@@ -3,7 +3,7 @@
 %include.blocks;
 
 <!ENTITY % boolean '(true|false)'>
-<!ENTITY % access-options '(read-only|read-write|write-only)'>
+<!ENTITY % access-options '(read-only|read-write|write-only|none)'>
 
 <!ELEMENT settings (features,properties)>
 <!ELEMENT features (desc?,(fcategory+|feature+)?)>

@@ -130,6 +130,7 @@ catch (SAXException e) {
    </desc>
    <type>java.lang.Integer</type>
    <access general='read-write'/>
+   <since value='&ParserName; 2.1.0'/>
    <note>
     Some tests indicate that a bigger buffer size can improve the parsing
     performance for relatively large files. The default buffer size
@@ -157,6 +158,7 @@ catch (SAXException e) {
    </desc>
    <type>org.apache.xerces.util.SecurityManager</type>
    <access general='read-write'/>
+   <since value='&ParserName; 2.3.0'/>
    <note>
     The <code>org.apache.xerces.util.SecurityManager</code> class
     contains a number of methods that allow applications to tailor Xerces's 
@@ -225,6 +227,20 @@ catch (SAXException e) {
     This property is only for SAX parser implementations used as
     DOM tree walkers. Currently, Xerces does not have this
     functionality.
+   </note>
+  </property>
+  <property name='http://xml.org/sax/properties/document-xml-version'
+            id='document-xml-version'>
+   <desc>
+    A literal string describing the actual XML version 
+    of the document, such as "1.0" or "1.1".
+   </desc>
+   <type>java.lang.String</type>
+   <access general='read-only'/>
+   <since value='&ParserName; 2.7.0'/>
+   <note>
+    This property may only be examined during a parse after the
+    startDocument callback has been completed.
    </note>
   </property>
  </pcategory>

@@ -320,6 +320,7 @@ catch (SAXException e) {
    </true>
    <false>DOCTYPE declaration is allowed.</false>
    <default value='false'/>
+   <since value='&ParserName; 2.3.0'/>
   </feature>
 
   <feature name='http://apache.org/xml/features/standard-uri-conformant'
@@ -332,6 +333,7 @@ catch (SAXException e) {
     invalid URI characters (space, for example).
    </false>
    <default value='false'/>
+   <since value='&ParserName; 2.3.0'/>
    <note>
     It's recommended to set this feature to true if you want your
     application/documents to be truly portable across different XML processors.
@@ -444,8 +446,83 @@ catch (SAXException e) {
     Do not report the beginning and end of parameter entities to a registered LexicalHandler.
    </false>
    <default value='true'/>
-   <since value='Xerces-J 2.7.0'/>
+   <since value='&ParserName; 2.7.0'/>
   </feature>
+  <feature name='http://xml.org/sax/features/is-standalone'
+           id='is-standalone'>
+   <true>
+    The document specified standalone="yes" in its XML declaration.
+   </true>
+   <false>
+    The document specified standalone="no" in its XML declaration or the 
+    standalone document declaration was absent.
+   </false>
+   <access parsing='read-only' not-parsing='none'/>
+   <since value='&ParserName; 2.7.0'/>
+  </feature>
+  <feature name='http://xml.org/sax/features/resolve-dtd-uris'
+           id='resolve-dtd-uris'>
+   <true>
+    The system identifiers passed to the notationDecl, unparsedEntityDecl, and 
+    externalEntityDecl events will be absolutized relative to their base URIs before reporting.
+   </true>
+   <false>
+    System identifiers in declarations will not be absolutized before reporting.
+   </false>
+   <default value='true'/>
+   <since value='&ParserName; 2.7.0'/>
+   <note>
+    This feature does not apply to EntityResolver.resolveEntity(), which is not used to report declarations, 
+    or to LexicalHandler.startDTD(), which already provides the non-absolutized URI.
+   </note>
+  </feature>
+  <feature name='http://xml.org/sax/features/unicode-normalization-checking'
+           id='unicode-normalization-checking'>
+   <true>
+    Perform Unicode normalization checking (as described in section 2.13 and Appendix B 
+    of the XML 1.1 Recommendation) and report normalization errors.
+   </true>
+   <false>
+    Do not report Unicode normalization errors.
+   </false>
+   <default value='false'/>
+   <since value='&ParserName; 2.7.0'/>
+   <note>
+    As there is currently no support for Unicode normalization checking, this 
+    feature can only be set to false.
+   </note>
+  </feature>
+  <feature name='http://xml.org/sax/features/xmlns-uris'
+           id='xmlns-uris'>
+   <true>
+    When the namespace-prefixes feature is set to true, namespace declaration attributes
+    will be reported as being in the http://www.w3.org/2000/xmlns/ namespace.
+   </true>
+   <false>
+    Namespace declaration attributes are reported as having no namespace.
+   </false>
+   <default value='false'/>
+   <since value='&ParserName; 2.7.0'/>
+   <see idref='namespaces'/>
+   <see idref='namespace-prefixes'/>
+  </feature>
+  <feature name='http://xml.org/sax/features/xml-1.1'
+           id='xml-1.1'>
+   <true>
+    The parser supports both XML 1.1 and XML 1.0.
+   </true>
+   <false>
+    The parser supports only XML 1.0.
+   </false>
+   <access general='read-only'/>
+   <since value='&ParserName; 2.7.0'/>
+   <note>
+    The value of this feature will depend on whether the
+    parser configuration owned by the SAX parser is known
+    to support XML 1.1.
+   </note>
+  </feature>
+  
  </fcategory>
  <fcategory name='XInclude Features (Experimental)'>
    <feature name='http://xml.org/sax/features/allow-dtd-events-after-endDTD'
@@ -459,6 +536,7 @@ catch (SAXException e) {
     are not sent after the <code>endDTD</code> event has been sent (default SAX behaviour).
    </false>
    <default value='true**'/>
+   <since value='&ParserName; 2.5.0'/>
    <note>
     The default value for this feature is true, except when using SAX,
     because SAX requires that no DTD events be sent after the <code>endDTD</code>
