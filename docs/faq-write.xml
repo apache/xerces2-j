@@ -364,15 +364,16 @@ parser.getXMLReader().setErrorHandler(handler);</source>
   </q>
   <a>
    <p>
-    DTDs are not currently cached by the parser. The common DTD, 
+    By default, the parser does not cache DTD's. The common DTD, 
     since it is specified in each XML document, will be re-parsed 
     once for each document.
    </p>
    <p>
-    However, there are things that you can do now, to make the 
+    However, there are things that you can do to make the 
     process of reading DTD's more efficient:
    </p>
    <ul>
+    <li>First, have a look at the grammar caching/preparsing FAQ:</li>
     <li>keep your DTD and DTD references local</li>
     <li>use internal DTD subsets, if possible</li>
     <li>load files from server to local client before parsing</li>

@@ -37,6 +37,7 @@
  <faqs label='FAQs' title='Frequently Asked Questions' id='faqs'>
   <faq title='Common FAQs' id='faq-common' source='faq-common.xml'/>
   <faq title='General FAQs' id='faq-general' source='faq-general.xml'/>
+  <faq title='Caching and Preparsing Grammars' id='faq-grammars' source='faq-grammars.xml'/>
   <faq title='Parser Configuration, Features and Properties FAQs' id='faq-pcfp' source='faq-pcfp.xml'/>
   <faq title='Xerces Native Interface FAQs' id='faq-xni' source='faq-xni.xml'/>
   <faq title='Building and Running FAQs' 
