@@ -1444,6 +1444,17 @@ import java.io.Serializable;
       return isWellFormedIPv4Address(address);
     }
     else {
+      // hostname      = *( domainlabel "." ) toplabel [ "." ]
+      // domainlabel   = alphanum | alphanum *( alphanum | "-" ) alphanum
+      // toplabel      = alpha | alpha *( alphanum | "-" ) alphanum
+      
+      // RFC 2396 states that hostnames take the form described in 
+      // RFC 1034 (Section 3) and RFC 1123 (Section 2.1). According
+      // to RFC 1034, hostnames are limited to 255 characters.
+      if (addrLength > 255) {
+      	return false;
+      }
+      
       // domain labels can contain alphanumerics and '-"
       // but must start and end with an alphanumeric
       char testChar;
