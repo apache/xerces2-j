@@ -1,4 +1,4 @@
-﻿<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
@@ -46,7 +46,14 @@
         Augmentation, XMLAttributes, and updated implementation accordingly.
        </note>
        <submitter name='Elena Litani, Sandy Gao'/>
-      </update>      
+      </update>
+      <update>
+       <note>
+        Modified PSVI interfaces (<code>org.apache.xerces.impl.xs.psvi</code>) 
+        and updated implementation accordingly.
+       </note>
+       <submitter name='Elena Litani'/>
+    </update>      
       <update>
             <note>
             Modified XMLDTDHandler, XMLDTDSource, XMLDTDContentModelHandler and
