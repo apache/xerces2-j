@@ -447,7 +447,7 @@ public abstract class XMLScanner
                         standalone = fString.toString();
                         state = STATE_DONE;
                         if (!standalone.equals("yes") && !standalone.equals("no")) {
-                            reportFatalError("SDDeclInvalid", null);
+                            reportFatalError("SDDeclInvalid", new Object[] {standalone});
                         }
                     }
                     else {
@@ -464,7 +464,7 @@ public abstract class XMLScanner
                         standalone = fString.toString();
                         state = STATE_DONE;
                         if (!standalone.equals("yes") && !standalone.equals("no")) {
-                            reportFatalError("SDDeclInvalid", null);
+                            reportFatalError("SDDeclInvalid", new Object[] {standalone});
                         }
                     }
                     else {
