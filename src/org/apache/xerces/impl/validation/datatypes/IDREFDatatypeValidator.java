@@ -153,7 +153,6 @@ implements StatefullDatatypeValidator{
          InvalidDatatypeValueException error = new InvalidDatatypeValueException( "IDREF is not valid" );//Need Message
          throw error;//Need Message
       }
-      //System.out.println("Content REF = " + content );
       addIdRef( content, state);// We are storing IDs 
    }
 
@@ -195,13 +194,13 @@ implements StatefullDatatypeValidator{
     */
    public void initialize( Object tableOfIDs ){
       //System.out.println("IDREF datatype initialized" );
-          
+         
       if ( this.fTableIDRefs != null) {
          this.fTableIDRefs.clear();
       } else {
-         this.fTableIDRefs = new Hashtable();
+        this.fTableIDRefs = new Hashtable();
       }
-      this.fTableOfId = (Hashtable) tableOfIDs; //set reference to table of Ids.
+      fTableOfId = (Hashtable) tableOfIDs; //set reference to table of Ids.
    }
 
 
@@ -269,7 +268,6 @@ implements StatefullDatatypeValidator{
     * @exception InvalidDatatypeValueException
     */
    private void checkIdRefs() throws InvalidDatatypeValueException {
-
       if ( fTableIDRefs == null)
          return;
 

@@ -249,8 +249,9 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
     private DatatypeValidator            fValNOTATION;
     */
 
-    private Hashtable fTableOfIDs = new Hashtable();//There is one per instance of XMLValidator
-
+    private Hashtable fTableOfIDs; //This table has to be own by instance of XMLValidator and shared among ID, IDREF and IDREFS
+                                   //Only ID has read/write access
+                                   //Should revisit and replace with a ligther structure
 
     /** DEBUG flags */
     private boolean DEBUG_ATTRIBUTES;
@@ -760,7 +761,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
             if (fValidation) {
                 try {
-                    fValIDRef.validate();   
+                    fValIDRef.validate();//Do final validation of IDREFS against IDs
                     fValIDRefs.validate();
                 } catch (InvalidDatatypeValueException ex) {
                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
@@ -771,11 +772,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                 }
             }
 
-            fTableOfIDs.clear();
-            fValID.initialize( null);
-            fValIDRef.initialize(null);
-            fValIDRefs.initialize(null);
-
+            fTableOfIDs.clear();//Clear table of IDs
             return;
         }
 
@@ -1765,7 +1762,6 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         switch (attributeDecl.simpleType.type) {
         
         case XMLSimpleType.TYPE_ENTITY:
-
             {
                 boolean isAlistAttribute = attributeDecl.simpleType.list;//Caveat - Save this information because invalidStandaloneAttDef
                 String  unTrimValue      = attValue;
@@ -1842,13 +1838,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                     }
                 }
                 try {
-                    //this.fIdDefs = (Hashtable) fValID.validate( value, null );
-                    //System.out.println("this.fIdDefs = " + this.fIdDefs );
-
-                    fValIDRef.validate( value, null );
-
-                    //this.fStoreIDRef.setDatatypeObject( fValID.validate( value, null ) );
-                    //fValIDRef.validate( value, this.fStoreIDRef ); //just in case we called id after IDREF
+                    fValID.validate( value, null );
                 } catch (InvalidDatatypeValueException ex) {
                     /*
                     reportRecoverableXMLError(ex.getMajorCode(),
@@ -1867,7 +1857,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                 String  unTrimValue = attValue;
                 String  value       = unTrimValue.trim();
                 boolean isAlistAttribute = attributeDecl.simpleType.list;//Caveat - Save this information because invalidStandaloneAttDef
-                //changes fTempAttDef
+
                 if (fValidation) {
                     if (value != unTrimValue) {
                         if (invalidStandaloneAttDef(element, attributeDecl.name)) {
@@ -1882,10 +1872,8 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                 try {
                     if (isAlistAttribute) {
                         fValIDRefs.validate(value, null );
-                        //fValIDRefs.validate( value, this.fStoreIDRef );
                     } else {
                         fValIDRef.validate(value, null );
-                        //fValIDRef.validate( value, this.fStoreIDRef );
                     }
                 } catch (InvalidDatatypeValueException ex) {
                     if (ex.getMajorCode() != 1 && ex.getMinorCode() != -1) {
@@ -2367,8 +2355,10 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         */
 
 
-        //Initialize ENTITY & ENTITIES Validatorh
-
+        //Initialize ID, IDREF, IDREFS, ENTITY & ENTITIES Validators
+        if( fTableOfIDs == null ){
+            fTableOfIDs = new Hashtable();//Initialize table of IDs
+        }
         fValID.initialize(fTableOfIDs);
         fValIDRef.initialize(fTableOfIDs);
         fValIDRefs.initialize(fTableOfIDs);

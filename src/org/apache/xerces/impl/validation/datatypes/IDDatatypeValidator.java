@@ -195,13 +195,7 @@ implements StatefullDatatypeValidator {
      * @param state  This is a dummy parameter.
      */
     public void initialize( Object tableOfIDs) {
-        //System.out.println("IDDatatypeValidator Initialized" );
         fTableOfId = (Hashtable) tableOfIDs;
-        if (this.fTableOfId != null) {
-            this.fTableOfId.clear();
-        } else {
-            this.fTableOfId = new Hashtable();
-        }
     }
 
     /**
@@ -260,17 +254,12 @@ implements StatefullDatatypeValidator {
      *         then validate method throws a validation exception.
      */
     private boolean addId(String content) {
-        //System.out.println("Added ID = " + content );
-        if (fTableOfId == null) {
-            fTableOfId = new Hashtable();//Gain reference to table
-        } else if (this.fTableOfId.containsKey( content )) {
-            //System.out.println("ID - it already has this key =" + content +"table = " + this.fTableOfId  );
+        if (fTableOfId.containsKey( content ) == true ) {
             return false;
         }
         if (this.fNullValue == null) {
             fNullValue = new Object();
         }
-        //System.out.println("Before putting content" + content );
         try {
             fTableOfId.put( content, fNullValue ); 
         } catch (Exception ex) {
