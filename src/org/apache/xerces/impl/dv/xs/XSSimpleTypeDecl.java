@@ -185,8 +185,6 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
     private boolean fBounded;
     private boolean fNumeric;
 
-    private ValidatedInfo fTempInfo = new ValidatedInfo();
-
     //Create a new built-in primitive types (and id/idref/entity)
     protected XSSimpleTypeDecl(XSSimpleTypeDecl base, String name, short validateDV,
                                short ordered, boolean bounded,
@@ -418,6 +416,8 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
     void applyFacets(XSFacets facets, short presentFacet, short fixedFacet, short tokenType, ValidationContext context)
         throws InvalidDatatypeFacetException {
 
+        ValidatedInfo tempInfo = new ValidatedInfo();
+
         // clear facets. because we always inherit facets in the constructor
         // REVISIT: in fact, we don't need to clear them.
         // we can convert 5 string values (4 bounds + 1 enum) to actual values,
@@ -528,7 +528,7 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
                 reportError("cos-applicable-facets", new Object[]{"maxInclusive"});
             } else {
                 try {
-                    fMaxInclusive = getActualValue(facets.maxInclusive, context, fTempInfo);
+                    fMaxInclusive = getActualValue(facets.maxInclusive, context, tempInfo);
                     fFacetsDefined |= FACET_MAXINCLUSIVE;
                     if ((fixedFacet & FACET_MAXINCLUSIVE) != 0)
                         fFixedFacet |= FACET_MAXINCLUSIVE;
@@ -543,7 +543,7 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
                 reportError("cos-applicable-facets", new Object[]{"maxExclusive"});
             } else {
                 try {
-                    fMaxExclusive = getActualValue(facets.maxExclusive, context, fTempInfo);
+                    fMaxExclusive = getActualValue(facets.maxExclusive, context, tempInfo);
                     fFacetsDefined |= FACET_MAXEXCLUSIVE;
                     if ((fixedFacet & FACET_MAXEXCLUSIVE) != 0)
                         fFixedFacet |= FACET_MAXEXCLUSIVE;
@@ -558,7 +558,7 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
                 reportError("cos-applicable-facets", new Object[]{"minExclusive"});
             } else {
                 try {
-                    fMinExclusive = getActualValue(facets.minExclusive, context, fTempInfo);
+                    fMinExclusive = getActualValue(facets.minExclusive, context, tempInfo);
                     fFacetsDefined |= FACET_MINEXCLUSIVE;
                     if ((fixedFacet & FACET_MINEXCLUSIVE) != 0)
                         fFixedFacet |= FACET_MINEXCLUSIVE;
@@ -573,7 +573,7 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
                 reportError("cos-applicable-facets", new Object[]{"minInclusive"});
             } else {
                 try {
-                    fMinInclusive = getActualValue(facets.minInclusive, context, fTempInfo);
+                    fMinInclusive = getActualValue(facets.minInclusive, context, tempInfo);
                     fFacetsDefined |= FACET_MININCLUSIVE;
                     if ((fixedFacet & FACET_MININCLUSIVE) != 0)
                         fFixedFacet |= FACET_MININCLUSIVE;
@@ -995,17 +995,13 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
      */
     public Object validate(String content, ValidationContext context, ValidatedInfo validatedInfo) throws InvalidDatatypeValueException {
 
+        if (validatedInfo == null)
+            validatedInfo = new ValidatedInfo();
+            
         // first normalize string value, and convert it to actual value
-        Object ob = getActualValue(content, context, fTempInfo);
+        Object ob = getActualValue(content, context, validatedInfo);
 
-        validate(context, fTempInfo);
-
-        if (validatedInfo != null) {
-            validatedInfo.actualValue = fTempInfo.actualValue;
-            validatedInfo.normalizedValue = fTempInfo.normalizedValue;
-            validatedInfo.memberType = fTempInfo.memberType;
-            validatedInfo.memberTypes = fTempInfo.memberTypes;
-        }
+        validate(context, tempInfo);
 
         return ob;
 
