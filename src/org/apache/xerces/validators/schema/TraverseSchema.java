@@ -1121,7 +1121,15 @@ public class TraverseSchema implements
            	} else if (name.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
                 if(fRedefineAttributeGroupMap != null) {
                     String dName = child.getAttribute(SchemaSymbols.ATT_NAME);
-                    Object [] bAttGrpStore = (Object [])fRedefineAttributeGroupMap.get(dName);
+                    Object [] bAttGrpStore = null;
+                    try {
+                        bAttGrpStore = (Object [])fRedefineAttributeGroupMap.get(dName);
+                    } catch(ClassCastException c) {
+                        // if it's still a String, then we mustn't have found a corresponding attributeGroup in the redefined schema.
+                        // REVISIT:  localize
+                        reportGenericSchemaError("src-redefine.7.2:  an <attributeGroup> within a <redefine> must either have a ref to an <attributeGroup> with the same name or must restrict such an <attributeGroup>");
+                        continue;
+                    }
                     if(bAttGrpStore != null) { // we have something!
                         ComplexTypeInfo bTypeInfo = (ComplexTypeInfo)bAttGrpStore[0];
                         SchemaGrammar bSchemaGrammar = (SchemaGrammar)bAttGrpStore[1];
@@ -1153,7 +1161,7 @@ public class TraverseSchema implements
                         }
                         catch (ComplexTypeRecoverableError e) {
                             String message = e.getMessage();
-                            handleComplexTypeError(message,fStringPool.addSymbol(dName),dTypeInfo);
+                            reportGenericSchemaError("src-redefine.7.2:  redefinition failed because of " + message);
                         }
                         continue;
                     }
