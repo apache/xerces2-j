@@ -2,6 +2,19 @@
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
+  <release version="TBD">
+    <desc>
+        TBD
+    </desc>
+    <changes>
+        <fix>
+            <note>Applied fixes to Xerces's regular expression suport to address
+                a number of bugs reported by users.
+            </note>
+            <submitter name="Kent Tamura, Neil Graham"/>
+        </fix>
+    </changes>
+  </release>
   <release version="2.0.2">
     <desc>
       In this release, numerous bugs have been fixed.  Only one minor change in the Xerces
