@@ -74,7 +74,9 @@ import org.apache.xerces.dom.events.*;
  * return itself in response to the getChildNodes() query. This eliminiates
  * the need for a separate ChildNodeList object. Note that this is an
  * IMPLEMENTATION DETAIL; applications should _never_ assume that
- * this identity exists.
+ * this identity exists. On the other hand, subclasses may need to override
+ * this, in case of conflicting names. This is the case for the classes
+ * HTMLSelectElementImpl and HTMLFormElementImpl of the HTML DOM.
  * <P>
  * While we have a direct reference to the first child, the last child is
  * stored as the previous sibling of the first child. First child nodes are
@@ -246,7 +248,6 @@ public abstract class ParentNode
      * differently.
      */
     public NodeList getChildNodes() {
-        // JKESS: KNOWN ISSUE HERE 
 
         if (needsSyncChildren()) {
             synchronizeChildren();
@@ -781,10 +782,11 @@ public abstract class ParentNode
     //
 
     /**
-     * NodeList method: Count the immediate children of this node
+     * Count the immediate children of this node.  Use to implement
+     * NodeList.getLength().
      * @return int
      */
-    public int getLength() {
+    private int nodeListGetLength() {
 
         if (nodeListLength == -1) { // is the cached length invalid ?
             ChildNode node;
@@ -803,15 +805,22 @@ public abstract class ParentNode
 
         return nodeListLength;
 
-    } // getLength():int
+    } // nodeListGetLength():int
 
     /**
-     * NodeList method: Return the Nth immediate child of this node, or
-     * null if the index is out of bounds.
-     * @return org.w3c.dom.Node
-     * @param Index int
+     * NodeList method: Count the immediate children of this node
+     * @return int
      */
-    public Node item(int index) {
+    public int getLength() {
+        return nodeListGetLength();
+    }
+
+    /**
+     * Return the Nth immediate child of this node, or null if the index is
+     * out of bounds.  Use to implement NodeList.item().
+     * @param index int
+     */
+    private Node nodeListItem(int index) {
         // short way
         if (nodeListIndex != -1 && nodeListNode != null) {
             if (nodeListIndex < index) {
@@ -838,7 +847,50 @@ public abstract class ParentNode
         }
         return nodeListNode;
 
+    } // nodeListItem(int):Node
+
+    /**
+     * NodeList method: Return the Nth immediate child of this node, or
+     * null if the index is out of bounds.
+     * @return org.w3c.dom.Node
+     * @param index int
+     */
+    public Node item(int index) {
+        return nodeListItem(index);
     } // item(int):Node
+
+    /**
+     * Create a NodeList to access children that is use by subclass elements
+     * that have methods named getLength() or item(int).  ChildAndParentNode
+     * optimizes getChildNodes() by implementing NodeList itself.  However if
+     * a subclass Element implements methods with the same name as the NodeList
+     * methods, they will override the actually methods in this class.
+     * <p>
+     * To use this method, the subclass should implement getChildNodes() and
+     * have it call this method.  The resulting NodeList instance maybe
+     * shared and cached in a transient field, but the cached value must be
+     * cleared if the node is cloned.
+     */
+    protected final NodeList getChildNodesUnoptimized() {
+        if (needsSyncChildren()) {
+            synchronizeChildren();
+        }
+        return new NodeList() {
+                /**
+                 * @see NodeList.getLength()
+                 */
+                public int getLength() {
+                    return nodeListGetLength();
+                } // getLength():int
+                
+                /**
+                 * @see NodeList.item(int)
+                 */
+                public Node item(int index) {
+                    return nodeListItem(index);
+                } // item(int):Node
+            };
+    } // getChildNodesUnoptimized():NodeList
 
     //
     // DOM2: methods, getters, setters

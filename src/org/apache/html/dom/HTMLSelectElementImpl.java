@@ -233,6 +233,13 @@ public final class HTMLSelectElementImpl
         // No scripting in server-side DOM. This method is moot.
     }
 
+    /*
+     * Explicit implementation of getChildNodes() to avoid problems with
+     * overriding the getLength() method hidden in the super class.
+     */
+    public NodeList getChildNodes() {
+        return getChildNodesUnoptimized();
+    }
   
     /**
      * Constructor requires owner document.
