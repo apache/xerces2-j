@@ -74,6 +74,8 @@ public class XMLEntityScanner
     // Data
     //
 
+    private static XMLEntityScanner fEntityScannerInstance = new XMLEntityScanner();
+
     /** fEntityHandler */
     protected XMLEntityHandler fEntityHandler;
 
@@ -99,7 +101,8 @@ public class XMLEntityScanner
     /**
      * 
      */
-    public XMLEntityScanner() {
+    private XMLEntityScanner() {
+
     }
 
     //
@@ -132,6 +135,12 @@ public class XMLEntityScanner
     public long getCharPosition() {
         return -1;
     } // getCharPosition
+
+
+   static public XMLEntityScanner getEntityScanner() {
+       return fEntityScannerInstance;//return the only instance of it
+   }
+
 
     /**
      * peekChar

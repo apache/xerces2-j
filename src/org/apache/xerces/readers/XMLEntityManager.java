@@ -178,7 +178,7 @@ public class XMLEntityManager
      * @return 
      */
     public XMLEntityScanner getEntityScanner() {
-        return null;
+        return XMLEntityScanner.getEntityScanner();
     } // getEntityScanner
 
 
