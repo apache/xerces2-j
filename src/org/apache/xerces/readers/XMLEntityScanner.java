@@ -158,7 +158,7 @@ implements Locator {
         charToReturn = this.fPushbackReader.read();
         this.fPushbackReader.unread(charToReturn );//pushback character
         if (XMLChar.isValid( charToReturn ) ) {
-            return charToReturn;
+            return (char) (charToReturn & 0xffff);
         } else {
             return '\uFFFE';
         }
@@ -175,7 +175,7 @@ implements Locator {
 
         charToReturn = this.fPushbackReader.read();//consume character
         if (XMLChar.isValid( charToReturn ) ) {
-            return charToReturn;
+            return (char) (charToReturn & 0xffff);
         } else {
             return '\uFFFE';
         }
@@ -213,13 +213,13 @@ implements Locator {
         if ( XMLChar.isNameStartChar( charValue = this.fPushbackReader.read() )== true) {
             buffer.append( (char) (charValue & 0xffff ) );
             fCharPosition++;
-        } else{
+        } else {
             return null;//Did not find a NameStartChar 
         }
         while ( XMLChar.isNameChar( charValue = this.fPushbackReader.read() ) == true ) {
-                buffer.append( (char) (charValue & 0xffff ) );
-                fCharPosition++;
-            }
+            buffer.append( (char) (charValue & 0xffff ) );
+            fCharPosition++;
+        }
         return buffer.toString();
     } // scanName
 
@@ -241,38 +241,44 @@ implements Locator {
      */
     public void scanQName(QName qname)
     throws IOException {
-        int charValue;
-        int startIndex = 0;
-        //int
-
+        int           charValue;
         StringBuffer  buffer = new StringBuffer();
 
         charValue = this.fPushbackReader.read();
+        fCharPosition++;
 
-        if ( charValue < 0x80 ) {
-            if ( XMLChar.isNameStartChar( charValue) == false ) {
-                qname.clear();
-                return;
-            }
-            if ( charValue  == ':' ) {
-                qname.clear();
-                return;
-            }
+        if ( XMLChar.isNameStartChar( charValue) == false ) {
+            qname.clear();
+            return;
         }
-        //int offset = 
+        if ( charValue  == ':' ) {
+            qname.clear();
+            return;
+        }
 
-
-
-        if ( XMLChar.isNameStartChar( charValue = this.fPushbackReader.read() )== true) {
-            buffer.append( (char) (charValue & 0xffff ) );
+        buffer.append( (char) (charValue & 0xffff ) );
+        while ( true ) {
+            charValue = this.fPushbackReader.read();
             fCharPosition++;
-            while ( XMLChar.isNameChar( charValue = this.fPushbackReader.read() ) == true ) {
-                buffer.append( (char) (charValue & 0xffff ) );
-                fCharPosition++;
+
+            if ( XMLChar.isNameChar( charValue) == false ) {
+                this.fPushbackReader.unread( charValue );
+                fCharPosition--;
+                break;
             }
+            buffer.append( (char) (charValue & 0xffff ) );
+        }
+
+        String strQname = buffer.toString();
+        int length      = strQname.length();
+        int prefixIndex = strQname.indexOf(':');
+        qname.clear();
+        qname.rawname   = strQname;
+        if( prefixIndex != -1 ){
+           qname.prefix    = strQname.substring(0, prefixIndex-1 );
+           qname.localpart = strQname.substring(prefixIndex+1, length );
         }
         return;
-
     } // scanQName
 
     /**
