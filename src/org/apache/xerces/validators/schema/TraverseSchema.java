@@ -807,8 +807,8 @@ public class TraverseSchema implements
                                  new Object [] { elm.getAttribute( SchemaSymbols.ATT_NAME )});
            }
            return null;
-	   }
-	   if (content.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
+       }
+       if (content.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
 		   traverseAnnotationDecl( content );   
 		   content = XUtil.getNextSiblingElement(content);
 		   if (content == null ) {   //must be followed by <simpleType?>
@@ -825,7 +825,7 @@ public class TraverseSchema implements
 		   }
 		   //return null if expected only annotation?, else returns updated content
 	   }
-	   return content;  
+       return content;  
    }
 
    
@@ -1075,15 +1075,24 @@ public class TraverseSchema implements
 
         
         else if (list && content!=null) { // report error - must not have any children!
-            reportSchemaError(SchemaMessageProvider.ListUnionRestrictionError,
+            if (baseTypeQNameProperty != "") {
+                content = checkContent(simpleTypeDecl, content, true);
+            }
+            else {
+                reportSchemaError(SchemaMessageProvider.ListUnionRestrictionError,
                         new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )});
-            //REVISIT: should we return?
-                       
+                //REVISIT: should we return?
+            }
         }
         else if (union && content!=null) { //report error - must not have any children!
-             reportSchemaError(SchemaMessageProvider.ListUnionRestrictionError,
+             if (baseTypeQNameProperty != "") {
+                content = checkContent(simpleTypeDecl, content, true);
+            }
+            else {
+                reportSchemaError(SchemaMessageProvider.ListUnionRestrictionError,
                         new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )});
-             //REVISIT: should we return?
+                //REVISIT: should we return?
+            }
         }
 
         // create & register validator for "generated" type if it doesn't exist        
