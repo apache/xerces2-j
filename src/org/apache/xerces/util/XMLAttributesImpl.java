@@ -400,7 +400,7 @@ public class XMLAttributesImpl
      */
     public String getType(String qname) {
         int index = getIndex(qname);
-        return index != -1 ? fAttributes[index].type : null;
+        return index != -1 ? getType(index): null;
     } // getType(String):String
 
     /**
