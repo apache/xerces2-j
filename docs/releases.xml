@@ -44,14 +44,14 @@
      Fixed bug in entity manager that would never resolve IANA encoding
      names to Java encoding names properly. (Bug #3449) 
     </note>
-    <submitter name='Pavani Mukthipudi' email='Pavani.Mukthipudi@sun.com'/>
+    <submitter name='Pavani Mukthipudi' mailto='Pavani.Mukthipudi@sun.com'/>
    </fix>
    <fix>
     <note>
      Fixed bug in SAX parser that was not forwarding external entity
      declarations in the DTD. (Bug #3392)
     </note>
-    <submitter name='Neeraj Bajaj' email='Neeraj.Bajaj@sun.com'/>
+    <submitter name='Neeraj Bajaj' mailto='Neeraj.Bajaj@sun.com'/>
    </fix>
    <add>
     <note>
