@@ -206,6 +206,7 @@ Copyright:
   <target name="jar" depends="compile">
     <jar jarfile="${build.dir}/${name}.jar"
          basedir="${build.dest}"
+         compress="false"
          includes="org/**, javax/**,META-INF/**"/>
   </target>
 
@@ -244,6 +245,7 @@ Copyright:
   <target name="sampjar" depends="samples">
     <jar jarfile="${build.dir}/${name}Samples.jar"
          basedir="${build.dest}"
+         compress="false"
          includes="dom/**,sax/**,socket/**,ui/**"/>
   </target>
 
