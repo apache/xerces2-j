@@ -1162,13 +1162,30 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                               String defaultType, XMLString defaultValue)
     throws SAXException {
 
-        //Should check if duplicate ID or Notations attributes if validation enable 
+        //ID validation rule - If Validation enable Should check for the following:
+        // a) If duplicate ID attribute 
+        // b) if there is a declareared attribute default for ID it should be of type #IMPLIED or #REQUIRED                                               
         if (fValidation == true) {
             if (type.equals("ID")) {
+
+                if (defaultValue != null) {
+                    if (defaultValue.length != 0) {
+                        if (defaultType == null || ! ( defaultType.equals("#IMPLIED") || defaultType.equals("#REQUIRED" ) )) {
+
+                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                       "IDDefaultTypeInvalid",
+                                                       new Object[]{ attributeName },
+                                                       XMLErrorReporter.SEVERITY_ERROR);
+
+
+                        }
+                    }
+                }
+
                 if (fTableOfIDAttributeNames.containsKey( elementName ) == false) {
                     fTableOfIDAttributeNames.put( elementName, attributeName);
                 } else {
-                    String previousIDAttributeName = (String) fTableOfIDAttributeNames.get( elementName );
+                    String previousIDAttributeName = (String) fTableOfIDAttributeNames.get( elementName );//rule a)
                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                "MSG_MORE_THAN_ONE_ID_ATTRIBUTE",
                                                new Object[]{ elementName, previousIDAttributeName, attributeName},
@@ -1176,6 +1193,10 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
                 }
             }
+
+            //NOTATION validation rule 
+            //  should check if there is a duplicate NOTATION attribute 
+
             if (type.equals("NOTATION")) {
                 if (fTableOfNOTATIONAttributeNames.containsKey( elementName ) == false) {
                     fTableOfNOTATIONAttributeNames.put( elementName, attributeName);
@@ -1394,8 +1415,8 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                                                XMLErrorReporter.SEVERITY_ERROR);
                 }
             }
-           fTableOfIDAttributeNames = null;//should be safe to release these references
-           fTableOfNOTATIONAttributeNames = null;
+            fTableOfIDAttributeNames = null;//should be safe to release these references
+            fTableOfNOTATIONAttributeNames = null;
 
         }
 
