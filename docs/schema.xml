@@ -31,7 +31,7 @@
             <li> year and seconds values in date/time datatypes are limited to the 
             value 2147483647. Items larger than this limit will not be validated 
             correctly. </li>
-            <li>There is currently no checking for constraint ct-cos-extends.1.5
+            <li>There is currently no checking for constraint ct-cos-extends.1.5</li>
         </ul>
     </s2>
     <s2 title='Problem Areas/Known Bugs'>
