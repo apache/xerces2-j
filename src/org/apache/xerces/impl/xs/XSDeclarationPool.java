@@ -340,6 +340,7 @@ public final class XSDeclarationPool {
         fSTDeclIndex = 0;
         fCTDeclIndex = 0;
         fAttrDeclIndex = 0;
+        fAttributeUseIndex = 0;
     }
 
 
