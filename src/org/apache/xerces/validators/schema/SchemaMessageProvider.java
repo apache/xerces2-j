@@ -155,9 +155,9 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         IllegalAttContent = 19,
         ValueNotInteger = 20,
         DatatypeError = 21,
-		TypeAlreadySet = 22,
-		GenericError = 23,
-		UnclassifiedError = 24,
+        TypeAlreadySet = 22,
+        GenericError = 23,
+        UnclassifiedError = 24,
         ContentError = 25,
         AnnotationError = 26,
         ListUnionRestrictionError = 27,
@@ -174,7 +174,10 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         KeyRefReferNotFound = 37,
         // ...
         FixedDiffersFromActual = 38,
-        MSG_MAX_CODE = 39;
+        // simpleType
+        InvalidBaseType = 39,
+        
+        MSG_MAX_CODE = 40;
     //
     // Minor Codes
     //
@@ -197,20 +200,20 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         "DatatypeWithType",             //  12, "Datatype qualifiers can only be used if you specify a type attribute."},
         "DatatypeQualUnsupported",      //  13, "The datatype qualifier {0} is not supported."
         "GroupContentRestricted",       //  14, "Error: {0} content must be one of choice, all or sequence.  Saw {1}"
-        "UnknownBaseDatatype",          //  15, "Unknown base type {0} for type {1}." },
-        "BadAttWithRef",          //  16, "ref cannot appear with any of type, abstract, block, final, nullable, default or fixed"},
+        "UnknownBaseDatatype",          //  15, "Unknown base type {0} for type {1}." }, 
+        "BadAttWithRef",                //  16, "ref cannot appear with any of type, abstract, block, final, nullable, default or fixed"},
         "NoContentForRef",              //  17, "Cannot have child content for an element declaration that has a ref attribute"
         "IncorrectDefaultType",         //  18, "Incorrect type for {0}'s default value: {1}"
         "IllegalAttContent",            //  19, "Illegal content {0} in attribute group"
         "ValueNotInteger",              //  20, "Value of {0} is not an integer"
         "DatatypeError",                //  21, "Datatype error {0}." 
-		"TypeAlreadySet",				//	22,	"The type of the element has already been declared."
-		"GenericError",					//	23, "Schema error: {0}."
-		"UnclassifiedError",			//	24,	"Unclassified error."
+        "TypeAlreadySet",               //  22, "The type of the element has already been declared."
+        "GenericError",                 //  23, "Schema error: {0}."
+        "UnclassifiedError",            //  24, "Unclassified error."
         "ContentError",                 //  25, "Content (annotation?,..) is incorrect for type {0}"
-        "AnnotationError",                //  26, "Annotation can only appear once: type {0}"
-        "ListUnionRestrictionError",       //  27, "List | Union | Restriction content is invalid for type {0}"
-        "ProhibitedAttributePresent",	    		// 	28,	attribue dcld prohibited is present
+        "AnnotationError",              //  26, "Annotation can only appear once: type {0}"
+        "ListUnionRestrictionError",    //  27, "List | Union | Restriction content is invalid for type {0}"
+        "ProhibitedAttributePresent",   //  28, attribue dcld prohibited is present
         // identity constraint keys
         "UniqueNotEnoughValues",
         "KeyNotEnoughValues",
@@ -222,6 +225,7 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         "UnknownField",
         "KeyRefReferNotFound",
         "FixedDiffersFromActual",
+        "InvalidBaseType",
         // END
     };
 }

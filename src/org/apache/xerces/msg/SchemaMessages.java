@@ -90,13 +90,13 @@ public class SchemaMessages extends ListResourceBundle {
         { "IllegalAttContent", "Illegal content {0} in attribute group" },
         { "ValueNotInteger", "Value of {0} is not an integer." },
         { "DatatypeError", "Datatype error: {0}." },
-		{ "TypeAlreadySet", "The type of the element has already been declared." },
-		{ "GenericError", "Schema error: {0}." },
-		{ "UnexpectedError", "UnexpectedError" },
-                {"ContentError", "Content (annotation?,..) is incorrect for type {0}"},
-                {"AnnotationError", "Annotation can only appear once: type {0}"},
-                {"ListUnionRestrictionError","List | Union | Restriction content is invalid for type {0}"},
-		{ "ProhibitedAttributePresent", "An attribute declared \"prohibited\" is present in this element definition." },
+        { "TypeAlreadySet", "The type of the element has already been declared." },
+        { "GenericError", "Schema error: {0}." },
+        { "UnexpectedError", "UnexpectedError" },
+        {"ContentError", "Content (annotation?,..) is incorrect for type {0}"},
+        {"AnnotationError", "Annotation can only appear once: type {0}"},
+        {"ListUnionRestrictionError","List | Union | Restriction content is invalid for type {0}"},
+        { "ProhibitedAttributePresent", "An attribute declared \"prohibited\" is present in this element definition." },
         // identity constraints
         { "UniqueNotEnoughValues", "Not enough values specified for <unique> identity constraint specified for element \"{0}\"." },
         { "KeyNotEnoughValues", "Not enough values specified for <key name=\"{1}\"> identity constraint specified for element \"{0}\"." },
@@ -108,7 +108,10 @@ public class SchemaMessages extends ListResourceBundle {
         { "UnknownField", "Internal identity constraint error; unknown field \"{0}\"." },
         { "KeyRefReferNotFound", "Key reference declaration \"{0}\" refers to unknown key with name \"{1}\"." },
         { "FixedDiffersFromActual", "The content of this element is not equivalent to the value of the \"fixed\" attribute in the element's declaration in the schema."}, 
-       };
+        // simpleType
+        {"InvalidBaseType", "itemType \"{0}\" must have a variety of atomic or union"},
+        
+    };
     
     /** Returns the list resource bundle contents. */
     public Object[][] getContents() {

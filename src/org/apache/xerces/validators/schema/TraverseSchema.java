@@ -76,7 +76,8 @@ import  org.apache.xerces.validators.datatype.DatatypeValidator;
 import  org.apache.xerces.validators.datatype.DatatypeValidatorFactoryImpl;
 import  org.apache.xerces.validators.datatype.NOTATIONDatatypeValidator;
 import  org.apache.xerces.validators.datatype.StringDatatypeValidator;  
-import  org.apache.xerces.validators.datatype.UnionDatatypeValidator;  
+import  org.apache.xerces.validators.datatype.ListDatatypeValidator;
+import  org.apache.xerces.validators.datatype.UnionDatatypeValidator; 
 import  org.apache.xerces.validators.datatype.InvalidDatatypeValueException;
 import  org.apache.xerces.utils.StringPool;
 import  org.w3c.dom.Element;
@@ -1630,16 +1631,16 @@ public class TraverseSchema implements
                 if (union) {
                     dTValidators.addElement((DatatypeValidator)baseValidator); //add validator to structure
                 }
-                //REVISIT: Should we raise exception here?
-                // if baseValidator.isInstanceOf(LIST) and UNION
-                if ( list && (baseValidator instanceof UnionDatatypeValidator)) {
-                    reportSchemaError(SchemaMessageProvider.UnknownBaseDatatype,
-                                      new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_BASE ),
-                                          simpleTypeDecl.getAttribute(SchemaSymbols.ATT_NAME)});
-                    return -1;
-                }
+                
             }
         } //end - base is available
+        
+        if (list && baseValidator instanceof ListDatatypeValidator) {
+            reportSchemaError(SchemaMessageProvider.InvalidBaseType,
+                                      new Object [] { baseTypeQNameProperty,
+                                          simpleTypeDecl.getAttribute(SchemaSymbols.ATT_NAME)});
+            return -1;
+        }
         
         // move to next child 
         // restriction ->[simpleType]->[facets]  OR
