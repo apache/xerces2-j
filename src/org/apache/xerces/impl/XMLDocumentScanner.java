@@ -574,6 +574,8 @@ public class XMLDocumentScanner
         encoding = fPseudoAttributeValues[1];
         standalone = fPseudoAttributeValues[2];
 
+        fStandalone = standalone != null && standalone.equals("yes");
+
         // call handler
         if (fDocumentHandler != null) {
             if (scanningTextDecl) {
@@ -726,7 +728,9 @@ public class XMLDocumentScanner
             }
             /***/
             fEntityManager.setEntityHandler(fDTDScanner);
-            fDTDScanner.scanDTDInternalSubset(true);
+            final boolean complete = true;
+            final boolean hasExternalDTD = systemId != null;
+            fDTDScanner.scanDTDInternalSubset(complete, fStandalone, hasExternalDTD);
             fEntityManager.setEntityHandler(this);
             /***/
             fEntityScanner.skipSpaces();
@@ -747,7 +751,8 @@ public class XMLDocumentScanner
                 fEntityManager.resolveEntity(publicId, systemId, null);
             fEntityManager.setEntityHandler(fDTDScanner);
             fEntityManager.startDTDEntity(xmlInputSource);
-            fDTDScanner.scanDTD(true);
+            final boolean complete = true;
+            fDTDScanner.scanDTD(complete);
             fEntityManager.setEntityHandler(this);
         }
 
