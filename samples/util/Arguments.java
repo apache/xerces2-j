@@ -179,6 +179,8 @@ public class Arguments {
                 i = (Integer ) stackOfOptions.pop();
                 lastPopArgument = i.intValue();
             }
+            else
+              lastPopArgument = -1;
         } catch ( EmptyStackException ex ) {
             return -1;
         }
