@@ -1114,6 +1114,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
    /** Call start CDATA section. */
    public void callStartCDATA() throws Exception {
+      if (fValidating && fInElementContent) {
+         charDataInContent();
+      }
       fDocumentHandler.startCDATA();
    }
 
