@@ -57,19 +57,26 @@
     <q>Does Xerces provide access to the post schema validation infoset (PSVI)?</q>
     <a>
       <p>
-	Xerces defines a set of objects and interfaces for accessing and querying the post 
-	schema validation infoset (PSVI) defined in 
+	Xerces defines an <link idref="api" anchor="xml-schema-api-documentation">XML Schema API</link>
+	for accessing and querying the post schema validation infoset (PSVI) defined in 
 	<jump href='http://www.w3.org/TR/xmlschema-1/#PSVI_contributions'>
 	  Contributions to the post-schema-validation infoset (Appendix C.2)</jump>. 
-	The interfaces defined in the <code>org.apache.xerces.impl.xs.psvi</code> allow 
+	The interfaces defined in the <code>org.apache.xerces.xs</code> package allow 
 	developers to access the XML Schema components, which follow as a consequence 
-	of validation and/or assessment. 
-	The interfaces defined in the <code>>org.apache.xerces.xni.psvi</code> defines a 
-	set of interfaces for accessing the PSVI from a document instance. 
+	of validation and/or assessment and also provide a means for accessing the
+	PSVI from a document instance.
       </p>
-      <note>The set of above interfaces is <strong>experimental</strong> 
-	and may change in the future.
-      </note>
+    </a>
+  </faq>
+  
+  <faq title="Changes to PSVI">
+    <q>What happened to the PSVI interfaces in org.apache.xerces.xni.psvi?</q>
+    <a>
+      <p>
+        The PSVI interfaces which used to be part of the <code>org.apache.xerces.xni.psvi</code>
+        and <code>org.apache.xerces.impl.xs.psvi</code> packages were modified and have been moved
+        into the <link idref="api" anchor="xml-schema-api-documentation">XML Schema API</link>.
+      </p>
     </a>
   </faq>
 
@@ -77,7 +84,7 @@
     <q>How do I access PSVI via XNI?</q>
     <a> <p>From within an <code>XMLDocumentHandler</code>, one can retrieve PSVI
 	information while in the scope of the document handler start/end element calls:</p>
-      <source>import org.apache.xerces.xni.psvi.*;
+      <source>import org.apache.xerces.xs.*;
 
 ...
 
@@ -96,14 +103,13 @@ public void startElement(QName element, XMLAttributes attributes,
 	elements/attributes are assessed. The other kind of information PSVI
 	offers is the property
 	<jump href="http://www.w3.org/TR/xmlschema-1/#e-schema_information">[schema information]</jump>.
-	This property exposes all schema components in the schema that's used for
+	This property exposes all schema components in the schema that are used for
 	assessment. These components and the schema itself are represented by
-	interfaces in the <code>org.apache.xerces.impl.xs.psvi</code> package.</p>
+	interfaces in the <code>org.apache.xerces.xs</code> package.</p>
       <p>[schema information] property is only available on the
 	<code>endElement</code> method for the validation root. When this method
 	is called, information about various components can be retrieved by</p>
-      <source>import org.apache.xerces.xni.psvi.*;
-import org.apache.xerces.impl.xs.psvi.*;
+      <source>import org.apache.xerces.xs.*;
 
 ...
 
@@ -112,10 +118,12 @@ public void endElement(QName element, Augmentations augs) {
     XSModel xsModel = elemPSVI.getSchemaInformation();
     // get a list of [namespace schema information information item]s,
     // one for each namespace.
-    ObjectList nsItems = xsModel.getNamespaceItems();
+    XSNamespaceItemList nsItems = xsModel.getNamespaceItems();
+    ...
+    
     // get an element declaration of the specified name and namespace
     XSElementDeclaration elemDecl = xsModel.getElementDeclaration
-        (name, namespace);
+        (namespace, name);
     ...
 }</source>
     </a>
@@ -125,17 +133,17 @@ public void endElement(QName element, Augmentations augs) {
   <faq title="Accessing PSVI via DOM">
     <q>How do I access PSVI via DOM?</q>  
     <a><anchor name="dom3-psvi"/><p>Use  
-	<link idref='properties' anchor="dom.document-class-name">http://apache.org/xml/properties/dom/document-class-name</link> property
- 	to set <code>org.apache.xerces.dom.PSVIDocumentImpl</code> document 
-        interfaces implementation. In the resulting DOM tree, you may cast 
+	the <link idref='properties' anchor="dom.document-class-name">http://apache.org/xml/properties/dom/document-class-name</link> property
+ 	to set <code>org.apache.xerces.dom.PSVIDocumentImpl</code> as the implementation 
+        of the <code>org.w3c.dom.Document</code> interface. In the resulting DOM tree, you may cast 
         <code>org.w3c.dom.Element</code> to the 
-        <code>org.apache.xerces.xni.psvi.ElementPSVI</code> and  
+        <code>org.apache.xerces.xs.ElementPSVI</code> and  
         <code>org.w3c.dom.Attr</code> to the 
-        <code>org.apache.xerces.xni.psvi.AttributePSVI</code>. 
+        <code>org.apache.xerces.xs.AttributePSVI</code>. 
       </p>
-      <source>import org.apache.xerces.xni.psvi.*;
-import org.apache.xerces.impl.xs.psvi.XSModel;
-import org.apache.xerces.impl.xs.psvi.XSNamedMap;
+      <source>import org.apache.xerces.xs.ElementPSVI;
+import org.apache.xerces.xs.XSModel;
+import org.apache.xerces.xs.XSNamedMap;
 
 ...
 
@@ -158,14 +166,15 @@ String normalizedValue = rootPSVI.getSchemaNormalizedValue();</source>
 
   <faq title="Accessing PSVI via SAX">
     <q>How do I access PSVI via SAX?</q>
-    <a> <p>Xerces SAX parser also implements 
-	<code>org.apache.xerces.impl.xs.psvi.PSVIProvider</code> interface.
-	Within the scope of the methods handling the start and end of an element, i.e.
-	org.xml.sax.ContentHandler.startElement (..), 
-	an application can use the PSVIProvider to retrieve the PSVI related to that 
-	element and its attributes.  
+    <a> <p>The Xerces SAX parser also implements the
+	<code>org.apache.xerces.xs.PSVIProvider</code> interface.
+	Within the scope of the methods handling the start 
+	(<code>org.xml.sax.ContentHandler.startElement</code>) and 
+	end (<code>org.xml.sax.ContentHandler.endElement</code>) of an element, 
+	applications may use the <code>PSVIProvider</code> to retrieve the PSVI 
+	related to the element and its attributes.
       </p>
-      <source>import org.apache.xerces.impl.xs.psvi.PSVIProvider;
+      <source>import org.apache.xerces.xs.PSVIProvider;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
