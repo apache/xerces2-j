@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.
+ * Copyright (c) 1999-2003 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -633,6 +633,7 @@ public class XML11DocumentScannerImpl
         boolean dataok = true;
         while (true) {
             int c = fEntityScanner.scanChar();
+            // REVISIT:  none of these except \n and 0x20 should make it past the entity scanner
             if (c == ' ' || c == '\n' || c == '\r' || c == 0x85 || c == 0x2028) {
                 if (!skipSpace) {
                     // take the first whitespace as a space and skip the others
@@ -664,20 +665,6 @@ public class XML11DocumentScannerImpl
         }
         return dataok;
    }
-
-    /**
-     * Normalize whitespace in an XMLString converting all whitespace
-     * characters to space characters.
-     */
-    protected void normalizeWhitespace(XMLString value) {
-        int end = value.offset + value.length;
-        for (int i = value.offset; i < end; i++) {
-            int c = value.ch[i];
-            if (XML11Char.isXML11Space(c)) {
-                value.ch[i] = ' ';
-            }
-        }
-    }
 
     // returns true if the given character is not
     // valid with respect to the version of

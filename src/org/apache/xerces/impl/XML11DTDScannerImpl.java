@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  
+ * Copyright (c) 1999-2003 The Apache Software Foundation.  
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -180,6 +180,7 @@ public class XML11DTDScannerImpl
         boolean dataok = true;
         while (true) {
             int c = fEntityScanner.scanChar();
+            // REVISIT:  it could really only be \n or 0x20; all else is normalized, no?  - neilg
             if (c == ' ' || c == '\n' || c == '\r' || c == 0x85 || c == 0x2028) {
                 if (!skipSpace) {
                     // take the first whitespace as a space and skip the others
@@ -211,20 +212,6 @@ public class XML11DTDScannerImpl
         }
         return dataok;
    }
-
-    /**
-     * Normalize whitespace in an XMLString converting all whitespace
-     * characters to space characters.
-     */
-    protected void normalizeWhitespace(XMLString value) {
-        int end = value.offset + value.length;
-        for (int i = value.offset; i < end; i++) {
-            int c = value.ch[i];
-            if (XML11Char.isXML11Space(c)) {
-                value.ch[i] = ' ';
-            }
-        }
-    }
 
     // returns true if the given character is not
     // valid with respect to the version of
