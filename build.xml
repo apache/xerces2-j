@@ -1179,6 +1179,8 @@ Copyright:
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
    <replace file="${build.src}/org/apache/xerces/dom/DOMStringListImpl.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/> 
+   <replace file="${build.src}/org/apache/xerces/impl/xs/XMLSchemaLoader.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/> 
   </target>
 
   <!-- =================================================================== -->
@@ -1218,6 +1220,9 @@ Copyright:
 
    <replace file="${build.samples}/dom/ASBuilder.java"  
              token="org.apache.xerces.dom3.DOMConfiguration" value="org.w3c.dom.DOMConfiguration"/>
+
+   <replace file="${build.samples}/xs/QueryXS.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/> 
  
    <xjavac srcdir="${build.samples}"
            destdir="${build.dest}"
@@ -1289,13 +1294,13 @@ Copyright:
           failOnError="yes">
        <arg value="${data.dir}/personal.xml"/>
     </java>
-    <!--
-    <echo message="Running DOMFilter ..." />
+
+    <echo message="Running QueryXS ..." />
     <java fork="yes"
           classpath="${build.dir}/dom3-${jar.apis}:${build.dir}/classes"
-          classname="dom.DOMFilter"
-          args="-p dom.wrappers.DOMParser ${data.dir}/personal.xml"/>
-    -->
+          classname="xs.QueryXS"
+          args="${data.dir}/personal.xsd"/>
+
     <!-- The following are samples but not command-line applications.
     <echo message="Running IteratorView ..." />
     <java fork="yes"
