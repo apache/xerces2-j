@@ -130,6 +130,10 @@ public class XSDHandler {
     protected static final String CONTINUE_AFTER_FATAL_ERROR =
         Constants.XERCES_FEATURE_PREFIX + Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE;
 
+    /** Feature identifier:  allow java encodings */
+    protected static final String STANDARD_URI_CONFORMANT_FEATURE =
+        Constants.XERCES_FEATURE_PREFIX + Constants.STANDARD_URI_CONFORMANT_FEATURE;
+
     /** Property identifier: error handler. */
     protected static final String ERROR_HANDLER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_HANDLER_PROPERTY;
@@ -169,6 +173,9 @@ public class XSDHandler {
 
     // are java encodings allowed?
     private boolean fAllowJavaEncodings = false;
+    
+    // enforcing strict uri?
+    private boolean fStrictURI = false;
 
     // These tables correspond to the symbol spaces defined in the
     // spec.
@@ -341,7 +348,8 @@ public class XSDHandler {
     // this object (i.e., clean the registries, etc.).
 
     public SchemaGrammar parseSchema(XMLInputSource is, XSDDescription desc,
-                Hashtable locationPairs) {
+                                     Hashtable locationPairs)
+            throws IOException {
 
         fLocationPairs = locationPairs;
 
@@ -379,7 +387,7 @@ public class XSDHandler {
             if(schemaNamespace != null && schemaNamespace.length() > 0) {
                 schemaNamespace = fSymbolTable.addSymbol(schemaNamespace);
                 desc.setTargetNamespace(schemaNamespace);
-                String schemaId = XMLEntityManager.expandSystemId(desc.getLiteralSystemId(), desc.getBaseSystemId());
+                String schemaId = XMLEntityManager.expandSystemId(desc.getLiteralSystemId(), desc.getBaseSystemId(), false);
                 XSDKey key = new XSDKey(schemaId, referType, schemaNamespace);
                 fTraversed.put(key, schemaRoot );
                 if (schemaId != null) {
@@ -1344,7 +1352,7 @@ public class XSDHandler {
                 // expand it, and check whether the same document has been
                 // parsed before. If so, return the document corresponding to
                 // that system id.
-                String schemaId = XMLEntityManager.expandSystemId(schemaSource.getSystemId(), schemaSource.getBaseSystemId());
+                String schemaId = XMLEntityManager.expandSystemId(schemaSource.getSystemId(), schemaSource.getBaseSystemId(), false);
                 XSDKey key = new XSDKey(schemaId, referType, schemaNamespace);
                 if ((schemaDoc = (Document)fTraversed.get(key)) != null) {
                     fLastSchemaWasDuplicate = true;
@@ -1485,13 +1493,15 @@ public class XSDHandler {
                       XMLEntityResolver entityResolver,
                       SymbolTable symbolTable,
                       XMLGrammarPool grammarPool,
-                      boolean allowJavaEncodings) {
+                      boolean allowJavaEncodings,
+                      boolean strictURI) {
 
         fErrorReporter = errorReporter;
         fEntityResolver = entityResolver;
         fSymbolTable = symbolTable;
         fGrammarPool = grammarPool;
         fAllowJavaEncodings = allowJavaEncodings;
+        fStrictURI = strictURI;
 
         resetSchemaParserErrorHandler();
         
@@ -1511,14 +1521,20 @@ public class XSDHandler {
                 }
             } catch (Exception e) {
             }
-            // make sure continue-after-fatal-error and
-            // allow-java-encodings set correctly:
+            // make sure the following are set correctly:
+            // continue-after-fatal-error
+            // allow-java-encodings
+            // standard-uri-conformant
             try {
                 fSchemaParser.setFeature(CONTINUE_AFTER_FATAL_ERROR, fErrorReporter.getFeature(CONTINUE_AFTER_FATAL_ERROR));
             } catch (Exception e) {
             }
             try {
                 fSchemaParser.setFeature(ALLOW_JAVA_ENCODINGS, fAllowJavaEncodings);
+            } catch (Exception e) {
+            }
+            try {
+                fSchemaParser.setFeature(STANDARD_URI_CONFORMANT_FEATURE, fStrictURI);
             } catch (Exception e) {
             }
             try {

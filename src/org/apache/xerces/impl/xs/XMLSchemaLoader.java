@@ -69,6 +69,7 @@ import org.apache.xerces.xni.grammars.Grammar;
 import org.xml.sax.InputSource;
 
 import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.traversers.XSDHandler;
 import org.apache.xerces.impl.Constants;
@@ -120,11 +121,16 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
     protected static final String ALLOW_JAVA_ENCODINGS =
         Constants.XERCES_FEATURE_PREFIX + Constants.ALLOW_JAVA_ENCODINGS_FEATURE;
 
+    /** Feature identifier: standard uri conformant feature. */
+    protected static final String STANDARD_URI_CONFORMANT_FEATURE =
+        Constants.XERCES_FEATURE_PREFIX + Constants.STANDARD_URI_CONFORMANT_FEATURE;
+
     // recognized features:
     private static final String[] RECOGNIZED_FEATURES = {
         SCHEMA_FULL_CHECKING,
         CONTINUE_AFTER_FATAL_ERROR,
         ALLOW_JAVA_ENCODINGS,
+        STANDARD_URI_CONFORMANT_FEATURE
     };
 
     // property identifiers
@@ -180,6 +186,9 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
 
     // is allow-java-encodings enabled?
     private boolean fAllowJavaEncodings = false;
+    
+    // enforcing strict uri?
+    private boolean fStrictURI = false;
 
     private SymbolTable fSymbolTable = null;
     private XMLErrorReporter fErrorReporter = new XMLErrorReporter ();
@@ -295,6 +304,8 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
             fErrorReporter.setFeature(CONTINUE_AFTER_FATAL_ERROR, state);
         } else if(featureId.equals(ALLOW_JAVA_ENCODINGS)) {
             fAllowJavaEncodings = state;
+        } else if(featureId.equals(STANDARD_URI_CONFORMANT_FEATURE)) {
+            fStrictURI = state;
         } else {
             throw new XMLConfigurationException(XMLConfigurationException.NOT_RECOGNIZED, featureId);
         }
@@ -447,7 +458,7 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
         }
 
         fSchemaHandler.reset(fErrorReporter, fEntityResolver,
-                fSymbolTable, fGrammarPool, fAllowJavaEncodings);
+                fSymbolTable, fGrammarPool, fAllowJavaEncodings, fStrictURI);
         if(fGrammarPool == null) {
             fDeclPool.reset();
             fSchemaHandler.setDeclPool(fDeclPool);
@@ -477,17 +488,11 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
         desc.setLiteralSystemId( source.getSystemId());
         // none of the other fields make sense for preparsing
         Hashtable locationPairs = new Hashtable();
-        if(!tokenizeSchemaLocationStr(fExternalSchemas, locationPairs)) {
-            fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                          "SchemaLocation",
-                                          new Object[]{fExternalSchemas},
-                                          XMLErrorReporter.SEVERITY_WARNING);
-        }
-        if(fExternalNoNSSchema != null) {
-            LocationArray noNs = new LocationArray();
-            noNs.addLocation(fExternalNoNSSchema);
-            locationPairs.put(XMLSymbols.EMPTY_STRING, noNs);
-        }
+        // Process external schema location properties.
+        // We don't call tokenizeSchemaLocationStr here, because we also want
+        // to check whether the values are valid URI.
+        processExternalHints(fExternalSchemas, fExternalNoNSSchema,
+                             locationPairs, fErrorReporter);
         SchemaGrammar grammar = loadSchema(desc, source, locationPairs);
         if(grammar != null && fGrammarPool != null) {
             fGrammarPool.cacheGrammars(XMLGrammarDescription.XML_SCHEMA, fGrammarBucket.getGrammars());
@@ -541,12 +546,76 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
                 loc = hints[0];
         }
 
-        String expandedLoc = XMLEntityManager.expandSystemId(loc, desc.getBaseSystemId());
+        String expandedLoc = XMLEntityManager.expandSystemId(loc, desc.getBaseSystemId(), false);
         desc.setLiteralSystemId(loc);
         desc.setExpandedSystemId(expandedLoc);
         return entityResolver.resolveEntity(desc);
     }
 
+    // add external schema locations to the location pairs
+    public static void processExternalHints(String sl, String nsl,
+                                            Hashtable locations,
+                                            XMLErrorReporter er) {
+        if (sl != null) {
+            try {
+                // get the attribute decl for xsi:schemaLocation
+                // because external schema location property has the same syntax
+                // as xsi:schemaLocation
+                XSAttributeDecl attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(SchemaSymbols.XSI_SCHEMALOCATION);
+                // validation the string value to get the list of URI's
+                Object actualValue = attrDecl.fType.validate(sl, null, null);
+                Object[] uris = (Object[])actualValue;
+                // if there are even number of URI's
+                // add them to the location pairs
+                if (uris.length % 2 == 0) {
+                    String namespace, location;
+                    for (int i = 0; i < uris.length;) {
+                        namespace = (String)uris[i++];
+                        location = (String)uris[i++];
+                        LocationArray la = ((LocationArray)locations.get(namespace));
+                        if(la == null) {
+                            la = new LocationArray();
+                            locations.put(namespace, la);
+                        }
+                        la.addLocation(location);
+                    }
+                }
+                else {
+                    // report warning (odd number of items)
+                    er.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                   "SchemaLocation",
+                                   new Object[]{sl},
+                                   XMLErrorReporter.SEVERITY_WARNING);
+                }
+            }
+            catch (InvalidDatatypeValueException ex) {
+                // report warning (not list of URI's)
+                er.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                               ex.getKey(), ex.getArgs(),
+                               XMLErrorReporter.SEVERITY_WARNING);
+            }
+        }
+
+        if (nsl != null) {
+            try {
+                // similarly for no ns schema location property
+                XSAttributeDecl attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(SchemaSymbols.XSI_NONAMESPACESCHEMALOCATION);
+                attrDecl.fType.validate(nsl, null, null);
+                LocationArray la = ((LocationArray)locations.get(XMLSymbols.EMPTY_STRING));
+                if(la == null) {
+                    la = new LocationArray();
+                    locations.put(XMLSymbols.EMPTY_STRING, la);
+                }
+                la.addLocation(nsl);
+            }
+            catch (InvalidDatatypeValueException ex) {
+                // report warning (not a URI)
+                er.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                               ex.getKey(), ex.getArgs(),
+                               XMLErrorReporter.SEVERITY_WARNING);
+            }
+        }
+    }
     // this method takes a SchemaLocation string.
     // If an error is encountered, false is returned;
     // otherwise, true is returned.  In either case, locations

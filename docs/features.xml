@@ -307,6 +307,22 @@ catch (SAXException e) {
    <default value='false'/>
   </feature>
 
+  <feature name='http://apache.org/xml/features/standard-uri-conformant'
+           id='standard-uri-conformant'>
+   <true>Requires that a URI has to be provided where a URI is expected.</true>
+   <false>
+    Some invalid URI's are accepted as valid values when a URI is expected.
+    Examples include: using platform dependent file separator in place of '/';
+    using Windows/DOS path names like "c:\blah" and "\\host\dir\blah"; using
+    invalid URI characters (space, for example).
+   </false>
+   <default value='false'/>
+   <note>
+    It's recommended to set this feature to true if you want your
+    application/documents to be truly portable across different XML processors.
+   </note>
+  </feature>
+
  </fcategory>
  <fcategory name='DOM Features'>
   <feature name='http://apache.org/xml/features/dom/defer-node-expansion'

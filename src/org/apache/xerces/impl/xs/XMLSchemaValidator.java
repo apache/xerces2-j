@@ -184,6 +184,10 @@ public class XMLSchemaValidator
     protected static final String ALLOW_JAVA_ENCODINGS =
     Constants.XERCES_FEATURE_PREFIX + Constants.ALLOW_JAVA_ENCODINGS_FEATURE;
 
+    /** Feature identifier: standard uri conformant feature. */
+    protected static final String STANDARD_URI_CONFORMANT_FEATURE =
+        Constants.XERCES_FEATURE_PREFIX + Constants.STANDARD_URI_CONFORMANT_FEATURE;
+
     /** Feature identifier: whether to continue parsing a schema after a fatal error is encountered */
     protected static final String CONTINUE_AFTER_FATAL_ERROR =
     Constants.XERCES_FEATURE_PREFIX + Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE;
@@ -238,6 +242,7 @@ public class XMLSchemaValidator
         SCHEMA_FULL_CHECKING,
         ALLOW_JAVA_ENCODINGS,
         CONTINUE_AFTER_FATAL_ERROR,
+        STANDARD_URI_CONFORMANT_FEATURE
     };
 
     /** Feature defaults. */
@@ -254,6 +259,7 @@ public class XMLSchemaValidator
         null, //Boolean.FALSE,
         null, //Boolean.FALSE,
         null, //Boolean.FALSE,
+        null
     };
 
     /** Recognized properties. */
@@ -443,7 +449,6 @@ public class XMLSchemaValidator
     /** Schema Grammar Description passed,  to give a chance to application to supply the Grammar */
     protected final XSDDescription fXSDDescription = new XSDDescription() ;
     protected final Hashtable fLocationPairs = new Hashtable() ;
-    protected final XMLSchemaLoader.LocationArray fNoNamespaceLocationArray = new XMLSchemaLoader.LocationArray();
 
     /** Base URI for the DOM revalidation*/
     protected String fBaseURI = null;
@@ -1321,7 +1326,6 @@ public class XMLSchemaValidator
 
         //reset XSDDescription
         fLocationPairs.clear();
-        fNoNamespaceLocationArray.resize(0 , 2) ;
 
         // get schema location properties
         try {
@@ -1338,7 +1342,8 @@ public class XMLSchemaValidator
         // so any other schemaLocation declaration for the same namespace will be
         // effectively ignored. becuase we choose to take first location hint
         // available for a particular namespace.
-        storeLocations(fExternalSchemas, fExternalNoNamespaceSchema) ;
+        XMLSchemaLoader.processExternalHints(fExternalSchemas, fExternalNoNamespaceSchema,
+                                             fLocationPairs, fXSIErrorReporter.fErrorReporter);
 
         try {
             fJaxpSchemaSource = componentManager.getProperty(JAXP_SCHEMA_SOURCE);
@@ -1364,6 +1369,12 @@ public class XMLSchemaValidator
         try {
             boolean allowJavaEncodings = componentManager.getFeature(ALLOW_JAVA_ENCODINGS);
             fSchemaLoader.setFeature(ALLOW_JAVA_ENCODINGS, allowJavaEncodings);
+        }
+        catch (XMLConfigurationException e){
+        }
+        try {
+            boolean strictURI = componentManager.getFeature(STANDARD_URI_CONFORMANT_FEATURE);
+            fSchemaLoader.setFeature(STANDARD_URI_CONFORMANT_FEATURE, strictURI);
         }
         catch (XMLConfigurationException e){
         }
@@ -2288,8 +2299,12 @@ public class XMLSchemaValidator
             }
         }
         if (nsLocation != null) {
-            fNoNamespaceLocationArray.addLocation(nsLocation);
-            fLocationPairs.put(XMLSymbols.EMPTY_STRING, fNoNamespaceLocationArray);
+            XMLSchemaLoader.LocationArray la = ((XMLSchemaLoader.LocationArray)fLocationPairs.get(XMLSymbols.EMPTY_STRING));
+            if(la == null) {
+                la = new XMLSchemaLoader.LocationArray();
+                fLocationPairs.put(XMLSymbols.EMPTY_STRING, la);
+            }
+            la.addLocation(nsLocation);
         }
 
     }//storeLocations
@@ -2314,13 +2329,9 @@ public class XMLSchemaValidator
             }
 
             String[] temp = null ;
-            if( namespace != null){
-                Object locationArray = fLocationPairs.get(namespace) ;
-                if(locationArray != null)
-                    temp = ((XMLSchemaLoader.LocationArray)locationArray).getLocationArray() ;
-            }else{
-                temp = fNoNamespaceLocationArray.getLocationArray() ;
-            }
+            Object locationArray = fLocationPairs.get(namespace == null ? XMLSymbols.EMPTY_STRING : namespace) ;
+            if(locationArray != null)
+                temp = ((XMLSchemaLoader.LocationArray)locationArray).getLocationArray() ;
             if (temp != null && temp.length != 0) {
                 fXSDDescription.fLocationHints = new String [temp.length] ;
                 System.arraycopy(temp, 0 , fXSDDescription.fLocationHints, 0, temp.length );

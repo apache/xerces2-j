@@ -263,6 +263,9 @@ public final class Constants {
     /** Notify built-in (&amp;amp;, etc.) references feature (scanner/notify-builtin-refs"). */
     public static final String NOTIFY_BUILTIN_REFS_FEATURE = "scanner/notify-builtin-refs";
 
+    /** Standard URI conformant feature ("standard-uri-conformant"). */
+    public static final String STANDARD_URI_CONFORMANT_FEATURE = "standard-uri-conformant";
+    
     // xerces properties
 
     /** Xerces properties prefix ("http://apache.org/xml/properties/"). */

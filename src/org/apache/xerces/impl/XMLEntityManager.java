@@ -159,6 +159,10 @@ public class XMLEntityManager
     protected static final String WARN_ON_DUPLICATE_ENTITYDEF =
     Constants.XERCES_FEATURE_PREFIX +Constants.WARN_ON_DUPLICATE_ENTITYDEF_FEATURE;
 
+    /** Feature identifier: standard uri conformant */
+    protected static final String STANDARD_URI_CONFORMANT =
+    Constants.XERCES_FEATURE_PREFIX +Constants.STANDARD_URI_CONFORMANT_FEATURE;
+
     // property identifiers
 
     /** Property identifier: symbol table. */
@@ -193,7 +197,8 @@ public class XMLEntityManager
         EXTERNAL_GENERAL_ENTITIES,
         EXTERNAL_PARAMETER_ENTITIES,
         ALLOW_JAVA_ENCODINGS,
-        WARN_ON_DUPLICATE_ENTITYDEF
+        WARN_ON_DUPLICATE_ENTITYDEF,
+        STANDARD_URI_CONFORMANT
     };
 
     /** Feature defaults. */
@@ -203,6 +208,7 @@ public class XMLEntityManager
         Boolean.TRUE,
         Boolean.FALSE,
         Boolean.FALSE,
+        Boolean.FALSE
     };
 
     /** Recognized properties. */
@@ -280,6 +286,12 @@ public class XMLEntityManager
      *  http://apache.org/xml/features/warn-on-duplicate-entitydef
      */
     protected boolean fWarnDuplicateEntityDef;
+
+    /**
+     * standard uri conformant (strict uri).
+     * http://apache.org/xml/features/standard-uri-conformant
+     */
+    protected boolean fStrictURI;
 
     // properties
 
@@ -500,7 +512,7 @@ public class XMLEntityManager
      */
     public void addExternalEntity(String name,
                                   String publicId, String literalSystemId,
-                                  String baseSystemId) {
+                                  String baseSystemId) throws IOException {
         if (!fEntities.containsKey(name)) {
             if (baseSystemId == null) {
                 // search for the first external entity on the stack
@@ -518,7 +530,7 @@ public class XMLEntityManager
                 }
             }
             Entity entity = new ExternalEntity(name,
-                    new XMLResourceIdentifierImpl(publicId, literalSystemId, baseSystemId, expandSystemId(literalSystemId, baseSystemId)), null, fInExternalSubset);
+                    new XMLResourceIdentifierImpl(publicId, literalSystemId, baseSystemId, expandSystemId(literalSystemId, baseSystemId, false)), null, fInExternalSubset);
             fEntities.put(name, entity);
         }
         else{
@@ -671,7 +683,7 @@ public class XMLEntityManager
                 needExpand = true;
          }
          if (needExpand)
-            expandedSystemId = expandSystemId(literalSystemId, baseSystemId);
+            expandedSystemId = expandSystemId(literalSystemId, baseSystemId, false);
 
        // give the entity resolver a chance
         XMLInputSource xmlInputSource = null;
@@ -751,7 +763,7 @@ public class XMLEntityManager
                     // expanded??? - neilg
                     String extLitSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getLiteralSystemId() : null);
                     String extBaseSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getBaseSystemId() : null);
-                    String expandedSystemId = expandSystemId(extLitSysId, extBaseSysId);
+                    String expandedSystemId = expandSystemId(extLitSysId, extBaseSysId, false);
                     fResourceIdentifier.setValues(
                             (externalEntity.entityLocation != null ? externalEntity.entityLocation.getPublicId() : null),
                             extLitSysId, extBaseSysId, expandedSystemId);
@@ -788,7 +800,7 @@ public class XMLEntityManager
                         // REVISIT:  for the same reason above...
                         String extLitSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getLiteralSystemId() : null);
                         String extBaseSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getBaseSystemId() : null);
-                        String expandedSystemId = expandSystemId(extLitSysId, extBaseSysId);
+                        String expandedSystemId = expandSystemId(extLitSysId, extBaseSysId, false);
                         fResourceIdentifier.setValues(
                                 (externalEntity.entityLocation != null ? externalEntity.entityLocation.getPublicId() : null),
                                 extLitSysId, extBaseSysId, expandedSystemId);
@@ -929,7 +941,8 @@ public class XMLEntityManager
         // create reader
         InputStream stream = null;
         Reader reader = xmlInputSource.getCharacterStream();
-        String expandedSystemId = expandSystemId(literalSystemId, baseSystemId);
+        // First chance checking strict URI
+        String expandedSystemId = expandSystemId(literalSystemId, baseSystemId, fStrictURI);
         if (baseSystemId == null) {
             baseSystemId = expandedSystemId;
         }
@@ -1182,6 +1195,13 @@ public class XMLEntityManager
             fWarnDuplicateEntityDef = false;
         }
 
+        try {
+            fStrictURI = componentManager.getFeature(STANDARD_URI_CONFORMANT);
+        }
+        catch (XMLConfigurationException e) {
+            fStrictURI = false;
+        }
+
         // xerces properties
         fSymbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
         fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
@@ -1239,11 +1259,15 @@ public class XMLEntityManager
             addInternalEntity("recursive-entity", "<foo>&recursive-entity2;</foo>");
             addInternalEntity("recursive-entity2", "<bar>&recursive-entity3;</bar>");
             addInternalEntity("recursive-entity3", "<baz>&recursive-entity;</baz>");
-
-            addExternalEntity("external-text", null, "external-text.ent", "test/external-text.xml");
-            addExternalEntity("external-balanced-element", null, "external-balanced-element.ent", "test/external-balanced-element.xml");
-            addExternalEntity("one", null, "ent/one.ent", "test/external-entity.xml");
-            addExternalEntity("two", null, "ent/two.ent", "test/ent/one.xml");
+            try {
+                addExternalEntity("external-text", null, "external-text.ent", "test/external-text.xml");
+                addExternalEntity("external-balanced-element", null, "external-balanced-element.ent", "test/external-balanced-element.xml");
+                addExternalEntity("one", null, "ent/one.ent", "test/external-entity.xml");
+                addExternalEntity("two", null, "ent/two.ent", "test/ent/one.xml");
+            }
+            catch (IOException ex) {
+                // should never happen
+            }
         }
 
         // copy declared entities
@@ -1392,23 +1416,6 @@ public class XMLEntityManager
     //
     // Public static methods
     //
-
-    /**
-     * Expands a system id and returns the system id as a URI, if
-     * it can be expanded. A return value of null means that the
-     * identifier is already expanded. An exception thrown
-     * indicates a failure to expand the id.
-     *
-     * @param systemId The systemId to be expanded.
-     *
-     * @return Returns the URI string representing the expanded system
-     *         identifier. A null value indicates that the given
-     *         system identifier is already expanded.
-     *
-     */
-    public static String expandSystemId(String systemId) {
-        return expandSystemId(systemId, null);
-    } // expandSystemId(String):String
 
     // current value of the "user.dir" property
     private static String gUserDir;
@@ -1562,7 +1569,43 @@ public class XMLEntityManager
      *         system identifier is already expanded.
      *
      */
-    public static String expandSystemId(String systemId, String baseSystemId) {
+    public static String expandSystemId(String systemId, String baseSystemId,
+                                        boolean strict)
+            throws URI.MalformedURIException {
+
+        // system id has to be a valid URI
+        if (strict) {
+            try {
+                // if it's already an absolute one, return it
+                URI uri = new URI(systemId);
+                return systemId;
+            }
+            catch (URI.MalformedURIException ex) {
+            }
+            URI base = null;
+            // if there isn't a base uri, use the working directory
+            if (baseSystemId == null || baseSystemId.length() == 0) {
+                base = new URI("file", "", getUserDir(), null, null);
+            }
+            // otherwise, use the base uri
+            else {
+                try {
+                    base = new URI(baseSystemId);
+                }
+                catch (URI.MalformedURIException e) {
+                    // assume "base" is also a relative uri
+                    String dir = getUserDir();
+                    dir = dir + baseSystemId;
+                    base = new URI("file", "", dir, null, null);
+                }
+            }
+            // absolutize the system id using the base
+            URI uri = new URI(base, systemId);
+            // return the string rep of the new uri (an absolute one)
+            return uri.toString();
+            
+            // if any exception is thrown, it'll get thrown to the caller.
+        }
 
         // check for bad parameters id
         if (systemId == null || systemId.length() == 0) {
@@ -1876,6 +1919,8 @@ public class XMLEntityManager
         // handle platform dependent strings
         str = str.replace(java.io.File.separatorChar, '/');
 
+        StringBuffer sb = null;
+
         // Windows fix
         if (str.length() >= 2) {
             char ch1 = str.charAt(1);
@@ -1883,13 +1928,45 @@ public class XMLEntityManager
             if (ch1 == ':') {
                 char ch0 = Character.toUpperCase(str.charAt(0));
                 if (ch0 >= 'A' && ch0 <= 'Z') {
-                    str = "/" + str;
+                    sb = new StringBuffer(str.length());
+                    sb.append('/');
                 }
             }
             // change "//blah" to "file://blah"
             else if (ch1 == '/' && str.charAt(0) == '/') {
-                str = "file:" + str;
+                sb = new StringBuffer(str.length());
+                sb.append("file:");
             }
+        }
+
+        int pos = str.indexOf(' ');
+        // there is no space in the string
+        // we just append "str" to the end of sb
+        if (pos < 0) {
+            if (sb != null) {
+                sb.append(str);
+                str = sb.toString();
+            }
+        }
+        // otherwise, convert all ' ' to "%20".
+        // Note: the following algorithm might not be very performant,
+        // but people who want to use invalid URI's have to pay the price.
+        else {
+            if (sb == null)
+                sb = new StringBuffer(str.length());
+            // put characters before ' ' into the string buffer
+            for (int i = 0; i < pos; i++)
+                sb.append(str.charAt(i));
+            // and %20 for the space
+            sb.append("%20");
+            // for the remamining part, also convert ' ' to "%20".
+            for (int i = pos+1; i < str.length(); i++) {
+                if (str.charAt(i) == ' ')
+                    sb.append("%20");
+                else
+                    sb.append(str.charAt(i));
+            }
+            str = sb.toString();
         }
 
         // done

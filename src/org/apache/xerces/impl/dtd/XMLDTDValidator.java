@@ -729,7 +729,12 @@ public class XMLDTDValidator
         fSeenDoctypeDecl = true;
         fRootElement.setValues(null, rootElement, rootElement, null);
         // find or create grammar:
-        XMLDTDDescription grammarDesc = new XMLDTDDescription(publicId, systemId, fDocLocation.getExpandedSystemId(), XMLEntityManager.expandSystemId(systemId), rootElement);
+        String eid = null;
+        try {
+            eid = XMLEntityManager.expandSystemId(systemId, fDocLocation.getExpandedSystemId(), false);
+        } catch (java.io.IOException e) {
+        }
+        XMLDTDDescription grammarDesc = new XMLDTDDescription(publicId, systemId, fDocLocation.getExpandedSystemId(), eid, rootElement);
         fDTDGrammar = fGrammarBucket.getGrammar(grammarDesc);
         if(fDTDGrammar == null) {
             // give grammar pool a chance...

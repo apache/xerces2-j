@@ -107,6 +107,20 @@ public class XMLDTDLoader
     // Constants
     //
 
+    // feature identifiers
+
+    /** Feature identifier: standard uri conformant feature. */
+    protected static final String STANDARD_URI_CONFORMANT_FEATURE =
+        Constants.XERCES_FEATURE_PREFIX + Constants.STANDARD_URI_CONFORMANT_FEATURE;
+
+    // recognized features:
+    private static final String[] RECOGNIZED_FEATURES = {
+        VALIDATION,
+        WARN_ON_DUPLICATE_ATTDEF,
+        NOTIFY_CHAR_REFS,
+        STANDARD_URI_CONFORMANT_FEATURE
+    };
+
     // property identifiers
 
     /** Property identifier: error handler. */
@@ -126,6 +140,9 @@ public class XMLDTDLoader
         GRAMMAR_POOL,       
         DTD_VALIDATOR,
     };
+
+    // enforcing strict uri?
+    private boolean fStrictURI = false;
 
     /** Entity resolver . */
     protected XMLEntityResolver fEntityResolver;
@@ -173,6 +190,7 @@ public class XMLDTDLoader
         } else {
             fEntityManager = new XMLEntityManager();
         }
+        fEntityManager.setProperty(Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY, errorReporter);
         fDTDScanner = new XMLDTDScannerImpl(fSymbolTable, fErrorReporter, fEntityManager);
         fDTDScanner.setDTDHandler(this);
         fDTDScanner.setDTDContentModelHandler(this);
@@ -204,6 +222,8 @@ public class XMLDTDLoader
             fWarnDuplicateAttdef = state;
         } else if(featureId.equals(NOTIFY_CHAR_REFS)) {
             fDTDScanner.setFeature(featureId, state);
+        } else if(featureId.equals(STANDARD_URI_CONFORMANT_FEATURE)) {
+            fStrictURI = state;
         }  else {
             throw new XMLConfigurationException(XMLConfigurationException.NOT_RECOGNIZED, featureId);
         }
@@ -357,7 +377,9 @@ public class XMLDTDLoader
     public Grammar loadGrammar(XMLInputSource source)
             throws IOException, XNIException {
         reset();
-        fDTDGrammar = new DTDGrammar(fSymbolTable, new XMLDTDDescription(source.getPublicId(), source.getSystemId(), source.getBaseSystemId(), fEntityManager.expandSystemId(source.getSystemId()), null));
+        // First chance checking strict URI
+        String eid = XMLEntityManager.expandSystemId(source.getSystemId(), source.getBaseSystemId(), fStrictURI);
+        fDTDGrammar = new DTDGrammar(fSymbolTable, new XMLDTDDescription(source.getPublicId(), source.getSystemId(), source.getBaseSystemId(), eid, null));
         fGrammarBucket = new DTDGrammarBucket();
         fGrammarBucket.setStandalone(false);
         fGrammarBucket.setActiveGrammar(fDTDGrammar); 
