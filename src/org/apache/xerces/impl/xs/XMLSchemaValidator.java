@@ -2008,7 +2008,6 @@ public class XMLSchemaValidator
         if (DEBUG) {
             System.out.println("==>handleEndElement:" +element);
         }
-
         // if we are skipping, return
         if (fSkipValidationDepth >= 0) {
             // but if this is the top element that we are skipping,
@@ -2092,6 +2091,7 @@ public class XMLSchemaValidator
         }
         fValueStoreCache.endElement();
 
+
         // decrease element depth and restore states
         fElementDepth--;
         
@@ -2114,8 +2114,10 @@ public class XMLSchemaValidator
             if (fGrammarPool != null) {
                 fGrammarPool.cacheGrammars(XMLGrammarDescription.XML_SCHEMA, grammars);
             }
+            augs = endElementPSVI(true, grammars, augs);
         }
         else {
+            augs = endElementPSVI(false, grammars, augs);
             // get the states for the parent element.
             fChildCount = fChildCountStack[fElementDepth];
             fCurrentElemDecl = fElemDeclStack[fElementDepth];
@@ -2128,6 +2130,14 @@ public class XMLSchemaValidator
             fSawChildren = fSawChildrenStack[fElementDepth];
         }
 
+
+
+        return augs;
+    } // handleEndElement(QName,boolean)*/
+
+    final Augmentations endElementPSVI (boolean root, SchemaGrammar[] grammars, 
+                               Augmentations augs){
+
         if (fAugPSVI) {
             augs = getEmptyAugs(augs);
 
@@ -2136,7 +2146,6 @@ public class XMLSchemaValidator
             fCurrentPSVI.fTypeDecl = this.fCurrentType;
             fCurrentPSVI.fNotation = this.fNotation;
             fCurrentPSVI.fValidationContext = this.fValidationRoot;
-    
             // PSVI: validation attempted
             if (fElementDepth <= fPartialValidationDepth) {
                 // the element had child with a content skip.
@@ -2167,14 +2176,15 @@ public class XMLSchemaValidator
                                      ElementPSVI.VALIDITY_VALID :
                                      ElementPSVI.VALIDITY_INVALID;
     
-            if (fElementDepth == -1) {
+            if (root) {
                 // store [schema information] in the PSVI
                 fCurrentPSVI.fSchemaInformation = new XSModelImpl(grammars);
             }
         }
 
         return augs;
-    } // handleEndElement(QName,boolean)*/
+
+    }
 
     Augmentations getEmptyAugs(Augmentations augs) {
         if (augs == null) {
