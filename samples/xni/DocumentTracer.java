@@ -1203,7 +1203,7 @@ public class DocumentTracer
     
             // parse file
             try {
-                parser.parse(new XMLInputSource(null, arg, arg));
+                parser.parse(new XMLInputSource(null, arg, null));
             }
             catch (XMLParseException e) {
                 // ignore
