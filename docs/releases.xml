@@ -4,6 +4,7 @@
 <s1 title="Releases">
     <s2 title='TBD'>
         <ul>
+           <li>Fixed DTD method ordering problem for INCLUDE/IGNORE sections. [Petr Kuzel]</li>
            <li>Implemented basic support for XML Schema identity constraints [andyc]</li>
            <li>Updates to improve DFA build-time performance. [ATOZAWA@jp.ibm.com]</li>
            <li>Sync'ed with Xerces 1.3.0 [Arnaud  Le Hors]</li>

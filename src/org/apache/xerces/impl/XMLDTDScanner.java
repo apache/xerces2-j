@@ -1565,12 +1565,12 @@ public class XMLDTDScanner
 
         skipSeparator(false, !scanningInternalSubset());
         if (fEntityScanner.skipString("INCLUDE")) {
+            skipSeparator(false, !scanningInternalSubset());
             // call handler
             if (fDTDHandler != null) {
                 fDTDHandler.startConditional(
                                             XMLDTDHandler.CONDITIONAL_INCLUDE);
             }
-            skipSeparator(false, !scanningInternalSubset());
             if (!fEntityScanner.skipChar('[')) {
                 reportFatalError("MSG_MARKUP_NOT_RECOGNIZED_IN_DTD", null);
             }
@@ -1578,11 +1578,11 @@ public class XMLDTDScanner
             // just stop there and go back to the main loop
         }
         else if (fEntityScanner.skipString("IGNORE")) {
+            skipSeparator(false, !scanningInternalSubset());
             // call handler
             if (fDTDHandler != null) {
                 fDTDHandler.startConditional(XMLDTDHandler.CONDITIONAL_IGNORE);
             }
-            skipSeparator(false, !scanningInternalSubset());
             if (!fEntityScanner.skipChar('[')) {
                 reportFatalError("MSG_MARKUP_NOT_RECOGNIZED_IN_DTD", null);
             }
