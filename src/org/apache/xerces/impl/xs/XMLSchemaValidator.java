@@ -1268,6 +1268,27 @@ public class XMLSchemaValidator
             System.out.println("handleStartElement: " +element);
         }
 
+        // if we are not skipping this element, and there is a content model,
+        // we try to find the corresponding decl object for this element.
+        // the reason we move this part of code here is to make sure the
+        // error reported here (if any) is stored within the parent element's
+        // context, instead of that of the current element.
+        Object decl = null;
+        if (fSkipValidationDepth < 0 && fCurrentCM != null) {
+            decl = fCurrentCM.oneTransition(element, fCurrCMState, fSubGroupHandler);
+            // it could be an element decl or a wildcard decl
+            if (fCurrCMState[0] == XSCMValidator.FIRST_ERROR && fDoValidation) {
+                XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
+                //REVISIT: is it the only case we will have particle = null?
+                if (ctype.fParticle != null) {
+                    reportSchemaError("cvc-complex-type.2.4.a", new Object[]{element.rawname, ctype.fParticle.toString()});
+                }
+                else {
+                    reportSchemaError("cvc-complex-type.2.4.a", new Object[]{element.rawname, "mixed with no element content"});
+                }
+            }
+        }
+        
         // push error reporter context: record the current position
         fXSIErrorReporter.pushContext();
 
@@ -1350,28 +1371,13 @@ public class XMLSchemaValidator
         fNil = false;
 
         XSWildcardDecl wildcard = null;
-        // if there is a content model, then get the decl from that
-        if (fCurrentCM != null) {
-            Object decl = fCurrentCM.oneTransition(element, fCurrCMState, fSubGroupHandler);
-            // it could be an element decl or a wildcard decl
-            if (fCurrCMState[0] == XSCMValidator.FIRST_ERROR && fDoValidation) {
-                XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
-                //REVISIT: is it the only case we will have particle = null?
-                if (ctype.fParticle != null) {
-                    reportSchemaError("cvc-complex-type.2.4.a", new Object[]{element.rawname, ctype.fParticle.toString()});
-                }
-                else {
-                    reportSchemaError("cvc-complex-type.2.4.a", new Object[]{element.rawname, "mixed with no element content"});
-                }
+        // now check what kind of decl this element maps to
+        if (decl != null) {
+            if (decl instanceof XSElementDecl) {
+                fCurrentElemDecl = (XSElementDecl)decl;
             }
-
-            if (decl != null) {
-                if (decl instanceof XSElementDecl) {
-                    fCurrentElemDecl = (XSElementDecl)decl;
-                }
-                else {
-                    wildcard = (XSWildcardDecl)decl;
-                }
+            else {
+                wildcard = (XSWildcardDecl)decl;
             }
         }
 
