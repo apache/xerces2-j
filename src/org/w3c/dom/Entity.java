@@ -65,49 +65,4 @@ public interface Entity extends Node {
      */
     public String getNotationName();
 
-    /**
-     * <p>EXPERIMENTAL! Based on the <a
-     * href='http://www.w3.org/TR/2001/WD-DOM-Level-3-Core-20010605'>Document
-     * Object Model (DOM) Level 3 Core Working Draft of 5 June 2001.</a>.
-     * <p>
-     * An attribute specifying, as part of the text declaration, the encoding 
-     * of this entity, when it is an external parsed entity. This is 
-     * <code>null</code> otherwise.
-     * @since DOM Level 3
-     */
-    public String getEncoding();
-    /**
-     * <p>EXPERIMENTAL! Based on the <a
-     * href='http://www.w3.org/TR/2001/WD-DOM-Level-3-Core-20010605'>Document
-     * Object Model (DOM) Level 3 Core Working Draft of 5 June 2001.</a>.
-     * <p>
-     * An attribute specifying, as part of the text declaration, the encoding 
-     * of this entity, when it is an external parsed entity. This is 
-     * <code>null</code> otherwise.
-     * @since DOM Level 3
-     */
-    public void setEncoding(String encoding);
-
-    /**
-     * <p>EXPERIMENTAL! Based on the <a
-     * href='http://www.w3.org/TR/2001/WD-DOM-Level-3-Core-20010605'>Document
-     * Object Model (DOM) Level 3 Core Working Draft of 5 June 2001.</a>.
-     * <p>
-     * An attribute specifying, as part of the text declaration, the version 
-     * number of this entity, when it is an external parsed entity. This is 
-     * <code>null</code> otherwise.
-     * @since DOM Level 3
-     */
-    public String getVersion();
-    /**
-     * <p>EXPERIMENTAL! Based on the <a
-     * href='http://www.w3.org/TR/2001/WD-DOM-Level-3-Core-20010605'>Document
-     * Object Model (DOM) Level 3 Core Working Draft of 5 June 2001.</a>.
-     * <p>
-     * An attribute specifying, as part of the text declaration, the version 
-     * number of this entity, when it is an external parsed entity. This is 
-     * <code>null</code> otherwise.
-     * @since DOM Level 3
-     */
-    public void setVersion(String version);
 }
