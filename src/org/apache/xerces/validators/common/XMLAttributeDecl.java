@@ -105,9 +105,9 @@ public class XMLAttributeDecl {
     public static final int VALUE_CONSTRAINT_FIXED = DEFAULT_TYPE_FIXED;
 
     // schema: attribte wildcard processContents property, share the defaultType field
-    public static final int PROCESSCONTENTS_STRICT = 10001;
-    public static final int PROCESSCONTENTS_LAX = 10002;
-    public static final int PROCESSCONTENTS_SKIP = 10003;
+    public static final int PROCESSCONTENTS_STRICT = 1024;
+    public static final int PROCESSCONTENTS_LAX = 2048;
+    public static final int PROCESSCONTENTS_SKIP = 4096;
 
 
     //

@@ -3418,14 +3418,14 @@ public final class XMLValidator
                                          ||fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_LOCAL 
                                          ||fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_OTHER) ) {
 
-                                 if (fTempAttDecl.defaultType == XMLAttributeDecl.PROCESSCONTENTS_SKIP) {
+                                 if ((fTempAttDecl.defaultType & XMLAttributeDecl.PROCESSCONTENTS_SKIP) > 0) {
                                     // attribute should just be bypassed, 
-                                 } else if ( fTempAttDecl.defaultType == XMLAttributeDecl.PROCESSCONTENTS_STRICT
-                                             || fTempAttDecl.defaultType == XMLAttributeDecl.PROCESSCONTENTS_LAX) {
+                                 } else if ( (fTempAttDecl.defaultType & XMLAttributeDecl.PROCESSCONTENTS_STRICT) > 0
+                                             || (fTempAttDecl.defaultType & XMLAttributeDecl.PROCESSCONTENTS_LAX) > 0) {
 
                                     boolean reportError = false;
                                     boolean processContentStrict = 
-                                    fTempAttDecl.defaultType == XMLAttributeDecl.PROCESSCONTENTS_STRICT;
+                                    (fTempAttDecl.defaultType & XMLAttributeDecl.PROCESSCONTENTS_STRICT) > 0;
 
                                     if (fTempQName.uri == StringPool.EMPTY_STRING) {
                                        if (processContentStrict) {

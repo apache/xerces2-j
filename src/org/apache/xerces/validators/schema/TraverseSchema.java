@@ -1982,13 +1982,14 @@ public class TraverseSchema implements
         }
 
         // default processContents is "strict";
-        anyAttDecl.defaultType = XMLAttributeDecl.PROCESSCONTENTS_STRICT;
-
         if (processContents.equals(SchemaSymbols.ATTVAL_SKIP)){
-            anyAttDecl.defaultType = XMLAttributeDecl.PROCESSCONTENTS_SKIP;
+            anyAttDecl.defaultType |= XMLAttributeDecl.PROCESSCONTENTS_SKIP;
         }
         else if (processContents.equals(SchemaSymbols.ATTVAL_LAX)) {
-            anyAttDecl.defaultType = XMLAttributeDecl.PROCESSCONTENTS_LAX;
+            anyAttDecl.defaultType |= XMLAttributeDecl.PROCESSCONTENTS_LAX;
+        }
+        else {
+            anyAttDecl.defaultType |= XMLAttributeDecl.PROCESSCONTENTS_STRICT;
         }
 
         return anyAttDecl; 
