@@ -58,7 +58,6 @@ package dom.DOMRangeTest;
 import org.apache.xerces.parsers.*;
 import org.apache.xerces.dom.*;
 import org.apache.xerces.dom.DocumentImpl;
-import org.apache.xerces.dom.range.*;
 
 import org.w3c.dom.*;
 import org.w3c.dom.Element;
