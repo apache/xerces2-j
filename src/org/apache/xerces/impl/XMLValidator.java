@@ -236,6 +236,7 @@ public class XMLValidator
     public void reset(XMLComponentManager configurationManager)
         throws SAXException {
 
+
         // clear grammars
         fCurrentGrammar = null;
         fDTDGrammar = null;
@@ -264,6 +265,7 @@ public class XMLValidator
 
         fElementDepth = -1;
 
+        init();
     } // reset(XMLComponentManager)
 
     /**
@@ -1584,8 +1586,8 @@ public class XMLValidator
        }
        else {
            boolean leadingSpace = true;
-           boolean spaceStart = true;
-           boolean readingNonSpace = true;
+           boolean spaceStart = false;
+           boolean readingNonSpace = false;
            int count = 0;
            int eaten = 0;
 
@@ -1606,18 +1608,20 @@ public class XMLValidator
                        count++;
                    }
                    else  {
-                       if (leadingSpace && !spaceStart) {
+                       if (leadingSpace || !spaceStart) {
                            eaten ++;
                            for (int j=0;  j<attributes.getEntityCount(index); j++) {
                                int offset = attributes.getEntityOffset(index, j);
                                int length = attributes.getEntityLength(index, j);
-                               if ( offset <= i-eaten ) {
-                                   if (offset+length >= i-eaten ) {
-                                       length--;
+                               if ( offset <= i-eaten+1  ) {
+                                   if (offset+length >= i-eaten+1 ) {
+                                       if (length > 0)
+                                           length--;
                                    }
                                }
                                else {
-                                   offset--;
+                                   if (offset > 0) 
+                                       offset--;
                                }
                                attributes.setEntityOffset(index, j, offset);
                                attributes.setEntityLength(index, j, length);
@@ -1633,24 +1637,23 @@ public class XMLValidator
                    fBuffer.append(attValue[i]);
                    count++;
                }
-               // check if the last appended character is a space.
-               if ( count > 0 && fBuffer.charAt(count-1) == ' ' ) {
-                   fBuffer.setLength(count-1);
-                   for (int j=0;  j<attributes.getEntityCount(index); j++) {
-                       int offset = attributes.getEntityOffset(index, j);
-                       int length = attributes.getEntityLength(index, j);
-                       if (offset < count-1 ) {
-                           if (offset+length == count) {
+           }
+           // check if the last appended character is a space.
+           if ( count > 0 && fBuffer.charAt(count-1) == ' ' ) {
+               fBuffer.setLength(count-1);
+               for (int j=0;  j<attributes.getEntityCount(index); j++) {
+                   int offset = attributes.getEntityOffset(index, j);
+                   int length = attributes.getEntityLength(index, j);
+                   if (offset < count-1 ) {
+                       if (offset+length == count) {
                                length--;
-                           }
                        }
-                       else {
-                           offset--;
-                       }
-                       attributes.setEntityOffset(index, j, offset);
-                       attributes.setEntityLength(index, j, length);
                    }
-
+                   else {
+                       offset--;
+                   }
+                   attributes.setEntityOffset(index, j, offset);
+                   attributes.setEntityLength(index, j, length);
                }
            }
 
