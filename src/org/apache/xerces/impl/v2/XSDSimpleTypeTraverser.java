@@ -63,6 +63,8 @@ import org.apache.xerces.util.XInt;
 import org.apache.xerces.util.XIntPool;
 import org.apache.xerces.impl.v2.datatypes.*;
 import org.apache.xerces.xni.QName;
+import org.apache.xerces.util.NamespaceSupport;
+
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Attr;
@@ -119,6 +121,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
     private SchemaGrammar fGrammar = null;
     private StringBuffer fPattern = null;
     private int fSimpleTypeAnonCount = 0;
+    private final QName fQName = new QName();
 
     XSDSimpleTypeTraverser (XSDHandler handler,
                             XMLErrorReporter errorReporter,
@@ -419,25 +422,23 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                     String enumVal =  DOMUtil.getAttrValue(content, SchemaSymbols.ATT_VALUE);
                     String localName;
                     if (baseValidator instanceof NOTATIONDatatypeValidator) {
+                        fAttrChecker.checkAttributes(content, false, schemaDoc.fNamespaceSupport);
                         String prefix = "";
                         String localpart = enumVal;
                         int colonptr = enumVal.indexOf(":");
                         if (colonptr > 0) {
                             prefix = enumVal.substring(0,colonptr);
                             localpart = enumVal.substring(colonptr+1);
+                            
                         }
-                        String uriStr = (prefix.length()!=0) ? schemaDoc.fNamespaceSupport.getURI(prefix):fSchemaDoc.fTargetNamespace;
-                        nameProperty=uriStr + ":" + localpart;
-                        localName = (String)fSchemaHandler.fNotationRegistry.get(nameProperty);
-                        if (localName == null) {
-
-                            //REVISIT: when implementing notation!
-                            //localName = traverseNotationFromAnotherSchema( localpart, uriStr);
-                            if (localName == null) {
+                        String uriStr =  schemaDoc.fNamespaceSupport.getURI(prefix);
+                        fQName.setValues(prefix, localpart, null, uriStr );
+                        int index = fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.NOTATION_TYPE , fQName);
+                        
+                        if (index == SchemaGrammar.I_EMPTY_DECL) {
                                 reportGenericSchemaError("Notation '" + localpart +
                                                          "' not found in the grammar "+ uriStr);
 
-                            }
                         }
                         enumVal=nameProperty;
                     }
@@ -514,7 +515,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                     checkContent(simpleTypeDecl, DOMUtil.getFirstChildElement( content ), true);
                 }
                 // REVISIT: when to return the array
-                fAttrChecker.returnAttrArray(attrs, schemaDoc.fNamespaceSupport);
+                fAttrChecker.returnAttrArray (attrs, schemaDoc.fNamespaceSupport);
                 content = DOMUtil.getNextSiblingElement(content);
             }
             if (numEnumerationLiterals > 0) {

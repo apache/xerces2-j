@@ -762,6 +762,32 @@ public class SchemaGrammar {
     } // getGroupIndex(String):int
 
 
+   // 
+    // Methods to create and get notation decl
+    //
+
+    /**
+     * addNotationDecl
+     * 
+     * @param notation
+     * 
+     * @return index
+     */
+    public int addNotationDecl(String name, String systemId, String publicId) {
+        //REVISIT
+        //ensureCapacityNotation();
+        int notationIndex = fNotationCount++;
+        int chunk = notationIndex >> CHUNK_SHIFT;
+        int index = notationIndex & CHUNK_MASK;
+        
+        fNotationName[chunk][index] = name;
+        fNotationPublicId[chunk][index] = publicId;
+        fNotationSystemId[chunk][index] = systemId;
+        fGlobalNotationDecls.put(name, notationIndex);
+        return notationIndex;
+    } // addNotationDecl
+
+
     /**
      * getNotationIndex
      * 
@@ -782,21 +808,24 @@ public class SchemaGrammar {
      * 
      * @return 
      */
-    /*public XSNotationDecl getNotationDecl(int notationDeclIndex, XSNotationDecl notationDecl) {
-        if (notationDeclIndex < 0 || notationDeclIndex >= fNotationCount) {
-            return false;
+    public XSNotationDecl getNotationDecl(String name, XSNotationDecl notationDecl) {
+        
+        int notationIndex = fGlobalNotationDecls.get(name);
+        if (notationIndex < 0 || notationIndex >= fNotationCount) {
+            return null;
         }
-        int chunk = notationDeclIndex >> CHUNK_SHIFT;
-        int index = notationDeclIndex & CHUNK_MASK;
+        int chunk = notationIndex >> CHUNK_SHIFT;
+        int index = notationIndex & CHUNK_MASK;
 
         notationDecl.setValues(fNotationName[chunk][index], 
                                fNotationPublicId[chunk][index],
                                fNotationSystemId[chunk][index]);
 
-        return true;
+        return notationDecl;
 
-    } */
+    } 
     // getNotationDecl
+ 
 
 
     // ***********************************************

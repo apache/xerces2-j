@@ -1,4 +1,3 @@
-
 /*
  * The Apache Software License, Version 1.1
  *
@@ -55,83 +54,38 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
+
 package org.apache.xerces.impl.v2;
 
-import  org.apache.xerces.impl.XMLErrorReporter;
-import org.apache.xerces.util.DOMUtil;
-import  org.w3c.dom.Element;
-
 /**
- * The notation declaration schema component traverser.
- * 
- * <notation
- *   id = ID
- *   name = NCName
- *   public = anyURI
- *   system = anyURI
- *   {any attributes with non-schema namespace . . .}>
- *   Content: (annotation?)
- * </notation>
+ * Holding information about <notation> element.
  * 
  * @author Rahul Srivastava, Sun Microsystems Inc.
- * @author Elena Litani, IBM
- * @version $Id$
  */
-class  XSDNotationTraverser extends XSDAbstractTraverser {
+public class XSNotationDecl {
 
+    //member variables
+    public String fName;
+    public String fPublicId;
+    public String fSystemId;
 
-    XSDNotationTraverser (XSDHandler handler,
-                          XMLErrorReporter errorReporter,
-                          XSAttributeChecker gAttrCheck) {
-        super(handler, errorReporter, gAttrCheck);
+    //constructor
+    public XSNotationDecl() {
+        clear();
     }
 
-    int traverse(Element elmNode,
-                 XSDocumentInfo schemaDoc,
-                 SchemaGrammar grammar) {
-
-        // General Attribute Checking for elmNode
-        Object[] attrValues = fAttrChecker.checkAttributes(elmNode, true, schemaDoc.fNamespaceSupport);
-
-
-        //get attributes
-        String  nameAttr   = (String) attrValues[XSAttributeChecker.ATTIDX_NAME];
-        String  publicAttr = (String) attrValues[XSAttributeChecker.ATTIDX_PUBLIC];
-        String  systemAttr = (String) attrValues[XSAttributeChecker.ATTIDX_SYSTEM];
-
-        if (nameAttr.length() == 0) {
-            //REVISIT: update error message
-            reportGenericSchemaError("<notation> must have a name");
-            return SchemaGrammar.I_EMPTY_DECL;
-        }
-
-        if (publicAttr.length() == 0 && systemAttr.length() == 0) {
-            reportGenericSchemaError("Invalid <notation> declaration");
-        }
-
-        int index = grammar.addNotationDecl(nameAttr, systemAttr, publicAttr);
-
-        //check content
-        Element child = DOMUtil.getFirstChildElement(elmNode);
-        if (child != null) {
-            if (child.equals(SchemaSymbols.ELT_ANNOTATION)) {
-                traverseAnnotationDecl(child, attrValues, false, schemaDoc);
-                child = DOMUtil.getNextSiblingElement(child);
-            }
-
-            if (child != null) {
-                Object[] args = new Object [] { "notation", child.getLocalName()};
-                fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                           "NotationContentRestricted",
-                                           args,
-                                           XMLErrorReporter.SEVERITY_ERROR);
-            }
-        }
-
-        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
-        return index;
-
+    public void clear() {
+        fName = null;
+        fPublicId = null;
+        fSystemId = null;
     }
 
+    
+    //populating notation element
+    public void setValues(String name, String publicId, String systemId) {
+        fName = name;
+        fPublicId = publicId;
+        fSystemId = systemId;
+    }
 
-}
+} // class XSNotationDecl
