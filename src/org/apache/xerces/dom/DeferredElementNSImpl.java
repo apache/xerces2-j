@@ -132,23 +132,32 @@ public class DeferredElementNSImpl
         // fluff data
         DeferredDocumentImpl ownerDocument =
             (DeferredDocumentImpl) this.ownerDocument;
-        int elementTypeName = ownerDocument.getNodeName(fNodeIndex);
+        int elementQName = ownerDocument.getNodeName(fNodeIndex);
         StringPool pool = ownerDocument.getStringPool();
-        name = pool.toString(elementTypeName);
-	String prefix = pool.toString(pool.getPrefixForQName(elementTypeName));
-	namespaceURI = pool.toString(pool.getURIForQName(elementTypeName));
-	localName = pool.toString(pool.getLocalPartForQName(elementTypeName));
+        name = pool.toString(elementQName);
+
+        // extract local part from QName
+        int index = name.indexOf(':');
+        if (index < 0) {
+            localName = name;
+        } 
+        else {
+            localName = name.substring(index + 1);
+        }
+
+	namespaceURI = pool.toString(ownerDocument.getNodeURI(fNodeIndex));
 
         // attributes
         setupDefaultAttributes();
-        int index = ownerDocument.getNodeValue(fNodeIndex);
-        if (index != -1) {
+        int attrIndex = ownerDocument.getNodeValue(fNodeIndex);
+        if (attrIndex != -1) {
             NamedNodeMap attrs = getAttributes();
             do {
-                NodeImpl attr = (NodeImpl)ownerDocument.getNodeObject(index);
+                NodeImpl attr =
+                    (NodeImpl)ownerDocument.getNodeObject(attrIndex);
                 attrs.setNamedItem(attr);
-                index = ownerDocument.getPrevSibling(index);
-            } while (index != -1);
+                attrIndex = ownerDocument.getPrevSibling(attrIndex);
+            } while (attrIndex != -1);
         }
 
     } // synchronizeData()
