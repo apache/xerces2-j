@@ -101,7 +101,7 @@ import org.apache.xerces.xni.parser.XMLDocumentSource;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
-import org.apache.xerces.xni.parser.XMLParserConfiguration;
+import org.apache.xerces.xni.parser.XMLPullParserConfiguration;
 
 /**
  * This class is the configuration used to parse XML 1.0 and XML 1.1 documents.
@@ -114,7 +114,7 @@ import org.apache.xerces.xni.parser.XMLParserConfiguration;
  * @version $Id$
  */
 public class XML11Configuration extends ParserConfigurationSettings
-implements XMLParserConfiguration {
+    implements XMLPullParserConfiguration {
 
     //
     // Constants
