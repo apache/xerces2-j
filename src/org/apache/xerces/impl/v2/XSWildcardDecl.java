@@ -69,7 +69,7 @@ import java.util.Vector;
  *
  * @version $Id$
  */
-public class XSWildcardDecl  extends XSElementDecl {
+public class XSWildcardDecl  {
 
     // types of wildcard
     // namespace="##any"

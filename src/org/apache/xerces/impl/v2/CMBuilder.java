@@ -507,7 +507,7 @@ public class CMBuilder {
             //  storing it. This makes the positions zero based since we
             //  store first and then increment.
             //
-            nodeRet = new XSCMLeaf((XSElementDecl)(startNode.fValue), fLeafCount++);
+            nodeRet = new XSCMLeaf(XSParticleDecl.PARTICLE_ELEMENT, (XSElementDecl)(startNode.fValue), fLeafCount++);
         } 
         else {
             //

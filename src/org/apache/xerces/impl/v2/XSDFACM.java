@@ -209,7 +209,7 @@ public class XSDFACM
     // temp variables
 
     /** Temporary element declaration. */
-    private XSElementDecl fElementDecl = new XSElementDecl();
+    private Object fElementDecl = new Object();
 
     /** initializing static members **/
     static {
@@ -497,8 +497,8 @@ public class XSDFACM
          */
 
         fElementDecl = new XSElementDecl();
-        fElementDecl.fName = fEOCString;
-        XSCMLeaf nodeEOC = new XSCMLeaf(fElementDecl);
+        ((XSElementDecl)fElementDecl).fName = fEOCString;
+        XSCMLeaf nodeEOC = new XSCMLeaf((XSElementDecl)fElementDecl);
         fHeadNode = new XSCMBinOp(
         XSParticleDecl.PARTICLE_SEQUENCE
             , syntaxTree
@@ -997,9 +997,9 @@ public class XSDFACM
         // Recurse as required
         if (nodeCur.type() == XSParticleDecl.PARTICLE_WILDCARD) {
             // REVISIT: Don't waste these structures.
-            fElementDecl = ((XSCMAny)nodeCur).getURI();
+            fElementDecl = (XSWildcardDecl)((XSCMLeaf)nodeCur).getURI();
             // REVISIT:  depends on result of XSDElement->XSDWildcard discussions...
-            fLeafList[curIndex] = new XSCMLeaf(fElementDecl, ((XSCMAny)nodeCur).getPosition());
+            fLeafList[curIndex] = new XSCMLeaf(XSParticleDecl.PARTICLE_WILDCARD, fElementDecl, ((XSCMLeaf)nodeCur).getPosition());
             fLeafListType[curIndex] = nodeCur.type();
             curIndex++;
         }
