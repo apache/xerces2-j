@@ -89,6 +89,11 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentType;
+import org.w3c.dom.Entity;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.NodeList;
 
 /**
  * This class adds implementation for normalizeDocument method.
@@ -331,6 +336,55 @@ public class DOMNormalizer implements XMLDocumentHandler {
 
                 // Normalize all of the attributes & remove defaults
                 AttributeMap attributes = (elem.hasAttributes()) ? (AttributeMap) elem.getAttributes() : null; 
+
+
+                //It is an error if an attribute value contains a reference 
+                //to an entity for which no declaration has been read.
+ 				//REVISIT: To improve performance since now we are looping 
+ 				//an extra time via attributes.                
+                if ( attributes!=null ) {
+                    for ( int i=0; i<attributes.getLength(); ++i ) {
+
+                        Attr attr = (Attr)attributes.item(i);
+                        NodeList children = attr.getChildNodes();
+
+                        //check each child node of the attribute's value
+                        for (int j =0; j < children.getLength(); j++ ) {
+                            if (DEBUG_ND) {
+                                 System.out.println("==>normalizeNode:{attribute} "+ attr.getNodeName() + "=" + attr.getNodeValue());
+                             }
+
+                             Node child = children.item(j);
+
+                             //If the attribute's child is an entity refernce
+                             if (child.getNodeType() == Node.ENTITY_REFERENCE_NODE) {
+
+                                 Document owner = attr.getOwnerDocument();
+                                 Entity ent = null;
+
+                                 //search for the entity in the docType
+                                 //of the attribute's ownerDocument
+                                 if(owner != null) {
+                                     DocumentType docType = owner.getDoctype();
+                                     if(docType != null) {
+                                         NamedNodeMap entities = docType.getEntities();
+                                         ent = (Entity)entities.getNamedItemNS("*",child.getNodeName());
+                                     } 
+                                 } 
+                                 
+                                 //If the entity was not found issue a fatal error
+                                 if (ent == null && fErrorHandler != null) {
+                                     reportDOMError("The attribute " + attr.getNodeName() 
+                                         + " value '" + child.getNodeValue() 
+                                         + "' referenced an entity that was not declared", 
+                                         DOMError.SEVERITY_FATAL_ERROR, attr,null);
+                                 }
+                                                                          
+                             }//endif Node.ENTITY_REFERENCE_NODE
+                        }
+                    }
+                } //endif
+                                          
 
                 // fix namespaces and remove default attributes
                 if ((fConfiguration.features & DOMConfigurationImpl.NAMESPACES) !=0) {
