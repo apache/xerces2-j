@@ -819,7 +819,7 @@ public class TraverseSchema implements
                  }
                  catch (ParticleRecoverableError e) {
                     String message = e.getMessage();
-                    reportGenericSchemaError("ComplexType '" + typeInfo.typeName + " " + baseTypeInfo.typeName + "': " + message);
+                    reportGenericSchemaError("ComplexType '" + typeInfo.typeName + "': " + message);
                  }
                }
             }
