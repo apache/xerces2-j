@@ -199,6 +199,24 @@ public interface XMLAttributes
     public void setValue(int attrIndex, String attrValue);
 
     /**
+     * Sets the non-normalized value of the attribute at the specified
+     * index.
+     *
+     * @param attrIndex The attribute index.
+     * @param attrValue The new non-normalized attribute value.
+     */
+    public void setNonNormalizedValue(int attrIndex, String attrValue);
+
+    /**
+     * Returns the non-normalized value of the attribute at the specified
+     * index. If no non-normalized value is set, this method will return
+     * the same value as the <code>getValue(int)</code> method.
+     *
+     * @param attrIndex The attribute index.
+     */
+    public String getNonNormalizedValue(int attrIndex);
+
+    /**
      * Returns the number of entities for the specified attribute.
      * 
      * @param attrIndex The attribute index.

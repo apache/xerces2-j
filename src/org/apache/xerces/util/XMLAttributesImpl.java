@@ -331,14 +331,30 @@ public class XMLAttributesImpl
     } // setValue(int,String)
 
     /**
-     * setValue
-     * 
-     * @param index 
-     * @param value 
+     * Sets the non-normalized value of the attribute at the specified
+     * index.
+     *
+     * @param attrIndex The attribute index.
+     * @param attrValue The new non-normalized attribute value.
      */
-    public void setValue(int index, XMLString value) {
-        setValue(index, value != null ? value.toString() : null);
-    } // setValue(int,XMLString)
+    public void setNonNormalizedValue(int attrIndex, String attrValue) {
+        fAttributes[attrIndex].nonNormalizedValue = attrValue;
+    } // setNonNormalizedValue(int,String)
+
+    /**
+     * Returns the non-normalized value of the attribute at the specified
+     * index. If no non-normalized value is set, this method will return
+     * the same value as the <code>getValue(int)</code> method.
+     *
+     * @param attrIndex The attribute index.
+     */
+    public String getNonNormalizedValue(int attrIndex) {
+        String value = fAttributes[attrIndex].nonNormalizedValue;
+        if (value == null) {
+            value = fAttributes[attrIndex].value;
+        }
+        return value;
+    } // getNonNormalizedValue(int):String
 
     /**
      * Returns the number of entities for the specified attribute.
@@ -697,6 +713,9 @@ public class XMLAttributesImpl
 
         /** Value. */
         public String value;
+
+        /** Non-normalized value. */
+        public String nonNormalizedValue;
 
         // entity info
 
