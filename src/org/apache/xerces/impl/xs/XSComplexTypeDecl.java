@@ -195,4 +195,47 @@ public class XSComplexTypeDecl implements XSTypeDecl {
 
     }
 
+    public boolean derivedFrom(XSTypeDecl ancestor) {
+        // ancestor is null, retur false
+        if (ancestor == null)
+            return false;
+        // ancestor is anyType, return true
+        if (ancestor == SchemaGrammar.fAnyType)
+            return true;
+        // recursively get base, and compare it with ancestor
+        XSTypeDecl type = this;
+        while (type != ancestor &&                      // compare with ancestor
+               type != SchemaGrammar.fAnySimpleType &&  // reached anySimpleType
+               type != SchemaGrammar.fAnyType) {        // reached anyType
+            type = type.getBaseType();
+        }
+
+        return type == ancestor;
+    }
+    
+    public boolean derivedFrom(String ancestorNS, String ancestorName) {
+        // ancestor is null, retur false
+        if (ancestorName == null)
+            return false;
+        // ancestor is anyType, return true
+        if (ancestorNS != null &&
+            ancestorNS.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) &&
+            ancestorName.equals(SchemaSymbols.ATTVAL_ANYTYPE)) {
+            return true;
+        }
+
+        // recursively get base, and compare it with ancestor
+        XSTypeDecl type = this;
+        while (!(ancestorName.equals(type.getTypeName()) &&
+                 ((ancestorNS == null && type.getTargetNamespace() == null) ||
+                  (ancestorNS != null && ancestorNS.equals(type.getTargetNamespace())))) &&   // compare with ancestor
+               type != SchemaGrammar.fAnySimpleType &&  // reached anySimpleType
+               type != SchemaGrammar.fAnyType) {        // reached anyType
+            type = type.getBaseType();
+        }
+
+        return type != SchemaGrammar.fAnySimpleType &&
+               type != SchemaGrammar.fAnyType;
+    }
+
 } // class XSComplexTypeDecl

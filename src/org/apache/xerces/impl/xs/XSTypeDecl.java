@@ -75,5 +75,15 @@ public interface XSTypeDecl {
     public XSTypeDecl getBaseType();
     public short getFinalSet();
     public boolean isAnonymous();
+    
+    /**
+     * Experimental: return whether this type is derived from a given type.
+     */
+    public boolean derivedFrom(XSTypeDecl ancestor);
+    /**
+     * Experimental: return whether this type is derived from a type of
+     * the given namespace name and type name.
+     */
+    public boolean derivedFrom(String ancestorNS, String ancestorName);
 
 }
