@@ -79,9 +79,10 @@ Document document = builder.parseURI("data/personal.xml");</source>
     </a>
   </faq>
 
-  <faq title="Serializing a DOM document.">
+  <faq title="Serializing a DOM document">
     <q>How do I serialize DOM to an output stream?</q>
-    <a> <p>
+    <a><anchor name="dom-xml-serialization"/>
+      <p>
 	You can serialize a DOM tree by using Xerces <code>org.apache.xml.XMLSerializer</code>:
       </p>
       <source>import org.apache.xml.serialize.OutputFormat;
@@ -121,6 +122,25 @@ DOMImplementationLS impl =
 
 LSWriter writer = impl.createLSSerializer();
 String str = writer.writeToString(document);</source>  
+    </a>
+  </faq>
+  
+  <faq title="Java Object Serialization of a DOM">
+    <q>Does Xerces DOM implement java.io.Serializable?</q>
+    <a>
+      <p>Yes. Xerces DOM can be serialized using Java object serialization.
+         It is recommended that a DOM be serialized as 
+         <link anchor='dom-xml-serialization'>XML</link> where possible
+         instead of using object serialization.
+      </p>
+      <p>By choosing object serialization you sacrifice interoperability 
+         between parsers and we do not guarantee interoperability 
+         between versions of Xerces. It should be used with caution.
+      </p>
+      <p>Some rough measurements have shown that XML serialization performs
+         better than Java object serialization and that XML instance documents 
+         require less storage space than object serialized DOMs.
+      </p>
     </a>
   </faq>
 
@@ -235,7 +255,6 @@ The PSVI information will not be added or modified as you modify the tree in mem
   		<p>
   			DOM revalidation is supported via W3C DOM Level 3 Core
   			<em>Document.normalizeDocument()</em>.
-  			.
   		</p>
   		<note>This release only supports revalidation against XML Schemas. Revalidation against DTDs or any other schema type is not implemented.</note>
 
