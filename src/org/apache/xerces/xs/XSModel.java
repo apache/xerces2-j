@@ -117,69 +117,69 @@ public interface XSModel {
 
     /**
      * Convenience method. Returns a top-level element declaration. 
+     * @param name The name of the declaration.
      * @param namespace The namespace of the declaration, otherwise 
      *   <code>null</code>.
-     * @param name The name of the declaration.
      * @return A top-level element declaration or <code>null</code> if such a 
      *   declaration does not exist. 
      */
-    public XSElementDeclaration getElementDeclaration(String namespace, 
-                                                      String name);
+    public XSElementDeclaration getElementDeclaration(String name, 
+                                                      String namespace);
 
     /**
      * Convenience method. Returns a top-level attribute declaration. 
+     * @param name The name of the declaration.
      * @param namespace The namespace of the declaration, otherwise 
      *   <code>null</code>.
-     * @param name The name of the declaration.
      * @return A top-level attribute declaration or <code>null</code> if such 
      *   a declaration does not exist. 
      */
-    public XSAttributeDeclaration getAttributeDeclaration(String namespace, 
-                                                          String name);
+    public XSAttributeDeclaration getAttributeDeclaration(String name, 
+                                                          String namespace);
 
     /**
      * Convenience method. Returns a top-level simple or complex type 
      * definition. 
+     * @param name The name of the definition.
      * @param namespace The namespace of the declaration, otherwise 
      *   <code>null</code>.
-     * @param name The name of the definition.
      * @return An <code>XSTypeDefinition</code> or <code>null</code> if such 
      *   a definition does not exist. 
      */
-    public XSTypeDefinition getTypeDefinition(String namespace, 
-                                              String name);
+    public XSTypeDefinition getTypeDefinition(String name, 
+                                              String namespace);
 
     /**
      * Convenience method. Returns a top-level attribute group definition. 
+     * @param name The name of the definition.
      * @param namespace The namespace of the definition, otherwise 
      *   <code>null</code>.
-     * @param name The name of the definition.
      * @return A top-level attribute group definition or <code>null</code> if 
      *   such a definition does not exist. 
      */
-    public XSAttributeGroupDefinition getAttributeGroup(String namespace, 
-                                                        String name);
+    public XSAttributeGroupDefinition getAttributeGroup(String name, 
+                                                        String namespace);
 
     /**
      * Convenience method. Returns a top-level model group definition. 
+     * @param name The name of the definition.
      * @param namespace The namespace of the definition, otherwise 
      *   <code>null</code>.
-     * @param name The name of the definition.
      * @return A top-level model group definition or <code>null</code> if 
      *   such a definition does not exist. 
      */
-    public XSModelGroupDefinition getModelGroupDefinition(String namespace, 
-                                                          String name);
+    public XSModelGroupDefinition getModelGroupDefinition(String name, 
+                                                          String namespace);
 
     /**
      * Convenience method. Returns a top-level notation declaration. 
+     * @param name The name of the declaration.
      * @param namespace The namespace of the declaration, otherwise 
      *   <code>null</code>.
-     * @param name The name of the declaration.
      * @return A top-level notation declaration or <code>null</code> if such 
      *   a declaration does not exist. 
      */
-    public XSNotationDeclaration getNotationDeclaration(String namespace, 
-                                                        String name);
+    public XSNotationDeclaration getNotationDeclaration(String name, 
+                                                        String namespace);
 
 }
