@@ -66,6 +66,7 @@ import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 
 import java.io.IOException;
+import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLChar;
 
@@ -361,6 +362,8 @@ public class SchemaValidator
      */
     public void startPrefixMapping(String prefix, String uri)
         throws XNIException {
+
+        handleStartPrefix(prefix, uri);
 
         // call handlers
         if (fDocumentHandler != null) {
@@ -676,9 +679,20 @@ public class SchemaValidator
     /** Schema handler */
     final XSDHandler fSchemaHandler;
 
+    /** Namespace support. */
+    final NamespaceSupport fNamespaceSupport = new NamespaceSupport();
+    /** this flag is used to indicate whether the next prefix binding
+     *  should start a new context (.pushContext)
+     */
+    boolean fPushForNextBinding;
+    /** the DV usd to convert xsi:type to a QName */
+    // REVISIT: in new simple type design, make things in DVs static,
+    //          so that we can QNameDV.getCompiledForm()
+    final DatatypeValidator fQNameDV = (DatatypeValidator)SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_QNAME);
+
     /** used to build content models */
     // REVISIT: create decl pool, and pass it to each traversers
-    CMBuilder fCMBuilder = new CMBuilder(new XSDeclarationPool());
+    final CMBuilder fCMBuilder = new CMBuilder(new XSDeclarationPool());
 
     // state
 
@@ -791,6 +805,10 @@ public class SchemaValidator
                 }
             };
 
+        // initialize namespace support
+        fNamespaceSupport.reset(fSymbolTable);
+        fPushForNextBinding = true;
+
         // clear grammars, and put the one for schema namespace there
         fGrammarResolver.reset();
         fGrammarResolver.putGrammar(URI_SCHEMAFORSCHEMA, SchemaGrammar.SG_SchemaNS);
@@ -848,6 +866,18 @@ public class SchemaValidator
 
     /** Handle element. */
     void handleStartElement(QName element, XMLAttributes attributes) {
+
+        // we receive prefix binding events before this one,
+        // so at this point, the prefix bindings for this element is done,
+        // and we need to push context when we receive another prefix binding.
+
+        // but if fPushForNextBinding is still true, that means there has
+        // been no prefix binding for this element. we still need to push
+        // context, because the context is always popped in end element.
+        if (fPushForNextBinding)
+            fNamespaceSupport.pushContext();
+        else
+            fPushForNextBinding = true;
 
         // whether to do validatoin
         // REVISIT: consider DynamicValidation
@@ -1022,6 +1052,10 @@ public class SchemaValidator
     /** Handle end element. */
     void handleEndElement(QName element) {
 
+        // need to pop context so that the bindings for this element is
+        // discarded.
+        fNamespaceSupport.popContext();
+
         // if we are skipping, return
         if (fSkipValidationDepth >= 0) {
             // but if this is the top element that we are skipping,
@@ -1083,13 +1117,44 @@ public class SchemaValidator
         fBuffer.append(text.toString());
     } // handleCharacters(XMLString)
 
+    void handleStartPrefix(String prefix, String uri) {
+        // push namespace context if necessary
+        if (fPushForNextBinding) {
+            fNamespaceSupport.pushContext();
+            fPushForNextBinding = false;
+        }
+
+        // add prefix declaration to the namespace support
+        // REVISIT: should it be null or ""
+        fNamespaceSupport.declarePrefix(prefix, uri.length() != 0 ? uri : null);
+    }
+
     void getAndCheckXsiType(QName element, String xsiType) {
         // Element Locally Valid (Element)
         // 4 If there is an attribute information item among the element information item's [attributes] whose [namespace name] is identical to http://www.w3.org/2001/XMLSchema-instance and whose [local name] is type, then all of the following must be true:
         // 4.1 The ·normalized value· of that attribute information item must be ·valid· with respect to the built-in QName simple type, as defined by String Valid (§3.14.4);
-        // REVISIT: bind namespace, get grammar, get type
-        QName typeName = new QName();
-        // REVISIT: try{QName typeName = QNameDV.validate(xsiType, nsSupport);} catch {reportSchemaError("cvc-elt.4.1", new Object[]{element.rawname, URI_XSI+","+XSI_TYPE, xsitype}}; return;}
+        QName typeName = null;
+        try {
+            // REVISIT: have QNameDV to return QName
+            //typeName = fQNameDV.validate(xsiType, fNamespaceSupport);
+            fQNameDV.validate(xsiType, fNamespaceSupport);
+            String prefix = fSchemaHandler.EMPTY_STRING;
+            String localpart = xsiType;
+            int colonptr = xsiType.indexOf(":");
+            if (colonptr > 0) {
+                prefix = fSymbolTable.addSymbol(xsiType.substring(0,colonptr));
+                localpart = xsiType.substring(colonptr+1);
+            }
+            // REVISIT: if we take the null approach (instead of ""),
+            //          we need to chech the retrned value from getURI
+            //          to see whether a binding is found.
+            String uri = fNamespaceSupport.getURI(prefix);
+            typeName = new QName(prefix, localpart, xsiType, uri);
+        } catch (InvalidDatatypeValueException e) {
+            reportSchemaError("cvc-elt.4.1", new Object[]{element.rawname, URI_XSI+","+XSI_TYPE, xsiType});
+            return;
+        }
+
         // 4.2 The ·local name· and ·namespace name· (as defined in QName Interpretation (§3.15.3)), of the ·actual value· of that attribute information item must resolve to a type definition, as defined in QName resolution (Instance) (§3.15.4)
         XSTypeDecl type = null;
         SchemaGrammar grammar = fGrammarResolver.getGrammar(typeName.uri);
@@ -1417,14 +1482,14 @@ public class SchemaValidator
                 reportSchemaError("cvc-type.3.1.2", new Object[]{element.rawname});
             // 3.1.3 If clause 3.2 of Element Locally Valid (Element) (§3.3.4) did not apply, then the ·normalized value· must be ·valid· with respect to the type definition as defined by String Valid (§3.14.4).
             if (!fNil) {
+                DatatypeValidator dv = (DatatypeValidator)fCurrentType;
+                // REVISIT: or should the normalize() be called withing validate()?
+                String content = XSAttributeChecker.normalize(textContent, dv.getWSFacet());
                 try {
-                    DatatypeValidator dv = (DatatypeValidator)fCurrentType;
-                    // REVISIT: or should the normalize() be called withing validate()?
-                    String content = XSAttributeChecker.normalize(textContent, dv.getWSFacet());
                     // REVISIT: use XSSimpleTypeDecl.ValidateContext to replace null
                     retValue = dv.validate(content, null);
                 } catch (InvalidDatatypeValueException e) {
-                    reportSchemaError("cvc-type.3.1.3", new Object[]{element, textContent});
+                    reportSchemaError("cvc-type.3.1.3", new Object[]{element.rawname, content});
                 }
             }
         } else {
