@@ -88,6 +88,7 @@ public class XSElementDecl {
 
     public short fBlock;
     public short fFinal;
+    // REVISIT: should be Object: compiled form
     public String fDefault;
 
     public String fSubGroupNS;

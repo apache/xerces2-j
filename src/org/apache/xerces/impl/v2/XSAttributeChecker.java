@@ -164,15 +164,13 @@ public class XSAttributeChecker {
     // DT_??? <  0 : validate directly, which is done in "validate()"
 
     protected static final int DT_ANYURI           = 0;
-    protected static final int DT_BOOLEAN          = 1;
-    protected static final int DT_ID               = 2;
-    protected static final int DT_NONNEGINT        = 3;
-    protected static final int DT_QNAME            = 4;
-    protected static final int DT_STRING           = 5;
-    protected static final int DT_TOKEN            = 6;
-    protected static final int DT_NCNAME           = 7;
-    protected static final int DT_XPATH            = 8;
-    protected static final int DT_XPATH1           = 9;
+    protected static final int DT_ID               = 1;
+    protected static final int DT_QNAME            = 2;
+    protected static final int DT_STRING           = 3;
+    protected static final int DT_TOKEN            = 4;
+    protected static final int DT_NCNAME           = 5;
+    protected static final int DT_XPATH            = 6;
+    protected static final int DT_XPATH1           = 7;
 
     // used to store extra datatype validators
     protected static final int DT_COUNT            = DT_XPATH1 + 1;
@@ -182,12 +180,8 @@ public class XSAttributeChecker {
         SchemaGrammar grammar = SchemaGrammar.SG_SchemaNS;
         // anyURI
         fExtraDVs[DT_ANYURI] = (DatatypeValidator)grammar.getTypeDecl(SchemaSymbols.ATTVAL_ANYURI);
-        // boolean
-        fExtraDVs[DT_BOOLEAN] = (DatatypeValidator)grammar.getTypeDecl(SchemaSymbols.ATTVAL_BOOLEAN);
         // ID
         fExtraDVs[DT_ID] = (DatatypeValidator)grammar.getTypeDecl(SchemaSymbols.ATTVAL_ID);
-        // nonNegtiveInteger
-        fExtraDVs[DT_NONNEGINT] = (DatatypeValidator)grammar.getTypeDecl(SchemaSymbols.ATTVAL_NONNEGATIVEINTEGER);
         // QName
         fExtraDVs[DT_QNAME] = (DatatypeValidator)grammar.getTypeDecl(SchemaSymbols.ATTVAL_QNAME);
         // string
@@ -216,6 +210,8 @@ public class XSAttributeChecker {
     protected static final int DT_PUBLIC           = -12;
     protected static final int DT_USE              = -13;
     protected static final int DT_WHITESPACE       = -14;
+    protected static final int DT_BOOLEAN          = -15;
+    protected static final int DT_NONNEGINT        = -16;
 
     static {
         // step 2: all possible attributes for all elements
@@ -1111,14 +1107,6 @@ public class XSAttributeChecker {
                     // REVISIT: should have the datatype validators return
                     // the object representation of the value.
                     switch (oneAttr.dvIndex) {
-                    case DT_BOOLEAN:
-                        retValue = attrVal.equals(SchemaSymbols.ATTVAL_TRUE) ||
-                                   attrVal.equals(SchemaSymbols.ATTVAL_TRUE_1) ?
-                                   Boolean.TRUE : Boolean.FALSE;
-                        break;
-                    case DT_NONNEGINT:
-                        retValue = fXIntPool.getXInt(Integer.parseInt(attrVal));
-                        break;
                     case DT_QNAME:
                         retValue = resolveQName(attrVal, nsSupport);
                         break;
@@ -1193,6 +1181,26 @@ public class XSAttributeChecker {
         int choice;
 
         switch (dvIndex) {
+        case DT_BOOLEAN:
+            if (value.equals(SchemaSymbols.ATTVAL_FALSE) ||
+                value.equals(SchemaSymbols.ATTVAL_FALSE_0)) {
+                retValue = Boolean.FALSE;
+            } else if (value.equals(SchemaSymbols.ATTVAL_TRUE) ||
+                       value.equals(SchemaSymbols.ATTVAL_TRUE_1)) {
+                retValue = Boolean.TRUE;
+            } else {
+                throw new InvalidDatatypeValueException("the value '"+value+"' is not a valid boolean");
+            }
+            break;
+        case DT_NONNEGINT:
+            try {
+                retValue = fXIntPool.getXInt(Integer.parseInt(value.trim()));
+            } catch (NumberFormatException e) {
+                throw new InvalidDatatypeValueException("the value '"+value+"' is not a valid nonNegativeInteger");
+            }
+            if (((XInt)retValue).intValue() < 0)
+                throw new InvalidDatatypeValueException("the value '"+value+"' is not a valid nonNegativeInteger");
+            break;
         case DT_BLOCK:
             // block = (#all | List of (substitution | extension | restriction | list | union))
             choice = 0;
@@ -1290,14 +1298,12 @@ public class XSAttributeChecker {
                 retValue = INT_UNBOUNDED;
             } else {
                 try {
-                    retValue = fExtraDVs[DT_NONNEGINT].validate(value, null);
-                    // REVISIT: should have the datatype validators return
-                    // the object representation of the value.
-                    retValue = fXIntPool.getXInt(Integer.parseInt(value));
-                }
-                catch (InvalidDatatypeValueException ide) {
+                    retValue = fXIntPool.getXInt(Integer.parseInt(value.trim()));
+                } catch (NumberFormatException e) {
                     throw new InvalidDatatypeValueException("the value '"+value+"' must match (nonNegativeInteger | unbounded)");
                 }
+                if (((XInt)retValue).intValue() < 0)
+                    throw new InvalidDatatypeValueException("the value '"+value+"' must match (nonNegativeInteger | unbounded)");
             }
             break;
         case DT_MAXOCCURS1:

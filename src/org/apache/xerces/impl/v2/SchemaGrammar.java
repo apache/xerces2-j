@@ -120,8 +120,9 @@ public class SchemaGrammar {
 
     // decl count: element, attribute, notation, particle, type
     private int fElementDeclCount = 0;
+    private int fAttributeDeclCount = 0;
+    private int fAttributeUseCount = 0;
     private int fIDConstraintCount = 0;
-    private int fAttributeDeclCount = 0 ;
     private int fNotationCount = 0;
     private int fParticleCount = 0;
     private int fXSTypeCount = 0;
@@ -150,6 +151,14 @@ public class SchemaGrammar {
     private int fAttributeDeclType[][];
     private short fAttributeDeclConstraintType[][];
     private String fAttributeDeclDefault[][];
+
+    // attribute use
+    private String fAttrDeclName[][];
+    private String fAttrDeclNS[][];
+    private int fAttrDeclIdx[][];
+    private short fAttrUseUse[][];
+    private short fAttrUseConstraintType[][];
+    private String fAttrUseDefault[][];
 
     // particles
     private short fParticleType[][];
@@ -219,6 +228,14 @@ public class SchemaGrammar {
         fAttributeDeclType = new int[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
         fAttributeDeclConstraintType = new short[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
         fAttributeDeclDefault = new String[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
+
+        // attribute use
+        fAttrDeclName = new String[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
+        fAttrDeclNS = new String[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
+        fAttrDeclIdx = new int[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
+        fAttrUseUse = new short[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
+        fAttrUseConstraintType = new short[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
+        fAttrUseDefault = new String[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
 
         // particles
         fParticleType = new short[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
@@ -700,6 +717,29 @@ public class SchemaGrammar {
     } // getAttributeDecl
 
     /**
+     * addAttributeUse
+     * 
+     * @param attributeUse
+     * 
+     * @return index
+     */
+    public int addAttributeUse(XSAttributeUse attributeUse) {
+        //REVISIT
+        //ensureCapacityAttribute();
+        int attributeUseIndex = fAttributeUseCount++;
+        int chunk = attributeUseIndex >> CHUNK_SHIFT;
+        int index = attributeUseIndex & CHUNK_MASK;
+        fAttrDeclName[chunk][index] = attributeUse.fAttrName;
+        fAttrDeclNS[chunk][index] = attributeUse.fAttrNS;
+        fAttrDeclIdx[chunk][index] = attributeUse.fAttrIdx;
+        fAttrUseUse[chunk][index] = attributeUse.fUse;
+        fAttrUseConstraintType[chunk][index] = attributeUse.fConstraintType;
+        fAttrUseDefault[chunk][index] = attributeUse.fDefaultValue;
+        
+        return attributeUseIndex;
+    }
+    
+    /**
      * getAttributeGroupIndex
      * 
      * @param attrGroupName
@@ -832,6 +872,23 @@ public class SchemaGrammar {
         return fParticleCount;
     }
 
+    public void setParticleDecl (int particleIndex, short type, int value, String uri, 
+                                 int otherValue, String otherUri, int min, int max){
+        if (particleIndex < 0 || particleIndex >= fParticleCount )
+            return;
+
+        int chunk = particleIndex >> CHUNK_SHIFT;
+        int index = particleIndex & CHUNK_MASK;
+
+        fParticleType[chunk][index] = type;
+        fParticleUri[chunk][index] = uri;
+        fParticleValue[chunk][index] = value;
+        fParticleOtherUri[chunk][index] = otherUri;
+        fParticleOtherValue[chunk][index] = otherValue;
+        fParticleMinOccurs[chunk][index] = min;
+        fParticleMaxOccurs[chunk][index] = max;
+    }
+
     /**
      * getParticleDecl
      * 
@@ -956,11 +1013,10 @@ public class SchemaGrammar {
         return getTypeDecl(typeIndex);
     }
 
+    final static SchemaGrammar SG_SchemaNS = new SchemaGrammar(null, true);
+    final static SchemaGrammar SG_SchemaBasicSet = new SchemaGrammar(null, false);
 
-    static SchemaGrammar SG_SchemaNS = new SchemaGrammar(null, true);
-    static SchemaGrammar SG_SchemaBasicSet = new SchemaGrammar(null, false);
     static CMBuilder fCMBuilder = new CMBuilder();
-    
 
     //
     // Content model create and get methods
@@ -1038,7 +1094,5 @@ public class SchemaGrammar {
 
         return cmValidator;
     }
-    
-
 
 } // class SchemaGrammar

@@ -182,16 +182,13 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
                 index = SchemaGrammar.I_EMPTY_DECL;
             }
             else if (childName.equals(SchemaSymbols.ELT_ALL)) {
-                index = traverseAll(l_elmChild, schemaDoc, grammar);
-                index = checkOccurrences(index, l_elmChild, CHILD_OF_GROUP, grammar);
+                index = traverseAll(l_elmChild, schemaDoc, grammar, CHILD_OF_GROUP);
             }
             else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
-                index = traverseChoice(l_elmChild, schemaDoc, grammar);
-                index = checkOccurrences(index, l_elmChild, CHILD_OF_GROUP, grammar);
+                index = traverseChoice(l_elmChild, schemaDoc, grammar, CHILD_OF_GROUP);
             }
             else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
-                index = traverseSequence(l_elmChild, schemaDoc, grammar);
-                index = checkOccurrences(index, l_elmChild, CHILD_OF_GROUP, grammar);
+                index = traverseSequence(l_elmChild, schemaDoc, grammar, CHILD_OF_GROUP);
             }
             else {
                 Object[] args = new Object [] { "group", childName};

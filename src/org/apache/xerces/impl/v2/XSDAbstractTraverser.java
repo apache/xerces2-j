@@ -61,6 +61,8 @@ import org.apache.xerces.impl.v2.datatypes.*;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XInt;
+import org.apache.xerces.util.XIntPool;
 import org.w3c.dom.Element;
 import java.util.Hashtable;
 import org.apache.xerces.util.DOMUtil;
@@ -76,11 +78,27 @@ import org.apache.xerces.util.DOMUtil;
  */
 abstract class XSDAbstractTraverser {
 
+    // Flags for checkOccurrences to indicate any special
+    // restrictions on minOccurs and maxOccurs relating to "all".
+    //    NOT_ALL_CONTEXT    - not processing an <all>
+    //    PROCESSING_ALL_EL  - processing an <element> in an <all>
+    //    GROUP_REF_WITH_ALL - processing <group> reference that contained <all>
+    //    CHILD_OF_GROUP     - processing a child of a model group definition
+    //    PROCESSING_ALL_GP  - processing an <all> group itself
+
+    protected static final int NOT_ALL_CONTEXT    = 0;
+    protected static final int PROCESSING_ALL_EL  = 1;
+    protected static final int GROUP_REF_WITH_ALL = 2;
+    protected static final int CHILD_OF_GROUP     = 3;
+    protected static final int PROCESSING_ALL_GP  = 4;
+
     //Shared data
     protected XSDHandler            fSchemaHandler = null;
     protected SymbolTable           fSymbolTable = null;
     protected XSAttributeChecker    fAttrChecker = null;
     protected XMLErrorReporter      fErrorReporter = null;
+
+    static final XIntPool fXIntPool = new XIntPool();
 
     XSDAbstractTraverser (XSDHandler handler,
                           XMLErrorReporter errorReporter,
@@ -173,5 +191,91 @@ abstract class XSDAbstractTraverser {
                                          "Only datatypes that are derived from NOTATION by specifying a value for enumeration can be used in a schema.");
             }
         }
+    }
+
+    // Checks constraints for minOccurs, maxOccurs
+    protected XSParticleDecl checkOccurrences(XSParticleDecl particle,
+                                              String particleName, Element parent,
+                                              int allContextFlags,
+                                              int defaultVals) {
+
+        int min = particle.minOccurs;
+        int max = particle.maxOccurs;
+        boolean defaultMin = (defaultVals & (1 << XSAttributeChecker.ATTIDX_MINOCCURS)) != 0;
+        boolean defaultMax = (defaultVals & (1 << XSAttributeChecker.ATTIDX_MAXOCCURS)) != 0;
+        
+        boolean processingAllEl = ((allContextFlags & PROCESSING_ALL_EL) != 0);
+        boolean processingAllGP = ((allContextFlags & PROCESSING_ALL_GP) != 0);
+        boolean groupRefWithAll = ((allContextFlags & GROUP_REF_WITH_ALL) != 0);
+        boolean isGroupChild    = ((allContextFlags & CHILD_OF_GROUP) != 0);
+
+        // Neither minOccurs nor maxOccurs may be specified
+        // for the child of a model group definition.
+        if (isGroupChild && (!defaultMin || !defaultMax)) {
+            Object[] args = new Object[]{parent.getAttribute(SchemaSymbols.ATT_NAME),
+                                         particleName};
+            fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                       "MinMaxOnGroupChild",
+                                       args,
+                                       XMLErrorReporter.SEVERITY_ERROR);
+            min = max = 1;
+        }
+
+        // If minOccurs=maxOccurs=0, no component is specified
+        if (min == 0 && max== 0) {
+            particle.type = XSParticleDecl.PARTICLE_EMPTY;
+            return null;
+        }
+
+        // For the elements referenced in an <all>, minOccurs attribute
+        // must be zero or one, and maxOccurs attribute must be one.
+        // For a complex type definition that contains an <all> or a
+        // reference a <group> whose model group is an all model group,
+        // minOccurs and maxOccurs must be one.
+        if (processingAllEl || groupRefWithAll || processingAllGP) {
+            String errorMsg;
+            if ((processingAllGP||groupRefWithAll||min!=0) && min !=1) {
+                if (processingAllEl) {
+                    errorMsg = "BadMinMaxForAllElem";
+                }
+                else if (processingAllGP) {
+                    errorMsg = "BadMinMaxForAllGp";
+                }
+                else {
+                    errorMsg = "BadMinMaxForGroupWithAll";
+                }
+                Object[] args = new Object [] {"minOccurs", fXIntPool.getXInt(min)};
+                fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                           errorMsg,
+                                           args,
+                                           XMLErrorReporter.SEVERITY_ERROR);
+                min = 1;
+            }
+
+            if (max != 1) {
+
+                if (processingAllEl) {
+                    errorMsg = "BadMinMaxForAllElem";
+                }
+                else if (processingAllGP) {
+                    errorMsg = "BadMinMaxForAllGp";
+                }
+                else {
+                    errorMsg = "BadMinMaxForGroupWithAll";
+                }
+
+                Object[] args = new Object [] {"maxOccurs", fXIntPool.getXInt(max)};
+                fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                           errorMsg,
+                                           args,
+                                           XMLErrorReporter.SEVERITY_ERROR);
+                max = 1;
+            }
+        }
+
+        particle.maxOccurs = min;
+        particle.maxOccurs = max;
+        
+        return particle;
     }
 }

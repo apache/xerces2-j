@@ -60,7 +60,6 @@ package org.apache.xerces.impl.v2;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.XInt;
-import org.apache.xerces.util.XInt;
 import org.w3c.dom.Element;
 
 /**
@@ -69,21 +68,6 @@ import org.w3c.dom.Element;
  * @version $Id$
  */
 abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
-
-
-    // Flags for checkOccurrences to indicate any special
-    // restrictions on minOccurs and maxOccurs relating to "all".
-    //    NOT_ALL_CONTEXT    - not processing an <all>
-    //    PROCESSING_ALL_EL  - processing an <element> in an <all>
-    //    GROUP_REF_WITH_ALL - processing <group> reference that contained <all>
-    //    CHILD_OF_GROUP     - processing a child of a model group definition
-    //    PROCESSING_ALL_GP  - processing an <all> group itself
-
-    protected static final int NOT_ALL_CONTEXT    = 0;
-    protected static final int PROCESSING_ALL_EL  = 1;
-    protected static final int GROUP_REF_WITH_ALL = 2;
-    protected static final int CHILD_OF_GROUP     = 3;
-    protected static final int PROCESSING_ALL_GP  = 4;
 
     private XSParticleDecl fParticle = new XSParticleDecl();
 
@@ -107,7 +91,8 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
      **/
     int traverseAll(Element allDecl,
                     XSDocumentInfo schemaDoc,
-                    SchemaGrammar grammar) {
+                    SchemaGrammar grammar,
+                    int allContextFlags) {
 
         // General Attribute Checking
 
@@ -127,8 +112,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
 
             // Only elements are allowed in <all>
             if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
-                particleIndex = fSchemaHandler.fElementTraverser.traverseLocal(child, schemaDoc, grammar);                  
-                particleIndex = checkOccurrences(particleIndex, child, PROCESSING_ALL_EL, grammar);
+                particleIndex = fSchemaHandler.fElementTraverser.traverseLocal(child, schemaDoc, grammar, PROCESSING_ALL_EL);
             }
             else {
                 Object[] args = { childName};
@@ -150,12 +134,19 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
             }
         }
 
-        if (right != SchemaGrammar.I_EMPTY_DECL) //|| fSchemaGrammar.getDeferContentSpecExpansion())
+        if (right != SchemaGrammar.I_EMPTY_DECL)
             left = grammar.addParticleDecl(XSParticleDecl.PARTICLE_ALL, left, right);
 
         XInt minAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MINOCCURS];
         XInt maxAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];
+        XInt defaultVals = (XInt)attrValues[XSAttributeChecker.ATTIDX_FROMDEFAULT];
         grammar.setParticleMinMax(left, minAtt.intValue(), maxAtt.intValue());
+
+        fParticle = checkOccurrences(fParticle,
+                                     SchemaSymbols.ELT_ALL,
+                                     (Element)allDecl.getParentNode(),
+                                     allContextFlags,
+                                     defaultVals.intValue());
 
         fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
 
@@ -181,9 +172,10 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
      */
     int traverseSequence (Element seqDecl,
                           XSDocumentInfo schemaDoc,
-                          SchemaGrammar grammar) {
+                          SchemaGrammar grammar,
+                          int allContextFlags) {
 
-        return traverseSeqChoice (seqDecl, schemaDoc, grammar, false);
+        return traverseSeqChoice (seqDecl, schemaDoc, grammar, allContextFlags, false);
     }
 
     /**
@@ -203,9 +195,10 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
      */
     int traverseChoice (Element choiceDecl,
                         XSDocumentInfo schemaDoc,
-                        SchemaGrammar grammar) {
+                        SchemaGrammar grammar,
+                        int allContextFlags) {
 
-        return traverseSeqChoice (choiceDecl, schemaDoc, grammar, true);
+        return traverseSeqChoice (choiceDecl, schemaDoc, grammar, allContextFlags, true);
     }
 
     /**
@@ -219,7 +212,8 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
      */
     private int traverseSeqChoice (Element decl, 
                                    XSDocumentInfo schemaDoc, 
-                                   SchemaGrammar grammar, 
+                                   SchemaGrammar grammar,
+                                   int allContextFlags,
                                    boolean choice) {
 
         // General Attribute Checking
@@ -234,16 +228,13 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
         boolean hadContent = false;
         String childName = null;
         int particleIndex;
-        boolean seeParticle;
         for (;child != null;child = DOMUtil.getNextSiblingElement(child)) {
 
             particleIndex = SchemaGrammar.I_EMPTY_DECL;
-            seeParticle = false;
 
             childName = child.getLocalName();
             if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
-                particleIndex = fSchemaHandler.fElementTraverser.traverseLocal(child, schemaDoc, grammar);                  
-                seeParticle = true;
+                particleIndex = fSchemaHandler.fElementTraverser.traverseLocal(child, schemaDoc, grammar, NOT_ALL_CONTEXT);
 
             }
             else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
@@ -266,22 +257,15 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
                                                XMLErrorReporter.SEVERITY_ERROR);
                 }
 
-                seeParticle = true;
-
             }
             else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
-                particleIndex = traverseChoice( child,schemaDoc, grammar);
-                seeParticle = true;
-
+                particleIndex = traverseChoice( child,schemaDoc, grammar, NOT_ALL_CONTEXT);
             }
             else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
-                particleIndex = traverseSequence(child,schemaDoc, grammar);
-                seeParticle = true;
-
+                particleIndex = traverseSequence(child,schemaDoc, grammar, NOT_ALL_CONTEXT);
             }
             else if (childName.equals(SchemaSymbols.ELT_ANY)) {
                 particleIndex = fSchemaHandler.fWildCardTraverser.traverseAny(child, schemaDoc, grammar);
-                seeParticle = true;
             }
             else {
                 Object [] args;
@@ -298,9 +282,6 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
             }
 
 
-            if (seeParticle) {
-                particleIndex = checkOccurrences( particleIndex, child,  NOT_ALL_CONTEXT, grammar);
-            }
             if (left == SchemaGrammar.I_EMPTY_DECL) {
                 left = particleIndex;
             }
@@ -328,134 +309,18 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
 
         XInt minAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MINOCCURS];
         XInt maxAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];
+        XInt defaultVals = (XInt)attrValues[XSAttributeChecker.ATTIDX_FROMDEFAULT];
         grammar.setParticleMinMax(left, minAtt.intValue(), maxAtt.intValue());
+
+        fParticle = checkOccurrences(fParticle,
+                                     choice ? SchemaSymbols.ELT_CHOICE : SchemaSymbols.ELT_SEQUENCE,
+                                     (Element)decl.getParentNode(),
+                                     allContextFlags,
+                                     defaultVals.intValue());
 
         fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
 
         return left;    
-    }
-
-    // Checks constraints for minOccurs, maxOccurs
-    protected int checkOccurrences(int particleIndex, Element particle,
-                                   int allContextFlags, SchemaGrammar grammar) {
-
-        // if particleIndex is invalid, return
-        if (particleIndex < 0)
-            return particleIndex;
-
-        int min, max;
-        String minOccurs = particle.getAttribute(SchemaSymbols.ATT_MINOCCURS).trim();
-        String maxOccurs = particle.getAttribute(SchemaSymbols.ATT_MAXOCCURS).trim();
-        boolean defaultMin = minOccurs.length() == 0;
-        boolean defaultMax = maxOccurs.length() == 0;
-        if (particle.getLocalName().equals(SchemaSymbols.ELT_ELEMENT)) {
-            // in the case of local element, min/max info isn't in yet,
-            // so we get the values directly from attributes
-            if (defaultMin) {
-                min = 1;
-            } else {
-                try {
-                    min = Integer.parseInt(minOccurs);
-                } catch (NumberFormatException e) {
-                    // we don't need to report an error.
-                    // we'll call checkAttributes later, which will do so
-                    min = 1;
-                }
-            }
-            if (defaultMax) {
-                max = 1;
-            } else {
-                if (maxOccurs.equals(SchemaSymbols.ATTVAL_UNBOUNDED)) {
-                    max = SchemaSymbols.OCCURRENCE_UNBOUNDED;
-                } else {
-                    try {
-                        max = Integer.parseInt(maxOccurs);
-                    } catch (NumberFormatException e) {
-                        // we don't need to report an error.
-                        // we'll call checkAttributes later, which will do so
-                        max = 1;
-                    }
-                }
-            }
-        } else {
-            fParticle = grammar.getParticleDecl(particleIndex, fParticle);
-            min = fParticle.minOccurs;
-            max = fParticle.maxOccurs;
-        }
-        
-        boolean processingAllEl = ((allContextFlags & PROCESSING_ALL_EL) != 0);
-        boolean processingAllGP = ((allContextFlags & PROCESSING_ALL_GP) != 0);
-        boolean groupRefWithAll = ((allContextFlags & GROUP_REF_WITH_ALL) != 0);
-        boolean isGroupChild    = ((allContextFlags & CHILD_OF_GROUP) != 0);
-
-        // Neither minOccurs nor maxOccurs may be specified
-        // for the child of a model group definition.
-        if (isGroupChild && (!defaultMin || !defaultMax)) {
-            Element group = (Element)particle.getParentNode();
-            Object[] args = new Object[]{group.getAttribute(SchemaSymbols.ATT_NAME),
-                particle.getNodeName()};
-            fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                       "MinMaxOnGroupChild",
-                                       args,
-                                       XMLErrorReporter.SEVERITY_ERROR);
-            min = max = 1;
-        }
-
-        // If minOccurs=maxOccurs=0, no component is specified
-        if (min == 0 && max== 0) {
-            return SchemaGrammar.I_EMPTY_DECL;
-        }
-
-        // For the elements referenced in an <all>, minOccurs attribute
-        // must be zero or one, and maxOccurs attribute must be one.
-        // For a complex type definition that contains an <all> or a
-        // reference a <group> whose model group is an all model group,
-        // minOccurs and maxOccurs must be one.
-        if (processingAllEl || groupRefWithAll || processingAllGP) {
-            String errorMsg;
-            if ((processingAllGP||groupRefWithAll||min!=0) && min !=1) {
-                if (processingAllEl) {
-                    errorMsg = "BadMinMaxForAllElem";
-                }
-                else if (processingAllGP) {
-                    errorMsg = "BadMinMaxForAllGp";
-                }
-                else {
-                    errorMsg = "BadMinMaxForGroupWithAll";
-                }
-                Object[] args = new Object [] {"minOccurs", minOccurs};
-                fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                           errorMsg,
-                                           args,
-                                           XMLErrorReporter.SEVERITY_ERROR);
-                min = 1;
-            }
-
-            if (max != 1) {
-
-                if (processingAllEl) {
-                    errorMsg = "BadMinMaxForAllElem";
-                }
-                else if (processingAllGP) {
-                    errorMsg = "BadMinMaxForAllGp";
-                }
-                else {
-                    errorMsg = "BadMinMaxForGroupWithAll";
-                }
-
-                Object[] args = new Object [] {"maxOccurs", maxOccurs};
-                fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                           errorMsg,
-                                           args,
-                                           XMLErrorReporter.SEVERITY_ERROR);
-                max = 1;
-            }
-        }
-
-        //REVISIT: assume we alwasy defer particle expantion.
-        grammar.setParticleMinMax(particleIndex, min, max);
-        return particleIndex;
-
     }
 
     // Determines whether a content spec tree represents an "all" content model

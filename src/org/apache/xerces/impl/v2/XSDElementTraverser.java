@@ -112,6 +112,7 @@ class XSDElementTraverser extends XSDAbstractTraverser{
     private Element[] fElementDecl = new Element[INIT_STACK_SIZE];
     private XSDocumentInfo[] fSchemaDoc = new XSDocumentInfo[INIT_STACK_SIZE];
     private SchemaGrammar[] fGrammar = new SchemaGrammar[INIT_STACK_SIZE];
+    private int[] fAllContext = new int[INIT_STACK_SIZE];
     
     SubstitutionGroupHandler fSubGroupHandler;
     
@@ -137,7 +138,8 @@ class XSDElementTraverser extends XSDAbstractTraverser{
      */
     int traverseLocal(Element elmDecl,
                       XSDocumentInfo schemaDoc,
-                      SchemaGrammar grammar) {
+                      SchemaGrammar grammar,
+                      int allContextFlags) {
 
         // if the stack is full, increase the size
         if (fParticleIdx.length == fStackPos) {
@@ -150,6 +152,8 @@ class XSDElementTraverser extends XSDAbstractTraverser{
             System.arraycopy(fSchemaDoc, 0, newStackX, 0, fStackPos);
             SchemaGrammar[] newStackS = new SchemaGrammar[fStackPos+INC_STACK_SIZE];
             System.arraycopy(fGrammar, 0, newStackS, 0, fStackPos);
+            newStackI = new int[fStackPos+INC_STACK_SIZE];
+            System.arraycopy(fAllContext, 0, newStackI, 0, fStackPos);
         }
 
         fTempParticleDecl.clear();
@@ -160,6 +164,7 @@ class XSDElementTraverser extends XSDAbstractTraverser{
         fElementDecl[fStackPos] = elmDecl;
         fSchemaDoc[fStackPos] = schemaDoc;
         fGrammar[fStackPos] = grammar;
+        fAllContext[fStackPos] = allContextFlags;
 
         return particleIdx;
     }
@@ -188,6 +193,7 @@ class XSDElementTraverser extends XSDAbstractTraverser{
         Element elmDecl = fElementDecl[index];
         XSDocumentInfo schemaDoc = fSchemaDoc[index];
         SchemaGrammar grammar = fGrammar[index];
+        int allContextFlags = fAllContext[index];
 
         // General Attribute Checking
         Object[] attrValues = fAttrChecker.checkAttributes(elmDecl, false, schemaDoc.fNamespaceSupport);
@@ -220,13 +226,18 @@ class XSDElementTraverser extends XSDAbstractTraverser{
         }
 
         if (elemIdx != SchemaGrammar.I_EMPTY_DECL) {
-            fTempParticleDecl.clear();
+            fTempParticleDecl = grammar.getParticleDecl(particleIdx, fTempParticleDecl);
             fTempParticleDecl.type = XSParticleDecl.PARTICLE_ELEMENT;
             fTempParticleDecl.uri = refAtt == null ? schemaDoc.fTargetNamespace : refAtt.uri;
             fTempParticleDecl.value = elemIdx;
             fTempParticleDecl.otherUri = refAtt == null ? fTempElementDecl.fName : refAtt.localpart;
             fTempParticleDecl.minOccurs = minAtt.intValue();
             fTempParticleDecl.maxOccurs = maxAtt.intValue();
+
+            XInt defaultVals = (XInt)attrValues[XSAttributeChecker.ATTIDX_FROMDEFAULT];
+            checkOccurrences(fTempParticleDecl, SchemaSymbols.ELT_ELEMENT,
+                             (Element)elmDecl.getParentNode(), allContextFlags,
+                             defaultVals.intValue());
         }
         
         fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);

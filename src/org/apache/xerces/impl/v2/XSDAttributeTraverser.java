@@ -95,6 +95,7 @@ class  XSDAttributeTraverser extends XSDAbstractTraverser {
                                                              SchemaSymbols.URI_SCHEMAFORSCHEMA);
 
     protected XSAttributeDecl fTempAttributeDecl = new XSAttributeDecl();
+    protected XSAttributeUse  fTempAttributeUse  = new XSAttributeUse();
 
     public XSDAttributeTraverser (XSDHandler handler,
                                   XMLErrorReporter errorReporter,
@@ -136,6 +137,7 @@ class  XSDAttributeTraverser extends XSDAbstractTraverser {
             
         } else {
             attrIdx = traverseNamedAttr(attrDecl, attrValues, schemaDoc, grammar, false);
+            fTempAttributeDecl = fSchemaHandler.getAttributeDecl(schemaDoc.fTargetNamespace, attrIdx, fTempAttributeDecl);
         }
 
         // get 'value constraint'
@@ -146,6 +148,18 @@ class  XSDAttributeTraverser extends XSDAbstractTraverser {
             consType = XSAttributeDecl.FIXED_VALUET;
             defaultAtt = fixedAtt;
             fixedAtt = null;
+        }
+        
+        int attrUseIdx = SchemaGrammar.I_EMPTY_DECL;
+        if (attrIdx != SchemaGrammar.I_EMPTY_DECL) {
+            fTempAttributeUse.clear();
+            fTempAttributeUse.fAttrIdx = attrIdx;
+            fTempAttributeUse.fAttrName = refAtt == null ? fTempAttributeDecl.fName : refAtt.localpart;
+            fTempAttributeUse.fAttrNS = refAtt == null ? schemaDoc.fTargetNamespace : refAtt.uri;
+            fTempAttributeUse.fUse = useAtt.shortValue();
+            fTempAttributeUse.fConstraintType = consType;
+            fTempAttributeUse.fDefaultValue = defaultAtt;
+            attrUseIdx = grammar.addAttributeUse(fTempAttributeUse);
         }
         
         fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
