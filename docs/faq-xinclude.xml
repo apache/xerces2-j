@@ -69,15 +69,15 @@
     </a>
   </faq>
   
-  <faq title="Content Negotation">
-    <q>Are the values of the content negotation attributes used in an HTTP request?</q>
+  <faq title="Content Negotiation">
+    <q>Are the values of the content negotiation attributes used in an HTTP request?</q>
     <a>
      <p>
       Currently, the values of <code>accept</code>, <code>accept-charset</code> and
       <code>accept-language</code> from an 
       <jump href="http://www.w3.org/TR/2003/WD-xinclude-20031110/#include_element">include</jump>
       element are only placed in an HTTP request for included items when parse="text". We hope
-      that in the future we will be able to support content negotation for included items
+      that in the future we will be able to support content negotiation for included items
       when parse="xml".
      </p>
     </a>
