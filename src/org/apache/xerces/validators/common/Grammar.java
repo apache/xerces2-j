@@ -153,7 +153,10 @@ implements XMLContentSpec.Provider {
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex &  CHUNK_MASK;
 
-        elementDecl.name.clear();
+        //elementDecl.name.clear();
+        elementDecl.name.prefix = -1;
+        elementDecl.name.rawname = -1;
+
         elementDecl.name.localpart          = fElementDeclNameIndex[chunk][index];               
         elementDecl.name.uri                = 0; // ""
         if (fElementDeclType[chunk][index] == -1) {
@@ -280,7 +283,13 @@ implements XMLContentSpec.Provider {
         }
         int chunk = attributeDeclIndex >> CHUNK_SHIFT;
         int index = attributeDeclIndex & CHUNK_MASK;
-        attributeDecl.name.setValues(fAttributeDeclName[chunk][index]);
+
+        //attributeDecl.name.setValues(fAttributeDeclName[chunk][index]);
+        attributeDecl.name.prefix = fAttributeDeclName[chunk][index].prefix;
+        attributeDecl.name.localpart =  fAttributeDeclName[chunk][index].localpart;
+        attributeDecl.name.rawname = fAttributeDeclName[chunk][index].rawname;
+        attributeDecl.name.uri = fAttributeDeclName[chunk][index].uri;
+
         if (fAttributeDeclType[chunk][index] == -1) {
             
             attributeDecl.type = -1;
@@ -397,6 +406,13 @@ implements XMLContentSpec.Provider {
         int attrIndex = attributeDeclIndex &  CHUNK_MASK; 
 
         fAttributeDeclName[attrChunk][attrIndex].setValues(attributeDecl.name);
+        /****
+        fAttributeDeclName[chunk][index].prefix = attributeDecl.name.prefix ;
+        fAttributeDeclName[chunk][index].localpart = attributeDecl.name.localpart  ;
+        fAttributeDeclName[chunk][index].rawname = attributeDecl.name.rawname ;
+        fAttributeDeclName[chunk][index].uri = attributeDecl.name.uri;
+        /****/
+
         fAttributeDeclType[attrChunk][attrIndex]  =  attributeDecl.type;
         if (attributeDecl.list) {
             fAttributeDeclType[attrChunk][attrIndex] |= LIST_FLAG;
