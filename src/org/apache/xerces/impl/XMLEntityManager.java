@@ -1585,59 +1585,30 @@ public class XMLEntityManager
                                         boolean strict)
             throws URI.MalformedURIException {
 
+        // check if there is a system id before 
+        // trying to expand it.
+        if (systemId == null) {
+            return null;
+        }
+        
         // system id has to be a valid URI
         if (strict) {
-            
-            // check if there is a system id before 
-            // trying to expand it.
-            if (systemId == null) {
-                return null;
-            }
-            
-            try {
-                // if it's already an absolute one, return it
-                URI uri = new URI(systemId);
-                return systemId;
-            }
-            catch (URI.MalformedURIException ex) {
-            }
-            URI base = null;
-            // if there isn't a base uri, use the working directory
-            if (baseSystemId == null || baseSystemId.length() == 0) {
-                base = getUserDir();
-            }
-            // otherwise, use the base uri
-            else {
-                try {
-                    base = new URI(baseSystemId);
-                }
-                catch (URI.MalformedURIException e) {
-                    // assume "base" is also a relative uri
-                    base = new URI(getUserDir(), baseSystemId);
-                }
-            }
-            // absolutize the system id using the base
-            URI uri = new URI(base, systemId);
-            // return the string rep of the new uri (an absolute one)
-            return uri.toString();
-            
-            // if any exception is thrown, it'll get thrown to the caller.
+            return expandSystemId0(systemId, baseSystemId);
         }
 
-        // check for bad parameters id
-        if (systemId == null || systemId.length() == 0) {
-            return systemId;
-        }
-        // if id already expanded, return
+        // Assume the URIs are well-formed. If it turns out they're not, try fixing them up.
         try {
-            URI uri = new URI(systemId.trim());
-            if (uri != null) {
-                return systemId;
-            }
+            return expandSystemId0(systemId, baseSystemId);
         }
         catch (URI.MalformedURIException e) {
             // continue on...
         }
+        
+        // check for bad parameters id
+        if (systemId.length() == 0) {
+            return systemId;
+        }
+        
         // normalize id
         String id = fixURI(systemId);
 
@@ -1677,7 +1648,42 @@ public class XMLEntityManager
         }
         return uri.toString();
 
-    } // expandSystemId(String,String):String
+    } // expandSystemId(String,String,boolean):String
+    
+    /**
+     * Helper method for expandSystemId(String,String,boolean):String
+     */
+    private static String expandSystemId0(String systemId, String baseSystemId)
+        throws URI.MalformedURIException {
+        
+        URI systemURI = new URI(systemId, true);
+        // If it's already an absolute one, return it
+        if (systemURI.isAbsoluteURI()) {
+            return systemId;
+        }
+        
+        // If there isn't a base URI, use the working directory
+        URI baseURI = null;
+        if (baseSystemId == null || baseSystemId.length() == 0) {
+            baseURI = getUserDir();
+        }
+        else {
+            baseURI = new URI(baseSystemId, true);
+            if (!baseURI.isAbsoluteURI()) {
+                // assume "base" is also a relative uri
+                baseURI.absolutize(getUserDir());
+            }
+        }
+        
+        // absolutize the system identifier using the base URI
+        systemURI.absolutize(baseURI);
+        
+        // return the string rep of the new uri (an absolute one)
+        return systemURI.toString();
+        
+        // if any exception is thrown, it'll get thrown to the caller.
+        
+    } // expandSystemId0(String,String):String
 
     //
     // Protected methods
