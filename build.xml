@@ -119,6 +119,7 @@ Copyright:
     <echo message="   jar      --> generates the xerces.jar file"/>
     <echo message="   samples  --> compiles the samples source code"/>
     <echo message="   sampjar  --> generates the xercesSamples.jar file"/>
+    <echo message="   jars     --> generates the xerces and xercesSamples jar files"/>
     <echo message="   docs     --> generates the HTML documentation"/>
     <echo message="   javadocs --> generates the API documentation (needs Java 1.2 or higher)"/>
     <echo message="   pack-src --> generates the source distributions of Xerces-Java (zip and tar.gz)"/>
@@ -215,7 +216,7 @@ Copyright:
   <!-- =================================================================== -->
   <target name="docs" depends="prepare, prepare-docs">
 	<echo message="Building docs for ${Name} ${version} ..." />
-    <java fork="yes"
+    <java fork="no"
           classpath="${java.class.path}:${doc.generator.package}"
           classname="${doc.generator}"
           args="targetDirectory=${build.docs} ${docs.book} ${doc.style}"/>
@@ -350,6 +351,12 @@ Copyright:
           classname="dom.TreeViewer"
           args="${data.dir}/personal.xml"/>
      -->
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Builds both xerces and sample jar files                             -->
+  <!-- =================================================================== -->
+  <target name="jars" depends="jar, sampjar">
   </target>
 
   <!-- =================================================================== -->
