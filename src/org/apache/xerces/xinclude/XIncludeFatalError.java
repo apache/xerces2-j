@@ -49,14 +49,12 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 1999, International
+ * originally based on software copyright (c) 2003, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
 package org.apache.xerces.xinclude;
-
-import org.apache.xerces.xni.XNIException;
 
 /**
  * @author Peter McCracken, IBM

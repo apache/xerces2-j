@@ -134,6 +134,12 @@ public abstract class AbstractSAXParser
     protected static final String STRING_INTERNING =
         Constants.SAX_FEATURE_PREFIX + Constants.STRING_INTERNING_FEATURE;
     
+    /** Feature identifier: allow notation and unparsed entity events to be sent out of order. */
+    // this is not meant to be a recognized feature, but we need it here to use
+    // if it is already a recognized feature for the pipeline
+    protected static final String ALLOW_UE_AND_NOTATION_EVENTS =
+        Constants.SAX_FEATURE_PREFIX + Constants.ALLOW_DTD_EVENTS_AFTER_ENDDTD_FEATURE;
+
     /** Recognized features. */
     private static final String[] RECOGNIZED_FEATURES = {
         NAMESPACES,
@@ -234,6 +240,12 @@ public abstract class AbstractSAXParser
         config.addRecognizedFeatures(RECOGNIZED_FEATURES);
         config.addRecognizedProperties(RECOGNIZED_PROPERTIES);
 
+        try {
+            config.setFeature(ALLOW_UE_AND_NOTATION_EVENTS, false);
+        }
+        catch (XMLConfigurationException e) {
+            // it wasn't a recognized feature, so we don't worry about it
+        }
     } // <init>(XMLParserConfiguration)
 
     //

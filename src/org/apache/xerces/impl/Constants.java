@@ -99,6 +99,9 @@ public final class Constants {
     /** External parameter entities feature ("external-parameter-entities "). */
     public static final String EXTERNAL_PARAMETER_ENTITIES_FEATURE = "external-parameter-entities";
 
+    /** Allow unparsed entity and notation declaration events to be sent after the end DTD event ("allow-dtd-events-after-endDTD") */
+    public static final String ALLOW_DTD_EVENTS_AFTER_ENDDTD_FEATURE = "allow-dtd-events-after-endDTD";
+
     // sax properties
 
     /** SAX property prefix ("http://xml.org/sax/properties/"). */
@@ -268,7 +271,7 @@ public final class Constants {
 
     /** Standard URI conformant feature ("standard-uri-conformant"). */
     public static final String STANDARD_URI_CONFORMANT_FEATURE = "standard-uri-conformant";
-    
+
     // xerces properties
 
     /** Xerces properties prefix ("http://apache.org/xml/properties/"). */
