@@ -1203,6 +1203,7 @@ public class XIncludeHandler
             XIncludeTextReader reader = null;
             try {
                 reader = new XIncludeTextReader(includedSource, this);
+                reader.setErrorReporter(fErrorReporter);
                 reader.parse();
             }
             catch (IOException e) {

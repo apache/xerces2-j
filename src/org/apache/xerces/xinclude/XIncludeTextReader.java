@@ -56,6 +56,7 @@
  */
 package org.apache.xerces.xinclude;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -64,6 +65,14 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Locale;
 
+import org.apache.xerces.impl.io.ASCIIReader;
+import org.apache.xerces.impl.io.UTF8Reader;
+import org.apache.xerces.impl.msg.XMLMessageFormatter;
+import org.apache.xerces.impl.XMLEntityManager;
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.util.EncodingMap;
+import org.apache.xerces.util.MessageFormatter;
+import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.XMLStringBuffer;
 import org.apache.xerces.xni.parser.XMLInputSource;
 
@@ -79,12 +88,12 @@ import org.apache.xerces.xni.parser.XMLInputSource;
  * for reading files as XML, and this needs to read files as text, there would need
  * to be some refactoring done.
  * 
- * REVISIT:
- * This uses standard Java readers, and not the optimized Xerces readers from the
- * package org.apache.xerces.impl.io; these readers should be used at some point.
- * 
+ * @author Michael Glavassevich, IBM
  * @author Peter McCracken, IBM
- * @author Arun Yadav, Sun Microsystem
+ * @author Arun Yadav, Sun Microsystems Inc.
+ *
+ * @version $Id$
+ *
  * @see XIncludeHandler
  */
 public class XIncludeTextReader {
@@ -92,6 +101,7 @@ public class XIncludeTextReader {
     private Reader fReader;
     private XIncludeHandler fHandler;
     private XMLInputSource fSource;
+    private XMLErrorReporter fErrorReporter;
 
     /**
      * Construct the XIncludeReader using the XMLInputSource and XIncludeHandler.
@@ -103,6 +113,17 @@ public class XIncludeTextReader {
         throws IOException {
         fHandler = handler;
         fSource = source;
+    }
+    
+    /**
+     * Sets the XMLErrorReporter used for reporting errors while
+     * reading the text include.
+     *
+     * @param errorReporter the XMLErrorReporter to be used for
+     * reporting errors.
+     */
+    public void setErrorReporter(XMLErrorReporter errorReporter) {
+        fErrorReporter = errorReporter;
     }
 
     /**
@@ -123,21 +144,24 @@ public class XIncludeTextReader {
             }
             if (source.getByteStream() != null) {
                 stream = source.getByteStream();
+                // Wrap the InputStream so that it is possible to rewind it.
+                if (!(stream instanceof BufferedInputStream)) {
+                    stream = new BufferedInputStream(stream);
+                }
             }
             else {
-                URL url =
-                    new URL(
-                        new URL(source.getBaseSystemId()),
-                        source.getSystemId());
-                // TODO: use this to ensure that rewinding is supported
-                //stream = new XMLEntityManager.RewindableInputStream(url.openStream());
-                stream = url.openStream();
+                String expandedSystemId = XMLEntityManager.expandSystemId(source.getSystemId(), source.getBaseSystemId(), false);
+                URL url = new URL(expandedSystemId);
+                
+                // Wrap the InputStream so that it is possible to rewind it.
+                stream = new BufferedInputStream(url.openStream());
                 URLConnection urlCon = url.openConnection();
 
                 // content type will be string like "text/xml; charset=UTF-8" or "text/xml"
                 String rawContentType = urlCon.getContentType();
+                
                 // text/xml and application/xml offer only one optional parameter
-                int index = rawContentType.indexOf(';');
+                int index = (rawContentType != null) ? rawContentType.indexOf(';') : -1;
 
                 String contentType = null;
                 String charset = null;
@@ -204,11 +228,43 @@ public class XIncludeTextReader {
                 }
                 // else 3 or 4.
             }
-
+            
+            encoding = encoding.toUpperCase(Locale.ENGLISH);
+            
             // eat the Byte Order Mark
             consumeBOM(stream, encoding);
-
-            return new InputStreamReader(stream, encoding);
+            
+            // If the document is UTF-8 or US-ASCII use 
+            // the Xerces readers for these encodings.
+            if (encoding.equals("UTF-8")) {
+                return new UTF8Reader(stream, 
+                    XMLEntityManager.DEFAULT_BUFFER_SIZE, 
+                    fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), 
+                    fErrorReporter.getLocale() );
+            }
+            else if (encoding.equals("US-ASCII")) {
+                return new ASCIIReader(stream,
+                    XMLEntityManager.DEFAULT_BUFFER_SIZE,
+                    fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), 
+                    fErrorReporter.getLocale() );
+            }
+            
+            // Try to use a Java reader.
+            String javaEncoding = EncodingMap.getIANA2JavaMapping(encoding);
+            
+            // If the specified encoding wasn't a recognized IANA encoding throw an IOException.
+            // The XIncludeHandler will report this as a ResourceError and then will
+            // attempt to include a fallback if there is one.
+            if (javaEncoding == null) {
+            	MessageFormatter aFormatter = 
+                    fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN);
+            	Locale aLocale = fErrorReporter.getLocale();
+            	throw new IOException( aFormatter.formatMessage( aLocale, 
+            	    "EncodingDeclInvalid", 
+                    new Object[] {encoding} ) );
+            }            
+            
+            return new InputStreamReader(stream, javaEncoding);
         }
     }
 
@@ -242,17 +298,17 @@ public class XIncludeTextReader {
      */
     protected void consumeBOM(InputStream stream, String encoding)
         throws IOException {
-        if (stream == null || encoding == null)
-            return;
 
         byte[] b = new byte[3];
         int count = 0;
         stream.mark(3);
-        encoding = encoding.toUpperCase(Locale.ENGLISH);
         if (encoding.equals("UTF-8")) {
             count = stream.read(b, 0, 3);
             if (count == 3) {
-                if (b[0] != 0xEF || b[1] != 0xBB || b[2] != 0xBF) {
+                int b0 = b[0] & 0xFF; 
+                int b1 = b[1] & 0xFF;
+                int b2 = b[2] & 0xFF;
+                if (b0 != 0xEF || b1 != 0xBB || b2 != 0xBF) {
                     // First three bytes are not BOM, so reset.
                     stream.reset();
                 }
@@ -264,8 +320,10 @@ public class XIncludeTextReader {
         else if (encoding.startsWith("UTF-16")) {
             count = stream.read(b, 0, 2);
             if (count == 2) {
-                if ((b[0] != 0xFE || b[1] != 0xFF) 
-                    && (b[0] != 0xFF || b[1] != 0xFE)) {
+                int b0 = b[0] & 0xFF;
+                int b1 = b[1] & 0xFF;
+                if ((b0 != 0xFE || b1 != 0xFF) 
+                    && (b0 != 0xFF || b1 != 0xFE)) {
                     // First two bytes are not BOM, so reset.
                     stream.reset();
                 }
@@ -353,28 +411,63 @@ public class XIncludeTextReader {
     /**
      * Read the input stream as text, and pass the text on to the XIncludeHandler
      * using calls to characters().  This will read all of the text it can from the
-     * file.
+     * resource.
      * 
      * @throws IOException
      */
     public void parse() throws IOException {
+        // REVISIT: This method needs to be rewritten to improve performance: both
+        // time and memory. We should be reading chunks and reporting chunks instead 
+        // of reading characters individually and reporting all the characters in 
+        // one callback. Also, currently we don't provide any locator information:
+        // line number, column number, etc... so if we report an error it will appear
+        // as if the invalid XML character was in the include parent. -- mrglavas
         XMLStringBuffer buffer = new XMLStringBuffer();
         fReader = getReader(fSource);
-        if (fReader.ready()) {
-            // We might want to consider sending the character events in multiple chunks
-            // instead of reading them all at once and sending them as one large chunk.
-            // This would be a space hog for large text includes.
-            while (fReader.ready()) {
-                buffer.append((char)fReader.read());
+        int ch;
+        while((ch = fReader.read()) != -1) {
+            if (isValid(ch)) {
+                buffer.append((char)ch);
             }
-            if (fHandler != null) {
-                fHandler.characters(
-                    buffer,
-                    fHandler.modifyAugmentations(null, true));
+            else if (XMLChar.isHighSurrogate(ch)) {
+            	int ch2 = fReader.read();
+            	if (XMLChar.isLowSurrogate(ch2)) {
+
+                    // convert surrogates to a supplemental character
+                    int sup = XMLChar.supplemental((char)ch, (char)ch2);
+
+                    // supplemental character must be a valid XML character
+                    if (!isValid(sup)) {
+                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                   "InvalidCharInContent", 
+                                                   new Object[] { Integer.toString(sup, 16) },
+                                                   XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                        continue;
+                    }                 
+                    buffer.append((char) ch);
+                    buffer.append((char) ch2);
+                }
+                else {
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "InvalidCharInContent", 
+                                               new Object[] { Integer.toString(ch, 16) },
+                                               XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                }
+            }
+            else {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "InvalidCharInContent", 
+                                           new Object[] { Integer.toString(ch, 16) },
+                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
             }
         }
+        if (fHandler != null && buffer.length > 0) {
+            fHandler.characters(
+                buffer,
+                fHandler.modifyAugmentations(null, true));
+        }
     }
-
+    
     /**
      * Closes the stream.  Call this after parse(), or when there is no longer any need
      * for this object.
@@ -385,5 +478,14 @@ public class XIncludeTextReader {
         if (fReader != null) {
             fReader.close();
         }
+    }
+    
+    /**
+     * Returns true if the specified character is a valid XML character.
+     *
+     * @param ch The character to check.
+     */
+    private boolean isValid(int ch) {
+        return XMLChar.isValid(ch);
     }
 }
