@@ -353,6 +353,9 @@ public class XMLGrammarCachingConfiguration
         if(resolver != null) {
             fSchemaLoader.setEntityResolver(resolver);
         }
+        if (fErrorReporter.getMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN) == null) {
+            fErrorReporter.putMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN, new XSMessageFormatter());
+        } 
         fSchemaLoader.setProperty(ERROR_REPORTER, fErrorReporter);
 
         String propPrefix = Constants.XERCES_PROPERTY_PREFIX;
