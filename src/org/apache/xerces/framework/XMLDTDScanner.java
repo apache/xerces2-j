@@ -1001,6 +1001,7 @@ public final class XMLDTDScanner {
      */
     public boolean scanDoctypeDecl() throws Exception
     {
+        System.out.println("XMLDTDScanner.scanDoctypeDecl()");
         fDTDGrammar = new DTDGrammar(fStringPool, fEventHandler);
         fDTDGrammar.callStartDTD();
         increaseMarkupDepth();
@@ -1054,8 +1055,10 @@ public final class XMLDTDScanner {
         }
         decreaseMarkupDepth();
 
-        if (scanExternalSubset)
+        System.out.println("  scanExternalSubset: "+scanExternalSubset);
+        if (scanExternalSubset) {
             fDTDGrammar.startReadingFromExternalSubset(publicId, systemId);
+        }
 
         return true;
     }

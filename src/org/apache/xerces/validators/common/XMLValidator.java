@@ -709,8 +709,35 @@ public final class XMLValidator
         fDocumentHandler.textDecl(version, encoding);
     }
 
+    /**
+     * Signal the scanning of an element name in a start element tag.
+     *
+     * @param element Element name scanned.
+     */
+    public void element(QName element) throws Exception {
+        fAttrListHandle = -1;
+    }
+    /**
+     * Signal the scanning of an attribute associated to the previous
+     * start element tag.
+     *
+     * @param element Element name scanned.
+     * @param attrName Attribute name scanned.
+     * @param attrValue The string pool index of the attribute value.
+     */
+    public boolean attribute(QName element, QName attrName, int attrValue) throws Exception {
+        if (fAttrListHandle == -1) {
+            fAttrListHandle = fAttrList.startAttrList();
+        }
+        return fAttrList.addAttr(attrName, attrValue, -1, true, true) == -1;
+    }
+
     /** Call start element. */
     public void callStartElement(QName element) throws Exception {
+
+        if (fAttrListHandle != -1) {
+            fAttrList.endAttrList();
+        }
 
         //
         // Check after all specified attrs are scanned

@@ -154,6 +154,8 @@ public final class XMLDocumentScanner {
     // NOTE: Used by old implementation of scanElementType method. -Ac
     private StringPool.CharArrayRange fCurrentElementCharArrayRange = null;
     /***/
+    int fAttrListHandle = -1;
+    XMLAttrList fAttrList = null;
     GrammarResolver fGrammarResolver = null;
     XMLDTDScanner fDTDScanner = null;
     boolean fNamespacesEnabled = false;
@@ -223,10 +225,25 @@ public final class XMLDocumentScanner {
         /**
          * signal the scanning of a start element tag
          * 
-         * @param elementType handle to the elementType being scanned
+         * @param element Element name scanned.
          * @exception java.lang.Exception
          */
         public void callStartElement(QName element) throws Exception;
+        /**
+         * Signal the scanning of an element name in a start element tag.
+         *
+         * @param element Element name scanned.
+         */
+        public void element(QName element) throws Exception;
+        /**
+         * Signal the scanning of an attribute associated to the previous
+         * start element tag.
+         *
+         * @param element Element name scanned.
+         * @param attrName Attribute name scanned.
+         * @param attrValue The string pool index of the attribute value.
+         */
+        public boolean attribute(QName element, QName attrName, int attrValue) throws Exception;
         /**
          * signal the scanning of an end element tag
          *
@@ -280,6 +297,7 @@ public final class XMLDocumentScanner {
         fEntityHandler = entityHandler;
         fLiteralData = literalData;
         fDispatcher = new XMLDeclDispatcher();
+        fAttrList = new XMLAttrList(fStringPool);
     }
 
     /**
@@ -311,6 +329,7 @@ public final class XMLDocumentScanner {
         fDispatcher = new XMLDeclDispatcher();
         fScannerState = SCANNER_STATE_XML_DECL;
         fScannerMarkupDepth = 0;
+        fAttrList = new XMLAttrList(fStringPool);
     }
 
     //
@@ -516,7 +535,8 @@ public final class XMLDocumentScanner {
             fEntityReader.append(fLiteralData, fAttValueMark, fAttValueOffset - fAttValueMark);
             dataLength = fLiteralData.length() - dataOffset;
         }
-        return fLiteralData.addString(dataOffset, dataLength);
+        int value = fLiteralData.addString(dataOffset, dataLength);
+        return value;
     }
 
     /**
@@ -1765,8 +1785,7 @@ public final class XMLDocumentScanner {
                     return false;
                 }
                 fEntityReader.skipPastSpaces();
-                //int result = fEventHandler.scanAttValue(prefixIndex, elementType, 
-                int result = scanAttValue(element,  fAttributeQName);
+                int result = scanAttValue(element, fAttributeQName, false);
                 if (result == RESULT_FAILURE) {
                     if (fScannerState != SCANNER_STATE_END_OF_INPUT) {
                         skipPastEndOfCurrentMarkup();
@@ -1778,6 +1797,7 @@ public final class XMLDocumentScanner {
                                         XMLMessages.WFC_UNIQUE_ATT_SPEC,
                                         element.rawname, fAttributeQName.rawname);
                 }
+                fEventHandler.attribute(element, fAttributeQName, result);
                 restoreScannerState(SCANNER_STATE_ATTRIBUTE_LIST);
                 if (!fEntityReader.lookingAtSpace(true)) {
                     if (!(greater = fEntityReader.lookingAtChar('>', true)))
@@ -2014,6 +2034,8 @@ public final class XMLDocumentScanner {
                  entityReader.skipPastNmtoken(' ');
             }
         }
+
+        fEventHandler.element(element);
 
     } // scanElementType(XMLEntityHandler.EntityReader,char,QName)
 
