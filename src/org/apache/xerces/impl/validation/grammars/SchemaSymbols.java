@@ -106,6 +106,7 @@ public final  class SchemaSymbols {
     public static final String ELT_PATTERN =  "pattern";
     public static final String ELT_PERIOD =  "period";
     public static final String ELT_PRECISION =  "precision";
+    public static final String ELT_WHITESPACE = "whiteSpace";
     public static final String ELT_SCALE =  "scale";
     public static final String ELT_SCHEMA =  "schema";
     public static final String ELT_SELECTOR =  "selector";
