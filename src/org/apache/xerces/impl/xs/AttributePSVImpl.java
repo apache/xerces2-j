@@ -58,36 +58,26 @@
 package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.impl.dv.XSSimpleType;
-import org.apache.xerces.impl.xs.XSElementDecl;
+import org.apache.xerces.impl.xs.XSAttributeDecl;
 import org.apache.xerces.impl.xs.XSNotationDecl;
-import org.apache.xerces.xni.psvi.ElementPSVI;
+import org.apache.xerces.xni.psvi.AttributePSVI;
 
 import java.util.Vector;
 
 
 /**
- * Element PSV infoset augmentations implementation.
- * The following information will be available at the startElement call:
- * name, namespace, type, notation, validation context
- *
- * The following information will be available at the endElement call:
- * nil, specified, normalized value, member type, validity, error codes,
- * default(?)
+ * Attribute PSV infoset augmentations implementation.
+ * The PSVI information for attributes will be available at the startElement call.
  *
  * @author Elena Litani IBM
  */
-public class ElementPSVImpl implements ElementPSVI {
+public class AttributePSVImpl implements AttributePSVI {
 
-    /** element declaration */
-    protected XSElementDecl fDeclaration = null;
+    /** attribute declaration */
+    protected XSAttributeDecl fDeclaration = null;
 
-    /** type of element, could be xsi:type */
+    /** type of attribute, simpleType */
     protected XSTypeDecl fTypeDecl = null;
-
-    /** true if clause 3.2 of Element Locally Valid (Element) (3.3.4) 
-      * is satisfied, otherwise false 
-      */
-    protected boolean fNil = false;
 
     /** if normalized value represent the default value  */
     protected boolean fSpecified = false;
@@ -95,17 +85,14 @@ public class ElementPSVImpl implements ElementPSVI {
     /** schema normalized value property */
     protected String fNormalizedValue = null;
 
-    /** http://www.w3.org/TR/xmlschema-1/#e-notation*/
-    protected XSNotationDecl fNotation = null;
-
-    /** member type definition against which element was validated */
+    /** member type definition against which attribute was validated */
     protected XSSimpleType fMemberType = null;
 
     /** validation attempted: none, partial, full */
-    protected short fValidationAttempted = ElementPSVI.NO_VALIDATION;
+    protected short fValidationAttempted = AttributePSVI.NO_VALIDATION;
 
     /** validity: valid, invalid, unknown */
-    protected short fValidity = ElementPSVI.UNKNOWN_VALIDITY;
+    protected short fValidity = AttributePSVI.UNKNOWN_VALIDITY;
 
     /** error codes */
     protected String[] fErrorCodes = null;
@@ -115,7 +102,7 @@ public class ElementPSVImpl implements ElementPSVI {
 
 
     //
-    // ElementPSVI methods
+    // AttributePSVI methods
     //
 
     /**
@@ -222,7 +209,7 @@ public class ElementPSVImpl implements ElementPSVI {
      *  @return simple or complex, depending on the type definition.
      */
     public short getTypeDefinitionType() {
-        return (fTypeDecl !=null)? fTypeDecl.getXSType():XSTypeDecl.COMPLEX_TYPE;
+        return XSTypeDecl.SIMPLE_TYPE;
     }
 
     /**
@@ -263,59 +250,17 @@ public class ElementPSVImpl implements ElementPSVI {
         return fValidationContext;
     }
 
-    /**
-     * [nil]
-     * @see http://www.w3.org/TR/xmlschema-1/#e-nil
-     * @return true if clause 3.2 of Element Locally Valid (Element) (3.3.4) above is satisfied, otherwise false
-     */
-    public boolean isNil() {
-        return fNil;
-    }
 
     /**
-     * [notation public]
-     * @see http://www.w3.org/TR/xmlschema-1/#e-notation_public
-     * @see http://www.w3.org/TR/xmlschema-1/#e-notation
-     * @return The value of the {public identifier} of that notation declaration.
-     */
-    public String getNotationPublicId() {
-        return (fNotation!=null)?fNotation.fPublicId:null;
-    }
-
-    /**
-     * [notation system]
-     *
-     * @see http://www.w3.org/TR/xmlschema-1/#e-notation_system
-     * @return The value of the {system identifier} of that notation declaration.
-     */
-    public String getNotationSystemId() {
-        return (fNotation!=null)?fNotation.fSystemId:null;
-    }
-
-    /**
-     * [schema namespace]
-     * @see http://www.w3.org/TR/xmlschema-1/#nsi-schema_namespace
-     * @see http://www.w3.org/TR/xmlschema-1/#e-schema_information
-     * @return A namespace name or absent.
-     */
-    public String getSchemaNamespace() {
-        // REVISIT: should we create component for schema-information item?
-        return (fDeclaration !=null)? fDeclaration.fTargetNamespace:null;
-    }
-
-
-    /**
-     * Reset() should be called in validator startElement(..) method.
+     * Reset() 
      */
     public void reset() {
         fDeclaration = null;
         fTypeDecl = null;
-        fNil = false;
         fSpecified = false;
-        fNotation = null;
         fMemberType = null;
-        fValidationAttempted = ElementPSVI.NO_VALIDATION;
-        fValidity = ElementPSVI.UNKNOWN_VALIDITY;
+        fValidationAttempted = AttributePSVI.NO_VALIDATION;
+        fValidity = AttributePSVI.UNKNOWN_VALIDITY;
         fErrorCodes = null;
         fValidationContext = null;
     }

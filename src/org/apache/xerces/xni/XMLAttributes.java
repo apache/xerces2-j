@@ -385,4 +385,22 @@ public interface XMLAttributes {
      */
     public boolean isSpecified(int attrIndex);
 
+    /**
+     * Look up an augmentations by attributes namespace name.
+     * 
+     * @param uri       The Namespace URI, or the empty string if
+     *                  the name has no Namespace URI.
+     * @param localPart
+     * @return Augmentations
+     */
+    public Augmentations getAugmentations (String uri, String localPart);
+
+    /**
+     * Look up an augmentations by attributes index.
+     * 
+     * @param attributeIndex The attribute index.
+     * @return Augmentations
+     */
+    public Augmentations getAugmentations (int attributeIndex);
+
 } // interface XMLAttributes

@@ -95,6 +95,7 @@ import org.apache.xerces.xni.parser.XMLDocumentFilter;
 
 
 import org.apache.xerces.xni.psvi.ElementPSVI;
+import org.apache.xerces.xni.psvi.AttributePSVI;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -222,6 +223,8 @@ public class XMLSchemaValidator
 
     // REVISIT: define constant here?
     protected final static String ELEM_PSVI = "ELEM_PSVI";
+    protected final static String ATTR_PSVI = "ATTR_PSVI";
+
 
     /** Validation. */
     protected boolean fValidation = false;
@@ -1257,8 +1260,11 @@ public class XMLSchemaValidator
             augs.putItem(ELEM_PSVI, fElemPSVI);
         }
 
-        // REVISIT: is it possible that ElementPSVI is null?
         fCurrentPSVI = (ElementPSVImpl)augs.getItem(ELEM_PSVI);
+        if (fCurrentPSVI == null) {
+            fCurrentPSVI = fElemPSVI;
+            augs.putItem(ELEM_PSVI, fCurrentPSVI);
+        }
         fCurrentPSVI.reset();
 
         // get xsi:schemaLocation and xsi:noNamespaceSchemaLocation attributes,
@@ -1486,8 +1492,11 @@ public class XMLSchemaValidator
     XMLString handleEndElement(QName element, Augmentations augs) {
 
 
-        //REVISIT: is it possible PSVI element is going to be null?
         fCurrentPSVI = (ElementPSVImpl)augs.getItem(ELEM_PSVI);
+        if (fCurrentPSVI == null) {
+            fCurrentPSVI = fElemPSVI;
+            augs.putItem(ELEM_PSVI, fCurrentPSVI);
+        }
         fCurrentPSVI.reset();
 
         // if we are skipping, return
@@ -1523,7 +1532,8 @@ public class XMLSchemaValidator
             // validation attempted = none
             fCurrentPSVI.fValidationAttempted = ElementPSVI.NO_VALIDATION;
             fCurrentPSVI.fValidity = ElementPSVI.UNKNOWN_VALIDITY;
-            fCurrentPSVI.fErrorCodes = errors;
+            // we should not report any errors for element that was not assessed
+            // fCurrentPSVI.fErrorCodes = errors;
             return null;
         }
 
@@ -1717,19 +1727,42 @@ public class XMLSchemaValidator
 
     void processAttributes(QName element, XMLAttributes attributes, XSAttributeGroupDecl attrGrp) {
 
+        // REVISIT: should we always assume that XMLAttributeImpl removes
+        //          all augmentations? if yes.. we loose objects
+        //         if no - we always produce attribute psvi objects which may not be filled in
+        //         in this case we need to create/reset here all objects
+        Augmentations augs = null;
+        AttributePSVImpl attrPSVI = null;
+        for (int k=0;k<attributes.getLength();k++) {
+            augs = attributes.getAugmentations(k);
+            attrPSVI = (AttributePSVImpl) augs.getItem(ATTR_PSVI);
+            if (attrPSVI != null) {
+                attrPSVI.reset();
+            } else {
+                augs.putItem(ATTR_PSVI, new AttributePSVImpl());
+            }
+        }
+
         // add default attributes
         if (attrGrp != null) {
             addDefaultAttributes(element, attributes, attrGrp);
         }
 
         // if we don't do validation, we don't need to validate the attributes
-        if (!fDoValidation)
+        if (!fDoValidation){ 
+            // PSVI: validity is unknown, and validation attempted is none
+            // this is a default value thus we should not set anything else here.
             return;
+        }
 
         // Element Locally Valid (Type)
-        // 3.1.1 The element information item's [attributes] must be empty, excepting those whose [namespace name] is identical to http://www.w3.org/2001/XMLSchema-instance and whose [local name] is one of type, nil, schemaLocation or noNamespaceSchemaLocation.
+        // 3.1.1 The element information item's [attributes] must be empty, excepting those 
+        // whose [namespace name] is identical to http://www.w3.org/2001/XMLSchema-instance and 
+        // whose [local name] is one of type, nil, schemaLocation or noNamespaceSchemaLocation.
         if (fCurrentType == null || fCurrentType.getXSType() == XSTypeDecl.SIMPLE_TYPE) {
             int attCount = attributes.getLength();
+            
+            // REVISIT: what should be PSVI info for those?
             for (int index = 0; index < attCount; index++) {
                 attributes.getName(index, fTempQName);
                 if (fTempQName.uri == URI_XSI) {
@@ -1841,12 +1874,36 @@ public class XMLSchemaValidator
             // 3 The item's normalized value must be locally valid with respect to that {type definition} as per String Valid (3.14.4).
             // get simple type
             XSSimpleType attDV = currDecl.fType;
+
+            // get attribute PSVI
+            attrPSVI = (AttributePSVImpl)attributes.getAugmentations(index).getItem(ATTR_PSVI);
+            
+            // PSVI: attribute declaration
+            attrPSVI.fDeclaration = currDecl;
+            // PSVI: attribute type
+            attrPSVI.fTypeDecl = attDV;
+
+            // PSVI: validation attempted:
+            attrPSVI.fValidationAttempted = AttributePSVI.FULL_VALIDATION;
+
             // get attribute value
             String attrValue = attributes.getValue(index);
 
             Object actualValue = null;
             try {
                 actualValue = attDV.validate(attrValue, fValidationState, fValidatedInfo);
+                // PSVI: attribute normalized value
+                attrPSVI.fNormalizedValue = fValidatedInfo.normalizedValue;
+                // PSVI: attribute memberType
+                attrPSVI.fMemberType = fValidatedInfo.memberType;
+                // PSVI: element notation
+                if (attDV.isNOTATIONType()){
+                   QName qName = (QName)actualValue;
+                   SchemaGrammar grammar = fGrammarResolver.getGrammar(qName.uri);
+                   if (grammar != null)
+                       fCurrentPSVI.fNotation = grammar.getNotationDecl(qName.localpart);
+                }
+
             }
             catch (InvalidDatatypeValueException idve) {
                 reportSchemaError("cvc-attribute.3", new Object[]{element.rawname, fTempQName.rawname, attrValue});
@@ -1871,6 +1928,10 @@ public class XMLSchemaValidator
         // 5.2 If wild IDs is non-empty, there must not be any attribute uses among the {attribute uses} whose {attribute declaration}'s {type definition} is or is derived from ID.
         if (attrGrp.fIDAttrName != null && wildcardIDName != null)
             reportSchemaError("cvc-complex-type.5.2", new Object[]{element.rawname, wildcardIDName, attrGrp.fIDAttrName});
+
+
+        // REVISIT PSVI: validity and error codes for attributes
+        
 
     } //processAttributes
 
@@ -1907,7 +1968,9 @@ public class XMLSchemaValidator
             isSpecified = attributes.getValue(currDecl.fTargetNamespace, currDecl.fName) != null;
 
             // Element Locally Valid (Complex Type)
-            // 4 The {attribute declaration} of each attribute use in the {attribute uses} whose {required} is true matches one of the attribute information items in the element information item's [attributes] as per clause 3.1 above.
+            // 4 The {attribute declaration} of each attribute use in the {attribute uses} whose 
+            // {required} is true matches one of the attribute information items in the element 
+            // information item's [attributes] as per clause 3.1 above.
             if (currUse.fUse == SchemaSymbols.USE_REQUIRED) {
                 if (!isSpecified)
                     reportSchemaError("cvc-complex-type.4", new Object[]{element.rawname, currDecl.fName});
@@ -1915,11 +1978,22 @@ public class XMLSchemaValidator
             // if the attribute is not specified, then apply the value constraint
             if (!isSpecified && constType != XSAttributeDecl.NO_CONSTRAINT) {
                 attName = new QName(null, currDecl.fName, currDecl.fName, currDecl.fTargetNamespace);
-                // REVISIT: fType on decl must be simpleType decl, using which we can find
-                // out the type. In the mean time, we must at least set CDATA,
-                // and we really need to know what attributes are of type ID:
-                // DOM requires some special handling for those ones.
-                attributes.addAttribute(attName, "CDATA", (defaultValue!=null)?defaultValue.normalizedValue:"");
+                
+                // REVISIT: implement getElementById for DOM using schemas
+                String type = (currDecl.fType.isIDType())?"ID":"CDATA";
+                int attrIndex = attributes.addAttribute(attName, type, (defaultValue!=null)?defaultValue.normalizedValue:"");
+                
+                // PSVI: attribute is "schema" specified
+                Augmentations augs = attributes.getAugmentations(attrIndex);
+                AttributePSVImpl attrPSVI = (AttributePSVImpl)augs.getItem(ATTR_PSVI);
+                // see REVISIT at processAttributes()
+                /* if (attrPSVI == null) {
+                    attrPSVI = new AttributePSVImpl();
+                    augs.putItem(ATTR_PSVI, attrPSVI);
+                }  
+                */
+                attrPSVI.fSpecified = true;
+               
             }
 
 

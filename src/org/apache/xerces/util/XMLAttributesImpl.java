@@ -60,6 +60,7 @@ package org.apache.xerces.util;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLString;
+import org.apache.xerces.xni.Augmentations;
 
 import org.xml.sax.AttributeList;
 import org.xml.sax.Attributes;
@@ -101,6 +102,10 @@ public class XMLAttributesImpl
     /** Attribute information. */
     protected Attribute[] fAttributes = new Attribute[4];
 
+    /** Augmentations information for each attribute 
+        number of augmentations is equal to the number of attributes*/
+    protected Augmentations[] fAugmentations = new AugmentationsImpl[4];
+
     //
     // Constructors
     //
@@ -109,6 +114,7 @@ public class XMLAttributesImpl
     public XMLAttributesImpl() {
         for (int i = 0; i < fAttributes.length; i++) {
             fAttributes[i] = new Attribute();
+            fAugmentations[i] = new AugmentationsImpl();
         }
     } // <init>()
 
@@ -170,11 +176,15 @@ public class XMLAttributesImpl
             index = fLength;
             if (fLength++ == fAttributes.length) {
                 Attribute[] attributes = new Attribute[fAttributes.length + 4];
+                Augmentations[] augs = new AugmentationsImpl[fAttributes.length +4];
                 System.arraycopy(fAttributes, 0, attributes, 0, fAttributes.length);
+                System.arraycopy(fAugmentations, 0, augs, 0, fAttributes.length);
                 for (int i = fAttributes.length; i < attributes.length; i++) {
                     attributes[i] = new Attribute();
+                    augs[i] = new AugmentationsImpl();
                 }
                 fAttributes = attributes;
+                fAugmentations = augs;
             }
         }
 
@@ -210,12 +220,19 @@ public class XMLAttributesImpl
     public void removeAttributeAt(int attrIndex) {
         if (attrIndex < fLength - 1) {
             Attribute removedAttr = fAttributes[attrIndex];
+            Augmentations removedAug = fAugmentations[attrIndex];
             System.arraycopy(fAttributes, attrIndex + 1,
                              fAttributes, attrIndex, fLength - attrIndex - 1);
+
+            System.arraycopy(fAugmentations, attrIndex + 1,
+                 fAugmentations, attrIndex, fLength - attrIndex - 1);
 
             // Make the discarded Attribute object available for re-use
             // by tucking it after the Attributes that are still in use
             fAttributes[fLength-1] = removedAttr;
+
+            //REVISIT: should all augmentations be removed here?
+            fAugmentations[fLength-1] = removedAug;
         }
         fLength--;
     } // removeAttributeAt(int)
@@ -593,6 +610,35 @@ public class XMLAttributesImpl
         return index != -1 ? getValue(index) : null;
     } // getValue(String,String):String
 
+
+    /**
+     * Look up an augmentations by Namespace name.
+     *
+     * @param uri The Namespace URI, or null if the
+     * @param localName The local name of the attribute.
+     * @return Augmentations     
+     */
+    public Augmentations getAugmentations (String uri, String localName) {
+        int index = getIndex(uri, localName);
+
+        if (index < 0 || index >= fLength) {
+            return null;
+        }
+        return fAugmentations[index];
+    }
+
+    /**
+     * Look up an augmentations by attributes index.
+     * 
+     * @param attributeIndex The attribute index.
+     * @return Augmentations
+     */
+    public Augmentations getAugmentations (int attributeIndex){
+        if (attributeIndex < 0 || attributeIndex >= fLength) {
+            return null;
+        }
+        return fAugmentations[attributeIndex];
+    }
     //
     // Classes
     //
