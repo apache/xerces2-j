@@ -66,8 +66,6 @@
 
 package org.apache.xerces.dom;
 
-import org.apache.xerces.utils.StringPool;
-
 /**
  * DeferredAttrNSImpl is to AttrNSImpl, what DeferredAttrImpl is to
  * AttrImpl. 

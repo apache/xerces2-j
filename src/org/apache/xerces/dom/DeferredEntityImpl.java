@@ -57,7 +57,6 @@
 
 package org.apache.xerces.dom;
 
-import org.apache.xerces.utils.StringPool;
 
 /**
  * Entity nodes hold the reference data for an XML Entity -- either
