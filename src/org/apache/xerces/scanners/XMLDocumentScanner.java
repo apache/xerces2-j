@@ -157,13 +157,13 @@ public class XMLDocumentScanner
     protected static final int SCANNER_STATE_REFERENCE = 8;
 
     /** Scanner state: attribute list. */
-    protected static final int SCANNER_STATE_ATTRIBUTE_LIST = 9;
+    //protected static final int SCANNER_STATE_ATTRIBUTE_LIST = 9;
 
     /** Scanner state: attribute name. */
-    protected static final int SCANNER_STATE_ATTRIBUTE_NAME = 10;
+    //protected static final int SCANNER_STATE_ATTRIBUTE_NAME = 10;
 
     /** Scanner state: attribute value. */
-    protected static final int SCANNER_STATE_ATTRIBUTE_VALUE = 11;
+    //protected static final int SCANNER_STATE_ATTRIBUTE_VALUE = 11;
 
     /** Scanner state: trailing misc. */
     protected static final int SCANNER_STATE_TRAILING_MISC = 12;
@@ -173,6 +173,9 @@ public class XMLDocumentScanner
 
     /** Scanner state: terminated. */
     protected static final int SCANNER_STATE_TERMINATED = 14;
+
+    /** Scanner state: CDATA section. */
+    protected static final int SCANNER_STATE_CDATA = 15;
 
     // debugging
 
@@ -224,6 +227,9 @@ public class XMLDocumentScanner
     
     /** Standalone. */
     protected boolean fStandalone;
+
+    /** Scanning attribute. */
+    protected boolean fScanningAttribute;
 
     /** Scanning DTD. */
     protected boolean fScanningDTD;
@@ -453,7 +459,7 @@ public class XMLDocumentScanner
         fEntityStack.push(entity);
 
         // call handler
-        if (fDocumentHandler != null) {
+        if (!fScanningAttribute && fDocumentHandler != null) {
             fDocumentHandler.startEntity(name, publicId, systemId);
         }
 
@@ -501,7 +507,7 @@ public class XMLDocumentScanner
         }
 
         // call handler
-        if (fDocumentHandler != null) {
+        if (!fScanningAttribute && fDocumentHandler != null) {
             fDocumentHandler.endEntity(name);
         }
 
@@ -904,9 +910,8 @@ public class XMLDocumentScanner
         throws IOException, SAXException {
         if (DEBUG_CONTENT_SCANNING) System.out.println(">>> scanStartElement()");
 
-        //
-        // Start element
-        //
+        // increase depth
+        fElementDepth++;
 
         // name
         if (fNamespaces) {
@@ -1045,6 +1050,42 @@ public class XMLDocumentScanner
     } // scanAttribute(XMLAttributes)
 
     /**
+     * Scans content.
+     *
+     * @returns Returns the next character on the stream.
+     */
+    protected int scanContent() throws IOException, SAXException {
+
+        int c = fEntityScanner.scanContent(fString);
+        if (fDocumentHandler != null) {
+            /*** REVISIT: Should we remove the whitespace param? -Ac
+            boolean whitespace = true;
+            for (int i = 0; i < fString.length; i++) {
+                if (!XMLChar.isSpace(fString.ch[fString.offset + i])) {
+                    whitespace = false;
+                    break;
+                }
+            }
+            fDocumentHandler.characters(fString, whitespace);
+            /***/
+            fDocumentHandler.characters(fString, false);
+            /***/
+        }
+        return c;
+
+    } // scanContent():int
+
+    /**
+     * Scans a CDATA section.
+     *
+     * @returns True if CDATA section is complete.
+     */
+    protected boolean scanCDATASection(boolean complete) 
+        throws IOException, SAXException {
+        throw new SAXException("not implemented");
+    } // scanCDATASection(boolean):boolean
+
+    /**
      * Scans an end element.
      * <p>
      * <pre>
@@ -1055,8 +1096,10 @@ public class XMLDocumentScanner
      * The contents of this variable will be destroyed. The caller should
      * copy the needed information out of this variable before calling
      * this method.
+     *
+     * @returns The element depth.
      */
-    protected void scanEndElement() throws IOException, SAXException {
+    protected int scanEndElement() throws IOException, SAXException {
         if (DEBUG_CONTENT_SCANNING) System.out.println(">>> scanEndElement()");
 
         // name
@@ -1076,10 +1119,11 @@ public class XMLDocumentScanner
         }
 
         // handle end element
-        handleEndElement(fElementQName);
+        int depth = handleEndElement(fElementQName);
+        if (DEBUG_CONTENT_SCANNING) System.out.println("<<< scanEndElement(): "+depth);
+        return depth;
 
-        if (DEBUG_CONTENT_SCANNING) System.out.println("<<< scanEndElement()");
-    } // scanEndElement()
+    } // scanEndElement():int
 
     /**
      * Scans a character reference.
@@ -1269,10 +1313,12 @@ public class XMLDocumentScanner
      *
      * @param element The element.
      *
+     * @returns The element depth.
+     *
      * @throws SAXException Thrown if the handler throws a SAX exception
      *                      upon notification.
      */
-    protected void handleEndElement(QName element) throws SAXException {
+    protected int handleEndElement(QName element) throws SAXException {
 
         // make sure the elements match
         QName startElement = (QName)fElementStack.pop();
@@ -1286,6 +1332,9 @@ public class XMLDocumentScanner
             element.uri = startElement.uri;
         }
         
+        // decrease depth
+        fElementDepth--;
+
         // call handler
         if (fDocumentHandler != null) {
             fDocumentHandler.endElement(element);
@@ -1306,7 +1355,9 @@ public class XMLDocumentScanner
             fNamespaceSupport.popContext();
         }
 
-    } // callEndElement(QName)
+        return fElementDepth;
+
+    } // callEndElement(QName):int
 
     // helper methods
 
@@ -1335,7 +1386,7 @@ public class XMLDocumentScanner
         fDispatcher = dispatcher;
         if (DEBUG_DISPATCHER) {
             System.out.print("%%% setDispatcher: ");
-            System.out.print(String.valueOf(dispatcher));
+            System.out.print(getDispatcherName(dispatcher));
             System.out.println();
         }
     }
@@ -1358,18 +1409,40 @@ public class XMLDocumentScanner
                 case SCANNER_STATE_ROOT_ELEMENT: return "SCANNER_STATE_ROOT_ELEMENT";
                 case SCANNER_STATE_CONTENT: return "SCANNER_STATE_CONTENT";
                 case SCANNER_STATE_REFERENCE: return "SCANNER_STATE_REFERENCE";
-                case SCANNER_STATE_ATTRIBUTE_LIST: return "SCANNER_STATE_ATTRIBUTE_LIST";
-                case SCANNER_STATE_ATTRIBUTE_NAME: return "SCANNER_STATE_ATTRIBUTE_NAME";
-                case SCANNER_STATE_ATTRIBUTE_VALUE: return "SCANNER_STATE_ATTRIBUTE_VALUE";
+                //case SCANNER_STATE_ATTRIBUTE_LIST: return "SCANNER_STATE_ATTRIBUTE_LIST";
+                //case SCANNER_STATE_ATTRIBUTE_NAME: return "SCANNER_STATE_ATTRIBUTE_NAME";
+                //case SCANNER_STATE_ATTRIBUTE_VALUE: return "SCANNER_STATE_ATTRIBUTE_VALUE";
                 case SCANNER_STATE_TRAILING_MISC: return "SCANNER_STATE_TRAILING_MISC";
                 case SCANNER_STATE_END_OF_INPUT: return "SCANNER_STATE_END_OF_INPUT";
                 case SCANNER_STATE_TERMINATED: return "SCANNER_STATE_TERMINATED";
+                case SCANNER_STATE_CDATA: return "SCANNER_STATE_CDATA";
             }
         }
 
         return "??? ("+state+')';
 
     } // getScannerStateName(int):String
+
+    /** Returns the dispatcher name. */
+    public String getDispatcherName(Dispatcher dispatcher) {
+
+        if (DEBUG_DISPATCHER) {
+            if (dispatcher != null) {
+                String name = dispatcher.getClass().getName();
+                int index = name.lastIndexOf('.');
+                if (index != -1) {
+                    name = name.substring(index + 1);
+                    index = name.lastIndexOf('$');
+                    if (index != -1) {
+                        name = name.substring(index + 1);
+                    }
+                }
+                return name;
+            }
+        }
+        return "null";
+
+    } // getDispatcherName():String
 
     //
     // Classes
@@ -1494,10 +1567,10 @@ public class XMLDocumentScanner
      *
      * @author Glenn Marcy, IBM
      */
-    protected abstract class Dispatcher {
+    protected interface Dispatcher {
 
         //
-        // Public methods
+        // Dispatcher methods
         //
 
         /** 
@@ -1512,28 +1585,8 @@ public class XMLDocumentScanner
          * @throws IOException  Thrown on i/o error.
          * @throws SAXException Thrown on parse error.
          */
-        public abstract boolean dispatch(boolean complete) 
+        public boolean dispatch(boolean complete) 
             throws IOException, SAXException;
-
-        //
-        // Object methods
-        //
-
-        /** Returns a string representation of this object. */
-        public String toString() {
-
-            String name = this.getClass().getName();
-            int index = name.lastIndexOf('.');
-            if (index != -1) {
-                name = name.substring(index + 1);
-                index = name.lastIndexOf('$');
-                if (index != -1) {
-                    name = name.substring(index + 1);
-                }
-            }
-            return name;
-
-        } // toString():String
 
     } // interface Dispatcher
 
@@ -1543,7 +1596,7 @@ public class XMLDocumentScanner
      * @author Andy Clark, IBM
      */
     protected final class XMLDeclDispatcher 
-        extends Dispatcher {
+        implements Dispatcher {
 
         //
         // Dispatcher methods
@@ -1586,7 +1639,8 @@ public class XMLDocumentScanner
                     while (XMLChar.isName(fEntityScanner.peekChar())) {
                         fStringBuffer.append((char)fEntityScanner.scanChar());
                     }
-                    scanPIData(fStringBuffer.toString());
+                    String target = fSymbolTable.addSymbol(fStringBuffer.ch, fStringBuffer.offset, fStringBuffer.length);
+                    scanPIData(target);
                 }
 
                 // standard XML declaration
@@ -1609,7 +1663,7 @@ public class XMLDocumentScanner
      * @author Andy Clark, IBM
      */
     protected final class PrologDispatcher
-        extends Dispatcher {
+        implements Dispatcher {
 
         //
         // Dispatcher methods
@@ -1734,7 +1788,7 @@ public class XMLDocumentScanner
      * @author Andy Clark, IBM
      */
     protected final class ContentDispatcher
-        extends Dispatcher {
+        implements Dispatcher {
 
         //
         // Dispatcher methods
@@ -1782,7 +1836,6 @@ public class XMLDocumentScanner
                         // REVISIT: report error
                         throw new SAXException("doctype not allowed in content");
                     }
-                    /***
                     // REVISIT: Handle CDATA so that we can split up
                     //          the processing over multiple callbacks.
                     case SCANNER_STATE_CDATA: {
@@ -1791,7 +1844,6 @@ public class XMLDocumentScanner
                         }
                         break;
                     }
-                    /***/
                     case SCANNER_STATE_REFERENCE: {
                         if (fEntityScanner.skipChar('#')) {
                             scanCharReference();
@@ -1804,62 +1856,72 @@ public class XMLDocumentScanner
                     }
                     case SCANNER_STATE_CONTENT: {
                         if (fEntityScanner.skipChar('<')) {
-                            if (fEntityScanner.skipChar('?')) {
-                                setScannerState(SCANNER_STATE_PI);
-                                again = true;
-                            }
-                            else if (fEntityScanner.skipChar('!')) {
-                                if (fEntityScanner.skipChar('-')) {
-                                    if (!fEntityScanner.skipChar('-')) {
-                                        // REVISIT: report error
-                                        throw new SAXException("comment must start with \"<!--\"");
-                                    }
-                                }
-                                else if (fEntityScanner.skipString("[CDATA[")) {
-                                    /***
-                                    // REVISIT: Handle CDATA sections
-                                    setScannerState(SCANNER_STATE_CDATA);
-                                    again = true;
-                                    /***/
-                                    throw new SAXException("not implemented");
-                                    /***/
-                                }
-                                else if (fEntityScanner.skipString("DOCTYPE")) {
-                                    setScannerState(SCANNER_STATE_DOCTYPE);
-                                }
-                                else {
-                                    // REVISIT: report error
-                                    throw new SAXException("expected comment, pi, or element");
-                                }
-                            }
-                            else if (fEntityScanner.skipChar('/')) {
-                                scanEndElement();
-                                if (fElementDepth == 0) {
-                                    setScannerState(SCANNER_STATE_TRAILING_MISC);
-                                    setDispatcher(fTrailingMiscDispatcher);
-                                    return complete;
-                                }
-                            }
-                            else if (XMLChar.isNameStart(fEntityScanner.peekChar())) {
-                                if (scanStartElement()) {
-                                    if (fElementDepth == 0) {
-                                        setScannerState(SCANNER_STATE_TRAILING_MISC);
-                                        setDispatcher(fTrailingMiscDispatcher);
-                                        return complete;
-                                    }
-                                }
-                            }
-                            else {
-                                // REVISIT: report error
-                                throw new SAXException("expected comment, pi, doctype, or root element");
-                            }
+                            setScannerState(SCANNER_STATE_START_OF_MARKUP);
+                            again = true;
                         }
                         else if (fEntityScanner.skipChar('&')) {
                             setScannerState(SCANNER_STATE_REFERENCE);
                             again = true;
                         }
                         else {
-                            // TODO
+                            while (complete) {
+                                int c = scanContent();
+                                if (c == '<') {
+                                    fEntityScanner.scanChar();
+                                    setScannerState(SCANNER_STATE_START_OF_MARKUP);
+                                    break;
+                                }
+                                else if (c == '&') {
+                                    fEntityScanner.scanChar();
+                                    setScannerState(SCANNER_STATE_REFERENCE);
+                                    break;
+                                }
+                                // REVISIT: eof, invalid char
+                            }
+                        }
+                        break;
+                    }
+                    case SCANNER_STATE_START_OF_MARKUP: {
+                        if (fEntityScanner.skipChar('?')) {
+                            setScannerState(SCANNER_STATE_PI);
+                            again = true;
+                        }
+                        else if (fEntityScanner.skipChar('!')) {
+                            if (fEntityScanner.skipChar('-')) {
+                                if (!fEntityScanner.skipChar('-')) {
+                                    // REVISIT: report error
+                                    throw new SAXException("comment must start with \"<!--\"");
+                                }
+                                setScannerState(SCANNER_STATE_COMMENT);
+                                again = true;
+                            }
+                            else if (fEntityScanner.skipString("[CDATA[")) {
+                                setScannerState(SCANNER_STATE_CDATA);
+                                again = true;
+                            }
+                            else if (fEntityScanner.skipString("DOCTYPE")) {
+                                setScannerState(SCANNER_STATE_DOCTYPE);
+                            }
+                            else {
+                                // REVISIT: report error
+                                throw new SAXException("expected comment, pi, or element");
+                            }
+                        }
+                        else if (fEntityScanner.skipChar('/')) {
+                            if (scanEndElement() == 0) {
+                                setScannerState(SCANNER_STATE_TRAILING_MISC);
+                                setDispatcher(fTrailingMiscDispatcher);
+                                return complete;
+                            }
+                            setScannerState(SCANNER_STATE_CONTENT);
+                        }
+                        else if (XMLChar.isNameStart(fEntityScanner.peekChar())) {
+                            scanStartElement();
+                            setScannerState(SCANNER_STATE_CONTENT);
+                        }
+                        else {
+                            // REVISIT: report error
+                            throw new SAXException("expected comment, pi, doctype, or root element");
                         }
                         break;
                     }
@@ -1878,7 +1940,7 @@ public class XMLDocumentScanner
      * @author Andy Clark, IBM
      */
     protected final class TrailingMiscDispatcher
-        extends Dispatcher {
+        implements Dispatcher {
 
         //
         // Dispatcher methods
@@ -1914,7 +1976,7 @@ public class XMLDocumentScanner
      * @author Andy Clark, IBM
      */
     protected final class EndOfInputDispatcher
-        extends Dispatcher {
+        implements Dispatcher {
 
         //
         // Dispatcher methods
