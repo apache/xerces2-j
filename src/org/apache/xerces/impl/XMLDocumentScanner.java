@@ -423,6 +423,9 @@ public class XMLDocumentScanner
     public void startEntity(String name, String publicId, String systemId,
                             String encoding) throws SAXException {
 
+        //save the element depth before increase fEntityDepth
+        fEntityStack[fEntityDepth] = fElementDepth;
+
         super.startEntity(name, publicId, systemId, encoding);
 
         // keep track of this entity
@@ -431,7 +434,6 @@ public class XMLDocumentScanner
             System.arraycopy(fEntityStack, 0, entityarray, 0, fEntityStack.length);
             fEntityStack = entityarray;
         }
-        fEntityStack[fEntityDepth] = fElementDepth;
 
         // prepare to look for a TextDecl if external general entity
         if (!name.equals("[xml]") && fEntityScanner.isExternal()) {
@@ -465,15 +467,16 @@ public class XMLDocumentScanner
         super.endEntity(name);
 
         // make sure elements are balanced
-        if (fElementDepth != fEntityStack[fEntityDepth]) {
-            reportFatalError("ElementEntityMismatch",
-                             new Object[]{fCurrentElement.rawname});
-        }
-
         // make sure markup is properly balanced
-        else if (fInMarkup) {
-            fInMarkup = false;
-            reportFatalError("MarkupEntityMismatch", null);
+        if (fElementDepth != fEntityStack[fEntityDepth]) {
+            if (fInMarkup) {
+                fInMarkup = false;
+                reportFatalError("MarkupEntityMismatch", null);
+            }         
+            else  {
+                reportFatalError("ElementEntityMismatch",
+                                 new Object[]{fCurrentElement.rawname});
+            }
         }
 
         // call handler
