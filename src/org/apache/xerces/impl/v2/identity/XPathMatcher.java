@@ -58,8 +58,11 @@
 package org.apache.xerces.impl.v2.identity;
 
 import org.apache.xerces.impl.v2.XSAttributeDecl;
+import org.apache.xerces.impl.v2.XSAttributeUse;
+import org.apache.xerces.impl.v2.XSAttributeGroupDecl;
 import org.apache.xerces.impl.v2.XSElementDecl;
-import org.apache.xerces.impl.v2.XSElementDecl;
+import org.apache.xerces.impl.v2.XSTypeDecl;
+import org.apache.xerces.impl.v2.XSComplexTypeDecl;
 import org.apache.xerces.impl.v2.datatypes.DatatypeValidator;
 import org.apache.xerces.impl.v2.SchemaGrammar;
 import org.apache.xerces.impl.v2.SchemaSymbols;
@@ -284,13 +287,12 @@ public class XPathMatcher {
      * 
      * @param element    The name of the element.
      * @param attributes The element attributes.
-     * @param eIndex:  the element index of the current element
-     * @param grammar:  the currently-active Schema Grammar
+     * @param elementDecl: The element declaration for the element 
      *
      * @throws SAXException Thrown by handler to signal an error.
      */
     public void startElement(QName element, XMLAttributes attributes, 
-                             SchemaGrammar grammar) 
+                             XSElementDecl elementDecl) 
         throws XNIException {
         if (DEBUG_METHODS2) {
             System.out.println(toString()+"#startElement("+
@@ -404,6 +406,21 @@ public class XPathMatcher {
                 if (attrCount > 0) {
                     XPath.NodeTest nodeTest = steps[fCurrentStep[i]].nodeTest;
                     QName aname = new QName(); // REVISIT: cache this
+
+                    // Get the list of attributes from the element decl. 
+                    // REVISIT - is this correct?   This is what was done in xerces-1, 
+                    // but is it right?                              
+                    XSAttributeGroupDecl attrGrp = null;
+                    if (elementDecl != null) {
+                        XSTypeDecl type = elementDecl.fType;
+                        if (type != null) {
+                          if (type.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
+                            XSComplexTypeDecl ctype = (XSComplexTypeDecl)type;
+                            attrGrp = ctype.fAttrGrp;
+                          }
+                        }
+                    }
+                    
                     for (int aindex = 0; aindex < attrCount; aindex++) {
                         attributes.getName(aindex, aname);
                         if (nodeTest.type != XPath.NodeTest.QNAME ||
@@ -418,8 +435,15 @@ public class XPathMatcher {
                                     fMatchedString = avalue;
                                     // now, we have to go on the hunt for 
                                     // datatype validator; not an easy or pleasant task...
-                                    XSAttributeDecl tempAttDecl = grammar.getGlobalAttributeDecl(aname.localpart);
-                                    DatatypeValidator aValidator = tempAttDecl.fType;
+
+                                    DatatypeValidator aValidator = null;
+                                    if (attrGrp != null) {
+                                      XSAttributeUse tempAttUse = attrGrp.getAttributeUse(aname.uri, aname.localpart);
+                                      if (tempAttUse != null) {
+                                        XSAttributeDecl tempAttDecl = tempAttUse.fAttrDecl; 
+                                        aValidator = tempAttDecl.fType;
+                                      }
+                                    }
                                     matched(fMatchedString, aValidator, false);
                                 }
                             }
@@ -474,19 +498,17 @@ public class XPathMatcher {
      * The end of an element.
      * 
      * @param element The name of the element.
-     * @param eIndex:  the elementDeclIndex of the current element;
-     *      needed so that we can look up its datatypeValidator.
+     * @param eDecl:  the element declaration 
      *
      * @throws SAXException Thrown by handler to signal an error.
      */
-    public void endElement(QName element, XSElementDecl eDecl, SchemaGrammar grammar) {
+    public void endElement(QName element, XSElementDecl eDecl) {
         if (DEBUG_METHODS2) {
             System.out.println(toString()+"#endElement("+
                                "element={"+element+"},"+
                                "ID constraint="+fIDConstraint+
                                ")");
         }
-        
         for(int i = 0; i<fLocationPaths.length; i++) {
             // don't do anything, if not matching
             if (fNoMatchDepth[i] > 0) {
@@ -504,11 +526,26 @@ public class XPathMatcher {
                     // REVISIT: cache this.
                     // REVISIT:  make sure type's from same schema!
                     // REVISIT:  make sure type is simple!
-                    DatatypeValidator val = (DatatypeValidator)(eDecl.fType);
+                    DatatypeValidator val=null;
+
+                    if (eDecl!=null) {
+                      XSTypeDecl type = eDecl.fType;
+                      if (type != null) {
+                        if (type.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
+                          XSComplexTypeDecl ctype = (XSComplexTypeDecl)type;
+                          val = ctype.fDatatypeValidator;
+                        }
+                        else {
+                          val = (DatatypeValidator)(type);
+                        }
+                      }
+                    }
+
                     if(eDecl != null) {
                         matched(fMatchedString, val, (eDecl.isNillable()));
-                    } else 
-                        matched(fMatchedString, null, false);
+                    } else  
+                        matched(fMatchedString, val, false);
+                    
                 }
                 clear();
             }
