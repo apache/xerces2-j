@@ -2516,16 +2516,21 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                 break;
                             }
                             baseTypeInfo = baseTypeInfo.baseComplexTypeInfo;
-                            String baseTName = baseTypeInfo.typeName;
-                            if (!baseTName.startsWith("#")) {
-                                int comma = baseTName.indexOf(',');
-                                aGrammarNSIndex = fStringPool.addSymbol(baseTName.substring(0,comma).trim());
-                                if (aGrammarNSIndex != fGrammarNameSpaceIndex) {
-                                    if ( !switchGrammar(aGrammarNSIndex) ) {
-                                        break; //exit the loop in this case
+                            if (baseTypeInfo != null) {
+                                String baseTName = baseTypeInfo.typeName;
+                                if (!baseTName.startsWith("#")) {
+                                    int comma = baseTName.indexOf(',');
+                                    aGrammarNSIndex = fStringPool.addSymbol(baseTName.substring(0,comma).trim());
+                                    if (aGrammarNSIndex != fGrammarNameSpaceIndex) {
+                                        if ( !switchGrammar(aGrammarNSIndex) ) {
+                                            break; //exit the loop in this case
+                                        }
                                     }
                                 }
                             }
+                        }
+                        if (elementIndex == -1) {
+                            switchGrammar(fGrammarNameSpaceIndex);
                         }
                     }
                     //if still can't resolve it, try TOP_LEVEL_SCOPE AGAIN
