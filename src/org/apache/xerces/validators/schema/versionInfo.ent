@@ -1,19 +1,37 @@
 <!-- Path and date information for XML Schema recommendation documents -->
 <!-- $Id$ -->
-<!ENTITY draft.year "1999">
-<!ENTITY draft.YY "1999">
-<!ENTITY draft.month "December">
-<!ENTITY draft.MM "12">
-<!ENTITY draft.day "17">
-<!ENTITY draft.DD "17">
-<!ENTITY draft.base "http://www.w3.org/TR/1999/WD-xmlschema">
-<!ENTITY WD-XSP1 "structures">
+<!ENTITY draft.year "2000">
+<!ENTITY draft.YY "2000">
+<!ENTITY draft.month "February">
+<!ENTITY draft.MM "02">
+<!ENTITY draft.day "25">
+<!ENTITY draft.DD "25">
+<!ENTITY draft.base "http://www.w3.org/TR/2000/WD-xmlschema">
+<!ENTITY % WD-XSP1 'structures'>
+<!ENTITY % WD-XSP1d '"%WD-XSP1;"'>
+<!ENTITY WD-XSP1 %WD-XSP1d;>
+<!ENTITY XSP0.base "&draft.base;-0-&draft.YY;&draft.MM;&draft.DD;">
 <!ENTITY XSP1.base "&draft.base;-1-&draft.YY;&draft.MM;&draft.DD;">
 <!ENTITY XSP1.URI "&XSP1.base;/structures">
 <!ENTITY WD-XSP2 "datatypes">
 <!ENTITY XSP2.base "&draft.base;-2-&draft.YY;&draft.MM;&draft.DD;">
 <!ENTITY XSP2.URI "&XSP2.base;/datatypes">
 <!ENTITY XMLSchemaNS "http://www.w3.org/1999/XMLSchema">
-<!ENTITY % reldatadtd "../WD-xmlschema-2-19991217/datatypes.dtd">
+<!ENTITY XMLSchemaInstanceNS "http://www.w3.org/1999/XMLSchema/instance">
+<!ENTITY % reldatadtd "'../WD-xmlschema-2-20000225/datatypes.dtd'">
 
+<!ENTITY % schemaProper '"structures.xsd"'>
+<!ENTITY schemaProper SYSTEM "structures.xsd" NDATA xmlschema>
 
+<!ENTITY % datatypeSchemaProper '"datatypes.xsd"'>
+<!ENTITY datatypeSchemaProper SYSTEM "datatypes.xsd" NDATA xmlschema>
+<!ENTITY % datatypeSchemaDump '"datatypes.xsd,dmp"'>
+<!ENTITY datatypeSchemaDump SYSTEM "datatypes.xsd,dmp" NDATA xmlschema>
+<!ENTITY % builtinsSchemaProper '"builtins.xsd"'>
+<!ENTITY builtinsSchemaProper SYSTEM "builtins.xsd" NDATA xmlschema>
+<!ENTITY % schemaDump '"structures.xsd,dmp"'>
+<!ENTITY schemaDump SYSTEM "structures.xsd,dmp" NDATA xmlschema>
+<!ENTITY % schemaExample '"example.xsd,dmp"'>
+<!ENTITY schemaExample SYSTEM "example.xsd,dmp" NDATA xmlschema>
+<!NOTATION xmlschema PUBLIC 'structures' '&XSP1.URI;.xsd' >
+<!ENTITY expo '<bibref ref="bib-expo"/>'>
