@@ -299,10 +299,13 @@
     </li>
     <li>
      Any time that the application sets a feature or property on the 
-     parser, the parser <strong>must</strong> pass those settings to 
-     each configurable component. This is important because
-     configuration settings can change while parsing an XML document 
-     and those settings may directly affect the operation of components.
+     parser <em>during a parse</em>, the parser <strong>must</strong> 
+     pass those settings to each configurable component. This is 
+     important because configuration settings can change while parsing 
+     an XML document and those settings may directly affect the 
+     operation of components. But this does <em>not</em> need to be
+     done before or after a parse because each component will query
+     settings during the call to <code>reset</code>.
     </li>
    </ul>
    </span>
