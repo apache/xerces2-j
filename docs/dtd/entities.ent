@@ -2,12 +2,12 @@
 <!-- upper case versions of names and versions -->
 <!ENTITY ParserNameLong 'Xerces2 Java Parser'>
 <!ENTITY ParserName 'Xerces-J'>
-<!ENTITY ParserVersion '2.0.0 (beta)'>
+<!ENTITY ParserVersion '2.0.0 (beta2)'>
 
 <!-- lower case versions of names and versions -->
 <!ENTITY parsername 'xerces-j'>
-<!ENTITY parserversion '2.0.0.beta'>
+<!ENTITY parserversion '2.0.0.beta2'>
 
 <!-- packaging names -->
-<!ENTITY parserdir 'xerces-2_0_0_beta'>
+<!ENTITY parserdir 'xerces-2_0_0_beta2'>
 <!ENTITY parserdistname 'Xerces-J-bin'>

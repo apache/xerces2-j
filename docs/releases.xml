@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
- <release version='NOT YET RELEASED'>
+ <release version='&ParserName; 2.0.0 (beta2)'>
   <desc/>
   <changes>
    <fix>

@@ -2,51 +2,12 @@
 
 <!-- ===================================================================
 
-Build file for Xerces-Java
-
-Notes:
-   This is a build file for use with the Jakarta Ant build tool.
-
-Installation Instructions:
-   To install Ant on your system, you need to checkout the
-   "jakarta-tools" CVS module. Then you should place the files
-     - ant.jar
-     - projectx-tr2.jar
-     - javac.jar
-   in your classpath.
-
-Build Instructions:
-   To build, run
-
-     java org.apache.tools.ant.Main <target>
-
-   on the directory where this file is located with the target you want.
-   There is also a batch file called "build.bat" to invoke Ant from a
-   Windows command line shell. On the UNIX platform, use "build.sh" shell
-   script to invoke Ant.
-
-Most useful targets:
-
- - package -> creates the "xerces.jar" package in "./build"
- - docs -> creates the HTML documentation in "./build/docs"
- - javadocs - crates the javadocs in "./build/javadocs"
- - dist -> creates the complete distribution
- - site -> regenerates the web site
-
-Note:
-
-  In order to regenerate the web site, you must have the "xml-site" and "xml-xerces"
-  CVS modules checked-out in the same directory, or this won't work. for example
-
-    xml.apache.org/xml-site
-    xml.apache.org/xml-xerces
-    ...
-
-  Have fun!
+Read the README file for build instruction.
 
 Authors:
   Stefano Mazzocchi <stefano@apache.org>
   Anupam Bagchi     <abagchi@apache.org>
+  Andy Clark, IBM
 
 Copyright:
   Copyright (c) 2000 The Apache Software Foundation.
@@ -60,9 +21,9 @@ Copyright:
   <target name="init">
     <property name="name" value="xerces"/>
     <property name="Name" value="Xerces-J"/>
-    <property name="version" value="2.0.0 (beta)"/>
-    <property name="version_postfix" value=".2.0.0.beta"/>
-    <property name="appendit" value="2_0_0_beta"/>
+    <property name="version" value="2.0.0 (beta2)"/>
+    <property name="version_postfix" value=".2.0.0.beta2"/>
+    <property name="appendit" value="2_0_0_beta2"/>
     <property name="year" value="1999-2001"/>
     <property name="copyright" value="Copyright &#169; ${year} Apache XML Project. All Rights Reserved."/>
 
