@@ -21,6 +21,11 @@
     </note>
     <submitter name='Andy Clark'/>
    </add>
+   <fix>
+        <note> Fixed a bug in the ui.DOMParserSaveEncoding sample.
+        </note>
+        <submitter name="Joerg Vogel, Neil Graham"/>
+   </fix>
    <add>
     <note>Implemented support for UCS-4 and UCS-2 encodings.</note>
     <submitter name='Neil Graham'/>

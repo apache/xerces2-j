@@ -79,7 +79,7 @@ import org.w3c.dom.NodeList;
 
 
 public class DOMParserSaveEncoding extends DOMParser {
-    String _mimeEncoding = "UTF8";//Default  MIME so we check the file.encoding
+    String _mimeEncoding = "UTF-8";//Default  MIME so we check the file.encoding
     private void setMimeEncoding( String encoding ) {
         _mimeEncoding = encoding;
     }
@@ -97,7 +97,8 @@ public class DOMParserSaveEncoding extends DOMParser {
                 javaEncoding = "Unicode";
             else
                 javaEncoding = EncodingMap.getIANA2JavaMapping( mimeEncoding );    
-        } else   // Should never return null
+        } 
+        if(javaEncoding == null)   // Should never return null
             javaEncoding = "UTF8";
         return(javaEncoding);
     }
