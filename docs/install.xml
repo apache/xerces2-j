@@ -26,8 +26,6 @@
 			<tr><td>samples/</td><td>Directory containing sample programs</td></tr>
 		</table>
 		<note>To use &javaparsername; you do not need the source files. 
-		However the source jar file contains the full documentation and you will 
-		want to have that available. so even if you do not plan on looking at the 
-		source files you still need to download the source jar file.</note>
+		</note>
 	</s2>
 </s1>
