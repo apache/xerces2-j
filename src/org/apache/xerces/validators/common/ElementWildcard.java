@@ -77,21 +77,41 @@ public class ElementWildcard {
         fErrorReporter = errorReporter;
     }
 
-    private static boolean uriInWildcard(int uri, int wildcard, int wtype) {
+    private static boolean uriInWildcard(QName qname, int wildcard, int wtype,
+                                         SubstitutionGroupComparator comparator) {
         int type = wtype & 0x0f;
 
         if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
             return true;
         }
         else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_NS) {
-            // TO BE DONE: substitution of "uri" satisfies "wtype:wildcard"
-            if (uri == wildcard)
-                return true;
+            // substitution of "uri" satisfies "wtype:wildcard"
+            if (comparator != null) {
+                try {
+                    if (comparator.isAllowedByWildcard(qname, wildcard, false))
+                        return true;
+                } catch (Exception e) {
+                    // error occurs in comparator, do nothing here.
+                }
+            } else {
+                if (qname.uri == wildcard)
+                    return true;
+            }
         }
         else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
-            // TO BE DONE: substitution of "uri" satisfies "wtype:wildcard"
-            if (wildcard != uri)
-                return true;
+            // substitution of "uri" satisfies "wtype:wildcard"
+            if (comparator != null) {
+                try {
+                    if (comparator.isAllowedByWildcard(qname, wildcard, true))
+                        return true;
+                } catch (Exception e) {
+                    // error occurs in comparator, do nothing here.
+                }
+            } else {
+                //if (wildcard != uri && uri != fStringPool.EMPTY_STRING) // ???
+                if (wildcard != qname.uri)
+                    return true;
+            }
         }
 
         return false;
@@ -157,10 +177,10 @@ public class ElementWildcard {
                     return true;
             }
         } else if (type1 == XMLContentSpec.CONTENTSPECNODE_LEAF) {
-            if (uriInWildcard(uri1, uri2, type2))
+            if (uriInWildcard(q1, uri2, type2, comparator))
                 return true;
         } else if (type2 == XMLContentSpec.CONTENTSPECNODE_LEAF) {
-            if (uriInWildcard(uri2, uri1, type1))
+            if (uriInWildcard(q2, uri1, type1, comparator))
                 return true;
         } else {
             if (wildcardIntersect(uri1, type1, uri2, type2))

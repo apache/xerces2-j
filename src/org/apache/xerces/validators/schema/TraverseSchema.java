@@ -2656,25 +2656,43 @@ public class TraverseSchema implements
             StringTokenizer tokenizer = new StringTokenizer(namespace);
                 String token = tokenizer.nextToken();
             if (token.equals(SchemaSymbols.ATTVAL_TWOPOUNDLOCAL)) {
-                choiceIndex = fSchemaGrammar.addContentSpecNode(processContentsAnyLocal, -1, StringPool.EMPTY_STRING, false);
+                uriIndex = StringPool.EMPTY_STRING;
             } else {
                 if (token.equals("##targetNamespace"))
 			        token = fTargetNSURIString;
                 uriIndex = fStringPool.addSymbol(token);
-                choiceIndex = fSchemaGrammar.addContentSpecNode(processContentsAnyLocal, -1, uriIndex, false);
             }
+            choiceIndex = fSchemaGrammar.addContentSpecNode(processContentsAnyLocal, -1, uriIndex, false);
+
+            // store a list of seen uri, so that if there are duplicate
+            // namespaces, we only add one of them to the content model
+            int[] uriList = new int[8];
+            uriList[0] = uriIndex;
+            int uriCount = 1;
 
             while (tokenizer.hasMoreElements()) {
                 token = tokenizer.nextToken();
                 if (token.equals(SchemaSymbols.ATTVAL_TWOPOUNDLOCAL)) {
-                    leafIndex = fSchemaGrammar.addContentSpecNode(processContentsAnyLocal, -1, StringPool.EMPTY_STRING, false);
+                    uriIndex = StringPool.EMPTY_STRING;
                 } else {
                     if (token.equals("##targetNamespace"))
                         token = fTargetNSURIString;
                     uriIndex = fStringPool.addSymbol(token);
-                    leafIndex = fSchemaGrammar.addContentSpecNode(processContentsAnyLocal, -1, uriIndex, false);
                 }
+                // check whether we have seen this namespace, if so, skip
+                for (int i = 0; i < uriCount; i++) {
+                    if (uriList[i] == uriIndex)
+                        continue;
+                }
+                // add this namespace to the list
+                if (uriList.length == uriCount) {
+                    int[] newList = new int[uriCount*2];
+                    System.arraycopy(uriList,0,newList,0,uriCount);
+                    uriList = newList;
+                }
+                uriList[uriCount++] = uriIndex;
 
+                leafIndex = fSchemaGrammar.addContentSpecNode(processContentsAnyLocal, -1, uriIndex, false);
                 choiceIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE, choiceIndex, leafIndex, false);
             }
             anyIndex = choiceIndex;
@@ -2686,7 +2704,6 @@ public class TraverseSchema implements
 
         return anyIndex;
     }
-
 
     public DatatypeValidator getDatatypeValidator(String uri, String localpart) {
 
@@ -6373,23 +6390,23 @@ throws Exception {
                 }
             }
 
-            
+
             if (fCurrentScope != TOP_LEVEL_SCOPE &&
                 elementIndex > -1) {
-               // See if there is a declaration of this element at current scope and 
-               // check types. 
-               // This is required because any model group cannot have more than 1 
-               // element with the same name, but different types (even if some are 
+               // See if there is a declaration of this element at current scope and
+               // check types.
+               // This is required because any model group cannot have more than 1
+               // element with the same name, but different types (even if some are
                // local, and others top-level)
                fSchemaGrammar.getElementDecl(elementIndex, fTempElementDecl);
                DatatypeValidator edv = fTempElementDecl.datatypeValidator;
                ComplexTypeInfo eTypeInfo = fSchemaGrammar.getElementComplexTypeInfo(elementIndex);
-               int existingEltNdx = fSchemaGrammar.getElementDeclIndex(eltName.uri, 
+               int existingEltNdx = fSchemaGrammar.getElementDeclIndex(eltName.uri,
                                                  eltName.localpart,fCurrentScope);
 
                if (existingEltNdx > -1) {
-                 if (!checkDuplicateElementTypes(existingEltNdx,eTypeInfo,edv)) 
- 
+                 if (!checkDuplicateElementTypes(existingEltNdx,eTypeInfo,edv))
+
                     reportGenericSchemaError("duplicate element decl in the same scope with different types : " +
                                               fStringPool.toString(eltName.localpart));
                }
@@ -6704,7 +6721,7 @@ throws Exception {
                     }
                 }
             }
-            if(!ignoreSub) 
+            if(!ignoreSub)
                 checkSubstitutionGroupOK(elementDecl, substitutionGroupElementDecl, noErrorSoFar, substitutionGroupElementDeclIndex, subGrammar, typeInfo, substitutionGroupEltTypeInfo, dv, substitutionGroupEltDV);
         }
 
@@ -6803,7 +6820,7 @@ throws Exception {
 
         // Check if an element exists at this scope.
         // If it does, check it against the type of the new element
-        int existingEltNdx = fSchemaGrammar.getElementDeclIndex(eltQName.uri, 
+        int existingEltNdx = fSchemaGrammar.getElementDeclIndex(eltQName.uri,
                                                  eltQName.localpart,enclosingScope);
 
         if (existingEltNdx > -1) {
@@ -6850,7 +6867,12 @@ throws Exception {
         fSchemaGrammar.setElementDefault(elementIndex, defaultStr);
 
         // setSubstitutionGroupElementFullName
-        fSchemaGrammar.setElementDeclSubstitutionGroupElementFullName(elementIndex, substitutionGroupFullName);
+        fSchemaGrammar.setElementDeclSubstitutionGroupAffFullName(elementIndex, substitutionGroupFullName);
+
+        // substitutionGroup: double-direction
+        if ( substitutionGroupStr.length() > 0 && !ignoreSub) {
+            subGrammar.addElementDeclOneSubstitutionGroupQName(substitutionGroupElementDeclIndex, eltQName, fSchemaGrammar, elementIndex);
+        }
 
         //
         // key/keyref/unique processing
@@ -6880,16 +6902,16 @@ throws Exception {
     private boolean checkDuplicateElementTypes(int eltNdx, ComplexTypeInfo typeInfo,
                                        DatatypeValidator dv) {
 
-     
+
         fSchemaGrammar.getElementDecl(eltNdx, fTempElementDecl);
         DatatypeValidator edv = fTempElementDecl.datatypeValidator;
         ComplexTypeInfo eTypeInfo = fSchemaGrammar.getElementComplexTypeInfo(eltNdx);
         if ( ((eTypeInfo != null)&&(eTypeInfo!=typeInfo))
-             || ((edv != null)&&(edv != dv)) )  
+             || ((edv != null)&&(edv != dv)) )
             return false;
         else
             return true;
-        
+
     }
 
     private void traverseIdentityNameConstraintsFor(int elementIndex,
@@ -7322,6 +7344,18 @@ throws Exception {
             boolean noErrorSoFar, int substitutionGroupElementDeclIndex, SchemaGrammar substitutionGroupGrammar, ComplexTypeInfo typeInfo,
             ComplexTypeInfo substitutionGroupEltTypeInfo, DatatypeValidator dv,
             DatatypeValidator substitutionGroupEltDV)  throws Exception {
+
+        // if final="#all" or final="extension restriction"
+        // then it can't be substituted at all (according to 3.3.1)
+        // ??? REVISIT: but it's not mentioned in 3.3.6, where it should be.
+        int finalSet = substitutionGroupGrammar.getElementDeclFinalSet(substitutionGroupElementDeclIndex);
+        if ((finalSet&SchemaSymbols.RESTRICTION) != 0 &&
+            (finalSet&SchemaSymbols.EXTENSION) != 0) {
+            reportGenericSchemaError("element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME)
+                + " cannot be part of the substitution group headed by "
+                + substitutionGroupElementDecl.getAttribute(SchemaSymbols.ATT_NAME));
+        }
+
         // here we must do two things:
         // 1.  Make sure there actually *is* a relation between the types of
         // the element being nominated and the element doing the nominating;
@@ -7338,6 +7372,9 @@ throws Exception {
         // that is, make sure that the type we're deriving has some relationship
         // to substitutionGroupElt's type.
         if (typeInfo != null) {
+            // if the two types are the same, just return
+            if (substitutionGroupEltTypeInfo == typeInfo)
+                return;
             int derivationMethod = typeInfo.derivedBy;
             if(typeInfo.baseComplexTypeInfo == null) {
                 if (typeInfo.baseDataTypeValidator != null) { // take care of complexType based on simpleType case...
@@ -7374,7 +7411,7 @@ throws Exception {
                             noErrorSoFar = false;
                         }
                     } else { // now let's see if substitutionGroup element allows this:
-                        if((derivationMethod & substitutionGroupGrammar.getElementDeclFinalSet(substitutionGroupElementDeclIndex)) != 0) {
+                        if((derivationMethod & finalSet) != 0) {
                             noErrorSoFar = false;
                             // REVISIT:  localize
                             reportGenericSchemaError("element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME)
@@ -7396,7 +7433,7 @@ throws Exception {
                     reportGenericSchemaError("Element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) + " has a type whose base is " + eltBaseName + "; this basetype does not derive from the type of the element at the head of the substitution group");
                     noErrorSoFar = false;
                 } else { // type is fine; does substitutionElement allow this?
-                    if((derivationMethod & substitutionGroupGrammar.getElementDeclFinalSet(substitutionGroupElementDeclIndex)) != 0) {
+                    if((derivationMethod & finalSet) != 0) {
                         noErrorSoFar = false;
                         // REVISIT:  localize
                         reportGenericSchemaError("element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME)
@@ -7406,6 +7443,9 @@ throws Exception {
                 }
             }
         } else if (dv != null) { // do simpleType case...
+            // if the two types are the same, just return
+            if (dv == substitutionGroupEltDV)
+                return;
             // first, check for type relation.
             if (!(checkSimpleTypeDerivationOK(dv,substitutionGroupEltDV))) {
                // REVISIT:  localize
@@ -7413,7 +7453,7 @@ throws Exception {
                noErrorSoFar = false;
             }
             else { // now let's see if substitutionGroup element allows this:
-                if((SchemaSymbols.RESTRICTION & substitutionGroupGrammar.getElementDeclFinalSet(substitutionGroupElementDeclIndex)) != 0) {
+                if((SchemaSymbols.RESTRICTION & finalSet) != 0) {
                     noErrorSoFar = false;
                     // REVISIT:  localize
                     reportGenericSchemaError("element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME)
@@ -7771,17 +7811,17 @@ throws Exception {
             if (!uriStr.equals(fTargetNSURIString)) {
                 gInfo = traverseGroupDeclFromAnotherSchema(localpart, uriStr);
                 if (DEBUG_NEW_GROUP)
-                  findAndCreateElements(gInfo.contentSpecIndex,gInfo.scope);            
+                  findAndCreateElements(gInfo.contentSpecIndex,gInfo.scope);
                 return gInfo;
             }
-            
+
             try {
               gInfo = (GroupInfo) fGroupNameRegistry.get(uriStr + "," + localpart);
               if (gInfo != null) {
-                // Ensure any LEAF elements are created at the 
+                // Ensure any LEAF elements are created at the
                 // scope of the referencing type
                 if (DEBUG_NEW_GROUP)
-                  findAndCreateElements(gInfo.contentSpecIndex,gInfo.scope);            
+                  findAndCreateElements(gInfo.contentSpecIndex,gInfo.scope);
 		return gInfo;
               }
 
@@ -7808,11 +7848,11 @@ throws Exception {
                 gInfo = traverseGroupDecl(referredGroup);
             }
 
-            // Now that we have a tree, ensure any LEAF elements are created at the 
+            // Now that we have a tree, ensure any LEAF elements are created at the
             // scope of the referencing type
             if (gInfo != null) {
-               if (DEBUG_NEW_GROUP) 
-                 findAndCreateElements(gInfo.contentSpecIndex,gInfo.scope);            
+               if (DEBUG_NEW_GROUP)
+                 findAndCreateElements(gInfo.contentSpecIndex,gInfo.scope);
             }
             return gInfo;
 
@@ -7824,10 +7864,10 @@ throws Exception {
         try {
           gInfo = (GroupInfo) fGroupNameRegistry.get(qualifiedGroupName);
           if (gInfo != null) {
-            // Ensure any LEAF elements are created at the 
+            // Ensure any LEAF elements are created at the
             // scope of the referencing type
             if (DEBUG_NEW_GROUP)
-              findAndCreateElements(gInfo.contentSpecIndex,gInfo.scope);            
+              findAndCreateElements(gInfo.contentSpecIndex,gInfo.scope);
 	    return gInfo;
           }
 
@@ -7842,7 +7882,7 @@ throws Exception {
 
         // Save the scope and set the current scope to -1
         int savedScope = fCurrentScope;
-        if (DEBUG_NEW_GROUP) 
+        if (DEBUG_NEW_GROUP)
            fCurrentScope = fScopeCount++;
         else
            fCurrentScope = -1;
@@ -7906,9 +7946,9 @@ throws Exception {
           int eltNdx = fSchemaGrammar.getElementDeclIndex(right, left, scope);
           if (eltNdx <0)
             return;
-          
+
           fSchemaGrammar.cloneElementDecl(eltNdx, fCurrentScope);
-        
+
         }
         else if (type == XMLContentSpec.CONTENTSPECNODE_CHOICE ||
                  type == XMLContentSpec.CONTENTSPECNODE_ALL ||
@@ -7916,8 +7956,8 @@ throws Exception {
 
           findAndCreateElements(left,scope);
 
-          if (right != -2)  
-             findAndCreateElements(right,scope); 
+          if (right != -2)
+             findAndCreateElements(right,scope);
         }
         return;
 
@@ -7955,7 +7995,7 @@ throws Exception {
         try {
 	    gInfo = (GroupInfo) fGroupNameRegistry.get(qualifiedGroupName);
             if (gInfo != null)
-              return gInfo; 
+              return gInfo;
         } catch (ClassCastException c) {
         }
 
@@ -7964,7 +8004,7 @@ throws Exception {
 
         int index = -2;
         int savedScope = fCurrentScope;
-        if (DEBUG_NEW_GROUP) 
+        if (DEBUG_NEW_GROUP)
           fCurrentScope = fScopeCount++;
 
         boolean illegalChild = false;

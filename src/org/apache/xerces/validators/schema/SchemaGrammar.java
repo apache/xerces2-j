@@ -75,10 +75,13 @@ import org.apache.xerces.validators.common.XMLAttributeDecl;
 import org.apache.xerces.validators.common.XMLContentModel;
 import org.apache.xerces.validators.common.XMLElementDecl;
 import org.apache.xerces.validators.common.Grammar;
+import org.apache.xerces.validators.common.GrammarResolver;
+import org.apache.xerces.utils.StringPool;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.util.Hashtable;
+import java.util.Vector;
 
 public class SchemaGrammar extends Grammar{
 
@@ -114,7 +117,10 @@ public class SchemaGrammar extends Grammar{
         new TraverseSchema.ComplexTypeInfo[INITIAL_CHUNK_COUNT][];
     private int fElementDeclDefaultType[][] = new int[INITIAL_CHUNK_COUNT][];
     private String fElementDeclDefaultValue[][] = new String[INITIAL_CHUNK_COUNT][];
-    private String fElementDeclSubstitutionGroupFullName[][] = new String[INITIAL_CHUNK_COUNT][];
+    private String fElementDeclSubGroupAffFullName[][] = new String[INITIAL_CHUNK_COUNT][];
+    private Vector fElementDeclSubGroupQNames[][] = new Vector[INITIAL_CHUNK_COUNT][];
+    private Vector fElementDeclAllSubGroupQNamesBlock[][] = new Vector[INITIAL_CHUNK_COUNT][];
+    private Vector fElementDeclAllSubGroupQNames[][] = new Vector[INITIAL_CHUNK_COUNT][];
     private int fElementDeclBlockSet[][] = new int[INITIAL_CHUNK_COUNT][];
     private int fElementDeclFinalSet[][] = new int[INITIAL_CHUNK_COUNT][];
     private int fElementDeclMiscFlags[][] = new int[INITIAL_CHUNK_COUNT][];
@@ -255,15 +261,147 @@ public class SchemaGrammar extends Grammar{
         return fElementDeclDefaultValue[chunk][index];
 
     }
-    public String getElementDeclSubstitutionGroupElementFullName( int elementDeclIndex){
+    public String getElementDeclSubstitutionGroupAffFullName( int elementDeclIndex){
 
         if (elementDeclIndex < 0 ) {
             return null;
         }
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex & CHUNK_MASK;
-        return fElementDeclSubstitutionGroupFullName[chunk][index];
+        return fElementDeclSubGroupAffFullName[chunk][index];
 
+    }
+
+    // get a list of element qnames that substitute the current element directly
+    private Vector getElementDeclSubstitutionGroupQNames( int elementDeclIndex){
+
+        if (elementDeclIndex < 0 ) {
+            return null;
+        }
+        int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        int index = elementDeclIndex & CHUNK_MASK;
+        return fElementDeclSubGroupQNames[chunk][index];
+
+    }
+
+    // get a list of element qnames that substitute the current element directly
+    // or indirectly
+    // and get the derivation methods / block set along the derivation chain
+    // but we haven't checked "blockset" yet, because it's possible that
+    // A substitute B, B substitute C, with types (AT, BT, CT)
+    // but the derivation method from AT to BT is block by B's blockset
+    // then A can't substitute B, but it's still possible that A substitute C.
+    private Vector getElementDeclAllSubstitutionGroupQNamesBlock( int elementDeclIndex, GrammarResolver grammarResolver, StringPool stringPool){
+        if (elementDeclIndex < 0 ) {
+            return null;
+        }
+        int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        int index = elementDeclIndex & CHUNK_MASK;
+        if (fElementDeclAllSubGroupQNamesBlock[chunk][index] != null)
+            return fElementDeclAllSubGroupQNamesBlock[chunk][index];
+
+        Vector groups = new Vector();
+        fElementDeclAllSubGroupQNamesBlock[chunk][index] = groups;
+
+        // get the type info for the current element
+        TraverseSchema.ComplexTypeInfo typeInfo = getElementComplexTypeInfo(elementDeclIndex);
+
+        // for all elements that can substitute directly
+        Vector substitutionGroupQNames = getElementDeclSubstitutionGroupQNames(elementDeclIndex);
+        int size = substitutionGroupQNames == null ? 0 : substitutionGroupQNames.size();
+        for (int i = 0; i < size; i++) {
+            OneSubGroup oneGroup = (OneSubGroup)substitutionGroupQNames.get(i);
+            SchemaGrammar sGrammar = oneGroup.grammar;
+            int subElementIndex = oneGroup.eleIndex;
+
+            // derivation method
+            // and prohibited derivation method
+            int devMethod = 0, pDevMethod = 0;
+
+            TraverseSchema.ComplexTypeInfo subTypeInfo = sGrammar.getElementComplexTypeInfo(subElementIndex);
+            if (subTypeInfo == null) {
+                // for simple type, we compare the datatypeValidators
+                XMLElementDecl tmpElementDecl = new XMLElementDecl();
+                sGrammar.getElementDecl(subElementIndex, tmpElementDecl);
+                DatatypeValidator subElementDV = tmpElementDecl.datatypeValidator;
+                getElementDecl(elementDeclIndex, tmpElementDecl);
+                DatatypeValidator elementDV = tmpElementDecl.datatypeValidator;
+                if (subElementDV != null && subElementDV != elementDV)
+                    devMethod = SchemaSymbols.RESTRICTION;
+            } else {
+                // store the devMethod of the deriving type,
+                // and pDevMethod of the derived type
+                if (subTypeInfo != typeInfo) {
+                    devMethod = subTypeInfo.derivedBy;
+                    pDevMethod = typeInfo.blockSet;
+                    subTypeInfo = subTypeInfo.baseComplexTypeInfo;
+                }
+                for (; subTypeInfo != null && subTypeInfo != typeInfo;
+                     subTypeInfo = subTypeInfo.baseComplexTypeInfo) {
+                     devMethod |= subTypeInfo.derivedBy;
+                     pDevMethod |= subTypeInfo.blockSet;
+                }
+            }
+
+            // put this element into the list
+            SubGroupBlockQName oneName = new SubGroupBlockQName();
+            oneName.name = oneGroup;
+            oneName.method = devMethod;
+            oneName.pmethod = pDevMethod;
+            groups.addElement(oneName);
+
+            // recursively get all elements that can substitute this element
+            Vector subSubGroup = sGrammar.getElementDeclAllSubstitutionGroupQNamesBlock(subElementIndex, grammarResolver, stringPool);
+            int bsize = subSubGroup == null ? 0 : subSubGroup.size();
+            for (i = 0; i < bsize; i++) {
+                // and add them to the list too
+                SubGroupBlockQName name = (SubGroupBlockQName)subSubGroup.get(i);
+                oneName = new SubGroupBlockQName();
+                oneName.name = name.name;
+                // note that we need to append the dev/pdev method
+                oneName.method = name.method|devMethod;
+                oneName.pmethod = name.pmethod|pDevMethod;
+                groups.addElement(oneName);
+            }
+        }
+
+        return groups;
+    }
+
+    // all elements that can substitute the given one
+    // returns a list (Vector) of SchemaGrammar.OneSubGroup: qname+grammar+elementIndex
+    // be sure to call this method ONLY AFTER (not during) schema traversal!!!
+    public Vector getElementDeclAllSubstitutionGroupQNames( int elementDeclIndex, GrammarResolver grammarResolver, StringPool stringPool){
+
+        if (elementDeclIndex < 0 ) {
+            return null;
+        }
+        int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        int index = elementDeclIndex & CHUNK_MASK;
+        if (fElementDeclAllSubGroupQNames[chunk][index] != null)
+            return fElementDeclAllSubGroupQNames[chunk][index];
+
+        Vector groups = new Vector();
+        fElementDeclAllSubGroupQNames[chunk][index] = groups;
+
+        // get the blockset of the current element
+        int blockSet = getElementDeclBlockSet(elementDeclIndex);
+        // 1 The blocking constraint does not contain substitution.
+        if((blockSet & SchemaSymbols.SUBSTITUTION) != 0)
+            return groups;
+
+        // 2 There is a chain of {substitution group affiliation}s from D to C, that is, either D's {substitution group affiliation} is C, or D's {substitution group affiliation}'s {substitution group affiliation} is C, or . . .
+        // get all substitution candidates without checking blockset
+        Vector substitutionGroupQNamesBlock = getElementDeclAllSubstitutionGroupQNamesBlock(elementDeclIndex, grammarResolver, stringPool);
+        // now check it
+        // 3 The set of all {derivation method}s involved in the derivation of D's {type definition} from C's {type definition} does not intersect with the union of the blocking constraint, C's {prohibited substitutions} (if C is complex, otherwise the empty set) and the {prohibited substitutions} (respectively the empty set) of any intermediate {type definition}s in the derivation of D's {type definition} from C's {type definition}.
+        for (int i = 0; i < substitutionGroupQNamesBlock.size(); i++) {
+            SubGroupBlockQName oneName = (SubGroupBlockQName)substitutionGroupQNamesBlock.get(i);
+            if (((blockSet | oneName.pmethod) & oneName.method) == 0)
+                groups.addElement(oneName.name);
+        }
+
+        return groups;
     }
 
     public TraverseSchema.ComplexTypeInfo getElementComplexTypeInfo(int elementDeclIndex){
@@ -511,12 +649,27 @@ public class SchemaGrammar extends Grammar{
         }
     }
 
-    protected void setElementDeclSubstitutionGroupElementFullName( int elementDeclIndex, String substitutionGroupFullName){
+    protected void setElementDeclSubstitutionGroupAffFullName( int elementDeclIndex, String substitutionGroupFullName){
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex & CHUNK_MASK;
         ensureElementDeclCapacity(chunk);
         if (elementDeclIndex > -1 ) {
-            fElementDeclSubstitutionGroupFullName[chunk][index] = substitutionGroupFullName;
+            fElementDeclSubGroupAffFullName[chunk][index] = substitutionGroupFullName;
+        }
+    }
+
+    protected void addElementDeclOneSubstitutionGroupQName( int elementDeclIndex, QName name, SchemaGrammar grammar, int eleIndex){
+        int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        int index = elementDeclIndex & CHUNK_MASK;
+        ensureElementDeclCapacity(chunk);
+        if (elementDeclIndex > -1 ) {
+            if (fElementDeclSubGroupQNames[chunk][index] == null)
+                fElementDeclSubGroupQNames[chunk][index] = new Vector();
+            OneSubGroup oneGroup = new OneSubGroup();
+            oneGroup.name = name;
+            oneGroup.grammar = grammar;
+            oneGroup.eleIndex = eleIndex;
+            fElementDeclSubGroupQNames[chunk][index].addElement(oneGroup);
         }
     }
 
@@ -607,7 +760,7 @@ public class SchemaGrammar extends Grammar{
         int finalSet = getElementDeclFinalSet(eltNdx);
         int elementMiscFlags = getElementDeclMiscFlags(eltNdx);
         String defaultStr = getElementDefaultValue(eltNdx);
-        String subGroupName = getElementDeclSubstitutionGroupElementFullName(eltNdx);
+        String subGroupName = getElementDeclSubstitutionGroupAffFullName(eltNdx);
         int attrListHead = getFirstAttributeDeclIndex(eltNdx);
         String anotherSchema = getElementFromAnotherSchemaURI(eltNdx);
 
@@ -616,7 +769,7 @@ public class SchemaGrammar extends Grammar{
                  fTempElementDecl.type,fTempElementDecl.contentSpecIndex,
                  attrListHead,fTempElementDecl.datatypeValidator);
 
-        setElementComplexTypeInfo(newElt, typeInfo); 
+        setElementComplexTypeInfo(newElt, typeInfo);
         setElementDeclBlockSet(newElt, blockSet);
         setElementDeclFinalSet(newElt, finalSet);
         setElementDeclMiscFlags(newElt, elementMiscFlags);
@@ -813,7 +966,10 @@ public class SchemaGrammar extends Grammar{
              fElementDeclBlockSet = resize(fElementDeclBlockSet,fElementDeclBlockSet.length*2);
              fElementDeclFinalSet = resize(fElementDeclFinalSet,fElementDeclFinalSet.length*2);
              fElementDeclMiscFlags = resize(fElementDeclMiscFlags,fElementDeclMiscFlags.length*2);
-             fElementDeclSubstitutionGroupFullName = resize(fElementDeclSubstitutionGroupFullName,fElementDeclSubstitutionGroupFullName.length*2);
+             fElementDeclSubGroupAffFullName = resize(fElementDeclSubGroupAffFullName,fElementDeclSubGroupAffFullName.length*2);
+             fElementDeclSubGroupQNames = resize(fElementDeclSubGroupQNames,fElementDeclSubGroupQNames.length*2);
+             fElementDeclAllSubGroupQNames = resize(fElementDeclAllSubGroupQNames,fElementDeclAllSubGroupQNames.length*2);
+             fElementDeclAllSubGroupQNamesBlock = resize(fElementDeclAllSubGroupQNamesBlock,fElementDeclAllSubGroupQNamesBlock.length*2);
         }
         catch (NullPointerException ex) {
             // ignore
@@ -826,7 +982,10 @@ public class SchemaGrammar extends Grammar{
         fComplexTypeInfo[chunk] = new TraverseSchema.ComplexTypeInfo[CHUNK_SIZE];
         fElementDeclDefaultType[chunk] = new int[CHUNK_SIZE];
         fElementDeclDefaultValue[chunk] = new String[CHUNK_SIZE];
-        fElementDeclSubstitutionGroupFullName[chunk] = new String[CHUNK_SIZE];
+        fElementDeclSubGroupAffFullName[chunk] = new String[CHUNK_SIZE];
+        fElementDeclSubGroupQNames[chunk] = new Vector[CHUNK_SIZE];
+        fElementDeclAllSubGroupQNames[chunk] = new Vector[CHUNK_SIZE];
+        fElementDeclAllSubGroupQNamesBlock[chunk] = new Vector[CHUNK_SIZE];
         fElementDeclBlockSet[chunk] = new int[CHUNK_SIZE]; // initialized to 0
         fElementDeclFinalSet[chunk] = new int[CHUNK_SIZE]; // initialized to 0
         fElementDeclMiscFlags[chunk] = new int[CHUNK_SIZE]; // initialized to 0
@@ -868,4 +1027,23 @@ public class SchemaGrammar extends Grammar{
         return newarray;
     }
 
+    private Vector[][] resize(Vector array[][], int newsize) {
+        // TODO
+        return array;
+    }
+
+    // make it public, so that other classes can access both qname and
+    // grammar+index pair
+    public class OneSubGroup {
+        public QName name;
+        SchemaGrammar grammar;
+        int eleIndex;
+    }
+
+    // OneSubGroup + derivation/prohibited derivation method
+    private class SubGroupBlockQName {
+        public OneSubGroup name;
+        public int method;
+        public int pmethod;
+    } // class IgnoreWhitespaceParser
 } // class SchemaGrammar

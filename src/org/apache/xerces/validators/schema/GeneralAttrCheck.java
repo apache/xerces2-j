@@ -1057,8 +1057,8 @@ public class GeneralAttrCheck {
             // block = (#all | List of (substitution | extension | restriction | list | union))
             choice = 0;
             if (value.equals (SchemaSymbols.ATTVAL_POUNDALL)) {
-                choice = SchemaSymbols.SUBSTITUTION+SchemaSymbols.EXTENSION+
-                         SchemaSymbols.RESTRICTION+SchemaSymbols.LIST+
+                choice = SchemaSymbols.SUBSTITUTION|SchemaSymbols.EXTENSION|
+                         SchemaSymbols.RESTRICTION|SchemaSymbols.LIST|
                          SchemaSymbols.UNION;
             } else {
                 StringTokenizer t = new StringTokenizer (value, " ");
@@ -1066,35 +1066,15 @@ public class GeneralAttrCheck {
                     String token = t.nextToken ();
 
                     if (token.equals (SchemaSymbols.ATTVAL_SUBSTITUTION) ) {
-                        if ((choice & SchemaSymbols.SUBSTITUTION) == 0) {
-                            choice |= SchemaSymbols.SUBSTITUTION;
-                        } else {
-                            throw new InvalidDatatypeValueException();
-                        }
+                        choice |= SchemaSymbols.SUBSTITUTION;
                     } else if (token.equals (SchemaSymbols.ATTVAL_EXTENSION)) {
-                        if ( (choice & SchemaSymbols.EXTENSION) == 0 ) {
-                                choice |= SchemaSymbols.EXTENSION;
-                        } else {
-                            throw new InvalidDatatypeValueException();
-                        }
+                        choice |= SchemaSymbols.EXTENSION;
                     } else if (token.equals (SchemaSymbols.ATTVAL_RESTRICTION)) {
-                        if ( (choice & SchemaSymbols.RESTRICTION) == 0 ) {
-                            choice |= SchemaSymbols.RESTRICTION;
-                        } else {
-                            throw new InvalidDatatypeValueException();
-                        }
+                        choice |= SchemaSymbols.RESTRICTION;
                     } else if ( token.equals (SchemaSymbols.ELT_LIST) ) {
-                        if ( (choice & SchemaSymbols.LIST) == 0 ) {
-                                choice |= SchemaSymbols.LIST;
-                        } else {
-                            throw new InvalidDatatypeValueException();
-                        }
+                        choice |= SchemaSymbols.LIST;
                     } else if ( token.equals (SchemaSymbols.ELT_UNION) ) {
-                        if ( (choice & SchemaSymbols.RESTRICTION) == 0 ) {
-                            choice |= SchemaSymbols.RESTRICTION;
-                        } else {
-                            throw new InvalidDatatypeValueException();
-                        }
+                        choice |= SchemaSymbols.RESTRICTION;
                     } else {
                         throw new InvalidDatatypeValueException();
                     }
@@ -1108,24 +1088,16 @@ public class GeneralAttrCheck {
             // final = (#all | List of (extension | restriction))
             choice = 0;
             if (value.equals (SchemaSymbols.ATTVAL_POUNDALL)) {
-                choice = SchemaSymbols.EXTENSION+SchemaSymbols.RESTRICTION;
+                choice = SchemaSymbols.EXTENSION|SchemaSymbols.RESTRICTION;
             } else {
                 StringTokenizer t = new StringTokenizer (value, " ");
                 while (t.hasMoreTokens()) {
                     String token = t.nextToken ();
 
                     if (token.equals (SchemaSymbols.ATTVAL_EXTENSION)) {
-                        if ( (choice & SchemaSymbols.EXTENSION) == 0 ) {
-                                choice |= SchemaSymbols.EXTENSION;
-                        } else {
-                            throw new InvalidDatatypeValueException();
-                        }
+                        choice |= SchemaSymbols.EXTENSION;
                     } else if (token.equals (SchemaSymbols.ATTVAL_RESTRICTION)) {
-                        if ( (choice & SchemaSymbols.RESTRICTION) == 0 ) {
-                            choice |= SchemaSymbols.RESTRICTION;
-                        } else {
-                            throw new InvalidDatatypeValueException();
-                        }
+                        choice |= SchemaSymbols.RESTRICTION;
                     } else {
                         throw new InvalidDatatypeValueException();
                     }
@@ -1137,7 +1109,7 @@ public class GeneralAttrCheck {
             // final = (#all | (list | union | restriction))
             choice = 0;
             if (value.equals (SchemaSymbols.ATTVAL_POUNDALL)) {
-                choice = SchemaSymbols.RESTRICTION+SchemaSymbols.LIST+
+                choice = SchemaSymbols.RESTRICTION|SchemaSymbols.LIST|
                          SchemaSymbols.UNION;
             } else if (value.equals (SchemaSymbols.ELT_LIST)) {
                 choice = SchemaSymbols.LIST;
