@@ -156,16 +156,18 @@ public class DocumentBuilderImpl extends DocumentBuilder
                 domParser.setFeature(name, ((Boolean)val).booleanValue());
             } else {
                 // Assume property
-
                 if (JAXP_SCHEMA_LANGUAGE.equals(name)) {
                     // JAXP 1.2 support
-                    if (W3C_XML_SCHEMA.equals(val)) {
-                        domParser.setFeature(
-                            Constants.XERCES_FEATURE_PREFIX +
-                            Constants.SCHEMA_VALIDATION_FEATURE, true);
-                        // this should allow us not to emit DTD errors, as expected by the 
-                        // spec when schema validation is enabled
-                        domParser.setProperty(JAXP_SCHEMA_LANGUAGE, W3C_XML_SCHEMA);
+                    //None of the properties will take effect till the setValidating(true) has been called                                        
+                    if ( W3C_XML_SCHEMA.equals(val) ) {
+                        if( isValidating() ) {
+                            domParser.setFeature(
+                                Constants.XERCES_FEATURE_PREFIX +
+                                Constants.SCHEMA_VALIDATION_FEATURE, true);
+                            // this should allow us not to emit DTD errors, as expected by the 
+                            // spec when schema validation is enabled
+                            domParser.setProperty(JAXP_SCHEMA_LANGUAGE, W3C_XML_SCHEMA);
+                        }
                     }
                 } else {
                     // Let Xerces code handle the property
