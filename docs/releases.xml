@@ -11,8 +11,10 @@
         <li>Added support for Schema &quot;final&quot; attribute [Neil Graham]</li>
         <li>Added support for nillable and removed limitation for xsi:schemaLocation usage [Elena Litani]</li>
         <li>PR changes for Datatypes (including implementation of date/time) [Sandy Gao, Elena Litani]</li>
-        <li>Added support for fixed attribute on datatype facets [Elena Litani]      
+        <li>Added support for fixed attribute on datatype facets [Elena Litani]</li>      
         <li>Constraint checking [Lisa Martin, Neil Graham, Sandy Gao, Elena Litani]</li>
+        <li>Re-implemented "all" group support for performance reasons [Henry Zongaro]</li>
+        <li>Re-implemented "mixed" content model groups for Schema [Lisa Martin]</li>
         <li>Miscellaneous bug fixes [Arnaud Le Hors, Jeffrey Rodrigues, Elena Litani]</li>
 
     </ul>
