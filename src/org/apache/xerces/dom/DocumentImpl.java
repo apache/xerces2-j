@@ -1236,7 +1236,7 @@ public class DocumentImpl
             if (lc.captures + lc.bubbles + lc.defaults > 0) {
                 MutationEventImpl me= new MutationEventImpl();
                 me.initMutationEvent(MutationEventImpl.DOM_ATTR_MODIFIED,
-                                     true, false, null,
+                                     true, false, attr,
                                      attr.getNodeValue(), null, name,
                                      MutationEvent.REMOVAL);
                 dispatchEvent(oldOwner, me);
