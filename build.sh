@@ -17,7 +17,7 @@ CLPATHSEP=:
 # if we're on a Windows box make it ;
 uname | grep WIN && CLPATHSEP=\;
 
-LOCALCLASSPATH="$JAVA_HOME/lib/tools.jar${CLPATHSEP}${JAVA_HOME}/lib/classes.zip${CLPATHSEP}./tools/ant.jar${CLPATHSEP}./tools/xerces.jar${CLPATHSEP}./tools/xalan.jar${CLPATHSEP}./tools/stylebook-1.0-b2.jar${CLPATHSEP}./tools/style-apachexml.jar"
+LOCALCLASSPATH="$JAVA_HOME/lib/tools.jar${CLPATHSEP}${JAVA_HOME}/lib/classes.zip${CLPATHSEP}./tools/ant.jar${CLPATHSEP}./tools/xerces.jar${CLPATHSEP}./tools/xalan.jar${CLPATHSEP}./tools/stylebook-1.0-b2.jar${CLPATHSEP}./tools/style-apachexml.jar${CLPATHSEP}./tools/junit.jar"
 ANT_HOME=./tools
 
 echo Building with classpath \"$LOCALCLASSPATH\"
