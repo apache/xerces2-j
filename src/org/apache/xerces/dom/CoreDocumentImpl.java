@@ -890,6 +890,10 @@ extends ParentNode implements Document  {
                 ElementImpl el = (ElementImpl) n;
                 if (el instanceof ElementNSImpl) {
                     ((ElementNSImpl) el).rename(namespaceURI, name);
+                    
+                    // fire user data NODE_RENAMED event
+                    callUserDataHandlers(el, null,
+                    UserDataHandler.NODE_RENAMED);
                 }
                 else {
                     if (namespaceURI == null) {
@@ -910,6 +914,10 @@ extends ParentNode implements Document  {
                             msg);
                         }
                         el.rename(name);
+                        
+                        // fire user data NODE_RENAMED event
+                        callUserDataHandlers(el, null,
+                        UserDataHandler.NODE_RENAMED);
                     }
                     else {
                         // we need to create a new object
@@ -970,6 +978,10 @@ extends ParentNode implements Document  {
                     if (el != null) {
                         el.setAttributeNodeNS(at);
                     }
+                    
+                    // fire user data NODE_RENAMED event
+                    callUserDataHandlers(at, null,
+                    UserDataHandler.NODE_RENAMED);
                 }
                 else {
                     if (namespaceURI == null) {
@@ -978,6 +990,10 @@ extends ParentNode implements Document  {
                         if (el != null) {
                             el.setAttributeNode(at);
                         }
+                        
+                        // fire user data NODE_RENAMED event
+                        callUserDataHandlers(at, null,
+                        UserDataHandler.NODE_RENAMED);
                     }
                     else {
                         // we need to create a new object
