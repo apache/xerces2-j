@@ -124,6 +124,7 @@ public class Test {
     /** Performs the actual test. */
     public void test(Document doc) {
 
+        System.out.println("DOM IDs Test...");
         Element el = doc.getElementById("one.worker");
         Assertion.assert(el != null);
         Assertion.equals(el.getAttribute("id"), "one.worker");
@@ -138,7 +139,12 @@ public class Test {
 
             el2 = doc.getElementById("one.worker");
             Assertion.assert(el2 == null);
+
+            el.removeAttribute("id");
+            el2 = doc.getElementById("my.worker");
+            Assertion.assert(el2 == null);
         }
+        System.out.println("done.");
 
     } // test(Document)
 
@@ -235,25 +241,31 @@ public class Test {
                 parser.setFeature(NAMESPACES_FEATURE_ID, namespaces);
             }
             catch (SAXException e) {
-                System.err.println("warning: Parser does not support feature ("+NAMESPACES_FEATURE_ID+")");
+                System.err.println("warning: Parser does not support feature ("
+                                   + NAMESPACES_FEATURE_ID + ")");
             }
             try {
                 parser.setFeature(VALIDATION_FEATURE_ID, validation);
             }
             catch (SAXException e) {
-                System.err.println("warning: Parser does not support feature ("+VALIDATION_FEATURE_ID+")");
+                System.err.println("warning: Parser does not support feature ("
+                                   + VALIDATION_FEATURE_ID + ")");
             }
             try {
-                parser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, schemaValidation);
+                parser.setFeature(SCHEMA_VALIDATION_FEATURE_ID,
+                                  schemaValidation);
             }
             catch (SAXException e) {
-                System.err.println("warning: Parser does not support feature ("+SCHEMA_VALIDATION_FEATURE_ID+")");
+                System.err.println("warning: Parser does not support feature ("
+                                   + SCHEMA_VALIDATION_FEATURE_ID + ")");
             }
             try {
-                parser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, schemaFullChecking);
+                parser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID,
+                                  schemaFullChecking);
             }
             catch (SAXException e) {
-                System.err.println("warning: Parser does not support feature ("+SCHEMA_FULL_CHECKING_FEATURE_ID+")");
+                System.err.println("warning: Parser does not support feature ("
+                                   + SCHEMA_FULL_CHECKING_FEATURE_ID + ")");
             }
 
             if (parser instanceof dom.wrappers.Xerces) {
@@ -278,7 +290,8 @@ public class Test {
                 // ignore
             }
             catch (Exception e) {
-                System.err.println("error: Parse error occurred - "+e.getMessage());
+                System.err.println("error: Parse error occurred - " +
+                                   e.getMessage());
                 Exception se = e;
                 if (e instanceof SAXException) {
                     se = ((SAXException)e).getException();
