@@ -208,10 +208,10 @@ extends AbstractDOMParser implements DOMParser, DOMConfiguration {
         fConfiguration.setFeature(Constants.DOM_CANONICAL_FORM, false);
         fConfiguration.setFeature(Constants.DOM_CDATA_SECTIONS, true);
         fConfiguration.setFeature(Constants.DOM_CHARSET_OVERRIDES_XML_ENCODING, true);
-        fConfiguration.setFeature(Constants.DOM_INFOSET, false);
+        fConfiguration.setFeature(Constants.DOM_INFOSET, true);
         fConfiguration.setFeature(Constants.DOM_NAMESPACE_DECLARATIONS, true);
-        fConfiguration.setFeature(Constants.DOM_SUPPORTED_MEDIATYPES_ONLY, false);
-        fConfiguration.setFeature(Constants.DOM_WELLFORMED, true);
+        fConfiguration.setFeature(Constants.DOM_SUPPORTED_MEDIATYPES_ONLY, false);        
+        fConfiguration.setFeature(Constants.DOM_WELLFORMED, true);        
 
         // REVISIT: by default Xerces assumes that input is certified.
         //          default is different from the one specified in the DOM spec
@@ -327,8 +327,7 @@ extends AbstractDOMParser implements DOMParser, DOMConfiguration {
 				else if (name.equals(Constants.DOM_ENTITIES)) {
 					fConfiguration.setFeature(CREATE_ENTITY_REF_NODES, state);
 				}
-				else if (name.equals(Constants.DOM_INFOSET)
-						|| name.equals(Constants.DOM_SUPPORTED_MEDIATYPES_ONLY)
+				else if (name.equals(Constants.DOM_SUPPORTED_MEDIATYPES_ONLY)
 						|| name.equals(Constants.DOM_CANONICAL_FORM)) {
 					if (state) { // true is not supported
 						String msg =
@@ -345,7 +344,8 @@ extends AbstractDOMParser implements DOMParser, DOMConfiguration {
 				}
 				else if (name.equals(Constants.DOM_CDATA_SECTIONS)
 						|| name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
-                                                || name.equals(Constants.DOM_WELLFORMED)) {
+                            || name.equals(Constants.DOM_WELLFORMED)
+                                || name.equals(Constants.DOM_INFOSET)) {
 					if (!state) { // false is not supported
 						String msg =
 							DOMMessageFormatter.formatMessage(
@@ -354,7 +354,7 @@ extends AbstractDOMParser implements DOMParser, DOMConfiguration {
 								new Object[] { name });
 						throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
 					}
-					// setting these features to true is no-op
+					// setting these features to true is no-op                    
 					// REVISIT: implement "namespace-declaration" feature
 				}
 				else if (name.equals(Constants.DOM_VALIDATE)) {
@@ -634,16 +634,16 @@ extends AbstractDOMParser implements DOMParser, DOMConfiguration {
 	public boolean canSetParameter(String name, Object value) {
 		if(value instanceof Boolean){
 			boolean state = ((Boolean)value).booleanValue();
-			if (name.equals(Constants.DOM_INFOSET)
-				|| name.equals(Constants.DOM_SUPPORTED_MEDIATYPES_ONLY)
-				|| name.equals(Constants.DOM_CANONICAL_FORM)) {
+			if ( name.equals(Constants.DOM_SUPPORTED_MEDIATYPES_ONLY)
+				|| name.equals(Constants.DOM_CANONICAL_FORM) ) {
 				// true is not supported
 				return (state) ? false : true;
 			}
 			else if (
 				name.equals(Constants.DOM_CDATA_SECTIONS)
 					|| name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
-                                        || name.equals(Constants.DOM_WELLFORMED)) {
+                        || name.equals(Constants.DOM_WELLFORMED)
+                            || name.equals(Constants.DOM_INFOSET) ) {
 				// false is not supported
 				return (state) ? true : false;
 			}

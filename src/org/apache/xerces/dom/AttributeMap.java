@@ -582,13 +582,14 @@ public class AttributeMap extends NamedNodeMapImpl {
             int dsize = defaults.nodes.size();
             for (int n = 0; n < dsize; n++) {
                 AttrImpl d = (AttrImpl) defaults.nodes.elementAt(n);
-                int i = findNamePoint(d.getNodeName(), 0);
+                int i = findNamePoint(d.getNodeName(), 0); 
                 if (i < 0) {
+            		i = -1 - i; 
                     NodeImpl clone = (NodeImpl) d.cloneNode(true);
                     clone.ownerNode = ownerNode;
                     clone.isOwned(true);
                     clone.isSpecified(false);
-                    nodes.setElementAt(clone, i);
+            		nodes.insertElementAt(clone, i);
                 }
             }
         }

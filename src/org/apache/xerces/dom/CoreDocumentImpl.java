@@ -872,7 +872,16 @@ public class CoreDocumentImpl
 		}
 		else {
 		    if (namespaceURI == null) {
-                        el.rename(name);
+				int colon1 = name.indexOf(':');
+				if(colon1 != -1){
+					String msg =
+						DOMMessageFormatter.formatMessage(
+						DOMMessageFormatter.DOM_DOMAIN,
+						"NAMESPACE_ERR",
+						null);
+					throw new DOMException(DOMException.NAMESPACE_ERR, msg);
+				}
+                el.rename(name);
 		    }
 		    else {
 			// we need to create a new object
