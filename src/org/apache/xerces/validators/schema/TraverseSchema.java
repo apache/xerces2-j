@@ -6333,8 +6333,7 @@ throws Exception {
             if(attGrpNameStr.length() != 0)
                 // REVISIT:  localize
                 reportGenericSchemaError ( "attributeGroup " + attGrpNameStr + " cannot refer to another attributeGroup, but it refers to " + ref);
-            if (XUtil.getFirstChildElement(attrGrpDecl) != null ||
-                attrGrpDecl.getNodeValue() != null)
+            if (child != null)
                 // REVISIT:  localize
                 reportGenericSchemaError ( "An attributeGroup with \"ref\" present must be empty");
 
@@ -7418,8 +7417,8 @@ throws Exception {
         // add to element decl
         traverseIdentityConstraint(keyRef, krElem);
         if(keyRef.getFieldCount() != kId.getFieldCount()){
-        		 reportSchemaError(SchemaMessageProvider.CardinalityNotEqual, new Object[]{krName,kName});
-        		 return ;
+                 reportSchemaError(SchemaMessageProvider.CardinalityNotEqual, new Object[]{krName,kName});
+                 return ;
         }
 
         // add key reference to element decl
