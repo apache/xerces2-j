@@ -65,7 +65,7 @@ import org.apache.xerces.impl.dv.InvalidDatatypeFacetException;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.xs.XSTypeDecl;
 import org.apache.xerces.impl.xs.SchemaSymbols;
-import org.apache.xerces.impl.validation.ValidationContext;
+import org.apache.xerces.impl.dv.ValidationContext;
 import org.apache.xerces.impl.validation.ValidationState;
 import org.apache.xerces.impl.xs.psvi.*;
 
