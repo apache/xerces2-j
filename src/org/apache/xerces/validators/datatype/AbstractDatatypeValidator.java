@@ -72,21 +72,8 @@ public abstract class AbstractDatatypeValidator implements DatatypeValidator, Cl
 
     private Hashtable fFacets; // Hashtable of Facets Strings.
 
-    //abstract public AbstractDatatypeValidator();
-    //public AbstractDatatypeValidator(){
-    //}
 
-
-    //abstract public AbstractDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
-      //                                 boolean list ); 
-
-    //public AbstractDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
-    //                                                                boolean list ){ 
-    //
-    //
-    //}
-
-    /**
+     /**
      * Checks that "content" string is valid
      * datatype.
      * If invalid a Datatype validation exception is thrown.
@@ -103,13 +90,7 @@ public abstract class AbstractDatatypeValidator implements DatatypeValidator, Cl
      * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
      */
     abstract public Object validate(String content, Object state) throws InvalidDatatypeValueException;
-
-    //{ 
-     //   System.out.println( "Here in AbstracDatatype " + content );
-      //  return null;
-    //}
-
-
+    
     abstract public Object clone() throws CloneNotSupportedException ;
 
 
@@ -121,6 +102,14 @@ public abstract class AbstractDatatypeValidator implements DatatypeValidator, Cl
      */
     public Hashtable getFacets() {
         return null;  // Not implemented yet
+    }
+    
+    /**
+     * default value for whiteSpace facet is collapse
+     * this function is overwritten in StringDatatypeValidator
+     */
+    public short getWSFacet (){
+        return DatatypeValidator.COLLAPSE;
     }
     /**
      * Compares content in the Domain value vs. lexical

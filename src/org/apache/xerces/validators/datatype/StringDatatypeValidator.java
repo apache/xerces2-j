@@ -90,6 +90,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
     private String     fMinInclusive     = null;
     private String     fMinExclusive     = null;
     private int        fFacetsDefined    = 0;
+    private  short      fWhiteSpace = DatatypeValidator.PRESERVE;
 
     private boolean    isMaxExclusiveDefined = false;
     private boolean    isMaxInclusiveDefined = false;
@@ -162,6 +163,19 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
                 } else if (key.equals(SchemaSymbols.ELT_MINEXCLUSIVE)) {
                     fFacetsDefined += DatatypeValidator.FACET_MINEXCLUSIVE;
                     fMinExclusive = (String)facets.get(key);
+                } else if (key.equals(SchemaSymbols.ELT_WHITESPACE)) {
+                    fFacetsDefined += DatatypeValidator.FACET_WHITESPACE;
+                    String ws = (String)facets.get(key);
+                    if (ws.equals("replace")) {
+                        fWhiteSpace = DatatypeValidator.REPLACE;
+                    }
+                    else if (ws.equals("collapse")) {
+                        fWhiteSpace = DatatypeValidator.COLLAPSE;
+                    }
+                    else {
+                        fWhiteSpace = DatatypeValidator.PRESERVE;
+                    }
+
                 } else {
                     throw new InvalidDatatypeFacetException("invalid facet tag : " + key);
                 }
@@ -206,7 +220,9 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
     }
 
 
-
+    public short getWSFacet(){
+        return fWhiteSpace;
+    }
 
     /**
      * validate that a string is a W3C string type
@@ -234,7 +250,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
 
     /**
      * 
-     * @return                          A Hashtable containing the facets
+     * @return   A Hashtable containing the facets
      *         for this datatype.
      */
     public Hashtable getFacets(){

@@ -142,6 +142,7 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
 
                 Hashtable facets = new Hashtable();
                 facets.put(SchemaSymbols.ELT_PATTERN , "\\c+" );
+                facets.put(SchemaSymbols.ELT_WHITESPACE, "collapse");
                 createDatatypeValidator("NMTOKEN", new StringDatatypeValidator(), facets, false );
 
                 createDatatypeValidator("NMTOKENS",  
@@ -174,7 +175,8 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 fRegistry.put("binary",            new BinaryDatatypeValidator());
                 fRegistry.put("uriReference",      new URIReferenceDatatypeValidator());
                 fRegistry.put("QName",             new QNameDatatypeValidator()); 
-
+                
+                
                 // need to check if the registry has been "DTD" initilized --ericye
                 // since we share the same instance of DTD attribute validators across the board,
                 // we couldn't afford call the initializeDTDRegistry more than one time.
@@ -183,30 +185,25 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 }
 
                 Hashtable facets = new Hashtable();
+                facets.put(SchemaSymbols.ELT_WHITESPACE, "replace");
+                createDatatypeValidator("CDATA", new StringDatatypeValidator(), facets, false);
+
+
+                facets = new Hashtable();
+                facets.put(SchemaSymbols.ELT_WHITESPACE, "collapse");
+                createDatatypeValidator("token", getDatatypeValidator("CDATA"), facets, false);
+
+                facets = new Hashtable();
                 facets.put(SchemaSymbols.ELT_PATTERN , "([a-zA-Z]{2}|[iI]-[a-zA-Z]+|[xX]-[a-zA-Z]+)(-[a-zA-Z]+)*" );
-
-                createDatatypeValidator("language", new StringDatatypeValidator() , facets,
-                                        false );
-
-                //createDatatypeValidator( "IDREFS", new IDREFDatatypeValidator(), null , true );
-
-                //createDatatypeValidator( "ENTITIES", new ENTITYDatatypeValidator(),  null, true );
-
-                //facets = new Hashtable();
-                //facets.put(SchemaSymbols.ELT_PATTERN , "\\c+" );
-                //createDatatypeValidator("NMTOKEN", new StringDatatypeValidator(), facets, false );
-
-                //createDatatypeValidator("NMTOKENS",  
-                //                        getDatatypeValidator( "NMTOKEN" ), null, true );
-
+                createDatatypeValidator("language", getDatatypeValidator("token") , facets, false );
 
                 facets = new Hashtable();
                 facets.put(SchemaSymbols.ELT_PATTERN , "\\i\\c*" );
-                createDatatypeValidator("Name", new StringDatatypeValidator(), facets, false );
+                createDatatypeValidator("Name", getDatatypeValidator("token"), facets, false );
 
                 facets = new Hashtable();
                 facets.put(SchemaSymbols.ELT_PATTERN , "[\\i-[:]][\\c-[:]]*"  );
-                createDatatypeValidator("NCName", new StringDatatypeValidator(), facets, false );
+                createDatatypeValidator("NCName", getDatatypeValidator("token"), facets, false );
 
                 facets = new Hashtable();
                 facets.put(SchemaSymbols.ELT_SCALE, "0");
@@ -359,8 +356,33 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 simpleType = new ListDatatypeValidator(base, facets, list);    
             } else {
                 try {
-                    Class validatorDef = base.getClass();
+                    String value = (String)facets.get(SchemaSymbols.ELT_WHITESPACE);
+                    if (base instanceof StringDatatypeValidator) { 
+                        //record value of whiteSpace facet present on the base datatype
+                        short ws = base.getWSFacet();
+                        if ( value == null) {
+                           value = (ws!=DatatypeValidator.COLLAPSE)?(ws==DatatypeValidator.REPLACE)?"replace":"preserve":"collapse";
+                           facets.put(SchemaSymbols.ELT_WHITESPACE, value);
+                        }
+                        else {
+                            if (ws == DatatypeValidator.REPLACE && !value.equals("collapse")){
+                                facets.put(SchemaSymbols.ELT_WHITESPACE, "replace");
+                            }
+                            else if (ws == DatatypeValidator.COLLAPSE) {
+                                facets.put(SchemaSymbols.ELT_WHITESPACE, "collapse");
+                            }
+                        }
+                    }
+                    else { 
+                        //for all other datatypes we don't need to pass WHITESPACE Facet
+                        //its value is always 'collapse' and cannot be reset by user
+                        if (value !=null) {
+                            facets.remove(SchemaSymbols.ELT_WHITESPACE);
+                        }
+                    }
 
+                    Class validatorDef = base.getClass();
+                    
                     Class [] validatorArgsClass = new Class[] {  
                         org.apache.xerces.validators.datatype.DatatypeValidator.class,
                         java.util.Hashtable.class,

@@ -348,11 +348,12 @@ public final class XMLValidator
    //Schema Normalization
     private boolean NORMALIZATION_ON = false;
     private boolean DEBUG_NORMALIZATION = false;
+    private DatatypeValidator fCurrentDV = null; //current datatype validator
     private boolean fFirstChunk = true; // got first chunk in characters() (SAX)
     private boolean fTrailing = false;  // Previous chunk had a trailing space
-    private boolean fCollapse = false;  //collapse spaces
-    private StringBuffer fStringBuffer = null;  //holds normalized str value
-    private StringBuffer fTempBuffer = null;  //holds unnormalized str value
+    private short fWhiteSpace = DatatypeValidator.COLLAPSE;  //whiteSpace: preserve/replace/collapse
+    private StringBuffer fStringBuffer = new StringBuffer(CHUNK_SIZE);  //holds normalized str value
+    private StringBuffer fTempBuffer = new StringBuffer(CHUNK_SIZE);  //holds unnormalized str value
     
 
 
@@ -718,9 +719,6 @@ public final class XMLValidator
    
     private int normalizeWhitespace( StringBuffer chars, boolean collapse) {
         int length = fTempBuffer.length(); 
-        if (fStringBuffer == null) {
-            fStringBuffer = new StringBuffer((CHUNK_SIZE>=length)?CHUNK_SIZE:length);
-        }
         fStringBuffer.setLength(0);
         boolean skipSpace = collapse;
         boolean sawNonWS = false;
@@ -771,9 +769,9 @@ public final class XMLValidator
        if (fFirstChunk) {
             fGrammar.getElementDecl(fCurrentElementIndex, fTempElementDecl);
             //REVISIT: add normalization according to datatypes 
-            DatatypeValidator dv = fTempElementDecl.datatypeValidator;
-            if (dv !=null) { 
-                fCollapse = true;
+            fCurrentDV = fTempElementDecl.datatypeValidator;
+            if (fCurrentDV !=null) { 
+                fWhiteSpace = fCurrentDV.getWSFacet();
             }
             fFirstChunk = false;
             if (DEBUG_NORMALIZATION) {
@@ -789,35 +787,37 @@ public final class XMLValidator
            }
         if (fBufferDatatype) {
             if (DEBUG_NORMALIZATION) {
-                System.out.println("Start schema datatype normalization");
+                System.out.println("Start schema datatype normalization <whiteSpace value=" +fWhiteSpace+">");
             }
-            if (fTempBuffer == null) {
-                fTempBuffer = new StringBuffer((CHUNK_SIZE>=length)?CHUNK_SIZE:length);
+            if (fWhiteSpace == DatatypeValidator.PRESERVE) { //do not normalize
+               fDatatypeBuffer.append(chars, offset, length);
             }
-            fTempBuffer.setLength(0);
-            fTempBuffer.append(chars, offset, length);
-            int spaces = normalizeWhitespace(fTempBuffer, fCollapse);
-            int nLength = fStringBuffer.length();
-            if (nLength > 0) {
-                if (spaces != 0 && fCollapse) { //some normalization was done
-                    if (!fFirstChunk && fTrailing && spaces !=2) {
-                        fStringBuffer.insert(0, ' ');
-                        nLength++;
+            else {
+                fTempBuffer.setLength(0);
+                fTempBuffer.append(chars, offset, length);
+                int spaces = normalizeWhitespace(fTempBuffer, (fWhiteSpace==DatatypeValidator.COLLAPSE));
+                int nLength = fStringBuffer.length();
+                if (nLength > 0) {
+                    if (spaces != 0 && 
+                        fWhiteSpace == DatatypeValidator.COLLAPSE) { 
+                        //some normalization was done
+                        if (!fFirstChunk && fTrailing && spaces !=2) {
+                            fStringBuffer.insert(0, ' ');
+                            nLength++;
+                        }
+                        //REVISIT: try to avoid..
+                        char[] newChars = new char[nLength]; 
+                        fStringBuffer.getChars(0, nLength , newChars, 0);
+                        chars = newChars;
+                        offset = 0;
+                        length = nLength;
                     }
-                    //REVISIT: try to avoid..
-                    char[] newChars = new char[nLength]; 
-                    fStringBuffer.getChars(0, nLength , newChars, 0);
-                    chars = newChars;
-                    offset = 0;
-                    length = nLength;
+                    fDatatypeBuffer.append(chars, offset, length);
+                    fDocumentHandler.characters(chars, offset, length);
                 }
-                fDatatypeBuffer.append(chars, offset, length);
-                fDocumentHandler.characters(chars, offset, length);
+                fTrailing = (spaces > 1)?true:false;
+                return;
             }
-            fTrailing = (spaces > 1)?true:false;
-
-           //REVISIT: do we need to call characters if there is nothing to pass? 
-            return;
         }
       }      
       fDocumentHandler.characters(chars, offset, length);
@@ -849,21 +849,31 @@ public final class XMLValidator
          if (fBufferDatatype) {
 
              if (NORMALIZATION_ON) {
-                 fCollapse = true; //REVISIT: must be updated according to datatypes
-                 String str =  fStringPool.toString(data);
-                 int length = str.length();
-                 if (fTempBuffer == null) {
-                     fTempBuffer = new StringBuffer((CHUNK_SIZE>=length)?CHUNK_SIZE:length);
-                 }
-                 fTempBuffer.setLength(0);
-                 fTempBuffer.append(str);
-                 int spaces = normalizeWhitespace(fTempBuffer, fCollapse);
-                 if (spaces >0) {
+                fGrammar.getElementDecl(fCurrentElementIndex, fTempElementDecl);
+                //REVISIT: add normalization according to datatypes 
+                fCurrentDV = fTempElementDecl.datatypeValidator;
+                if (fCurrentDV !=null) { 
+                    fWhiteSpace = fCurrentDV.getWSFacet();
+                }
+                if (fWhiteSpace == DatatypeValidator.PRESERVE) {  //no normalization done
+                    fDatatypeBuffer.append(fStringPool.toString(data));
+                }
+                else {
+                    String str =  fStringPool.toString(data);
+                    int length = str.length();
+                    if (fTempBuffer == null) {
+                        fTempBuffer = new StringBuffer((CHUNK_SIZE>=length)?CHUNK_SIZE:length);
+                    }
+                    fTempBuffer.setLength(0);
+                    fTempBuffer.append(str);
+                    int spaces = normalizeWhitespace(fTempBuffer, (fWhiteSpace == DatatypeValidator.COLLAPSE));
+                    if (spaces >0) {
                      //normalization was done.
-                     fStringPool.releaseString(data);
-                     data = fStringPool.addString(fStringBuffer.toString());
-                 }
-                 fDatatypeBuffer.append(fStringBuffer.toString());
+                        fStringPool.releaseString(data);
+                        data = fStringPool.addString(fStringBuffer.toString());
+                    }
+                    fDatatypeBuffer.append(fStringBuffer.toString());
+                }
              }
              else {
                  fDatatypeBuffer.append(fStringPool.toString(data));
@@ -3229,12 +3239,19 @@ public final class XMLValidator
                                                       }
                                                       if (attDecl.type == XMLAttributeDecl.TYPE_IDREF ) {
                                                          attDV.validate(value, this.fStoreIDRef );
-                                                      } else {
+                                                      }
+                                                       else {
                                                           if (NORMALIZATION_ON) {
-                                                              //REVISIT: add check if CDATA..
-                                                              int normalizedValue = fStringPool.addString(value);
-                                                              attrList.setAttValue(index,normalizedValue );
-                                                              fTempAttDecl.datatypeValidator.validate(value, null );
+                                                              fWhiteSpace = attDV.getWSFacet();
+                                                              if (fWhiteSpace == DatatypeValidator.REPLACE) { //CDATA
+                                                                  attDV.validate(unTrimValue, null );
+                                                              }
+                                                              else { // normalize 
+                                                                  int normalizedValue = fStringPool.addString(value);
+                                                                  attrList.setAttValue(index,normalizedValue );
+                                                                  attDV.validate(value, null );
+                                                              }
+                                                              
                                                           }
                                                           else {
                                                               attDV.validate(unTrimValue, null );
@@ -3292,12 +3309,18 @@ public final class XMLValidator
                                        this.fStoreIDRef.setDatatypeObject( fValID.validate( value, null ) );
                                     } else if (fTempAttDecl.type == XMLAttributeDecl.TYPE_IDREF ) {
                                        fTempAttDecl.datatypeValidator.validate(value, this.fStoreIDRef );
-                                    } else {
+                                    }
+                                    else {
                                         if (NORMALIZATION_ON) {
-                                              //REVISIT: add check if CDATA..
-                                              int normalizedValue = fStringPool.addString(value);
-                                              attrList.setAttValue(index,normalizedValue );
-                                              fTempAttDecl.datatypeValidator.validate(value, null );
+                                            fWhiteSpace = fTempAttDecl.datatypeValidator.getWSFacet();
+                                            if (fWhiteSpace == DatatypeValidator.REPLACE) { //CDATA
+                                                   fTempAttDecl.datatypeValidator.validate(unTrimValue, null );
+                                            }
+                                            else { // normalize 
+                                                  int normalizedValue = fStringPool.addString(value);
+                                                  attrList.setAttValue(index,normalizedValue );
+                                                  fTempAttDecl.datatypeValidator.validate(value, null );
+                                            }
                                         }
                                         else {
                                               fTempAttDecl.datatypeValidator.validate(unTrimValue, null );
@@ -3765,24 +3788,23 @@ public final class XMLValidator
                                        XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
          } else {
             try {
-
-               fGrammar.getElementDecl(elementIndex, fTempElementDecl);
-
-               DatatypeValidator dv = fTempElementDecl.datatypeValidator;
-
-               // If there is xsi:type validator, substitute it.
+                if (!NORMALIZATION_ON || fCurrentDV == null) { //no character data   
+                    fGrammar.getElementDecl(elementIndex, fTempElementDecl);
+                    fCurrentDV = fTempElementDecl.datatypeValidator;
+                }
+                
+                // If there is xsi:type validator, substitute it.
                if ( fXsiTypeValidator != null ) {
-                  dv = fXsiTypeValidator;
+                  fCurrentDV = fXsiTypeValidator;
                   fXsiTypeValidator = null;
                }
-
-               if (dv == null) {
+               if (fCurrentDV == null) {
                   System.out.println("Internal Error: this element have a simpletype "+
                                      "but no datatypevalidator was found, element "+fTempElementDecl.name
                                      +",locapart: "+fStringPool.toString(fTempElementDecl.name.localpart));
                } else {
-                  dv.validate(fDatatypeBuffer.toString(), null);
-                  fCollapse = false;
+                  fCurrentDV.validate(fDatatypeBuffer.toString(), null);
+                  fCurrentDV = null;
                   fFirstChunk= true;
                }
 

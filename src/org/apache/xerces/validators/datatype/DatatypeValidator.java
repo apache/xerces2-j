@@ -85,6 +85,12 @@ public interface DatatypeValidator {
     public static final int FACET_ENCODING     = 1<<11;
     public static final int FACET_DURATION     = 1<<12;
     public static final int FACET_PERIOD       = 1<<13;
+    public static final int FACET_WHITESPACE   = 1<<14;
+
+    //2.4.2.6 whiteSpace - Datatypes 
+    public static final short PRESERVE = 0;
+    public static final short REPLACE  = 1;
+    public static final short COLLAPSE = 2;
 
 
 
@@ -106,7 +112,7 @@ public interface DatatypeValidator {
      */
     public Object validate(String content, Object state ) throws InvalidDatatypeValueException;
 
-
+    public short getWSFacet ();
     /**
      * returns the datatype facet if any is set as a
      * Hashtable
