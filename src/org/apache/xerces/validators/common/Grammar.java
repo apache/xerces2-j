@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -109,7 +109,6 @@ implements XMLContentSpec.Provider {
     private int fElementDeclType[][] = new int[INITIAL_CHUNK_COUNT][];
     private DatatypeValidator fElementDeclDatatypeValidator[][] = new DatatypeValidator[INITIAL_CHUNK_COUNT][];
     private int fElementDeclContentSpecIndex[][] = new int[INITIAL_CHUNK_COUNT][];
-    private XMLContentModel fElementDeclContentModelValidator[][] = new XMLContentModel[INITIAL_CHUNK_COUNT][];
     private int fElementDeclFirstAttributeDeclIndex[][] = new int[INITIAL_CHUNK_COUNT][];
     private int fElementDeclLastAttributeDeclIndex[][] = new int[INITIAL_CHUNK_COUNT][];
     private Vector fElementDeclUnique[][] = new Vector[INITIAL_CHUNK_COUNT][];
@@ -122,6 +121,7 @@ implements XMLContentSpec.Provider {
     private int fContentSpecType[][] = new int[INITIAL_CHUNK_COUNT][];
     private int fContentSpecValue[][] = new int[INITIAL_CHUNK_COUNT][];
     private int fContentSpecOtherValue[][] = new int[INITIAL_CHUNK_COUNT][];
+    private XMLContentModel fContentSpecValidator[][] = new XMLContentModel[INITIAL_CHUNK_COUNT][];
 
     // attribute decl tables
 
@@ -157,14 +157,14 @@ implements XMLContentSpec.Provider {
         }
         return -1;
     }
-    
+
     public int getElementDeclIndex(int uriIndex, int localpartIndex, int scopeIndex) {
         if ( localpartIndex > -1 && scopeIndex >-2 ) {
             return fElementNameAndScopeToElementDeclIndexMapping.get(uriIndex, localpartIndex, scopeIndex);
         }
         return -1;
     }
-    
+
     public int getElementDeclIndex(QName element, int scopeIndex) {
         if ( element.localpart > -1 && scopeIndex >-2 ) {
             return fElementNameAndScopeToElementDeclIndexMapping.get(element.uri, element.localpart, scopeIndex);
@@ -189,8 +189,8 @@ implements XMLContentSpec.Provider {
             elementDecl.type                    = fElementDeclType[chunk][index] & LIST_MASK;
             elementDecl.list = (fElementDeclType[chunk][index] & LIST_FLAG) != 0;
         }
-        elementDecl.datatypeValidator       = fElementDeclDatatypeValidator[chunk][index];       
-        elementDecl.contentSpecIndex        = fElementDeclContentSpecIndex[chunk][index];        
+        elementDecl.datatypeValidator       = fElementDeclDatatypeValidator[chunk][index];
+        elementDecl.contentSpecIndex        = fElementDeclContentSpecIndex[chunk][index];
 
         // copy identity constraints
         elementDecl.unique.removeAllElements();
@@ -242,24 +242,24 @@ implements XMLContentSpec.Provider {
         return true;
     }
 
-    protected void clearElementContentModel(int elementDeclIndex) {
-        if (elementDeclIndex < 0 || elementDeclIndex >= fElementDeclCount)
+    protected void clearContentModel(int contentSpecIndex) {
+        if (contentSpecIndex < 0 || contentSpecIndex >= fContentSpecCount)
             return;
 
-        int chunk = elementDeclIndex >> CHUNK_SHIFT;
-        int index = elementDeclIndex & CHUNK_MASK;
+        int chunk = contentSpecIndex >> CHUNK_SHIFT;
+        int index = contentSpecIndex & CHUNK_MASK;
 
-        fElementDeclContentModelValidator[chunk][index] = null;
+        fContentSpecValidator[chunk][index] = null;
     }
 
-    protected boolean existElementContentModel(int elementDeclIndex) {
-        if (elementDeclIndex < 0 || elementDeclIndex >= fElementDeclCount)
+    protected boolean existContentModel(int contentSpecIndex) {
+        if (contentSpecIndex < 0 || contentSpecIndex >= fContentSpecCount)
             return false;
 
-        int chunk = elementDeclIndex >> CHUNK_SHIFT;
-        int index = elementDeclIndex & CHUNK_MASK;
+        int chunk = contentSpecIndex >> CHUNK_SHIFT;
+        int index = contentSpecIndex & CHUNK_MASK;
 
-        return (fElementDeclContentModelValidator[chunk][index] != null);
+        return (fContentSpecValidator[chunk][index] != null);
     }
 
     public XMLContentModel getElementContentModel(int elementDeclIndex, SubstitutionGroupComparator comparator) throws CMException {
@@ -270,41 +270,47 @@ implements XMLContentSpec.Provider {
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex & CHUNK_MASK;
 
-        XMLContentModel contentModel    =  fElementDeclContentModelValidator[chunk][index];
+        int contentType = fElementDeclType[chunk][index];
+
+        return getContentModel(fElementDeclContentSpecIndex[chunk][index],
+                               contentType, comparator);
+    }
+
+    public XMLContentModel getContentModel(int contentSpecIndex, int contentType, SubstitutionGroupComparator comparator) throws CMException {
+        if (contentSpecIndex < 0 || contentSpecIndex >= fContentSpecCount)
+            return null;
+
+        int chunk = contentSpecIndex >> CHUNK_SHIFT;
+        int index = contentSpecIndex & CHUNK_MASK;
+
+        XMLContentModel contentModel = fContentSpecValidator[chunk][index];
 
         // If we have one, just return that. Otherwise, gotta create one
         if (contentModel != null)
             return contentModel;
 
-        int contentType = fElementDeclType[chunk][index];
         if (contentType == XMLElementDecl.TYPE_SIMPLE) {
             return null;
         }
 
         // Get the type of content this element has
-
-        int contentSpecIndex = convertContentSpecTree(fElementDeclContentSpecIndex[chunk][index]); 
-
-        /***
-        if ( contentSpecIndex == -1 )
-            return null;
-        /***/
+        int expendedIndex = convertContentSpecTree(contentSpecIndex);
 
         XMLContentSpec  contentSpec = new XMLContentSpec();
-        getContentSpec( contentSpecIndex, contentSpec );
-        
+        getContentSpec( expendedIndex, contentSpec );
+
         // And create the content model according to the spec type
-        
+
         if ( contentType == XMLElementDecl.TYPE_MIXED_SIMPLE ) {
               //
               //  just create a mixed content model object. This type of
               //  content model is optimized for simple mixed content validation.
               //
 
-              Vector vQName = new Vector(); 
+              Vector vQName = new Vector();
               try {
                   ChildrenList children = new ChildrenList();
-                  contentSpecTree(contentSpecIndex, contentSpec, children);
+                  contentSpecTree(expendedIndex, contentSpec, children);
                   contentModel = new MixedContentModel(children.qname,
                                                        children.type,
                                                        0, children.length, false, isDTD());
@@ -314,18 +320,18 @@ implements XMLContentSpec.Provider {
         }
         else if (contentType == XMLElementDecl.TYPE_MIXED_COMPLEX) {
               //
-              // For Schema, we need a more complex model.   Create a child model as 
-              // per the element-only case, unless there are actually no children in 
-              // the model.  If that's the case, we can use the Mixed Content Model for 
-              // DTDs.  
+              // For Schema, we need a more complex model.   Create a child model as
+              // per the element-only case, unless there are actually no children in
+              // the model.  If that's the case, we can use the Mixed Content Model for
+              // DTDs.
               try {
-                contentModel = createChildModel(contentSpecIndex, true);
+                contentModel = createChildModel(expendedIndex, true);
               }
               catch (CMException ex) {
                 ex.printStackTrace();
               }
         }
-            
+
 
         else if (contentType == XMLElementDecl.TYPE_CHILDREN) {
             //  This method will create an optimal model for the complexity
@@ -335,7 +341,7 @@ implements XMLContentSpec.Provider {
             //  will create a DFAContentModel object.
             //
             try {
-            contentModel = createChildModel(contentSpecIndex, false);
+            contentModel = createChildModel(expendedIndex, false);
             }catch( CMException ex ) {
                  ex.printStackTrace();
             }
@@ -345,7 +351,7 @@ implements XMLContentSpec.Provider {
 
         // Add the new model to the content model for this element
 
-        fElementDeclContentModelValidator[chunk][index] = contentModel;
+        fContentSpecValidator[chunk][index] = contentModel;
 
         //build it  ..... in XMLValidator
         if (contentModel != null)
@@ -353,8 +359,6 @@ implements XMLContentSpec.Provider {
 
         return contentModel;
     }
-
-
 
     public boolean getAttributeDecl(int attributeDeclIndex, XMLAttributeDecl attributeDecl) {
         if (attributeDeclIndex < 0 || attributeDeclIndex >= fAttributeDeclCount) {
@@ -366,7 +370,7 @@ implements XMLContentSpec.Provider {
         attributeDecl.name.setValues(fAttributeDeclName[chunk][index]);
 
         if (fAttributeDeclType[chunk][index] == -1) {
-            
+
             attributeDecl.type = -1;
             attributeDecl.list = false;
         }
@@ -389,7 +393,7 @@ implements XMLContentSpec.Provider {
         fGrammarDocument = grammarDocument;
     }
 
-    // SchemaGrammar overrides this and does a conversion 
+    // SchemaGrammar overrides this and does a conversion
     protected int convertContentSpecTree(int index) {
         return index;
     }
@@ -399,11 +403,10 @@ implements XMLContentSpec.Provider {
         int chunk = fElementDeclCount >> CHUNK_SHIFT;
         int index = fElementDeclCount & CHUNK_MASK;
         ensureElementDeclCapacity(chunk);
-        fElementDeclName[chunk][index]               = new QName(); 
-        fElementDeclType[chunk][index]                    = -1;  
+        fElementDeclName[chunk][index]               = new QName();
+        fElementDeclType[chunk][index]                    = -1;
         fElementDeclDatatypeValidator[chunk][index]       = null;
         fElementDeclContentSpecIndex[chunk][index] = -1;
-        fElementDeclContentModelValidator[chunk][index] = null;
         fElementDeclFirstAttributeDeclIndex[chunk][index] = -1;
         fElementDeclLastAttributeDeclIndex[chunk][index]  = -1;
         return fElementDeclCount++;
@@ -463,26 +466,26 @@ implements XMLContentSpec.Provider {
             }
         }
 
-        // add the mapping information to the 
+        // add the mapping information to the
         putElementNameMapping(elementDecl.name,
-                              elementDecl.enclosingScope, 
+                              elementDecl.enclosingScope,
                               elementDeclIndex);
     }
 
     protected void putElementNameMapping(QName name, int scope,
                                          int elementDeclIndex) {
-        fElementNameAndScopeToElementDeclIndexMapping.put(name.uri, 
-                                                          name.localpart, 
+        fElementNameAndScopeToElementDeclIndexMapping.put(name.uri,
+                                                          name.localpart,
                                                           scope,
                                                           elementDeclIndex);
     }
 
     protected void setFirstAttributeDeclIndex(int elementDeclIndex, int newFirstAttrIndex){
-        
+
         if (elementDeclIndex < 0 || elementDeclIndex >= fElementDeclCount) {
             return;
         }
-    
+
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex &  CHUNK_MASK;
 
@@ -498,6 +501,7 @@ implements XMLContentSpec.Provider {
         fContentSpecType[chunk][index]       = -1;
         fContentSpecValue[chunk][index]      = -1;
         fContentSpecOtherValue[chunk][index] = -1;
+        fContentSpecValidator[chunk][index] = null;
 
         return fContentSpecCount++;
     }
@@ -530,7 +534,7 @@ implements XMLContentSpec.Provider {
     protected void setAttributeDecl(int elementDeclIndex, int attributeDeclIndex, XMLAttributeDecl attributeDecl) {
 
         int attrChunk = attributeDeclIndex >> CHUNK_SHIFT;
-        int attrIndex = attributeDeclIndex &  CHUNK_MASK; 
+        int attrIndex = attributeDeclIndex &  CHUNK_MASK;
 
         fAttributeDeclName[attrChunk][attrIndex].setValues(attributeDecl.name);
 
@@ -685,7 +689,7 @@ implements XMLContentSpec.Provider {
 
             fQName1.setValues(-1, contentSpec.value, contentSpec.value, contentSpec.otherValue);
             return new SimpleContentModel(fQName1, null, contentSpec.type, isDTD());
-        } 
+        }
         else if ((contentSpec.type == XMLContentSpec.CONTENTSPECNODE_CHOICE)
                    ||  (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_SEQ)) {
             //
@@ -708,7 +712,7 @@ implements XMLContentSpec.Provider {
                 fQName2.setValues(-1, contentSpecRight.value, contentSpecRight.value, contentSpecRight.otherValue);
                 return new SimpleContentModel(fQName1, fQName2, contentSpec.type, isDTD());
             }
-        } 
+        }
         else if ((contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE)
                    ||  (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE)
                    ||  (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE)) {
@@ -742,7 +746,7 @@ implements XMLContentSpec.Provider {
 
                 return allContent;
             }
-        } 
+        }
         else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ALL) {
             // All of the nodes under an ALL must be additional ALL nodes and
             // ELEMENTs (or ELEMENTs under ZERO_OR_ONE nodes.)
@@ -761,7 +765,7 @@ implements XMLContentSpec.Provider {
         //  for this element. So we create a DFAContentModel object. He
         //  encapsulates all of the work to create the DFA.
         //
-        
+
         //int leafCount = countLeaves(contentSpecIndex);
         fLeafCount = 0;
         CMNode cmn    = buildSyntaxTree(contentSpecIndex, contentSpec);
@@ -784,16 +788,16 @@ implements XMLContentSpec.Provider {
         if (cmn instanceof CMUniOp) {
             printSyntaxTree( ((CMUniOp)cmn).getChild());
         }
-        
+
     }
 
-    
+
     private int countLeaves(int contentSpecIndex) {
         return countLeaves(contentSpecIndex, new XMLContentSpec());
     }
-    
+
     private int countLeaves(int contentSpecIndex, XMLContentSpec contentSpec) {
-        
+
         if (contentSpecIndex == -1) {
             return 0;
         }
@@ -843,7 +847,7 @@ implements XMLContentSpec.Provider {
             //
             fQName1.setValues(-1, contentSpec.value, contentSpec.value, contentSpec.otherValue);
             nodeRet = new CMLeaf(fQName1, fLeafCount++);
-        } 
+        }
         else {
             //
             //  It's not a leaf, so we have to recurse its left and maybe right
@@ -942,14 +946,14 @@ implements XMLContentSpec.Provider {
     /**
      * Build a vector of valid QNames from Content Spec
      * table.
-     * 
+     *
      * @param contentSpecIndex
      *               Content Spec index
      * @param vectorQName
      *               Array of QName
      * @exception CMException
      */
-    private void contentSpecTree(int contentSpecIndex, 
+    private void contentSpecTree(int contentSpecIndex,
                                 XMLContentSpec contentSpec,
                                 ChildrenList children) throws CMException {
 
@@ -989,7 +993,7 @@ implements XMLContentSpec.Provider {
             contentSpecTree(leftNode, contentSpec, children);
             contentSpecTree(rightNode, contentSpec, children);
             return;
-        } 
+        }
 
         if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE ||
             contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE ||
@@ -1014,7 +1018,6 @@ implements XMLContentSpec.Provider {
             fElementDeclType = resize(fElementDeclType, fElementDeclType.length * 2);
             fElementDeclDatatypeValidator = resize(fElementDeclDatatypeValidator, fElementDeclDatatypeValidator.length * 2);
             fElementDeclContentSpecIndex = resize(fElementDeclContentSpecIndex, fElementDeclContentSpecIndex.length * 2);
-            fElementDeclContentModelValidator = resize(fElementDeclContentModelValidator, fElementDeclContentModelValidator.length * 2);
             fElementDeclFirstAttributeDeclIndex = resize(fElementDeclFirstAttributeDeclIndex, fElementDeclFirstAttributeDeclIndex.length * 2);
             fElementDeclLastAttributeDeclIndex = resize(fElementDeclLastAttributeDeclIndex, fElementDeclLastAttributeDeclIndex.length * 2);
             fElementDeclUnique = resize(fElementDeclUnique, fElementDeclUnique.length * 2);
@@ -1027,7 +1030,6 @@ implements XMLContentSpec.Provider {
         fElementDeclType[chunk] = new int[CHUNK_SIZE];
         fElementDeclDatatypeValidator[chunk] = new DatatypeValidator[CHUNK_SIZE];
         fElementDeclContentSpecIndex[chunk] = new int[CHUNK_SIZE];
-        fElementDeclContentModelValidator[chunk] = new XMLContentModel[CHUNK_SIZE];
         fElementDeclFirstAttributeDeclIndex[chunk] = new int[CHUNK_SIZE];
         fElementDeclLastAttributeDeclIndex[chunk] = new int[CHUNK_SIZE];
         fElementDeclUnique[chunk] = new Vector[CHUNK_SIZE];
@@ -1043,12 +1045,14 @@ implements XMLContentSpec.Provider {
             fContentSpecType = resize(fContentSpecType, fContentSpecType.length * 2);
             fContentSpecValue = resize(fContentSpecValue, fContentSpecValue.length * 2);
             fContentSpecOtherValue = resize(fContentSpecOtherValue, fContentSpecOtherValue.length * 2);
+            fContentSpecValidator = resize(fContentSpecValidator, fContentSpecValidator.length * 2);
         } catch (NullPointerException ex) {
             // ignore
         }
         fContentSpecType[chunk] = new int[CHUNK_SIZE];
         fContentSpecValue[chunk] = new int[CHUNK_SIZE];
         fContentSpecOtherValue[chunk] = new int[CHUNK_SIZE];
+        fContentSpecValidator[chunk] = new XMLContentModel[CHUNK_SIZE];
         return true;
     }
 

@@ -501,13 +501,15 @@ public class TraverseSchema implements
                            GrammarResolver grammarResolver,
                            XMLErrorReporter errorReporter,
                            String schemaURL,
-                   EntityResolver entityResolver,
-                           boolean fullChecking
+                           EntityResolver entityResolver,
+                           boolean fullChecking,
+                           GeneralAttrCheck generalAttrCheck
                            ) throws Exception {
         fErrorReporter = errorReporter;
         fCurrentSchemaURL = schemaURL;
         fFullConstraintChecking = fullChecking;
-    fEntityResolver = entityResolver;
+        fEntityResolver = entityResolver;
+        fGeneralAttrCheck = generalAttrCheck;
         doTraverseSchema(root, stringPool, schemaGrammar, grammarResolver);
     }
 
@@ -516,20 +518,24 @@ public class TraverseSchema implements
                            GrammarResolver grammarResolver,
                            XMLErrorReporter errorReporter,
                            String schemaURL,
-                           boolean fullChecking
+                           boolean fullChecking,
+                           GeneralAttrCheck generalAttrCheck
                            ) throws Exception {
         fErrorReporter = errorReporter;
         fCurrentSchemaURL = schemaURL;
         fFullConstraintChecking = fullChecking;
+        fGeneralAttrCheck = generalAttrCheck;
         doTraverseSchema(root, stringPool, schemaGrammar, grammarResolver);
     }
 
     public  TraverseSchema(Element root, StringPool stringPool,
                            SchemaGrammar schemaGrammar,
                            GrammarResolver grammarResolver,
-                           boolean fullChecking
+                           boolean fullChecking,
+                           GeneralAttrCheck generalAttrCheck
                            ) throws Exception {
         fFullConstraintChecking = fullChecking;
+        fGeneralAttrCheck = generalAttrCheck;
         doTraverseSchema(root, stringPool, schemaGrammar, grammarResolver);
     }
 
@@ -553,8 +559,6 @@ public class TraverseSchema implements
         //Expand to registry type to contain all primitive datatype
         fDatatypeRegistry.expandRegistryToFullSchemaSet();
 
-        // General Attribute Checking
-        fGeneralAttrCheck = new GeneralAttrCheck(fErrorReporter);
         fXsiURI = fStringPool.addSymbol(SchemaSymbols.URI_XSI);
 
         if (root == null) {
@@ -749,10 +753,6 @@ public class TraverseSchema implements
                 traverseIdentityRefConstraintsFor(elementIndex, identityConstraints);
             }
         }
-
-        // General Attribute Checking
-        fGeneralAttrCheck = null;
-
     } // traverseSchema(Element)
 
 
@@ -1201,7 +1201,7 @@ public class TraverseSchema implements
                 // we have yet to be renamed.
                 try {
                     Integer i = (Integer)fGroupNameRegistry.get(fTargetNSURIString + ","+dName);
-                    // if that succeeded then we're done; were ref'd here in 
+                    // if that succeeded then we're done; were ref'd here in
                     // an include most likely.
                     continue;
                 } catch (ClassCastException c) {
@@ -1936,7 +1936,7 @@ public class TraverseSchema implements
                                           +targetNSURI+"' from what is declared '"+namespaceString+"'.");
              }
              else {
-                 TraverseSchema impSchema = new TraverseSchema(root, fStringPool, importedGrammar, fGrammarResolver, fErrorReporter, location, fEntityResolver, fFullConstraintChecking);
+                 TraverseSchema impSchema = new TraverseSchema(root, fStringPool, importedGrammar, fGrammarResolver, fErrorReporter, location, fEntityResolver, fFullConstraintChecking, fGeneralAttrCheck);
                  Enumeration ics = impSchema.fIdentityConstraints.keys();
                  while(ics.hasMoreElements()) {
                     Object icsKey = ics.nextElement();
@@ -3277,7 +3277,7 @@ public class TraverseSchema implements
                                " derivedBy=" + typeInfo.derivedBy +
                              " contentType=" + typeInfo.contentType +
                                " contentSpecHandle=" + typeInfo.contentSpecHandle +
-                               " datatypeValidator=" + typeInfo.datatypeValidator + 
+                               " datatypeValidator=" + typeInfo.datatypeValidator +
                                " scopeDefined=" + typeInfo.scopeDefined);
 
         fComplexTypeRegistry.put(typeName,typeInfo);
@@ -4467,14 +4467,14 @@ public class TraverseSchema implements
                  }
                  else {
                    // update the element decl with info from the type
-                
+
                    fSchemaGrammar.getElementDecl(elementIndex, fTempElementDecl);
                    fTempElementDecl.type = typeInfo.contentType;
                    fTempElementDecl.contentSpecIndex = typeInfo.contentSpecHandle;
-                   fTempElementDecl.datatypeValidator = typeInfo.datatypeValidator; 
+                   fTempElementDecl.datatypeValidator = typeInfo.datatypeValidator;
                    fSchemaGrammar.setElementDecl(elementIndex, fTempElementDecl);
 
-                   fSchemaGrammar.setFirstAttributeDeclIndex(elementIndex, 
+                   fSchemaGrammar.setFirstAttributeDeclIndex(elementIndex,
                         typeInfo.attlistHead);
                    fSchemaGrammar.setElementComplexTypeInfo(elementIndex,typeInfo);
 
@@ -6507,7 +6507,7 @@ throws Exception {
                         int eltIndex = fSchemaGrammar.addElementDecl(tempQName,
                               fCurrentScope, fCurrentScope, -1, -1, -1, null);
                         fElementRecurseComplex.addElement(new ElementInfo(eltIndex,anonTypeName));
-                        return tempQName; 
+                        return tempQName;
 
                     }
                     else {
@@ -7001,7 +7001,7 @@ throws Exception {
             // REVISIT: localize
             reportGenericSchemaError("The content of an identity constraint must match (annotation?, selector, field+)");
             return;
-        } 
+        }
         sElem = checkContent( icElem, sElem, false);
         // General Attribute Checking
         attrValues = fGeneralAttrCheck.checkAttributes(sElem, scope);

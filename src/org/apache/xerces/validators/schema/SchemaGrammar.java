@@ -347,26 +347,26 @@ public class SchemaGrammar extends Grammar{
 
     // Unique Particle Attribution
     // overrides same method from Grammar, to do UPA checking
-    public XMLContentModel getElementContentModel(int elementDeclIndex, SubstitutionGroupComparator comparator) throws CMException {
+    public XMLContentModel getContentModel(int contentSpecIndex, int contentType, SubstitutionGroupComparator comparator) throws CMException {
         // if the content model is already there, no UPA checking is necessary
-        if (existElementContentModel(elementDeclIndex))
-            return super.getElementContentModel(elementDeclIndex, comparator);
+        if (existContentModel(contentSpecIndex))
+            return super.getContentModel(contentSpecIndex, contentType, comparator);
 
         // if it's not there, we create a new one, do UPA checking,
         // then throw it away. because UPA checking might result in NFA,
         // but we need DFA for further checking
         if (checkUniqueParticleAttribution) {
             checkingUPA = true;
-            XMLContentModel contentModel = super.getElementContentModel(elementDeclIndex, comparator);
+            XMLContentModel contentModel = super.getContentModel(contentSpecIndex, contentType, comparator);
             checkingUPA = false;
 
             if (contentModel != null) {
                 contentModel.checkUniqueParticleAttribution(this);
-                clearElementContentModel(elementDeclIndex);
+                clearContentModel(contentSpecIndex);
             }
         }
 
-        return super.getElementContentModel(elementDeclIndex, comparator);
+        return super.getContentModel(contentSpecIndex, contentType, comparator);
     }
 
     // Unique Particle Attribution

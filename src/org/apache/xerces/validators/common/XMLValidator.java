@@ -96,6 +96,7 @@ import java.util.Vector;
 
 import org.apache.xerces.validators.dtd.DTDGrammar;
 
+import org.apache.xerces.validators.schema.GeneralAttrCheck;
 import org.apache.xerces.validators.schema.SubstitutionGroupComparator;
 import org.apache.xerces.validators.schema.SchemaGrammar;
 import org.apache.xerces.validators.schema.SchemaMessageProvider;
@@ -2694,16 +2695,15 @@ public final class XMLValidator
                grammar = new SchemaGrammar();
                grammar.setGrammarDocument(document);
 
-                // Since we've just constructed a schema grammar, we should make sure we know what we've done.
-                fGrammarIsSchemaGrammar = true;
-                fGrammarIsDTDGrammar = false;
+               // Since we've just constructed a schema grammar, we should make sure we know what we've done.
+               fGrammarIsSchemaGrammar = true;
+               fGrammarIsDTDGrammar = false;
 
-                //At this point we should expand the registry table.
-                // pass parser's entity resolver (local Resolver), which also has reference to user's
-                // entity resolver, and also can fall-back to entityhandler's expandSystemId()
-               tst = new TraverseSchema( root, fStringPool, (SchemaGrammar)grammar, fGrammarResolver, fErrorReporter, source.getSystemId(), currentER, getSchemaFullCheckingEnabled());
-               this.fIdDefs.clear();
-               this.fIdREFDefs.clear();
+               //At this point we should expand the registry table.
+               // pass parser's entity resolver (local Resolver), which also has reference to user's
+               // entity resolver, and also can fall-back to entityhandler's expandSystemId()
+               GeneralAttrCheck generalAttrCheck = new GeneralAttrCheck(fErrorReporter);
+               tst = new TraverseSchema( root, fStringPool, (SchemaGrammar)grammar, fGrammarResolver, fErrorReporter, source.getSystemId(), currentER, getSchemaFullCheckingEnabled(), generalAttrCheck);
 
                //allowing xsi:schemaLocation to appear on any element
                String targetNS =   root.getAttribute("targetNamespace");
@@ -2711,6 +2711,50 @@ public final class XMLValidator
 
                fGrammarResolver.putGrammar(targetNS, grammar);
                fGrammar = (SchemaGrammar)grammar;
+
+               // when in full checking, we need to do UPA stuff here
+               // by constructing all content models
+               if (fSchemaValidationFullChecking) {
+                  try {
+                    ElementWildcard.setErrReporter(fStringPool, fErrorReporter);
+                    // get all grammar URIs
+                    Enumeration grammarURIs = fGrammarResolver.nameSpaceKeys();
+                    String grammarURI;
+                    Grammar gGrammar;
+                    SchemaGrammar sGrammar;
+                    // for each grammar
+                    while (grammarURIs.hasMoreElements()) {
+                        grammarURI = (String)grammarURIs.nextElement();
+                        gGrammar = fGrammarResolver.getGrammar(grammarURI);
+                        if (!(gGrammar instanceof SchemaGrammar))
+                            continue;
+                        sGrammar = (SchemaGrammar)gGrammar;
+
+                        // get all registered complex type in this grammar
+                        Hashtable complexTypeRegistry = sGrammar.getComplexTypeRegistry();
+                        int count = complexTypeRegistry.size();
+                        Enumeration enum = complexTypeRegistry.elements();
+
+                        TraverseSchema.ComplexTypeInfo typeInfo;
+                        while (enum.hasMoreElements ()) {
+                            typeInfo = (TraverseSchema.ComplexTypeInfo)enum.nextElement();
+                            // for each type, we construct a corresponding content model
+                            sGrammar.getContentModel(typeInfo.contentSpecHandle,
+                                                     typeInfo.contentType,
+                                                     fSGComparator);
+                        }
+                    }
+                  } catch (CMException excToCatch) {
+                     // REVISIT - Translate caught error to the protected error handler interface
+                     int majorCode = excToCatch.getErrorCode();
+                     fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                                ImplementationMessages.XERCES_IMPLEMENTATION_DOMAIN,
+                                                majorCode,
+                                                0,
+                                                null,
+                                                XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
+                  }
+               }
             }
          } catch (Exception e) {
             e.printStackTrace(System.err);
@@ -3214,7 +3258,7 @@ public final class XMLValidator
                                     "Type : "+uri+","+localpart
                                     +" does not derive from the type of element " + fStringPool.toString(tempElementDecl.name.localpart));
                             }
-                        } else { 
+                        } else {
                             // if we have an attribute but xsi:type's type is simple, we have a problem...
                             if (tempVal != null && fXsiTypeValidator != null &&
                                     (fGrammar.getFirstAttributeDeclIndex(elementIndex) != -1)) {
