@@ -598,7 +598,7 @@ public abstract class BaseMarkupSerializer
             _preRoot.addElement( buffer.toString() );
         } else {
             _printer.indent();
-            printText( buffer.toString(), false, false );
+            printText( buffer.toString(), false, true );
             _printer.unindent();
         }
     }
