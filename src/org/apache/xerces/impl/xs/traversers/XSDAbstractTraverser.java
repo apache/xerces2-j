@@ -200,10 +200,8 @@ abstract class XSDAbstractTraverser {
             contentBuffer.append(contents.substring(0,annotationTokenEnd));
             contentBuffer.append(localStrBuffer.toString());
             contentBuffer.append(contents.substring(annotationTokenEnd, contents.length()));
-            System.err.println("annotation is\n"+contentBuffer);
             return new XSAnnotationImpl(contentBuffer.toString(), grammar);
         } else {
-            System.err.println("annotation is\n"+contents);
             return new XSAnnotationImpl(contents, grammar);
         } 
 
