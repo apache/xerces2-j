@@ -57,19 +57,18 @@
 
 package org.apache.xerces.impl;
 
-import org.apache.xerces.xni.XMLLocator;
-import org.apache.xerces.xni.XMLString;
-import org.apache.xerces.xni.QName;
+import java.io.EOFException;
+import java.io.IOException;
+import java.util.Locale;
 
-import org.apache.xerces.util.XMLChar;
-import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.impl.io.UCSReader;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
+import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.XMLStringBuffer;
-
-import java.io.IOException;
-import java.io.EOFException;
-import java.util.Locale;
+import org.apache.xerces.xni.QName;
+import org.apache.xerces.xni.XMLLocator;
+import org.apache.xerces.xni.XMLString;
 
 /**
  * Implements the entity scanner methods.

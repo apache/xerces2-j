@@ -57,8 +57,8 @@
 
 package org.apache.xerces.impl;
 
-import  org.apache.xerces.xni.XMLResourceIdentifier;
-import  org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.XMLResourceIdentifier;
+import org.apache.xerces.xni.XNIException;
 
 /**
  * The entity handler interface defines methods to report information

@@ -57,14 +57,10 @@
 
 package org.apache.xerces.parsers;
 
-import java.io.InputStream;
 import java.io.IOException;
-import java.io.Reader;
-import java.util.Locale;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.xni.XNIException;
-import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 

@@ -59,23 +59,17 @@ package org.apache.xerces.impl;
 
 import java.io.IOException;
 
-import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.dtd.XMLDTDValidatorFilter;
-import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.util.XMLSymbols;
-
-import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.util.XMLAttributesImpl;
-
-import org.apache.xerces.xni.QName;
+import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.NamespaceContext;
-import org.apache.xerces.xni.XMLString;
-import org.apache.xerces.xni.XNIException;
-import org.apache.xerces.xni.parser.XMLDocumentSource;
+import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLDocumentHandler;
-import org.apache.xerces.xni.parser.XMLDocumentFilter;
+import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLDocumentSource;
 
 /**
  * The scanner acts as the source for the document

@@ -57,7 +57,6 @@
 
 package org.apache.xerces.impl.xs;
 
-import org.apache.xerces.util.SymbolTable;
 
 /**
  * Collection of symbols used to parse a Schema Grammar.

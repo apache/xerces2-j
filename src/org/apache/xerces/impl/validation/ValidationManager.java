@@ -57,8 +57,6 @@
 
 package org.apache.xerces.impl.validation;
 
-import org.apache.xerces.impl.validation.ValidationState;
-import org.apache.xerces.xni.parser.XMLComponent;
 import java.util.Vector;
 
 /**

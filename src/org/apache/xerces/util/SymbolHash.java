@@ -57,8 +57,6 @@
 
 package org.apache.xerces.util;
 
-import org.apache.xerces.xni.QName;
-import java.util.Vector;
 
 /**
  * This class is an unsynchronized hash table primary used for String

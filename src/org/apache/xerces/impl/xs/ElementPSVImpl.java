@@ -57,12 +57,14 @@
 
 package org.apache.xerces.impl.xs;
 
-import org.apache.xerces.impl.dv.XSSimpleType;
-import org.apache.xerces.impl.xs.XSElementDecl;
+import org.apache.xerces.impl.xs.psvi.StringList;
+import org.apache.xerces.impl.xs.psvi.XSElementDeclaration;
+import org.apache.xerces.impl.xs.psvi.XSModel;
+import org.apache.xerces.impl.xs.psvi.XSNotationDeclaration;
+import org.apache.xerces.impl.xs.psvi.XSSimpleTypeDefinition;
+import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
 import org.apache.xerces.impl.xs.util.StringListImpl;
-import org.apache.xerces.impl.xs.XSNotationDecl;
 import org.apache.xerces.xni.psvi.ElementPSVI;
-import org.apache.xerces.impl.xs.psvi.*;
 
 /**
  * Element PSV infoset augmentations implementation.

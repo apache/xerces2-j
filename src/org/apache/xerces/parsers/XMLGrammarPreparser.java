@@ -58,23 +58,22 @@
 package org.apache.xerces.parsers;
 
 import java.io.IOException;
-import java.util.Locale;
-import java.util.Hashtable;
 import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Locale;
 
 import org.apache.xerces.impl.Constants;
-import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.XMLEntityManager;
-import org.apache.xerces.xni.grammars.XMLGrammarPool;
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.util.ObjectFactory;
+import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XMLGrammarLoader;
-import org.apache.xerces.xni.grammars.Grammar;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
-import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.util.ObjectFactory;
-import org.apache.xerces.xni.XNIException;
-import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLInputSource;
 
 /**

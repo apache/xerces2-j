@@ -57,10 +57,10 @@
 
 package org.apache.xerces.impl.dv.dtd;
 
-import org.apache.xerces.impl.dv.DTDDVFactory;
-import org.apache.xerces.impl.dv.DatatypeValidator;
-import java.util.Hashtable;
 import java.util.Enumeration;
+import java.util.Hashtable;
+
+import org.apache.xerces.impl.dv.DatatypeValidator;
 
 /**
  * the factory to create/return built-in XML 1.1 DVs and create user-defined DVs

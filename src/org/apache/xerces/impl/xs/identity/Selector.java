@@ -57,18 +57,13 @@
 
 package org.apache.xerces.impl.xs.identity;
 
-import org.apache.xerces.impl.xs.SchemaGrammar;
+import org.apache.xerces.impl.xpath.XPathException;
 import org.apache.xerces.impl.xs.XSElementDecl;
-import org.apache.xerces.impl.xpath.*;
+import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
-import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.XMLAttributes;
-import org.apache.xerces.xni.psvi.ElementPSVI;
-import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
-import org.apache.xerces.util.SymbolTable;
-
-import org.xml.sax.SAXException;
+import org.apache.xerces.xni.XNIException;
 
 /**
  * Schema identity constraint selector.
@@ -162,7 +157,7 @@ public class Selector {
             for (int i=0;i<fLocationPaths.length;i++) {
                 org.apache.xerces.impl.xpath.XPath.Axis axis =
                 fLocationPaths[i].steps[fLocationPaths[i].steps.length-1].axis;
-                if (axis.type == axis.ATTRIBUTE) {
+                if (axis.type == XPath.Axis.ATTRIBUTE) {
                     throw new XPathException("c-selector-xpath");
                 }
             }

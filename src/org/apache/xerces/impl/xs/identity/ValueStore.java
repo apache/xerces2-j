@@ -57,7 +57,6 @@
 
 package org.apache.xerces.impl.xs.identity;
 
-import org.xml.sax.SAXException;
 
 /**
  * Interface for storing values associated to an identity constraint. 

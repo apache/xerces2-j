@@ -58,19 +58,9 @@
 package org.apache.xerces.impl.xs.opti;
 
 import org.w3c.dom.Attr;
-import org.w3c.dom.Node;
-import org.w3c.dom.Element;
 import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
 import org.w3c.dom.NamedNodeMap;
-
-import org.w3c.dom.DOMException;
-
-import org.apache.xerces.xni.QName;
-import org.apache.xerces.xni.XMLAttributes;
-import org.apache.xerces.xni.Augmentations;
-
-import org.apache.xerces.xni.XNIException;
+import org.w3c.dom.Node;
 
 /**
  * @author Rahul Srivastava, Sun Microsystems Inc.

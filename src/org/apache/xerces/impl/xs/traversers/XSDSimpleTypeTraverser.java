@@ -405,7 +405,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         if (baseTypeStr == null)
             return null;
 
-        XSTypeDefinition baseType = (XSTypeDefinition)fSchemaHandler.getGlobalDecl(schemaDoc, fSchemaHandler.TYPEDECL_TYPE, baseTypeStr, elm);
+        XSTypeDefinition baseType = (XSTypeDefinition)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.TYPEDECL_TYPE, baseTypeStr, elm);
         if (baseType != null) {
             // if it's a complex type, or if its restriction of anySimpleType
             if (baseType.getTypeCategory() != XSTypeDefinition.SIMPLE_TYPE ||

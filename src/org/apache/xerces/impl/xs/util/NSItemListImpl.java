@@ -57,11 +57,10 @@
 
 package org.apache.xerces.impl.xs.util;
 
+import java.util.Vector;
+
 import org.apache.xerces.impl.xs.psvi.XSNamespaceItem;
 import org.apache.xerces.impl.xs.psvi.XSNamespaceItemList;
-import org.apache.xerces.impl.xs.psvi.XSObject;
-import org.apache.xerces.impl.xs.psvi.XSObjectList;
-import java.util.Vector;
 /**
  * Containts a list of Object's.
  *

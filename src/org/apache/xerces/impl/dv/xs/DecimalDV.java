@@ -59,8 +59,6 @@ package org.apache.xerces.impl.dv.xs;
 
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidationContext;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 
 /**
  * Represent the schema type "decimal"

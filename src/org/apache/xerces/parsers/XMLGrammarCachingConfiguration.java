@@ -60,23 +60,21 @@ package org.apache.xerces.parsers;
 import java.io.IOException;
 
 import org.apache.xerces.impl.Constants;
-import org.apache.xerces.xni.grammars.XMLGrammarPool;
-import org.apache.xerces.xni.grammars.XMLGrammarDescription;
-import org.apache.xerces.xni.grammars.Grammar;
-import org.apache.xerces.xni.parser.XMLEntityResolver;
-import org.apache.xerces.util.XMLGrammarPoolImpl;
-import org.apache.xerces.impl.xs.SchemaSymbols;
+import org.apache.xerces.impl.dtd.DTDGrammar;
+import org.apache.xerces.impl.dtd.XMLDTDLoader;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.XMLSchemaLoader;
 import org.apache.xerces.impl.xs.XSMessageFormatter;
-import org.apache.xerces.impl.dtd.XMLDTDLoader;
-import org.apache.xerces.impl.dtd.DTDGrammar;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.SynchronizedSymbolTable;
+import org.apache.xerces.util.XMLGrammarPoolImpl;
 import org.apache.xerces.xni.XNIException;
-import org.apache.xerces.xni.parser.XMLComponent;
+import org.apache.xerces.xni.grammars.Grammar;
+import org.apache.xerces.xni.grammars.XMLGrammarDescription;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 
 /**

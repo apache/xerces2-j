@@ -57,15 +57,10 @@
 
 package org.apache.xerces.util;
 
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.Reader;
-
 import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLParseException;
-
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;

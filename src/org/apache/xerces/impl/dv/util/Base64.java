@@ -57,7 +57,6 @@
 
 package org.apache.xerces.impl.dv.util;
 
-import java.io.UnsupportedEncodingException;
 /**
  * This class provides encode/decode for RFC 2045 Base64 as
  * defined by RFC 2045, N. Freed and N. Borenstein.

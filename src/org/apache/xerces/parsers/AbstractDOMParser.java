@@ -75,8 +75,8 @@ import org.apache.xerces.dom.NodeImpl;
 import org.apache.xerces.dom.NotationImpl;
 import org.apache.xerces.dom.PSVIAttrNSImpl;
 import org.apache.xerces.dom.PSVIElementNSImpl;
-import org.apache.xerces.dom.ProcessingInstructionImpl;
 import org.apache.xerces.dom.TextImpl;
+import org.apache.xerces.dom3.DOMError;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
@@ -1643,7 +1643,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
 					DOMErrorImpl error = new DOMErrorImpl();
                     error.fType = "infoset-baseURI";
                     error.fRelatedData = baseURI;
-					error.fSeverity = error.SEVERITY_WARNING;
+					error.fSeverity = DOMError.SEVERITY_WARNING;
 					fErrorHandler.getErrorHandler().handleError(error);
 				}
 			}
@@ -1689,7 +1689,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
 				DOMErrorImpl error = new DOMErrorImpl();
 				error.fType = "infoset-baseURI";
 				error.fRelatedData = baseURI; 
-                error.fSeverity = error.SEVERITY_WARNING;
+                error.fSeverity = DOMError.SEVERITY_WARNING;
 				fErrorHandler.getErrorHandler().handleError(error);
 			}
 		}

@@ -57,25 +57,20 @@
 
 package org.apache.xerces.impl.xs.traversers;
 
-import org.apache.xerces.impl.dv.XSSimpleType;
-import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
-import org.apache.xerces.impl.dv.ValidationContext;
-import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.impl.dv.ValidatedInfo;
+import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSAttributeDecl;
 import org.apache.xerces.impl.xs.XSAttributeUseImpl;
-import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
-import org.apache.xerces.xni.QName;
-import org.apache.xerces.util.DOMUtil;
-import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.util.XMLSymbols;
-import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.impl.xs.psvi.XSConstants;
 import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
-import org.apache.xerces.impl.validation.ValidationState;
+import org.apache.xerces.impl.xs.util.XInt;
+import org.apache.xerces.util.DOMUtil;
+import org.apache.xerces.util.XMLSymbols;
+import org.apache.xerces.xni.QName;
 import org.w3c.dom.Element;
 
 /**

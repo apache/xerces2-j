@@ -57,7 +57,6 @@
 
 package org.apache.xerces.impl.dv.util;
 
-import java.io.UnsupportedEncodingException;
 /**
  * format validation
  *

@@ -58,14 +58,8 @@
 package org.apache.xerces.util;
 
 import org.apache.xerces.xni.grammars.Grammar;
-import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
-
-import org.apache.xerces.impl.dtd.XMLDTDDescription;
-//import org.apache.xerces.impl.xs.XSDDescription;
-
-import java.util.Hashtable;
-import java.util.Enumeration;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
 
 /**
  * Stores grammars in a pool associated to a specific key. This grammar pool

@@ -59,13 +59,11 @@ package org.apache.xerces.impl.xs.traversers;
 
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
-import org.apache.xerces.impl.xs.XSWildcardDecl;
-import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.impl.xs.XSParticleDecl;
-import org.apache.xerces.util.DOMUtil;
+import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.impl.xs.util.XInt;
+import org.apache.xerces.util.DOMUtil;
 import org.w3c.dom.Element;
-import java.util.StringTokenizer;
 
 /**
  * The wildcard schema component traverser.

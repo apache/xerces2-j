@@ -58,7 +58,6 @@
 package org.apache.xerces.impl;
 
 import org.apache.xerces.xni.Augmentations;
-import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLDocumentFilter;
 /**
  * DOM Revalidation handler adds additional functionality to XMLDocumentHandler

@@ -59,21 +59,12 @@ package org.apache.xerces.impl;
 
 import java.io.EOFException;
 import java.io.IOException;
-import java.util.Stack;
 
-import org.apache.xerces.impl.XMLEntityManager;
-import org.apache.xerces.impl.XMLEntityScanner;
-import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
-
 import org.apache.xerces.util.XMLAttributesImpl;
-import org.apache.xerces.util.XMLStringBuffer;
-import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.util.XMLChar;
-import org.apache.xerces.util.AugmentationsImpl;
-
-import org.apache.xerces.xni.Augmentations;
+import org.apache.xerces.util.XMLStringBuffer;
+import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentHandler;
@@ -84,7 +75,6 @@ import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLDocumentScanner;
-import org.apache.xerces.xni.parser.XMLDTDScanner;
 import org.apache.xerces.xni.parser.XMLInputSource;
 
 /**

@@ -57,29 +57,22 @@
 
 package org.apache.xerces.parsers;
 
-import org.w3c.dom.ls.DOMInputSource;
+import java.util.Vector;
+
+import org.apache.xerces.dom.ASModelImpl;
 import org.apache.xerces.dom3.as.ASModel;
 import org.apache.xerces.dom3.as.DOMASBuilder;
 import org.apache.xerces.dom3.as.DOMASException;
-
-import org.apache.xerces.xni.parser.XMLInputSource;
-import org.apache.xerces.xni.parser.XMLEntityResolver;
-import org.apache.xerces.xni.parser.XMLParserConfiguration;
-import org.apache.xerces.xni.XNIException;
-import org.apache.xerces.xni.parser.XMLConfigurationException;
-import org.apache.xerces.xni.grammars.XMLGrammarPool;
-import org.apache.xerces.xni.grammars.Grammar;
-
-import org.apache.xerces.dom.ASModelImpl;
-
 import org.apache.xerces.impl.Constants;
-import org.apache.xerces.impl.XMLErrorReporter;
-import org.apache.xerces.util.XMLGrammarPoolImpl;
-import org.apache.xerces.impl.xs.XSGrammarBucket;
 import org.apache.xerces.impl.xs.SchemaGrammar;
-
-import java.util.Vector;
+import org.apache.xerces.impl.xs.XSGrammarBucket;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLGrammarPoolImpl;
+import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.grammars.Grammar;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
+import org.apache.xerces.xni.parser.XMLInputSource;
+import org.w3c.dom.ls.DOMInputSource;
 
 /**
  * This is Abstract Schema DOM Builder class. It extends the DOMBuilderImpl

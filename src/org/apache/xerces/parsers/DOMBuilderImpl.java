@@ -63,6 +63,7 @@ import java.util.Stack;
 import org.apache.xerces.dom.DOMErrorImpl;
 import org.apache.xerces.dom.DOMMessageFormatter;
 import org.apache.xerces.dom3.DOMConfiguration;
+import org.apache.xerces.dom3.DOMError;
 import org.apache.xerces.dom3.DOMErrorHandler;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.DOMEntityResolverWrapper;
@@ -695,7 +696,7 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
                 DOMErrorImpl error = new DOMErrorImpl();
                 error.fException = e;
                 error.fMessage = e.getMessage();
-                error.fSeverity = error.SEVERITY_FATAL_ERROR;
+                error.fSeverity = DOMError.SEVERITY_FATAL_ERROR;
                 fErrorHandler.getErrorHandler().handleError(error);
             }
             if (DEBUG) {            
@@ -725,7 +726,7 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
                 DOMErrorImpl error = new DOMErrorImpl();
                 error.fException = e;
                 error.fMessage = e.getMessage();
-                error.fSeverity = error.SEVERITY_FATAL_ERROR;
+                error.fSeverity = DOMError.SEVERITY_FATAL_ERROR;
                 fErrorHandler.getErrorHandler().handleError(error);
             }
             if (DEBUG) {            

@@ -57,7 +57,6 @@
 
 package org.apache.xerces.impl.xs.identity;
 
-import org.xml.sax.SAXException;
 
 /**
  * Interface for a field activator. The field activator is responsible

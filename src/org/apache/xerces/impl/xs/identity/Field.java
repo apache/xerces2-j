@@ -178,7 +178,7 @@ public class Field {
                 for(int j=0; j<fLocationPaths[i].steps.length; j++) {
                     org.apache.xerces.impl.xpath.XPath.Axis axis =
                         fLocationPaths[i].steps[j].axis;
-                    if (axis.type == axis.ATTRIBUTE &&
+                    if (axis.type == XPath.Axis.ATTRIBUTE &&
                             (j < fLocationPaths[i].steps.length-1)) {
                         throw new XPathException("c-fields-xpaths");
                     }

@@ -508,7 +508,7 @@ abstract class XSDAbstractTraverser {
      * the type is NOTATION without enumeration facet
      */
     void checkNotationType(String refName, XSTypeDefinition typeDecl, Element elem) {
-        if (typeDecl.getTypeCategory() == typeDecl.SIMPLE_TYPE &&
+        if (typeDecl.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE &&
             ((XSSimpleType)typeDecl).getVariety() == XSSimpleType.VARIETY_ATOMIC &&
             ((XSSimpleType)typeDecl).getPrimitiveKind() == XSSimpleType.PRIMITIVE_NOTATION) {
             if ((((XSSimpleType)typeDecl).getDefinedFacets() & XSSimpleType.FACET_ENUMERATION) == 0) {

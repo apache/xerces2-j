@@ -58,15 +58,10 @@
 package org.apache.xerces.impl.dtd;
 
 import org.apache.xerces.impl.XMLErrorReporter;
-
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XML11Char;
-
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
-import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
-import org.apache.xerces.xni.parser.XMLComponentManager;
-import org.apache.xerces.xni.parser.XMLDTDFilter;
 
 
 /**

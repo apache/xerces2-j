@@ -60,11 +60,11 @@ package org.apache.xerces.impl.xs.traversers;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSElementDecl;
-import org.apache.xerces.util.DOMUtil;
+import org.apache.xerces.impl.xs.identity.IdentityConstraint;
+import org.apache.xerces.impl.xs.identity.KeyRef;
+import org.apache.xerces.impl.xs.identity.UniqueOrKey;
 import org.apache.xerces.xni.QName;
 import org.w3c.dom.Element;
-import org.apache.xerces.impl.xs.identity.*;
-import org.apache.xerces.impl.xpath.*;
 
 /**
  * This class contains code that is used to traverse <keyref>s.

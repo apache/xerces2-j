@@ -57,16 +57,13 @@
 
 package org.apache.xerces.impl;
 
-import java.io.EOFException;
 import java.io.IOException;
 
-import org.apache.xerces.impl.XMLEntityScanner;
-import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.util.XMLStringBuffer;
-import org.apache.xerces.util.XMLResourceIdentifierImpl;
 import org.apache.xerces.util.XMLChar;
+import org.apache.xerces.util.XMLResourceIdentifierImpl;
+import org.apache.xerces.util.XMLStringBuffer;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;

@@ -59,9 +59,6 @@ package org.apache.xerces.impl.xs.models;
 
 import org.apache.xerces.impl.dtd.models.CMNode;
 import org.apache.xerces.impl.dtd.models.CMStateSet;
-import org.apache.xerces.impl.xs.XSElementDecl;
-import org.apache.xerces.impl.xs.XSParticleDecl;
-import org.apache.xerces.impl.xs.XSWildcardDecl;
 
 /**
  * Content model leaf node.

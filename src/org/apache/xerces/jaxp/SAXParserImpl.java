@@ -57,23 +57,17 @@
 
 package org.apache.xerces.jaxp;
 
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import java.util.Enumeration;
+import java.util.Hashtable;
 
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.HandlerBase;
-import org.xml.sax.Parser;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderAdapter;
-import org.xml.sax.helpers.DefaultHandler;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
+import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.xerces.impl.Constants;
-
-import java.util.*;
+import org.xml.sax.Parser;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.XMLReader;
 
 /**
  * @author Rajiv Mordani

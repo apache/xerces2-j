@@ -57,10 +57,9 @@
 
 package org.apache.xerces.util;
 
+import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
-import org.apache.xerces.xni.XMLString;
-import org.apache.xerces.xni.Augmentations;
 
 /**
  * The XMLAttributesImpl class is an implementation of the XMLAttributes

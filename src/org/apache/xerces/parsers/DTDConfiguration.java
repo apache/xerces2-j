@@ -61,27 +61,25 @@ import java.io.IOException;
 import java.util.Locale;
 
 import org.apache.xerces.impl.Constants;
-import org.apache.xerces.impl.XMLDocumentScannerImpl;
 import org.apache.xerces.impl.XMLDTDScannerImpl;
-import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.XMLDocumentScannerImpl;
 import org.apache.xerces.impl.XMLEntityManager;
-import org.apache.xerces.impl.dtd.XMLDTDValidator;
-import org.apache.xerces.impl.dtd.XMLDTDProcessor;
+import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.XMLNamespaceBinder;
+import org.apache.xerces.impl.dtd.XMLDTDProcessor;
+import org.apache.xerces.impl.dtd.XMLDTDValidator;
+import org.apache.xerces.impl.dv.DTDDVFactory;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.ValidationManager;
-import org.apache.xerces.impl.dv.DTDDVFactory;
-import org.apache.xerces.xni.grammars.XMLGrammarPool;
-
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
-import org.apache.xerces.xni.parser.XMLDocumentScanner;
-import org.apache.xerces.xni.parser.XMLDocumentSource;
 import org.apache.xerces.xni.parser.XMLDTDScanner;
+import org.apache.xerces.xni.parser.XMLDocumentScanner;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLPullParserConfiguration;
 

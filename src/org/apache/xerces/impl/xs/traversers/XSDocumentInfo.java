@@ -57,19 +57,18 @@
 
 package org.apache.xerces.impl.xs.traversers;
 
+import java.util.Stack;
+import java.util.Vector;
+
+import org.apache.xerces.impl.validation.ValidationState;
 import org.apache.xerces.impl.xs.SchemaNamespaceSupport;
 import org.apache.xerces.impl.xs.SchemaSymbols;
-import org.apache.xerces.impl.validation.ValidationState;
 import org.apache.xerces.impl.xs.XMLSchemaException;
+import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.impl.xs.util.XInt;
-import org.apache.xerces.impl.xs.util.XIntPool;
-import org.apache.xerces.util.XMLSymbols;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import java.util.Vector;
-import java.util.Stack;
 
 /*
  * Objects of this class hold all information pecular to a

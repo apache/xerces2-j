@@ -60,9 +60,8 @@ package org.apache.xerces.impl.xs.traversers;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSNotationDecl;
-import org.apache.xerces.impl.xs.XSMessageFormatter;
-import org.w3c.dom.Element;
 import org.apache.xerces.util.DOMUtil;
+import org.w3c.dom.Element;
 
 /**
  * The notation declaration schema component traverser.

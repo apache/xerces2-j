@@ -57,9 +57,9 @@
 
 package org.apache.xerces.impl.xs.util;
 
+import org.apache.xerces.impl.xs.psvi.XSObject;
+import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
 import org.apache.xerces.util.SymbolHash;
-import org.apache.xerces.xni.QName;
-import org.apache.xerces.impl.xs.psvi.*;
 
 /**
  * Containts the map between qnames and XSObject's.

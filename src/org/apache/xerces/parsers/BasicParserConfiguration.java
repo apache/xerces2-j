@@ -57,20 +57,17 @@
 
 package org.apache.xerces.parsers;
 
-import java.io.InputStream;
 import java.io.IOException;
-import java.io.Reader;
 import java.util.Hashtable;
 import java.util.Locale;
 import java.util.Vector;
 
 import org.apache.xerces.impl.Constants;
-import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.util.ParserConfigurationSettings;
 import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.xni.XMLDocumentHandler;
-import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
+import org.apache.xerces.xni.XMLDTDHandler;
+import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;

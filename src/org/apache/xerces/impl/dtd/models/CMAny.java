@@ -57,8 +57,6 @@
 
 package org.apache.xerces.impl.dtd.models;
 
-import org.apache.xerces.impl.dtd.XMLContentSpec;
-import org.apache.xerces.xni.QName;
 
 /**
  * Content model any node.

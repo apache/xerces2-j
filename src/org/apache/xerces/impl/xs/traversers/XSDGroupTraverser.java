@@ -58,13 +58,12 @@ package org.apache.xerces.impl.xs.traversers;
 
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
-import org.apache.xerces.impl.xs.XSParticleDecl;
-import org.apache.xerces.impl.xs.XSModelGroupImpl;
 import org.apache.xerces.impl.xs.XSGroupDecl;
-import org.apache.xerces.impl.xs.XSMessageFormatter;
+import org.apache.xerces.impl.xs.XSModelGroupImpl;
+import org.apache.xerces.impl.xs.XSParticleDecl;
+import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.XMLSymbols;
-import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.xni.QName;
 import org.w3c.dom.Element;
 

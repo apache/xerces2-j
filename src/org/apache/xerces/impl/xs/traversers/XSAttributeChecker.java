@@ -57,29 +57,29 @@
 
 package org.apache.xerces.impl.xs.traversers;
 
-import org.w3c.dom.Element;
-import org.w3c.dom.Attr;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Locale;
-import java.util.Vector;
 import java.util.StringTokenizer;
-import java.util.Enumeration;
-import org.apache.xerces.impl.dv.XSSimpleType;
+import java.util.Vector;
+
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
+import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaNamespaceSupport;
 import org.apache.xerces.impl.xs.SchemaSymbols;
-import org.apache.xerces.impl.xs.SchemaGrammar;
-import org.apache.xerces.impl.xs.XSWildcardDecl;
-import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.impl.xs.XSAttributeDecl;
 import org.apache.xerces.impl.xs.XSGrammarBucket;
+import org.apache.xerces.impl.xs.XSWildcardDecl;
+import org.apache.xerces.impl.xs.psvi.XSConstants;
+import org.apache.xerces.impl.xs.util.XInt;
+import org.apache.xerces.impl.xs.util.XIntPool;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLSymbols;
-import org.apache.xerces.impl.xs.util.XInt;
-import org.apache.xerces.impl.xs.util.XIntPool;
-import org.apache.xerces.impl.xs.psvi.XSConstants;
 import org.apache.xerces.xni.QName;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Element;
 
 /**
  * Class <code>XSAttributeCheck</code> is used to check the validity of attributes
