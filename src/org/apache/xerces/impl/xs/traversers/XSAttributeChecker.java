@@ -992,10 +992,10 @@ public class XSAttributeChecker {
      * copy of the namespace context, so that the value can be resolved as a
      * QName later.
      *
-     * @param element    - which element to check
-     * @param isGlobal   - whether a child of <schema> or <redefine>
-     * @param schemaDoc  - the document where the element lives in
-     * @param enumAsQName- whether to tread enumeration value as QName
+     * @param element      which element to check
+     * @param isGlobal     whether a child of <schema> or <redefine>
+     * @param schemaDoc    the document where the element lives in
+     * @param enumAsQName  whether to tread enumeration value as QName
      * @return             an array containing attribute values
      */
     public Object[] checkAttributes(Element element, boolean isGlobal,

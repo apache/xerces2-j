@@ -169,9 +169,6 @@ public class XPathMatcher {
 
     /**
      * The start of the document fragment.
-     *
-     * @param context The namespace scope in effect at the
-     *                start of this document fragment.
      */
     public void startDocumentFragment(){
         if (DEBUG_METHODS) {
@@ -189,7 +186,7 @@ public class XPathMatcher {
         }
 
 
-    } // startDocumentFragment(SymbolTable)
+    } // startDocumentFragment()
 
     /**
      * The start of an element. If the document specifies the start element
@@ -198,7 +195,6 @@ public class XPathMatcher {
      *
      * @param element    The name of the element.
      * @param attributes The element attributes.
-     * @param type: The element's type
      *
      * @throws SAXException Thrown by handler to signal an error.
      */

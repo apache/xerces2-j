@@ -3360,10 +3360,10 @@ public class XMLSchemaValidator
 		/**
 		 * Adds the specified value to the value store.
 		 *
-		 * @param value The value to add.
 		 * @param field The field associated to the value. This reference
 		 *              is used to ensure that each field only adds a value
 		 *              once within a selection scope.
+		 * @param actualValue The value to add.
 		 */
 		public void addValue(Field field, Object actualValue) {
 			int i;
@@ -3502,8 +3502,6 @@ public class XMLSchemaValidator
 
 		/**
 		 * Called when a duplicate value is added.
-		 *
-		 * @param tuple The duplicate value tuple.
 		 */
 		protected void checkDuplicateValues() {
 			// is this value as a group duplicated?
@@ -3541,8 +3539,6 @@ public class XMLSchemaValidator
 
 		/**
 		 * Called when a duplicate value is added.
-		 *
-		 * @param tuple The duplicate value tuple.
 		 */
 		protected void checkDuplicateValues() {
 			if (contains()) {

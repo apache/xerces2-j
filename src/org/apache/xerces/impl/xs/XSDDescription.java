@@ -179,8 +179,8 @@ public class XSDDescription extends XMLResourceIdentifierImpl
      * Compares this grammar with the given grammar. Currently, we compare 
      * the target namespaces.
      * 
-     * @param desc The description of the grammar to be compared with
-     * @return     True if they are equal, else false
+     * @param descObj The description of the grammar to be compared with
+     * @return        True if they are equal, else false
      */
     public boolean equals(Object descObj) {
         if(!(descObj instanceof XMLSchemaDescription)) return false;

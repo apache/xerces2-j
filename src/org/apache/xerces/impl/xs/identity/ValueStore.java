@@ -47,7 +47,7 @@ public interface ValueStore {
      * @param field The field associated to the value. This reference
      *              is used to ensure that each field only adds a value
      *              once within a selection scope.
-     * @param value The value to add.
+     * @param actualValue The value to add.
      */
     public void addValue(Field field, Object actualValue);
 

@@ -333,7 +333,7 @@ public class XML11Char {
      * Check to see if a string is a valid NCName according to [4]
      * from the XML Namespaces 1.1 Recommendation
      *
-     * @param name string to check
+     * @param ncName string to check
      * @return true if name is a valid NCName
      */
     public static boolean isXML11ValidNCName(String ncName) {

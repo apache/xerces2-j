@@ -381,7 +381,7 @@ public class SchemaParsingConfig extends BasicParserConfiguration
      * @param complete True if the pull parser should parse the
      *                 remaining document completely.
      *
-     * @returns True if there is more document to parse.
+     * @return True if there is more document to parse.
      *
      * @exception XNIException Any XNI exception, possibly wrapping 
      *                         another exception.

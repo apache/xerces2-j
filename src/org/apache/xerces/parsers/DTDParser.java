@@ -252,13 +252,14 @@ public abstract class DTDParser
 
     /**
      * An external entity declaration.
-     * 
+     *
      * @param name     The name of the entity. Parameter entity names start
      *                 with '%', whereas the name of a general entity is just
      *                 the entity name.
-     * @param publicId The public identifier of the entity or null if the
-     *                 the entity was specified with SYSTEM.
-     * @param systemId The system identifier of the entity.
+     * @param identifier    An object containing all location information 
+     *                      pertinent to this entity.
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -270,13 +271,14 @@ public abstract class DTDParser
 
     /**
      * An unparsed entity declaration.
-     * 
+     *
      * @param name     The name of the entity.
-     * @param publicId The public identifier of the entity, or null if not
-     *                 specified.
-     * @param systemId The system identifier of the entity, or null if not
-     *                 specified.
+     * @param identifier    An object containing all location information 
+     *                      pertinent to this entity.
      * @param notation The name of the notation.
+     *
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -288,12 +290,12 @@ public abstract class DTDParser
 
     /**
      * A notation declaration
-     * 
+     *
      * @param name     The name of the notation.
-     * @param publicId The public identifier of the notation, or null if not
-     *                 specified.
-     * @param systemId The system identifier of the notation, or null if not
-     *                 specified.
+     * @param identifier    An object containing all location information 
+     *                      pertinent to this notation.
+     * @param augmentations Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */

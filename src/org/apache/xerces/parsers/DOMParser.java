@@ -132,7 +132,7 @@ public class DOMParser
      *     parse(new InputSource(systemId));
      * </pre>
      *
-     * @param source The input source.
+     * @param systemId The system identifier (URI).
      *
      * @exception org.xml.sax.SAXException Throws exception on SAX error.
      * @exception java.io.IOException Throws exception on i/o error.
@@ -415,7 +415,7 @@ public class DOMParser
      *
      * @param propertyId The unique identifier (URI) of the property
      *                   being set.
-     * @param Object The value to which the property is being set.
+     * @param value The value to which the property is being set.
      *
      * @exception SAXNotRecognizedException If the
      *            requested property is not known.

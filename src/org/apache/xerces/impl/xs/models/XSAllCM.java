@@ -105,7 +105,7 @@ public class XSAllCM implements XSCMValidator {
      * The method corresponds to one transition in the content model.
      *
      * @param elementName
-     * @param state  Current state
+     * @param currentState  Current state
      * @return an element decl object
      */
     public Object oneTransition (QName elementName, int[] currentState, SubstitutionGroupHandler subGroupHandler) {
@@ -143,7 +143,7 @@ public class XSAllCM implements XSCMValidator {
     /**
      * The method indicates the end of list of children
      *
-     * @param state  Current state of the content model
+     * @param currentState  Current state of the content model
      * @return true if the last state was a valid final state
      */
     public boolean endContentModel (int[] currentState) {

@@ -201,8 +201,7 @@ public class Selector {
          * be followed by the endElement method, with no intervening methods.
          * 
          * @param element    The name of the element.
-         * @param attributes The element attributes.
-         * @param elementDecl:  The element declaration 
+         * @param attributes The element attributes. 
          *
          */
         public void startElement(QName element, XMLAttributes attributes) {

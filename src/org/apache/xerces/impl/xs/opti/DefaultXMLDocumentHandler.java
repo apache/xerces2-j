@@ -420,7 +420,7 @@ public class DefaultXMLDocumentHandler implements XMLDocumentHandler,
      * @exception XNIException
      *                   Thrown by handler to signal an error.
      */
-    public void startExternalSubset(XMLResourceIdentifier ri,
+    public void startExternalSubset(XMLResourceIdentifier identifier,
                                     Augmentations augmentations) 
         throws XNIException {
     }

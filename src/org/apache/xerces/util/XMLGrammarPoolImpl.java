@@ -290,9 +290,9 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
      * the root element names for DTD grammars and the target namespaces for Schema grammars.
      * The application can override this behaviour and add its own logic.
      *
-     * @param gDesc1 The grammar description
-     * @param gDesc2 The grammar description of the grammar to be compared to
-     * @return       True if the grammars are equal, otherwise false
+     * @param desc1 The grammar description
+     * @param desc2 The grammar description of the grammar to be compared to
+     * @return      True if the grammars are equal, otherwise false
      */
     public boolean equals(XMLGrammarDescription desc1, XMLGrammarDescription desc2) {
         return desc1.equals(desc2);

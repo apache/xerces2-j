@@ -213,7 +213,7 @@ public class XMLGrammarCachingConfiguration
      * This method also adds this grammar to the XMLGrammarPool
      *
      * @param type The type of the grammar to be constructed
-     * @param source The XMLInputSource containing this grammar's
+     * @param is The XMLInputSource containing this grammar's
      * information
      * <strong>If a URI is included in the systemId field, the parser will not expand this URI or make it
      * available to the EntityResolver</strong>

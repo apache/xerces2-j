@@ -515,7 +515,7 @@ public class XMLAttributesImpl
      * <p>If the attribute name has a namespace prefix, the prefix
      * will still be attached.</p>
      *
-     * @param i The index of the attribute in the list (starting at 0).
+     * @param index The index of the attribute in the list (starting at 0).
      * @return The name of the indexed attribute, or null
      *         if the index is out of range.
      * @see #getLength 
@@ -554,7 +554,7 @@ public class XMLAttributesImpl
      *
      * @param uri The Namespace URI, or null if
      *        the name has no Namespace URI.
-     * @param localName The attribute's local name.
+     * @param localPart The attribute's local name.
      * @return The index of the attribute, or -1 if it does not
      *         appear in the list.
      */
@@ -914,7 +914,7 @@ public class XMLAttributesImpl
      *
      * @param uri The Namespace URI, or null if
      *        the name has no Namespace URI.
-     * @param localName The attribute's local name.
+     * @param localPart The attribute's local name.
      * @return The index of the attribute, or -1 if it does not
      *         appear in the list.
      */

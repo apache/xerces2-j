@@ -302,7 +302,7 @@ public abstract class BasicParserConfiguration
      * has ended.  If a client application wants to terminate 
      * parsing early, it should throw an exception.
      *
-     * @param source The input source for the top-level of the
+     * @param inputSource The input source for the top-level of the
      *               XML document.
      *
      * @exception XNIException Any XNI exception, possibly wrapping 
