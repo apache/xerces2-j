@@ -11,9 +11,9 @@
   <p>Basic DOM samples:</p>
   <ul>
    <li><link anchor='Counter'>dom.Counter</link></li>
+   <li><link anchor='DOMAddLines'>dom.DOMAddLines</link></li>
    <!--
      - Should the following samples be removed? rewritten? revamped?
-   <li><link anchor='DOMAddLines'>dom.DOMAddLines</link></li>
    <li><link anchor='DOMGenerate'>dom.DOMGenerate</link></li>
    -->
    <li><link anchor='GetElementsByTagName'>dom.GetElementsByTagName</link></li>
@@ -103,12 +103,30 @@
    </table>
   </s3>
  </s2>
- <!--
-   - Should the following samples be removed? rewritten? revamped?
  <anchor name='DOMAddLines'/>
  <s2 title='Sample dom.DOMAddLines'>
-  <p>TODO</p>
+  <p>
+    A sample of Adding lines to the DOM Node. This sample program illustrates:
+  </p>
+  <ul>
+    <li>How to override methods from  DocumentHandler ( XMLDocumentHandler)</li>
+    <li>How to turn off ignorable white spaces by overriding ignorableWhiteSpace</li>
+    <li>How to use the SAX Locator to return row position (line number of DOM element)</li>
+    <li>How to attach user defined Objects to Nodes using method setUserData</li>
+  </ul>
+  <s3 title='usage'>
+   <source>java dom.DOMAddLines (options) uri ...</source>
+  </s3>
+  <s3 title='options'>
+   <table>
+    <tr><th>Option</th><th>Description</th></tr>
+    <tr><td>-h</td><td>Display help screen.</td></tr>
+    <tr><td>-i</td><td>Don't print ignorable white spaces.</td></tr>
+   </table>
+  </s3>
  </s2>
+ <!--
+   - Should the following samples be removed? rewritten? revamped?
  <anchor name='DOMGenerate'/>
  <s2 title='Sample dom.DOMGenerate'>
   <p>TODO</p>

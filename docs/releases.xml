@@ -104,6 +104,30 @@
    
 
    <fix>
+        <note> Moved schema simple type error messages to the property file to enable localization.
+        </note>
+        <submitter name="Sandy Gao"/>
+   </fix>
+   
+   <fix>
+        <note> Fixed various bugs related to the dependency between schema documents.
+        </note>
+        <submitter name="Sandy Gao"/>
+   </fix>
+   
+   <fix>
+        <note> Modified URI resolution strategy so that Windows network paths are recognized.
+        </note>
+        <submitter name="Sandy Gao"/>
+   </fix>
+   
+   <fix>
+        <note> Fixed various bugs related to schema components traversal and validation.
+        </note>
+        <submitter name="Sandy Gao"/>
+   </fix>
+   
+   <fix>
         <note> Fixed a bug in the ui.DOMParserSaveEncoding sample.
         </note>
         <submitter name="Joerg Vogel, Neil Graham"/>
@@ -134,7 +158,6 @@
         <submitter name="Arnaud Le Hors"/>
     </fix> 
     
-    
     <fix>
         <note>Fixed misc. SAX bugs.
         </note>
@@ -153,8 +176,7 @@
         </note>
         <submitter name="Ted Leung, Neeraj Bajaj, Rahul Srivastava"/>
     </fix>
-    
-    
+
     <fix>
         <note>Fixed external-schemaLocation and external-noNamespaceSchemalocation 
         	properties related bug (# 5768)        
@@ -175,7 +197,6 @@
         <submitter name="Rahul Srivastava"/>
     </fix>
     
-
     <fix>
         <note>Fixed the bug in which duplicate attribute definitions were not ignored
 	  and error was reported for ID datatype and Notation.

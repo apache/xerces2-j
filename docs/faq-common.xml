@@ -1,25 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE faqs SYSTEM 'dtd/faqs.dtd'>
 <faqs title='Common Problems FAQs'>
- <faq title='DOS Filenames No Longer Work'>
-  <q>
-   I used to be able to use DOS filenames with the parser and now
-   they don't work. Why not?
-  </q>
-  <a>
-   <p>
-    DOS filenames are not legal URIs as required by the XML 1.0
-    specification. Therefore, it was an error for the parser to 
-    accept DOS filenames. This bug is now fixed.
-   </p>
-   <p>
-    DOS filenames can be converted to legal URIs, however. For
-    example, the DOS filename "c:\xerces\data\personal.xml" would 
-    become "file:///c:/xerces/data/personal.xml", which is a legal
-    URI.
-   </p>
-  </a>
- </faq>
  <faq title='Parsing HTML Generated an Error.'>
   <q>
    I tried to use &ParserName; to parse an HTML file and it

@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE s1 SYSTEM 'dtd/document.dtd'>
-<s1 title="Schema Implementation Limitations">
+<s1 title="XML Schema Limitations">
 	<s2 title="Introduction">
 		<p>This package contains an implementation of the W3C XML 
 		Schema Language, a recommendation of the Worldwide Web Consortium
@@ -32,14 +32,6 @@
             <li> Due to changes in the specification for Decimals in
             JDK1.3, not all decimals that should be invalid according
             to the Schema specs may be found by the parser;</li>
-            <li> When the same schema document is both imported and
-            included by the same schema document, only the first one
-            takes effect;</li>
-            <li> If an imported/included/redefined schema document is
-            specified via a relative path, the parser may not
-            always succeed in locating the document.  Please implement and register a SAX
-            EntityResolver (<code>org.xml.sax.EntityResolver</code>) to customize
-            the parser&apos;s behaviour to your situation;</li>
         </ul>
     </s2>
     <s2 title='Interpretation of Areas that are Unclear or
