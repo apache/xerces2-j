@@ -60,6 +60,7 @@ package org.apache.xerces.impl.xs;
 import org.apache.xerces.xni.QName;
 import java.util.Vector;
 
+
 /**
  * The XML representation for a wildcard declaration
  * schema component is an <any> or <anyAttribute> element information item
