@@ -775,9 +775,6 @@ public class XMLValidator
             return;
         }
 
-
-
-
         if (fNamespaces) { //If Namespace enable then localName != rawName
             fCurrentElement.localpart = fElementQNamePartsStack[fElementDepth].localpart;
         } else {//REVISIT - jeffreyr - This is so we still do old behavior when namespace is off 
@@ -787,9 +784,9 @@ public class XMLValidator
         fCurrentElement.uri          = fElementQNamePartsStack[fElementDepth].uri;
         fCurrentElement.prefix       = fElementQNamePartsStack[fElementDepth].prefix;
 
-
         fCurrentElementIndex = fElementIndexStack[fElementDepth];
         fCurrentContentSpecType = fContentSpecTypeStack[fElementDepth];
+        fInElementContent = (fCurrentContentSpecType == XMLElementDecl.TYPE_CHILDREN);
 
         if (fValidation) {
             fBufferDatatype = false;
