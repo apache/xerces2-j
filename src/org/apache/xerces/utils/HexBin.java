@@ -69,15 +69,15 @@ import java.lang.*;
  */
 
 public final class  HexBin {
-    static private final int  BASELENGTH   = 255;       
+    static private final int  BASELENGTH   = 255;
     static private final int  LOOKUPLENGTH = 16;
-    static private byte [] hexNumberTable       = new byte[BASELENGTH]; 
+    static private byte [] hexNumberTable       = new byte[BASELENGTH];
     static private byte [] lookUpHexAlphabet = new byte[LOOKUPLENGTH];
 
 
     static {
-        for (int i = 0; i<BASELENGTH; i++ ) {  
-            hexNumberTable[i] = -1; 
+        for (int i = 0; i<BASELENGTH; i++ ) {
+            hexNumberTable[i] = -1;
         }
         for ( int i = '9'; i >= '0'; i--) {
             hexNumberTable[i] = (byte) (i-'0');
@@ -97,31 +97,31 @@ public final class  HexBin {
 
     /**
      * byte to be tested if it is Base64 alphabet
-     * 
+     *
      * @param octect
-     * @return 
+     * @return
      */
     static boolean isHex( byte octect ) {
         //shall we ignore white space? JEFF??
-        return(hexNumberTable[octect] != -1 ); 
+        return( hexNumberTable[octect] != -1 );
     }
 
 
     /**
-     *       Array of bytes to check against Hex Table 
-     * 
+     *       Array of bytes to check against Hex Table
+     *
      * @param arrayOctect
-     * @return 
+     * @return
      */
     static boolean isArrayByteHex( byte[] arrayOctect ) {
-       int length = arrayOctect.length;
-       if( length == 0 )
-           return false;
-       for( int i=0; i < length; i++ ){   
-           
-           if( HexBin.isHex( arrayOctect[i] ) == false)
-               return false;
-
+        if (arrayOctect == null)
+            return false;
+        int length = arrayOctect.length;
+        if( length == 0 || length % 2 != 0)
+            return false;
+        for( int i=0; i < length; i++ ){
+            if( HexBin.isHex( arrayOctect[i] ) == false)
+                return false;
        }
        return true;
    }
@@ -130,32 +130,40 @@ public final class  HexBin {
       return( isArrayByteHex( isValidString.getBytes()));
   }
 
-
-
     /**
      * array of byte to encode
-     * 
+     *
      * @param binaryData
      * @return return encode binary array
      */
     static public byte[] encode( byte[] binaryData ) {
-      int lengthData   = binaryData.length;
-      int lengthEncode = lengthData;
-      byte[] encodedData = new byte[lengthData];
-      for( int i = 0; i<lengthData; i++ ){
-         encodedData[i] = lookUpHexAlphabet[ binaryData[i] ];
-      }
-      return encodedData;
+        int lengthData   = binaryData.length;
+        int lengthEncode = lengthData * 2;
+        byte[] encodedData = new byte[lengthEncode];
+        for( int i = 0; i<lengthData; i++ ){
+            encodedData[i*2] = lookUpHexAlphabet[ binaryData[i] >> 4];
+            encodedData[i*2+1] = lookUpHexAlphabet[ binaryData[i] & 0xf];
+        }
+        return encodedData;
     }
 
-
     static public  byte[] decode ( byte[]  binaryData ) {
-      int lengthData   = binaryData.length;
-      int lengthEncode = lengthData;
-      byte[] decodedData = new byte[lengthData];
-      for( int i = 0; i<lengthData; i++ ){
-      decodedData[i] = hexNumberTable[binaryData[i]];
-      }
-     return decodedData;
+        int lengthData   = binaryData.length;
+        if( lengthData == 0 || lengthData % 2 != 0)
+            return null;
+
+        int lengthDecode = lengthData / 2;
+        byte[] decodedData = new byte[lengthDecode];
+        for( int i = 0; i<lengthDecode; i++ ){
+            decodedData[i] = (byte)((hexNumberTable[binaryData[i*2]] << 4) | hexNumberTable[binaryData[i*2+1]]);
+        }
+        return decodedData;
+    }
+
+    static public int getDataLength (byte[] hexData) {
+        if (!isArrayByteHex(hexData))
+            return -1;
+
+        return hexData.length / 2;
     }
 }
