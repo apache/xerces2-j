@@ -198,8 +198,8 @@ public class XMLDocumentScanner
     /** Entity depth. */
     protected int fEntityDepth;
 
-    /** The entity at the beginning of a piece of markup. */
-    protected XMLEntity fMarkupEntity;
+    /** True if we started some markup. */
+    protected boolean fInMarkup;
 
     /** Scanner state. */
     protected int fScannerState;
@@ -362,7 +362,7 @@ public class XMLDocumentScanner
 
         // initialize vars
         fEntityDepth = 0;
-        fMarkupEntity = null;
+        fInMarkup = false;
         fElementDepth = 0;
         fCurrentElement = null;
         fElementStack.clear();
@@ -511,8 +511,8 @@ public class XMLDocumentScanner
         }
 
         // make sure markup is properly balanced
-        if (fMarkupEntity != null) {
-            fMarkupEntity = null;
+        if (fInMarkup) {
+            fInMarkup = false;
             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                        "MarkupEntityMismatch",
                                        null,
@@ -568,7 +568,7 @@ public class XMLDocumentScanner
 
         // scan decl
         super.scanXMLDeclOrTextDecl(scanningTextDecl, fPseudoAttributeValues);
-        fMarkupEntity = null;
+        fInMarkup = false;
 
         // pseudo-attribute values
         String version = fPseudoAttributeValues[0];
@@ -608,7 +608,7 @@ public class XMLDocumentScanner
         throws IOException, SAXException {
 
         super.scanPIData(target, data);
-        fMarkupEntity = null;
+        fInMarkup = false;
 
         // call handler
         if (fDocumentHandler != null) {
@@ -629,7 +629,7 @@ public class XMLDocumentScanner
     protected void scanComment() throws IOException, SAXException {
 
         scanComment(fStringBuffer);
-        fMarkupEntity = null;
+        fInMarkup = false;
 
         // call handler
         if (fDocumentHandler != null) {
@@ -782,7 +782,7 @@ public class XMLDocumentScanner
                                        new Object[]{name},
                                        XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
-        fMarkupEntity = null;
+        fInMarkup = false;
 
         // call handler
         if (fDocumentHandler != null) {
@@ -878,7 +878,7 @@ public class XMLDocumentScanner
             scanAttribute(fAttributes);
 
         } while (true);
-        fMarkupEntity = null;
+        fInMarkup = false;
 
         // push element stack
         fCurrentElement = fElementStack.pushElement(fElementQName);
@@ -1037,7 +1037,7 @@ public class XMLDocumentScanner
                                         System.out.println("*** scanning TextDecl");
                                     }
                                     if (fEntityScanner.skipString("<?xml")) {
-                                        fMarkupEntity = fEntityManager.getCurrentEntity();
+                                        fInMarkup = true;
                                         scanXMLDeclOrTextDecl(true);
                                     }
                                 }
@@ -1169,7 +1169,7 @@ public class XMLDocumentScanner
                 }
             }
         }
-        fMarkupEntity = null;
+        fInMarkup = false;
 
         // call handler
         if (fDocumentHandler != null) {
@@ -1214,7 +1214,7 @@ public class XMLDocumentScanner
                                        new Object[]{fElementQName.rawname},
                                        XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
-        fMarkupEntity = null;
+        fInMarkup = false;
 
         // handle end element
         int depth = handleEndElement(fElementQName);
@@ -1267,7 +1267,7 @@ public class XMLDocumentScanner
                                        "SemicolonRequiredInReference",
                                        null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
-        fMarkupEntity = null;
+        fInMarkup = false;
 
         // handle built-in entities
         if (name == fAmpSymbol) {
@@ -1670,7 +1670,7 @@ public class XMLDocumentScanner
             // scan XMLDecl
             try {
                 if (fEntityScanner.skipString("<?xml")) {
-                    fMarkupEntity = fEntityManager.getCurrentEntity();
+                    fInMarkup = true;
                     // NOTE: special case where document starts with a PI
                     //       whose name starts with "xml" (e.g. "xmlfoo")
                     if (XMLChar.isName(fEntityScanner.peekChar())) {
@@ -1756,7 +1756,7 @@ public class XMLDocumentScanner
                             break;
                         }
                         case SCANNER_STATE_START_OF_MARKUP: {
-                            fMarkupEntity = fEntityManager.getCurrentEntity();
+                            fInMarkup = true;
                             if (fEntityScanner.skipChar('?')) {
                                 setScannerState(SCANNER_STATE_PI);
                                 again = true;
@@ -1898,13 +1898,13 @@ public class XMLDocumentScanner
                                 do {
                                     int c = scanContent();
                                     if (c == '<') {
-                                        fMarkupEntity = fEntityManager.getCurrentEntity();
+                                        fInMarkup = true;
                                         fEntityScanner.scanChar();
                                         setScannerState(SCANNER_STATE_START_OF_MARKUP);
                                         break;
                                     }
                                     else if (c == '&') {
-                                        fMarkupEntity = fEntityManager.getCurrentEntity();
+                                        fInMarkup = true;
                                         fEntityScanner.scanChar();
                                         setScannerState(SCANNER_STATE_REFERENCE);
                                         break;
@@ -1931,7 +1931,7 @@ public class XMLDocumentScanner
                             break;
                         }
                         case SCANNER_STATE_START_OF_MARKUP: {
-                            fMarkupEntity = fEntityManager.getCurrentEntity();
+                            fInMarkup = true;
                             if (fEntityScanner.skipChar('?')) {
                                 setScannerState(SCANNER_STATE_PI);
                                 again = true;
@@ -1993,7 +1993,7 @@ public class XMLDocumentScanner
                             break;
                         }
                         case SCANNER_STATE_REFERENCE: {
-                            fMarkupEntity = fEntityManager.getCurrentEntity();
+                            fInMarkup = true;
                             // NOTE: We need to set the state beforehand
                             //       because the XMLEntityHandler#startEntity
                             //       callback could set the state to
@@ -2011,7 +2011,7 @@ public class XMLDocumentScanner
                         case SCANNER_STATE_TEXT_DECL: {
                             // scan text decl
                             if (fEntityScanner.skipString("<?xml")) {
-                                fMarkupEntity = fEntityManager.getCurrentEntity();
+                                fInMarkup = true;
                                 // NOTE: special case where entity starts with a PI
                                 //       whose name starts with "xml" (e.g. "xmlfoo")
                                 if (XMLChar.isName(fEntityScanner.peekChar())) {
@@ -2111,7 +2111,7 @@ public class XMLDocumentScanner
                             break;
                         }
                         case SCANNER_STATE_START_OF_MARKUP: {
-                            fMarkupEntity = fEntityManager.getCurrentEntity();
+                            fInMarkup = true;
                             if (fEntityScanner.skipChar('?')) {
                                 setScannerState(SCANNER_STATE_PI);
                                 again = true;
@@ -2165,7 +2165,7 @@ public class XMLDocumentScanner
                 // NOTE: This is the only place we're allowed to reach
                 //       the real end of the document stream. Unless the
                 //       end of file was reached prematurely.
-                if (fMarkupEntity != null) {
+                if (fInMarkup) {
                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                "PrematureEOF",
                                                null,
