@@ -150,10 +150,10 @@ public class NamespaceSupport implements NamespaceContext {
 
         // bind "xml" prefix to the XML uri
         fNamespace[fNamespaceSize++] = XMLSymbols.PREFIX_XML;
-        fNamespace[fNamespaceSize++] = XML_URI;
+        fNamespace[fNamespaceSize++] = NamespaceContext.XML_URI;
         // bind "xmlns" prefix to the XMLNS uri
         fNamespace[fNamespaceSize++] = XMLSymbols.PREFIX_XMLNS;
-        fNamespace[fNamespaceSize++] = XMLNS_URI;
+        fNamespace[fNamespaceSize++] = NamespaceContext.XMLNS_URI;
         ++fCurrentContext;
 
     } // reset(SymbolTable)
@@ -330,6 +330,16 @@ public class NamespaceSupport implements NamespaceContext {
             }
 			throw new NoSuchElementException("Illegal access to Namespace prefixes enumeration.");
 		}
+        
+        public String toString(){
+            StringBuffer buf = new StringBuffer();
+            for (int i=0;i<size;i++){
+                buf.append(prefixes[i]);
+                buf.append(" ");
+            }
+                
+            return buf.toString(); 
+        }
 
 }
 

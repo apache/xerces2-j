@@ -75,30 +75,25 @@ package org.apache.xml.serialize;
 
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.util.Enumeration;
 
-import org.w3c.dom.Node;
+import org.apache.xerces.dom.DOMMessageFormatter;
+import org.apache.xerces.dom3.DOMError;
+import org.apache.xerces.util.NamespaceSupport;
+import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLChar;
+import org.apache.xerces.util.XMLSymbols;
+import org.apache.xerces.xni.NamespaceContext;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
-
-import org.apache.xerces.dom3.DOMError;
-
-import org.xml.sax.DocumentHandler;
-import org.xml.sax.ContentHandler;
+import org.w3c.dom.Node;
 import org.xml.sax.AttributeList;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
-
-import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.util.XMLSymbols;
-import org.apache.xerces.util.NamespaceSupport;
-import org.apache.xerces.util.XMLChar;
-import org.apache.xerces.dom.DOMMessageFormatter;
 
 /**
  * Implements an XML serializer supporting both DOM and SAX pretty
@@ -785,14 +780,14 @@ extends BaseMarkupSerializer {
                 attr = (Attr) attrMap.item( i );
                 uri = attr.getNamespaceURI();
                 // check if attribute is a namespace decl 
-                if (uri != null && uri.equals(NamespaceSupport.XMLNS_URI)) {
+                if (uri != null && uri.equals(NamespaceContext.XMLNS_URI)) {
 
                     value = attr.getNodeValue();
                     if (value == null) {
                         value=XMLSymbols.EMPTY_STRING;
                     }
 
-                    if (value.equals(NamespaceSupport.XMLNS_URI)) {
+                    if (value.equals(NamespaceContext.XMLNS_URI)) {
                         if (fDOMErrorHandler != null) {
                             modifyDOMError("No prefix other than 'xmlns' can be bound to 'http://www.w3.org/2000/xmlns/' namespace name", 
                                            DOMError.SEVERITY_ERROR, attr);
@@ -966,7 +961,7 @@ extends BaseMarkupSerializer {
                     // ---------------------------------------------------
                     // print namespace declarations namespace declarations 
                     // ---------------------------------------------------
-                    if (uri != null && uri.equals(NamespaceSupport.XMLNS_URI)) {
+                    if (uri != null && uri.equals(NamespaceContext.XMLNS_URI)) {
                         // check if we need to output this declaration
                         prefix = attr.getPrefix();
                         prefix = (prefix == null || 
