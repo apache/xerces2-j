@@ -117,7 +117,7 @@ public class SchemaValidator
     //
     // Constants
     //
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
     // feature identifiers
 
     /** Feature identifier: validation. */
@@ -142,6 +142,11 @@ public class SchemaValidator
     protected static final String ENTITY_RESOLVER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
 
+
+    // REVISIT: this is just a temporary solution for entity resolver
+    //          while we are making a decision
+    protected static final String ENTITY_MANAGER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_MANAGER_PROPERTY;
     // recognized features and properties
 
     /** Recognized features. */
@@ -178,6 +183,7 @@ public class SchemaValidator
 
     /** Entity resolver */
     protected XMLEntityResolver fEntityResolver;
+
 
     // handlers
 
@@ -809,17 +815,8 @@ public class SchemaValidator
         fSymbolTable = symbolTable;
 
         // get entity resolver. if there is no one, create a default
-        // REVISIT: why there is no default one already?
-        fEntityResolver = (XMLEntityResolver)componentManager.getProperty(ENTITY_RESOLVER);
-        if (fEntityResolver == null)
-            fEntityResolver = new XMLEntityResolver() {
-                // REVISIT: what's the default dehavior
-                public XMLInputSource resolveEntity(String publicId, String systemId,
-                                                    String baseSystemId)
-                    throws XNIException, IOException {
-                    return new XMLInputSource(null, systemId, baseSystemId);
-                }
-            };
+        // REVISIT: use default entity resolution from ENTITY MANAGER - temporary solution        
+        fEntityResolver = (XMLEntityResolver)componentManager.getProperty(ENTITY_MANAGER);
 
         // initialize namespace support
         fNamespaceSupport.reset(fSymbolTable);
@@ -1395,7 +1392,9 @@ public class SchemaValidator
         // (2) report error for PROHIBITED attrs that are present (V_TAGc)
         // (3) add default attrs (FIXED and NOT_FIXED)
         //
-
+        if (DEBUG) {
+            System.out.println("addDefaultAttributes: " + element);
+        }
         XSAttributeUse attrUses[] = attrGrp.getAttributeUses();
         int useCount = attrUses.length;
         XSAttributeUse currUse;
@@ -1404,12 +1403,10 @@ public class SchemaValidator
         Object defaultValue;
         boolean isSpecified;
         QName attName;
-
         // for each attribute use
         for (int i = 0; i < useCount; i++) {
             currUse = attrUses[i];
             currDecl = currUse.fAttrDecl;
-
             // get value constraint
             constType = currUse.fConstraintType;
             defaultValue = currUse.fDefault;
@@ -1417,23 +1414,24 @@ public class SchemaValidator
                 constType = currDecl.fConstraintType;
                 defaultValue = currDecl.fDefault;
             }
-
             // whether this attribute is specified
             isSpecified = attributes.getValue(currDecl.fTargetNamespace, currDecl.fName) != null;
-
+            
             // Element Locally Valid (Complex Type)
             // 4 The {attribute declaration} of each attribute use in the {attribute uses} whose {required} is true matches one of the attribute information items in the element information item's [attributes] as per clause 3.1 above.
             if (currUse.fUse == SchemaSymbols.USE_REQUIRED) {
                 if (!isSpecified)
                     reportSchemaError("cvc-complex-type.4", new Object[]{element.rawname, currDecl.fName});
             }
-
             // if the attribute is not specified, then apply the value constraint
             if (!isSpecified && constType != XSAttributeDecl.NO_CONSTRAINT) {
+                
                 attName = new QName(null, currDecl.fName, currDecl.fName, currDecl.fTargetNamespace);
                 //REVISIT: what's the proper attrType?
-                attributes.addAttribute(attName, null, defaultValue.toString());
+                attributes.addAttribute(attName, null, (defaultValue !=null)?defaultValue.toString():"");
             }
+
+            
         } // for
     } // addDefaultAttributes
 
