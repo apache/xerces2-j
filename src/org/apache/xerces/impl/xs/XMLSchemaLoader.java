@@ -470,7 +470,11 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
             noNs.addLocation(fExternalNoNSSchema);
             locationPairs.put(EMPTY_STRING, noNs);
         }
-        return loadSchema(desc, source, locationPairs); 
+        SchemaGrammar grammar = loadSchema(desc, source, locationPairs); 
+        if(grammar != null && fGrammarPool != null) {
+            fGrammarPool.cacheGrammars(XMLGrammarDescription.XML_SCHEMA, fGrammarBucket.getGrammars());
+        }
+        return grammar;
     } // loadGrammar(XMLInputSource):  Grammar
 
     SchemaGrammar loadSchema(XSDDescription desc, 

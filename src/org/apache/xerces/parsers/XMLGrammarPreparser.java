@@ -187,7 +187,7 @@ public class XMLGrammarPreparser {
     */
     public boolean registerPreparser(String grammarType, XMLGrammarLoader loader) { 
         if(loader == null) { // none specified!
-            if(KNOWN_LOADERS.contains(grammarType)) {
+            if(KNOWN_LOADERS.containsKey(grammarType)) {
                 // got one; just instantiate it...
                 String loaderName = (String)KNOWN_LOADERS.get(grammarType);
                 try {
@@ -224,7 +224,7 @@ public class XMLGrammarPreparser {
      */
     public Grammar preparseGrammar(String type, XMLInputSource
                 is) throws XNIException, IOException {
-        if(fLoaders.contains(type)) {
+        if(fLoaders.containsKey(type)) {
             XMLGrammarLoader gl = (XMLGrammarLoader)fLoaders.get(type);
             // make sure gl's been set up with all the "basic" properties:
             gl.setProperty(SYMBOL_TABLE, fSymbolTable);
