@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,72 +58,86 @@
 package org.apache.xerces.impl.v2.new_datatypes;
 
 import org.apache.xerces.impl.v2.datatypes.InvalidDatatypeValueException;
-import org.apache.xerces.impl.v2.datatypes.SchemaDateTimeException;
+import org.apache.xerces.impl.v2.datatypes.DatatypeMessageProvider;
+
+import java.util.Locale;
 
 /**
- * Validator for <dateTime> datatype (W3C Schema Datatypes)
- *
- * @author Elena Litani
- * @author Gopal Sharma, SUN Microsystem Inc.
  * @version $Id$
  */
-public class DateTimeDV extends AbstractDateTimeDV {
+public abstract class AbstractNumericDV implements TypeValidator{
+
+    protected DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
+    protected Locale fLocale = null;
 
     // for most DV classes, this is the same as the DV_?? value defined
     // in XSSimpleTypeDecl that's corresponding to that class. But for
     // ID/IDREF/ENTITY, the privitivaDV is DV_STRING.
-
-	public short getPrimitiveDV(){
-		return XSSimpleTypeDecl.DV_DATETIME;
-    }
-
-	public Object  getCompiledValue(String content) throws InvalidDatatypeValueException{
-            // REVISIT:  Initialize this intelligently!!!  Fixed by neilg for the sake
-            // of making this compile...
-			int[] date = new int[10];
-			try{
-					date= parse(content, null);
-			}catch(Exception ex){
-			}
-			return date;
-	}
+    public abstract short getPrimitiveDV();
 
     /**
-     * Parses, validates and computes normalized version of dateTime object
-     *
-     * @param str    The lexical representation of dateTime object CCYY-MM-DDThh:mm:ss.sss
-     *               with possible time zone Z or (-),(+)hh:mm
-     * @param date   uninitialized date object
-     * @return normalized dateTime representation
-     * @exception Exception Invalid lexical representation
-     */
+    * return the facets allowed by Decimal
+    */
+    public short getAllowedFacets(){
+        return ( XSSimpleTypeDecl.DEFINED_PATTERN | XSSimpleTypeDecl.DEFINED_WHITESPACE | XSSimpleTypeDecl.DEFINED_ENUMERATION |XSSimpleTypeDecl.DEFINED_MAXINCLUSIVE |XSSimpleTypeDecl.DEFINED_MININCLUSIVE | XSSimpleTypeDecl.DEFINED_MAXEXCLUSIVE  | XSSimpleTypeDecl.DEFINED_MINEXCLUSIVE  );
+    }//getAllowedFacets()
 
-	protected int[] parse(String str, int[] date) throws SchemaDateTimeException{
-        resetBuffer(str);
 
-        //create structure to hold an object
-        if ( date == null ) {
-            date = new int[TOTAL_SIZE];
-        }
-        resetDateObj(date);
-        int end = indexOf (fStart, fEnd, 'T');
+    // convert a string to a compiled form. for example,
+    // for number types (decimal, double, float, and types derived from them),
+    // get the BigDecimal, Double, Flout object.
+    // for some types (string and derived), they just return the string itself
+    public abstract Object getCompiledValue(String content) throws InvalidDatatypeValueException;
 
-        // both time and date
-        getDate(fStart, end, date);
-        getTime(end+1, fEnd, date);
 
-        //validate and normalize
+    // the parameters are in compiled form (from getCompiledValue)
+    public boolean isEqual(Object value1, Object value2){
+        return value1.equals(value2);
+    }
 
-        //REVISIT: do we need SchemaDateTimeException?
-        validateDateTime(date);
+    // the following methods might not be supported by every DV.
+    // but XSSimpleTypeDecl should know which type supports which methods,
+    // and it's an *internal* error if a method is called on a DV that
+    // doesn't support it.
 
-        if ( date[utc]!=0 && date[utc]!='Z') {
-            normalize(date);
-        }
-        return date;
+
+    // REVISIT: these are compiled  values.
+
+    public abstract int compare(Object value1, Object value2);
+
+
+    // the parameters are in compiled form (from getCompiledValue)
+    public int getDataLength(Object value){
+		    return -1;
     }
 
 
-}
+    // the parameters are in compiled form (from getCompiledValue)
+    public int getTotalDigits(Object value){
+	      return -1;
+    }
+
+    // the parameters are in compiled form (from getCompiledValue)
+    public int getFractionDigits(Object value){
+	      return -1;
+    }
+
+    protected String getErrorString(String key, Object args[]) {
+        try {
+            return fMessageProvider.formatMessage(fLocale, key, args);
+        }
+        catch ( Exception e ) {
+            return "Illegal Errorcode "+key;
+        }
+    }
 
 
+    /**
+     * set the locate to be used for error messages
+     */
+    public void setLocale(Locale locale) {
+        fLocale = locale;
+    }
+
+
+} // class AbstractDV
