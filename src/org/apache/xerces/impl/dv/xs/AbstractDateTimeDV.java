@@ -872,5 +872,17 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
         public boolean hasTimeZone() {
             return utc != 0;
         }
+        /* (non-Javadoc)
+         * @see org.apache.xerces.xs.datatypes.XSDateTime#getTimeZoneHr()
+         */
+        public int getTimeZoneHr() {
+        	return timezoneHr;
+        }
+        /* (non-Javadoc)
+         * @see org.apache.xerces.xs.datatypes.XSDateTime#getTimeZoneMin()
+         */
+        public int getTimeZoneMin() {
+        	return timezoneMin;
+        }
     }
 }

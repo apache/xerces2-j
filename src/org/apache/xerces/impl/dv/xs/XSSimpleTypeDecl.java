@@ -34,7 +34,7 @@ import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.NamespaceContext;
-import org.apache.xerces.xs.datatypes.ObjectList;
+import org.apache.xerces.xs.ShortList;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSAnnotation;
 import org.apache.xerces.xs.XSConstants;
@@ -44,6 +44,7 @@ import org.apache.xerces.xs.XSNamespaceItem;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
+import org.apache.xerces.xs.datatypes.ObjectList;
 
 /**
  * @xerces.internal
@@ -243,6 +244,8 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     private Vector fPattern;
     private Vector fPatternStr;
     private Vector fEnumeration;
+    private short[] fEnumerationType;
+	private ShortList fEnumerationTypeList;
     private StringList fLexicalPattern;
     private StringList fLexicalEnumeration;
     private ObjectList fActualEnumeration;
@@ -351,6 +354,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         fPattern = fBase.fPattern;
         fPatternStr = fBase.fPatternStr;
         fEnumeration = fBase.fEnumeration;
+        fEnumerationType = fBase.fEnumerationType;
         fWhiteSpace = fBase.fWhiteSpace;
         fMaxExclusive = fBase.fMaxExclusive;
         fMaxInclusive = fBase.fMaxInclusive;
@@ -455,6 +459,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         fPattern = fBase.fPattern;
         fPatternStr = fBase.fPatternStr;
         fEnumeration = fBase.fEnumeration;
+        fEnumerationType = fBase.fEnumerationType;
         fWhiteSpace = fBase.fWhiteSpace;
         fMaxExclusive = fBase.fMaxExclusive;
         fMaxInclusive = fBase.fMaxInclusive;
@@ -787,6 +792,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             } else {
                 fEnumeration = new Vector();
                 Vector enumVals = facets.enumeration;
+                fEnumerationType = new short[enumVals.size()];
                 Vector enumNSDecls = facets.enumNSDecls;
                 ValidationContextImpl ctx = new ValidationContextImpl(context);
                 enumerationAnnotations = facets.enumAnnotations;
@@ -794,8 +800,10 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                     if (enumNSDecls != null)
                         ctx.setNSContext((NamespaceContext)enumNSDecls.elementAt(i));
                     try {
+                    	ValidatedInfo info = this.fBase.validateWithInfo((String)enumVals.elementAt(i), ctx, tempInfo);
                         // check 4.3.5.c0 must: enumeration values from the value space of base
-                        fEnumeration.addElement(this.fBase.validate((String)enumVals.elementAt(i), ctx, tempInfo));
+                        fEnumeration.addElement(info.actualValue);
+                        fEnumerationType[i] = info.actualValueType;
                     } catch (InvalidDatatypeValueException ide) {
                         reportError("enumeration-valid-restriction", new Object[]{enumVals.elementAt(i), this.getBaseType().getName()});
                     }
@@ -1470,6 +1478,29 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         return ob;
 
     }
+    
+    /**
+     * validate a value, and return the compiled form
+     */
+    public ValidatedInfo validateWithInfo(String content, ValidationContext context, ValidatedInfo validatedInfo) throws InvalidDatatypeValueException {
+
+        if (context == null)
+            context = fEmptyContext;
+
+        if (validatedInfo == null)
+            validatedInfo = new ValidatedInfo();
+        else
+            validatedInfo.memberType = null;
+
+        // first normalize string value, and convert it to actual value
+        boolean needNormalize = context==null||context.needToNormalize();
+        getActualValue(content, context, validatedInfo, needNormalize);
+
+        validate(context, validatedInfo);
+
+        return validatedInfo;
+
+    }
 
     /**
      * validate a value, and return the compiled form
@@ -2078,6 +2109,13 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             };
         }
         return fActualEnumeration;
+    }
+    
+    public ShortList getEnumerationTypeList() {
+        if (fEnumerationTypeList == null) {
+            fEnumerationTypeList = new ShortListImpl (fEnumerationType, fEnumerationType.length);
+        }
+        return fEnumerationTypeList;
     }
 
     /**
@@ -2718,6 +2756,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         fPattern = null;
         fPatternStr = null;
         fEnumeration = null;
+        fEnumerationType = null;
         fLexicalPattern = null;
         fLexicalEnumeration = null;
         fMaxInclusive = null;
