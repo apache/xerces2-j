@@ -287,6 +287,9 @@ public class XIncludeHandler
     // track the version of the document being parsed
     private boolean fIsXML11;
     
+    // track whether a DTD is being parsed
+    private boolean fInDTD;
+    
     // track whether a warning has already been reported for
     // use of the old http://www.w3.org/2001/XInclude namespace.
     private boolean fOldNamespaceWarningIssued;
@@ -319,6 +322,7 @@ public class XIncludeHandler
         fUnparsedEntities = new Vector();
         fParentRelativeURI = null;
         fIsXML11 = false;
+        fInDTD = false;
         fOldNamespaceWarningIssued = false;
 
         baseURIScope.clear();
@@ -578,12 +582,17 @@ public class XIncludeHandler
 
     public void comment(XMLString text, Augmentations augs)
         throws XNIException {
-        if (fDocumentHandler != null
-            && getState() == STATE_NORMAL_PROCESSING) {
-            fDepth++;
-            augs = modifyAugmentations(augs);
-            fDocumentHandler.comment(text, augs);
-            fDepth--;
+        if (!fInDTD) {
+            if (fDocumentHandler != null
+                && getState() == STATE_NORMAL_PROCESSING) {
+                fDepth++;
+                augs = modifyAugmentations(augs);
+                fDocumentHandler.comment(text, augs);
+                fDepth--;
+            }
+        }
+        else if (fDTDHandler != null) {
+            fDTDHandler.comment(text, augs);
         }
     }
 
@@ -592,13 +601,18 @@ public class XIncludeHandler
         XMLString data,
         Augmentations augs)
         throws XNIException {
-        if (fDocumentHandler != null
-            && getState() == STATE_NORMAL_PROCESSING) {
-            // we need to change the depth like this so that modifyAugmentations() works
-            fDepth++;
-            augs = modifyAugmentations(augs);
-            fDocumentHandler.processingInstruction(target, data, augs);
-            fDepth--;
+        if (!fInDTD) {
+            if (fDocumentHandler != null
+                && getState() == STATE_NORMAL_PROCESSING) {
+                // we need to change the depth like this so that modifyAugmentations() works
+                fDepth++;
+                augs = modifyAugmentations(augs);
+                fDocumentHandler.processingInstruction(target, data, augs);
+                fDepth--;
+            }
+        }
+        else if (fDTDHandler != null) {
+            fDTDHandler.processingInstruction(target, data, augs);
         }
     }
 
@@ -864,6 +878,7 @@ public class XIncludeHandler
         if (fDTDHandler != null) {
             fDTDHandler.endDTD(augmentations);
         }
+        fInDTD = false;
     }
 
     /* (non-Javadoc)
@@ -980,6 +995,7 @@ public class XIncludeHandler
      */
     public void startDTD(XMLLocator locator, Augmentations augmentations)
         throws XNIException {
+        fInDTD = true;
         if (fDTDHandler != null) {
             fDTDHandler.startDTD(locator, augmentations);
         }
