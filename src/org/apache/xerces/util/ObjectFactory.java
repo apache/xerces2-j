@@ -64,9 +64,6 @@ import java.util.Properties;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.InvocationTargetException;
-
 /**
  * This class is duplicated for each JAXP subpackage so keep it in sync.
  * It is package private and therefore is not exposed as part of the JAXP
@@ -294,13 +291,21 @@ public class ObjectFactory {
         // Figure out which ClassLoader to use for loading the provider
         // class.  If there is a Context ClassLoader then use it.
         ClassLoader cl = ss.getContextClassLoader();
-        if (cl == null) {
+        if (cl == null || cl == ss.getSystemClassLoader()) {
             // Assert: we are on JDK 1.1 or we have no Context ClassLoader
-            // so use the current ClassLoader
+            // so use the current ClassLoader or we have default (system)
+            // Context ClassLoader so extend to current ClassLoader (normal
+            // classloader will delegate back to system ClassLoader first)
             cl = ObjectFactory.class.getClassLoader();
         }
-        return cl;
 
+        if (cl == null) {
+            // Assert: we are on JDK 1.1 or we are on JDK 1.2 and loaded
+            // by bootstrap ClassLoader so extend to System ClassLoader
+            cl = ss.getSystemClassLoader();
+        }
+
+        return cl;
     } // findClassLoader():ClassLoader
 
     /**
@@ -352,13 +357,21 @@ public class ObjectFactory {
             } catch (ClassNotFoundException x) {
                 if (doFallback) {
                     // Fall back to current classloader
-                    cl = ObjectFactory.class.getClassLoader();
-                    providerClass = cl.loadClass(className);
+                    ClassLoader current = ObjectFactory.class.getClassLoader();
+                    if (current == null) {
+                        providerClass = Class.forName(className);
+                    } else if (cl != current) {
+                        cl = current;
+                        providerClass = cl.loadClass(className);
+                    } else {
+                        throw x;
+                    }
                 } else {
                     throw x;
                 }
             }
         }
+
         return providerClass;
     }
 
@@ -375,20 +388,17 @@ public class ObjectFactory {
         InputStream is = null;
 
         // First try the Context ClassLoader
-        ClassLoader cl = ss.getContextClassLoader();
-        if (cl != null) {
-            is = ss.getResourceAsStream(cl, serviceId);
+        ClassLoader cl = findClassLoader();
 
-            // If no provider found then try the current ClassLoader
-            if (is == null) {
-                cl = ObjectFactory.class.getClassLoader();
+        is = ss.getResourceAsStream(cl, serviceId);
+
+        // If no provider found then try the current ClassLoader
+        if (is == null) {
+            ClassLoader current = ObjectFactory.class.getClassLoader();
+            if (cl != current) {
+                cl = current;
                 is = ss.getResourceAsStream(cl, serviceId);
             }
-        } else {
-            // No Context ClassLoader or JDK 1.1 so try the current
-            // ClassLoader
-            cl = ObjectFactory.class.getClassLoader();
-            is = ss.getResourceAsStream(cl, serviceId);
         }
 
         if (is == null) {

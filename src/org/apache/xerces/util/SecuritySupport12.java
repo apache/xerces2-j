@@ -56,9 +56,7 @@
 package org.apache.xerces.util;
 
 import java.security.*;
-import java.net.*;
 import java.io.*;
-import java.util.*;
 
 /**
  * This class is duplicated for each JAXP subpackage so keep it in sync.
@@ -80,6 +78,19 @@ class SecuritySupport12 extends SecuritySupport {
 		return cl;
 	    }
 	});
+    }
+
+    public ClassLoader getSystemClassLoader() {
+        return (ClassLoader)
+            AccessController.doPrivileged(new PrivilegedAction() {
+                public Object run() {
+                    ClassLoader cl = null;
+                    try {
+                        cl = ClassLoader.getSystemClassLoader();
+                    } catch (SecurityException ex) {}
+                    return cl;
+                }
+            });
     }
 
     public String getSystemProperty(final String propName) {

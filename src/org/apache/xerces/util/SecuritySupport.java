@@ -55,8 +55,6 @@
 
 package org.apache.xerces.util;
 
-import java.lang.reflect.*;
-import java.net.*;
 import java.io.*;
 
 /**
@@ -116,6 +114,10 @@ class SecuritySupport {
 
     public ClassLoader getContextClassLoader() {
 	return null;
+    }
+
+    public ClassLoader getSystemClassLoader() {
+        return null;
     }
 
     public String getSystemProperty(String propName) {
