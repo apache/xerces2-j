@@ -88,7 +88,7 @@ public class XSImplementationImpl extends CoreDOMImplementationImpl
      * @see org.apache.xerces.xs.XSImplementation#createXSLoader(org.apache.xerces.xs.StringList)
      */
     public XSLoader createXSLoader(StringList versions) throws XSException {
-    	XSLoader loader = new XMLSchemaLoader();
+    	XSLoader loader = new XSLoaderImpl();
     	if (versions == null){
 			return loader;
     	}

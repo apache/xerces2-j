@@ -1002,13 +1002,7 @@ public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent,
             Grammar g = loadGrammar(dom2xmlInputSource(is));
             return ((XSGrammar) g).toXSModel();
         } catch (Exception e) {
-            if (fErrorHandler != null) {
-                DOMErrorImpl error = new DOMErrorImpl();
-                error.fException = e;
-                error.fMessage = e.getMessage();
-                error.fSeverity = DOMError.SEVERITY_FATAL_ERROR;
-                fErrorHandler.getErrorHandler().handleError(error);
-            }
+            reportDOMFatalError(e);
             return null;
         }
     }
@@ -1026,39 +1020,27 @@ public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent,
             try {
                 gs[i] = (SchemaGrammar) loadGrammar(dom2xmlInputSource(is.item(i)));
             } catch (Exception e) {
-                if (fErrorHandler != null) {
-                    DOMErrorImpl error = new DOMErrorImpl();
-                    error.fException = e;
-                    error.fMessage = e.getMessage();
-                    error.fSeverity = DOMError.SEVERITY_FATAL_ERROR;
-                    fErrorHandler.getErrorHandler().handleError(error);
-                }
+                reportDOMFatalError(e);
                 return null;
             }
         }
         return new XSModelImpl(gs);
     }
-
+    
     /* (non-Javadoc)
      * @see org.apache.xerces.xs.XSLoader#loadURI(java.lang.String)
      */
     public XSModel loadURI(String uri) {
-    	try {
-			Grammar g = loadGrammar(new XMLInputSource(null, uri, null));
-			return ((XSGrammar)g).toXSModel();
-    	}
-    	catch (Exception e){
-			if (fErrorHandler != null) {
-				DOMErrorImpl error = new DOMErrorImpl();
-				error.fException = e;
-				error.fMessage = e.getMessage();
-				error.fSeverity = DOMError.SEVERITY_FATAL_ERROR;
-				fErrorHandler.getErrorHandler().handleError(error);
-			}
-    		return null;
-    	}
+        try {
+            Grammar g = loadGrammar(new XMLInputSource(null, uri, null));
+            return ((XSGrammar)g).toXSModel();
+        }
+        catch (Exception e){
+            reportDOMFatalError(e);
+            return null;
+        }
     }
-
+    
     /* (non-Javadoc)
      * @see org.apache.xerces.xs.XSLoader#loadURIList(org.apache.xerces.xs.StringList)
      */
@@ -1073,17 +1055,21 @@ public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent,
                 gs[i] =
                     (SchemaGrammar) loadGrammar(new XMLInputSource(null, uriList.item(i), null));
             } catch (Exception e) {
-                if (fErrorHandler != null) {
-                    DOMErrorImpl error = new DOMErrorImpl();
-                    error.fException = e;
-                    error.fMessage = e.getMessage();
-                    error.fSeverity = DOMError.SEVERITY_FATAL_ERROR;
-                    fErrorHandler.getErrorHandler().handleError(error);
-                }
+                reportDOMFatalError(e);
                 return null;
             }
         }
         return new XSModelImpl(gs);
+    }
+    
+    void reportDOMFatalError(Exception e) {
+        if (fErrorHandler != null) {
+            DOMErrorImpl error = new DOMErrorImpl();
+            error.fException = e;
+            error.fMessage = e.getMessage();
+            error.fSeverity = DOMError.SEVERITY_FATAL_ERROR;
+            fErrorHandler.getErrorHandler().handleError(error);
+        }
     }
 
     /* (non-Javadoc)
@@ -1248,7 +1234,7 @@ public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent,
         
     }
     
-	private XMLInputSource dom2xmlInputSource(LSInput is) {
+	XMLInputSource dom2xmlInputSource(LSInput is) {
 		// need to wrap the LSInput with an XMLInputSource
 		XMLInputSource xis = null;
         
