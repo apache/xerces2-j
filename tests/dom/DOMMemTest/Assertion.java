@@ -68,19 +68,30 @@ import java.io.PrintWriter;
 
 public class Assertion {
 
-    public static void assert(boolean result) {
-	if (!result) {
-	    System.err.println("Assertion failed:\n" + getSourceLocation());
-	}
+    public static boolean assert(boolean result) {
+	return assert(result, null);
     }
 
-    public static void equals(String s1, String s2) {
+    public static boolean assert(boolean result, String error) {
+	if (!result) {
+	    System.err.print("Assertion failed: ");
+	    if (error != null) {
+		System.err.print(error);
+	    }
+	    System.err.println();
+	    System.err.println(getSourceLocation());
+	}
+	return result;
+    }
+
+    public static boolean equals(String s1, String s2) {
         boolean result = ((s1 != null && s1.equals(s2))
 			  || (s1 == null && s2 == null));
 	if (!result) {
 	    assert(result);
 	    System.err.println("  was: equals(" + s1 + ", \"" + s2 + "\")");
 	}
+	return result;
     }
 
     public static String getSourceLocation() {
