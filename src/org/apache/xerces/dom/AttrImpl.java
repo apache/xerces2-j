@@ -1094,6 +1094,18 @@ public class AttrImpl
         return super.isEqualNode(arg);
     }
 
+    /**
+     * DOM Level 3 WD- Experimental.
+     * @see org.apache.xerces.dom3.TypeInfo#isDerivedFrom()
+     */
+    public boolean isDerivedFrom(String typeNamespaceArg, 
+                                 String typeNameArg, 
+                                 int derivationMethod) {
+                                 	
+        return false;
+    }
+        
+
     //
     // Public methods
     //

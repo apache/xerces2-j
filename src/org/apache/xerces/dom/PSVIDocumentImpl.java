@@ -120,13 +120,14 @@ public class PSVIDocumentImpl extends DocumentImpl {
         return new PSVIAttrNSImpl(this, namespaceURI, qualifiedName, localName);
     } 
     
-        /**
-     *  The configuration used when <code>Document.normalizeDocument</code> is 
+    /**
+     * 
+     * The configuration used when <code>Document.normalizeDocument</code> is 
      * invoked. 
      * @since DOM Level 3
      */
-    public DOMConfiguration getConfig(){
-        super.getConfig();
+    public DOMConfiguration getDomConfig(){
+        super.getDomConfig();
         return fConfiguration;
     }
     

@@ -122,9 +122,9 @@ public class EntityImpl
     protected String encoding;
 
 
-    /** Actual Encoding */
-    protected String actualEncoding;
-
+    /** Input Encoding */
+    protected String inputEncoding;
+    
     /** Version */
     protected String version;
 
@@ -228,6 +228,7 @@ public class EntityImpl
        if (needsSyncData()) {
            synchronizeData();
        }
+
        return encoding;
 
    } // getVersion():String
@@ -268,46 +269,46 @@ public class EntityImpl
     } // setPublicId(String)
 
     /**
-     * DOM Level 3 WD - experimental 
+     * NON-DOM 
      * encoding - An attribute specifying, as part of the text declaration, 
      * the encoding of this entity, when it is an external parsed entity. 
      * This is null otherwise
+     *
      */
     public void setXmlEncoding(String value) {
-        
         if (needsSyncData()) {
             synchronizeData();
         }
-    	encoding = value;
-
+        encoding = value;
     } // setEncoding (String)
 
 
     /**
-     * An attribute specifying the actual encoding of this entity, when it is 
-     * an external parsed entity. This is <code>null</code> otherwise.
+     * An attribute specifying the encoding used for this entity at the tiome 
+     * of parsing, when it is an external parsed entity. This is 
+     * <code>null</code> if it an entity from the internal subset or if it 
+     * is not known..
      * @since DOM Level 3
      */
-    public String getActualEncoding(){
+    public String getInputEncoding(){
         if (needsSyncData()) {
             synchronizeData();
         }
-        return actualEncoding;
+        return inputEncoding;
     }
+    
     /**
-     * An attribute specifying the actual encoding of this entity, when it is 
-     * an external parsed entity. This is <code>null</code> otherwise.
-     * @since DOM Level 3
+     * NON-DOM, used to set the input encoding.
      */
-    public void setActualEncoding(String actualEncoding){
+    public void setInputEncoding(String inputEncoding){
         if (needsSyncData()) {
             synchronizeData();
         }
-        this.actualEncoding = actualEncoding;
+        this.inputEncoding = inputEncoding;
     }
 
     /** 
-      * DOM Level 3 WD - experimental
+      * NON-DOM
       * version - An attribute specifying, as part of the text declaration, 
       * the version number of this entity, when it is an external parsed entity. 
       * This is null otherwise
@@ -316,8 +317,7 @@ public class EntityImpl
         if (needsSyncData()) {
             synchronizeData();
         }
-    	version = value;
-
+        version = value;
     } // setVersion (String)
 
 
@@ -368,5 +368,7 @@ public class EntityImpl
         }
         baseURI = uri;
     }
+
+
 
 } // class EntityImpl

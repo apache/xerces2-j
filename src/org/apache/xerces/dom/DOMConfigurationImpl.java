@@ -64,6 +64,7 @@ import java.util.Vector;
 
 import org.apache.xerces.dom3.DOMConfiguration;
 import org.apache.xerces.dom3.DOMErrorHandler;
+import org.apache.xerces.dom3.DOMStringList;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLEntityManager;
@@ -206,6 +207,10 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 
     protected final DOMErrorHandlerWrapper fErrorHandlerWrapper =
                 new DOMErrorHandlerWrapper();
+                
+    // private data
+    
+    private DOMStringList fRecognizedParameters;            
 
 
     //
@@ -578,6 +583,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                     || name.equals(Constants.DOM_NORMALIZE_CHARACTERS)
                     || name.equals(Constants.DOM_CANONICAL_FORM)
                     || name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)
+                    || name.equals(Constants.DOM_CHECK_CHAR_NORMALIZATION)
                     //REVISIT: we need to support true value
                     || name.equals(Constants.DOM_WELLFORMED)) {
                 if (state) { // true is not supported
@@ -642,7 +648,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                     throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
                 }
             }
-            else if (name.equals(Constants.DOM_ENTITY_RESOLVER)) {
+            else if (name.equals(Constants.DOM_RESOURCE_RESOLVER)) {
                 if (value instanceof DOMResourceResolver) {
                     try {
                         setEntityResolver(new DOMEntityResolverWrapper((DOMResourceResolver) value));
@@ -807,6 +813,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 				|| name.equals(Constants.DOM_NORMALIZE_CHARACTERS)
 				|| name.equals(Constants.DOM_CANONICAL_FORM)
 				|| name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)
+				|| name.equals(Constants.DOM_CHECK_CHAR_NORMALIZATION)				
                 //REVISIT: currently its set to false
                 || name.equals(Constants.DOM_WELLFORMED)
                 ) {
@@ -827,7 +834,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 		else if (name.equals(Constants.DOM_ERROR_HANDLER)) {
             return fErrorHandlerWrapper.getErrorHandler();
 		}
-		else if (name.equals(Constants.DOM_ENTITY_RESOLVER)) {
+		else if (name.equals(Constants.DOM_RESOURCE_RESOLVER)) {
 			XMLEntityResolver entityResolver = getEntityResolver();
 			if (entityResolver != null && entityResolver instanceof DOMEntityResolverWrapper) {
 				return ((DOMEntityResolverWrapper) entityResolver).getEntityResolver();
@@ -899,6 +906,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                     || name.equals(Constants.DOM_NORMALIZE_CHARACTERS)
                     || name.equals(Constants.DOM_CANONICAL_FORM)
                     || name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)
+                    || name.equals(Constants.DOM_CHECK_CHAR_NORMALIZATION)
                     //REVISIT: we need to support true value
                     || name.equals(Constants.DOM_WELLFORMED)
                     ) {
@@ -917,7 +925,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 		else if (name.equals(Constants.DOM_ERROR_HANDLER)) {
             return (value instanceof DOMErrorHandler) ? true : false ;
         }
-        else if (name.equals(Constants.DOM_ENTITY_RESOLVER)) {
+        else if (name.equals(Constants.DOM_RESOURCE_RESOLVER)) {
             return (value instanceof DOMResourceResolver) ? true : false ;
         }
         else if (name.equals(Constants.DOM_SCHEMA_LOCATION)) {
@@ -942,6 +950,55 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 
 	} //canSetParameter
 
+    /**
+     *  DOM Level 3 CR - Experimental.
+     * 
+     *  The list of the parameters supported by this 
+     * <code>DOMConfiguration</code> object and for which at least one value 
+     * can be set by the application. Note that this list can also contain 
+     * parameter names defined outside this specification. 
+     */
+    public DOMStringList getParameterNames() {
+    	if (fRecognizedParameters == null){
+			Vector parameters = new Vector();
+		
+			//Add DOM recognized parameters
+			//REVISIT: Would have been nice to have a list of 
+			//recognized paramters.
+			parameters.add(Constants.DOM_COMMENTS);
+			parameters.add(Constants.DOM_DATATYPE_NORMALIZATION);
+			parameters.add(Constants.DOM_CDATA_SECTIONS);    	
+			parameters.add(Constants.DOM_ENTITIES); 
+			parameters.add(Constants.DOM_SPLIT_CDATA); 
+			parameters.add(Constants.DOM_NAMESPACES); 
+			parameters.add(Constants.DOM_VALIDATE); 
+        
+			parameters.add(Constants.DOM_INFOSET); 
+			parameters.add(Constants.DOM_NORMALIZE_CHARACTERS); 
+			parameters.add(Constants.DOM_CANONICAL_FORM); 
+			parameters.add(Constants.DOM_VALIDATE_IF_SCHEMA); 
+			parameters.add(Constants.DOM_CHECK_CHAR_NORMALIZATION);    	
+			parameters.add(Constants.DOM_WELLFORMED); 
+    	
+			parameters.add(Constants.DOM_NAMESPACE_DECLARATIONS); 
+			parameters.add(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT); 
+
+			parameters.add(Constants.DOM_ERROR_HANDLER);
+			parameters.add(Constants.DOM_SCHEMA_TYPE);
+			parameters.add(Constants.DOM_SCHEMA_LOCATION);
+			parameters.add(Constants.DOM_RESOURCE_RESOLVER);
+
+			//Add recognized xerces features and properties
+			parameters.addAll(fRecognizedFeatures);
+			parameters.addAll(fRecognizedProperties);
+		
+			fRecognizedParameters = new DOMStringListImpl(parameters);		
+    		
+    	}
+
+    	return fRecognizedParameters; 	
+    }//getParameterNames
+    
     //
     // Protected methods
     //

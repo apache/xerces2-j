@@ -145,18 +145,24 @@ public class TextImpl
     } // setIgnorableWhitespace(boolean)
     
 
-    /**    
-    * DOM Level 3 WD - Experimental.
-     * Returns whether this text node contains whitespace in element content, 
-     * often abusively called "ignorable whitespace".     
+    /**
+     * DOM L3 Core CR - Experimental 
+     * 
+     * Returns whether this text node contains 
+     * element content whitespace</a>, often abusively called "ignorable whitespace". 
+     * The text node is determined to contain whitespace in element content 
+     * during the load of the document or if validation occurs while using 
+     * <code>Document.normalizeDocument()</code>.
+     * @since DOM Level 3
      */
-    public boolean isWhitespaceInElementContent(){
+    public boolean isElementContentWhitespace() {
         // REVISIT: is this implemenation correct?
         if (needsSyncData()) {
             synchronizeData();
         }
         return internalIsIgnorableWhitespace();
     }
+
 
     /**
      * DOM Level 3 WD - Experimental.
@@ -299,6 +305,7 @@ public class TextImpl
         return internalIsIgnorableWhitespace();
 
     } // isIgnorableWhitespace():boolean
+
     
     //
     // Text methods
@@ -352,7 +359,7 @@ public class TextImpl
 
     } // splitText(int):Text
 
-
+    
     /**
      * NON-DOM (used by DOMParser): Reset data for the node. 
      */

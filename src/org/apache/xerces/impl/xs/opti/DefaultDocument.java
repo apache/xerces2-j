@@ -176,14 +176,16 @@ public class DefaultDocument extends NodeImpl
 
     // DOM Level 3 methods.
     
-    public String getActualEncoding(){
+    public String getInputEncoding(){
         return null;
     }
     
-    public void setActualEncoding(String actualEncoding){
+    /**
+    public void setInputEncoding(String actualEncoding){
        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
     }
-
+	*/
+	
     public String getXmlEncoding(){
         return null;
     }
@@ -193,11 +195,11 @@ public class DefaultDocument extends NodeImpl
      * An attribute specifying, as part of the XML declaration, the encoding 
      * of this document. This is <code>null</code> when unspecified.
      * @since DOM Level 3
-     */
     public void setXmlEncoding(String encoding){
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
     }
-
+     */
+     
     /**
      * An attribute specifying, as part of the XML declaration, whether this 
      * document is standalone.
@@ -303,7 +305,7 @@ public class DefaultDocument extends NodeImpl
      * invoked. 
      * @since DOM Level 3
      */
-    public DOMConfiguration getConfig(){
+    public DOMConfiguration getDomConfig(){
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
     }
     

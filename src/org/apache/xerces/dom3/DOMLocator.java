@@ -34,13 +34,16 @@ public interface DOMLocator {
     public int getColumnNumber();
 
     /**
-     * The byte or character offset into the input source this locator is
-     * pointing to. If the input source is a file or a byte stream then this
-     * is the byte offset into that stream, but if the input source is a
-     * character media then the offset is the character offset. The value is
-     * <code>-1</code> if there is no offset available.
+     * The byte offset into the input source this locator is pointing to or 
+     * <code>-1</code> if there is no byte offset available.
      */
-    public int getOffset();
+    public int getByteOffset();
+
+    /**
+     * The UTF-16, as defined in [Unicode] and Amendment 1 of [ISO/IEC 10646], offset into the input source this locator is pointing to or 
+     * <code>-1</code> if there is no UTF-16 offset available.
+     */
+    public int getUtf16Offset();
 
     /**
      * The node this locator is pointing to, or <code>null</code> if no node

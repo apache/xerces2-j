@@ -189,7 +189,7 @@ public final class Constants {
     public static final String DOM_CERTIFIED =  "certified";
    
     // DOM Properties
-    public static final String DOM_ENTITY_RESOLVER = "entity-resolver";
+    public static final String DOM_RESOURCE_RESOLVER = "resource-resolver";
     public static final String DOM_ERROR_HANDLER = "error-handler";
     public static final String DOM_SCHEMA_TYPE = "schema-type";
     public static final String DOM_SCHEMA_LOCATION = "schema-location";

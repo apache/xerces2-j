@@ -452,6 +452,21 @@ public class ElementNSImpl
         return null;
     }
 
+    /**
+     * DOM Level 3 CR - Experimental
+     *
+     * @see org.apache.xerces.dom3.TypeInfo#isDerivedFrom()
+     */
+    public boolean isDerivedFrom(String typeNamespaceArg, 
+                                 String typeNameArg, 
+                                 int derivationMethod) {
+        //REVISIT: XSSimpleTypeDecl and XSComplexTypeDecl .derivedFrom
+        //derivationMethod constants in DOM vs Xerces                                 	
+        if (type !=null){
+            return type.derivedFrom(typeNamespaceArg, typeNameArg,(short)derivationMethod);
+        } 
+        return false;
+    }
 
     /**
      * NON-DOM: setting type used by the DOM parser

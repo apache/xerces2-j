@@ -408,7 +408,8 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
      */
     public void reset() throws XNIException {
         super.reset();
-        
+       
+       
         // get feature state
         fCreateEntityRefNodes =
             fConfiguration.getFeature(CREATE_ENTITY_REF_NODES);
@@ -516,13 +517,12 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
 
                 // set base uri
                 erImpl.setBaseURI(identifier.getExpandedSystemId());
-
                 if (fDocumentType != null) {
                     // set actual encoding
                     NamedNodeMap entities = fDocumentType.getEntities();
                     fCurrentEntityDecl = (EntityImpl) entities.getNamedItem(name);
                     if (fCurrentEntityDecl != null) {
-                        fCurrentEntityDecl.setActualEncoding(encoding);
+                        fCurrentEntityDecl.setInputEncoding(encoding);
                     }
 
                 }
@@ -548,7 +548,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                             fDeferredDocumentImpl.getNodeName(node, false);
                         if (nodeName.equals(name)) {
                             fDeferredEntityDecl = node;
-                            fDeferredDocumentImpl.setActualEncoding(node, encoding);
+                            fDeferredDocumentImpl.setInputEncoding(node, encoding);
                             break;
                         }
                     }
@@ -770,7 +770,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                 // set DOM error checking off
                 fDocumentImpl.setStrictErrorChecking(false);
                 // set actual encoding
-                fDocumentImpl.setActualEncoding(encoding);
+                fDocumentImpl.setInputEncoding(encoding);
                 // set documentURI
                 fDocumentImpl.setDocumentURI(locator.getExpandedSystemId());
             }
@@ -799,7 +799,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                         // set DOM error checking off
                         fDocumentImpl.setStrictErrorChecking(false);
                         // set actual encoding
-                        fDocumentImpl.setActualEncoding(encoding);
+                        fDocumentImpl.setInputEncoding(encoding);
                         // set documentURI
                         if (locator != null) {
                             fDocumentImpl.setDocumentURI(locator.getExpandedSystemId());
@@ -826,7 +826,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
             //          Document.support instead of specific class
 
             // set actual encoding
-            fDeferredDocumentImpl.setActualEncoding(encoding);
+            fDeferredDocumentImpl.setInputEncoding(encoding);
             // set documentURI
             fDeferredDocumentImpl.setDocumentURI(locator.getExpandedSystemId());
             fCurrentNodeIndex = fDocumentIndex;

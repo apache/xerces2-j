@@ -1061,6 +1061,18 @@ public class ElementImpl
         return null;
     }
 
+    /**
+     * DOM Level 3 CR - Experimental
+     *
+     * @see org.apache.xerces.dom3.TypeInfo#isDerivedFrom()
+     */
+    public boolean isDerivedFrom(String typeNamespaceArg, 
+                                 String typeNameArg, 
+                                 int derivationMethod) {
+                                 	
+        return false;
+    }
+
 	/**
 	 * Method getSchemaTypeInfo.
 	 * @return TypeInfo

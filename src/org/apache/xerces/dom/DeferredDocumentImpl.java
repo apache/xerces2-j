@@ -345,9 +345,15 @@ public class DeferredDocumentImpl
     }
 
 
-    // DOM Level 3
-    // setting actual encoding
-    public void setActualEncoding(int currentEntityDecl, String value){
+    /**
+     * DOM Internal 
+     *
+     * An attribute specifying the actual encoding of this document. This is
+     * <code>null</code> otherwise.
+     * <br> This attribute represents the property [character encoding scheme]
+     * defined in .
+     */
+    public void setInputEncoding(int currentEntityDecl, String value){
         // get first extra data chunk
         int nodeIndex = getNodeExtra(currentEntityDecl, false);
         // get second extra data chunk

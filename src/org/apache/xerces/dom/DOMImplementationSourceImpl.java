@@ -105,7 +105,20 @@ public class DOMImplementationSourceImpl
         return null;
     }
     
-	public DOMImplementationList getDOMImplementations(String features) {
+    /**
+     * DOM Level 3 Core - CR
+     *
+     * A method to request a list of DOM implementations that support the 
+     * specified features and versions, as specified in .
+     * @param features A string that specifies which features and versions 
+     *   are required. This is a space separated list in which each feature 
+     *   is specified by its name optionally followed by a space and a 
+     *   version number. This is something like: "XML 3.0 Traversal +Events 
+     *   2.0"
+     * @return A list of DOM implementations that support the desired 
+     *   features.
+     */
+    public DOMImplementationList getDOMImplementationList(String features) {
 		// first check whether the CoreDOMImplementation would do
 		DOMImplementation impl = CoreDOMImplementationImpl.getDOMImplementation();
         DOMImplementationListImpl list = new DOMImplementationListImpl();

@@ -67,6 +67,7 @@ import org.apache.xerces.dom.DOMMessageFormatter;
 import org.apache.xerces.dom3.DOMConfiguration;
 import org.apache.xerces.dom3.DOMError;
 import org.apache.xerces.dom3.DOMErrorHandler;
+import org.apache.xerces.dom3.DOMStringList;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.DOMEntityResolverWrapper;
 import org.apache.xerces.util.DOMErrorHandlerWrapper;
@@ -418,7 +419,7 @@ extends AbstractDOMParser implements DOMParser, DOMConfiguration {
 				}
 
 			}
-			else if (name.equals(Constants.DOM_ENTITY_RESOLVER)) {
+			else if (name.equals(Constants.DOM_RESOURCE_RESOLVER)) {
 				if (value instanceof DOMResourceResolver) {
 					try {
                         fConfiguration.setProperty(ENTITY_RESOLVER, new DOMEntityResolverWrapper((DOMResourceResolver) value));
@@ -595,7 +596,7 @@ extends AbstractDOMParser implements DOMParser, DOMConfiguration {
 			}
 			return null;
 		}
-		else if (name.equals(Constants.DOM_ENTITY_RESOLVER)) {
+		else if (name.equals(Constants.DOM_RESOURCE_RESOLVER)) {
 			try {
                 XMLEntityResolver entityResolver =
                (XMLEntityResolver) fConfiguration.getProperty(ENTITY_RESOLVER);
@@ -675,7 +676,7 @@ extends AbstractDOMParser implements DOMParser, DOMConfiguration {
 				}
 				return false;
 			}
-			else if (name.equals(Constants.DOM_ENTITY_RESOLVER)) {
+			else if (name.equals(Constants.DOM_RESOURCE_RESOLVER)) {
 				if (value instanceof DOMResourceResolver) {
 					return true;
 				}
@@ -701,7 +702,19 @@ extends AbstractDOMParser implements DOMParser, DOMConfiguration {
 		}
 	}
 
-
+    /**
+     *  DOM Level 3 CR - Experimental.
+     * 
+     *  The list of the parameters supported by this 
+     * <code>DOMConfiguration</code> object and for which at least one value 
+     * can be set by the application. Note that this list can also contain 
+     * parameter names defined outside this specification. 
+     */
+    public DOMStringList getParameterNames() {
+    	//REVISIT
+    	return null; 	
+    }	
+    
     /**
      * Parse an XML document from a location identified by an URI reference.
      * If the URI contains a fragment identifier (see section 4.1 in ), the

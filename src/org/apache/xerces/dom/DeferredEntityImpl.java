@@ -169,7 +169,7 @@ public class DeferredEntityImpl
         // baseURI, actualEncoding DOM L3
         int extraIndex2 = ownerDocument.getNodeExtra(extraDataIndex);
         baseURI = ownerDocument.getNodeName(extraIndex2);
-        actualEncoding = ownerDocument.getNodeValue(extraIndex2);
+        inputEncoding = ownerDocument.getNodeValue(extraIndex2);
 
     } // synchronizeData()
 

@@ -16,84 +16,84 @@ package org.apache.xerces.dom3;
  *  The <code>TypeInfo</code> interface represent a type referenced from 
  * <code>Element</code> or <code>Attr</code> nodes, specified in the schemas 
  * associated with the document. The type is a pair of a namespace URI and 
- * name properties, and depends on the document's schema.
- * <p> If the document's schema is an XML DTD [<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>], the values
- * are computed as follows:
+ * name properties, and depends on the document's schema. 
+ * <p> If the document's schema is an XML DTD [<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>], the values 
+ * are computed as follows: 
  * <ul>
- * <li> If this type is referenced from an
- * <code>Attr</code> node, <code>typeNamespace</code> is <code>null</code>
- * and <code>typeName</code> represents the <b>[attribute type]</b> property in the [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information set</a>]
- * . If there is no declaration for the attribute, <code>typeName</code> is
- * <code>null</code>.
+ * <li> If this type is referenced from an 
+ * <code>Attr</code> node, <code>typeNamespace</code> is <code>null</code> 
+ * and <code>typeName</code> represents the <b>[attribute type]</b> property in the [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information Set</a>]
+ * . If there is no declaration for the attribute, <code>typeName</code> is 
+ * <code>null</code>. 
  * </li>
- * <li> If this type is referenced from an
- * <code>Element</code> node, the <code>typeNamespace</code> and
- * <code>typeName</code> are <code>null</code>.
+ * <li> If this type is referenced from an 
+ * <code>Element</code> node, the <code>typeNamespace</code> and 
+ * <code>typeName</code> are <code>null</code>. 
  * </li>
  * </ul>
  * <p> If the document's schema is an XML Schema [<a href='http://www.w3.org/TR/2001/REC-xmlschema-1-20010502/'>XML Schema Part 1</a>]
- * , the values are computed as follows using the post-schema-validation
- * infoset contributions (also called PSVI contributions):
+ * , the values are computed as follows using the post-schema-validation 
+ * infoset contributions (also called PSVI contributions): 
  * <ul>
- * <li> If the <b>[validity]</b> property exists AND is <em>"invalid"</em> or <em>"notKnown"</em>: the {target namespace} and {name} properties of the declared type if
- * available, otherwise <code>null</code>.
- * <p ><b>Note:</b>  At the time of writing, the XML Schema specification does
- * not require exposing the declared type. Thus, DOM implementations might
- * choose not to provide type information if validity is not valid.
+ * <li> If the <b>[validity]</b> property exists AND is <em>"invalid"</em> or <em>"notKnown"</em>: the {target namespace} and {name} properties of the declared type if 
+ * available, otherwise <code>null</code>. 
+ * <p ><b>Note:</b>  At the time of writing, the XML Schema specification does 
+ * not require exposing the declared type. Thus, DOM implementations might 
+ * choose not to provide type information if validity is not valid. 
  * </li>
- * <li> If the <b>[validity]</b> property exists and is <em>"valid"</em>:
+ * <li> If the <b>[validity]</b> property exists and is <em>"valid"</em>: 
  * <ol>
- * <li> If <b>[member type definition]</b> exists:
+ * <li> If <b>[member type definition]</b> exists: 
  * <ol>
- * <li>If {name} is not absent, then expose {name} and {target
+ * <li>If {name} is not absent, then expose {name} and {target 
  * namespace} properties of the <b>[member type definition]</b> property;
  * </li>
- * <li>Otherwise, expose the namespace and local name of the
+ * <li>Otherwise, expose the namespace and local name of the 
  * corresponding anonymous type name.
  * </li>
  * </ol>
  * </li>
- * <li> If the <b>[type definition]</b> property exists:
+ * <li> If the <b>[type definition]</b> property exists: 
  * <ol>
- * <li>If {name} is not absent, then expose {name} and {target
+ * <li>If {name} is not absent, then expose {name} and {target 
  * namespace} properties of the <b>[type definition]</b> property;
  * </li>
- * <li>Otherwise, expose the namespace and local name of the
+ * <li>Otherwise, expose the namespace and local name of the 
  * corresponding anonymous type name.
  * </li>
- * </ol>
+ * </ol> 
  * </li>
- * <li> If the <b>[member type definition anonymous]</b> exists:
+ * <li> If the <b>[member type definition anonymous]</b> exists: 
  * <ol>
  * <li>If it is false, then expose <b>[member type definition name]</b> and <b>[member type definition namespace]</b> properties;
  * </li>
- * <li>Otherwise, expose the namespace and local name of the
+ * <li>Otherwise, expose the namespace and local name of the 
  * corresponding anonymous type name.
  * </li>
- * </ol>
+ * </ol> 
  * </li>
- * <li> If the <b>[type definition anonymous]</b> exists:
+ * <li> If the <b>[type definition anonymous]</b> exists: 
  * <ol>
  * <li>If it is false, then expose <b>[type definition name]</b> and <b>[type definition namespace]</b> properties;
  * </li>
- * <li>Otherwise, expose the namespace and local name of the
+ * <li>Otherwise, expose the namespace and local name of the 
  * corresponding anonymous type name.
  * </li>
- * </ol>
+ * </ol> 
  * </li>
  * </ol>
  * </li>
  * </ul>
- * <p ><b>Note:</b>  Other schema languages are outside the scope of the W3C
- * and therefore should define how to represent their type systems using
+ * <p ><b>Note:</b>  Other schema languages are outside the scope of the W3C 
+ * and therefore should define how to represent their type systems using 
  * <code>TypeInfo</code>. 
- * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>Document Object Model (DOM) Level 3 Core Specification</a>.
  * @since DOM Level 3
  */
 public interface TypeInfo {
     /**
      *  The name of a type declared for the associated element or attribute, 
-     * or <code>null</code> if unknown.
+     * or <code>null</code> if unknown. 
      */
     public String getTypeName();
 
@@ -103,5 +103,62 @@ public interface TypeInfo {
      * declaration or if no namespace information is available. 
      */
     public String getTypeNamespace();
+
+    // DerivationMethods
+    /**
+     *  If the document's schema is an XML Schema [<a href='http://www.w3.org/TR/2001/REC-xmlschema-1-20010502/'>XML Schema Part 1</a>]
+     * , this constant represents the derivation by <a href='http://www.w3.org/TR/2001/REC-xmlschema-1-20010502/#key-typeRestriction'>
+     * restriction</a> if complex types are involved, or a <a href='http://www.w3.org/TR/2001/REC-xmlschema-1-20010502/#element-restriction'>
+     * restriction</a> if simple types are involved. 
+     */
+    public static final int DERIVATION_RESTRICTION    = 0x00000001;
+    /**
+     *  If the document's schema is an XML Schema [<a href='http://www.w3.org/TR/2001/REC-xmlschema-1-20010502/'>XML Schema Part 1</a>]
+     * , this constant represents the derivation by <a href='http://www.w3.org/TR/2001/REC-xmlschema-1-20010502/#key-typeExtension'>
+     * extension</a> if complex types are involved. 
+     */
+    public static final int DERIVATION_EXTENSION      = 0x00000002;
+    /**
+     *  If the document's schema is an XML Schema [<a href='http://www.w3.org/TR/2001/REC-xmlschema-1-20010502/'>XML Schema Part 1</a>]
+     * , this constant represents the <a href='http://www.w3.org/TR/2001/REC-xmlschema-1-20010502/#element-union'>
+     * union</a> if simple types are involved. 
+     */
+    public static final int DERIVATION_UNION          = 0x00000004;
+    /**
+     *  If the document's schema is an XML Schema [<a href='http://www.w3.org/TR/2001/REC-xmlschema-1-20010502/'>XML Schema Part 1</a>]
+     * , this constant represents the <a href='http://www.w3.org/TR/2001/REC-xmlschema-1-20010502/#element-list'>list</a> if simple types are involved. 
+     */
+    public static final int DERIVATION_LIST           = 0x00000008;
+
+    /**
+     *  The method checks if this <code>TypeInfo</code> derives from the 
+     * specified ancestor type. 
+     * @param typeNamespaceArg  the namespace of the ancestor type. 
+     * @param typeNameArg  the name of the ancestor type. 
+     * @param derivationMethod  the type of derivation and conditions applied 
+     *   between two types, as described in the list of constants provided 
+     *   in this interface. Note that those constants: 
+     * <ul>
+     * <li> are only defined if 
+     *   the document's schema is an XML Schema; 
+     * </li>
+     * <li> could be combined if XML 
+     *   Schema types are involved. 
+     * </li>
+     * <li> 
+     *   <code>TypeInfo.DERIVATION_EXTENSION</code> only applies to XML 
+     *   Schema complex types. 
+     * </li>
+     * </ul> The value <code>0x00000000</code> represents 
+     *   any kind of derivation method. 
+     * @return  <code>true</code> if the specified type is an ancestor 
+     *   according to the derivation parameter, <code>false</code> 
+     *   otherwise. If the document's schema is a DTD or no schema is 
+     *   associated with the document, this method will always return 
+     *   <code>false</code>. 
+     */
+    public boolean isDerivedFrom(String typeNamespaceArg, 
+                                 String typeNameArg, 
+                                 int derivationMethod);
 
 }

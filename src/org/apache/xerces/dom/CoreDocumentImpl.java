@@ -771,31 +771,35 @@ extends ParentNode implements Document, DocumentLS {
     
     
     /**
-     * DOM Level 3 WD - Experimental.
-     * An attribute specifying the actual encoding of this document. This is
-     * <code>null</code> otherwise.
-     * <br> This attribute represents the property [character encoding scheme]
-     * defined in .
+     * DOM Level 3 CR - Experimental. (Was getActualEncoding)
+     * 
+     * An attribute specifying the encoding used for this document 
+     * at the time of the parsing. This is <code>null</code> when 
+     * it is not known, such as when the <code>Document</code> was 
+     * created in memory.  
      * @since DOM Level 3
      */
-    public String getActualEncoding() {
+    public String getInputEncoding() {
         return actualEncoding;
     }
     
     /**
-     * DOM Level 3 WD - Experimental.
+     * DOM Internal 
+     * (Was a DOM L3 Core WD public interface method setActualEncoding )
+     *
      * An attribute specifying the actual encoding of this document. This is
      * <code>null</code> otherwise.
      * <br> This attribute represents the property [character encoding scheme]
      * defined in .
-     * @since DOM Level 3
      */
-    public void setActualEncoding(String value) {
+    public void setInputEncoding(String value) {
         actualEncoding = value;
     }
     
     /**
-     * DOM Level 3 WD - Experimental.
+     * DOM Internal 
+     * (Was a DOM L3 Core WD public interface method setXMLEncoding )
+     *
      * An attribute specifying, as part of the XML declaration,
      * the encoding of this document. This is null when unspecified.
      */
@@ -812,7 +816,7 @@ extends ParentNode implements Document, DocumentLS {
     }
     
     /**
-     * DOM Level 3 WD - Experimental.
+     * DOM Level 3 CR - Experimental.
      * version - An attribute specifying, as part of the XML declaration,
      * the version number of this document.
      */
@@ -847,12 +851,18 @@ extends ParentNode implements Document, DocumentLS {
     }
     
     /**
-     * DOM Level 3 WD - Experimental.
-     * standalone - An attribute specifying, as part of the XML declaration,
+     * DOM Level 3 CR - Experimental.
+     * 
+     * Xmlstandalone - An attribute specifying, as part of the XML declaration,
      * whether this document is standalone
+     * @exception DOMException
+     *    NOT_SUPPORTED_ERR: Raised if this document does not support the 
+     *   "XML" feature. 
+     * @since DOM Level 3
      */
-    public void setXmlStandalone(boolean value) {
-        standalone = value;
+    public void setXmlStandalone(boolean value)
+                                  throws DOMException { 
+            standalone = value;        
     }
     
     /**
@@ -1061,11 +1071,13 @@ extends ParentNode implements Document, DocumentLS {
     
     
     /**
+     * DOM Level 3 CR - Experimental
+     *
      *  The configuration used when <code>Document.normalizeDocument</code> is
      * invoked.
      * @since DOM Level 3
      */
-    public DOMConfiguration getConfig(){
+    public DOMConfiguration getDomConfig(){
         if (fConfiguration == null) {
             fConfiguration = new DOMConfigurationImpl();
         }
@@ -1738,6 +1750,11 @@ extends ParentNode implements Document, DocumentLS {
                 node.setOwnerDocument(this);
             }
         }
+
+		//DOM L3 Core CR
+		//http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107/core.html#UserDataHandler-ADOPTED  
+		callUserDataHandlers(source, null, UserDataHandler.NODE_ADOPTED);
+
         return node;
     }
     

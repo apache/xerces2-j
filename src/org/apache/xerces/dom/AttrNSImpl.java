@@ -342,6 +342,25 @@ public class AttrNSImpl
     }
 
     /**
+     * DOM Level 3 Experimental 
+     *
+     * @see org.apache.xerces.dom3.TypeInfo#isDerivedFrom()
+     */
+    public boolean isDerivedFrom(String typeNamespaceArg, 
+                                 String typeNameArg, 
+                                 int derivationMethod) {
+        
+        //REVISIT: XSSimpleTypeDecl.derivedFrom and 
+        //derivationMethod constants in DOM vs Xerces
+        if (type !=null){
+            if (type instanceof XSSimpleTypeDecl){
+                return ((XSSimpleTypeDecl)type).derivedFrom(typeNamespaceArg,typeNameArg,(short)derivationMethod);
+            }
+        }                                	
+        return false;
+    }
+
+    /**
      * @see org.apache.xerces.dom3.TypeInfo#getTypeNamespace()
      */
     public String getTypeNamespace() {

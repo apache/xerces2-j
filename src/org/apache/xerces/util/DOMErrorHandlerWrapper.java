@@ -271,7 +271,9 @@ implements XMLErrorHandler, DOMErrorHandler {
             fOut.print(":");
             fOut.print(locator.getColumnNumber());
             fOut.print(":");
-            fOut.print(locator.getOffset());
+            fOut.print(locator.getByteOffset());
+            fOut.print(",");            
+            fOut.print(locator.getUtf16Offset());
             Node node = locator.getRelatedNode();
             if (node != null) {
                 fOut.print("[");

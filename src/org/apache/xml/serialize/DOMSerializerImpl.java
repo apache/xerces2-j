@@ -75,6 +75,8 @@ import org.apache.xerces.dom.DOMMessageFormatter;
 import org.apache.xerces.dom3.DOMConfiguration;
 import org.apache.xerces.dom3.DOMError;
 import org.apache.xerces.dom3.DOMErrorHandler;
+import org.apache.xerces.dom3.DOMStringList;
+
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
@@ -218,7 +220,7 @@ public class DOMSerializerImpl implements DOMSerializer, DOMConfiguration {
                throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
 			}
 		}
-		else if (name.equals(Constants.DOM_ENTITY_RESOLVER)
+		else if (name.equals(Constants.DOM_RESOURCE_RESOLVER)
 				|| name.equals(Constants.DOM_SCHEMA_LOCATION)
 				|| name.equals(Constants.DOM_SCHEMA_TYPE)) {
                 String msg = DOMMessageFormatter.formatMessage(
@@ -279,6 +281,19 @@ public class DOMSerializerImpl implements DOMSerializer, DOMConfiguration {
 	    return false;
     }
 
+    /**
+     *  DOM Level 3 Core CR - Experimental.
+     * 
+     *  The list of the parameters supported by this 
+     * <code>DOMConfiguration</code> object and for which at least one value 
+     * can be set by the application. Note that this list can also contain 
+     * parameter names defined outside this specification. 
+     */
+    public DOMStringList getParameterNames() {
+    	//REVISIT
+    	return null;
+    }	
+    
     /** DOM L3-EXPERIMENTAL:
      * Getter for boolean and object parameters
      */
@@ -288,7 +303,7 @@ public class DOMSerializerImpl implements DOMSerializer, DOMConfiguration {
 			if (name.equals(Constants.DOM_ERROR_HANDLER)) {
 				return serializer.fDOMErrorHandler;
 			}
-			else if (name.equals(Constants.DOM_ENTITY_RESOLVER)
+			else if (name.equals(Constants.DOM_RESOURCE_RESOLVER)
 					|| name.equals(Constants.DOM_SCHEMA_LOCATION)
 					|| name.equals(Constants.DOM_SCHEMA_TYPE)) {
 				String msg =
