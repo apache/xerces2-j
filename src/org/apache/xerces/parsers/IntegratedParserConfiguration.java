@@ -193,75 +193,67 @@ extends StandardParserConfiguration {
 
     
     /** Configures the pipeline. */
-    protected void configurePipeline() {
-        // setup dtd pipeline
-        if (fDTDScanner != null) {
-            if (fDTDProcessor != null) {
-                fDTDScanner.setDTDHandler(fDTDProcessor);
-                fDTDProcessor.setDTDHandler(fDTDHandler);
-                fDTDScanner.setDTDContentModelHandler(fDTDProcessor);
-                fDTDProcessor.setDTDContentModelHandler(fDTDContentModelHandler);
-            } else {
-                fDTDScanner.setDTDHandler(fDTDHandler);
-                fDTDScanner.setDTDContentModelHandler(fDTDContentModelHandler);
-            }
-        }
+	protected void configurePipeline() {
+		// setup dtd pipeline
+		if (fDTDScanner != null) {
+			if (fDTDProcessor != null) {
+				fDTDScanner.setDTDHandler(fDTDProcessor);
+				fDTDProcessor.setDTDHandler(fDTDHandler);
+				fDTDScanner.setDTDContentModelHandler(fDTDProcessor);
+				fDTDProcessor.setDTDContentModelHandler(fDTDContentModelHandler);
+			}
+			else {
+				fDTDScanner.setDTDHandler(fDTDHandler);
+				fDTDScanner.setDTDContentModelHandler(fDTDContentModelHandler);
+			}
+		}
 
-        // setup document pipeline
-        if ( fFeatures.get(XMLSCHEMA_VALIDATION) == Boolean.TRUE) {
-            // If schema validator was not in the pipeline insert it.
-            if (fSchemaValidator == null) {
-                fSchemaValidator = new XMLSchemaValidator(); 
+		if (fFeatures.get(NAMESPACES) == Boolean.TRUE) {
+			fScanner = fNamespaceScanner;
+			fProperties.put(DTD_VALIDATOR, fDTDValidator);
+			fProperties.put(DOCUMENT_SCANNER, fNamespaceScanner);
+			fNamespaceScanner.setDTDValidator(fDTDValidator);
+			fNamespaceScanner.setDocumentHandler(fDTDValidator);
+			fDTDValidator.setDocumentSource(fNamespaceScanner);
+			fDTDValidator.setDocumentHandler(fDocumentHandler);
+			fDocumentHandler.setDocumentSource(fDTDValidator);
+			fLastComponent = fDTDValidator;
+		}
+		else {
+			fScanner = fNonNSScanner;
+			fProperties.put(DTD_VALIDATOR, fNonNSDTDValidator);
+			fProperties.put(DOCUMENT_SCANNER, fNonNSScanner);
+			fNonNSScanner.setDocumentHandler(fNonNSDTDValidator);
+			fNonNSDTDValidator.setDocumentSource(fNonNSScanner);
+			fNonNSDTDValidator.setDocumentHandler(fDocumentHandler);
+			fDocumentHandler.setDocumentSource(fNonNSDTDValidator);
+			fLastComponent = fNonNSDTDValidator;
+		}
 
-                // add schema component
-                fProperties.put(SCHEMA_VALIDATOR, fSchemaValidator);
-                addComponent(fSchemaValidator);
-                // add schema message formatter
-                if (fErrorReporter.getMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN) == null) {
-                    XSMessageFormatter xmft = new XSMessageFormatter();
-                    fErrorReporter.putMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN, xmft);
-                }
+		// setup document pipeline
+		if (fFeatures.get(XMLSCHEMA_VALIDATION) == Boolean.TRUE) {
+			// If schema validator was not in the pipeline insert it.
+			if (fSchemaValidator == null) {
+				fSchemaValidator = new XMLSchemaValidator();
 
-            }
-            fProperties.put(DTD_VALIDATOR, fDTDValidator);
-            fProperties.put(DOCUMENT_SCANNER, fNamespaceScanner);
-            fScanner = fNamespaceScanner;
-            fNamespaceScanner.setDTDValidator(fDTDValidator);
-            fNamespaceScanner.setDocumentHandler(fDTDValidator);
-            fDTDValidator.setDocumentSource(fNamespaceScanner);
-            fDTDValidator.setDocumentHandler(fSchemaValidator);
-            fSchemaValidator.setDocumentSource(fDTDValidator);
-            fSchemaValidator.setDocumentHandler(fDocumentHandler);
-            fLastComponent = fSchemaValidator;
+				// add schema component
+				fProperties.put(SCHEMA_VALIDATOR, fSchemaValidator);
+				addComponent(fSchemaValidator);
+				// add schema message formatter
+				if (fErrorReporter.getMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN) == null) {
+					XSMessageFormatter xmft = new XSMessageFormatter();
+					fErrorReporter.putMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN, xmft);
+				}
 
-        } 
-        else {
+			}
 
-            if (fFeatures.get(NAMESPACES) == Boolean.TRUE) {
-                fScanner = fNamespaceScanner;
-                fProperties.put(DTD_VALIDATOR, fDTDValidator);
-                fProperties.put(DOCUMENT_SCANNER, fNamespaceScanner);
-                fNamespaceScanner.setDTDValidator(fDTDValidator);
-                fNamespaceScanner.setDocumentHandler(fDTDValidator);
-                fDTDValidator.setDocumentSource(fNamespaceScanner);
-                fDTDValidator.setDocumentHandler(fDocumentHandler);
-                fDocumentHandler.setDocumentSource(fDTDValidator);
-                fLastComponent = fDTDValidator;
-            } 
-            else {
-                fScanner = fNonNSScanner;
-                fProperties.put(DTD_VALIDATOR, fNonNSDTDValidator);
-                fProperties.put(DOCUMENT_SCANNER, fNonNSScanner);
-                fNonNSScanner.setDocumentHandler(fNonNSDTDValidator);
-                fNonNSDTDValidator.setDocumentSource(fNonNSScanner);
-                fNonNSDTDValidator.setDocumentHandler(fDocumentHandler);
-                fDocumentHandler.setDocumentSource(fNonNSDTDValidator);
-                fLastComponent = fNonNSDTDValidator;
-            }
+			fLastComponent.setDocumentHandler(fSchemaValidator);
+			fSchemaValidator.setDocumentSource(fLastComponent);
+			fSchemaValidator.setDocumentHandler(fDocumentHandler);
+			fLastComponent = fSchemaValidator;
 
-        }
-
-    } // configurePipeline()
+		}
+	} // configurePipeline()
 
 
 
