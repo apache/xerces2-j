@@ -57,40 +57,75 @@
 
 package org.apache.xerces.validators.schema.identity;
 
-import org.xml.sax.SAXException;
+import org.apache.xerces.validators.datatype.DatatypeValidator;
 
 /**
- * Interface for storing values associated to an identity constraint. 
- * Each value stored corresponds to a field declared for the identity
- * constraint. One instance of an object implementing this interface
- * is created for each identity constraint per element declaration in
- * the instance document to store the information for this identity
- * constraint.
- * <p>
- * <strong>Note:</strong> The component performing identity constraint
- * collection and validation is responsible for providing an 
- * implementation of this interface. The component is also responsible
- * for performing the necessary checks required by each type of identity
- * constraint.
+ * Stores a value associated with a particular field of an identity constraint that
+ * has successfully matched some string in an instance document.  
+ * This class also stores the DatatypeValidator associated
+ * with the element or attribute whose content is the string
+ * in question; this must be done here because type determination is
+ * dynamic.  
+ * <p> This class also makes it its business to provide
+ * functionality to determine whether two instances are duplicates.</p>
  *
- * @author Andy Clark, IBM
+ * @author Neil Graham, IBM
  *
- * @version $Id$
  */
-public interface ValueStore {
+public class IDValue {
+
+    // data
+
+    protected String fValue;
+    protected DatatypeValidator fValidator;
     
+    // constructor
+    
+    public IDValue(String value, DatatypeValidator val) {
+        fValue = value;
+        fValidator = val;
+    }
+
     //
-    // ValueStore methods
+    // IDValue methods
     //
 
     /** 
-     * Adds the specified value to the value store.
+     * Returns whether the supplied IDValue is a duplicate of this IDValue.  
+     * It is a duplicate only if either of these conditions are true:
+     * - The Datatypes are the same or related by derivation and
+     * the values are in the same valuespace.
+     * - The datatypes are unrelated and the values are Stringwise identical.
      *
-     * @param value The value to add.
-     * @param field The field associated to the value. This reference
-     *              is used to ensure that each field only adds a value
+     * @param value The value to compare.
      *              once within a selection scope.
      */
-    public void addValue(Field field, IDValue value) throws Exception;
+    public boolean isDuplicateOf(IDValue value) {
+        // if either validator's null, fall back on string comparison
+        if(fValidator == null || value.fValidator == null)
+            return(fValue.equals(value.fValue));
+        // are the validators equal?
+        // As always we are obliged to compare by reference...
+        if (fValidator == value.fValidator) {
+            return ((fValidator.compare(fValue, value.fValue)) == 0);
+        } 
+        // see if this.fValidator is derived from value.fValidator:
+        DatatypeValidator tempVal;
+        for(tempVal = fValidator; tempVal == null || tempVal == value.fValidator; tempVal = tempVal.getBaseValidator());
+        if(tempVal != null) { // was derived!
+            return ((value.fValidator.compare(fValue, value.fValue)) == 0);
+        }
+        // see if value.fValidator is derived from this.fValidator:
+        for(tempVal = value.fValidator; tempVal == null || tempVal == fValidator; tempVal = tempVal.getBaseValidator());
+        if(tempVal != null) { // was derived!
+            return ((fValidator.compare(fValue, value.fValue)) == 0);
+        }
+        // if we're here it means the types weren't related.  Must fall back to strings:
+        return(fValue.equals(value.fValue)); 
+    } // end compare(IDValue):boolean
 
-} // interface ValueStore
+    // Object methods:
+    public String toString() {
+        return ("ID Value:  " + fValue );
+    }
+} // class IDValue

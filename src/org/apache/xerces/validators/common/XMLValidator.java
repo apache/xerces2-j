@@ -103,6 +103,7 @@ import org.apache.xerces.validators.schema.TraverseSchema;
 import org.apache.xerces.validators.schema.identity.Field;
 import org.apache.xerces.validators.schema.identity.FieldActivator;
 import org.apache.xerces.validators.schema.identity.IdentityConstraint;
+import org.apache.xerces.validators.schema.identity.IDValue;
 import org.apache.xerces.validators.schema.identity.Key;
 import org.apache.xerces.validators.schema.identity.KeyRef;
 import org.apache.xerces.validators.schema.identity.Selector;
@@ -638,7 +639,7 @@ public final class XMLValidator
         ValueStore valueStore = fValueStoreCache.getValueStoreFor(field);
         XPathMatcher matcher = field.createMatcher(valueStore);
         fMatcherStack.addMatcher(matcher);
-        matcher.startDocumentFragment(fStringPool, fNamespacesScope);
+        matcher.startDocumentFragment(fStringPool, (SchemaGrammar)fGrammar);
         return matcher;
     } // activateField(Field):XPathMatcher
 
@@ -1165,7 +1166,7 @@ public final class XMLValidator
               if (DEBUG_IDENTITY_CONSTRAINTS) {
                   System.out.println("<IC>: "+matcher.toString()+"#startElement("+fStringPool.toString(element.rawname)+")");
               }
-              matcher.startElement(element, fAttrList, fAttrListHandle);
+              matcher.startElement(element, fAttrList, fAttrListHandle, fCurrentScope);
           }
       }
       
@@ -1245,7 +1246,7 @@ public final class XMLValidator
         if (DEBUG_IDENTITY_CONSTRAINTS) {
             System.out.println("<IC>: "+matcher+"#startDocumentFragment()");
         }
-        matcher.startDocumentFragment(fStringPool, null);
+        matcher.startDocumentFragment(fStringPool, (SchemaGrammar)fGrammar);
     }
 
    private void pushContentLeafStack() throws Exception {
@@ -1369,7 +1370,7 @@ public final class XMLValidator
              if (DEBUG_IDENTITY_CONSTRAINTS) {
                  System.out.println("<IC>: "+matcher+"#endElement("+fStringPool.toString(fCurrentElement.rawname)+")");
              }
-             matcher.endElement(fCurrentElement);
+             matcher.endElement(fCurrentElement, fCurrentScope);
          }
          if (DEBUG_IDENTITY_CONSTRAINTS) {
              System.out.println("<IC>: popping context - element: "+fStringPool.toString(fCurrentElement.rawname));
@@ -3174,7 +3175,7 @@ public final class XMLValidator
                             // WARNING!!!  Comparison by reference. 
                             if(tempVal == ancestorValidator) break;
                         if(tempVal == null) { 
-                            // now if ancestorValidator is a union, then wemust
+                            // now if ancestorValidator is a union, then we must
                             // look through its members to see whether we derive from any of them.
 			                if(ancestorValidator instanceof UnionDatatypeValidator) {
 			                    // fXsiTypeValidator must derive from one of its members...
@@ -4436,7 +4437,7 @@ public final class XMLValidator
         //
 
         /** Not a value (Unicode: #FFFF). */
-        protected final String NOT_A_VALUE = "\uFFFF";
+        protected IDValue NOT_AN_IDVALUE = new IDValue("\uFFFF", null);
 
         //
         // Data
@@ -4475,7 +4476,7 @@ public final class XMLValidator
             fValuesCount = 0;
             int count = fIdentityConstraint.getFieldCount();
             for (int i = 0; i < count; i++) {
-                fValues.put(fIdentityConstraint.getFieldAt(i), NOT_A_VALUE);
+                fValues.put(fIdentityConstraint.getFieldAt(i), NOT_AN_IDVALUE);
             }
         } // startValueScope()
 
@@ -4552,7 +4553,7 @@ public final class XMLValidator
          *              is used to ensure that each field only adds a value
          *              once within a selection scope.
          */
-        public void addValue(Field field, String value) throws Exception {
+        public void addValue(Field field, IDValue value) throws Exception {
             if (DEBUG_VALUE_STORES) {
                 System.out.println("<VS>: "+toString()+"#addValue("+
                                    "field="+field+','+
@@ -4569,8 +4570,8 @@ public final class XMLValidator
             }    
 
             // store value
-            String storedValue = fValues.valueAt(index);
-            if (storedValue.equals(NOT_A_VALUE)) {
+            IDValue storedValue = fValues.valueAt(index);
+            if (storedValue.isDuplicateOf(NOT_AN_IDVALUE)) {
                 fValuesCount++;
             }
             fValues.put(field, value);
@@ -4598,36 +4599,19 @@ public final class XMLValidator
             }
            
             // do sizes match?
-            int vcount = fValues.size();
             int tcount = tuple.size();
-            if (vcount != tcount) {
-                return false;
-            }
 
             // iterate over tuples to find it
             int count = fValueTuples.size();
             LOOP: for (int i = 0; i < count; i++) {
                 OrderedHashtable vtuple = (OrderedHashtable)fValueTuples.elementAt(i);
                 // compare values
-                for (int j = 0; j < vcount; j++) {
-                    String value1 = vtuple.valueAt(j);
-                    String value2 = tuple.valueAt(j);
-                    Field field = fValues.keyAt(j);
-                    DatatypeValidator validator = field.getDatatypeValidator();
-                    // REVISIT: THIS DOESN'T WORK RIGHT BECAUSE THE
-                    //          COMPARE METHOD OF ALL OF THE DATATYPE
-                    //          VALIDATORS WERE NEVER IMPLEMENTED!
-                    //          Once those methods are implemented,
-                    //          then this code can be swapped out. -Ac
-                    /***
-                    if (validator.compare(value1, value2) != 0) {
+                for (int j = 0; j < tcount; j++) {
+                    IDValue value1 = vtuple.valueAt(j);
+                    IDValue value2 = tuple.valueAt(j);
+                    if(!(value1.isDuplicateOf(value2))) {
                         continue LOOP;
                     }
-                    /***/
-                    if (!value1.equals(value2)) {
-                        continue LOOP;
-                    }
-                    /***/
                 }
 
                 // found it
@@ -5029,7 +5013,7 @@ public final class XMLValidator
         } // size():int
 
         /** Puts an entry into the hashtable. */
-        public void put(Field key, String value) {
+        public void put(Field key, IDValue value) {
             int index = indexOf(key);
             if (index == -1) {
                 ensureCapacity(fSize);
@@ -5040,7 +5024,7 @@ public final class XMLValidator
         } // put(Field,String)
 
         /** Returns the value associated to the specified key. */
-        public String get(Field key) {
+        public IDValue get(Field key) {
             return fEntries[indexOf(key)].value;
         } // get(Field):String
 
@@ -5072,7 +5056,7 @@ public final class XMLValidator
         } // keyAt(int):Field
 
         /** Returns the value at the specified index. */
-        public String valueAt(int index) {
+        public IDValue valueAt(int index) {
             return fEntries[index].value;
         } // valueAt(int):String
 
@@ -5172,7 +5156,7 @@ public final class XMLValidator
             public Field key;
 
             /** Value. */
-            public String value;
+            public IDValue value;
 
         } // class Entry
 

@@ -58,8 +58,9 @@
 package org.apache.xerces.validators.schema.identity;
 
 import org.apache.xerces.framework.XMLAttrList;
-import org.apache.xerces.utils.NamespacesScope;
+import org.apache.xerces.validators.schema.SchemaGrammar;
 import org.apache.xerces.utils.QName;
+import org.apache.xerces.utils.NamespacesScope;
 import org.apache.xerces.utils.StringPool;
 
 import org.xml.sax.SAXException;
@@ -200,9 +201,9 @@ public class Selector {
         //
     
         public void startDocumentFragment(StringPool stringPool,
-                                          NamespacesScope namespacesScope)
+                                          SchemaGrammar grammar)
             throws Exception {
-            super.startDocumentFragment(stringPool,namespacesScope);
+            super.startDocumentFragment(stringPool,grammar);
             fElementDepth = 0;
             fMatchedDepth = -1;
         } // startDocumentFragment(StringPool,NamespacesScope)
@@ -218,8 +219,8 @@ public class Selector {
          * @throws SAXException Thrown by handler to signal an error.
          */
         public void startElement(QName element, XMLAttrList attributes, 
-                                 int handle) throws Exception {
-            super.startElement(element, attributes, handle);
+                                 int handle, int scope) throws Exception {
+            super.startElement(element, attributes, handle, scope);
             fElementDepth++;
     
             // activate the fields, if selector is matched
@@ -230,14 +231,14 @@ public class Selector {
                 for (int i = 0; i < count; i++) {
                     Field field = fIdentityConstraint.getFieldAt(i);
                     XPathMatcher matcher = fFieldActivator.activateField(field);
-                    matcher.startElement(element, attributes, handle);
+                    matcher.startElement(element, attributes, handle, scope);
                 }
             }
     
         } // startElement(QName,XMLAttrList,int)
     
-        public void endElement(QName element) throws Exception {
-            super.endElement(element);
+        public void endElement(QName element, int scope) throws Exception {
+            super.endElement(element, scope);
             if (fElementDepth-- == fMatchedDepth) {
                 fMatchedDepth = -1;
                 fFieldActivator.endValueScopeFor(fIdentityConstraint);

@@ -59,6 +59,7 @@ package org.apache.xerces.validators.schema.identity;
 
 import org.apache.xerces.utils.NamespacesScope;
 import org.apache.xerces.utils.StringPool;
+
 import org.apache.xerces.validators.datatype.DatatypeValidator;
 
 import org.xml.sax.SAXException;
@@ -79,7 +80,9 @@ public class Field {
     protected Field.XPath fXPath;
 
     /** Datatype. */
-    protected DatatypeValidator fDatatypeValidator;
+    // Unfortunately, a Field may conceivably match values of varying
+    // datatypes.  Hence, this member no longer makes sense; see the IDValue class.
+    // protected DatatypeValidator fDatatypeValidator;
 
     /** Identity constraint. */
     protected IdentityConstraint fIdentityConstraint;
@@ -88,13 +91,12 @@ public class Field {
     // Constructors
     //
 
-    /** Constructs a selector. */
-    public Field(Field.XPath xpath, DatatypeValidator datatypeValidator,
+    /** Constructs a field. */
+    public Field(Field.XPath xpath, 
                  IdentityConstraint identityConstraint) {
         fXPath = xpath;
-        fDatatypeValidator = datatypeValidator;
         fIdentityConstraint = identityConstraint;
-    } // <init>(Field.XPath,DatatypeValidator,IdentityConstraint)
+    } // <init>(Field.XPath,IdentityConstraint)
 
     //
     // Public methods
@@ -104,11 +106,6 @@ public class Field {
     public org.apache.xerces.validators.schema.identity.XPath getXPath() {
         return fXPath;
     } // getXPath():org.apache.xerces.validators.schema.identity.XPath
-
-    /** Returns the datatype validator. */
-    public DatatypeValidator getDatatypeValidator() {
-        return fDatatypeValidator;
-    } // getDatatypeValidator():DatatypeValidator
 
     /** Returns the identity constraint. */
     public IdentityConstraint getIdentityConstraint() {
@@ -195,9 +192,9 @@ public class Field {
          * This method is called when the XPath handler matches the
          * XPath expression.
          */
-        protected void matched(String content) throws Exception {
-            super.matched(content);
-            fStore.addValue(Field.this, content);
+        protected void matched(String content, DatatypeValidator val) throws Exception {
+            super.matched(content, val);
+            fStore.addValue(Field.this, new IDValue(content, val));
         } // matched(String)
 
     } // class Matcher

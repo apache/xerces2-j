@@ -58,6 +58,10 @@
 package org.apache.xerces.validators.schema.identity;
 
 import org.apache.xerces.framework.XMLAttrList;
+import org.apache.xerces.validators.common.XMLAttributeDecl;
+import org.apache.xerces.validators.common.XMLElementDecl;
+import org.apache.xerces.validators.schema.SchemaGrammar;
+import org.apache.xerces.validators.datatype.DatatypeValidator;
 
 import org.apache.xerces.utils.IntStack;
 import org.apache.xerces.utils.QName;
@@ -149,6 +153,9 @@ public class XPathMatcher {
     /** String pool. */
     protected StringPool fStringPool;
 
+    // the Schema grammar that we're validating against.
+    protected SchemaGrammar fGrammar;
+
     /** Namespace scope. */
     protected NamespacesScope fNamespacesScope;
 
@@ -161,7 +168,6 @@ public class XPathMatcher {
      * handler. 
      *
      * @param xpath   The xpath.
-     * @param symbols The symbol table.
      */
     public XPathMatcher(XPath xpath) {
         this(xpath, false);
@@ -172,7 +178,6 @@ public class XPathMatcher {
      * handler. 
      *
      * @param xpath   The xpath.
-     * @param symbols The symbol table.
      * @param shouldBufferContent True if the matcher should buffer the
      *                            matched content.
      */
@@ -207,11 +212,11 @@ public class XPathMatcher {
      * XPath expression. Subclasses can override this method to
      * provide default handling upon a match.
      */
-    protected void matched(String content) throws Exception {
+    protected void matched(String content, DatatypeValidator val) throws Exception {
         if (DEBUG_METHODS3) {
             System.out.println(toString()+"#matched(\""+normalize(content)+"\")");
         }
-    } // matched(String content)
+    } // matched(String content, DatatypeValidator val)
 
     //
     // XMLDocumentFragmentHandler methods
@@ -222,16 +227,17 @@ public class XPathMatcher {
      *
      * @param namespaceScope The namespace scope in effect at the
      *                       start of this document fragment.
+     * @param grammar:  the schema grammar we're validating against.
      *
      * @throws SAXException Thrown by handler to signal an error.
      */
     public void startDocumentFragment(StringPool stringPool,
-                                      NamespacesScope namespacesScope) 
+                                      SchemaGrammar grammar) 
         throws Exception {
         if (DEBUG_METHODS) {
             System.out.println(toString()+"#startDocumentFragment("+
                                "stringPool="+stringPool+','+
-                               "namespacesScope="+namespacesScope+
+                               "grammar="+fGrammar+
                                ")");
         }
 
@@ -244,12 +250,9 @@ public class XPathMatcher {
 
         // keep values
         fStringPool = stringPool;
-        fNamespacesScope = namespacesScope;
-        if (namespacesScope == null) {
-            fNamespacesScope = new NamespacesScope();
-        }
+        fGrammar = grammar;
 
-    } // startDocumentFragment(StringPool,NamespacesScope)
+    } // startDocumentFragment(StringPool,SchemaGrammar)
 
     /**
      * The start of an element. If the document specifies the start element
@@ -258,10 +261,11 @@ public class XPathMatcher {
      * 
      * @param element    The name of the element.
      * @param attributes The element attributes.
+     * @param scope:  the scope of the current element
      *
      * @throws SAXException Thrown by handler to signal an error.
      */
-    public void startElement(QName element, XMLAttrList attributes, int handle)
+    public void startElement(QName element, XMLAttrList attributes, int handle, int scope)
         throws Exception {
         if (DEBUG_METHODS2) {
             System.out.println(toString()+"#startElement("+
@@ -281,7 +285,6 @@ public class XPathMatcher {
         if (DEBUG_STACK) {
             System.out.println(toString()+": "+fStepIndexes);
         }
-        //fNamespacesScope.increaseDepth();
 
         // return, if not matching
         if (fMatched || fNoMatchDepth > 0) {
@@ -357,7 +360,14 @@ public class XPathMatcher {
                             fMatched = true;
                             int avalue = attributes.getAttValue(aindex);
                             fMatchedString = fStringPool.toString(avalue);
-                            matched(fMatchedString);
+                            // now, we have to go on the hunt for 
+                            // datatype validator; not an easy or pleasant task...
+                            int eIndex = fGrammar.getElementDeclIndex(element, scope);
+                            int attIndex = fGrammar.getAttributeDeclIndex(eIndex, aname);
+                            XMLAttributeDecl tempAttDecl = new XMLAttributeDecl();
+                            fGrammar.getAttributeDecl(attIndex, tempAttDecl);
+                            DatatypeValidator aValidator = tempAttDecl.datatypeValidator;
+                            matched(fMatchedString, aValidator);
                         }
                         break;
                     }
@@ -403,10 +413,12 @@ public class XPathMatcher {
      * The end of an element.
      * 
      * @param element The name of the element.
+     * @param scope:  the scope of the element.  Needed so that we can look 
+     *      up its datatypeValidator.
      *
      * @throws SAXException Thrown by handler to signal an error.
      */
-    public void endElement(QName element) throws Exception {
+    public void endElement(QName element, int scope) throws Exception {
         if (DEBUG_METHODS2) {
             System.out.println(toString()+"#endElement("+
                                "element={"+
@@ -427,7 +439,11 @@ public class XPathMatcher {
             if (fBufferContent) {
                 fBufferContent = false;
                 fMatchedString = fMatchedBuffer.toString();
-                matched(fMatchedString);
+                int eIndex = fGrammar.getElementDeclIndex(element, scope);
+                XMLElementDecl temp = new XMLElementDecl();
+                fGrammar.getElementDecl(eIndex, temp);
+                DatatypeValidator val = temp.datatypeValidator;
+                matched(fMatchedString, val);
             }
             clear();
         }

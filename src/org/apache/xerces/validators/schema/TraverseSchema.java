@@ -156,8 +156,6 @@ public class TraverseSchema implements
      */
     private static final boolean DEBUG_IC_DATATYPES = false;
 
-    //CR Implementation
-    private static final boolean CR_IMPL = true;
     //private data members
 
 
@@ -4793,26 +4791,30 @@ int aaaa= 1;
     } // traverseKeyRef(Element,XMLElementDecl)
 
     private void traverseIdentityConstraint(IdentityConstraint ic, 
-                                            Element icelem) throws Exception {
+                                            Element icElem) throws Exception {
         
-        // get selector
-        Element selem = XUtil.getFirstChildElementNS(icelem, 
-                                                     SchemaSymbols.URI_SCHEMAFORSCHEMA,
-                                                     SchemaSymbols.ELT_SELECTOR);
-        String stext = CR_IMPL
-                     ? selem.getAttribute(SchemaSymbols.ATT_XPATH) 
-                     : XUtil.getChildText(selem);
-        stext = stext.trim();
-        Selector.XPath sxpath = null;
+        // check for <annotation> and get selector
+        Element sElem = XUtil.getFirstChildElement(icElem);
+        sElem = checkContent( icElem, sElem, false);
+        if(!sElem.getLocalName().equals(SchemaSymbols.ELT_SELECTOR)) {
+            // REVISIT: localize
+            reportGenericSchemaError("The content of an identity constraint must match (annotation?, selector, field+)");
+        }
+        // and make sure <selector>'s content is fine:
+        checkContent(icElem, XUtil.getFirstChildElement(sElem), true);
+
+        String sText = sElem.getAttribute(SchemaSymbols.ATT_XPATH);
+        sText = sText.trim();
+        Selector.XPath sXpath = null;
         try {
             // REVISIT: Must get ruling from XML Schema working group
             //          regarding whether steps in the XPath must be
             //          fully qualified if the grammar has a target
             //          namespace. -Ac
             //          RESOLUTION: Yes.
-            sxpath = new Selector.XPath(stext, fStringPool, 
+            sXpath = new Selector.XPath(sText, fStringPool, 
                                         fNamespacesScope);
-            Selector selector = new Selector(sxpath, ic);
+            Selector selector = new Selector(sXpath, ic);
             if (DEBUG_IDENTITY_CONSTRAINTS) {
                 System.out.println("<IC>:   selector: "+selector);
             }
@@ -4825,29 +4827,33 @@ int aaaa= 1;
         }
 
         // get fields
-        Element parent = (Element)icelem.getParentNode();
-        Element felem = XUtil.getNextSiblingElementNS(selem, 
-                                                      SchemaSymbols.URI_SCHEMAFORSCHEMA,
-                                                      SchemaSymbols.ELT_FIELD);
-        while (felem != null) {
-            String ftext = CR_IMPL
-                         ? felem.getAttribute(SchemaSymbols.ATT_XPATH) 
-                         : XUtil.getChildText(felem);
-            ftext = ftext.trim();
+        Element fElem = XUtil.getNextSiblingElement(sElem);
+
+        while (fElem != null) {
+            if(!fElem.getLocalName().equals(SchemaSymbols.ELT_FIELD))
+                // REVISIT: localize
+                reportGenericSchemaError("The content of an identity constraint must match (annotation?, selector, field+)");
+            // and make sure <field>'s content is fine:
+            checkContent(icElem, XUtil.getFirstChildElement(fElem), true);
+            String fText = fElem.getAttribute(SchemaSymbols.ATT_XPATH);
+            fText = fText.trim();
             try {
                 // REVISIT: Must get ruling from XML Schema working group
                 //          regarding whether steps in the XPath must be
                 //          fully qualified if the grammar has a target
                 //          namespace. -Ac
                 //          RESOLUTION: Yes.
-                Field.XPath fxpath = new Field.XPath(ftext, fStringPool, 
+                Field.XPath fXpath = new Field.XPath(fText, fStringPool, 
                                                      fNamespacesScope);
                 // REVISIT: Get datatype validator. -Ac
-                DatatypeValidator validator = getDatatypeValidatorFor(parent, sxpath, fxpath);
-                if (DEBUG_IC_DATATYPES) {
-                    System.out.println("<ICD>: datatype validator: "+validator);
-                }
-                Field field = new Field(fxpath, validator, ic);
+                // cannot statically determine type of field; not just because of descendant/union
+                // but because of <any> and <anyAttribute>.  - NG
+                // DatatypeValidator validator = getDatatypeValidatorFor(parent, sXpath, fXpath);
+                // if (DEBUG_IC_DATATYPES) {
+                //  System.out.println("<ICD>: datatype validator: "+validator);
+                // }
+                // must find DatatypeValidator in the Validator...
+                Field field = new Field(fXpath, ic);
                 if (DEBUG_IDENTITY_CONSTRAINTS) {
                     System.out.println("<IC>:   field:    "+field);
                 }
@@ -4858,11 +4864,12 @@ int aaaa= 1;
                 reportGenericSchemaError(e.getMessage());
                 return;
             }
-            felem = XUtil.getNextSiblingElement(felem, SchemaSymbols.ELT_FIELD);
+            fElem = XUtil.getNextSiblingElement(fElem);
         }
 
     } // traverseIdentityConstraint(IdentityConstraint,Element)
 
+    /* This code is no longer used because datatypes can't be found statically for ID constraints.
     private DatatypeValidator getDatatypeValidatorFor(Element element, 
                                                       Selector.XPath sxpath, 
                                                       Field.XPath fxpath)
@@ -4971,6 +4978,8 @@ int aaaa= 1;
                             return null;
                         }
                         DatatypeValidator validator = edecl.datatypeValidator;
+                        if (validator == null) validator = new StringDatatypeValidator();
+                        System.err.println(validator);
                         return validator;
                     }
                     break;
@@ -4990,6 +4999,7 @@ int aaaa= 1;
         return null;
 
     } // getDatatypeValidatorFor(XPath):DatatypeValidator
+    */ // back in to live code...
 
     private String getElementNameFor(Element icnode) {
         Element enode = (Element)icnode.getParentNode();
