@@ -3375,7 +3375,8 @@ public class TraverseSchema implements
               //
               // EMPTY complexType with complexContent
               //
-              processComplexContent(typeNameIndex, child, typeInfo, null, false);
+              processComplexContent(typeNameIndex, child, typeInfo, null,
+                                    mixed.equals(SchemaSymbols.ATTVAL_TRUE) ? true:false);
           }
           else {
               String childName = child.getLocalName();
@@ -4315,6 +4316,10 @@ public class TraverseSchema implements
            if (typeInfo.contentSpecHandle == -2) {
 
              //throw new ComplexTypeRecoverableError("Type '" + typeName + "': The content of a mixed complexType must not be empty");
+             typeInfo.contentSpecHandle = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF,
+                                                                            fStringPool.EMPTY_STRING,
+                                                                            fStringPool.EMPTY_STRING,
+                                                                            false);
              typeInfo.contentType = XMLElementDecl.TYPE_MIXED_SIMPLE;
            }
 
@@ -6843,7 +6848,7 @@ throws Exception {
                 } else {
                     // REVISIT:  locallize
                     noErrorSoFar = false;
-                    reportGenericSchemaError("couldn't find a schema grammar with target namespace " + substitutionGroupUri);
+                    reportGenericSchemaError("couldn't find a schema grammar with target namespace '" + substitutionGroupUri + "' for element '" + substitutionGroupStr + "'");
                 }
             }
             else {
@@ -6892,6 +6897,8 @@ throws Exception {
                     }
                 }
             }
+            if (substitutionGroupElementDeclIndex <= -1)
+                ignoreSub = true;
             if(!ignoreSub)
                 checkSubstitutionGroupOK(elementDecl, substitutionGroupElementDecl, noErrorSoFar, substitutionGroupElementDeclIndex, subGrammar, typeInfo, substitutionGroupEltTypeInfo, dv, substitutionGroupEltDV);
         }
