@@ -239,6 +239,11 @@ implements DOMWriter {
         String       name;
         String       value;
         boolean      addNSAttr = false;
+        
+        if (DEBUG) {
+            System.out.println("==>startElement("+namespaceURI+","+localName+
+                               ","+rawName+")");
+        }
 
         try {
             if (_printer == null)
@@ -397,7 +402,6 @@ implements DOMWriter {
     throws IOException
     {
         ElementState state;
-        fNamespaceSupport.popContext();
         if (DEBUG) {
             System.out.println("==>endElement: " +rawName);
         }
@@ -446,6 +450,11 @@ implements DOMWriter {
         ElementState state;
         String       name;
         String       value;
+
+
+        if (DEBUG) {
+            System.out.println("==>startElement("+tagName+")");
+        }
 
         try {
             if (_printer == null)
@@ -1000,6 +1009,7 @@ implements DOMWriter {
                 serializeNode( child );
                 child = child.getNextSibling();
             }
+            fNamespaceSupport.popContext();
             endElementIO( null, null, tagName );
         }
         else {
@@ -1104,6 +1114,9 @@ implements DOMWriter {
         String         prefix;
         int            length;
 
+        if (attrs == null) {
+            return null;
+        }
         length = attrs.getLength();
         attrsOnly = new AttributesImpl( attrs );
 
