@@ -626,7 +626,8 @@ public abstract class XMLScanner
         if (!XMLChar.isValid(value)) {
             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                        "InvalidCharRef",
-                                       new Object[]{ String.valueOf((char)value) },
+                                       new Object[]{
+                                           Integer.toString(value, 16) },
                                        XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
         return value;
