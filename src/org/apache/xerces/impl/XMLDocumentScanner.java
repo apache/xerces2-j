@@ -412,6 +412,9 @@ public class XMLDocumentScanner
             if (property.equals(Constants.DTD_SCANNER_PROPERTY)) {
                 fDTDScanner = (XMLDTDScanner)value;
             }
+            else if (property.equals(Constants.ENTITY_MANAGER_PROPERTY)) {
+                fEntityManager = (XMLEntityManager)value;
+            }
             return;
         }
         /***/
@@ -1596,8 +1599,6 @@ public class XMLDocumentScanner
                         fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                    "ReferenceIllegalInProlog",
                                                    null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                        // REVISIT: report error
-                        throw new SAXException("reference not allowed in prolog");
                     }
                 }
             } while (complete || again);
@@ -1620,6 +1621,7 @@ public class XMLDocumentScanner
      * Dispatcher to handle content scanning.
      *
      * @author Andy Clark, IBM
+     * @author Eric Ye, IBM
      */
     protected final class ContentDispatcher
         implements Dispatcher {
@@ -1706,7 +1708,20 @@ public class XMLDocumentScanner
                                     setScannerState(SCANNER_STATE_REFERENCE);
                                     break;
                                 }
-                                // REVISIT: eof, invalid char
+                                else if (c == -1) {
+                                    
+                                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, "ETagRequired",
+                                                               new Object[] {fCurrentElement.rawname},
+                                                               XMLErrorReporter.SEVERITY_FATAL_ERROR);
+
+                                    setScannerState(SCANNER_STATE_TERMINATED);
+                                    return false;
+                                }
+                                else {
+                                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, "InvalidCharInContent",
+                                                               new Object[] {Integer.toString(c, 16)},
+                                                               XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                                }
                             }
                         }
                         break;
@@ -1825,8 +1840,9 @@ public class XMLDocumentScanner
                                 return false;
                             }
                             else {
-                                // REVISIT report error
-                                // throw new SAXException("invalid char in trailing Misc);
+                                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, "InvalidCharInMisc",
+                                                           new Object[] {Integer.toString(ch, 16)},
+                                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
                                 setScannerState(SCANNER_STATE_TERMINATED);
                                 return false;
                             }
