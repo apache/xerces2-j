@@ -192,6 +192,10 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
               //
               // EMPTY complexType with complexContent
               //
+               
+              // set the base to the anyType
+              complexType.fBaseType = (XSTypeDecl)fSchemaHandler.getGlobalDecl(schemaDoc, 
+                                 fSchemaHandler.TYPEDECL_TYPE, ANY_TYPE);
               processComplexContent(child, complexType, mixedAtt.booleanValue(),
                                     schemaDoc, grammar);
             }
@@ -213,6 +217,10 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
               // GROUP, ALL, SEQUENCE or CHOICE, followed by optional attributes
               // Note that it's possible that only attributes are specified.
               //
+
+              // set the base to the anyType
+              complexType.fBaseType = (XSTypeDecl)fSchemaHandler.getGlobalDecl(schemaDoc, 
+                                 fSchemaHandler.TYPEDECL_TYPE, ANY_TYPE);
               processComplexContent(child, complexType, mixedAtt.booleanValue(),
                                     schemaDoc, grammar);
             }
@@ -296,6 +304,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 
        XSTypeDecl type = (XSTypeDecl)fSchemaHandler.getGlobalDecl(schemaDoc, 
                                          XSDHandler.TYPEDECL_TYPE, baseTypeName);
+       if (type==null) 
+         throw new ComplexTypeRecoverableError();   
 
        typeInfo.fBaseType = type;
 
@@ -350,6 +360,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
           // -----------------------------------------------------------------------
           if (simpleContent.getLocalName().equals(SchemaSymbols.ELT_SIMPLETYPE )) {
               DatatypeValidator dv =fSchemaHandler.fSimpleTypeTraverser.traverseLocal(simpleContent, schemaDoc, grammar); 
+              if (dv == null) 
+                throw new ComplexTypeRecoverableError();
 
               //check that this datatype validator is validly derived from the base
               //according to derivation-ok-restriction 5.1.1
@@ -392,6 +404,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
           }
           traverseAttrsAndAttrGrps(attrNode,typeInfo.fAttrGrp,
                                    schemaDoc,grammar);
+
+
           mergeAttributes(baseComplexType.fAttrGrp, typeInfo.fAttrGrp, typeName, false);
           String error = typeInfo.fAttrGrp.validRestrictionOf(baseComplexType.fAttrGrp);
           if (error != null) {
@@ -499,6 +513,10 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 
        XSTypeDecl type = (XSTypeDecl)fSchemaHandler.getGlobalDecl(schemaDoc, 
                                          XSDHandler.TYPEDECL_TYPE, baseTypeName);
+
+       if (type==null) 
+          throw new ComplexTypeRecoverableError();   
+
        if (! (type instanceof XSComplexTypeDecl)) {
           // REVISIT - should create a msg in properties file 
           reportGenericSchemaError("ComplexType " + typeName + ": " + 
