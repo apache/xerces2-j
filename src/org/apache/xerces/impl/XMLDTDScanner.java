@@ -257,22 +257,19 @@ public class XMLDTDScanner
         setScannerState(SCANNER_STATE_MARKUP_DECL);
 
         // keep dispatching "events"
-        boolean done = false;
         do {
             if (!scanDecls(complete)) {
-                done = true;
-                break;
+                // call handler
+                if (fDTDHandler != null && hasExtDTD == false) {
+                    fDTDHandler.endDTD();
+                }
+                // we're done
+                return false;
             }
         } while (complete);
 
-        // REVISIT: fix this for the case when it's not complete
-        // call handler
-        if (fDTDHandler != null && hasExtDTD == false) {
-            fDTDHandler.endDTD();
-        }
-
         // return that there is more to scan
-        return done;
+        return true;
 
     } // scanDTDInternalSubset
 
@@ -1084,11 +1081,11 @@ public class XMLDTDScanner
                 fStringBuffer.append(fString);
                 value = fStringBuffer;
             }
+            defaultVal.setValues(value);
             if (!fEntityScanner.skipChar(quote)) {
                 fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "CloseQuoteMissingInDecl", 
                                             new Object[]{name}, XMLErrorReporter.SEVERITY_FATAL_ERROR);
             }
-            defaultVal.setValues(value);
         }
         return defaultType;
 
