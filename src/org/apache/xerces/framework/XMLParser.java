@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -385,9 +385,9 @@ public abstract class XMLParser
         fLocator = locator;
     }
 
-    /** 
+    /**
      * return the locator being used by the parser
-     * 
+     *
      * @return the parser's active locator
      */
     public final Locator getLocator() {
@@ -396,8 +396,8 @@ public abstract class XMLParser
 
     // DTD callbacks
 
-    /** 
-     * Callback for processing instruction in DTD.  
+    /**
+     * Callback for processing instruction in DTD.
      *
      * @param target the string pool index of the PI's target
      * @param data the string pool index of the PI's data
@@ -410,7 +410,7 @@ public abstract class XMLParser
 
     /**
      * Callback for comment in DTD.
-     * 
+     *
      * @param comment the string pool index of the comment text
      * @exception java.lang.Exception
      */
@@ -437,15 +437,15 @@ public abstract class XMLParser
      */
     public abstract void startDocument(int version, int encoding, int standAlone)  throws Exception;
 
-    /** 
-     * callback for the end of document. 
+    /**
+     * callback for the end of document.
      *
      * @exception java.lang.Exception
      */
     public abstract void endDocument() throws Exception;
 
-    /** 
-     * callback for the start of a namespace declaration scope. 
+    /**
+     * callback for the start of a namespace declaration scope.
      *
      * @param prefix string pool index of the namespace prefix being declared
      * @param uri string pool index of the namespace uri begin bound
@@ -454,8 +454,8 @@ public abstract class XMLParser
     public abstract void startNamespaceDeclScope(int prefix, int uri) throws Exception;
 
     /**
-     * callback for the end a namespace declaration scope. 
-     * 
+     * callback for the end a namespace declaration scope.
+     *
      * @param prefix string pool index of the namespace prefix being declared
      * @exception java.lang.Exception
      */
@@ -471,7 +471,7 @@ public abstract class XMLParser
      */
     public abstract void startElement(int elementType, XMLAttrList attrList, int attrListHandle) throws Exception;
 
-    /** 
+    /**
      * callback for end of element.
      *
      * @param elementType element handle for the element being scanned
@@ -479,7 +479,7 @@ public abstract class XMLParser
      */
     public abstract void endElement(int elementType) throws Exception;
 
-    /**    
+    /**
      * callback for start of entity reference.
      *
      * @param entityName string pool index of the entity name
@@ -492,8 +492,8 @@ public abstract class XMLParser
      */
     public abstract void startEntityReference(int entityName, int entityType, int entityContext) throws Exception;
 
-    /** 
-     * callback for end of entity reference. 
+    /**
+     * callback for end of entity reference.
      *
      * @param entityName string pool index of the entity anem
      * @param entityType the XMLEntityHandler.ENTITYTYPE_* type
@@ -505,15 +505,15 @@ public abstract class XMLParser
      */
     public abstract void endEntityReference(int entityName, int entityType, int entityContext) throws Exception;
 
-    /** 
-     * callback for start of CDATA section. 
+    /**
+     * callback for start of CDATA section.
      * this callback marks the start of a CDATA section
      *
      * @exception java.lang.Exception
      */
     public abstract void startCDATA() throws Exception;
 
-    /** 
+    /**
      * callback for end of CDATA section.
      * this callback marks the end of a CDATA section
      *
@@ -531,14 +531,14 @@ public abstract class XMLParser
     public abstract void processingInstruction(int target, int data) throws Exception;
 
     /**
-     * callback for comment. 
+     * callback for comment.
      *
      * @param comment string pool index of the comment text
      * @exception java.lang.Exception
      */
     public abstract void comment(int comment) throws Exception;
 
-    /** 
+    /**
      * callback for characters (string pool form).
      *
      * @param data string pool index of the characters that were scanned
@@ -556,7 +556,7 @@ public abstract class XMLParser
      */
     public abstract void characters(char ch[], int start, int length) throws Exception;
 
-    /** 
+    /**
      * callback for ignorable whitespace.
      *
      * @param data string pool index of ignorable whitespace
@@ -588,14 +588,14 @@ public abstract class XMLParser
      */
     public abstract void startDTD(int rootElementType, int publicId, int systemId) throws Exception;
 
-    /** 
+    /**
      * callback for the end of the DTD
-     * This function will be called at the end of the DTD. 
+     * This function will be called at the end of the DTD.
      */
     public abstract void endDTD() throws Exception;
 
     /**
-     * callback for an element declaration. 
+     * callback for an element declaration.
      *
      * @param elementType element handle of the element being declared
      * @param contentSpec contentSpec for the element being declared
@@ -604,8 +604,8 @@ public abstract class XMLParser
      */
     public abstract void elementDecl(int elementType, XMLValidator.ContentSpec contentSpec) throws Exception;
 
-    /** 
-     * callback for an attribute list declaration. 
+    /**
+     * callback for an attribute list declaration.
      *
      * @param elementType element handle for the attribute's element
      * @param attrName string pool index of the attribute name
@@ -613,8 +613,8 @@ public abstract class XMLParser
      * @param enumString String representing the values of the enumeration,
      *        if the attribute is of enumerated type, or null if it is not.
      * @param attDefaultType an integer value denoting the DefaultDecl value
-     * @param attDefaultValue string pool index of this attribute's default value 
-     *        or -1 if there is no defaultvalue 
+     * @param attDefaultValue string pool index of this attribute's default value
+     *        or -1 if there is no defaultvalue
      * @exception java.lang.Exception
      */
     public abstract void attlistDecl(int elementType,
@@ -623,7 +623,7 @@ public abstract class XMLParser
                                      int attDefaultType,
                                      int attDefaultValue) throws Exception;
 
-    /** 
+    /**
      * callback for an internal parameter entity declaration.
      *
      * @param entityName string pool index of the entity name
@@ -633,7 +633,7 @@ public abstract class XMLParser
     public abstract void internalPEDecl(int entityName, int entityValue) throws Exception;
 
     /**
-     * callback for an external parameter entity declaration. 
+     * callback for an external parameter entity declaration.
      *
      * @param entityName string pool index of the entity name
      * @param publicId string pool index of the entity's public id.
@@ -642,8 +642,8 @@ public abstract class XMLParser
      */
     public abstract void externalPEDecl(int entityName, int publicId, int systemId) throws Exception;
 
-    /** 
-     * callback for internal general entity declaration. 
+    /**
+     * callback for internal general entity declaration.
      *
      * @param entityName string pool index of the entity name
      * @param entityValue string pool index of the entity replacement text
@@ -652,7 +652,7 @@ public abstract class XMLParser
     public abstract void internalEntityDecl(int entityName, int entityValue) throws Exception;
 
     /**
-     * callback for external general entity declaration. 
+     * callback for external general entity declaration.
      *
      * @param entityName string pool index of the entity name
      * @param publicId string pool index of the entity's public id.
@@ -661,8 +661,8 @@ public abstract class XMLParser
      */
     public abstract void externalEntityDecl(int entityName, int publicId, int systemId) throws Exception;
 
-    /** 
-     * callback for an unparsed entity declaration. 
+    /**
+     * callback for an unparsed entity declaration.
      *
      * @param entityName string pool index of the entity name
      * @param publicId string pool index of the entity's public id.
@@ -1040,8 +1040,8 @@ public abstract class XMLParser
 
     // resetting
 
-    /** 
-     * Reset or copy parser 
+    /**
+     * Reset or copy parser
      * Allows parser instance reuse
      */
     protected void resetOrCopy() throws Exception {
@@ -1082,8 +1082,8 @@ public abstract class XMLParser
         return fSchemaValidator;
     }
 
-    /** 
-     * Set char data processing preference. 
+    /**
+     * Set char data processing preference.
      */
     protected void setSendCharDataAsCharArray(boolean flag) {
         fSendCharDataAsCharArray = flag;
@@ -1758,7 +1758,7 @@ public abstract class XMLParser
     // XMLDocumentScanner methods
     //
 
-    /** 
+    /**
      * Returns true if the specified version is valid.
      *
      */
@@ -1766,8 +1766,8 @@ public abstract class XMLParser
         return XMLCharacterProperties.validVersionNum(version);
     }
 
-    /** 
-     * Returns true if the specified encoding is valid. 
+    /**
+     * Returns true if the specified encoding is valid.
      *
      */
     public boolean validEncName(String encoding) {
@@ -1776,8 +1776,8 @@ public abstract class XMLParser
 
     // callbacks
 
-    /** 
-     * Call the start document callback. 
+    /**
+     * Call the start document callback.
      */
     public void callStartDocument(int version, int encoding, int standalone) throws Exception {
         if (!fCalledStartDocument) {
@@ -1892,9 +1892,17 @@ public abstract class XMLParser
             fCharRefData[0] = (char)(((ch-0x00010000)>>10)+0xd800);
             fCharRefData[1] = (char)(((ch-0x00010000)&0x3ff)+0xdc00);
         }
-        if (!fInElementContent)
-            fValidator.characters(fCharRefData, 0, count);
-        characters(fCharRefData, 0, count);
+        if (fSendCharDataAsCharArray) {
+            if (!fInElementContent)
+                fValidator.characters(fCharRefData, 0, count);
+            characters(fCharRefData, 0, count);
+        }
+        else {
+            int index = fStringPool.addString(new String(fCharRefData, 0, count));
+            if (!fInElementContent)
+                fValidator.characters(index);
+            characters(index);
+        }
     }
 
     // scanning
@@ -2018,8 +2026,8 @@ public abstract class XMLParser
     // XMLEntityHandler methods
     //
 
-    /** 
-     * Character data. 
+    /**
+     * Character data.
      */
     public void processCharacters(char[] chars, int offset, int length)
         throws Exception {
@@ -2030,7 +2038,7 @@ public abstract class XMLParser
 
     }
 
-    /** 
+    /**
      * Character data.
      */
     public void processCharacters(int data)
@@ -2042,8 +2050,8 @@ public abstract class XMLParser
 
     }
 
-    /** 
-     * White space. 
+    /**
+     * White space.
      */
     public void processWhitespace(char[] chars, int offset, int length)
         throws Exception {
@@ -2060,7 +2068,7 @@ public abstract class XMLParser
 
     }
 
-    /** 
+    /**
      * White space.
      */
     public void processWhitespace(int data) throws Exception {
@@ -2115,7 +2123,7 @@ public abstract class XMLParser
     private int fNextReaderId = 0;
     private NullReader fNullReader = null;
 
-    /** 
+    /**
      * Resets the entity handler.
      */
     private void resetEntityHandler() {
@@ -2157,8 +2165,8 @@ public abstract class XMLParser
         return fReader;
     }
 
-    /** 
-     * Adds a recognizer. 
+    /**
+     * Adds a recognizer.
      *
      * @param recognizer The XML recognizer to add.
      */
@@ -2179,11 +2187,11 @@ public abstract class XMLParser
 
     /**
      * Expands a system id and returns the system id as a URL, if
-     * it can be expanded. A return value of null means that the 
+     * it can be expanded. A return value of null means that the
      * identifier is already expanded. An exception thrown
      * indicates a failure to expand the id.
      *
-     * @param systemId The systemId to be expanded. 
+     * @param systemId The systemId to be expanded.
      *
      * @return Returns the URL object representing the expanded system
      *         identifier. A null value indicates that the given
@@ -2239,7 +2247,7 @@ public abstract class XMLParser
             // expand id
             url = new URL(base, id);
         }
-        catch (Exception e) { 
+        catch (Exception e) {
             // let it go through
         }
         if (url == null) {
@@ -2252,8 +2260,8 @@ public abstract class XMLParser
     // Private methods
     //
 
-    /** 
-     * Finds a recognizer that can handle the given input source. 
+    /**
+     * Finds a recognizer that can handle the given input source.
      *
      * @param source  The input source to recognize.
      * @param xmlDecl True if XML decl.
@@ -2322,7 +2330,7 @@ public abstract class XMLParser
     private void sendEndEntityNotifications() throws Exception {
         endEntityReference(fEntityName, fEntityType, fEntityContext);
     }
-    /** 
+    /**
      * set up the reader stack to read from the document entity
      */
     public boolean startReadingFromDocument(InputSource source) throws Exception {
