@@ -615,6 +615,27 @@ public class Test implements DOMErrorHandler, LSResourceResolver{
  
     
             }
+            
+            
+            // baseURI tests
+            {
+				LSParser parser = impl.createLSParser(DOMImplementationLS.MODE_SYNCHRONOUS,
+														   null);
+				Document doc = parser.parseURI("tests/dom/dom3/baseURI.xml");
+				Element root = doc.getDocumentElement();
+				NodeList ls = doc.getElementsByTagNameNS(null, "streetNum");
+				Node e = ls.item(0);
+				Assertion.verify(((NodeImpl)e).getBaseURI().endsWith("tests/dom/dom3/baseURI.xml"), 
+								 "baseURI=tests/dom/dom3/baseURI.xml");
+				ls = root.getElementsByTagNameNS(null, "header");
+				Node p2 = ls.item(0);
+				Assertion.verify(((NodeImpl)p2).getBaseURI().equals("http://paragraph.com"), 
+								 "baseURI=http://paragraph.com");
+				p2 = ls.item(1);
+				Assertion.verify(((NodeImpl)p2).getBaseURI().equals("http://paragraph.com2"), 
+				 "baseURI=http://paragraph.com2");
+
+            }
 
 
         } catch ( Exception ex ) {
