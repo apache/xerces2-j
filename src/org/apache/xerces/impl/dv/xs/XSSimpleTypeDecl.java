@@ -725,6 +725,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             if ((allowedFacet & FACET_PATTERN) == 0) {
                 reportError("cos-applicable-facets", new Object[]{"pattern", fTypeName});
             } else {
+                patternAnnotations = facets.patternAnnotations;
                 RegularExpression regex = null;
                 try {
                     regex = new RegularExpression(facets.pattern, "X");

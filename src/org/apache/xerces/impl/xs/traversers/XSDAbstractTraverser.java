@@ -292,19 +292,22 @@ abstract class XSDAbstractTraverser {
                     // ---------------------------------------------
                     fPattern.append("|");
                     fPattern.append((String)attrs[XSAttributeChecker.ATTIDX_VALUE]);
-
-                    Element child = DOMUtil.getFirstChildElement( content );
-                    if (child != null) {
+                }
+                Element child = DOMUtil.getFirstChildElement( content );
+                if (child != null) {
                          // traverse annotation if any
                          if (DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                             if (patternAnnotations == null){
+                                 patternAnnotations = new XSObjectListImpl();
+                             }
                              patternAnnotations.add(traverseAnnotationDecl(child, attrs, false, schemaDoc));
                              child = DOMUtil.getNextSiblingElement(child);
                          }
                          if (child !=null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
                              reportSchemaError("s4s-elt-must-match.1", new Object[]{"pattern", "(annotation?)", DOMUtil.getLocalName(child)}, child);
                          }
-                   }
                 }
+                
             }
             else {
                 if (facet.equals(SchemaSymbols.ELT_MINLENGTH)) {
@@ -444,6 +447,7 @@ abstract class XSDAbstractTraverser {
         if (fPattern.length() != 0) {
             facetsPresent |= XSSimpleType.FACET_PATTERN;
             xsFacets.pattern = fPattern.toString();
+            xsFacets.patternAnnotations = patternAnnotations;
         }
 
         fPattern.setLength(0);
