@@ -1021,7 +1021,15 @@ Copyright:
 
 
        <!-- DOM level 3 hack: replace import statements-->
-     <replace file="${build.src}/org/apache/xerces/dom/NodeImpl.java"               	 	     token="org.apache.xerces.dom3" value="org.w3c.dom"/>
+     <replace file="${build.src}/org/apache/xerces/dom/NodeImpl.java"               	 	     	     token="org.apache.xerces.dom3" value="org.w3c.dom"/>
+    <replace file="${build.src}/org/apache/xerces/dom/ElementImpl.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
+    <replace file="${build.src}/org/apache/xerces/dom/ElementNSImpl.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
+    <replace file="${build.src}/org/apache/xerces/dom/AttrImpl.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
+     <replace file="${build.src}/org/apache/xerces/dom/AttrNSImpl.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
     <replace file="${build.src}/org/apache/xerces/dom/DocumentImpl.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
     <replace file="${build.src}/org/apache/xerces/dom/DOMNormalizer.java"  
@@ -1057,6 +1065,10 @@ Copyright:
     <replace file="${build.src}/org/w3c/dom/ls/DOMBuilder.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
     <replace file="${build.src}/org/apache/xerces/impl/xs/opti/DefaultNode.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
+    <replace file="${build.src}/org/apache/xerces/impl/xs/opti/AttrImpl.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
+    <replace file="${build.src}/org/apache/xerces/impl/xs/opti/DefaultElement.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
     <replace file="${build.src}/org/apache/xerces/impl/xs/opti/DefaultDocument.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
