@@ -105,14 +105,47 @@ public class QNameDV extends TypeValidator {
         if (prefix.length() > 0 && uri == null)
             throw new InvalidDatatypeValueException("UndeclaredPrefix", new Object[]{content, prefix});
 
-        return new QName(prefix, context.getSymbol(localpart), context.getSymbol(content), uri);
+        return new XQName(prefix, context.getSymbol(localpart), context.getSymbol(content), uri);
 
     }
 
     // REVISIT: qname and notation shouldn't support length facets.
     //          now we just return the length of the rawname
     public int getDataLength(Object value) {
-        return ((QName)value).rawname.length();
+        return ((XQName)value).rawname.length();
     }
 
+    /**
+     * represent QName data
+     */
+    private static final class XQName extends QName {
+        /** Constructs a QName with the specified values. */
+        public XQName(String prefix, String localpart, String rawname, String uri) {
+            setValues(prefix, localpart, rawname, uri);
+        } // <init>(String,String,String,String)
+
+        /** Returns true if the two objects are equal. */
+        public boolean equals(Object object) {
+            if (object instanceof QName) {
+                QName qname = (QName)object;
+                return uri == qname.uri && localpart == qname.localpart;
+            }
+            return false;
+        } // equals(Object):boolean
+
+        // canonical representation of the data
+        private String canonical;
+        public synchronized String toString() {
+            // REVISIT: what's the canonical form for QName?
+            if (canonical == null) {
+                if (prefix == null) {
+                    canonical = localpart;
+                }
+                else {
+                    canonical = prefix + ':' + localpart;
+                }
+            }
+            return canonical;
+        }
+    }
 } // class QNameDVDV

@@ -102,4 +102,15 @@ public class ValidatedInfo {
         this.memberType = null;
         this.memberTypes = null;
     }
+    
+    /**
+     * Return a string representation of the value. If there is an actual
+     * value, use toString; otherwise, use the normalized value.
+     */
+    public String stringValue() {
+        if (actualValue == null)
+            return normalizedValue;
+        else
+            return actualValue.toString();
+    }
 }

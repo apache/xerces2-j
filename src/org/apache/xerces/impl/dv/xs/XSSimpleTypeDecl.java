@@ -106,8 +106,9 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     static final short DV_ID            = DV_NOTATION + 1;
     static final short DV_IDREF         = DV_NOTATION + 2;
     static final short DV_ENTITY        = DV_NOTATION + 3;
-    static final short DV_LIST          = DV_NOTATION + 4;
-    static final short DV_UNION         = DV_NOTATION + 5;
+    static final short DV_INTEGER       = DV_NOTATION + 4;
+    static final short DV_LIST          = DV_NOTATION + 5;
+    static final short DV_UNION         = DV_NOTATION + 6;
 
     static final TypeValidator[] fDVs = {
         new AnySimpleDV(),
@@ -133,6 +134,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         new IDDV(),
         new IDREFDV(),
         new EntityDV(),
+        new IntegerDV(),
         new ListDV(),
         new UnionDV()
     };
@@ -164,6 +166,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         NORMALIZE_TRIM, //IDDV(),
         NORMALIZE_TRIM, //IDREFDV(),
         NORMALIZE_TRIM, //EntityDV(),
+        NORMALIZE_TRIM, //IntegerDV(),
         NORMALIZE_FULL, //ListDV(),
         NORMALIZE_NONE, //UnionDV()
     };
@@ -172,7 +175,6 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     static final short SPECIAL_PATTERN_NMTOKEN  = 1;
     static final short SPECIAL_PATTERN_NAME     = 2;
     static final short SPECIAL_PATTERN_NCNAME   = 3;
-    static final short SPECIAL_PATTERN_INTEGER  = 4;
 
     static final String[] SPECIAL_PATTERN_STRING   = {
         "NONE", "NMTOKEN", "Name", "NCName", "integer"
@@ -259,7 +261,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     // default constructor
     public XSSimpleTypeDecl(){}
 
-    //Create a new built-in primitive types (and id/idref/entity)
+    //Create a new built-in primitive types (and id/idref/entity/integer)
     protected XSSimpleTypeDecl(XSSimpleTypeDecl base, String name, short validateDV,
                                short ordered, boolean bounded,
                                boolean finite, boolean numeric, boolean isImmutable) {
@@ -520,8 +522,10 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 
     public short getPrimitiveKind() {
         if (fVariety == VARIETY_ATOMIC && fValidationDV != DV_ANYSIMPLETYPE) {
-            if (fVariety == DV_ID || fVariety == DV_IDREF || fVariety == DV_ENTITY)
+            if (fValidationDV == DV_ID || fValidationDV == DV_IDREF || fValidationDV == DV_ENTITY)
                 return DV_STRING;
+            else if (fValidationDV == DV_INTEGER)
+                return DV_DECIMAL;
             else
                 return fValidationDV;
         }
@@ -737,7 +741,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                 if (((fBase.fFacetsDefined & FACET_MAXINCLUSIVE) != 0)) {
                     result = fDVs[fValidationDV].compare(fMaxInclusive, fBase.fMaxInclusive);
                     if ((fBase.fFixedFacet & FACET_MAXINCLUSIVE) != 0 && result != 0) {
-                        reportError( "FixedFacetValue", new Object[]{"maxInclusive", getStringValue(fMaxInclusive), getStringValue(fBase.fMaxInclusive)});
+                        reportError( "FixedFacetValue", new Object[]{"maxInclusive", fMaxInclusive, fBase.fMaxInclusive});
                     }
                     if (result == 0) {
                         needCheckBase = false;
@@ -754,6 +758,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         }
 
         // maxExclusive
+        needCheckBase = true;
         if ((presentFacet & FACET_MAXEXCLUSIVE) != 0) {
             if ((allowedFacet & FACET_MAXEXCLUSIVE) == 0) {
                 reportError("cos-applicable-facets", new Object[]{"maxExclusive"});
@@ -771,7 +776,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                 if (((fBase.fFacetsDefined & FACET_MAXEXCLUSIVE) != 0)) {
                     result = fDVs[fValidationDV].compare(fMaxExclusive, fBase.fMaxExclusive);
                     if ((fBase.fFixedFacet & FACET_MAXEXCLUSIVE) != 0 && result != 0) {
-                        reportError( "FixedFacetValue", new Object[]{"maxExclusive", facets.maxExclusive, getStringValue(fBase.fMaxExclusive)});
+                        reportError( "FixedFacetValue", new Object[]{"maxExclusive", facets.maxExclusive, fBase.fMaxExclusive});
                     }
                     if (result == 0) {
                         needCheckBase = false;
@@ -787,6 +792,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             }
         }
         // minExclusive
+        needCheckBase = true;
         if ((presentFacet & FACET_MINEXCLUSIVE) != 0) {
             if ((allowedFacet & FACET_MINEXCLUSIVE) == 0) {
                 reportError("cos-applicable-facets", new Object[]{"minExclusive"});
@@ -804,7 +810,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                 if (((fBase.fFacetsDefined & FACET_MINEXCLUSIVE) != 0)) {
                     result = fDVs[fValidationDV].compare(fMinExclusive, fBase.fMinExclusive);
                     if ((fBase.fFixedFacet & FACET_MINEXCLUSIVE) != 0 && result != 0) {
-                        reportError( "FixedFacetValue", new Object[]{"minExclusive", facets.minExclusive, getStringValue(fBase.fMinExclusive)});
+                        reportError( "FixedFacetValue", new Object[]{"minExclusive", facets.minExclusive, fBase.fMinExclusive});
                     }
                     if (result == 0) {
                         needCheckBase = false;
@@ -820,6 +826,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             }
         }
         // minInclusive
+        needCheckBase = true;
         if ((presentFacet & FACET_MININCLUSIVE) != 0) {
             if ((allowedFacet & FACET_MININCLUSIVE) == 0) {
                 reportError("cos-applicable-facets", new Object[]{"minInclusive"});
@@ -837,7 +844,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                 if (((fBase.fFacetsDefined & FACET_MININCLUSIVE) != 0)) {
                     result = fDVs[fValidationDV].compare(fMinInclusive, fBase.fMinInclusive);
                     if ((fBase.fFixedFacet & FACET_MININCLUSIVE) != 0 && result != 0) {
-                        reportError( "FixedFacetValue", new Object[]{"minInclusive", facets.minInclusive, getStringValue(fBase.fMinInclusive)});
+                        reportError( "FixedFacetValue", new Object[]{"minInclusive", facets.minInclusive, fBase.fMinInclusive});
                     }
                     if (result == 0) {
                         needCheckBase = false;
@@ -913,26 +920,26 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             if (((fFacetsDefined &  FACET_MAXINCLUSIVE) != 0) && ((fFacetsDefined & FACET_MININCLUSIVE) != 0)) {
               result = fDVs[fValidationDV].compare(fMinInclusive, fMaxInclusive);
               if (result != -1 && result != 0)
-                reportError("minInclusive-less-than-equal-to-maxInclusive", new Object[]{getStringValue(fMinInclusive), getStringValue(fMaxInclusive)});
+                reportError("minInclusive-less-than-equal-to-maxInclusive", new Object[]{fMinInclusive, fMaxInclusive});
             }
 
             // check 4.3.8.c2 must: minExclusive <= maxExclusive ??? minExclusive < maxExclusive
             if (((fFacetsDefined & FACET_MAXEXCLUSIVE) != 0) && ((fFacetsDefined & FACET_MINEXCLUSIVE) != 0)) {
               result = fDVs[fValidationDV].compare(fMinExclusive, fMaxExclusive);
               if (result != -1 && result != 0)
-                reportError( "minExclusive-less-than-equal-to-maxExclusive", new Object[]{getStringValue(fMinExclusive), getStringValue(fMaxExclusive)});
+                reportError( "minExclusive-less-than-equal-to-maxExclusive", new Object[]{fMinExclusive, fMaxExclusive});
             }
 
             // check 4.3.9.c2 must: minExclusive < maxInclusive
             if (((fFacetsDefined & FACET_MAXINCLUSIVE) != 0) && ((fFacetsDefined & FACET_MINEXCLUSIVE) != 0)) {
               if (fDVs[fValidationDV].compare(fMinExclusive, fMaxInclusive) != -1)
-                reportError( "minExclusive-less-than-maxInclusive", new Object[]{getStringValue(fMinExclusive), getStringValue(fMaxInclusive)});
+                reportError( "minExclusive-less-than-maxInclusive", new Object[]{fMinExclusive, fMaxInclusive});
             }
 
             // check 4.3.10.c1 must: minInclusive < maxExclusive
             if (((fFacetsDefined & FACET_MAXEXCLUSIVE) != 0) && ((fFacetsDefined & FACET_MININCLUSIVE) != 0)) {
               if (fDVs[fValidationDV].compare(fMinInclusive, fMaxExclusive) != -1)
-                reportError( "minInclusive-less-than-maxExclusive", new Object[]{getStringValue(fMinInclusive), getStringValue(fMaxExclusive)});
+                reportError( "minInclusive-less-than-maxExclusive", new Object[]{fMinInclusive, fMaxExclusive});
             }
 
             // check 4.3.12.c1 must: fractionDigits <= totalDigits
@@ -1013,27 +1020,27 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                 if (((fBase.fFacetsDefined & FACET_MAXINCLUSIVE) != 0)) {
                     result = fDVs[fValidationDV].compare(fMaxInclusive, fBase.fMaxInclusive);
                     if ((fBase.fFixedFacet & FACET_MAXINCLUSIVE) != 0 && result != 0) {
-                        reportError( "FixedFacetValue", new Object[]{"maxInclusive", getStringValue(fMaxInclusive), getStringValue(fBase.fMaxInclusive)});
+                        reportError( "FixedFacetValue", new Object[]{"maxInclusive", fMaxInclusive), fBase.fMaxInclusive)});
                     }
                     if (result != -1 && result != 0) {
-                        reportError( "maxInclusive-valid-restriction.1", new Object[]{getStringValue(fMaxInclusive), getStringValue(fBase.fMaxInclusive)});
+                        reportError( "maxInclusive-valid-restriction.1", new Object[]{fMaxInclusive), fBase.fMaxInclusive)});
                     }
                 }
                 if (((fBase.fFacetsDefined & FACET_MAXEXCLUSIVE) != 0) &&
                     fDVs[fValidationDV].compare(fMaxInclusive, fBase.fMaxExclusive) != -1){
-                        reportError( "maxInclusive-valid-restriction.1", new Object[]{getStringValue(fMaxInclusive), getStringValue(fBase.fMaxExclusive)});
+                        reportError( "maxInclusive-valid-restriction.1", new Object[]{fMaxInclusive), fBase.fMaxExclusive)});
                 }
 
                 if ((( fBase.fFacetsDefined & FACET_MININCLUSIVE) != 0)) {
                     result = fDVs[fValidationDV].compare(fMaxInclusive, fBase.fMinInclusive);
                     if (result != 1 && result != 0) {
-                        reportError( "maxInclusive-valid-restriction.1", new Object[]{getStringValue(fMaxInclusive), getStringValue(fBase.fMinInclusive)});
+                        reportError( "maxInclusive-valid-restriction.1", new Object[]{fMaxInclusive), fBase.fMinInclusive)});
                     }
                 }
 
                 if ((( fBase.fFacetsDefined & FACET_MINEXCLUSIVE) != 0) &&
                     fDVs[fValidationDV].compare(fMaxInclusive, fBase.fMinExclusive ) != 1)
-                    reportError( "maxInclusive-valid-restriction.1", new Object[]{getStringValue(fMaxInclusive), getStringValue(fBase.fMinExclusive)});
+                    reportError( "maxInclusive-valid-restriction.1", new Object[]{fMaxInclusive), fBase.fMinExclusive)});
             }
 
             // check 4.3.8.c3 error:
@@ -1045,27 +1052,27 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                 if ((( fBase.fFacetsDefined & FACET_MAXEXCLUSIVE) != 0)) {
                     result= fDVs[fValidationDV].compare(fMaxExclusive, fBase.fMaxExclusive);
                     if ((fBase.fFixedFacet & FACET_MAXEXCLUSIVE) != 0 &&  result != 0) {
-                        reportError( "FixedFacetValue", new Object[]{"maxExclusive", getStringValue(fMaxExclusive), getStringValue(fBase.fMaxExclusive)});
+                        reportError( "FixedFacetValue", new Object[]{"maxExclusive", fMaxExclusive), fBase.fMaxExclusive)});
                     }
                     if (result != -1 && result != 0) {
-                        reportError( "maxExclusive-valid-restriction.1", new Object[]{getStringValue(fMaxExclusive), getStringValue(fBase.fMaxExclusive)});
+                        reportError( "maxExclusive-valid-restriction.1", new Object[]{fMaxExclusive), fBase.fMaxExclusive)});
                     }
                 }
 
                 if ((( fBase.fFacetsDefined & FACET_MAXINCLUSIVE) != 0)) {
                     result= fDVs[fValidationDV].compare(fMaxExclusive, fBase.fMaxInclusive);
                     if (result != -1 && result != 0) {
-                        reportError( "maxExclusive-valid-restriction.2", new Object[]{getStringValue(fMaxExclusive), getStringValue(fBase.fMaxInclusive)});
+                        reportError( "maxExclusive-valid-restriction.2", new Object[]{fMaxExclusive), fBase.fMaxInclusive)});
                     }
                 }
 
                 if ((( fBase.fFacetsDefined & FACET_MINEXCLUSIVE) != 0) &&
                     fDVs[fValidationDV].compare(fMaxExclusive, fBase.fMinExclusive ) != 1)
-                    reportError( "maxExclusive-valid-restriction.3", new Object[]{getStringValue(fMaxExclusive), getStringValue(fBase.fMinExclusive)});
+                    reportError( "maxExclusive-valid-restriction.3", new Object[]{fMaxExclusive), fBase.fMinExclusive)});
 
                 if ((( fBase.fFacetsDefined & FACET_MININCLUSIVE) != 0) &&
                     fDVs[fValidationDV].compare(fMaxExclusive, fBase.fMinInclusive) != 1)
-                    reportError( "maxExclusive-valid-restriction.4", new Object[]{getStringValue(fMaxExclusive), getStringValue(fBase.fMinInclusive)});
+                    reportError( "maxExclusive-valid-restriction.4", new Object[]{fMaxExclusive), fBase.fMinInclusive)});
             }
 
             // check 4.3.9.c3 error:
@@ -1077,10 +1084,10 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                 if ((( fBase.fFacetsDefined & FACET_MINEXCLUSIVE) != 0)) {
                     result= fDVs[fValidationDV].compare(fMinExclusive, fBase.fMinExclusive);
                     if ((fBase.fFixedFacet & FACET_MINEXCLUSIVE) != 0 && result != 0) {
-                        reportError( "FixedFacetValue", new Object[]{"minExclusive", getStringValue(fMinExclusive), getStringValue(fBase.fMinExclusive)});
+                        reportError( "FixedFacetValue", new Object[]{"minExclusive", fMinExclusive), fBase.fMinExclusive)});
                     }
                     if (result != 1 && result != 0) {
-                        reportError( "minExclusive-valid-restriction.1", new Object[]{getStringValue(fMinExclusive), getStringValue(fBase.fMinExclusive)});
+                        reportError( "minExclusive-valid-restriction.1", new Object[]{fMinExclusive), fBase.fMinExclusive)});
                     }
                 }
 
@@ -1088,7 +1095,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                     result=fDVs[fValidationDV].compare(fMinExclusive, fBase.fMaxInclusive);
 
                     if (result != -1 && result != 0) {
-                        reportError( "minExclusive-valid-restriction.2", new Object[]{getStringValue(fMinExclusive), getStringValue(fBase.fMaxInclusive)});
+                        reportError( "minExclusive-valid-restriction.2", new Object[]{fMinExclusive), fBase.fMaxInclusive)});
                     }
                 }
 
@@ -1096,13 +1103,13 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                     result = fDVs[fValidationDV].compare(fMinExclusive, fBase.fMinInclusive);
 
                     if (result != 1 && result != 0) {
-                        reportError( "minExclusive-valid-restriction.3", new Object[]{getStringValue(fMinExclusive), getStringValue(fBase.fMinInclusive)});
+                        reportError( "minExclusive-valid-restriction.3", new Object[]{fMinExclusive), fBase.fMinInclusive)});
                     }
                 }
 
                 if ((( fBase.fFacetsDefined & FACET_MAXEXCLUSIVE) != 0) &&
                     fDVs[fValidationDV].compare(fMinExclusive, fBase.fMaxExclusive) != -1)
-                    reportError( "minExclusive-valid-restriction.4", new Object[]{getStringValue(fMinExclusive), getStringValue(fBase.fMaxExclusive)});
+                    reportError( "minExclusive-valid-restriction.4", new Object[]{fMinExclusive), fBase.fMaxExclusive)});
             }
 
             // check 4.3.10.c2 error:
@@ -1115,24 +1122,24 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                     result = fDVs[fValidationDV].compare(fMinInclusive, fBase.fMinInclusive);
 
                     if ((fBase.fFixedFacet & FACET_MININCLUSIVE) != 0 && result != 0) {
-                        reportError( "FixedFacetValue", new Object[]{"minInclusive", getStringValue(fMinInclusive), getStringValue(fBase.fMinInclusive)});
+                        reportError( "FixedFacetValue", new Object[]{"minInclusive", fMinInclusive), fBase.fMinInclusive)});
                     }
                     if (result != 1 && result != 0) {
-                        reportError( "minInclusive-valid-restriction.1", new Object[]{getStringValue(fMinInclusive), getStringValue(fBase.fMinInclusive)});
+                        reportError( "minInclusive-valid-restriction.1", new Object[]{fMinInclusive), fBase.fMinInclusive)});
                     }
                 }
                 if ((( fBase.fFacetsDefined & FACET_MAXINCLUSIVE) != 0)) {
                     result=fDVs[fValidationDV].compare(fMinInclusive, fBase.fMaxInclusive);
                     if (result != -1 && result != 0) {
-                        reportError( "minInclusive-valid-restriction.2", new Object[]{getStringValue(fMinInclusive), getStringValue(fBase.fMaxInclusive)});
+                        reportError( "minInclusive-valid-restriction.2", new Object[]{fMinInclusive), fBase.fMaxInclusive)});
                     }
                 }
                 if ((( fBase.fFacetsDefined & FACET_MINEXCLUSIVE) != 0) &&
                     fDVs[fValidationDV].compare(fMinInclusive, fBase.fMinExclusive ) != 1)
-                    reportError( "minInclusive-valid-restriction.3", new Object[]{getStringValue(fMinInclusive), getStringValue(fBase.fMinExclusive)});
+                    reportError( "minInclusive-valid-restriction.3", new Object[]{fMinInclusive), fBase.fMinExclusive)});
                 if ((( fBase.fFacetsDefined & FACET_MAXEXCLUSIVE) != 0) &&
                     fDVs[fValidationDV].compare(fMinInclusive, fBase.fMaxExclusive) != -1)
-                    reportError( "minInclusive-valid-restriction.4", new Object[]{getStringValue(fMinInclusive), getStringValue(fBase.fMaxExclusive)});
+                    reportError( "minInclusive-valid-restriction.4", new Object[]{fMinInclusive), fBase.fMaxExclusive)});
             }
 */
             // check 4.3.11.c1 error: totalDigits > fBase.totalDigits
@@ -1362,7 +1369,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         if ( ((fFacetsDefined & FACET_ENUMERATION) != 0 ) ) {
             boolean present = false;
             for (int i = 0; i < fEnumeration.size(); i++) {
-                if (isEqual(ob, fEnumeration.elementAt(i))) {
+                if (fEnumeration.elementAt(i).equals(ob)) {
                     present = true;
                     break;
                 }
@@ -1441,19 +1448,20 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 
         } else if (fVariety == VARIETY_LIST) {
 
-            Object[] values = (Object[])ob;
+            ListData values = (ListData)ob;
+            int len = values.length();
             if (fItemType.fVariety == VARIETY_UNION) {
                 XSSimpleTypeDecl[] memberTypes = (XSSimpleTypeDecl[])validatedInfo.memberTypes;
                 XSSimpleType memberType = validatedInfo.memberType;
-                for (int i = values.length-1; i >= 0; i--) {
-                    validatedInfo.actualValue = values[i];
+                for (int i = len-1; i >= 0; i--) {
+                    validatedInfo.actualValue = values.item(i);
                     validatedInfo.memberType = memberTypes[i];
                     fItemType.checkExtraRules(context, validatedInfo);
                 }
                 validatedInfo.memberType = memberType;
             } else { // (fVariety == VARIETY_ATOMIC)
-                for (int i = values.length-1; i >= 0; i--) {
-                    validatedInfo.actualValue = values[i];
+                for (int i = len-1; i >= 0; i--) {
+                    validatedInfo.actualValue = values.item(i);
                     fItemType.checkExtraRules(context, validatedInfo);
                 }
             }
@@ -1508,12 +1516,6 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                     // PATTERN "[\\i-[:]][\\c-[:]]*"
                     seenErr = !XMLChar.isValidNCName(nvalue);
                 }
-                else if (fPatternType == SPECIAL_PATTERN_INTEGER) {
-                    // REVISIT: the pattern is not published yet
-                    // we only need to worry about the period '.'
-                    // other parts are taken care of by the DecimalDV
-                    seenErr = nvalue.indexOf('.') >= 0;
-                }
                 if (seenErr) {
                     throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1",
                                                             new Object[]{nvalue, SPECIAL_PATTERN_STRING[fPatternType]});
@@ -1547,12 +1549,13 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                 memberTypes[i] = (XSSimpleTypeDecl)validatedInfo.memberType;
             }
 
-            validatedInfo.actualValue = avalue;
+            ListData v = new ListData(avalue);
+            validatedInfo.actualValue = v;
             validatedInfo.memberType = null;
             validatedInfo.memberTypes = memberTypes;
             validatedInfo.normalizedValue = nvalue;
   
-            return avalue;
+            return v;
 
         } else { // (fVariety == VARIETY_UNION)
             for(int i = 0 ; i < fMemberTypes.length; i++) {
@@ -1580,41 +1583,10 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 
     }//getActualValue()
 
-
     public boolean isEqual(Object value1, Object value2) {
-
-        if (fVariety == VARIETY_ATOMIC)
-            return fDVs[fValidationDV].isEqual(value1,value2);
-
-        else if (fVariety == VARIETY_LIST) {
-            if (!(value1 instanceof Object[]) || !(value2 instanceof Object[]))
-                return false;
-
-            Object[] v1 = (Object[])value1;
-            Object[] v2 = (Object[])value2;
-
-            int count = v1.length;
-            if (count != v2.length)
-                return false;
-
-            for (int i = 0 ; i < count ; i++) {
-                if (!fItemType.isEqual(v1[i], v2[i]))
-                    return false;
-            }//end of loop
-
-            //everything went fine.
-            return true;
-
-        } else if (fVariety == VARIETY_UNION) {
-            for (int i = fMemberTypes.length-1; i >= 0; i--) {
-                if (fMemberTypes[i].isEqual(value1,value2)){
-                    return true;
-                }
-            }
+        if (value1 == null)
             return false;
-        }
-
-        return false;
+        return value1.equals(value2);
     }//isEqual()
 
     // normalize the string according to the whiteSpace facet
@@ -1734,17 +1706,6 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         return WS_FACET_STRING[ws];
     }
 
-    public String getStringValue(Object value){
-        if(value != null) {
-            if (fDVs[fValidationDV] instanceof AbstractDateTimeDV)
-                return ((AbstractDateTimeDV)fDVs[fValidationDV]).dateToString((int[])value);
-            else
-                return value.toString();
-        } else {
-            return null;
-        }
-    }
-
     public short getOrdered() {
         return fOrdered;
     }
@@ -1788,13 +1749,13 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         case FACET_WHITESPACE:
             return WS_FACET_STRING[fWhiteSpace];
         case FACET_MAXINCLUSIVE:
-            return getStringValue(fMaxInclusive);
+            return fMaxInclusive.toString();
         case FACET_MAXEXCLUSIVE:
-            return getStringValue(fMaxExclusive);
+            return fMaxExclusive.toString();
         case FACET_MINEXCLUSIVE:
-            return getStringValue(fMinExclusive);
+            return fMinExclusive.toString();
         case FACET_MININCLUSIVE:
-            return getStringValue(fMinInclusive);
+            return fMinInclusive.toString();
         case FACET_TOTALDIGITS:
             return Integer.toString(fTotalDigits);
         case FACET_FRACTIONDIGITS:
@@ -1811,7 +1772,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         int size = fEnumeration.size();
         String[] strs = new String[size];
         for (int i = 0; i < size; i++)
-            strs[i] = getStringValue(fEnumeration.elementAt(i));
+            strs[i] = fEnumeration.elementAt(i).toString();
         return new StringListImpl(strs, size);
     }
 
@@ -2008,7 +1969,10 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         if (validationDV == DV_ID || validationDV == DV_IDREF || validationDV == DV_ENTITY){
             return DV_STRING;
         }
-        else{
+        else if (validationDV == DV_INTEGER) {
+            return DV_DECIMAL;
+        }
+        else {
             return validationDV;
         }
 

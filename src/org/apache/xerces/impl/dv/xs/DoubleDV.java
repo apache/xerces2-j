@@ -77,57 +77,86 @@ public class DoubleDV extends TypeValidator {
     //convert a String to Double form, we have to take care of cases specified in spec like INF, -INF and NaN
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
         try{
-            return dValueOf(content);
-        } catch (Exception ex){
+            return new XDouble(content);
+        } catch (NumberFormatException ex){
             throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "double"});
         }
     }//getActualValue()
 
     // Can't call Double#compareTo method, because it's introduced in jdk 1.2
     public int compare(Object value1, Object value2) {
-        return compareDoubles((Double)value1, (Double)value2);
+        return ((XDouble)value1).compareTo((XDouble)value2);
     }//compare()
 
-    //
-    // private methods
-    //
-    private static Double dValueOf(String s) throws NumberFormatException {
-        Double d;
-        try {
-            d = Double.valueOf(s);
+    private static final class XDouble {
+        private double value;
+        public XDouble(String s) throws NumberFormatException {
+            try {
+                value = Double.parseDouble(s);
+            }
+            catch ( NumberFormatException nfe ) {
+                if ( s.equals("INF") ) {
+                    value = Double.POSITIVE_INFINITY;
+                }
+                else if ( s.equals("-INF") ) {
+                    value = Double.NEGATIVE_INFINITY;
+                }
+                else if ( s.equals("NaN" ) ) {
+                    value = Double.NaN;
+                }
+                else {
+                    throw nfe;
+                }
+            }
         }
-        catch ( NumberFormatException nfe ) {
-            if ( s.equals("INF") ) {
-                d = new Double(Double.POSITIVE_INFINITY);
-            }
-            else if ( s.equals("-INF") ) {
-                d = new Double (Double.NEGATIVE_INFINITY);
-            }
-            else if ( s.equals("NaN" ) ) {
-                d = new Double (Double.NaN);
-            }
-            else {
-                throw nfe;
-            }
+
+        public boolean equals(Object val) {
+            if (val == this)
+                return true;
+    
+            if (!(val instanceof XDouble))
+                return false;
+            XDouble oval = (XDouble)val;
+
+            if (value == oval.value)
+                return true;
+            
+            if (value != value && oval.value != oval.value)
+                return true;
+
+            return false;
         }
-        return d;
-    }//dValueOf()
 
-    private int compareDoubles(Double value, Double anotherValue) {
-        double thisVal = value.doubleValue();
-        double anotherVal = anotherValue.doubleValue();
+        private int compareTo(XDouble val) {
+            double oval = val.value;
 
-        if (thisVal < anotherVal)
-            return -1;		 // Neither val is NaN, thisVal is smaller
-        if (thisVal > anotherVal)
-            return 1;		 // Neither val is NaN, thisVal is larger
+            // this < other
+            if (value < oval)
+                return -1;
+            // this > other
+            if (value > oval)
+                return 1;
 
-        long thisBits = Double.doubleToLongBits(thisVal);
-        long anotherBits = Double.doubleToLongBits(anotherVal);
+            // get the bits
+            long bits = Double.doubleToLongBits(value);
+            long obits = Double.doubleToLongBits(oval);
 
-        return (thisBits == anotherBits ?  0 : // Values are equal
-                (thisBits < anotherBits ? -1 : // (-0.0, 0.0) or (!NaN, NaN)
-                 1));                          // (0.0, -0.0) or (NaN, !NaN)
+            // equal, or one is NaN, which is always smaller
+            return (bits == obits ?  0 :
+                    (bits < obits ? -1 :
+                     1));
+        }
+        private String canonical;
+        public synchronized String toString() {
+            if (canonical == null) {
+                if (value == Double.POSITIVE_INFINITY)
+                    canonical = "INF";
+                else if (value == Double.NEGATIVE_INFINITY)
+                    canonical = "-INF";
+                else
+                    canonical = Double.toString(value);
+            }
+            return canonical;
+        }
     }
-
 } // class DoubleDV

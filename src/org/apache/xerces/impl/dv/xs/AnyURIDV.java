@@ -71,12 +71,14 @@ import org.apache.xerces.impl.dv.ValidationContext;
  */
 public class AnyURIDV extends TypeValidator {
 
-    private static URI BASE_URI = null;
+    private static final URI BASE_URI;
     static {
+        URI uri = null;
         try {
-            BASE_URI = new URI("http://www.template.com");
+            uri = new URI("abc://def.ghi.jkl");
         } catch (URI.MalformedURIException ex) {
         }
+        BASE_URI = uri;
     }
 
     public short getAllowedFacets(){
@@ -101,8 +103,5 @@ public class AnyURIDV extends TypeValidator {
         // REVISIT: do we need to return the new URI object?
         return content;
     }
-
-    // REVISIT: do we need to compare based on URI, or based on String?
-    // public boolean isEqual(Object value1, Object value2);
 
 } // class AnyURIDV

@@ -241,9 +241,7 @@ public class SchemaDVFactoryImpl extends SchemaDVFactory {
         fBuiltInTypes.put(DAY, new XSSimpleTypeDecl(anySimpleType, DAY, XSSimpleTypeDecl.DV_GDAY, XSSimpleType.ORDERED_PARTIAL, false, false, false, true));
         fBuiltInTypes.put(MONTH, new XSSimpleTypeDecl(anySimpleType, MONTH, XSSimpleTypeDecl.DV_GMONTH, XSSimpleType.ORDERED_PARTIAL, false, false, false, true));
 
-        facets.fractionDigits = 0;
-        XSSimpleTypeDecl integerDV = new XSSimpleTypeDecl(decimalDV, INTEGER, URI_SCHEMAFORSCHEMA, (short)0, false);
-        integerDV.applyFacets1(facets , XSSimpleType.FACET_FRACTIONDIGITS, (short)0, XSSimpleTypeDecl.SPECIAL_PATTERN_INTEGER);
+        XSSimpleTypeDecl integerDV = new XSSimpleTypeDecl(decimalDV, INTEGER, XSSimpleTypeDecl.DV_INTEGER, XSSimpleType.ORDERED_TOTAL, false, false, true, true);
         fBuiltInTypes.put(INTEGER, integerDV);
 
         facets.maxInclusive = "0";

@@ -72,40 +72,34 @@ import java.math.BigInteger;
  */
 public class DecimalDV extends TypeValidator {
 
-    public short getAllowedFacets(){
+    public final short getAllowedFacets(){
         return ( XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_WHITESPACE | XSSimpleTypeDecl.FACET_ENUMERATION |XSSimpleTypeDecl.FACET_MAXINCLUSIVE |XSSimpleTypeDecl.FACET_MININCLUSIVE | XSSimpleTypeDecl.FACET_MAXEXCLUSIVE  | XSSimpleTypeDecl.FACET_MINEXCLUSIVE | XSSimpleTypeDecl.FACET_TOTALDIGITS | XSSimpleTypeDecl.FACET_FRACTIONDIGITS);
     }
 
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
         try {
-            return new MyDecimal(content);
+            return new XDecimal(content);
         } catch (NumberFormatException nfe) {
             throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "decimal"});
         }
     }
 
-    public boolean isEqual(Object value1, Object value2) {
-        if (!(value1 instanceof MyDecimal) || !(value2 instanceof MyDecimal))
-            return false;
-        return ((MyDecimal)value1).equals((MyDecimal)value2);
+    public final int compare(Object value1, Object value2){
+        return ((XDecimal)value1).compareTo((XDecimal)value2);
     }
 
-    public int compare(Object value1, Object value2){
-        return ((MyDecimal)value1).compareTo((MyDecimal)value2);
+    public final int getTotalDigits(Object value){
+        return ((XDecimal)value).totalDigits;
     }
 
-    public int getTotalDigits(Object value){
-        return ((MyDecimal)value).totalDigits;
-    }
-
-    public int getFractionDigits(Object value){
-        return ((MyDecimal)value).fracDigits;
+    public final int getFractionDigits(Object value){
+        return ((XDecimal)value).fracDigits;
     }
     
 } // class DecimalDV
 
 // Avoid using the heavy-weight java.math.BigDecimal
-class MyDecimal {
+class XDecimal {
     // sign: 0 for vlaue 0; 1 for positive values; -1 for negative values
     int sign = 1;
     // total digits. >= 1
@@ -118,11 +112,19 @@ class MyDecimal {
     String ivalue = "";
     // the string representing the fraction part
     String fvalue = "";
+    // whether the canonical form contains decimal point
+    boolean integer = false;
     
-    MyDecimal(String content) throws NumberFormatException {
-        if (content.equals("0")) {
-            int i = 0;
-        }
+    XDecimal(String content) throws NumberFormatException {
+        initD(content);
+    }
+    XDecimal(String content, boolean integer) throws NumberFormatException {
+        if (integer)
+            initI(content);
+        else
+            initD(content);
+    }
+    void initD(String content) throws NumberFormatException {
         int len = content.length();
         if (len == 0)
             throw new NumberFormatException();
@@ -198,28 +200,82 @@ class MyDecimal {
             }
         }
     }
-    public boolean equals(MyDecimal val) {
-        if (val == null)
-            return false;
+    void initI(String content) throws NumberFormatException {
+        int len = content.length();
+        if (len == 0)
+            throw new NumberFormatException();
+
+        // these 2 variables are used to indicate where the integre start/end.
+        int intStart = 0, intEnd = 0;
+
+        // Deal with leading sign symbol if present
+        if (content.charAt(0) == '+') {
+            // skip '+', so intStart should be 1
+            intStart = 1;
+        }
+        else if (content.charAt(0) == '-') {
+            // keep '-', so intStart is stil 0
+            intStart = 1;
+            sign = -1;
+        }
+
+        // skip leading zeroes in integer part
+        int actualIntStart = intStart;
+        while (actualIntStart < len && content.charAt(actualIntStart) == '0') {
+            actualIntStart++;
+        }
+
+        // Find the ending position of the integer part
+        for (intEnd = actualIntStart;
+             intEnd < len && TypeValidator.isDigit(content.charAt(intEnd));
+             intEnd++);
+
+        // Not reached the end yet, error
+        if (intEnd < len)
+            throw new NumberFormatException();
+
+        // no integer part, error.
+        if (intStart == intEnd)
+            throw new NumberFormatException();
+
+        intDigits = intEnd - actualIntStart;
+        fracDigits = 0;
+        totalDigits = intDigits == 0 ? 1 : intDigits;
+
+        if (intDigits > 0) {
+            ivalue = content.substring(actualIntStart, intEnd);
+        }
+        else {
+            // "00", treat it as "0"
+            sign = 0;
+        }
+        
+        integer = true;
+    }
+    public boolean equals(Object val) {
         if (val == this)
             return true;
+
+        if (!(val instanceof XDecimal))
+            return false;
+        XDecimal oval = (XDecimal)val;
         
-        if (sign != val.sign)
+        if (sign != oval.sign)
            return false;
         if (sign == 0)
             return true;
         
-        return intDigits == val.intDigits && fracDigits == val.fracDigits &&
-               ivalue.equals(val.ivalue) && fvalue.equals(val.fvalue);
+        return intDigits == oval.intDigits && fracDigits == oval.fracDigits &&
+               ivalue.equals(oval.ivalue) && fvalue.equals(oval.fvalue);
     }
-    public int compareTo(MyDecimal val) {
+    public int compareTo(XDecimal val) {
         if (sign != val.sign)
             return sign > val.sign ? 1 : -1;
         if (sign == 0)
             return 0;
         return sign * intComp(val);
     }
-    private int intComp(MyDecimal val) {
+    private int intComp(XDecimal val) {
         if (intDigits != val.intDigits)
             return intDigits > val.intDigits ? 1 : -1;
         int ret = ivalue.compareTo(val.ivalue);
@@ -228,9 +284,26 @@ class MyDecimal {
         ret = fvalue.compareTo(val.fvalue);
         return ret == 0 ? 0 : (ret > 0 ? 1 : -1);
     }
-    public String toString() {
-        if (sign == 0)
-            return "0";
+    private String canonical;
+    public synchronized String toString() {
+        if (canonical == null) {
+            makeCanonical();
+        }
+        return canonical;
+    }
+    
+    private void makeCanonical() {
+        if (sign == 0) {
+            if (integer)
+                canonical = "0";
+            else
+                canonical = "0.0";
+            return;
+        }
+        if (integer && sign > 0) {
+            canonical = ivalue;
+            return;
+        }
         StringBuffer buffer = new StringBuffer(totalDigits+2);
         if (sign == -1)
             buffer.append('-');
@@ -238,10 +311,15 @@ class MyDecimal {
             buffer.append(ivalue);
         else
             buffer.append('0');
-        if (fracDigits != 0) {
+        if (!integer) {
             buffer.append('.');
-            buffer.append(fvalue);
+            if (fracDigits != 0) {
+                buffer.append(fvalue);
+            }
+            else {
+                buffer.append('0');
+            }
         }
-        return buffer.toString();
+        canonical = buffer.toString();
     }
 }

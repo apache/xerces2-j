@@ -76,11 +76,50 @@ public class Base64BinaryDV extends TypeValidator {
     }
 
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
-        String decoded = Base64.decode(content);
+        byte[] decoded = Base64.decode(content);
         if (decoded == null)
             throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "base64Binary"});
 
-        return decoded;
+        return new XBase64(decoded);
     }
 
+    // length of a binary type is the number of bytes
+    public int getDataLength(Object value) {
+        return ((XBase64)value).length();
+    }
+
+    /**
+     * represent base64 data
+     */
+    private static final class XBase64 {
+        // actually data stored in a byte array
+        final byte[] data;
+        // canonical representation of the data
+        private String canonical;
+        public XBase64(byte[] data) {
+            this.data = data;
+        }
+        public synchronized String toString() {
+            if (canonical == null) {
+                canonical = Base64.encode(data);
+            }
+            return canonical;
+        }
+        public int length() {
+            return data.length;
+        }
+        public boolean equals(Object obj) {
+            if (!(obj instanceof XBase64))
+                return false;
+            byte[] odata = ((XBase64)obj).data;
+            int len = data.length;
+            if (len != odata.length)
+                return false;
+            for (int i = 0; i < len; i++) {
+                if (data[i] != odata[i])
+                    return false;
+            }
+            return true;
+        }
+    }
 } // class Base64BinaryDV

@@ -77,55 +77,86 @@ public class FloatDV extends TypeValidator {
     //convert a String to Float form, we have to take care of cases specified in spec like INF, -INF and NaN
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
         try{
-            return fValueOf(content);
-        } catch (Exception ex){
+            return new XFloat(content);
+        } catch (NumberFormatException ex){
             throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "float"});
         }
     }//getActualValue()
 
     // Can't call Float#compareTo method, because it's introduced in jdk 1.2
     public int compare(Object value1, Object value2){
-        return compareFloats((Float)value1, (Float)value2);
+        return ((XFloat)value1).compareTo((XFloat)value2);
     }//compare()
 
-    //takes care of special values positive, negative infinity and Not a Number as per the spec.
-    private static Float fValueOf(String s) throws NumberFormatException {
-        Float f=null;
-        try {
-            f = Float.valueOf(s);
+    private static final class XFloat {
+        private float value;
+        public XFloat(String s) throws NumberFormatException {
+            try {
+                value = Float.parseFloat(s);
+            }
+            catch ( NumberFormatException nfe ) {
+                if ( s.equals("INF") ) {
+                    value = Float.POSITIVE_INFINITY;
+                }
+                else if ( s.equals("-INF") ) {
+                    value = Float.NEGATIVE_INFINITY;
+                }
+                else if ( s.equals("NaN" ) ) {
+                    value = Float.NaN;
+                }
+                else {
+                    throw nfe;
+                }
+            }
         }
-        catch ( NumberFormatException nfe ) {
-            if ( s.equals("INF") ) {
-                f = new Float(Float.POSITIVE_INFINITY);
-            }
-            else if ( s.equals("-INF") ) {
-                f = new Float (Float.NEGATIVE_INFINITY);
-            }
-            else if ( s.equals("NaN" ) ) {
-                f = new Float (Float.NaN);
-            }
-            else {
-                throw nfe;
-            }
+
+        public boolean equals(Object val) {
+            if (val == this)
+                return true;
+
+            if (!(val instanceof XFloat))
+                return false;
+            XFloat oval = (XFloat)val;
+
+            if (value == oval.value)
+                return true;
+
+            if (value != value && oval.value != oval.value)
+                return true;
+
+            return false;
         }
-        return f;
+
+        private int compareTo(XFloat val) {
+            float oval = val.value;
+
+            // this < other
+            if (value < oval)
+                return -1;
+            // this > other
+            if (value > oval)
+                return 1;
+
+            // get the bits
+            int bits = Float.floatToIntBits(value);
+            int obits = Float.floatToIntBits(oval);
+
+            // equal, or one is NaN, which is always smaller
+            return (bits == obits ?  0 :
+                    (bits < obits ? -1 :
+                     1));
+        }
+        private String canonical;
+        public synchronized String toString() {
+            if (canonical == null) {
+                if (value == Float.POSITIVE_INFINITY)
+                    canonical = "INF";
+                else if (value == Float.NEGATIVE_INFINITY)
+                    canonical = "-INF";
+                else
+                    canonical = Float.toString(value);
+            }
+            return canonical;
+        }
     }
-
-    private int compareFloats(Float value, Float anotherValue){
-        float thisVal = value.floatValue();
-        float anotherVal = anotherValue.floatValue();
-
-        if (thisVal < anotherVal)
-            return -1;		 // Neither val is NaN, thisVal is smaller
-        if (thisVal > anotherVal)
-            return 1;		 // Neither val is NaN, thisVal is larger
-
-        int thisBits = Float.floatToIntBits(thisVal);
-        int anotherBits = Float.floatToIntBits(anotherVal);
-
-        return (thisBits == anotherBits ?  0 : // Values are equal
-                (thisBits < anotherBits ? -1 : // (-0.0, 0.0) or (!NaN, NaN)
-                 1));                          // (0.0, -0.0) or (NaN, !NaN)
-    }
-
 } // class FloatDV

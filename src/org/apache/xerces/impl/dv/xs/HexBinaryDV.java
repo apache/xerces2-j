@@ -76,11 +76,47 @@ public class HexBinaryDV extends TypeValidator {
     }
 
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
-        String decoded = HexBin.decode(content);
+        byte[] decoded = HexBin.decode(content);
         if (decoded == null)
             throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "hexBinary"});
 
-        return decoded;
+        return new XHex(decoded);
     }
 
+    // length of a binary type is the number of bytes
+    public int getDataLength(Object value) {
+        return ((XHex)value).length();
+    }
+
+    private static final class XHex {
+        // actually data stored in a byte array
+        final byte[] data;
+        // canonical representation of the data
+        private String canonical;
+        public XHex(byte[] data) {
+            this.data = data;
+        }
+        public synchronized String toString() {
+            if (canonical == null) {
+                canonical = HexBin.encode(data);
+            }
+            return canonical;
+        }
+        public int length() {
+            return data.length;
+        }
+        public boolean equals(Object obj) {
+            if (!(obj instanceof XHex))
+                return false;
+            byte[] odata = ((XHex)obj).data;
+            int len = data.length;
+            if (len != odata.length)
+                return false;
+            for (int i = 0; i < len; i++) {
+                if (data[i] != odata[i])
+                    return false;
+            }
+            return true;
+        }
+    }
 }

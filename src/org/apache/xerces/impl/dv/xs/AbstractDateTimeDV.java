@@ -102,15 +102,9 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
     }//getAllowedFacets()
 
     // the parameters are in compiled form (from getActualValue)
-    public boolean isEqual(Object value1, Object value2){
-        if (!(value1 instanceof int[]) || !(value2 instanceof int[]))
-            return false;
-        return compareDates((int[])value1,(int[])value2, true)==0;
-    }//IsEqual()
-
-    // the parameters are in compiled form (from getActualValue)
     public int compare (Object value1, Object value2) {
-        return compareDates((int[])value1, (int[])value2, true);
+        return compareDates(((DateTimeData)value1).data,
+                            ((DateTimeData)value2).data, true);
     }//compare()
 
     /**
@@ -721,4 +715,32 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
         System.arraycopy(finalValue, 0, tempDate, 0, TOTAL_SIZE);
     }
 
+    /**
+     * Represents date time data
+     */
+    static final class DateTimeData {
+        // actual data stored in an int array
+        final int[] data;
+        // a pointer to the type that was used go generate this data
+        // note that this is not the actual simple type, but one of the
+        // statically created XXXDV objects, so this won't cause any GC problem.
+        final AbstractDateTimeDV type;
+        private String canonical;
+        public DateTimeData(int[] data, AbstractDateTimeDV type) {
+            this.data = data;
+            this.type = type;
+        }
+        public boolean equals(Object obj) {
+            if (!(obj instanceof DateTimeData))
+                return false;
+            int[] odata = ((DateTimeData)obj).data;
+            return type.compareDates(data, odata, true)==0;
+        }
+        public synchronized String toString() {
+            if (canonical == null) {
+                canonical = type.dateToString(data);
+            }
+            return canonical;
+        }
+    }
 }
