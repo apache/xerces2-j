@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -49,8 +49,8 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 1999, iClick Inc., 
- * http://www.apache.org.  For more information on the Apache Software 
+ * originally based on software copyright (c) 1999, iClick Inc.,
+ * http://www.apache.org.  For more information on the Apache Software
  * Foundation, please see <http://www.apache.org/>.
  */
 
@@ -61,20 +61,20 @@ import java.io.Serializable;
 
 /**********************************************************************
 * A class to represent a Uniform Resource Identifier (URI). This class
-* is designed to handle the parsing of URIs and provide access to 
+* is designed to handle the parsing of URIs and provide access to
 * the various components (scheme, host, port, userinfo, path, query
-* string and fragment) that may constitute a URI. 
+* string and fragment) that may constitute a URI.
 * <p>
-* Parsing of a URI specification is done according to the URI 
-* syntax described in RFC 2396 
-* <http://www.ietf.org/rfc/rfc2396.txt?number=2396>. Every URI consists 
+* Parsing of a URI specification is done according to the URI
+* syntax described in RFC 2396
+* <http://www.ietf.org/rfc/rfc2396.txt?number=2396>. Every URI consists
 * of a scheme, followed by a colon (':'), followed by a scheme-specific
 * part. For URIs that follow the "generic URI" syntax, the scheme-
 * specific part begins with two slashes ("//") and may be followed
-* by an authority segment (comprised of user information, host, and 
+* by an authority segment (comprised of user information, host, and
 * port), path segment, query segment and fragment. Note that RFC 2396
 * no longer specifies the use of the parameters segment and excludes
-* the "user:password" syntax as part of the authority segment. If 
+* the "user:password" syntax as part of the authority segment. If
 * "user:password" appears in a URI, the entire user/password string
 * is stored as userinfo.
 * <p>
@@ -83,9 +83,9 @@ import java.io.Serializable;
 * of the URI.
 * <p>
 * Note that, unlike the java.net.URL class, this class does not provide
-* any built-in network access functionality nor does it provide any 
-* scheme-specific functionality (for example, it does not know a 
-* default port for a specific scheme). Rather, it only knows the 
+* any built-in network access functionality nor does it provide any
+* scheme-specific functionality (for example, it does not know a
+* default port for a specific scheme). Rather, it only knows the
 * grammar and basic set of operations that can be applied to a URI.
 *
 * @version  $Id$
@@ -95,8 +95,8 @@ import java.io.Serializable;
 
   /*******************************************************************
   * MalformedURIExceptions are thrown in the process of building a URI
-  * or setting fields on a URI when an operation would result in an 
-  * invalid URI specification. 
+  * or setting fields on a URI when an operation would result in an
+  * invalid URI specification.
   *
   ********************************************************************/
   public static class MalformedURIException extends IOException {
@@ -110,8 +110,8 @@ import java.io.Serializable;
     }
 
     /*****************************************************************
-    * Constructs a <code>MalformedURIException</code> with the 
-    * specified detail message. 
+    * Constructs a <code>MalformedURIException</code> with the
+    * specified detail message.
     *
     * @param p_msg the detail message.
     ******************************************************************/
@@ -123,14 +123,14 @@ import java.io.Serializable;
   /** reserved characters */
   private static final String RESERVED_CHARACTERS = ";/?:@&=+$,";
 
-  /** URI punctuation mark characters - these, combined with 
+  /** URI punctuation mark characters - these, combined with
       alphanumerics, constitute the "unreserved" characters */
   private static final String MARK_CHARACTERS = "-_.!~*'() ";
 
   /** scheme can be composed of alphanumerics and these characters */
   private static final String SCHEME_CHARACTERS = "+-.";
 
-  /** userinfo can be composed of unreserved, escaped and these 
+  /** userinfo can be composed of unreserved, escaped and these
       characters */
   private static final String USERINFO_CHARACTERS = ";:&=+$,";
 
@@ -149,7 +149,7 @@ import java.io.Serializable;
   /** If specified, stores the path for this URI; otherwise null */
   private String m_path = null;
 
-  /** If specified, stores the query string for this URI; otherwise 
+  /** If specified, stores the query string for this URI; otherwise
       null.  */
   private String m_queryString = null;
 
@@ -165,7 +165,7 @@ import java.io.Serializable;
   }
 
  /**
-  * Construct a new URI from another URI. All fields for this URI are 
+  * Construct a new URI from another URI. All fields for this URI are
   * set equal to the fields of the URI passed in.
   *
   * @param p_other the URI to copy (cannot be null)
@@ -175,12 +175,12 @@ import java.io.Serializable;
   }
 
  /**
-  * Construct a new URI from a URI specification string. If the 
-  * specification follows the "generic URI" syntax, (two slashes 
-  * following the first colon), the specification will be parsed 
+  * Construct a new URI from a URI specification string. If the
+  * specification follows the "generic URI" syntax, (two slashes
+  * following the first colon), the specification will be parsed
   * accordingly - setting the scheme, userinfo, host,port, path, query
-  * string and fragment fields as necessary. If the specification does 
-  * not follow the "generic URI" syntax, the specification is parsed 
+  * string and fragment fields as necessary. If the specification does
+  * not follow the "generic URI" syntax, the specification is parsed
   * into a scheme and scheme-specific part (stored as the path) only.
   *
   * @param p_uriSpec the URI specification string (cannot be null or
@@ -195,7 +195,7 @@ import java.io.Serializable;
 
  /**
   * Construct a new URI from a base URI and a URI specification string.
-  * The URI specification string may be a relative URI. 
+  * The URI specification string may be a relative URI.
   *
   * @param p_base the base URI (cannot be null if p_uriSpec is null or
   *               empty)
@@ -218,16 +218,16 @@ import java.io.Serializable;
   * @param p_schemeSpecificPart the scheme-specific part (cannot be
   *                             null or empty)
   *
-  * @exception MalformedURIException if p_scheme violates any 
+  * @exception MalformedURIException if p_scheme violates any
   *                                  syntax rules
   */
-  public URI(String p_scheme, String p_schemeSpecificPart) 
+  public URI(String p_scheme, String p_schemeSpecificPart)
              throws MalformedURIException {
     if (p_scheme == null || p_scheme.trim().length() == 0) {
       throw new MalformedURIException(
             "Cannot construct URI with null/empty scheme!");
     }
-    if (p_schemeSpecificPart == null || 
+    if (p_schemeSpecificPart == null ||
         p_schemeSpecificPart.trim().length() == 0) {
       throw new MalformedURIException(
           "Cannot construct URI with null/empty scheme-specific part!");
@@ -246,19 +246,19 @@ import java.io.Serializable;
   * @param p_host the hostname or IPv4 address for the URI
   * @param p_path the URI path - if the path contains '?' or '#',
   *               then the query string and/or fragment will be
-  *               set from the path; however, if the query and 
-  *               fragment are specified both in the path and as 
+  *               set from the path; however, if the query and
+  *               fragment are specified both in the path and as
   *               separate parameters, an exception is thrown
   * @param p_queryString the URI query string (cannot be specified
   *                      if path is null)
   * @param p_fragment the URI fragment (cannot be specified if path
   *                   is null)
   *
-  * @exception MalformedURIException if any of the parameters violates 
+  * @exception MalformedURIException if any of the parameters violates
   *                                  syntax rules or semantic rules
   */
   public URI(String p_scheme, String p_host, String p_path,
-             String p_queryString, String p_fragment) 
+             String p_queryString, String p_fragment)
          throws MalformedURIException {
     this(p_scheme, null, p_host, -1, p_path, p_queryString, p_fragment);
   }
@@ -270,27 +270,27 @@ import java.io.Serializable;
   * setter methods for specifics.
   *
   * @param p_scheme the URI scheme (cannot be null or empty)
-  * @param p_userinfo the URI userinfo (cannot be specified if host 
+  * @param p_userinfo the URI userinfo (cannot be specified if host
   *                   is null)
   * @param p_host the hostname or IPv4 address for the URI
-  * @param p_port the URI port (may be -1 for "unspecified"; cannot 
+  * @param p_port the URI port (may be -1 for "unspecified"; cannot
   *               be specified if host is null)
   * @param p_path the URI path - if the path contains '?' or '#',
   *               then the query string and/or fragment will be
-  *               set from the path; however, if the query and 
-  *               fragment are specified both in the path and as 
+  *               set from the path; however, if the query and
+  *               fragment are specified both in the path and as
   *               separate parameters, an exception is thrown
   * @param p_queryString the URI query string (cannot be specified
   *                      if path is null)
   * @param p_fragment the URI fragment (cannot be specified if path
   *                   is null)
   *
-  * @exception MalformedURIException if any of the parameters violates 
+  * @exception MalformedURIException if any of the parameters violates
   *                                  syntax rules or semantic rules
   */
-  public URI(String p_scheme, String p_userinfo, 
+  public URI(String p_scheme, String p_userinfo,
              String p_host, int p_port, String p_path,
-             String p_queryString, String p_fragment) 
+             String p_queryString, String p_fragment)
          throws MalformedURIException {
     if (p_scheme == null || p_scheme.trim().length() == 0) {
       throw new MalformedURIException("Scheme is required!");
@@ -302,12 +302,12 @@ import java.io.Serializable;
              "Userinfo may not be specified if host is not specified!");
       }
       if (p_port != -1) {
-        throw new MalformedURIException(      
+        throw new MalformedURIException(
              "Port may not be specified if host is not specified!");
       }
     }
 
-    if (p_path != null) { 
+    if (p_path != null) {
       if (p_path.indexOf('?') != -1 && p_queryString != null) {
         throw new MalformedURIException(
           "Query string cannot be specified in path and query string!");
@@ -357,11 +357,11 @@ import java.io.Serializable;
   *
   * @exception MalformedURIException if p_base is null and p_uriSpec
   *                                  is not an absolute URI or if
-  *                                  p_uriSpec violates syntax rules 
+  *                                  p_uriSpec violates syntax rules
   */
-  private void initialize(URI p_base, String p_uriSpec) 
+  private void initialize(URI p_base, String p_uriSpec)
                          throws MalformedURIException {
-    if (p_base == null && 
+    if (p_base == null &&
         (p_uriSpec == null || p_uriSpec.trim().length() == 0)) {
       throw new MalformedURIException(
                   "Cannot initialize URI with empty parameters.");
@@ -381,7 +381,7 @@ import java.io.Serializable;
     // DOS drive letters ('D:'), so 1-character schemes are not allowed.
     int colonIdx = uriSpec.indexOf(':');
     int slashIdx = uriSpec.indexOf('/');
-    if ((colonIdx < 2) || (colonIdx > slashIdx && slashIdx != -1)) { 
+    if ((colonIdx < 2) || (colonIdx > slashIdx && slashIdx != -1)) {
       int fragmentIdx = uriSpec.indexOf('#');
       // A standalone base is a valid URI according to spec
       if (p_base == null && fragmentIdx != 0 ) {
@@ -394,7 +394,7 @@ import java.io.Serializable;
     }
 
     // two slashes means generic URI syntax, so we get the authority
-    if (((index+1) < uriSpecLen) && 
+    if (((index+1) < uriSpecLen) &&
         (uriSpec.substring(index).startsWith("//"))) {
       index += 2;
       int startPos = index;
@@ -425,17 +425,17 @@ import java.io.Serializable;
     // In some cases, it might make more sense to throw an exception
     // (when scheme is specified is the string spec and the base URI
     // is also specified, for example), but we're just following the
-    // RFC specifications 
+    // RFC specifications
     if (p_base != null) {
 
       // check to see if this is the current doc - RFC 2396 5.2 #2
       // note that this is slightly different from the RFC spec in that
       // we don't include the check for query string being null
       // - this handles cases where the urispec is just a query
-      // string or a fragment (e.g. "?y" or "#s") - 
+      // string or a fragment (e.g. "?y" or "#s") -
       // see <http://www.ics.uci.edu/~fielding/url/test1.html> which
       // identified this as a bug in the RFC
-      if (m_path.length() == 0 && m_scheme == null && 
+      if (m_path.length() == 0 && m_scheme == null &&
           m_host == null) {
         m_scheme = p_base.getScheme();
         m_userinfo = p_base.getUserinfo();
@@ -470,7 +470,7 @@ import java.io.Serializable;
       }
 
       // check for absolute path - RFC 2396 5.2 #5
-      if (m_path.length() > 0 && 
+      if (m_path.length() > 0 &&
           m_path.startsWith("/")) {
         return;
       }
@@ -502,13 +502,13 @@ import java.io.Serializable;
         path = path.substring(0, path.length()-1);
       }
 
-      // 6e - remove all "<segment>/../" where "<segment>" is a complete 
+      // 6e - remove all "<segment>/../" where "<segment>" is a complete
       // path segment not equal to ".."
-      index = -1;
+      index = 1;
       int segIndex = -1;
       String tempString = null;
 
-      while ((index = path.indexOf("/../")) > 0) {
+      while ((index = path.indexOf("/../", index)) > 0) {
         tempString = path.substring(0, path.indexOf("/../"));
         segIndex = tempString.lastIndexOf('/');
         if (segIndex != -1) {
@@ -516,9 +516,11 @@ import java.io.Serializable;
             path = path.substring(0, segIndex).concat(path.substring(index+4));
            }
         }
+        else
+            index += 4;
       }
 
-      // 6f - remove ending "<segment>/.." where "<segment>" is a 
+      // 6f - remove ending "<segment>/.." where "<segment>" is a
       // complete path segment
       if (path.endsWith("/..")) {
         tempString = path.substring(0, path.length()-3);
@@ -539,7 +541,7 @@ import java.io.Serializable;
   * @exception MalformedURIException if URI does not have a conformant
   *                                  scheme
   */
-  private void initializeScheme(String p_uriSpec) 
+  private void initializeScheme(String p_uriSpec)
                  throws MalformedURIException {
     int uriSpecLen = p_uriSpec.length();
     int index = 0;
@@ -548,7 +550,7 @@ import java.io.Serializable;
 
     while (index < uriSpecLen) {
       testChar = p_uriSpec.charAt(index);
-      if (testChar == ':' || testChar == '/' || 
+      if (testChar == ':' || testChar == '/' ||
           testChar == '?' || testChar == '#') {
         break;
       }
@@ -565,14 +567,14 @@ import java.io.Serializable;
   }
 
  /**
-  * Initialize the authority (userinfo, host and port) for this 
+  * Initialize the authority (userinfo, host and port) for this
   * URI from a URI string spec.
   *
   * @param p_uriSpec the URI specification (cannot be null)
   *
   * @exception MalformedURIException if p_uriSpec violates syntax rules
   */
-  private void initializeAuthority(String p_uriSpec) 
+  private void initializeAuthority(String p_uriSpec)
                  throws MalformedURIException {
     int index = 0;
     int start = 0;
@@ -596,7 +598,7 @@ import java.io.Serializable;
     // host is everything up to ':'
     String host = null;
     start = index;
-    while (index < end) { 
+    while (index < end) {
       testChar = p_uriSpec.charAt(index);
       if (testChar == ':') {
         break;
@@ -618,10 +620,10 @@ import java.io.Serializable;
           for (int i = 0; i < portStr.length(); i++) {
             if (!isDigit(portStr.charAt(i))) {
               throw new MalformedURIException(
-                   portStr + 
+                   portStr +
                    " is invalid. Port should only contain digits!");
             }
-          } 
+          }
           try {
             port = Integer.parseInt(portStr);
           }
@@ -643,7 +645,7 @@ import java.io.Serializable;
   *
   * @exception MalformedURIException if p_uriSpec violates syntax rules
   */
-  private void initializePath(String p_uriSpec) 
+  private void initializePath(String p_uriSpec)
                  throws MalformedURIException {
     if (p_uriSpec == null) {
       throw new MalformedURIException(
@@ -662,7 +664,7 @@ import java.io.Serializable;
         break;
       }
       // check for valid escape sequence
-      if (testChar == '%') { 
+      if (testChar == '%') {
          if (index+2 >= end ||
             !isHex(p_uriSpec.charAt(index+1)) ||
             !isHex(p_uriSpec.charAt(index+2))) {
@@ -670,7 +672,7 @@ import java.io.Serializable;
                 "Path contains invalid escape sequence!");
          }
       }
-      else if (!isReservedCharacter(testChar) && 
+      else if (!isReservedCharacter(testChar) &&
                !isUnreservedCharacter(testChar)) {
         throw new MalformedURIException(
                   "Path contains invalid character: " + testChar);
@@ -680,7 +682,7 @@ import java.io.Serializable;
     m_path = p_uriSpec.substring(start, index);
 
     // query - starts with ? and up to fragment or end
-    if (testChar == '?') { 
+    if (testChar == '?') {
       index++;
       start = index;
       while (index < end) {
@@ -688,7 +690,7 @@ import java.io.Serializable;
         if (testChar == '#') {
           break;
         }
-        if (testChar == '%') { 
+        if (testChar == '%') {
            if (index+2 >= end ||
               !isHex(p_uriSpec.charAt(index+1)) ||
               !isHex(p_uriSpec.charAt(index+2))) {
@@ -696,7 +698,7 @@ import java.io.Serializable;
                     "Query string contains invalid escape sequence!");
            }
         }
-        else if (!isReservedCharacter(testChar) && 
+        else if (!isReservedCharacter(testChar) &&
                  !isUnreservedCharacter(testChar)) {
           throw new MalformedURIException(
                 "Query string contains invalid character:" + testChar);
@@ -707,13 +709,13 @@ import java.io.Serializable;
     }
 
     // fragment - starts with #
-    if (testChar == '#') { 
+    if (testChar == '#') {
       index++;
       start = index;
       while (index < end) {
         testChar = p_uriSpec.charAt(index);
 
-        if (testChar == '%') { 
+        if (testChar == '%') {
            if (index+2 >= end ||
               !isHex(p_uriSpec.charAt(index+1)) ||
               !isHex(p_uriSpec.charAt(index+2))) {
@@ -721,7 +723,7 @@ import java.io.Serializable;
                     "Fragment contains invalid escape sequence!");
            }
         }
-        else if (!isReservedCharacter(testChar) && 
+        else if (!isReservedCharacter(testChar) &&
                  !isUnreservedCharacter(testChar)) {
           throw new MalformedURIException(
                 "Fragment contains invalid character:"+testChar);
@@ -814,11 +816,11 @@ import java.io.Serializable;
 
  /**
   * Get the path for this URI (optionally with the query string and
-  * fragment). 
+  * fragment).
   *
   * @param p_includeQueryString if true (and query string is not null),
-  *                             then a "?" followed by the query string 
-  *                             will be appended 
+  *                             then a "?" followed by the query string
+  *                             will be appended
   * @param p_includeFragment if true (and fragment is not null),
   *                             then a "#" followed by the fragment
   *                             will be appended
@@ -826,7 +828,7 @@ import java.io.Serializable;
   * @return the path for this URI possibly including the query string
   *         and fragment
   */
-  public String getPath(boolean p_includeQueryString, 
+  public String getPath(boolean p_includeQueryString,
                         boolean p_includeFragment) {
     StringBuffer pathString = new StringBuffer(m_path);
 
@@ -856,7 +858,7 @@ import java.io.Serializable;
   * Get the query string for this URI.
   *
   * @return the query string for this URI. Null is returned if there
-  *         was no "?" in the URI spec, empty string if there was a 
+  *         was no "?" in the URI spec, empty string if there was a
   *         "?" but no query string following it.
   */
   public String getQueryString() {
@@ -867,7 +869,7 @@ import java.io.Serializable;
   * Get the fragment for this URI.
   *
   * @return the fragment for this URI. Null is returned if there
-  *         was no "#" in the URI spec, empty string if there was a 
+  *         was no "#" in the URI spec, empty string if there was a
   *         "#" but no fragment following it.
   */
   public String getFragment() {
@@ -896,7 +898,7 @@ import java.io.Serializable;
   }
 
  /**
-  * Set the userinfo for this URI. If a non-null value is passed in and 
+  * Set the userinfo for this URI. If a non-null value is passed in and
   * the host value is null, then an exception is thrown.
   *
   * @param p_userinfo the userinfo for this URI
@@ -946,7 +948,7 @@ import java.io.Serializable;
   *
   * @param p_host the host for this URI
   *
-  * @exception MalformedURIException if p_host is not a valid IP 
+  * @exception MalformedURIException if p_host is not a valid IP
   *                                  address or DNS hostname.
   */
   public void setHost(String p_host) throws MalformedURIException {
@@ -957,7 +959,7 @@ import java.io.Serializable;
     }
     else if (!isWellFormedAddress(p_host)) {
       throw new MalformedURIException("Host is not a well formed address!");
-    } 
+    }
     m_host = p_host;
   }
 
@@ -969,8 +971,8 @@ import java.io.Serializable;
   *
   * @param p_port the port number for this URI
   *
-  * @exception MalformedURIException if p_port is not -1 and not a 
-  *                                  valid port number 
+  * @exception MalformedURIException if p_port is not -1 and not a
+  *                                  valid port number
   */
   public void setPort(int p_port) throws MalformedURIException {
     if (p_port >= 0 && p_port <= 65535) {
@@ -987,11 +989,11 @@ import java.io.Serializable;
 
  /**
   * Set the path for this URI. If the supplied path is null, then the
-  * query string and fragment are set to null as well. If the supplied 
+  * query string and fragment are set to null as well. If the supplied
   * path includes a query string and/or fragment, these fields will be
   * parsed and set as well. Note that, for URIs following the "generic
   * URI" syntax, the path specified should start with a slash.
-  * For URIs that do not follow the generic URI syntax, this method 
+  * For URIs that do not follow the generic URI syntax, this method
   * sets the scheme-specific part.
   *
   * @param p_path the path for this URI (may be null)
@@ -1012,8 +1014,8 @@ import java.io.Serializable;
 
  /**
   * Append to the end of the path of this URI. If the current path does
-  * not end in a slash and the path to be appended does not begin with 
-  * a slash, a slash will be appended to the current path before the 
+  * not end in a slash and the path to be appended does not begin with
+  * a slash, a slash will be appended to the current path before the
   * new segment is added. Also, if the current path ends in a slash
   * and the new segment begins with a slash, the extra slash will be
   * removed before the new segment is appended.
@@ -1023,7 +1025,7 @@ import java.io.Serializable;
   * @exception MalformedURIException if p_addToPath contains syntax
   *                                  errors
   */
-  public void appendPath(String p_addToPath) 
+  public void appendPath(String p_addToPath)
                          throws MalformedURIException {
     if (p_addToPath == null || p_addToPath.trim().length() == 0) {
       return;
@@ -1062,12 +1064,12 @@ import java.io.Serializable;
 
  /**
   * Set the query string for this URI. A non-null value is valid only
-  * if this is an URI conforming to the generic URI syntax and 
+  * if this is an URI conforming to the generic URI syntax and
   * the path value is not null.
   *
   * @param p_queryString the query string for this URI
   *
-  * @exception MalformedURIException if p_queryString is not null and this  
+  * @exception MalformedURIException if p_queryString is not null and this
   *                                  URI does not conform to the generic
   *                                  URI syntax or if the path is null
   */
@@ -1094,12 +1096,12 @@ import java.io.Serializable;
 
  /**
   * Set the fragment for this URI. A non-null value is valid only
-  * if this is a URI conforming to the generic URI syntax and 
+  * if this is a URI conforming to the generic URI syntax and
   * the path value is not null.
   *
   * @param p_fragment the fragment for this URI
   *
-  * @exception MalformedURIException if p_fragment is not null and this  
+  * @exception MalformedURIException if p_fragment is not null and this
   *                                  URI does not conform to the generic
   *                                  URI syntax or if the path is null
   */
@@ -1184,14 +1186,14 @@ import java.io.Serializable;
   *         otherwise
   */
   public boolean isGenericURI() {
-    // presence of the host (whether valid or empty) means 
+    // presence of the host (whether valid or empty) means
     // double-slashes which means generic uri
     return (m_host != null);
   }
 
  /**
   * Determine whether a scheme conforms to the rules for a scheme name.
-  * A scheme is conformant if it starts with an alphanumeric, and 
+  * A scheme is conformant if it starts with an alphanumeric, and
   * contains only alphanumerics, '+','-' and '.'.
   *
   * @return true if the scheme is conformant, false otherwise
@@ -1208,7 +1210,7 @@ import java.io.Serializable;
     char testChar;
     for (int i = 1; i < p_scheme.length(); i++) {
       testChar = p_scheme.charAt(i);
-      if (!isAlphanum(testChar) && 
+      if (!isAlphanum(testChar) &&
           SCHEME_CHARACTERS.indexOf(testChar) == -1) {
         return false;
       }
@@ -1221,11 +1223,11 @@ import java.io.Serializable;
   * Determine whether a string is syntactically capable of representing
   * a valid IPv4 address or the domain name of a network host. A valid
   * IPv4 address consists of four decimal digit groups separated by a
-  * '.'. A hostname consists of domain labels (each of which must 
+  * '.'. A hostname consists of domain labels (each of which must
   * begin and end with an alphanumeric but may contain '-') separated
   & by a '.'. See RFC 2396 Section 3.2.2.
   *
-  * @return true if the string is a syntactically valid IPv4 address 
+  * @return true if the string is a syntactically valid IPv4 address
   *              or hostname
   */
   public static boolean isWellFormedAddress(String p_address) {
@@ -1256,12 +1258,12 @@ import java.io.Serializable;
       int numDots = 0;
 
       // make sure that 1) we see only digits and dot separators, 2) that
-      // any dot separator is preceded and followed by a digit and 
+      // any dot separator is preceded and followed by a digit and
       // 3) that we find 3 dots
       for (int i = 0; i < addrLength; i++) {
         testChar = address.charAt(i);
         if (testChar == '.') {
-          if (!isDigit(address.charAt(i-1)) || 
+          if (!isDigit(address.charAt(i-1)) ||
               (i+1 < addrLength && !isDigit(address.charAt(i+1)))) {
             return false;
           }
@@ -1279,13 +1281,13 @@ import java.io.Serializable;
       // domain labels can contain alphanumerics and '-"
       // but must start and end with an alphanumeric
       char testChar;
-  
+
       for (int i = 0; i < addrLength; i++) {
         testChar = address.charAt(i);
         if (testChar == '.') {
           if (!isAlphanum(address.charAt(i-1))) {
             return false;
-          } 
+          }
           if (i+1 < addrLength && !isAlphanum(address.charAt(i+1))) {
             return false;
           }
@@ -1315,8 +1317,8 @@ import java.io.Serializable;
   *         or 'A' and 'F', false otherwise
   */
   private static boolean isHex(char p_char) {
-    return (isDigit(p_char) || 
-            (p_char >= 'a' && p_char <= 'f') || 
+    return (isDigit(p_char) ||
+            (p_char >= 'a' && p_char <= 'f') ||
             (p_char >= 'A' && p_char <= 'F'));
   }
 
@@ -1326,8 +1328,8 @@ import java.io.Serializable;
   * @return true if the char is alphabetic, false otherwise
   */
   private static boolean isAlpha(char p_char) {
-    return ((p_char >= 'a' && p_char <= 'z') || 
-            (p_char >= 'A' && p_char <= 'Z' )); 
+    return ((p_char >= 'a' && p_char <= 'z') ||
+            (p_char >= 'A' && p_char <= 'Z' ));
   }
 
  /**
@@ -1336,12 +1338,12 @@ import java.io.Serializable;
   * @return true if the char is alphanumeric, false otherwise
   */
   private static boolean isAlphanum(char p_char) {
-    return (isAlpha(p_char) || isDigit(p_char)); 
+    return (isAlpha(p_char) || isDigit(p_char));
   }
 
  /**
   * Determine whether a character is a reserved character:
-  * ';', '/', '?', ':', '@', '&', '=', '+', '$' or ',' 
+  * ';', '/', '?', ':', '@', '&', '=', '+', '$' or ','
   *
   * @return true if the string contains any reserved characters
   */
@@ -1355,7 +1357,7 @@ import java.io.Serializable;
   * @return true if the char is unreserved, false otherwise
   */
   private static boolean isUnreservedCharacter(char p_char) {
-    return (isAlphanum(p_char) || 
+    return (isAlphanum(p_char) ||
             MARK_CHARACTERS.indexOf(p_char) != -1);
   }
 
@@ -1385,7 +1387,7 @@ import java.io.Serializable;
           continue;
         }
       }
-      if (isReservedCharacter(testChar) || 
+      if (isReservedCharacter(testChar) ||
           isUnreservedCharacter(testChar)) {
           continue;
       }
