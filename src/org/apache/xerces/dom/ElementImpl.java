@@ -109,7 +109,7 @@ public class ElementImpl
     /** DOM2: support. 
      * Is this element created with ownerDocument.createElementNS()? 
      */
-	protected boolean enableNamespace = false;
+	//protected boolean enableNamespace = false;
   
     //
     // Constructors
@@ -119,7 +119,7 @@ public class ElementImpl
     public ElementImpl(DocumentImpl ownerDoc, String name) {
     	super(ownerDoc, name, null);
         //setupDefaultAttributes(ownerDoc);
-        this.localName = name;
+        //this.localName = name;
         syncData = true;
     }
     
@@ -128,7 +128,9 @@ public class ElementImpl
      */
     protected ElementImpl(DocumentImpl ownerDocument, 
                           String namespaceURI,
-                          String qualifiedName) {
+                          String qualifiedName) 
+        throws DOMException
+    {
 
         this.ownerDocument = ownerDocument;
         this.namespaceURI = namespaceURI;
@@ -136,13 +138,33 @@ public class ElementImpl
         int index = qualifiedName.indexOf(':');
         if (index < 0) {
             this.prefix = null;
-            this.localName = qualifiedName;
+            this.localName = null;
         } 
         else {
             this.prefix = qualifiedName.substring(0, index); 
             this.localName = qualifiedName.substring(index+1);
         }
-        this.enableNamespace = true;
+        
+    	if (!DocumentImpl.isXMLName(qualifiedName)) {
+    	    throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
+    	                               "INVALID_CHARACTER_ERR");
+        }
+        
+        if (prefix != null && prefix.equals("xml")) {
+            if (namespaceURI != null && !namespaceURI.equals("") 
+            && !namespaceURI.equals("http://www.w3.org/XML/1998/namespace")) 
+            {
+    	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
+    	                            "NAMESPACE_ERR");
+            } 
+        }
+        else if (prefix != null && (namespaceURI == null || namespaceURI.equals(""))) 
+        {
+    	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
+    	                            "NAMESPACE_ERR");
+    	}
+            
+        //this.enableNamespace = true;
         syncData = true;
         
     } // <init>(DocumentImpl,String,short,boolean,String)
@@ -337,9 +359,22 @@ public class ElementImpl
     	    throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
     	                               "INVALID_CHARACTER_ERR");
         }
-            
+        
+        if (prefix != null && prefix.equals("xml")) {
+            if (!(namespaceURI != null && namespaceURI.equals("") 
+            && !namespaceURI.equals("http://www.w3.org/XML/1998/namespace"))) 
+            {
+    	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
+    	                            "NAMESPACE_ERR");
+            } 
+        }
+        else if (namespaceURI == null || namespaceURI.equals("")) 
+        {
+    	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
+    	                            "NAMESPACE_ERR");
+    	}
+        
         this.prefix = prefix;
-        this.name = prefix+":"+localName;
     }
                                         
     /** 
@@ -588,8 +623,7 @@ public class ElementImpl
      *
      * @param namespaceURI
      *                      The namespace URI of the attribute to
-     *                      retrieve. When it is null or an empty string,
-     *                      this method behaves like getAttribute.
+     *                      retrieve.
      * @param localName     The local name of the attribute to retrieve.
      * @return String       The Attr value as a string, or an empty string 
      *                      if that attribute
@@ -610,21 +644,23 @@ public class ElementImpl
     /**
      * Introduced in DOM Level 2. <p>
      *
-     * Adds a new attribute. If an attribute with that local name and namespace URI is
-     * already present in the element, its value is changed to be that of the value
-     * parameter. This value is a simple string, it is not parsed as it is being set. So any
-     * markup (such as syntax to be recognized as an entity reference) is treated as
-     * literal text, and needs to be appropriately escaped by the implementation when
-     * it is written out. In order to assign an attribute value that contains entity
-     * references, the user must create an Attr node plus any Text and
-     * EntityReference nodes, build the appropriate subtree, and use
-     * setAttributeNodeNS or setAttributeNode to assign it as the value of an
-     * attribute. HTML-only DOM implementations do not need to implement this
-     * method.
+     *  Adds a new attribute. 
+     *  If the given namespaceURI is null or an empty string and
+     *  the qualifiedName has a prefix that is "xml", the new attribute is bound to the
+     *  predefined namespace "http://www.w3.org/XML/1998/namespace" [Namespaces].
+     *  If an attribute with the same local name and namespace URI is already present on
+     *  the element, its prefix is changed to be the prefix part of the qualifiedName, and
+     *  its value is changed to be the value parameter. This value is a simple string, it is not
+     *  parsed as it is being set. So any markup (such as syntax to be recognized as an
+     *  entity reference) is treated as literal text, and needs to be appropriately escaped by
+     *  the implementation when it is written out. In order to assign an attribute value that
+     *  contains entity references, the user must create an Attr node plus any Text and
+     *  EntityReference nodes, build the appropriate subtree, and use
+     *  setAttributeNodeNS or setAttributeNode to assign it as the value of an
+     *  attribute.
      * @param namespaceURI
      *                          The namespace URI of the attribute to create
-     *                          or alter. When it is null or an empty string,
-     *                          this method behaves like getAttribute.
+     *                          or alter. 
      * @param localName         The local name of the attribute to create or
      *                          alter.
      * @param value             The value to set in string form.
@@ -633,6 +669,16 @@ public class ElementImpl
      *
      * @throws                  NO_MODIFICATION_ALLOWED_ERR: Raised if this
      *                          node is readonly.
+     *
+     * @throws                  NAMESPACE_ERR: Raised if the qualifiedName
+     *                          has a prefix that is "xml" and the namespaceURI is
+     *                          neither null nor an empty string nor
+     *                          "http://www.w3.org/XML/1998/namespace", or if the
+     *                          qualifiedName has a prefix that is "xmlns" but the
+     *                          namespaceURI is neither null nor an empty string, or
+     *                          if if the qualifiedName has a prefix different from
+     *                          "xml" and "xmlns" and the namespaceURI is null or an
+     *                          empty string.
      * @since WD-DOM-Level-2-19990923
      */
     public void setAttributeNS(String namespaceURI, String localName, String value) {
@@ -646,13 +692,12 @@ public class ElementImpl
         if (syncData) {
             synchronizeData();
         }
-        //REVISTNS: THe createAttributeNS input params is qualifiedName, 
-        // but we only have localName. What are implications?
     	AttrImpl newAttr = (AttrImpl) 
     	    ((DocumentImpl)getOwnerDocument()).
     	        createAttributeNS(namespaceURI, localName);
+    	
     	newAttr.setNodeValue(value);
-    	attributes.setNamedItem(newAttr);
+    	attributes.setNamedItemNS(newAttr);
     	newAttr.owned = true; // Set true AFTER adding -- or move in?????
 
     } // setAttributeNS(String,String,String)
@@ -661,12 +706,15 @@ public class ElementImpl
      * Introduced in DOM Level 2. <p>
      *
      * Removes an attribute by local name and namespace URI. If the removed
-     * attribute has a default value it is immediately replaced.<p>
+     * attribute has a default value it is immediately replaced.
+     * The replacing attribute has the same namespace URI and local name, 
+     * as well as the original prefix.<p>
      *
      * @param namespaceURI  The namespace URI of the attribute to remove.
-     *                      When it is null or an empty string, this method
-     *                      behaves like removeAttribute.
+     *                      
      * @param localName     The local name of the attribute to remove.
+     * @throws                  NO_MODIFICATION_ALLOWED_ERR: Raised if this
+     *                          node is readonly.
      * @since WD-DOM-Level-2-19990923
      */
     public void removeAttributeNS(String namespaceURI, String localName) {
@@ -694,8 +742,7 @@ public class ElementImpl
      * Retrieves an Attr node by local name and namespace URI. 
      *
      * @param namespaceURI  The namespace URI of the attribute to
-     *                      retrieve. When it is null or an empty string,
-     *                      this method behaves like getAttribute.
+     *                      retrieve. 
      * @param localName     The local name of the attribute to retrieve.
      * @return Attr         The Attr node with the specified attribute 
      *                      local name and namespace
@@ -725,6 +772,17 @@ public class ElementImpl
      * @return Attr     If the newAttr attribute replaces an existing attribute with the same
      *                  local name and namespace URI, the previously existing Attr node is
      *                  returned, otherwise null is returned.
+     * @throws          WRONG_DOCUMENT_ERR: Raised if newAttr
+     *                  was created from a different document than the one that
+     *                  created the element.
+     *
+     * @throws          NO_MODIFICATION_ALLOWED_ERR: Raised if
+     *                  this node is readonly.
+     *
+     * @throws          INUSE_ATTRIBUTE_ERR: Raised if newAttr is
+     *                  already an attribute of another Element object. The
+     *                  DOM user must explicitly clone Attr nodes to re-use
+     *                  them in other elements.
      * @since WD-DOM-Level-2-19990923
      */
     public Attr setAttributeNodeNS(Attr newAttr)

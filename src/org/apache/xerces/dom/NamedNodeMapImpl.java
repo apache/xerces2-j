@@ -79,10 +79,12 @@ import org.apache.xerces.dom.events.MutationEventImpl;
  * Only one Node may be stored per name; attempting to
  * store another will replace the previous value.
  * <P>
- * NOTE: The storage key is taken from the NodeName attribute of the
- * node. As a result, Node types that have fixed names can only have a
- * single instance stored in the NamedNodeMap. This is a DOM
- * restriction.
+ * NOTE: The "primary" storage key is taken from the NodeName attribute of the
+ * node. The "nodes" Vector is kept sorted by this key to speed lookup,
+ * ad make it easier to reconcile with the defaults. The "secondary" 
+ * storage key is the namespaceURI and localName, when accessed by 
+ * DOM level 2 nodes. all nodes, even DOM Level 2 nodes are stored in
+ * a single Vector sorted by the primary "nodename" key.
  * <P>
  * NOTE: item()'s integer index does _not_ imply that the named nodes
  * must be stored in an array; that's only an access method. Note too
@@ -95,11 +97,6 @@ import org.apache.xerces.dom.events.MutationEventImpl;
  * This implementation includes support for DOM Level 2 Mutation Events.
  * If the static boolean NodeImpl.MUTATIONEVENTS is not set true, that support
  * is disabled and can be optimized out to reduce code size.
- * <p>
- * Looked at basing this on Hashtable. Doing so would save about 250 bytes
- * of classfile, at the expense of wasting memory at runtime... and the
- * performance gains for such short sets are questionable. For
- * now I'm going to stick with sorted vectors and binary search.
  *
  * @version
  * @since  PR-DOM-Level-1-19980818.
@@ -113,6 +110,7 @@ public class NamedNodeMapImpl
 
     /** Serialization version. */
     static final long serialVersionUID = -7039242451046758020L;
+    static final boolean DEBUG = false;
 
     //
     // Data
@@ -221,8 +219,7 @@ public class NamedNodeMapImpl
      */
     public Node getNamedItem(String name) {
 
-    	int i = findNamePoint(name);
-    	//int i = findNamePoint(null, name);
+    	int i = findNamePoint(name,0);
         return (i < 0) ? null : (Node)(nodes.elementAt(i));
 
     } // getNamedItem(String):Node
@@ -246,15 +243,30 @@ public class NamedNodeMapImpl
     } // getNamedItemNS(String,String):Node
 
     /**
-     * Internal routine: Only update this structure.
+     * Adds a node using its nodeName attribute.
+     * As the nodeName attribute is used to derive the name which the node must be
+     * stored under, multiple nodes of certain types (those that have a "special" string
+     * value) cannot be stored as the names would clash. This is seen as preferable to
+     * allowing nodes to be aliased.
      * @see org.w3c.dom.NamedNodeMap#setNamedItem
-     * @return org.w3c.dom.Node
-     * @param arg org.w3c.dom.Node
+     * @return If the new Node replaces an existing node the replaced Node is returned,
+     *      otherwise null is returned. 
+     * @param arg 
+     *      A node to store in a named node map. The node will later be
+     *      accessible using the value of the namespaceURI and localName
+     *      attribute of the node. If a node with those namespace URI and
+     *      local name is already present in the map, it is replaced by the new
+     *      one.
      * @exception org.w3c.dom.DOMException The exception description.
      */
     public Node setNamedItem(Node arg)
         throws DOMException {
 
+    	if (readOnly) {
+            throw new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR,
+                                       "NO_MODIFICATION_ALLOWED_ERR");
+        }
+    	
     	if(arg.getOwnerDocument() != ownerDocument) {
             throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR,
                                        "WRONG_DOCUMENT_ERR");
@@ -265,10 +277,8 @@ public class NamedNodeMapImpl
                                        "INUSE_ATTRIBUTE_ERR");
         }
 
-        //DOM2: REVISTNS: Should we create a setNamedItemNS instead?
         NodeImpl argn = (NodeImpl)arg;
-    	//int i = findNamePoint(argn.getNamespaceURI(), argn.getLocalName());
-    	int i = findNamePoint(arg.getNodeName());
+    	int i = findNamePoint(arg.getNodeName(),0);
     	Node previous = null;
     	if (i >= 0) {
     		previous = (Node)nodes.elementAt(i);
@@ -311,17 +321,106 @@ public class NamedNodeMapImpl
     } // setNamedItem(Node):Node
 
     /**
-     * Remove an entry from the NamedNodeMap. @see removeNamedItem.
-     * @return org.w3c.dom.Node
-     * @param name java.lang.String
-     * @exception org.w3c.dom.DOMException The exception description.
+     * Adds a node using its namespaceURI and localName.
+     * @see org.w3c.dom.NamedNodeMap#setNamedItem
+     * @return If the new Node replaces an existing node the replaced Node is returned,
+     *      otherwise null is returned. 
+     * @param arg A node to store in a named node map. The node will later be
+     *      accessible using the value of the namespaceURI and localName
+     *      attribute of the node. If a node with those namespace URI and
+     *      local name is already present in the map, it is replaced by the new
+     *      one.
      */
-    /***
+    public Node setNamedItemNS(Node arg)
+        throws DOMException {
+
+    	if (readOnly) {
+            throw new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR,
+                                       "NO_MODIFICATION_ALLOWED_ERR");
+        }
+    
+    	if(arg.getOwnerDocument() != ownerDocument) {
+            throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR,
+                                       "WRONG_DOCUMENT_ERR");
+        }
+
+    	if (arg instanceof AttrImpl && ((AttrImpl)arg).owned) {
+            throw new DOMExceptionImpl(DOMException.INUSE_ATTRIBUTE_ERR,
+                                       "INUSE_ATTRIBUTE_ERR");
+        }
+
+        NodeImpl argn = (NodeImpl)arg;
+    	int i = findNamePoint(argn.getNamespaceURI(), argn.getLocalName());
+    	Node previous = null;
+    	if (i >= 0) {
+    		previous = (Node)nodes.elementAt(i);
+            if (element != null) {
+                ((NodeImpl)arg).parentNode = element;
+            }
+    		nodes.setElementAt(arg,i);
+    	}
+    	else {
+    	    // If we can't find by namespaceURI, localName, then we find by nodeName
+    	    // so we know where to insert.
+    	    i = findNamePoint(argn.getNodeName(),0);
+    		if (i >=0) {
+    		    previous = (Node)nodes.elementAt(i);
+                if (element != null) {
+                    ((NodeImpl)arg).parentNode = element;
+                }
+    		    nodes.insertElementAt(arg,i);
+    		    
+    		} else {
+    		    i = -1 - i; // Insert point (may be end of list)
+    		    if (null == nodes) {
+    			    nodes = new Vector(5, 10);
+                }
+                if (element != null) {
+                    ((NodeImpl)arg).parentNode = element;
+                }
+    		    nodes.insertElementAt(arg, i);
+    		}
+        }			
+
+        // change owning element
+        if (element != null) {
+            ((NodeImpl)arg).parentNode = element;
+        }
+
+    	++changes;
+
+    	// Only NamedNodeMaps containing attributes (those which are
+    	// bound to an element) need report MutationEvents
+        if(NodeImpl.MUTATIONEVENTS && element!=null)
+        {
+            // MUTATION POST-EVENTS:
+            element.dispatchAggregateEvents(
+                (AttrImpl)arg,
+                previous==null ? null : previous.getNodeValue()
+                );
+        }
+    	
+    	return previous;
+
+    } // setNamedItem(Node):Node
+   
+    /**
+     * Removes a node specified by name.
+     * @param name
+     *      The name of a node to remove. When this NamedNodeMap
+     *      contains the attributes attached to an element, as returned
+     *      by the attributes attribute of the Node interface, if the
+     *      removed attribute is known to have a default value, an
+     *      attribute immediately appears containing the default value
+     *      as well as the corresponding namespace URI, local name,
+     *      and prefix when applicable.
+     * @return The node removed from the map if a node with such a name exists.
+     */
+    /***/
     public Node removeNamedItem(String name)
         throws DOMException {
 
-    	int i = findNamePoint(name);
-    	//int i = findNamePoint(null, name);
+    	int i = findNamePoint(name,0);
     	if (i < 0) {
     		throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR,
     		                           "NOT_FOUND_ERR");
@@ -330,7 +429,9 @@ public class NamedNodeMapImpl
         Node n = (Node)(nodes.elementAt(i));
         // If there's a default, add it instead
         Node d;
-        if (defaults != null && (d = defaults.getNamedItem(name)) != null) {
+        if (defaults != null && (d = defaults.getNamedItem(name)) != null
+            && findNamePoint(name, i+1) < 0) {
+            
             NodeImpl clone = (NodeImpl)d.cloneNode(true);
             clone.parentNode = element;
             nodes.setElementAt(clone, i);
@@ -348,12 +449,7 @@ public class NamedNodeMapImpl
         return n;
 
     } // removeNamedItem(String):Node
-    /***/
-
-    public Node removeNamedItem(String name) {
-        return removeNamedItemNS(null, name);
-    }
-
+    
     /**
      * Introduced in DOM Level 2. <p>
      * Removes a node specified by local name and namespace URI.
@@ -400,12 +496,17 @@ public class NamedNodeMapImpl
         Node n = (Node)(nodes.elementAt(i));
         // If there's a default, add it instead
         Node d;
-        // REVISTNS: What to do about defaults and namespaces.
-        //if (defaults != null && (d = defaults.getNamedItem(name)) != null) {
-        if (defaults != null && (d = defaults.getNamedItemNS(namespaceURI, name)) != null) {
-            NodeImpl clone = (NodeImpl)d.cloneNode(true);
-            clone.parentNode = element;
-            nodes.setElementAt(clone, i);
+        String nodeName = n.getNodeName();
+        if (defaults != null && (d = defaults.getNamedItem(nodeName)) != null
+        ) {
+            int j = findNamePoint(nodeName,0);
+            if (j>=0 && findNamePoint(nodeName, j+1) < 0) {
+                NodeImpl clone = (NodeImpl)d.cloneNode(true);
+                clone.parentNode = element;
+                nodes.setElementAt(clone, i);
+            } else {
+                nodes.removeElementAt(i);
+            }
         }
         else {
             nodes.removeElementAt(i);
@@ -459,13 +560,12 @@ public class NamedNodeMapImpl
     /**
      * Cloning a NamedNodeMap is a DEEP OPERATION; it always clones
      * all the nodes contained in the map.
-     * <P>
-     * ????? Currently, this does _not_ clone the docType reference.
-     * Should the new docType object (if any) be a parameter, rather
-     * than being set manually later on?
-     * <P>
-     * ????? We _do_ clone the defaults reference, if any.
      */
+     
+     // REVIST: Currently, this does _not_ clone the docType reference.
+     // Should the new docType object (if any) be a parameter, rather
+     // than being set manually later on?
+     // We _do_ clone the defaults reference, if any.
     public NamedNodeMapImpl cloneMap() {
 
     	boolean deep = true;
@@ -510,6 +610,15 @@ public class NamedNodeMapImpl
     	}
 
     } // setReadOnly(boolean,boolean)
+    
+    /**
+     * Internal subroutine returns this NodeNameMap's (shallow) readOnly value.
+     *
+     */
+    boolean getReadOnly() {
+    	return readOnly;
+    } // getReadOnly()
+    
 
     //
     // Protected methods
@@ -527,7 +636,7 @@ public class NamedNodeMapImpl
      * versus which were defaults... assuming that the defaults list is being
      * maintained properly, of course.
      * <P>
-     * Also luckily, I made the decision to maintain NamedNodeMaps as
+     * Also luckily, The NameNodeMaps are maintained as 
      * sorted lists. This should keep the cost of convolving the two lists
      * managable... not wonderful, but at least more like 2N than N**2..
      * <P>
@@ -541,7 +650,8 @@ public class NamedNodeMapImpl
      * that the DOM requires.
      */
     protected void reconcileDefaults() {
-
+        
+        if (DEBUG) System.out.println("reconcileDefaults:");
     	if (defaults != null && lastDefaultsChanges != defaults.changes) {
 
     		int n = 0;
@@ -555,49 +665,36 @@ public class NamedNodeMapImpl
     		while (n < nsize && d < dsize) {
     			nnode = (AttrImpl) nodes.elementAt(n);
     			dnode = (AttrImpl) defaults.nodes.elementAt(d);
-    			//int test = nnode.getNodeName().compareTo(dnode.getNodeName());
-    			int testNS;
-    			String nNSString = nnode.getNamespaceURI();
-    			String dNSString = dnode.getNamespaceURI();
-    			// REVISTNS: Are null namespace and "" namespace equal?
-    			if (nNSString == null)
-    			    if (dNSString == null)
-    			        testNS = 0;
-    			    else
-    			        //if (dNSString.equals(""))
-    			        //    testNS = 0;
-    			        //else
-    			            testNS = 1;
-    			else
-    			    if (dNSString == null)
-    			        //if (nNSString.equals(""))
-    			        //    testNS = 0;
-    			        //else
-    			            testNS = -1;
-    			    else
-    			        testNS = nNSString.compareTo(dNSString);
-    			System.out.println("n,d"+nnode.getLocalName()+","+dnode.getLocalName());
-    			int testLocal = (
-    			        nnode.getLocalName()
-    			    ).compareTo(
-    			        dnode.getLocalName()
-    			    );
+    			if (DEBUG) {
+    			System.out.println("\n\nnnode="+nnode.getNodeName());
+    			System.out.println("dnode="+dnode.getNodeName());
+    			}
     			
-    			//int test = nnode.getNodeName().compareTo(dnode.getNodeName());
-    			int test = (testNS != 0) ? testNS : testLocal;
+    			
+    			int test = nnode.getNodeName().compareTo(dnode.getNodeName());
 
+                //REVIST: EACH CONDITION - HOW IT RESPONDS TO DUPLICATE KEYS!
     			// Same name and a default -- make sure same value
-    			if (test == 0 && !nnode.getSpecified()) {
-                    NodeImpl clone = (NodeImpl)dnode.cloneNode(true);
-                    clone.parentNode = element;
-    				nodes.setElementAt(clone, n);
-    				// Advance over both, since names in sync
-    				++n;
-    				++d;
+    			if (test == 0) {
+    			    if (!nnode.getSpecified()) {
+    			        if (DEBUG) System.out.println("reconcile (test==0, specified = false): clone default");
+                        NodeImpl clone = (NodeImpl)dnode.cloneNode(true);
+                        clone.parentNode = element;
+    				    nodes.setElementAt(clone, n);
+    				    // Advance over both, since names in sync
+    				    ++n;
+    				    ++d;
+    			    }
+    			    else { //REVIST: if same name, but specified, simply increment over it.
+    			        System.out.println("reconcile (test==0, specified=true): just increment");
+    				    ++n;
+    				    ++d;
+    			    }
     			}
 
     			// Different name, new default in table; add it
     			else if (test > 0) {
+    			    if (DEBUG) System.out.println("reconcile (test>0): insert new default");
                     NodeImpl clone = (NodeImpl)dnode.cloneNode(true);
                     clone.parentNode = element;
     				nodes.insertElementAt(clone, n);
@@ -608,6 +705,8 @@ public class NamedNodeMapImpl
 
     			// Different name, old default here; remove it.
     			else if (!nnode.getSpecified()) {
+    			    if (DEBUG) System.out.println("reconcile(!specified): remove old default:"
+    			    +nnode.getNodeName());
                     // NOTE: We don't need to null out the parent
                     //       because this is a node that we're
                     //       throwing away (not returning). -Ac
@@ -618,23 +717,24 @@ public class NamedNodeMapImpl
 
     			// Different name, specified; accept it
                 else {
+    			    if (DEBUG) System.out.println("reconcile: Different name else accept it.");
     				++n;
                 }
         	}
 
     		// If we ran out of local before default, pick up defaults
             if (d < dsize) {
-                nodes = new Vector();
+                if (nodes == null) nodes = new Vector();
                 while (d < dsize) {
                     dnode = (AttrImpl)defaults.nodes.elementAt(d++);
                     NodeImpl clone = (NodeImpl)dnode.cloneNode(true);
                     clone.parentNode = element;
+    			    if (DEBUG) System.out.println("reconcile: adding"+clone);
                     nodes.addElement(clone);
                 }
             }
     		lastDefaultsChanges = defaults.changes;
     	}
-
     } // reconcileDefaults()
 
     //
@@ -643,12 +743,9 @@ public class NamedNodeMapImpl
 
     /**
      * Subroutine: Locate the named item, or the point at which said item
-     * should be added. Factoring this out saved very few bytes, but improved
-     * code readability.
+     * should be added. 
      *
-     * SIDE EFFECT: Resynchronizes w/ Defaults. That code could
-     * be moved directly in here to save a few bytes, but for now I like
-     * the conceptual separation.
+     * SIDE EFFECT: Resynchronizes w/ Defaults. 
      *
      * @param name Name of a node to look up.
      *
@@ -658,15 +755,14 @@ public class NamedNodeMapImpl
      * it from -1. (Encoding because I don't want to recompare the strings
      * but don't want to burn bytes on a datatype to hold a flagged value.)
      */
-    /***
-    private int findNamePoint(String name) {
+    private int findNamePoint(String name, int start) {
 
     	reconcileDefaults();
 
     	// Binary search
     	int i = 0;
     	if(nodes != null) {
-    		int first = 0;
+    		int first = start;
             int last  = nodes.size() - 1;
 
     		while (first <= last) {
@@ -691,82 +787,32 @@ public class NamedNodeMapImpl
     	return -1 - i; // not-found has to be encoded.
 
     } // findNamePoint(String):int
-    /***/
 
-    // REVISTNS: Reimplement.
-    private int findNamePoint(String name) {
-        return findNamePoint(null, name);
-    }
-
-    // for DOM2 Namespaces...
+    
+    /** This findNamePoint is for DOM Level 2 Namespaces.
+     */
     private int findNamePoint(String namespaceURI, String name) {
-
-    	reconcileDefaults();
-
-    	// Binary search
-    	int i = 0;
-    	if(nodes != null) {
-    		int first = 0;
-            int last  = nodes.size() - 1;
-    		int testNS;
-    		int testLocal;
-    		
-    		while (first <= last) {
-    			i = (first + last) / 2;
-    			
-    			String nodeNS = ((NodeImpl)(nodes.elementAt(i))).getNamespaceURI();
-    			
-    			if (namespaceURI == null)
-    			    if (nodeNS == null)
-    			        testNS = 0;
-    			    else
-    			        //if (nodeNS.equals(""))
-    			        //    testNS = 0;
-    			        //else
-    			            testNS = 1;
-    			else
-    			    if (nodeNS == null)
-    			        //if (namespaceURI.equals(""))
-    			        //    testNS = 0;
-    			        //else
-    			            testNS = - 1;
-    			    else
-    			        testNS = namespaceURI.compareTo(nodeNS);
-    			
-                String local = ((NodeImpl)(nodes.elementAt(i))).getLocalName();
-    			
-                //REVISTNS: How can the local name be null? !!!
-    			if(local==null) testLocal = -1;
-    			else
-    		    testLocal = (
-    			        name
-    			    ).compareTo(
-                        ((NodeImpl)(nodes.elementAt(i))).getLocalName()
-                    );
-    			
-    			//int test = nnode.getNodeName().compareTo(dnode.getNodeName());
-    			int test = (testNS != 0) ? testNS : testLocal;
-    			
-    			/***/
-    			if(test == 0) {
-    			    return i; // Name found
-                }
-    			else if (test < 0) {
-    				last = i - 1;
-                }
-    			else {
-    				first = i + 1;
-                }
-                /***/
+        
+        reconcileDefaults();
+        if (nodes == null) return -1;
+        if (namespaceURI == null) return -1;
+        if (name == null) return -1;
+        
+        // This is a linear search through the same nodes Vector.
+        // The Vector is sorted on the DOM Level 1 nodename.
+        // The DOM Level 2 NS keys are namespaceURI and Localname, 
+        // so we must linear search thru it.
+        
+        for (int i = 0; i < nodes.size(); i++) {
+            NodeImpl a = (NodeImpl)nodes.elementAt(i);
+            if (namespaceURI.equals(a.getNamespaceURI())
+                && name.equals(a.getLocalName())
+                ) {
+                return i;
             }
-
-    		if (first > i) {
-                i = first;
-            }
-    	}
-
-    	return -1 - i; // not-found has to be encoded.
-
-    } // findNamePoint(String):int
+        }
+        return -1;
+    }
+    
 
 } // class NamedNodeMapImpl

@@ -128,17 +128,19 @@ public class DOMImplementationImpl
      * @param qualifiedName The qualified name of the document type to be created. 
      * @param publicID The document type public identifier.
      * @param systemID The document type system identifier.
+     * @param internalSubset The internal subset as a string.
      * @since WD-DOM-Level-2-19990923
      */
     public DocumentType       createDocumentType(String qualifiedName, 
                                                  String publicID, 
-                                                 String systemID)
+                                                 String systemID,
+                                                 String internalSubset)
     {
     	if (!DocumentImpl.isXMLName(qualifiedName)) {
     		throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
     		                           "INVALID_CHARACTER_ERR");
         }
-    	return new DocumentTypeImpl(null, qualifiedName, publicID, systemID);
+    	return new DocumentTypeImpl(null, qualifiedName, publicID, systemID, internalSubset);
     }
     /**
      * Introduced in DOM Level 2. <p>
@@ -170,6 +172,7 @@ public class DOMImplementationImpl
     		                           "WRONG_DOCUMENT_ERR");
         }
         DocumentImpl doc = new DocumentImpl(doctype);
+        //((DocumentTypeImpl)doctype).ownerDocument = doc;
         Element e = doc.createElementNS( namespaceURI, qualifiedName);
         doc.appendChild(e);
         return doc;

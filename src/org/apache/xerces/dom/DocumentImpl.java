@@ -165,9 +165,12 @@ public class DocumentImpl
     /** Experimental constructor. */
     public DocumentImpl(DocumentType doctype, boolean grammarAccess) {
         this(grammarAccess);
-        this.docType = docType;
+        this.docType = (DocumentTypeImpl)doctype;
         if (this.docType != null) {
             docType.ownerDocument = this;
+            docType.entities.ownerDocument = this;
+            docType.notations.ownerDocument = this;
+            docType.elements.ownerDocument = this;
         }
 
     }
@@ -533,7 +536,8 @@ public class DocumentImpl
      */
     public DocumentType createDocumentType(String qualifiedName,
                                            String publicID,
-                                           String systemID)
+                                           String systemID,
+                                           String internalSubset)
         throws DOMException {
 
     	if (errorChecking && !isXMLName(qualifiedName)) {
@@ -543,7 +547,7 @@ public class DocumentImpl
 
         // REVISIT: What is the right thing to do here? Set the owner doc
         //          as "this"? Provide a setOwnerDocument() method? -Ac
-    	return new DocumentTypeImpl(this, qualifiedName, publicID, systemID);
+    	return new DocumentTypeImpl(this, qualifiedName, publicID, systemID, internalSubset);
 
     } // createDocumentType(String):DocumentType
 
@@ -723,7 +727,10 @@ public class DocumentImpl
     			DocumentTypeImpl newdoctype =
     			    (DocumentTypeImpl)createDocumentType(
     			        doctype.getNodeName(),
-    			        doctype.getPublicID(), doctype.getSystemID());
+    			        doctype.getPublicID(), 
+    			        doctype.getSystemID(),
+    			        doctype.getInternalSubset()
+    			        );
     			// Values are on NamedNodeMaps
     			NamedNodeMap smap = ((DocumentType)source).getEntities();
     			NamedNodeMap tmap = newdoctype.getEntities();
@@ -786,6 +793,20 @@ public class DocumentImpl
     } // importNode(Node,boolean):Node
 
     // identifier maintenence
+    /**
+     *  Introduced in DOM Level 2 
+     *  Returns the Element whose ID is given by elementId. If no such element
+     *  exists, returns null. Behavior is not defined if more than one element has this ID.
+     *  <p>
+     *  Note: The DOM implementation must have information that says which
+     *  attributes are of type ID. Attributes with the name "ID" are not of type ID unless
+     *  so defined. Implementations that do not know whether attributes are of type ID
+     *  or not are expected to return null.
+     * @see #getIdentifier
+     */
+    public Element getElementById(String elementId) {
+        return getIdentifier(elementId);
+    }
 
     /**
      * Registers an identifier name with a specified element node.
@@ -877,30 +898,39 @@ public class DocumentImpl
 
     /**
      * Introduced in DOM Level 2. <p>
-     * Creates an element of the given qualified name and namespace URI.
-     *
+     * Creates an element of the given qualified name and namespace URI. 
+     * If the given namespaceURI is null or an empty string and the 
+     * qualifiedName has a prefix that is "xml", the created element 
+     * is bound to the predefined namespace
+     * "http://www.w3.org/XML/1998/namespace" [Namespaces]. 
      * @param namespaceURI The namespace URI of the element to
-     *                     create. When it is null or an empty string,
-     *                     this method behaves like createElement.
+     *                     create.
      * @param qualifiedName The qualified name of the element type to
      *                      instantiate.
      * @return Element A new Element object with the following attributes:
      * @throws DOMException INVALID_CHARACTER_ERR: Raised if the specified
                             name contains an invalid character.
+     * @throws DOMException NAMESPACE_ERR: Raised if the qualifiedName has a
+     *                      prefix that is "xml" and the namespaceURI is 
+     *                      neither null nor an empty string nor 
+     *                      "http://www.w3.org/XML/1998/namespace", or
+     *                      if the qualifiedName has a prefix different 
+     *                      from "xml" and the namespaceURI is null or an empty string.
      * @since WD-DOM-Level-2-19990923
      */
     public Element createElementNS(String namespaceURI, String qualifiedName)
         throws DOMException
     {
-        if (namespaceURI == null || namespaceURI.equals("")) {
-            return new ElementImpl(this, qualifiedName);
-        }
         return new ElementImpl( this, namespaceURI, qualifiedName);
     }
 
     /**
      * Introduced in DOM Level 2. <p>
-     * Creates an attribute of the given qualified name and namespace URI.
+     * Creates an attribute of the given qualified name and namespace URI. 
+     * If the given namespaceURI is null or an empty string and the 
+     * qualifiedName has a prefix that is "xml", the created element 
+     * is bound to the predefined namespace
+     * "http://www.w3.org/XML/1998/namespace" [Namespaces]. 
      *
      * @param namespaceURI  The namespace URI of the attribute to
      *                      create. When it is null or an empty string,
@@ -915,9 +945,6 @@ public class DocumentImpl
     public Attr createAttributeNS(String namespaceURI, String qualifiedName)
         throws DOMException
     {
-        if (namespaceURI == null || namespaceURI.equals("")) {
-            return new AttrImpl(this, qualifiedName);
-        }
         return new AttrImpl( this, namespaceURI, qualifiedName);
     }
 

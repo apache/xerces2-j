@@ -110,6 +110,9 @@ public class DocumentTypeImpl
     
     // DOM2: support system ID.
     protected String systemID;
+    
+    // DOM2: support internal subset.
+    protected String internalSubset;
 
     //
     // Constructors
@@ -130,10 +133,11 @@ public class DocumentTypeImpl
   
     /** Factory method for creating a document type node. */
     public DocumentTypeImpl(DocumentImpl ownerDocument, String name, 
-                            String publicID, String systemID) {
+                            String publicID, String systemID, String internalSubset) {
         this(ownerDocument, name);
         this.publicID = publicID;
         this.systemID = systemID;
+        this.internalSubset = internalSubset;
 
 
     } // <init>(DocumentImpl,String)
@@ -167,6 +171,33 @@ public class DocumentTypeImpl
         return systemID;
     }
     
+    /**
+     * Introduced in DOM Level 2. <p>
+     * 
+     * Return the internalSubset given as a string.
+     * @since WD-DOM-Level-2-19990923
+     */
+    public String getInternalSubset() {
+        if (syncData) {
+            synchronizeData();
+        }
+        return internalSubset;
+    }
+    
+    /**
+     * Introduced in DOM Level 2. <p>
+     * 
+     * Return the internalSubset given as a string.
+     * @since WD-DOM-Level-2-19990923
+     */
+    public void setInternalSubset(String internalSubset) {
+        if (syncData) {
+            synchronizeData();
+        }
+        this.internalSubset = internalSubset;
+    }
+    
+   
     //
     // Node methods
     //

@@ -155,12 +155,11 @@ public final class DeferredAttrImpl
 
         if (ownerDocument.fNamespacesEnabled) {
             prefix = pool.toString(pool.getPrefixForQName(elementTypeName));
-            namespaceURI = pool.toString(pool.getURIForQName(elementTypeName));
+            if (prefix != null)  { // REVIST: Unqualified attributes do not inherit default namespaces.
+                namespaceURI = pool.toString(pool.getURIForQName(elementTypeName));
+            }
             localName = pool.toString(pool.getLocalPartForQName(elementTypeName));
         }
-		else {
-			localName = name;
-		}
 
     } // synchronizeData()
 

@@ -235,8 +235,17 @@ public class DeferredDocumentImpl
 
         // return node index
         return nodeIndex;
-
+        
     } // createDocumentType(int,int,int):int
+    
+    public void setInternalSubset(int doctypeIndex, int subsetIndex) {
+        int chunk     = doctypeIndex >> CHUNK_SHIFT;
+        int index     = doctypeIndex & CHUNK_MASK;
+        int extraDataIndex = fNodeValue[chunk][index];
+        int echunk = extraDataIndex >> CHUNK_SHIFT;
+        int eindex = extraDataIndex & CHUNK_MASK;
+        fNodeFirstChild[echunk][eindex]  = subsetIndex;
+    }
 
     /** Creates a notation in the table. */
     public int createNotation(int notationName, int publicId, int systemId) throws Exception {
@@ -1091,6 +1100,23 @@ public class DeferredDocumentImpl
                 System.out.print(getChunkIndex(fNodeFirstChild, chunk, index));
                 System.out.print('\t');
                 System.out.print(getChunkIndex(fNodeNextSib, chunk, index));
+                /***
+                System.out.print(fNodeType[0][i]);
+                System.out.print('\t');
+                System.out.print(fNodeName[0][i]);
+                System.out.print('\t');
+                System.out.print(fNodeValue[0][i]);
+                System.out.print('\t');
+                System.out.print(fNodeParent[0][i]);
+                System.out.print('\t');
+                System.out.print(fNodeFirstChild[0][i]);
+                System.out.print('\t');
+                System.out.print(fNodeLastChild[0][i]);
+                System.out.print('\t');
+                System.out.print(fNodePrevSib[0][i]);
+                System.out.print('\t');
+                System.out.print(fNodeNextSib[0][i]);
+                /***/
                 System.out.println();
             }
             System.out.println("# end table");

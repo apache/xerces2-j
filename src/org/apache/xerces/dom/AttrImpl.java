@@ -136,7 +136,6 @@ public class AttrImpl
      */
     protected AttrImpl(DocumentImpl ownerDocument, String name) {
     	super(ownerDocument, name, null);
-    	this.localName = name;
         syncData = true;
     }
     /**
@@ -151,13 +150,45 @@ public class AttrImpl
         this.namespaceURI = namespaceURI;
         int index = qualifiedName.indexOf(':');
         if (index < 0) {
-            prefix = null;
-            localName = qualifiedName;
-        } else {
-            // else lookup the specific namespace.
-            prefix = qualifiedName.substring(0, index);
-            localName = qualifiedName.substring(index+1);
+            this.prefix = null;
+            this.localName = null;
+        } 
+        else {
+            this.prefix = qualifiedName.substring(0, index); 
+            this.localName = qualifiedName.substring(index+1);
         }
+        
+    	if (!DocumentImpl.isXMLName(prefix)) {
+    	    throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
+    	                               "INVALID_CHARACTER_ERR");
+        }
+        
+        if (prefix != null && prefix.equals("xml")) {
+            
+            if (namespaceURI != null && !namespaceURI.equals("") 
+            && !namespaceURI.equals("http://www.w3.org/XML/1998/namespace"))
+            {
+    	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
+    	                            "NAMESPACE_ERR");
+            } 
+        }
+        else if (prefix != null && prefix.equals("xmlns")) {
+            if (namespaceURI != null && !namespaceURI.equals("") )
+            {
+    	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
+    	                            "NAMESPACE_ERR");
+            } 
+        }
+        else if (prefix != null && (namespaceURI == null || namespaceURI.equals("")) ) 
+        {
+    	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
+    	                            "NAMESPACE_ERR");
+    	}
+    	
+    	// Unqualified attributes do not have namespaces as per NS spec.
+    	if (prefix == null) 
+    	    namespaceURI = null;
+    	
         syncData = true;
         
     } 
@@ -365,6 +396,9 @@ public class AttrImpl
         if (syncData) {
             synchronizeData();
         }
+        // REVIST: This code could/should be done at a lower-level, such that the namespaceURI
+        // is set properly upon creation. However, there still seems to be some DOM spec 
+        // interpretation grey-area.
         return namespaceURI;
     }
     
@@ -410,7 +444,6 @@ public class AttrImpl
         }
             
         this.prefix = prefix;
-        this.name = prefix+":"+localName;
     }
                                         
     /** 
@@ -419,7 +452,7 @@ public class AttrImpl
      * Returns the local part of the qualified name of this node.
      * @since WD-DOM-Level-2-19990923
      */
-    public String             getLocalName()
+    public String getLocalName()
     {
         if (syncData) {
             synchronizeData();

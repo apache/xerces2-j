@@ -141,10 +141,10 @@ public class DeferredDocumentTypeImpl
         // public and system ids
         StringPool pool = ownerDocument.getStringPool();
         int extraDataIndex = ownerDocument.getNodeValue(fNodeIndex);
-        ownerDocument.getNodeType(extraDataIndex);
+        //ownerDocument.getNodeType(extraDataIndex);
         publicID = pool.toString(ownerDocument.getNodeName(extraDataIndex));
         systemID = pool.toString(ownerDocument.getNodeValue(extraDataIndex));
-
+        internalSubset = pool.toString(ownerDocument.getFirstChild(extraDataIndex));
     } // synchronizeData()
 
     /** Synchronizes the entities, notations, and elements. */
