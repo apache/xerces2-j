@@ -3,7 +3,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1354,7 +1354,7 @@ public class TraverseSchema implements
         // attribute type
         int attType = -1;
         boolean attIsList = false;
-        int enumeration = -1;
+        int dataTypeSymbol = -1;
 
         String ref = attrDecl.getAttribute(SchemaSymbols.ATT_REF); 
         String datatype = attrDecl.getAttribute(SchemaSymbols.ATT_TYPE);
@@ -1391,11 +1391,11 @@ public class TraverseSchema implements
                 child = XUtil.getNextSiblingElement(child);
             if (child != null && child.getNodeName().equals(SchemaSymbols.ELT_SIMPLETYPE)) {
                 attType = XMLAttributeDecl.TYPE_SIMPLE;
-                enumeration = traverseSimpleTypeDecl(child);
+                dataTypeSymbol = traverseSimpleTypeDecl(child);
             } 
             else {
                 attType = XMLAttributeDecl.TYPE_SIMPLE;
-                enumeration = fStringPool.addSymbol("string");
+                dataTypeSymbol = fStringPool.addSymbol("string");
             }
 
         } else {
@@ -1412,31 +1412,18 @@ public class TraverseSchema implements
                 attType = XMLAttributeDecl.TYPE_ENTITY;
                 attIsList = true;
             } else if (datatype.equals("NMTOKEN")) {
-                Element e = XUtil.getFirstChildElement(attrDecl, "enumeration");
-                if (e == null) {
                     attType = XMLAttributeDecl.TYPE_NMTOKEN;
-                } else {
-                    attType = XMLAttributeDecl.TYPE_ENUMERATION;
-                    enumeration = fStringPool.startStringList();
-                    for (Element literal = XUtil.getFirstChildElement(e, "literal");
-                         literal != null;
-                         literal = XUtil.getNextSiblingElement(literal, "literal")) {
-                        int stringIndex = fStringPool.addSymbol(literal.getFirstChild().getNodeValue());
-                        fStringPool.addStringToList(enumeration, stringIndex);
-                    }
-                    fStringPool.finishStringList(enumeration);
-                }
             } else if (datatype.equals("NMTOKENS")) {
                 attType = XMLAttributeDecl.TYPE_NMTOKEN;
                 attIsList = true;
-                //TO DO: should we do the the same enumeration thing here? 
             } else if (datatype.equals(SchemaSymbols.ELT_NOTATION)) {
                 attType = XMLAttributeDecl.TYPE_NOTATION;
             } else { // REVISIT: Danger: assuming all other ATTR types are datatypes
                 //REVISIT check against list of validators to ensure valid type name
                 attType = XMLAttributeDecl.TYPE_SIMPLE;
-                enumeration = fStringPool.addSymbol(datatype);
             }
+            dataTypeSymbol = fStringPool.addSymbol(datatype);
+
         }
 
         // attribute default type
@@ -1446,9 +1433,9 @@ public class TraverseSchema implements
         String use = attrDecl.getAttribute(SchemaSymbols.ATT_USE);
         boolean required = use.equals(SchemaSymbols.ATTVAL_REQUIRED);
 
-        if (attType == XMLAttributeDecl.TYPE_SIMPLE ) {
-            dv = fDatatypeRegistry.getDatatypeValidator(fStringPool.toString(enumeration));
-        }
+        //if (attType == XMLAttributeDecl.TYPE_SIMPLE ) {
+            dv = fDatatypeRegistry.getDatatypeValidator(fStringPool.toString(dataTypeSymbol));
+        //}
 
         if (required) {
             attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_REQUIRED;
@@ -1510,7 +1497,7 @@ public class TraverseSchema implements
         // add attribute to attr decl pool in fSchemaGrammar, 
         fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
                                   attQName, attType, 
-                                  enumeration, attDefaultType, 
+                                  dataTypeSymbol, attDefaultType, 
                                   fStringPool.toString( attDefaultValue), dv);
         return -1;
     } // end of method traverseAttribute
