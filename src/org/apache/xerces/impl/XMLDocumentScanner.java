@@ -509,8 +509,8 @@ public class XMLDocumentScanner
 
         // make sure elements are balanced
         if (fElementDepth != fEntityStack[--fEntityDepth]) {
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, "ElementEntityMismatch", 
-                                       new Object[]{fCurrentElement.rawname}, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("ElementEntityMismatch",
+                             new Object[]{fCurrentElement.rawname});
         }
 
         // keep track of entities appearing in attribute values
@@ -524,10 +524,7 @@ public class XMLDocumentScanner
         // make sure markup is properly balanced
         else if (fInMarkup) {
             fInMarkup = false;
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "MarkupEntityMismatch",
-                                       null,
-                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("MarkupEntityMismatch", null);
         }
 
         // call handler
@@ -646,17 +643,14 @@ public class XMLDocumentScanner
 
         // spaces
         if (!fEntityScanner.skipSpaces()) {
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "MSG_SPACE_REQUIRED_BEFORE_ROOT_ELEMENT_TYPE_IN_DOCTYPEDECL",
-                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("MSG_SPACE_REQUIRED_BEFORE_ROOT_ELEMENT_TYPE_IN_DOCTYPEDECL",
+                             null);
         }
 
         // root element name
         String name = fEntityScanner.scanName();
         if (name == null) {
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "MSG_ROOT_ELEMENT_TYPE_REQUIRED",
-                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("MSG_ROOT_ELEMENT_TYPE_REQUIRED", null);
         }
 
         // external id
@@ -666,15 +660,11 @@ public class XMLDocumentScanner
         if (spaces) {
             if (fEntityScanner.skipString("SYSTEM")) {
                 if (!fEntityScanner.skipSpaces()) {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               "SpaceRequiredAfterSYSTEM",
-                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    reportFatalError("SpaceRequiredAfterSYSTEM", null);
                 }
                 int quote = fEntityScanner.peekChar();
                 if (quote != '\'' && quote != '"') {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               "QuoteRequiredInSystemID",
-                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    reportFatalError("QuoteRequiredInSystemID", null);
                 }
                 fEntityScanner.scanChar();
                 XMLString value = fString;
@@ -691,22 +681,16 @@ public class XMLDocumentScanner
                 }
                 systemId = value.toString();
                 if (!fEntityScanner.skipChar(quote)) {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               "SystemIDUnterminated",
-                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    reportFatalError("SystemIDUnterminated", null);
                 }
             }
             else if (fEntityScanner.skipString("PUBLIC")) {
                 if (!fEntityScanner.skipSpaces()) {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                             "SpaceRequiredAfterPUBLIC",
-                             null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    reportFatalError("SpaceRequiredAfterPUBLIC", null);
                 }
                 int quote = fEntityScanner.peekChar();
                 if (quote != '\'' && quote != '"') {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               "QuoteRequiredInPublicID",
-                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    reportFatalError("QuoteRequiredInPublicID", null);
                 }
                 fEntityScanner.scanChar();
                 XMLString value = fString;
@@ -723,20 +707,15 @@ public class XMLDocumentScanner
                 }
                 publicId = value.toString();
                 if (!fEntityScanner.skipChar(quote)) {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               "PublicIDUnterminated",
-                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    reportFatalError("PublicIDUnterminated", null);
                 }
                 if (!fEntityScanner.skipSpaces()) {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               "SpaceRequiredBetweenPublicAndSystem",
-                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    reportFatalError("SpaceRequiredBetweenPublicAndSystem",
+                                     null);
                 }
                 quote = fEntityScanner.peekChar();
                 if (quote != '\'' && quote != '"') {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               "QuoteRequiredInSystemID",
-                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    reportFatalError("QuoteRequiredInSystemID", null);
                 }
                 fEntityScanner.scanChar();
                 value = fString;
@@ -753,10 +732,7 @@ public class XMLDocumentScanner
                 }
                 systemId = value.toString();
                 if (!fEntityScanner.skipChar(quote)) {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               "SystemIDUnterminated",
-                                               null, 
-                                               XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    reportFatalError("SystemIDUnterminated", null);
                 }
             }
             fEntityScanner.skipSpaces();
@@ -775,10 +751,8 @@ public class XMLDocumentScanner
             //          document content. However, there is the continue-
             //          after-fatal-error setting... -Ac
             if (!fEntityScanner.skipChar(']')) {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "EXPECTED_SQUARE_BRACKET_TO_CLOSE_INTERNAL_SUBSET",
-                                           null,
-                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                reportFatalError("EXPECTED_SQUARE_BRACKET_TO_CLOSE_INTERNAL_SUBSET",
+                                 null);
             }
             fEntityScanner.skipSpaces();
         }
@@ -786,10 +760,7 @@ public class XMLDocumentScanner
         // end
         fEntityScanner.skipSpaces();
         if (!fEntityScanner.skipChar('>')) {
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "DoctypedeclUnterminated",
-                                       new Object[]{name},
-                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("DoctypedeclUnterminated", new Object[]{name});
         }
         fInMarkup = false;
 
@@ -868,20 +839,15 @@ public class XMLDocumentScanner
             else if (c == '/') {
                 fEntityScanner.scanChar();
                 if (!fEntityScanner.skipChar('>')) {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               "ElementUnterminated",
-                                               new Object[]{rawname},
-                                               XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    reportFatalError("ElementUnterminated",
+                                     new Object[]{rawname});
                 }
                 fElementDepth--;
                 empty = true;
                 break;
             }
             else if (!XMLChar.isNameStart(c)) {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "ElementUnterminated",
-                                           new Object[]{rawname},
-                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                reportFatalError("ElementUnterminated", new Object[]{rawname});
             }
 
             // attributes
@@ -936,20 +902,17 @@ public class XMLDocumentScanner
         // equals
         fEntityScanner.skipSpaces();
         if (!fEntityScanner.skipChar('=')) {
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "EqRequiredInAttribute",
-                                       new Object[]{fCurrentElement.rawname, fAttributeQName.rawname},
-                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("EqRequiredInAttribute",
+                             new Object[]{fCurrentElement.rawname,
+                                          fAttributeQName.rawname});
         }
         fEntityScanner.skipSpaces();
 
         // quote
         int quote = fEntityScanner.peekChar();
         if (quote != '\'' && quote != '"') {
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "OpenQuoteExpected",
-                                       new Object[]{fAttributeQName.rawname},
-                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("OpenQuoteExpected",
+                             new Object[]{fAttributeQName.rawname});
         }
         fEntityScanner.scanChar();
         int entityDepth = fEntityDepth;
@@ -990,14 +953,11 @@ public class XMLDocumentScanner
                     else {
                         String entityName = fEntityScanner.scanName();
                         if (entityName == null) {
-                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                       "NameRequiredInReference",
-                                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                            reportFatalError("NameRequiredInReference", null);
                         }
                         if (!fEntityScanner.skipChar(';')) {
-                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                       "SemicolonRequiredInReference",
-                                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                            reportFatalError("SemicolonRequiredInReference",
+                                             null);
                         }
                         if (entityName == fAmpSymbol) {
                             fStringBuffer2.append('&');
@@ -1035,30 +995,20 @@ public class XMLDocumentScanner
                             }
                         }
                         else {
-                            int odepth = fEntityDepth;
-                            fEntityManager.startEntity(entityName, false);
-                            int ndepth = fEntityDepth;
-                            // if we actually got a new entity and it's external
-                            // parse text decl if there is any
-                            if (odepth != ndepth) {
-                                if (fEntityScanner.isExternal()) {
-                                    if (DEBUG_ATTR_ENTITIES) {
-                                        System.out.println("*** scanning TextDecl");
-                                    }
-                                    if (fEntityScanner.skipString("<?xml")) {
-                                        fInMarkup = true;
-                                        scanXMLDeclOrTextDecl(true);
-                                    }
-                                }
+                            if (fEntityManager.isExternalEntity(entityName)) {
+                                reportFatalError("ReferenceToExternalEntity",
+                                                 new Object[] { entityName });
+                            }
+                            else {
+                                fEntityManager.startEntity(entityName, false);
                             }
                         }
                     }
                 }
                 else if (c == '<') {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               "LessthanInAttValue",
-                                               new Object[] { null, fAttributeQName.rawname }, 
-                                               XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    reportFatalError("LessthanInAttValue",
+                                     new Object[] { null,
+                                                    fAttributeQName.rawname });
                 }
                 else if (c == '%') {
                     fStringBuffer2.append((char)fEntityScanner.scanChar());
@@ -1067,10 +1017,8 @@ public class XMLDocumentScanner
                     scanSurrogates(fStringBuffer2);
                 }
                 else if (c != -1 && XMLChar.isInvalid(c)) {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                               "InvalidCharInAttValue",
-                                               new Object[] {Integer.toString(c, 16)},
-                                               XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    reportFatalError("InvalidCharInAttValue",
+                                     new Object[] {Integer.toString(c, 16)});
                     fEntityScanner.scanChar();
                 }
                 while (true) {
@@ -1102,10 +1050,8 @@ public class XMLDocumentScanner
         // quote
         int cquote = fEntityScanner.scanChar();
         if (cquote != cquote) {
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "CloseQuoteExpected",
-                                       new Object[]{fAttributeQName.rawname},
-                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("CloseQuoteExpected",
+                             new Object[]{fAttributeQName.rawname});
         }
 
         if (DEBUG_CONTENT_SCANNING) System.out.println("<<< scanAttribute()");
@@ -1126,10 +1072,7 @@ public class XMLDocumentScanner
         // REVISIT: Handle this better.
         if (c == ']' && fString.length == 0) {
             if (fEntityScanner.skipString("]]>")) {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "CDEndInContent",
-                                           null,
-                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                reportFatalError("CDEndInContent", null);
             }
             else if (fEntityScanner.skipString("]]")) {
                 fStringBuffer.clear();
@@ -1199,10 +1142,8 @@ public class XMLDocumentScanner
             else {
                 int c = fEntityScanner.peekChar();
                 if (c != -1 && XMLChar.isInvalid(c)) {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                               "InvalidCharInCDSect",
-                                               new Object[] {Integer.toString(c, 16)},
-                                               XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    reportFatalError("InvalidCharInCDSect",
+                                     new Object[] {Integer.toString(c, 16)});
                     fEntityScanner.scanChar();
                 }
                 if (fDocumentHandler != null) {
@@ -1250,10 +1191,8 @@ public class XMLDocumentScanner
         // end
         fEntityScanner.skipSpaces();
         if (!fEntityScanner.skipChar('>')) {
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "ETagUnterminated",
-                                       new Object[]{fElementQName.rawname},
-                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("ETagUnterminated",
+                             new Object[]{fElementQName.rawname});
         }
         fInMarkup = false;
         fElementDepth--;
@@ -1298,16 +1237,12 @@ public class XMLDocumentScanner
         // name
         String name = fEntityScanner.scanName();
         if (name == null) {
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "NameRequiredInReference",
-                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("NameRequiredInReference", null);
         }
 
         // end
         if (!fEntityScanner.skipChar(';')) {
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "SemicolonRequiredInReference",
-                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("SemicolonRequiredInReference", null);
         }
         fInMarkup = false;
 
@@ -1369,10 +1304,8 @@ public class XMLDocumentScanner
         QName startElement = fElementQName;
         fElementStack.popElement(startElement);
         if (element.rawname != startElement.rawname) {
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "ETagRequired",
-                                       new Object[]{startElement.rawname},
-                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("ETagRequired",
+                             new Object[]{startElement.rawname});
         }
 
         // bind namespaces
@@ -1732,10 +1665,7 @@ public class XMLDocumentScanner
 
             // premature end of file
             catch (EOFException e) {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "PrematureEOF",
-                                           null,
-                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                reportFatalError("PrematureEOF", null);
                 throw e;
             }
 
@@ -1803,9 +1733,8 @@ public class XMLDocumentScanner
                             else if (fEntityScanner.skipChar('!')) {
                                 if (fEntityScanner.skipChar('-')) {
                                     if (!fEntityScanner.skipChar('-')) {
-                                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                                   "InvalidCommentStart",
-                                                                   null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                                        reportFatalError("InvalidCommentStart",
+                                                         null);
                                     }
                                     setScannerState(SCANNER_STATE_COMMENT);
                                     again = true;
@@ -1815,9 +1744,8 @@ public class XMLDocumentScanner
                                     again = true;
                                 }
                                 else {
-                                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                               "MarkupNotRecognizedInProlog",
-                                                               null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                                    reportFatalError("MarkupNotRecognizedInProlog",
+                                                     null);
                                 }
                             }
                             else if (XMLChar.isNameStart(fEntityScanner.peekChar())) {
@@ -1826,9 +1754,8 @@ public class XMLDocumentScanner
                                 return true;
                             }
                             else {
-                                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                           "MarkupNotRecognizedInProlog",
-                                                           null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                                reportFatalError("MarkupNotRecognizedInProlog",
+                                                 null);
                             }
                             break;
                         }
@@ -1844,9 +1771,7 @@ public class XMLDocumentScanner
                         }
                         case SCANNER_STATE_DOCTYPE: {
                             if (fSeenDoctypeDecl) {
-                                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                           "AlreadySeenDoctype",
-                                                           null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                                reportFatalError("AlreadySeenDoctype", null);
                             }
                             fSeenDoctypeDecl = true;
                             scanDoctypeDecl();
@@ -1854,23 +1779,17 @@ public class XMLDocumentScanner
                             break;
                         }
                         case SCANNER_STATE_CONTENT: {
-                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                       "ContentIllegalInProlog",
-                                                       null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                            reportFatalError("ContentIllegalInProlog", null);
                             fEntityScanner.scanChar();
                         }
                         case SCANNER_STATE_REFERENCE: {
-                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                       "ReferenceIllegalInProlog",
-                                                       null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                            reportFatalError("ReferenceIllegalInProlog", null);
                         }
                     }
                 } while (complete || again);
     
                 if (fEntityScanner.scanChar() != '<') {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               "RootElementRequired",
-                                               null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    reportFatalError("RootElementRequired", null);
                 }
                 setScannerState(SCANNER_STATE_ROOT_ELEMENT);
                 setDispatcher(fContentDispatcher);
@@ -1878,10 +1797,7 @@ public class XMLDocumentScanner
 
             // premature end of file
             catch (EOFException e) {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "PrematureEOF",
-                                           null,
-                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                reportFatalError("PrematureEOF", null);
                 throw e;
             }
 
@@ -1960,10 +1876,8 @@ public class XMLDocumentScanner
                                         }
                                     }
                                     else if (c != -1 && XMLChar.isInvalid(c)) {
-                                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                                                   "InvalidCharInContent",
-                                                                   new Object[] {Integer.toString(c, 16)},
-                                                                   XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                                        reportFatalError("InvalidCharInContent",
+                                                         new Object[] {Integer.toString(c, 16)});
                                         fEntityScanner.scanChar();
                                     }
                                 } while (complete);
@@ -1979,9 +1893,8 @@ public class XMLDocumentScanner
                             else if (fEntityScanner.skipChar('!')) {
                                 if (fEntityScanner.skipChar('-')) {
                                     if (!fEntityScanner.skipChar('-')) {
-                                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                                   "InvalidCommentStart",
-                                                                   null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                                        reportFatalError("InvalidCommentStart",
+                                                         null);
                                     }
                                     setScannerState(SCANNER_STATE_COMMENT);
                                     again = true;
@@ -1994,9 +1907,8 @@ public class XMLDocumentScanner
                                     setScannerState(SCANNER_STATE_DOCTYPE);
                                 }
                                 else {
-                                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                               "MarkupNotRecognizedInContent",
-                                                               null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                                    reportFatalError("MarkupNotRecognizedInContent",
+                                                     null);
                                 }
                             }
                             else if (fEntityScanner.skipChar('/')) {
@@ -2012,9 +1924,8 @@ public class XMLDocumentScanner
                                 setScannerState(SCANNER_STATE_CONTENT);
                             }
                             else {
-                                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                           "MarkupNotRecognizedInContent",
-                                                           null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                                reportFatalError("MarkupNotRecognizedInContent",
+                                                 null);
                             }
                             break;
                         }
@@ -2083,9 +1994,8 @@ public class XMLDocumentScanner
                             break;
                         }
                         case SCANNER_STATE_DOCTYPE: {
-                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                       "DoctypeIllegalInContent",
-                                                       null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                            reportFatalError("DoctypeIllegalInContent",
+                                             null);
                         }
                     }
                 } while (complete || again);
@@ -2093,10 +2003,7 @@ public class XMLDocumentScanner
     
             // premature end of file
             catch (EOFException e) {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "PrematureEOF",
-                                           null,
-                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                reportFatalError("PrematureEOF", null);
                 throw e;
             }
 
@@ -2164,18 +2071,14 @@ public class XMLDocumentScanner
                             /***
                             // REVISIT: Should we detect this?
                             else if (XMLChar.isNameStart(fEntityScanner.peekChar())) {
-                                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                           "MarkupNotRecognizedInMisc",
-                                                           null,
-                                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                                reportFatalError("MarkupNotRecognizedInMisc",
+                                                 null);
                                 // REVISIT: continue after fatal error
                             }
                             /***/
                             else {
-                                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                           "MarkupNotRecognizedInMisc",
-                                                           null,
-                                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                                reportFatalError("MarkupNotRecognizedInMisc",
+                                                 null);
                             }
                             break;
                         }
@@ -2186,10 +2089,7 @@ public class XMLDocumentScanner
                         }
                         case SCANNER_STATE_COMMENT: {
                             if (!fEntityScanner.skipString("--")) {
-                                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                           "InvalidCommentStart",
-                                                           null,
-                                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                                reportFatalError("InvalidCommentStart", null);
                             }
                             scanComment();
                             setScannerState(SCANNER_STATE_TRAILING_MISC);
@@ -2201,19 +2101,15 @@ public class XMLDocumentScanner
                                 setScannerState(SCANNER_STATE_TERMINATED);
                                 return false;
                             }
-                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                       "ContentIllegalInTrailingMisc",
-                                                       null,
-                                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                            reportFatalError("ContentIllegalInTrailingMisc",
+                                             null);
                             fEntityScanner.scanChar();
                             setScannerState(SCANNER_STATE_TRAILING_MISC);
                             break;
                         }
                         case SCANNER_STATE_REFERENCE: {
-                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                       "ReferenceIllegalInTrailingMisc",
-                                                       null,
-                                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                            reportFatalError("ReferenceIllegalInTrailingMisc",
+                                             null);
                             setScannerState(SCANNER_STATE_TRAILING_MISC);
                             break;
                         }
@@ -2225,10 +2121,7 @@ public class XMLDocumentScanner
                 //       the real end of the document stream. Unless the
                 //       end of file was reached prematurely.
                 if (fInMarkup) {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               "PrematureEOF",
-                                               null,
-                                               XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    reportFatalError("PrematureEOF", null);
                     throw e;
                 }
             }
