@@ -1086,16 +1086,16 @@ public class DocumentImpl
     }
 
     //
-    // Not yet DOM Level 2. Support DocumentTraversal methods.
+    // Not DOM Level 2. Support DocumentTraversal methods.
     //
 
-    /**
-     *  Remove a NodeIterator from the list of NodeIterators.
-     *  Should be called when finished using a NodeIterator.
-     *  Not yet DOM Level 2, but some removal or deregistration
-     *  mechanism is needed.
+    /** This is not called by the developer client. The 
+     *  developer client uses the detach() function on the 
+     *  NodeIterator itself. <p>
+     *  
+     *  This function is called from the NodeIterator#detach().
      */
-    public void removeNodeIterator(NodeIterator nodeIterator) {
+     void removeNodeIterator(NodeIterator nodeIterator) {
 
         if (nodeIterator == null) return;
         if (iterators == null) return;
@@ -1124,18 +1124,6 @@ public class DocumentImpl
         if (treeWalkers == null) return null;
 
         return treeWalkers.elements();
-    }
-
-    /** Remove all NodeIterators from the list of NodeIterators */
-    public void removeNodeIterators() {
-
-        iterators = null;
-    }
-
-    /** Remove all TreeWalkers from the list of TreeWalkers */
-    public void removeTreeWalkers() {
-
-        treeWalkers = null;
     }
     
     //
