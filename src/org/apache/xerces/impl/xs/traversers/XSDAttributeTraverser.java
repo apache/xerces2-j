@@ -301,7 +301,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         attribute.fType = attrType;
 
         // Step 2: register attribute decl to the grammar
-        if (nameAtt != null)
+        if (isGlobal && nameAtt != null)
             grammar.addGlobalAttributeDecl(attribute);
 
         // Step 3: check against schema for schemas

@@ -371,7 +371,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         }
 
         // Step 2: register the element decl to the grammar
-        if (nameAtt != null)
+        if (isGlobal && nameAtt != null)
             grammar.addGlobalElementDecl(element);
 
         // Step 3: check against schema for schemas
