@@ -169,7 +169,6 @@
 				<em>true/false</em>
 				] -- (NON-DOM) setting the value of this parameter to true will include 
 				PSVI information in the DOM tree. 
-				To access the information, cast dom.Element to org.apache.xerces.xs.ElementPSVI and dom.Attr to org.apache.xerces.xs.AttributePSVI.
 			</li>
 
 		</ul>
@@ -190,15 +189,7 @@
 			</li>
             <li><strong>LSSerializer</strong> - the following parameters are not supported:</li>
 <ul>
-<li><strong>ignore-unknown-character-denormalizations</strong>
-[
-<em>true</em>
-]</li>
 <li><strong>normalize-characters</strong>
-[
-<em>true</em>
-]</li>
-<li><strong>well-formed</strong>
 [
 <em>true</em>
 ]</li>
