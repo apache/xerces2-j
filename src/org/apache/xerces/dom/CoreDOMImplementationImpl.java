@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package org.apache.xerces.dom;
+
 import org.apache.xerces.impl.RevalidationHandler;
 import org.apache.xerces.parsers.DOMParserImpl;
 import org.apache.xerces.util.XMLChar;
@@ -59,7 +60,7 @@ public class CoreDOMImplementationImpl
     // doctypes without owners, on an demand basis.   Used for
     // compareDocumentPosition
     private int docAndDoctypeCounter = 0;
-
+    
 	// static
 	/** Dom implementation singleton. */
 	static CoreDOMImplementationImpl singleton =
@@ -78,53 +79,65 @@ public class CoreDOMImplementationImpl
 	 * Test if the DOM implementation supports a specific "feature" --
 	 * currently meaning language and level thereof.
 	 *
-	 * @param feature      The package name of the feature to test.
+	 * @param feature The package name of the feature to test.
 	 * In Level 1, supported values are "HTML" and "XML" (case-insensitive).
 	 * At this writing, org.apache.xerces.dom supports only XML.
 	 *
-	 * @param version      The version number of the feature being tested.
+	 * @param version The version number of the feature being tested.
 	 * This is interpreted as "Version of the DOM API supported for the
 	 * specified Feature", and in Level 1 should be "1.0"
 	 *
-	 * @return    true iff this implementation is compatable with the specified
+	 * @return true iff this implementation is compatable with the specified
 	 * feature and version.
 	 */
-    public boolean hasFeature(String feature, String version) {
-
-        boolean anyVersion = version == null || version.length() == 0;
-		if (feature.startsWith("+")) {
-			feature = feature.substring(1);
-		}
-        // check if Xalan implementation is around and if yes report true for supporting
-        // XPath API
-        if ((feature.equalsIgnoreCase("XPath")
-            || feature.equalsIgnoreCase("+XPath"))
-            && (anyVersion || version.equals("3.0"))) {
-            try {
-                Class xpathClass =
-                    ObjectFactory.findProviderClass(
-                        "org.apache.xpath.domapi.XPathEvaluatorImpl",
-                        ObjectFactory.findClassLoader(),
-                        true);
-            } catch (Exception e) {
-                return false;
-            }
-            return true;
-        }
-        return (
-            feature.equalsIgnoreCase("Core")
-                && (anyVersion
-                    || version.equals("1.0")
-                    || version.equals("2.0")
-                    || version.equals("3.0")))
-            || (feature.equalsIgnoreCase("XML")
-                && (anyVersion
-                    || version.equals("1.0")
-                    || version.equals("2.0")
-                    || version.equals("3.0")))
-            || (feature.equalsIgnoreCase("LS")
-                && (anyVersion || version.equals("3.0")));
-    } // hasFeature(String,String):boolean
+	public boolean hasFeature(String feature, String version) {
+	    
+	    boolean anyVersion = version == null || version.length() == 0;
+	    
+	    // check if Xalan implementation is around and if yes report true for supporting
+	    // XPath API
+	    // if a plus sign "+" is prepended to any feature name, implementations 
+	    // are considered in which the specified feature may not be directly 
+	    // castable DOMImplementation.getFeature(feature, version). Without a 
+	    // plus, only features whose interfaces are directly castable are considered.
+	    if ((feature.equalsIgnoreCase("+XPath"))       
+	        && (anyVersion || version.equals("3.0"))) {
+	        try {
+	            Class xpathClass = ObjectFactory.findProviderClass(
+	                "org.apache.xpath.domapi.XPathEvaluatorImpl",
+	                ObjectFactory.findClassLoader(), true);
+                
+                // Check if the DOM XPath implementation implements
+                // the interface org.w3c.dom.XPathEvaluator
+                Class interfaces[] = xpathClass.getInterfaces();
+                for (int i = 0; i < interfaces.length; i++) {
+                    if (interfaces[i].getName().equals(
+                        "org.w3c.dom.xpath.XPathEvaluator")) {
+                        return true;
+                    }
+                }
+	        } catch (Exception e) {
+	            return false;
+	        }
+	        return true;
+	    }
+	    if (feature.startsWith("+")) {
+	        feature = feature.substring(1);
+	    }
+	    return (
+	        feature.equalsIgnoreCase("Core")
+	            && (anyVersion
+	                || version.equals("1.0")
+	                || version.equals("2.0")
+	                || version.equals("3.0")))
+	                || (feature.equalsIgnoreCase("XML")
+	            && (anyVersion
+	                || version.equals("1.0")
+	                || version.equals("2.0")
+	                || version.equals("3.0")))
+	                || (feature.equalsIgnoreCase("LS")
+	            && (anyVersion || version.equals("3.0")));
+	} // hasFeature(String,String):boolean
 
 
 	/**
@@ -252,13 +265,32 @@ public class CoreDOMImplementationImpl
 
 	/**
 	 * DOM Level 3 WD - Experimental.
-     */
+	 */
 	public Object getFeature(String feature, String version) {
-		if (singleton.hasFeature(feature, version)){
-			return singleton;
-		}
-		return null;
-
+	    if (singleton.hasFeature(feature, version)) {
+	        if ((feature.equalsIgnoreCase("+XPath"))) {
+	            try {
+	                Class xpathClass = ObjectFactory.findProviderClass(
+	                    "org.apache.xpath.domapi.XPathEvaluatorImpl",
+	                    ObjectFactory.findClassLoader(), true);
+	                
+	                // Check if the DOM XPath implementation implements
+	                // the interface org.w3c.dom.XPathEvaluator
+	                Class interfaces[] = xpathClass.getInterfaces();
+	                for (int i = 0; i < interfaces.length; i++) {
+	                    if (interfaces[i].getName().equals(
+	                        "org.w3c.dom.xpath.XPathEvaluator")) {
+	                        return xpathClass.newInstance();
+	                    }
+	                }
+	            } catch (Exception e) {
+	                return null;
+	            }
+	        } else {
+	            return singleton;
+	        }
+	    }
+	    return null;
 	}
 
 	// DOM L3 LS

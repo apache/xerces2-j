@@ -17,6 +17,7 @@
 package org.apache.xerces.dom;
 
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
@@ -129,9 +130,6 @@ extends ParentNode implements Document  {
     // DOM Level 3: normalizeDocument
     transient DOMNormalizer domNormalizer = null;
     transient DOMConfigurationImpl fConfiguration= null;
-
-    // support of XPath API
-    transient Object fXPathEvaluator = null;
 
     /** Table for quick check of child insertion. */
     private final static int[] kidOK;
@@ -482,20 +480,32 @@ extends ParentNode implements Document  {
         
         boolean anyVersion = version == null || version.length() == 0;
         
-        if ((feature.equalsIgnoreCase("XPath")
-            || feature.equalsIgnoreCase("+XPath")) && 
-            (anyVersion || version.equals("3.0"))) {
-
+        // if a plus sign "+" is prepended to any feature name, implementations
+        // are considered in which the specified feature may not be directly
+        // castable DOMImplementation.getFeature(feature, version). Without a
+        // plus, only features whose interfaces are directly castable are
+        // considered.
+        if ((feature.equalsIgnoreCase("+XPath"))
+            && (anyVersion || version.equals("3.0"))) {
+            
             try {
                 Class xpathClass = ObjectFactory.findProviderClass(
-                "org.apache.xpath.domapi.XPathEvaluatorImpl",
-                ObjectFactory.findClassLoader(), true);
-                fXPathEvaluator = xpathClass.newInstance();
-                java.lang.reflect.Method setDocument = xpathClass.getMethod("setDoc", new Class[]{Document.class});
-                setDocument.invoke(fXPathEvaluator, new Object[]{this});
-                return fXPathEvaluator;
-            }
-            catch (Exception e){
+                    "org.apache.xpath.domapi.XPathEvaluatorImpl",
+                    ObjectFactory.findClassLoader(), true);
+                Constructor xpathClassConstr = 
+                    xpathClass.getConstructor(new Class[] { Document.class });
+                
+                // Check if the DOM XPath implementation implements
+                // the interface org.w3c.dom.XPathEvaluator
+                Class interfaces[] = xpathClass.getInterfaces();
+                for (int i = 0; i < interfaces.length; i++) {
+                    if (interfaces[i].getName().equals(
+                    "org.w3c.dom.xpath.XPathEvaluator")) {
+                        return xpathClassConstr.newInstance(new Object[] { this });
+                    }
+                }
+                return null;
+            } catch (Exception e) {
                 return null;
             }
         }
@@ -505,22 +515,22 @@ extends ParentNode implements Document  {
     //
     // Document methods
     //
-
+    
     // factory methods
-
+    
     /**
      * Factory method; creates an Attribute having this Document as its
      * OwnerDoc.
-     *
-     * @param name The name of the attribute. Note that the attribute's value
-     * is _not_ established at the factory; remember to set it!
-     *
-     * @throws DOMException(INVALID_NAME_ERR) if the attribute name is not
-     * acceptable.
+     * 
+     * @param name The name of the attribute. Note that the attribute's value is
+     * _not_ established at the factory; remember to set it!
+     * 
+     * @throws DOMException(INVALID_NAME_ERR)
+     * if the attribute name is not acceptable.
      */
     public Attr createAttribute(String name)
-    throws DOMException {
-
+        throws DOMException {
+        
         if (errorChecking && !isXMLName(name,xml11Version)) {
             String msg =
                 DOMMessageFormatter.formatMessage(
@@ -530,7 +540,7 @@ extends ParentNode implements Document  {
             throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
         }
         return new AttrImpl(this, name);
-
+        
     } // createAttribute(String):Attr
 
     /**
