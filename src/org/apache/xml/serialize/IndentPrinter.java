@@ -183,7 +183,7 @@ public class IndentPrinter
     
     public void printText( StringBuffer text )
     {
-        _text.append( text );
+        _text.append( text.toString() );
     }
 
 
