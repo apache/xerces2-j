@@ -243,8 +243,15 @@ public class DocumentImpl
      */
     public Node cloneNode(boolean deep) {
 
-        // clone node
-        DocumentImpl newdoc = (DocumentImpl)super.cloneNode(deep);
+        // clone the node itself
+        DocumentImpl newdoc = new DocumentImpl();
+
+        // then the children by importing them
+        if (deep) {
+            for (ChildNode n = firstChild; n != null; n = n.nextSibling) {
+                newdoc.appendChild(newdoc.importNode(n, true));
+            }
+        }
 
         // REVISIT: What to do about identifiers that are cloned? -Ac
         //newdoc.identifiers = (Hashtable)identifiers.clone(); // WRONG!
@@ -256,10 +263,6 @@ public class DocumentImpl
         // experimental
         newdoc.allowGrammarAccess = allowGrammarAccess;
         newdoc.errorChecking = errorChecking;
-
-	// make sure every cloned node is owned by this document
-	// as opposed to the source document
-	newdoc.adoptNode(newdoc);
 
         // return new document
     	return newdoc;
@@ -704,9 +707,15 @@ public class DocumentImpl
 		}
 		NamedNodeMap srcattr = source.getAttributes();
 		if (srcattr != null) {
-		    for(int i = 0; i < srcattr.getLength(); i++) {
-			Attr attr = (Attr) importNode(srcattr.item(i), true);
-			newelement.setAttributeNode(attr);
+                    for(int i = 0; i < srcattr.getLength(); i++) {
+                        Attr attr = (Attr) srcattr.item(i);
+                        if (attr.getSpecified()) { // not a default attribute
+                            Attr nattr = (Attr) importNode(attr, true);
+                            if (attr.getLocalName() == null)
+                                newelement.setAttributeNode(nattr);
+                            else
+                                newelement.setAttributeNodeNS(nattr);
+                        }
                     }
                 }
 		newnode = newelement;
@@ -720,6 +729,7 @@ public class DocumentImpl
 		    newnode = createAttributeNS(source.getNamespaceURI(),
 						source.getNodeName());
 		}
+                deep = true;
 		// Kids carry value
 		break;
             }
@@ -736,9 +746,6 @@ public class DocumentImpl
 
     	    case ENTITY_REFERENCE_NODE: {
 		newnode = createEntityReference(source.getNodeName());
-		deep = false;
-		// Value implied by doctype, so we must not copy it
-		// -- instead, refer to local doctype, if any.
 		break;
             }
 
