@@ -247,6 +247,10 @@ public class DocumentTracer
         fOut.print(',');
         fOut.print("encoding=");
         printQuotedString(encoding);
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
         fOut.println(')');
         fOut.flush();
         fIndent++;
@@ -267,6 +271,10 @@ public class DocumentTracer
         fOut.print(',');
         fOut.print("standalone=");
         printQuotedString(standalone);
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
         fOut.println(')');
 
     } // xmlDecl(String,String,String,String)
@@ -286,6 +294,10 @@ public class DocumentTracer
         fOut.print("systemId=");
         printQuotedString(systemId);
         fOut.println(')');
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
         fOut.flush();
 
     } // doctypeDecl(String,String,String)
@@ -301,6 +313,10 @@ public class DocumentTracer
         fOut.print(',');
         fOut.print("uri=");
         printQuotedString(uri);
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
         fOut.println(')');
         fOut.flush();
 
@@ -313,6 +329,10 @@ public class DocumentTracer
         printIndent();
         fOut.print("startElement(");
         printElement(element, attributes);
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
         fOut.println(')');
         fOut.flush();
         fIndent++;
@@ -326,6 +346,10 @@ public class DocumentTracer
         printIndent();
         fOut.print("emptyElement(");
         printElement(element, attributes);
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
         fOut.println(')');
         fOut.flush();
 
@@ -338,12 +362,17 @@ public class DocumentTracer
         fOut.print("characters(");
         fOut.print("text=");
         printQuotedString(text.ch, text.offset, text.length);
+        /***
         if (augs != null) {
             ElementPSVI element = (ElementPSVI)augs.getItem(Constants.ELEMENT_PSVI);
-            fOut.print(" schemaNormalized=");
+            fOut.print(",schemaNormalized=");
             printQuotedString(element.getSchemaNormalizedValue());
         }
-        
+        /***/
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
         fOut.println(')');
         fOut.flush();
 
@@ -358,6 +387,10 @@ public class DocumentTracer
         fOut.print("ignorableWhitespace(");
         fOut.print("text=");
         printQuotedString(text.ch, text.offset, text.length);
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
         fOut.println(')');
         fOut.flush();
 
@@ -383,6 +416,10 @@ public class DocumentTracer
         fOut.print("uri=");
         printQuotedString(element.uri);
         fOut.print('}');
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
         fOut.println(')');
         fOut.flush();
 
@@ -395,6 +432,10 @@ public class DocumentTracer
         fOut.print("endPrefixMapping(");
         fOut.print("prefix=");
         printQuotedString(prefix);
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
         fOut.println(')');
         fOut.flush();
 
@@ -404,7 +445,11 @@ public class DocumentTracer
     public void startCDATA(Augmentations augs) throws XNIException {
 
         printIndent();
-        fOut.println("startCDATA()");
+        fOut.print("startCDATA(");
+        if (augs != null) {
+            printAugmentations(augs);
+        }
+        fOut.println(')');
         fOut.flush();
         fIndent++;
 
@@ -415,7 +460,12 @@ public class DocumentTracer
 
         fIndent--;
         printIndent();
-        fOut.println("endCDATA()");
+        fOut.print("endCDATA(");
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
+        fOut.println(')');
         fOut.flush();
 
     } //  endCDATA()
@@ -436,6 +486,10 @@ public class DocumentTracer
         fOut.print(',');
         fOut.print("encoding=");
         printQuotedString(encoding);
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
         fOut.println(')');
         fOut.flush();
         fIndent++;
@@ -452,6 +506,10 @@ public class DocumentTracer
         fOut.print(',');
         fOut.print("encoding=");
         printQuotedString(encoding);
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
         fOut.println(')');
         fOut.flush();
 
@@ -464,6 +522,10 @@ public class DocumentTracer
         fOut.print("comment(");
         fOut.print("text=");
         printQuotedString(text.ch, text.offset, text.length);
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
         fOut.println(')');
         fOut.flush();
 
@@ -480,6 +542,10 @@ public class DocumentTracer
         fOut.print(',');
         fOut.print("data=");
         printQuotedString(data.ch, data.offset, data.length);
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
         fOut.println(')');
         fOut.flush();
 
@@ -493,6 +559,10 @@ public class DocumentTracer
         fOut.print("endGeneralEntity(");
         fOut.print("name=");
         printQuotedString(name);
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
         fOut.println(')');
         fOut.flush();
 
@@ -503,7 +573,12 @@ public class DocumentTracer
 
         fIndent--;
         printIndent();
-        fOut.println("endDocument()");
+        fOut.print("endDocument(");
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
+        fOut.println(')');
         fOut.flush();
 
     } // endDocument();
@@ -542,6 +617,10 @@ public class DocumentTracer
             fOut.print(locator.getColumnNumber());
             fOut.print('}');
         }
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
         fOut.println(')');
         fOut.flush();
         fIndent++;
@@ -552,7 +631,12 @@ public class DocumentTracer
     public void startExternalSubset(Augmentations augs) throws XNIException {
 
         printIndent();
-        fOut.println("startExternalSubset()");
+        fOut.print("startExternalSubset(");
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
+        fOut.println(')');
         fOut.flush();
         fIndent++;
 
@@ -563,7 +647,12 @@ public class DocumentTracer
 
         fIndent--;
         printIndent();
-        fOut.println("endExternalSubset()");
+        fOut.print("endExternalSubset(");
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
+        fOut.println(')');
         fOut.flush();
 
     } // endExternalSubset(Augmentations)
@@ -575,6 +664,10 @@ public class DocumentTracer
         fOut.print("ignoredCharacters(");
         fOut.print("text=");
         printQuotedString(text.ch, text.offset, text.length);
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
         fOut.println(')');
         fOut.flush();
 
@@ -596,6 +689,10 @@ public class DocumentTracer
         fOut.print(',');
         fOut.print("encoding=");
         printQuotedString(encoding);
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
         fOut.println(')');
         fOut.flush();
         fIndent++;
@@ -610,6 +707,10 @@ public class DocumentTracer
         fOut.print("endParameterEntity(");
         fOut.print("name=");
         printQuotedString(name);
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
         fOut.println(')');
         fOut.flush();
 
@@ -626,6 +727,10 @@ public class DocumentTracer
         fOut.print(',');
         fOut.print("contentModel=");
         printQuotedString(contentModel);
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
         fOut.println(')');
         fOut.flush();
 
@@ -638,6 +743,10 @@ public class DocumentTracer
         fOut.print("startAttlist(");
         fOut.print("elementName=");
         printQuotedString(elementName);
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
         fOut.println(')');
         fOut.flush();
         fIndent++;
@@ -697,6 +806,10 @@ public class DocumentTracer
             printQuotedString(nonNormalizedDefaultValue.ch, nonNormalizedDefaultValue.offset,
                               nonNormalizedDefaultValue.length);
         }
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
         fOut.println(')');
         fOut.flush();
 
@@ -707,7 +820,12 @@ public class DocumentTracer
 
         fIndent--;
         printIndent();
-        fOut.println("endAttlist()");
+        fOut.print("endAttlist(");
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
+        fOut.println(')');
         fOut.flush();
 
     } // endAttlist()
@@ -729,6 +847,10 @@ public class DocumentTracer
         fOut.print("nonNormalizedText=");
         printQuotedString(nonNormalizedText.ch, nonNormalizedText.offset,
                           nonNormalizedText.length);
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
         fOut.println(')');
         fOut.flush();
 
@@ -751,6 +873,10 @@ public class DocumentTracer
         fOut.print(',');
         fOut.print("baseSystemId=");
         printQuotedString(identifier.getBaseSystemId());
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
         fOut.println(')');
         fOut.flush();
 
@@ -776,6 +902,10 @@ public class DocumentTracer
         fOut.print(',');
         fOut.print("notation=");
         printQuotedString(notation);
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
         fOut.println(')');
         fOut.flush();
 
@@ -798,6 +928,10 @@ public class DocumentTracer
         fOut.print(',');
         fOut.print("baseSystemId=");
         printQuotedString(identifier.getBaseSystemId());
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
         fOut.println(')');
         fOut.flush();
 
@@ -823,6 +957,10 @@ public class DocumentTracer
                 fOut.print("??? ("+type+')');
             }
         }
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
         fOut.println(')');
         fOut.flush();
         fIndent++;
@@ -834,7 +972,12 @@ public class DocumentTracer
 
         fIndent--;
         printIndent();
-        fOut.println("endConditional()");
+        fOut.print("endConditional(");
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
+        fOut.println(')');
         fOut.flush();
 
     } // endConditional()
@@ -844,7 +987,12 @@ public class DocumentTracer
 
         fIndent--;
         printIndent();
-        fOut.println("endDTD()");
+        fOut.print("endDTD(");
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
+        fOut.println(')');
         fOut.flush();
 
     } // endDTD()
@@ -861,6 +1009,10 @@ public class DocumentTracer
         fOut.print("startContentModel(");
         fOut.print("elementName=");
         printQuotedString(elementName);
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
         fOut.println(')');
         fOut.flush();
         fIndent++;
@@ -871,7 +1023,12 @@ public class DocumentTracer
     public void any(Augmentations augs) throws XNIException {
 
         printIndent();
-        fOut.println("any()");
+        fOut.print("any(");
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
+        fOut.println(')');
         fOut.flush();
 
     } // any()
@@ -880,7 +1037,12 @@ public class DocumentTracer
     public void empty(Augmentations augs) throws XNIException {
 
         printIndent();
-        fOut.println("empty()");
+        fOut.print("empty(");
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
+        fOut.println(')');
         fOut.flush();
 
     } // empty()
@@ -889,7 +1051,12 @@ public class DocumentTracer
     public void startGroup(Augmentations augs) throws XNIException {
 
         printIndent();
-        fOut.println("startGroup()");
+        fOut.print("startGroup(");
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
+        fOut.println(')');
         fOut.flush();
         fIndent++;
 
@@ -899,7 +1066,12 @@ public class DocumentTracer
     public void pcdata(Augmentations augs) throws XNIException {
 
         printIndent();
-        fOut.println("pcdata()");
+        fOut.print("pcdata(");
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
+        fOut.println(')');
         fOut.flush();
 
     } // pcdata()
@@ -912,6 +1084,10 @@ public class DocumentTracer
         fOut.print("element(");
         fOut.print("elementName=");
         printQuotedString(elementName);
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
         fOut.println(')');
         fOut.flush();
 
@@ -936,6 +1112,10 @@ public class DocumentTracer
             default: {
                 fOut.print("??? ("+separator+')');
             }
+        }
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
         }
         fOut.println(')');
         fOut.flush();
@@ -966,6 +1146,10 @@ public class DocumentTracer
                 fOut.print("??? ("+occurrence+')');
             }
         }
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
         fOut.println(')');
         fOut.flush();
 
@@ -976,7 +1160,12 @@ public class DocumentTracer
 
         fIndent--;
         printIndent();
-        fOut.println("endGroup()");
+        fOut.print("endGroup(");
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
+        fOut.println(')');
         fOut.flush();
 
     } // childrenEndGroup()
@@ -986,7 +1175,12 @@ public class DocumentTracer
 
         fIndent--;
         printIndent();
-        fOut.println("endContentModel()");
+        fOut.print("endContentModel(");
+        if (augs != null) {
+            fOut.print(',');
+            printAugmentations(augs);
+        }
+        fOut.println(')');
         fOut.flush();
 
     } // endContentModel()
@@ -1051,6 +1245,7 @@ public class DocumentTracer
                 String attrType = attributes.getType(i);
                 String attrValue = attributes.getValue(i);
                 String attrNonNormalizedValue = attributes.getNonNormalizedValue(i);
+                Augmentations augs = attributes.getAugmentations(i);
                 fOut.print("name=");
                 fOut.print('{');
                 fOut.print("prefix=");
@@ -1077,12 +1272,30 @@ public class DocumentTracer
                 if (attributes.isSpecified(i) == false ) {
                    fOut.print("(default)");
                 }
+                if (augs != null) {
+                    fOut.print(',');
+                    printAugmentations(augs);
+                }
                 fOut.print('}');
             }
             fOut.print('}');
         }
 
     } // printElement(QName,XMLAttributes)
+
+    /** Prints augmentations. */
+    protected void printAugmentations(Augmentations augs) {
+        fOut.print("augs={");
+        java.util.Enumeration keys = augs.keys();
+        while (keys.hasMoreElements()) {
+            String key = (String)keys.nextElement();
+            Object value = augs.getItem(key);
+            fOut.print(key);
+            fOut.print('#');
+            fOut.print(String.valueOf(value));
+        }
+        fOut.print('}');
+    } // printAugmentations(Augmentations)
 
     /** Print quoted string. */
     protected void printQuotedString(String s) {
@@ -1299,7 +1512,8 @@ public class DocumentTracer
             }
             catch (XMLConfigurationException e) {
                 if (e.getType() == XMLConfigurationException.NOT_RECOGNIZED) {
-                    e.printStackTrace();
+                    //e.printStackTrace();
+                    System.err.println("warning: Parser does not recognize feature ("+NOTIFY_CHAR_REFS_FEATURE_ID+")");
                 }
                 else {
                     System.err.println("warning: Parser does not support feature ("+NOTIFY_CHAR_REFS_FEATURE_ID+")");

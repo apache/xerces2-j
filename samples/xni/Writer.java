@@ -555,6 +555,7 @@ public class Writer
                     catch (Exception e) {
                         parserConfig = null;
                         System.err.println("error: Unable to instantiate parser configuration ("+parserName+")");
+                        e.printStackTrace(System.err);
                     }
                     continue;
                 }
@@ -602,6 +603,7 @@ public class Writer
                 }
                 catch (Exception e) {
                     System.err.println("error: Unable to instantiate parser configuration ("+DEFAULT_PARSER_CONFIG+")");
+                    e.printStackTrace(System.err);
                     continue;
                 }
             }

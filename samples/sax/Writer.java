@@ -483,6 +483,7 @@ public class Writer
                         catch (Exception ex) {
                             parser = null;
                             System.err.println("error: Unable to instantiate parser ("+parserName+")");
+                            e.printStackTrace(System.err);
                         }
                     }
                     continue;
@@ -522,6 +523,7 @@ public class Writer
                 }
                 catch (Exception e) {
                     System.err.println("error: Unable to instantiate parser ("+DEFAULT_PARSER_NAME+")");
+                    e.printStackTrace(System.err);
                     continue;
                 }
             }
