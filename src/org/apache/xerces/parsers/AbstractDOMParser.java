@@ -189,6 +189,10 @@ public abstract class AbstractDOMParser
     protected Node fCurrentNode;
     protected CDATASection fCurrentCDATASection;
 
+    // internal subset
+
+    /** Internal subset buffer. */
+    protected StringBuffer fInternalSubset;
 
     // deferred expansion data
 
@@ -201,6 +205,9 @@ public abstract class AbstractDOMParser
     protected int                  fCurrentCDATASectionIndex;
 
     // state
+
+    /** True if inside DTD external subset. */
+    protected boolean fInDTDExternalSubset;
 
     /** True if inside document. */
     protected boolean fInDocument;
@@ -352,6 +359,7 @@ public abstract class AbstractDOMParser
         // reset state information
         fInDocument = false;
         fInDTD = false;
+        fInDTDExternalSubset = false;
         fInCDATASection = false;
         fCurrentCDATASection = null;
         fCurrentCDATASectionIndex = -1;
@@ -1002,6 +1010,82 @@ public abstract class AbstractDOMParser
     //
 
     /**
+     * The start of the DTD.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void startDTD(XMLLocator locator) throws XNIException {
+        super.startDTD(locator);
+        if (fDeferNodeExpansion || fDocumentImpl != null) {
+            fInternalSubset = new StringBuffer(1024);
+        }
+    } // startDTD(XMLLocator)
+
+    /**
+     * The end of the DTD.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void endDTD() throws XNIException {
+        super.endDTD();
+        String internalSubset = fInternalSubset != null && fInternalSubset.length() > 0
+                              ? fInternalSubset.toString() : null;
+        if (fDeferNodeExpansion) {
+            if (internalSubset != null) {
+                fDeferredDocumentImpl.setInternalSubset(fDocumentTypeIndex, internalSubset);
+            }
+        }
+        else if (fDocumentImpl != null) {
+            if (internalSubset != null) {
+                ((DocumentTypeImpl)fDocumentType).setInternalSubset(internalSubset);
+            }
+        }
+    } // endDTD()
+
+    /**
+     * This method notifies of the start of an entity. The DTD has the 
+     * pseudo-name of "[dtd]" and parameter entity names start with '%'.
+     * <p>
+     * 
+     * @param name     The name of the entity.
+     * @param publicId The public identifier of the entity if the entity
+     *                 is external, null otherwise.
+     * @param systemId The system identifier of the entity if the entity
+     *                 is external, null otherwise.
+     * @param baseSystemId The base system identifier of the entity if
+     *                     the entity is external, null otherwise.
+     * @param encoding The auto-detected IANA encoding name of the entity
+     *                 stream. This value will be null in those situations
+     *                 where the entity encoding is not auto-detected (e.g.
+     *                 internal parameter entities).
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void startEntity(String name, 
+                            String publicId, String systemId,
+                            String baseSystemId,
+                            String encoding) throws XNIException {
+        if (name.equals("[dtd]")) {
+            fInDTDExternalSubset = true;
+        }
+    } // startEntity(String,String,String,String,String)
+
+    /**
+     * This method notifies the end of an entity. The DTD has the pseudo-name
+     * of "[dtd]" and parameter entity names start with '%'.
+     * <p>
+     * 
+     * @param name The name of the entity.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void endEntity(String name) throws XNIException {
+        if (name.equals("[dtd]")) {
+            fInDTDExternalSubset = false;
+        }
+    } // endEntity(String)
+
+    /**
      * An internal entity declaration.
      * 
      * @param name The name of the entity. Parameter entity names start with
@@ -1018,6 +1102,25 @@ public abstract class AbstractDOMParser
     public void internalEntityDecl(String name, XMLString text, 
                                    XMLString nonNormalizedText) 
         throws XNIException {
+
+        // internal subset string
+        if (fInternalSubset != null && !fInDTDExternalSubset) {
+            fInternalSubset.append("<!ENTITY ");
+            if (name.startsWith("%")) {
+                fInternalSubset.append("% ");
+                fInternalSubset.append(name.substring(1));
+            }
+            else {
+                fInternalSubset.append(name);
+            }
+            fInternalSubset.append(' ');
+            String value = nonNormalizedText.toString();
+            boolean singleQuote = value.indexOf('\'') == -1;
+            fInternalSubset.append(singleQuote ? '\'' : '"');
+            fInternalSubset.append(value);
+            fInternalSubset.append(singleQuote ? '\'' : '"');
+            fInternalSubset.append(">\n");
+        }
 
         // NOTE: We only know how to create these nodes for the Xerces
         //       DOM implementation because DOM Level 2 does not specify 
@@ -1078,6 +1181,29 @@ public abstract class AbstractDOMParser
                                    String publicId, String systemId,
                                    String baseSystemId) throws XNIException {
 
+        // internal subset string
+        if (fInternalSubset != null && !fInDTDExternalSubset) {
+            fInternalSubset.append("<!ENTITY ");
+            if (name.startsWith("%")) {
+                fInternalSubset.append("% ");
+                fInternalSubset.append(name.substring(1));
+            }
+            else {
+                fInternalSubset.append(name);
+            }
+            fInternalSubset.append(' ');
+            if (publicId != null) {
+                fInternalSubset.append("PUBLIC '");
+                fInternalSubset.append(publicId);
+                fInternalSubset.append("' '");
+            }
+            else {
+                fInternalSubset.append("SYSTEM '");
+            }
+            fInternalSubset.append(systemId);
+            fInternalSubset.append("'>\n");
+        }
+
         // NOTE: We only know how to create these nodes for the Xerces
         //       DOM implementation because DOM Level 2 does not specify 
         //       that functionality. -Ac
@@ -1137,6 +1263,28 @@ public abstract class AbstractDOMParser
                                    String publicId, String systemId, 
                                    String notation) throws XNIException {
 
+        // internal subset string
+        if (fInternalSubset != null && !fInDTDExternalSubset) {
+            fInternalSubset.append("<!ENTITY ");
+            fInternalSubset.append(name);
+            fInternalSubset.append(' ');
+            if (publicId != null) {
+                fInternalSubset.append("PUBLIC '");
+                fInternalSubset.append(publicId);
+                if (systemId != null) {
+                    fInternalSubset.append("' '");
+                    fInternalSubset.append(systemId);
+                }
+            }
+            else {
+                fInternalSubset.append("SYSTEM '");
+                fInternalSubset.append(systemId);
+            }
+            fInternalSubset.append("' NDATA ");
+            fInternalSubset.append(notation);
+            fInternalSubset.append(">\n");
+        }
+
         // NOTE: We only know how to create these nodes for the Xerces
         //       DOM implementation because DOM Level 2 does not specify 
         //       that functionality. -Ac
@@ -1192,6 +1340,24 @@ public abstract class AbstractDOMParser
     public void notationDecl(String name, String publicId, String systemId)
         throws XNIException {
 
+        // internal subset string
+        if (fInternalSubset != null && !fInDTDExternalSubset) {
+            fInternalSubset.append("<!NOTATION ");
+            if (publicId != null) {
+                fInternalSubset.append("PUBLIC '");
+                fInternalSubset.append(publicId);
+                if (systemId != null) {
+                    fInternalSubset.append("' '");
+                    fInternalSubset.append(systemId);
+                }
+            }
+            else {
+                fInternalSubset.append("SYSTEM '");
+                fInternalSubset.append(systemId);
+            }
+            fInternalSubset.append("'>\n");
+        }
+
         // NOTE: We only know how to create these nodes for the Xerces
         //       DOM implementation because DOM Level 2 does not specify 
         //       that functionality. -Ac
@@ -1232,6 +1398,28 @@ public abstract class AbstractDOMParser
     } // notationDecl(String,String,String)
 
     /**
+     * An element declaration.
+     * 
+     * @param name         The name of the element.
+     * @param contentModel The element content model.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void elementDecl(String name, String contentModel)
+        throws XNIException {
+
+        // internal subset string
+        if (fInternalSubset != null && !fInDTDExternalSubset) {
+            fInternalSubset.append("<!ELEMENT ");
+            fInternalSubset.append(name);
+            fInternalSubset.append(' ');
+            fInternalSubset.append(contentModel);
+            fInternalSubset.append(">\n");
+        }
+
+    } // elementDecl(String,String)
+
+    /**
      * An attribute declaration.
      * 
      * @param elementName   The name of the element that this attribute
@@ -1256,6 +1444,46 @@ public abstract class AbstractDOMParser
                               String type, String[] enumeration, 
                               String defaultType, XMLString defaultValue)
         throws XNIException {
+
+        // internal subset string
+        if (fInternalSubset != null && !fInDTDExternalSubset) {
+            fInternalSubset.append("<!ATTLIST ");
+            fInternalSubset.append(elementName);
+            fInternalSubset.append(' ');
+            fInternalSubset.append(attributeName);
+            fInternalSubset.append(' ');
+            if (type.equals("ENUMERATION")) {
+                fInternalSubset.append('(');
+                for (int i = 0; i < enumeration.length; i++) {
+                    if (i > 0) {
+                        fInternalSubset.append('|');
+                    }
+                    fInternalSubset.append(enumeration[i]);
+                }
+                fInternalSubset.append(')');
+            }
+            else {
+                fInternalSubset.append(type);
+            }
+            if (defaultType != null) {
+                fInternalSubset.append(' ');
+                fInternalSubset.append(defaultType);
+            }
+            if (defaultValue != null) {
+                fInternalSubset.append(" '");
+                for (int i = 0; i < defaultValue.length; i++) {
+                    char c = defaultValue.ch[defaultValue.offset + i];
+                    if (c == '\'') {
+                        fInternalSubset.append("&apos;");
+                    }
+                    else {
+                        fInternalSubset.append(c);
+                    }
+                }
+                fInternalSubset.append('\'');
+            }
+            fInternalSubset.append(">\n");
+        }
 
         // deferred expansion
         if (fDeferredDocumentImpl != null) {

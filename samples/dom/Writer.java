@@ -64,6 +64,7 @@ import java.io.UnsupportedEncodingException;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
+import org.w3c.dom.DocumentType;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -187,13 +188,41 @@ public class Writer {
         short type = node.getNodeType();
         switch (type) {
             case Node.DOCUMENT_NODE: {
+                Document document = (Document)node;
                 if (!fCanonical) {
                     fOut.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
                     fOut.flush();
+                    write(document.getDoctype());
                 }
-
-                Document document = (Document)node;
                 write(document.getDocumentElement());
+                break;
+            }
+
+            case Node.DOCUMENT_TYPE_NODE: {
+                DocumentType doctype = (DocumentType)node;
+                fOut.print("<!DOCTYPE ");
+                fOut.print(doctype.getName());
+                String publicId = doctype.getPublicId();
+                String systemId = doctype.getSystemId();
+                if (publicId != null) {
+                    fOut.print(" PUBLIC '");
+                    fOut.print(publicId);
+                    fOut.print("' '");
+                    fOut.print(systemId);
+                    fOut.print('\'');
+                }
+                else {
+                    fOut.print(" SYSTEM '");
+                    fOut.print(systemId);
+                    fOut.print('\'');
+                }
+                String internalSubset = doctype.getInternalSubset();
+                if (internalSubset != null) {
+                    fOut.println(" [");
+                    fOut.print(internalSubset);
+                    fOut.print(']');
+                }
+                fOut.println('>');
                 break;
             }
 
