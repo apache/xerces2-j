@@ -207,7 +207,7 @@ public abstract class XMLParser
     private boolean fSeenRootElement = false;
     private boolean fStandaloneDocument = false;
     private int fCDATASymbol = -1;
-    protected boolean fNamespacesEnabled = false;
+    protected boolean fNamespacesEnabled = true;
     private boolean fSendCharDataAsCharArray = false;
     private boolean fValidating = false;
     private boolean fScanningDTD = false;
