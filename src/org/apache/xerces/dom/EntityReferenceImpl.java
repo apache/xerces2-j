@@ -115,7 +115,7 @@ import org.w3c.dom.NodeList;
  * @author Joe Kesselman, IBM
  * @author Andy Clark, IBM
  * @author Ralf Pfeiffer, IBM
- * @version
+ * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */
 public class EntityReferenceImpl 

@@ -269,7 +269,6 @@ public abstract class AbstractDOMParser
      *                      the DOM tree.
      *
      * @see #getDocumentClassName
-     * @see #setDeferNodeExpansion
      * @see #DEFAULT_DOCUMENT_CLASS_NAME
      */
     protected void setDocumentClassName(String documentClassName) {

@@ -74,7 +74,7 @@ import org.w3c.dom.Text;
  * This class doesn't directly support mutation events, however, it notifies
  * the document when mutations are performed so that the document class do so.
  *
- * @version
+ * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */
 public abstract class CharacterDataImpl

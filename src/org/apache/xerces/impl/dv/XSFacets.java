@@ -60,7 +60,7 @@ package org.apache.xerces.impl.dv;
 import java.util.Vector;
 
 /**
- * The class used to pass all facets to {@link XSSimpleType#applyFacets()}.
+ * The class used to pass all facets to {@link XSSimpleType#applyFacets}.
  *
  * @author Sandy Gao, IBM
  *

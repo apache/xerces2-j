@@ -115,7 +115,7 @@ import org.apache.xerces.dom3.UserDataHandler;
  *
  * @author Arnaud  Le Hors, IBM
  * @author Joe Kesselman, IBM
- * @version
+ * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */
 public abstract class NodeImpl

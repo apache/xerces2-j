@@ -110,7 +110,7 @@ public interface DatatypeValidator {//extends XSTypeDecl {
      * @exception throws InvalidDatatypeException if the content is
      *                   invalid according to the rules for the validators
      * @exception InvalidDatatypeValueException
-     * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
+     * @see         org.apache.xerces.impl.dv.dtd.InvalidDatatypeValueException
      */
     public Object validate(String content, ValidationContext state ) throws InvalidDatatypeValueException;
 

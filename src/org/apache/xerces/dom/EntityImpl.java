@@ -91,7 +91,7 @@ import org.w3c.dom.Node;
  * simplest solution.
  *
  *
- * @version
+ * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */
 public class EntityImpl 

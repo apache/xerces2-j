@@ -61,7 +61,7 @@ public interface ElementPSVI extends ItemPSVI {
 
     /**
      * [nil] 
-     * @see http://www.w3.org/TR/xmlschema-1/#e-nil
+     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-nil>XML Schema Part 1: Structures [nil]</a>
      * @return true if clause 3.2 of Element Locally Valid (Element) (3.3.4) above is satisfied, otherwise false 
      */
     public boolean isNil();
@@ -69,8 +69,8 @@ public interface ElementPSVI extends ItemPSVI {
 
     /**
      * [notation public] 
-     * @see http://www.w3.org/TR/xmlschema-1/#e-notation_public
-     * @see http://www.w3.org/TR/xmlschema-1/#e-notation
+     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-notation_public>XML Schema Part 1: Structures [notation public]</a>
+     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-notation>XML Schema Part 1: Structures [notation]</a>
      * @return The value of the {public identifier} of that notation declaration. 
      */
     public String getNotationPublicId();
@@ -79,7 +79,7 @@ public interface ElementPSVI extends ItemPSVI {
     /**
      * [notation system] 
      * 
-     * @see http://www.w3.org/TR/xmlschema-1/#e-notation_system
+     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-notation_system>XML Schema Part 1: Structures [notation system]</a>
      * @return The value of the {system identifier} of that notation declaration. 
      */
     public String getNotationSystemId();
@@ -89,8 +89,8 @@ public interface ElementPSVI extends ItemPSVI {
      * [schema namespace]
      * 
      * @return A namespace name or absent.
-     * @see http://www.w3.org/TR/xmlschema-1/#nsi-schema_namespace
-     * @see http://www.w3.org/TR/xmlschema-1/#e-schema_information
+     * @see <a href="http://www.w3.org/TR/xmlschema-1/#nsi-schema_namespace>XML Schema Part 1: Structures [schema namespace]</a>
+     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-schema_information>XML Schema Part 1: Structures [schema information]</a>
      */
     public String getSchemaNamespace();
 

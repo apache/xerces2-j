@@ -62,7 +62,7 @@ import org.w3c.dom.Node;
 /** 
  * An interface for deferred node object. 
  *
- * @version
+ * @version $Id$
  */
 public interface DeferredNode extends Node {
 

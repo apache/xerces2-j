@@ -98,7 +98,7 @@ package org.apache.xerces.dom;
  *
  * @author Andy Clark, IBM
  * @author Arnaud  Le Hors, IBM
- * @version
+ * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */
 public final class DeferredAttrImpl

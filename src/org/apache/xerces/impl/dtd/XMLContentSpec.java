@@ -181,12 +181,12 @@ public class XMLContentSpec {
     /** 
      * The content spec node type. 
      *
-     * @see CONTENTSPECNODE_LEAF
-     * @see CONTENTSPECNODE_ZERO_OR_ONE
-     * @see CONTENTSPECNODE_ZERO_OR_MORE
-     * @see CONTENTSPECNODE_ONE_OR_MORE
-     * @see CONTENTSPECNODE_CHOICE
-     * @see CONTENTSPECNODE_SEQ
+     * @see #CONTENTSPECNODE_LEAF
+     * @see #CONTENTSPECNODE_ZERO_OR_ONE
+     * @see #CONTENTSPECNODE_ZERO_OR_MORE
+     * @see #CONTENTSPECNODE_ONE_OR_MORE
+     * @see #CONTENTSPECNODE_CHOICE
+     * @see #CONTENTSPECNODE_SEQ
      */
     public short type;
 

@@ -288,9 +288,9 @@ public class XMLErrorReporter
      *                  if needed.
      * @param severity  The severity of the error.
      *
-     * @see SEVERITY_WARNING
-     * @see SEVERITY_ERROR
-     * @see SEVERITY_FATAL_ERROR
+     * @see #SEVERITY_WARNING
+     * @see #SEVERITY_ERROR
+     * @see #SEVERITY_FATAL_ERROR
      */
     public void reportError(String domain, String key, Object[] arguments, 
                             short severity) throws XNIException {
@@ -307,9 +307,9 @@ public class XMLErrorReporter
      *                  if needed.
      * @param severity  The severity of the error.
      *
-     * @see SEVERITY_WARNING
-     * @see SEVERITY_ERROR
-     * @see SEVERITY_FATAL_ERROR
+     * @see #SEVERITY_WARNING
+     * @see #SEVERITY_ERROR
+     * @see #SEVERITY_FATAL_ERROR
      */
     public void reportError(XMLLocator location,
                             String domain, String key, Object[] arguments, 

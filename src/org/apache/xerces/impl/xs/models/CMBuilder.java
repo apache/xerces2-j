@@ -91,8 +91,8 @@ public class CMBuilder {
      *
      * @param elementDeclIndex
      * @param comparator
-     * @return
-     * @exception Exception
+     * @return a content model validator
+     * @exception RuntimeException
      */
     public XSCMValidator getContentModel(XSComplexTypeDecl typeDecl) {
 

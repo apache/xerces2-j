@@ -76,7 +76,7 @@ import org.w3c.dom.Node;
  * and using Element and Attribute information. Nor was the linkage
  * between Entities and Entity References nailed down solidly.
  *
- * @version
+ * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */
 public class DeferredDocumentTypeImpl

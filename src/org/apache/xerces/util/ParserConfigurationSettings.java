@@ -164,13 +164,8 @@ public class ParserConfigurationSettings
      * @param featureId The unique identifier (URI) of the feature.
      * @param state The requested state of the feature (true or false).
      *
-     * @exception org.xml.sax.SAXNotRecognizedException If the
+     * @exception org.apache.xerces.xni.parser.XMLConfigurationException If the
      *            requested feature is not known.
-     * @exception org.xml.sax.SAXNotSupportedException If the
-     *            requested feature is known, but the requested
-     *            state is not supported.
-     * @exception org.xml.sax.SAXException If there is any other
-     *            problem fulfilling the request.
      */
     public void setFeature(String featureId, boolean state)
         throws XMLConfigurationException {
@@ -206,6 +201,8 @@ public class ParserConfigurationSettings
      * 
      * @param propertyId 
      * @param value 
+     * @exception org.apache.xerces.xni.parser.XMLConfigurationException If the
+     *            requested feature is not known.
      */
     public void setProperty(String propertyId, Object value)
         throws XMLConfigurationException {
@@ -224,6 +221,7 @@ public class ParserConfigurationSettings
      * Returns the state of a feature.
      * 
      * @param featureId The feature identifier.
+		 * @return true if the feature is supported
      * 
      * @throws XMLConfigurationException Thrown for configuration error.
      *                                   In general, components should
@@ -245,6 +243,7 @@ public class ParserConfigurationSettings
      * Returns the value of a property.
      * 
      * @param propertyId The property identifier.
+		 * @return the value of the property
      * 
      * @throws XMLConfigurationException Thrown for configuration error.
      *                                   In general, components should
@@ -271,13 +270,8 @@ public class ParserConfigurationSettings
      *
      * @param featureId The unique identifier (URI) of the feature.
      *
-     * @exception org.xml.sax.SAXNotRecognizedException If the
+     * @exception org.apache.xerces.xni.parser.XMLConfigurationException If the
      *            requested feature is not known.
-     * @exception org.xml.sax.SAXNotSupportedException If the
-     *            requested feature is known, but the requested
-     *            state is not supported.
-     * @exception org.xml.sax.SAXException If there is any other
-     *            problem fulfilling the request.
      */
     protected void checkFeature(String featureId)
         throws XMLConfigurationException {
@@ -301,13 +295,8 @@ public class ParserConfigurationSettings
      *
      * @param propertyId The unique identifier (URI) of the property
      *                   being set.
-     * @exception org.xml.sax.SAXNotRecognizedException If the
-     *            requested property is not known.
-     * @exception org.xml.sax.SAXNotSupportedException If the
-     *            requested property is known, but the requested
-     *            value is not supported.
-     * @exception org.xml.sax.SAXException If there is any other
-     *            problem fulfilling the request.
+     * @exception org.apache.xerces.xni.parser.XMLConfigurationException If the
+     *            requested feature is not known.
      */
     protected void checkProperty(String propertyId)
         throws XMLConfigurationException {
@@ -325,4 +314,4 @@ public class ParserConfigurationSettings
 
     } // checkProperty(String)
 
-} // class XMLParser
+} // class ParserConfigurationSettings

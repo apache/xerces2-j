@@ -69,13 +69,13 @@ import org.w3c.dom.Text;
  * When a document is first made available to the DOM, there is only
  * one Text object for each block of adjacent plain-text. Users (ie,
  * applications) may create multiple adjacent Texts during editing --
- * see {@link Element#normalize} for discussion.
+ * see {@link org.w3c.dom.Element#normalize} for discussion.
  * <P>
  * Note that CDATASection is a subclass of Text. This is conceptually
  * valid, since they're really just two different ways of quoting
  * characters when they're written out as part of an XML stream.
  *
- * @version
+ * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */
 public class TextImpl 

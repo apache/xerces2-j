@@ -1831,7 +1831,7 @@ public abstract class AbstractSAXParser
     /**
      * Reset all components before parsing.
      *
-     * @throws SAXException Thrown if an error occurs during initialization.
+     * @throws XNIException Thrown if an error occurs during initialization.
      */
     public void reset() throws XNIException {
         super.reset();

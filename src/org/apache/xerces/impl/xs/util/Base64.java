@@ -152,7 +152,7 @@ public final class  Base64 {
      * iiiiiiiiierejrlkwjerklwjerwerwr==\n\r"
      * 
      * @param data
-     * @return 
+     * @return byte array with whitespace removed
      */
     public static synchronized byte[] removeWhiteSpace( byte[] data ) {
         if (data == null)

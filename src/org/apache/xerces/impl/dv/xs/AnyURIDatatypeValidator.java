@@ -71,8 +71,7 @@ import org.apache.xerces.impl.validation.ValidationContext;
  * @author Ted Leung
  * @author Jeffrey Rodriguez
  * @author Mark Swinkles - List Validation refactoring
- * @see          RFC 2396
- * @see Tim Berners-Lee, et. al. RFC 2396: Uniform Resource Identifiers (URI): Generic Syntax.. 1998 Available at: http://www.ietf.org/rfc/rfc2396.txt
+ * @see "Tim Berners-Lee, et. al. RFC 2396: Uniform Resource Identifiers (URI): Generic Syntax.. 1998 Available at: <a href=\"http://www.ietf.org/rfc/rfc2396.txt\">http://www.ietf.org/rfc/rfc2396.txt</a>"
  * @version  $Id$
  */
 public class AnyURIDatatypeValidator extends AbstractStringValidator {

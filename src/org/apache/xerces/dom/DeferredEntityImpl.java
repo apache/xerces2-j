@@ -89,7 +89,7 @@ package org.apache.xerces.dom;
  * simplest solution.
  *
  *
- * @version
+ * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */
 public class DeferredEntityImpl

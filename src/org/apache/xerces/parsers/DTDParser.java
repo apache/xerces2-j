@@ -335,8 +335,8 @@ public abstract class DTDParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      *
-     * @see CONDITIONAL_INCLUDE
-     * @see CONDITIONAL_IGNORE
+     * @see XMLDTDHandler#CONDITIONAL_INCLUDE
+     * @see XMLDTDHandler#CONDITIONAL_IGNORE
      */
     public void startConditional(short type) throws XNIException {
     } // startConditional
@@ -387,10 +387,10 @@ public abstract class DTDParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      *
-     * @see TYPE_EMPTY
-     * @see TYPE_ANY
-     * @see TYPE_MIXED
-     * @see TYPE_CHILDREN
+     * @see org.apache.xerces.impl.dtd.XMLElementDecl#TYPE_EMPTY
+     * @see org.apache.xerces.impl.dtd.XMLElementDecl#TYPE_ANY
+     * @see org.apache.xerces.impl.dtd.XMLElementDecl#TYPE_MIXED
+     * @see org.apache.xerces.impl.dtd.XMLElementDecl#TYPE_CHILDREN
      */
     public void startContentModel(String elementName, short type)
         throws XNIException {
@@ -409,7 +409,7 @@ public abstract class DTDParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      *
-     * @see TYPE_MIXED
+     * @see org.apache.xerces.impl.dtd.XMLElementDecl#TYPE_MIXED
      */
     public void mixedElement(String elementName) throws XNIException {
     } // mixedElement
@@ -425,7 +425,7 @@ public abstract class DTDParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      *
-     * @see TYPE_CHILDREN
+     * @see org.apache.xerces.impl.dtd.XMLElementDecl#TYPE_CHILDREN
      */
     public void childrenStartGroup() throws XNIException {
     } // childrenStartGroup
@@ -437,7 +437,7 @@ public abstract class DTDParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      *
-     * @see TYPE_CHILDREN
+     * @see org.apache.xerces.impl.dtd.XMLElementDecl#TYPE_CHILDREN
      */
     public void childrenElement(String elementName) throws XNIException {
     } // childrenElement
@@ -453,9 +453,9 @@ public abstract class DTDParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      *
-     * @see SEPARATOR_CHOICE
-     * @see SEPARATOR_SEQUENCE
-     * @see TYPE_CHILDREN
+     * @see XMLDTDContentModelHandler#SEPARATOR_CHOICE
+     * @see XMLDTDContentModelHandler#SEPARATOR_SEQUENCE
+     * @see org.apache.xerces.impl.dtd.XMLElementDecl#TYPE_CHILDREN
      */
     public void childrenSeparator(short separator) throws XNIException {
     } // childrenSeparator
@@ -471,10 +471,10 @@ public abstract class DTDParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      *
-     * @see OCCURS_ZERO_OR_ONE
-     * @see OCCURS_ZERO_OR_MORE
-     * @see OCCURS_ONE_OR_MORE
-     * @see TYPE_CHILDREN
+     * @see XMLDTDContentModelHandler#OCCURS_ZERO_OR_ONE
+     * @see XMLDTDContentModelHandler#OCCURS_ZERO_OR_MORE
+     * @see XMLDTDContentModelHandler#OCCURS_ONE_OR_MORE
+     * @see org.apache.xerces.impl.dtd.XMLElementDecl#TYPE_CHILDREN
      */
     public void childrenOccurrence(short occurrence) throws XNIException {
     } // childrenOccurrence
@@ -485,7 +485,7 @@ public abstract class DTDParser
      * <strong>Note:</strong> This method is only called after a call to
      * the startContentModel method where the type is TYPE_CHILDREN.
      *
-     * @see TYPE_CHILDREN
+     * @see org.apache.xerces.impl.dtd.XMLElementDecl#TYPE_CHILDREN
      */
     public void childrenEndGroup() throws XNIException {
     } // childrenEndGroup

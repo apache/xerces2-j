@@ -82,7 +82,7 @@ import org.w3c.dom.Node;
  * <P>
  * CDATA does not participate in Element.normalize() processing.
  *
- * @version
+ * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */
 public class CDATASectionImpl 

@@ -87,7 +87,7 @@ import org.w3c.dom.Node;
  * contents, the indices associated with nodes may change.
  * <P>
  *
- * @version
+ * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */
 public class NamedNodeMapImpl

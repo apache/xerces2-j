@@ -100,9 +100,9 @@ import java.util.NoSuchElementException;
  * 
  * @author Jeffrey Rodriguez-
  * @version $Id$
- * @see org.apache.xerces.impl.validation.datatypes.IDDatatypeValidator
- * @see org.apache.xerces.impl.validation.datatypes.AbstractDatatypeValidator
- * @see org.apache.xerces.impl.validation.DatatypeValidator
+ * @see IDDatatypeValidator
+ * @see DatatypeValidator
+ * @see DatatypeValidator
  */
 public class IDREFDatatypeValidator extends AbstractDatatypeValidator
 implements StatefullDatatypeValidator{
@@ -140,7 +140,7 @@ implements StatefullDatatypeValidator{
     * @exception throws InvalidDatatypeException if the content is
     *                   invalid according to the rules for the validators
     * @exception InvalidDatatypeValueException
-    * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
+    * @see         InvalidDatatypeValueException
     */
    public void validate(String content, Object state ) throws InvalidDatatypeValueException{
       //Pass content as a String

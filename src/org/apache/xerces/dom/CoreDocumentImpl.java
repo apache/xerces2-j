@@ -108,7 +108,7 @@ import org.apache.xerces.dom3.UserDataHandler;
  * @author Joe Kesselman, IBM
  * @author Andy Clark, IBM
  * @author Ralf Pfeiffer, IBM
- * @version
+ * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */
 public class CoreDocumentImpl
@@ -1154,7 +1154,7 @@ public class CoreDocumentImpl
      * Change the node's ownerDocument, and its subtree, to this Document
      *
      * @param source The node to adopt.
-     * @see DocumentImpl.importNode
+     * @see #importNode
      **/
     public Node adoptNode(Node source) {
         NodeImpl node;

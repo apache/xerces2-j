@@ -443,13 +443,8 @@ public abstract class BasicParserConfiguration
      * @param featureId The unique identifier (URI) of the feature.
      * @param state The requested state of the feature (true or false).
      *
-     * @exception org.xml.sax.SAXNotRecognizedException If the
+     * @exception org.apache.xerces.xni.parser.XMLConfigurationException If the
      *            requested feature is not known.
-     * @exception org.xml.sax.SAXNotSupportedException If the
-     *            requested feature is known, but the requested
-     *            state is not supported.
-     * @exception org.xml.sax.SAXException If there is any other
-     *            problem fulfilling the request.
      */
     public void setFeature(String featureId, boolean state)
         throws XMLConfigurationException {
@@ -528,13 +523,8 @@ public abstract class BasicParserConfiguration
      *
      * @param propertyId The unique identifier (URI) of the property
      *                   being set.
-     * @exception org.xml.sax.SAXNotRecognizedException If the
-     *            requested property is not known.
-     * @exception org.xml.sax.SAXNotSupportedException If the
-     *            requested property is known, but the requested
-     *            value is not supported.
-     * @exception org.xml.sax.SAXException If there is any other
-     *            problem fulfilling the request.
+     * @exception org.apache.xerces.xni.parser.XMLConfigurationException If the
+     *            requested feature is not known or supported.
      */
     protected void checkProperty(String propertyId)
         throws XMLConfigurationException {

@@ -62,7 +62,7 @@ package org.apache.xerces.dom;
  * processor-specific information alongside their actual content. PIs
  * are most common in XML, but they are supported in HTML as well.
  *
- * @version
+ * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */
 public class DeferredProcessingInstructionImpl

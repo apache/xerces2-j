@@ -60,7 +60,7 @@ package org.apache.xerces.dom;
 /**
  * Represents an XML (or HTML) comment.
  *
- * @version
+ * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */
 public class DeferredCommentImpl 

@@ -809,8 +809,8 @@ public class DTDGrammar
      *
      * @throws XNIException Thrown by handler to signal an error.
      *
-     * @see #CONDITIONAL_INCLUDE
-     * @see #CONDITIONAL_IGNORE
+     * @see XMLDTDHandler#CONDITIONAL_INCLUDE
+     * @see XMLDTDHandler#CONDITIONAL_IGNORE
      */
     public void startConditional(short type) throws XNIException {}
 
@@ -914,8 +914,8 @@ public class DTDGrammar
      *
      * @throws XNIException Thrown by handler to signal an error.
      *
-     * @see #SEPARATOR_CHOICE
-     * @see #SEPARATOR_SEQUENCE
+     * @see org.apache.xerces.xni.XMLDTDContentModelHandler#SEPARATOR_CHOICE
+     * @see org.apache.xerces.xni.XMLDTDContentModelHandler#SEPARATOR_SEQUENCE
      */
     public void separator(short separator) throws XNIException {
 
@@ -946,9 +946,9 @@ public class DTDGrammar
      *
      * @throws XNIException Thrown by handler to signal an error.
      *
-     * @see #OCCURS_ZERO_OR_ONE
-     * @see #OCCURS_ZERO_OR_MORE
-     * @see #OCCURS_ONE_OR_MORE
+     * @see org.apache.xerces.xni.XMLDTDContentModelHandler#OCCURS_ZERO_OR_ONE
+     * @see org.apache.xerces.xni.XMLDTDContentModelHandler#OCCURS_ZERO_OR_MORE
+     * @see org.apache.xerces.xni.XMLDTDContentModelHandler#OCCURS_ONE_OR_MORE
      */
     public void occurrence(short occurrence) throws XNIException {
 

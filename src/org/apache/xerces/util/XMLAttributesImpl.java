@@ -76,7 +76,7 @@ import org.xml.sax.Attributes;
  * pipeline can modify the values or change the attributes that are
  * propogated to the next stage.
  *
- * @see XMLDocumentHandler#startElement
+ * @see org.apache.xerces.xni.XMLDocumentHandler#startElement
  *
  * @author Andy Clark, IBM 
  * @author Elena Litani, IBM

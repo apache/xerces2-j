@@ -110,7 +110,7 @@ import org.w3c.dom.Node;
  * structure-change-monitoring code I implemented to support
  * DeepNodeList.
  * 
- * @version
+ * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */
 public class DeferredEntityReferenceImpl 

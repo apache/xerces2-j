@@ -34,13 +34,13 @@ public interface DOMImplementationAS {
     /**
      * Creates an <code>DOMASBuilder</code>.Do we need the method since we 
      * already have <code>DOMImplementationLS.createDOMBuilder</code>?
-     * @return 
+     * @return a DOMASBuilder
      */
     public DOMASBuilder createDOMASBuilder();
 
     /**
      * Creates an <code>DOMASWriter</code>.
-     * @return 
+     * @return a DOMASWriter
      */
     public DOMASWriter createDOMASWriter();
 

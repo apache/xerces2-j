@@ -97,7 +97,7 @@ import org.w3c.dom.Node;
  * standard methods from the Node interface, such as insertBefore()
  * and appendChild().
  *
- * @version
+ * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */
 public class DocumentFragmentImpl 

@@ -87,7 +87,7 @@ import org.apache.xml.serialize.XMLSerializer;
  * methods. However, there's nothing that says it can't be a singleton,
  * so that's how I've implemented it.
  *
- * @version
+ * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */
 public class DOMImplementationImpl  
@@ -266,7 +266,7 @@ public class DOMImplementationImpl
      * DOM Level 3 WD - Experimental.
      * Creates an <code>DOMASBuilder</code>.Do we need the method since we 
      * already have <code>DOMImplementationLS.createDOMBuilder</code>?
-     * @return 
+     * @return  DOMASBuilder
      */
     public DOMASBuilder createDOMASBuilder(){
         return new DOMASBuilderImpl();
@@ -276,7 +276,7 @@ public class DOMImplementationImpl
     /**
      * DOM Level 3 WD - Experimental.
      * Creates an <code>DOMASWriter</code>.
-     * @return 
+     * @return  a DOMASWriter
      */
     public DOMASWriter createDOMASWriter(){
         throw new  DOMException(DOMException.NOT_SUPPORTED_ERR, 

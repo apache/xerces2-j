@@ -99,8 +99,7 @@ public class NamespaceSupport
      * index of declared namespace bindings and runs to the size of the
      * namespace information array.
      *
-     * @see #fContextSize
-     * @see #fNamespace
+     * @see #fNamespaceSize
      */
     protected int[] fContext = new int[8];
 
@@ -240,9 +239,8 @@ public class NamespaceSupport
      *
      * @return true if the prefix was legal, false otherwise
      *
-     * @see #processName
      * @see #getURI
-     * @see #getPrefix
+     * @see #getDeclaredPrefixAt
      */
     public boolean declarePrefix(String prefix, String uri) {
 
@@ -290,8 +288,7 @@ public class NamespaceSupport
      * @return The associated Namespace URI, or null if the prefix
      *         is undeclared in this context.
      *
-     * @see #getPrefix
-     * @see #getPrefixes
+     * @see #getDeclaredPrefixAt
      */
     public String getURI(String prefix) {
 

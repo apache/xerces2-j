@@ -72,11 +72,11 @@ package org.apache.xerces.impl.dv.dtd;
  * 
  * @author Jeffrey Rodriguez
  * @version $Id$
- * @see org.apache.xerces.impl.validation.datatypes.ListDatatypeValidator
- * @see org.apache.xerces.impl.validation.datatypes.IDDatatypeValidator
- * @see org.apache.xerces.impl.validation.datatypes.IDREFDatatypeValidator
- * @see org.apache.xerces.impl.validation.datatypes.ENTITYDatatypeValidator
- * @see org.apache.xerces.impl.validation.DatatypeValidator
+ * @see ListDatatypeValidator
+ * @see IDDatatypeValidator
+ * @see IDREFDatatypeValidator
+ * @see ENTITYDatatypeValidator
+ * @see DatatypeValidator
  */
 public interface StatefullDatatypeValidator{
      public void   validate() throws InvalidDatatypeValueException;

@@ -63,11 +63,11 @@ import java.text.CharacterIterator;
  * 
  * An instance of this class has ranges captured in matching.
  *
- * @see org.apache.xerces.utils.regex.RegularExpression#matches(char[], int, int, org.apache.xerces.utils.regex.Match)
- * @see org.apache.xerces.utils.regex.RegularExpression#matches(char[], org.apache.xerces.utils.regex.Match)
- * @see org.apache.xerces.utils.regex.RegularExpression#matches(java.text.CharacterIterator, org.apache.xerces.utils.regex.Match)
- * @see org.apache.xerces.utils.regex.RegularExpression#matches(java.lang.String, int, int, org.apache.xerces.utils.regex.Match)
- * @see org.apache.xerces.utils.regex.RegularExpression#matches(java.lang.String, org.apache.xerces.utils.regex.Match)
+ * @see RegularExpression#matches(char[], int, int, Match)
+ * @see RegularExpression#matches(char[], Match)
+ * @see RegularExpression#matches(java.text.CharacterIterator, Match)
+ * @see RegularExpression#matches(java.lang.String, int, int, Match)
+ * @see RegularExpression#matches(java.lang.String, Match)
  * @author TAMURA Kent &lt;kent@trl.ibm.co.jp&gt;
  */
 public class Match implements Cloneable {

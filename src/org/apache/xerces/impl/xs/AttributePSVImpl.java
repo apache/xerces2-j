@@ -108,7 +108,7 @@ public class AttributePSVImpl implements AttributePSVI {
 
     /**
      * [member type definition anonymous]
-     * @ see http://www.w3.org/TR/xmlschema-1/#e-member_type_definition_anonymous
+     * @ see <a href="http://www.w3.org/TR/xmlschema-1/#e-member_type_definition_anonymous>XML Schema Part 1: Structures [member type definition anonymous]</a>
      * @return true if the {name} of the actual member type definition is absent,
      *         otherwise false.
      */
@@ -119,7 +119,7 @@ public class AttributePSVImpl implements AttributePSVI {
 
     /**
      * [member type definition name]
-     * @see http://www.w3.org/TR/xmlschema-1/#e-member_type_definition_name
+     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-member_type_definition_name>XML Schema Part 1: Structures [member type definition name]</a>
      * @return The {name} of the actual member type definition, if it is not absent.
      *         If it is absent, schema processors may, but need not, provide a
      *         value unique to the definition.
@@ -130,7 +130,7 @@ public class AttributePSVImpl implements AttributePSVI {
 
     /**
      * [member type definition namespace]
-     * @see http://www.w3.org/TR/xmlschema-1/#e-member_type_definition_namespace
+     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-member_type_definition_namespace>XML Schema Part 1: Structures [member type definition namespace]</a>
      * @return The {target namespace} of the actual member type definition.
      */
     public String   getMemberTypeNamespace() {
@@ -141,7 +141,7 @@ public class AttributePSVImpl implements AttributePSVI {
      * [schema default]
      *
      * @return The canonical lexical representation of the declaration's {value constraint} value.
-     * @see http://www.w3.org/TR/xmlschema-1/#e-schema_default
+     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-schema_default>XML Schema Part 1: Structures [schema default]</a>
      */
     public String   schemaDefault() {
         Object dValue = null;
@@ -155,8 +155,8 @@ public class AttributePSVImpl implements AttributePSVI {
      * [schema normalized value]
      *
      *
-     * @see http://www.w3.org/TR/xmlschema-1/#e-schema_normalized_value
-     * @return
+     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-schema_normalized_value>XML Schema Part 1: Structures [schema normalized value]</a>
+     * @return the normalized value of this item after validation
      */
     public String schemaNormalizedValue() {
         return fNormalizedValue;
@@ -166,7 +166,7 @@ public class AttributePSVImpl implements AttributePSVI {
      * [schema specified]
      * 
      * @return if return is true - schema, otherwise - infoset
-     * @see http://www.w3.org/TR/xmlschema-1/#e-schema_specified
+     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-schema_specified>XML Schema Part 1: Structures [schema specified]</a>
      */
     public boolean schemaSpecified() {
         return fSpecified;
@@ -175,7 +175,7 @@ public class AttributePSVImpl implements AttributePSVI {
 
     /**
      * [type definition anonymous]
-     * @see http://www.w3.org/TR/xmlschema-1/#e-type_definition_anonymous
+     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-type_definition_anonymous>XML Schema Part 1: Structures [type definition anonymous]</a>
      * @return true if the {name} of the type definition is absent, otherwise false.
      */
     public boolean isTypeAnonymous() {
@@ -184,7 +184,7 @@ public class AttributePSVImpl implements AttributePSVI {
 
     /**
      * [type definition name]
-     * @see http://www.w3.org/TR/xmlschema-1/#e-type_definition_name
+     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-type_definition_name>XML Schema Part 1: Structures [type definition name]</a>
      * @return The {name} of the type definition, if it is not absent.
      *         If it is absent, schema processors may, but need not,
      *         provide a value unique to the definition.
@@ -195,7 +195,7 @@ public class AttributePSVImpl implements AttributePSVI {
 
     /**
      * [type definition namespace]
-     * @see http://www.w3.org/TR/xmlschema-1/#e-member_type_definition_namespace
+     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-member_type_definition_namespace>XML Schema Part 1: Structures [type definition namespace]</a>
      * @return The {target namespace} of the type definition.
      */
     public String getTypeNamespace() {
@@ -205,8 +205,8 @@ public class AttributePSVImpl implements AttributePSVI {
     /**
      * [type definition type]
      *
-     *  @see http://www.w3.org/TR/xmlschema-1/#a-type_definition_type
-     *  @see http://www.w3.org/TR/xmlschema-1/#e-type_definition_type
+     *  @see <a href="http://www.w3.org/TR/xmlschema-1/#a-type_definition_type>XML Schema Part 1: Structures [type definition type]</a>
+     *  @see <a href="http://www.w3.org/TR/xmlschema-1/#e-type_definition_type>XML Schema Part 1: Structures [type definition type]</a>
      *  @return simple or complex, depending on the type definition.
      */
     public short getTypeDefinitionType() {

@@ -1626,8 +1626,8 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      *
      * @throws XNIException Thrown by handler to signal an error.
      *
-     * @see CONDITIONAL_INCLUDE
-     * @see CONDITIONAL_IGNORE
+     * @see XMLDTDHandler#CONDITIONAL_INCLUDE
+     * @see XMLDTDHandler#CONDITIONAL_IGNORE
      */
     public void startConditional(short type) throws XNIException {
 

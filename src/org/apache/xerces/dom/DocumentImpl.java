@@ -122,7 +122,7 @@ import org.apache.xerces.dom3.ls.DOMImplementationLS;
  * @author Joe Kesselman, IBM
  * @author Andy Clark, IBM
  * @author Ralf Pfeiffer, IBM
- * @version
+ * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */
 public class DocumentImpl
@@ -232,8 +232,6 @@ public class DocumentImpl
      * Create and return a NodeIterator. The NodeIterator is
      * added to a list of NodeIterators so that it can be
      * removed to free up the DOM Nodes it references.
-     * @see #removeNodeIterator
-     * @see #removeNodeIterators
      *
      * @param root The root of the iterator.
      * @param whatToShow The whatToShow mask.
@@ -250,8 +248,6 @@ public class DocumentImpl
      * Create and return a NodeIterator. The NodeIterator is
      * added to a list of NodeIterators so that it can be
      * removed to free up the DOM Nodes it references.
-     * @see #removeNodeIterator
-     * @see #removeNodeIterators
      *
      * @param root The root of the iterator.
      * @param whatToShow The whatToShow mask.

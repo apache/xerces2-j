@@ -76,7 +76,7 @@ import org.w3c.dom.Element;
  * Core. Optional modules are supported by the more complete DOMImplementation
  * class along with DocumentImpl.
  *
- * @version
+ * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */
 public class CoreDOMImplementationImpl  

@@ -284,7 +284,7 @@ public final class REUtil {
      * Creates a RegularExpression instance.
      * This method caches created instances.
      *
-     * @see org.apache.xerces.utils.regex.RegularExpression#RegularExpression(java.lang.String, java.lang.String)
+     * @seeq RegularExpression#RegularExpression(java.lang.String, java.lang.String)
      */
     public static RegularExpression createRegex(String pattern, String options)
         throws ParseException {
@@ -317,7 +317,7 @@ public final class REUtil {
 
     /**
      *
-     * @see org.apache.xerces.utils.regex.RegularExpression#matches(java.lang.String)
+     * @see RegularExpression#matches(java.lang.String)
      */
     public static boolean matches(String regex, String target) throws ParseException {
         return REUtil.createRegex(regex, null).matches(target);
@@ -325,7 +325,7 @@ public final class REUtil {
 
     /**
      *
-     * @see org.apache.xerces.utils.regex.RegularExpression#matches(java.lang.String)
+     * @see RegularExpression#matches(java.lang.String)
      */
     public static boolean matches(String regex, String options, String target) throws ParseException {
         return REUtil.createRegex(regex, options).matches(target);
