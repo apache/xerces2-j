@@ -197,6 +197,23 @@ public class AttrImpl
         }
     }
 
+    /**
+     * NON-DOM
+     * set the ownerDocument of this node and its children
+     */
+    void setOwnerDocument(DocumentImpl doc) {
+        if (needsSyncChildren()) {
+            synchronizeChildren();
+        }
+        super.setOwnerDocument(doc);
+        if (!hasStringValue()) {
+            for (ChildNode child = firstChild;
+                 child != null; child = child.nextSibling) {
+                child.setOwnerDocument(doc);
+            }
+        }
+    }
+
     //
     // Node methods
     //
