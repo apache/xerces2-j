@@ -144,18 +144,26 @@ public class XMLSimpleType {
      * @param datatypeValidator 
      */
     public void setValues(short type, String name, String[] enumeration, boolean list, short defaultType, String defaultValue, DatatypeValidator datatypeValidator) {
-        this.type = type;
-        this.name = name;
-        this.enumeration = enumeration;
+        this.type              = type;
+        this.name              = name;
+        this.enumeration       = enumeration;
+        this.list              = list;
+        this.defaultType       = defaultType;
+        this.defaultValue      = defaultValue;
+        this.datatypeValidator = datatypeValidator;
     } // setValues
 
     /**
      * clear
      */
     public void clear() {
-        this.type = -1;
-        this.name = null;
-        this.enumeration = null;
+        this.type              = -1;
+        this.name              = null;
+        this.enumeration       = null;
+        this.list              = false;
+        this.defaultType       = -1;
+        this.defaultValue      = null;
+        this.datatypeValidator = null;
     } // clear
 
 } // class XMLSimpleType
