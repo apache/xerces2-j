@@ -58,13 +58,13 @@
 		schema capabilities of this release. We intend to track the W3C XML 
 		Schema Language in subsequent updates of &javaparsername;.</p>
 	</s2>
-	<s2 title="DOM Level 2 (alpha) Support">
+	<s2 title="DOM Level 2 (beta) Support">
 		<p>This release includes support for the 
 		<jump href="http://www.w3.org/TR/WD-DOM-Level-2">DOM Level 2</jump>.
                 As of this writing, the DOM Level 2 specification is now a
                 Candidate Recommendation.</p>
 	</s2>
-	<s2 title="SAX 2 (alpha) Support">
+	<s2 title="SAX 2 (beta 2) Support">
 		<p>This release includes support for the <jump href="http://www.megginson.com/SAX/SAX2/">
 		SAX Version 2</jump> API&apos;s which are being discussed on the 
 		<jump href="http://www.lists.ic.ac.uk/hypermail/xml-dev/">xml-dev</jump> mailing list. 
