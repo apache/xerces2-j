@@ -56,13 +56,19 @@
  */
 
 package org.apache.xerces.validators.common;
+
 import  org.apache.xerces.validators.common.XMLValidator;
+import  org.apache.xerces.validators.schema.SchemaSymbols;
+import  org.apache.xerces.utils.StringPool;
+
 import  org.w3c.dom.Node;
 import  org.w3c.dom.Document;
 
 public abstract class Grammar  {
-    private  String   fGrammarID       = null;
-    private  Document fGrammarDocument = null;
+    private  String    fGrammarID       = null;
+    private  Document  fGrammarDocument = null;
+    private StringPool fStringPool      = null;
+
     public Grammar( String grammarID ) {
        fGrammarID = grammarID;
     }

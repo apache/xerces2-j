@@ -62,10 +62,12 @@ import java.util.*;
 import org.apache.xerces.validators.common.Grammar;
 
 /**
- * This class embodies the representation of a Grammar 
+ * This class embodies the representation of a Grammar
  * pool.
  * This class is called from the validator.
  * Grammar pool maps to a set of Grammar Proxy classes.
+ * 
+ * @author Jeffrey Rodriguez
  */
 public class GrammarPool {
     private static  GrammarPool  _instance = new GrammarPool();
