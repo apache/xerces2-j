@@ -127,12 +127,11 @@ public class Test {
         System.out.println("DOM IDs Test...");
         Element el = doc.getElementById("one.worker");
         Assertion.assert(el != null);
-        Assertion.equals(el.getAttribute("id"), "one.worker");
-
         Element el2 = doc.getElementById("one.worker there");
         Assertion.assert(el2 == null);
 
         if (el != null) {
+            Assertion.equals(el.getAttribute("id"), "one.worker");
             el.setAttribute("id", "my.worker");
             el2 = doc.getElementById("my.worker");
             Assertion.assert(el2 == el);
