@@ -112,17 +112,16 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
         // no children are allowed here except annotation, which is optional.
         Element child = DOMUtil.getFirstChildElement(elmNode);
         if (child != null) {
-            String childName = child.getLocalName();
+            String childName = DOMUtil.getLocalName(child);
             if (childName.equals(SchemaSymbols.ELT_ANNOTATION)) {
                 traverseAnnotationDecl(child, attrValues, false, schemaDoc);
                 child = DOMUtil.getNextSiblingElement(child);
-                childName = child.getLocalName();
             }
 
             if (child != null) {
-                Object[] args = new Object [] { "attributeGroup", childName};
+                Object[] args = new Object [] {refAttr};
                 fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                          "AttributeGroupContentRestricted",
+                                          "src-attribute_group",
                                           args,
                                           XMLErrorReporter.SEVERITY_ERROR);
 
@@ -156,11 +155,13 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
 
         // check the content
         Element child = DOMUtil.getFirstChildElement(elmNode);
-        String childName = child == null ? null : child.getLocalName();
 
-        if (child != null && childName.equals(SchemaSymbols.ELT_ANNOTATION)) {
-            traverseAnnotationDecl(child, attrValues, false, schemaDoc);
-            child = DOMUtil.getNextSiblingElement(child);
+        if (child!=null) {
+            String childName = DOMUtil.getLocalName(child);
+            if (childName.equals(SchemaSymbols.ELT_ANNOTATION)) {
+              traverseAnnotationDecl(child, attrValues, false, schemaDoc);
+              child = DOMUtil.getNextSiblingElement(child);
+          }
         }
 
         // Traverse the attribute and attribute group elements and fill in the 
@@ -168,11 +169,11 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
 
         if (!traverseAttrsAndAttrGrps(child, attrGrp, schemaDoc, grammar)) {
             // An invalid element was found...
-            Object[] args = new Object [] { "attributeGroup", childName};
+            Object[] args = new Object [] {nameAttr};
             fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                           "AttributeGroupContentRestricted",
-                           args,
-                           XMLErrorReporter.SEVERITY_ERROR);
+                                      "src-attribute_group",
+                                      args,
+                                      XMLErrorReporter.SEVERITY_ERROR);
         } 
 
         // make an entry in global declarations.
