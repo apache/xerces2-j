@@ -144,7 +144,7 @@ source: ../bin/${JARFILE}
 
 #make the first jar file
 	echo ${PRODUCTVERSION}> ../class/Xerces_Ver_${PRODUCTVERSION}.info
-	cd ../class;${JAR} ../bin/${JARFILE} *.info org; cd ../src        
+	cd ../class;$(JAR) c0vf ../bin/${JARFILE} *.info org; cd ../src        
 ###################################
 #copy the .class files unser samples
 samples: ../bin/${SAMPLESJARFILE}
@@ -182,7 +182,7 @@ samples: ../bin/${SAMPLESJARFILE}
 
 #Make the second jar file
 
-	cd ../class;${JAR} ../bin/${SAMPLESJARFILE} Xerces_Ver_${PRODUCTVERSION}.info dom sax ui;cd ../src
+	cd ../class;$(JAR) c0vf ../bin/${SAMPLESJARFILE} Xerces_Ver_${PRODUCTVERSION}.info dom sax ui;cd ../src
 
 # copy the license, ANT build file, Status file, and READMEs
 	${CP}  ../build.xml ../README ../Readme.html ../STATUS ../bin
