@@ -88,10 +88,11 @@ import org.apache.xerces.dom.events.MutationEventImpl;
  * (see the INUSE exception), so this object's mutability is
  * officially not an issue.
  * <p>
- * Note: Attributes do not have parent nodes. In other words, the
- * getParentNode() method is defined to return null for Attr nodes.
- * However, the getElement() method will return the element node
- * that this attribute is associated with.
+ * Note: The parentNode attribute is used to store the Element the Attr
+ * node is associated with. However, Attr nodes do not have parent nodes. So,
+ * the getParentNode() method is defined to return null for Attr nodes.
+ * Besides, the getOwnerElement() method can be used to get the element node
+ * this attribute is associated with.
  * <P>
  * AttrImpl does not support Namespaces. AttrNSImpl, which inherits from
  * it, does.
@@ -114,9 +115,6 @@ public class AttrImpl
     //
     // Data
     //
-
-    /** Flag used for INUSE exception processing. */
-    protected boolean owned;
 
     /** False for default attributes. */
     protected boolean specified = true;
@@ -177,7 +175,6 @@ public class AttrImpl
     /** Clone node. */
     public Node cloneNode(boolean deep) {
         AttrImpl newattr = (AttrImpl)super.cloneNode(deep);
-        newattr.owned = false;
         newattr.specified = specified;
         return newattr;
     }

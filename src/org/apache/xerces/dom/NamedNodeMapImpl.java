@@ -272,7 +272,7 @@ public class NamedNodeMapImpl
                                        "DOM005 Wrong document");
         }
 
-    	if (arg instanceof AttrImpl && ((AttrImpl)arg).owned) {
+    	if (arg instanceof AttrImpl && ((AttrImpl)arg).parentNode != null) {
             throw new DOMExceptionImpl(DOMException.INUSE_ATTRIBUTE_ERR,
                                        "DOM009 Attribute already in use");
         }
@@ -344,7 +344,7 @@ public class NamedNodeMapImpl
                                        "DOM005 Wrong document");
         }
 
-    	if (arg instanceof AttrImpl && ((AttrImpl)arg).owned) {
+    	if (arg instanceof AttrImpl && ((AttrImpl)arg).parentNode != null) {
             throw new DOMExceptionImpl(DOMException.INUSE_ATTRIBUTE_ERR,
                                        "DOM009 Attribute already in use");
         }
@@ -514,14 +514,9 @@ public class NamedNodeMapImpl
 
         // Need to remove references to an Attr's owner before the
         // MutationEvents fire.
-        // ***** We really don't need a seperate "owned" flag; we
-        // could instead test for parentNode!=null... or alternatively,
-        // and perhaps better, we could replace owned with ownerElement
-        // and avoid overloading parentNode as owner.
         if (element != null) {
             AttrImpl attr=(AttrImpl)n;
             attr.parentNode = null;
-            attr.owned=false;
         }
 
         ++changes;

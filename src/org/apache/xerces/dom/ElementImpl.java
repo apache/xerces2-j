@@ -336,8 +336,7 @@ public class ElementImpl
     	AttrImpl att = (AttrImpl) attributes.getNamedItem(name);
     	// Remove it (and let the NamedNodeMap recreate the default, if any)
     	if (att != null) {
-    		att.owned = false;
-    		attributes.removeNamedItem(name);
+            attributes.removeNamedItem(name);
     	}
 
     } // removeAttribute(String)
@@ -379,9 +378,8 @@ public class ElementImpl
     	// NamedNodeMap recreate the default, if any)
 
     	if (found == oldAttr) {
-    		attributes.removeNamedItem(oldAttr.getName());
-    		found.owned = false;
-    		return found;
+            attributes.removeNamedItem(oldAttr.getName());
+            return found;
     	}
 
         throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR, 
@@ -425,7 +423,6 @@ public class ElementImpl
         if (newAttr == null) {
             newAttr = (AttrImpl) getOwnerDocument().createAttribute(name);
             attributes.setNamedItem(newAttr);
-            newAttr.owned = true;
         }
     	newAttr.setNodeValue(value);
 
@@ -468,7 +465,6 @@ public class ElementImpl
 
     	// This will throw INUSE if necessary
     	attributes.setNamedItem(na);
-    	na.owned = true; // Must set after adding ... or within?
 
     	return oldAttr;
 
@@ -560,7 +556,6 @@ public class ElementImpl
             newAttr = (AttrImpl)
                 getOwnerDocument().createAttributeNS(namespaceURI, localName);
             attributes.setNamedItemNS(newAttr);
-            newAttr.owned = true;
     	}
     	newAttr.setNodeValue(value);
 
@@ -596,8 +591,7 @@ public class ElementImpl
     	AttrImpl att = (AttrImpl) attributes.getNamedItemNS(namespaceURI, localName);
     	// Remove it (and let the NamedNodeMap recreate the default, if any)
     	if (att != null) {
-    		att.owned = false;
-    		attributes.removeNamedItemNS(namespaceURI, localName);
+            attributes.removeNamedItemNS(namespaceURI, localName);
     	}
 
     } // removeAttributeNS(String,String)
@@ -673,7 +667,6 @@ public class ElementImpl
 
     	// This will throw INUSE if necessary
     	attributes.setNamedItem(na);
-    	na.owned = true; // Must set after adding ... or within?
 
     	return oldAttr;
 
