@@ -124,6 +124,9 @@ public class DOMParser
     /** Default programmatic document class name (org.apache.xerces.dom.DocumentImpl). */
     public static final String DEFAULT_DOCUMENT_CLASS_NAME = "org.apache.xerces.dom.DocumentImpl";
 
+    /** Default deferred document class name (org.apache.xerces.dom.DeferredDocumentImpl). */
+    public static final String DEFAULT_DEFERRED_DOCUMENT_CLASS_NAME = "org.apache.xerces.dom.DeferredDocumentImpl";
+
     // debugging
 
     /** Set to true to debug attribute list declaration calls. */
@@ -889,37 +892,45 @@ public class DOMParser
         } catch (SAXException e) {
             throw new RuntimeException("PAR009 Fatal error reading expansion mode.");
         }
-        if (documentClassName.equals(DEFAULT_DOCUMENT_CLASS_NAME) && deferNodeExpansion) {
-            boolean nsEnabled = false;
-            try { nsEnabled = getNamespaces(); }
-            catch (SAXException s) {}
-            fDocument = fDeferredDocumentImpl =
-                new DeferredDocumentImpl(fStringPool, nsEnabled, fGrammarAccess);
-            fDocumentIndex = fDeferredDocumentImpl.createDocument();
-            fCurrentNodeIndex = fDocumentIndex;
-        }
-
-        // full expansion
-        else {
-
-            if (documentClassName.equals(DEFAULT_DOCUMENT_CLASS_NAME)) {
-                fDocument = fDocumentImpl = new DocumentImpl(fGrammarAccess);
-                fDocumentImpl.setErrorChecking(false);
+        try {
+            Class docClass = Class.forName(documentClassName);
+            Class defaultDeferredDocClass = Class.forName(DEFAULT_DEFERRED_DOCUMENT_CLASS_NAME);
+            if (deferNodeExpansion && docClass.isAssignableFrom(defaultDeferredDocClass)) {
+                boolean nsEnabled = false;
+                try { nsEnabled = getNamespaces(); }
+                catch (SAXException s) {}
+                fDocument = fDeferredDocumentImpl =
+                    new DeferredDocumentImpl(fStringPool, nsEnabled, fGrammarAccess);
+                fDocumentIndex = fDeferredDocumentImpl.createDocument();
+                fCurrentNodeIndex = fDocumentIndex;
             }
+
+            // full expansion
             else {
-                try {
-                    Class documentClass = Class.forName(documentClassName);
-                    fDocument = (Document)documentClass.newInstance();
+                Class defaultDocClass = Class.forName(DEFAULT_DOCUMENT_CLASS_NAME);
+                if (docClass.isAssignableFrom(defaultDocClass)) {
+                    fDocument = fDocumentImpl = new DocumentImpl(fGrammarAccess);
+                    fDocumentImpl.setErrorChecking(false);
                 }
-                catch (Exception e) {
-                    // REVISIT: We've already checked the type of the factory
-                    //          in the setDocumentClassName() method. The only
-                    //          exception that can occur here is if the class
-                    //          doesn't have a zero-arg constructor. -Ac
+                else {
+                    try {
+                        Class documentClass = Class.forName(documentClassName);
+                        fDocument = (Document)documentClass.newInstance();
+                    }
+                    catch (Exception e) {
+                        // REVISIT: We've already checked the type of the factory
+                        //          in the setDocumentClassName() method. The only
+                        //          exception that can occur here is if the class
+                        //          doesn't have a zero-arg constructor. -Ac
+                    }
                 }
-            }
 
-            fCurrentElementNode = fDocument;
+                fCurrentElementNode = fDocument;
+            }
+        }
+        catch (ClassNotFoundException e) {
+            // REVISIT: Localize this message.
+            throw new RuntimeException(documentClassName);
         }
 
     } // startDocument()
