@@ -120,11 +120,12 @@ public class SAXParserImpl extends SAXParser {
         // Allow SAX parser to use a different ErrorHandler if it wants to
         xmlReader.setFeature(validation, validating);
 
-        if (spf.isNamespaceAware()) {
-            namespaceAware = true;
-	    // XXX default value of namespaceAware conflicts with SAX2
-	    // namespaces feature so do nothing for now
-        }
+        // "namespaceAware" == SAX Namespaces feature
+        // Note: there is a compatibility problem here with default values:
+        // JAXP default is false while SAX 2 default is true!
+        namespaceAware = spf.isNamespaceAware();
+        String namespaces = "http://xml.org/sax/features/namespaces";
+        xmlReader.setFeature(namespaces, namespaceAware);
 
         setFeatures(features);
     }
