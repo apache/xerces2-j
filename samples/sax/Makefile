@@ -1,8 +1,9 @@
 # Makefile for directory ./sax
 
 TARGETS=\
-	SAXCount.class\
+	DTDReader.class\
 	SAX2Count.class\
+	SAXWriter.class\
 	SAXWriter.class\
 	SAX2Writer.class
 
