@@ -899,7 +899,7 @@ Copyright:
   <!-- =================================================================== -->
   <!-- Compiles the dv source code package                                 -->
   <!-- =================================================================== -->
-  <target name="dvprepare-src">
+  <target name="dvprepare-src" depends="prepare">
 
     <!-- copy src files -->
     <copy todir="${build.src}">
@@ -918,6 +918,9 @@ Copyright:
                       org/apache/xerces/impl/xs/psvi/XSTypeDefinition.java,
                       org/apache/xerces/impl/xs/util/StringListImpl.java,
                       org/apache/xerces/impl/xs/util/XSObjectListImpl.java,
+                      org/apache/xerces/util/ObjectFactory.java,
+                      org/apache/xerces/util/SecuritySupport.java,
+                      org/apache/xerces/util/SecuritySupport12.java,
                       org/apache/xerces/util/SymbolHash.java,
                       org/apache/xerces/util/URI.java,
                       org/apache/xerces/util/XMLChar.java,
