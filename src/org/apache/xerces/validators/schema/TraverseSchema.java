@@ -325,7 +325,7 @@ public class TraverseSchema implements
 
     public boolean particleEmptiable(int contentSpecIndex) {
 
-       if (fFullConstraintChecking) {
+       if (!fFullConstraintChecking) {
            return true;
        }
        if (minEffectiveTotalRange(contentSpecIndex)==0) 
@@ -4947,6 +4947,14 @@ throws Exception {
         throw new ParticleRecoverableError("rcase-Recurse.2:  There is not a complete functional mapping between the particles");
       }
       
+      // Now, see if there are some elements in the base we didn't match up
+      for (int j=current; j < count2; j++) {
+        Integer particle2 = (Integer)tempVector2.elementAt(j);
+        if (!particleEmptiable(particle2.intValue())) {
+          throw new ParticleRecoverableError("rcase-Recurse.2:  There is not a complete functional mapping between the particles");
+        }
+      }
+      
     }
 
     private void checkRecurseUnordered(int csIndex1, Vector tempVector1, int derivedScope, int csIndex2, Vector tempVector2, int baseScope, ComplexTypeInfo bInfo) throws Exception {
@@ -6440,7 +6448,7 @@ throws Exception {
             if(typeInfo != null &&
                (typeInfo.contentType == XMLElementDecl.TYPE_MIXED_SIMPLE ||
                 typeInfo.contentType == XMLElementDecl.TYPE_MIXED_COMPLEX)) {
-                if (particleEmptiable(typeInfo.contentSpecHandle))
+                if (!particleEmptiable(typeInfo.contentSpecHandle))
                     reportGenericSchemaError ("e-props-correct.2.2.2: for element " + nameStr + ", the {content type} is mixed, then the {content type}'s particle must be emptiable");
             }
 
