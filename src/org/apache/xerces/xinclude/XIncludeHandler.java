@@ -342,12 +342,20 @@ public class XIncludeHandler
         literalSystemID.clear();
         expandedSystemID.clear();
 
+        // REVISIT: Find a better method for maintaining
+        // the state of the XInclude processor. These arrays
+        // can potentially grow quite large. Cleaning them
+        // out on reset may be very time consuming. -- mrglavas
+        //
         // clear the previous settings from the arrays
-        for (int i = 0; i < fState.length; i++) {
-            // these three arrays will always be the same length, so this is safe
-            fSawFallback[i] = false;
-            fSawInclude[i] = false;
+        for (int i = 0; i < fState.length; ++i) {          
             fState[i] = STATE_NORMAL_PROCESSING;
+        }
+        for (int i = 0; i < fSawFallback.length; ++i) {
+            fSawFallback[i] = false;
+        }
+        for (int i = 0; i < fSawInclude.length; ++i) {
+            fSawInclude[i] = false;
         }
 
         try {
