@@ -159,6 +159,7 @@ public class TraverseSchema implements
 
     //private data members
 
+    private boolean fFullConstraintChecking = false;
 
     private XMLErrorReporter    fErrorReporter = null;
     private StringPool          fStringPool    = null;
@@ -223,6 +224,8 @@ public class TraverseSchema implements
     private XMLAttributeDecl fTempAttributeDecl = new XMLAttributeDecl();
     private XMLAttributeDecl fTemp2AttributeDecl = new XMLAttributeDecl();
     private XMLElementDecl fTempElementDecl = new XMLElementDecl();
+    private XMLContentSpec tempContentSpec1 = new XMLContentSpec();
+    private XMLContentSpec tempContentSpec2 = new XMLContentSpec();
 
     private EntityResolver  fEntityResolver = null;
     
@@ -287,6 +290,9 @@ public class TraverseSchema implements
         // new TraverseSchema() is forbidden;
     }
 
+    public void setFullConstraintCheckingEnabled() {
+        fFullConstraintChecking = true;
+    }
 
     public void setGrammarResolver(GrammarResolver grammarResolver){
         fGrammarResolver = grammarResolver;
@@ -299,7 +305,12 @@ public class TraverseSchema implements
     }
 
     public boolean particleEmptiable(int contentSpecIndex) {
-       //TODO
+
+       if (fFullConstraintChecking) {
+           return true;
+       }
+
+       // implement
        return true;
 
     }
@@ -327,10 +338,12 @@ public class TraverseSchema implements
                            GrammarResolver grammarResolver,
                            XMLErrorReporter errorReporter,
                            String schemaURL,
-                   EntityResolver entityResolver
+                   EntityResolver entityResolver,
+                           boolean fullChecking
                            ) throws Exception {
         fErrorReporter = errorReporter;
         fCurrentSchemaURL = schemaURL;
+        fFullConstraintChecking = fullChecking;
     fEntityResolver = entityResolver;
         doTraverseSchema(root, stringPool, schemaGrammar, grammarResolver);
     }
@@ -339,17 +352,21 @@ public class TraverseSchema implements
                            SchemaGrammar schemaGrammar, 
                            GrammarResolver grammarResolver,
                            XMLErrorReporter errorReporter,
-                           String schemaURL
+                           String schemaURL, 
+                           boolean fullChecking
                            ) throws Exception {
         fErrorReporter = errorReporter;
         fCurrentSchemaURL = schemaURL;
+        fFullConstraintChecking = fullChecking;
         doTraverseSchema(root, stringPool, schemaGrammar, grammarResolver);
     }
 
     public  TraverseSchema(Element root, StringPool stringPool, 
                            SchemaGrammar schemaGrammar, 
-                           GrammarResolver grammarResolver
+                           GrammarResolver grammarResolver, 
+                           boolean fullChecking
                            ) throws Exception {
+        fFullConstraintChecking = fullChecking;
         doTraverseSchema(root, stringPool, schemaGrammar, grammarResolver);
     }
 
@@ -362,6 +379,9 @@ public class TraverseSchema implements
         fSchemaRootElement = root;
         fStringPool = stringPool;
         fSchemaGrammar = schemaGrammar;
+        if (fFullConstraintChecking) 
+          fSchemaGrammar.setDeferContentSpecExpansion();                           
+
         fGrammarResolver = grammarResolver;
         fDatatypeRegistry = (DatatypeValidatorFactoryImpl) fGrammarResolver.getDatatypeRegistry();
         
@@ -1542,7 +1562,7 @@ public class TraverseSchema implements
                                           +targetNSURI+"' from what is declared '"+namespaceString+"'.");
              }
              else
-                 new TraverseSchema(root, fStringPool, importedGrammar, fGrammarResolver, fErrorReporter, location, fEntityResolver);
+                 new TraverseSchema(root, fStringPool, importedGrammar, fGrammarResolver, fErrorReporter, location, fEntityResolver, fFullConstraintChecking);
          }
          else {
              reportGenericSchemaError("Could not get the doc root for imported Schema file: "+location);
@@ -2970,7 +2990,7 @@ public class TraverseSchema implements
        
         // check that the base isn't a complex type with complex content
         if (typeInfo.baseComplexTypeInfo != null)  {
-             if (typeInfo.baseComplexTypeInfo.contentSpecHandle > -1) {
+             if (typeInfo.baseComplexTypeInfo.contentType != XMLElementDecl.TYPE_SIMPLE) {
                  throw new ComplexTypeRecoverableError(
                  "The type '"+ base +"' specified as the " + 
                  "base in the simpleContent element must not have complexContent");
@@ -3615,7 +3635,9 @@ public class TraverseSchema implements
               // derivation-ok-restriction 5.3
               //
               else {
-                //checkParticleDerivationOK();
+                checkParticleDerivationOK(typeInfo.contentSpecHandle,fCurrentScope,
+                     baseContentSpecHandle,typeInfo.baseComplexTypeInfo.scopeDefined,
+                     typeInfo.baseComplexTypeInfo);
               }
            }
            //-------------------------------------------------------------
@@ -3667,9 +3689,9 @@ public class TraverseSchema implements
                // cos-ct-extends.1.4.2.1
                // LM - commented out until I get a clarification from HT
                //
-               //if (typeInfo.contentSpecHandle <0) {
-               //     throw new ComplexTypeRecoverableError("cos-ct-extends.1.4.2.1: The content of a type derived by EXTENSION must contain a particle");
-               //}
+               if (typeInfo.contentSpecHandle <0) {
+                    throw new ComplexTypeRecoverableError("cos-ct-extends.1.4.2.1: The content of a type derived by EXTENSION must contain a particle");
+               }
            }
        }
        else {
@@ -3995,8 +4017,431 @@ public class TraverseSchema implements
         }
     }
 
-    private void checkParticleDerivationOK(Element derivedTypeNode, Element baseTypeNode) {
-        //TO DO: !!!
+    // Check that the particle defined by the derived ct tree is a valid restriction of 
+    // that specified by baseContentSpecIndex.   derivedScope and baseScope are the 
+    // scopes of the particles, respectively.  bInfo is supplied when the base particle
+    // is from a base type definition, and may be null - it helps determine other scopes
+    // that elements should be looked up in. 
+
+    private void checkParticleDerivationOK(int derivedContentSpecIndex, int derivedScope, int baseContentSpecIndex, int baseScope, ComplexTypeInfo bInfo) throws Exception {
+        
+
+       // Only do this if full checking is enabled
+       if (!fFullConstraintChecking) 
+           return;
+
+       // Check for pointless occurrences of all, choice, sequence.  The result is the 
+       // contentspec which is not pointless.   If the result is a non-pointless 
+       // group, Vector is filled  in with the children of interest
+       int csIndex1 = derivedContentSpecIndex;
+       fSchemaGrammar.getContentSpec(csIndex1, tempContentSpec1);
+       int csIndex2 = baseContentSpecIndex; 
+       fSchemaGrammar.getContentSpec(csIndex2, tempContentSpec2);
+
+       Vector tempVector1 = new Vector();
+       Vector tempVector2 = new Vector();
+
+       if (tempContentSpec1.type == XMLContentSpec.CONTENTSPECNODE_SEQ ||
+           tempContentSpec1.type == XMLContentSpec.CONTENTSPECNODE_CHOICE || 
+           tempContentSpec1.type == XMLContentSpec.CONTENTSPECNODE_ALL) {
+         csIndex1 = checkForPointlessOccurrences(csIndex1,tempVector1);
+       }
+       if (tempContentSpec2.type == XMLContentSpec.CONTENTSPECNODE_SEQ ||
+           tempContentSpec2.type == XMLContentSpec.CONTENTSPECNODE_CHOICE || 
+           tempContentSpec2.type == XMLContentSpec.CONTENTSPECNODE_ALL) {
+         csIndex2 = checkForPointlessOccurrences(csIndex2,tempVector2);
+       }
+         
+       fSchemaGrammar.getContentSpec(csIndex1, tempContentSpec1);
+       fSchemaGrammar.getContentSpec(csIndex2, tempContentSpec2);
+
+       switch (tempContentSpec1.type & 0x0f) {
+         case XMLContentSpec.CONTENTSPECNODE_LEAF: 
+         {
+            switch (tempContentSpec2.type & 0x0f) {
+
+              // Elt:Elt NameAndTypeOK
+              case XMLContentSpec.CONTENTSPECNODE_LEAF: 
+              {
+                 checkNameAndTypeOK(csIndex1, derivedScope, csIndex2, baseScope, bInfo);
+                 return;
+              }
+              
+              // Elt:Any NSCompat
+              case XMLContentSpec.CONTENTSPECNODE_ANY:
+              case XMLContentSpec.CONTENTSPECNODE_ANY_OTHER:
+              case XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL:
+              {
+                 checkNSCompat(csIndex1, derivedScope, csIndex2);
+                 return;
+              }
+
+              // Elt:All RecurseAsIfGroup 
+              case XMLContentSpec.CONTENTSPECNODE_CHOICE:
+              case XMLContentSpec.CONTENTSPECNODE_SEQ:
+              case XMLContentSpec.CONTENTSPECNODE_ALL:
+              {
+                 checkRecurseAsIfGroup(csIndex1, derivedScope, csIndex2, tempVector2, baseScope, bInfo);
+                 return;
+              }
+
+              default:
+              { 
+           	reportGenericSchemaError("internal Xerces error"); 
+                return;
+              }
+            }
+         }
+
+         case XMLContentSpec.CONTENTSPECNODE_ANY: 
+         case XMLContentSpec.CONTENTSPECNODE_ANY_OTHER:
+         case XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL:
+         {
+            switch (tempContentSpec2.type & 0x0f) {
+
+              // Any:Any NSSubset
+              case XMLContentSpec.CONTENTSPECNODE_ANY:
+              case XMLContentSpec.CONTENTSPECNODE_ANY_OTHER:
+              case XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL:
+              {
+                 checkNSSubset(csIndex1, csIndex2);
+                 return;
+              }
+
+              case XMLContentSpec.CONTENTSPECNODE_CHOICE:
+              case XMLContentSpec.CONTENTSPECNODE_SEQ:
+              case XMLContentSpec.CONTENTSPECNODE_ALL:
+              case XMLContentSpec.CONTENTSPECNODE_LEAF:
+              {
+                 reportGenericSchemaError("cos-particle-restrict: Forbidden restriction: Any: Choice,Seq,All,Elt");
+                 return;
+              }
+
+              default:
+              { 
+           	reportGenericSchemaError("internal Xerces error"); 
+                return;
+              }
+            }
+         }
+
+         case XMLContentSpec.CONTENTSPECNODE_ALL: 
+         {
+            switch (tempContentSpec2.type & 0x0f) {
+
+              // All:Any NSRecurseCheckCardinality
+              case XMLContentSpec.CONTENTSPECNODE_ANY:
+              case XMLContentSpec.CONTENTSPECNODE_ANY_OTHER:
+              case XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL:
+              {
+                 checkNSRecurseCheckCardinality(csIndex1, tempVector1, derivedScope, csIndex2);
+                 return;
+              }
+
+              case XMLContentSpec.CONTENTSPECNODE_ALL:
+              {
+                 checkRecurse(csIndex1, tempVector1, derivedScope, csIndex2, tempVector2, baseScope, bInfo);
+                 return;
+              }
+
+              case XMLContentSpec.CONTENTSPECNODE_CHOICE:
+              case XMLContentSpec.CONTENTSPECNODE_SEQ:
+              case XMLContentSpec.CONTENTSPECNODE_LEAF:
+              {
+                 reportGenericSchemaError("cos-particle-restrict: Forbidden restriction: All:Choice,Seq,Elt");
+                 return;
+              }
+
+              default:
+              { 
+           	reportGenericSchemaError("internal Xerces error"); 
+                return;
+              }
+            }
+         }
+
+         case XMLContentSpec.CONTENTSPECNODE_CHOICE: 
+         {
+            switch (tempContentSpec2.type & 0x0f) {
+
+              // Choice:Any NSRecurseCheckCardinality
+              case XMLContentSpec.CONTENTSPECNODE_ANY:
+              case XMLContentSpec.CONTENTSPECNODE_ANY_OTHER:
+              case XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL:
+              {
+                 checkNSRecurseCheckCardinality(csIndex1, tempVector1, derivedScope, csIndex2);
+                 return;
+              }
+
+              case XMLContentSpec.CONTENTSPECNODE_CHOICE:
+              {
+                 checkRecurseLax(csIndex1, tempVector1, derivedScope, csIndex2, tempVector2, baseScope, bInfo);
+                 return;
+              }
+
+              case XMLContentSpec.CONTENTSPECNODE_ALL:
+              case XMLContentSpec.CONTENTSPECNODE_SEQ:
+              case XMLContentSpec.CONTENTSPECNODE_LEAF:
+              {
+                 reportGenericSchemaError("cos-particle-restrict: Forbidden restriction: Choice:All,Seq,Leaf");
+                 return;
+              }
+
+              default:
+              { 
+           	reportGenericSchemaError("internal Xerces error"); 
+                return;
+              }
+            }
+         }
+
+
+         case XMLContentSpec.CONTENTSPECNODE_SEQ: 
+         {
+            switch (tempContentSpec2.type & 0x0f) {
+
+              // Choice:Any NSRecurseCheckCardinality
+              case XMLContentSpec.CONTENTSPECNODE_ANY:
+              case XMLContentSpec.CONTENTSPECNODE_ANY_OTHER:
+              case XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL:
+              {
+                 checkNSRecurseCheckCardinality(csIndex1, tempVector1, derivedScope, csIndex2);
+                 return;
+              }
+
+              case XMLContentSpec.CONTENTSPECNODE_ALL:
+              {
+                 checkRecurseUnordered(csIndex1, tempVector1, derivedScope, csIndex2, tempVector2, baseScope, bInfo);
+                 return;
+              }
+
+              case XMLContentSpec.CONTENTSPECNODE_SEQ:
+              {
+                 checkRecurse(csIndex1, tempVector1, derivedScope, csIndex2, tempVector2, baseScope, bInfo);
+                 return;
+              }
+
+              case XMLContentSpec.CONTENTSPECNODE_CHOICE:
+              {
+                 checkMapAndSum(csIndex1, tempVector1, derivedScope, csIndex2, tempVector2, baseScope, bInfo);
+                 return;
+              }
+
+              case XMLContentSpec.CONTENTSPECNODE_LEAF:
+              {
+                reportGenericSchemaError("cos-particle-restrict: Forbidden restriction: Seq:Elt");
+                return;
+              }
+
+              default:
+              { 
+           	reportGenericSchemaError("internal Xerces error"); 
+                return;
+              }
+            }
+         }
+
+       }
+
+    }
+
+    private int checkForPointlessOccurrences(int csIndex, Vector tempVector)  { 
+
+       // Note:  instead of using a Vector, we should use a growable array of int. 
+       // To be cleaned up in release 1.4.1. (LM)
+
+       fSchemaGrammar.getContentSpec(csIndex, tempContentSpec1);
+       
+       if (tempContentSpec1.otherValue == -2) {
+         gatherChildren(tempContentSpec1.type,tempContentSpec1.value,tempVector);
+         if (tempVector.size() == 1) {
+           Integer returnVal = (Integer)(tempVector.elementAt(0));
+           return returnVal.intValue();
+         }
+       }
+
+       int type = tempContentSpec1.type;
+       int value = tempContentSpec1.value;
+       int otherValue = tempContentSpec1.otherValue;
+
+       gatherChildren(type,value, tempVector);
+       gatherChildren(type,otherValue, tempVector);
+
+       
+       return csIndex;
+    }
+
+
+    private void gatherChildren(int parentType, int csIndex, Vector tempVector) {
+       
+       fSchemaGrammar.getContentSpec(csIndex, tempContentSpec1);
+       int min = fSchemaGrammar.getContentSpecMinOccurs(csIndex);
+       int max = fSchemaGrammar.getContentSpecMaxOccurs(csIndex);
+       int left = tempContentSpec1.value;
+       int right = tempContentSpec1.otherValue;
+       int type = tempContentSpec1.type;
+
+       if (type == XMLContentSpec.CONTENTSPECNODE_LEAF ||
+           (type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY ||
+           (type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL  ||
+           (type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER ) {
+          tempVector.addElement(new Integer(csIndex));
+       }
+       else if (! (min==1 && max==1)) {
+          tempVector.addElement(new Integer(csIndex)); 
+       }
+       else if (right == -2) {
+          gatherChildren(type,left,tempVector);
+       }
+       else if (parentType == type) {
+          gatherChildren(type,left,tempVector);
+          gatherChildren(type,right,tempVector);
+       }
+       else {
+          tempVector.addElement(new Integer(csIndex));
+       }
+          
+    }
+       
+
+    private void checkNameAndTypeOK(int csIndex1, int derivedScope, int csIndex2, int baseScope, ComplexTypeInfo bInfo) throws Exception {
+
+      fSchemaGrammar.getContentSpec(csIndex1, tempContentSpec1);
+      fSchemaGrammar.getContentSpec(csIndex2, tempContentSpec2);
+    
+      int localpart1 = tempContentSpec1.value;
+      int uri1 = tempContentSpec1.otherValue;
+      int localpart2 = tempContentSpec2.value;
+      int uri2 = tempContentSpec2.otherValue;
+
+      int min1 = fSchemaGrammar.getContentSpecMinOccurs(csIndex1);
+      int max1 = fSchemaGrammar.getContentSpecMaxOccurs(csIndex1);
+      int min2 = fSchemaGrammar.getContentSpecMinOccurs(csIndex2);
+      int max2 = fSchemaGrammar.getContentSpecMaxOccurs(csIndex2);
+
+      //start the checking...
+      if (!(localpart1==localpart2 && uri1==uri2)) {
+        reportGenericSchemaError("rcase-nameAndTypeOK.1:  Element name/uri in restriction does not match that of corresponding base element");
+        return;
+      }
+ 
+      if (!checkOccurrenceRange(min1,max1,min2,max2)) {
+        reportGenericSchemaError("rcase-nameAndTypeOK.3:  Element occurrence range not a restriction of base element's range: element is " +  fStringPool.toString(localpart1));
+        return;
+      }
+
+      SchemaGrammar aGrammar = fSchemaGrammar;
+
+      // get the element decl indices for the remainder...
+      String schemaURI = fStringPool.toString(uri1);
+      if ( !schemaURI.equals(fTargetNSURIString)
+            && schemaURI.length() != 0 ) 
+         aGrammar= (SchemaGrammar) fGrammarResolver.getGrammar(schemaURI);
+
+      int eltndx1 =  findElement(derivedScope, localpart1, aGrammar, null);
+      if (eltndx1 < 0) 
+         return;
+         
+      int eltndx2 = findElement(baseScope, localpart2, aGrammar, bInfo);
+      if (eltndx2 < 0) 
+         return;
+       
+      int miscFlags1 = ((SchemaGrammar) aGrammar).getElementDeclMiscFlags(eltndx1);
+      int miscFlags2 = ((SchemaGrammar) aGrammar).getElementDeclMiscFlags(eltndx2);
+      boolean element1IsNillable = (miscFlags1 & SchemaSymbols.NILLABLE) !=0;
+      boolean element2IsNillable = (miscFlags2 & SchemaSymbols.NILLABLE) !=0;
+      boolean element2IsFixed = (miscFlags2 & SchemaSymbols.FIXED) !=0;
+      boolean element1IsFixed = (miscFlags1 & SchemaSymbols.FIXED) !=0;
+      String element1Value = aGrammar.getElementDefaultValue(eltndx1);
+      String element2Value = aGrammar.getElementDefaultValue(eltndx2);
+      
+      if (! (element2IsNillable || !element1IsNillable)) {
+        reportGenericSchemaError("rcase-nameAndTypeOK.2:  Element " +fStringPool.toString(localpart1) + "is nillable in the restriction but not the base");
+        return;
+      }
+
+      if (! (element2Value == null || !element2IsFixed ||  
+             (element1IsFixed && element1Value.equals(element2Value)))) {
+        reportGenericSchemaError("rcase-nameAndTypeOK.4:  Element " +fStringPool.toString(localpart1) + "is either not fixed, or is not fixed with the same value as in the base");
+        return;
+      }
+         
+      // check identity constraints - TO BE DONE
+
+      // check disallowed substitutions - TO BE DONE
+
+      // check that the derived element's type is derived from the base's. - TO BE DONE
+  
+    }
+
+    private boolean checkOccurrenceRange(int min1, int max1, int min2, int max2) {
+
+      if (min1>=min2 && 
+          (max2==SchemaSymbols.OCCURRENCE_UNBOUNDED || (max1!=SchemaSymbols.OCCURRENCE_UNBOUNDED && max1<=max2))) 
+        return true;
+      else
+        return false;
+    }
+
+    private int findElement(int scope, int nameIndex, SchemaGrammar gr, ComplexTypeInfo bInfo) {
+
+      // check for element at given scope first
+      int elementDeclIndex = gr.getElementDeclIndex(nameIndex,scope);
+
+      // if not found, check at global scope
+      if (elementDeclIndex == -1) {
+         elementDeclIndex = gr.getElementDeclIndex(nameIndex, -1);
+        
+         // if still not found, and base is specified, look it up there
+         if (elementDeclIndex == -1 && bInfo != null) {
+            ComplexTypeInfo baseInfo = bInfo;
+            while (baseInfo != null) {
+                elementDeclIndex = gr.getElementDeclIndex(nameIndex,baseInfo.scopeDefined);
+                if (elementDeclIndex > -1) 
+                   break;
+            }
+         }
+
+      }
+      return elementDeclIndex;
+    }
+
+    private void checkNSCompat(int csIndex1, int derivedScope, int csIndex2) throws Exception { 
+
+      int min1 = fSchemaGrammar.getContentSpecMinOccurs(csIndex1);
+      int max1 = fSchemaGrammar.getContentSpecMaxOccurs(csIndex1);
+      int min2 = fSchemaGrammar.getContentSpecMinOccurs(csIndex2);
+      int max2 = fSchemaGrammar.getContentSpecMaxOccurs(csIndex2);
+
+      // check Occurrence ranges
+      if (!checkOccurrenceRange(min1,max1,min2,max2)) {
+        reportGenericSchemaError("rcase-NSCompat.2:  Element occurrence range not a restriction of base any element's range");
+        return;
+      }
+
+
+    }
+
+    private void checkNSSubset(int csIndex1, int csIndex2) { 
+
+    }
+
+    private void checkRecurseAsIfGroup(int csIndex1, int derivedScope, int csindex2, Vector tempVector2, int baseScope, ComplexTypeInfo bInfo) {
+    }
+
+    private void checkNSRecurseCheckCardinality(int csIndex1, Vector tempVector1, int derivedScope, int csIndex2) { 
+    }
+
+    private void checkRecurse(int csIndex1, Vector tempVector1, int derivedScope, int csIndex2, Vector tempVector2, int baseScope, ComplexTypeInfo bInfo) { 
+    }
+
+    private void checkRecurseLax(int csIndex1, Vector tempVector1, int derivedScope, int csIndex2, Vector tempVector2, int baseScope, ComplexTypeInfo bInfo) { 
+    }
+
+    private void checkRecurseUnordered(int csIndex1, Vector tempVector1, int derivedScope, int csIndex2, Vector tempVector2, int baseScope, ComplexTypeInfo bInfo) { 
+    }
+
+    private void checkMapAndSum(int csIndex1, Vector tempVector1, int derivedScope, int csIndex2, Vector tempVector2, int baseScope, ComplexTypeInfo bInfo) {
     }
 
     private int importContentSpec(SchemaGrammar aGrammar, int contentSpecHead ) throws Exception {
