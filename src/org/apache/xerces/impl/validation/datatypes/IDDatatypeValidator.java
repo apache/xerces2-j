@@ -70,14 +70,65 @@ import org.apache.xerces.util.XMLChar;
 import java.util.NoSuchElementException;
 
 
-//import org.apache.xerces.utils.XMLMessages;
-
 /**
- * DataTypeValidator defines the interface that data type validators must obey.
- * These validators can be supplied by the application writer and may be useful as
- * standalone code as well as plugins to the validator architecture.
+ * <P>IDDatatypeValidator - ID represents the ID attribute
+ * type from XML 1.0 Recommendation. The value space
+ * od ID is the set of all strings that match the
+ * NCName production and have been used in an XML
+ * document. The lexical space of ID is the set of all
+ * strings that match the NCName production.</P>
+ * <P>The value space of ID is scoped to a specific
+ * instance document.</P>
+ * <P>The following constraint applies:
+ * An ID must not appear more than once in an XML
+ * document as a value of this type; i.e., ID values
+ * must uniquely identify the elements which bear
+ * them.</P>
+ * <P>An ID validator is a statefull validator, it needs
+ * read/write access to the associated instant document
+ * table of IDs.</P>
+ * <P>
+ * The following snippet shows typical use of the
+ * the IDDatatype:</P>
+ * <CODE>
+ * <PRE>
+ *  DatatypeValidator  idData = tstRegistry.getDatatypeValidator( "ID" );
+ * 
+ *       if (  idData != null ) {
+ *          ((IDDatatypeValidator) idData).initialize();
+ *          try {
+ *             idData.validate( "a1", null );
+ *             idData.validate( "a2", null );
+ *          } catch ( Exception ex ) {
+ *             ex.printStackTrace();
+ *          }
+ *          Hashtable tst = (Hashtable)((IDDatatypeValidator) idData).getTableIds();
+ *          if (tst != null) {
+ *             System.out.println("Table of ID = " + tst.toString());
+ *          }
+ * 
+ *       }
+ * 
+ *       DatatypeValidator idRefData = tstRegistry.getDatatypeValidator("IDREF" );
+ *       if( idRefData != null ){
+ *          IDREFDatatypeValidator refData = (IDREFDatatypeValidator) idRefData;
+ *          refData.initialize( ((IDDatatypeValidator) idData).getTableIds());
+ *          try {
+ *             refData.validate( "a1", null );
+ *             refData.validate( "a2", null );
+ *             //refData.validate( "a3", null );//Should throw exception at validate()
+ *             refData.validate();
+ *          } catch( Exception ex ){
+ *             ex.printStackTrace();
+ *          }
+ *       }
+ *       </PRE>
+ * </CODE>
+ * 
  * @author Jeffrey Rodriguez
  * @version $Id$
+ * @see org.apache.xerces.impl.validation.datatypes.AbstractDatatypeValidator
+ * @see org.apache.xerces.impl.validation.DatatypeValidator
  */
 public class IDDatatypeValidator extends AbstractDatatypeValidator {
    private DatatypeValidator       fBaseValidator;
@@ -126,6 +177,12 @@ public class IDDatatypeValidator extends AbstractDatatypeValidator {
       }
    }
 
+   /**
+    * Initializes internal table of IDs used
+    * by ID datatype validator to keep track
+    * of ID's.
+    * This method is unique to IDDatatypeValidator.
+    */
    public void initialize(){
       if ( this.fTableOfId != null) {
          this.fTableOfId.clear();
@@ -157,6 +214,14 @@ public class IDDatatypeValidator extends AbstractDatatypeValidator {
       throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
    }
 
+   /**
+    * This method is unique to IDDatatypeValidator.
+    * It returns a reference to the internal ID table.
+    * This method should be used by the IDREF datatype
+    * validator which needs read access to ID table.
+    * 
+    * @return 
+    */
    public Object getTableIds(){
       return fTableOfId;
    }
@@ -173,7 +238,14 @@ public class IDDatatypeValidator extends AbstractDatatypeValidator {
       fBaseValidator = base;
    }
 
-   /** addId. */
+   /**
+    * Adds validated ID to internal table of ID's.
+    * We check ID uniqueness constraint.
+    * 
+    * @param content
+    * @return    If ID validated is not unique we return a false and
+    *         then validate method throws a validation exception.
+    */
    private boolean addId(String content) {
       //System.out.println("Added ID = " + content );
       if ( fTableOfId == null ) {
