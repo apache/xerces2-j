@@ -155,7 +155,7 @@ abstract class XSDAbstractTraverser {
             // "appinfo" and "documentation"
             if (!((name.equals(SchemaSymbols.ELT_APPINFO)) ||
                   (name.equals(SchemaSymbols.ELT_DOCUMENTATION)))) {
-                reportGenericSchemaError("an <annotation> can only contain <appinfo> and <documentation> elements");
+                reportSchemaError("src-annotation", null);
             }
 
             // General Attribute Checking
@@ -218,11 +218,10 @@ abstract class XSDAbstractTraverser {
                     try{
                         QName temp = (QName)fQNameDV.validate(enumVal, schemaDoc.fValidationContext, null);
                         if (fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.NOTATION_TYPE, temp) == null) {
-                            reportGenericSchemaError("Notation '" + temp.localpart +
-                                                     "' not found in the grammar "+ temp.uri);
+                            reportSchemaError("declaration-not-found", new Object [] {"notation", temp.localpart});
                         }
                     }catch(InvalidDatatypeValueException ex){
-                        reportGenericSchemaError(ex.getMessage());
+                        reportSchemaError("cvc-simple-type", new Object[]{ ex.getMessage()});
                     }
                     // restore to the normal namespace context
                     schemaDoc.fValidationContext.setNamespaceSupport(schemaDoc.fNamespaceSupport);
@@ -240,7 +239,8 @@ abstract class XSDAbstractTraverser {
                          child = DOMUtil.getNextSiblingElement(child);
                      }
                      if (child !=null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                          reportGenericSchemaError("Enumeration facet has more than one annotation.");
+                         Object[] args = new Object [] {"Enumeration facet has more than one annotation."};
+                         reportSchemaError("cvc-simple-type", args);
                      }
                }
             }
@@ -263,7 +263,8 @@ abstract class XSDAbstractTraverser {
                              child = DOMUtil.getNextSiblingElement(child);
                          }
                          if (child !=null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                              reportGenericSchemaError("Pattern facet has more than one annotation.");
+                              Object[] args = new Object [] {"Pattern facet has more than one annotation."};
+                              reportSchemaError("cvc-simple-type", args);
                          }
                    }
                 }
@@ -307,10 +308,7 @@ abstract class XSDAbstractTraverser {
 
                 // check for duplicate facets
                 if ((facetsPresent & currentFacet) != 0) {
-                    fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                               "DatatypeError",
-                                               new Object[]{"The facet '" + facet + "' is defined more than once."},
-                                               XMLErrorReporter.SEVERITY_ERROR);
+                    reportSchemaError("src-single-facet-value", new Object[]{"The facet '" + facet + "' is defined more than once."});
                 } else if (attrs[XSAttributeChecker.ATTIDX_VALUE] != null) {
                     facetsPresent |= currentFacet;
                     // check for fixed facet
@@ -359,7 +357,7 @@ abstract class XSDAbstractTraverser {
                         child = DOMUtil.getNextSiblingElement(child);
                     }
                     if (child !=null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                         reportGenericSchemaError(facet+" facet has more than one annotation.");
+                        reportSchemaError("cvc-simple-type", new Object[]{facet+" facet has more than one annotation."});                        
                     }
                 }
             }
@@ -430,15 +428,12 @@ abstract class XSDAbstractTraverser {
                                             tempAttrUse.fAttrDecl.fName)==null) {
                     String idName = attrGrp.addAttributeUse(tempAttrUse);
                     if (idName != null) {
-                        reportGenericSchemaError("Two distinct members of the {attribute uses} '" +
-                                                 idName + "' and '" + tempAttrUse.fAttrDecl.fName +
-                                                 "' have {attribute declaration}s both of whose {type definition}s are or are derived from ID");
+                        reportSchemaError("cvc-complex-type.5.3",new Object[]{tempAttrUse.fAttrDecl.fName, idName});
                     }
                 }
                 else {
                     // REVISIT: what if one of the attribute uses is "prohibited"
-                    reportGenericSchemaError("Duplicate attribute " +
-                                             tempAttrUse.fAttrDecl.fName + " found ");
+                    reportSchemaError("ct-props-correct.4", new Object[]{"Duplicate attribute " + tempAttrUse.fAttrDecl.fName + " found "});
                 }
             }
             else if (childName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
@@ -454,15 +449,12 @@ abstract class XSDAbstractTraverser {
                     if (existingAttrUse == null) {
                         String idName = attrGrp.addAttributeUse(attrUseS[i]);
                         if (idName != null) {
-                            reportGenericSchemaError("Two distinct members of the {attribute uses} '" +
-                                                     idName + "' and '" + attrUseS[i].fAttrDecl.fName +
-                                                     "' have {attribute declaration}s both of whose {type definition}s are or are derived from ID");
+                            reportSchemaError("cvc-complex-type.5.3", new Object[]{attrUseS[i].fAttrDecl.fName, idName});
                         }
                     }
                     else {
                         // REVISIT: what if one of the attribute uses is "prohibited"
-                        reportGenericSchemaError("Duplicate attribute " +
-                                                 existingAttrUse.fAttrDecl.fName + " found ");
+                        reportSchemaError("ct-props-correct.4", new Object[]{"Duplicate attribute " + existingAttrUse.fAttrDecl.fName + " found "});
                     }
                 }
 
@@ -475,7 +467,7 @@ abstract class XSDAbstractTraverser {
                         attrGrp.fAttributeWC = attrGrp.fAttributeWC.
                                                performIntersectionWith(tempAttrGrp.fAttributeWC, attrGrp.fAttributeWC.fProcessContents);
                         if (attrGrp.fAttributeWC == null) {
-                            reportGenericSchemaError("intersection of wildcards is not expressible");
+                            reportSchemaError("src-wildcard", new Object[]{"intersection of wildcards is not expressible"});                            
                         }
                     }
                 }
@@ -497,7 +489,7 @@ abstract class XSDAbstractTraverser {
                     attrGrp.fAttributeWC = tempAttrWC.
                                            performIntersectionWith(attrGrp.fAttributeWC, tempAttrWC.fProcessContents);
                     if (attrGrp.fAttributeWC == null) {
-                        reportGenericSchemaError("intersection of wildcards is not expressible");
+                        reportSchemaError("src-wildcard", new Object[]{"intersection of wildcards is not expressible"});                            
                     }
                 }
                 child = DOMUtil.getNextSiblingElement(child);
