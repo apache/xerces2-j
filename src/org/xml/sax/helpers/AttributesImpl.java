@@ -437,7 +437,7 @@ public class AttributesImpl implements Attributes
 	    data[index*5+4] = null;
 	    if (index < length - 1) {
 		System.arraycopy(data, (index+1)*5, data, index*5,
-				 (length-index)*5);
+				 (length-index-1)*5);
 	    }
 	    length--;
 	} else {
