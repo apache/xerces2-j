@@ -67,7 +67,6 @@ import org.apache.xerces.impl.Constants;
 
 import org.apache.xerces.util.EntityResolverWrapper;
 import org.apache.xerces.util.ErrorHandlerWrapper;
-import org.apache.xerces.util.SymbolTable;
 
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
@@ -137,12 +136,6 @@ public abstract class AbstractSAXParser
     protected static final String NORMALIZE_DATA = 
         Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_NORMALIZED_VALUE;
 
-    // NOTE: The symbol table properties is for internal use. -Ac
-
-    /** Property identifier: symbol table. */
-    protected static final String SYMBOL_TABLE =
-        Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
-
     //
     // Data
     //
@@ -176,12 +169,6 @@ public abstract class AbstractSAXParser
     protected LexicalHandler fLexicalHandler;
 
     protected QName fQName = new QName();
-
-    // symbols
-
-    /** Symbol: empty string (""). */
-    private String fEmptySymbol;
-    private String fXmlnsSymbol;
 
     // state
 
@@ -420,8 +407,8 @@ public abstract class AbstractSAXParser
                         }
                     }
 
-                    if (fQName.prefix == fXmlnsSymbol || 
-                        fQName.rawname == fXmlnsSymbol) {
+                    if ((fQName.prefix != null && fQName.prefix.equals("xmlns")) || 
+                        fQName.rawname.equals("xmlns")) {
                         if (!fNamespacePrefixes) {
                             // remove namespace declaration attributes
                             attributes.removeAttributeAt(i);
@@ -429,8 +416,8 @@ public abstract class AbstractSAXParser
                         if (fNamespaces && fNamespacePrefixes) {
                             // localpart should be empty string as per SAX documentation:
                             // http://www.saxproject.org/?selected=namespaces
-                            fQName.prefix = fEmptySymbol;
-                            fQName.localpart = fEmptySymbol;
+                            fQName.prefix = "";
+                            fQName.localpart = "";
                             attributes.setName(i, fQName);
                         }
                     } 
@@ -439,8 +426,8 @@ public abstract class AbstractSAXParser
                   
                 }
                 
-                String uri = element.uri != null ? element.uri : fEmptySymbol;
-                String localpart = fNamespaces ? element.localpart : fEmptySymbol;
+                String uri = element.uri != null ? element.uri : "";
+                String localpart = fNamespaces ? element.localpart : "";
                 fAttributesProxy.setAttributes(attributes);
                 fContentHandler.startElement(uri, localpart, element.rawname,
                                              fAttributesProxy);
@@ -563,8 +550,8 @@ public abstract class AbstractSAXParser
 
             // SAX2
             if (fContentHandler != null) {
-                String uri = element.uri != null ? element.uri : fEmptySymbol;
-                String localpart = fNamespaces ? element.localpart : fEmptySymbol;
+                String uri = element.uri != null ? element.uri : "";
+                String localpart = fNamespaces ? element.localpart : "";
                 fContentHandler.endElement(uri, localpart,
                                            element.rawname);
             }
@@ -1891,13 +1878,6 @@ public abstract class AbstractSAXParser
         fNamespacePrefixes = fConfiguration.getFeature(NAMESPACE_PREFIXES);
         fNormalizeData = fConfiguration.getFeature(NORMALIZE_DATA);
         
-        // save needed symbols
-        SymbolTable symbolTable = (SymbolTable)fConfiguration.getProperty(SYMBOL_TABLE);
-        if (symbolTable != null) {
-            fEmptySymbol = symbolTable.addSymbol("");
-            fXmlnsSymbol = symbolTable.addSymbol("xmlns");
-        }
-
     } // reset()
 
     //
