@@ -40,6 +40,10 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
     <td>License for &ParserName;</td>
    </tr>
    <tr>
+    <td>NOTICE</td>
+    <td>NOTICE file for &ParserName;</td>
+   </tr>
+   <tr>
     <td>LICENSE.resolver.txt</td>
     <td>License for the XML Commons Resolver</td>
    </tr>
@@ -109,6 +113,10 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
    <tr>
     <td>LICENSE</td>
     <td>License for &ParserName;</td>
+   </tr>
+   <tr>
+    <td>NOTICE</td>
+    <td>NOTICE file for &ParserName;</td>
    </tr>
    <tr>
     <td>LICENSE.resolver.txt</td>
