@@ -624,7 +624,7 @@ public class XSDHandler {
         
         if (referType != XSDDescription.CONTEXT_INCLUDE &&
             referType != XSDDescription.CONTEXT_REDEFINE) {
-            sg = new SchemaGrammar(fSymbolTable, currSchemaInfo.fTargetNamespace, desc.makeClone());
+            sg = new SchemaGrammar(currSchemaInfo.fTargetNamespace, desc.makeClone());
             fGrammarBucket.putGrammar(sg);
         }
             
