@@ -23,8 +23,9 @@
 
 <ul>
 <li><jump href='#schema-limitations'>Limitations and known bugs</jump></li>
-<li><link idref='faq-xs'>How do I?</link> -- the most frequently asked questions
-    about DOM that include some sample code.</li>
+<li><link idref='faq-xs'>How do I?</link> -- 
+	the most frequently asked questions
+	about XML Schema that include some sample code.</li>
 </ul>
 </s2>
 <anchor name='schema-limitations'/>

@@ -11,7 +11,6 @@
   <p>Basic DOM samples:</p>
   <ul>
    <li><link anchor='Counter'>dom.Counter</link></li>
-   <li><link anchor='DOMAddLines'>dom.DOMAddLines</link></li>
    <!--
      - Should the following samples be removed? rewritten? revamped?
    <li><link anchor='DOMGenerate'>dom.DOMGenerate</link></li>
@@ -20,6 +19,7 @@
    <li><link anchor='Writer'>dom.Writer</link></li>
    <li><link anchor='ASBuilder'>dom.ASBuilder</link></li>
    <li><link anchor='DOM3'>dom.DOM3</link></li>
+   <li><link anchor='DOMAddLines'>dom.DOMAddLines</link></li>
   </ul>
   <!--
     - These samples should be redone.
@@ -94,28 +94,6 @@
      </td>
     </tr>
     <tr><td>-h</td><td>Display help screen.</td></tr>
-   </table>
-  </s3>
- </s2>
- <anchor name='DOMAddLines'/>
- <s2 title='Sample dom.DOMAddLines'>
-  <p>
-    A sample of Adding lines to the DOM Node. This sample program illustrates:
-  </p>
-  <ul>
-    <li>How to override methods from  DocumentHandler ( XMLDocumentHandler)</li>
-    <li>How to turn off ignorable white spaces by overriding ignorableWhiteSpace</li>
-    <li>How to use the SAX Locator to return row position (line number of DOM element)</li>
-    <li>How to attach user defined Objects to Nodes using method setUserData</li>
-  </ul>
-  <s3 title='usage'>
-   <source>java dom.DOMAddLines (options) uri ...</source>
-  </s3>
-  <s3 title='options'>
-   <table>
-    <tr><th>Option</th><th>Description</th></tr>
-    <tr><td>-h</td><td>Display help screen.</td></tr>
-    <tr><td>-i</td><td>Don't print ignorable white spaces.</td></tr>
    </table>
   </s3>
  </s2>
@@ -214,22 +192,51 @@
  <s2 title='Sample dom.DOM3'>
   <p>
    This sample program illustrates how to use the DOM Level 3 API. </p>
-   <note>This sample is <strong>not</strong> included in the default Xerces distribution. 
-   The sample uses the DOM Level 3 interfaces and will
- <strong>not</strong> complile with the default Xerces build.
+
+   <note>This sample is <strong>not</strong> included in the default Xerces 
+      distribution. 
+      The sample uses the DOM Level 3 interfaces 
+      (<link idref='faq-dom'>Accessing the DOM Level 3 API
+      </link>) and will <strong>not</strong> complile with the default 
+      Xerces build. 
    </note>
-  <p>To access this sample you need to check out the code from CVS and build Xerces with 
-   <code>jars-dom3</code> build target (for more information, please refer to 
-  <link idref='faq-write'>How do I access the DOM Level 3 functionality?</link>.</p>
-   
   
   <s3 title='usage'>
    <source>java dom.DOM3 uri</source>
   </s3>
  </s2>
 
+ <anchor name='DOMAddLines'/>
+ <s2 title='Sample dom.DOMAddLines'>
+  <p>
+    A sample of Adding lines to the DOM Node. This sample program illustrates:
+  </p>
+  <ul>
+    <li>How to override methods from  DocumentHandler ( XMLDocumentHandler)</li>
+    <li>How to turn off ignorable white spaces by overriding ignorableWhiteSpace</li>
+    <li>How to use the SAX Locator to return row position (line number of DOM element)</li>
+    <li>How to attach user defined Objects to Nodes using the DOM Level 3 setUserData method.</li>
+  </ul>
+   <note>This sample is <strong>not</strong> included in the default Xerces 
+      distribution. 
+      The sample uses the DOM Level 3 interfaces 
+      (<link idref='faq-dom'>Accessing the DOM Level 3 API
+      </link>) and will <strong>not</strong> complile with the default 
+      Xerces build. 
+   </note>
+ <s3 title='usage'>
+   <source>java dom.DOMAddLines (options) uri ...</source>
+  </s3>
+  <s3 title='options'>
+   <table>
+    <tr><th>Option</th><th>Description</th></tr>
+    <tr><td>-h</td><td>Display help screen.</td></tr>
+    <tr><td>-i</td><td>Don't print ignorable white spaces.</td></tr>
+   </table>
+  </s3>
+ </s2>
  <!--
-   - These samples should be redone.
+    These samples should be redone.
  <anchor name='IteratorView'/>
  <s2 title='Sample dom.traversal.IteratorView'>
   <p>TODO</p>
