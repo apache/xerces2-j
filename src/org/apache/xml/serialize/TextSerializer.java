@@ -66,7 +66,9 @@ import java.io.Writer;
 
 import org.w3c.dom.*;
 import org.xml.sax.DocumentHandler;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.AttributeList;
+import org.xml.sax.Attributes;
 
 
 /**
@@ -162,6 +164,24 @@ public final class TextSerializer
     }
 
 
+    //-----------------------------------------//
+    // SAX content handler serializing methods //
+    //-----------------------------------------//
+
+
+    public void startElement( String namespaceURI, String localName,
+			      String rawName, Attributes attrs )
+    {
+	startElement( rawName == null ? localName : rawName, null );
+    }
+
+
+    public void endElement( String namespaceURI, String localName,
+			    String rawName )
+    {
+	endElement( rawName == null ? localName : rawName );
+    }
+
 
     //------------------------------------------//
     // SAX document handler serializing methods //
@@ -202,7 +222,7 @@ public final class TextSerializer
 	// Now it's time to enter a new element state
 	// with the tag name and space preserving.
 	// We still do not change the curent element state.
-	state = enterElementState( tagName, preserveSpace );
+	state = enterElementState( null, null, tagName, preserveSpace );
     }
 
 
@@ -325,7 +345,7 @@ public final class TextSerializer
 	if ( elem.hasChildNodes() ) {
 	    // Enter an element state, and serialize the children
 	    // one by one. Finally, end the element.
-	    state = enterElementState( tagName, preserveSpace );
+	    state = enterElementState( null, null, tagName, preserveSpace );
 	    child = elem.getFirstChild();
 	    while ( child != null ) {
 		serializeNode( child );

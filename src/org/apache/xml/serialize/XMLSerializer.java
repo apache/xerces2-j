@@ -63,10 +63,13 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.util.Enumeration;
 
 import org.w3c.dom.*;
 import org.xml.sax.DocumentHandler;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.AttributeList;
+import org.xml.sax.Attributes;
 
 
 /**
@@ -168,10 +171,169 @@ public final class XMLSerializer
     }
 
 
+    //-----------------------------------------//
+    // SAX content handler serializing methods //
+    //-----------------------------------------//
+
+
+    public void startElement( String namespaceURI, String localName,
+			      String rawName, Attributes attrs )
+    {
+	int          i;
+	boolean      preserveSpace;
+	ElementState state;
+	String       name;
+	String       value;
+	boolean      addNSAttr = false;
+
+	if ( _writer == null )
+	    throw new IllegalStateException( "SER002 No writer supplied for serializer" );
+
+	state = getElementState();
+	if ( state == null ) {
+	    // If this is the root element handle it differently.
+	    // If the first root element in the document, serialize
+	    // the document's DOCTYPE. Space preserving defaults
+	    // to that of the output format.
+	    if ( ! _started )
+		startDocument( localName == null ? rawName : localName );
+	    preserveSpace = _format.getPreserveSpace();
+	} else {
+	    // For any other element, if first in parent, then
+	    // close parent's opening tag and use the parnet's
+	    // space preserving.
+	    if ( state.empty )
+		printText( ">" );
+	    preserveSpace = state.preserveSpace;
+	    // Indent this element on a new line if the first
+	    // content of the parent element or immediately
+	    // following an element.
+	    if ( _format.getIndenting() && ! state.preserveSpace &&
+		 ( state.empty || state.afterElement ) )
+		breakLine();
+	}
+	// Do not change the current element state yet.
+	// This only happens in endElement().
+
+	if ( rawName == null ) {
+	    rawName = localName;
+	    if ( namespaceURI != null ) {
+		String prefix;
+		prefix = getPrefix( namespaceURI );
+		if ( prefix.length() > 0 )
+		    rawName = prefix + ":" + localName;
+	    }
+	    addNSAttr = true;
+	}
+
+	printText( '<' + rawName );
+	indent();
+
+	// For each attribute print it's name and value as one part,
+	// separated with a space so the element can be broken on
+	// multiple lines.
+	if ( attrs != null ) {
+	    for ( i = 0 ; i < attrs.getLength() ; ++i ) {
+		printSpace();
+
+		name = attrs.getRawName( i );
+		if ( name == null ) {
+		    String prefix;
+		    String attrURI;
+
+		    name = attrs.getLocalName( i );
+		    attrURI = attrs.getURI( i );
+		    if ( attrURI != null && ( namespaceURI == null ||
+					      ! attrURI.equals( namespaceURI ) ) ) {
+			prefix = getPrefix( attrURI );
+			if ( prefix != null && prefix.length() > 0 )
+			    name = prefix + ":" + name;
+		    }
+		}
+
+		value = attrs.getValue( i );
+		if ( value == null )
+		    value = "";
+		printText( name + "=\"" + escape( value ) + '"' );
+		
+		// If the attribute xml:space exists, determine whether
+		// to preserve spaces in this and child nodes based on
+		// its value.
+		if ( name.equals( "xml:space" ) ) {
+		    if ( value.equals( "preserve" ) )
+			preserveSpace = true;
+		    else
+			preserveSpace = _format.getPreserveSpace();
+		}
+	    }
+	}
+
+	if ( addNSAttr ) {
+	    Enumeration enum;
+	    
+	    enum = _prefixes.keys();
+	    while ( enum.hasMoreElements() ) {
+		printSpace();
+		value = (String) enum.nextElement();
+		name = (String) _prefixes.get( value );
+		if ( name.length() == 0 )
+		    printText( "xmlns=\"" + value + '"' );
+		else
+		    printText( "xmlns:" + name + "=\"" + value + '"' );
+	    }
+	}
+
+	// Now it's time to enter a new element state
+	// with the tag name and space preserving.
+	// We still do not change the curent element state.
+	state = enterElementState( namespaceURI, localName, rawName, preserveSpace );
+	state.doCData = _format.isCDataElement( namespaceURI == null ? rawName :
+						namespaceURI + "^" + localName );
+	state.unescaped = _format.isNonEscapingElement( namespaceURI == null ? rawName :
+							namespaceURI + "^" + localName );
+    }
+
+
+    public void endElement( String namespaceURI, String localName,
+			    String rawName )
+    {
+	ElementState state;
+
+	// Works much like content() with additions for closing
+	// an element. Note the different checks for the closed
+	// element's state and the parent element's state.
+	unindent();
+	state = getElementState();
+	if ( state.empty ) {
+	    printText( "/>" );
+	} else {
+	    // Must leave CData section first
+	    if ( state.inCData )
+		printText( "]]>" );
+	    // This element is not empty and that last content was
+	    // another element, so print a line break before that
+	    // last element and this element's closing tag.
+	    if ( _format.getIndenting() && ! state.preserveSpace && state.afterElement )
+		breakLine();
+	    printText( "</" + state.rawName + ">" );
+	}
+	// Leave the element state and update that of the parent
+	// (if we're not root) to not empty and after element.
+	state = leaveElementState();
+	if ( state != null ) {
+	    state.afterElement = true;
+	    state.empty = false;
+	} else {
+	    // [keith] If we're done printing the document but don't
+	    // get to call endDocument(), the buffer should be flushed.
+	    flush();
+	}
+    }
+
 
     //------------------------------------------//
     // SAX document handler serializing methods //
-    //------------------------------000---------//
+    //------------------------------------------//
 
 
     public void startDocument()
@@ -248,7 +410,7 @@ public final class XMLSerializer
 	// Now it's time to enter a new element state
 	// with the tag name and space preserving.
 	// We still do not change the curent element state.
-	state = enterElementState( tagName, preserveSpace );
+	state = enterElementState( null, null, tagName, preserveSpace );
 	state.doCData = _format.isCDataElement( tagName );
 	state.unescaped = _format.isNonEscapingElement( tagName );
     }
@@ -256,37 +418,7 @@ public final class XMLSerializer
 
     public void endElement( String tagName )
     {
-	ElementState state;
-
-	// Works much like content() with additions for closing
-	// an element. Note the different checks for the closed
-	// element's state and the parent element's state.
-	unindent();
-	state = getElementState();
-	if ( state.empty ) {
-	    printText( "/>" );
-	} else {
-	    // Must leave CData section first
-	    if ( state.inCData )
-		printText( "]]>" );
-	    // This element is not empty and that last content was
-	    // another element, so print a line break before that
-	    // last element and this element's closing tag.
-	    if ( _format.getIndenting() && ! state.preserveSpace && state.afterElement )
-		breakLine();
-	    printText( "</" + tagName + ">" );
-	}
-	// Leave the element state and update that of the parent
-	// (if we're not root) to not empty and after element.
-	state = leaveElementState();
-	if ( state != null ) {
-	    state.afterElement = true;
-	    state.empty = false;
-	} else {
-	    // [keith] If we're done printing the document but don't
-	    // get to call endDocument(), the buffer should be flushed.
-	    flush();
-	}
+	endElement( null, null, tagName );
     }
 
 
@@ -475,7 +607,7 @@ public final class XMLSerializer
 	if ( elem.hasChildNodes() ) {
 	    // Enter an element state, and serialize the children
 	    // one by one. Finally, end the element.
-	    state = enterElementState( tagName, preserveSpace );
+	    state = enterElementState( null, null, tagName, preserveSpace );
 	    state.doCData = _format.isCDataElement( tagName );
 	    state.unescaped = _format.isNonEscapingElement( tagName );
 	    child = elem.getFirstChild();

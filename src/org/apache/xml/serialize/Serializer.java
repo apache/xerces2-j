@@ -152,9 +152,7 @@ public interface Serializer
      * If the serializer does not support the {@link ContentHandler}
      * interface, it should return null.
      */
-    /*
     public ContentHandler asContentHandler();
-    */
 
 
     /**

@@ -59,6 +59,9 @@
 package org.apache.xml.serialize;
 
 
+import java.util.Hashtable;
+
+
 /**
  * Holds the state of the currently serialized element.
  *
@@ -72,9 +75,21 @@ class ElementState
 
 
     /**
-     * The element's tag name.
+     * The element's raw tag name (local or prefix:local).
      */
-    String tagName;
+    String rawName;
+
+
+    /**
+     * The element's local tag name.
+     */
+    String localName;
+
+
+    /**
+     * The element's namespace URI.
+     */
+    String namespaceURI;
 
 
     /**
@@ -114,6 +129,13 @@ class ElementState
      * True while inside CData and printing text as CData.
      */
     boolean inCData;
+
+
+    /**
+     * Association between namespace URIs (keys) and prefixes (values).
+     */
+    Hashtable prefixes;
+
 
 
 }

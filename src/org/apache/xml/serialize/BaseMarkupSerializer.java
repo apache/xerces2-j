@@ -120,7 +120,8 @@ import org.xml.sax.ext.DeclHandler;
  * @see DOMSerializer
  */
 public abstract class BaseMarkupSerializer
-    implements DocumentHandler, LexicalHandler, DTDHandler, DeclHandler,
+    implements ContentHandler, DocumentHandler, LexicalHandler,
+	       DTDHandler, DeclHandler,
 	       DOMSerializer, Serializer
 {
 
@@ -241,6 +242,15 @@ public abstract class BaseMarkupSerializer
     private Writer          _docWriter;
 
 
+    /**
+     * Association between namespace URIs (keys) and prefixes (values).
+     * Accumulated here prior to starting an element and placing this
+     * list in the element state.
+     */
+    protected Hashtable     _prefixes;
+
+
+
     //--------------------------------//
     // Constructor and initialization //
     //--------------------------------//
@@ -269,7 +279,7 @@ public abstract class BaseMarkupSerializer
 
     public ContentHandler asContentHandler()
     {
-	return null;
+	return this;
     }
 
 
@@ -588,33 +598,18 @@ public abstract class BaseMarkupSerializer
     }
     
 
-    public void startPrefixMapping (String prefix, String uri)
+    public void startPrefixMapping( String prefix, String uri )
 	throws SAXException
     {
-	// Not yet supported
+	if ( _prefixes == null )
+	    _prefixes = new Hashtable();
+	_prefixes.put( uri, prefix == null ? "" : prefix );
     }
 
 
-    public void endPrefixMapping (String prefix)
+    public void endPrefixMapping( String prefix )
 	throws SAXException
     {
-	// Not yet supported
-    }
-
-
-    public void startElement (String namespaceURI, String localName,
-			      String rawName, Attributes atts)
-	throws SAXException
-    {
-	// Not yet supported
-    }
-
-
-    public void endElement (String namespaceURI, String localName,
-			    String rawName)
-	throws SAXException
-    {
-	// Not yet supported
     }
 
 
@@ -1428,29 +1423,34 @@ public abstract class BaseMarkupSerializer
      *
      * @return Current element state, or null
      */
-    protected ElementState enterElementState( String tagName, boolean preserveSpace )
+    protected ElementState enterElementState( String namespaceURI, String localName,
+					      String rawName, boolean preserveSpace )
     {
 	ElementState state;
 
 	if ( _elementStateCount == _elementStates.length ) {
 	    ElementState[] newStates;
-	    int            i;
 
 	    // Need to create a larger array of states.
 	    // This does not happen often, unless the document
 	    // is really deep.
 	    newStates = new ElementState[ _elementStates.length + 5 ];
-	    System.arraycopy( _elementStates, 0, newStates, 0, _elementStates.length );
+	    for ( int i = 0 ; i < _elementStates.length ; ++i )
+		newStates[ i ] = _elementStates[ i ];
 	    _elementStates = newStates;
-	    for ( i = _elementStateCount ; i < _elementStates.length ; ++i )
+	    for ( int i = _elementStateCount ; i < _elementStates.length ; ++i )
 		_elementStates[ i ] = new ElementState();
 	}
 	state = _elementStates[ _elementStateCount ];
-	state.tagName = tagName;
+	state.namespaceURI = namespaceURI;
+	state.localName = localName;
+	state.rawName = rawName;
 	state.preserveSpace = preserveSpace;
 	state.empty = true;
 	state.afterElement = false;
 	state.doCData = state.inCData = false;
+	state.prefixes = _prefixes;
+	_prefixes = null;
 	++_elementStateCount;
 	return state;
     }
@@ -1467,12 +1467,38 @@ public abstract class BaseMarkupSerializer
     {
 	if ( _elementStateCount > 1 ) {
 	    -- _elementStateCount;
+	    _prefixes = _elementStates[ _elementStateCount ].prefixes;
 	    return _elementStates[ _elementStateCount - 1 ];
 	} else if ( _elementStateCount == 1 ) {
 	    -- _elementStateCount;
+	    _prefixes = _elementStates[ _elementStateCount ].prefixes;
 	    return null;
 	} else
 	    return null;
+    }
+
+
+    protected String getPrefix( String namespaceURI )
+    {
+	String    prefix;
+	
+	if ( _prefixes != null ) {
+	    prefix = (String) _prefixes.get( namespaceURI );
+	    if ( prefix != null )
+		return prefix;
+	}
+	if ( _elementStateCount == 0 )
+	    return null;
+	else {
+	    for ( int i = _elementStateCount ; i-- > 0 ; ) {
+		if ( _elementStates[ i ].prefixes != null ) {
+		    prefix = (String) _elementStates[ i ].prefixes.get( namespaceURI );
+                    if ( prefix != null )
+			 return prefix;
+		}
+	    }
+	}
+	return null;
     }
 
 
