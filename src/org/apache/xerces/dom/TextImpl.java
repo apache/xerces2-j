@@ -178,12 +178,17 @@ public class TextImpl
         if (nextSibling == null) {
             return data;
         }
-        StringBuffer buffer = new StringBuffer();
-        if (data != null && data.length() != 0) {
-            buffer.append(data);
+        if (fBufferStr == null){
+            fBufferStr = new StringBuffer();
         }
-        getWholeText(nextSibling, buffer);
-        return buffer.toString();
+        else {
+            fBufferStr.setLength(0);
+        }
+        if (data != null && data.length() != 0) {
+            fBufferStr.append(data);
+        }
+        getWholeText(nextSibling, fBufferStr);
+        return fBufferStr.toString();
     
     }
 

@@ -75,12 +75,12 @@ public abstract class ChildNode
     /** Serialization version. */
     static final long serialVersionUID = -6112455738802414002L;
 
-    // public
-
+    transient StringBuffer fBufferStr = null;
+    
     //
     // Data
     //
-
+    
     /** Previous sibling. */
     protected ChildNode previousSibling;
 
