@@ -240,7 +240,12 @@ public class DOMWriter {
                     out.println("<?xml version=\"1.0\" encoding=\""+
                                 Encoding + "\"?>");
                 }
-                print(((Document)node).getDocumentElement());
+                //print(((Document)node).getDocumentElement());
+                
+                NodeList children = node.getChildNodes(); 
+                for ( int iChild = 0; iChild < children.getLength(); iChild++ ) { 
+                    print(children.item(iChild)); 
+                } 
                 out.flush();
                 break;
             }
@@ -314,7 +319,7 @@ public class DOMWriter {
                     out.print(' ');
                     out.print(data);
                 }
-                out.print("?>");
+                out.println("?>");
                 break;
             }
         }
