@@ -132,7 +132,7 @@ public class ElementImpl
         if (needsSyncData()) {
             synchronizeData();
         }
-	this.name = name;
+	    this.name = name;
         reconcileDefaultAttributes();
     }
 
@@ -966,8 +966,10 @@ public class ElementImpl
 
     /** Reconcile default attributes. */
     protected void reconcileDefaultAttributes() {
-        NamedNodeMapImpl defaults = getDefaultAttributes();
-	attributes.reconcileDefaults(defaults);
+        if (attributes != null) {
+            NamedNodeMapImpl defaults = getDefaultAttributes();
+            attributes.reconcileDefaults(defaults);
+        }
     }
 
     /** Get the default attributes. */
