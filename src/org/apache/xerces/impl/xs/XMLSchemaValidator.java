@@ -84,6 +84,7 @@ import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.IntStack;
 import org.apache.xerces.util.XMLResourceIdentifierImpl;
+import org.apache.xerces.util.XMLAttributesImpl;
 
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
@@ -2490,9 +2491,10 @@ public class XMLSchemaValidator
         // 3 The item's normalized value must be locally valid with respect to that {type definition} as per String Valid (3.14.4).
         // get simple type
         XSSimpleType attDV = currDecl.fType;
-
+        
         // PSVI: attribute declaration
         attrPSVI.fDeclaration = currDecl;
+        attrPSVI.fSchemaDefault = currDecl.fDefault.normalizedValue;
         // PSVI: attribute type
         attrPSVI.fTypeDecl = attDV;
 
@@ -2508,6 +2510,14 @@ public class XMLSchemaValidator
                 attributes.setValue(index, fValidatedInfo.normalizedValue);
             // PSVI: attribute memberType
             attrPSVI.fMemberType = fValidatedInfo.memberType;
+            if (attributes instanceof XMLAttributesImpl) {
+                XMLAttributesImpl attrs = (XMLAttributesImpl)attributes;
+                boolean schemaId = fValidatedInfo.memberType != null ?
+                                   fValidatedInfo.memberType.isIDType() :
+                                   attDV.isIDType();
+                attrs.setSchemaId(index, schemaId);
+            }
+    
             // PSVI: element notation
             if (attDV.getVariety() == XSSimpleType.VARIETY_ATOMIC &&
                 attDV.getPrimitiveKind() == XSSimpleType.PRIMITIVE_NOTATION){
@@ -2609,27 +2619,29 @@ public class XMLSchemaValidator
             // if the attribute is not specified, then apply the value constraint
             if (!isSpecified && constType != XSConstants.VC_NONE) {
                 attName = new QName(null, currDecl.fName, currDecl.fName, currDecl.fTargetNamespace);
-
-                int attrIndex = attributes.addAttribute(attName, "CDATA", (defaultValue!=null)?defaultValue.normalizedValue:"");
+                String normalized = (defaultValue!=null)?defaultValue.normalizedValue:"";
+                int attrIndex = attributes.addAttribute(attName, "CDATA", normalized);
+                if (attributes instanceof XMLAttributesImpl) {
+                    XMLAttributesImpl attrs = (XMLAttributesImpl)attributes;
+                    boolean schemaId = defaultValue != null &&
+                                       defaultValue.memberType != null ?
+                                       defaultValue.memberType.isIDType() :
+                                       currDecl.fType.isIDType();
+                    attrs.setSchemaId(attrIndex, schemaId);
+                }
 
                 // PSVI: attribute is "schema" specified
                 Augmentations augs = attributes.getAugmentations(attrIndex);
 
-                AttributePSVImpl attrPSVI = (AttributePSVImpl)augs.getItem(Constants.ATTRIBUTE_PSVI);
+                AttributePSVImpl attrPSVI = new AttributePSVImpl();
+                augs.putItem(Constants.ATTRIBUTE_PSVI, attrPSVI);
 
-                // check if PSVIAttribute was added to Augmentations.
-                // it is possible that we just created new chunck of attributes
-                // in this case PSVI attribute are not there.
-                if (attrPSVI != null) {
-                    attrPSVI.reset();
-                } else {
-                    attrPSVI = new AttributePSVImpl();
-                    augs.putItem(Constants.ATTRIBUTE_PSVI, attrPSVI);
-                }
-
-                attrPSVI.fSpecified = false;
-                // PSVI attribute: validation context
+                attrPSVI.fNormalizedValue = normalized;
+                attrPSVI.fSchemaDefault = normalized;
                 attrPSVI.fValidationContext = fValidationRoot;
+                attrPSVI.fValidity = AttributePSVI.VALIDITY_VALID;
+                attrPSVI.fValidationAttempted = AttributePSVI.VALIDATION_FULL;
+                attrPSVI.fSpecified = false;
             }
 
         } // for
