@@ -368,6 +368,7 @@ abstract class XSDAbstractTraverser {
                     attrGrp.addAttributeUse(tempAttrUse);
                 }
                 else {
+                    // REVISIT: what if one of the attribute uses is "prohibited"
                     reportGenericSchemaError("Duplicate attribute " +
                                              tempAttrUse.fAttrDecl.fName + " found ");
                 }
@@ -386,6 +387,7 @@ abstract class XSDAbstractTraverser {
                         attrGrp.addAttributeUse(attrUseS[i]);
                     }
                     else {
+                        // REVISIT: what if one of the attribute uses is "prohibited"
                         reportGenericSchemaError("Duplicate attribute " +
                                                  existingAttrUse.fAttrDecl.fName + " found ");
                     }
@@ -421,15 +423,13 @@ abstract class XSDAbstractTraverser {
                 }
                 child = DOMUtil.getNextSiblingElement(child);
             }
-
-            if (child != null) {
-                // Error - the element is not an attribute, attributeGroup or anyAttr
-                return child;
-            }
         }
 
+        // remove prohibited attribute uses
+        attrGrp.removeProhibitedAttrs();
+
         // Success
-        return null;
+        return child;
 
     }
 

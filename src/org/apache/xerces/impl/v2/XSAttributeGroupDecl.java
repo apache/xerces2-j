@@ -96,13 +96,44 @@ public class XSAttributeGroupDecl {
     }
 
     public XSAttributeUse getAttributeUse(String uri, String localpart) {
-    	for (int i=0; i<fAttrUseNum; i++) {
-    		if ( (fAttributeUses[i].fAttrDecl.fTargetNamespace == uri) &&
-    		     (fAttributeUses[i].fAttrDecl.fName == localpart) )
-    			return fAttributeUses[i];
-    	}
-    	
-    	return null;
+        for (int i=0; i<fAttrUseNum; i++) {
+            if ( (fAttributeUses[i].fAttrDecl.fTargetNamespace == uri) &&
+                 (fAttributeUses[i].fAttrDecl.fName == localpart) )
+                return fAttributeUses[i];
+        }
+
+        return null;
+    }
+
+    public void removeProhibitedAttrs() {
+        int pCount = 0;
+        XSAttributeUse[] pUses = new XSAttributeUse[fAttrUseNum];
+        for (int i = 0; i < fAttrUseNum; i++) {
+            if (fAttributeUses[i].fUse == SchemaSymbols.USE_PROHIBITED) {
+                pCount++;
+                // we use the entries at the end, so that we can use the
+                // first entries to store non-prohibited attribute uses,
+                // hence avoid creating a new array.
+                pUses[fAttrUseNum-pCount] = fAttributeUses[i];
+            }
+        }
+
+        int newCount = 0;
+        if (pCount > 0) {
+            for (int i = 0; i < fAttrUseNum; i++) {
+                if (fAttributeUses[i].fUse == SchemaSymbols.USE_PROHIBITED)
+                    continue;
+                for (int j = 1; j <= pCount; j++) {
+                    if (fAttributeUses[i].fAttrDecl.fName == pUses[fAttrUseNum-pCount].fAttrDecl.fName &&
+                        fAttributeUses[i].fAttrDecl.fTargetNamespace == pUses[fAttrUseNum-pCount].fAttrDecl.fTargetNamespace) {
+                        continue;
+                    }
+                }
+                pUses[newCount++] = fAttributeUses[i];
+            }
+            fAttributeUses = pUses;
+            fAttrUseNum = newCount;
+        }
     }
 
     public XSAttributeUse[] getAttributeUses() {
@@ -112,8 +143,8 @@ public class XSAttributeGroupDecl {
         return fAttributeUses;
     }
 
-   // Check that the attributes in this group validly restrict those from a base group  
-   // If an error is found, the error code is returned. 
+   // Check that the attributes in this group validly restrict those from a base group
+   // If an error is found, the error code is returned.
    public String validRestrictionOf(XSAttributeGroupDecl baseGroup) {
 
         String errorCode = null;
@@ -129,7 +160,7 @@ public class XSAttributeGroupDecl {
              //
              // derivation-ok-restriction.  Constraint 2.1.1
              //
-             if (baseAttrUse.fUse == SchemaSymbols.USE_REQUIRED && 
+             if (baseAttrUse.fUse == SchemaSymbols.USE_REQUIRED &&
                  attrUse.fUse != SchemaSymbols.USE_REQUIRED) {
                errorCode = "derivation-ok-restriction.2.1.1";
                return errorCode;
@@ -142,15 +173,15 @@ public class XSAttributeGroupDecl {
              if (! XSConstraints.checkSimpleDerivationOk(attrDecl.fType,
                                            baseAttrDecl.fType,
                                            baseAttrDecl.fType.getFinalSet()) ) {
-             	errorCode="derivation-ok-restriction.2.1.2";
-             	return errorCode;
+                errorCode="derivation-ok-restriction.2.1.2";
+                return errorCode;
              }
 
-             
+
              //
              // derivation-ok-restriction.  Constraint 2.1.3
              //
-             if (baseAttrDecl.fConstraintType == XSAttributeDecl.FIXED_VALUE && 
+             if (baseAttrDecl.fConstraintType == XSAttributeDecl.FIXED_VALUE &&
                  attrDecl.fConstraintType != XSAttributeDecl.FIXED_VALUE) {
                errorCode="derivation-ok-restriction.2.1.3";
                return errorCode;
@@ -170,8 +201,8 @@ public class XSAttributeGroupDecl {
                return errorCode;
              }
            }
-        }               
-            
+        }
+
 
         // Now, check wildcards
         //
@@ -187,8 +218,8 @@ public class XSAttributeGroupDecl {
             return errorCode;
           }
         }
-    
-        return null; 
+
+        return null;
 
    }
 
