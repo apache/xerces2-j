@@ -244,6 +244,8 @@ public class XML11NSDocumentScannerImpl extends XML11DocumentScannerImpl {
 
             if (fElementQName.prefix == null && fElementQName.uri != null) {
                 fElementQName.prefix = XMLSymbols.EMPTY_STRING;
+                // making sure that the object in the element stack is updated too.
+                fCurrentElement.prefix = XMLSymbols.EMPTY_STRING;
             }
             if (fElementQName.prefix != null && fElementQName.uri == null) {
                 fErrorReporter.reportError(
