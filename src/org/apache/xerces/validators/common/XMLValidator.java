@@ -96,6 +96,8 @@ public final class XMLValidator
 {
 	// **** DEBUG ****
 	static XMLValidator schemaValidator = null;
+        static boolean DEBUG_TO_STDERR              = false;
+
 	// **** DEBUG ****
 
 
@@ -220,8 +222,9 @@ public final class XMLValidator
 
 	private void DEBUG (String message)
 	{
-		if ( this == schemaValidator ) {
-			System.out.print (message);
+		//if ( this == schemaValidator ) {
+                if( DEBUG_TO_STDERR == true ) {
+			System.err.println(message);
 		}
 	}
 
