@@ -65,6 +65,7 @@ import java.io.Reader;
 import java.util.StringTokenizer;
 
 import org.apache.xerces.util.AugmentationsImpl;
+import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.util.XMLStringBuffer;
 
@@ -186,7 +187,7 @@ public class CSVConfiguration
 
         // start document
         if (fDocumentHandler != null) {
-            fDocumentHandler.startDocument(null, "UTF-8", null);
+            fDocumentHandler.startDocument(null, "UTF-8", new NamespaceSupport(), null);
             fDocumentHandler.xmlDecl("1.0", "UTF-8", "true", null);
             fDocumentHandler.doctypeDecl("csv", null, null, null);
         }

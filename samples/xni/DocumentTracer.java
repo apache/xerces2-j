@@ -66,6 +66,7 @@ import java.io.Writer;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.parsers.XMLDocumentParser;
+import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
@@ -214,7 +215,8 @@ public class DocumentTracer
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocument(XMLLocator locator, String encoding, Augmentations augs)
+    public void startDocument(XMLLocator locator, String encoding, 
+                              NamespaceContext namespaceContext, Augmentations augs)
         throws XNIException {
 
         fIndent = 0;

@@ -59,6 +59,7 @@ package xni;
 
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
+import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLLocator;
@@ -128,10 +129,11 @@ public class PassThroughFilter
      *     
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocument(XMLLocator locator, String encoding, Augmentations augs)
+    public void startDocument(XMLLocator locator, String encoding, 
+                              NamespaceContext namespaceContext, Augmentations augs)
         throws XNIException {
         if (fDocumentHandler != null) {
-            fDocumentHandler.startDocument(locator, encoding, augs);
+            fDocumentHandler.startDocument(locator, encoding, namespaceContext, augs);
 	    }
     } // startDocument(XMLLocator,String)
     

@@ -442,12 +442,10 @@ implements XMLComponent, XMLDocumentFilter {
 
     /**
      * The start of the document.
-     *
-     * @param augs   Additional information that may include infoset augmentations
-     *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocument(XMLLocator locator, String encoding, Augmentations augs)
+    public void startDocument(XMLLocator locator, String encoding, 
+                              NamespaceContext namespaceContext, Augmentations augs)
     throws XNIException {
         if (fPSVInfoset) {
             printIndentTag("<document"+
@@ -456,7 +454,7 @@ implements XMLComponent, XMLDocumentFilter {
                            " xmlns='http://www.w3.org/2001/05/XMLInfoset'>");
         }
         if (fDocumentHandler != null) {
-            fDocumentHandler.startDocument(locator, encoding, augs);
+            fDocumentHandler.startDocument(locator, encoding, namespaceContext, augs);
         }
     } // startDocument(XMLLocator,String)
 
