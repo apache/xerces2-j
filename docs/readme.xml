@@ -24,13 +24,8 @@
 	XML Schema</link> page. 
     </p>
     <p>
-      Xerces 2 also provides a partial implementation of Document Object Model Level 3  
-      <jump href='http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020409/'>Core</jump>, 
-      
-      <jump href='http://www.w3.org/TR/2002/WD-DOM-Level-3-ASLS-20020409/load-save.html'>
-	Load and Save</jump> and 
-      <jump href='http://www.w3.org/TR/2001/WD-DOM-Level-3-ASLS-20011025/abstract-schemas.html'>
-	Abstract Schemas</jump> [<strong>deprecated</strong>] Working Drafts. 
+      Xerces 2 also provides an experimental implementation of the Document Object Model Level 3  
+      Core and Load/Save Working Drafts. 
       For more information, refer to the <link idref='dom3'>DOM Level 3 Implementation</link> page. 
     </p>
 
