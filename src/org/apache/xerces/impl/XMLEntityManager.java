@@ -318,13 +318,28 @@ public class XMLEntityManager
 
     /**
      * Checks whether an entity given by name is external.
-     * <p>
-     * <strong>Note:</strong> This method assumes the entity has been declared.
      *
+     * @param entityName The name of the entity to check.
      * @returns True if the entity is external.
      */
-    public boolean isExternalEntity(String name) {
-        Entity entity = (Entity)fEntities.get(name);
+    public boolean isExternalEntity(String entityName) throws SAXException {
+
+        Entity entity = (Entity)fEntities.get(entityName);
+        if (entity == null) {
+            if (fStandalone && entityName.startsWith("%")) {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "EntityNotDeclared",
+                                           new Object[] { entityName },
+                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            }
+            else if (fValidation) {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "EntityNotDeclared",
+                                           new Object[] { entityName },
+                                           XMLErrorReporter.SEVERITY_ERROR);
+            }
+            return false;
+        }
         return entity.isExternal();
     }
 
