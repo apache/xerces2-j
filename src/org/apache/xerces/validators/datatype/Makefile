@@ -22,6 +22,8 @@ TARGETS=\
 	InvalidDatatypeValueException.class\
 	RealValidator.class\
 	StringValidator.class\
+        TimeDurationValidator.java \
+        TimeInstantValidator.java \
 	UnknownFacetException.class
 
 all: dirs compile
