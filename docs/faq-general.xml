@@ -93,6 +93,14 @@
             <code>org.apache.xerces.parsers.DOMParser</code>. <br/><br/>
      		<code>parser.setFeature("http://xml.org/sax/features/validation", true);</code>
 			</p>
+			<p><em>IMPORTANT!</em>Simply turning on
+			validation will <em>not</em> make Xerces
+			actually report the errors that it detects.
+			For this, you need to implement the 
+			<code>org.xml.sax.ErrorHandler</code>
+			interface and register your implementation
+			with the parser using the
+			<code>setErrorHandler</code> method.</p>
 		</a>
 	</faq>
 	
