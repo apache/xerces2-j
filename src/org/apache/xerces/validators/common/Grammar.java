@@ -153,6 +153,7 @@ implements XMLContentSpec.Provider {
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex &  CHUNK_MASK;
 
+        elementDecl.name.clear();
         elementDecl.name.localpart          = fElementDeclNameIndex[chunk][index];               
         elementDecl.name.uri                = 0; // ""
         elementDecl.type                    = fElementDeclType[chunk][index];                    
