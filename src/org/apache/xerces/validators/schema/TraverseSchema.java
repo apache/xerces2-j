@@ -760,21 +760,21 @@ public class TraverseSchema implements
 
         // At this point, we can do any remaining checking for cos-element-consistent
         // that involves substitution group elements
-        
+
         if (fFullConstraintChecking) {
-            // Loop thru all of the top-level elements that were ref'd from groups or 
-            // complexTypes, and ensure that: 
-            // 1. they have consistent type as any local element potentially declared in 
-            //    the group/type 
-            // 2.  any substitutable elements are consistent wrt type given any 
+            // Loop thru all of the top-level elements that were ref'd from groups or
+            // complexTypes, and ensure that:
+            // 1. they have consistent type as any local element potentially declared in
+            //    the group/type
+            // 2.  any substitutable elements are consistent wrt type given any
             //     similiarly named elements from the group scope
             // Note: for a complexType, we don't check against base scope.   Not clear if
-            // we need to. 
-            
+            // we need to.
+
             for (int j = 0; j < fTopLevelElementsRefdFromGroup.size(); j+=2) {
                QName eltName = (QName)fTopLevelElementsRefdFromGroup.elementAt(j);
                int groupScope = ((Integer)fTopLevelElementsRefdFromGroup.elementAt(j+1)).intValue();
-               checkConsistentElements(eltName, groupScope);     
+               checkConsistentElements(eltName, groupScope);
             }
 
             // Loop thru all of the complexTypes, and for any derived by restriction,
@@ -786,8 +786,8 @@ public class TraverseSchema implements
             while (enum.hasMoreElements ()) {
                typeInfo = (TraverseSchema.ComplexTypeInfo)enum.nextElement();
                baseTypeInfo = typeInfo.baseComplexTypeInfo;
-               
-               if (typeInfo.derivedBy == SchemaSymbols.RESTRICTION && 
+
+               if (typeInfo.derivedBy == SchemaSymbols.RESTRICTION &&
                    baseTypeInfo!=null &&
                    typeInfo.contentSpecHandle>-1) {
                  try {
@@ -878,7 +878,7 @@ public class TraverseSchema implements
     private void checkConsistentElements(QName eltName, int scope) throws Exception {
 
       // See if there is a declaration of an element with the same name at the
-      // given scope. 
+      // given scope.
       // This is required because any model group cannot have more than 1
       // element with the same name, but different types (even if some are
       // local, and others top-level)
@@ -901,12 +901,12 @@ public class TraverseSchema implements
        }
 
        Vector substitutableNames = fSchemaGrammar.getElementDeclAllSubstitutionGroupQNames(topLevelElementNdx, fGrammarResolver, fStringPool);
-       
+
        for (int i = 0; i < substitutableNames.size(); i++) {
           SchemaGrammar.OneSubGroup subGroup = (SchemaGrammar.OneSubGroup)substitutableNames.elementAt(i);
           QName substName = subGroup.name;
           int substEltNdx = subGroup.eleIndex;
-          
+
           int localEltNdx = fSchemaGrammar.getElementDeclIndex(substName, scope);
           if (localEltNdx > -1) {
              fSchemaGrammar.getElementDecl(localEltNdx, fTempElementDecl);
@@ -920,7 +920,7 @@ public class TraverseSchema implements
 
     }
 
-    
+
     /**
      * Expands a system id and returns the system id as a URL, if
      * it can be expanded. A return value of null means that the
@@ -3300,12 +3300,12 @@ public class TraverseSchema implements
         int previousScope = fCurrentScope;
         fCurrentScope = scopeDefined;
 
-        // Squirrel away the groupNameStack.     
-        // If we are in the middle of processing a group, and we hit the group again 
-        // because of a complexType for an element, it's not an error. 
+        // Squirrel away the groupNameStack.
+        // If we are in the middle of processing a group, and we hit the group again
+        // because of a complexType for an element, it's not an error.
         if (!fCurrentGroupNameStack.isEmpty()) {
           savedGroupNameStack = fCurrentGroupNameStack;
-          fCurrentGroupNameStack = new Stack(); 
+          fCurrentGroupNameStack = new Stack();
         }
 
         Element child = null;
@@ -3941,14 +3941,14 @@ public class TraverseSchema implements
      */
     private String genAnonTypeName(Element complexTypeDecl) throws Exception {
 
-        // Generate a unique name for the anonymous type by concatenating together the 
+        // Generate a unique name for the anonymous type by concatenating together the
         // names of parent nodes
         String typeName;
         Element node=complexTypeDecl;
         typeName="#AnonType_";
         while (!isTopLevel(node))   {
           node = (Element)node.getParentNode();
-          typeName = typeName+node.getAttribute(SchemaSymbols.ATT_NAME); 
+          typeName = typeName+node.getAttribute(SchemaSymbols.ATT_NAME);
         }
 
         return typeName;
@@ -4180,11 +4180,11 @@ public class TraverseSchema implements
               }
 
               //
-              // Delay derivation by restriction particle constraint checking until 
-              // the whole schema has been processed.  We need to do this because: 
-              //  - top-level element declarations are not processed until traversed 
-              //    thru the main traverseSchema walk.   
-              //   
+              // Delay derivation by restriction particle constraint checking until
+              // the whole schema has been processed.  We need to do this because:
+              //  - top-level element declarations are not processed until traversed
+              //    thru the main traverseSchema walk.
+              //
               //
 
            }
@@ -5981,7 +5981,7 @@ throws Exception {
 				if (!referredTo)
                 	reportSchemaError(SchemaMessageProvider.IncorrectDefaultType,
                         new Object [] { attrDecl.getAttribute(SchemaSymbols.ATT_NAME), idve.getMessage() });    //a-props-correct.2
-            } 
+            }
         }
 
         // check the coexistence of ID and value constraint
@@ -6510,7 +6510,7 @@ throws Exception {
                     //return new QName(-1,fStringPool.addSymbol(localpart), -1, fStringPool.addSymbol(uriString));
                 }
                 else {
-                    // Problem with recursive decls if we attempt the traversal now. 
+                    // Problem with recursive decls if we attempt the traversal now.
                     //eltName= traverseElementDecl(targetElement);
 
                 }
@@ -6521,10 +6521,10 @@ throws Exception {
                if (fFullConstraintChecking) {
                  // Add the name to a list of top-level elements we'll need to check later
                  // for consistency wrt type
-                 fTopLevelElementsRefdFromGroup.addElement(eltName);           
-                 fTopLevelElementsRefdFromGroup.addElement(new Integer(fCurrentScope));           
+                 fTopLevelElementsRefdFromGroup.addElement(eltName);
+                 fTopLevelElementsRefdFromGroup.addElement(new Integer(fCurrentScope));
                }
-               
+
             }
 
             return eltName;
@@ -8454,7 +8454,8 @@ throws Exception {
     // check the prefix of each element: must be SchemaForSchema
     // general constrain checking on attriubtes
     private Hashtable generalCheck(Element element, int scope) throws Exception{
-        if (!element.getNamespaceURI().equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) {
+        String uri = element.getNamespaceURI();
+        if (uri == null || !uri.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) {
             reportGenericSchemaError("The namespce name for '"+element.getLocalName()+"' must be "+SchemaSymbols.URI_SCHEMAFORSCHEMA);
         }
         return fGeneralAttrCheck.checkAttributes (element, scope);

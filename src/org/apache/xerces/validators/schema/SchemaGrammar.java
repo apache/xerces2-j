@@ -333,7 +333,8 @@ public class SchemaGrammar extends Grammar{
                 // and pDevMethod of the derived type
                 if (subTypeInfo != typeInfo) {
                     devMethod = subTypeInfo.derivedBy;
-                    pDevMethod = typeInfo.blockSet;
+                    if (typeInfo != null)
+                        pDevMethod = typeInfo.blockSet;
                     subTypeInfo = subTypeInfo.baseComplexTypeInfo;
                 }
                 for (; subTypeInfo != null && subTypeInfo != typeInfo;
