@@ -28,7 +28,7 @@ Copyright:
   <property file=".ant.properties"/>
   <property file="${user.home}/.ant.properties"/>
   <property file="default.properties"/>  
-
+ 
   <target name="init">
     <property name='parser.Name' value='Xerces-J'/>
     <property name='parser.name' value='xerces-j'/>
@@ -367,7 +367,18 @@ Copyright:
   <!-- =================================================================== -->
   <!-- Creates the API documentation                                       -->
   <!-- =================================================================== -->
-  <target name="javadocs" depends="prepare-src">
+  <target name="javadocs" depends="prepare-src">	
+  
+    <condition property="additional.param" value="">
+      <not>
+        <available classname="com.sun.tools.doclets.Taglet"/>
+      </not>
+    </condition>
+		
+    <condition property="additional.param" value=" @${tools.dir}\bin\xerces2taglets.opt -tagletpath ${tools.dir}\bin\xerces2taglets.jar">
+      <available classname="com.sun.tools.doclets.Taglet"/>
+    </condition>
+  	
     <mkdir dir='${build.dir}/docs/javadocs/api'/>
     <javadoc packagenames='javax.xml.parsers,org.w3c.*,org.xml.*'
       locale='en_US'
@@ -375,6 +386,7 @@ Copyright:
       author='true' version='true'
       windowtitle='XML Standard API' doctitle='XML Standard API'
       bottom='${copyright}'
+      additionalparam='${additional.param}'
       />
     <mkdir dir='${build.dir}/docs/javadocs/xni'/>
     <javadoc packagenames='org.apache.xerces.xni.*'
@@ -384,6 +396,7 @@ Copyright:
       windowtitle='Xerces Native Interface' 
       doctitle='Xerces Native Interface'
       bottom='${copyright}'
+      additionalparam='${additional.param}'
       />
     <mkdir dir='${build.dir}/docs/javadocs/xs'/>
     <javadoc packagenames='org.apache.xerces.xs'
@@ -393,6 +406,7 @@ Copyright:
       windowtitle='XML Schema API' 
       doctitle='XML Schema API'
       bottom='${copyright}'
+      additionalparam='${additional.param}'
       />
     <mkdir dir='${build.dir}/docs/javadocs/dom3-api'/>
     <javadoc packagenames='org.apache.xerces.dom3.*'
@@ -401,6 +415,7 @@ Copyright:
      author='true' version='true'
      windowtitle='DOM Level 3 API' doctitle='DOM Level 3 API'
      bottom='${copyright}'
+     additionalparam='${additional.param}'
      />
     
     <mkdir dir='${build.dir}/docs/javadocs/xerces2'/>
@@ -417,6 +432,7 @@ Copyright:
       windowtitle='Xerces2 Implementation' 
       doctitle='Xerces2 Implementation'
       bottom='${copyright}'
+      additionalparam='${additional.param}'
       />
     <mkdir dir='${build.dir}/docs/javadocs/other'/>
     <javadoc packagenames='org.apache.html.*,
@@ -427,6 +443,7 @@ Copyright:
       author='true' version='true'
       windowtitle='Other Classes' doctitle='Other Classes'
       bottom='${copyright}'
+      additionalparam='${additional.param}'
       />
   </target>
 
@@ -513,7 +530,7 @@ Copyright:
     <copy todir="${disttools.dir}" >
         <fileset
             dir="${tools.dir}"  
-            includes="**/*.txt, **/*.bat, **/*.jar, **/*.zip"
+            includes="**/*.txt, **/*.bat, **/*.jar, **/*.zip, **/*.opt"
             excludes="**/CVS*, **/.#*, **/*.class"
         />
     </copy>
