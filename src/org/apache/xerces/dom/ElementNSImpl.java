@@ -388,7 +388,6 @@ public class ElementNSImpl
      * @see NodeImpl#setReadOnly
      */
     public void setType(XSTypeDefinition type) {
-        type = type;
-    }
-    
+        this.type = type;
+    }    
 }
