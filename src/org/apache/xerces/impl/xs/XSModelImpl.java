@@ -164,7 +164,7 @@ public class XSModelImpl implements XSModel {
         // establish the mapping from namespace to grammars
         fGrammarMap = new SymbolHash(len*2);
         for (i = 0; i < len; i++) {
-            fGrammarMap.put(fNamespaces[i], fGrammarList[i]);
+            fGrammarMap.put(null2EmptyString(fNamespaces[i]), fGrammarList[i]);
         }
         
         fGrammarCount = len;
@@ -316,7 +316,7 @@ public class XSModelImpl implements XSModel {
      */
     public XSTypeDefinition getTypeDefinition(String name,
                                               String namespace) {
-        SchemaGrammar sg = (SchemaGrammar)fGrammarMap.get(namespace);
+        SchemaGrammar sg = (SchemaGrammar)fGrammarMap.get(null2EmptyString(namespace));
         if (sg == null)
             return null;
         return (XSTypeDefinition)sg.fGlobalTypeDecls.get(name);
@@ -331,7 +331,7 @@ public class XSModelImpl implements XSModel {
      */
     public XSAttributeDeclaration getAttributeDecl(String name,
                                                    String namespace) {
-        SchemaGrammar sg = (SchemaGrammar)fGrammarMap.get(namespace);
+        SchemaGrammar sg = (SchemaGrammar)fGrammarMap.get(null2EmptyString(namespace));
         if (sg == null)
             return null;
         return (XSAttributeDeclaration)sg.fGlobalAttrDecls.get(name);
@@ -346,7 +346,7 @@ public class XSModelImpl implements XSModel {
      */
     public XSElementDeclaration getElementDecl(String name,
                                                String namespace) {
-        SchemaGrammar sg = (SchemaGrammar)fGrammarMap.get(namespace);
+        SchemaGrammar sg = (SchemaGrammar)fGrammarMap.get(null2EmptyString(namespace));
         if (sg == null)
             return null;
         return (XSElementDeclaration)sg.fGlobalElemDecls.get(name);
@@ -361,7 +361,7 @@ public class XSModelImpl implements XSModel {
      */
     public XSAttributeGroupDefinition getAttributeGroup(String name,
                                                         String namespace) {
-        SchemaGrammar sg = (SchemaGrammar)fGrammarMap.get(namespace);
+        SchemaGrammar sg = (SchemaGrammar)fGrammarMap.get(null2EmptyString(namespace));
         if (sg == null)
             return null;
         return (XSAttributeGroupDefinition)sg.fGlobalAttrGrpDecls.get(name);
@@ -377,7 +377,7 @@ public class XSModelImpl implements XSModel {
      */
     public XSModelGroupDefinition getModelGroupDefinition(String name,
                                                           String namespace) {
-        SchemaGrammar sg = (SchemaGrammar)fGrammarMap.get(namespace);
+        SchemaGrammar sg = (SchemaGrammar)fGrammarMap.get(null2EmptyString(namespace));
         if (sg == null)
             return null;
         return (XSModelGroupDefinition)sg.fGlobalGroupDecls.get(name);
@@ -393,7 +393,7 @@ public class XSModelImpl implements XSModel {
      */
     public XSNotationDeclaration getNotationDecl(String name,
                                                  String namespace) {
-        SchemaGrammar sg = (SchemaGrammar)fGrammarMap.get(namespace);
+        SchemaGrammar sg = (SchemaGrammar)fGrammarMap.get(null2EmptyString(namespace));
         if (sg == null)
             return null;
         return (XSNotationDeclaration)sg.fGlobalNotationDecls.get(name);
@@ -407,4 +407,9 @@ public class XSModelImpl implements XSModel {
         return null;
     }
 
+    private static final String EMPTY_STRING = "";
+    private static final String null2EmptyString(String str) {
+        return str == null ? EMPTY_STRING : str;
+    }
+    
 } // class XSModelImpl

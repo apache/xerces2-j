@@ -157,7 +157,8 @@ public class XSNamedMapImpl implements XSNamedMap {
      *   identify any <code>XSObject</code> in this map.
      */
     public XSObject getNSItem(String namespace, String localName) {
-        namespace = namespace.intern();
+        if (namespace != null)
+            namespace = namespace.intern();
         for (int i = 0; i < fNSNum; i++) {
             if (namespace == fNamespaces[i]) {
                 // when this map is created from SymbolHash's

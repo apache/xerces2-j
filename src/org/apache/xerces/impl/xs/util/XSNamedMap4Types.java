@@ -141,7 +141,8 @@ public class XSNamedMap4Types extends XSNamedMapImpl {
      *   identify any <code>XSObject</code> in this map.
      */
     public XSObject getNSItem(String namespace, String localName) {
-        namespace = namespace.intern();
+        if (namespace != null)
+            namespace = namespace.intern();
         for (int i = 0; i < fNSNum; i++) {
             if (namespace == fNamespaces[i]) {
                 XSTypeDefinition type = (XSTypeDefinition)fMaps[i].get(localName);
