@@ -725,7 +725,9 @@ public class XMLDocumentScanner
                 // skip to end of internal subset
             }
             /***/
+            fEntityManager.setEntityHandler(fDTDScanner);
             fDTDScanner.scanDTDInternalSubset(true);
+            fEntityManager.setEntityHandler(this);
             /***/
             fEntityScanner.skipSpaces();
         }
