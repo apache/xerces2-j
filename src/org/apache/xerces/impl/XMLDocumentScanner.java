@@ -166,6 +166,39 @@ public class XMLDocumentScanner
     /** Scanner state: Text declaration. */
     protected static final int SCANNER_STATE_TEXT_DECL = 16;
 
+    // feature identifiers
+
+    /** Feature identifier: namespaces. */
+    protected static final String NAMESPACES = 
+        Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
+
+    /** Feature identifier: load external DTD. */
+    protected static final String LOAD_EXTERNAL_DTD = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.LOAD_EXTERNAL_DTD_FEATURE;
+
+    // property identifiers
+    
+    /** Property identifier: DTD scanner. */
+    protected static final String DTD_SCANNER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.DTD_SCANNER_PROPERTY;
+
+    // recognized features and properties
+
+    /** Recognized features. */
+    private static final String[] RECOGNIZED_FEATURES = {
+        NAMESPACES,     LOAD_EXTERNAL_DTD,
+    };
+
+    /** Recognized properties. */
+    private static final String[] RECOGNIZED_PROPERTIES = {
+        DTD_SCANNER,
+        /***
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY,
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY,
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_MANAGER_PROPERTY,
+        /***/
+    };
+
     // debugging
 
     /** Debug scanner state. */
@@ -313,12 +346,18 @@ public class XMLDocumentScanner
     //
 
     /**
-     * 
+     * Resets the component. The component can query the component manager
+     * about any features and properties that affect the operation of the
+     * component.
      * 
      * @param componentManager The component manager.
      *
-     * @throws SAXException Throws exception if required features and
-     *                      properties cannot be found.
+     * @throws SAXException Thrown by component on initialization error.
+     *                      For example, if a feature or property is
+     *                      required for the operation of the component, the
+     *                      component manager may throw a 
+     *                      SAXNotRecognizedException or a
+     *                      SAXNotSupportedException.
      */
     public void reset(XMLComponentManager componentManager)
         throws SAXException {
@@ -326,16 +365,12 @@ public class XMLDocumentScanner
         super.reset(componentManager);
 
         // sax features
-        final String NAMESPACES = Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
         fNamespaces = componentManager.getFeature(NAMESPACES);
         fAttributes.setNamespaces(fNamespaces);
 
         // xerces properties
-        final String DTD_SCANNER =
-            Constants.XERCES_PROPERTY_PREFIX + Constants.DTD_SCANNER_PROPERTY;
         fDTDScanner = (XMLDTDScanner)componentManager.getProperty(DTD_SCANNER);
 
-        final String LOAD_EXTERNAL_DTD = Constants.XERCES_FEATURE_PREFIX + Constants.LOAD_EXTERNAL_DTD_FEATURE;
         fLoadExternalDTD = componentManager.getFeature(LOAD_EXTERNAL_DTD);
 
         // initialize vars
@@ -357,10 +392,28 @@ public class XMLDocumentScanner
     } // reset(XMLComponentManager)
 
     /**
-     * Sets the state of a feature during parsing.
+     * Returns a list of feature identifiers that are recognized by
+     * this component. This method may return null if no features
+     * are recognized by this component.
+     */
+    public String[] getRecognizedFeatures() {
+        return RECOGNIZED_FEATURES;
+    } // getRecognizedFeatures():String[]
+
+    /**
+     * Sets the state of a feature. This method is called by the component
+     * manager any time after reset when a feature changes state. 
+     * <p>
+     * <strong>Note:</strong> Components should silently ignore features
+     * that do not affect the operation of the component.
      * 
-     * @param featureId 
-     * @param state 
+     * @param featureId The feature identifier.
+     * @param state     The state of the feature.
+     *
+     * @throws SAXNotRecognizedException The component should not throw
+     *                                   this exception.
+     * @throws SAXNotSupportedException The component should not throw
+     *                                  this exception.
      */
     public void setFeature(String featureId, boolean state)
         throws SAXNotRecognizedException, SAXNotSupportedException {
@@ -376,10 +429,28 @@ public class XMLDocumentScanner
     } // setFeature(String,boolean)
 
     /**
-     * Sets the value of a property during parsing.
+     * Returns a list of property identifiers that are recognized by
+     * this component. This method may return null if no properties
+     * are recognized by this component.
+     */
+    public String[] getRecognizedProperties() {
+        return RECOGNIZED_PROPERTIES;
+    } // getRecognizedProperties():String[]
+
+    /**
+     * Sets the value of a property. This method is called by the component
+     * manager any time after reset when a property changes value. 
+     * <p>
+     * <strong>Note:</strong> Components should silently ignore properties
+     * that do not affect the operation of the component.
      * 
-     * @param propertyId 
-     * @param value 
+     * @param propertyId The property identifier.
+     * @param value      The value of the property.
+     *
+     * @throws SAXNotRecognizedException The component should not throw
+     *                                   this exception.
+     * @throws SAXNotSupportedException The component should not throw
+     *                                  this exception.
      */
     public void setProperty(String propertyId, Object value)
         throws SAXNotRecognizedException, SAXNotSupportedException {
@@ -667,9 +738,6 @@ public class XMLDocumentScanner
             fDTDScanner.scanDTD(complete);
             fEntityManager.setEntityHandler(this);
         }
-
-        // external subset
-        // TODO: scan external subset
 
     } // scanDoctypeDecl()
 

@@ -128,6 +128,52 @@ public class XMLEntityManager
     /** Default buffer size (2048). */
     public static final int DEFAULT_BUFFER_SIZE = 2048;
 
+    // feature identifiers
+
+    /** Feature identifier: validation. */
+    protected static final String VALIDATION = 
+        Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
+
+    /** Feature identifier: external general entities. */
+    protected static final String EXTERNAL_GENERAL_ENTITIES = 
+        Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_GENERAL_ENTITIES_FEATURE;
+
+    /** Feature identifier: external parameter entities. */
+    protected static final String EXTERNAL_PARAMETER_ENTITIES = 
+        Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_PARAMETER_ENTITIES_FEATURE;
+
+    /** Feature identifier: allow Java encodings. */
+    protected static final String ALLOW_JAVA_ENCODINGS = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.ALLOW_JAVA_ENCODINGS_FEATURE;
+
+    // property identifiers
+
+    /** Property identifier: entity resolver. */
+    protected static final String ENTITY_RESOLVER = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
+
+    /** Property identifier: symbol table. */
+    protected static final String SYMBOL_TABLE = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
+
+    /** Property identifier: error reporter. */
+    protected static final String ERROR_REPORTER = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
+
+    // recognized features and properties
+
+    /** Recognized features. */
+    private static final String[] RECOGNIZED_FEATURES = {
+        VALIDATION,                     EXTERNAL_GENERAL_ENTITIES,
+        EXTERNAL_PARAMETER_ENTITIES,    ALLOW_JAVA_ENCODINGS,
+    };
+
+    /** Recognized properties. */
+    private static final String[] RECOGNIZED_PROPERTIES = {
+        ENTITY_RESOLVER,    SYMBOL_TABLE,
+        ERROR_REPORTER,
+    };
+
     // debugging
 
     /** 
@@ -624,27 +670,16 @@ public class XMLEntityManager
         throws SAXException {
 
         // sax features
-        final String VALIDATION = Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
         fValidation = componentManager.getFeature(VALIDATION);
-
-        final String EXTERNAL_GENERAL_ENTITIES = Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_GENERAL_ENTITIES_FEATURE;
         fExternalGeneralEntities = componentManager.getFeature(EXTERNAL_GENERAL_ENTITIES);
-
-        final String EXTERNAL_PARAMETER_ENTITIES = Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_PARAMETER_ENTITIES_FEATURE;
         fExternalParameterEntities = componentManager.getFeature(EXTERNAL_PARAMETER_ENTITIES);
 
         // xerces features
-        final String ALLOW_JAVA_ENCODINGS = Constants.XERCES_FEATURE_PREFIX + Constants.ALLOW_JAVA_ENCODINGS_FEATURE;
         fAllowJavaEncodings = componentManager.getFeature(ALLOW_JAVA_ENCODINGS);
 
         // xerces properties
-        final String ENTITY_RESOLVER = Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
         fEntityResolver = (EntityResolver)componentManager.getProperty(ENTITY_RESOLVER);
-        
-        final String SYMBOL_TABLE = Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
         fSymbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
-
-        final String ERROR_REPORTER = Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
         fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
 
         // initialize state
@@ -675,6 +710,15 @@ public class XMLEntityManager
     } // reset(XMLComponentManager)
 
     /**
+     * Returns a list of feature identifiers that are recognized by
+     * this component. This method may return null if no features
+     * are recognized by this component.
+     */
+    public String[] getRecognizedFeatures() {
+        return RECOGNIZED_FEATURES;
+    } // getRecognizedFeatures():String[]
+
+    /**
      * Sets the state of a feature. This method is called by the component
      * manager any time after reset when a feature changes state. 
      * <p>
@@ -701,6 +745,15 @@ public class XMLEntityManager
         }
 
     } // setFeature(String,boolean)
+
+    /**
+     * Returns a list of property identifiers that are recognized by
+     * this component. This method may return null if no properties
+     * are recognized by this component.
+     */
+    public String[] getRecognizedProperties() {
+        return RECOGNIZED_PROPERTIES;
+    } // getRecognizedProperties():String[]
 
     /**
      * Sets the value of a property. This method is called by the component

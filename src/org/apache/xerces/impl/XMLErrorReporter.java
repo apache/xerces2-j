@@ -116,6 +116,8 @@ public class XMLErrorReporter
     // Constants
     //
 
+    // severity
+
     /** 
      * Severity: warning. Warnings represent informational messages only
      * that should not be considered serious enough to stop parsing or 
@@ -141,6 +143,30 @@ public class XMLErrorReporter
      */
     public static final short SEVERITY_FATAL_ERROR = 2;
     
+    // feature identifiers
+
+    /** Feature identifier: continue after fatal error. */
+    protected static final String CONTINUE_AFTER_FATAL_ERROR =
+        Constants.XERCES_FEATURE_PREFIX + Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE;
+
+    // property identifiers
+
+    /** Property identifier: error handler. */
+    protected static final String ERROR_HANDLER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_HANDLER_PROPERTY;
+
+    // recognized features and properties
+
+    /** Recognized features. */
+    protected static final String[] RECOGNIZED_FEATURES = {
+        CONTINUE_AFTER_FATAL_ERROR,
+    };
+
+    /** Recognized properties. */
+    protected static final String[] RECOGNIZED_PROPERTIES = {
+        ERROR_HANDLER,
+    };
+
     //
     // Data
     //
@@ -344,8 +370,6 @@ public class XMLErrorReporter
         throws SAXException {
 
         // features
-        String CONTINUE_AFTER_FATAL_ERROR = Constants.XERCES_FEATURE_PREFIX + 
-                                            Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE;
         try {
             fContinueAfterFatalError = componentManager.getFeature(CONTINUE_AFTER_FATAL_ERROR);
         }
@@ -354,11 +378,18 @@ public class XMLErrorReporter
         }
 
         // properties
-        String ERROR_HANDLER = Constants.XERCES_PROPERTY_PREFIX + 
-                               Constants.ERROR_HANDLER_PROPERTY;
         fErrorHandler = (ErrorHandler)componentManager.getProperty(ERROR_HANDLER);
 
     } // reset(XMLComponentManager)
+
+    /**
+     * Returns a list of feature identifiers that are recognized by
+     * this component. This method may return null if no features
+     * are recognized by this component.
+     */
+    public String[] getRecognizedFeatures() {
+        return RECOGNIZED_FEATURES;
+    } // getRecognizedFeatures():String[]
 
     /**
      * Sets the state of a feature. This method is called by the component
@@ -395,6 +426,15 @@ public class XMLErrorReporter
         }
 
     } // setFeature(String,boolean)
+
+    /**
+     * Returns a list of property identifiers that are recognized by
+     * this component. This method may return null if no properties
+     * are recognized by this component.
+     */
+    public String[] getRecognizedProperties() {
+        return RECOGNIZED_PROPERTIES;
+    } // getRecognizedProperties():String[]
 
     /**
      * Sets the value of a property. This method is called by the component

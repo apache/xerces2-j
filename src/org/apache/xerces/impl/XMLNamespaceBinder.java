@@ -99,6 +99,38 @@ public class XMLNamespaceBinder
     implements XMLComponent, XMLDocumentFilter {
 
     //
+    // Constants
+    //
+
+    // feature identifiers
+
+    /** Feature identifier: namespaces. */
+    protected static final String NAMESPACES =
+        Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
+
+    // property identifiers
+
+    /** Property identifier: symbol table. */
+    protected static final String SYMBOL_TABLE =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
+    
+    /** Property identifier: error reporter. */
+    protected static final String ERROR_REPORTER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
+
+    // recognized features and properties
+
+    /** Recognized features. */
+    protected static final String[] RECOGNIZED_FEATURES = {
+        NAMESPACES,
+    };
+
+    /** Recognized properties. */
+    protected static final String[] RECOGNIZED_PROPERTIES = {
+        SYMBOL_TABLE,       ERROR_REPORTER,
+    };
+
+    //
     // Data
     //
 
@@ -207,6 +239,15 @@ public class XMLNamespaceBinder
     } // reset(XMLComponentManager)
 
     /**
+     * Returns a list of feature identifiers that are recognized by
+     * this component. This method may return null if no features
+     * are recognized by this component.
+     */
+    public String[] getRecognizedFeatures() {
+        return RECOGNIZED_FEATURES;
+    } // getRecognizedFeatures():String[]
+
+    /**
      * Sets the state of a feature. This method is called by the component
      * manager any time after reset when a feature changes state. 
      * <p>
@@ -224,6 +265,15 @@ public class XMLNamespaceBinder
     public void setFeature(String featureId, boolean state)
         throws SAXNotRecognizedException, SAXNotSupportedException {
     } // setFeature(String,boolean)
+
+    /**
+     * Returns a list of property identifiers that are recognized by
+     * this component. This method may return null if no properties
+     * are recognized by this component.
+     */
+    public String[] getRecognizedProperties() {
+        return RECOGNIZED_PROPERTIES;
+    } // getRecognizedProperties():String[]
 
     /**
      * Sets the value of a property during parsing.

@@ -115,8 +115,29 @@ public class XMLDTDScanner
     protected static final int SCANNER_STATE_CONDITIONAL_SECT = 9;
     ***/
 
-    // set default values for features
-    final String VALIDATION = Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
+    // feature identifiers
+
+    /** Feature identifier: validation. */
+    protected static final String VALIDATION = 
+        Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
+
+    // property identifiers
+
+    /** Property identifier: error reporter. */
+    protected static final String ERROR_REPORTER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
+
+    // recognized features and properties
+    
+    /** Recognized features. */
+    private static final String[] RECOGNIZED_FEATURES = {
+        VALIDATION,
+    };
+
+    /** Recognized properties. */
+    private static final String[] RECOGNIZED_PROPERTIES = {
+        ERROR_REPORTER,
+    };
 
     // debugging
 
@@ -329,9 +350,7 @@ public class XMLDTDScanner
 
 
         // Xerces properties
-        fErrorReporter = (XMLErrorReporter)
-            componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX
-                                         + Constants.ERROR_REPORTER_PROPERTY);
+        fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
 
         // reset state related data
         fStartDTDCalled = false;
@@ -347,6 +366,15 @@ public class XMLDTDScanner
     } // reset
 
     /**
+     * Returns a list of feature identifiers that are recognized by
+     * this component. This method may return null if no features
+     * are recognized by this component.
+     */
+    public String[] getRecognizedFeatures() {
+        return RECOGNIZED_FEATURES;
+    } // getRecognizedFeatures():String[]
+
+    /**
      * setFeature
      * 
      * @param featureId 
@@ -360,6 +388,15 @@ public class XMLDTDScanner
         }
 
     } // setFeature
+
+    /**
+     * Returns a list of property identifiers that are recognized by
+     * this component. This method may return null if no properties
+     * are recognized by this component.
+     */
+    public String[] getRecognizedProperties() {
+        return RECOGNIZED_PROPERTIES;
+    } // getRecognizedProperties():String[]
 
     /**
      * setProperty

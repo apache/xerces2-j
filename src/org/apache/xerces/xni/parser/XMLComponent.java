@@ -98,6 +98,13 @@ public interface XMLComponent {
         throws SAXException;
 
     /**
+     * Returns a list of feature identifiers that are recognized by
+     * this component. This method may return null if no features
+     * are recognized by this component.
+     */
+    public String[] getRecognizedFeatures();
+
+    /**
      * Sets the state of a feature. This method is called by the component
      * manager any time after reset when a feature changes state. 
      * <p>
@@ -116,6 +123,13 @@ public interface XMLComponent {
         throws SAXNotRecognizedException, SAXNotSupportedException;
 
     /**
+     * Returns a list of property identifiers that are recognized by
+     * this component. This method may return null if no properties
+     * are recognized by this component.
+     */
+    public String[] getRecognizedProperties();
+
+    /**
      * Sets the value of a property. This method is called by the component
      * manager any time after reset when a property changes value. 
      * <p>
@@ -132,11 +146,5 @@ public interface XMLComponent {
      */
     public void setProperty(String propertyId, Object value)
         throws SAXNotRecognizedException, SAXNotSupportedException;
-
-    /** Returns the set of features that this component recognizes. */
-    //    public String[] getRecognizedFeatures();
-
-    /** Returns the set of properties that this component recognizes. */
-    //    public String[] getRecognizedProperties();
 
 } // interface XMLComponent

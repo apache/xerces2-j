@@ -153,20 +153,50 @@ public interface XMLParserConfiguration
         throws SAXException, IOException;
 
     /**
+     * Allows a parser to add parser specific features to be recognized
+     * and managed by the parser configuration.
+     *
+     * @param featureIds An array of the additional feature identifiers 
+     *                   to be recognized.
+     */
+    public void addRecognizedFeatures(String[] featureIds);
+
+    /**
      * Sets the state of a feature. This method is called by the parser
      * and gets propagated to components in this parser configuration.
      * 
      * @param featureId The feature identifier.
      * @param state     The state of the feature.
-     * @param check     Whether to check if the feature is recognized.
      *
      * @throws SAXNotRecognizedException Thrown if the feature is not
      *                                   recognized by this configuration
      *                                   or any of its components.
      * @throws SAXNotSupportedException Thrown if the state is not supported.
      */
-    public void setFeature(String featureId, boolean state, boolean check)
+    public void setFeature(String featureId, boolean statek)
         throws SAXNotRecognizedException, SAXNotSupportedException;
+
+    /**
+     * Returns the state of a feature.
+     * 
+     * @param featureId The feature identifier.
+     * 
+     * @throws SAXNotRecognizedException Thrown if the feature is not 
+     *                                   recognized.
+     * @throws SAXNotSupportedException Thrown if the feature is not
+     *                                  supported.
+     */
+    public boolean getFeature(String featureId)
+        throws SAXNotRecognizedException, SAXNotSupportedException;
+
+    /**
+     * Allows a parser to add parser specific properties to be recognized
+     * and managed by the parser configuration.
+     *
+     * @param propertyIds An array of the additional property identifiers 
+     *                    to be recognized.
+     */
+    public void addRecognizedProperties(String[] propertyIds);
 
     /**
      * Sets the value of a property. This method is called by the parser
@@ -174,42 +204,26 @@ public interface XMLParserConfiguration
      * 
      * @param propertyId The property identifier.
      * @param value      The value of the property.
-     * @param check      Whether to check if the property is recognized.
      *
      * @throws SAXNotRecognizedException Thrown if the property is not
      *                                   recognized by this configuration
      *                                   or any of its components.
      * @throws SAXNotSupportedException Thrown if the value is not supported.
      */
-    public void setProperty(String propertyId, Object value, boolean check)
-        throws SAXNotRecognizedException, SAXNotSupportedException;
-
-    /**
-     * Returns the state of a feature.
-     * 
-     * @param featureId The feature identifier.
-     * @param check     Whether to check if the feature is recognized.
-     * 
-     * @throws SAXNotRecognizedException Thrown if the feature is not 
-     *                                   recognized.
-     * @throws SAXNotSupportedException Thrown if the feature is not
-     *                                  supported.
-     */
-    public boolean getFeature(String featureId, boolean check)
+    public void setProperty(String propertyId, Object value)
         throws SAXNotRecognizedException, SAXNotSupportedException;
 
     /**
      * Returns the value of a property.
      * 
      * @param propertyId The property identifier.
-     * @param check      Whether to check if the property is recognized.
      * 
      * @throws SAXNotRecognizedException Thrown if the feature is not 
      *                                   recognized.
      * @throws SAXNotSupportedException Thrown if the feature is not
      *                                  supported.
      */
-    public Object getProperty(String propertyId, boolean check)
+    public Object getProperty(String propertyId)
         throws SAXNotRecognizedException, SAXNotSupportedException;
 
     /**

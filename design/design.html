@@ -11,55 +11,6 @@
   <H2>Classes and Interfaces</H2>
   <H3>Xerces Native Interface (XNI)</H3>
   <BLOCKQUOTE>
-   <A name="XMLComponent"><DL class="interface">
-     <DT>interface <SPAN class="interface-title">XMLComponent</SPAN>
-     <DD class="methods">      methods:      <UL>
-       <LI>
-        <SPAN class="method-title">reset</SPAN>      (   <SPAN
-        class="interface-title">XMLComponentManager</SPAN> <SPAN
-        class="param-title">componentManager</SPAN>          )
-       <LI>
-        <SPAN class="method-title">setFeature</SPAN>      (   <SPAN
-        class="class-title">String</SPAN> <SPAN
-        class="param-title">featureId</SPAN>, boolean <SPAN
-        class="param-title">state</SPAN>          )
-       <LI>
-        <SPAN class="method-title">setProperty</SPAN>      (   <SPAN
-        class="class-title">String</SPAN> <SPAN
-        class="param-title">propertyId</SPAN>, <SPAN
-        class="class-title">Object</SPAN> <SPAN
-        class="param-title">value</SPAN>          )
-      </UL>
-    </DL>
-   </A></BLOCKQUOTE>
-  <BLOCKQUOTE>
-   <A name="XMLComponentManager"><DL class="interface">
-     <DT>interface <SPAN class="interface-title">XMLComponentManager</SPAN>
-     <DD class="methods">      methods:      <UL>
-       <LI>
-        <SPAN class="method-title">getFeature</SPAN>      (   <SPAN
-        class="class-title">String</SPAN> <SPAN
-        class="param-title">featureId</SPAN>          )       :    boolean
-       <LI>
-        <SPAN class="method-title">getProperty</SPAN>      (   <SPAN
-        class="class-title">String</SPAN> <SPAN
-        class="param-title">propertyId</SPAN>          )       :
-         <SPAN class="class-title">Object</SPAN>
-      </UL>
-    </DL>
-   </A></BLOCKQUOTE>
-  <BLOCKQUOTE>
-   <A name="XMLDocumentSource"><DL class="interface">
-     <DT>interface <SPAN class="interface-title">XMLDocumentSource</SPAN>
-     <DD class="methods">      methods:      <UL>
-       <LI>
-        <SPAN class="method-title">setDocumentHandler</SPAN>      (
-         <SPAN class="interface-title">XMLDocumentHandler</SPAN> <SPAN
-        class="param-title">documentHandler</SPAN>          )
-      </UL>
-    </DL>
-   </A></BLOCKQUOTE>
-  <BLOCKQUOTE>
    <A name="XMLDocumentHandler"><DL class="interface">
      <DT>interface <SPAN class="interface-title">XMLDocumentHandler</SPAN>
      <DD class="methods">      methods:      <UL>
@@ -152,13 +103,6 @@
         <SPAN class="method-title">endDocument</SPAN>      (
         )
       </UL>
-    </DL>
-   </A></BLOCKQUOTE>
-  <BLOCKQUOTE>
-   <A name="XMLDocumentFilter"><DL class="interface">
-     <DT>interface <SPAN class="interface-title">XMLDocumentFilter</SPAN>
-     <DD class="extends">      extends      <SPAN class="interface-title">XMLDocumentHandler</SPAN>
-      <SPAN class="interface-title">XMLDocumentSource</SPAN>
     </DL>
    </A></BLOCKQUOTE>
   <BLOCKQUOTE>
@@ -260,17 +204,6 @@
         <SPAN class="method-title">getDeclaredPrefixAt</SPAN>      (
         int <SPAN class="param-title">index</SPAN>          )       :
          <SPAN class="class-title">String</SPAN>
-      </UL>
-    </DL>
-   </A></BLOCKQUOTE>
-  <BLOCKQUOTE>
-   <A name="XMLDTDSource"><DL class="interface">
-     <DT>interface <SPAN class="interface-title">XMLDTDSource</SPAN>
-     <DD class="methods">      methods:      <UL>
-       <LI>
-        <SPAN class="method-title">setDTDHandler</SPAN>      (   <SPAN
-        class="interface-title">XMLDTDHandler</SPAN> <SPAN
-        class="param-title">dtdHandler</SPAN>          )
       </UL>
     </DL>
    </A></BLOCKQUOTE>
@@ -385,25 +318,6 @@
     </DL>
    </A></BLOCKQUOTE>
   <BLOCKQUOTE>
-   <A name="XMLDTDFilter"><DL class="interface">
-     <DT>interface <SPAN class="interface-title">XMLDTDFilter</SPAN>
-     <DD class="extends">      extends      <SPAN class="interface-title">XMLDTDHandler</SPAN>
-      <SPAN class="interface-title">XMLDTDSource</SPAN>
-    </DL>
-   </A></BLOCKQUOTE>
-  <BLOCKQUOTE>
-   <A name="XMLDTDContentModelSource"><DL class="interface">
-     <DT>interface <SPAN class="interface-title">XMLDTDContentModelSource</SPAN>
-     <DD class="methods">      methods:      <UL>
-       <LI>
-        <SPAN class="method-title">setDTDContentModelHandler</SPAN>
-        (   <SPAN
-        class="interface-title">XMLDTDContentModelHandler</SPAN> <SPAN
-        class="param-title">dtdContentModelHandler</SPAN>          )
-      </UL>
-    </DL>
-   </A></BLOCKQUOTE>
-  <BLOCKQUOTE>
    <A name="XMLDTDContentModelHandler"><DL class="interface">
      <DT>interface <SPAN class="interface-title">XMLDTDContentModelHandler</SPAN>
      <DD class="constants">      constants:      <UL>
@@ -447,13 +361,6 @@
         <SPAN class="method-title">endContentModel</SPAN>      (
         )
       </UL>
-    </DL>
-   </A></BLOCKQUOTE>
-  <BLOCKQUOTE>
-   <A name="XMLDTDContentModelFilter"><DL class="interface">
-     <DT>interface <SPAN class="interface-title">XMLDTDContentModelFilter</SPAN>
-     <DD class="extends">      extends      <SPAN class="interface-title">XMLDTDContentModelHandler</SPAN>
-      <SPAN class="interface-title">XMLDTDContentModelSource</SPAN>
     </DL>
    </A></BLOCKQUOTE>
   <BLOCKQUOTE>
@@ -618,6 +525,109 @@
       </UL>
     </DL>
    </A></BLOCKQUOTE>
+  <H3>XNI: Parser Pipeline</H3>
+  <BLOCKQUOTE>
+   <A name="XMLComponent"><DL class="interface">
+     <DT>interface <SPAN class="interface-title">XMLComponent</SPAN>
+     <DD class="methods">      methods:      <UL>
+       <LI>
+        <SPAN class="method-title">reset</SPAN>      (   <SPAN
+        class="interface-title">XMLComponentManager</SPAN> <SPAN
+        class="param-title">componentManager</SPAN>          )
+       <LI>
+        <SPAN class="method-title">getRecognizedFeatures</SPAN>      (
+         <SPAN class="class-title">String</SPAN>[]   <SPAN
+        class="param-title">recognizedFeatures</SPAN>          )
+       <LI>
+        <SPAN class="method-title">setFeature</SPAN>      (   <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">featureId</SPAN>, boolean <SPAN
+        class="param-title">state</SPAN>          )
+       <LI>
+        <SPAN class="method-title">getRecognizedProperties</SPAN>      (
+         <SPAN class="class-title">String</SPAN>[]   <SPAN
+        class="param-title">recognizedProperties</SPAN>          )
+       <LI>
+        <SPAN class="method-title">setProperty</SPAN>      (   <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">propertyId</SPAN>, <SPAN
+        class="class-title">Object</SPAN> <SPAN
+        class="param-title">value</SPAN>          )
+      </UL>
+    </DL>
+   </A></BLOCKQUOTE>
+  <BLOCKQUOTE>
+   <A name="XMLComponentManager"><DL class="interface">
+     <DT>interface <SPAN class="interface-title">XMLComponentManager</SPAN>
+     <DD class="methods">      methods:      <UL>
+       <LI>
+        <SPAN class="method-title">getFeature</SPAN>      (   <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">featureId</SPAN>          )       :    boolean
+       <LI>
+        <SPAN class="method-title">getProperty</SPAN>      (   <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">propertyId</SPAN>          )       :
+         <SPAN class="class-title">Object</SPAN>
+      </UL>
+    </DL>
+   </A></BLOCKQUOTE>
+  <BLOCKQUOTE>
+   <A name="XMLParserConfiguration"><DL class="interface">
+     <DT>interface <SPAN class="interface-title">XMLParserConfiguration</SPAN>
+     <DD class="methods">      methods:      <UL>
+       <LI>
+        <SPAN class="method-title">addRecognizedFeatures</SPAN>      (
+         <SPAN class="class-title">String</SPAN> <SPAN
+        class="param-title">featureIds</SPAN>          )
+       <LI>
+        <SPAN class="method-title">setFeature</SPAN>      (   <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">featureId</SPAN>, boolean <SPAN
+        class="param-title">state</SPAN>          )
+       <LI>
+        <SPAN class="method-title">getFeature</SPAN>      (   <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">featureId</SPAN>          )       :    boolean
+       <LI>
+        <SPAN class="method-title">addRecognizedProperties</SPAN>      (
+         <SPAN class="class-title">String</SPAN> <SPAN
+        class="param-title">propertyIds</SPAN>          )
+       <LI>
+        <SPAN class="method-title">setProperty</SPAN>      (   <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">propertyId</SPAN>, <SPAN
+        class="class-title">Object</SPAN> <SPAN
+        class="param-title">value</SPAN>          )
+       <LI>
+        <SPAN class="method-title">getProperty</SPAN>      (   <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">propertyId</SPAN>          )       :
+         <SPAN class="class-title">Object</SPAN>
+       <LI>
+        <SPAN class="method-title">setLocale</SPAN>      (   <SPAN
+        class="class-title">Locale</SPAN> <SPAN
+        class="param-title">locale</SPAN>          )
+       <LI>
+        <SPAN class="method-title">setDocumentHandler</SPAN>      (
+         <SPAN class="interface-title">XMLDocumentHandler</SPAN> <SPAN
+        class="param-title">documentHandler</SPAN>          )
+       <LI>
+        <SPAN class="method-title">setDTDHandler</SPAN>      (   <SPAN
+        class="interface-title">XMLDTDHandler</SPAN> <SPAN
+        class="param-title">dtdHandler</SPAN>          )
+       <LI>
+        <SPAN class="method-title">setDTDContentModelHandler</SPAN>
+        (   <SPAN
+        class="interface-title">XMLDTDContentModelHandler</SPAN> <SPAN
+        class="param-title">dtdContentModelHandler</SPAN>          )
+       <LI>
+        <SPAN class="method-title">parse</SPAN>      (   <SPAN
+        class="class-title">InputSource</SPAN> <SPAN
+        class="param-title">inputSource</SPAN>          )
+      </UL>
+    </DL>
+   </A></BLOCKQUOTE>
   <H3>Implementation: Core Components</H3>
   <BLOCKQUOTE>
    <A name="XMLErrorReporter"><DL class="class">
@@ -691,7 +701,7 @@
      <DT>class <SPAN class="class-title">XMLDocumentScanner</SPAN>
      <DD class="implements">      implements      <SPAN
       class="interface-title">XMLComponent</SPAN>, <SPAN
-      class="interface-title">XMLDocumentSource</SPAN>, <SPAN class="interface-title">XMLEntityHandler</SPAN>
+      class="class-title"></SPAN>, <SPAN class="interface-title">XMLEntityHandler</SPAN>
      <DD class="fields">      fields:      <UL>
        <LI>
         <SPAN class="class-title">SymbolTable</SPAN> <SPAN class="field-title">fSymbolTable</SPAN>
@@ -722,8 +732,8 @@
      <DT>class <SPAN class="class-title">XMLDTDScanner</SPAN>
      <DD class="implements">      implements      <SPAN
       class="interface-title">XMLComponent</SPAN>, <SPAN
-      class="interface-title">XMLDTDSource</SPAN>, <SPAN
-      class="interface-title">XMLDTDContentModelSource</SPAN>, <SPAN class="interface-title">XMLEntityHandler</SPAN>
+      class="class-title"></SPAN>, <SPAN class="class-title"></SPAN>,
+       <SPAN class="interface-title">XMLEntityHandler</SPAN>
      <DD class="fields">      fields:      <UL>
        <LI>
         <SPAN class="class-title">SymbolTable</SPAN> <SPAN class="field-title">fSymbolTable</SPAN>
@@ -988,7 +998,7 @@
    <A name="XMLValidator"><DL class="class">
      <DT>class <SPAN class="class-title">XMLValidator</SPAN>
      <DD class="implements">      implements      <SPAN
-      class="interface-title">XMLComponent</SPAN>, <SPAN class="interface-title">XMLDocumentFilter</SPAN>
+      class="interface-title">XMLComponent</SPAN>, <SPAN class="class-title"></SPAN>
      <DD class="fields">      fields:      <UL>
        <LI>
         <SPAN class="class-title">SymbolTable</SPAN> <SPAN class="field-title">fSymbolTable</SPAN>
@@ -1547,7 +1557,7 @@
      <DT>class <SPAN class="class-title">DTDGrammar</SPAN>
      <DD class="extends">      extends      <SPAN class="class-title">Grammar</SPAN>
      <DD class="implements">      implements      <SPAN
-      class="interface-title">XMLDTDFilter</SPAN>, <SPAN class="interface-title">XMLDTDContentModelFilter</SPAN>
+      class="class-title"></SPAN>, <SPAN class="class-title"></SPAN>
      <DD class="fields">      fields:      <UL>
        <LI>
         <SPAN class="interface-title">XMLDTDHandler</SPAN> <SPAN class="field-title">fDTDHandler</SPAN>
