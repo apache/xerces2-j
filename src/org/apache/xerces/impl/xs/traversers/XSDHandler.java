@@ -1764,39 +1764,41 @@ public class XSDHandler {
                 reportSchemaError("src-redefine.5.a.a", null, child);
             }
             else {
-                String grandKidName = grandKid.getLocalName();
+                String grandKidName = DOMUtil.getLocalName(grandKid);
                 if (grandKidName.equals(SchemaSymbols.ELT_ANNOTATION)) {
                     grandKid = DOMUtil.getNextSiblingElement(grandKid);
-                    grandKidName = grandKid.getLocalName();
                 }
                 if (grandKid == null) {
                     reportSchemaError("src-redefine.5.a.a", null, child);
                 }
-                else if (!grandKidName.equals(SchemaSymbols.ELT_RESTRICTION)) {
-                    reportSchemaError("src-redefine.5.a.b", new Object[]{grandKidName}, child);
-                }
                 else {
-                    Object[] attrs = fAttributeChecker.checkAttributes(grandKid, false, currSchema);
-                    QName derivedBase = (QName)attrs[XSAttributeChecker.ATTIDX_BASE];
-                    if (derivedBase == null ||
-                        derivedBase.uri != currSchema.fTargetNamespace ||
-                        !derivedBase.localpart.equals(oldName)) {
-                        reportSchemaError("src-redefine.5.a.c",
-                                          new Object[]{grandKidName,
-                                                       (currSchema.fTargetNamespace==null?"":currSchema.fTargetNamespace)
-                                                       + "," + oldName},
-                                          child);
+                    grandKidName = DOMUtil.getLocalName(grandKid);
+                    if (!grandKidName.equals(SchemaSymbols.ELT_RESTRICTION)) {
+                        reportSchemaError("src-redefine.5.a.b", new Object[]{grandKidName}, child);
                     }
                     else {
-                        // now we have to do the renaming...
-                        if (derivedBase.prefix != null && derivedBase.prefix.length() > 0)
-                            grandKid.setAttribute( SchemaSymbols.ATT_BASE,
-                                                   derivedBase.prefix + ":" + newName );
-                        else
-                            grandKid.setAttribute( SchemaSymbols.ATT_BASE, newName );
-//                        return true;
+                        Object[] attrs = fAttributeChecker.checkAttributes(grandKid, false, currSchema);
+                        QName derivedBase = (QName)attrs[XSAttributeChecker.ATTIDX_BASE];
+                        if (derivedBase == null ||
+                            derivedBase.uri != currSchema.fTargetNamespace ||
+                            !derivedBase.localpart.equals(oldName)) {
+                            reportSchemaError("src-redefine.5.a.c",
+                                              new Object[]{grandKidName,
+                                                           (currSchema.fTargetNamespace==null?"":currSchema.fTargetNamespace)
+                                                           + "," + oldName},
+                                              child);
+                        }
+                        else {
+                            // now we have to do the renaming...
+                            if (derivedBase.prefix != null && derivedBase.prefix.length() > 0)
+                                grandKid.setAttribute( SchemaSymbols.ATT_BASE,
+                                                       derivedBase.prefix + ":" + newName );
+                            else
+                                grandKid.setAttribute( SchemaSymbols.ATT_BASE, newName );
+//                            return true;
+                        }
+                        fAttributeChecker.returnAttrArray(attrs, currSchema);
                     }
-                    fAttributeChecker.returnAttrArray(attrs, currSchema);
                 }
             }
         }
@@ -1806,7 +1808,7 @@ public class XSDHandler {
                 reportSchemaError("src-redefine.5.b.a", null, child);
             }
             else {
-                if (grandKid.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
+                if (DOMUtil.getLocalName(grandKid).equals(SchemaSymbols.ELT_ANNOTATION)) {
                     grandKid = DOMUtil.getNextSiblingElement(grandKid);
                 }
                 if (grandKid == null) {
@@ -1819,39 +1821,41 @@ public class XSDHandler {
                         reportSchemaError("src-redefine.5.b.b", null, grandKid);
                     }
                     else {
-                        String greatGrandKidName = greatGrandKid.getLocalName();
+                        String greatGrandKidName = DOMUtil.getLocalName(greatGrandKid);
                         if (greatGrandKidName.equals(SchemaSymbols.ELT_ANNOTATION)) {
                             greatGrandKid = DOMUtil.getNextSiblingElement(greatGrandKid);
-                            greatGrandKidName = greatGrandKid.getLocalName();
                         }
                         if (greatGrandKid == null) {
                             reportSchemaError("src-redefine.5.b.b", null, grandKid);
                         }
-                        else if (!greatGrandKidName.equals(SchemaSymbols.ELT_RESTRICTION) &&
-                                 !greatGrandKidName.equals(SchemaSymbols.ELT_EXTENSION)) {
-                            reportSchemaError("src-redefine.5.b.c", new Object[]{greatGrandKidName}, greatGrandKid);
-                        }
                         else {
-                            Object[] attrs = fAttributeChecker.checkAttributes(greatGrandKid, false, currSchema);
-                            QName derivedBase = (QName)attrs[XSAttributeChecker.ATTIDX_BASE];
-                            if (derivedBase == null ||
-                                derivedBase.uri != currSchema.fTargetNamespace ||
-                                !derivedBase.localpart.equals(oldName)) {
-                                reportSchemaError("src-redefine.5.b.d",
-                                                  new Object[]{greatGrandKidName,
-                                                               (currSchema.fTargetNamespace==null?"":currSchema.fTargetNamespace)
-                                                               + "," + oldName},
-                                                  greatGrandKid);
+                            greatGrandKidName = DOMUtil.getLocalName(greatGrandKid);
+                            if (!greatGrandKidName.equals(SchemaSymbols.ELT_RESTRICTION) &&
+                                 !greatGrandKidName.equals(SchemaSymbols.ELT_EXTENSION)) {
+                                reportSchemaError("src-redefine.5.b.c", new Object[]{greatGrandKidName}, greatGrandKid);
                             }
                             else {
-                                // now we have to do the renaming...
-                                if (derivedBase.prefix != null && derivedBase.prefix.length() > 0)
-                                    greatGrandKid.setAttribute( SchemaSymbols.ATT_BASE,
-                                                                derivedBase.prefix + ":" + newName );
-                                else
-                                    greatGrandKid.setAttribute( SchemaSymbols.ATT_BASE,
-                                                                newName );
-//                                return true;
+                                Object[] attrs = fAttributeChecker.checkAttributes(greatGrandKid, false, currSchema);
+                                QName derivedBase = (QName)attrs[XSAttributeChecker.ATTIDX_BASE];
+                                if (derivedBase == null ||
+                                    derivedBase.uri != currSchema.fTargetNamespace ||
+                                    !derivedBase.localpart.equals(oldName)) {
+                                    reportSchemaError("src-redefine.5.b.d",
+                                                      new Object[]{greatGrandKidName,
+                                                                   (currSchema.fTargetNamespace==null?"":currSchema.fTargetNamespace)
+                                                                   + "," + oldName},
+                                                      greatGrandKid);
+                                }
+                                else {
+                                    // now we have to do the renaming...
+                                    if (derivedBase.prefix != null && derivedBase.prefix.length() > 0)
+                                        greatGrandKid.setAttribute( SchemaSymbols.ATT_BASE,
+                                                                    derivedBase.prefix + ":" + newName );
+                                    else
+                                        greatGrandKid.setAttribute( SchemaSymbols.ATT_BASE,
+                                                                    newName );
+//                                    return true;
+                                }
                             }
                         }
                     }
@@ -1936,7 +1940,7 @@ public class XSDHandler {
         int result = 0;
         for (Element child = DOMUtil.getFirstChildElement(curr);
             child != null; child = DOMUtil.getNextSiblingElement(child)) {
-            String name = child.getLocalName();
+            String name = DOMUtil.getLocalName(child);
             if (!name.equals(elementSought))
                 result += changeRedefineGroup(originalQName, elementSought, newName, child, schemaDoc);
             else {
