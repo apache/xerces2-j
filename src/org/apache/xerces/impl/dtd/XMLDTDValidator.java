@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  
+ * Copyright (c) 1999-2003 The Apache Software Foundation.  
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -260,7 +260,7 @@ public class XMLDTDValidator
     protected DTDGrammarBucket fGrammarBucket;
 
     /* location of the document as passed in from startDocument call */
-    protected XMLResourceIdentifier fDocLocation;
+    protected XMLLocator fDocLocation;
 
     /** Namespace support. */
     protected NamespaceContext fNamespaceContext = null;

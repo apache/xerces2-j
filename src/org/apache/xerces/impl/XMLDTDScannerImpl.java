@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  
+ * Copyright (c) 1999-2003 The Apache Software Foundation.  
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,10 +66,10 @@ import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 
 import org.apache.xerces.util.AugmentationsImpl;
+import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.XMLStringBuffer;
-import org.apache.xerces.util.SymbolTable;
 
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
@@ -538,8 +538,9 @@ public class XMLDTDScannerImpl
             if (fDTDHandler != null && !fStartDTDCalled ) {
                 fDTDHandler.startDTD(fEntityScanner, null);
             }
-            if (fDTDHandler != null)
-                fDTDHandler.startExternalSubset(fEntityScanner,null);
+            if (fDTDHandler != null) {
+                fDTDHandler.startExternalSubset(identifier,null);
+            }
             fEntityManager.startExternalSubset();
             fExtEntityDepth++;
         }

@@ -68,12 +68,23 @@ package org.apache.xerces.xni;
  *
  * @version $Id$
  */
-public interface XMLLocator
-    extends XMLResourceIdentifier {
+public interface XMLLocator {
 
     //
     // XMLLocator methods
     //
+    
+    /** Returns the public identifier. */
+    public String getPublicId();
+    
+    /** Returns the literal system identifier. */
+    public String getLiteralSystemId();
+    
+    /** Returns the base system identifier. */
+    public String getBaseSystemId();
+    
+    /** Returns the expanded system identifier. */
+    public String getExpandedSystemId();
     
     /** Returns the line number. */
     public int getLineNumber();
