@@ -997,6 +997,9 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      */
     public void startExternalSubset(Augmentations augs) throws XNIException {
         fDTDGrammar.startExternalSubset(augs);
+        if(fDTDHandler != null){
+            fDTDHandler.startExternalSubset(augs);
+        }
     }
 
     /**
@@ -1008,7 +1011,10 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void endExternalSubset(Augmentations augs) throws XNIException {
-        fDTDGrammar.startExternalSubset(augs);
+        fDTDGrammar.endExternalSubset(augs);
+        if(fDTDHandler != null){
+            fDTDHandler.endExternalSubset(augs);
+        }
     }
 
     /**
