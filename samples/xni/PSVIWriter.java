@@ -877,11 +877,11 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         sendElementEvent("prefix", "xml");
         sendElementEvent("namespaceName", NamespaceContext.XML_URI);
         sendUnIndentedElement("namespace");
-        Enumeration enum = fNamespaceContext.getAllPrefixes();
-        while (enum.hasMoreElements()) {
+        Enumeration prefixes = fNamespaceContext.getAllPrefixes();
+        while (prefixes.hasMoreElements()) {
             sendIndentedElement("namespace");
 
-            String prefix = (String)enum.nextElement();
+            String prefix = (String)prefixes.nextElement();
             String uri = fNamespaceContext.getURI(prefix);
             sendElementEvent("prefix", prefix);
             sendElementEvent("namespaceName", uri);
