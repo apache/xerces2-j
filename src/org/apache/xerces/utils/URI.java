@@ -380,7 +380,8 @@ import java.io.Serializable;
     // Check for scheme, which must be before `/'. Also handle names with
     // DOS drive letters ('D:'), so 1-character schemes are not allowed.
     int colonIdx = uriSpec.indexOf(':');
-    if ((colonIdx < 2) || (colonIdx > uriSpec.indexOf('/'))) { 
+    int slashIdx = uriSpec.indexOf('/');
+    if ((colonIdx < 2) || (colonIdx > slashIdx && slashIdx != -1)) { 
       int fragmentIdx = uriSpec.indexOf('#');
       // A standalone base is a valid URI according to spec
       if (p_base == null && fragmentIdx != 0 ) {
