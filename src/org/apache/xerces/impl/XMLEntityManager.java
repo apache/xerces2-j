@@ -63,6 +63,8 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.net.URL;
+import java.net.HttpURLConnection;
+import java.net.URLConnection;
 import java.util.Hashtable;
 import java.util.Locale;
 import java.util.Stack;
@@ -917,7 +919,7 @@ public class XMLEntityManager
         // get information
 
         final String publicId = xmlInputSource.getPublicId();
-        final String literalSystemId = xmlInputSource.getSystemId();
+        String literalSystemId = xmlInputSource.getSystemId();
         String baseSystemId = xmlInputSource.getBaseSystemId();
         String encoding = xmlInputSource.getEncoding();
         Boolean isBigEndian = null;
@@ -933,7 +935,22 @@ public class XMLEntityManager
         if (reader == null) {
             stream = xmlInputSource.getByteStream();
             if (stream == null) {
-                stream = new URL(expandedSystemId).openStream();
+                URL location = new URL(expandedSystemId);
+                URLConnection connect = location.openConnection();
+                stream = connect.getInputStream();
+                
+                // REVISIT: If the URLConnection has external encoding
+                // information, we should be reading it here. It's located
+                // in the charset parameter of Content-Type. -- mrglavas
+                if (connect instanceof HttpURLConnection) {
+                    String redirect = connect.getURL().toString();
+                    // E43: Check if the URL was redirected, and then
+                    // update literal and expanded system IDs if needed.
+                    if (!redirect.equals(expandedSystemId)) {
+                        literalSystemId = redirect;
+                        expandedSystemId = redirect;
+                    }
+                }
             }
             // wrap this stream in RewindableInputStream
             stream = new RewindableInputStream(stream);
