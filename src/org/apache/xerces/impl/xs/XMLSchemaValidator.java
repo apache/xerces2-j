@@ -430,8 +430,7 @@ public class XMLSchemaValidator
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void characters(XMLString text) throws XNIException {
-        if (fSkipValidationDepth >= 0)
-            return;
+
         boolean allWhiteSpace = true;
         for (int i=text.offset; i< text.offset+text.length; i++) {
             if (!XMLChar.isSpace(text.ch[i])) {
@@ -445,11 +444,13 @@ public class XMLSchemaValidator
             fSawCharacters = true;
         }
 
-
         // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.characters(text);
         }
+
+        if (fSkipValidationDepth >= 0)
+            return;
 
         // call all active identity constraints
         int count = fMatcherStack.getMatcherCount();
@@ -477,6 +478,9 @@ public class XMLSchemaValidator
         if (fDocumentHandler != null) {
             fDocumentHandler.ignorableWhitespace(text);
         }
+
+        if (fSkipValidationDepth >= 0)
+            return;
 
         // call all active identity constraints
         int count = fMatcherStack.getMatcherCount();
