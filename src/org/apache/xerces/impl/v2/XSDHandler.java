@@ -212,7 +212,7 @@ class XSDHandler {
     XSDComplexTypeTraverser fComplexTypeTraverser;
     XSDElementTraverser fElementTraverser;
     XSDGroupTraverser fGroupTraverser;
-    XSDKeyrefTraverser fKeyrefTraverser;;
+    XSDKeyrefTraverser fKeyrefTraverser;
     XSDNotationTraverser fNotationTraverser;
     XSDSimpleTypeTraverser fSimpleTypeTraverser;
     XSDUniqueOrKeyTraverser fUniqueOrKeyTraverser;
@@ -402,8 +402,12 @@ class XSDHandler {
                 break;
             }
 
-             // If the schema is duplicate, we needn't call constructTrees() again.
-             // To handle mutual <include>s
+            // If the schema is duplicate, we needn't call constructTrees() again.
+            // To handle mutual <include>s
+
+            // REVISIT: this creates a bug if the same document is both
+            //          imported and included. then only the first one takes
+            //          effect.
 
             XSDocumentInfo newSchemaInfo = null;
              if (fLastSchemaWasDuplicate) {
@@ -883,7 +887,7 @@ class XSDHandler {
             //          default entity resolver). but it's not clear to me
             //          whether the same applies for DTD.
             if (schemaSource != null && schemaSource.getSystemId() != null) {
-                StringBuffer schemaIdBuf = new StringBuffer();;
+                StringBuffer schemaIdBuf = new StringBuffer();
                 if(schemaSource.getPublicId() != null)
                     schemaIdBuf.append(schemaSource.getPublicId());
                 if(schemaSource.getSystemId() != null)
@@ -977,7 +981,7 @@ class XSDHandler {
         // and do same for keyrefs.
         fKeyrefStackPos = 0;
         fKeyrefs = new Element[INIT_KEYREF_STACK];
-        fKeyrefElems = new XSElementDecl [INIT_KEYREF_STACK];;
+        fKeyrefElems = new XSElementDecl [INIT_KEYREF_STACK];
         fKeyrefNamespaceContext = new String[INIT_KEYREF_STACK][1];
 
         // reset traversers
