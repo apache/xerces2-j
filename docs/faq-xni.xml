@@ -137,9 +137,17 @@
     </tr>
     <tr>
      <td>XML11Configuration</td>
-     <td>Like IntegratedParserConfiguration except that is supports XML 1.1
+     <td>Like IntegratedParserConfiguration except that it supports XML 1.1
          in addition to XML 1.0.
      </td>
+    </tr>
+    <tr>
+     <td>XML11DTDConfiguration</td>
+     <td>Like DTDConfiguration except that it supports XML 1.1 in addition to XML 1.0.</td>
+    </tr>
+    <tr>
+     <td>XML11NonValidatingConfiguration</td>
+     <td>Like NonValidatingConfiguration except that it supports XML 1.1 in addition to XML 1.0.</td>
     </tr>
     <tr>
      <td>XMLGrammarCachingConfiguration</td>
