@@ -978,7 +978,7 @@ public class DocumentImpl
     //
 
     /**
-     * Introduced in DOM Level 2. Optional. <p>
+     * NON-DOM extension:
      * Create and return a NodeIterator. The NodeIterator is
      * added to a list of NodeIterators so that it can be
      * removed to free up the DOM Nodes it references.
@@ -989,7 +989,6 @@ public class DocumentImpl
      * @param root The root of the iterator.
      * @param whatToShow The whatToShow mask.
      * @param filter The NodeFilter installed. Null means no filter.
-     * @since WD-DOM-Level-2-19990923
      */
     public NodeIterator createNodeIterator(Node root,
                                            short whatToShow,
@@ -998,7 +997,7 @@ public class DocumentImpl
         return createNodeIterator(root,whatToShow,filter,true);
     }    
      
-    /** NON-DOM extension:
+    /**
      * Create and return a NodeIterator. The NodeIterator is
      * added to a list of NodeIterators so that it can be
      * removed to free up the DOM Nodes it references.
@@ -1033,7 +1032,7 @@ public class DocumentImpl
     }
 
     /**
-     * Introduced in DOM Level 2. Optional. <p>
+     * NON-DOM extension:
      * Create and return a TreeWalker. The TreeWalker is
      * added to a list of TreeWalkers so that it can be
      * removed to free up the DOM Nodes it references.
@@ -1044,7 +1043,6 @@ public class DocumentImpl
      * @param root The root of the iterator.
      * @param whatToShow The whatToShow mask.
      * @param filter The NodeFilter installed. Null means no filter.
-     * @since WD-DOM-Level-2-19990923
      */
     public TreeWalker createTreeWalker(Node root,
                                        short whatToShow,
@@ -1053,7 +1051,6 @@ public class DocumentImpl
         return createTreeWalker(root,whatToShow,filter,true);
     }
     /**
-     * NON-DOM extension:
      * Create and return a TreeWalker. The TreeWalker is
      * added to a list of TreeWalkers so that it can be
      * removed to free up the DOM Nodes it references.
