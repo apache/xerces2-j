@@ -60,6 +60,7 @@ package org.apache.xerces.util;
 
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.XMLResourceIdentifier;
+import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 
@@ -90,7 +91,10 @@ public class DOMEntityResolverWrapper
     //
 
     /** XML 1.0 type constant according to DOM L3 LS CR spec "http://www.w3.org/TR/2003/CR-DOM-Level-3-LS-20031107" */
-    private static final String XML_TYPE="http://www.w3.org/TR/REC-xml";
+    private static final String XML_TYPE = "http://www.w3.org/TR/REC-xml";
+    
+    /** XML Schema constant according to DOM L3 LS CR spec "http://www.w3.org/TR/2003/CR-DOM-Level-3-LS-20031107" */
+    private static final String XSD_TYPE = "http://www.w3.org/2001/XMLSchema";
 
     /** The DOM entity resolver. */
     protected LSResourceResolver fEntityResolver;
@@ -150,7 +154,7 @@ public class DOMEntityResolverWrapper
                             null,
                             null)
                         : fEntityResolver.resolveResource(
-                            XML_TYPE,
+                            getType(resourceIdentifier),
                             resourceIdentifier.getNamespace(),
                             resourceIdentifier.getPublicId(),
                             resourceIdentifier.getLiteralSystemId(),
@@ -194,5 +198,16 @@ public class DOMEntityResolverWrapper
         return null;
 
     } // resolveEntity(String,String,String):XMLInputSource
+    
+    /** Determines the type of resource being resolved **/
+    private String getType(XMLResourceIdentifier resourceIdentifier) {
+        if (resourceIdentifier instanceof XMLGrammarDescription) {
+            XMLGrammarDescription desc = (XMLGrammarDescription) resourceIdentifier;
+            if (desc.getGrammarType() == XMLGrammarDescription.XML_SCHEMA) {
+                return XSD_TYPE;
+            }
+        }
+        return XML_TYPE;
+    } // getType(XMLResourceIdentifier):String
     
 } // DOMEntityResolverWrapper
