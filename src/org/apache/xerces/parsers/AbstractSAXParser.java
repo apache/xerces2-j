@@ -90,7 +90,7 @@ import org.xml.sax.ext.LexicalHandler;
  *
  * @version $Id$ */
 public abstract class AbstractSAXParser
-    extends XMLDocumentParser
+    extends AbstractXMLDocumentParser
     implements Parser, XMLReader // SAX1, SAX2
     {
 
@@ -127,6 +127,13 @@ public abstract class AbstractSAXParser
     /** Default constructor. */
     protected AbstractSAXParser() {
     } // <init>()
+
+    /**
+     * Constructs a SAX parser using the specified symbol table.
+     */
+    protected AbstractSAXParser(SymbolTable symbolTable) {
+        super(symbolTable);
+    } // <init>(SymbolTable)
 
     //
     // XMLDocumentHandler methods

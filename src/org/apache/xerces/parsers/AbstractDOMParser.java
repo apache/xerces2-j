@@ -93,7 +93,7 @@ import org.xml.sax.SAXException;
  * 
  * @version $Id$ */
 public abstract class AbstractDOMParser
-    extends XMLDocumentParser {
+    extends AbstractXMLDocumentParser {
 
     //
     // Data
@@ -133,6 +133,13 @@ public abstract class AbstractDOMParser
     /** Default constructor. */
     protected AbstractDOMParser() {
     } // <init>()
+
+    /**
+     * Constructs a DOM parser using the specified symbol table.
+     */
+    protected AbstractDOMParser(SymbolTable symbolTable) {
+        super(symbolTable);
+    } // <init>(SymbolTable)
 
     //
     // Public methods

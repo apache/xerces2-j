@@ -186,6 +186,18 @@ public abstract class XMLParser
     } // <init>
 
     /**
+     * Constructs a document parser using the specified symbol table
+     * and a default grammar pool.
+     *
+     */
+    protected XMLParser(SymbolTable symbolTable) {
+        this();
+        final String SYMBOL_TABLE = Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
+        fSymbolTable = new SymbolTable();
+        fProperties.put(SYMBOL_TABLE, fSymbolTable);
+    } // <init>(SymbolTable)
+
+    /**
      * Initialize the parser with all the components specified via the
      * properties plus any missing ones. This method MUST be called before
      * parsing. It is not called from the constructor though, so that the

@@ -126,10 +126,30 @@ public class DOMParser
     //
 
     /**
-     * Constructs a DOM parser.
+     * Constructs a DOM parser using the default symbol table and grammar pool
+     * or the ones specified by the application (through the properties).
      */
     public DOMParser() {
     } // <init>
+
+    /**
+     * Constructs a DOM parser using the specified symbol table.
+     */
+    public DOMParser(SymbolTable symbolTable) {
+        super(symbolTable);
+    } // <init>(SymbolTable)
+
+    /**
+     * Constructs a DOM parser using the specified symbol table and grammar
+     * pool.
+     */
+    public DOMParser(SymbolTable symbolTable, GrammarPool grammarPool) {
+        super(symbolTable);
+
+        final String GRAMMAR_POOL = Constants.XERCES_PROPERTY_PREFIX + Constants.GRAMMAR_POOL_PROPERTY;
+        fGrammarPool = new GrammarPool();
+        fProperties.put(GRAMMAR_POOL, fGrammarPool);
+    }
 
     /**
      * Initialize the parser with all the components specified via the

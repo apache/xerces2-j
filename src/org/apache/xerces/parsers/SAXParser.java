@@ -132,6 +132,25 @@ public class SAXParser
     } // <init>
 
     /**
+     * Constructs a SAX parser using the specified symbol table.
+     */
+    public SAXParser(SymbolTable symbolTable) {
+        super(symbolTable);
+    } // <init>(SymbolTable)
+
+    /**
+     * Constructs a SAX parser using the specified symbol table and grammar
+     * pool.
+     */
+    public SAXParser(SymbolTable symbolTable, GrammarPool grammarPool) {
+        super(symbolTable);
+
+        final String GRAMMAR_POOL = Constants.XERCES_PROPERTY_PREFIX + Constants.GRAMMAR_POOL_PROPERTY;
+        fGrammarPool = new GrammarPool();
+        fProperties.put(GRAMMAR_POOL, fGrammarPool);
+    }
+
+    /**
      * Initialize the parser with all the components specified via the
      * properties plus any missing ones. This method MUST be called before
      * parsing. It is not called from the constructor though, so that the
