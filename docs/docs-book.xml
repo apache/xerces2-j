@@ -10,13 +10,14 @@
 
   <separator/>
   <document id="api"         label="API Docs"     source="api.xml"         />
-  <document id="samples"     label="Samples"      source="samples.xml"     />
-				   <hidden   id="domcount"        source="sam-domcount.xml"/>
-				   <hidden   id="domwriter"       source="sam-domwriter.xml"/>
-				   <hidden   id="domfilter"       source="sam-domfilter.xml"/>
-				   <hidden   id="iterator"        source="sam-iterator.xml"/>
-				   <hidden   id="tree"            source="sam-tree.xml"    />
-				   <hidden   id="treeview"        source="sam-treeview.xml"    />
+  <container id="samples"     label="Samples"      source="samples.xml">
+	<entry  id="domcount"        source="sam-domcount.xml" />
+	<entry  id="domwriter"       source="sam-domwriter.xml"/>
+	<entry  id="domfilter"       source="sam-domfilter.xml"/>
+	<entry  id="iterator"        source="sam-iterator.xml" />
+	<entry  id="tree"            source="sam-tree.xml"     />
+	<entry  id="treeview"        source="sam-treeview.xml" />
+  </container>
   <document id="schema"      label="Schema"       source="schema.xml"      />
 
   <separator/>
@@ -30,7 +31,7 @@
     <entry  id="faq-migrate"                      source="faq-migrate.xml" />
     <entry  id="faq-common"                       source="faq-common.xml"  />
   </group>
-				   <hidden   id="jpc"       	  source="javapurecheck.xml"/>
+	<hidden   id="jpc"       	  source="javapurecheck.xml"/>
 
   <separator/>
   <document id="releases"    label="Releases"     source="releases.xml"    />
