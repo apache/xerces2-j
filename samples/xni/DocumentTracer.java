@@ -301,7 +301,9 @@ public class DocumentTracer
 
     public void startAttlist(String elementName) throws SAXException {
         printIndent();
-        System.out.println("startAttlist(\"" + elementName + ")");
+        System.out.print("startAttlist(");
+        System.out.print("elementName="+quoteString(elementName));
+        System.out.println(')');
         fIndent++;
     } // startAttlist
 
