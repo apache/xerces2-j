@@ -237,6 +237,7 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
     private void checkContent( String content,  Object state )throws InvalidDatatypeValueException
     {
         StringTokenizer parsedList = new StringTokenizer( content );
+        boolean enumOn = false; //if enumeration facet present
         try {
             int numberOfTokens =  parsedList.countTokens();
             if ( (fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 ) {
@@ -265,15 +266,26 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
             if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 ) {
                 // Enumerations are defined in the value space so the contains method
                 // of vector doesn't really do the right thing, we really should check using compare
-                if ( fEnumeration.contains( content ) == false )
-                    throw new InvalidDatatypeValueException("Value '"+
-                                                            content+"' must be one of "+fEnumeration);
+                enumOn = true;
             }
             
-            if (this.fDerivedByList) {
+            if (this.fDerivedByList || enumOn) {
+                if( numberOfTokens == 0 ){
+                       InvalidDatatypeValueException error = new InvalidDatatypeValueException( content );
+                       throw error;
+                   }
+
+                String token = null;
                 while ( parsedList.hasMoreTokens() ) {       //Check each token in list against base type
+                    token = parsedList.nextToken();
+                    if (enumOn) {
+                        if ( fEnumeration.contains( token ) == false )
+                            throw new InvalidDatatypeValueException("Value '"+
+                                                                    token +"' must be one of "+fEnumeration);
+                    }
+                    
                     if ( this.fBaseValidator != null ) {//validate against parent type if any
-                        this.fBaseValidator.validate( parsedList.nextToken(), state );
+                        this.fBaseValidator.validate( token, state );
                     }
                 }
             }
