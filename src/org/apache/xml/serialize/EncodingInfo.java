@@ -62,7 +62,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import sun.io.CharToByteConverter;
 import org.apache.xerces.util.EncodingMap;
 
 /**
@@ -72,15 +71,28 @@ import org.apache.xerces.util.EncodingMap;
  */
 public class EncodingInfo {
 
+    // Method: sun.io.CharToByteConverter.getConverter(java.lang.String)
+    private static java.lang.reflect.Method fgGetConverterMethod = null; 
+    
+    // Method: sun.io.CharToByteConverter.canConvert(char)
+    private static java.lang.reflect.Method fgCanConvertMethod = null;
+    
+    // Flag indicating whether or not sun.io.CharToByteConverter is available.
+    private static boolean fgConvertersAvailable = false;
+    
+    // An array to hold the argument for a method of CharToByteConverter.
+    private Object [] fArgsForMethod = null;
+    
     // name of encoding as registered with IANA;
     // preferably a MIME name, but aliases are fine too.
     String ianaName;
     String javaName;
     int lastPrintable;
-    // the charToByteConverter we test unusual characters
-    // with
-    CharToByteConverter fCToB = null;
-    // is the converter null because it can't be instantiated
+    
+    // The charToByteConverter with which we test unusual characters.
+    Object fCharToByteConverter = null;
+    
+    // Is the converter null because it can't be instantiated
     // for some reason (perhaps we're running with insufficient authority as 
     // an applet?
     boolean fHaveTriedCToB = false;
@@ -130,14 +142,18 @@ public class EncodingInfo {
         if(ch <= this.lastPrintable) 
             return true;
         
-        if(fCToB == null) {
-            if(fHaveTriedCToB) {
+        if(fCharToByteConverter == null) {
+            if(fHaveTriedCToB || !fgConvertersAvailable) {
                 // forget it; nothing we can do...
                 return false;
             }
+            if (fArgsForMethod == null) {
+                fArgsForMethod = new Object [1];
+            }
             // try and create it:
             try {
-                fCToB = CharToByteConverter.getConverter(javaName);
+                fArgsForMethod[0] = javaName;
+                fCharToByteConverter = fgGetConverterMethod.invoke(null, fArgsForMethod);
             } catch(Exception e) {   
                 // don't try it again...
                 fHaveTriedCToB = true;
@@ -145,11 +161,12 @@ public class EncodingInfo {
             }
         }
         try {
-            return fCToB.canConvert(ch); 
+            fArgsForMethod[0] = new Character(ch);
+            return ((Boolean) fgCanConvertMethod.invoke(fCharToByteConverter, fArgsForMethod)).booleanValue();
         } catch (Exception e) {
             // obviously can't use this converter; probably some kind of
             // security restriction
-            fCToB = null;
+            fCharToByteConverter = null;
             fHaveTriedCToB = false;
             return false;
         }
@@ -160,5 +177,23 @@ public class EncodingInfo {
     public static void testJavaEncodingName(String name)  throws UnsupportedEncodingException {
         final byte [] bTest = {(byte)'v', (byte)'a', (byte)'l', (byte)'i', (byte)'d'};
         String s = new String(bTest, name);
+    }
+    
+    // Attempt to get methods for char to byte 
+    // converter on class initialization.
+    static {
+        try {
+            Class clazz = Class.forName("sun.io.CharToByteConverter");
+            fgGetConverterMethod = clazz.getMethod("getConverter", new Class [] {String.class});
+            fgCanConvertMethod = clazz.getMethod("canConvert", new Class [] {Character.TYPE});
+            fgConvertersAvailable = true;
+        }
+        // ClassNotFoundException, NoSuchMethodException or SecurityException
+        // Whatever the case, we cannot use sun.io.CharToByteConverter.
+        catch (Exception exc) {
+            fgGetConverterMethod = null;
+            fgCanConvertMethod = null;
+            fgConvertersAvailable = false;
+        }
     }
 }
