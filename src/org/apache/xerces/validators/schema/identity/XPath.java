@@ -60,6 +60,7 @@ package org.apache.xerces.validators.schema.identity;
 import org.apache.xerces.utils.NamespacesScope;
 import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.StringPool;
+import org.apache.xerces.utils.XMLCharacterProperties;
 
 /**
  * Bare minimum XPath parser.
@@ -101,6 +102,7 @@ public class XPath {
     public XPath(String xpath, StringPool stringPool, 
                  NamespacesScope context) 
         throws XPathException {
+        XMLCharacterProperties.initCharFlags();
         fExpression = xpath;
         fStringPool = stringPool;
         parseExpression(context);
@@ -783,30 +785,30 @@ public class XPath {
          *                  | AxisName | Literal | Number | VariableReference
          */
         public static final int
-            EXPRTOKEN_OPEN_PAREN                    = -1000,
-            EXPRTOKEN_CLOSE_PAREN                   = -1001,
-            EXPRTOKEN_OPEN_BRACKET                  = -1002,
-            EXPRTOKEN_CLOSE_BRACKET                 = -1003,
-            EXPRTOKEN_PERIOD                        = -1004,
-            EXPRTOKEN_DOUBLE_PERIOD                 = -1005,
-            EXPRTOKEN_ATSIGN                        = -1006,
-            EXPRTOKEN_COMMA                         = -1007,
-            EXPRTOKEN_DOUBLE_COLON                  = -1008,
+            EXPRTOKEN_OPEN_PAREN                    =   0,
+            EXPRTOKEN_CLOSE_PAREN                   =   1,
+            EXPRTOKEN_OPEN_BRACKET                  =   2,
+            EXPRTOKEN_CLOSE_BRACKET                 =   3,
+            EXPRTOKEN_PERIOD                        =   4,
+            EXPRTOKEN_DOUBLE_PERIOD                 =   5,
+            EXPRTOKEN_ATSIGN                        =   6,
+            EXPRTOKEN_COMMA                         =   7,
+            EXPRTOKEN_DOUBLE_COLON                  =   8,
             //
             // [37] NameTest ::= '*' | NCName ':' '*' | QName
             //
             // followed by symbol handle of NCName or QName
             //
-            EXPRTOKEN_NAMETEST_ANY                  = -1009,
-            EXPRTOKEN_NAMETEST_NAMESPACE            = -1010,
-            EXPRTOKEN_NAMETEST_QNAME                = -1011,
+            EXPRTOKEN_NAMETEST_ANY                  =   9,
+            EXPRTOKEN_NAMETEST_NAMESPACE            =  10,
+            EXPRTOKEN_NAMETEST_QNAME                =  11,
             //
             // [38] NodeType ::= 'comment' | 'text' | 'processing-instruction' | 'node'
             //
-            EXPRTOKEN_NODETYPE_COMMENT              = -1012,
-            EXPRTOKEN_NODETYPE_TEXT                 = -1013,
-            EXPRTOKEN_NODETYPE_PI                   = -1014,
-            EXPRTOKEN_NODETYPE_NODE                 = -1015,
+            EXPRTOKEN_NODETYPE_COMMENT              =  12,
+            EXPRTOKEN_NODETYPE_TEXT                 =  13,
+            EXPRTOKEN_NODETYPE_PI                   =  14,
+            EXPRTOKEN_NODETYPE_NODE                 =  15,
             //
             // [32] Operator ::= OperatorName
             //                 | MultiplyOperator
@@ -814,31 +816,32 @@ public class XPath {
             // [33] OperatorName ::= 'and' | 'or' | 'mod' | 'div'
             // [34] MultiplyOperator ::= '*'
             //
-            EXPRTOKEN_OPERATOR_AND                  = -1016,
-            EXPRTOKEN_OPERATOR_OR                   = -1017,
-            EXPRTOKEN_OPERATOR_MOD                  = -1018,
-            EXPRTOKEN_OPERATOR_DIV                  = -1019,
-            EXPRTOKEN_OPERATOR_MULT                 = -1020,
-            EXPRTOKEN_OPERATOR_SLASH                = -1021,
-            EXPRTOKEN_OPERATOR_DOUBLE_SLASH         = -1022,
-            EXPRTOKEN_OPERATOR_UNION                = -1023,
-            EXPRTOKEN_OPERATOR_PLUS                 = -1024,
-            EXPRTOKEN_OPERATOR_MINUS                = -1025,
-            EXPRTOKEN_OPERATOR_EQUAL                = -1026,
-            EXPRTOKEN_OPERATOR_NOT_EQUAL            = -1027,
-            EXPRTOKEN_OPERATOR_LESS                 = -1028,
-            EXPRTOKEN_OPERATOR_LESS_EQUAL           = -1029,
-            EXPRTOKEN_OPERATOR_GREATER              = -1030,
-            EXPRTOKEN_OPERATOR_GREATER_EQUAL        = -1031,
+            EXPRTOKEN_OPERATOR_AND                  =  16,
+            EXPRTOKEN_OPERATOR_OR                   =  17,
+            EXPRTOKEN_OPERATOR_MOD                  =  18,
+            EXPRTOKEN_OPERATOR_DIV                  =  19,
+            EXPRTOKEN_OPERATOR_MULT                 =  20,
+            EXPRTOKEN_OPERATOR_SLASH                =  21,
+            EXPRTOKEN_OPERATOR_DOUBLE_SLASH         =  22,
+            EXPRTOKEN_OPERATOR_UNION                =  23,
+            EXPRTOKEN_OPERATOR_PLUS                 =  24,
+            EXPRTOKEN_OPERATOR_MINUS                =  25,
+            EXPRTOKEN_OPERATOR_EQUAL                =  26,
+            EXPRTOKEN_OPERATOR_NOT_EQUAL            =  27,
+            EXPRTOKEN_OPERATOR_LESS                 =  28,
+            EXPRTOKEN_OPERATOR_LESS_EQUAL           =  29,
+            EXPRTOKEN_OPERATOR_GREATER              =  30,
+            EXPRTOKEN_OPERATOR_GREATER_EQUAL        =  31,
     
-            EXPRTOKEN_FIRST_OPERATOR                = EXPRTOKEN_OPERATOR_AND,
-            EXPRTOKEN_LAST_OPERATOR                 = EXPRTOKEN_OPERATOR_GREATER_EQUAL,
+            //EXPRTOKEN_FIRST_OPERATOR                = EXPRTOKEN_OPERATOR_AND,
+            //EXPRTOKEN_LAST_OPERATOR                 = EXPRTOKEN_OPERATOR_GREATER_EQUAL,
+
             //
             // [35] FunctionName ::= QName - NodeType
             //
             // followed by symbol handle
             //
-            EXPRTOKEN_FUNCTION_NAME                 = -1032,
+            EXPRTOKEN_FUNCTION_NAME                 =  32,
             //
             // [6] AxisName ::= 'ancestor' | 'ancestor-or-self'
             //                | 'attribute'
@@ -850,39 +853,91 @@ public class XPath {
             //                | 'preceding' | 'preceding-sibling'
             //                | 'self'
             //
-            EXPRTOKEN_AXISNAME_ANCESTOR             = -1033,
-            EXPRTOKEN_AXISNAME_ANCESTOR_OR_SELF     = -1034,
-            EXPRTOKEN_AXISNAME_ATTRIBUTE            = -1035,
-            EXPRTOKEN_AXISNAME_CHILD                = -1036,
-            EXPRTOKEN_AXISNAME_DESCENDANT           = -1037,
-            EXPRTOKEN_AXISNAME_DESCENDANT_OR_SELF   = -1038,
-            EXPRTOKEN_AXISNAME_FOLLOWING            = -1039,
-            EXPRTOKEN_AXISNAME_FOLLOWING_SIBLING    = -1040,
-            EXPRTOKEN_AXISNAME_NAMESPACE            = -1041,
-            EXPRTOKEN_AXISNAME_PARENT               = -1042,
-            EXPRTOKEN_AXISNAME_PRECEDING            = -1043,
-            EXPRTOKEN_AXISNAME_PRECEDING_SIBLING    = -1044,
-            EXPRTOKEN_AXISNAME_SELF                 = -1045,
+            EXPRTOKEN_AXISNAME_ANCESTOR             =  33,
+            EXPRTOKEN_AXISNAME_ANCESTOR_OR_SELF     =  34,
+            EXPRTOKEN_AXISNAME_ATTRIBUTE            =  35,
+            EXPRTOKEN_AXISNAME_CHILD                =  36,
+            EXPRTOKEN_AXISNAME_DESCENDANT           =  37,
+            EXPRTOKEN_AXISNAME_DESCENDANT_OR_SELF   =  38,
+            EXPRTOKEN_AXISNAME_FOLLOWING            =  39,
+            EXPRTOKEN_AXISNAME_FOLLOWING_SIBLING    =  40,
+            EXPRTOKEN_AXISNAME_NAMESPACE            =  41,
+            EXPRTOKEN_AXISNAME_PARENT               =  42,
+            EXPRTOKEN_AXISNAME_PRECEDING            =  43,
+            EXPRTOKEN_AXISNAME_PRECEDING_SIBLING    =  44,
+            EXPRTOKEN_AXISNAME_SELF                 =  45,
             //
             // [29] Literal ::= '"' [^"]* '"' | "'" [^']* "'"
             //
             // followed by symbol handle for literal
             //
-            EXPRTOKEN_LITERAL                       = -1046,
+            EXPRTOKEN_LITERAL                       =  46,
             //
             // [30] Number ::= Digits ('.' Digits?)? | '.' Digits
             // [31] Digits ::= [0-9]+
             //
             // followed by number handle
             //
-            EXPRTOKEN_NUMBER                        = -1047,
+            EXPRTOKEN_NUMBER                        =  47,
             //
             // [36] VariableReference ::= '$' QName
             //
             // followed by symbol handle for QName
             //
-            EXPRTOKEN_VARIABLE_REFERENCE            = -1048;
-    
+            EXPRTOKEN_VARIABLE_REFERENCE            =  48;
+
+        public static final String[] fgTokenNames = {
+            "EXPRTOKEN_OPEN_PAREN",
+            "EXPRTOKEN_CLOSE_PAREN",
+            "EXPRTOKEN_OPEN_BRACKET",
+            "EXPRTOKEN_CLOSE_BRACKET",
+            "EXPRTOKEN_PERIOD",
+            "EXPRTOKEN_DOUBLE_PERIOD",
+            "EXPRTOKEN_ATSIGN",
+            "EXPRTOKEN_COMMA",
+            "EXPRTOKEN_DOUBLE_COLON",
+            "EXPRTOKEN_NAMETEST_ANY",
+            "EXPRTOKEN_NAMETEST_NAMESPACE",
+            "EXPRTOKEN_NAMETEST_QNAME",
+            "EXPRTOKEN_NODETYPE_COMMENT",
+            "EXPRTOKEN_NODETYPE_TEXT",
+            "EXPRTOKEN_NODETYPE_PI",
+            "EXPRTOKEN_NODETYPE_NODE",
+            "EXPRTOKEN_OPERATOR_AND",
+            "EXPRTOKEN_OPERATOR_OR",
+            "EXPRTOKEN_OPERATOR_MOD",
+            "EXPRTOKEN_OPERATOR_DIV",
+            "EXPRTOKEN_OPERATOR_MULT",
+            "EXPRTOKEN_OPERATOR_SLASH",
+            "EXPRTOKEN_OPERATOR_DOUBLE_SLASH",
+            "EXPRTOKEN_OPERATOR_UNION",
+            "EXPRTOKEN_OPERATOR_PLUS",
+            "EXPRTOKEN_OPERATOR_MINUS",
+            "EXPRTOKEN_OPERATOR_EQUAL",
+            "EXPRTOKEN_OPERATOR_NOT_EQUAL",
+            "EXPRTOKEN_OPERATOR_LESS",
+            "EXPRTOKEN_OPERATOR_LESS_EQUAL",
+            "EXPRTOKEN_OPERATOR_GREATER",
+            "EXPRTOKEN_OPERATOR_GREATER_EQUAL",
+            "EXPRTOKEN_FUNCTION_NAME",
+            "EXPRTOKEN_AXISNAME_ANCESTOR",
+            "EXPRTOKEN_AXISNAME_ANCESTOR_OR_SELF",
+            "EXPRTOKEN_AXISNAME_ATTRIBUTE",
+            "EXPRTOKEN_AXISNAME_CHILD",
+            "EXPRTOKEN_AXISNAME_DESCENDANT",
+            "EXPRTOKEN_AXISNAME_DESCENDANT_OR_SELF",
+            "EXPRTOKEN_AXISNAME_FOLLOWING",
+            "EXPRTOKEN_AXISNAME_FOLLOWING_SIBLING",
+            "EXPRTOKEN_AXISNAME_NAMESPACE",
+            "EXPRTOKEN_AXISNAME_PARENT",
+            "EXPRTOKEN_AXISNAME_PRECEDING",
+            "EXPRTOKEN_AXISNAME_PRECEDING_SIBLING",
+            "EXPRTOKEN_AXISNAME_SELF",
+            "EXPRTOKEN_LITERAL",
+            "EXPRTOKEN_NUMBER",
+            "EXPRTOKEN_VARIABLE_REFERENCE"
+        };
+
         /**
          *
          */
@@ -893,10 +948,10 @@ public class XPath {
         private StringPool fStringPool;
     
         // REVISIT: Code something better here. -Ac
-        private java.util.Hashtable fSymbolMapping = new java.util.Hashtable();
+        //private java.util.Hashtable fSymbolMapping = new java.util.Hashtable();
     
         // REVISIT: Code something better here. -Ac
-        private java.util.Hashtable fTokenNames = new java.util.Hashtable();
+        //private java.util.Hashtable fTokenNames = new java.util.Hashtable();
     
         //
         // Constructors
@@ -920,7 +975,7 @@ public class XPath {
             for (int i = 0; i < symbols.length; i++) {
                 fSymbolMapping.put(fSymbolTable.addSymbol(symbols[i]), new Integer(i));
             }
-            /***/
+            /*
             fTokenNames.put(new Integer(EXPRTOKEN_OPEN_PAREN), "EXPRTOKEN_OPEN_PAREN");
             fTokenNames.put(new Integer(EXPRTOKEN_CLOSE_PAREN), "EXPRTOKEN_CLOSE_PAREN");
             fTokenNames.put(new Integer(EXPRTOKEN_OPEN_BRACKET), "EXPRTOKEN_OPEN_BRACKET");
@@ -970,6 +1025,7 @@ public class XPath {
             fTokenNames.put(new Integer(EXPRTOKEN_LITERAL), "EXPRTOKEN_LITERAL");
             fTokenNames.put(new Integer(EXPRTOKEN_NUMBER), "EXPRTOKEN_NUMBER");
             fTokenNames.put(new Integer(EXPRTOKEN_VARIABLE_REFERENCE), "EXPRTOKEN_VARIABLE_REFERENCE");
+            */
         }
         /***/
         
@@ -985,7 +1041,9 @@ public class XPath {
         /***/
     
         public String getTokenName(int token) { 
-            return (String)fTokenNames.get(new Integer(token));
+            if (token < 0 || token >= fgTokenNames.length)
+                return null;
+            return fgTokenNames[token];
         }
     
         public int getTokenString(int token) {
@@ -1272,7 +1330,7 @@ public class XPath {
             CHARTYPE_CLOSE_BRACKET      = 22,   // ']' (0x5D)
             CHARTYPE_UNDERSCORE         = 23,   // '_' (0x5F)
             CHARTYPE_UNION              = 24,   // '|' (0x7C)
-            CHARTYPE_NONASCII           = 25;   // Multi-byte or 8-bit codepoint (>= 0x80)
+            CHARTYPE_NONASCII           = 25;   // Non-ASCII Unicode codepoint (>= 0x80)
         
         private static byte[] fASCIICharMap = {
             0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  2,  0,  0,  2,  0,  0,
@@ -1725,36 +1783,17 @@ public class XPath {
         System.out.println("abort 3a");
                         return false; // REVISIT
                     }
-                    /***
-                    ch = (data[currentOffset] & 0xFF);
-                    /***/
-                    ch = data.charAt(currentOffset);
-                    /***/
                     nameOffset = currentOffset;
-                    if (ch >= 0x80) {
-                        throw new RuntimeException("need encoding support");
-                    }
-                    chartype = fASCIICharMap[ch];
-                    if (chartype != CHARTYPE_LETTER && chartype != CHARTYPE_UNDERSCORE) {
+                    currentOffset = scanNCName(data, endOffset, currentOffset);
+                    if (currentOffset == nameOffset) {
         System.out.println("abort 3b");
                         return false; // REVISIT
                     }
-                    while (++currentOffset < endOffset) {
-                        /***
-                        ch = (data[currentOffset] & 0xFF);
-                        /***/
+                    if (currentOffset < endOffset) {
                         ch = data.charAt(currentOffset);
-                        /***/
-                        if (ch >= 0x80) {
-                            throw new RuntimeException("need encoding support");
-                        }
-                        chartype = fASCIICharMap[ch];
-                        if (chartype != CHARTYPE_LETTER && chartype != CHARTYPE_DIGIT &&
-                            chartype != CHARTYPE_PERIOD && chartype != CHARTYPE_MINUS &&
-                            chartype != CHARTYPE_UNDERSCORE)
-                        {
-                            break;
-                        }
+                    }
+                    else {
+                        ch = -1;
                     }
                     /***
                     nameHandle = tokens.addSymbol(data, nameOffset, currentOffset - nameOffset, encoding);
@@ -1769,36 +1808,17 @@ public class XPath {
         System.out.println("abort 4a");
                             return false; // REVISIT
                         }
-                        /***
-                        ch = (data[currentOffset] & 0xFF);
-                        /***/
-                        ch = data.charAt(currentOffset);
-                        /***/
                         nameOffset = currentOffset;
-                        if (ch >= 0x80) {
-                            throw new RuntimeException("need encoding support");
-                        }
-                        chartype = fASCIICharMap[ch];
-                        if (chartype != CHARTYPE_LETTER && chartype != CHARTYPE_UNDERSCORE) {
+                        currentOffset = scanNCName(data, endOffset, currentOffset);
+                        if (currentOffset == nameOffset) {
         System.out.println("abort 4b");
                             return false; // REVISIT
                         }
-                        while (++currentOffset < endOffset) {
-                            /***
-                            ch = (data[currentOffset] & 0xFF);
-                            /***/
+                        if (currentOffset < endOffset) {
                             ch = data.charAt(currentOffset);
-                            /***/
-                            if (ch >= 0x80) {
-                                throw new RuntimeException("need encoding support");
-                            }
-                            chartype = fASCIICharMap[ch];
-                            if (chartype != CHARTYPE_LETTER && chartype != CHARTYPE_DIGIT &&
-                                chartype != CHARTYPE_PERIOD && chartype != CHARTYPE_MINUS &&
-                                chartype != CHARTYPE_UNDERSCORE)
-                            {
-                                break;
-                            }
+                        }
+                        else {
+                            ch = -1;
                         }
                         /***
                         nameHandle = tokens.addSymbol(data, nameOffset, currentOffset - nameOffset, encoding);
@@ -1839,7 +1859,6 @@ public class XPath {
                 // NCName, QName and non-terminals
                 //
                 case CHARTYPE_NONASCII: // possibly a valid non-ascii 'Letter' (BaseChar | Ideographic)
-                    throw new RuntimeException("need encoding support");
                 case CHARTYPE_LETTER:
                 case CHARTYPE_UNDERSCORE:
                     //
@@ -1870,25 +1889,16 @@ public class XPath {
                     // [?] Digit ::= [0-9]                                  (ascii subset of 'Digit')
                     //
                     nameOffset = currentOffset;
-                    while (true) {
-                        if (++currentOffset == endOffset) {
-                            break;
-                        }
-                        /***
-                        ch = (data[currentOffset] & 0xFF);
-                        /***/
+                    currentOffset = scanNCName(data, endOffset, currentOffset);
+                    if (currentOffset == nameOffset) {
+        System.out.println("abort 4c");
+                        return false; // REVISIT
+                    }
+                    if (currentOffset < endOffset) {
                         ch = data.charAt(currentOffset);
-                        /***/
-                        if (ch >= 0x80) {
-                            throw new RuntimeException("need encoding support");
-                        }
-                        chartype = fASCIICharMap[ch];
-                        if (chartype != CHARTYPE_LETTER && chartype != CHARTYPE_DIGIT &&
-                            chartype != CHARTYPE_PERIOD && chartype != CHARTYPE_MINUS &&
-                            chartype != CHARTYPE_UNDERSCORE)
-                        {
-                            break;
-                        }
+                    }
+                    else {
+                        ch = -1;
                     }
                     /***
                     nameHandle = tokens.addSymbol(data, nameOffset, currentOffset - nameOffset, encoding);
@@ -1929,30 +1939,16 @@ public class XPath {
                         } else {
                             prefixHandle = nameHandle;
                             nameOffset = currentOffset;
-                            if (ch >= 0x80) {
-                                throw new RuntimeException("need encoding support");
-                            }
-                            chartype = fASCIICharMap[ch];
-                            if (chartype != CHARTYPE_LETTER && chartype != CHARTYPE_UNDERSCORE) {
+                            currentOffset = scanNCName(data, endOffset, currentOffset);
+                            if (currentOffset == nameOffset) {
         System.out.println("abort 5b");
                                 return false; // REVISIT
                             }
-                            while (++currentOffset < endOffset) {
-                                /***
-                                ch = (data[currentOffset] & 0xFF);
-                                /***/
+                            if (currentOffset < endOffset) {
                                 ch = data.charAt(currentOffset);
-                                /***/
-                                if (ch >= 0x80) {
-                                    throw new RuntimeException("need encoding support");
-                                }
-                                chartype = fASCIICharMap[ch];
-                                if (chartype != CHARTYPE_LETTER && chartype != CHARTYPE_DIGIT &&
-                                    chartype != CHARTYPE_PERIOD && chartype != CHARTYPE_MINUS &&
-                                    chartype != CHARTYPE_UNDERSCORE)
-                                {
-                                    break;
-                                }
+                            }
+                            else {
+                                ch = -1;
                             }
                             /***
                             nameHandle = tokens.addSymbol(data, nameOffset, currentOffset - nameOffset, encoding);
@@ -2105,6 +2101,46 @@ public class XPath {
                 tokens.dumpTokens();
             }
             return true;
+        }
+        //
+        // [5] NCName ::= (Letter | '_') (NCNameChar)*
+        // [6] NCNameChar ::= Letter | Digit | '.' | '-' | '_' | CombiningChar | Extender
+        //
+        int scanNCName(String data, int endOffset, int currentOffset) {
+            int ch = data.charAt(currentOffset);
+            if (ch >= 0x80) {
+                if ((XMLCharacterProperties.fgCharFlags[ch] &
+                     XMLCharacterProperties.E_InitialNameCharFlag) == 0)
+                {
+                    return currentOffset;
+                }
+            }
+            else {
+                byte chartype = fASCIICharMap[ch];
+                if (chartype != CHARTYPE_LETTER && chartype != CHARTYPE_UNDERSCORE) {
+                    return currentOffset;
+                }
+            }
+            while (++currentOffset < endOffset) {
+                ch = data.charAt(currentOffset);
+                if (ch >= 0x80) {
+                    if ((XMLCharacterProperties.fgCharFlags[ch] &
+                         XMLCharacterProperties.E_NameCharFlag) == 0)
+                    {
+                        break;
+                    }
+                }
+                else {
+                    byte chartype = fASCIICharMap[ch];
+                    if (chartype != CHARTYPE_LETTER && chartype != CHARTYPE_DIGIT &&
+                        chartype != CHARTYPE_PERIOD && chartype != CHARTYPE_MINUS &&
+                        chartype != CHARTYPE_UNDERSCORE)
+                    {
+                        break;
+                    }
+                }
+            }
+            return currentOffset;
         }
         /*
         void allocateProducer(byte[] data, int offset, int length, EncodingSupport encoding) {
