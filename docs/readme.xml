@@ -19,14 +19,12 @@
 		whether the APIs that we are providing are the right ones. Please 
 		direct your feedback to the &javaparsername; mailing list.</p>
 
-        <p>The 1.0.1 release is the first release to benefit from the
-        xml.apache.org collaboration.  This release includes Assaf Arkin's
-        serialization and HTML DOM contributions.
-        </p>
 	</s2>
 	<s2 title="License Information">
 		<p>The &javaparsername; &javaparserversion; release is available in both source code
-			and precompiled binary (JAR files) form.</p>
+			and precompiled binary (JAR files) form. &javaparsername;
+			&javaparserversion; is licensed under the terms of Version
+			1.1 of the  <jump href="http://xml.apache.org/dist/License.txt">Apache Software License</jump></p>
 	</s2>
 	<s2 title="Applications of the &javaparsername; Parser">
 		<p>The rich generating and validating capabilities allow the &javaparsername; 

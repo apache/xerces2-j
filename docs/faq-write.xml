@@ -2,48 +2,13 @@
 <!DOCTYPE faqs SYSTEM "sbk:/style/dtd/faqs.dtd">
 
 <faqs title="Writing Application FAQs">
-	<faq title="Constructing a Parser">
-		<q>How do I construct a parser in &javaparsername;?</q>
-		<a><p>
-There are two ways the parser classes can be
-	  instantiated: The first way is to <em>create a string</em>
-	  containing the fully qualified name of the parser class. Pass
-	  this string to the <code>org.xml.sax.helpers.ParserFactory.makeParser()</code>
-	  method to instantiate it. This method is useful if your application will need to switch between different parser configurations. The code snippet shown below is using this method to instantiate a DOMParser.</p> 
-
-<source>import org.xml.sax.Parser;
-import org.xml.sax.helpers.ParserFactory; 
-import org.apache.xerces.parsers.DOMParser;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-import java.io.IOException; 
-
-  ...
-
-String parserClass = &quot;org.apache.xerces.parsers.DOMParser&quot;;
-
-String xmlFile = &quot;file:///Xerces-J/data/personal.xml&quot;; 
-
-Parser parser = ParserFactory.makeParser(parserClass);
-
-try {
-    parser.parse(xmlFile);
-} catch (SAXException se) {
-    se.printStackTrace();
-} catch (IOException ioe) {
-	ioe.printStackTrace();
-}
-// The next line is only for DOM Parsers
-
-Document doc = ((DOMParser) parser).getDocument(); 
-
-  ...</source>
-
-	 <p>The second way to instantiate a parser class is to <em>explicitly
-	 instantiate</em> the parser class, as shown in this example,
-	 which is creating a DOM Parser. Use this way when you know
-	 exactly which parser configuration you need, and you are sure
-	 that you will not need to switch configurations.</p>
+	<faq title="Creating a DOM Parser">
+		<q>How do I create a parser that produces a DOM tree?</q>
+        <a><p>To work with a parser that produces a DOM tree, you need to
+        use the <code>DOMParser</code> class from
+        <code>org.apache.xerces.parsers</code>.  The code sample below
+        shows you how to create a <code>DOMParser</code> instance and
+        use it to parse an XML document.</p> 
 
 <source>import org.apache.xerces.parsers.DOMParser;
 import org.w3c.dom.Document;
@@ -64,30 +29,51 @@ try {
 } catch (IOException ioe) {
     ioe.printStackTrace();
 }
-// The next line is only for DOM Parsers
+
 Document doc = parser.getDocument();
 
   ...</source>
 
-	<p>Once you have the Document object, you can call any method on it as defined by the DOM specification.</p>
-   </a>
-	</faq>
-	
-	<faq title="Creating a DOM Parser">
-		<q>How do I create a DOM parser?</q>
-        <a><p>Use one of the methods in the question above, and use 
-		<code>org.apache.xerces.parsers.DOMParser</code> as the name of the class. </p>
-		<p>To access the DOM tree, you can call the
-		<code>getDocument()</code> method on the parser instance.</p> 
-		</a>
+	<p>Once you have the <code>Document</code> object, you can call any method on it as defined by the DOM specification.</p>
+     </a>
 	</faq>
 	
 	<faq title="Creating a SAX Parser">
-		<q>How do I create a SAX parser?</q>
-		<a><p>Use one of the methods in the question above, and use 
-		<code>org.apache.xerces.parsers.SAXParser</code> as the name of the class. </p>
-		<p>Once you have the parser instance, you can use the standard SAX 
-		methods to set the various handlers provided by SAX. </p>
+		<q>How do I create a parser that uses the SAX API?</q>
+		<a><p>To work with a parser that uses the SAX API, you need to
+		use the <code>SAXParser</code> class from
+		<code>org.apache.xerces.parsers</code>.  You need to be sure
+		that you provide classes that implement the SAX
+		<code>DocumentHandler</code> and <code>ErrorHandler</code>
+		interfaces.  The code sample below shows how to create a
+		<code>SAXParser</code> instance and use that instance to
+		parse an XML document.</p>
+<source>import org.apache.xerces.parsers.SAXParser;
+import org.xml.sax.SAXException;
+import org.xml.sax.DocumentHandler;
+import java.io.IOException;
+
+  ...
+
+String xmlFile = &quot;file:///Xerces-J/data/personal.xml&quot;; 
+
+SAXParser parser = new SAXParser();
+
+DocumentHandler documentHandler = ... // you supply a class that implements the DocumentHandler interface
+ErrorHandler errorHandler = ... // you supply a class that implements the ErrorHandler interface
+
+try {
+    parser.setDocumentHandler(documentHandler);
+    parser.setErrorHandler(errorHandler)
+    parser.parse(xmlFile);
+
+} catch (SAXException se) {
+    se.printStackTrace();
+} catch (IOException ioe) {
+    ioe.printStackTrace();
+}
+
+  ...</source>
 		</a>
 	</faq>
 	
