@@ -183,6 +183,7 @@ public abstract class AbstractSAXParser
     public void doctypeDecl(String rootElement,
                             String publicId, String systemId)
         throws SAXException {
+        fInDTD = true;
 
         // SAX2 extension
         if (fLexicalHandler != null) {
@@ -636,6 +637,7 @@ public abstract class AbstractSAXParser
      * @throws SAXException Thrown by handler to signal an error.
      */
     public void endDTD() throws SAXException {
+        fInDTD = false;
 
         // SAX2 extension
         if (fLexicalHandler != null) {
@@ -1178,6 +1180,9 @@ public abstract class AbstractSAXParser
      */
     public void reset() throws SAXException {
         super.reset();
+
+        // reset state
+        fInDTD = false;
 
         // save needed symbols
         fEmptySymbol = fConfiguration.getSymbolTable().addSymbol("");
