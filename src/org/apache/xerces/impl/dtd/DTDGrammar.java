@@ -59,32 +59,19 @@ package org.apache.xerces.impl.dtd;
 
 import java.util.Hashtable;
 import java.util.Vector;
-import java.util.Enumeration;
-import java.lang.Integer;
 
-import org.apache.xerces.impl.XMLErrorReporter;
-import org.apache.xerces.impl.msg.XMLMessageFormatter;
-import org.apache.xerces.impl.dv.DTDDVFactory;
-import org.apache.xerces.impl.dtd.models.ContentModelValidator;
-import org.apache.xerces.impl.dtd.models.CMNode;
 import org.apache.xerces.impl.dtd.models.CMAny;
-import org.apache.xerces.impl.dtd.models.CMLeaf;
-import org.apache.xerces.impl.dtd.models.CMUniOp;
 import org.apache.xerces.impl.dtd.models.CMBinOp;
+import org.apache.xerces.impl.dtd.models.CMLeaf;
+import org.apache.xerces.impl.dtd.models.CMNode;
+import org.apache.xerces.impl.dtd.models.CMUniOp;
+import org.apache.xerces.impl.dtd.models.ContentModelValidator;
 import org.apache.xerces.impl.dtd.models.DFAContentModel;
 import org.apache.xerces.impl.dtd.models.MixedContentModel;
 import org.apache.xerces.impl.dtd.models.SimpleContentModel;
-import org.apache.xerces.impl.dtd.XMLElementDecl;
-import org.apache.xerces.impl.dtd.XMLAttributeDecl;
-import org.apache.xerces.impl.dtd.XMLNotationDecl;
-import org.apache.xerces.impl.dtd.XMLEntityDecl;
-import org.apache.xerces.impl.dtd.XMLSimpleType;
-import org.apache.xerces.impl.dtd.XMLContentSpec;
-import org.apache.xerces.impl.dtd.XMLDTDDescription;
-import org.apache.xerces.impl.validation.EntityState;
 import org.apache.xerces.impl.dv.DatatypeValidator;
+import org.apache.xerces.impl.validation.EntityState;
 import org.apache.xerces.util.SymbolTable;
-
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
@@ -93,12 +80,10 @@ import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
-import org.apache.xerces.xni.parser.XMLDTDSource;
-import org.apache.xerces.xni.parser.XMLDTDContentModelSource;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
-
-import org.xml.sax.SAXException;
+import org.apache.xerces.xni.parser.XMLDTDContentModelSource;
+import org.apache.xerces.xni.parser.XMLDTDSource;
 
 /**
  * A DTD grammar. This class implements the XNI handler interfaces
@@ -678,7 +663,6 @@ public class DTDGrammar
         fSimpleType.nonNormalizedDefaultValue      = nonNormalizedDefaultValue!=null ?  nonNormalizedDefaultValue.toString() : null;
         fSimpleType.enumeration       = enumeration;
 
-        Hashtable facets = new Hashtable();
         if (type.equals("CDATA")) {
             fSimpleType.type = XMLSimpleType.TYPE_CDATA;
         }
@@ -707,20 +691,9 @@ public class DTDGrammar
         }
         else if (type.startsWith("NOTATION") ) {
             fSimpleType.type = XMLSimpleType.TYPE_NOTATION;
-            /***
-            facets.put(SchemaSymbols.ELT_ENUMERATION, fSimpleType.enumeration);
-            /***/
-            // REVISIT: Is this a bug? -Ac
-            facets.put("enumeration", fSimpleType.enumeration);
-            /***/
         }
         else if (type.startsWith("ENUMERATION") ) {
             fSimpleType.type = XMLSimpleType.TYPE_ENUMERATION;
-            /***
-            facets.put(SchemaSymbols.ELT_ENUMERATION, fSimpleType.enumeration);
-            /***/
-            facets.put("enumeration", fSimpleType.enumeration);
-            /***/
         }
         else {
             // REVISIT: Report error message. -Ac
