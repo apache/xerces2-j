@@ -50,7 +50,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
     //all date/time excluding duration
     protected final static int YEAR=2000;
     protected final static int MONTH=01;
-    protected final static int DAY = 15;
+    protected final static int DAY = 01;
 
     public short getAllowedFacets(){
         return ( XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_WHITESPACE | XSSimpleTypeDecl.FACET_ENUMERATION |XSSimpleTypeDecl.FACET_MAXINCLUSIVE |XSSimpleTypeDecl.FACET_MININCLUSIVE | XSSimpleTypeDecl.FACET_MAXEXCLUSIVE  | XSSimpleTypeDecl.FACET_MINEXCLUSIVE  );
@@ -94,7 +94,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
      */
     protected short compareDates(DateTimeData date1, DateTimeData date2, boolean strict) {
         if (date1.utc == date2.utc) {
-            return compareOrder(date1, date2);
+            return compareOrder2(date1, date2);
         }
         short c1, c2;
 
@@ -165,6 +165,10 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
         return INDETERMINATE;
 
     }
+    
+    protected short compareOrder2(DateTimeData date1, DateTimeData date2) {
+    	return compareOrder(date1, date2);
+    }
 
     /**
      * Given normalized values, determines order-relation
@@ -175,14 +179,18 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
      * @return 0 if date1 and date2 are equal, a value less than 0 if date1 is less than date2, a value greater than 0 if date1 is greater than date2
      */
     protected short compareOrder(DateTimeData date1, DateTimeData date2) {
-        if (date1.year < date2.year)
-            return -1;
-        if (date1.year > date2.year)
-            return 1;
-        if (date1.month < date2.month)
-            return -1;
-        if (date1.month > date2.month)
-            return 1;
+        if(date1.position < 1) {
+            if (date1.year < date2.year)
+                return -1;
+            if (date1.year > date2.year)
+                return 1;
+        }
+        if(date1.position < 2) {
+            if (date1.month < date2.month)
+                return -1;
+            if (date1.month > date2.month)
+                return 1;
+        }
         if (date1.day < date2.day)
             return -1;
         if (date1.day > date2.day)
@@ -788,6 +796,10 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
         int year, month, day, hour, minute, utc;
         double second;
         int timezoneHr, timezoneMin;
+        
+        // used for comparisons - to decide the 'interesting' portions of
+        // a date/time based data type.
+        int position;
         // a pointer to the type that was used go generate this data
         // note that this is not the actual simple type, but one of the
         // statically created XXXDV objects, so this won't cause any GC problem.

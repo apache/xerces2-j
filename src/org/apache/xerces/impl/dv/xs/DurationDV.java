@@ -202,7 +202,6 @@ public class DurationDV extends AbstractDateTimeDV {
 
         //add constA to both durations
         short resultA, resultB= INDETERMINATE;
-
         //try and see if the objects are equal
         resultA = compareOrder (date1, date2);
         if ( resultA == 0 ) {

@@ -62,7 +62,7 @@ public class TimeDV extends AbstractDateTimeDV {
         // initialize to default values
         date.year=YEAR;
         date.month=MONTH;
-        date.day=DAY;
+        date.day=15;
         getTime(str, 0, len, date);
 
         //validate and normalize
@@ -72,35 +72,8 @@ public class TimeDV extends AbstractDateTimeDV {
         if ( date.utc!=0 ) {
             normalize(date);
         }
+        date.position = 2;
         return date;
-    }
-    
-    /**
-     * Given normalized values, determines order-relation
-     * between give date/time objects.
-     *
-     * @param date1  date/time object
-     * @param date2  date/time object
-     * @return 0 if date1 and date2 are equal, a value less than 0 if date1 is less than date2, a value greater than 0 if date1 is greater than date2
-     */
-    protected short compareOrder(DateTimeData date1, DateTimeData date2) {
-        if (date1.hour < date2.hour)
-            return -1;
-        if (date1.hour > date2.hour)
-            return 1;
-        if (date1.minute < date2.minute)
-            return -1;
-        if (date1.minute > date2.minute)
-            return 1;
-        if (date1.second < date2.second)
-            return -1;
-        if (date1.second > date2.second)
-            return 1;
-        if (date1.utc < date2.utc)
-            return -1;
-        if (date1.utc > date2.utc)
-            return 1;
-        return 0;
     }
 
     /**
@@ -120,5 +93,24 @@ public class TimeDV extends AbstractDateTimeDV {
         append(message, (char)date.utc, 0);
         return message.toString();
     }
+
+	/* (non-Javadoc)
+	 * @see org.apache.xerces.impl.dv.xs.AbstractDateTimeDV#compareOrder2(org.apache.xerces.impl.dv.xs.AbstractDateTimeDV.DateTimeData, org.apache.xerces.impl.dv.xs.AbstractDateTimeDV.DateTimeData)
+	 */
+	protected short compareOrder2(DateTimeData date1, DateTimeData date2) {
+        if (date1.hour < date2.hour)
+            return -1;
+        if (date1.hour > date2.hour)
+            return 1;
+        if (date1.minute < date2.minute)
+            return -1;
+        if (date1.minute > date2.minute)
+            return 1;
+        if (date1.second < date2.second)
+            return -1;
+        if (date1.second > date2.second)
+            return 1;
+        return 0;
+	}
 
 }
