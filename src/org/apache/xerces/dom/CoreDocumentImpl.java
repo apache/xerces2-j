@@ -2325,65 +2325,26 @@ extends ParentNode implements Document  {
     }
     
     /**
-     * @param n
-     * @param data
+     * Checks if the given qualified name is legal with respect 
+     * to the version of XML to which this document must conform.
+     * 
+     * @param prefix prefix of qualified name
+     * @param local local part of qualified name
      */
-    protected final void checkQName(String prefix,
-    String local){
+    protected final void checkQName(String prefix, String local) {
         if (!errorChecking) {
             return;
         }
-        int length;
+
+		// check that both prefix and local part match NCName
         boolean validNCName = false;
-        if (prefix != null) {
-            length=prefix.length();
-            // check that prefix is NCName
-            if(!xml11Version){
-                validNCName=XMLChar.isNCNameStart(prefix.charAt(0));
-            }else{
-                validNCName=XML11Char.isXML11NCNameStart(prefix.charAt(0));
-            }
-            
-            if (!validNCName) {
-                String msg =
-                DOMMessageFormatter.formatMessage(
-                DOMMessageFormatter.DOM_DOMAIN,
-                "INVALID_CHARACTER_ERR",
-                null);
-                throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
-            }
-            validNCName = false; //reuse
-            
-            //TODO :: pass position of the invalid char in msg
-            //otherwise it doesnot make sense to use this forloop.
-            for (int i = 1; i < length; i++) {
-                
-                if(!xml11Version){
-                    validNCName = XMLChar.isNCName(prefix.charAt(i));
-                }else{
-                    validNCName = XML11Char.isXML11NCName(prefix.charAt(i));
-                }
-                
-                if (!validNCName) {
-                    String msg =
-                    DOMMessageFormatter.formatMessage(
-                    DOMMessageFormatter.DOM_DOMAIN,
-                    "INVALID_CHARACTER_ERR",
-                    null);
-                    throw new DOMException(
-                    DOMException.INVALID_CHARACTER_ERR,
-                    msg);
-                }
-            }
+        if (!xml11Version) {
+            validNCName = (prefix == null || XMLChar.isValidNCName(prefix)) 
+                && XMLChar.isValidNCName(local);
         }
-        length = local.length();
-        // check local part
-        validNCName = false;
-        
-        if(!xml11Version) {
-            validNCName = XMLChar.isNCNameStart(local.charAt(0));
-        }else{
-            validNCName = XML11Char.isXML11NCNameStart(local.charAt(0));
+        else {
+            validNCName = (prefix == null || XML11Char.isXML11ValidNCName(prefix))
+                && XML11Char.isXML11ValidNCName(local);
         }
         
         if (!validNCName) {
@@ -2394,27 +2355,6 @@ extends ParentNode implements Document  {
             "INVALID_CHARACTER_ERR",
             null);
             throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
-        }
-        
-        validNCName = false;
-        
-        //TODO :: pass position of the invalid char in msg
-        //otherwise it doesnot make sense to use this forloop.
-        
-        for (int i = 1; i < length; i++) {
-            if(!xml11Version){
-                validNCName = XMLChar.isNCName(local.charAt(i));
-            }else{
-                validNCName = XML11Char.isXML11NCName(local.charAt(i));
-            }
-            if (!validNCName) {
-                String msg =
-                DOMMessageFormatter.formatMessage(
-                DOMMessageFormatter.DOM_DOMAIN,
-                "INVALID_CHARACTER_ERR",
-                null);
-                throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
-            }
         }
     }
     
