@@ -413,6 +413,16 @@
   </xsl:template>
 
   <xsl:template match="img">
+   <xsl:choose>
+   <xsl:when test='starts-with(@src,"sbk:/resources/")'>
+    <img src='resources/{substring-after(@src,"sbk:/resources/")}' 
+         border="0" vspace="4" hspace="4">
+     <xsl:if test='@alt'>
+      <xsl:attribute name='alt'><xsl:value-of select='@alt'/></xsl:attribute>
+     </xsl:if>
+    </img>
+   </xsl:when>
+   <xsl:otherwise>
     <img src="images/{@src}" border="0" vspace="4" hspace="4">
      <xsl:if test='@alt'>
       <xsl:attribute name='alt'><xsl:value-of select='@alt'/></xsl:attribute>
@@ -420,6 +430,8 @@
     </img>
     <!--<img src="images/{@src}" border="0" vspace="4" hspace="4" align="right"/>-->
     <!--<img src="{@src}" border="0"/>-->
+   </xsl:otherwise>
+   </xsl:choose>
   </xsl:template>
 
   <xsl:template match="resource-ref">

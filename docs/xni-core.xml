@@ -29,6 +29,10 @@
    refer to the <link idref='xni-config'>Parser Configuration</link>
    documentation.
   </p>
+  <note>
+   The source code for the samples in this document are included
+   in the downloaded packages for Xerces2.
+  </note>
  </s2>
  <s2 title='Document Information'>
   <p>
@@ -41,12 +45,11 @@
    Interface. However, XNI does not depend on the SAX interfaces
    and classes.
   </p>
-  <p>
-   <strong>Note:</strong>
+  <note>
    All of the interfaces and classes documented on this page
    are contained within the <code>org.apache.xerces.xni</code>
    package.
-  </p>
+  </note>
   <anchor name='document-handler'/>
   <s3 title='Interface XMLDocumentHandler'>
    <p>

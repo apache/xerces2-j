@@ -20,11 +20,11 @@
  <hidden title='User Interface Samples'
          id='samples-ui' source='samples-ui.xml'/>
  <hidden title='XNI Samples' id='samples-xni' source='samples-xni.xml'/>
- <!--
  <document label='API JavaDoc' title='API JavaDoc'
            id='api' source='api.xml'/>
- -->
+ <!--
  <external label='API JavaDoc' href='apiDocs/index.html'/>
+ -->
  <document label='XNI Manual' title='Xerces Native Interface'
            id='xni' source='xni.xml'/>
  <hidden title='XNI Design Details' 

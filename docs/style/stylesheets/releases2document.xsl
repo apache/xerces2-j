@@ -39,7 +39,7 @@
  <xsl:template match='add|remove|fix|update'>
   <xsl:variable name='name'><xsl:value-of select='name()'/></xsl:variable>
   <li>
-   <img alt='{$name}' src='resources/changes-{$name}.jpg' border='0'/>
+   <img alt='{$name}' src='sbk:/resources/changes-{$name}.jpg' border='0'/>
    <xsl:copy-of select='note/*|note/text()'/>
    <xsl:if test='submitter'>
     <xsl:apply-templates select='submitter'/>

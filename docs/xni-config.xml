@@ -22,13 +22,16 @@
    <li><link anchor='abstract-parser-config'>Abstract Parser Configuration</link></li>
    <li><link anchor='csv-parser-config'>CSV Parser Configuration</link></li>
   </ul>
-  <p>
-   <strong>Note:</strong>
+  <note>
    All of the interfaces and classes defined in this document
    reside in the <code>org.apache.xerces.xni.parser</code> package
    but may use various interfaces and classes from the core XNI
    package, <code>org.apache.xerces.xni</code>.
-  </p>
+  </note>
+  <note>
+   The source code for the samples in this document are included
+   in the downloaded packages for Xerces2.
+  </note>
  </s2>
  <anchor name='components'/>
  <s2 title='Components'>
@@ -629,6 +632,7 @@ public abstract class AbstractConfiguration
             short type = XMLConfigurationException.NOT_RECOGNIZED;
             throw new XMLConfigurationException(type, featureId);
         }
+        fFeatures.put(featureId, state ? Boolean.TRUE : Boolean.FALSE);
         int length = fComponents.size();
         for (int i = 0; i < length; i++) {
             XMLComponent component = (XMLComponent)fComponents.elementAt(i);
@@ -661,6 +665,12 @@ public abstract class AbstractConfiguration
         if (!fRecognizedProperties.contains(propertyId)) {
             short type = XMLConfigurationException.NOT_RECOGNIZED;
             throw new XMLConfigurationException(type, propertyId);
+        }
+        if (value != null) {
+            fProperties.put(propertyId, value);
+        }
+        else {
+            fProperties.remove(propertyId);
         }
         int length = fComponents.size();
         for (int i = 0; i < length; i++) {
@@ -750,13 +760,13 @@ public abstract class AbstractConfiguration
   <s3 title='CSV Parser Configuration'>
    <p>
     This example is a very simple parser configuration that can
-    parser files with comma-separated values (CSV) to generate
+    parse files with comma-separated values (CSV) to generate
     XML events. For example, the following CSV document:
    </p>
    <source>Andy Clark,16 Jan 1973,Cincinnati</source>
    <p>
     produces the following XML "document" as represented by the
-    the XNI streaming document information:
+    XNI streaming document information:
    </p>
    <source><![CDATA[<?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE csv [
@@ -901,6 +911,36 @@ public class CSVConfiguration
     }
     
 } // class CSVConfiguration]]></source>
+  <p>
+   The source code is longer than it actually needs to be because
+   it also emits the DTD information necessary for a validating
+   parser to validate the document. The real core of the example
+   is the following:
+  </p>
+  <source><![CDATA[fDocumentHandler.startDocument(null, "UTF-8");
+fDocumentHandler.startElement(CSV, EMPTY_ATTRS);
+
+String line;
+while ((line = bufferedReader.readLine()) != null) {
+    if (fDocumentHandler != null) {
+        fDocumentHandler.startElement(ROW, EMPTY_ATTRS);
+        
+	StringTokenizer tokenizer = new StringTokenizer(line, ",");
+        while (tokenizer.hasMoreTokens()) {
+            fDocumentHandler.startElement(COL, EMPTY_ATTRS);
+            String token = tokenizer.nextToken();
+            fStringBuffer.clear();
+            fStringBuffer.append(token);
+            fDocumentHandler.characters(fStringBuffer);
+            fDocumentHandler.endElement(COL);
+        }
+	
+        fDocumentHandler.endElement(ROW);
+    }
+}
+
+fDocumentHandler.endElement(CSV);
+fDocumentHandler.endDocument();]]></source>
   </s3>
  </s2>
 </s1>
