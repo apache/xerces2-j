@@ -57,6 +57,7 @@
 
 package org.apache.xerces.impl.xs.opti;
 
+import org.apache.xerces.dom3.UserDataHandler;
 import org.w3c.dom.Node;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -168,6 +169,11 @@ public class DefaultNode implements Node {
     public String getLocalName() {
     	return null;
     }
+    /** DOM Level 3*/
+    public String getBaseURI(){
+        return null;
+    }
+
 
 
     public boolean hasAttributes() {
@@ -203,6 +209,48 @@ public class DefaultNode implements Node {
     public void setPrefix(String prefix) throws DOMException {
     	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
     }
+    
+    public short compareTreePosition(Node other){
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
+    }
+    
+    public String getTextContent() throws DOMException{
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
+    }
+    public void setTextContent(String textContent)throws DOMException{
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
+    }
+    public boolean isSameNode(Node other){
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
+
+    }
+    public String lookupNamespacePrefix(String namespaceURI, 
+                                        boolean useDefault){
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
+                                        }
+    public boolean isDefaultNamespace(String namespaceURI){
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
+    }
+    
+    public String lookupNamespaceURI(String prefix){
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
+    }
+    
+    public boolean isEqualNode(Node arg){
+       throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
+
+    }
+    
+    public Node getInterface(String feature){
+        return null;
+    }
+    public Object setUserData(String key,  Object data, UserDataHandler handler){
+       throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");                              
+    }
+    public Object getUserData(String key){
+        return null;
+    }
+
 
 }
 	

@@ -57,6 +57,7 @@
 
 package org.apache.xerces.impl.xs.opti;
 
+import org.apache.xerces.dom3.DOMConfiguration;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
@@ -139,11 +140,10 @@ public class DefaultDocument extends NodeImpl
 	return null;
     }
 
-
     public Comment createComment(String data) {
 	return null;
     }
-
+    
 
     public CDATASection createCDATASection(String data) throws DOMException {
 	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
@@ -173,5 +173,150 @@ public class DefaultDocument extends NodeImpl
     public Attr createAttributeNS(String namespaceURI, String qualifiedName) throws DOMException {
 	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
     }
+
+    // DOM Level 3 methods.
+    
+    public String getActualEncoding(){
+        return null;
+    }
+    
+    public void setActualEncoding(String actualEncoding){
+       throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
+    }
+
+    public String getEncoding(){
+        return null;
+    }
+    
+    
+    /**
+     * An attribute specifying, as part of the XML declaration, the encoding 
+     * of this document. This is <code>null</code> when unspecified.
+     * @since DOM Level 3
+     */
+    public void setEncoding(String encoding){
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
+    }
+
+    /**
+     * An attribute specifying, as part of the XML declaration, whether this 
+     * document is standalone.
+     * <br> This attribute represents the property [standalone] defined in . 
+     * @since DOM Level 3
+     */
+    public boolean getStandalone(){
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
+    }
+    /**
+     * An attribute specifying, as part of the XML declaration, whether this 
+     * document is standalone.
+     * <br> This attribute represents the property [standalone] defined in . 
+     * @since DOM Level 3
+     */
+    public void setStandalone(boolean standalone){
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
+    }
+
+    /**
+     * An attribute specifying, as part of the XML declaration, the version 
+     * number of this document. This is <code>null</code> when unspecified.
+     * <br> This attribute represents the property [version] defined in . 
+     * @exception DOMException
+     *   NOT_SUPPORTED_ERR: Raised if the version is set to a value that is 
+     *   not supported by this <code>Document</code>.
+     * @since DOM Level 3
+     */
+    public String getVersion(){
+        return null;
+    }
+    /**
+     * An attribute specifying, as part of the XML declaration, the version 
+     * number of this document. This is <code>null</code> when unspecified.
+     * <br> This attribute represents the property [version] defined in . 
+     * @exception DOMException
+     *   NOT_SUPPORTED_ERR: Raised if the version is set to a value that is 
+     *   not supported by this <code>Document</code>.
+     * @since DOM Level 3
+     */
+    public void setVersion(String version) throws DOMException{
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
+    }
+
+    /**
+     * An attribute specifying whether errors checking is enforced or not. 
+     * When set to <code>false</code>, the implementation is free to not 
+     * test every possible error case normally defined on DOM operations, 
+     * and not raise any <code>DOMException</code>. In case of error, the 
+     * behavior is undefined. This attribute is <code>true</code> by 
+     * defaults.
+     * @since DOM Level 3
+     */
+    public boolean getStrictErrorChecking(){
+        return false;
+    }
+    /**
+     * An attribute specifying whether errors checking is enforced or not. 
+     * When set to <code>false</code>, the implementation is free to not 
+     * test every possible error case normally defined on DOM operations, 
+     * and not raise any <code>DOMException</code>. In case of error, the 
+     * behavior is undefined. This attribute is <code>true</code> by 
+     * defaults.
+     * @since DOM Level 3
+     */
+    public void setStrictErrorChecking(boolean strictErrorChecking){
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
+    }
+
+    /**
+     * The location of the document or <code>null</code> if undefined.
+     * <br>Beware that when the <code>Document</code> supports the feature 
+     * "HTML" , the href attribute of the HTML BASE element takes precedence 
+     * over this attribute.
+     * @since DOM Level 3
+     */
+    public String getDocumentURI(){
+        return null;
+    }
+    /**
+     * The location of the document or <code>null</code> if undefined.
+     * <br>Beware that when the <code>Document</code> supports the feature 
+     * "HTML" , the href attribute of the HTML BASE element takes precedence 
+     * over this attribute.
+     * @since DOM Level 3
+     */
+    public void setDocumentURI(String documentURI){
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
+    }
+
+    /** DOM Level 3*/
+    public Node adoptNode(Node source) throws DOMException{
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
+    }
+    
+    /** DOM Level 3*/
+    public void normalizeDocument(){
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
+    }
+
+    /**
+     *  The configuration used when <code>Document.normalizeDocument</code> is 
+     * invoked. 
+     * @since DOM Level 3
+     */
+    public DOMConfiguration getConfig(){
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
+    }
+    
+    /** DOM Level 3*/
+    public Node renameNode(Node n,String namespaceURI, String name) throws DOMException{
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
+    }
+    
+
+
+
+
+    
+
 
 }
