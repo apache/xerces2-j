@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,7 +57,8 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.*;
+import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.Node;
 
 /**
  * DocumentFragment is a "lightweight" or "minimal" Document
@@ -96,7 +97,7 @@ import org.w3c.dom.*;
  * standard methods from the Node interface, such as insertBefore()
  * and appendChild().
  *
- * @version $Id$
+ * @version
  * @since  PR-DOM-Level-1-19980818.
  */
 public class DocumentFragmentImpl 
@@ -115,7 +116,7 @@ public class DocumentFragmentImpl
     //
 
     /** Factory constructor. */
-    public DocumentFragmentImpl(DocumentImpl ownerDoc) {
+    public DocumentFragmentImpl(CoreDocumentImpl ownerDoc) {
         super(ownerDoc);
     }  
   

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,23 +55,28 @@
 
 package org.apache.xerces.dom;
 
+import java.util.Vector;
+
 import org.w3c.dom.DOMException;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.CharacterData;
-import org.apache.xerces.dom.DocumentImpl;
-import org.w3c.dom.ranges.*;
-import java.util.Vector;
+import org.w3c.dom.ranges.Range;
+import org.w3c.dom.ranges.RangeException;
+
 
 /** The RangeImpl class implements the org.w3c.dom.range.Range interface.
  *  <p> Please see the API documentation for the interface classes  
  *  and use the interfaces in your client programs.
- *
- * @version $Id$
  */
 public class RangeImpl  implements Range {
     
+    //
+    // Constants
+    //
+    
+
     //
     // Data
     //

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,7 +57,11 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.*;
+import org.w3c.dom.DocumentType;
+import org.w3c.dom.EntityReference;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * EntityReference models the XML &entityname; syntax, when used for
@@ -111,7 +115,7 @@ import org.w3c.dom.*;
  * @author Joe Kesselman, IBM
  * @author Andy Clark, IBM
  * @author Ralf Pfeiffer, IBM
- * @version $Id$
+ * @version
  * @since  PR-DOM-Level-1-19980818.
  */
 public class EntityReferenceImpl 
@@ -143,7 +147,7 @@ public class EntityReferenceImpl
     //
 
     /** Factory constructor. */
-    public EntityReferenceImpl(DocumentImpl ownerDoc, String name) {
+    public EntityReferenceImpl(CoreDocumentImpl ownerDoc, String name) {
     	super(ownerDoc);
         this.name = name;
         isReadOnly(true);

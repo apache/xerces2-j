@@ -57,7 +57,11 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.*;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentType;
+import org.w3c.dom.Element;
 
 /**
  * The DOMImplementation class is description of a particular
@@ -68,7 +72,7 @@ import org.w3c.dom.*;
  * methods. However, there's nothing that says it can't be a singleton,
  * so that's how I've implemented it.
  *
- * @version $Id$
+ * @version
  * @since  PR-DOM-Level-1-19980818.
  */
 public class DOMImplementationImpl  
@@ -151,7 +155,7 @@ public class DOMImplementationImpl
                                                  String publicID, 
                                                  String systemID)
     {
-    	if (!DocumentImpl.isXMLName(qualifiedName)) {
+    	if (!CoreDocumentImpl.isXMLName(qualifiedName)) {
     		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
     		                           "DOM002 Illegal character");
         }
@@ -171,7 +175,7 @@ public class DOMImplementationImpl
      * @param namespaceURI     The namespace URI of the document
      *                         element to create, or null. 
      * @param qualifiedName    The qualified name of the document
-     *                         element to create, or null. 
+     *                         element to create. 
      * @param doctype          The type of document to be created or null.<p>
      *
      *                         When doctype is not null, its
@@ -188,11 +192,10 @@ public class DOMImplementationImpl
                                              throws DOMException
     {
     	if (doctype != null && doctype.getOwnerDocument() != null) {
-    		throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
-    		                           "DOM005 Wrong document");
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
+                                   "DOM005 Wrong document");
         }
         DocumentImpl doc = new DocumentImpl(doctype);
-        //((DocumentTypeImpl)doctype).ownerDocument = doc;
         Element e = doc.createElementNS( namespaceURI, qualifiedName);
         doc.appendChild(e);
         return doc;

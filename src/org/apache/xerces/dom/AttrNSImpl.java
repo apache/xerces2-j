@@ -3,7 +3,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,9 +58,7 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.*;
-import org.apache.xerces.dom.events.MutationEventImpl;
-
+import org.w3c.dom.DOMException;
 
 /**
  * AttrNSImpl inherits from AttrImpl and adds namespace support. 
@@ -71,8 +69,6 @@ import org.apache.xerces.dom.events.MutationEventImpl;
  * @author Arnaud  Le Hors, IBM
  * @author Andy Clark, IBM
  * @author Ralf Pfeiffer, IBM
- *
- * @version $Id$
  */
 public class AttrNSImpl
     extends AttrImpl {
@@ -98,7 +94,7 @@ public class AttrNSImpl
     /**
      * DOM2: Constructor for Namespace implementation.
      */
-    protected AttrNSImpl(DocumentImpl ownerDocument, 
+    protected AttrNSImpl(CoreDocumentImpl ownerDocument, 
 			 String namespaceURI, 
 			 String qualifiedName) {
 
@@ -148,7 +144,7 @@ public class AttrNSImpl
     } 
 
     // for DeferredAttrImpl
-    protected AttrNSImpl(DocumentImpl ownerDocument, 
+    protected AttrNSImpl(CoreDocumentImpl ownerDocument, 
 			 String value) {
 	super(ownerDocument, value);
     }
@@ -162,9 +158,9 @@ public class AttrNSImpl
      *
      * The namespace URI of this node, or null if it is unspecified.<p>
      *
-     * This is not a computed value that is the result of a namespace lookup based on
-     * an examination of the namespace declarations in scope. It is merely the
-     * namespace URI given at creation time.<p>
+     * This is not a computed value that is the result of a namespace lookup
+     * based on an examination of the namespace declarations in scope. It is
+     * merely the namespace URI given at creation time.<p>
      *
      * For nodes created with a DOM Level 1 method, such as createElement
      * from the Document interface, this is null.     
@@ -175,9 +171,9 @@ public class AttrNSImpl
         if (needsSyncData()) {
             synchronizeData();
         }
-        // REVIST: This code could/should be done at a lower-level, such that the namespaceURI
-        // is set properly upon creation. However, there still seems to be some DOM spec 
-        // interpretation grey-area.
+        // REVIST: This code could/should be done at a lower-level, such that
+        // the namespaceURI is set properly upon creation. However, there still
+        // seems to be some DOM spec interpretation grey-area.
 	return namespaceURI;
     }
     
@@ -203,9 +199,9 @@ public class AttrNSImpl
     /** 
      * Introduced in DOM Level 2. <p>
      *
-     * Note that setting this attribute changes the nodeName attribute, which holds the
-     * qualified name, as well as the tagName and name attributes of the Element
-     * and Attr interfaces, when applicable.<p>
+     * Note that setting this attribute changes the nodeName attribute, which
+     * holds the qualified name, as well as the tagName and name attributes of
+     * the Element and Attr interfaces, when applicable.<p>
      *
      * @throws INVALID_CHARACTER_ERR Raised if the specified
      * prefix contains an invalid character.     
@@ -224,7 +220,7 @@ public class AttrNSImpl
                                      DOMException.NO_MODIFICATION_ALLOWED_ERR, 
                                      "DOM001 Modification not allowed");
             }
-            if (!DocumentImpl.isXMLName(prefix)) {
+            if (!CoreDocumentImpl.isXMLName(prefix)) {
                 throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
     	                               "DOM002 Illegal character");
             }

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2001 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -61,13 +61,33 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Attr;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.DocumentType;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Notation;
+import org.w3c.dom.ProcessingInstruction;
+import org.w3c.dom.Text;
 
-import org.w3c.dom.traversal.*;
-import org.w3c.dom.ranges.*;
-import org.w3c.dom.events.*;
-import org.apache.xerces.dom.events.*;
-import org.apache.xerces.util.XMLChar;
+import org.w3c.dom.events.DocumentEvent;
+import org.w3c.dom.events.Event;
+import org.w3c.dom.events.EventException;
+import org.w3c.dom.events.EventListener;
+import org.w3c.dom.events.EventTarget;
+import org.w3c.dom.events.MutationEvent;
+import org.w3c.dom.ranges.DocumentRange;
+import org.w3c.dom.ranges.Range;
+import org.w3c.dom.traversal.DocumentTraversal;
+import org.w3c.dom.traversal.NodeIterator;
+import org.w3c.dom.traversal.NodeFilter;
+import org.w3c.dom.traversal.TreeWalker;
+
+import org.apache.xerces.dom.events.EventImpl;
+import org.apache.xerces.dom.events.MutationEventImpl;
+import org.apache.xerces.utils.XMLCharacterProperties;
 
 
 /**
@@ -97,12 +117,12 @@ import org.apache.xerces.util.XMLChar;
  * @author Joe Kesselman, IBM
  * @author Andy Clark, IBM
  * @author Ralf Pfeiffer, IBM
- * @version $Id$
+ * @version
  * @since  PR-DOM-Level-1-19980818.
  */
 public class DocumentImpl
-    extends ParentNode
-    implements Document, DocumentTraversal, DocumentEvent, DocumentRange {
+    extends CoreDocumentImpl
+    implements DocumentTraversal, DocumentEvent, DocumentRange {
 
     //
     // Constants
@@ -115,28 +135,6 @@ public class DocumentImpl
     // Data
     //
 
-    // document information
-
-    /** Document type. */
-    protected DocumentTypeImpl docType;
-
-    /** Document element. */
-    protected ElementImpl docElement;
-
-    
-    /**Experimental DOM Level 3 feature: Document encoding */
-    protected String encoding;
-
-    /**Experimental DOM Level 3 feature: Document version */
-    protected String version;
-
-    /**Experimental DOM Level 3 feature: Document standalone */
-    protected boolean standalone;
-
-
-    /** Identifiers. */
-    protected Hashtable identifiers;
-
     /** Iterators */
     // REVISIT: Should this be transient? -Ac
     protected Vector iterators;
@@ -144,9 +142,6 @@ public class DocumentImpl
      /** Ranges */
     // REVISIT: Should this be transient? -Ac
     protected Vector ranges;
-    
-    /** Table for quick check of child insertion. */
-    protected static int[] kidOK;
 
     /** Table for user data attached to this document nodes. */
     protected Hashtable userData;
@@ -154,86 +149,8 @@ public class DocumentImpl
     /** Table for event listeners registered to this document nodes. */
     protected Hashtable eventListeners;
 
-    /**
-     * Number of alterations made to this document since its creation.
-     * Serves as a "dirty bit" so that live objects such as NodeList can
-     * recognize when an alteration has been made and discard its cached
-     * state information.
-     * <p>
-     * Any method that alters the tree structure MUST cause or be
-     * accompanied by a call to changed(), to inform it that any outstanding
-     * NodeLists may have to be updated.
-     * <p>
-     * (Required because NodeList is simultaneously "live" and integer-
-     * indexed -- a bad decision in the DOM's design.)
-     * <p>
-     * Note that changes which do not affect the tree's structure -- changing
-     * the node's name, for example -- do _not_ have to call changed().
-     * <p>
-     * Alternative implementation would be to use a cryptographic
-     * Digest value rather than a count. This would have the advantage that
-     * "harmless" changes (those producing equal() trees) would not force
-     * NodeList to resynchronize. Disadvantage is that it's slightly more prone
-     * to "false negatives", though that's the difference between "wildly
-     * unlikely" and "absurdly unlikely". IF we start maintaining digests,
-     * we should consider taking advantage of them.
-     *
-     * Note: This used to be done a node basis, so that we knew what
-     * subtree changed. But since only DeepNodeList really use this today,
-     * the gain appears to be really small compared to the cost of having
-     * an int on every (parent) node plus having to walk up the tree all the
-     * way to the root to mark the branch as changed everytime a node is
-     * changed.
-     * So we now have a single counter global to the document. It means that
-     * some objects may flush their cache more often than necessary, but this
-     * makes nodes smaller and only the document needs to be marked as changed.
-     */
-    protected int changes = 0;
-
-    // experimental
-
-    /** Allow grammar access. */
-    protected boolean allowGrammarAccess;
-
-    /** Bypass error checking. */
-    protected boolean errorChecking = true;
-
     /** Bypass mutation events firing. */
     protected boolean mutationEvents = false;
-
-    //
-    // Static initialization
-    //
-
-    static {
-
-        kidOK = new int[13];
-
-        kidOK[DOCUMENT_NODE] =
-            1 << ELEMENT_NODE | 1 << PROCESSING_INSTRUCTION_NODE |
-            1 << COMMENT_NODE | 1 << DOCUMENT_TYPE_NODE;
-			
-        kidOK[DOCUMENT_FRAGMENT_NODE] =
-        kidOK[ENTITY_NODE] =
-        kidOK[ENTITY_REFERENCE_NODE] =
-        kidOK[ELEMENT_NODE] =
-            1 << ELEMENT_NODE | 1 << PROCESSING_INSTRUCTION_NODE |
-            1 << COMMENT_NODE | 1 << TEXT_NODE |
-            1 << CDATA_SECTION_NODE | 1 << ENTITY_REFERENCE_NODE ;
-			
-			
-        kidOK[ATTRIBUTE_NODE] =
-            1 << TEXT_NODE | 1 << ENTITY_REFERENCE_NODE;
-			
-        kidOK[DOCUMENT_TYPE_NODE] =
-        kidOK[PROCESSING_INSTRUCTION_NODE] =
-        kidOK[COMMENT_NODE] =
-        kidOK[TEXT_NODE] =
-        kidOK[CDATA_SECTION_NODE] =
-        kidOK[NOTATION_NODE] =
-            0;
-
-    } // static
 
     //
     // Constructors
@@ -244,51 +161,31 @@ public class DocumentImpl
      * since it has to operate in terms of a particular implementation.
      */
     public DocumentImpl() {
-        this(false);
+        super();
     }
 
-    /** Experimental constructor. */
+    /** Constructor. */
     public DocumentImpl(boolean grammarAccess) {
-        super(null);
-        ownerDocument = this;
-        allowGrammarAccess = grammarAccess;
+        super(grammarAccess);
     }
 
-    // For DOM2: support.
-    // The createDocument factory method is in DOMImplementation.
+    /**
+     * For DOM2 support.
+     * The createDocument factory method is in DOMImplementation.
+     */
     public DocumentImpl(DocumentType doctype)
     {
-        this(doctype, false);
+        super(doctype);
     }
-    
-    /** Experimental constructor. */
+
+    /** For DOM2 support. */
     public DocumentImpl(DocumentType doctype, boolean grammarAccess) {
-        this(grammarAccess);
-        this.docType = (DocumentTypeImpl)doctype;
-        if (this.docType != null) {
-            docType.ownerDocument = this;
-        }
+        super(doctype, grammarAccess);
     }
 
     //
     // Node methods
     //
-
-    // even though ownerDocument refers to this in this implementation
-    // the DOM Level 2 spec says it must be null, so make it appear so
-    final public Document getOwnerDocument() {
-        return null;
-    }
-
-    /** Returns the node type. */
-    public short getNodeType() {
-        return Node.DOCUMENT_NODE;
-    }
-
-    /** Returns the node name. */
-    public String getNodeName() {
-        return "#document";
-    }
 
     /**
      * Deep-clone a document, including fixing ownerDoc for the cloned
@@ -301,1031 +198,53 @@ public class DocumentImpl
      */
     public Node cloneNode(boolean deep) {
 
-        // clone the node itself
         DocumentImpl newdoc = new DocumentImpl();
-
-        // then the children by importing them
-
-        if (needsSyncChildren()) {
-            synchronizeChildren();
-        }
-
-        if (deep) {
-            Hashtable reversedIdentifiers = null;
-
-            if (identifiers != null) {
-                // Build a reverse mapping from element to identifier.
-                reversedIdentifiers = new Hashtable();
-                Enumeration elementIds = identifiers.keys();
-                while (elementIds.hasMoreElements()) {
-                    Object elementId = elementIds.nextElement();
-                    reversedIdentifiers.put(identifiers.get(elementId), elementId);
-                }
-            }
-
-            // Copy children into new document.
-            for (ChildNode kid = firstChild; kid != null; kid = kid.nextSibling) {
-                newdoc.appendChild(newdoc.importNode(kid, true, reversedIdentifiers));
-            }
-        }
+        cloneNode(newdoc, deep);
 
         // experimental
-        newdoc.allowGrammarAccess = allowGrammarAccess;
-        newdoc.errorChecking = errorChecking;
         newdoc.mutationEvents = mutationEvents;
 
-        // return new document
     	return newdoc;
 
     } // cloneNode(boolean):Node
 
     /**
-     * Since a Document may contain at most one top-level Element child,
-     * and at most one DocumentType declaraction, we need to subclass our
-     * add-children methods to implement this constraint.
-     * Since appendChild() is implemented as insertBefore(,null),
-     * altering the latter fixes both.
-     * <p>
-     * While I'm doing so, I've taken advantage of the opportunity to
-     * cache documentElement and docType so we don't have to
-     * search for them.
-     *
-     * REVISIT: According to the spec it is not allowed to alter neither the
-     * document element nor the document type in any way
-     */
-    public Node insertBefore(Node newChild, Node refChild)
-        throws DOMException {
-
-    	// Only one such child permitted
-        int type = newChild.getNodeType();
-        if (errorChecking) {
-            if((type == Node.ELEMENT_NODE && docElement != null) ||
-               (type == Node.DOCUMENT_TYPE_NODE && docType != null)) {
-                throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
-                                           "DOM006 Hierarchy request error");
-            }
-        }
-
-    	super.insertBefore(newChild,refChild);
-
-    	// If insert succeeded, cache the kid appropriately
-        if (type == Node.ELEMENT_NODE) {
-    	    docElement = (ElementImpl)newChild;
-        }
-        else if (type == Node.DOCUMENT_TYPE_NODE) {
-    	    docType=(DocumentTypeImpl)newChild;
-        }
-
-    	return newChild;
-
-    } // insertBefore(Node,Node):Node
-
-    /**
-     * Since insertBefore caches the docElement (and, currently, docType),
-     * removeChild has to know how to undo the cache
-     *
-     * REVISIT: According to the spec it is not allowed to alter neither the
-     * document element nor the document type in any way
-     */
-    public Node removeChild(Node oldChild)
-        throws DOMException {
-        super.removeChild(oldChild);
-	
-    	// If remove succeeded, un-cache the kid appropriately
-        int type = oldChild.getNodeType();
-        if(type == Node.ELEMENT_NODE) {
-    	    docElement = null;
-        }
-        else if (type == Node.DOCUMENT_TYPE_NODE) {
-    	    docType=null;
-        }
-
-    	return oldChild;
-
-    }   // removeChild(Node):Node
-
-    /**
-     * Since we cache the docElement (and, currently, docType),
-     * replaceChild has to update the cache
-     *
-     * REVISIT: According to the spec it is not allowed to alter neither the
-     * document element nor the document type in any way
-     */
-    public Node replaceChild(Node newChild, Node oldChild)
-        throws DOMException {
-	
-        super.replaceChild(newChild, oldChild);
-
-        int type = oldChild.getNodeType();
-        if(type == Node.ELEMENT_NODE) {
-    	    docElement = (ElementImpl)newChild;
-        }
-        else if (type == Node.DOCUMENT_TYPE_NODE) {
-    	    docType = (DocumentTypeImpl)newChild;
-        }
-        return oldChild;
-    }   // replaceChild(Node,Node):Node
-
-    //
-    // Document methods
-    //
-
-    // factory methods
-
-    /**
-     * Factory method; creates an Attribute having this Document as its
-	 * OwnerDoc.
-     *
-	 * @param name The name of the attribute. Note that the attribute's value
-	 * is _not_ established at the factory; remember to set it!
-     *
-	 * @throws DOMException(INVALID_NAME_ERR) if the attribute name is not
-	 * acceptable.
-     */
-    public Attr createAttribute(String name)
-        throws DOMException {
-
-    	if(errorChecking && !isXMLName(name)) {
-    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
-    		                           "DOM002 Illegal character");
-        }
-
-    	return new AttrImpl(this, name);
-
-    } // createAttribute(String):Attr
-
-    /**
-     * Factory method; creates a CDATASection having this Document as
-	 * its OwnerDoc.
-     *
-	 * @param data The initial contents of the CDATA
-     *
-	 * @throws DOMException(NOT_SUPPORTED_ERR) for HTML documents. (HTML
-	 * not yet implemented.)
-	 */
-    public CDATASection createCDATASection(String data)
-	    throws DOMException {
-	    return new CDATASectionImpl(this, data);
-    }
-
-    /**
-     * Factory method; creates a Comment having this Document as its
-     * OwnerDoc.
-     *
-     * @param data The initial contents of the Comment. */
-    public Comment createComment(String data) {
-	    return new CommentImpl(this, data);
-    }
-
-    /**
-     * Factory method; creates a DocumentFragment having this Document
-	 * as its OwnerDoc.
-     */
-    public DocumentFragment createDocumentFragment() {
-	    return new DocumentFragmentImpl(this);
-    }
-
-    /**
-     * Factory method; creates an Element having this Document
-	 * as its OwnerDoc.
-     *
-	 * @param tagName The name of the element type to instantiate. For
-	 * XML, this is case-sensitive. For HTML, the tagName parameter may
-	 * be provided in any case, but it must be mapped to the canonical
-	 * uppercase form by the DOM implementation.
-     *
-	 * @throws DOMException(INVALID_NAME_ERR) if the tag name is not
-	 * acceptable.
-	 */
-    public Element createElement(String tagName)
-        throws DOMException {
-
-    	if (errorChecking && !isXMLName(tagName)) {
-            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
-                                   "DOM002 Illegal character");
-        }
-    	return new ElementImpl(this, tagName);
-
-    } // createElement(String):Element
-
-    /**
-     * Factory method; creates an EntityReference having this Document
-     * as its OwnerDoc.
-     *
-     * @param name The name of the Entity we wish to refer to
-     *
-     * @throws DOMException(NOT_SUPPORTED_ERR) for HTML documents, where
-     * nonstandard entities are not permitted. (HTML not yet
-     * implemented.)
-     */
-    public EntityReference createEntityReference(String name)
-        throws DOMException {
-
-    	if (errorChecking && !isXMLName(name)) {
-            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
-                                   "DOM002 Illegal character");
-        }
-    	return new EntityReferenceImpl(this, name);
-
-    } // createEntityReference(String):EntityReference
-
-    /**
-     * Factory method; creates a ProcessingInstruction having this Document
-	 * as its OwnerDoc.
-     *
-	 * @param target The target "processor channel"
-	 * @param data Parameter string to be passed to the target.
-     *
-	 * @throws DOMException(INVALID_NAME_ERR) if the target name is not
-	 * acceptable.
-     *
-	 * @throws DOMException(NOT_SUPPORTED_ERR) for HTML documents. (HTML
-	 * not yet implemented.)
-	 */
-    public ProcessingInstruction createProcessingInstruction(String target, String data)
-        throws DOMException {
-
-    	if(errorChecking && !isXMLName(target)) {
-    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
-    		                           "DOM002 Illegal character");
-        }
-    	return new ProcessingInstructionImpl(this, target, data);
-
-    } // createProcessingInstruction(String,String):ProcessingInstruction
-
-    /**
-     * Factory method; creates a Text node having this Document as its
-	 * OwnerDoc.
-     *
-	 * @param data The initial contents of the Text.
-     */
-    public Text createTextNode(String data) {
-        return new TextImpl(this, data);
-    }
-
-    // other document methods
-
-    /**
-     * For XML, this provides access to the Document Type Definition.
-	 * For HTML documents, and XML documents which don't specify a DTD,
-	 * it will be null.
-	 */
-    public DocumentType getDoctype() {
-        if (needsSyncChildren()) {
-            synchronizeChildren();
-        }
-        return docType;
-    }
-
-
-   /**
-    * DOM Level 3 WD - Experimental.      
-    * The encoding of this document (part of XML Declaration)     
-    */
-    public String getEncoding() {
-	return encoding;
-    }
-
-    /**
-      * DOM Level 3 WD - Experimental.
-      * The version of this document (part of XML Declaration)     
-      */
-    public String getVersion() {
-	return version;
-    }
-
-     /**
-      * DOM Level 3 WD - Experimental.    
-      * standalone that specifies whether this document is standalone (part of XML Declaration)     
-      */
-    public boolean getStandalone() {
-        return standalone;
-    }
-
-
-    /**
-     * Convenience method, allowing direct access to the child node
-	 * which is considered the root of the actual document content. For
-	 * HTML, where it is legal to have more than one Element at the top
-	 * level of the document, we pick the one with the tagName
-	 * "HTML". For XML there should be only one top-level
-     *
-	 * (HTML not yet supported.)
-     */
-    public Element getDocumentElement() {
-        if (needsSyncChildren()) {
-            synchronizeChildren();
-        }
-        return docElement;
-    }
-
-    /**
-     * Return a <em>live</em> collection of all descendent Elements (not just
-	 * immediate children) having the specified tag name.
-     *
-	 * @param tagname The type of Element we want to gather. "*" will be
-	 * taken as a wildcard, meaning "all elements in the document."
-     *
-	 * @see DeepNodeListImpl
-	 */
-    public NodeList getElementsByTagName(String tagname) {
-        return new DeepNodeListImpl(this,tagname);
-    }
-
-    /**
      * Retrieve information describing the abilities of this particular
-	 * DOM implementation. Intended to support applications that may be
-	 * using DOMs retrieved from several different sources, potentially
-	 * with different underlying representations.
-	 */
+     * DOM implementation. Intended to support applications that may be
+     * using DOMs retrieved from several different sources, potentially
+     * with different underlying representations.
+     */
     public DOMImplementation getImplementation() {
         // Currently implemented as a singleton, since it's hardcoded
         // information anyway.
         return DOMImplementationImpl.getDOMImplementation();
     }
 
-    //
-    // Public methods
-    //
-
-    // properties
-
-    /** 
-     * Sets whether the DOM implementation performs error checking
-     * upon operations. Turning off error checking only affects
-     * the following DOM checks:
-     * <ul>
-     * <li>Checking strings to make sure that all characters are
-     *     legal XML characters
-     * <li>Hierarchy checking such as allowed children, checks for
-     *     cycles, etc.
-     * </ul>
-     * <p>
-     * Turning off error checking does <em>not</em> turn off the
-     * following checks:
-     * <ul>
-     * <li>Read only checks
-     * <li>Checks related to DOM events
-     * </ul>
-     */
-    
-    public void setErrorChecking(boolean check) {
-        errorChecking = check;
-    }
-
-    
     /**
-      * DOM Level 3 WD - Experimental.
-      * An attribute specifying, as part of the XML declaration, 
-      * the encoding of this document. This is null when unspecified.
-      */
-    public void setEncoding(String value) {
-        encoding = value;
+     * Store user data related to a given node
+     * This is a place where we could use weak references! Indeed, the node
+     * here won't be GC'ed as long as some user data is attached to it, since
+     * the userData table will have a reference to the node.
+     */
+    protected void setUserData(NodeImpl n, Object data) {
+        if (userData == null) {
+            userData = new Hashtable();
+        }
+        if (data == null) {
+            userData.remove(n);
+        } else {
+            userData.put(n, data);
+        }
     }
 
     /**
-      * DOM Level 3 WD - Experimental.
-      * version - An attribute specifying, as part of the XML declaration, 
-      * the version number of this document. This is null when unspecified
-      */
-    public void setVersion(String value) {
-       version = value;    
-    }
-
-    /**
-      * DOM Level 3 WD - Experimental.
-      * standalone - An attribute specifying, as part of the XML declaration, 
-      * whether this document is standalone
-      */
-    public void setStandalone(boolean value) {
-        standalone = value;
-    } 
-    
-
-    /**
-     * Returns true if the DOM implementation performs error checking.
+     * Retreive user data related to a given node
      */
-    public boolean getErrorChecking() {
-        return errorChecking;
-    }
-
-    /** 
-     * Sets whether the DOM implementation generates mutation events
-     * upon operations.
-     */
-    public void setMutationEvents(boolean set) {
-        mutationEvents = set;
-    }
-
-    /**
-     * Returns true if the DOM implementation generates mutation events.
-     */
-    public boolean getMutationEvents() {
-        return mutationEvents;
-    }
-
-    // non-DOM factory methods
-    
-    /**
-     * NON-DOM
-     * Factory method; creates a DocumentType having this Document
-     * as its OwnerDoc. (REC-DOM-Level-1-19981001 left the process of building
-     * DTD information unspecified.)
-     *
-     * @param name The name of the Entity we wish to provide a value for.
-     *
-     * @throws DOMException(NOT_SUPPORTED_ERR) for HTML documents, where
-     * DTDs are not permitted. (HTML not yet implemented.)
-     */
-    public DocumentType createDocumentType(String qualifiedName,
-                                           String publicID,
-                                           String systemID)
-        throws DOMException {
-
-    	if (errorChecking && !isXMLName(qualifiedName)) {
-            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
-                                   "DOM002 Illegal character");
-        }
-    	return new DocumentTypeImpl(this, qualifiedName, publicID, systemID);
-
-    } // createDocumentType(String):DocumentType
-
-    /**
-     * NON-DOM
-     * Factory method; creates an Entity having this Document
-     * as its OwnerDoc. (REC-DOM-Level-1-19981001 left the process of building
-     * DTD information unspecified.)
-     *
-     * @param name The name of the Entity we wish to provide a value for.
-     *
-     * @throws DOMException(NOT_SUPPORTED_ERR) for HTML documents, where
-     * nonstandard entities are not permitted. (HTML not yet
-     * implemented.)
-     */
-    public Entity createEntity(String name)
-        throws DOMException {
-
-    	if (errorChecking && !isXMLName(name)) {
-    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
-    		                           "DOM002 Illegal character");
-        }
-    	return new EntityImpl(this, name);
-
-    } // createEntity(String):Entity
-
-    /**
-     * NON-DOM
-     * Factory method; creates a Notation having this Document
-     * as its OwnerDoc. (REC-DOM-Level-1-19981001 left the process of building
-     * DTD information unspecified.)
-     *
-     * @param name The name of the Notation we wish to describe
-     *
-     * @throws DOMException(NOT_SUPPORTED_ERR) for HTML documents, where
-     * notations are not permitted. (HTML not yet
-     * implemented.)
-     */
-    public Notation createNotation(String name)
-        throws DOMException {
-
-    	if (errorChecking && !isXMLName(name)) {
-    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
-    		                           "DOM002 Illegal character");
-        }
-    	return new NotationImpl(this, name);
-
-    } // createNotation(String):Notation
-
-    /**
-     * NON-DOM Factory method: creates an element definition. Element
-     * definitions hold default attribute values.
-     */
-    public ElementDefinitionImpl createElementDefinition(String name)
-        throws DOMException {
-
-    	if (errorChecking && !isXMLName(name)) {
-    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
-    		                           "DOM002 Illegal character");
-        }
-        return new ElementDefinitionImpl(this, name);
-
-    } // createElementDefinition(String):ElementDefinitionImpl
-
-    // other non-DOM methods
-
-    /**
-     * Copies a node from another document to this document. The new nodes are
-     * created using this document's factory methods and are populated with the
-     * data from the source's accessor methods defined by the DOM interfaces.
-     * Its behavior is otherwise similar to that of cloneNode.
-     * <p>
-     * According to the DOM specifications, document nodes cannot be imported
-     * and a NOT_SUPPORTED_ERR exception is thrown if attempted.
-     */
-    public Node importNode(Node source, boolean deep)
-	throws DOMException {
-        return importNode(source, deep, null);
-    } // importNode(Node,boolean):Node
-
-    /**
-     * Overloaded implementation of DOM's importNode method. This method
-     * provides the core functionality for the public importNode and cloneNode
-     * methods.
-     *
-     * The reversedIdentifiers parameter is provided for cloneNode to
-     * preserve the document's identifiers. The Hashtable has Elements as the
-     * keys and their identifiers as the values. When an element is being
-     * imported, a check is done for an associated identifier. If one exists,
-     * the identifier is registered with the new, imported element. If
-     * reversedIdentifiers is null, the parameter is not applied.
-     */
-    private Node importNode(Node source, boolean deep, Hashtable reversedIdentifiers)
-	throws DOMException {
-        Node newnode=null;
-
-        // Sigh. This doesn't work; too many nodes have private data that
-        // would have to be manually tweaked. May be able to add local
-        // shortcuts to each nodetype. Consider ?????
-        // if(source instanceof NodeImpl &&
-        //  !(source instanceof DocumentImpl))
-        // {
-        //  // Can't clone DocumentImpl since it invokes us...
-        //  newnode=(NodeImpl)source.cloneNode(false);
-        //  newnode.ownerDocument=this;
-        // }
-        // else
-
-        DOMImplementation  domImplementation     = 
-                  source.getOwnerDocument().getImplementation(); // get source implementation
-        boolean   domLevel20                     = 
-                  domImplementation.hasFeature("XML", "2.0" ); //DOM Level 2.0 implementation
-
-
-        int type                                 = source.getNodeType();
-
-        switch (type) {
-            case ELEMENT_NODE: {
-                Element newElement;
-
-                // Create element according to namespace support/qualification.
-                if(domLevel20 == false || source.getLocalName() == null)
-                    newElement = createElement(source.getNodeName());
-                else
-                    newElement = createElementNS(source.getNamespaceURI(), source.getNodeName());
-
-                // Copy element's attributes, if any.
-                NamedNodeMap sourceAttrs = source.getAttributes();
-                if (sourceAttrs != null) {
-                    int length = sourceAttrs.getLength();
-                    for (int index = 0; index < length; index++) {
-                        Attr attr = (Attr)sourceAttrs.item(index);
-
-                        // Copy the attribute only if it is not a default.
-                        if (attr.getSpecified()) {
-                            Attr newAttr = (Attr)importNode(attr, true, reversedIdentifiers);
-
-                            // Attach attribute according to namespace support/qualification.
-                            if(domLevel20 == false || attr.getLocalName() == null)
-                                newElement.setAttributeNode(newAttr);
-                            else
-                                newElement.setAttributeNodeNS(newAttr);
-                        }
-                    }
-                }
-
-                // Register element identifier.
-                if (reversedIdentifiers != null) {
-                    // Does element have an associated identifier?
-                    Object elementId = reversedIdentifiers.get(source);
-                    if (elementId != null) {
-                        if (identifiers == null)
-                            identifiers = new Hashtable();
-
-                        identifiers.put(elementId, newElement);
-                    }
-                }
-
-                newnode = newElement;
-                break;
-            }
-
-            case ATTRIBUTE_NODE: {
-
-                if( domLevel20 == true ){
-                    if (source.getLocalName() == null) {
-         	        newnode = createAttribute(source.getNodeName());
-         	    } else {
-          	        newnode = createAttributeNS(source.getNamespaceURI(),
-                                                    source.getNodeName());
-         	    }
-                }
-                else {
-                    newnode = createAttribute(source.getNodeName());
-                }
-                // if source is an AttrImpl from this very same implementation
-                // avoid creating the child nodes if possible
-                if (source instanceof AttrImpl) {
-                    AttrImpl attr = (AttrImpl) source;
-                    if (attr.hasStringValue()) {
-                        AttrImpl newattr = (AttrImpl) newnode;
-                        newattr.setValue(attr.getValue());
-                        deep = false;
-                    }
-                    else {
-                        deep = true;
-                    }
-                }
-                else {
-                    // Kids carry value
-                    deep = true;
-                }
-		break;
-            }
-
-	    case TEXT_NODE: {
-		newnode = createTextNode(source.getNodeValue());
-		break;
-            }
-
-	    case CDATA_SECTION_NODE: {
-		newnode = createCDATASection(source.getNodeValue());
-		break;
-            }
-
-    	    case ENTITY_REFERENCE_NODE: {
-		newnode = createEntityReference(source.getNodeName());
-                // allow deep import temporarily
-                ((EntityReferenceImpl)newnode).isReadOnly(false);
-		break;
-            }
-
-    	    case ENTITY_NODE: {
-		Entity srcentity = (Entity)source;
-		EntityImpl newentity =
-		    (EntityImpl)createEntity(source.getNodeName());
-		newentity.setPublicId(srcentity.getPublicId());
-		newentity.setSystemId(srcentity.getSystemId());
-		newentity.setNotationName(srcentity.getNotationName());
-		// Kids carry additional value
-                newentity.isReadOnly(false); // allow deep import temporarily
-		newnode = newentity;
-		break;
-            }
-
-    	    case PROCESSING_INSTRUCTION_NODE: {
-		newnode = createProcessingInstruction(source.getNodeName(),
-						      source.getNodeValue());
-		break;
-            }
-
-    	    case COMMENT_NODE: {
-		newnode = createComment(source.getNodeValue());
-		break;
-            }
-
-            // REVISIT: The DOM specifications say that DocumentType nodes cannot be
-            // imported. Is this OK?
-    	    case DOCUMENT_TYPE_NODE: {
-		DocumentType srcdoctype = (DocumentType)source;
-		DocumentTypeImpl newdoctype = (DocumentTypeImpl)
-		    createDocumentType(srcdoctype.getNodeName(),
-				       srcdoctype.getPublicId(),
-				       srcdoctype.getSystemId());
-		// Values are on NamedNodeMaps
-		NamedNodeMap smap = srcdoctype.getEntities();
-		NamedNodeMap tmap = newdoctype.getEntities();
-		if(smap != null) {
-		    for(int i = 0; i < smap.getLength(); i++) {
-			tmap.setNamedItem(importNode(smap.item(i), true, reversedIdentifiers));
-                    }
-                }
-		smap = srcdoctype.getNotations();
-		tmap = newdoctype.getNotations();
-		if (smap != null) {
-		    for(int i = 0; i < smap.getLength(); i++) {
-			tmap.setNamedItem(importNode(smap.item(i), true, reversedIdentifiers));
-                    }
-                }
-		// NOTE: At this time, the DOM definition of DocumentType
-		// doesn't cover Elements and their Attributes. domimpl's
-		// extentions in that area will not be preserved, even if
-		// copying from domimpl to domimpl. We could special-case
-		// that here. Arguably we should. Consider. ?????
-		newnode = newdoctype;
-		break;
-            }
-
-    	    case DOCUMENT_FRAGMENT_NODE: {
-		newnode = createDocumentFragment();
-		// No name, kids carry value
-		break;
-            }
-
-    	    case NOTATION_NODE: {
-		Notation srcnotation = (Notation)source;
-		NotationImpl newnotation =
-		    (NotationImpl)createNotation(source.getNodeName());
-		newnotation.setPublicId(srcnotation.getPublicId());
-		newnotation.setSystemId(srcnotation.getSystemId());
-		// Kids carry additional value
-		newnode = newnotation;
-		// No name, no value
-		break;
-            }
-
-            case DOCUMENT_NODE : // Can't import document nodes
-            default: {           // Unknown node type
-                throw new DOMException(
-                                       DOMException.NOT_SUPPORTED_ERR,
-                                       "Node type being imported is not supported");
-            }
-        }
-
-    	// If deep, replicate and attach the kids.
-    	if (deep) {
-	    for (Node srckid = source.getFirstChild();
-                 srckid != null;
-                 srckid = srckid.getNextSibling()) {
-		newnode.appendChild(importNode(srckid, true, reversedIdentifiers));
-	    }
-        }
-        if (newnode.getNodeType() == Node.ENTITY_REFERENCE_NODE
-            || newnode.getNodeType() == Node.ENTITY_NODE) {
-          ((NodeImpl)newnode).setReadOnly(true, true);
-        }
-    	return newnode;
-
-    } // importNode(Node,boolean,Hashtable):Node
-
-    /**
-     * DOM Level 3 Prototype:
-     * Change the node's ownerDocument, and its subtree, to this Document
-     *
-     * @param source The node to adopt.
-     * @see DocumentImpl.importNode
-     **/
-    public Node adoptNode(Node source) {
-        NodeImpl node;
-        try {
-            node = (NodeImpl) source;
-        } catch (ClassCastException e) {
-            // source node comes from a different DOMImplementation
+    protected Object getUserData(NodeImpl n) {
+        if (userData == null) {
             return null;
         }
-        switch (node.getNodeType()) {
-            case ATTRIBUTE_NODE: {
-                AttrImpl attr = (AttrImpl) node;
-                // remove node from wherever it is
-                attr.getOwnerElement().removeAttributeNode(attr);
-                // mark it as specified
-                attr.isSpecified(true);
-                // change ownership
-                attr.setOwnerDocument(this);
-                break;
-            }
-            case DOCUMENT_NODE:
-            case DOCUMENT_TYPE_NODE: {
-                throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-                                       "cannot adopt this type of node.");
-            }
-            case ENTITY_REFERENCE_NODE: {
-                // remove node from wherever it is
-                Node parent = node.getParentNode();
-                if (parent != null) {
-                    parent.removeChild(source);
-                }
-                // discard its replacement value
-                Node child;
-                while ((child = node.getFirstChild()) != null) {
-                    node.removeChild(child);
-                }
-                // change ownership
-                node.setOwnerDocument(this);
-                // set its new replacement value if any
-                if (docType == null) {
-                    break;
-                }
-                NamedNodeMap entities = docType.getEntities();
-                Node entityNode = entities.getNamedItem(node.getNodeName());
-                if (entityNode == null) {
-                    break;
-                }
-                EntityImpl entity = (EntityImpl) entityNode;
-                for (child = entityNode.getFirstChild();
-                     child != null; child = child.getNextSibling()) {
-                    Node childClone = child.cloneNode(true);
-                    node.appendChild(childClone);
-                }
-                break;
-            }
-            case ELEMENT_NODE: {
-                // remove node from wherever it is
-                Node parent = node.getParentNode();
-                if (parent != null) {
-                    parent.removeChild(source);
-                }
-                // change ownership
-                node.setOwnerDocument(this);
-                // reconcile default attributes
-                ((ElementImpl)node).reconcileDefaultAttributes();
-                break;
-            }
-            default: {
-                // remove node from wherever it is
-                Node parent = node.getParentNode();
-                if (parent != null) {
-                    parent.removeChild(source);
-                }
-                // change ownership
-                node.setOwnerDocument(this);
-            }
-        }
-        return node;
-    }
-
-    // identifier maintenence
-    /**
-     *  Introduced in DOM Level 2 
-     *  Returns the Element whose ID is given by elementId. If no such element
-     *  exists, returns null. Behavior is not defined if more than one element has this ID.
-     *  <p>
-     *  Note: The DOM implementation must have information that says which
-     *  attributes are of type ID. Attributes with the name "ID" are not of type ID unless
-     *  so defined. Implementations that do not know whether attributes are of type ID
-     *  or not are expected to return null.
-     * @see #getIdentifier
-     */
-    public Element getElementById(String elementId) {
-        return getIdentifier(elementId);
-    }
-
-    /**
-     * Registers an identifier name with a specified element node.
-     * If the identifier is already registered, the new element
-     * node replaces the previous node. If the specified element
-     * node is null, removeIdentifier() is called.
-     *
-     * @see #getIdentifier
-     * @see #removeIdentifier
-     */
-    public void putIdentifier(String idName, Element element) {
-
-        if (element == null) {
-            removeIdentifier(idName);
-            return;
-        }
-
-        if (needsSyncData()) {
-            synchronizeData();
-        }
-
-        if (identifiers == null) {
-            identifiers = new Hashtable();
-        }
-
-        identifiers.put(idName, element);
-
-    } // putIdentifier(String,Element)
-
-    /**
-     * Returns a previously registered element with the specified
-     * identifier name, or null if no element is registered.
-     *
-     * @see #putIdentifier
-     * @see #removeIdentifier
-     */
-    public Element getIdentifier(String idName) {
-
-        if (needsSyncData()) {
-            synchronizeData();
-        }
-
-        if (identifiers == null) {
-            return null;
-        }
-
-        return (Element)identifiers.get(idName);
-
-    } // getIdentifier(String):Element
-
-    /**
-     * Removes a previously registered element with the specified
-     * identifier name.
-     *
-     * @see #putIdentifier
-     * @see #getIdentifier
-     */
-    public void removeIdentifier(String idName) {
-
-        if (needsSyncData()) {
-            synchronizeData();
-        }
-
-        if (identifiers == null) {
-            return;
-        }
-
-        identifiers.remove(idName);
-
-    } // removeIdentifier(String)
-
-    /** Returns an enumeration registered of identifier names. */
-    public Enumeration getIdentifiers() {
-
-        if (needsSyncData()) {
-            synchronizeData();
-        }
-
-        if (identifiers == null) {
-            identifiers = new Hashtable();
-        }
-
-        return identifiers.keys();
-
-    } // getIdentifiers():Enumeration
-
-    //
-    // DOM2: Namespace methods
-    //
-
-    /**
-     * Introduced in DOM Level 2. <p>
-     * Creates an element of the given qualified name and namespace URI. 
-     * If the given namespaceURI is null or an empty string and the 
-     * qualifiedName has a prefix that is "xml", the created element 
-     * is bound to the predefined namespace
-     * "http://www.w3.org/XML/1998/namespace" [Namespaces]. 
-     * @param namespaceURI The namespace URI of the element to
-     *                     create.
-     * @param qualifiedName The qualified name of the element type to
-     *                      instantiate.
-     * @return Element A new Element object with the following attributes:
-     * @throws DOMException INVALID_CHARACTER_ERR: Raised if the specified
-                            name contains an invalid character.
-     * @throws DOMException NAMESPACE_ERR: Raised if the qualifiedName has a
-     *                      prefix that is "xml" and the namespaceURI is 
-     *                      neither null nor an empty string nor 
-     *                      "http://www.w3.org/XML/1998/namespace", or
-     *                      if the qualifiedName has a prefix different 
-     *                      from "xml" and the namespaceURI is null or an empty string.
-     * @since WD-DOM-Level-2-19990923
-     */
-    public Element createElementNS(String namespaceURI, String qualifiedName)
-        throws DOMException
-    {
-    	if (errorChecking && !isXMLName(qualifiedName)) {
-            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
-                                   "DOM002 Illegal character");
-        }
-        return new ElementNSImpl( this, namespaceURI, qualifiedName);
-    }
-
-    /**
-     * Introduced in DOM Level 2. <p>
-     * Creates an attribute of the given qualified name and namespace URI. 
-     * If the given namespaceURI is null or an empty string and the 
-     * qualifiedName has a prefix that is "xml", the created element 
-     * is bound to the predefined namespace
-     * "http://www.w3.org/XML/1998/namespace" [Namespaces]. 
-     *
-     * @param namespaceURI  The namespace URI of the attribute to
-     *                      create. When it is null or an empty string,
-     *                      this method behaves like createAttribute.
-     * @param qualifiedName The qualified name of the attribute to
-     *                      instantiate.
-     * @return Attr         A new Attr object.
-     * @throws DOMException INVALID_CHARACTER_ERR: Raised if the specified
-                            name contains an invalid character.
-     * @since WD-DOM-Level-2-19990923
-     */
-    public Attr createAttributeNS(String namespaceURI, String qualifiedName)
-        throws DOMException
-    {
-    	if (errorChecking && !isXMLName(qualifiedName)) {
-            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
-                                   "DOM002 Illegal character");
-        }
-        return new AttrNSImpl( this, namespaceURI, qualifiedName);
-    }
-
-    /**
-     * Introduced in DOM Level 2. <p>
-     * Returns a NodeList of all the Elements with a given local name and
-     * namespace URI in the order in which they would be encountered in a preorder
-     * traversal of the Document tree.
-     * @param namespaceURI  The namespace URI of the elements to match
-     *                      on. The special value "*" matches all
-     *                      namespaces. When it is null or an empty
-     *                      string, this method behaves like
-     *                      getElementsByTagName.
-     * @param localName     The local name of the elements to match on.
-     *                      The special value "*" matches all local names.
-     * @return NodeList     A new NodeList object containing all the matched Elements.
-     * @since WD-DOM-Level-2-19990923
-     */
-    public NodeList getElementsByTagNameNS(String namespaceURI, String localName)
-    {
-        return new DeepNodeListImpl(this, namespaceURI, localName);
+        return userData.get(n);
     }
 
     //
@@ -1347,10 +266,10 @@ public class DocumentImpl
     public NodeIterator createNodeIterator(Node root,
                                            short whatToShow,
                                            NodeFilter filter)
-    {                                           
-        return createNodeIterator(root,whatToShow,filter,true);
-    }    
-     
+    {
+        return createNodeIterator(root, whatToShow, filter, true);
+    }
+
     /**
      * Create and return a NodeIterator. The NodeIterator is
      * added to a list of NodeIterators so that it can be
@@ -1361,7 +280,8 @@ public class DocumentImpl
      * @param root The root of the iterator.
      * @param whatToShow The whatToShow mask.
      * @param filter The NodeFilter installed. Null means no filter.
-     * @param entityReferenceExpansion true to expand the contents of EntityReference nodes
+     * @param entityReferenceExpansion true to expand the contents of
+     *                                 EntityReference nodes
      * @since WD-DOM-Level-2-19990923
      */
     public NodeIterator createNodeIterator(Node root,
@@ -1369,12 +289,11 @@ public class DocumentImpl
                                            NodeFilter filter,
                                            boolean entityReferenceExpansion)
     {
-        NodeIterator iterator = new NodeIteratorImpl(
-                                        this,
-                                        root,
-                                        whatToShow,
-                                        filter,
-                                        entityReferenceExpansion);
+        NodeIterator iterator = new NodeIteratorImpl(this,
+                                                     root,
+                                                     whatToShow,
+                                                     filter,
+                                                     entityReferenceExpansion);
         if (iterators == null) {
             iterators = new Vector();
         }
@@ -1396,7 +315,7 @@ public class DocumentImpl
                                        short whatToShow,
                                        NodeFilter filter)
     {
-        return createTreeWalker(root,whatToShow,filter,true);
+        return createTreeWalker(root, whatToShow, filter, true);
     }
     /**
      * Create and return a TreeWalker.
@@ -1404,7 +323,8 @@ public class DocumentImpl
      * @param root The root of the iterator.
      * @param whatToShow The whatToShow mask.
      * @param filter The NodeFilter installed. Null means no filter.
-     * @param entityReferenceExpansion true to expand the contents of EntityReference nodes
+     * @param entityReferenceExpansion true to expand the contents of
+     *                                 EntityReference nodes
      * @since WD-DOM-Level-2-19990923
      */
     public TreeWalker createTreeWalker(Node root,
@@ -1412,10 +332,9 @@ public class DocumentImpl
                                        NodeFilter filter,
                                        boolean entityReferenceExpansion)
     {
-    	if (root==null) {
-            throw new DOMException(
-    			DOMException.NOT_SUPPORTED_ERR, 
-			"DOM007 Not supported");
+    	if (root == null) {
+            throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
+                                   "DOM007 Not supported");
         }
         return new TreeWalkerImpl(root, whatToShow, filter,
                                   entityReferenceExpansion);
@@ -1425,10 +344,10 @@ public class DocumentImpl
     // Not DOM Level 2. Support DocumentTraversal methods.
     //
 
-    /** This is not called by the developer client. The 
-     *  developer client uses the detach() function on the 
+    /** This is not called by the developer client. The
+     *  developer client uses the detach() function on the
      *  NodeIterator itself. <p>
-     *  
+     *
      *  This function is called from the NodeIterator#detach().
      */
      void removeNodeIterator(NodeIterator nodeIterator) {
@@ -1445,19 +364,19 @@ public class DocumentImpl
     /**
      */
     public Range createRange() {
-        
+
         if (ranges == null) {
             ranges = new Vector();
         }
 
         Range range = new RangeImpl(this);
-        
+
         ranges.addElement(range);
 
         return range;
-        
+
     }
-    
+
     /** Not a client function. Called by Range.detach(),
      *  so a Range can remove itself from the list of
      *  Ranges.
@@ -1469,12 +388,12 @@ public class DocumentImpl
 
         ranges.removeElement(range);
     }
-    
+
     /**
      * A method to be called when some text was changed in a text node,
      * so that live objects can be notified.
      */
-    void replacedText(Node node) {
+    void replacedText(NodeImpl node) {
         // notify ranges
         if (ranges != null) {
             Enumeration enum = ranges.elements();
@@ -1488,7 +407,7 @@ public class DocumentImpl
      * A method to be called when some text was deleted from a text node,
      * so that live objects can be notified.
      */
-    void deletedText(Node node, int offset, int count) {
+    void deletedText(NodeImpl node, int offset, int count) {
         // notify ranges
         if (ranges != null) {
             Enumeration enum = ranges.elements();
@@ -1504,7 +423,7 @@ public class DocumentImpl
      * A method to be called when some text was inserted into a text node,
      * so that live objects can be notified.
      */
-    void insertedText(Node node, int offset, int count) {
+    void insertedText(NodeImpl node, int offset, int count) {
         // notify ranges
         if (ranges != null) {
             Enumeration enum = ranges.elements();
@@ -1532,115 +451,54 @@ public class DocumentImpl
         }
     }
 
-    /**
-     * A method to be called when a node is removed from the tree so that live
-     * objects can be notified.
-     */
-    void removedChildNode(Node oldChild) {
-
-        // notify iterators
-        if (iterators != null) {
-            Enumeration enum = iterators.elements();
-            while (enum.hasMoreElements()) {
-                ((NodeIteratorImpl)enum.nextElement()).removeNode(oldChild);
-            }
-        }
-        
-        // notify ranges
-        if (ranges != null) {
-            Enumeration enum = ranges.elements();
-            while (enum.hasMoreElements()) {
-                ((RangeImpl)enum.nextElement()).removeNode(oldChild);
-            }
-        }
-    }
-
-
     //
     // DocumentEvent methods
     //
 
     /**
      * Introduced in DOM Level 2. Optional. <p>
-     * Create and return Event objects. 
-	 * <p>
-	 * @param type The event set name, defined as the interface name 
-	 * minus package qualifiers. For example, to create a DOMNodeInserted
-	 * event you'd call <code>createEvent("MutationEvent")</code>, 
-	 * then use its initMutationEvent() method to configure it properly
-	 * as DOMNodeInserted. This parameter is case-sensitive.
-	 * @return an uninitialized Event object. Call the appropriate
-	 * <code>init...Event()</code> method before dispatching it.
-	 * @exception DOMException NOT_SUPPORTED_ERR if the requested
-	 * event type is not supported in this DOM.
+     * Create and return Event objects.
+     *
+     * @param type The eventType parameter specifies the type of Event
+     * interface to be created.  If the Event interface specified is supported
+     * by the implementation this method will return a new Event of the
+     * interface type requested. If the Event is to be dispatched via the
+     * dispatchEvent method the appropriate event init method must be called
+     * after creation in order to initialize the Event's values.  As an
+     * example, a user wishing to synthesize some kind of Event would call
+     * createEvent with the parameter "Events". The initEvent method could then
+     * be called on the newly created Event to set the specific type of Event
+     * to be dispatched and set its context information.
+     * @return Newly created Event
+     * @exception DOMException NOT_SUPPORTED_ERR: Raised if the implementation
+     * does not support the type of Event interface requested
      * @since WD-DOM-Level-2-19990923
      */
-    public Event createEvent(String type) 
+    public Event createEvent(String type)
 	throws DOMException {
-	    if("Event".equals(type))
+	    if (type.equalsIgnoreCase("Events") || "Event".equals(type))
 	        return new EventImpl();
-	    if("MutationEvent".equals(type))
+	    if (type.equalsIgnoreCase("MutationEvents") ||
+                "MutationEvent".equals(type))
 	        return new MutationEventImpl();
 	    else
 	        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
 					   "DOM007 Not supported");
 	}
-     
-    //
-    // Object methods
-    //
-
-    /** Clone. */
-    public Object clone() throws CloneNotSupportedException {
-        DocumentImpl newdoc = (DocumentImpl)super.clone();
-        newdoc.docType = null;
-        newdoc.docElement = null;
-        return newdoc;
-    }
-
-    //
-    // Public static methods
-    //
 
     /**
-     * Check the string against XML's definition of acceptable names for
-     * elements and attributes and so on using the XMLCharacterProperties
-     * utility class
+     * Sets whether the DOM implementation generates mutation events
+     * upon operations.
      */
-    public static boolean isXMLName(String s) {
-
-        if (s == null) {
-            return false;
-        }
-        return XMLChar.isValidName(s);
-    	
-    } // isXMLName(String):boolean
-
-    /**
-     * Store user data related to a given node
-     * This is a place where we could use weak references! Indeed, the node
-     * here won't be GC'ed as long as some user data is attached to it, since
-     * the userData table will have a reference to the node.
-     */
-    protected void setUserData(NodeImpl n, Object data) {
-        if (userData == null) {
-            userData = new Hashtable();
-        }
-        if (data == null) {
-            userData.remove(n);
-        } else {
-            userData.put(n, data);
-        }
+    void setMutationEvents(boolean set) {
+        mutationEvents = set;
     }
 
     /**
-     * Retreive user data related to a given node
+     * Returns true if the DOM implementation generates mutation events.
      */
-    protected Object getUserData(NodeImpl n) {
-        if (userData == null) {
-            return null;
-        }
-        return userData.get(n);
+    boolean getMutationEvents() {
+        return mutationEvents;
     }
 
     /**
@@ -1677,32 +535,744 @@ public class DocumentImpl
     }
 
     //
-    // Protected methods
+    // EventTarget support (public and internal)
     //
 
-    /**
-     * Uses the kidOK lookup table to check whether the proposed
-     * tree structure is legal.
+    //
+    // Constants
+    //
+
+    /*
+     * NON-DOM INTERNAL: Class LEntry is just a struct used to represent
+     * event listeners registered with this node. Copies of this object
+     * are hung from the nodeListeners Vector.
+     * <p>
+     * I considered using two vectors -- one for capture,
+     * one for bubble -- but decided that since the list of listeners 
+     * is probably short in most cases, it might not be worth spending
+     * the space. ***** REVISIT WHEN WE HAVE MORE EXPERIENCE.
      */
-    protected boolean isKidOK(Node parent, Node child) {
-        if (allowGrammarAccess && parent.getNodeType() == Node.DOCUMENT_TYPE_NODE) {
-            return child.getNodeType() == Node.ELEMENT_NODE;
+    class LEntry
+    {
+        String type;
+        EventListener listener;
+        boolean useCapture;
+	    
+        /** NON-DOM INTERNAL: Constructor for Listener list Entry 
+         * @param type Event name (NOT event group!) to listen for.
+         * @param listener Who gets called when event is dispatched
+         * @param useCaptue True iff listener is registered on
+         *  capturing phase rather than at-target or bubbling
+         */
+        LEntry(String type, EventListener listener, boolean useCapture)
+        {
+            this.type = type;
+            this.listener = listener;
+            this.useCapture = useCapture;
         }
-    	return 0 != (kidOK[parent.getNodeType()] & 1 << child.getNodeType());
+    } // LEntry
+	
+    /**
+     * Introduced in DOM Level 2. <p> Register an event listener with this
+     * Node. A listener may be independently registered as both Capturing and
+     * Bubbling, but may only be registered once per role; redundant
+     * registrations are ignored.
+     * @param node node to add listener to
+     * @param type Event name (NOT event group!) to listen for.
+     * @param listener Who gets called when event is dispatched
+     * @param useCapture True iff listener is registered on
+     *  capturing phase rather than at-target or bubbling
+     */
+    protected void addEventListener(NodeImpl node, String type,
+                                    EventListener listener, boolean useCapture)
+    {
+        // We can't dispatch to blank type-name, and of course we need
+        // a listener to dispatch to
+        if (type == null || type.equals("") || listener == null)
+            return;
+
+        // Each listener may be registered only once per type per phase.
+        // Simplest way to code that is to zap the previous entry, if any.
+        removeEventListener(node, type, listener, useCapture);
+	    
+        Vector nodeListeners = getEventListeners(node);
+        if(nodeListeners == null) {
+            nodeListeners = new Vector();
+            setEventListeners(node, nodeListeners);
+        }
+        nodeListeners.addElement(new LEntry(type, listener, useCapture));
+	    
+        // Record active listener
+        LCount lc = LCount.lookup(type);
+        if (useCapture)
+            ++lc.captures;
+        else
+            ++lc.bubbles;
+
+    } // addEventListener(NodeImpl,String,EventListener,boolean) :void
+	
+    /**
+     * Introduced in DOM Level 2. <p> Deregister an event listener previously
+     * registered with this Node.  A listener must be independently removed
+     * from the Capturing and Bubbling roles. Redundant removals (of listeners
+     * not currently registered for this role) are ignored.
+     * @param node node to remove listener from
+     * @param type Event name (NOT event group!) to listen for.
+     * @param listener Who gets called when event is dispatched
+     * @param useCapture True iff listener is registered on
+     *  capturing phase rather than at-target or bubbling
+     */
+    protected void removeEventListener(NodeImpl node, String type,
+                                       EventListener listener,
+                                       boolean useCapture)
+    {
+        // If this couldn't be a valid listener registration, ignore request
+        if (type == null || type.equals("") || listener == null)
+            return;
+        Vector nodeListeners = getEventListeners(node);
+        if (nodeListeners == null)
+            return;
+
+        // Note that addListener has previously ensured that 
+        // each listener may be registered only once per type per phase.
+        // count-down is OK for deletions!
+        for (int i = nodeListeners.size() - 1; i >= 0; --i) {
+            LEntry le = (LEntry) nodeListeners.elementAt(i);
+            if (le.useCapture == useCapture && le.listener == listener && 
+               le.type.equals(type)) {
+                nodeListeners.removeElementAt(i);
+                // Storage management: Discard empty listener lists
+                if (nodeListeners.size() == 0)
+                    setEventListeners(node, null);
+
+                // Remove active listener
+                LCount lc = LCount.lookup(type);
+                if (useCapture)
+                    --lc.captures;
+                else
+                    --lc.bubbles;
+
+                break;  // Found it; no need to loop farther.
+            }
+        }
+    } // removeEventListener(NodeImpl,String,EventListener,boolean) :void
+	
+    /**
+     * Introduced in DOM Level 2. <p>
+     * Distribution engine for DOM Level 2 Events. 
+     * <p>
+     * Event propagation runs as follows:
+     * <ol>
+     * <li>Event is dispatched to a particular target node, which invokes
+     *   this code. Note that the event's stopPropagation flag is
+     *   cleared when dispatch begins; thereafter, if it has 
+     *   been set before processing of a node commences, we instead
+     *   immediately advance to the DEFAULT phase.
+     * <li>The node's ancestors are established as destinations for events.
+     *   For capture and bubble purposes, node ancestry is determined at 
+     *   the time dispatch starts. If an event handler alters the document 
+     *   tree, that does not change which nodes will be informed of the event. 
+     * <li>CAPTURING_PHASE: Ancestors are scanned, root to target, for 
+     *   Capturing listeners. If found, they are invoked (see below). 
+     * <li>AT_TARGET: 
+     *   Event is dispatched to NON-CAPTURING listeners on the
+     *   target node. Note that capturing listeners on this node are _not_
+     *   invoked.
+     * <li>BUBBLING_PHASE: Ancestors are scanned, target to root, for
+     *   non-capturing listeners. 
+     * <li>Default processing: Some DOMs have default behaviors bound to
+     *   specific nodes. If this DOM does, and if the event's preventDefault
+     *   flag has not been set, we now return to the target node and process
+     *   its default handler for this event, if any.
+     * </ol>
+     * <p>
+     * Note that (de)registration of handlers during
+     * processing of an event does not take effect during
+     * this phase of this event; they will not be called until
+     * the next time this node is visited by dispatchEvent.
+     * <p>
+     * If an event handler itself causes events to be dispatched, they are
+     * processed synchronously, before processing resumes
+     * on the event which triggered them. Please be aware that this may 
+     * result in events arriving at listeners "out of order" relative
+     * to the actual sequence of requests.
+     * <p>
+     * Note that our implementation resets the event's stop/prevent flags
+     * when dispatch begins.
+     * I believe the DOM's intent is that event objects be redispatchable,
+     * though it isn't stated in those terms.
+     * @param node node to dispatch to
+     * @param event the event object to be dispatched to 
+     *              registered EventListeners
+     * @return true if the event's <code>preventDefault()</code>
+     *              method was invoked by an EventListener; otherwise false.
+    */
+    protected boolean dispatchEvent(NodeImpl node, Event event) {
+        if (event == null) return false;
+        
+        // Can't use anyone else's implementation, since there's no public
+        // API for setting the event's processing-state fields.
+        EventImpl evt = (EventImpl)event;
+
+        // VALIDATE -- must have been initialized at least once, must have
+        // a non-null non-blank name.
+        if(!evt.initialized || evt.type == null || evt.type.equals(""))
+            throw new EventException(EventException.UNSPECIFIED_EVENT_TYPE_ERR,
+                                     "DOM010 Unspecified event type");
+        
+        // If nobody is listening for this event, discard immediately
+        LCount lc = LCount.lookup(evt.getType());
+        if (lc.captures + lc.bubbles + lc.defaults == 0)
+            return evt.preventDefault;
+
+        // INITIALIZE THE EVENT'S DISPATCH STATUS
+        // (Note that Event objects are reusable in our implementation;
+        // that doesn't seem to be explicitly guaranteed in the DOM, but
+        // I believe it is the intent.)
+        evt.target = node;
+        evt.stopPropagation = false;
+        evt.preventDefault = false;
+        
+        // Capture pre-event parentage chain, not including target;
+        // use pre-event-dispatch ancestors even if event handlers mutate
+        // document and change the target's context.
+        // Note that this is parents ONLY; events do not
+        // cross the Attr/Element "blood/brain barrier". 
+        // DOMAttrModified. which looks like an exception,
+        // is issued to the Element rather than the Attr
+        // and causes a _second_ DOMSubtreeModified in the Element's
+        // tree.
+        Vector pv = new Vector(10,10);
+        Node p = node;
+        Node n = p.getParentNode();
+        while (n != null) {
+            pv.addElement(n);
+            p = n;
+            n = n.getParentNode();
+        }
+        
+        // CAPTURING_PHASE:
+        if (lc.captures > 0) {
+            evt.eventPhase = Event.CAPTURING_PHASE;
+            // Ancestors are scanned, root to target, for 
+            // Capturing listeners.
+            for (int j = pv.size() - 1; j >= 0; --j) {
+                if (evt.stopPropagation)
+                    break;  // Someone set the flag. Phase ends.
+
+                // Handle all capturing listeners on this node
+                NodeImpl nn = (NodeImpl) pv.elementAt(j);
+                evt.currentTarget = nn;
+                Vector nodeListeners = getEventListeners(nn);
+                if (nodeListeners != null) {
+                    Vector nl = (Vector) nodeListeners.clone();
+                    // count-down more efficient
+                    for (int i = nl.size() - 1; i >= 0; --i) {
+                        LEntry le = (LEntry) nl.elementAt(i);
+                        if (le.useCapture && le.type.equals(evt.type)) {
+                            try {
+                                le.listener.handleEvent(evt);
+                            }
+                            catch(Exception e) {
+                                // All exceptions are ignored.
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Both AT_TARGET and BUBBLE use non-capturing listeners.
+        if (lc.bubbles > 0) {
+            // AT_TARGET PHASE: Event is dispatched to NON-CAPTURING listeners
+            // on the target node. Note that capturing listeners on the target
+            // node are _not_ invoked, even during the capture phase.
+            evt.eventPhase = Event.AT_TARGET;
+            evt.currentTarget = node;
+            Vector nodeListeners = getEventListeners(node);
+            if (!evt.stopPropagation && nodeListeners != null) {
+                Vector nl = (Vector) nodeListeners.clone();
+                // count-down is more efficient
+                for (int i = nl.size() - 1; i >= 0; --i) {
+                    LEntry le = (LEntry)nl.elementAt(i);
+                    if (le != null && !le.useCapture &&
+                        le.type.equals(evt.type)) {
+                        try {
+                            le.listener.handleEvent(evt);
+                        }
+                        catch(Exception e) {
+                            // All exceptions are ignored.
+                        }
+                    }
+                }
+            }
+            // BUBBLING_PHASE: Ancestors are scanned, target to root, for
+            // non-capturing listeners. If the event's preventBubbling flag
+            // has been set before processing of a node commences, we
+            // instead immediately advance to the default phase.
+            // Note that not all events bubble.
+            if (evt.bubbles) {
+                evt.eventPhase = Event.BUBBLING_PHASE;
+                for (int j = 0; j < pv.size(); ++j) {
+                    if (evt.stopPropagation)
+                        break;  // Someone set the flag. Phase ends.
+
+                    // Handle all bubbling listeners on this node
+                    NodeImpl nn = (NodeImpl) pv.elementAt(j);
+                    evt.currentTarget = nn;
+                    nodeListeners = getEventListeners(nn);
+                    if (nodeListeners != null) {
+                        Vector nl = (Vector) nodeListeners.clone();
+                        // count-down more efficient
+                        for (int i = nl.size() - 1; i >= 0; --i) {
+                            LEntry le = (LEntry) nl.elementAt(i);
+                            if (!le.useCapture && le.type.equals(evt.type)) {
+                                try {
+                                    le.listener.handleEvent(evt);
+                                }
+                                catch(Exception e) {
+                                    // All exceptions are ignored.
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // DEFAULT PHASE: Some DOMs have default behaviors bound to specific
+        // nodes. If this DOM does, and if the event's preventDefault flag has
+        // not been set, we now return to the target node and process its
+        // default handler for this event, if any.
+        // No specific phase value defined, since this is DOM-internal
+        if (lc.defaults > 0 && (!evt.cancelable || !evt.preventDefault)) {
+            // evt.eventPhase = Event.DEFAULT_PHASE;
+            // evt.currentTarget = node;
+            // DO_DEFAULT_OPERATION
+        }
+
+        return evt.preventDefault;        
+    } // dispatchEvent(NodeImpl,Event) :boolean
+
+
+    /**
+     * NON-DOM INTERNAL: DOMNodeInsertedIntoDocument and ...RemovedFrom...
+     * are dispatched to an entire subtree. This is the distribution code
+     * therefor. They DO NOT bubble, thanks be, but may be captured.
+     * <p>
+     * ***** At the moment I'm being sloppy and using the normal
+     * capture dispatcher on every node. This could be optimized hugely
+     * by writing a capture engine that tracks our position in the tree to
+     * update the capture chain without repeated chases up to root.
+     * @param node node to dispatch to
+     * @param n node which was directly inserted or removed
+     * @param e event to be sent to that node and its subtree
+     */
+    protected void dispatchEventToSubtree(NodeImpl node, Node n, Event e) {
+        Vector nodeListeners = getEventListeners(node);
+        if (nodeListeners == null || n == null)
+            return;
+
+        // ***** Recursive implementation. This is excessively expensive,
+        // and should be replaced in conjunction with optimization
+        // mentioned above.
+        ((NodeImpl) n).dispatchEvent(e);
+        if (n.getNodeType() == Node.ELEMENT_NODE) {
+            NamedNodeMap a = n.getAttributes();
+            for (int i = a.getLength() - 1; i >= 0; --i)
+                dispatchEventToSubtree(node, a.item(i), e);
+        }
+        dispatchEventToSubtree(node, n.getFirstChild(), e);
+        dispatchEventToSubtree(node, n.getNextSibling(), e);
+    } // dispatchEventToSubtree(NodeImpl,Node,Event) :void
+
+    /**
+     * NON-DOM INTERNAL: Return object for getEnclosingAttr. Carries
+     * (two values, the Attr node affected (if any) and its previous 
+     * string value. Simple struct, no methods.
+     */
+    class EnclosingAttr
+    {
+        AttrImpl node;
+        String oldvalue;
+    }
+
+    EnclosingAttr savedEnclosingAttr;
+
+    /**
+     * NON-DOM INTERNAL: Convenience wrapper for calling
+     * dispatchAggregateEvents when the context was established
+     * by <code>savedEnclosingAttr</code>.
+     * @param node node to dispatch to
+     * @param ea description of Attr affected by current operation
+     */
+    protected void dispatchAggregateEvents(NodeImpl node, EnclosingAttr ea) {
+        if (ea != null)
+            dispatchAggregateEvents(node, ea.node, ea.oldvalue,
+                                    MutationEvent.MODIFICATION);
+        else
+            dispatchAggregateEvents(node, null, null, (short) 0);
+	        
+    } // dispatchAggregateEvents(NodeImpl,EnclosingAttr) :void
+
+    /**
+     * NON-DOM INTERNAL: Generate the "aggregated" post-mutation events
+     * DOMAttrModified and DOMSubtreeModified.
+     * Both of these should be issued only once for each user-requested
+     * mutation operation, even if that involves multiple changes to
+     * the DOM.
+     * For example, if a DOM operation makes multiple changes to a single
+     * Attr before returning, it would be nice to generate only one 
+     * DOMAttrModified, and multiple changes over larger scope but within
+     * a recognizable single subtree might want to generate only one 
+     * DOMSubtreeModified, sent to their lowest common ancestor. 
+     * <p>
+     * To manage this, use the "internal" versions of insert and remove
+     * with MUTATION_LOCAL, then make an explicit call to this routine
+     * at the higher level. Some examples now exist in our code.
+     *
+     * @param node The node to dispatch to
+     * @param enclosingAttr The Attr node (if any) whose value has been changed
+     * as a result of the DOM operation. Null if none such.
+     * @param oldValue The String value previously held by the
+     * enclosingAttr. Ignored if none such.
+     * @param change Type of modification to the attr. See
+     * MutationEvent.attrChange
+     */
+    protected void dispatchAggregateEvents(NodeImpl node,
+                                           AttrImpl enclosingAttr,
+                                           String oldvalue, short change) {
+        // We have to send DOMAttrModified.
+        NodeImpl owner = null;
+        if (enclosingAttr != null) {
+            LCount lc = LCount.lookup(MutationEventImpl.DOM_ATTR_MODIFIED);
+            owner = (NodeImpl) enclosingAttr.getOwnerElement();
+            if (lc.captures + lc.bubbles + lc.defaults > 0) {
+                if (owner != null) {
+                    MutationEventImpl me =  new MutationEventImpl();
+                    me.initMutationEvent(MutationEventImpl.DOM_ATTR_MODIFIED,
+                                         true, false, enclosingAttr,
+                                         oldvalue,
+                                         enclosingAttr.getNodeValue(),
+                                         enclosingAttr.getNodeName(),
+                                         change);
+                    owner.dispatchEvent(me);
+                }
+            }
+        }
+        // DOMSubtreeModified gets sent to the lowest common root of a
+        // set of changes. 
+        // "This event is dispatched after all other events caused by the
+        // mutation have been fired."
+        LCount lc = LCount.lookup(MutationEventImpl.DOM_SUBTREE_MODIFIED);
+        if (lc.captures + lc.bubbles + lc.defaults > 0) {
+            MutationEvent me =  new MutationEventImpl();
+            me.initMutationEvent(MutationEventImpl.DOM_SUBTREE_MODIFIED,
+                                 true, false, null, null,
+                                 null, null, (short) 0);
+
+            // If we're within an Attr, DStM gets sent to the Attr
+            // and to its owningElement. Otherwise we dispatch it
+            // locally.
+            if (enclosingAttr != null) {
+                dispatchEvent(enclosingAttr, me);
+                if (owner != null)
+                    dispatchEvent(owner, me);
+            }
+            else
+                dispatchEvent(node, me);
+        }
+    } // dispatchAggregateEvents(NodeImpl, AttrImpl,String) :void
+
+    /**
+     * NON-DOM INTERNAL: Pre-mutation context check, in
+     * preparation for later generating DOMAttrModified events.
+     * Determines whether this node is within an Attr
+     * @param node node to get enclosing attribute for
+     * @return either a description of that Attr, or null if none such. 
+     */
+    protected void saveEnclosingAttr(NodeImpl node) {
+        savedEnclosingAttr = null;
+        // MUTATION PREPROCESSING AND PRE-EVENTS:
+        // If we're within the scope of an Attr and DOMAttrModified 
+        // was requested, we need to preserve its previous value for
+        // that event.
+        LCount lc = LCount.lookup(MutationEventImpl.DOM_ATTR_MODIFIED);
+        if (lc.captures + lc.bubbles + lc.defaults > 0) {
+            NodeImpl eventAncestor = node;
+            while (true) {
+                if (eventAncestor == null)
+                    return;
+                int type = eventAncestor.getNodeType();
+                if (type == Node.ATTRIBUTE_NODE) {
+                    EnclosingAttr retval = new EnclosingAttr();
+                    retval.node = (AttrImpl) eventAncestor;
+                    retval.oldvalue = retval.node.getNodeValue();
+                    savedEnclosingAttr = retval;
+                    return;
+                }
+                else if (type == Node.ENTITY_REFERENCE_NODE)
+                    eventAncestor = eventAncestor.parentNode();
+                else
+                    return;
+                // Any other parent means we're not in an Attr
+            }
+        }
+    } // saveEnclosingAttr(NodeImpl) :void
+
+    /**
+     * A method to be called when a character data node has been modified
+     */
+    void modifyingCharacterData(NodeImpl node) {
+        if (mutationEvents) {
+            saveEnclosingAttr(node);
+        }
     }
 
     /**
-     * Denotes that this node has changed.
+     * A method to be called when a character data node has been modified
      */
-    protected void changed() {
-        changes++;
+    void modifiedCharacterData(NodeImpl node, String oldvalue, String value) {
+        if (mutationEvents) {
+            // MUTATION POST-EVENTS:
+            LCount lc =
+                LCount.lookup(MutationEventImpl.DOM_CHARACTER_DATA_MODIFIED);
+            if (lc.captures + lc.bubbles + lc.defaults > 0) {
+                MutationEvent me = new MutationEventImpl();
+                me.initMutationEvent(
+                                 MutationEventImpl.DOM_CHARACTER_DATA_MODIFIED,
+                                     true, false, null,
+                                     oldvalue, value, null, (short) 0);
+                dispatchEvent(me);
+            }
+            
+            // Subroutine: Transmit DOMAttrModified and DOMSubtreeModified,
+            // if required. (Common to most kinds of mutation)
+            dispatchAggregateEvents(node, savedEnclosingAttr);
+        } // End mutation postprocessing
     }
 
     /**
-     * Returns the number of changes to this node.
+     * A method to be called when a node is about to be inserted in the tree.
      */
-    protected int changes() {
-        return changes;
+    void insertingNode(NodeImpl node, boolean replace) {
+        if (mutationEvents) {
+            if (!replace) {
+                saveEnclosingAttr(node);
+            }
+        }
+    }
+
+    /**
+     * A method to be called when a node has been inserted in the tree.
+     */
+    void insertedNode(NodeImpl node, NodeImpl newInternal, boolean replace) {
+        if (mutationEvents) {
+            // MUTATION POST-EVENTS:
+            // "Local" events (non-aggregated)
+            // New child is told it was inserted, and where
+            LCount lc = LCount.lookup(MutationEventImpl.DOM_NODE_INSERTED);
+            if (lc.captures + lc.bubbles + lc.defaults > 0) {
+                MutationEventImpl me = new MutationEventImpl();
+                me.initMutationEvent(MutationEventImpl.DOM_NODE_INSERTED,
+                                     true, false, node,
+                                     null, null, null, (short) 0);
+                dispatchEvent(newInternal, me);
+            }
+
+            // If within the Document, tell the subtree it's been added
+            // to the Doc.
+            lc = LCount.lookup(
+                            MutationEventImpl.DOM_NODE_INSERTED_INTO_DOCUMENT);
+            if (lc.captures + lc.bubbles + lc.defaults > 0) {
+                NodeImpl eventAncestor = node;
+                if (savedEnclosingAttr != null)
+                    eventAncestor = (NodeImpl)
+                        savedEnclosingAttr.node.getOwnerElement();
+                if (eventAncestor != null) { // Might have been orphan Attr
+                    NodeImpl p = eventAncestor;
+                    while (p != null) {
+                        eventAncestor = p; // Last non-null ancestor
+                        // In this context, ancestry includes
+                        // walking back from Attr to Element
+                        if (p.getNodeType() == ATTRIBUTE_NODE) {
+                            p = (NodeImpl) ((AttrImpl)p).getOwnerElement();
+                        }
+                        else {
+                            p = p.parentNode();
+                        }
+                    }
+                    if (eventAncestor.getNodeType() == Node.DOCUMENT_NODE){
+                        MutationEventImpl me = new MutationEventImpl();
+                        me.initMutationEvent(MutationEventImpl
+                                             .DOM_NODE_INSERTED_INTO_DOCUMENT,
+                                             false,false,null,null,
+                                             null,null,(short)0);
+                        dispatchEventToSubtree(node, newInternal, me);
+                    }
+                }
+            }
+            if (!replace) {
+                // Subroutine: Transmit DOMAttrModified and DOMSubtreeModified
+                // (Common to most kinds of mutation)
+                dispatchAggregateEvents(node, savedEnclosingAttr);
+            }
+        }
+    }
+
+    /**
+     * A method to be called when a node is about to be removed from the tree.
+     */
+    void removingNode(NodeImpl node, NodeImpl oldChild, boolean replace) {
+
+        // notify iterators
+        if (iterators != null) {
+            Enumeration enum = iterators.elements();
+            while (enum.hasMoreElements()) {
+                ((NodeIteratorImpl)enum.nextElement()).removeNode(oldChild);
+            }
+        }
+
+        // notify ranges
+        if (ranges != null) {
+            Enumeration enum = ranges.elements();
+            while (enum.hasMoreElements()) {
+                ((RangeImpl)enum.nextElement()).removeNode(oldChild);
+            }
+        }
+
+        // mutation events
+        if (mutationEvents) {
+            // MUTATION PREPROCESSING AND PRE-EVENTS:
+            // If we're within the scope of an Attr and DOMAttrModified 
+            // was requested, we need to preserve its previous value for
+            // that event.
+            if (!replace) {
+                saveEnclosingAttr(node);
+            }
+            // Child is told that it is about to be removed
+            LCount lc = LCount.lookup(MutationEventImpl.DOM_NODE_REMOVED);
+            if (lc.captures + lc.bubbles + lc.defaults > 0) {
+                MutationEventImpl me= new MutationEventImpl();
+                me.initMutationEvent(MutationEventImpl.DOM_NODE_REMOVED,
+                                     true, false, node, null,
+                                     null, null, (short) 0);
+                dispatchEvent(oldChild, me);
+            }
+
+            // If within Document, child's subtree is informed that it's
+            // losing that status
+            lc = LCount.lookup(
+                             MutationEventImpl.DOM_NODE_REMOVED_FROM_DOCUMENT);
+            if (lc.captures + lc.bubbles + lc.defaults > 0) {
+                NodeImpl eventAncestor = this;
+                if(savedEnclosingAttr != null)
+                    eventAncestor = (NodeImpl)
+                        savedEnclosingAttr.node.getOwnerElement();
+                if (eventAncestor != null) { // Might have been orphan Attr
+                    for (NodeImpl p = eventAncestor.parentNode();
+                         p != null; p = p.parentNode()) {
+                        eventAncestor = p; // Last non-null ancestor
+                    }
+                    if (eventAncestor.getNodeType() == Node.DOCUMENT_NODE){
+                        MutationEventImpl me = new MutationEventImpl();
+                        me.initMutationEvent(
+                              MutationEventImpl.DOM_NODE_REMOVED_FROM_DOCUMENT,
+                                             false, false, null,
+                                             null, null, null, (short) 0);
+                        dispatchEventToSubtree(node, oldChild, me);
+                    }
+                }
+            }
+        } // End mutation preprocessing
+    }
+
+    /**
+     * A method to be called when a node has been removed from the tree.
+     */
+    void removedNode(NodeImpl node, boolean replace) {
+        if (mutationEvents) {
+            // MUTATION POST-EVENTS:
+            // Subroutine: Transmit DOMAttrModified and DOMSubtreeModified,
+            // if required. (Common to most kinds of mutation)
+            if (!replace) {
+                dispatchAggregateEvents(node, savedEnclosingAttr);
+            }
+        } // End mutation postprocessing
+    }
+
+    /**
+     * A method to be called when a node is about to be replaced in the tree.
+     */
+    void replacingNode(NodeImpl node) {
+        if (mutationEvents) {
+            saveEnclosingAttr(node);
+        }
+    }
+
+    /**
+     * A method to be called when a node has been replaced in the tree.
+     */
+    void replacedNode(NodeImpl node) {
+        if (mutationEvents) {
+            dispatchAggregateEvents(node, savedEnclosingAttr);
+        }
+    }
+
+    /**
+     * A method to be called when an attribute value has been modified
+     */
+    void modifiedAttrValue(AttrImpl attr, String oldvalue) {
+        if (mutationEvents) {
+            // MUTATION POST-EVENTS:
+            dispatchAggregateEvents(attr, attr, oldvalue,
+                                    MutationEvent.MODIFICATION);
+        }
+    }
+
+    /**
+     * A method to be called when an attribute node has been set
+     */
+    void setAttrNode(AttrImpl attr, AttrImpl previous) {
+        if (mutationEvents) {
+            // MUTATION POST-EVENTS:
+            if (previous == null) {
+                dispatchAggregateEvents(attr.ownerNode, attr, null,
+                                        MutationEvent.ADDITION);
+            }
+            else {
+                dispatchAggregateEvents(attr.ownerNode, attr,
+                                        previous.getNodeValue(),
+                                        MutationEvent.MODIFICATION);
+            }
+        }
+    }
+
+    /**
+     * A method to be called when an attribute node has been removed
+     */
+    void removedAttrNode(AttrImpl attr, NodeImpl oldOwner, String name) {
+        // We can't use the standard dispatchAggregate, since it assumes
+        // that the Attr is still attached to an owner. This code is
+        // similar but dispatches to the previous owner, "element".
+        if (mutationEvents) {
+    	    // If we have to send DOMAttrModified (determined earlier),
+            // do so.
+            LCount lc = LCount.lookup(MutationEventImpl.DOM_ATTR_MODIFIED);
+            if (lc.captures + lc.bubbles + lc.defaults > 0) {
+                MutationEventImpl me= new MutationEventImpl();
+                me.initMutationEvent(MutationEventImpl.DOM_ATTR_MODIFIED,
+                                     true, false, null,
+                                     attr.getNodeValue(), null, name,
+                                     MutationEvent.REMOVAL);
+                dispatchEvent(oldOwner, me);
+            }
+
+            // We can hand off to process DOMSubtreeModified, though.
+            // Note that only the Element needs to be informed; the
+            // Attr's subtree has not been changed by this operation.
+            dispatchAggregateEvents(oldOwner, null, null, (short) 0);
+        }
     }
 
 } // class DocumentImpl

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,7 +57,9 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.*;
+import org.w3c.dom.DocumentType;
+import org.w3c.dom.Node;
+import org.w3c.dom.NamedNodeMap;
 
 /**
  * This class represents a Document Type <em>declaraction</em> in
@@ -79,7 +81,7 @@ import org.w3c.dom.*;
  * @author Arnaud  Le Hors, IBM
  * @author Joe Kesselman, IBM
  * @author Andy Clark, IBM
- * @version $Id$
+ * @version
  * @since  PR-DOM-Level-1-19980818.
  */
 public class DocumentTypeImpl 
@@ -125,7 +127,7 @@ public class DocumentTypeImpl
     //
 
     /** Factory method for creating a document type node. */
-    public DocumentTypeImpl(DocumentImpl ownerDocument, String name) {
+    public DocumentTypeImpl(CoreDocumentImpl ownerDocument, String name) {
         super(ownerDocument);
 
         this.name = name;
@@ -136,16 +138,17 @@ public class DocumentTypeImpl
         // NON-DOM
         elements = new NamedNodeMapImpl(this);
 
-    } // <init>(DocumentImpl,String)
+    } // <init>(CoreDocumentImpl,String)
   
     /** Factory method for creating a document type node. */
-    public DocumentTypeImpl(DocumentImpl ownerDocument, String qualifiedName, 
+    public DocumentTypeImpl(CoreDocumentImpl ownerDocument,
+                            String qualifiedName,
                             String publicID, String systemID) {
         this(ownerDocument, qualifiedName);
         this.publicID = publicID;
         this.systemID = systemID;
 
-    } // <init>(DocumentImpl,String)
+    } // <init>(CoreDocumentImpl,String)
     
     //
     // DOM2: methods.
@@ -240,7 +243,7 @@ public class DocumentTypeImpl
      * NON-DOM
      * set the ownerDocument of this node and its children
      */
-    void setOwnerDocument(DocumentImpl doc) {
+    void setOwnerDocument(CoreDocumentImpl doc) {
         super.setOwnerDocument(doc);
         entities.setOwnerDocument(doc);
         notations.setOwnerDocument(doc);

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,11 +57,13 @@
 
 package org.apache.xerces.dom;
 
-import java.io.*;
+import java.io.Serializable;
 import java.util.Vector;
 import java.util.Enumeration;
 
-import org.w3c.dom.*;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 
 /**
  * NamedNodeMaps represent collections of Nodes that can be accessed
@@ -85,7 +87,7 @@ import org.w3c.dom.*;
  * contents, the indices associated with nodes may change.
  * <P>
  *
- * @version $Id$
+ * @version
  * @since  PR-DOM-Level-1-19980818.
  */
 public class NamedNodeMapImpl
@@ -413,7 +415,7 @@ public class NamedNodeMapImpl
      * NON-DOM
      * set the ownerDocument of this node, and the attributes it contains
      */
-    void setOwnerDocument(DocumentImpl doc) {
+    void setOwnerDocument(CoreDocumentImpl doc) {
         if (nodes != null) {
             for (int i = 0; i < nodes.size(); i++) {
                 ((NodeImpl)item(i)).setOwnerDocument(doc);

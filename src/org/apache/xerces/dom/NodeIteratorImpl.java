@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,9 +57,11 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.*;
-import org.w3c.dom.traversal.*;
-import org.apache.xerces.dom.DocumentImpl;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Node;
+import org.w3c.dom.traversal.NodeFilter;
+import org.w3c.dom.traversal.NodeIterator;
+
 
 /** DefaultNodeIterator implements a NodeIterator, which iterates a 
  *  DOM tree in the expected depth first way. 
@@ -70,8 +72,6 @@ import org.apache.xerces.dom.DocumentImpl;
  *  on DOM remove. It is expected that the DOM implementation call removeNode
  *  right before the actual DOM transformation. If not called by the DOM,
  *  the client could call it before doing the removal.
- *
- * @version $Id$
  */
 public class NodeIteratorImpl implements NodeIterator {
     

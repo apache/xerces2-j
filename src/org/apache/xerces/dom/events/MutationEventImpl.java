@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,9 +56,8 @@
  */
 package org.apache.xerces.dom.events;
 
-import org.apache.xerces.dom.*;
-import org.w3c.dom.*;
-import org.w3c.dom.events.*;
+import org.w3c.dom.Node;
+import org.w3c.dom.events.MutationEvent;
 
 public class MutationEventImpl 
 extends org.apache.xerces.dom.events.EventImpl 

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000 The Apache Software Foundation.  All rights
+ * Copyright (c) 2000-2001 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,14 +57,11 @@
 
 package org.apache.xerces.dom;
 
-import java.io.*;
 import java.util.Vector;
-import java.util.Enumeration;
 
-import org.w3c.dom.*;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Node;
 
-import org.apache.xerces.dom.events.MutationEventImpl;
-import org.w3c.dom.events.*;
 
 /**
  * AttributeMap inherits from NamedNodeMapImpl and extends it to deal with the
@@ -74,12 +71,12 @@ import org.w3c.dom.events.*;
  *  <li>managing default attributes
  *  <li>firing mutation events
  * </ul>
+ * <p>
+ * This class doesn't directly support mutation events, however, it notifies
+ * the document when mutations are performed so that the document class do so.
  *
- * @version $Id$
  */
 public class AttributeMap extends NamedNodeMapImpl {
-
-    final static boolean DEBUG = false;
 
     //
     // Constructors
@@ -123,7 +120,7 @@ public class AttributeMap extends NamedNodeMapImpl {
                                    "DOM006 Hierarchy request error");
         }
 
-        NodeImpl argn = (NodeImpl)arg;
+        AttrImpl argn = (AttrImpl)arg;
 
     	if (argn.isOwned()) {
             throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR,
@@ -135,9 +132,9 @@ public class AttributeMap extends NamedNodeMapImpl {
         argn.isOwned(true);
 
    	int i = findNamePoint(arg.getNodeName(),0);
-    	NodeImpl previous = null;
+    	AttrImpl previous = null;
     	if (i >= 0) {
-            previous = (NodeImpl) nodes.elementAt(i);
+            previous = (AttrImpl) nodes.elementAt(i);
             nodes.setElementAt(arg,i);
             previous.ownerNode = ownerNode.ownerDocument();
             previous.isOwned(false);
@@ -151,16 +148,8 @@ public class AttributeMap extends NamedNodeMapImpl {
             nodes.insertElementAt(arg, i);
         }
 
-        if (NodeImpl.MUTATIONEVENTS &&
-            ownerNode.ownerDocument().mutationEvents) {
-            // MUTATION POST-EVENTS:
-            ownerNode.dispatchAggregateEvents(
-                (AttrImpl)arg,
-                previous==null ? null : previous.getNodeValue(),
-                previous==null ?
-                           MutationEvent.ADDITION : MutationEvent.MODIFICATION
-                );
-        }
+        // notify document
+        ownerNode.ownerDocument().setAttrNode(argn, previous);
 
         // If the new attribute is not normalized,
         // the owning element is inherently not normalized.
@@ -196,7 +185,7 @@ public class AttributeMap extends NamedNodeMapImpl {
             throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, 
                                    "DOM006 Hierarchy request error");
         }
-        NodeImpl argn = (NodeImpl)arg;
+        AttrImpl argn = (AttrImpl)arg;
     	if (argn.isOwned()) {
             throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR,
                                        "DOM009 Attribute already in use");
@@ -207,9 +196,9 @@ public class AttributeMap extends NamedNodeMapImpl {
         argn.isOwned(true);
 
     	int i = findNamePoint(argn.getNamespaceURI(), argn.getLocalName());
-    	NodeImpl previous = null;
+    	AttrImpl previous = null;
     	if (i >= 0) {
-            previous = (NodeImpl) nodes.elementAt(i);
+            previous = (AttrImpl) nodes.elementAt(i);
             nodes.setElementAt(arg,i);
             previous.ownerNode = ownerNode.ownerDocument();
             previous.isOwned(false);
@@ -220,7 +209,7 @@ public class AttributeMap extends NamedNodeMapImpl {
     	    // nodeName so we know where to insert.
     	    i = findNamePoint(arg.getNodeName(),0);
             if (i >=0) {
-                previous = (NodeImpl) nodes.elementAt(i);
+                previous = (AttrImpl) nodes.elementAt(i);
                 nodes.insertElementAt(arg,i);
             } else {
                 i = -1 - i; // Insert point (may be end of list)
@@ -232,19 +221,8 @@ public class AttributeMap extends NamedNodeMapImpl {
         }
         //    	changed(true);
 
-    	// Only NamedNodeMaps containing attributes (those which are
-    	// bound to an element) need report MutationEvents
-        if (NodeImpl.MUTATIONEVENTS
-            && ownerNode.ownerDocument().mutationEvents)
-        {
-            // MUTATION POST-EVENTS:
-            ownerNode.dispatchAggregateEvents(
-                (AttrImpl)arg,
-                previous==null ? null : previous.getNodeValue(),
-                previous==null ?
-                           MutationEvent.ADDITION : MutationEvent.MODIFICATION
-                );
-        }
+        // notify document
+        ownerNode.ownerDocument().setAttrNode(argn, previous);
 
         // If the new attribute is not normalized,
         // the owning element is inherently not normalized.
@@ -301,22 +279,9 @@ public class AttributeMap extends NamedNodeMapImpl {
             }
         }
 
-        LCount lc=null;
-        String oldvalue="";
-        AttrImpl enclosingAttribute=null;
-        if (NodeImpl.MUTATIONEVENTS
-            && ownerNode.ownerDocument().mutationEvents)
-        {
-            // MUTATION PREPROCESSING AND PRE-EVENTS:
-            lc=LCount.lookup(MutationEventImpl.DOM_ATTR_MODIFIED);
-            if(lc.captures+lc.bubbles+lc.defaults>0)
-            {
-               enclosingAttribute=(AttrImpl)(nodes.elementAt(i));
-               oldvalue=enclosingAttribute.getNodeValue();
-            }
-        } // End mutation preprocessing
+        AttrImpl n = (AttrImpl)nodes.elementAt(i);
+        CoreDocumentImpl ownerDocument = ownerNode.ownerDocument();
 
-        NodeImpl n = (NodeImpl)nodes.elementAt(i);
         // If there's a default, add it instead
         if (hasDefaults()) {
             NamedNodeMapImpl defaults =
@@ -324,7 +289,7 @@ public class AttributeMap extends NamedNodeMapImpl {
             Node d;
             if (defaults != null && (d = defaults.getNamedItem(name)) != null
                 && findNamePoint(name, i+1) < 0) {
-            
+
                 NodeImpl clone = (NodeImpl)d.cloneNode(true);
                 clone.ownerNode = ownerNode;
                 clone.isOwned(true);
@@ -339,37 +304,18 @@ public class AttributeMap extends NamedNodeMapImpl {
 
         //        changed(true);
 
-        // remove owning element
-        n.ownerNode = ownerNode.ownerDocument();
+        // remove reference to owner
+        n.ownerNode = ownerDocument;
         n.isOwned(false);
         // make sure it won't be mistaken with defaults in case it's reused
         n.isSpecified(true);
 
-        // We can't use the standard dispatchAggregate, since it assumes
-        // that the Attr is still attached to an owner. This code is
-        // similar but dispatches to the previous owner, "element".
-        if(NodeImpl.MUTATIONEVENTS && ownerNode.ownerDocument().mutationEvents)
-        {
-    	    // If we have to send DOMAttrModified (determined earlier),
-            // do so.
-            if(lc.captures+lc.bubbles+lc.defaults>0) {
-                MutationEventImpl me= new MutationEventImpl();
-                me.initMutationEvent(MutationEventImpl.DOM_ATTR_MODIFIED,
-                                     true, false,
-                                     null, n.getNodeValue(),
-				     null, name, MutationEvent.REMOVAL);
-                ownerNode.dispatchEvent(me);
-            }
-
-            // We can hand off to process DOMSubtreeModified, though.
-            // Note that only the Element needs to be informed; the
-            // Attr's subtree has not been changed by this operation.
-            ownerNode.dispatchAggregateEvents(null,null,(short)0);
-        }
+        // notify document
+        ownerDocument.removedAttrNode(n, ownerNode, name);
 
         return n;
 
-    } // removeNamedItem(String):Node
+    } // internalRemoveNamedItem(String,boolean):Node
     
     /**
      * Introduced in DOM Level 2. <p>
@@ -423,22 +369,9 @@ public class AttributeMap extends NamedNodeMapImpl {
             }
         }
 
-        LCount lc=null;
-        String oldvalue="";
-        AttrImpl enclosingAttribute=null;
-        if (NodeImpl.MUTATIONEVENTS
-            && ownerNode.ownerDocument().mutationEvents)
-        {
-            // MUTATION PREPROCESSING AND PRE-EVENTS:
-            lc=LCount.lookup(MutationEventImpl.DOM_ATTR_MODIFIED);
-            if(lc.captures+lc.bubbles+lc.defaults>0)
-            {
-               enclosingAttribute=(AttrImpl)(nodes.elementAt(i));
-               oldvalue=enclosingAttribute.getNodeValue();
-            }
-        } // End mutation preprocessing
+        AttrImpl n = (AttrImpl)nodes.elementAt(i);
+        CoreDocumentImpl ownerDocument = ownerNode.ownerDocument();
 
-        NodeImpl n = (NodeImpl)nodes.elementAt(i);
         // If there's a default, add it instead
         String nodeName = n.getNodeName();
         if (hasDefaults()) {
@@ -467,36 +400,18 @@ public class AttributeMap extends NamedNodeMapImpl {
 
         //        changed(true);
 
-        // Need to remove references to an Attr's owner before the
-        // MutationEvents fire.
-        n.ownerNode = ownerNode.ownerDocument();
+        // remove reference to owner
+        n.ownerNode = ownerDocument;
         n.isOwned(false);
         // make sure it won't be mistaken with defaults in case it's reused
         n.isSpecified(true);
 
-        // We can't use the standard dispatchAggregate, since it assumes
-        // that the Attr is still attached to an owner. This code is
-        // similar but dispatches to the previous owner, "element".
-        if(NodeImpl.MUTATIONEVENTS && ownerNode.ownerDocument().mutationEvents)
-        {
-    	    // If we have to send DOMAttrModified (determined earlier),
-            // do so.
-            if(lc.captures+lc.bubbles+lc.defaults>0) {
-                MutationEventImpl me= new MutationEventImpl();
-                me.initMutationEvent(MutationEventImpl.DOM_ATTR_MODIFIED,
-                                     true, false, null, n.getNodeValue(),
-				     null, name, MutationEvent.REMOVAL);
-                ownerNode.dispatchEvent(me);
-            }
+        // notify document
+        ownerDocument.removedAttrNode(n, ownerNode, name);
 
-            // We can hand off to process DOMSubtreeModified, though.
-            // Note that only the Element needs to be informed; the
-            // Attr's subtree has not been changed by this operation.
-            ownerNode.dispatchAggregateEvents(null,null,(short)0);
-        }
         return n;
 
-    } // removeNamedItem(String):Node
+    } // internalRemoveNamedItemNS(String,String,boolean):Node
 
     //
     // Public methods

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,12 +57,14 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.*;
+import org.w3c.dom.CharacterData;
+import org.w3c.dom.Comment;
+import org.w3c.dom.Node;
 
 /**
  * Represents an XML (or HTML) comment.
  *
- * @version $Id$
+ * @version
  * @since  PR-DOM-Level-1-19980818.
  */
 public class CommentImpl 
@@ -81,7 +83,7 @@ public class CommentImpl
     //
 
     /** Factory constructor. */
-    public CommentImpl(DocumentImpl ownerDoc, String data) {
+    public CommentImpl(CoreDocumentImpl ownerDoc, String data) {
     	super(ownerDoc, data);
     }
     

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,7 +57,8 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.*;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 
 /**
  * NON-DOM CLASS: Describe one of the Elements (and its associated
@@ -66,7 +67,7 @@ import org.w3c.dom.*;
  * I've included this in Level 1 purely as an anchor point for default
  * attributes. In Level 2 it should enable the ChildRule support.
  *
- * @version $Id$
+ * @version
  */
 public class ElementDefinitionImpl 
     extends ParentNode {
@@ -93,7 +94,7 @@ public class ElementDefinitionImpl
     //
 
     /** Factory constructor. */
-    public ElementDefinitionImpl(DocumentImpl ownerDocument, String name) {
+    public ElementDefinitionImpl(CoreDocumentImpl ownerDocument, String name) {
     	super(ownerDocument);
         this.name = name;
         attributes = new NamedNodeMapImpl(ownerDocument);

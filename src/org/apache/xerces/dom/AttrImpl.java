@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999-2001 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,11 +57,16 @@
 
 package org.apache.xerces.dom;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
-import org.w3c.dom.*;
-import org.w3c.dom.events.MutationEvent;
-import org.apache.xerces.dom.events.MutationEventImpl;
+import org.w3c.dom.Attr;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 /**
  * Attribute represents an XML-style attribute of an
@@ -101,7 +106,7 @@ import org.apache.xerces.dom.events.MutationEventImpl;
  *
  * <p>AttrImpl used to inherit from ParentNode. It now directly inherits from
  * NodeImpl and provide its own implementation of the ParentNode's behavior.
- * The reason is that we now try and avoid to always creating a Text node to
+ * The reason is that we now try and avoid to always create a Text node to
  * hold the value of an attribute. The DOM spec requires it, so we still have
  * to do it in case getFirstChild() is called for instance. The reason
  * attribute values are stored as a list of nodes is so that they can carry
@@ -122,10 +127,13 @@ import org.apache.xerces.dom.events.MutationEventImpl;
  * To avoid too much duplicated code, I got rid of ParentNode and renamed
  * ChildAndParentNode, which I never really liked, to ParentNode for
  * simplicity, this doesn't make much of a difference in memory usage because
- * there are only very objects that are only a Parent. This is only true now
- * because AttrImpl now inherits directly from NodeImpl and has its own
+ * there are only very few objects that are only a Parent. This is only true
+ * now because AttrImpl now inherits directly from NodeImpl and has its own
  * implementation of the ParentNode's node behavior. So there is still some
  * duplicated code there.
+ * <p>
+ * This class doesn't directly support mutation events, however, it notifies
+ * the document when mutations are performed so that the document class do so.
  *
  * <p><b>WARNING</b>: Some of the code here is partially duplicated in
  * ParentNode, be careful to keep these two classes in sync!
@@ -135,7 +143,7 @@ import org.apache.xerces.dom.events.MutationEventImpl;
  * @author Arnaud  Le Hors, IBM
  * @author Joe Kesselman, IBM
  * @author Andy Clark, IBM
- * @version $Id$
+ * @version
  * @since PR-DOM-Level-1-19980818.
  *
  */
@@ -170,7 +178,7 @@ public class AttrImpl
      * Attribute has no public constructor. Please use the factory
      * method in the Document class.
      */
-    protected AttrImpl(DocumentImpl ownerDocument, String name) {
+    protected AttrImpl(CoreDocumentImpl ownerDocument, String name) {
     	super(ownerDocument);
         this.name = name;
         /** False for default attributes. */
@@ -178,7 +186,7 @@ public class AttrImpl
         hasStringValue(true);
     }
 
-    // for AttrNS
+    // for AttrNSImpl
     protected AttrImpl() {}
 
     // create a real text node as child if we don't have one yet
@@ -201,7 +209,7 @@ public class AttrImpl
      * NON-DOM
      * set the ownerDocument of this node and its children
      */
-    void setOwnerDocument(DocumentImpl doc) {
+    void setOwnerDocument(CoreDocumentImpl doc) {
         if (needsSyncChildren()) {
             synchronizeChildren();
         }
@@ -309,26 +317,9 @@ public class AttrImpl
             throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, 
                                    "DOM001 Modification not allowed");
         }
-    		
-        LCount lc=null;
-        String oldvalue="";
-        DocumentImpl ownerDocument = ownerDocument();
-        if(MUTATIONEVENTS && ownerDocument.mutationEvents)
-        {
-            // MUTATION PREPROCESSING AND PRE-EVENTS:
-            // Only DOMAttrModified need be produced directly.
-            // It needs the previous value. Note that this may be
-            // a treewalk, so I've put it under the conditional.
-            lc=LCount.lookup(MutationEventImpl.DOM_ATTR_MODIFIED);
-            if(lc.captures+lc.bubbles+lc.defaults>0 && ownerNode!=null)
-            {
-               oldvalue=getValue();
-            }
-            
-        } // End mutation preprocessing
-
-        if(MUTATIONEVENTS && ownerDocument.mutationEvents)
-        {
+        CoreDocumentImpl ownerDocument = ownerDocument();
+        String oldvalue = "";
+        if (ownerDocument.getMutationEvents()) {
             // Can no longer just discard the kids; they may have
             // event listeners waiting for them to disconnect.
             if (needsSyncChildren()) {
@@ -336,7 +327,8 @@ public class AttrImpl
             }
             if (value != null) {
                 if (hasStringValue()) {
-                    // temporarily sets an actual text node as our child so
+                    oldvalue = (String) value;
+                    // create an actual text node as our child so
                     // that we can use it in the event
                     if (textNode == null) {
                         textNode = (TextImpl)
@@ -351,11 +343,12 @@ public class AttrImpl
                     textNode.ownerNode = this;
                     textNode.isOwned(true);
                     hasStringValue(false);
-                    internalRemoveChild(textNode, MUTATION_LOCAL);
+                    internalRemoveChild(textNode, true);
                 }
                 else {
+                    oldvalue = getValue();
                     while (value != null) {
-                        internalRemoveChild((Node) value, MUTATION_LOCAL);
+                        internalRemoveChild((Node) value, true);
                     }
                 }
             }
@@ -380,27 +373,20 @@ public class AttrImpl
         // Note that aggregate events are NOT dispatched here,
         // since we need to combine the remove and insert.
     	isSpecified(true);
-        if (newvalue != null) {
-            if(MUTATIONEVENTS && ownerDocument.mutationEvents) {
-                // if there are any event handlers create a real node
-                internalInsertBefore(ownerDocument.createTextNode(newvalue),
-                                     null, MUTATION_LOCAL);
-                hasStringValue(false);
-            } else {
-                // directly store the string
-                value = newvalue;
-                hasStringValue(true);
-            }
+        if (ownerDocument.getMutationEvents()) {
+            // if there are any event handlers create a real node
+            internalInsertBefore(ownerDocument.createTextNode(newvalue),
+                                 null, true);
+            hasStringValue(false);
+            // notify document
+            ownerDocument.modifiedAttrValue(this, oldvalue);
+        } else {
+            // directly store the string
+            value = newvalue;
+            hasStringValue(true);
+            changed();
         }
-		
-    	changed(); // ***** Is this redundant?
 
-        if(MUTATIONEVENTS && ownerDocument.mutationEvents)
-        {
-            // MUTATION POST-EVENTS:
-            dispatchAggregateEvents(this,oldvalue,MutationEvent.MODIFICATION);
-        }
-		
     } // setValue(String)
 
     /**
@@ -643,7 +629,7 @@ public class AttrImpl
     public Node insertBefore(Node newChild, Node refChild) 
         throws DOMException {
         // Tail-call; optimizer should be able to do good things with.
-        return internalInsertBefore(newChild,refChild,MUTATION_ALL);
+        return internalInsertBefore(newChild, refChild, false);
     } // insertBefore(Node,Node):Node
      
     /** NON-DOM INTERNAL: Within DOM actions,we sometimes need to be able
@@ -651,10 +637,10 @@ public class AttrImpl
      * insertBefore operation allows us to do so. It is not intended
      * for use by application programs.
      */
-    Node internalInsertBefore(Node newChild, Node refChild,int mutationMask) 
+    Node internalInsertBefore(Node newChild, Node refChild, boolean replace) 
         throws DOMException {
 
-        DocumentImpl ownerDocument = ownerDocument();
+        CoreDocumentImpl ownerDocument = ownerDocument();
         boolean errorChecking = ownerDocument.errorChecking;
 
         if (newChild.getNodeType() == Node.DOCUMENT_FRAGMENT_NODE) {
@@ -741,18 +727,8 @@ public class AttrImpl
 
         makeChildNode(); // make sure we have a node and not a string
 
-        EnclosingAttr enclosingAttr=null;
-        if (MUTATIONEVENTS && ownerDocument.mutationEvents
-            && (mutationMask&MUTATION_AGGREGATE)!=0) {
-            // MUTATION PREPROCESSING
-            // No direct pre-events, but if we're within the scope 
-            // of an Attr and DOMAttrModified was requested,
-            // we need to preserve its previous value.
-            LCount lc=LCount.lookup(MutationEventImpl.DOM_ATTR_MODIFIED);
-            if (lc.captures+lc.bubbles+lc.defaults>0) {
-                enclosingAttr=getEnclosingAttr();
-            }
-        }
+        // notify document
+        ownerDocument.insertingNode(this, replace);
 
         // Convert to internal type, to avoid repeated casting
         ChildNode newInternal = (ChildNode)newChild;
@@ -810,60 +786,8 @@ public class AttrImpl
 
         changed();
 
-        if (MUTATIONEVENTS && ownerDocument.mutationEvents) {
-            // MUTATION POST-EVENTS:
-            // "Local" events (non-aggregated)
-            if ((mutationMask&MUTATION_LOCAL) != 0) {
-                // New child is told it was inserted, and where
-                LCount lc = LCount.lookup(MutationEventImpl.DOM_NODE_INSERTED);
-                if (lc.captures+lc.bubbles+lc.defaults>0) {
-                    MutationEvent me= new MutationEventImpl();
-                    me.initMutationEvent(MutationEventImpl.DOM_NODE_INSERTED,
-                                         true,false,this,null,
-                                         null,null,(short)0);
-                    newInternal.dispatchEvent(me);
-                }
-
-                // If within the Document, tell the subtree it's been added
-                // to the Doc.
-                lc=LCount.lookup(
-                            MutationEventImpl.DOM_NODE_INSERTED_INTO_DOCUMENT);
-                if (lc.captures+lc.bubbles+lc.defaults>0) {
-                    NodeImpl eventAncestor=this;
-                    if (enclosingAttr!=null) 
-                        eventAncestor=
-                            (NodeImpl)(enclosingAttr.node.getOwnerElement());
-                    if (eventAncestor!=null) { // Might have been orphan Attr
-                        NodeImpl p=eventAncestor;
-                        while (p!=null) {
-                            eventAncestor=p; // Last non-null ancestor
-                            // In this context, ancestry includes
-                            // walking back from Attr to Element
-                            if (p.getNodeType()==ATTRIBUTE_NODE) {
-                                p=(ElementImpl)((AttrImpl)p).getOwnerElement();
-                            }
-                            else {
-                                p=p.parentNode();
-                            }
-                        }
-                        if (eventAncestor.getNodeType()==Node.DOCUMENT_NODE) {
-                            MutationEvent me= new MutationEventImpl();
-                            me.initMutationEvent(MutationEventImpl
-                                              .DOM_NODE_INSERTED_INTO_DOCUMENT,
-                                                 false,false,null,null,
-                                                 null,null,(short)0);
-                            dispatchEventToSubtree(newInternal,me);
-                        }
-                    }
-                }
-            }
-
-            // Subroutine: Transmit DOMAttrModified and DOMSubtreeModified
-            // (Common to most kinds of mutation)
-            if ((mutationMask&MUTATION_AGGREGATE) != 0) {
-                dispatchAggregateEvents(enclosingAttr);
-            }
-        }
+        // notify document
+        ownerDocument.insertedNode(this, newInternal, replace);
 
         checkNormalizationAfterInsert(newInternal);
 
@@ -891,7 +815,7 @@ public class AttrImpl
             throw new DOMException(DOMException.NOT_FOUND_ERR, 
                                    "DOM008 Not found");
         }
-        return internalRemoveChild(oldChild,MUTATION_ALL);
+        return internalRemoveChild(oldChild, false);
     } // removeChild(Node) :Node
      
     /** NON-DOM INTERNAL: Within DOM actions,we sometimes need to be able
@@ -899,10 +823,10 @@ public class AttrImpl
      * removeChild operation allows us to do so. It is not intended
      * for use by application programs.
      */
-    Node internalRemoveChild(Node oldChild,int mutationMask)
+    Node internalRemoveChild(Node oldChild, boolean replace)
         throws DOMException {
 
-        DocumentImpl ownerDocument = ownerDocument();
+        CoreDocumentImpl ownerDocument = ownerDocument();
         if (ownerDocument.errorChecking) {
             if (isReadOnly()) {
                 throw new DOMException(
@@ -915,75 +839,18 @@ public class AttrImpl
             }
         }
 
-        // notify document
-        ownerDocument.removedChildNode(oldChild);
-
         ChildNode oldInternal = (ChildNode) oldChild;
 
-        EnclosingAttr enclosingAttr=null;
-        if(MUTATIONEVENTS && ownerDocument.mutationEvents)
-        {
-            // MUTATION PREPROCESSING AND PRE-EVENTS:
-            // If we're within the scope of an Attr and DOMAttrModified 
-            // was requested, we need to preserve its previous value for
-            // that event.
-            LCount lc=LCount.lookup(MutationEventImpl.DOM_ATTR_MODIFIED);
-            if(lc.captures+lc.bubbles+lc.defaults>0)
-            {
-                enclosingAttr=getEnclosingAttr();
-            }
-            
-            if( (mutationMask&MUTATION_LOCAL) != 0)
-            {
-                // Child is told that it is about to be removed
-                lc=LCount.lookup(MutationEventImpl.DOM_NODE_REMOVED);
-                if(lc.captures+lc.bubbles+lc.defaults>0)
-                {
-                    MutationEvent me= new MutationEventImpl();
-                    me.initMutationEvent(MutationEventImpl.DOM_NODE_REMOVED,
-                                         true,false,this,null,
-                                         null,null,(short)0);
-                    oldInternal.dispatchEvent(me);
-                }
-            
-                // If within Document, child's subtree is informed that it's
-                // losing that status
-                lc=LCount.lookup(
-                             MutationEventImpl.DOM_NODE_REMOVED_FROM_DOCUMENT);
-                if(lc.captures+lc.bubbles+lc.defaults>0)
-                {
-                    NodeImpl eventAncestor=this;
-                    if(enclosingAttr!=null) 
-                        eventAncestor=
-                            (NodeImpl) enclosingAttr.node.getOwnerElement();
-                    if(eventAncestor!=null) // Might have been orphan Attr
-                    {
-                        for(NodeImpl p=eventAncestor.parentNode();
-                            p!=null;
-                            p=p.parentNode())
-                        {
-                            eventAncestor=p; // Last non-null ancestor
-                        }
-                        if(eventAncestor.getNodeType()==Node.DOCUMENT_NODE)
-                        {
-                            MutationEvent me= new MutationEventImpl();
-                            me.initMutationEvent(MutationEventImpl
-                                               .DOM_NODE_REMOVED_FROM_DOCUMENT,
-                                                 false,false,
-                                                 null,null,null,null,(short)0);
-                            dispatchEventToSubtree(oldInternal,me);
-                        }
-                    }
-                }
-            }
-        } // End mutation preprocessing
+        // notify document
+        ownerDocument.removingNode(this, oldInternal, replace);
 
         // Patch linked list around oldChild
         // Note: lastChild == firstChild.previousSibling
         if (oldInternal == value) { // oldInternal == firstChild
             // removing first child
             oldInternal.isFirstChild(false);
-            value = oldInternal.nextSibling; // firstChild = oldInternal.nextSibling
+            // next line is: firstChild = oldInternal.nextSibling
+            value = oldInternal.nextSibling;
             ChildNode firstChild = (ChildNode) value;
             if (firstChild != null) {
                 firstChild.isFirstChild(true);
@@ -1014,14 +881,8 @@ public class AttrImpl
 
         changed();
 
-        if(MUTATIONEVENTS && ownerDocument.mutationEvents)
-        {
-            // MUTATION POST-EVENTS:
-            // Subroutine: Transmit DOMAttrModified and DOMSubtreeModified,
-            // if required. (Common to most kinds of mutation)
-            if( (mutationMask&MUTATION_AGGREGATE) != 0)
-                dispatchAggregateEvents(enclosingAttr);
-        } // End mutation postprocessing
+        // notify document
+        ownerDocument.removedNode(this, replace);
 
         checkNormalizationAfterRemove(oldPreviousSibling);
 
@@ -1061,30 +922,17 @@ public class AttrImpl
         // this as either desirable or undesirable, but hints that
         // aggregations should be issued only once per user request.
 
-        EnclosingAttr enclosingAttr=null;
-        DocumentImpl ownerDocument = ownerDocument();
-        if(MUTATIONEVENTS && ownerDocument.mutationEvents)
-        {
-            // MUTATION PREPROCESSING AND PRE-EVENTS:
-            // If we're within the scope of an Attr and DOMAttrModified 
-            // was requested, we need to preserve its previous value for
-            // that event.
-            LCount lc=LCount.lookup(MutationEventImpl.DOM_ATTR_MODIFIED);
-            if(lc.captures+lc.bubbles+lc.defaults>0)
-            {
-                enclosingAttr=getEnclosingAttr();
-            }
-        } // End mutation preprocessing
+        // notify document
+        CoreDocumentImpl ownerDocument = ownerDocument();
+        ownerDocument.replacingNode(this);
 
-        internalInsertBefore(newChild, oldChild,MUTATION_LOCAL);
+        internalInsertBefore(newChild, oldChild, true);
         if (newChild != oldChild) {
-            internalRemoveChild(oldChild,MUTATION_LOCAL);
+            internalRemoveChild(oldChild, true);
         }
 
-        if(MUTATIONEVENTS && ownerDocument.mutationEvents)
-        {
-            dispatchAggregateEvents(enclosingAttr);
-        }
+        // notify document
+        ownerDocument.replacedNode(this);
 
         return oldChild;
     }
@@ -1190,66 +1038,6 @@ public class AttrImpl
     }
 
     /**
-     * Synchronizes the node's children with the internal structure.
-     * Fluffing the children at once solves a lot of work to keep
-     * the two structures in sync. The problem gets worse when
-     * editing the tree -- this makes it a lot easier.
-     * Even though this is only used in deferred classes this method is
-     * put here so that it can be shared by all deferred classes.
-     */
-    /***
-    protected final void synchronizeChildren(int nodeIndex) {
-
-        // we don't want to generate any event for this so turn them off
-        DeferredDocumentImpl ownerDocument =
-            (DeferredDocumentImpl) ownerDocument();
-        boolean orig = ownerDocument.mutationEvents;
-        ownerDocument.mutationEvents = false;
-
-        // no need to sync in the future
-        needsSyncChildren(false);
-
-        // create children and link them as siblings or simply store the value
-        // as a String if all we have is one piece of text
-        int last = ownerDocument.getLastChild(nodeIndex);
-        int prev = ownerDocument.getPrevSibling(last);
-        if (prev == -1) {
-            value = ownerDocument.getNodeValueString(last);
-            hasStringValue(true);
-        }
-        else {
-            ChildNode firstNode = null;
-            ChildNode lastNode = null;
-            for (int index = last; index != -1;
-                 index = ownerDocument.getPrevSibling(index)) {
-
-                ChildNode node = (ChildNode)ownerDocument.getNodeObject(index);
-                if (lastNode == null) {
-                    lastNode = node;
-                }
-                else {
-                    firstNode.previousSibling = node;
-                }
-                node.ownerNode = this;
-                node.isOwned(true);
-                node.nextSibling = firstNode;
-                firstNode = node;
-            }
-            if (lastNode != null) {
-                value = firstNode; // firstChild = firstNode
-                firstNode.isFirstChild(true);
-                lastChild(lastNode);
-            }
-            hasStringValue(false);
-        }
-
-        // set mutation events flag back to its original value
-        ownerDocument.mutationEvents = orig;
-
-    } // synchronizeChildren()
-    /***/
-
-    /**
      * Checks the normalized state of this node after inserting a child.
      * If the inserted child causes this node to be unnormalized, then this
      * node is flagged accordingly.
@@ -1334,9 +1122,9 @@ public class AttrImpl
         // perform default deseralization
         ois.defaultReadObject();
 
-        // hardset synchildren - so we don't try to sync- it does not make any sense
-        // to try to synchildren when we just desealize object.
-
+        // hardset synchildren - so we don't try to sync -
+        // it does not make any sense to try to synchildren when we just
+        // deserialize object.
         needsSyncChildren(false);
 
     } // readObject(ObjectInputStream)

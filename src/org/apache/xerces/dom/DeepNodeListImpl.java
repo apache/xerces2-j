@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,7 +57,9 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import java.util.Vector;
 
 /**
@@ -104,7 +106,7 @@ import java.util.Vector;
  * NOTE: Level 2 of the DOM will probably _not_ use NodeList for its
  * extended search mechanisms, partly for the reasons just discussed.
  *
- * @version $Id$
+ * @version
  * @since  PR-DOM-Level-1-19980818.
  */
 public class DeepNodeListImpl 

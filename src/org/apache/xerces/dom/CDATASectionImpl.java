@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,7 +57,8 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.*;
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.Node;
 
 /**
  * XML provides the CDATA markup to allow a region of text in which
@@ -81,7 +82,7 @@ import org.w3c.dom.*;
  * <P>
  * CDATA does not participate in Element.normalize() processing.
  *
- * @version $Id$
+ * @version
  * @since  PR-DOM-Level-1-19980818.
  */
 public class CDATASectionImpl 
@@ -100,7 +101,7 @@ public class CDATASectionImpl
     //
 
     /** Factory constructor for creating a CDATA section. */
-    public CDATASectionImpl(DocumentImpl ownerDoc, String data) {
+    public CDATASectionImpl(CoreDocumentImpl ownerDoc, String data) {
         super(ownerDoc, data);
     }  
     

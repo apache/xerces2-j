@@ -1,6 +1,15 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
+ <release version='NOT YET RELEASED'>
+  <desc/>
+  <update>
+   <note>
+    Synchronized DOM implementation code from Xerces 1.x codebase.
+   </note>
+   <submitter name='Andy Clark'/>
+  </update>
+ </release>
  <release version='&ParserName; 2.0.0 (beta)'>
   <desc>
    First beta release of the Xerces2 code. Besides numerous bug 

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,14 +56,7 @@
  */
 package org.apache.xerces.dom;
 
-import java.io.*;
 import java.util.Vector;
-
-import org.w3c.dom.*;
-
-import org.w3c.dom.events.*;
-//import org.w3c.dom.events.*;
-
 
 /** Internal class LCount is used to track the number of
     listeners registered for a given event name, as an entry
@@ -86,8 +79,6 @@ import org.w3c.dom.events.*;
     ???? CONCERN: The hashtable should probably be a per-document object.
     Finer granularity would be even better, but would cost more cycles to
     resolve and might not save enough event traffic to be worth the investment.
-
-* @version $Id$
 */
 class LCount 
 { 

@@ -57,17 +57,11 @@
 
 package org.apache.xerces.dom;
 
-import java.util.Enumeration;
-import java.util.Vector;
-
-import org.w3c.dom.*;
-import org.w3c.dom.events.*;
+import org.w3c.dom.Node;
 
 /**
  * ChildNode inherits from NodeImpl and adds the capability of being a child by
  * having references to its previous and next siblings.
- *
- * @version $Id$
  */
 public abstract class ChildNode
     extends NodeImpl {
@@ -101,9 +95,9 @@ public abstract class ChildNode
      * <p>
      * Every Node knows what Document it belongs to.
      */
-    protected ChildNode(DocumentImpl ownerDocument) {
+    protected ChildNode(CoreDocumentImpl ownerDocument) {
         super(ownerDocument);
-    } // <init>(DocumentImpl,String,short,boolean,String)
+    } // <init>(CoreDocumentImpl)
 
     /** Constructor for serialization. */
     public ChildNode() {}

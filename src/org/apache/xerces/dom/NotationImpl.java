@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,7 +57,9 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.*;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Node;
+import org.w3c.dom.Notation;
 
 /**
  * Notations are how the Document Type Description (DTD) records hints
@@ -77,7 +79,7 @@ import org.w3c.dom.*;
  * <P>
  * Level 1 of the DOM does not support editing Notation contents.
  *
- * @version $Id$
+ * @version
  * @since  PR-DOM-Level-1-19980818.
  */
 public class NotationImpl 
@@ -109,7 +111,7 @@ public class NotationImpl
     //
 
     /** Factory constructor. */
-    public NotationImpl(DocumentImpl ownerDoc, String name) {
+    public NotationImpl(CoreDocumentImpl ownerDoc, String name) {
     	super(ownerDoc);
         this.name = name;
     }

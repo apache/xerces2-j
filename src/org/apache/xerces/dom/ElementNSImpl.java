@@ -3,7 +3,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,7 +58,8 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.*;
+import org.w3c.dom.DOMException;
+
 
 /**
  * ElementNSImpl inherits from ElementImpl and adds namespace support. 
@@ -66,8 +67,6 @@ import org.w3c.dom.*;
  * The qualified name is the node name, and we store localName which is also
  * used in all queries. On the other hand we recompute the prefix when
  * necessary.
- *
- * @version $Id$
  */
 public class ElementNSImpl
     extends ElementImpl {
@@ -94,7 +93,7 @@ public class ElementNSImpl
     /**
      * DOM2: Constructor for Namespace implementation.
      */
-    protected ElementNSImpl(DocumentImpl ownerDocument, 
+    protected ElementNSImpl(CoreDocumentImpl ownerDocument, 
 			    String namespaceURI,
 			    String qualifiedName) 
         throws DOMException
@@ -133,7 +132,7 @@ public class ElementNSImpl
     }
 
     // for DeferredElementImpl
-    protected ElementNSImpl(DocumentImpl ownerDocument, 
+    protected ElementNSImpl(CoreDocumentImpl ownerDocument, 
 			    String value) {
 	super(ownerDocument, value);
     }
@@ -211,7 +210,7 @@ public class ElementNSImpl
                                      DOMException.NO_MODIFICATION_ALLOWED_ERR, 
                                      "DOM001 Modification not allowed");
             }
-            if (!DocumentImpl.isXMLName(prefix)) {
+            if (!CoreDocumentImpl.isXMLName(prefix)) {
                 throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
     	                               "DOM002 Illegal character");
             }

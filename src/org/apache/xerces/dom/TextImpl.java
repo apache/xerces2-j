@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,7 +57,10 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.*;
+import org.w3c.dom.CharacterData;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Node;
+import org.w3c.dom.Text;
 
 /**
  * Text nodes hold the non-markup, non-Entity content of
@@ -72,7 +75,7 @@ import org.w3c.dom.*;
  * valid, since they're really just two different ways of quoting
  * characters when they're written out as part of an XML stream.
  *
- * @version $Id$
+ * @version
  * @since  PR-DOM-Level-1-19980818.
  */
 public class TextImpl 
@@ -91,7 +94,7 @@ public class TextImpl
     //
 
     /** Factory constructor. */
-    public TextImpl(DocumentImpl ownerDoc, String data) {
+    public TextImpl(CoreDocumentImpl ownerDoc, String data) {
         super(ownerDoc, data);
     }  
     

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,14 +57,11 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.*;
-import org.w3c.dom.traversal.*;
+import org.w3c.dom.Node;
+import org.w3c.dom.traversal.NodeFilter;
+import org.w3c.dom.traversal.TreeWalker;
 
-/** 
- * This class implements the TreeWalker interface. 
- *
- * @version $Id$
- */
+/** This class implements the TreeWalker interface. */
 public class TreeWalkerImpl implements TreeWalker {
     
     //
@@ -114,6 +111,9 @@ public class TreeWalkerImpl implements TreeWalker {
         return fWhatToShow;
     }
 
+    public void setWhatShow(int whatToShow){
+        fWhatToShow = whatToShow;
+    }
     /** Return the NodeFilter */
     public NodeFilter         getFilter() {
         return fNodeFilter;
@@ -323,20 +323,30 @@ public class TreeWalkerImpl implements TreeWalker {
      *  The current node is not consulted or set.
      */
     Node getNextSibling(Node node) {
+		return getNextSibling(node, fRoot);
+	}
+
+    /** Internal function.
+     *  Return the nextSibling Node, from the input node
+     *  after applying filter, whatToshow.
+     *  NEVER TRAVERSES ABOVE THE SPECIFIED ROOT NODE. 
+     *  The current node is not consulted or set.
+     */
+    Node getNextSibling(Node node, Node root) {
         
-        if (node == null || node == fRoot) return null;
+        if (node == null || node == root) return null;
         
         Node newNode = node.getNextSibling();
         if (newNode == null) {
                 
             newNode = node.getParentNode();
                 
-            if (newNode == null || node == fRoot)  return null; 
+            if (newNode == null || newNode == root)  return null; 
                 
             int parentAccept = acceptNode(newNode);
                 
             if (parentAccept==NodeFilter.FILTER_SKIP) {
-                return getNextSibling(newNode);
+                return getNextSibling(newNode, root);
             }
                 
             return null;
@@ -348,16 +358,16 @@ public class TreeWalkerImpl implements TreeWalker {
             return newNode;
         else 
         if (accept == NodeFilter.FILTER_SKIP) {
-            Node fChild =  getFirstChild(newNode);
+            Node fChild = getFirstChild(newNode);
             if (fChild == null) {
-                return getNextSibling(newNode);
+                return getNextSibling(newNode, root);
             }
             return fChild;
         }
         else 
         //if (accept == NodeFilter.REJECT_NODE) 
         {
-            return getNextSibling(newNode);
+            return getNextSibling(newNode, root);
         }
         
     } // getNextSibling(Node node) {
@@ -368,19 +378,29 @@ public class TreeWalkerImpl implements TreeWalker {
      *  The current node is not consulted or set.
      */
     Node getPreviousSibling(Node node) {
+		return getPreviousSibling(node, fRoot);
+	}
+
+    /** Internal function.
+     *  Return the previousSibling Node, from the input node
+     *  after applying filter, whatToshow.
+	 *  NEVER TRAVERSES ABOVE THE SPECIFIED ROOT NODE. 
+     *  The current node is not consulted or set.
+     */
+    Node getPreviousSibling(Node node, Node root) {
         
-        if (node == null || node == fRoot) return null;
+        if (node == null || node == root) return null;
         
         Node newNode = node.getPreviousSibling();
         if (newNode == null) {
                 
             newNode = node.getParentNode();
-            if (newNode == null || node == fRoot)  return null; 
+            if (newNode == null || newNode == root)  return null; 
                 
             int parentAccept = acceptNode(newNode);
                 
             if (parentAccept==NodeFilter.FILTER_SKIP) {
-                return getPreviousSibling(newNode);
+                return getPreviousSibling(newNode, root);
             }
             
             return null;
@@ -394,14 +414,14 @@ public class TreeWalkerImpl implements TreeWalker {
         if (accept == NodeFilter.FILTER_SKIP) {
             Node fChild =  getLastChild(newNode);
             if (fChild == null) {
-                return getPreviousSibling(newNode);
+                return getPreviousSibling(newNode, root);
             }
             return fChild;
         }
         else 
         //if (accept == NodeFilter.REJECT_NODE) 
         {
-            return getPreviousSibling(newNode);
+            return getPreviousSibling(newNode, root);
         }
         
     } // getPreviousSibling(Node node) {
@@ -412,16 +432,13 @@ public class TreeWalkerImpl implements TreeWalker {
      *  The current node is not consulted or set.
      */
     Node getFirstChild(Node node) {
-        
         if (node == null) return null;
         
         if ( !fEntityReferenceExpansion
              && node.getNodeType() == Node.ENTITY_REFERENCE_NODE)
             return null;
-   
         Node newNode = node.getFirstChild();
         if (newNode == null)  return null;
-        
         int accept = acceptNode(newNode);
         
         if (accept == NodeFilter.FILTER_ACCEPT)
@@ -430,12 +447,17 @@ public class TreeWalkerImpl implements TreeWalker {
         if (accept == NodeFilter.FILTER_SKIP
             && newNode.hasChildNodes()) 
         {
-            return getFirstChild(newNode);
+            Node fChild = getFirstChild(newNode);
+            
+            if (fChild == null) {
+                return getNextSibling(newNode, node);
+            }
+            return fChild;
         }
         else 
         //if (accept == NodeFilter.REJECT_NODE) 
         {
-            return getNextSibling(newNode);
+            return getNextSibling(newNode, node);
         }
         
         
@@ -465,12 +487,16 @@ public class TreeWalkerImpl implements TreeWalker {
         if (accept == NodeFilter.FILTER_SKIP
             && newNode.hasChildNodes()) 
         {
-            return getLastChild(newNode);
+            Node lChild = getLastChild(newNode);
+            if (lChild == null) {
+                return getPreviousSibling(newNode, node);
+            }
+            return lChild;
         }
         else 
         //if (accept == NodeFilter.REJECT_NODE) 
         {
-            return getPreviousSibling(newNode);
+            return getPreviousSibling(newNode, node);
         }
         
         
