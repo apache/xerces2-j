@@ -134,10 +134,6 @@ public abstract class AbstractSAXParser
     protected static final String NAMESPACE_PREFIXES =
         Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACE_PREFIXES_FEATURE;
 
-    /** Expose XML Schema normalize value */
-    protected static final String NORMALIZE_DATA = 
-        Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_NORMALIZED_VALUE;
-
     /** Feature id: string interning. */
     protected static final String STRING_INTERNING =
         Constants.SAX_FEATURE_PREFIX + Constants.STRING_INTERNING_FEATURE;
@@ -146,7 +142,6 @@ public abstract class AbstractSAXParser
     private static final String[] RECOGNIZED_FEATURES = {
         NAMESPACES,
         NAMESPACE_PREFIXES,
-        NORMALIZE_DATA,
         STRING_INTERNING,
     };
 
@@ -182,9 +177,6 @@ public abstract class AbstractSAXParser
 
     /** Namespace prefixes. */
     protected boolean fNamespacePrefixes = false;
-
-    /** Expose XML Schema schema_normalize_values via DOM*/
-    protected boolean fNormalizeData = true;
 
     // parser handlers
 
@@ -1873,12 +1865,6 @@ public abstract class AbstractSAXParser
         fNamespaces = fConfiguration.getFeature(NAMESPACES);           
         fNamespacePrefixes = fConfiguration.getFeature(NAMESPACE_PREFIXES);
         fAugmentations = null;
-        try {
-            fNormalizeData = fConfiguration.getFeature(NORMALIZE_DATA);
-        }
-        catch (XMLConfigurationException e) {
-            fNormalizeData = false;
-        }
         
     } // reset()
 

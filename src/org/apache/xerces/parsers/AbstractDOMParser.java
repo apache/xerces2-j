@@ -159,10 +159,6 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
     protected static final String DEFER_NODE_EXPANSION =
         Constants.XERCES_FEATURE_PREFIX + Constants.DEFER_NODE_EXPANSION_FEATURE;
     
-    /** Expose XML Schema normalize value */
-    protected static final String NORMALIZE_DATA = 
-        Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_NORMALIZED_VALUE;
-
     /** Recognized features. */
     private static final String[] RECOGNIZED_FEATURES = {
         NAMESPACES,
@@ -171,7 +167,6 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
         CREATE_CDATA_NODES_FEATURE,
         INCLUDE_IGNORABLE_WHITESPACE,
         DEFER_NODE_EXPANSION,
-        NORMALIZE_DATA,
     };
 
     // property ids
@@ -230,9 +225,6 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
                           
     /** Create cdata nodes. */
     protected boolean fCreateCDATANodes;
-
-    /** Expose XML Schema schema_normalize_values via DOM*/
-    protected boolean fNormalizeData = true;
 
     // dom information
 
@@ -435,12 +427,6 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
         fIncludeComments = fConfiguration.getFeature(INCLUDE_COMMENTS_FEATURE);
 
         fCreateCDATANodes = fConfiguration.getFeature(CREATE_CDATA_NODES_FEATURE);
-
-        try {
-            fNormalizeData = fConfiguration.getFeature(NORMALIZE_DATA);
-        } catch (XMLConfigurationException x) {
-            fNormalizeData = false;
-        }
 
         // get property
         setDocumentClassName((String)
