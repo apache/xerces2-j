@@ -55,7 +55,7 @@ Copyright:
 
   <property name="name" value="xerces"/>
   <property name="Name" value="Xerces"/>
-  <property name="version" value="1.0.1-dev"/>
+  <property name="version" value="1.0.2"/>
   <property name="year" value="1999"/>
 
   <property name="build.compiler" value="classic"/>
@@ -80,7 +80,7 @@ Copyright:
   <property name="build.dir" value="./build"/>
   <property name="build.src" value="./build/src"/>
   <property name="build.dest" value="./build/classes"/>
-  <property name="build.docs" value="./build/docs"/>
+  <property name="build.docs" value="./build/docs/html"/>
   <property name="build.samples" value="./build/samples"/>
   <property name="build.javadocs" value="./build/javadocs"/>
 
@@ -129,7 +129,14 @@ Copyright:
   <target name="samples" depends="package">
     <mkdir dir="${build.samples}"/>
     <copydir src="${samples.dir}" dest="${build.samples}" ignore="Makefile"/>
-    <javac srcdir="${build.samples}" destdir="${build.samples}" classpath="${build.dir}/${name}.jar" debug="${debug}"/>
+    <javac srcdir="${build.samples}" destdir="${build.dest}" classpath="${build.dir}/${name}.jar" debug="${debug}"/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Creates the samples package                                           -->
+  <!-- =================================================================== -->
+  <target name="samples-package" depends="samples">
+    <jar jarfile="${build.dir}/${name}Samples.jar" basedir="${build.dest}" items="dom,sax,ui"/>
   </target>
 
   <!-- =================================================================== -->
@@ -168,7 +175,7 @@ Copyright:
   <!-- =================================================================== -->
   <!-- Creates the distribution                                            -->
   <!-- =================================================================== -->
-  <target name="dist" depends="package, docs, javadocs, samples">
+  <target name="dist" depends="package, docs, javadocs, samples-package">
     <mkdir dir="${dist.dir}"/>
     <mkdir dir="${dist.dir}/bin"/>
     <mkdir dir="${dist.dir}/src"/>
@@ -176,21 +183,22 @@ Copyright:
     <mkdir dir="${dist.dir}/docs"/>
     <mkdir dir="${dist.dir}/docs/apiDocs"/>
     <mkdir dir="${dist.dir}/samples"/>
-    <mkdir dir="${dist.dir}/xdocs"/>
 
     <copydir src="${build.src}" dest="${dist.dir}/src"/>
-    <copydir src="${build.docs}" dest="${dist.dir}/docs"/>
+    <copydir src="${docs.dir}" dest="${dist.dir}/docs"/>
+    <copydir src="${build.docs}" dest="${dist.dir}/docs/html"/>
     <copydir src="${build.javadocs}" dest="${dist.dir}/docs/apiDocs"/>
     <copydir src="${build.samples}" dest="${dist.dir}/samples"/>
     <copydir src="${data.dir}" dest="${dist.dir}/data"/>
-    <copydir src="${docs.dir}" dest="${dist.dir}/xdocs"/>
 
-    <copyfile src="${build.dir}/${name}.jar" dest="${dist.dir}/bin/${name}.jar"/>
+    <copyfile src="${build.dir}/${name}.jar" dest="${dist.dir}/${name}.jar"/>
+    <copyfile src="${build.dir}/${name}Samples.jar" dest="${dist.dir}/${name}Samples.jar"/>
     <copyfile src="README" dest="${dist.dir}/README"/>
+    <copyfile src="Readme.html" dest="${dist.dir}/Readme.html"/>
     <copyfile src="STATUS" dest="${dist.dir}/STATUS"/>
     <copyfile src="build.xml" dest="${dist.dir}/build.xml"/>
 
-    <zip zipfile="${name}-${version}.zip" basedir="${dist.dir}" items="*"/>
+    <jar jarfile="${name}-${version}.jar" basedir="${dist.dir}" items="bin,build.xml,data,docs,README,Readme.html,samples,src,STATUS,xerces.jar,xercesSamples.jar"/>
   </target>
 
   <!-- =================================================================== -->
