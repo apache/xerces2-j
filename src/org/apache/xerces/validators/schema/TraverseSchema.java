@@ -5789,7 +5789,6 @@ throws Exception {
 
             if ( typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) { 
                 dv = getDatatypeValidator(SchemaSymbols.URI_SCHEMAFORSCHEMA, localpart);
-//                System.err.println("dv is " + dv + " and typeURI is " + typeURI);
 
                 if (localpart.equals("ID")) {
                     attType = XMLAttributeDecl.TYPE_ID;
@@ -5813,16 +5812,7 @@ throws Exception {
                 }
                 else {
                     attType = XMLAttributeDecl.TYPE_SIMPLE;
-                    if (dv == null && typeURI.length() == 0) {
-                        Element topleveltype = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
-                        if (topleveltype != null) {
-                            traverseSimpleTypeDecl( topleveltype );
-                            dv = getDatatypeValidator(typeURI, localpart);
-                        }else if (!referredTo) {
-                            // REVISIT: Localize
-                            reportGenericSchemaError("simpleType not found : " + "("+typeURI+":"+localpart+")"+ errorContext);
-                        }
-                    } else if(dv == null && !referredTo) {
+                    if(dv == null && !referredTo) {
                         // REVISIT:  localize
                         reportGenericSchemaError("attribute " + attNameStr + " has a type (" + datatypeStr + ") which is not recognized as one of the predefined schema datatypes");
                     }
