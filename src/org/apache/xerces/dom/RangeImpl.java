@@ -1508,10 +1508,9 @@ public class RangeImpl  implements Range {
 
     /** what is the index of the child in the parent */
     int indexOf(Node child, Node parent) {
-        Node node;
-        int i = 0;
         if (child.getParentNode() != parent) return -1;
-        for(node = child; node!= null; node=node.getPreviousSibling()) {
+        int i = 0;
+        for(Node node = parent.getFirstChild(); node!= child; node=node.getNextSibling()) {
             i++;
         }
         return i;
