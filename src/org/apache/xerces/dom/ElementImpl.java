@@ -474,7 +474,7 @@ public class ElementImpl
      *                      The namespace URI of the attribute to
      *                      retrieve.
      * @param localName     The local name of the attribute to retrieve.
-     * @return String       The Attr value as a string, or an empty string 
+     * @return String       The Attr value as a string, or null
      *                      if that attribute
      *                      does not have a specified or default value.
      * @since WD-DOM-Level-2-19990923
@@ -486,9 +486,9 @@ public class ElementImpl
         }
 
         Attr attr = (Attr)(attributes.getNamedItemNS(namespaceURI, localName));
-        return (attr == null) ? "" : attr.getValue();
+        return (attr == null) ? null : attr.getValue();
 
-    } // getAttribute(String):String
+    } // getAttributeNS(String,String):String
     
     /**
      * Introduced in DOM Level 2. <p>
