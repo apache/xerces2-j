@@ -117,7 +117,7 @@ public class XSModelGroupImpl implements XSModelGroup {
     private int maxEffectiveTotalRangeChoice() {
         int max = 0, one;
         if (fParticleCount > 0) {
-            max = fParticles[0].minEffectiveTotalRange();
+            max = fParticles[0].maxEffectiveTotalRange();
             if (max == SchemaSymbols.OCCURRENCE_UNBOUNDED)
                 return SchemaSymbols.OCCURRENCE_UNBOUNDED;
         }
