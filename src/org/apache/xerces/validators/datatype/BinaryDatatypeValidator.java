@@ -92,8 +92,8 @@ public class BinaryDatatypeValidator extends AbstractDatatypeValidator {
     }
 
     public BinaryDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
-                          boolean derivedByList ) throws InvalidDatatypeFacetException {
-        if( base != null )
+                                     boolean derivedByList ) throws InvalidDatatypeFacetException {
+        if ( base != null )
             setBasetype( base ); // Set base type 
 
         fDerivedByList = derivedByList;
@@ -111,11 +111,11 @@ public class BinaryDatatypeValidator extends AbstractDatatypeValidator {
                             fLength     = Integer.parseInt( lengthValue );
                         } catch (NumberFormatException nfe) {
                             throw new InvalidDatatypeFacetException("Length value '"+
-                                                           lengthValue+"' is invalid.");
+                                                                    lengthValue+"' is invalid.");
                         }
                         if ( fLength < 0 )
                             throw new InvalidDatatypeFacetException("Length value '"+
-                                          lengthValue+"'  must be a nonNegativeInteger.");
+                                                                    lengthValue+"'  must be a nonNegativeInteger.");
 
                     } else if (key.equals(SchemaSymbols.ELT_MINLENGTH) ) {
                         fFacetsDefined += DatatypeValidator.FACET_MINLENGTH;
@@ -149,10 +149,10 @@ public class BinaryDatatypeValidator extends AbstractDatatypeValidator {
                 if (((fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
                     if (((fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
                         throw new InvalidDatatypeFacetException(
-                                                    "It is an error for both length and maxLength to be members of facets." );  
+                                                               "It is an error for both length and maxLength to be members of facets." );  
                     } else if (((fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ) {
                         throw new InvalidDatatypeFacetException(
-                                                    "It is an error for both length and minLength to be members of facets." );
+                                                               "It is an error for both length and minLength to be members of facets." );
                     }
                 }
 
@@ -160,7 +160,7 @@ public class BinaryDatatypeValidator extends AbstractDatatypeValidator {
                                            DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
                     if ( fMinLength > fMaxLength ) {
                         throw new InvalidDatatypeFacetException( "Value of maxLength = " + fMaxLength +
-                                                      "must be greater that the value of minLength" + fMinLength );
+                                                                 "must be greater that the value of minLength" + fMinLength );
                     }
                 }
             } else {  //Derivation by List 
@@ -182,12 +182,12 @@ public class BinaryDatatypeValidator extends AbstractDatatypeValidator {
      *  not a W3C binary type
      */
     public Object validate(String content, Object state ) throws InvalidDatatypeValueException {
-        if( fFacetsDefined == 0 )
-           {
-           throw new InvalidDatatypeValueException( "Constrain encoding required for binary datatype" );
-           }
 
         if ( fDerivedByList == false) { //derived by restriction
+            if ( this.fBaseValidator != null ) {//validate against parent type if any
+                this.fBaseValidator.validate( content, state );
+            }
+
             if (((fFacetsDefined & DatatypeValidator.FACET_ENCODING) != 0 ) ){ //Encode defined then validate
                 if ( fEncoding.equals( SchemaSymbols.ATTVAL_BASE64)){ //Base64
                     if ( Base64.isBase64( content ) == false ) {
@@ -201,7 +201,7 @@ public class BinaryDatatypeValidator extends AbstractDatatypeValidator {
                     }
                 }
             }
-        } else{ //derived by list
+        } else{ //derived by list - What does it mean for binary types?
         }
         return null;
     }
@@ -227,10 +227,10 @@ public class BinaryDatatypeValidator extends AbstractDatatypeValidator {
         return null;
     }
 
-    
-     /**
-     * Returns a copy of this object.
-     */
+
+    /**
+    * Returns a copy of this object.
+    */
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
     }
