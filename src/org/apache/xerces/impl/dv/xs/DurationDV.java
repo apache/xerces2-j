@@ -233,34 +233,34 @@ public class DurationDV extends AbstractDateTimeDV {
             return 0;
         }
 
-        int[][] fDuration = new int[2][TOTAL_SIZE];
+        int[][] result = new int[2][TOTAL_SIZE];
 
         //long comparison algorithm is required
-        int[] tempA = addDuration (date1, DATETIMES[0], fDuration[0]);
-        int[] tempB = addDuration (date2, DATETIMES[0], fDuration[1]);
+        int[] tempA = addDuration (date1, DATETIMES[0], result[0]);
+        int[] tempB = addDuration (date2, DATETIMES[0], result[1]);
         resultA =  compareOrder(tempA, tempB);
         if ( resultA == INDETERMINATE ) {
             return INDETERMINATE;
         }
 
-        tempA = addDuration(date1, DATETIMES[1], fDuration[0]);
-        tempB = addDuration(date2, DATETIMES[1], fDuration[1]);
+        tempA = addDuration(date1, DATETIMES[1], result[0]);
+        tempB = addDuration(date2, DATETIMES[1], result[1]);
         resultB = compareOrder(tempA, tempB);
         resultA = compareResults(resultA, resultB, strict);
         if (resultA == INDETERMINATE) {
             return INDETERMINATE;
         }
 
-        tempA = addDuration(date1, DATETIMES[2], fDuration[0]);
-        tempB = addDuration(date2, DATETIMES[2], fDuration[1]);
+        tempA = addDuration(date1, DATETIMES[2], result[0]);
+        tempB = addDuration(date2, DATETIMES[2], result[1]);
         resultB = compareOrder(tempA, tempB);
         resultA = compareResults(resultA, resultB, strict);
         if (resultA == INDETERMINATE) {
             return INDETERMINATE;
         }
 
-        tempA = addDuration(date1, DATETIMES[3], fDuration[0]);
-        tempB = addDuration(date2, DATETIMES[3], fDuration[1]);
+        tempA = addDuration(date1, DATETIMES[3], result[0]);
+        tempB = addDuration(date2, DATETIMES[3], result[1]);
         resultB = compareOrder(tempA, tempB);
         resultA = compareResults(resultA, resultB, strict);
 
