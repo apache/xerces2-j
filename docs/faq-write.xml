@@ -420,11 +420,12 @@ void pullParse(XMLInputSource input) throws Exception {
     SAXParser parser = new SAXParser(config);
     config.setInputSource(input);
     parser.reset();
-    while (continueParse)
-        config.parse(false);
+    while (continueParse) {
+        continueParse = continueParse && config.parse(false);
+    }
 }</source>
     <p>
-     In the above example, a SAXParser is used to to pull-parse an
+     In the above example, a SAXParser is used to pull-parse an
      XMLInputSource. DOMParser can be used in a similar way. A flag
      <code>continueParse</code> is used to indicate whether to continue
      parsing the document. The application can stop the parsing by
