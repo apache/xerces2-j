@@ -101,26 +101,32 @@ public abstract class XMLDocumentParser
     // Data
     //
 
-    /** Entity manager. */
-    protected XMLEntityManager fEntityManager;
+    // components (non-configurable)
 
-    /** fScanner */
-    protected XMLDocumentScanner fScanner;
-
-    /** fDTDScanner */
-    protected XMLDTDScanner fDTDScanner;
-
-    /** fValidator */
-    protected XMLValidator fValidator;
-
-    /** fGrammarPool */
+    /** Grammar pool. */
     protected GrammarPool fGrammarPool;
 
-    /** fDatatypeValidatorFactory */
+    /** Datatype validator factory. */
     protected DatatypeValidatorFactory fDatatypeValidatorFactory;
+
+    // components (configurable)
+
+    /** Document scanner. */
+    protected XMLDocumentScanner fScanner;
+
+    /** DTD scanner. */
+    protected XMLDTDScanner fDTDScanner;
+
+    /** Validator. */
+    protected XMLValidator fValidator;
 
     // state
 
+    /** 
+     * True if a parse is in progress. This state is needed because
+     * some features/properties cannot be set while parsing (e.g.
+     * validation and namespaces).
+     */
     protected boolean fParseInProgress = false;
 
     // debugging
@@ -136,9 +142,9 @@ public abstract class XMLDocumentParser
      * Default Constructor.
      * Creates an XMLDocumentParser with its own SymbolTable and GrammarPool. 
      */
-    public XMLDocumentParser() {
+    protected XMLDocumentParser() {
         this(new SymbolTable(), new GrammarPool());
-    }
+    } // <init>()
 
     /**
      * Constructor allowing to specify the SymbolTable and GrammarPool to use
@@ -168,10 +174,6 @@ public abstract class XMLDocumentParser
         final String GRAMMAR_POOL = Constants.XERCES_PROPERTY_PREFIX + Constants.GRAMMAR_POOL_PROPERTY;
         fProperties.put(GRAMMAR_POOL, fGrammarPool);
 
-        fEntityManager = new XMLEntityManager();
-        final String ENTITY_MANAGER = Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_MANAGER_PROPERTY;
-        fProperties.put(ENTITY_MANAGER, fEntityManager);
-
         fScanner = new XMLDocumentScanner();
         final String DOCUMENT_SCANNER = Constants.XERCES_PROPERTY_PREFIX + Constants.DOCUMENT_SCANNER_PROPERTY;
         fProperties.put(DOCUMENT_SCANNER, fScanner);
@@ -191,6 +193,182 @@ public abstract class XMLDocumentParser
         /***/
 
     } // <init>(SymbolTable,GrammarPool)
+
+    //
+    // XMLParser methods
+    //
+
+    /** 
+     * Reset all components before parsing. 
+     *
+     * @throws SAXException Thrown if an error occurs during initialization.
+     */
+    protected void reset() throws SAXException {
+        super.reset();
+
+        // reset every component
+        fScanner.reset(this);
+        fDTDScanner.reset(this);
+        fValidator.reset(this);
+
+        // setup document pipeline
+        /***
+        fScanner.setDocumentHandler(fValidator);
+        fValidator.setDocumentHandler(this);
+        /***/
+        fScanner.setDocumentHandler(this);
+        /***/
+
+        // setup dtd pipeline
+        /***
+        fDTDScanner.setDTDHandler(fValidator);
+        fValidator.setDTDHandler(this);
+        /***/
+        fDTDScanner.setDTDHandler(this);
+        /***/
+
+        // setup dtd content model pipeline
+        /***
+        fDTDScanner.setDTDContentModelHandler(fValidator);
+        fValidator.setDTDContentModelHandler(this);
+        /***/
+        fDTDScanner.setDTDContentModelHandler(this);
+        /***/
+
+    } // reset()
+
+    //
+    // XMLComponentManager methods
+    //
+
+    /**
+     * setFeature
+     * 
+     * @param featureId 
+     * @param state 
+     */
+    public void setFeature(String featureId, boolean state)
+        throws SAXNotRecognizedException, SAXNotSupportedException {
+
+        super.setFeature(featureId, state);
+
+        // forward to every component
+        fScanner.setFeature(featureId, state);
+        fDTDScanner.setFeature(featureId, state);
+        fValidator.setFeature(featureId, state);
+
+    } // setFeature
+
+    /**
+     * setProperty
+     * 
+     * @param propertyId 
+     * @param value 
+     */
+    public void setProperty(String propertyId, Object value)
+        throws SAXNotRecognizedException, SAXNotSupportedException {
+
+        super.setProperty(propertyId, value);
+
+        // forward to every component
+        fScanner.setProperty(propertyId, value);
+        fDTDScanner.setProperty(propertyId, value);
+        fValidator.setProperty(propertyId, value);
+
+    } // setProperty
+
+    /**
+     * Parses the specified input source.
+     *
+     * @param source The input source.
+     *
+     * @exception org.xml.sax.SAXException Throws exception on SAX error.
+     * @exception java.io.IOException Throws exception on i/o error.
+     */
+    public void parse(InputSource source)
+        throws SAXException, IOException {
+
+        if (fParseInProgress) {
+            // REVISIT - need to add new error message
+            throw new SAXException(
+                              "FWK005 parse may not be called while parsing.");
+        }
+
+        try {
+            reset();
+            fEntityManager.setEntityHandler(fScanner);
+            fEntityManager.startDocumentEntity(new XMLInputSource(source));
+            fScanner.scanDocument(true);
+            fParseInProgress = false;
+        } catch (SAXException ex) {
+            fParseInProgress = false;
+            if (PRINT_EXCEPTION_STACK_TRACE)
+                ex.printStackTrace();
+            throw ex;
+        } catch (IOException ex) {
+            fParseInProgress = false;
+            if (PRINT_EXCEPTION_STACK_TRACE)
+                ex.printStackTrace();
+            throw ex;
+        } catch (Exception ex) {
+            fParseInProgress = false;
+            if (PRINT_EXCEPTION_STACK_TRACE)
+                ex.printStackTrace();
+            throw new org.xml.sax.SAXException(ex);
+        }
+
+    } // parse(InputSource)
+
+    //
+    // XMLParser methods
+    //
+
+    /**
+     * Check a property. If the property is know and supported, this method
+     * simply returns. Otherwise, the appropriate exception is thrown.
+     *
+     * @param propertyId The unique identifier (URI) of the property
+     *                   being set.
+     * @exception org.xml.sax.SAXNotRecognizedException If the
+     *            requested property is not known.
+     * @exception org.xml.sax.SAXNotSupportedException If the
+     *            requested property is known, but the requested
+     *            value is not supported.
+     * @exception org.xml.sax.SAXException If there is any other
+     *            problem fulfilling the request.
+     */
+    protected void checkProperty(String propertyId)
+        throws SAXNotRecognizedException, SAXNotSupportedException {
+
+        //
+        // SAX2 Properties
+        //
+
+        if (propertyId.startsWith(Constants.SAX_PROPERTY_PREFIX)) {
+            String property =
+                propertyId.substring(Constants.SAX_PROPERTY_PREFIX.length());
+        }
+
+        //
+        // Xerces Properties
+        //
+
+        else if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
+            String property =
+                propertyId.substring(Constants.XERCES_PROPERTY_PREFIX.length());
+            if (property.equals(Constants.DTD_SCANNER_PROPERTY)) {
+                return;
+            }
+            /***
+            if (property.equals(Constants.ENTITY_RESOLVER_PROPERTY)) {
+                return;
+            }   
+            /***/
+        }
+
+        super.checkProperty(propertyId);
+
+    } // checkProperty(String)
 
     //
     // XMLDocumentHandler methods
@@ -735,180 +913,5 @@ public abstract class XMLDocumentParser
      */
     public void endContentModel() throws SAXException {
     } // endContentModel()
-
-    //
-    // Methods inherited from XMLParser that are overriden
-    //
-
-    /**
-     * setFeature
-     * 
-     * @param featureId 
-     * @param state 
-     */
-    public void setFeature(String featureId, boolean state)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
-
-        super.setFeature(featureId, state);
-
-        // forward to every component
-        fEntityManager.setFeature(featureId, state);
-        fScanner.setFeature(featureId, state);
-        fDTDScanner.setFeature(featureId, state);
-        fValidator.setFeature(featureId, state);
-
-    } // setFeature
-
-    /**
-     * setProperty
-     * 
-     * @param propertyId 
-     * @param value 
-     */
-    public void setProperty(String propertyId, Object value)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
-
-        super.setProperty(propertyId, value);
-
-        // forward to every component
-        fEntityManager.setProperty(propertyId, value);
-        fScanner.setProperty(propertyId, value);
-        fDTDScanner.setProperty(propertyId, value);
-        fValidator.setProperty(propertyId, value);
-
-    } // setProperty
-
-    /**
-     * Parses the specified input source.
-     *
-     * @param source The input source.
-     *
-     * @exception org.xml.sax.SAXException Throws exception on SAX error.
-     * @exception java.io.IOException Throws exception on i/o error.
-     */
-    public void parse(InputSource source)
-        throws SAXException, IOException {
-
-        if (fParseInProgress) {
-            // REVISIT - need to add new error message
-            throw new SAXException(
-                              "FWK005 parse may not be called while parsing.");
-        }
-
-        try {
-            reset();
-            fEntityManager.setEntityHandler(fScanner);
-            fEntityManager.startDocumentEntity(new XMLInputSource(source));
-            fScanner.scanDocument(true);
-            fParseInProgress = false;
-        } catch (SAXException ex) {
-            fParseInProgress = false;
-            if (PRINT_EXCEPTION_STACK_TRACE)
-                ex.printStackTrace();
-            throw ex;
-        } catch (IOException ex) {
-            fParseInProgress = false;
-            if (PRINT_EXCEPTION_STACK_TRACE)
-                ex.printStackTrace();
-            throw ex;
-        } catch (Exception ex) {
-            fParseInProgress = false;
-            if (PRINT_EXCEPTION_STACK_TRACE)
-                ex.printStackTrace();
-            throw new org.xml.sax.SAXException(ex);
-        }
-
-    } // parse(InputSource)
-
-    /** 
-     * Reset all components before parsing. 
-     *
-     * @throws SAXException Thrown if an error occurs during initialization.
-     */
-    public void reset() throws SAXException {
-        super.reset();
-
-        // reset every component
-        fEntityManager.reset(this);
-        fScanner.reset(this);
-        fDTDScanner.reset(this);
-        fValidator.reset(this);
-
-        // setup document pipeline
-        /***
-        fScanner.setDocumentHandler(fValidator);
-        fValidator.setDocumentHandler(this);
-        /***/
-        fScanner.setDocumentHandler(this);
-        /***/
-
-        // setup dtd pipeline
-        /***
-        fDTDScanner.setDTDHandler(fValidator);
-        fValidator.setDTDHandler(this);
-        /***/
-        fDTDScanner.setDTDHandler(this);
-        /***/
-
-        // setup dtd content model pipeline
-        /***
-        fDTDScanner.setDTDContentModelHandler(fValidator);
-        fValidator.setDTDContentModelHandler(this);
-        /***/
-        fDTDScanner.setDTDContentModelHandler(this);
-        /***/
-
-    } // reset()
-
-    //
-    // XMLParser methods
-    //
-
-    /**
-     * Check a property. If the property is know and supported, this method
-     * simply returns. Otherwise, the appropriate exception is thrown.
-     *
-     * @param propertyId The unique identifier (URI) of the property
-     *                   being set.
-     * @exception org.xml.sax.SAXNotRecognizedException If the
-     *            requested property is not known.
-     * @exception org.xml.sax.SAXNotSupportedException If the
-     *            requested property is known, but the requested
-     *            value is not supported.
-     * @exception org.xml.sax.SAXException If there is any other
-     *            problem fulfilling the request.
-     */
-    protected void checkProperty(String propertyId)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
-
-        //
-        // SAX2 Properties
-        //
-
-        if (propertyId.startsWith(Constants.SAX_PROPERTY_PREFIX)) {
-            String property =
-                propertyId.substring(Constants.SAX_PROPERTY_PREFIX.length());
-        }
-
-        //
-        // Xerces Properties
-        //
-
-        else if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
-            String property =
-                propertyId.substring(Constants.XERCES_PROPERTY_PREFIX.length());
-            if (property.equals(Constants.DTD_SCANNER_PROPERTY)) {
-                return;
-            }
-            /***
-            if (property.equals(Constants.ENTITY_RESOLVER_PROPERTY)) {
-                return;
-            }   
-            /***/
-        }
-
-        super.checkProperty(propertyId);
-
-    } // checkProperty(String)
 
 } // class XMLDocumentParser
