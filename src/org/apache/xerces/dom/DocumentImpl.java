@@ -936,7 +936,7 @@ public class DocumentImpl
                     AttrImpl attr = (AttrImpl) source;
                     if (attr.hasStringValue()) {
                         AttrImpl newattr = (AttrImpl) newnode;
-                        newattr.setValue((String) attr.value);
+                        newattr.setValue(attr.getValue());
                         deep = false;
                     }
                     else {
