@@ -861,7 +861,6 @@ public class XMLSerializer
         checkAllFeatures();
         try {
             setOutputByteStream(destination);
-            //REVISIT: do we serialize complete Document when wnode is null??
             if (wnode == null)
                 return false;
             else if (wnode.getNodeType() == Node.DOCUMENT_NODE)
@@ -889,7 +888,6 @@ public class XMLSerializer
         StringWriter destination = new StringWriter();
         try {
             setOutputCharStream(destination);
-            //REVISIT: do we serialize complete Document when wnode is null??
             if (wnode == null)
                 return null;
             else if (wnode.getNodeType() == Node.DOCUMENT_NODE)

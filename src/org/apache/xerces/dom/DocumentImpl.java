@@ -1309,6 +1309,9 @@ public class DocumentImpl
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR,"Node "+snode.getNodeName()+" does not belongs to this Document.");
         DOMImplementationLS domImplLS = (DOMImplementationLS)DOMImplementationImpl.getDOMImplementation();
         DOMWriter xmlWriter = domImplLS.createDOMWriter();
+        if (snode == null) {
+            snode = this;
+        }
         return xmlWriter.writeToString(snode);
     }
 
