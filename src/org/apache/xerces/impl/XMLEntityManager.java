@@ -16,6 +16,7 @@
 
 package org.apache.xerces.impl;
 
+import java.lang.reflect.Method;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -946,7 +947,9 @@ public class XMLEntityManager
                         
                         // set preference for redirection
                         followRedirects = httpInputSource.getFollowHTTPRedirects();
-                        urlConnection.setInstanceFollowRedirects(followRedirects);
+                        if (!followRedirects) {
+                            setInstanceFollowRedirects(urlConnection, followRedirects);
+                        }
                     }
                     
                     stream = connect.getInputStream();
@@ -1722,6 +1725,19 @@ public class XMLEntityManager
         // if any exception is thrown, it'll get thrown to the caller.
         
     } // expandSystemId0(String,String):String
+    
+    /**
+     * Attempt to set whether redirects will be followed for an <code>HttpURLConnection</code>.
+     * This may fail on earlier JDKs which do not support setting this preference.
+     */
+    public static void setInstanceFollowRedirects(HttpURLConnection urlCon, boolean followRedirects) {
+        try {
+            Method method = HttpURLConnection.class.getMethod("setInstanceFollowRedirects", new Class[] {Boolean.TYPE});
+            method.invoke(urlCon, new Object[] {followRedirects ? Boolean.TRUE : Boolean.FALSE});
+        }
+        // setInstanceFollowRedirects doesn't exist.
+        catch (Exception exc) {}
+    }
 
     //
     // Protected methods

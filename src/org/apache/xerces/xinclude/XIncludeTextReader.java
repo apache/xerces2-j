@@ -135,7 +135,10 @@ public class XIncludeTextReader {
                     }
                     
                     // set preference for redirection
-                    urlConnection.setInstanceFollowRedirects(httpInputSource.getFollowHTTPRedirects());
+                    boolean followRedirects = httpInputSource.getFollowHTTPRedirects();
+                    if (!followRedirects) {
+                        XMLEntityManager.setInstanceFollowRedirects(urlConnection, followRedirects);
+                    }
                 }
                 
                 // Wrap the InputStream so that it is possible to rewind it.
