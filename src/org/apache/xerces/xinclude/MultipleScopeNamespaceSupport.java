@@ -23,7 +23,7 @@ import org.apache.xerces.xni.NamespaceContext;
 
 /**
  * This implementation of NamespaceContext has the ability to maintain multiple
- * scopes of namespace/prefix bindings.  This is useful it situtions when it is
+ * scopes of namespace/prefix bindings.  This is useful in situations when it is
  * not always appropriate for elements to inherit the namespace bindings of their
  * ancestors (such as included elements in XInclude).
  * 
@@ -90,9 +90,9 @@ public class MultipleScopeNamespaceSupport extends NamespaceSupport {
 
     public int getScopeForContext(int context) {
         int scope = fCurrentScope;
-                while (context < fScope[scope]) {
-                    scope--;
-                }
+        while (context < fScope[scope]) {
+            scope--;
+        }
         return scope;
     }
 
@@ -100,22 +100,22 @@ public class MultipleScopeNamespaceSupport extends NamespaceSupport {
      * @see org.apache.xerces.xni.NamespaceContext#getPrefix(java.lang.String)
      */
     public String getPrefix(String uri) {
-        return getPrefix(uri, fNamespaceSize, fScope[fCurrentScope]);
+        return getPrefix(uri, fNamespaceSize, fContext[fScope[fCurrentScope]]);
     }
 
     /* (non-Javadoc)
      * @see org.apache.xerces.xni.NamespaceContext#getURI(java.lang.String)
      */
     public String getURI(String prefix) {
-        return getURI(prefix, fNamespaceSize, fScope[fCurrentScope]);
+        return getURI(prefix, fNamespaceSize, fContext[fScope[fCurrentScope]]);
     }
 
     public String getPrefix(String uri, int context) {
-        return getPrefix(uri, fContext[context+1], fScope[getScopeForContext(context)]);
+        return getPrefix(uri, fContext[context+1], fContext[fScope[getScopeForContext(context)]]);
     }
 
     public String getURI(String prefix, int context) {
-        return getURI(prefix, fContext[context+1], fScope[getScopeForContext(context)]);
+        return getURI(prefix, fContext[context+1], fContext[fScope[getScopeForContext(context)]]);
     }
 
     public String getPrefix(String uri, int start, int end) {
@@ -160,7 +160,7 @@ public class MultipleScopeNamespaceSupport extends NamespaceSupport {
     }
 
     /**
-     * Onlys resets the current scope -- all namespaces defined in lower scopes
+     * Only resets the current scope -- all namespaces defined in lower scopes
      * remain valid after a call to reset.
      */
     public void reset() {
