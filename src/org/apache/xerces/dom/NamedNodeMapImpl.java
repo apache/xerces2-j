@@ -535,6 +535,22 @@ public class NamedNodeMapImpl
         return -1;
     }
 
+    // compare 2 nodes in the map.  If a precedes b, return true, otherwise 
+    // return false
+    protected boolean precedes(Node a, Node b) {
+
+       if (nodes != null) {
+          for (int i = 0; i < nodes.size(); i++) {
+              Node n = (Node)nodes.elementAt(i);
+              if (n==a) return true;
+              if (n==b) return false;
+          }
+       }
+
+       return false;
+    }
+
+
     /**
       * NON-DOM: Remove attribute at specified index
       */
