@@ -67,20 +67,12 @@ public class Key
     extends IdentityConstraint {
 
     //
-    // Data
-    //
-
-    /** Name. */
-    protected String fKeyName;
-
-    //
     // Constructors
     //
 
     /** Constructs a key with the specified name. */
-    public Key(String elementName, String keyName) {
-        super(elementName);
-        fKeyName = keyName;
+    public Key(String identityConstraintName, String elementName) {
+        super(identityConstraintName, elementName);
     } // <init>(String,String)
 
     //
@@ -91,10 +83,5 @@ public class Key
     public short getType() {
         return KEY;
     } // getType():short
-
-    /** Returns the name. */
-    public String getName() {
-        return fKeyName;
-    } // getName():String
 
 } // class Key

@@ -71,9 +71,9 @@ public class Unique
     //
 
     /** Constructs a unique identity constraint. */
-    public Unique(String elementName) {
-        super(elementName);
-    } // <init>(String)
+    public Unique(String identityConstraintName, String elementName) {
+        super(identityConstraintName, elementName);
+    } // <init>(String,String)
 
     //
     // Public methods

@@ -4281,11 +4281,12 @@ public class TraverseSchema implements
         throws Exception {
 
         // create identity constraint
+        String uname = uelem.getAttribute(SchemaSymbols.ATT_NAME);
         if (DEBUG_IDENTITY_CONSTRAINTS) {
-            System.out.println("<IC>: traverseUnique(\""+uelem.getNodeName()+"\")");
+            System.out.println("<IC>: traverseUnique(\""+uelem.getNodeName()+"\") ["+uname+']');
         }
         String ename = getElementNameFor(uelem);
-        Unique unique = new Unique(ename);
+        Unique unique = new Unique(uname, ename);
 
         // get selector and fields
         traverseIdentityConstraint(unique, uelem);
@@ -4304,7 +4305,7 @@ public class TraverseSchema implements
             System.out.println("<IC>: traverseKey(\""+kelem.getNodeName()+"\") ["+kname+']');
         }
         String ename = getElementNameFor(kelem);
-        Key key = new Key(ename, kname);
+        Key key = new Key(kname, ename);
 
         // get selector and fields
         traverseIdentityConstraint(key, kelem);
@@ -4319,11 +4320,25 @@ public class TraverseSchema implements
 
         // create identity constraint
         String krname = krelem.getAttribute(SchemaSymbols.ATT_NAME);
+        String kname = krelem.getAttribute(SchemaSymbols.ATT_REFER);
         if (DEBUG_IDENTITY_CONSTRAINTS) {
-            System.out.println("<IC>: traverseKeyRef(\""+krelem.getNodeName()+"\") ["+krname+']');
+            System.out.println("<IC>: traverseKeyRef(\""+krelem.getNodeName()+"\") ["+krname+','+kname+']');
         }
+
+        // verify that key reference "refer" attribute is valid
+        Element element = (Element)krelem.getParentNode();
+        Element kelem = XUtil.getFirstChildElement(element, 
+                                                   SchemaSymbols.ELT_KEY, 
+                                                   SchemaSymbols.ATT_NAME, 
+                                                   kname);
+        if (kelem == null) {
+            reportSchemaError(SchemaMessageProvider.KeyRefReferNotFound,
+                              new Object[]{krname,kname});
+            return;
+        }
+        
         String ename = getElementNameFor(krelem);
-        KeyRef keyRef = new KeyRef(ename, krname);
+        KeyRef keyRef = new KeyRef(krname, kname, ename);
 
         // add to element decl
         traverseIdentityConstraint(keyRef, krelem);

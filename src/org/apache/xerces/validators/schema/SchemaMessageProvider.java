@@ -171,8 +171,9 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         DuplicateKey = 34,
         KeyNotFound = 35,
         UnknownField = 36,
+        KeyRefReferNotFound = 37,
         // ...
-        MSG_MAX_CODE = 37;
+        MSG_MAX_CODE = 38;
     //
     // Minor Codes
     //
@@ -218,6 +219,7 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         "DuplicateKey",
         "KeyNotFound",
         "UnknownField",
+        "KeyRefReferNotFound",
         // END
     };
 }

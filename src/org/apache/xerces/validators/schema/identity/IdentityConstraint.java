@@ -82,6 +82,9 @@ public abstract class IdentityConstraint {
     // Data
     //
 
+    /** Identity constraint name. */
+    protected String fIdentityConstraintName;
+
     /** Element name. */
     protected String fElementName;
 
@@ -99,9 +102,11 @@ public abstract class IdentityConstraint {
     //
 
     /** Default constructor. */
-    protected IdentityConstraint(String elementName) {
+    protected IdentityConstraint(String identityConstraintName,
+                                 String elementName) {
+        fIdentityConstraintName = identityConstraintName;
         fElementName = elementName;
-    } // <init>(String)
+    } // <init>(String,String)
 
     //
     // Public methods
@@ -109,6 +114,11 @@ public abstract class IdentityConstraint {
 
     /** Returns the identity constraint type. */
     public abstract short getType();
+
+    /** Returns the identity constraint name. */
+    public String getIdentityConstraintName() {
+        return fIdentityConstraintName;
+    } // getIdentityConstraintName():String
 
     /** Returns the element name. */
     public String getElementName() {

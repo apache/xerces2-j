@@ -106,6 +106,7 @@ public class SchemaMessages extends ListResourceBundle {
         { "DuplicateKey", "Duplicate key value [{0}] declared for identity constraint of element \"{1}\"." },
         { "KeyNotFound", "Key with value [{0}] not found for identity constraint of element \"{1}\"." },
         { "UnknownField", "Internal identity constraint error; unknown field \"{0}\"." },
+        { "KeyRefReferNotFound", "Key reference declaration \"{0}\" refers to unknown key with name \"{1}\"." },
        };
     
     /** Returns the list resource bundle contents. */

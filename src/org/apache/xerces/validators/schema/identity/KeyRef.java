@@ -70,18 +70,19 @@ public class KeyRef
     // Data
     //
 
-    /** Key name. */
-    protected String fKeyName;
+    /** The key referal name. */
+    protected String fReferName;
 
     //
     // Constructors
     //
 
     /** Constructs a keyref with the specified name. */
-    public KeyRef(String elementName, String keyName) {
-        super(elementName);
-        fKeyName = keyName;
-    } // <init>(String,String)
+    public KeyRef(String identityConstraintName, String referName,
+                  String elementName) {
+        super(identityConstraintName, elementName);
+        fReferName = referName;
+    } // <init>(String,String,String)
 
     //
     // Public methods
@@ -92,9 +93,9 @@ public class KeyRef
         return KEYREF;
     } // getType():short
 
-    /** Returns the name. */
-    public String getName() {
-        return fKeyName;
-    } // getName():String
+    /** Returns the refer name. */
+    public String getReferName() {
+        return fReferName;
+    } // getReferName():String
 
 } // class KeyRef

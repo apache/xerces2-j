@@ -165,7 +165,7 @@ public class XPathMatcher {
      */
     public XPathMatcher(XPath xpath) {
         this(xpath, false);
-    } // <init>(Stringm,SymbolTable,NamespaceContext)
+    } // <init>(XPath)
 
     /** 
      * Constructs an XPath matcher that implements a document fragment 
@@ -182,7 +182,7 @@ public class XPathMatcher {
         if (DEBUG_METHODS) {
             System.out.println(toString()+"#<init>()");
         }
-    } // <init>(String,SymbolTable,NamespaceContext,boolean)
+    } // <init>(XPath,boolean)
 
     //
     // Public methods
@@ -417,23 +417,24 @@ public class XPathMatcher {
                                "})");
         }
         
-        // go back a step
-        fCurrentStep = fStepIndexes.pop();
-        
-        // return, if not matching
+        // don't do anything, if not matching
         if (fNoMatchDepth > 0) {
             fNoMatchDepth--;
-            return;
         }
 
         // signal match, if appropriate
-        if (fBufferContent) {
-            fBufferContent = false;
-            fMatchedString = fMatchedBuffer.toString();
-            matched(fMatchedString);
+        else {
+            if (fBufferContent) {
+                fBufferContent = false;
+                fMatchedString = fMatchedBuffer.toString();
+                matched(fMatchedString);
+            }
+            clear();
         }
-        clear();
 
+        // go back a step
+        fCurrentStep = fStepIndexes.pop();
+        
         if (DEBUG_STACK) {
             System.out.println(toString()+": "+fStepIndexes);
         }

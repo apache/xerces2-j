@@ -808,6 +808,17 @@ public final class XMLValidator
                     }
                     fDatatypeBuffer.append(chars, offset, length);
                     fDocumentHandler.characters(chars, offset, length);
+                    
+                    // call all active identity constraints
+                    int count = fMatcherStack.getMatcherCount();
+                    for (int i = 0; i < count; i++) {
+                        XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
+                        if (DEBUG_IDENTITY_CONSTRAINTS) {
+                            String text = new String(chars, offset, length);
+                            System.out.println("<IC>: "+matcher.toString()+"#characters("+text+")");
+                        }
+                        matcher.characters(chars, offset, length);
+                    }
                 }
                 fTrailing = (spaces > 1)?true:false;
                 fFirstChunk = false;
@@ -818,6 +829,17 @@ public final class XMLValidator
       
        fFirstChunk = false;
        fDocumentHandler.characters(chars, offset, length);
+
+       // call all active identity constraints
+       int count = fMatcherStack.getMatcherCount();
+       for (int i = 0; i < count; i++) {
+           XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
+           if (DEBUG_IDENTITY_CONSTRAINTS) {
+               String text = new String(chars, offset, length);
+               System.out.println("<IC>: "+matcher.toString()+"#characters("+text+")");
+           }
+           matcher.characters(chars, offset, length);
+       }
    }
 
    /** Process characters. */
@@ -852,6 +874,23 @@ public final class XMLValidator
         }
       }
       fDocumentHandler.characters(data);
+
+      // call all active identity constraints
+      int count = fMatcherStack.getMatcherCount();
+      if (count > 0) {
+          String text = fStringPool.toString(data);
+          char[] chars = new char[text.length()];
+          int offset = 0;
+          int length = chars.length;
+          text.getChars(length, length, chars, offset);
+          for (int i = 0; i < count; i++) {
+              XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
+              if (DEBUG_IDENTITY_CONSTRAINTS) {
+                  System.out.println("<IC>: "+matcher.toString()+"#characters("+text+")");
+              }
+              matcher.characters(chars, offset, length);
+          }
+      }
    }
 
    /** Process whitespace. */
@@ -869,6 +908,17 @@ public final class XMLValidator
             charDataInContent();
          }
          fDocumentHandler.characters(chars, offset, length);
+
+         // call all active identity constraints
+         int count = fMatcherStack.getMatcherCount();
+         for (int i = 0; i < count; i++) {
+             XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
+             if (DEBUG_IDENTITY_CONSTRAINTS) {
+                 String text = new String(chars, offset, length);
+                 System.out.println("<IC>: "+matcher.toString()+"#characters("+text+")");
+             }
+             matcher.characters(chars, offset, length);
+         }
       }
 
    } // processWhitespace(char[],int,int)
@@ -887,6 +937,23 @@ public final class XMLValidator
             charDataInContent();
          }
          fDocumentHandler.characters(data);
+
+         // call all active identity constraints
+         int count = fMatcherStack.getMatcherCount();
+         if (count > 0) {
+             String text = fStringPool.toString(data);
+             char[] chars = new char[text.length()];
+             int offset = 0;
+             int length = chars.length;
+             text.getChars(length, length, chars, offset);
+             for (int i = 0; i < count; i++) {
+                 XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
+                 if (DEBUG_IDENTITY_CONSTRAINTS) {
+                     System.out.println("<IC>: "+matcher.toString()+"#characters("+text+")");
+                 }
+                 matcher.characters(chars, offset, length);
+             }
+         }
       }
 
    } // processWhitespace(int)
@@ -1448,6 +1515,17 @@ public final class XMLValidator
       } else {
          int index = fStringPool.addString(new String(fCharRefData, 0, count));
          fDocumentHandler.characters(index);
+      }
+
+      // call all active identity constraints
+      int matcherCount = fMatcherStack.getMatcherCount();
+      for (int i = 0; i < matcherCount; i++) {
+          XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
+          if (DEBUG_IDENTITY_CONSTRAINTS) {
+              String text = new String(fCharRefData, 0, count);
+              System.out.println("<IC>: "+matcher.toString()+"#characters("+text+")");
+          }
+          matcher.characters(fCharRefData, 0, count);
       }
 
    } // callCharacters(int)
@@ -4183,6 +4261,18 @@ public final class XMLValidator
                 System.out.println("<VS>: "+toString()+"#endValueScope()");
             }
 
+            // is there anything to do?
+            // REVISIT: This check solves the problem with field matchers
+            //          that get activated because they are at the same
+            //          level as the declaring element (e.g. selector xpath
+            //          is ".") but never match.
+            //          However, this doesn't help us catch the problem
+            //          when we expect a field value but never see it. A
+            //          better solution has to be found. -Ac
+            if (fValuesCount == 0) {
+                return;
+            }
+
             // do we have enough values?
             if (fValuesCount != fIdentityConstraint.getFieldCount()) {
                 switch (fIdentityConstraint.getType()) {
@@ -4196,7 +4286,7 @@ public final class XMLValidator
                         int code = SchemaMessageProvider.KeyNotEnoughValues;
                         Key key = (Key)fIdentityConstraint;
                         String ename = fIdentityConstraint.getElementName();
-                        String kname = key.getName();
+                        String kname = key.getIdentityConstraintName();
                         reportSchemaError(code, new Object[]{ename,kname});
                         break;
                     }
@@ -4204,7 +4294,7 @@ public final class XMLValidator
                         int code = SchemaMessageProvider.KeyRefNotEnoughValues;
                         KeyRef keyref = (KeyRef)fIdentityConstraint;
                         String ename = fIdentityConstraint.getElementName();
-                        String kname = keyref.getName();
+                        String kname = keyref.getReferName();
                         reportSchemaError(code, new Object[]{ename,kname});
                         break;
                     }
@@ -4213,12 +4303,14 @@ public final class XMLValidator
             }
             
             // is this value as a group duplicated?
+//System.out.println("+++ "+toString()+" checking for duplications");
             if (contains(fValues)) {
                 duplicateValue(fValues);
             }
 
             // store values
             Hashtable values = (Hashtable)fValues.clone();
+//System.out.println("+++ "+toString()+" adding values "+values);
             fValueTuples.addElement(values);
 
         } // endValueScope()
@@ -4270,6 +4362,7 @@ public final class XMLValidator
             }
 
             // store value
+//System.out.println("+++ "+toString()+".addValue("+value+')');
             fValuesCount++;
             fValues.put(field, value);
 
@@ -4467,6 +4560,7 @@ public final class XMLValidator
         // ValueStoreBase methods
         //
 
+        /** End document. */
         public void endDocument() throws Exception {
             super.endDocument();
 
@@ -4474,6 +4568,8 @@ public final class XMLValidator
             int count = fValueTuples.size();
             for (int i = 0; i < count; i++) {
                 Hashtable values = (Hashtable)fValueTuples.elementAt(i);
+                System.out.println(">>> fKeyValueStore: "+fKeyValueStore);
+                System.out.println(">>> values: "+values);
                 if (!fKeyValueStore.contains(values)) {
                     int code = SchemaMessageProvider.KeyNotFound;
                     String value = toString(values);
@@ -4582,7 +4678,7 @@ public final class XMLValidator
                         if (valueStore == null) {
                             valueStore = new KeyValueStore(key);
                             fValueStores.addElement(valueStore);
-                            keyHash.put(key.getName(), valueStore);
+                            keyHash.put(key.getIdentityConstraintName(), valueStore);
                         }
                         if (DEBUG_VALUE_STORES) {
                             System.out.println("<VS>: "+key+" -> "+valueStore);
@@ -4597,7 +4693,7 @@ public final class XMLValidator
             int krcount = krvector.size();
             for (int i = 0; i < krcount; i++) {
                 KeyRef keyRef = (KeyRef)krvector.elementAt(i);
-                KeyValueStore keyValueStore = (KeyValueStore)keyHash.get(keyRef.getName());
+                KeyValueStore keyValueStore = (KeyValueStore)keyHash.get(keyRef.getReferName());
                 KeyRefValueStore keyRefValueStore = null;
                 int fcount = keyRef.getFieldCount();
                 for (int j = 0; j < fcount; j++) {
