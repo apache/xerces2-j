@@ -192,7 +192,7 @@ public class Selector {
 
         /** Constructs a selector matcher. */
         public Matcher(Selector.XPath xpath, FieldActivator activator) {
-            super(xpath, false, fIdentityConstraint);
+            super(xpath, false, Selector.this.fIdentityConstraint);
             fFieldActivator = activator;
         } // <init>(Selector.XPath,FieldActivator)
 
