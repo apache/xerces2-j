@@ -69,37 +69,40 @@ public class AttributeMap extends NamedNodeMapImpl {
      * @exception org.w3c.dom.DOMException The exception description.
      */
     public Node setNamedItem(Node arg)
-        throws DOMException {
-
-        if (isReadOnly()) {
-            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
-            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
+    throws DOMException {
+        
+        boolean errCheck = ownerNode.ownerDocument().errorChecking;
+        if (errCheck) {
+            if (isReadOnly()) {
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
+                throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
+            }
+            if (arg.getOwnerDocument() != ownerNode.ownerDocument()) {
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null);
+                throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);
+            }
+            if (arg.getNodeType() != Node.ATTRIBUTE_NODE) {
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "HIERARCHY_REQUEST_ERR", null);
+                throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, msg);
+            }
         }
-        if(arg.getOwnerDocument() != ownerNode.ownerDocument()) {
-            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null);
-            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);
-        }
-        if (arg.getNodeType() != Node.ATTRIBUTE_NODE) {
-            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "HIERARCHY_REQUEST_ERR", null);
-            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, msg);
-        }
-
         AttrImpl argn = (AttrImpl)arg;
-
+        
         if (argn.isOwned()){
-            if (argn.getOwnerElement() != ownerNode) {
-                   String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INUSE_ATTRIBUTE_ERR", null);
-                   throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR, msg);
+            if (errCheck && argn.getOwnerElement() != ownerNode) {
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INUSE_ATTRIBUTE_ERR", null);
+                throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR, msg);
             } 
             // replacing an Attribute with itself does nothing
             return arg;
         }
-
+        
+        
         // set owner
         argn.ownerNode = ownerNode;
         argn.isOwned(true);
-
-    int i = findNamePoint(arg.getNodeName(),0);
+        
+        int i = findNamePoint(arg.getNodeName(),0);
         AttrImpl previous = null;
         if (i >= 0) {
             previous = (AttrImpl) nodes.elementAt(i);
@@ -115,17 +118,17 @@ public class AttributeMap extends NamedNodeMapImpl {
             }
             nodes.insertElementAt(arg, i);
         }
-
+        
         // notify document
         ownerNode.ownerDocument().setAttrNode(argn, previous);
-
+        
         // If the new attribute is not normalized,
         // the owning element is inherently not normalized.
         if (!argn.isNormalized()) {
             ownerNode.isNormalized(false);
         }
         return previous;
-
+        
     } // setNamedItem(Node):Node
 
     /**
@@ -136,37 +139,38 @@ public class AttributeMap extends NamedNodeMapImpl {
      * @param arg A node to store in a named node map.
      */
     public Node setNamedItemNS(Node arg)
-        throws DOMException {
-
-        if (isReadOnly()) {
-            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
-            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);            
-        }
-    
-        if(arg.getOwnerDocument() != ownerNode.ownerDocument()) {
-            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null);
-            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);
-        }
-
-        if (arg.getNodeType() != Node.ATTRIBUTE_NODE) {
-            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "HIERARCHY_REQUEST_ERR", null);
-            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, msg);
+    throws DOMException {
+        
+        boolean errCheck = ownerNode.ownerDocument().errorChecking;
+        if (errCheck) { 
+            if (isReadOnly()) {
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
+                throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);            
+            }
+            if(arg.getOwnerDocument() != ownerNode.ownerDocument()) {
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null);
+                throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);
+            }
+            if (arg.getNodeType() != Node.ATTRIBUTE_NODE) {
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "HIERARCHY_REQUEST_ERR", null);
+                throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, msg);
+            }
         }
         AttrImpl argn = (AttrImpl)arg;
-
+        
         if (argn.isOwned()){
-            if (argn.getOwnerElement() != ownerNode) {
+            if (errCheck && argn.getOwnerElement() != ownerNode) {
                 String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INUSE_ATTRIBUTE_ERR", null);
                 throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR, msg);
             } 
             // replacing an Attribute with itself does nothing
             return arg;
         }
-
+        
         // set owner
         argn.ownerNode = ownerNode;
         argn.isOwned(true);
-
+        
         int i = findNamePoint(argn.getNamespaceURI(), argn.getLocalName());
         AttrImpl previous = null;
         if (i >= 0) {
@@ -192,17 +196,17 @@ public class AttributeMap extends NamedNodeMapImpl {
             }
         }
         //    	changed(true);
-
+        
         // notify document
         ownerNode.ownerDocument().setAttrNode(argn, previous);
-
+        
         // If the new attribute is not normalized,
         // the owning element is inherently not normalized.
         if (!argn.isNormalized()) {
             ownerNode.isNormalized(false);
         }
         return previous;
-
+        
     } // setNamedItemNS(Node):Node
    
     /**
@@ -381,9 +385,11 @@ public class AttributeMap extends NamedNodeMapImpl {
      * is not found.
      */
     final protected Node internalRemoveNamedItemNS(String namespaceURI,
-                                                   String name,
-                                                   boolean raiseEx) {
-        if (isReadOnly()) {
+            String name,
+            boolean raiseEx) {
+        
+        CoreDocumentImpl ownerDocument = ownerNode.ownerDocument();
+        if (ownerDocument.errorChecking && isReadOnly()) {
             String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
             throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);            
         }
@@ -396,12 +402,11 @@ public class AttributeMap extends NamedNodeMapImpl {
                 return null;
             }
         }
-
+        
         AttrImpl n = (AttrImpl)nodes.elementAt(i);
-        CoreDocumentImpl ownerDocument = ownerNode.ownerDocument();
-
+        
         if (n.isIdAttribute()) {
-                ownerDocument.removeIdentifier(n.getValue());
+            ownerDocument.removeIdentifier(n.getValue());
         }
         // If there's a default, add it instead
         String nodeName = n.getNodeName();
@@ -409,38 +414,38 @@ public class AttributeMap extends NamedNodeMapImpl {
             NamedNodeMapImpl defaults = ((ElementImpl) ownerNode).getDefaultAttributes();
             Node d;
             if (defaults != null
-                && (d = defaults.getNamedItem(nodeName)) != null)
-                {
-                    int j = findNamePoint(nodeName,0);
-                    if (j>=0 && findNamePoint(nodeName, j+1) < 0) {
-                        NodeImpl clone = (NodeImpl)d.cloneNode(true);
-                        clone.ownerNode = ownerNode;
-                        if (d.getLocalName() != null) {
-                            // we must rely on the name to find a default attribute
-                            // ("test:attr"), but while copying it from the DOCTYPE
-                            // we should not loose namespace URI that was assigned
-                            // to the attribute in the instance document.
-                            ((AttrNSImpl)clone).namespaceURI = namespaceURI;
-                        }
-                        clone.isOwned(true);
-                        clone.isSpecified(false);
-                        nodes.setElementAt(clone, i);
-                        if (clone.isIdAttribute()) {
-                                ownerDocument.putIdentifier(clone.getNodeValue(), 
-                                                            (ElementImpl)ownerNode);
-                        }
-                    } else {
-                        nodes.removeElementAt(i);
+                    && (d = defaults.getNamedItem(nodeName)) != null)
+            {
+                int j = findNamePoint(nodeName,0);
+                if (j>=0 && findNamePoint(nodeName, j+1) < 0) {
+                    NodeImpl clone = (NodeImpl)d.cloneNode(true);
+                    clone.ownerNode = ownerNode;
+                    if (d.getLocalName() != null) {
+                        // we must rely on the name to find a default attribute
+                        // ("test:attr"), but while copying it from the DOCTYPE
+                        // we should not loose namespace URI that was assigned
+                        // to the attribute in the instance document.
+                        ((AttrNSImpl)clone).namespaceURI = namespaceURI;
+                    }
+                    clone.isOwned(true);
+                    clone.isSpecified(false);
+                    nodes.setElementAt(clone, i);
+                    if (clone.isIdAttribute()) {
+                        ownerDocument.putIdentifier(clone.getNodeValue(), 
+                                (ElementImpl)ownerNode);
                     }
                 } else {
                     nodes.removeElementAt(i);
                 }
+            } else {
+                nodes.removeElementAt(i);
+            }
         } else {
             nodes.removeElementAt(i);
         }
-
+        
         //        changed(true);
-
+        
         // remove reference to owner
         n.ownerNode = ownerDocument;
         n.isOwned(false);
@@ -449,12 +454,12 @@ public class AttributeMap extends NamedNodeMapImpl {
         n.isSpecified(true);
         // update id table if needed
         n.isIdAttribute(false);
-
+        
         // notify document
         ownerDocument.removedAttrNode(n, ownerNode, name);
-
+        
         return n;
-
+        
     } // internalRemoveNamedItemNS(String,String,boolean):Node
 
     //
