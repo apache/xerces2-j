@@ -762,7 +762,7 @@ public class XIncludeHandler
                     && getState() == STATE_NORMAL_PROCESSING) {
                 augs = modifyAugmentations(augs);
                 attributes = processAttributes(attributes);
-                fDocumentHandler.emptyElement(element, attributes, augs);
+                fDocumentHandler.startElement(element, attributes, augs);
             }
         }
         else if (
