@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,15 +57,18 @@
 
 package org.apache.xerces.impl.xs.opti;
 
-import org.apache.xerces.xni.Augmentations;
+import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLString;
-import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.util.XMLSymbols;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+
+import java.util.Vector;
+import java.util.Enumeration;
 
 /**
  * @author Rahul Srivastava, Sun Microsystems Inc.
@@ -78,35 +81,38 @@ public class SchemaDOM extends DefaultDocument {
     static final int relationsRowResizeFactor = 15;
     static final int relationsColResizeFactor = 10;
 
-    ElementImpl[][] relations;
+    NodeImpl[][] relations;
+    // parent must be an element in this scheme
     ElementImpl parent;
     int currLoc;
     int nextFreeLoc;
     boolean hidden;
 
+    // for annotation support:
+    StringBuffer fAnnotationBuffer = null;
 
     public SchemaDOM() {
         reset();
     }
     
 
-    public void startElement(QName element, XMLAttributes attributes, Augmentations augs,
-                             int line, int column) throws XNIException {
+    public void startElement(QName element, XMLAttributes attributes,
+                             int line, int column) {
         ElementImpl node = new ElementImpl(line, column);
-        processElement(element, attributes, augs, node);
+        processElement(element, attributes, node);
         // now the current node added, becomes the parent
         parent = node;
     }
     
     
-    public void emptyElement(QName element, XMLAttributes attributes, Augmentations augs,
-                             int line, int column) throws XNIException {
+    public void emptyElement(QName element, XMLAttributes attributes,
+                             int line, int column) {
         ElementImpl node = new ElementImpl(line, column);
-        processElement(element, attributes, augs, node);
+        processElement(element, attributes, node);
     }
     
     
-    private void processElement(QName element, XMLAttributes attributes, Augmentations augs, ElementImpl node) throws XNIException {
+    private void processElement(QName element, XMLAttributes attributes, ElementImpl node) {
 
         // populate node
         node.prefix = element.prefix;
@@ -160,30 +166,92 @@ public class SchemaDOM extends DefaultDocument {
     }
     
     
-    public void endElement(QName element, Augmentations augs) throws XNIException {
+    public void endElement()  {
         // the parent of current parent node becomes the parent
         // for the next node.
         currLoc = parent.row;
-        parent = relations[currLoc][0];
+        parent = (ElementImpl)relations[currLoc][0];
     }
     
-    
-    public void characters(XMLString text, Augmentations augs) throws XNIException {
-        // REVISIT: Make a text node.
+    // note that this will only be called within appinfo/documentation
+    void comment(XMLString text) {
+        fAnnotationBuffer.append("<!--").append(text.toString()).append("-->");
+    }
+
+    // note that this will only be called within appinfo/documentation
+    void processingInstruction(String target, String data) {
+        fAnnotationBuffer.append("<?").append(target).append(" ").append(data).append("?>");
     }
     
+    // note that this will only be called within appinfo/documentation
+    void characters(XMLString text ) {
+        // need to handle &s and <s
+        for(int i=text.offset; i<text.offset+text.length; i++ ) {
+            if(text.ch[i] == '&') {
+                fAnnotationBuffer.append("&amp;");
+            } else if (text.ch[i] == '<') {
+                fAnnotationBuffer.append("&lt;");
+            } else {
+                fAnnotationBuffer.append(text.ch[i]);
+            }
+        }
+    }
+
+    void endAnnotationElement(QName elemName, boolean complete) {
+        if(complete) {
+            fAnnotationBuffer.append("\n</").append(elemName.rawname).append(">");
+            // note that this is always called after endElement on <annotation>'s
+            // child and before endElement on annotation.
+            // hence, we must make this the child of the current
+            // parent's only child.
+            ElementImpl child = (ElementImpl)relations[currLoc][1];
+
+            // check if array needs to be resized
+            if (nextFreeLoc == relations.length) {
+                resizeRelations();
+            }
+            int newRow = child.parentRow = nextFreeLoc++; 
+        
+            // now find the place to insert this node
+            boolean foundPlace = false;
+            int i = 1;
+            for (; i<relations[newRow].length; i++) {
+                if (relations[newRow][i] == null) {
+                    foundPlace = true;
+                    break;
+                }
+            }
+        
+            if (!foundPlace) {
+                resizeRelations(newRow);
+            }
+            relations[newRow][i] = new TextImpl(fAnnotationBuffer, this, newRow, i);
+            // apparently, there is no sensible way of resetting
+            // these things
+            fAnnotationBuffer = null;
+        } else      //capturing character calls
+            fAnnotationBuffer.append("</").append(elemName.rawname).append(">");
+    }
+
+    void startAnnotationCDATA() {
+        fAnnotationBuffer.append("<![CDATA[");
+    }
+    
+    void endAnnotationCDATA() {
+        fAnnotationBuffer.append("]]>");
+    }
     
     private void resizeRelations() {
-        ElementImpl[][] temp = new ElementImpl[relations.length+relationsRowResizeFactor][];
+        NodeImpl[][] temp = new NodeImpl[relations.length+relationsRowResizeFactor][];
         System.arraycopy(relations, 0, temp, 0, relations.length);
         for (int i = relations.length ; i < temp.length ; i++) {
-            temp[i] = new ElementImpl[relationsColResizeFactor];
+            temp[i] = new NodeImpl[relationsColResizeFactor];
         }
         relations = temp;
     }
     
     private void resizeRelations(int i) {
-        ElementImpl[] temp = new ElementImpl[relations[i].length+relationsColResizeFactor];
+        NodeImpl[] temp = new NodeImpl[relations[i].length+relationsColResizeFactor];
         System.arraycopy(relations[i], 0, temp, 0, relations[i].length);
         relations[i] = temp;
     }
@@ -191,13 +259,18 @@ public class SchemaDOM extends DefaultDocument {
     
     public void reset() {
         
-        relations = new ElementImpl[relationsRowResizeFactor][];
+        // help out the garbage collector
+        if(relations != null) 
+            for(int i=0; i<relations.length; i++) 
+                for(int j=0; j<relations[i].length; j++) 
+                    relations[i][j] = null;
+        relations = new NodeImpl[relationsRowResizeFactor][];
         parent = new ElementImpl(0, 0);
         parent.rawname = "DOCUMENT_NODE";
         currLoc = 0;
         nextFreeLoc = 1;
         for (int i=0; i<relationsRowResizeFactor; i++) {
-            relations[i] = new ElementImpl[relationsColResizeFactor];
+            relations[i] = new NodeImpl[relationsColResizeFactor];
         }
         relations[currLoc][0] = parent;
     }
@@ -256,7 +329,69 @@ public class SchemaDOM extends DefaultDocument {
     
     // org.w3c.dom methods
     public Element getDocumentElement() {
-        return relations[0][1];
+        // this returns a parent node, known to be an ElementImpl
+        return (ElementImpl)relations[0][1];
     }
     
+    // commence the serialization of an annotation
+    void startAnnotation(QName elemName, XMLAttributes attributes,
+                NamespaceContext namespaceContext) {
+        if(fAnnotationBuffer == null) fAnnotationBuffer = new StringBuffer(256);
+        fAnnotationBuffer.append("<").append(elemName.rawname).append(" ");
+
+        // attributes are a bit of a pain.  To get this right, we have to keep track
+        // of the namespaces we've seen declared, then examine the namespace context
+        // for other namespaces so that we can also include them.
+        // optimized for simplicity and the case that not many
+        // namespaces are declared on this annotation...
+        Vector namespaces = new Vector();
+        for(int i=0; i<attributes.getLength(); i++) {
+            String aValue = attributes.getValue(i);
+            String aPrefix = attributes.getPrefix(i);
+            // if it's xmlns, must be a namespace decl
+            namespaces.addElement(aValue);
+            fAnnotationBuffer.append(attributes.getQName(i)).append("=\"").append(aValue).append("\" ");
+        }
+        // now we have to look through currently in-scope namespaces to see what
+        // wasn't declared here
+        Enumeration currPrefixes = namespaceContext.getAllPrefixes();
+        while(currPrefixes.hasMoreElements()) {
+            String prefix = (String)currPrefixes.nextElement();
+            String uri = namespaceContext.getURI(prefix);
+            if(!namespaces.contains(uri)) {
+                // have to declare this one
+                if(prefix == XMLSymbols.EMPTY_STRING) 
+                    fAnnotationBuffer.append("xmlns").append("=\"").append(uri).append("\" ");
+                else 
+                    fAnnotationBuffer.append("xmlns:").append(prefix).append("=\"").append(uri).append("\" ");
+            }
+        }
+        fAnnotationBuffer.append(">\n");
+    }
+    void startAnnotationElement(QName elemName, XMLAttributes attributes) {
+        fAnnotationBuffer.append("<").append(elemName.rawname).append(" ");
+        for(int i=0; i<attributes.getLength(); i++) {
+            String aValue = attributes.getValue(i);
+            fAnnotationBuffer.append(" ").append(attributes.getQName(i)).append("=\"").append(processAttValue(aValue)).append("\" ");
+        }
+        fAnnotationBuffer.append(">");
+    }
+    
+    private static String processAttValue(String original) {
+        // normally, nothing will happen
+        StringBuffer newVal = new StringBuffer(original.length());
+        for(int i=0; i<original.length(); i++) {
+            char currChar = original.charAt(i);
+            if(currChar == '"') {
+                newVal.append("&quot;");
+            } else if (currChar == '>') {
+                newVal.append("&gt;");
+            } else if (currChar == '&') {
+                newVal.append("&amp;");
+            } else {
+                newVal.append(currChar);
+            }
+        }
+        return newVal.toString();
+    }
 }

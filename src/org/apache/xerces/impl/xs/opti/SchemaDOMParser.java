@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -92,6 +92,10 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
     // the locator containing line/column information
     protected XMLLocator   fLocator;
 
+    // namespace context, needed for producing
+    // representations of annotations
+    protected NamespaceContext fNamespaceContext = null;
+
     SchemaDOM schemaDOM;
    
     XMLParserConfiguration config;
@@ -106,10 +110,12 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
         this.config = config;
     }
 
-
+    // where an annotation element itself begins
+    // -1 means not in an annotation's scope
+    private int fAnnotationDepth = -1;
     // Where xs:appinfo or xs:documentation starts;
     // -1 means not in the scope of either of the two elements.
-    private int fAnnotationDepth = -1;
+    private int fInnerAnnotationDepth = -1;
     // The current element depth
     private int fDepth = -1;
     // Use to report the error when characters are not allowed.
@@ -124,7 +130,8 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                               NamespaceContext namespaceContext, Augmentations augs)
         throws XNIException {
         fLocator = locator;
-    } // startDocument(XMLLocator,String,Augmentations)
+        fNamespaceContext = namespaceContext;
+    } // startDocument(XMLLocator,String,NamespaceContext, Augmentations)
 
     /**
      * The end of the document.
@@ -133,10 +140,50 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void endDocument(Augmentations augs) throws XNIException {
-	// To debug the DOM created uncomment the line below
-	// schemaDOM.printDOM();
+	    // To debug the DOM created uncomment the line below
+	    // schemaDOM.printDOM();
     } // endDocument()
 
+
+    /**
+     * A comment.
+     * 
+     * @param text   The text in the comment.
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by application to signal an error.
+     */
+    public void comment(XMLString text, Augmentations augs) throws XNIException {
+        if(fAnnotationDepth > -1) {
+            schemaDOM.comment(text);
+        }
+    }
+
+    /**
+     * A processing instruction. Processing instructions consist of a
+     * target name and, optionally, text data. The data is only meaningful
+     * to the application.
+     * <p>
+     * Typically, a processing instruction's data will contain a series
+     * of pseudo-attributes. These pseudo-attributes follow the form of
+     * element attributes but are <strong>not</strong> parsed or presented
+     * to the application as anything other than text. The application is
+     * responsible for parsing the data.
+     * 
+     * @param target The target.
+     * @param data   The data or null if none specified.
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
+     */
+    public void processingInstruction(String target, XMLString data, Augmentations augs)
+        throws XNIException {
+        if(fAnnotationDepth > -1) {
+            schemaDOM.processingInstruction(target, data.toString());
+        }
+    }
 
     /**
      * Character content.
@@ -149,7 +196,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
      */
     public void characters(XMLString text, Augmentations augs) throws XNIException {
         // when it's not within xs:appinfo or xs:documentation
-        if (fAnnotationDepth == -1) {
+        if (fInnerAnnotationDepth == -1 ) {
             for (int i=text.offset; i<text.offset+text.length; i++) {
                 // and there is a non-whitespace character
                 if (!XMLChar.isSpace(text.ch[i])) {
@@ -182,7 +229,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
         // when it's within either of the 2 elements, characters are allowed
         // and we need to store them.
         else {
-            schemaDOM.characters(text, augs);
+            schemaDOM.characters(text);
         }
 
     }
@@ -201,21 +248,29 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
     public void startElement(QName element, XMLAttributes attributes, Augmentations augs)
         throws XNIException {
 
-        schemaDOM.startElement(element, attributes, augs,
-                               fLocator.getLineNumber(),
-                               fLocator.getColumnNumber());
-
         fDepth++;
-        // if it's not within either element, check whether it's one of them
-        // if so, record the current depth, so that any element with larger
-        // depth is allowed to have character data.
+        // while it is true that non-whitespace character data
+        // may only occur in appInfo or documentation
+        // elements, it's certainly legal for comments and PI's to
+        // occur as children of annotation; we need
+        // to account for these here.
         if (fAnnotationDepth == -1) {
             if (element.uri == SchemaSymbols.URI_SCHEMAFORSCHEMA &&
-                (element.localpart == SchemaSymbols.ELT_APPINFO ||
-                element.localpart == SchemaSymbols.ELT_DOCUMENTATION)) {
+                    element.localpart == SchemaSymbols.ELT_ANNOTATION) {
                 fAnnotationDepth = fDepth;
-            }
+                schemaDOM.startAnnotation(element, attributes, fNamespaceContext);
+            } 
+        } else if(fDepth == fAnnotationDepth+1) {
+            fInnerAnnotationDepth = fDepth;
+            schemaDOM.startAnnotationElement(element, attributes);
+        } else {
+            schemaDOM.startAnnotationElement(element, attributes);
+            // avoid falling through; don't call startElement in this case
+            return;
         }
+        schemaDOM.startElement(element, attributes, 
+                               fLocator.getLineNumber(),
+                               fLocator.getColumnNumber());
 
     }
 
@@ -233,7 +288,18 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
     public void emptyElement(QName element, XMLAttributes attributes, Augmentations augs)
         throws XNIException {
 
-        schemaDOM.emptyElement(element, attributes, augs,
+        if (fAnnotationDepth == -1) {
+            // this is messed up, but a case to consider:
+            if (element.uri == SchemaSymbols.URI_SCHEMAFORSCHEMA &&
+                    element.localpart == SchemaSymbols.ELT_ANNOTATION) {
+                schemaDOM.startAnnotation(element, attributes, fNamespaceContext);
+                schemaDOM.endAnnotationElement(element, true);
+            } 
+        } else {
+            schemaDOM.startAnnotationElement(element, attributes);
+            schemaDOM.endAnnotationElement(element, false);
+        } 
+        schemaDOM.emptyElement(element, attributes, 
                                fLocator.getLineNumber(),
                                fLocator.getColumnNumber());
 
@@ -251,15 +317,72 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
      */
     public void endElement(QName element, Augmentations augs) throws XNIException {
 
-	schemaDOM.endElement(element,  augs);
-    // when we reach the endElement of xs:appinfo or xs:documentation,
-    // change fAnnotationDepth to -1
-    if (fAnnotationDepth == fDepth)
-        fAnnotationDepth = -1;
-    fDepth--;
+        // when we reach the endElement of xs:appinfo or xs:documentation,
+        // change fInnerAnnotationDepth to -1
+        if(fAnnotationDepth > -1) {
+            if (fInnerAnnotationDepth == fDepth) {
+                fInnerAnnotationDepth = -1;
+                schemaDOM.endAnnotationElement(element, false);
+	            schemaDOM.endElement();
+            } else if (fAnnotationDepth == fDepth) {
+                fAnnotationDepth = -1;
+                schemaDOM.endAnnotationElement(element, true);
+	            schemaDOM.endElement();
+            } else { // inside a child of annotation
+                schemaDOM.endAnnotationElement(element, false);
+            }
+        } else { // not in an annotation at all
+	        schemaDOM.endElement();
+        }
+        fDepth--;
 
     }
     
+    /**
+     * Ignorable whitespace. For this method to be called, the document
+     * source must have some way of determining that the text containing
+     * only whitespace characters should be considered ignorable. For
+     * example, the validator can determine if a length of whitespace
+     * characters in the document are ignorable based on the element
+     * content model.
+     * 
+     * @param text   The ignorable whitespace.
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
+     */
+    public void ignorableWhitespace(XMLString text, Augmentations augs) throws XNIException {
+        // unlikely to be called, but you never know...
+        if (fAnnotationDepth != -1 ) {
+            schemaDOM.characters(text);
+        }
+    }
+
+    /**
+     * The start of a CDATA section.
+     * 
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
+     */
+    public void startCDATA(Augmentations augs) throws XNIException {
+        schemaDOM.startAnnotationCDATA();
+    }
+
+    /**
+     * The end of a CDATA section.
+     * 
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
+     */
+    public void endCDATA(Augmentations augs) throws XNIException {
+        schemaDOM.endAnnotationCDATA();
+    }
+
     
     //
     // other methods
