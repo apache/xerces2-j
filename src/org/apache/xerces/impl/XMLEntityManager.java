@@ -1243,7 +1243,7 @@ public class XMLEntityManager
         gNeedEscaping[0x7f] = true;
         gAfterEscaping1[0x7f] = '7';
         gAfterEscaping2[0x7f] = 'F';
-        char[] escChs = {' ', '<', '>', '#', '%', '"', '"', '}',
+        char[] escChs = {' ', '<', '>', '#', '%', '"', '{', '}',
                          '|', '\\', '^', '~', '[', ']', '`'};
         int len = escChs.length;
         char ch;
