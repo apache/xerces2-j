@@ -106,27 +106,12 @@ public abstract class DocumentBuilderFactory {
      */
     public static DocumentBuilderFactory newInstance() {
 
-        // Evaluate wether we have to use or Class.forName() for JDK 1.1 or
-        // Thread.currentThread().getContextClassLoader().loadClass() for
-        // the new JDK 1.2
-        boolean newPlatform=true;
-        try {
-            new ThreadLocal();
-        } catch (NoClassDefFoundError t) {
-            newPlatform=false;
-        }
-
         // Retrieve the javax.xml.parsers.DocumentBuilderFactory system property
         String n=System.getProperty(property, factory);
 
         try {
-            // Attempt to load the factory class.
-            Class c=null;
-            if (!newPlatform) c=Class.forName(n);
-            else c=Thread.currentThread().getContextClassLoader().loadClass(n);
-
-            // Attempt to instantiate and return the factory class
-            return (DocumentBuilderFactory)c.newInstance();
+            // Attempt to load, instantiate and return the factory class
+            return (DocumentBuilderFactory)Class.forName(n).newInstance();
 
         } catch (ClassNotFoundException e) {
             // The factory class was not found
