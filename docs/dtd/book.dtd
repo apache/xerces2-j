@@ -6,7 +6,8 @@
 <!ENTITY % externalEntity SYSTEM "entities.ent">
 %externalEntity;
 
-<!ELEMENT book (resources?|document|hidden|faqs|changes|group|container|external|separator)+>
+<!ELEMENT book (resources?|document|hidden|faqs|releases|
+                external|separator|settings)+>
 <!ATTLIST book title     CDATA #REQUIRED
                copyright CDATA #IMPLIED>
                
@@ -14,42 +15,42 @@
 <!ATTLIST resources source CDATA #REQUIRED>
 
 <!ELEMENT document EMPTY>
-<!ATTLIST document id     ID    #REQUIRED
-                   source CDATA #REQUIRED
-                   label  CDATA #REQUIRED>
+<!ATTLIST document label  CDATA #REQUIRED
+                   title  CDATA #REQUIRED
+                   id     ID    #REQUIRED
+                   source CDATA #REQUIRED>
 
 <!ELEMENT hidden EMPTY>
-<!ATTLIST hidden id     ID    #REQUIRED
+<!ATTLIST hidden title  CDATA #REQUIRED
+                 id     ID    #REQUIRED
                  source CDATA #REQUIRED>
 
-<!ELEMENT faqs EMPTY>
-<!ATTLIST faqs id     ID    #REQUIRED
-               source CDATA #REQUIRED
-               label  CDATA #REQUIRED>
+<!ELEMENT faqs (faq+)>
+<!ATTLIST faqs label CDATA #REQUIRED
+               title CDATA #REQUIRED
+	       id    ID    #IMPLIED>
 
-<!ELEMENT changes EMPTY>
-<!ATTLIST changes id     ID    #REQUIRED
-                  source CDATA #REQUIRED
-                  label  CDATA #REQUIRED>
+<!ELEMENT faq EMPTY>
+<!ATTLIST faq title  CDATA #REQUIRED
+              id     ID    #REQUIRED
+              source CDATA #REQUIRED>
 
-<!ELEMENT group (entry)+>
-<!ATTLIST group id    ID    #IMPLIED
-		label CDATA #REQUIRED                
-		title CDATA #REQUIRED>
-
-<!ELEMENT container (entry)+>
-<!ATTLIST container id    ID    #IMPLIED
-	            source CDATA #REQUIRED
-               	    label CDATA #REQUIRED>
-
-<!ELEMENT entry EMPTY>
-<!ATTLIST entry id     ID    #REQUIRED
-                source CDATA #REQUIRED>
+<!ELEMENT releases EMPTY>
+<!ATTLIST releases label  CDATA #REQUIRED
+                   title  CDATA #REQUIRED
+                   id     ID    #REQUIRED
+                   source CDATA #REQUIRED>
 
 <!ELEMENT external EMPTY>
 <!ATTLIST external label CDATA #REQUIRED
                    href  CDATA #REQUIRED>
                    
 <!ELEMENT separator EMPTY>
+
+<!ELEMENT settings EMPTY>
+<!ATTLIST settings label  CDATA #REQUIRED
+                   title  CDATA #REQUIRED
+                   id     ID    #REQUIRED
+                   source CDATA #REQUIRED>
 
 <!-- CVS $Revision$ $Date$ -->

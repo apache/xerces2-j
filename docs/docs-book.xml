@@ -1,54 +1,58 @@
-<?xml version="1.0"?>
-<!DOCTYPE book SYSTEM "./dtd/book.dtd">
-
-<book title="Xerces-J Documentation" copyright="1999, 2000 The Apache Software Foundation">
-  <external href="../index.html"  label="Home"/>
-
-  <separator/>
-  <document id="index"       label="Readme"       source="readme.xml"      />
-  <external href="http://xml.apache.org/dist/xerces-j/"  label="Download"/>
-  <external href="http://xml.apache.org/websrc/cvsweb.cgi/xml-xerces/java/"  label="Repository"/>
-  <document id="install"     label="Installation" source="install.xml"     />
-
-  <separator/>
-  <document id="api"         label="API Docs"     source="api.xml"         />
-  <!--
-  <container id="samples"     label="Samples"      source="samples.xml">
-	<entry  id="domcount"        source="sam-domcount.xml" />
-	<entry  id="domwriter"       source="sam-domwriter.xml"/>
-	<entry  id="domfilter"       source="sam-domfilter.xml"/>
-	<entry  id="iterator"        source="sam-iterator.xml" />
-	<entry  id="tree"            source="sam-tree.xml"     />
-	<entry  id="treeview"        source="sam-treeview.xml" />
-  </container>
-  -->
-  <document id='samples'     label='Samples'      source='samples.xml'/>
-  <hidden id='domcount' source='sam-domcount.xml'/>
-  <hidden id="domwriter"       source="sam-domwriter.xml"/>
-  <hidden id="domfilter"       source="sam-domfilter.xml"/>
-  <hidden id="iterator"        source="sam-iterator.xml" />
-  <hidden  id="tree"            source="sam-tree.xml"     />
-  <hidden  id="treeview"        source="sam-treeview.xml" />
-  <document id="schema"      label="Schema"       source="schema.xml"      />
-
-  <separator/>
-  <document id="properties"  label="Properties"   source="properties.xml"  />
-  <document id="features"    label="Features"     source="features.xml"    />
-  <group    id="faqs"        title="Frequently Asked Questions" label="FAQs">
-    <entry  id="faq-general"                      source="faq-general.xml" />
-    <entry  id="faq-build"                        source="faq-build.xml"   />
-    <entry  id="faq-write"                        source="faq-write.xml"   />
-    <entry  id="faq-performance"                  source="faq-performance.xml"   />
-    <entry  id="faq-migrate"                      source="faq-migrate.xml" />
-    <entry  id="faq-common"                       source="faq-common.xml"  />
-  </group>
-	<hidden   id="jpc"       	  source="javapurecheck.xml"/>
-
-  <separator/>
-  <document id="releases"    label="Releases"     source="releases.xml"    />
-  <document id="caveats"     label="Caveats"      source="caveats.xml"     />
-  <document id="feedback"    label="Feedback"     source="feedback.xml"    />
-
-  <separator/>
-  <document id="y2k"         label="Y2K Compliance" source="y2k.xml"       />
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE book SYSTEM 'dtd/book.dtd'>
+<book title='Xerces-J Documentation' 
+      copyright='1999-2001 The Apache Software Foundation'>
+ <external label='Home' href='http://xml.apache.org/'/>
+ <separator/>
+ <document label='Readme' title='Xerces2 Java Parser Readme'
+           id='index' source='readme.xml'/>
+ <document label='Installation' title='Installation Instructions'
+           id='install' source='install.xml'/>
+ <external label='Download' href='http://xml.apache.org/dist/xerces-j/'/>
+ <external label='CVS Repository'
+           href='http://xml.apache.org/websrc/cvsweb.cgi/xml-xerces/java/?only_with_tag=xerces_j_2&amp;hideattic=0'/>
+ <separator/>
+ <document label='Samples' title='Sample Programs'
+           id='samples' source='samples.xml'/>
+ <hidden title='DOM Samples' id='samples-dom' source='samples-dom.xml'/>
+ <hidden title='SAX Samples' id='samples-sax' source='samples-sax.xml'/>
+ <hidden title='Socket Samples' id='samples-socket' source='samples-socket.xml'/>
+ <hidden title='User Interface Samples'
+         id='samples-ui' source='samples-ui.xml'/>
+ <hidden title='XNI Samples' id='samples-xni' source='samples-xni.xml'/>
+ <!--
+ <document label='API JavaDoc' title='API JavaDoc'
+           id='api' source='api.xml'/>
+ -->
+ <external label='API JavaDoc' href='apiDocs/index.html'/>
+ <document label='XNI Manual' title='Xerces Native Interface'
+           id='xni' source='xni.xml'/>
+ <!--
+ <hidden title='XNI Design' id='xni-design' source='xni-design.xml'/>
+ <hidden title='XNI API' id='xni-api' source='xni-api.xml'/>
+ <hidden title='XNI Parser Configurations' 
+         id='xni-config' source='xni-config.xml'/>
+ -->
+ <faqs label='FAQs' title='Frequently Asked Questions' id='faqs'>
+  <faq title='Common FAQs' id='faq-common' source='faq-common.xml'/>
+  <faq title='General FAQs' id='faq-general' source='faq-general.xml'/>
+  <faq title='Building and Running FAQs' 
+       id='faq-build' source='faq-build.xml'/>
+  <faq title='Writing Applications FAQs' 
+       id='faq-write' source='faq-write.xml'/>
+  <faq title='Performance FAQs' 
+       id='faq-performance' source='faq-performance.xml'/>
+ </faqs>
+ <separator/>
+ <settings title='Parser Features' label='Features' 
+           id='features' source='features.xml'/>
+ <settings title='Parser Properties' label='Properties' 
+           id='properties' source='properties.xml'/>
+ <separator/>
+ <releases label='Release Info' title='Release Information'
+           id='releases' source='releases.xml'/>
+ <document label='Limitations' title='Parser Limitations'
+           id='limitations' source='limitations.xml'/>
+ <external label='Report a Bug' 
+           href='http://nagoya.apache.org/bugzilla/enter_bug.cgi?product=Xerces2-J'/>
 </book>

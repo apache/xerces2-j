@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE s1 SYSTEM 'dtd/document.dtd'>
+<s1 title='UI Samples'>
+ <!--
+   - REVISIT: The UI samples should be completely rewritten.
+   -
+ <s2 title='ui.DOMTree'>
+  <anchor name='DOMTree'/>
+  <p><strong>TODO</strong></p>
+ </s2>
+ <s2 title='ui.DOMTreeFull'>
+  <anchor name='DOMTreeFull'/>
+  <p><strong>TODO</strong></p>
+ </s2>
+ <s2 title='ui.TreeView'>
+  <anchor name='TreeView'/>
+  <p><strong>TODO</strong></p>
+ </s2>
+ <s2 title='ui.TreeViewer'>
+  <anchor name='TreeViewer'/>
+  <p><strong>TODO</strong></p>
+ </s2>
+ -->
+ <p><strong>TODO</strong></p>
+</s1>

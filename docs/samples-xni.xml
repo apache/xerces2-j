@@ -1,0 +1,163 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE s1 SYSTEM 'dtd/document.dtd'>
+<s1 title='XNI Samples'>
+ <s2 title='Overview'>
+  <p>
+   The Xerces Native Interface (XNI) is an internal API that is
+   independent of other XML APIs and is used to implement the 
+   Xerces family of parsers. XNI allows a wide variety of parsers
+   to be written in an easy and modular fashion. The XNI samples
+   included with Xerces are simple examples of how to program
+   using the XNI API. However, for information on how to take full
+   advantage of this powerful framework, refer to the
+   <link idref='xni'>XNI Manual</link>.
+  </p>
+  <p>Basic XNI samples:</p>
+  <ul>
+   <li><link anchor='Counter'>xni.Counter</link></li>
+   <li><link anchor='DocumentTracer'>xni.DocumentTracer</link></li>
+  </ul>
+  <p>Parser configuration samples:</p>
+  <ul>
+   <li><link anchor='NonValidatingParserConfiguration'>xni.parser.NonValidatingParserConfiguration</link></li>
+   <!--
+     - REVISIT: Add in this sample once the proper interfaces have been
+     -          designed and implemented in the parser. *And* after the
+     -          sample code has been written.
+     -
+   <li><link anchor='DynamicParserConfiguration'>xni.parser.DynamicParserConfiguration</link></li>
+   -->
+  </ul>
+  <p>
+   Most of the XNI samples have a command line option that allows the
+   user to specify a different XNI parser configuration to use. In
+   order to supply another parser configuration besides the default
+   Xerces <code>StandardParserConfiguration</code>, the configuration
+   must implement the 
+   <code>org.apache.xerces.xni.parser.XMLParserConfiguration</code>
+   interface.
+  </p>
+ </s2>
+ <s2 title='xni.Counter'>
+  <anchor name='Counter'/>
+  <p>
+   A sample XNI counter. The output of this program shows the time
+   and count of elements, attributes, ignorable whitespaces, and 
+   characters appearing in the document. 
+  </p>
+  <p>
+   This class is useful as a "poor-man's" performance tester to
+   compare the speed and accuracy of various parser configurations. 
+   However, it is important to note that the first parse time of a
+   parser will include both VM class load time and parser 
+   initialization that would not be present in subsequent parses 
+   with the same file. 
+  </p>
+  <note>
+   The results produced by this program should never be accepted as
+   true performance measurements.
+  </note>
+  <s3 title='usage'>
+   <source>java xni.Counter (options) uri ...</source>
+  </s3>
+  <s3 title='options'>
+   <table>
+    <tr><th>Option</th><th>Description</th></tr>
+    <tr><td>-p name</td><td>Select parser configuration by name.</td></tr>
+    <tr><td>-x number</td><td>Select number of repetitions.</td></tr>
+    <tr><td>-n  | -N</td><td>Turn on/off namespace processing.</td></tr>
+    <tr>
+     <td>-np | -NP</td>
+     <td>
+      Turn on/off namespace prefixes.<br/>
+      <strong>NOTE:</strong> Requires use of -n.
+     </td>
+    </tr>
+    <tr><td>-v  | -V</td><td>Turn on/off validation.</td></tr>
+    <tr>
+     <td>-s  | -S</td>
+     <td>
+      Turn on/off Schema validation support.<br/>
+      <strong>NOTE:</strong> Not supported by all parser configurations.
+     </td>
+    </tr>
+    <tr><td>-m  | -M</td><td>Turn on/off memory usage report.</td></tr>
+    <tr><td>-t  | -T</td><td>Turn on/off \"tagginess\" report.</td></tr>
+    <tr>
+     <td>--rem text</td>
+     <td>Output user defined comment before next parse.</td>
+    </tr>
+    <tr><td>-h</td><td>Display help screen.</td></tr>
+   </table>
+  </s3>
+  <s3 title='notes'>
+   <p>
+    The speed and memory results from this program should NOT be used
+    as the basis of parser performance comparison! Real analytical 
+    methods should be used. For better results, perform multiple 
+    document parses within the same virtual machine to remove class
+    loading from parse time and memory usage.
+   </p>
+   <p>
+    The "tagginess" measurement gives a rough estimate of the percentage
+    of markup versus content in the XML document. The percent tagginess
+    of a document is equal to the minimum amount of tag characters 
+    required for elements, attributes, and processing instructions 
+    divided by the total amount of characters (characters, ignorable 
+    whitespace, and tag characters) in the document.
+   </p>
+   <p>
+    Not all features are supported by different parser configurations.
+   </p>
+  </s3>
+ </s2>
+ <s2 title='xni.DocumentTracer'>
+  <anchor name='DocumentTracer'/>
+  <p>
+   Provides a complete trace of XNI document and DTD events for 
+   files parsed.
+  </p>
+  <s3 title='usage'>
+   <source>java xni.DocumentTracer (options) uri ...</source>
+  </s3>
+  <s3 title='options'>
+   <table>
+    <tr><th>Option</th><th>Description</th></tr>
+    <tr><td>-p name</td><td>Specify parser configuration by name.</td></tr>
+    <tr><td>-n | -N</td><td>Turn on/off namespace processing.</td></tr>
+    <tr><td>-v | -V</td><td>Turn on/off validation.</td></tr>
+    <tr>
+     <td>-s | -S</td>
+     <td>
+      Turn on/off Schema validation support.<br/>
+      <strong>NOTE:</strong> Not supported by all parser configurations.
+     </td>
+    </tr>
+    <tr><td>-c | -C</td><td>Turn on/off character notifications");</td></tr>
+    <tr><td>-h</td><td>Display help screen.</td></tr>
+   </table>
+  </s3>
+ </s2>
+ <s2 title='xni.parser.NonValidatingParserConfiguration'>
+  <anchor name='NonValidatingParserConfiguration'/>
+  <p>Non-validating parser configuration.</p>
+  <p>
+   This class can <strong>NOT</strong> be run as a standalone
+   program. It is only an example of how to write a parser
+   configuration using XNI. You can use this parser configuration
+   by specifying the fully qualified class name to all of the XNI
+   samples that accept a parser configuration using the 
+   <code>-p</code> option. For example:
+  </p>
+  <source>java xni.Counter -p xni.parser.NonValidatingParserConfiguration document.xml</source>
+ </s2>
+ <!--
+   - REVISIT: Add in this sample once the proper interfaces have been
+   -          designed and implemented in the parser. *And* after the
+   -          sample code has been written.
+   -
+ <s2 title='xni.parser.DynamicParserConfiguration'>
+  <anchor name='DynamicParserConfiguration'/>
+ </s2>
+ -->
+</s1>

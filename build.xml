@@ -85,7 +85,7 @@ Copyright:
 
     <property name="doc.generator" value="org.apache.stylebook.StyleBook"/>
     <property name="doc.generator.package" value="${tools.dir}/stylebook-1.0-b2.jar"/>
-    <property name="doc.style" value="${tools.dir}/style-apachexml.jar"/>
+    <property name="doc.style" value="${docs.dir}/style"/>
 
     <property name="build.dir" value="./build"/>
     <property name="build.src" value="${build.dir}/src"/>

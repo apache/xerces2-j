@@ -1,327 +1,327 @@
-<?xml version="1.0" standalone="no"?>
-<!DOCTYPE faqs SYSTEM "./dtd/faqs.dtd">
-
-<faqs title="Writing Application FAQs">
-	<faq title="Creating a DOM Parser">
-		<q>How do I create a DOM parser?</q>
-        <a>
-<source>import org.apache.xerces.parsers.DOMParser;
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE faqs SYSTEM 'dtd/faqs.dtd'>
+<faqs title='Writing Application FAQs'>
+ <faq title='Creating a DOM Parser'>
+  <q>How do I create a DOM parser?</q>
+  <a>
+   <p>
+    You can create a DOM parser by using the Java APIs for
+    XML Processing (JAXP). The following source code shows
+    how:
+   </p>
+   <source>import java.io.IOException;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.FactoryConfigurationError;
+import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
-import java.io.IOException;
 
   ...
 
 String xmlFile = &quot;file:///&javaparserdirectory;/data/personal.xml&quot;; 
-
-DOMParser parser = new DOMParser();
-
 try {
-    parser.parse(xmlFile);
-
-} catch (SAXException se) {
-    se.printStackTrace();
-} catch (IOException ioe) {
-    ioe.printStackTrace();
+    DocumentBuilderFactory factory = 
+        DocumentBuilderFactory.newInstance();
+    DocumentBuilder builder = factory.newDocumentBuilder();
+    Document document = builder.parse(xmlFile);
 }
-
-Document document = parser.getDocument();</source>
-		</a>
-	</faq>
-	
-	<faq title="Creating a SAX Parser">
-		<q>How do I create a SAX parser?</q>
-		<a>
-<source>import org.apache.xerces.parsers.SAXParser;
-import org.xml.sax.Parser;
-import org.xml.sax.ParserFactory;
-import org.xml.sax.SAXException;
-import java.io.IOException; 
-
-  ...
-
-String xmlFile = &quot;file:///&javaparserdirectory;/data/personal.xml&quot;; 
-
-String parserClass = &quot;org.apache.xerces.parsers.SAXParser&quot;;
-Parser parser = ParserFactory.makeParser(parserClass);
-
-try {
-    parser.parse(xmlFile);
-} catch (SAXException se) {
-    se.printStackTrace();
-} catch (IOException ioe) {
-	ioe.printStackTrace();
+catch (FactoryConfigurationError e) {
+    // unable to get a document builder factory
+} 
+catch (ParserConfigurationException e) {
+    // parser was unable to be configured
+catch (SAXException e) {
+    // parsing error
+} 
+catch (IOException e) {
+    // i/o error
 }</source>
-		</a>
-	</faq>
-	
-	<faq title="Controlling parser options">
-		<q>How do I control the various parser options?</q>
-		<a><p>For this release, all of the parser control API's have
-		been switched over to the SAX2 Configurable interface.  This
-		provide a uniform and extensible mechanism for setting and
-		querying parser options.  Here are guides to the set of
-		available <link idref="features">features</link> and
-		<link idref="properties">properties</link>.</p>
-		</a>
-	</faq>
-	<faq title="Using lazy DOM">
-		<q>How do I use the lazy evaluating DOM implementation?</q>
-		<a><p>The DOM parser class <code>org.apache.xerces.parsers.DOMParser</code> uses a 
-		DOM implementation that can take advantage of lazy evaluation to 
-		improve performance. There is also a mode where the parser creates 
-		all of the nodes as the document is parsed. By default, the parser 
-		uses the lazy evaluation DOM implementation.</p>
-		<p>Nodes in the DOM tree are only created when they are accessed. 
-		The initial call to <code>getDocument()</code> will return a DOM tree that 
-		consists only of the Document node. All of the immediate children 
-		of a Node are created when any of that Node's children are accessed. 
-		This shortens the time it takes to parse an XML file and create a DOM 
-		tree at the expense of requiring more memory during parsing and 
-		traversing the document.</p>
-		<p>The lazy evaluation feature is set using the SAX2 Configurable 
-		interface. To turn off this feature, use the following code:</p>
-<source>DOMParser parser = new DOMParser();
-parser.setFeature("http://apache.org/xml/features/dom/defer-node-expansion", false);</source>
-		<p>To turn the lazy evaluation feature back on, use the following code:</p>
+  </a>
+ </faq>
+ <faq title="Creating a SAX Parser">
+  <q>How do I create a SAX parser?</q>
+  <a>
+   <p>
+    You can create a SAX parser by using the Java APIs for
+    XML Processing (JAXP). The following source code shows
+    how:
+   </p>
+   <source>
+import java.io.IOException; 
+import javax.xml.parsers.FactoryConfigurationError;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
-<source>parser.setFeature("http://apache.org/xml/features/dom/defer-node-expansion", true);</source>
-		</a>
-	</faq>
-	
-	<faq title="Handling Errors">
-		<q>How do handle errors?</q>
-		<a><p>When you create a parser instance, the default error handler does nothing. 
-		This means that your program will fail silently when it encounters an error. 
-		You should register an error handler with the parser by supplying a class 
-		which implements the <code>org.xml.sax.ErrorHandler</code>
-		interface. This is true regardless of whether your parser is a
-		DOM based or SAX based parser.</p>
-		</a>
-	</faq>
-	
-	<faq title="Controlling Entity Representation">
-		<q>How can I control the way that entities are represented in
-		the DOM?</q>
-		<a><p>
-        The feature <code>http://apache.org/xml/features/dom/create-entity-ref-nodes</code>
-        controls how entities appear in the DOM tree. When this
-        feature is set to true (the default), an occurance of an
-        entity reference in the XML document will be represented by a
-        subtree with an EntityReference node at the root whose
-        children represent the entity expansion.</p>
+  ...
 
-    	<p>If the property is false, an entity reference in the XML
-    	document is represented by only the nodes that represent the
-    	entity expansion.</p> 
-
-        <p>In either case, the entity expansion will be a DOM tree
-        representing the structure of the entity expansion, not a text
-        node containing the entity expansion as text.</p>
-		</a>
-	</faq>
-	
-	<faq title="What does &quot;non-validating&quot; mean?">  
-		<q>Why does &quot;non-validating&quot; not mean &quot;well-formedness checking only&quot;?</q>
-		<a><p>Using a &quot;non-validating&quot; parser does not mean that only well-formedness 
-        checking is done! There are still many things that the XML specification 
-		requires of the parser, including entity substitution, defaulting of 
-		attribute values, and attribute normalization.</p>
-        <p>This table describes what &quot;non-validating&quot; really means for &javaparsername; parsers. 
-		In this table, "no DTD" means no internal or external DTD subset is present.</p>
-		
-        <table>
-			<tr><tn/>
-				<th colspan="2">non-validating parsers</th>
-				<th colspan="2">validating parsers</th>
-          	</tr>
-          	<tr><tn/>							<th>DTD present</th>	<th>no DTD</th>	<th>DTD present</th>	<th>no DTD</th></tr>
-          	<tr><th>DTD is read</th>			<td>Yes</td>			<td>No</td>		<td>Yes</td>			<td>Error</td></tr>
-          	<tr><th>entity substitution</th>	<td>Yes</td>			<td>No</td>		<td>Yest</td>			<td>Error</td></tr>
-          	<tr><th>defaulting of attributes</th>	<td>Yes</td>		<td>No</td>		<td>Yes</td>			<td>Error</td></tr>
-          	<tr><th>attribute normalization</th>	<td>Yes</td>		<td>No</td>		<td>Yes</td>			<td>Error</td></tr>
-          	<tr><th>checking against model</th>		<td>No</td>			<td>No</td>		<td>Yes</td>			<td>Error</td></tr>
-        </table>
-		</a>
-	</faq>
-	
-	<faq title="Associating Data with a Node">
-		<q>How do I associate my own data with a node in the DOM tree?</q>
-		<a><p>The class <code>org.apache.xerces.dom.NodeImpl</code> provides a 
-			<code>void setUserData(Object o)</code> and an <code>Object getUserData()</code>
-         	method that you can use to attach any object to a node in the DOM tree.</p>
-                <p>Beware that you should try and remove references to your
-                  data on nodes you no longer use (by calling
-                  <code>setUserData(null)</code>, or these nodes will not be
-                  garbage collected until the whole document is.</p>
-		</a>
-	</faq>
-	
-	<faq title="Parsing Several Documents">
-		<q>How do I more efficiently parse several documents sharing a common DTD?</q>
-		<a>	<p>DTDs are not currently cached by the parser. The common DTD, since it is 
-        	specified in each XML document, will be re-parsed once for each document.</p>
-			<p>However, there are things that you can do now, to make the process of 
-			reading DTD's more efficient:</p>
-        	<ul>
-          		<li>keep your DTD and DTD references local</li>
-          		<li>use internal DTD subsets, if possible</li>
-          		<li>load files from server to local client before parsing</li>
-          		<li>Cache document files into a local client cache. You should do an 
-					HTTP header request to check whether the document has changed, 
-					before accessing it over the network.</li>
-          		<li>Do not reference an external DTD or internal DTD subset at all. 
-					In this case, no DTD will be read.</li>
-				<li>Use a custom <code>EntityResolver</code> and keep common 
-				DTDs in a memory buffer.</li>
-        	</ul>
-		</a>
-	</faq>
-	
-	<faq title="How do I access the DOM Level 2 functionality?">
-		<q>How do I access the DOM Level 2 functionality?</q>
-		<a><p>The <jump href="http://www.w3.org/TR/DOM-Level-2/">DOM Level 2</jump> 
-			specification is at the stage of 
-			"Candidate Recommendation" (CR), which allows feedback from implementors 
-			before it becomes a "Recommedation". It is comprised of "core" 
-			functionality, which is mainly the DOM 
-			<jump href="http://www.w3.org/TR/REC-xml-names/">Namespaces</jump> implementation, 
-			and a number of optional modules (called Chapters in the spec).</p>
-			<p>Please refer to:</p>
-			<p><jump href="http://www.w3.org/TR/DOM-Level-2/">
-			http://www.w3.org/TR/DOM-Level-2/</jump> for the 
-			latest DOM Level 2 specification.</p>
-			<p>The following DOM Level 2 modules are fully implemented in &javaparsername;: </p>
-			<ul>
-				<li><jump href="http://www.w3.org/TR/DOM-Level-2/core.html">
-					Chapter 1: Core</jump> - most of these enhancements are for 
-					Namespaces, and can be acessed through additional functions which 
-					have been added directly to the <ref>org.w3c.dom.*</ref> classes.</li>
-
-				<li><jump href="http://www.w3.org/TR/DOM-Level-2/events.html">
-					Chapter 6: Events</jump> - The <ref>org.w3c.dom.events.EventTarget</ref> 
-					interface is implemented by all <code>Nodes</code> of the DOM. 
-					The &javaparsername; DOM implementation handles all of the event 
-					triggering, capture and flow.</li>
-
-				<li><jump href="http://www.w3.org/TR/DOM-Level-2/traversal.html">
-					Chapter 7: Traversal</jump> - The Traversal module interfaces 
-					are located in <ref>org.w3c.dom.traversal</ref>. 
-					The <code>NodeIterator</code> and <code>TreeWalker</code>, and 
-					<code>NodeFilter</code> interfaces have been supplied to allow 
-					traversal of the DOM at a higher-level. Our DOM Document 
-					implementation class, <code>DocumentImpl</code> class now 
-					implements <code>DocumentTraversal</code>, which supplies the 
-					factory methods to create the iterators and treewalkers.</li>
-
-				<li><jump href="http://www.w3.org/TR/DOM-Level-2/range.html">
-				Chapter 8. Range</jump> - The Range module interfaces are 
-					located in <ref>org.w3c.dom.range</ref>. The Range interface 
-					allows you to specify ranges or selections using boundary 
-					points in the DOM, along with functions (like delete, 
-					clone, extract..) that can be performed on these ranges. 
-					Our DOM Document implementation class, <code>DocumentImpl</code> 
-					class now implements <code>DocumentRange</code>, that supplies 
-					the factory method to create a <code>Range</code>.</li>
-			</ul>
-			<note>Since the DOM Level 2 is still in the CR phase, some changes 
-			to these specs are still possible. The purpose of this phase is to 
-			provide feedback to the W3C, so that the specs can be clarified and 
-        		implementation concerns can be addressed.</note>		
-		</a>
-	</faq>
-	
-	<faq title="How do I read data from a stream as it arrives?">
-                     <q>How do I read data from a stream as it arrives?</q>
-                     <a><p>There are 3 problems you have to deal with:</p>
-
-<ol>
-<li>The Apache parsers read the entire data stream into a buffer before they start 
-   parsing; you need to change this behaviour, so that they analyse "on the fly"</li>
-<li>The Apache parsers terminate when they reach end-of-file; with a data stream, 
-    unless the sender drops the socket, you have no end-of-file, so you need to 
-    terminate in some other way</li>
-<li>The Apache parsers close the input stream on termination, and this closes the 
-    socket; you normally don't want this, because you'll want to send an ack to the 
-    data stream source, and you may want to have further exchanges on the socket 
-    anyway.</li>
-</ol>
-
-
-<p>Preventing the buffering</p>
-<p>To do this, create a subclass of org.apache.xerces.readers.DefaultReaderFactory 
-and override createCharReader and createUTF8Reader as shown below.</p>
-
-<source>
-package org.apache.xerces.readers;
-
-import org.apache.xerces.framework.XMLErrorReporter;
-import org.apache.xerces.utils.ChunkyByteArray;
-import org.apache.xerces.utils.StringPool;
-import org.xml.sax.InputSource;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.URL;
-import java.util.Stack;
-
-public class StreamingCharFactory extends org.apache.xerces.readers.DefaultReaderFactory {
-    public XMLEntityHandler.EntityReader createCharReader(XMLEntityHandler  entityHandler,
-                                                          XMLErrorReporter errorReporter,boolean sendCharDataAsCharArray,
-                                                          Reader reader,
-                                                          StringPool stringPool)
-    throws Exception
-    {
-        return new org.apache.xerces.readers.StreamingCharReader(entityHandler,
-                                                                 errorReporter,
-                                                                 sendCharDataAsCharArray,
-                                                                 reader,
-                                                                 stringPool);
-    }
-
-    public XMLEntityHandler.EntityReader createUTF8Reader(XMLEntityHandler entityHandler, 
-                                                          XMLErrorReporter errorReporter,
-                                                          boolean sendCharDataAsCharArray,
-                                                          InputStream data,StringPool stringPool)
-    throws Exception
-    {
-        XMLEntityHandler.EntityReader reader;
-        reader = new org.apache.xerces.readers.StreamingCharReader(entityHandler,
-                                                                   errorReporter,
-                                                                   sendCharDataAsCharArray,
-                                                                   new InputStreamReader(data, "UTF8"),
-                                                                   stringPool);
-        return reader;
-    }
-}
-</source>
-
-<p>
-In your program, after you instantiate a parser class, replace the
-DefaultReaderFactory with StreamingCharFactory. You'll need to instantiate your
-parser as a SAXParser, rather than simply as an XMLReader, because the XMLReader
-interface doesn't have the setReaderFactory method. Be sure to wrap the
-InputStream that you are reading from with an InputStreamReader.
-</p>
-
-<source>
+String xmlFile = &quot;file:///&javaparserdirectory;/data/personal.xml&quot;; 
 try {
-    SAXParser parser =
-    (SAXParser)Class.forName("org.apache.xerces.parsers.SAXParser").newInstance();
-    parser.setContentHandler(new DocProcessor(out));
-    parser.setReaderFactory(new StreamingCharFactory());
-    parser.parse(new InputSource(bufferedReader));
-} catch (Exception ex) {
-}
-</source>
+    SAXParserFactory factory = SAXParserFactory.newInstance();
+    SAXParser parser = factory.newSAXParser();
+    DefaultHandler handler = /* custom handler class */;
+    parser.parse(xmlFile, handler);
+} 
+catch (FactoryConfigurationError e) {
+    // unable to get a document builder factory
+} 
+catch (ParserConfigurationException e) {
+    // parser was unable to be configured
+catch (SAXException e) {
+    // parsing error
+} 
+catch (IOException e) {
+    // i/o error
+}</source>
+  </a>
+ </faq>
+ <!--
+   - REVISIT: make sure that JAXP implementation can handle
+   -          passing features and properties through to the
+   -          parser implementation. Then complete this section.
+ <faq title='Controlling parser options'>
+  <q>How do I control the various parser options?</q>
+  <a>TBD</a>
+ </faq>
+ -->
+ <faq title='Handling Errors'>
+  <q>How do handle errors?</q>
+  <a>
+   <p>
+    You should register an error handler with the parser by supplying
+    a class which implements the <code>org.xml.sax.ErrorHandler</code>
+    interface. This is true regardless of whether your parser is a
+    DOM based or SAX based parser.
+   </p>
+   <p>
+    You can register an error handler on a <code>DocumentBuilder</code>
+    created using JAXP like this:
+   </p>
+   <source>import javax.xml.parsers.DocumentBuilder;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
-<p>Terminating the parse</p>
-<p>One way that works forSAX is to throw an exception when you detect the logical
-end-of-document.</p>
-<p>For instance, in your class extending DefaultHandler, you can have:</p>
+ErrorHandler handler = new ErrorHandler() {
+    public void warning(SAXParseException e) throws SAXException {
+        System.err.println("[warning] "+e.getMessage());
+    }
+    public void error(SAXParseException e) throws SAXException {
+        System.err.println("[error] "+e.getMessage());
+    }
+    public void fatalError(SAXParseException e) throws SAXException {
+        System.err.println("[fatal error] "+e.getMessage());
+	throw e;
+    }
+};
 
-<source>
-public class DocProcessor extends DefaultHandler {
+DocumentBuilder builder = /* builder instance */;
+builder.setErrorHandler(handler);</source>
+   <p>
+    You can also register an error handler on a SAXParser using JAXP
+    like this:
+   </p>
+   <source>import javax.xml.parsers.SAXParser;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+
+ErrorHandler handler = new ErrorHandler() {
+    public void warning(SAXParseException e) throws SAXException {
+        System.err.println("[warning] "+e.getMessage());
+    }
+    public void error(SAXParseException e) throws SAXException {
+        System.err.println("[error] "+e.getMessage());
+    }
+    public void fatalError(SAXParseException e) throws SAXException {
+        System.err.println("[fatal error] "+e.getMessage());
+	throw e;
+    }
+};
+
+SAXParser parser = /* parser instance */;
+parser.getXMLReader().setErrorHandler(handler);</source>
+  </a>
+ </faq>
+ <faq title='Controlling Entity Representation'>
+  <q>
+   How can I control the way that entities are represented in the DOM?
+  </q>
+  <a>
+   <p>
+    The feature 
+    <code>http://apache.org/xml/features/dom/create-entity-ref-nodes</code>
+    controls how entities appear in the DOM tree. When this feature
+    is set to true (the default), an occurance of an entity reference
+    in the XML document will be represented by a subtree with an 
+    EntityReference node at the root whose children represent the 
+    entity expansion.
+   </p>
+   <p>
+    If the property is false, an entity reference in the XML document
+    is represented by only the nodes that represent the entity 
+    expansion.
+   </p> 
+   <p>
+    In either case, the entity expansion will be a DOM tree 
+    representing the structure of the entity expansion, not a text
+    node containing the entity expansion as text.
+   </p>
+  </a>
+ </faq>
+ <faq title='What does &quot;non-validating&quot; mean?'>  
+  <q>
+   Why does &quot;non-validating&quot; not mean &quot;well-formedness 
+   checking only&quot;?
+  </q>
+  <a>
+   <p>
+    Using a &quot;non-validating&quot; parser does not mean that
+    only well-formedness checking is done! There are still many 
+    things that the XML specification requires of the parser, 
+    including entity substitution, defaulting of attribute values, 
+    and attribute normalization.
+   </p>
+   <p>
+    This table describes what &quot;non-validating&quot; really
+    means for &javaparsername; parsers. In this table, "no DTD" 
+    means no internal or external DTD subset is present.
+   </p>
+   <table>
+    <tr>
+     <tn/>
+     <th colspan="2">non-validating parsers</th>
+     <th colspan="2">validating parsers</th>
+    </tr>
+    <tr>
+     <tn/>
+     <th>DTD present</th>
+     <th>no DTD</th>
+     <th>DTD present</th>
+     <th>no DTD</th>
+    </tr>
+    <tr>
+     <th>DTD is read</th>
+     <td>Yes</td>
+     <td>No</td>
+     <td>Yes</td>
+     <td>Error</td>
+    </tr>
+    <tr>
+     <th>entity substitution</th>
+     <td>Yes</td>
+     <td>No</td>
+     <td>Yes</td>
+     <td>Error</td>
+    </tr>
+    <tr>
+     <th>defaulting of attributes</th>
+     <td>Yes</td>
+     <td>No</td>
+     <td>Yes</td>
+     <td>Error</td>
+    </tr>
+    <tr>
+     <th>attribute normalization</th>
+     <td>Yes</td>
+     <td>No</td>
+     <td>Yes</td>
+     <td>Error</td>
+    </tr>
+    <tr>
+     <th>checking against model</th>
+     <td>No</td>
+     <td>No</td>
+     <td>Yes</td>
+     <td>Error</td>
+    </tr>
+   </table>
+  </a>
+ </faq>
+ <faq title='Associating Data with a Node'>
+  <q>How do I associate my own data with a node in the DOM tree?</q>
+  <a>
+   <p>
+    The class <code>org.apache.xerces.dom.NodeImpl</code> provides a 
+    <code>void setUserData(Object o)</code> and an <code>Object 
+    getUserData()</code> method that you can use to attach any object
+    to a node in the DOM tree.
+   </p>
+   <p>
+    Beware that you should try and remove references to your data on
+    nodes you no longer use (by calling <code>setUserData(null)</code>,
+    or these nodes will not be garbage collected until the entire
+    document is garbage collected.
+   </p>
+  </a>
+ </faq>
+ <faq title='Parsing Several Documents'>
+  <q>
+   How do I more efficiently parse several documents sharing a 
+   common DTD?
+  </q>
+  <a>
+   <p>
+    DTDs are not currently cached by the parser. The common DTD, 
+    since it is specified in each XML document, will be re-parsed 
+    once for each document.
+   </p>
+   <p>
+    However, there are things that you can do now, to make the 
+    process of reading DTD's more efficient:
+   </p>
+   <ul>
+    <li>keep your DTD and DTD references local</li>
+    <li>use internal DTD subsets, if possible</li>
+    <li>load files from server to local client before parsing</li>
+    <li>
+     Cache document files into a local client cache. You should do an 
+     HTTP header request to check whether the document has changed, 
+     before accessing it over the network.
+    </li>
+    <li>
+     Do not reference an external DTD or internal DTD subset at all. 
+     In this case, no DTD will be read.
+    </li>
+    <li>
+     Use a custom <code>EntityResolver</code> and keep common 
+     DTDs in a memory buffer.
+    </li>
+   </ul>
+  </a>
+ </faq>
+ <!--
+   - REVISIT: Rewrite this section with better information.
+ <faq title='How do I read data from a stream as it arrives?'>
+  <q>How do I read data from a stream as it arrives?</q>
+  <a>
+   <p>There are 2 problems you have to deal with:</p>
+   <ol>
+    <li>
+     The Apache parsers terminate when they reach end-of-file; with 
+     a data stream, unless the sender drops the socket, you have no
+     end-of-file, so you need to terminate in some other way
+    </li>
+    <li>
+     The Apache parsers close the input stream on termination, and 
+     this closes the socket; you normally don't want this, because 
+     you'll want to send an ack to the data stream source, and you
+     may want to have further exchanges on the socket anyway.
+    </li>
+   </ol>
+   <p>Terminating the parse</p>
+   <p>
+    One way that works forSAX is to throw an exception when you
+    detect the logical end-of-document.
+   </p>
+   <p>
+    For instance, in your class extending DefaultHandler, you can 
+    have:
+   </p>
+   <source>public class DocProcessor extends DefaultHandler {
     private int level;
     .
     .
@@ -337,23 +337,17 @@ public class DocProcessor extends DefaultHandler {
                             String localName,
                             String qName) throws SAXException
     {
-        if ((--level) == 0) {
+        level = level - 1;
+        if (level == 0) {
             throw new SAXException ("Finished");
         }
-    }
-</source>
-
-<p>
-    Preventing the parser from closing the socket
-
-    One way is to subclass BufferedReader to provide an empty close method.
-
-    So, invoke the parser as follows:
-</p>
-
-<source>
-
-    Socket socket;
+    }</source>
+  <p>Preventing the parser from closing the socket</p>
+  <p>
+   One way is to subclass BufferedReader to provide an empty close 
+   method. So, invoke the parser as follows:
+  </p>
+  <source>Socket socket;
 
     // code to set the socket
 
@@ -368,8 +362,8 @@ public class DocProcessor extends DefaultHandler {
 
         public void close() {
         }
-    }
-</source>
-
-</a></faq>
+    }</source>
+  </a>
+ </faq>
+ -->
 </faqs>
