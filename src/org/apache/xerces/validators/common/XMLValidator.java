@@ -2608,7 +2608,11 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                     }
                 } 
                 else if (attValue != -1) {
-                    if (validationEnabled && standalone ) { // REVISIT: we don't have such informatio anymore && fAttDefIsExternal[adChunk][adIndex] != 0) {
+                    if (validationEnabled && standalone )
+                        if ( fGrammar instanceof DTDGrammar 
+                             && ((DTDGrammar) fGrammar).getAttributeDeclIsExternal(attlistIndex) ) {
+                        
+                         // REVISIT: we don't have such informatio anymore && fAttDefIsExternal[adChunk][adIndex] != 0) {
                         Object[] args = { fStringPool.toString(elementNameIndex),
                                           fStringPool.toString(attName) };
                         fErrorReporter.reportError(fErrorReporter.getLocator(),
