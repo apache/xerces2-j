@@ -8,7 +8,7 @@
            <li>Fixed namespaces bugs for endElement method in SAX. [jeffreyr]</li>
            <li>Fixed misc. Schema Datatype bugs. [jeffreyr]</li>
            <li>Fixed misc. DOM implementation bugs. [lehors]</li>
-           <li>Fixed Makefiles and documentations. [andyc]<li>
+           <li>Fixed Makefiles and documentations. [andyc]</li>
            <li>Added "any" with "processContents='lax|skip'" support for Schema. [ericye]</li>           
            <li>Added feature "load-dtd-grammar" [ericye]</li>
            <li>Fixed a bug in reset() method of XMLValidator. [ericye]</li>
