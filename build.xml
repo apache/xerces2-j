@@ -27,7 +27,8 @@ Build Instructions:
 
 Most useful targets:
 
- - package -> creates the "xerces.jar" package in "./build"
+ - jar -> creates the "xerces.jar" file in "./build"
+ - jars -> creates the "xerces.jar" and xercesSamples.jar files in "./build"
  - docs -> creates the HTML documentation in "./build/docs"
  - javadocs - crates the javadocs in "./build/javadocs"
  - dist -> creates the complete distribution
