@@ -469,6 +469,7 @@ Copyright:
     </copy>
 
     <copy file="LICENSE" tofile="${distsrc.dir}/LICENSE"/>
+    <copy file="NOTICE" tofile="${distsrc.dir}/NOTICE"/>    
     <copy file="LICENSE-DOM.html" tofile="${distsrc.dir}/LICENSE-DOM.html"/>
     <copy file="LICENSE-SAX.html" tofile="${distsrc.dir}/LICENSE-SAX.html"/>
     <copy file="LICENSE.resolver.txt" tofile="${distsrc.dir}/LICENSE.resolver.txt"/>
@@ -563,6 +564,7 @@ Copyright:
     </copy>
 
     <copy file="LICENSE" tofile="${distbin.dir}/LICENSE"/>
+    <copy file="NOTICE" tofile="${distsrc.dir}/NOTICE"/>
     <copy file="LICENSE-DOM.html" tofile="${distbin.dir}/LICENSE-DOM.html"/>
     <copy file="LICENSE-SAX.html" tofile="${distbin.dir}/LICENSE-SAX.html"/>
     <copy file="LICENSE.resolver.txt" tofile="${distbin.dir}/LICENSE.resolver.txt"/>
