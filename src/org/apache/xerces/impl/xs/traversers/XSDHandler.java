@@ -367,7 +367,7 @@ public class XSDHandler {
             Element schemaElem = DOMUtil.getRoot(schemaRoot);
             schemaNamespace = DOMUtil.getAttrValue(schemaElem, SchemaSymbols.ATT_TARGETNAMESPACE);
             if(schemaNamespace != null && schemaNamespace.length() > 0) {
-                fSymbolTable.addSymbol(schemaNamespace);
+                schemaNamespace = fSymbolTable.addSymbol(schemaNamespace);
                 desc.setTargetNamespace(schemaNamespace);
                 String schemaId = XMLEntityManager.expandSystemId(desc.getLiteralSystemId(), desc.getBaseSystemId());
                 XSDKey key = new XSDKey(schemaId, referType, schemaNamespace);
@@ -454,7 +454,7 @@ public class XSDHandler {
                     }
                 }
             }
-        }
+        } 
         return sg;
     }
     
