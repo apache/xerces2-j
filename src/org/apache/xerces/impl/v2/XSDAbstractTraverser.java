@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2001 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -54,35 +54,37 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
-package org.apache.xerces.impl.v2;
 
+package org.apache.xerces.impl.v2;
 
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.util.SymbolTable;
 import org.w3c.dom.Element;
 import java.util.Hashtable;
 
-
-
+/**
+ * Class <code>XSDAbstractTraverser</code> serves as the base class for all
+ * other <code>XSD???Traverser</code>s. It holds the common data and provide
+ * a unified way to initialize these data.
+ *
+ * @version $Id$
+ */
 abstract class XSDAbstractTraverser {
 
     //Shared data
-    protected XSDHandler    fSchemaHandler; 
-    protected SymbolTable   fSymbolTable;
+    protected XSDHandler            fSchemaHandler = null;
+    protected SymbolTable           fSymbolTable = null;
+    protected XSAttributeChecker    fAttrChecker = null;
+    private XMLErrorReporter        fErrorReporter = null;
 
     //REVISIT: should we add global fSchemaGrammar field
 
-    //REVISIT: should the following be protected fields?
-    private GeneralAttrCheck    fGeneralAttrCheck = null;
-    private XMLErrorReporter    fErrorReporter = null;
-
-    XSDAbstractTraverser (XSDHandler handler, 
+    XSDAbstractTraverser (XSDHandler handler,
                           XMLErrorReporter errorReporter,
-                          GeneralAttrCheck gAttrCheck) {
+                          XSAttributeChecker attrChecker) {
         fSchemaHandler = handler;
         fErrorReporter = errorReporter;
-        fGeneralAttrCheck = fGeneralAttrCheck;
-
+        fAttrChecker = attrChecker;
     }
 
     // REVISIT: should symbol table passed as parameter to constractor or
@@ -91,36 +93,56 @@ abstract class XSDAbstractTraverser {
         fSymbolTable = table;
     }
 
+    // traver the annotation declaration
+    // REVISIT: store annotation information for PSVI
+    int traverseAnnotationDecl(Element annotationDecl, Hashtable parentAttrs) {
+        // General Attribute Checking
+        // There is no difference between global or local annotation,
+        // so we assume it's always global.
+        Hashtable attrValues = fAttrChecker.checkAttributes(annotationDecl, true);
 
-    void traverseAnnotationDecl(Element annotationDecl) {
+        for(Element child = XMLManipulator.getFirstChildElement(annotationDecl);
+            child != null;
+            child = XMLManipulator.getNextSiblingElement(child)) {
+            String name = child.getLocalName();
+
+            // the only valid children of "annotation" are
+            // "appinfo" and "documentation"
+            if(!((name.equals(SchemaSymbols.ELT_APPINFO)) ||
+                 (name.equals(SchemaSymbols.ELT_DOCUMENTATION)))) {
+                reportSchemaError("an <annotation> can only contain <appinfo> and <documentation> elements", null);
+            }
+
+            // General Attribute Checking
+            // There is no difference between global or local appinfo/documentation,
+            // so we assume it's always global.
+            attrValues = fAttrChecker.checkAttributes(child, true);
+        }
+
+        // REVISIT: an annotation index should be returned when we support PSVI
+        return -1;
     }
 
     // REVISIT: is it how we want to handle error reporting?
     void reportGenericSchemaError (String error) {
     }
 
-
-    void reportSchemaError(int major, Object args[]) {
+    void reportSchemaError(String key, Object args[]) {
     }
-
 
     //
     // Evaluates content of Annotation if present.
     //
-    // @param: elm - top element
-    // @param: content - content must be annotation? or some other simple content
+    // @param: elm - parent element
+    // @param: content - the first child of <code>elm</code> that needs to be checked
     // @param: isEmpty: -- true if the content allowed is (annotation?) only
     //                     false if must have some element (with possible preceding <annotation?>)
     //
     //REVISIT: this function should be used in all traverse* methods!
-    Element checkContent( Element elmNode, Element content, boolean isEmpty ) {
+    //REVISIT: in fact, no one should call this method. To support PSVI, the
+    //         traversers have to call traverseAnnotationDecl directly, and
+    //         store the returned annotation index in their own structure.
+    Element checkContent( Element elm, Element content, boolean isEmpty ) {
         return null;
     }
-
-    // check the prefix of each element: must be SchemaForSchema
-    // general constrain checking on attriubtes
-    Hashtable generalCheck(Element elmNode, int scope) {
-        return null;
-    }
-
 }
