@@ -99,7 +99,7 @@ public class HexBinaryDatatypeValidator extends AbstractStringValidator{
     }
     
     protected int getLength( String content) {
-        return HexBin.getDataLength(content.getBytes());
+        return HexBin.getDecodedDataLength(content.getBytes());
     }
 
 

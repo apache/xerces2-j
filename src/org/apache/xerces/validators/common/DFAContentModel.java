@@ -886,7 +886,8 @@ public class DFAContentModel
                     }
                 }
                 else {
-                    if (fElemMap[inIndex].uri == element.uri &&
+                    if (fElemMapType[inIndex] == fLeafListType[outIndex] &&
+                        fElemMap[inIndex].uri == element.uri &&
                             fElemMap[inIndex].localpart == element.localpart) 
                         break;
                 }
@@ -928,7 +929,8 @@ public class DFAContentModel
 				fLeafSorter[fSortCount++] = leafIndex;
 		    }
 		}
-		else if (leaf.uri == element.uri &&
+		else if (fElemMapType[elemIndex] == fLeafListType[leafIndex] &&
+                 leaf.uri == element.uri &&
 					leaf.localpart == element.localpart) {
 				fLeafSorter[fSortCount++] = leafIndex;
 		}

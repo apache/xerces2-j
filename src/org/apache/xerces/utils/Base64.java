@@ -182,7 +182,7 @@ public final class  Base64 {
     }
 
     public static synchronized boolean isArrayByteBase64( byte[] arrayOctect ) {
-        return(getDataLength(arrayOctect) > 0);
+        return(getDecodedDataLength(arrayOctect) > 0);
     }
 
     /**
@@ -396,18 +396,5 @@ public final class  Base64 {
             return 0;
 
         return decodedData.length;
-    }
-
-    /**
-     * returns length of decoded data given an
-     * array containing encoded data.
-     * WhiteSpace removing is done if any.
-     * 
-     * @param base64Data
-     * @return 
-     * @deprecated getDecodedDataLength
-     */
-    static public synchronized int getDataLength (byte[] base64Data) {
-        return getDecodedDataLength( base64Data );
     }
 }

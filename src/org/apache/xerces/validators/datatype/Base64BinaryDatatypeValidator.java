@@ -100,7 +100,7 @@ public class Base64BinaryDatatypeValidator extends AbstractStringValidator{
     }
 
     protected int getLength( String content) {
-        return Base64.getDataLength(content.getBytes());
+        return Base64.getDecodedDataLength(content.getBytes());
     }
 
 }

@@ -567,6 +567,7 @@ public class XMLContentSpec {
                 provider.getContentSpec(contentSpec.value, contentSpec);
                 appendContentSpec(provider, stringPool,
                            contentSpec, str, contentSpec.type != type, thisContentSpec);
+                if (otherValue != -2) {
                 if (type == XMLContentSpec.CONTENTSPECNODE_CHOICE) {
                     str.append('|');
                 }
@@ -583,6 +584,7 @@ public class XMLContentSpec {
                 provider.getContentSpec(otherValue, contentSpec);
                 appendContentSpec(provider, stringPool,
                                   contentSpec, str, true, thisContentSpec);
+                }
                 if (parens) {
                     str.append(')');
                 }

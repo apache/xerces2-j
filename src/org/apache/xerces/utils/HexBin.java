@@ -160,7 +160,7 @@ public final class  HexBin {
         return decodedData;
     }
 
-    static public int getDataLength (byte[] hexData) {
+    static public int getDecodedDataLength (byte[] hexData) {
         if (!isArrayByteHex(hexData))
             return -1;
 
