@@ -113,7 +113,7 @@ public class XSAttributeChecker {
     private static final String ATTRIBUTE_N = "attribute_n";
     private static final String ATTRIBUTE_R = "attribute_r";
 
-    public static       int ATTIDX_COUNT           = 0;
+    private static       int ATTIDX_COUNT           = 0;
     public static final int ATTIDX_ABSTRACT        = ATTIDX_COUNT++;
     public static final int ATTIDX_AFORMDEFAULT    = ATTIDX_COUNT++;
     public static final int ATTIDX_BASE            = ATTIDX_COUNT++;
@@ -169,13 +169,9 @@ public class XSAttributeChecker {
     private static final XInt INT_WS_COLLAPSE    = fXIntPool.getXInt(XSSimpleType.WS_COLLAPSE);
     private static final XInt INT_UNBOUNDED      = fXIntPool.getXInt(SchemaSymbols.OCCURRENCE_UNBOUNDED);
 
-    // default wildcard to return
-    private static final XSWildcardDecl WC_ANY   = new XSWildcardDecl();
-    private final        XSWildcardDecl fTempWC  = new XSWildcardDecl();
-
     // used to store the map from element name to attribute list
-    protected static Hashtable fEleAttrsMapG = new Hashtable();
-    protected static Hashtable fEleAttrsMapL = new Hashtable();
+    private static final Hashtable fEleAttrsMapG = new Hashtable();
+    private static final Hashtable fEleAttrsMapL = new Hashtable();
 
     // used to initialize fEleAttrsMap
     // step 1: all possible data types
@@ -193,7 +189,7 @@ public class XSAttributeChecker {
 
     // used to store extra datatype validators
     protected static final int DT_COUNT            = DT_XPATH1 + 1;
-    protected static XSSimpleType[] fExtraDVs = new XSSimpleType[DT_COUNT];
+    private static final XSSimpleType[] fExtraDVs = new XSSimpleType[DT_COUNT];
     static {
         // step 5: register all datatype validators for new types
         SchemaGrammar grammar = SchemaGrammar.SG_SchemaNS;
@@ -387,7 +383,7 @@ public class XSAttributeChecker {
         allAttrs[ATT_NAMESPACE_D]       =   new OneAttr(SchemaSymbols.ATT_NAMESPACE,
                                                         DT_NAMESPACE,
                                                         ATTIDX_NAMESPACE,
-                                                        WC_ANY);
+                                                        new XSWildcardDecl());
         allAttrs[ATT_NAMESPACE_N]       =   new OneAttr(SchemaSymbols.ATT_NAMESPACE,
                                                         DT_ANYURI,
                                                         ATTIDX_NAMESPACE,
@@ -1394,20 +1390,17 @@ public class XSAttributeChecker {
             break;
         case DT_NAMESPACE:
             // namespace = ((##any | ##other) | List of (anyURI | (##targetNamespace | ##local)) )
-            XSWildcardDecl wildcard = null;
+            XSWildcardDecl wildcard = new XSWildcardDecl();
             if (value.equals(SchemaSymbols.ATTVAL_TWOPOUNDANY)) {
                 // ##any
-                wildcard = WC_ANY;
             } else if (value.equals(SchemaSymbols.ATTVAL_TWOPOUNDOTHER)) {
                 // ##other
-                wildcard = fTempWC;
                 wildcard.fType = XSWildcardDecl.NSCONSTRAINT_NOT;
                 wildcard.fNamespaceList = new String[2];
                 wildcard.fNamespaceList[0] = schemaDoc.fTargetNamespace;
                 wildcard.fNamespaceList[1] = null;
             } else {
                 // list
-                wildcard = fTempWC;
                 wildcard.fType = XSWildcardDecl.NSCONSTRAINT_LIST;
 
                 // tokenize
