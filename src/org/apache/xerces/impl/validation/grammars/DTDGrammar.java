@@ -141,9 +141,6 @@ public class DTDGrammar
     /** Mixed. */
     private boolean fMixed;
 
-    /** Children. */
-    private boolean fChildren;
-
     /** Element declaration. */
     private XMLElementDecl fElementDecl = new XMLElementDecl();
 
@@ -209,8 +206,6 @@ public class DTDGrammar
     int valueIndex            = -1;
     int prevNodeIndex         = -1;
     int nodeIndex             = -1;
-
-    private String fElementName;
 
     //
     // Constructors
@@ -357,7 +352,6 @@ public class DTDGrammar
      */
     public void elementDecl(String name, String contentModel)
         throws XNIException {
-        /***
 
         XMLElementDecl tmpElementDecl = (XMLElementDecl) fElementDeclTab.get(name) ;
 
@@ -429,7 +423,6 @@ public class DTDGrammar
         int index = fCurrentElementIndex & CHUNK_MASK;
         ensureElementDeclCapacity(chunk);
         fElementDeclIsExternal[chunk][index] = fReadingExternalDTD? 1 : 0;
-        /***/
 
     } // elementDecl(String,String)
 
@@ -794,135 +787,40 @@ public class DTDGrammar
         }
         fDepth = 0;
         initializeContentModelStack();
-        fElementName = elementName;
-        fMixed = false;
-        fChildren = false;
 
     } // startContentModel(String)
 
     /** ANY. */
-    public void any() throws XNIException {
-        //System.out.println("<!ELEMENT "+fElementName+" ANY>");
-
-        XMLElementDecl tmpElementDecl = 
-            (XMLElementDecl) fElementDeclTab.get(fElementName) ;
-
-        // check if it is already defined
-        if ( tmpElementDecl != null ) {
-            if (tmpElementDecl.type == -1) {
-                fCurrentElementIndex = getElementDeclIndex(fElementName, -1);
-            }
-            else {
-                // duplicate element, ignored.
-                return;
-            }
-        }
-        else {
-            fCurrentElementIndex = createElementDecl();//create element decl
-        }
-
-        XMLElementDecl elementDecl       = new XMLElementDecl();
-        elementDecl.name.setValues(null, fElementName, fElementName, null);
-
-        elementDecl.contentModelValidator = null;
-        elementDecl.scope= -1;
-        elementDecl.type = XMLElementDecl.TYPE_ANY;
-
-        //add(or set) this elementDecl to the local cache
-        this.fElementDeclTab.put(fElementName, elementDecl );
-
-        fElementDecl         = elementDecl; 
-
-        if ( DEBUG ) {
-            System.out.println(  "name = " + fElementDecl.name.localpart );
-            System.out.println(  "Type = " + fElementDecl.type );
-        }
-
-        setElementDecl(fCurrentElementIndex, fElementDecl );//set internal structure
-
-        int chunk = fCurrentElementIndex >> CHUNK_SHIFT;
-        int index = fCurrentElementIndex & CHUNK_MASK;
-        ensureElementDeclCapacity(chunk);
-        fElementDeclIsExternal[chunk][index] = fReadingExternalDTD? 1 : 0;
-
-    } // any()
+    public void any() throws XNIException {}
 
     /** EMPTY. */
-    public void empty() throws XNIException {
-        //System.out.println("<!ELEMENT "+fElementName+" EMPTY>");
-
-        XMLElementDecl tmpElementDecl = 
-            (XMLElementDecl) fElementDeclTab.get(fElementName) ;
-
-        // check if it is already defined
-        if ( tmpElementDecl != null ) {
-            if (tmpElementDecl.type == -1) {
-                fCurrentElementIndex = getElementDeclIndex(fElementName, -1);
-            }
-            else {
-                // duplicate element, ignored.
-                return;
-            }
-        }
-        else {
-            fCurrentElementIndex = createElementDecl();//create element decl
-        }
-
-        XMLElementDecl elementDecl       = new XMLElementDecl();
-
-        elementDecl.name.setValues(null, fElementName, fElementName, null);
-
-        elementDecl.contentModelValidator = null;
-        elementDecl.scope= -1;
-        elementDecl.type = XMLElementDecl.TYPE_EMPTY;
-
-        //add(or set) this elementDecl to the local cache
-        this.fElementDeclTab.put(fElementName, elementDecl );
-
-        fElementDecl         = elementDecl; 
-
-        if ( DEBUG ) {
-            System.out.println(  "name = " + fElementDecl.name.localpart );
-            System.out.println(  "Type = " + fElementDecl.type );
-        }
-
-        setElementDecl(fCurrentElementIndex, fElementDecl );//set internal structure
-
-        int chunk = fCurrentElementIndex >> CHUNK_SHIFT;
-        int index = fCurrentElementIndex & CHUNK_MASK;
-        ensureElementDeclCapacity(chunk);
-        fElementDeclIsExternal[chunk][index] = fReadingExternalDTD? 1 : 0;
-
-    } // empty()
+    public void empty() throws XNIException {}
 
     /** Start group. */
     public void startGroup() throws XNIException {
         fDepth++;
         initializeContentModelStack();
+        fMixed = false;
     } // startGroup()
 
     /** #PCDATA. */
     public void pcdata() throws XNIException {
         fMixed = true;
-        fNodeIndexStack[fDepth] = addUniqueLeafNode(null);
     } // pcdata()
 
     /** Element. */
     public void element(String elementName) throws XNIException {
         if (fMixed) {
-            /***
             if (fNodeIndexStack[fDepth] == -1 ) {
                 fNodeIndexStack[fDepth] = addUniqueLeafNode(elementName);
             }
             else {
-            /***/
                 fNodeIndexStack[fDepth] = addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE, 
                                                              fNodeIndexStack[fDepth], 
                                                              addUniqueLeafNode(elementName));
-            //}
+            }
         }
         else {
-            fChildren = true;
             fNodeIndexStack[fDepth] = addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF, elementName);
         }
     } // element(String)
@@ -978,75 +876,7 @@ public class DTDGrammar
 
     /** End content model. */
     public void endContentModel() throws XNIException {
-
-        if (fMixed || fChildren) {
-            XMLElementDecl tmpElementDecl = 
-                (XMLElementDecl) fElementDeclTab.get(fElementName) ;
-
-            // check if it is already defined
-            if ( tmpElementDecl != null ) {
-                if (tmpElementDecl.type == -1) {
-                    fCurrentElementIndex = getElementDeclIndex(fElementName, -1);
-                }
-                else {
-                    // duplicate element, ignored.
-                    return;
-                }
-            }
-            else {
-                fCurrentElementIndex = createElementDecl();//create element decl
-            }
-
-            XMLElementDecl elementDecl       = new XMLElementDecl();
-
-            elementDecl.name.setValues(null, fElementName, fElementName, null);
-
-            elementDecl.contentModelValidator = null;
-            elementDecl.scope= -1;
-            if (fMixed) {
-                elementDecl.type = XMLElementDecl.TYPE_MIXED;
-            }
-            else if (fChildren) {
-                elementDecl.type = XMLElementDecl.TYPE_CHILDREN;
-            }
-
-            //add(or set) this elementDecl to the local cache
-            this.fElementDeclTab.put(fElementName, elementDecl );
-
-            fElementDecl         = elementDecl; 
-
-            if (fDepth >= 0 && fNodeIndexStack != null) {
-                if (elementDecl.type == XMLElementDecl.TYPE_MIXED) {
-                    int pcdata = addUniqueLeafNode(null);
-                    if (fNodeIndexStack[0] == -1) {
-                        fNodeIndexStack[0] = pcdata;
-                    }
-                    else {
-                        fNodeIndexStack[0] = addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE, 
-                                                                pcdata, fNodeIndexStack[0]);
-                        /***
-                        fNodeIndexStack[0] = addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE,
-                                                                fNodeIndexStack[0], -1);
-                        /***/
-                    }
-                }
-                setContentSpecIndex(fCurrentElementIndex, fNodeIndexStack[fDepth]);
-            }
-
-            if ( DEBUG ) {
-                System.out.println(  "name = " + fElementDecl.name.localpart );
-                System.out.println(  "Type = " + fElementDecl.type );
-            }
-
-            setElementDecl(fCurrentElementIndex, fElementDecl );//set internal structure
-            //System.out.println("<!ELEMENT "+fElementDecl.name.rawname+" "+getContentSpecAsString(fCurrentElementIndex)+">");
-
-            int chunk = fCurrentElementIndex >> CHUNK_SHIFT;
-            int index = fCurrentElementIndex & CHUNK_MASK;
-            ensureElementDeclCapacity(chunk);
-            fElementDeclIsExternal[chunk][index] = fReadingExternalDTD? 1 : 0;
-        }
-    
+        // no-op
     } // endContentModel()
 
     //
