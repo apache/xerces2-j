@@ -677,10 +677,11 @@ final class StringReader extends XMLEntityReader {
 
         qname.clear();
         qname.rawname = fStringPool.addSymbol(fData.substring(nameOffset, fCurrentOffset));
+       
         int index = fData.indexOf(':', nameOffset);
         if (index != -1) {
             qname.prefix = fStringPool.addSymbol(fData.substring(nameOffset, index));
-            qname.localpart = fStringPool.addSymbol(fData.substring(index, fCurrentOffset));
+            qname.localpart = fStringPool.addSymbol(fData.substring(index, index + fCurrentOffset));
         }
         else {
             qname.localpart = qname.rawname;
