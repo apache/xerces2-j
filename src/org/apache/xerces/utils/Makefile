@@ -8,6 +8,7 @@ TARGETS=\
 	Hash2intTable.class\
 	HexBin.class\
 	ImplementationMessages.class\
+	IntStack.class\
 	ISO8601Format.class\
 	NamespacesScope.class\
 	QName.class\

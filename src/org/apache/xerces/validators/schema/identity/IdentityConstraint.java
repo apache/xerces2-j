@@ -66,29 +66,54 @@ package org.apache.xerces.validators.schema.identity;
 public abstract class IdentityConstraint {
 
     //
+    // Constants
+    //
+
+    /** Type: unique. */
+    public static final short UNIQUE = 0;
+
+    /** Type: key. */
+    public static final short KEY = 1;
+
+    /** Type: key reference. */
+    public static final short KEYREF = 2;
+
+    //
     // Data
     //
 
+    /** Element name. */
+    protected String fElementName;
+
     /** Selector. */
-    private Selector fSelector;
+    protected Selector fSelector;
 
     /** Field count. */
-    private int fFieldCount;
+    protected int fFieldCount;
 
     /** Fields. */
-    private Field[] fFields;
+    protected Field[] fFields;
 
     //
     // Constructors
     //
 
     /** Default constructor. */
-    protected IdentityConstraint() {
-    } // <init>()
+    protected IdentityConstraint(String elementName) {
+        fElementName = elementName;
+    } // <init>(String)
 
     //
     // Public methods
     //
+
+    /** Returns the identity constraint type. */
+    public abstract short getType();
+
+    /** Returns the element name. */
+    public String getElementName() {
+        return fElementName;
+    } // getElementName():String
 
     /** Sets the selector. */
     public void setSelector(Selector selector) {
@@ -125,5 +150,23 @@ public abstract class IdentityConstraint {
     public Field getFieldAt(int index) {
         return fFields[index];
     } // getFieldAt(int):Field
+
+    //
+    // Object methods
+    //
+
+    /** Returns a string representation of this object. */
+    public String toString() {
+        String s = super.toString();
+        int index1 = s.lastIndexOf('$');
+        if (index1 != -1) {
+            return s.substring(index1 + 1);
+        }
+        int index2 = s.lastIndexOf('.');
+        if (index2 != -1) {
+            return s.substring(index2 + 1);
+        }
+        return s;
+    } // toString():String
 
 } // class IdentityConstraint

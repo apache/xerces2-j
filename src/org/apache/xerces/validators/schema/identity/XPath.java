@@ -103,7 +103,6 @@ public class XPath {
         throws XPathException {
         fExpression = xpath;
         fStringPool = stringPool;
-        //System.out.println("@@@ fStringPool:     "+fStringPool);
         parseExpression(context);
     } // <init>(String,StringPool,NamespacesScope)
 
@@ -352,6 +351,15 @@ public class XPath {
                 }
                 str.append(steps[i].toString());
             }
+            // DEBUG: This code is just for debugging and should *not*
+            //        be left in because it will mess up hashcodes of
+            //        serialized versions of this object. -Ac
+            if (false) {
+                str.append('[');
+                String s = super.toString();
+                str.append(s.substring(s.indexOf('@')));
+                str.append(']');
+            }
             return str.toString();
         } // toString():String
 
@@ -402,7 +410,20 @@ public class XPath {
 
         /** Returns a string representation of this object. */
         public String toString() {
+            /***
             return axis.toString() + "::" + nodeTest.toString();
+            /***/
+            if (axis.type == Axis.SELF) {
+                return ".";
+            }
+            if (axis.type == Axis.ATTRIBUTE) {
+                return "@" + nodeTest.toString();
+            }
+            if (axis.type == Axis.CHILD) {
+                return nodeTest.toString();
+            }
+            return "??? ("+axis.type+')';
+            /***/
         } // toString():String
 
         /** Returns a clone of this object. */
@@ -527,6 +548,7 @@ public class XPath {
 
         /** Copy constructor. */
         public NodeTest(NodeTest nodeTest) {
+            fStringPool = nodeTest.fStringPool;
             type = nodeTest.type;
             name.setValues(nodeTest.name);
         } // <init>(NodeTest)

@@ -59,13 +59,16 @@ package org.apache.xerces.validators.schema.identity;
 
 import org.apache.xerces.framework.XMLAttrList;
 
+import org.apache.xerces.utils.IntStack;
 import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.NamespacesScope;
 import org.apache.xerces.utils.StringPool;
 
+/***
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
+/***/
 
 /**
  * XPath matcher.
@@ -83,22 +86,29 @@ public class XPathMatcher {
     // debugging
 
     /** Compile to true to debug everything. */
-    private static final boolean DEBUG_ALL = false;
+    protected static final boolean DEBUG_ALL = false;
 
     /** Compile to true to debug method callbacks. */
-    private static final boolean DEBUG_METHODS = DEBUG_ALL || false;
+    protected static final boolean DEBUG_METHODS = false || DEBUG_ALL;
 
     /** Compile to true to debug important method callbacks. */
-    private static final boolean DEBUG_METHODS2 = DEBUG_ALL || DEBUG_METHODS || 
-                                                  false;
+    protected static final boolean DEBUG_METHODS2 = false || DEBUG_METHODS || DEBUG_ALL;
 
+    /** Compile to true to debug the <em>really</em> important methods. */
+    protected static final boolean DEBUG_METHODS3 = false || DEBUG_METHODS || DEBUG_ALL;
+                                                      
     /** Compile to true to debug match. */
-    private static final boolean DEBUG_MATCH = DEBUG_ALL || false;
+    protected static final boolean DEBUG_MATCH = false || DEBUG_ALL;
+
+    /** Compile to true to debug step index stack. */
+    protected static final boolean DEBUG_STACK = false || DEBUG_ALL;
 
     /** Don't touch this value unless you add more debug constants. */
-    private static final boolean DEBUG_ANY = DEBUG_METHODS || 
-                                             DEBUG_METHODS2 ||
-                                             DEBUG_MATCH;
+    protected static final boolean DEBUG_ANY = DEBUG_METHODS || 
+                                               DEBUG_METHODS2 ||
+                                               DEBUG_METHODS3 ||
+                                               DEBUG_MATCH ||
+                                               DEBUG_STACK;
 
     //
     // Data
@@ -123,7 +133,7 @@ public class XPathMatcher {
     private String fMatchedString;
 
     /** Integer stack of step indexes. */
-    private IntegerStack fStepIndexes = new IntegerStack();
+    private IntStack fStepIndexes = new IntStack();
 
     /** Current step. */
     private int fCurrentStep;
@@ -170,7 +180,7 @@ public class XPathMatcher {
         fLocationPath = xpath.getLocationPath();
         fShouldBufferContent = shouldBufferContent;
         if (DEBUG_METHODS) {
-            System.out.println("XPATH["+toString()+"]: <init>()");
+            System.out.println(toString()+"#<init>()");
         }
     } // <init>(String,SymbolTable,NamespaceContext,boolean)
 
@@ -197,9 +207,9 @@ public class XPathMatcher {
      * XPath expression. Subclasses can override this method to
      * provide default handling upon a match.
      */
-    protected void matched(String content) throws SAXException {
-        if (DEBUG_METHODS || DEBUG_METHODS2) {
-            System.out.println("XPATH["+toString()+"]: matched \""+content+'"');
+    protected void matched(String content) throws Exception {
+        if (DEBUG_METHODS3) {
+            System.out.println(toString()+"#matched(\""+normalize(content)+"\")");
         }
     } // matched(String content)
 
@@ -210,13 +220,8 @@ public class XPathMatcher {
     /**
      * The start of the document fragment.
      *
-     * @param namespaceContext The namespace context in effect at the
-     *                         start of this document fragment. This
-     *                         object only represents the current context.
-     *                         Implementors of this class are responsible
-     *                         for copying the namespace bindings from the
-     *                         the current context (and its parent contexts)
-     *                         if that information is important.
+     * @param namespaceScope The namespace scope in effect at the
+     *                       start of this document fragment.
      *
      * @throws SAXException Thrown by handler to signal an error.
      */
@@ -224,7 +229,7 @@ public class XPathMatcher {
                                       NamespacesScope namespacesScope) 
         throws Exception {
         if (DEBUG_METHODS) {
-            System.out.println("XPATH["+toString()+"]: startDocumentFragment("+
+            System.out.println(toString()+"#startDocumentFragment("+
                                "stringPool="+stringPool+','+
                                "namespacesScope="+namespacesScope+
                                ")");
@@ -241,14 +246,7 @@ public class XPathMatcher {
         fStringPool = stringPool;
         fNamespacesScope = namespacesScope;
         if (namespacesScope == null) {
-            NamespacesScope.NamespacesHandler handler =
-                new NamespacesScope.NamespacesHandler() {
-                public void startNamespaceDeclScope(int prefix, int uri) throws Exception {
-                }
-                public void endNamespaceDeclScope(int prefix) throws Exception {
-                }
-            };
-            fNamespacesScope = new NamespacesScope(handler);
+            fNamespacesScope = new NamespacesScope();
         }
 
     } // startDocumentFragment(StringPool,NamespacesScope)
@@ -265,186 +263,130 @@ public class XPathMatcher {
      */
     public void startElement(QName element, XMLAttrList attributes, int handle)
         throws Exception {
-        if (DEBUG_METHODS || DEBUG_METHODS2) {
-            System.out.println("XPATH["+toString()+"]: startElement("+
+        if (DEBUG_METHODS2) {
+            System.out.println(toString()+"#startElement("+
                                "element={"+
                                "prefix="+fStringPool.toString(element.prefix)+','+
                                "localpart="+fStringPool.toString(element.localpart)+','+
                                "rawname="+fStringPool.toString(element.rawname)+','+
                                "uri="+fStringPool.toString(element.uri)+
                                "},"+
-                               "attributes="+attributes+
+                               "attributes=..."+//attributes+
                                ")");
         }
 
+        // push context
+        int startStep = fCurrentStep;
+        fStepIndexes.push(startStep);
+        if (DEBUG_STACK) {
+            System.out.println(toString()+": "+fStepIndexes);
+        }
+        //fNamespacesScope.increaseDepth();
+
         // return, if not matching
-        if (fNoMatchDepth > 0) {
+        if (fMatched || fNoMatchDepth > 0) {
             fNoMatchDepth++;
             return;
         }
 
-        // check match
-        int startStepIndex = fCurrentStep;
-        while (fCurrentStep < fLocationPath.steps.length) {
-            XPath.Step step = fLocationPath.steps[fCurrentStep++];
+        // consume self::node() steps
+        XPath.Step[] steps = fLocationPath.steps;
+        while (fCurrentStep < steps.length && 
+               steps[fCurrentStep].axis.type == XPath.Axis.SELF) {
             if (DEBUG_MATCH) {
-                System.out.println("XPATH["+toString()+"]: "+
-                                   "attempting match at step["+(fCurrentStep - 1)+"]: \""+step+'"');
+                XPath.Step step = steps[fCurrentStep];
+                System.out.println(toString()+" [SELF] MATCHED!");
             }
-            XPath.Axis axis = step.axis;
-            switch (axis.type) {
-                case XPath.Axis.SELF: {
-                    if (DEBUG_MATCH) {
-                        System.out.println("XPATH["+toString()+"]: "+
-                                           "axis: SELF");
-                    }
-                    if (DEBUG_MATCH) {
-                        System.out.println("XPATH["+toString()+"]: "+
-                                           "STEP MATCHED");
-                    }
-                    if (fCurrentStep == fLocationPath.steps.length) {
-                        if (DEBUG_MATCH) {
-                            System.out.println("XPATH["+toString()+"]: "+
-                                               "PATH MATCHED");
-                        }
-                        fMatched = true;
-                        fBufferContent = true && fShouldBufferContent;
-                        break;
-                    }
-                    continue;
+            fCurrentStep++;
+        }
+        if (fCurrentStep == steps.length) {
+            if (DEBUG_MATCH) {
+                System.out.println(toString()+" XPath MATCHED!");
+            }
+            fMatched = true;
+            fBufferContent = true && fShouldBufferContent;
+        }
+        
+        // match child::... step, if haven't consumed any self::node()
+        if (fCurrentStep == startStep &&
+            steps[fCurrentStep].axis.type == XPath.Axis.CHILD) {
+            XPath.Step step = steps[fCurrentStep];
+            XPath.NodeTest nodeTest = step.nodeTest;
+            if (DEBUG_MATCH) {
+                System.out.println(toString()+" [CHILD] before");
+            }
+            if (nodeTest.type == XPath.NodeTest.QNAME) {
+                // REVISIT: Hack to work around current problem with schema
+                //          validation setting the target namespace to the
+                //          empty string. -Ac
+                if (element.uri == StringPool.EMPTY_STRING) {
+                    element.uri = -1;
                 }
-                case XPath.Axis.CHILD: {
-                    int elementStep = fCurrentStep + 1;
+                if (!nodeTest.name.equals(element)) {
+                    fNoMatchDepth++;
                     if (DEBUG_MATCH) {
-                        System.out.println("XPATH["+toString()+"]: "+
-                                           "axis: CHILD");
+                        System.out.println(toString()+" [CHILD] after NO MATCH");
                     }
-                    // check element match
-                    XPath.NodeTest nodeTest = step.nodeTest;
-                    if (nodeTest.type == nodeTest.QNAME) {
-                        if (DEBUG_MATCH) {
-                            System.out.println("XPATH["+toString()+"]: "+
-                                               "nodeTest: QNAME");
-                        }
-                        boolean matched = true;
-                        QName name = nodeTest.name;
-                        if (name.uri == -1) {
-                            if (element.rawname != name.rawname) {
-                                //System.out.println(">>> fStringPool:     "+fStringPool);
-                                //System.out.println(">>> element.rawname: "+fStringPool.toString(element.rawname));
-                                //System.out.println(">>> name.rawname:    "+fStringPool.toString(name.rawname));
-                                matched = false;
-                            }
-                        }
-                        else {
-                            if (element.uri != name.uri ||
-                                element.localpart != name.localpart) {
-                                matched = false;
-                            }
-                        }
-                        if (!matched) {
-                            if (DEBUG_MATCH) {
-                                System.out.println("XPATH["+toString()+"]: "+
-                                                   "STEP *NOT* MATCHED");
-                            }
-                            fNoMatchDepth++;
-                            return;
-                        }
-                        if (DEBUG_MATCH) {
-                            System.out.println("XPATH["+toString()+"]: "+
-                                               "STEP MATCHED");
-                        }
-                        if (fCurrentStep == fLocationPath.steps.length) {
-                            if (DEBUG_MATCH) {
-                                System.out.println("XPATH["+toString()+"]: "+
-                                                   "PATH MATCHED");
-                            }
-                            fMatched = true;
-                            fBufferContent = true && fShouldBufferContent;
-                        }
-                    }
-                    /***
-                    // REVISIT: [Q] Is self:: axis needed? -Ac
-                    else if (axis.type == XPath.Axis.SELF) {
-                        // let pass
-                    }
-                    /***/
-                    else {
-                        throw new SAXException("axis \""+axis+"\" not allowed");
-                    }
-
-                    // check for attribute match
-                    if (fCurrentStep < fLocationPath.steps.length) {
-                        step = fLocationPath.steps[fCurrentStep];
-                        axis = step.axis;
-                        if (axis.type == axis.ATTRIBUTE) {
-                            fCurrentStep++;
-                            nodeTest = step.nodeTest;
-                            if (nodeTest.type == nodeTest.QNAME) {
-                                boolean matched = true;
-                                QName name = nodeTest.name;
-                                if (name.uri == -1) {
-                                    fMatchedString = attributes.getValue(name.rawname);
-                                    if (fMatchedString == null) {
-                                        matched = false;
-                                    }
-                                }
-                                else {
-                                    int aindex = attributes.getFirstAttr(handle);
-                                    while (aindex != -1) {
-                                        int auri = attributes.getAttrURI(aindex);
-                                        int alocalpart = attributes.getAttrLocalpart(aindex);
-                                        if (auri != -1 && alocalpart != -1 &&
-                                            auri == name.uri && alocalpart == name.localpart) {
-                                            fMatchedString = fStringPool.toString(attributes.getAttValue(aindex));
-                                            break;
-                                        }
-                                        aindex = attributes.getNextAttr(aindex);
-                                    }
-                                    if (fMatchedString == null) {
-                                        matched = false;
-                                    }
-                                }
-                                if (!matched) {
-                                    if (DEBUG_MATCH) {
-                                        System.out.println("XPATH["+toString()+"]: "+
-                                                           "ATTRIBUTE *NOT* MATCHED");
-                                    }
-                                    fNoMatchDepth++;
-                                    return;
-                                }
-                                if (DEBUG_MATCH) {
-                                    System.out.println("XPATH["+toString()+"]: "+
-                                                       "STEP MATCHED");
-                                }
-                                if (fCurrentStep == fLocationPath.steps.length) {
-                                    if (DEBUG_MATCH) {
-                                        System.out.println("XPATH["+toString()+"]: "+
-                                                           "PATH MATCHED");
-                                    }
-                                }
-                                fBufferContent = false;
-                                fCurrentStep++;
-                                fMatched = fMatchedString != null;
-                                matched(fMatchedString);
-                            }
-                            else {
-                                throw new SAXException("node test \""+nodeTest+"\" not allowed");
-                            }
-                        }
-                    }
-                    break;
-                }
-                default: {
-                    throw new SAXException("step \""+step+"\" not allowed");
+                    return;
                 }
             }
-            break;
+            fCurrentStep++;
+            if (DEBUG_MATCH) {
+                System.out.println(toString()+" [CHILD] after MATCHED!");
+            }
+        }
+        if (fCurrentStep == steps.length) {
+            fMatched = true;
+            fBufferContent = true && fShouldBufferContent;
         }
 
-        // push context
-        fNamespacesScope.increaseDepth();
-        fStepIndexes.push(startStepIndex);
+        // match attribute::... step
+        if (fCurrentStep < steps.length &&
+            steps[fCurrentStep].axis.type == XPath.Axis.ATTRIBUTE) {
+            if (DEBUG_MATCH) {
+                System.out.println(toString()+" [ATTRIBUTE] before");
+            }
+            int aindex = attributes.getFirstAttr(handle);
+            if (aindex != -1) {
+                XPath.NodeTest nodeTest = steps[fCurrentStep].nodeTest;
+                QName aname = new QName(); // REVISIT: cache this
+                while (aindex != -1) {
+                    int aprefix = attributes.getAttrPrefix(aindex);
+                    int alocalpart = attributes.getAttrLocalpart(aindex);
+                    int arawname = attributes.getAttrName(aindex);
+                    int auri = attributes.getAttrURI(aindex);
+                    // REVISIT: Hack to work around current problem with schema
+                    //          validation setting the target namespace to the
+                    //          empty string. -Ac
+                    if (auri == StringPool.EMPTY_STRING) {
+                        auri = -1;
+                    }
+                    aname.setValues(aprefix, alocalpart, arawname, auri);
+                    if (nodeTest.type != XPath.NodeTest.QNAME ||
+                        nodeTest.name.equals(aname)) {
+                        fCurrentStep++;
+                        if (fCurrentStep == steps.length) {
+                            fMatched = true;
+                            int avalue = attributes.getAttValue(aindex);
+                            fMatchedString = fStringPool.toString(avalue);
+                            matched(fMatchedString);
+                        }
+                        break;
+                    }
+                    aindex = attributes.getNextAttr(aindex);
+                }
+            }
+            if (!fMatched) {
+                fNoMatchDepth++;
+                if (DEBUG_MATCH) {
+                    System.out.println(toString()+" [ATTRIBUTE] after");
+                }
+                return;
+            }
+            if (DEBUG_MATCH) {
+                System.out.println(toString()+" [ATTRIBUTE] after MATCHED!");
+            }
+        }
 
     } // startElement(QName,XMLAttrList,int)
 
@@ -452,16 +394,16 @@ public class XPathMatcher {
     public void characters(char[] ch, int offset, int length) 
         throws Exception {
         if (DEBUG_METHODS) {
-            System.out.println("XPATH["+toString()+"]: characters("+
-                               "text="+new String(ch, offset, length)+
+            System.out.println(toString()+"#characters("+
+                               "text="+normalize(new String(ch, offset, length))+
                                ")");
         }
 
         // collect match content
         if (fBufferContent && fNoMatchDepth == 0) {
             if (!DEBUG_METHODS && DEBUG_METHODS2) {
-                System.out.println("XPATH["+toString()+"]: characters("+
-                                   "text="+new String(ch, offset, length)+
+                System.out.println(toString()+"#characters("+
+                                   "text="+normalize(new String(ch, offset, length))+
                                    ")");
             }
             fMatchedBuffer.append(ch, offset, length);
@@ -477,8 +419,8 @@ public class XPathMatcher {
      * @throws SAXException Thrown by handler to signal an error.
      */
     public void endElement(QName element) throws Exception {
-        if (DEBUG_METHODS || DEBUG_METHODS2) {
-            System.out.println("XPATH["+toString()+"]: endElement("+
+        if (DEBUG_METHODS2) {
+            System.out.println(toString()+"#endElement("+
                                "element={"+
                                "prefix="+fStringPool.toString(element.prefix)+','+
                                "localpart="+fStringPool.toString(element.localpart)+','+
@@ -486,6 +428,9 @@ public class XPathMatcher {
                                "uri="+fStringPool.toString(element.uri)+
                                "})");
         }
+        
+        // go back a step
+        fCurrentStep = fStepIndexes.pop();
         
         // return, if not matching
         if (fNoMatchDepth > 0) {
@@ -499,10 +444,11 @@ public class XPathMatcher {
             fMatchedString = fMatchedBuffer.toString();
             matched(fMatchedString);
         }
-
-        // go back a step
-        fCurrentStep = fStepIndexes.pop();
         clear();
+
+        if (DEBUG_STACK) {
+            System.out.println(toString()+": "+fStepIndexes);
+        }
 
     } // endElement(QName)
 
@@ -513,7 +459,7 @@ public class XPathMatcher {
      */
     public void endDocumentFragment() throws Exception {
         if (DEBUG_METHODS) {
-            System.out.println("XPATH["+toString()+"]: endDocumentFragment()");
+            System.out.println(toString()+"#endDocumentFragment()");
         }
         clear();
     } // endDocumentFragment()
@@ -524,7 +470,33 @@ public class XPathMatcher {
     
     /** Returns a string representation of this object. */
     public String toString() {
+        /***
         return fLocationPath.toString();
+        /***/
+        StringBuffer str = new StringBuffer();
+        String s = super.toString();
+        int index2 = s.lastIndexOf('.');
+        if (index2 != -1) {
+            s = s.substring(index2 + 1);
+        }
+        str.append(s);
+        str.append('[');
+        XPath.Step[] steps = fLocationPath.steps;
+        for (int i = 0; i < steps.length; i++) {
+            if (i == fCurrentStep) {
+                str.append('^');
+            }
+            str.append(steps[i].toString());
+            if (i < steps.length - 1) {
+                str.append('/');
+            }
+        }
+        if (fCurrentStep == steps.length) {
+            str.append('^');
+        }
+        str.append(']');
+        return str.toString();
+        /***/
     } // toString():String
 
     //
@@ -534,73 +506,29 @@ public class XPathMatcher {
     /** Clears the match values. */
     private void clear() {
         fBufferContent = false;
+        fMatchedBuffer.setLength(0);
         fMatched = false;
         fMatchedString = null;
     } // clear()
 
-    //
-    // Classes
-    //
-
-    /**
-     * A simple integer stack. 
-     *
-     * @author Andy Clark, IBM
-     */
-    protected final static class IntegerStack {
-
-        //
-        // Data
-        //
-
-        /** Stack top. */
-        private int fTop = -1;
-
-        /** Stack data. */
-        private int[] fData = new int[4];
-
-        //
-        // Constructors
-        //
-
-        /** Default constructor. */
-        public IntegerStack() {
-        } // <init>()
-
-        //
-        // Public methods
-        //
-
-        /** Clears the stack. */
-        public void clear() {
-            fTop = -1;
-        } // clear()
-
-        /** Pushes an integer onto the stack. */
-        public void push(int value) {
-            ensureCapacity(++fTop);
-            fData[fTop] = value;
-        } // push(int)
-
-        /** Pops an integer off of the stack. */
-        public int pop() {
-            return fData[fTop--];
-        } // pop():int
-
-        //
-        // Private methods
-        //
-
-        /** Ensures data structure can hold data. */
-        private void ensureCapacity(int size) {
-            if (size >= fData.length) {
-                int[] array = new int[fData.length * 2];
-                System.arraycopy(fData, 0, array, 0, fData.length);
-                fData = array;
+    /** Normalizes text. */
+    private String normalize(String s) {
+        StringBuffer str = new StringBuffer();
+        int length = s.length();
+        for (int i = 0; i < length; i++) {
+            char c = s.charAt(i);
+            switch (c) {
+                case '\n': {
+                    str.append("\\n");
+                    break;
+                }
+                default: {
+                    str.append(c);
+                }
             }
-        } // ensureCapacity(int)
-
-    } // class IntegerStack
+        }
+        return str.toString();
+    } // normalize(String):String
 
     //
     // MAIN
@@ -627,7 +555,7 @@ public class XPathMatcher {
                 org.apache.xerces.parsers.SAXParser parser = 
                     new org.apache.xerces.parsers.SAXParser(symbols) {
                     public void startDocument() throws Exception {
-                        matcher.startDocumentFragment(matcher.fStringPool, null);
+                        matcher.startDocumentFragment(symbols, null);
                     }
                     public void startElement(QName element, XMLAttrList attributes, int handle) throws Exception {
                         matcher.startElement(element, attributes, handle);

@@ -71,24 +71,30 @@ public class Key
     //
 
     /** Name. */
-    private String fName;
+    protected String fKeyName;
 
     //
     // Constructors
     //
 
     /** Constructs a key with the specified name. */
-    public Key(String name) {
-        fName = name;
-    } // <init>(String)
+    public Key(String elementName, String keyName) {
+        super(elementName);
+        fKeyName = keyName;
+    } // <init>(String,String)
 
     //
     // Public methods
     //
 
+    /** Returns the identity constraint type. */
+    public short getType() {
+        return KEY;
+    } // getType():short
+
     /** Returns the name. */
     public String getName() {
-        return fName;
+        return fKeyName;
     } // getName():String
 
 } // class Key

@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000 The Apache Software Foundation.  All rights 
- * reserved.
+ * Copyright (c) 2000,2001 The Apache Software Foundation.  
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -55,33 +55,97 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.validators.schema.identity;
+package org.apache.xerces.utils;
 
 /**
- * Schema unique identity constraint.
+ * A simple integer based stack.
  *
- * @author Andy Clark, IBM
+ * @author  Andy Clark, IBM
+ *
  * @version $Id$
  */
-public class Unique 
-    extends IdentityConstraint {
+public final class IntStack {
 
     //
-    // Constructors
+    // Data
     //
 
-    /** Constructs a unique identity constraint. */
-    public Unique(String elementName) {
-        super(elementName);
-    } // <init>(String)
+    /** Stack depth. */
+    private int fDepth;
+
+    /** Stack data. */
+    private int[] fData;
 
     //
     // Public methods
     //
 
-    /** Returns the identity constraint type. */
-    public short getType() {
-        return UNIQUE;
-    } // getType():short
+    /** Returns the size of the stack. */
+    public int size() {
+        return fDepth;
+    }
 
-} // class Unique
+    /** Pushes a value onto the stack. */
+    public void push(int value) {
+        ensureCapacity(fDepth + 1);
+        fData[fDepth++] = value;
+    }
+
+    /** Peeks at the top of the stack. */
+    public int peek() {
+        return fData[fDepth - 1];
+    }
+
+    /** Pops a value off of the stack. */
+    public int pop() {
+        return fData[--fDepth];
+    }
+
+    /** Clears the stack. */
+    public void clear() {
+        fDepth = 0;
+    }
+
+    // debugging
+
+    /** Prints the stack. */
+    public void print() {
+        System.out.print('(');
+        System.out.print(fDepth);
+        System.out.print(") {");
+        for (int i = 0; i < fDepth; i++) {
+            if (i == 3) {
+                System.out.print(" ...");
+                break;
+            }
+            System.out.print(' ');
+            System.out.print(fData[i]);
+            if (i < fDepth - 1) {
+                System.out.print(',');
+            }
+        }
+        System.out.print(" }");
+        System.out.println();
+    }
+
+    //
+    // Private methods
+    //
+
+    /** Ensures capacity. */
+    private boolean ensureCapacity(int size) {
+        try {
+            return fData[size] != 0;
+        }
+        catch (NullPointerException e) {
+            fData = new int[32];
+        }
+        catch (ArrayIndexOutOfBoundsException e) {
+            int[] newdata = new int[fData.length * 2];
+            System.arraycopy(fData, 0, newdata, 0, fData.length);
+            fData = newdata;
+        }
+        return true;
+    }
+
+} // class IntStack

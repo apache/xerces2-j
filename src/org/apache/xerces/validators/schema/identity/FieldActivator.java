@@ -74,12 +74,30 @@ public interface FieldActivator {
     // FieldActivator methods
     //
 
+    /**
+     * Start the value scope for the specified identity constraint. This 
+     * method is called when the selector matches in order to initialize 
+     * the value store.
+     *
+     * @param identityConstraint The identity constraint.
+     */
+    public void startValueScopeFor(IdentityConstraint identityConstraint)
+        throws Exception;
+
     /** 
      * Request to activate the specified field. This method returns the
      * matcher for the field.
      *
      * @param field The field to activate.
      */
-    public XPathMatcher activateField(Field field) throws SAXException;
+    public XPathMatcher activateField(Field field) throws Exception;
+
+    /**
+     * Ends the value scope for the specified identity constraint.
+     *
+     * @param identityConstraint The identity constraint.
+     */
+    public void endValueScopeFor(IdentityConstraint identityConstraint)
+        throws Exception;
 
 } // interface FieldActivator

@@ -71,24 +71,30 @@ public class KeyRef
     //
 
     /** Key name. */
-    private String fName;
+    protected String fKeyName;
 
     //
     // Constructors
     //
 
     /** Constructs a keyref with the specified name. */
-    public KeyRef(String name) {
-        fName = name;
-    } // <init>(String)
+    public KeyRef(String elementName, String keyName) {
+        super(elementName);
+        fKeyName = keyName;
+    } // <init>(String,String)
 
     //
     // Public methods
     //
 
+    /** Returns the identity constraint type. */
+    public short getType() {
+        return KEYREF;
+    } // getType():short
+
     /** Returns the name. */
     public String getName() {
-        return fName;
+        return fKeyName;
     } // getName():String
 
 } // class KeyRef

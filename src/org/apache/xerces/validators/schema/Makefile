@@ -8,7 +8,7 @@ TARGETS=\
 	TraverseSchema.class \
 	XUtil.class
 
-DIRS = 
+DIRS = identity
 
 TOP = ../../../../../..
 include $(TOP)/src/Makefile.incl

@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
- * reserved.
+ * Copyright (c) 1999,2000,2001 The Apache Software Foundation.  
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -66,6 +66,7 @@ import org.apache.xerces.readers.DefaultEntityHandler;
 import org.apache.xerces.readers.XMLEntityHandler;
 import org.apache.xerces.utils.ChunkyCharArray;
 import org.apache.xerces.utils.Hash2intTable;
+import org.apache.xerces.utils.IntStack;
 import org.apache.xerces.utils.NamespacesScope;
 import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.StringPool;
@@ -99,6 +100,15 @@ import org.apache.xerces.validators.schema.SchemaGrammar;
 import org.apache.xerces.validators.schema.SchemaMessageProvider;
 import org.apache.xerces.validators.schema.SchemaSymbols;
 import org.apache.xerces.validators.schema.TraverseSchema;
+import org.apache.xerces.validators.schema.identity.Field;
+import org.apache.xerces.validators.schema.identity.FieldActivator;
+import org.apache.xerces.validators.schema.identity.IdentityConstraint;
+import org.apache.xerces.validators.schema.identity.Key;
+import org.apache.xerces.validators.schema.identity.KeyRef;
+import org.apache.xerces.validators.schema.identity.Selector;
+import org.apache.xerces.validators.schema.identity.Unique;
+import org.apache.xerces.validators.schema.identity.ValueStore;
+import org.apache.xerces.validators.schema.identity.XPathMatcher;
 
 import org.apache.xerces.validators.datatype.DatatypeValidatorFactoryImpl;
 import org.apache.xerces.validators.datatype.DatatypeValidator;
@@ -114,10 +124,12 @@ import org.apache.xerces.validators.datatype.ENTITYDatatypeValidator;
  * @version $Id$
  */
 public final class XMLValidator
-implements DefaultEntityHandler.EventHandler,
-XMLEntityHandler.CharDataHandler,
-XMLDocumentScanner.EventHandler,
-NamespacesScope.NamespacesHandler {
+    implements DefaultEntityHandler.EventHandler,
+               XMLEntityHandler.CharDataHandler,
+               XMLDocumentScanner.EventHandler,
+               NamespacesScope.NamespacesHandler,
+               FieldActivator // for identity constraints
+    {
 
    //
    // Constants
@@ -130,6 +142,12 @@ NamespacesScope.NamespacesHandler {
    private static final boolean DEBUG_PRINT_CONTENT = false;
    private static final boolean DEBUG_SCHEMA_VALIDATION = false;
    private static final boolean DEBUG_ELEMENT_CHILDREN = false;
+
+   /** Compile to true to debug identity constraints. */
+   protected static final boolean DEBUG_IDENTITY_CONSTRAINTS = false;
+
+   /** Compile to true to debug value stores. */
+   protected static final boolean DEBUG_VALUE_STORES = false;
 
    // Chunk size constants
 
@@ -217,22 +235,12 @@ NamespacesScope.NamespacesHandler {
    };
    */
 
-
-
-
-
    //
    // Data
    //
 
    // REVISIT: The data should be regrouped and re-organized so that
    //          it's easier to find a meaningful field.
-
-   // debugging
-
-//    private static boolean DEBUG = false;
-
-   // other
 
    // attribute validators
 
@@ -371,6 +379,26 @@ NamespacesScope.NamespacesHandler {
    private DatatypeValidator            fValNMTOKENS = null;
    private DatatypeValidator            fValNOTATION = null;
 
+    // identity constraint information
+
+    /** 
+     * Stack of active XPath matchers for identity constraints. All
+     * active XPath matchers are notified of startElement, characters
+     * and endElement callbacks in order to perform their matches.
+     * <p>
+     * For each element with identity constraints, the selector of
+     * each identity constraint is activated. When the selector matches
+     * its XPath, then all the fields of the identity constraint are
+     * activated.
+     * <p>
+     * <strong>Note:</strong> Once the activation scope is left, the
+     * XPath matchers are automatically removed from the stack of
+     * active matchers and no longer receive callbacks.
+     */
+    protected XPathMatcherStack fMatcherStack = new XPathMatcherStack();
+
+    /** Cache of value stores for identity constraint fields. */
+    protected ValueStoreCache fValueStoreCache = new ValueStoreCache();
 
    //
    // Constructors
@@ -563,6 +591,58 @@ NamespacesScope.NamespacesHandler {
       return fWarningOnUndeclaredElements;
    }
 
+    //
+    // FieldActivator methods
+    //
+
+   /**
+    * Start the value scope for the specified identity constraint. This 
+    * method is called when the selector matches in order to initialize 
+    * the value store.
+    *
+    * @param identityConstraint The identity constraint.
+    */
+   public void startValueScopeFor(IdentityConstraint identityConstraint)
+        throws Exception {
+
+        Field field = identityConstraint.getFieldAt(0);
+        ValueStoreBase valueStore = fValueStoreCache.getValueStoreFor(field);
+        valueStore.startValueScope();
+
+    } // startValueScopeFor(IdentityConstraint identityConstraint)
+
+    /** 
+     * Request to activate the specified field. This method returns the
+     * matcher for the field.
+     *
+     * @param field The field to activate.
+     */
+    public XPathMatcher activateField(Field field) throws Exception {
+        if (DEBUG_IDENTITY_CONSTRAINTS) {
+            System.out.println("<IC>: activateField(\""+field+"\")");
+        }
+        ValueStore valueStore = fValueStoreCache.getValueStoreFor(field);
+        XPathMatcher matcher = field.createMatcher(valueStore);
+        fMatcherStack.addMatcher(matcher);
+        // REVISIT: Pass namespace scope information. -Ac
+        matcher.startDocumentFragment(fStringPool, null);
+        return matcher;
+    } // activateField(Field):XPathMatcher
+
+    /**
+     * Ends the value scope for the specified identity constraint.
+     *
+     * @param identityConstraint The identity constraint.
+     */
+    public void endValueScopeFor(IdentityConstraint identityConstraint)
+        throws Exception {
+
+        Field field = identityConstraint.getFieldAt(0);
+        ValueStoreBase valueStore = fValueStoreCache.getValueStoreFor(field);
+        valueStore.endValueScope();
+
+    } // endValueScopeFor(IdentityConstraint)
+
    //
    // DefaultEntityHandler.EventHandler methods
    //
@@ -750,6 +830,9 @@ NamespacesScope.NamespacesHandler {
       if (!fCalledStartDocument) {
          fDocumentHandler.startDocument();
          fCalledStartDocument = true;
+         if (fValidating) {
+             fValueStoreCache.startDocument();
+         }
       }
    }
 
@@ -757,6 +840,12 @@ NamespacesScope.NamespacesHandler {
    public void callEndDocument() throws Exception {
 
       if (fCalledStartDocument) {
+          if (fValidating) {
+                if (DEBUG_IDENTITY_CONSTRAINTS) {
+                    System.out.println("<IC>: ValueStoreCache#endDocument()");
+                }
+              fValueStoreCache.endDocument();
+          }
          fDocumentHandler.endDocument();
       }
    }
@@ -833,17 +922,18 @@ NamespacesScope.NamespacesHandler {
          bindNamespacesToElementAndAttributes(element, fAttrList);
       }
 
+      //before we increment the element depth, add this element's QName to its enclosing element 's children list
+      fElementDepth++;
+
       validateElementAndAttributes(element, fAttrList);
       if (fAttrListHandle != -1) {
          fAttrList.endAttrList();
       }
 
       fDocumentHandler.startElement(element, fAttrList, fAttrListHandle);
-      fAttrListHandle = -1;
-
-      //before we increment the element depth, add this element's QName to its enclosing element 's children list
-      fElementDepth++;
+      
       //if (fElementDepth >= 0) {
+      // REVISIT: Why are doing anything if the grammar is null? -Ac
       if (fValidating) {
          // push current length onto stack
          if (fElementChildrenOffsetStack.length <= fElementDepth) {
@@ -873,10 +963,42 @@ NamespacesScope.NamespacesHandler {
             printChildren();
             printStack();
          }
-      }
+      
+         // activate identity constraints
+         if (fGrammar != null) {
+             if (DEBUG_IDENTITY_CONSTRAINTS) {
+                 System.out.println("<IC>: pushing context - element: "+fStringPool.toString(element.rawname));
+             }
+             fMatcherStack.pushContext();
+             int eindex = fGrammar.getElementDeclIndex(element, -1);
+             if (eindex != -1) {
+                 fGrammar.getElementDecl(eindex, fTempElementDecl);
+                 fValueStoreCache.initValueStoresFor(fTempElementDecl);
+                 int ucount = fTempElementDecl.unique.size();
+                 for (int i = 0; i < ucount; i++) {
+                     activateSelectorFor((IdentityConstraint)fTempElementDecl.unique.elementAt(i));
+                 }
+                 int kcount = fTempElementDecl.key.size();
+                 for (int i = 0; i < kcount; i++) {
+                     activateSelectorFor((IdentityConstraint)fTempElementDecl.key.elementAt(i));
+                 }
+                 int krcount = fTempElementDecl.keyRef.size();
+                 for (int i = 0; i < krcount; i++) {
+                     activateSelectorFor((IdentityConstraint)fTempElementDecl.keyRef.elementAt(i));
+                 }
+             }
 
-      // One more level of depth
-      //fElementDepth++;
+             // call all active identity constraints
+             int count = fMatcherStack.getMatcherCount();
+             for (int i = 0; i < count; i++) {
+                 XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
+                 if (DEBUG_IDENTITY_CONSTRAINTS) {
+                     System.out.println("<IC>: "+matcher.toString()+"#startElement("+fStringPool.toString(element.rawname)+")");
+                 }
+                 matcher.startElement(element, fAttrList, fAttrListHandle);
+             }
+         }
+      }
 
       ensureStackCapacity(fElementDepth);
       fCurrentElement.setValues(element);
@@ -902,7 +1024,24 @@ NamespacesScope.NamespacesHandler {
       fScopeStack[fElementDepth] = fCurrentScope;
       fGrammarNameSpaceIndexStack[fElementDepth] = fGrammarNameSpaceIndex;
 
+      fAttrList.releaseAttrList(fAttrListHandle);
+      fAttrListHandle = -1;
+
    } // callStartElement(QName)
+
+    private void activateSelectorFor(IdentityConstraint ic) throws Exception {
+        Selector selector = ic.getSelector();
+        if (DEBUG_IDENTITY_CONSTRAINTS) {
+            System.out.println("<IC>: XMLValidator#activateSelectorFor("+selector+')');
+        }
+        FieldActivator activator = this;
+        XPathMatcher matcher = selector.createMatcher(activator);
+        fMatcherStack.addMatcher(matcher);
+        if (DEBUG_IDENTITY_CONSTRAINTS) {
+            System.out.println("<IC>: "+matcher+"#startDocumentFragment()");
+        }
+        matcher.startDocumentFragment(fStringPool, null);
+    }
 
    private void pushContentLeafStack() throws Exception {
       int contentType = getContentSpecType(fCurrentElementIndex);
@@ -1016,6 +1155,28 @@ NamespacesScope.NamespacesHandler {
             }
          }
          fElementChildrenLength = fElementChildrenOffsetStack[fElementDepth + 1] + 1;
+
+         // call matchers and de-activate context
+         int oldCount = fMatcherStack.getMatcherCount();
+         for (int i = oldCount - 1; i >= 0; i--) {
+             XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
+             if (DEBUG_IDENTITY_CONSTRAINTS) {
+                 System.out.println("<IC>: "+matcher+"#endElement("+fStringPool.toString(fCurrentElement.rawname)+")");
+             }
+             matcher.endElement(fCurrentElement);
+         }
+         if (DEBUG_IDENTITY_CONSTRAINTS) {
+             System.out.println("<IC>: popping context - element: "+fStringPool.toString(fCurrentElement.rawname));
+         }
+         fMatcherStack.popContext();
+         int newCount = fMatcherStack.getMatcherCount();
+         for (int i = oldCount - 1; i >= newCount; i--) {
+             XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
+             if (DEBUG_IDENTITY_CONSTRAINTS) {
+                 System.out.println("<IC>: "+matcher+"#endDocumentFragment()");
+             }
+             matcher.endDocumentFragment();
+         }
       }
       fDocumentHandler.endElement(fCurrentElement);
       if (fNamespacesEnabled) {
@@ -1239,6 +1400,16 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
    //
 
    // error reporting
+
+   /** Report a recoverable schema error. */
+   private void reportSchemaError(int code, Object[] args) throws Exception {
+       fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                  SchemaMessageProvider.SCHEMA_DOMAIN,
+                                  code,
+                                  SchemaMessageProvider.MSG_NONE,
+                                  args,
+                                  XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+   } // reportSchemaError(int,Object)
 
    /** Report a recoverable xml error. */
    protected void reportRecoverableXMLError(int majorCode, int minorCode) 
@@ -1500,6 +1671,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
       fGrammarIsDTDGrammar = false;
       fGrammarIsSchemaGrammar = false;
 
+      fMatcherStack.clear();
 
       init();
 
@@ -2123,11 +2295,17 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                            locationUriPairs = new Hashtable();
                         }
                         locationUriPairs.put(fStringPool.toString(attrList.getAttValue(index)), "");
+                        /***/
+                        // NOTE: This is the *wrong* solution to the problem
+                        //       of finding the grammar associated to elements
+                        //       when the grammar does *not* have a target
+                        //       namespace!!! -Ac
                         if (fNamespacesScope != null) {
                            //bind prefix "" to URI "" in this case
                            fNamespacesScope.setNamespaceForPrefix( fStringPool.addSymbol(""), 
                                                                    fStringPool.addSymbol(""));
                         }
+                        /***/
                      } else if (localpart == fStringPool.addSymbol(SchemaSymbols.XSI_TYPE)) {
                         fXsiTypeAttValue = attrList.getAttValue(index);
                      }
@@ -2561,7 +2739,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                          + " , can not found");
             }
          }
-
 
          if ( fGrammar != null ) {
             if (DEBUG_SCHEMA_VALIDATION) {
@@ -3351,9 +3528,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
       // Get out the content spec for this element
       final int contentType = fCurrentContentSpecType;
 
-// debugging
-//System.out.println("~~~~~~in checkContent, fCurrentContentSpecType : " + fCurrentContentSpecType);
-
       //
       //  Deal with the possible types of content. We try to optimized here
       //  by dealing specially with content models that don't require the
@@ -3687,5 +3861,627 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
       }
 
    } // class AttValidatorENUMERATION
+
+    // xpath matcher information
+
+    /**
+     * Stack of XPath matchers for identity constraints.
+     *
+     * @author Andy Clark, IBM
+     */
+    protected static class XPathMatcherStack {
+
+        //
+        // Data
+        //
+
+        /** Active matchers. */
+        protected XPathMatcher[] fMatchers = new XPathMatcher[4];
+
+        /** Count of active matchers. */
+        protected int fMatchersCount;
+
+        /** Offset stack for contexts. */
+        protected IntStack fContextStack = new IntStack();
+
+        //
+        // Constructors
+        //
+
+        public XPathMatcherStack() {
+        } // <init>()
+
+        //
+        // Public methods
+        //
+
+        /** Resets the XPath matcher stack. */
+        public void clear() {
+            for (int i = 0; i < fMatchersCount; i++) {
+                fMatchers[i] = null;
+            }
+            fMatchersCount = 0;
+            fContextStack.clear();
+        } // clear()
+
+        /** Returns the count of XPath matchers. */
+        public int getMatcherCount() {
+            return fMatchersCount;
+        } // getMatcherCount():int
+
+        /** Adds a matcher. */
+        public void addMatcher(XPathMatcher matcher) {
+            ensureMatcherCapacity();
+            fMatchers[fMatchersCount++] = matcher;
+        } // addMatcher(XPathMatcher)
+
+        /** Returns the XPath matcher at the specified index. */
+        public XPathMatcher getMatcherAt(int index) {
+            return fMatchers[index];
+        } // getMatcherAt(index):XPathMatcher
+
+        /** Pushes a new context onto the stack. */
+        public void pushContext() {
+            fContextStack.push(fMatchersCount);
+        } // pushContext()
+
+        /** Pops a context off of the stack. */
+        public void popContext() {
+            fMatchersCount = fContextStack.pop();
+        } // popContext()
+
+        //
+        // Private methods
+        //
+
+        /** Ensures the size of the matchers array. */
+        private void ensureMatcherCapacity() {
+            if (fMatchersCount == fMatchers.length) {
+                XPathMatcher[] array = new XPathMatcher[fMatchers.length * 2];
+                System.arraycopy(fMatchers, 0, array, 0, fMatchers.length);
+                fMatchers = array;
+            }
+        } // ensureMatcherCapacity()
+
+    } // class XPathMatcherStack
+
+    // value store implementations
+
+    /**
+     * Value store implementation base class. There are specific subclasses
+     * for handling unique, key, and keyref.
+     *
+     * @author Andy Clark, IBM
+     */
+    protected abstract class ValueStoreBase
+        implements ValueStore {
+
+        //
+        // Constants
+        //
+
+        /** Not a value (Unicode: #FFFF). */
+        protected final String NOT_A_VALUE = "\uFFFF";
+
+        //
+        // Data
+        //
+
+        /** Identity constraint. */
+        protected IdentityConstraint fIdentityConstraint;
+
+        /** Current data values. */
+        protected final Hashtable fValues = new Hashtable();
+
+        /** Current data value count. */
+        protected int fValuesCount;
+
+        /** Data value tuples. */
+        protected final Vector fValueTuples = new Vector();
+
+        //
+        // Constructors
+        //
+
+        /** Constructs a value store for the specified identity constraint. */
+        protected ValueStoreBase(IdentityConstraint identityConstraint) {
+            fIdentityConstraint = identityConstraint;
+        } // <init>(IdentityConstraint)
+
+        //
+        // Public methods
+        //
+
+        /** Start scope for value store. */
+        public void startValueScope() throws Exception {
+            if (DEBUG_VALUE_STORES) {
+                System.out.println("<VS>: "+toString()+"#startValueScope()");
+            }
+            fValuesCount = 0;
+            int count = fIdentityConstraint.getFieldCount();
+            for (int i = 0; i < count; i++) {
+                fValues.put(fIdentityConstraint.getFieldAt(i), NOT_A_VALUE);
+            }
+        } // startValueScope()
+
+        /** Ends scope for value store. */
+        public void endValueScope() throws Exception {
+            if (DEBUG_VALUE_STORES) {
+                System.out.println("<VS>: "+toString()+"#endValueScope()");
+            }
+
+            // do we have enough values?
+            if (fValuesCount != fIdentityConstraint.getFieldCount()) {
+                switch (fIdentityConstraint.getType()) {
+                    case IdentityConstraint.UNIQUE: {
+                        int code = SchemaMessageProvider.UniqueNotEnoughValues;
+                        String ename = fIdentityConstraint.getElementName();
+                        reportSchemaError(code, new Object[]{ename});
+                        break;
+                    }
+                    case IdentityConstraint.KEY: {
+                        int code = SchemaMessageProvider.KeyNotEnoughValues;
+                        Key key = (Key)fIdentityConstraint;
+                        String ename = fIdentityConstraint.getElementName();
+                        String kname = key.getName();
+                        reportSchemaError(code, new Object[]{ename,kname});
+                        break;
+                    }
+                    case IdentityConstraint.KEYREF: {
+                        int code = SchemaMessageProvider.KeyRefNotEnoughValues;
+                        KeyRef keyref = (KeyRef)fIdentityConstraint;
+                        String ename = fIdentityConstraint.getElementName();
+                        String kname = keyref.getName();
+                        reportSchemaError(code, new Object[]{ename,kname});
+                        break;
+                    }
+                }
+                return;
+            }
+            
+            // is this value as a group duplicated?
+            if (contains(fValues)) {
+                duplicateValue(fValues);
+            }
+
+            // store values
+            Hashtable values = (Hashtable)fValues.clone();
+            fValueTuples.addElement(values);
+
+        } // endValueScope()
+
+        /** 
+         * Signals the end of the document. This is where the specific
+         * instances of value stores can verify the integrity of the
+         * identity constraints.
+         */
+        public void endDocument() throws Exception {
+            if (DEBUG_VALUE_STORES) {
+                System.out.println("<VS>: "+toString()+"#endDocument()");
+            }
+        } // endDocument()
+
+        //
+        // ValueStore methods
+        //
+       
+        /**
+         * Adds the specified value to the value store.
+         *
+         * @param value The value to add.
+         * @param field The field associated to the value. This reference
+         *              is used to ensure that each field only adds a value
+         *              once within a selection scope.
+         */
+        public void addValue(Field field, String value) throws Exception {
+            if (DEBUG_VALUE_STORES) {
+                System.out.println("<VS>: "+toString()+"#addValue("+
+                                   "field="+field+','+
+                                   "value="+value+
+                                   ")");
+            }
+
+            // do we even know this field?
+            if (!fValues.containsKey(field)) {
+                int code = SchemaMessageProvider.UnknownField;
+                reportSchemaError(code, new Object[]{field.toString()});
+                return;
+            }    
+
+            // duplicate value?
+            Object storedValue = fValues.get(field);
+            if (!storedValue.equals(NOT_A_VALUE)) {
+                int code = SchemaMessageProvider.DuplicateField;
+                reportSchemaError(code, new Object[]{field.toString()});
+                return;
+            }
+
+            // store value
+            fValuesCount++;
+            fValues.put(field, value);
+
+        } // addValue(String,Field)
+
+        /** 
+         * Returns true if this value store contains the specified
+         * values tuple. 
+         */
+        public boolean contains(Hashtable tuple) {
+            if (DEBUG_VALUE_STORES) {
+                System.out.println("<VS>: "+this.toString()+"#contains("+toString(tuple)+")");
+            }
+           
+            // do sizes match?
+            int vcount = fValues.size();
+            int tcount = tuple.size();
+            if (vcount != tcount) {
+                return false;
+            }
+
+            // iterate over tuples to find it
+            int count = fValueTuples.size();
+            LOOP: for (int i = 0; i < count; i++) {
+                Hashtable valueTuple = (Hashtable)fValueTuples.elementAt(i);
+                Enumeration values = tuple.elements();
+                while (values.hasMoreElements()) {
+                    String value = (String)values.nextElement();
+                    // REVISIT: This isn't right! The values need to be
+                    //          compared in order that they are declared.
+                    //          However, at the moment, we don't store the
+                    //          order because we just take advantage of
+                    //          a java.util.Hashtable to keep the mapping
+                    //          between fields and their values. -Ac
+                    if (!valueTuple.contains(value)) {
+                        continue LOOP;
+                    }
+                }
+                return true;
+            }
+
+            // didn't find it
+            return false;
+
+        } // contains(Hashtable):boolean
+
+        //
+        // Protected methods
+        //
+
+        /** 
+         * Called when a duplicate value is added. Subclasses should override
+         * this method to perform error checking.
+         *
+         * @param tuple The duplicate value tuple.
+         */
+        protected void duplicateValue(Hashtable tuple) throws Exception {
+            // no-op
+        } // duplicateValue(Hashtable)
+
+        /** Returns a string of the specified values. */
+        protected String toString(Hashtable tuple) {
+            StringBuffer str = new StringBuffer();
+            Enumeration fields = tuple.keys();
+            while (fields.hasMoreElements()) {
+                Field field = (Field)fields.nextElement();
+                String value = (String)tuple.get(field);
+                str.append(value);
+                if (fields.hasMoreElements()) {
+                    str.append(',');
+                }
+            }
+            return str.toString();
+        } // toString(Hashtable):String
+
+        //
+        // Object methods
+        //
+
+        /** Returns a string representation of this object. */
+        public String toString() {
+            String s = super.toString();
+            int index1 = s.lastIndexOf('$');
+            if (index1 != -1) {
+                s = s.substring(index1 + 1);
+            }
+            int index2 = s.lastIndexOf('.');
+            if (index2 != -1) {
+                s = s.substring(index2 + 1);
+            }
+            return s + '[' + fIdentityConstraint + ']';
+        } // toString():String
+
+    } // class ValueStoreBase
+
+    /**
+     * Unique value store.
+     *
+     * @author Andy Clark, IBM
+     */
+    protected class UniqueValueStore
+        extends ValueStoreBase {
+
+        //
+        // Constructors
+        //
+
+        /** Constructs a unique value store. */
+        public UniqueValueStore(Unique unique) {
+            super(unique);
+        } // <init>(Unique)
+
+        //
+        // ValueStoreBase protected methods
+        //
+
+        /** 
+         * Called when a duplicate value is added.
+         *
+         * @param tuple The duplicate value tuple.
+         */
+        protected void duplicateValue(Hashtable tuple) throws Exception {
+            int code = SchemaMessageProvider.DuplicateUnique;
+            String value = toString(tuple);
+            String ename = fIdentityConstraint.getElementName();
+            reportSchemaError(code, new Object[]{value,ename});
+        } // duplicateValue(Hashtable)
+
+    } // class UniqueValueStore
+
+    /**
+     * Key value store.
+     *
+     * @author Andy Clark, IBM
+     */
+    protected class KeyValueStore
+        extends ValueStoreBase {
+
+        // REVISIT: Implement a more efficient storage mechanism. -Ac
+
+        //
+        // Constructors
+        //
+
+        /** Constructs a key value store. */
+        public KeyValueStore(Key key) {
+            super(key);
+        } // <init>(Key)
+
+        //
+        // ValueStoreBase protected methods
+        //
+
+        /** 
+         * Called when a duplicate value is added.
+         *
+         * @param tuple The duplicate value tuple.
+         */
+        protected void duplicateValue(Hashtable tuple) throws Exception {
+            int code = SchemaMessageProvider.DuplicateKey;
+            String value = toString(tuple);
+            String ename = fIdentityConstraint.getElementName();
+            reportSchemaError(code, new Object[]{value,ename});
+        } // duplicateValue(Hashtable)
+
+    } // class KeyValueStore
+
+    /**
+     * Key reference value store.
+     *
+     * @author Andy Clark, IBM
+     */
+    protected class KeyRefValueStore
+        extends ValueStoreBase {
+
+        //
+        // Data
+        //
+
+        /** Key value store. */
+        protected KeyValueStore fKeyValueStore;
+
+        //
+        // Constructors
+        //
+
+        /** Constructs a key value store. */
+        public KeyRefValueStore(KeyRef keyRef, KeyValueStore keyValueStore) {
+            super(keyRef);
+            fKeyValueStore = keyValueStore;
+        } // <init>(KeyRef)
+
+        //
+        // ValueStoreBase methods
+        //
+
+        public void endDocument() throws Exception {
+            super.endDocument();
+
+            // verify references
+            int count = fValueTuples.size();
+            for (int i = 0; i < count; i++) {
+                Hashtable values = (Hashtable)fValueTuples.elementAt(i);
+                if (!fKeyValueStore.contains(values)) {
+                    int code = SchemaMessageProvider.KeyNotFound;
+                    String value = toString(values);
+                    String element = fIdentityConstraint.getElementName();
+                    reportSchemaError(code, new Object[]{value,element});
+                }
+            }
+
+        } // endValueScope()
+
+    } // class KeyRefValueStore
+
+    // value store management
+
+    /**
+     * Value store cache. This class is used to store the values for
+     * identity constraints.
+     *
+     * @author Andy Clark, IBM
+     */
+    protected class ValueStoreCache {
+
+        //
+        // Data
+        //
+
+        // values stores
+
+        /** Values stores. */
+        protected final Vector fValueStores = new Vector();
+
+        /** Values stores associated to specific identity constraints. */
+        protected final Hashtable fIdentityConstraint2ValueStoreMap = new Hashtable();
+
+        //
+        // Constructors
+        //
+
+        /** Default constructor. */
+        public ValueStoreCache() {
+        } // <init>()
+
+        //
+        // Public methods
+        //
+
+        /** Resets the identity constraint cache. */
+        public void startDocument() throws Exception {
+            if (DEBUG_VALUE_STORES) {
+                System.out.println("<VS>: "+toString()+"#startDocument()");
+            }
+            fValueStores.removeAllElements();
+            fIdentityConstraint2ValueStoreMap.clear();
+        } // startDocument()
+
+        /** 
+         * Initializes the value stores for the specified element
+         * declaration. 
+         */
+        public void initValueStoresFor(XMLElementDecl edecl) 
+            throws Exception {
+            if (DEBUG_VALUE_STORES) {
+                System.out.println("<VS>: "+toString()+"#initValueStoresFor("+
+                                   fStringPool.toString(edecl.name.rawname)+
+                                   ")");
+            }
+
+            // initialize value stores for unique fields
+            Vector uvector = edecl.unique;
+            int ucount = uvector.size();
+            for (int i = 0; i < ucount; i++) {
+                Unique unique = (Unique)uvector.elementAt(i);
+                UniqueValueStore valueStore = null;
+                int fcount = unique.getFieldCount();
+                for (int j = 0; j < fcount; j++) {
+                    Field field = unique.getFieldAt(j);
+                    if (valueStore == null) {
+                        valueStore = (UniqueValueStore)fIdentityConstraint2ValueStoreMap.get(unique);
+                        if (valueStore != null) {
+                            // NOTE: If already initialized, don't need to
+                            //       do it again. -Ac
+                            return;
+                        }
+                        valueStore = new UniqueValueStore(unique);
+                        fValueStores.addElement(valueStore);
+                    }
+                    if (DEBUG_VALUE_STORES) {
+                        System.out.println("<VS>: "+unique+" -> "+valueStore);
+                    }
+                    fIdentityConstraint2ValueStoreMap.put(unique, valueStore);
+                }
+            }
+
+            // initialize value stores for key fields
+            Vector kvector = edecl.key;
+            int kcount = kvector.size();
+            Hashtable keyHash = null;
+            if (kcount > 0) {
+                keyHash = new Hashtable(kcount);
+                for (int i = 0; i < kcount; i++) {
+                    Key key = (Key)kvector.elementAt(i);
+                    KeyValueStore valueStore = null;
+                    int fcount = key.getFieldCount();
+                    for (int j = 0; j < fcount; j++) {
+                        Field field = key.getFieldAt(j);
+                        if (valueStore == null) {
+                            valueStore = new KeyValueStore(key);
+                            fValueStores.addElement(valueStore);
+                            keyHash.put(key.getName(), valueStore);
+                        }
+                        if (DEBUG_VALUE_STORES) {
+                            System.out.println("<VS>: "+key+" -> "+valueStore);
+                        }
+                        fIdentityConstraint2ValueStoreMap.put(key, valueStore);
+                    }
+                }
+            }
+
+            // initialize value stores for key reference fields
+            Vector krvector = edecl.keyRef;
+            int krcount = krvector.size();
+            for (int i = 0; i < krcount; i++) {
+                KeyRef keyRef = (KeyRef)krvector.elementAt(i);
+                KeyValueStore keyValueStore = (KeyValueStore)keyHash.get(keyRef.getName());
+                KeyRefValueStore keyRefValueStore = null;
+                int fcount = keyRef.getFieldCount();
+                for (int j = 0; j < fcount; j++) {
+                    Field field = keyRef.getFieldAt(i);
+                    if (keyRefValueStore == null) {
+                        keyRefValueStore = new KeyRefValueStore(keyRef, keyValueStore);
+                        fValueStores.addElement(keyRefValueStore);
+                    }
+                    if (DEBUG_VALUE_STORES) {
+                        System.out.println("<VS>: "+keyRef+" -> "+keyRefValueStore);
+                    }
+                    fIdentityConstraint2ValueStoreMap.put(keyRef, keyRefValueStore);
+                }
+            }
+
+        } // initValueStoresFor(XMLElementDecl)
+
+        /** Returns the value store associated to the specified field. */
+        public ValueStoreBase getValueStoreFor(Field field) {
+            if (DEBUG_VALUE_STORES) {
+                System.out.println("<VS>: "+toString()+"#getValueStoreFor("+field+")");
+            }
+            IdentityConstraint identityConstraint = field.getIdentityConstraint();
+            return (ValueStoreBase)fIdentityConstraint2ValueStoreMap.get(identityConstraint);
+        } // getValueStoreFor(Field):ValueStoreBase
+
+        /** Check identity constraints. */
+        public void endDocument() throws Exception {
+            if (DEBUG_VALUE_STORES) {
+                System.out.println("<VS>: "+toString()+"#endDocument()");
+            }
+
+            int count = fValueStores.size();
+            for (int i = 0; i < count; i++) {
+                ValueStoreBase valueStore = (ValueStoreBase)fValueStores.elementAt(i);
+                valueStore.endDocument();
+            }
+
+        } // endDocument()
+
+        //
+        // Object methods
+        //
+
+        /** Returns a string representation of this object. */
+        public String toString() {
+            String s = super.toString();
+            int index1 = s.lastIndexOf('$');
+            if (index1 != -1) {
+                return s.substring(index1 + 1);
+            }
+            int index2 = s.lastIndexOf('.');
+            if (index2 != -1) {
+                return s.substring(index2 + 1);
+            }
+            return s;
+        } // toString():String
+
+    } // class ValueStoreCache
 
 } // class XMLValidator

@@ -91,6 +91,6 @@ public interface ValueStore {
      *              is used to ensure that each field only adds a value
      *              once within a selection scope.
      */
-    public void addValue(String value, Field field) throws SAXException;
+    public void addValue(Field field, String value) throws Exception;
 
 } // interface ValueStore

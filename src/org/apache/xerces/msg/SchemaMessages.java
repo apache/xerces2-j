@@ -97,8 +97,16 @@ public class SchemaMessages extends ListResourceBundle {
                 {"AnnotationError", "Annotation can only appear once: type {0}"},
                 {"ListUnionRestrictionError","List | Union | Restriction content is invalid for type {0}"},
 		{ "ProhibitedAttributePresent", "An attribute declared \"prohibited\" is present in this element definition." },
-                
-   };
+        // identity constraints
+        { "UniqueNotEnoughValues", "Not enough values specified for <unique> identity constraint specified for element \"{0}\"." },
+        { "KeyNotEnoughValues", "Not enough values specified for <key name=\"{1}\"> identity constraint specified for element \"{0}\"." },
+        { "KeyRefNotEnoughValues", "Not enough values specified for <keyref name=\"{1}\"> identity constraint specified for element \"{0}\"." },
+        { "DuplicateField", "Duplicate match in scope for field \"{0}\"." },
+        { "DuplicateUnique", "Duplicate unique value [{0}] declared for identity constraint of element \"{1}\"." },
+        { "DuplicateKey", "Duplicate key value [{0}] declared for identity constraint of element \"{1}\"." },
+        { "KeyNotFound", "Key with value [{0}] not found for identity constraint of element \"{1}\"." },
+        { "UnknownField", "Internal identity constraint error; unknown field \"{0}\"." },
+       };
     
     /** Returns the list resource bundle contents. */
     public Object[][] getContents() {

@@ -1377,7 +1377,10 @@ public class SAXParser
         }
 
         // free attribute list
-        attrList.releaseAttrList(attrListIndex);
+        // NOTE: This is now the responsibility of the caller
+        //       because other components need to know the
+        //       attributes before it gets released. -Ac
+        //attrList.releaseAttrList(attrListIndex);
 
     } // startElement(QName,XMLAttrList,int)
 

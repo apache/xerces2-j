@@ -76,13 +76,13 @@ public class Field {
     //
 
     /** Field XPath. */
-    private Field.XPath fXPath;
+    protected Field.XPath fXPath;
 
     /** Datatype. */
-    private DatatypeValidator fDatatypeValidator;
+    protected DatatypeValidator fDatatypeValidator;
 
     /** Identity constraint. */
-    private IdentityConstraint fIdentityConstraint;
+    protected IdentityConstraint fIdentityConstraint;
 
     //
     // Constructors
@@ -192,8 +192,9 @@ public class Field {
          * This method is called when the XPath handler matches the
          * XPath expression.
          */
-        protected void matched(String content) throws SAXException {
-            fStore.addValue(content, Field.this);
+        protected void matched(String content) throws Exception {
+            super.matched(content);
+            fStore.addValue(Field.this, content);
         } // matched(String)
 
     } // class Matcher

@@ -1093,7 +1093,10 @@ public class DOMParser
                 }
             }
 
-            xmlAttrList.releaseAttrList(attrListIndex);
+            // NOTE: This is now the responsibility of the caller
+            //       because other components need to know the
+            //       attributes before it gets released. -Ac
+            //xmlAttrList.releaseAttrList(attrListIndex);
 
             // copy schema grammar, if needed
             if (!fSeenRootElement) {

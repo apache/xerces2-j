@@ -113,291 +113,15 @@ import  org.apache.xerces.validators.schema.SchemaSymbols;
  * to populate the Grammar internal representation by
  * instances of Grammar objects.
  * Traverse a Schema Grammar:
-     * As of April 07, 2000 the following is the
-     * XML Representation of Schemas and Schema components,
-     * Chapter 4 of W3C Working Draft.
-     * <schema 
-     *   attributeFormDefault = qualified | unqualified 
-     *   blockDefault = #all or (possibly empty) subset of {substitutionGroup, extension, restriction} 
-     *   elementFormDefault = qualified | unqualified 
-     *   finalDefault = #all or (possibly empty) subset of {extension, restriction} 
-     *   id = ID 
-     *   targetNamespace = uriReference 
-     *   version = string>
-     *   Content: ((include | import | annotation)* , ((simpleType | complexType | element | group | attribute | attributeGroup | notation) , annotation*)+)
-     * </schema>
-     * 
-     * 
-     * <attribute 
-     *   form = qualified | unqualified 
-     *   id = ID 
-     *   name = NCName 
-     *   ref = QName 
-     *   type = QName 
-     *   use = default | fixed | optional | prohibited | required 
-     *   value = string>
-     *   Content: (annotation? , simpleType?)
-     * </>
-     * 
-     * <element 
-     *   abstract = boolean 
-     *   block = #all or (possibly empty) subset of {substitutionGroup, extension, restriction} 
-     *   default = string 
-     *   substitutionGroup = QName 
-     *   final = #all or (possibly empty) subset of {extension, restriction} 
-     *   fixed = string 
-     *   form = qualified | unqualified 
-     *   id = ID 
-     *   maxOccurs = string 
-     *   minOccurs = nonNegativeInteger 
-     *   name = NCName 
-     *   nullable = boolean 
-     *   ref = QName 
-     *   type = QName>
-     *   Content: (annotation? , (simpleType | complexType)? , (unique | key | keyref)*)
-     * </>
-     * 
-     * 
-     * <complexType 
-     *   abstract = boolean 
-     *   base = QName 
-     *   block = #all or (possibly empty) subset of {extension, restriction} 
-     *   content = elementOnly | empty | mixed | textOnly 
-     *   derivedBy = extension | restriction 
-     *   final = #all or (possibly empty) subset of {extension, restriction} 
-     *   id = ID 
-     *   name = NCName>
-     *   Content: (annotation? , (((minExclusive | minInclusive | maxExclusive | maxInclusive | precision | scale | length | minLength | maxLength | encoding | period | duration | enumeration | pattern)* | (element | group | all | choice | sequence | any)*) , ((attribute | attributeGroup)* , anyAttribute?)))
-     * </>
-     * 
-     * 
-     * <attributeGroup 
-     *   id = ID 
-     *   name = NCName
-     *   ref = QName>
-     *   Content: (annotation?, (attribute|attributeGroup), anyAttribute?)
-     * </>
-     * 
-     * <anyAttribute 
-     *   id = ID 
-     *   namespace = ##any | ##other | ##local | list of {uri, ##targetNamespace}>
-     *   Content: (annotation?)
-     * </anyAttribute>
-     * 
-     * <group 
-     *   id = ID 
-     *   maxOccurs = string 
-     *   minOccurs = nonNegativeInteger 
-     *   name = NCName 
-     *   ref = QName>
-     *   Content: (annotation? , (element | group | all | choice | sequence | any)*)
-     * </>
-     * 
-     * <all 
-     *   id = ID 
-     *   maxOccurs = string 
-     *   minOccurs = nonNegativeInteger>
-     *   Content: (annotation? , (element | group | choice | sequence | any)*)
-     * </all>
-     * 
-     * <choice 
-     *   id = ID 
-     *   maxOccurs = string 
-     *   minOccurs = nonNegativeInteger>
-     *   Content: (annotation? , (element | group | choice | sequence | any)*)
-     * </choice>
-     * 
-     * <sequence 
-     *   id = ID 
-     *   maxOccurs = string 
-     *   minOccurs = nonNegativeInteger>
-     *   Content: (annotation? , (element | group | choice | sequence | any)*)
-     * </sequence>
-     * 
-     * 
-     * <any 
-     *   id = ID 
-     *   maxOccurs = string 
-     *   minOccurs = nonNegativeInteger 
-     *   namespace = ##any | ##other | ##local | list of {uri, ##targetNamespace} 
-     *   processContents = lax | skip | strict>
-     *   Content: (annotation?)
-     * </any>
-     * 
-     * <unique 
-     *   id = ID 
-     *   name = NCName>
-     *   Content: (annotation? , (selector , field+))
-     * </unique>
-     * 
-     * <key 
-     *   id = ID 
-     *   name = NCName>
-     *   Content: (annotation? , (selector , field+))
-     * </key>
-     * 
-     * <keyref 
-     *   id = ID 
-     *   name = NCName 
-     *   refer = QName>
-     *   Content: (annotation? , (selector , field+))
-     * </keyref>
-     * 
-     * <selector>
-     *   Content: XPathExprApprox : An XPath expression 
-     * </selector>
-     * 
-     * <field>
-     *   Content: XPathExprApprox : An XPath expression 
-     * </field>
-     * 
-     * 
-     * <notation 
-     *   id = ID 
-     *   name = NCName 
-     *   public = A public identifier, per ISO 8879 
-     *   system = uriReference>
-     *   Content: (annotation?)
-     * </notation>
-     * 
-     * <annotation>
-     *   Content: (appinfo | documentation)*
-     * </annotation>
-     * 
-     * <include 
-     *   id = ID 
-     *   schemaLocation = uriReference>
-     *   Content: (annotation?)
-     * </include>
-     * 
-     * <import 
-     *   id = ID 
-     *   namespace = uriReference 
-     *   schemaLocation = uriReference>
-     *   Content: (annotation?)
-     * </import>
-     * 
-     * <simpleType
-     *   id = ID 
-     *   name = NCName 
-     *   Content: (annotation? , ((list | restriction | union)))
-     * </simpleType>
-     * 
-     * <restriction 
-     *   base = QName 
-     *   id = ID 
-     *   Content: (annotation? , (simpleType? , (duration | encoding | enumeration | length | maxExclusive | maxInclusive | maxLength | minExclusive | minInclusive | minLength | pattern | period | precision | scale | whiteSpace)*))
-     * </restriction>
-     *
-     * <list 
-     *   id = ID 
-     *   itemType = QName 
-     *   Content: (annotation? , (simpleType?))
-     * </list>
-     *
-     * <union 
-     *   id = ID 
-     *   memberTypes = List of QName 
-     *   Content: (annotation? , (simpleType*))
-     * </union>
-     *
-     *
-     * <length
-     *   id = ID 
-     *   value = nonNegativeInteger>
-     *   Content: ( annotation? )
-     * </length>
-     * 
-     * <minLength
-     *   id = ID 
-     *   value = nonNegativeInteger>
-     *   Content: ( annotation? )
-     * </minLength>
-     * 
-     * <maxLength
-     *   id = ID 
-     *   value = nonNegativeInteger>
-     *   Content: ( annotation? )
-     * </maxLength>
-     * 
-     * 
-     * <pattern
-     *   id = ID 
-     *   value = string>
-     *   Content: ( annotation? )
-     * </pattern>
-     * 
-     * 
-     * <enumeration
-     *   id = ID 
-     *   value = string>
-     *   Content: ( annotation? )
-     * </enumeration>
-     * 
-     * <maxInclusive
-     *   id = ID 
-     *   value = string>
-     *   Content: ( annotation? )
-     * </maxInclusive>
-     * 
-     * <maxExclusive
-     *   id = ID 
-     *   value = string>
-     *   Content: ( annotation? )
-     * </maxExclusive>
-     * 
-     * <minInclusive
-     *   id = ID 
-     *   value = string>
-     *   Content: ( annotation? )
-     * </minInclusive>
-     * 
-     * 
-     * <minExclusive
-     *   id = ID 
-     *   value = string>
-     *   Content: ( annotation? )
-     * </minExclusive>
-     * 
-     * <precision
-     *   id = ID 
-     *   value = nonNegativeInteger>
-     *   Content: ( annotation? )
-     * </precision>
-     * 
-     * <scale
-     *   id = ID 
-     *   value = nonNegativeInteger>
-     *   Content: ( annotation? )
-     * </scale>
-     * 
-     * <encoding
-     *   id = ID 
-     *   value = | hex | base64 >
-     *   Content: ( annotation? )
-     * </encoding>
-     * 
-     * 
-     * <duration
-     *   id = ID 
-     *   value = timeDuration>
-     *   Content: ( annotation? )
-     * </duration>
-     * 
-     * <period
-     *   id = ID 
-     *   value = timeDuration>
-     *   Content: ( annotation? )
-     * </period>
-     * 
  * 
- * @author Eric Ye, Jeffrey Rodriguez, Andy Clark
+ * @author Eric Ye, IBM
+ * @author Jeffrey Rodriguez, IBM
+ * @author Andy Clark, IBM
  *  
- * @see                  org.apache.xerces.validators.common.Grammar
+ * @see org.apache.xerces.validators.common.Grammar
  *
  * @version $Id$
  */
-
 public class TraverseSchema implements 
                             NamespacesScope.NamespacesHandler{
 
@@ -4647,7 +4371,9 @@ public class TraverseSchema implements
 					|| (childName.equals(SchemaSymbols.ELT_KEYREF)) 
 					|| (childName.equals(SchemaSymbols.ELT_UNIQUE)))) {
             	child = XUtil.getNextSiblingElement(child);
-            	childName = child.getLocalName();
+                if (child != null) {
+                    childName = child.getLocalName();
+                }
 			}
 			if (child != null) {
                	// REVISIT: Localize
@@ -4909,7 +4635,8 @@ public class TraverseSchema implements
         if (DEBUG_IDENTITY_CONSTRAINTS) {
             System.out.println("<IC>: traverseUnique(\""+uelem.getNodeName()+"\")");
         }
-        Unique unique = new Unique();
+        String ename = getElementNameFor(uelem);
+        Unique unique = new Unique(ename);
 
         // get selector and fields
         traverseIdentityConstraint(unique, uelem);
@@ -4927,7 +4654,8 @@ public class TraverseSchema implements
         if (DEBUG_IDENTITY_CONSTRAINTS) {
             System.out.println("<IC>: traverseKey(\""+kelem.getNodeName()+"\") ["+kname+']');
         }
-        Key key = new Key(kname);
+        String ename = getElementNameFor(kelem);
+        Key key = new Key(ename, kname);
 
         // get selector and fields
         traverseIdentityConstraint(key, kelem);
@@ -4945,7 +4673,8 @@ public class TraverseSchema implements
         if (DEBUG_IDENTITY_CONSTRAINTS) {
             System.out.println("<IC>: traverseKeyRef(\""+krelem.getNodeName()+"\") ["+krname+']');
         }
-        KeyRef keyRef = new KeyRef(krname);
+        String ename = getElementNameFor(krelem);
+        KeyRef keyRef = new KeyRef(ename, krname);
 
         // add to element decl
         traverseIdentityConstraint(keyRef, krelem);
@@ -5003,6 +4732,15 @@ public class TraverseSchema implements
         }
 
     } // traverseIdentityConstraint(IdentityConstraint,Element)
+
+    private String getElementNameFor(Element icnode) {
+        Element enode = (Element)icnode.getParentNode();
+        String ename = enode.getAttribute("name");
+        if (ename.length() == 0) {
+            ename = enode.getAttribute("ref");
+        }
+        return ename;
+    } // getElementNameFor(Element):String
 
     int getLocalPartIndex(String fullName){
         int colonAt = fullName.indexOf(":"); 
@@ -6431,10 +6169,4 @@ public class TraverseSchema implements
         public void ignorableWhitespace(int dataIdx) {}
     } // class IgnoreWhitespaceParser
 
-}
-
-
-
-
-
-
+} // class TraverseSchema

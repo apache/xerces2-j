@@ -162,8 +162,17 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         AnnotationError = 26,
         ListUnionRestrictionError = 27,
         ProhibitedAttributePresent = 28,
+        // identity constaints
+        UniqueNotEnoughValues = 29,
+        KeyNotEnoughValues = 30,
+        KeyRefNotEnoughValues = 31,
+        DuplicateField = 32,
+        DuplicateUnique = 33,
+        DuplicateKey = 34,
+        KeyNotFound = 35,
+        UnknownField = 36,
         // ...
-        MSG_MAX_CODE = 31;
+        MSG_MAX_CODE = 37;
     //
     // Minor Codes
     //
@@ -200,5 +209,15 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         "AnnotationError",                //  26, "Annotation can only appear once: type {0}"
         "ListUnionRestrictionError",       //  27, "List | Union | Restriction content is invalid for type {0}"
         "ProhibitedAttributePresent",	    		// 	28,	attribue dcld prohibited is present
+        // identity constraint keys
+        "UniqueNotEnoughValues",
+        "KeyNotEnoughValues",
+        "KeyRefNotEnoughValues",
+        "DuplicateField",
+        "DuplicateUnique",
+        "DuplicateKey",
+        "KeyNotFound",
+        "UnknownField",
+        // END
     };
 }

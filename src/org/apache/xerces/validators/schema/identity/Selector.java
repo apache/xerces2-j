@@ -77,10 +77,10 @@ public class Selector {
     //
 
     /** XPath. */
-    private Selector.XPath fXPath;
+    protected Selector.XPath fXPath;
 
     /** Identity constraint. */
-    private IdentityConstraint fIdentityConstraint;
+    protected IdentityConstraint fIdentityConstraint;
 
     //
     // Constructors
@@ -172,7 +172,13 @@ public class Selector {
         //
 
         /** Field activator. */
-        private FieldActivator fFieldActivator;
+        protected FieldActivator fFieldActivator;
+
+        /** Element depth. */
+        protected int fElementDepth;
+
+        /** Depth at match. */
+        protected int fMatchedDepth;
 
         //
         // Constructors
@@ -188,6 +194,14 @@ public class Selector {
         // XMLDocumentFragmentHandler methods
         //
     
+        public void startDocumentFragment(StringPool stringPool,
+                                          NamespacesScope namespacesScope)
+            throws Exception {
+            super.startDocumentFragment(stringPool,namespacesScope);
+            fElementDepth = 0;
+            fMatchedDepth = -1;
+        } // startDocumentFragment(StringPool,NamespacesScope)
+
         /**
          * The start of an element. If the document specifies the start element
          * by using an empty tag, then the startElement method will immediately
@@ -201,22 +215,30 @@ public class Selector {
         public void startElement(QName element, XMLAttrList attributes, 
                                  int handle) throws Exception {
             super.startElement(element, attributes, handle);
+            fElementDepth++;
     
             // activate the fields, if selector is matched
             if (isMatched()) {
+                fMatchedDepth = fElementDepth;
+                fFieldActivator.startValueScopeFor(fIdentityConstraint);
                 int count = fIdentityConstraint.getFieldCount();
                 for (int i = 0; i < count; i++) {
                     Field field = fIdentityConstraint.getFieldAt(i);
                     XPathMatcher matcher = fFieldActivator.activateField(field);
-                    // NOTE: We have to notify the field of *this* element
-                    //       to handle fields like "@foo" which is relative
-                    //       to the selector matched. -Ac
                     matcher.startElement(element, attributes, handle);
                 }
             }
     
         } // startElement(QName,XMLAttrList,int)
     
+        public void endElement(QName element) throws Exception {
+            super.endElement(element);
+            if (fElementDepth-- == fMatchedDepth) {
+                fMatchedDepth = -1;
+                fFieldActivator.endValueScopeFor(fIdentityConstraint);
+            }
+        }
+
     } // class Matcher
 
 } // class Selector
