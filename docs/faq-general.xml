@@ -23,6 +23,25 @@
         </p>
     </a>
  </faq>
+ <faq title="Obtaining smaller jars">
+   <q>I don&apos;t need all the features Xerces provides, but I&apos;m
+   running in an environment where space is at a premium.  Is there
+   anything I can do?
+ </q>
+ <a>
+    <p>
+    Partially to address this issue, we've recently begun to
+    distribute compressed jarfiles instead of our traditionally
+    uncompressed files.  But if you still need a smaller jar, and
+    don&apos;t need things like support for XML Schema or the WML/HTML
+    DOM implementations that Xerces provides, then look at the
+    <code>dtdjars</code> and <code>tinyjars</code> targets in our
+    buildfile.  <code>tinyjars</code> will generate a
+    <code>xercesImpl.jar</code> fifty percent smaller than the one we
+    distribute.
+    </p>
+  </a>
+ </faq>
  <faq title='Validation against DTD'>
   <q>How do I turn on DTD validation?</q>
   <a>

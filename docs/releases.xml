@@ -7,6 +7,22 @@
       This release fixes a number of bugs, and adds some functionality.
   </desc>
   <changes>
+    <update>
+      <note>
+        Compress jars by default.  We have not done so in the past,
+        and it will be useful to see if this proves problematic or
+        beneficial.
+      </note>
+      <submitter name="Neil Graham"/>
+    </update>
+    <add>
+      <note>
+        Added several build targets for building customized xercesImpl
+        jarfiles.  Now we can build a DTD-only version, and a DTD-only
+        version also excluding support for the HTML/WML DOM.
+      </note>
+      <submitter name="Neil Graham"/>
+    </add>
     <fix>
       <note>
         Parser now reads external entities one chunk at a time, rather than a character at a time;
