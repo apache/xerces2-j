@@ -94,8 +94,8 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
 
+// REVISIT: Change use of AttributeList to Attributes. -Ac
 import org.xml.sax.AttributeList;
-import org.xml.sax.Configurable;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
