@@ -84,7 +84,7 @@ public class XML11Char {
     //
 
     /** Character flags for XML 1.1. */
-    public static final byte XML11CHARS [] = new byte [1 << 16];
+    private static final byte XML11CHARS [] = new byte [1 << 16];
 
     /** XML 1.1 Valid character mask. */
     public static final int MASK_XML11_VALID = 0x01;
