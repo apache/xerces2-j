@@ -1,0 +1,11 @@
+<?xml encoding='US-ASCII'?>
+<!-- $Id$ -->
+<!ELEMENT schedule (date,milestone*)>
+<!ELEMENT date (#PCDATA)>
+<!ELEMENT milestone (title,depends*,goal*)>
+<!ATTLIST milestone id      ID     #REQUIRED
+                    date    CDATA  #IMPLIED>
+<!ELEMENT depends EMPTY>
+<!ATTLIST depends idref IDREF #REQUIRED>
+<!ELEMENT title (#PCDATA)>
+<!ELEMENT goal (#PCDATA)>

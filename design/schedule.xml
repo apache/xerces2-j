@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='US-ASCII'?>
+<!-- $Id$ -->
+<!DOCTYPE schedule SYSTEM 'schedule.dtd'>
+<schedule>
+ <date>$Date$</date>
+ <milestone id='M1'>
+  <title>Parser without DTD support</title>
+  <goal>XMLString</goal>
+  <goal>XMLStringBuffer</goal>
+  <goal>XMLErrorReporter</goal>
+  <goal>XMLDocumentScanner</goal>
+  <goal>XMLAttributes</goal>
+  <goal>XMLEntityManager</goal>
+  <goal>XMLEntityReader</goal>
+  <goal>CachingParserPool (only supporting the SymbolTable)</goal>
+  <goal>XMLParser/XMLDocumentParser (SAXParser? DOMParser?)</goal>
+  <goal>XMLChar</goal>
+  <goal>EncodingMap</goal>
+  <goal>SymbolTable</goal>
+  <goal>QName</goal>
+  <goal>Some MessageFormatter</goal>
+ </milestone>
+ <milestone id='M2'>
+  <depends idref='M1'/>
+  <title>Parser with DTD scanning without validation</title>
+  <goal>CachingParserPool (supporting GrammarPool)</goal>
+  <goal>XMLDTDScanner</goal>
+  <goal>XMLGrammarParser/DTDParser</goal>
+  <goal>GrammarPool</goal>
+  <goal>Grammar/DTDGrammar</goal>
+  <goal>XMLElementDecl</goal>
+  <goal>XMLAttributeDecl</goal>
+  <goal>XMLSimpleType</goal>
+  <goal>XMLEntityDecl</goal>
+  <goal>XMLNotationDecl</goal>
+ </milestone>
+ <milestone id='M3'>
+  <depends idref='M2'/>
+  <title>Parser with DTD scanning + datatypes validation</title>
+  <goal>XMLValidator</goal>
+  <goal>DatatypeValidatorFactoryImpl</goal>
+  <goal>AbstractDatatypeValidator</goal>
+  <goal>StringDatatypeValidator</goal>
+  <goal>InvalidDatatypeFacetException</goal>
+  <goal>InvalidDatatypeValueException</goal>
+ </milestone>
+ <milestone id='M4'>
+  <depends idref='M3'/>
+  <title>Parser with DTD scanning + datatypes and content model validation</title>
+  <goal>SimpleContentModel</goal>
+  <goal>MixedContentModel</goal>
+  <goal>DFAContentModel</goal>
+ </milestone>
+ <milestone id='M5'>
+  <depends idref='M4'/>
+  <title>Parser with DTD scanning and Schema parsing + validation</title>
+  <goal>SchemaGrammar</goal>
+  <goal>SchemaParser</goal>
+ </milestone>
+</schedule>
