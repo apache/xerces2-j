@@ -1153,8 +1153,11 @@ public abstract class NodeImpl
             for (node=thisNode; node != null; node=node.getParentNode()) {
                 thisDepth +=1;
                 if (node == otherNode) 
+                  {
                   // The other node is an ancestor of the owning element
-                  return DOCUMENT_POSITION_PRECEDING;
+                  return (DOCUMENT_POSITION_CONTAINS | 
+                          DOCUMENT_POSITION_PRECEDING);
+                  }
                 thisAncestor = node;
             }
           }
