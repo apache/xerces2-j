@@ -61,6 +61,7 @@ import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
+import org.apache.xerces.impl.Constants;
 
 /**
  * This is a concrete vanilla XML parser class. It uses the abstract parser
@@ -101,7 +102,11 @@ public class XMLDocumentParser
      * Constructs a document parser using the specified symbol table.
      */
     public XMLDocumentParser(SymbolTable symbolTable) {
-        super(new StandardParserConfiguration(symbolTable));
+        super((XMLParserConfiguration)ObjectFactory.createObject(
+            "org.apache.xerces.xni.parser.XMLParserConfiguration",
+            "org.apache.xerces.parsers.StandardParserConfiguration"
+            ));
+        fConfiguration.setProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SYMBOL_TABLE_PROPERTY, symbolTable);
     } // <init>(SymbolTable)
 
     /**
@@ -110,7 +115,12 @@ public class XMLDocumentParser
      */
     public XMLDocumentParser(SymbolTable symbolTable,
                              XMLGrammarPool grammarPool) {
-        super(new StandardParserConfiguration(symbolTable, grammarPool));
+        super((XMLParserConfiguration)ObjectFactory.createObject(
+            "org.apache.xerces.xni.parser.XMLParserConfiguration",
+            "org.apache.xerces.parsers.StandardParserConfiguration"
+            ));
+        fConfiguration.setProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SYMBOL_TABLE_PROPERTY, symbolTable);
+        fConfiguration.setProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.XMLGRAMMAR_POOL_PROPERTY, grammarPool);
     }
 
 } // class XMLDocumentParser

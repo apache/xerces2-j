@@ -73,6 +73,7 @@ import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
+import org.apache.xerces.impl.Constants;
 
 import org.w3c.dom.Node;
 
@@ -123,7 +124,11 @@ public class DOMParser
      * Constructs a DOM parser using the specified symbol table.
      */
     public DOMParser(SymbolTable symbolTable) {
-        super(new StandardParserConfiguration(symbolTable));
+        super((XMLParserConfiguration)ObjectFactory.createObject(
+            "org.apache.xerces.xni.parser.XMLParserConfiguration",
+            "org.apache.xerces.parsers.StandardParserConfiguration"
+            ));
+        fConfiguration.setProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SYMBOL_TABLE_PROPERTY, symbolTable);
     } // <init>(SymbolTable)
 
 
@@ -132,7 +137,12 @@ public class DOMParser
      * grammar pool.
      */
     public DOMParser(SymbolTable symbolTable, XMLGrammarPool grammarPool) {
-        super(new StandardParserConfiguration(symbolTable, grammarPool));
+        super((XMLParserConfiguration)ObjectFactory.createObject(
+            "org.apache.xerces.xni.parser.XMLParserConfiguration",
+            "org.apache.xerces.parsers.StandardParserConfiguration"
+            ));
+        fConfiguration.setProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SYMBOL_TABLE_PROPERTY, symbolTable);
+        fConfiguration.setProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.XMLGRAMMAR_POOL_PROPERTY, grammarPool);
     }
 
     //
@@ -183,6 +193,7 @@ public class DOMParser
             throw new SAXException(ex);
         }
         catch (XNIException e) {
+            e.printStackTrace();
             Exception ex = e.getException();
             if (ex == null) {
                 throw new SAXException(e.getMessage());

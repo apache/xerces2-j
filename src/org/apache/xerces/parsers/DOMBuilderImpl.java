@@ -77,6 +77,7 @@ import org.apache.xerces.dom3.ls.DOMInputSource;
 
 import org.apache.xerces.util.DOMEntityResolverWrapper;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.util.DOMErrorHandlerWrapper;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
@@ -210,7 +211,10 @@ extends AbstractDOMParser implements DOMBuilder {
      * Constructs a DOM Builder using the standard parser configuration.
      */
     public DOMBuilderImpl() {
-        this(new StandardParserConfiguration());
+        this( (XMLParserConfiguration)ObjectFactory.createObject(
+            "org.apache.xerces.xni.parser.XMLParserConfiguration",
+            "org.apache.xerces.parsers.StandardParserConfiguration"
+            ));
     } // <init>
 
     /**
@@ -254,7 +258,11 @@ extends AbstractDOMParser implements DOMBuilder {
      * Constructs a DOM Builder using the specified symbol table.
      */
     public DOMBuilderImpl(SymbolTable symbolTable) {
-        this(new StandardParserConfiguration(symbolTable));
+        this((XMLParserConfiguration)ObjectFactory.createObject(
+            "org.apache.xerces.xni.parser.XMLParserConfiguration",
+            "org.apache.xerces.parsers.StandardParserConfiguration"
+            ));
+        fConfiguration.setProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SYMBOL_TABLE_PROPERTY, symbolTable);
     } // <init>(SymbolTable)
 
 
@@ -263,7 +271,12 @@ extends AbstractDOMParser implements DOMBuilder {
      * grammar pool.
      */
     public DOMBuilderImpl(SymbolTable symbolTable, XMLGrammarPool grammarPool) {
-        this(new StandardParserConfiguration(symbolTable, grammarPool));
+        this((XMLParserConfiguration)ObjectFactory.createObject(
+            "org.apache.xerces.xni.parser.XMLParserConfiguration",
+            "org.apache.xerces.parsers.StandardParserConfiguration"
+            ));
+        fConfiguration.setProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SYMBOL_TABLE_PROPERTY, symbolTable);
+        fConfiguration.setProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.XMLGRAMMAR_POOL_PROPERTY, grammarPool);
     }
 
     /**

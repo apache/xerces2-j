@@ -111,7 +111,11 @@ public class SAXParser
      * Constructs a SAX parser using the specified symbol table.
      */
     public SAXParser(SymbolTable symbolTable) {
-        super(new StandardParserConfiguration(symbolTable));
+        super((XMLParserConfiguration)ObjectFactory.createObject(
+            "org.apache.xerces.xni.parser.XMLParserConfiguration",
+            "org.apache.xerces.parsers.StandardParserConfiguration"
+            ));
+        fConfiguration.setProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SYMBOL_TABLE_PROPERTY, symbolTable);
         fConfiguration.setFeature(NOTIFY_BUILTIN_REFS, true);
     } // <init>(SymbolTable)
 
@@ -120,7 +124,12 @@ public class SAXParser
      * grammar pool.
      */
     public SAXParser(SymbolTable symbolTable, XMLGrammarPool grammarPool) {
-        super(new StandardParserConfiguration(symbolTable, grammarPool));
+        super((XMLParserConfiguration)ObjectFactory.createObject(
+            "org.apache.xerces.xni.parser.XMLParserConfiguration",
+            "org.apache.xerces.parsers.StandardParserConfiguration"
+            ));
+        fConfiguration.setProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SYMBOL_TABLE_PROPERTY, symbolTable);
+        fConfiguration.setProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.XMLGRAMMAR_POOL_PROPERTY, grammarPool);
         fConfiguration.setFeature(NOTIFY_BUILTIN_REFS, true);
     } // <init>(SymbolTable,XMLGrammarPool)
 
