@@ -68,7 +68,10 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
    package (or equivalent) available.
   </note>
   <note>
-    xerces.jar is no longer available in the main distribution. You can still download this jar from deprecated distribution. xerces.jar is a Jar file that contains all the parser class files. 
+    xerces.jar is no longer available in the main distribution. You can still 
+    download this jar from deprecated distribution. xerces.jar is a Jar file 
+    that contains all the parser class files (i.e., it contains
+    the intersection of the contents of xercesImpl.jar and xmlParserAPIs.jar). 
    </note>
  </s2>
  <s2 title='Files in the Source Package'>
@@ -181,5 +184,63 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
  more options, please look inside build.xml itself; all possibilities
  are documented there.
  </p>
+</s2>
+<s2 title="Verifying signatures">
+    <p>In order to provide security-conscious users with the best
+    possible assurance that the Xerces distribution they have
+    downloaded is official, "signatures" are provided for all 6
+    Xerces packages produced in each release.  A signature is
+    produced with cryptographic software (such as <jump
+    href="http://www.pgp.com">PGP</jump> or <jump
+    href="http://www.gnupg.org">GNUPG</jump>).  The cryptographic
+    software is used to apply an algorithm that uses the secret
+    "key" of a Xerces committer to generate a unique file from
+    each Xerces distribution.  The Xerces committer then makes a
+    "public" key available, which the user can use, in
+    conjunction with the downloaded distribution and the
+    accompanying signature, to verify that the distribution was
+    actually produced by that committer.
+    </p>
+    <p>In order to verify the legitimacy of Xerces distributions
+    you download, these steps should be followed:</p>
+    <ol>
+        <li>
+            Get a copy of PGP or GNUPG from the above URL's.
+        </li>
+        <li>
+            Obtain the signature of the Xerces package you wish
+            to verify.  For instance, if you want to verify the
+            legitimacy of Xerces-bin.x.y.z.tar.gz, download the
+            Xerces-bin.x.y.z.tar.gz.asc file from the same
+            location as the original file was obtained.
+        </li>
+        <li>
+            Obtain a copy of the public key of the Xerces
+            committer.  While most committers have posted their
+            keys to public "key servers", probably the easiest
+            place to get them from is CVS.  The public keys of
+            all Xerces committers who post releases are available
+            from the file called <code>KEYS</code> located in the
+            root directory of the <code>xml-xerces/java</code>
+            repository.
+        </li>
+        <li>
+            Add these keys to your "public" keyring.  In GNUPG,
+            you'd do this with a command like <code>gpg --import
+            KEYS</code>.
+        </li>
+        <li>
+            Issue the command for verifying signatures
+            appropriate for the cryptographic software you've
+            chosen.  For GNUPG, this would be 
+            <code>gpg --verify Xerces-J-foo.x.y.z.ext.asc
+            Xerces-J-foo.x.y.z.ext</code>.
+        </li>
+    </ol>
+    <p>Note that, in general, it won't be necessary to acquire new copies
+    of public keys to verify signatures for each Xerces release.
+    This will only be necessary if a new Xerces committer has
+    published the release.  
+    </p>
 </s2>
 </s1>
