@@ -463,7 +463,7 @@ public class XPathMatcher {
                 if (j == fCurrentStep[i]) {
                     str.append('^');
                 }
-                str.append(steps[i].toString());
+                str.append(steps[j].toString());
                 if (j < steps.length - 1) {
                     str.append('/');
                 }
