@@ -119,7 +119,8 @@ public class AttrNSImpl
 	      (prefix.equals("xmlns") &&
 	       !namespaceURI.equals("http://www.w3.org/2000/xmlns/"))))
 	     || (qualifiedName.equals("xmlns") &&
-		 !namespaceURI.equals("http://www.w3.org/2000/xmlns/"))) {
+		 (namespaceURI == null ||
+		  !namespaceURI.equals("http://www.w3.org/2000/xmlns/")))) {
 
 	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
 				       "DOM003 Namespace error");
