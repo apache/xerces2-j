@@ -301,22 +301,22 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
         if(value instanceof Boolean){
             boolean state = ((Boolean)value).booleanValue ();
             try {
-                if (name.equals (Constants.DOM_COMMENTS)) {
+                if (name.equalsIgnoreCase (Constants.DOM_COMMENTS)) {
                     fConfiguration.setFeature (INCLUDE_COMMENTS_FEATURE, state);
                 }
-                else if (name.equals (Constants.DOM_DATATYPE_NORMALIZATION)) {
+                else if (name.equalsIgnoreCase (Constants.DOM_DATATYPE_NORMALIZATION)) {
                     fConfiguration.setFeature (NORMALIZE_DATA, state);
                 }
-                else if (name.equals (Constants.DOM_ENTITIES)) {
+                else if (name.equalsIgnoreCase (Constants.DOM_ENTITIES)) {
                     fConfiguration.setFeature (CREATE_ENTITY_REF_NODES, state);
                 }
-                else if (name.equals (Constants.DOM_DISALLOW_DOCTYPE)) {
+                else if (name.equalsIgnoreCase (Constants.DOM_DISALLOW_DOCTYPE)) {
                     fConfiguration.setFeature (DISALLOW_DOCTYPE_DECL_FEATURE, state);
                 }
-                else if (name.equals (Constants.DOM_SUPPORTED_MEDIATYPES_ONLY)
-                || name.equals(Constants.DOM_NORMALIZE_CHARACTERS)
-                || name.equals (Constants.DOM_CHECK_CHAR_NORMALIZATION)
-                || name.equals (Constants.DOM_CANONICAL_FORM)) {
+                else if (name.equalsIgnoreCase (Constants.DOM_SUPPORTED_MEDIATYPES_ONLY)
+                || name.equalsIgnoreCase(Constants.DOM_NORMALIZE_CHARACTERS)
+                || name.equalsIgnoreCase (Constants.DOM_CHECK_CHAR_NORMALIZATION)
+                || name.equalsIgnoreCase (Constants.DOM_CANONICAL_FORM)) {
                     if (state) { // true is not supported
                         String msg =
                         DOMMessageFormatter.formatMessage (
@@ -327,10 +327,10 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                     }
                     // setting those features to false is no-op
                 }
-                else if (name.equals (Constants.DOM_NAMESPACES)) {
+                else if (name.equalsIgnoreCase (Constants.DOM_NAMESPACES)) {
                     fConfiguration.setFeature (NAMESPACES, state);
                 }
-                else if (name.equals (Constants.DOM_INFOSET)) {
+                else if (name.equalsIgnoreCase (Constants.DOM_INFOSET)) {
                     // Setting false has no effect.
                     if (state) {
                         // true: namespaces, comments, element-content-whitespace
@@ -346,12 +346,12 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                         fConfiguration.setFeature(CREATE_CDATA_NODES_FEATURE, false);
                     }
                 }
-                else if (name.equals(Constants.DOM_CDATA_SECTIONS)) {
+                else if (name.equalsIgnoreCase(Constants.DOM_CDATA_SECTIONS)) {
                     fConfiguration.setFeature(CREATE_CDATA_NODES_FEATURE, state);
                 }
-                else if (name.equals (Constants.DOM_NAMESPACE_DECLARATIONS)
-                || name.equals (Constants.DOM_WELLFORMED)
-                || name.equals (Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)) {
+                else if (name.equalsIgnoreCase (Constants.DOM_NAMESPACE_DECLARATIONS)
+                || name.equalsIgnoreCase (Constants.DOM_WELLFORMED)
+                || name.equalsIgnoreCase (Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)) {
                     if (!state) { // false is not supported
                         String msg =
                         DOMMessageFormatter.formatMessage (
@@ -363,7 +363,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                     // setting these features to true is no-op
                     // REVISIT: implement "namespace-declaration" feature
                 }
-                else if (name.equals (Constants.DOM_VALIDATE)) {
+                else if (name.equalsIgnoreCase (Constants.DOM_VALIDATE)) {
                     fConfiguration.setFeature (VALIDATION_FEATURE, state);
                     if (fSchemaType != Constants.NS_DTD) {
                         fConfiguration.setFeature (XMLSCHEMA, state);
@@ -372,17 +372,17 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                         fConfiguration.setFeature (DYNAMIC_VALIDATION, false);
                     }
                 }
-                else if (name.equals (Constants.DOM_VALIDATE_IF_SCHEMA)) {
+                else if (name.equalsIgnoreCase (Constants.DOM_VALIDATE_IF_SCHEMA)) {
                     fConfiguration.setFeature (DYNAMIC_VALIDATION, state);
                     // Note: validation and dynamic validation are mutually exclusive
                     if (state){
                         fConfiguration.setFeature (VALIDATION_FEATURE, false);
                     }
                 }
-                else if (name.equals (Constants.DOM_ELEMENT_CONTENT_WHITESPACE)) {
+                else if (name.equalsIgnoreCase (Constants.DOM_ELEMENT_CONTENT_WHITESPACE)) {
                     fConfiguration.setFeature (INCLUDE_IGNORABLE_WHITESPACE, state);
                 }
-                else if (name.equals (Constants.DOM_PSVI)){
+                else if (name.equalsIgnoreCase (Constants.DOM_PSVI)){
                     //XSModel - turn on PSVI augmentation
                     fConfiguration.setFeature (PSVI_AUGMENT, true);
                     fConfiguration.setProperty (DOCUMENT_CLASS_NAME,
@@ -405,7 +405,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
             }
         }
         else { // set properties
-            if (name.equals (Constants.DOM_ERROR_HANDLER)) {
+            if (name.equalsIgnoreCase (Constants.DOM_ERROR_HANDLER)) {
                 // REVISIT: we should probably allow unsetting error-handler
                 if (value == null) return;
                 if (value instanceof DOMErrorHandler) {
@@ -426,7 +426,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                 }
 
             }
-            else if (name.equals (Constants.DOM_RESOURCE_RESOLVER)) {
+            else if (name.equalsIgnoreCase (Constants.DOM_RESOURCE_RESOLVER)) {
                 if (value instanceof LSResourceResolver) {
                     try {
                         fConfiguration.setProperty (ENTITY_RESOLVER, new DOMEntityResolverWrapper ((LSResourceResolver) value));
@@ -444,7 +444,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                 }
 
             }
-            else if (name.equals (Constants.DOM_SCHEMA_LOCATION)) {
+            else if (name.equalsIgnoreCase (Constants.DOM_SCHEMA_LOCATION)) {
                 if (value instanceof String) {
                     try {
                         if (fSchemaType == Constants.NS_XMLSCHEMA) {
@@ -492,7 +492,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                 }
 
             }
-            else if (name.equals (Constants.DOM_SCHEMA_TYPE)) {
+            else if (name.equalsIgnoreCase (Constants.DOM_SCHEMA_TYPE)) {
                 // REVISIT: should null value be supported?
                 if (value instanceof String) {
                     try {
@@ -530,7 +530,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                 }
 
             }
-            else if (name.equals (DOCUMENT_CLASS_NAME)) {
+            else if (name.equalsIgnoreCase (DOCUMENT_CLASS_NAME)) {
                 fConfiguration.setProperty (DOCUMENT_CLASS_NAME, value);
             }
             else {
@@ -550,47 +550,47 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
      * Look up the value of a feature or a property.
      */
     public Object getParameter (String name) throws DOMException {
-        if (name.equals (Constants.DOM_COMMENTS)) {
+        if (name.equalsIgnoreCase (Constants.DOM_COMMENTS)) {
             return (fConfiguration.getFeature (INCLUDE_COMMENTS_FEATURE))
             ? Boolean.TRUE
             : Boolean.FALSE;
         }
-        else if (name.equals (Constants.DOM_DATATYPE_NORMALIZATION)) {
+        else if (name.equalsIgnoreCase (Constants.DOM_DATATYPE_NORMALIZATION)) {
             return (fConfiguration.getFeature (NORMALIZE_DATA))
             ? Boolean.TRUE
             : Boolean.FALSE;
         }
-        else if (name.equals (Constants.DOM_ENTITIES)) {
+        else if (name.equalsIgnoreCase (Constants.DOM_ENTITIES)) {
             return (fConfiguration.getFeature (CREATE_ENTITY_REF_NODES))
             ? Boolean.TRUE
             : Boolean.FALSE;
         }
-        else if (name.equals (Constants.DOM_NAMESPACES)) {
+        else if (name.equalsIgnoreCase (Constants.DOM_NAMESPACES)) {
             return (fConfiguration.getFeature (NAMESPACES))
             ? Boolean.TRUE
             : Boolean.FALSE;
         }
-        else if (name.equals (Constants.DOM_VALIDATE)) {
+        else if (name.equalsIgnoreCase (Constants.DOM_VALIDATE)) {
             return (fConfiguration.getFeature (VALIDATION_FEATURE))
             ? Boolean.TRUE
             : Boolean.FALSE;
         }
-        else if (name.equals (Constants.DOM_VALIDATE_IF_SCHEMA)) {
+        else if (name.equalsIgnoreCase (Constants.DOM_VALIDATE_IF_SCHEMA)) {
             return (fConfiguration.getFeature (DYNAMIC_VALIDATION))
             ? Boolean.TRUE
             : Boolean.FALSE;
         }
-        else if (name.equals (Constants.DOM_ELEMENT_CONTENT_WHITESPACE)) {
+        else if (name.equalsIgnoreCase (Constants.DOM_ELEMENT_CONTENT_WHITESPACE)) {
             return (fConfiguration.getFeature (INCLUDE_IGNORABLE_WHITESPACE))
             ? Boolean.TRUE
             : Boolean.FALSE;
         }
-        else if (name.equals (Constants.DOM_DISALLOW_DOCTYPE)) {
+        else if (name.equalsIgnoreCase (Constants.DOM_DISALLOW_DOCTYPE)) {
             return (fConfiguration.getFeature (DISALLOW_DOCTYPE_DECL_FEATURE))
             ? Boolean.TRUE
             : Boolean.FALSE;
         }
-        else if (name.equals (Constants.DOM_INFOSET)) {
+        else if (name.equalsIgnoreCase (Constants.DOM_INFOSET)) {
             // REVISIT: This is somewhat expensive to compute
             // but it's possible that the user has a reference
             // to the configuration and is changing the values
@@ -604,31 +604,31 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                 !fConfiguration.getFeature(CREATE_CDATA_NODES_FEATURE);
             return (infoset) ? Boolean.TRUE : Boolean.FALSE;
         }
-        else if (name.equals(Constants.DOM_CDATA_SECTIONS)) {
+        else if (name.equalsIgnoreCase(Constants.DOM_CDATA_SECTIONS)) {
             return (fConfiguration.getFeature(CREATE_CDATA_NODES_FEATURE))
                 ? Boolean.TRUE : Boolean.FALSE;
         }
-        else if (name.equals(Constants.DOM_CHECK_CHAR_NORMALIZATION ) ||
-                 name.equals(Constants.DOM_NORMALIZE_CHARACTERS)){
+        else if (name.equalsIgnoreCase(Constants.DOM_CHECK_CHAR_NORMALIZATION ) ||
+                 name.equalsIgnoreCase(Constants.DOM_NORMALIZE_CHARACTERS)){
             return Boolean.FALSE;
         }
-        else if (name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
-        || name.equals (Constants.DOM_WELLFORMED)
-        || name.equals (Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)
-        || name.equals (Constants.DOM_CANONICAL_FORM)
-        || name.equals (Constants.DOM_SUPPORTED_MEDIATYPES_ONLY)
-        || name.equals (Constants.DOM_CHARSET_OVERRIDES_XML_ENCODING)) {
+        else if (name.equalsIgnoreCase(Constants.DOM_NAMESPACE_DECLARATIONS)
+        || name.equalsIgnoreCase (Constants.DOM_WELLFORMED)
+        || name.equalsIgnoreCase (Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)
+        || name.equalsIgnoreCase (Constants.DOM_CANONICAL_FORM)
+        || name.equalsIgnoreCase (Constants.DOM_SUPPORTED_MEDIATYPES_ONLY)
+        || name.equalsIgnoreCase (Constants.DOM_CHARSET_OVERRIDES_XML_ENCODING)) {
             return (fConfiguration.getFeature (name))
             ? Boolean.TRUE
             : Boolean.FALSE;
         }
-        else if (name.equals (Constants.DOM_ERROR_HANDLER)) {
+        else if (name.equalsIgnoreCase (Constants.DOM_ERROR_HANDLER)) {
             if (fErrorHandler != null) {
                 return fErrorHandler.getErrorHandler ();
             }
             return null;
         }
-        else if (name.equals (Constants.DOM_RESOURCE_RESOLVER)) {
+        else if (name.equalsIgnoreCase (Constants.DOM_RESOURCE_RESOLVER)) {
             try {
                 XMLEntityResolver entityResolver =
                 (XMLEntityResolver) fConfiguration.getProperty (ENTITY_RESOLVER);
@@ -640,17 +640,17 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
             }
             catch (XMLConfigurationException e) {}
         }
-        else if (name.equals (Constants.DOM_SCHEMA_TYPE)) {
+        else if (name.equalsIgnoreCase (Constants.DOM_SCHEMA_TYPE)) {
             return fConfiguration.getProperty (
             Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_LANGUAGE);
         }
-        else if (name.equals (Constants.DOM_SCHEMA_LOCATION)) {
+        else if (name.equalsIgnoreCase (Constants.DOM_SCHEMA_LOCATION)) {
             return fSchemaLocation;
         }
-        else if (name.equals (SYMBOL_TABLE)){
+        else if (name.equalsIgnoreCase (SYMBOL_TABLE)){
             return fConfiguration.getProperty (SYMBOL_TABLE);
         }
-        else if (name.equals (DOCUMENT_CLASS_NAME)) {
+        else if (name.equalsIgnoreCase (DOCUMENT_CLASS_NAME)) {
             return fConfiguration.getProperty (DOCUMENT_CLASS_NAME);
         }
         else {
@@ -667,31 +667,31 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
     public boolean canSetParameter (String name, Object value) {
         if(value instanceof Boolean){
             boolean state = ((Boolean)value).booleanValue ();
-            if ( name.equals (Constants.DOM_SUPPORTED_MEDIATYPES_ONLY)
-            || name.equals(Constants.DOM_NORMALIZE_CHARACTERS)
-            || name.equals(Constants.DOM_CHECK_CHAR_NORMALIZATION )
-            || name.equals (Constants.DOM_CANONICAL_FORM) ) {
+            if ( name.equalsIgnoreCase (Constants.DOM_SUPPORTED_MEDIATYPES_ONLY)
+            || name.equalsIgnoreCase(Constants.DOM_NORMALIZE_CHARACTERS)
+            || name.equalsIgnoreCase(Constants.DOM_CHECK_CHAR_NORMALIZATION )
+            || name.equalsIgnoreCase (Constants.DOM_CANONICAL_FORM) ) {
                 // true is not supported
                 return (state) ? false : true;
             }
-            else if (name.equals (Constants.DOM_NAMESPACE_DECLARATIONS)
-            || name.equals (Constants.DOM_WELLFORMED)
-            || name.equals (Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)) {
+            else if (name.equalsIgnoreCase (Constants.DOM_NAMESPACE_DECLARATIONS)
+            || name.equalsIgnoreCase (Constants.DOM_WELLFORMED)
+            || name.equalsIgnoreCase (Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)) {
                 // false is not supported
                 return (state) ? true : false;
             }
-            else if (name.equals (Constants.DOM_CDATA_SECTIONS)
-            || name.equals (Constants.DOM_CHARSET_OVERRIDES_XML_ENCODING)
-            || name.equals (Constants.DOM_COMMENTS)
-            || name.equals (Constants.DOM_DATATYPE_NORMALIZATION)
-            || name.equals (Constants.DOM_DISALLOW_DOCTYPE)
-            || name.equals (Constants.DOM_ENTITIES)
-            || name.equals (Constants.DOM_INFOSET)
-            || name.equals (Constants.DOM_NAMESPACES)
-            || name.equals (Constants.DOM_VALIDATE)
-            || name.equals (Constants.DOM_VALIDATE_IF_SCHEMA)
-            || name.equals (Constants.DOM_ELEMENT_CONTENT_WHITESPACE)
-            || name.equals (Constants.DOM_XMLDECL)) {
+            else if (name.equalsIgnoreCase (Constants.DOM_CDATA_SECTIONS)
+            || name.equalsIgnoreCase (Constants.DOM_CHARSET_OVERRIDES_XML_ENCODING)
+            || name.equalsIgnoreCase (Constants.DOM_COMMENTS)
+            || name.equalsIgnoreCase (Constants.DOM_DATATYPE_NORMALIZATION)
+            || name.equalsIgnoreCase (Constants.DOM_DISALLOW_DOCTYPE)
+            || name.equalsIgnoreCase (Constants.DOM_ENTITIES)
+            || name.equalsIgnoreCase (Constants.DOM_INFOSET)
+            || name.equalsIgnoreCase (Constants.DOM_NAMESPACES)
+            || name.equalsIgnoreCase (Constants.DOM_VALIDATE)
+            || name.equalsIgnoreCase (Constants.DOM_VALIDATE_IF_SCHEMA)
+            || name.equalsIgnoreCase (Constants.DOM_ELEMENT_CONTENT_WHITESPACE)
+            || name.equalsIgnoreCase (Constants.DOM_XMLDECL)) {
                 return true;
             }
 
@@ -705,19 +705,19 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
             }
         }
         else { // check properties
-            if (name.equals (Constants.DOM_ERROR_HANDLER)) {
+            if (name.equalsIgnoreCase (Constants.DOM_ERROR_HANDLER)) {
                 if (value instanceof DOMErrorHandler) {
                     return true;
                 }
                 return false;
             }
-            else if (name.equals (Constants.DOM_RESOURCE_RESOLVER)) {
+            else if (name.equalsIgnoreCase (Constants.DOM_RESOURCE_RESOLVER)) {
                 if (value instanceof LSResourceResolver) {
                     return true;
                 }
                 return false;
             }
-            else if (name.equals (Constants.DOM_SCHEMA_TYPE)) {
+            else if (name.equalsIgnoreCase (Constants.DOM_SCHEMA_TYPE)) {
                 if (value instanceof String
                 && (value.equals (Constants.NS_XMLSCHEMA)
                 || value.equals (Constants.NS_DTD))) {
@@ -725,12 +725,12 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                 }
                 return false;
             }
-            else if (name.equals (Constants.DOM_SCHEMA_LOCATION)) {
+            else if (name.equalsIgnoreCase (Constants.DOM_SCHEMA_LOCATION)) {
                 if (value instanceof String)
                     return true;
                 return false;
             }
-            else if (name.equals (DOCUMENT_CLASS_NAME)){
+            else if (name.equalsIgnoreCase (DOCUMENT_CLASS_NAME)){
                 return true;
             }
             return false;
