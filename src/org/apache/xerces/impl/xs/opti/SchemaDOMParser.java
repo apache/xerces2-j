@@ -16,9 +16,6 @@
 
 package org.apache.xerces.impl.xs.opti;
 
-
-import java.util.Stack;
-
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.xs.SchemaSymbols;
@@ -88,11 +85,11 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
     // Use to report the error when characters are not allowed.
     XMLErrorReporter fErrorReporter;
     
+    // fields for generate-synthetic annotations feature
     private boolean fGenerateSyntheticAnnotation = false;
-    private Stack fHasNonSchemaAttributes = new Stack();
-    private XMLAttributes emptyAttr = new XMLAttributesImpl();
-    private Stack fSawAnnotation = new Stack();
-    
+    private BooleanStack fHasNonSchemaAttributes = new BooleanStack();
+    private BooleanStack fSawAnnotation = new BooleanStack();
+    private XMLAttributes fEmptyAttr = new XMLAttributesImpl();
     
     //
     // XMLDocumentHandler methods
@@ -103,6 +100,8 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
     throws XNIException {
         fErrorReporter = (XMLErrorReporter)config.getProperty(ERROR_REPORTER);
         fGenerateSyntheticAnnotation = config.getFeature(GENERATE_SYNTHETIC_ANNOTATION);
+        fHasNonSchemaAttributes.clear();
+        fSawAnnotation.clear();
         schemaDOM = new SchemaDOM(); 
         fAnnotationDepth = -1;
         fInnerAnnotationDepth = -1;
@@ -228,14 +227,14 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                     if (fSawAnnotation.size() > 0) {
                         fSawAnnotation.pop();
                     }
-                    fSawAnnotation.push(Boolean.TRUE);
+                    fSawAnnotation.push(true);
                 }
                 fAnnotationDepth = fDepth;
                 schemaDOM.startAnnotation(element, attributes, fNamespaceContext);
             } 
             else if (fGenerateSyntheticAnnotation) {
-                fSawAnnotation.push(Boolean.FALSE);
-                fHasNonSchemaAttributes.push(hasNonSchemaAttributes(element, attributes) ? Boolean.TRUE : Boolean.FALSE);
+                fSawAnnotation.push(false);
+                fHasNonSchemaAttributes.push(hasNonSchemaAttributes(element, attributes));
             }
         } else if(fDepth == fAnnotationDepth+1) {
             fInnerAnnotationDepth = fDepth;
@@ -353,14 +352,14 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
             }
         } else { // not in an annotation at all
             if(fGenerateSyntheticAnnotation) {
-                boolean value = ((Boolean)fHasNonSchemaAttributes.pop()).booleanValue();
-                boolean sawann = ((Boolean)fSawAnnotation.pop()).booleanValue();
-                if(value && !sawann) {
+                boolean value = fHasNonSchemaAttributes.pop();
+                boolean sawann = fSawAnnotation.pop();
+                if (value && !sawann) {
                     String schemaPrefix = fNamespaceContext.getPrefix(SchemaSymbols.URI_SCHEMAFORSCHEMA);
                     QName annQName = new QName(schemaPrefix, SchemaSymbols.ELT_ANNOTATION, schemaPrefix + (schemaPrefix.length() == 0?"":":") + SchemaSymbols.ELT_ANNOTATION, SchemaSymbols.URI_SCHEMAFORSCHEMA);
-                    schemaDOM.startAnnotation(annQName, emptyAttr, fNamespaceContext);
+                    schemaDOM.startAnnotation(annQName, fEmptyAttr, fNamespaceContext);
                     QName elemQName = new QName(schemaPrefix, SchemaSymbols.ELT_DOCUMENTATION, schemaPrefix + (schemaPrefix.length() == 0?"":":") + SchemaSymbols.ELT_DOCUMENTATION, SchemaSymbols.URI_SCHEMAFORSCHEMA);
-                    schemaDOM.startAnnotationElement(elemQName, emptyAttr);
+                    schemaDOM.startAnnotationElement(elemQName, fEmptyAttr);
                     schemaDOM.characters(new XMLString("SYNTHETIC_ANNOTATION".toCharArray(), 0, 20 ));     
                     schemaDOM.endSyntheticAnnotationElement(elemQName, false);
                     schemaDOM.endSyntheticAnnotationElement(annQName, true);
@@ -453,4 +452,68 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
         return schemaDOM;
     }
     
+    /**
+     * A simple boolean based stack.
+     * 
+     * @xerces.internal
+     */
+    private static final class BooleanStack {
+
+        //
+        // Data
+        //
+
+        /** Stack depth. */
+        private int fDepth;
+
+        /** Stack data. */
+        private boolean[] fData;
+        
+        //
+        // Constructor
+        //
+        
+        public BooleanStack () {}
+
+        //
+        // Public methods
+        //
+
+        /** Returns the size of the stack. */
+        public int size() {
+            return fDepth;
+        }
+
+        /** Pushes a value onto the stack. */
+        public void push(boolean value) {
+            ensureCapacity(fDepth + 1);
+            fData[fDepth++] = value;
+        }
+
+        /** Pops a value off of the stack. */
+        public boolean pop() {
+            return fData[--fDepth];
+        }
+
+        /** Clears the stack. */
+        public void clear() {
+            fDepth = 0;
+        }
+
+        //
+        // Private methods
+        //
+
+        /** Ensures capacity. */
+        private void ensureCapacity(int size) {
+            if (fData == null) {
+                fData = new boolean[32];
+            }
+            else if (fData.length <= size) {
+                boolean[] newdata = new boolean[fData.length * 2];
+                System.arraycopy(fData, 0, newdata, 0, fData.length);
+                fData = newdata;
+            }
+        }
+    }
 }
