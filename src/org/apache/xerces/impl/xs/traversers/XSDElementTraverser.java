@@ -418,7 +418,8 @@ class XSDElementTraverser extends XSDAbstractTraverser {
 
         // 2 If there is a {value constraint}, the canonical lexical representation of its value must be ·valid· with respect to the {type definition} as defined in Element Default Valid (Immediate) (§3.3.6).
         if (element.fDefault != null) {
-            Object actualValue = XSConstraints.ElementDefaultValidImmediate(element.fType, element.fDefault.toString());
+            fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
+            Object actualValue = XSConstraints.ElementDefaultValidImmediate(element.fType, element.fDefault.toString(), fValidationState);
             if (actualValue == null) {
                 reportSchemaError ("e-props-correct.2", new Object[]{nameAtt, element.fDefault});
                 element.setConstraintType(XSElementDecl.NO_CONSTRAINT);
@@ -426,7 +427,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
             element.fDefault = actualValue;
         }
 
-        // 3 If there is an {substitution group affiliation}, the {type definition} of the element declaration must be validly derived from the {type definition} of the {substitution group affiliation}, given the value of the {substitution group exclusions} of the {substitution group affiliation}, as defined in Type Derivation OK (Complex) (§3.4.6) (if the {type definition} is complex) or as defined in Type Derivation OK (Simple) (§3.14.6) (if the {type definition} is simple).
+        // 3 If there is an {substitution group affiliation}, the {type definition} of the element declaration must be validly derived from the {type definition} of the {substitution group affiliation}, given the value of the {substitution group exclusions} of the {substitution group affiliation}, as defined in Type Derivation OK (Complex) (§3.4.6) (if the {type definition} is complex) or as defined in Type Derivation OK (Simple) (b3.14.6) (if the {type definition} is simple).
         if (element.fSubGroup != null) {
            if (!XSConstraints.checkTypeDerivationOk(element.fType, element.fSubGroup.fType, element.fSubGroup.fFinal)) {
                 reportSchemaError ("e-props-correct.3", new Object[]{nameAtt, subGroupAtt.prefix+":"+subGroupAtt.localpart});

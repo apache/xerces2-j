@@ -164,7 +164,6 @@ public class XMLSchemaValidator
     public static final String ENTITY_RESOLVER =
     Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
 
-
     protected static final String VALIDATION_MANAGER =
     Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATION_MANAGER_PROPERTY;
     // REVISIT: this is just a temporary solution for entity resolver
@@ -187,7 +186,7 @@ public class XMLSchemaValidator
         SYMBOL_TABLE,
         ERROR_REPORTER,
         ENTITY_RESOLVER,
-        VALIDATION_MANAGER
+        VALIDATION_MANAGER,
     };
 
     //
@@ -216,10 +215,10 @@ public class XMLSchemaValidator
     /** Entity resolver */
     protected XMLEntityResolver fEntityResolver;
 
-
     // updated during reset
     protected ValidationManager fValidationManager = null;
     protected ValidationState fValidationState = null;
+
     // handlers
 
     /** Document handler. */
@@ -360,7 +359,7 @@ public class XMLSchemaValidator
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void doctypeDecl(String rootElement, String publicId, String systemId, 
+    public void doctypeDecl(String rootElement, String publicId, String systemId,
                             Augmentations augs)
     throws XNIException {
 
@@ -428,9 +427,9 @@ public class XMLSchemaValidator
         XMLString defaultValue = handleEndElement(element);
         // call handlers
         if (fDocumentHandler != null) {
-            
+
             fDocumentHandler.emptyElement(element, attributes, augs);
-            
+
             // REVISIT: should we send default element value?
             /*if (defaultValue == null) {
                 fDocumentHandler.emptyElement(element, attributes);
@@ -594,7 +593,7 @@ public class XMLSchemaValidator
     public void startEntity(String name,
                             String publicId, String systemId,
                             String baseSystemId,
-                            String encoding, 
+                            String encoding,
                             Augmentations augs) throws XNIException {
 
         // call handlers
@@ -785,13 +784,6 @@ public class XMLSchemaValidator
 
     /** Stack to record if we saw character data outside of element content*/
     boolean[] fStringContent = new boolean[INITIAL_STACK_SIZE];
-    /**
-     * This table has to be own by instance of XMLValidator and shared
-     * among ID, IDREF and IDREFS.
-     * REVISIT: Should replace with a lighter structure.
-     */
-    final Hashtable fTableOfIDs = new Hashtable();
-    final Hashtable fTableOfIDRefs = new Hashtable();
 
     /**
      * temprory qname
@@ -801,6 +793,14 @@ public class XMLSchemaValidator
      * temprory empty object, used to fill IDREF table
      */
     static final Object fTempObject = new Object();
+
+    // used to validate default/fixed values against xsi:type
+    // only need to check facets, so we set extraChecking to false (in reset)
+    private ValidationState fState4XsiType = new ValidationState();
+
+    // used to apply default/fixed values
+    // only need to check id/idref/entity, so we set checkFacets to false
+    private ValidationState fState4ApplyDefault = new ValidationState();
 
     // identity constraint information
 
@@ -911,7 +911,6 @@ public class XMLSchemaValidator
             fDynamicValidation = false;
         }
 
-        // get entity resolver. if there is no one, create a default
         // REVISIT: use default entity resolution from ENTITY MANAGER - temporary solution
         fEntityResolver = (XMLEntityResolver)componentManager.getProperty(ENTITY_MANAGER);
 
@@ -943,13 +942,20 @@ public class XMLSchemaValidator
         fElementDepth = -1;
         fChildCount = 0;
 
-        // clear values stored in id and idref table
-        fTableOfIDs.clear();
-        fTableOfIDRefs.clear();
-
         fMatcherStack.clear();
 
         fValueStoreCache = new ValueStoreCache();
+
+        fState4XsiType.setExtraChecking(false);
+        fState4XsiType.setSymbolTable(symbolTable);
+        fState4XsiType.setSymbolTable(symbolTable);
+        fState4XsiType.setNamespaceSupport(fNamespaceSupport);
+
+        fState4ApplyDefault.setFacetChecking(false);
+        fState4ApplyDefault.setSymbolTable(symbolTable);
+        fState4ApplyDefault.setSymbolTable(symbolTable);
+        fState4ApplyDefault.setNamespaceSupport(fNamespaceSupport);
+
     } // reset(XMLComponentManager)
 
     //
@@ -1135,6 +1141,7 @@ public class XMLSchemaValidator
             // thus we will not validate in the case dynamic feature is on or we found dtd grammar
             fDoValidation = fValidation && !(fValidationManager.isGrammarFound() || fDynamicValidation);
 
+            // REVISIT: why don't we do it in reset()?
             fValidationState = fValidationManager.getValidationState();
             fValidationState.setNamespaceSupport(fNamespaceSupport);
             fValidationState.setSymbolTable(fSymbolTable);
@@ -1146,27 +1153,8 @@ public class XMLSchemaValidator
 
         String sLocation = attributes.getValue(URI_XSI, XSI_SCHEMALOCATION);
         String nsLocation = attributes.getValue(URI_XSI, XSI_NONAMESPACESCHEMALOCATION);
-        if (sLocation != null) {
-            StringTokenizer t = new StringTokenizer(sLocation, " \n\t\r");
-            String namespace, location;
-            while (t.hasMoreTokens()) {
-                namespace = t.nextToken ();
-                if (!t.hasMoreTokens()) {
-                    // REVISIT: new error code
-                    fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                               "General", new Object[]{"No matching location hint for namespace '" + namespace + "' in attribute schemaLocation"},
-                                               XMLErrorReporter.SEVERITY_WARNING);
-                    break;
-                }
-                location = t.nextToken();
-                if (fGrammarResolver.getGrammar(namespace) == null)
-                    fSchemaHandler.parseSchema(namespace, location);
-            }
-        }
-        if (nsLocation != null) {
-            if (fGrammarResolver.getGrammar(null) == null)
-                fSchemaHandler.parseSchema(null, nsLocation);
-        }
+        parseSchemas(sLocation, nsLocation);
+
         // REVISIT: we should not rely on presence of
         //          schemaLocation or noNamespaceSchemaLocation
         //          attributes
@@ -1459,7 +1447,6 @@ public class XMLSchemaValidator
         return defaultValue;
     } // handleEndElement(QName,boolean)*/
 
-
     void handleStartPrefix(String prefix, String uri) {
         // push namespace context if necessary
         if (fPushForNextBinding) {
@@ -1469,6 +1456,30 @@ public class XMLSchemaValidator
 
         // add prefix declaration to the namespace support
         fNamespaceSupport.declarePrefix(prefix, uri.length() != 0 ? uri : null);
+    }
+
+    void parseSchemas(String sLocation, String nsLocation) {
+        if (sLocation != null) {
+            StringTokenizer t = new StringTokenizer(sLocation, " \n\t\r");
+            String namespace, location;
+            while (t.hasMoreTokens()) {
+                namespace = t.nextToken ();
+                if (!t.hasMoreTokens()) {
+                    // REVISIT: new error code
+                    fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                               "general", new Object[]{"No matching location hint for namespace '" + namespace + "' in attribute schemaLocation"},
+                                               XMLErrorReporter.SEVERITY_WARNING);
+                    break;
+                }
+                location = t.nextToken();
+                if (fGrammarResolver.getGrammar(namespace) == null)
+                    fSchemaHandler.parseSchema(namespace, location);
+            }
+        }
+        if (nsLocation != null) {
+            if (fGrammarResolver.getGrammar(null) == null)
+                fSchemaHandler.parseSchema(null, nsLocation);
+        }
     }
 
     void getAndCheckXsiType(QName element, String xsiType) {
@@ -1816,10 +1827,12 @@ public class XMLSchemaValidator
                 fChildCount == 0 && content.length() == 0 && !fNil) {
                 // 5.1.1 If the ·actual type definition· is a ·local type definition· then the canonical lexical representation of the {value constraint} value must be a valid default for the ·actual type definition· as defined in Element Default Valid (Immediate) (§3.3.6).
                 if (fCurrentType != fCurrentElemDecl.fType) {
-                    if (XSConstraints.ElementDefaultValidImmediate(fCurrentType, fCurrentElemDecl.fDefault.toString()) == null)
+                    if (XSConstraints.ElementDefaultValidImmediate(fCurrentType, fCurrentElemDecl.fDefault.toString(), fState4XsiType) == null)
                         reportSchemaError("cvc-elt.5.1.1", new Object[]{element.rawname, fCurrentType.getXSTypeName(), fCurrentElemDecl.fDefault.toString()});
                 }
                 // 5.1.2 The element information item with the canonical lexical representation of the {value constraint} value used as its ·normalized value· must be ·valid· with respect to the ·actual type definition· as defined by Element Locally Valid (Type) (§3.3.4).
+                // REVISIT: don't use toString, but validateActualValue instead
+                //          use the fState4ApplyDefault
                 elementLocallyValidType(element, fCurrentElemDecl.fDefault.toString());
             }
             else {

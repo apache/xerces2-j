@@ -134,6 +134,7 @@ class XSDocumentInfo {
 
             fNamespaceSupportRoot = new SchemaNamespaceSupport(fNamespaceSupport);
             fValidationContext.setNamespaceSupport(fNamespaceSupport);
+            fValidationContext.setSymbolTable(symbolTable);
             // REVISIT: we can't return, becaues we can't pop fNamespaceSupport
             //attrChecker.returnAttrArray(schemaAttrs, this);
         }

@@ -442,7 +442,10 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 attrNode = fi.nodeAfterFacets;
             }
 
-
+            fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
+            // REVISIT: after using the new simpleType interfaces, should be:
+            //stype = dvFactory.create(...);
+            //stype.applyFacets(..., fValidationState);
             typeInfo.fDatatypeValidator = createRestrictedValidator(baseValidator,
                                                           fFacetData, fErrorReporter);
             if (typeInfo.fDatatypeValidator == null) {

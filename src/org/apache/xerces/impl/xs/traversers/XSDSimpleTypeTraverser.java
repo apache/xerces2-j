@@ -448,6 +448,10 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                 newDV = new ListDatatypeValidator(baseValidator, fFacetData, true, fErrorReporter);
         }
         else if (restriction) {
+            fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
+            // REVISIT: after using the new simpleType interfaces, should be:
+            //stype = dvFactory.create(...);
+            //stype.applyFacets(..., fValidationState);
             newDV = createRestrictedValidator(baseValidator, fFacetData, fErrorReporter);
         }
         else { //union

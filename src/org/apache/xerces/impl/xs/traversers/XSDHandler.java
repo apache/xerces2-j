@@ -87,16 +87,6 @@ import java.util.Stack;
 import java.util.Vector;
 import java.io.IOException;
 
-// REVISIT:  needed for the main method
-import org.apache.xerces.util.EntityResolverWrapper;
-import org.xml.sax.helpers.DefaultHandler;
-import java.util.Enumeration;
-import java.io.FileReader;
-import java.io.IOException;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
 /**
  * The purpose of this class is to co-ordinate the construction of a
  * grammar object corresponding to a schema.  To do this, it must be

@@ -70,6 +70,7 @@ import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.impl.validation.ValidationState;
 import org.w3c.dom.Element;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -110,19 +111,23 @@ abstract class XSDAbstractTraverser {
     protected XSAttributeChecker    fAttrChecker = null;
     protected XMLErrorReporter      fErrorReporter = null;
 
+    // used to validate default/fixed attribute values
+    ValidationState fValidationState = new ValidationState();
+
     XSDAbstractTraverser (XSDHandler handler,
                           XSAttributeChecker attrChecker) {
         fSchemaHandler = handler;
         fAttrChecker = attrChecker;
     }
 
-    //REVISIT: Implement
     void reset(XMLErrorReporter errorReporter, SymbolTable symbolTable) {
         fErrorReporter = errorReporter;
         fSymbolTable = symbolTable;
+        fValidationState.setExtraChecking(false);
+        fValidationState.setSymbolTable(symbolTable);
     }
 
-    // traver the annotation declaration
+    // traverse the annotation declaration
     // REVISIT: store annotation information for PSVI
     // REVISIT: how to pass the parentAttrs? as DOM attributes?
     //          as name/value pairs (string)? in parsed form?

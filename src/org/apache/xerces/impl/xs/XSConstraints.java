@@ -61,6 +61,7 @@ import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.dv.xs.*;
 import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.models.XSCMValidator;
+import org.apache.xerces.impl.validation.ValidationContext;
 import java.util.Vector;
 
 /**
@@ -246,7 +247,7 @@ public class XSConstraints {
      * check whether a value is a valid default for some type
      * returns the compiled form of the value
      */
-    public static Object ElementDefaultValidImmediate(XSTypeDecl type, String value) {
+    public static Object ElementDefaultValidImmediate(XSTypeDecl type, String value, ValidationContext context) {
 
         DatatypeValidator dv = null;
 
@@ -282,7 +283,7 @@ public class XSConstraints {
             try {
                 // REVISIT:  we'll be able to do this once he datatype redesign is implemented
                 //actualValue = dv.validate(value, null);
-                dv.validate(value, null);
+                dv.validate(value, context);
                 actualValue = value;
             } catch (InvalidDatatypeValueException ide) {
             }

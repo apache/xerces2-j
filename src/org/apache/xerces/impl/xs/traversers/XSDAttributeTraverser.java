@@ -67,7 +67,9 @@ import org.apache.xerces.impl.xs.XSTypeDecl;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.util.DOMUtil;
+import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.impl.xs.util.XInt;
+import org.apache.xerces.impl.validation.ValidationState;
 import org.w3c.dom.Element;
 
 /**
@@ -167,6 +169,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
 
         if (defaultAtt != null && attrUse != null) {
             // 2 if there is a {value constraint}, the canonical lexical representation of its value must be ·valid· with respect to the {type definition} as defined in String Valid (§3.14.4).
+            fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
             if (!checkDefaultValid(attrUse)) {
                 reportSchemaError ("a-props-correct.2", new Object[]{nameAtt, defaultAtt});
             }
@@ -355,6 +358,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
 
         // 2 if there is a {value constraint}, the canonical lexical representation of its value must be ·valid· with respect to the {type definition} as defined in String Valid (§3.14.4).
         if (attribute.fDefault != null) {
+            fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
             if (!checkDefaultValid(attribute)) {
                 reportSchemaError ("a-props-correct.2", new Object[]{nameAtt, defaultAtt});
             }
@@ -394,7 +398,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
             //REVISIT:  Our validators don't return Objects yet, instead  return null
             //
             //attribute.fDefault = attribute.fType.validate((String)attribute.fDefault, null);
-            attribute.fType.validate((String)attribute.fDefault, null);
+            attribute.fType.validate((String)attribute.fDefault, fValidationState);
         } catch (InvalidDatatypeValueException ide) {
             ret = false;
         }
@@ -412,7 +416,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
             //REVISIT:  Our validators don't return Objects yet, instead  return null
             //
             //attrUse.fDefault = attrUse.fAttrDecl.fType.validate((String)attrUse.fDefault, null);
-            attrUse.fAttrDecl.fType.validate((String)attrUse.fDefault, null);
+            attrUse.fAttrDecl.fType.validate((String)attrUse.fDefault, fValidationState);
         } catch (InvalidDatatypeValueException ide) {
             ret = false;
         }

@@ -1179,11 +1179,12 @@ public class XSAttributeChecker {
         return attrValues;
     }
 
-    private Object validate(String attr, String value, int dvIndex,
+    private Object validate(String attr, String ivalue, int dvIndex,
                             XSDocumentInfo schemaDoc) throws InvalidDatatypeValueException {
-        if (value == null)
+        if (ivalue == null)
             return null;
 
+        String value = normalize(ivalue, DatatypeValidator.COLLAPSE);
         Object retValue = value;
         Vector memberType;
         int choice;
@@ -1202,7 +1203,7 @@ public class XSAttributeChecker {
             break;
         case DT_NONNEGINT:
             try {
-                retValue = fXIntPool.getXInt(Integer.parseInt(value.trim()));
+                retValue = fXIntPool.getXInt(Integer.parseInt(value));
             } catch (NumberFormatException e) {
                 throw new InvalidDatatypeValueException("the value '"+value+"' is not a valid nonNegativeInteger");
             }
