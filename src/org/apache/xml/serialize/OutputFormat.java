@@ -68,6 +68,7 @@ package org.apache.xml.serialize;
 
 
 import java.util.Hashtable;
+import java.io.UnsupportedEncodingException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
@@ -188,6 +189,9 @@ public class OutputFormat
      * The EncodingInfo instance for _encoding.
      */
     private EncodingInfo _encodingInfo = null;
+
+    // whether java names for encodings are permitted
+    private boolean _allowJavaNames = false;
 
     /**
      * The specified media type or null.
@@ -491,7 +495,7 @@ public class OutputFormat
      * instance.
      */
     public void setEncoding(EncodingInfo encInfo) {
-        _encoding = encInfo.getName();
+        _encoding = encInfo.getIANAName();
         _encodingInfo = encInfo;
     }
 
@@ -500,10 +504,24 @@ public class OutputFormat
      *
      * @see #setEncoding
      */
-    public EncodingInfo getEncodingInfo() {
+    public EncodingInfo getEncodingInfo() throws UnsupportedEncodingException {
         if (_encodingInfo == null)
-            _encodingInfo = Encodings.getEncodingInfo(_encoding);
+            _encodingInfo = Encodings.getEncodingInfo(_encoding, _allowJavaNames);
         return _encodingInfo;
+    }
+
+    /**
+     * Sets whether java encoding names are permitted
+     */
+    public void setAllowJavaNames (boolean allow) {
+        _allowJavaNames = allow;
+    }
+
+    /**
+     * Returns whether java encoding names are permitted
+     */
+    public boolean setAllowJavaNames () {
+        return _allowJavaNames;
     }
 
     /**

@@ -62,6 +62,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import sun.io.CharToByteConverter;
+import org.apache.xerces.util.EncodingMap;
 
 /**
  * This class represents an encoding.
@@ -70,31 +72,33 @@ import java.io.Writer;
  */
 public class EncodingInfo {
 
-    String name;
+    // name of encoding as registered with IANA;
+    // preferably a MIME name, but aliases are fine too.
+    String ianaName;
     String javaName;
     int lastPrintable;
+    // the charToByteConverter we test unusual characters
+    // with
+    CharToByteConverter fCToB = null;
+    // is the converter null because it can't be instantiated
+    // for some reason (perhaps we're running with insufficient authority as 
+    // an applet?
+    boolean fHaveTriedCToB = false;
 
     /**
      * Creates new <code>EncodingInfo</code> instance.
      */
-    public EncodingInfo(String mimeName, String javaName, int lastPrintable) {
-        this.name = mimeName;
-        this.javaName = javaName == null ? mimeName : javaName;
+    public EncodingInfo(String ianaName, String javaName, int lastPrintable) {
+        this.ianaName = ianaName;
+        this.javaName = EncodingMap.getIANA2JavaMapping(ianaName);
         this.lastPrintable = lastPrintable;
-    }
-
-    /**
-     * Creates new <code>EncodingInfo</code> instance.
-     */
-    public EncodingInfo(String mimeName, int lastPrintable) {
-        this(mimeName, mimeName, lastPrintable);
     }
 
     /**
      * Returns a MIME charset name of this encoding.
      */
-    public String getName() {
-        return this.name;
+    public String getIANAName() {
+        return this.ianaName;
     }
 
     /**
@@ -107,16 +111,54 @@ public class EncodingInfo {
      */
     public Writer getWriter(OutputStream output)
         throws UnsupportedEncodingException {
-        if (this.javaName == null)
-            return new OutputStreamWriter(output);
-        return new OutputStreamWriter(output, this.javaName);
+        // this should always be true!
+        if (javaName != null) 
+            return new OutputStreamWriter(output, javaName);
+        javaName = EncodingMap.getIANA2JavaMapping(ianaName);
+        if(javaName == null) 
+            // use UTF-8 as preferred encoding
+            return new OutputStreamWriter(output, "UTF8");
+        return new OutputStreamWriter(output, javaName);
     }
     /**
-     * Checks whether the specified character is printable or not.
+     * Checks whether the specified character is printable or not
+     * in this encoding.
      *
      * @param ch a code point (0-0x10ffff)
      */
-    public boolean isPrintable(int ch) {
-        return ch <= this.lastPrintable;
+    public boolean isPrintable(char ch) {
+        if(ch <= this.lastPrintable) 
+            return true;
+        
+        if(fCToB == null) {
+            if(fHaveTriedCToB) {
+                // forget it; nothing we can do...
+                return false;
+            }
+            // try and create it:
+            try {
+                fCToB = CharToByteConverter.getConverter(javaName);
+            } catch(Exception e) {   
+                // don't try it again...
+                fHaveTriedCToB = true;
+                return false;
+            }
+        }
+        try {
+            return fCToB.canConvert(ch); 
+        } catch (Exception e) {
+            // obviously can't use this converter; probably some kind of
+            // security restriction
+            fCToB = null;
+            fHaveTriedCToB = false;
+            return false;
+        }
+    }
+
+    // is this an encoding name recognized by this JDK?
+    // if not, will throw UnsupportedEncodingException
+    public static void testJavaEncodingName(String name)  throws UnsupportedEncodingException {
+        final byte [] bTest = {'v', 'a', 'l', 'i', 'd'};
+        String s = new String(bTest, name);
     }
 }

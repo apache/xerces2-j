@@ -63,6 +63,8 @@ import java.io.Writer;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.Hashtable;
+import org.apache.xerces.util.EncodingMap;
 
 
 /**
@@ -81,19 +83,76 @@ public class Encodings
     /**
      * The last printable character for unknown encodings.
      */
-    static final int DefaultLastPrintable = 0x7F;
+    static final int DEFAULT_LAST_PRINTABLE = 0x7F;
+
+    // last printable character for Unicode-compatible encodings
+    static final int LAST_PRINTABLE_UNICODE = 0xffff;
+    // unicode-compliant encodings; can express plane 0
+    static final String[] UNICODE_ENCODINGS = {
+        "Unicode", "UnicodeBig", "UnicodeLittle", "GB2312", "UTF8", 
+    };
+    // default (Java) encoding if none supplied:
+    static final String DEFAULT_ENCODING = "UTF8";
+
+    // note that the size of this Hashtable
+    // is bounded by the number of encodings recognized by EncodingMap;
+    // therefore it poses no static mutability risk.
+    static Hashtable _encodings = new Hashtable();
 
     /**
      * @param encoding a MIME charset name, or null.
      */
-    static EncodingInfo getEncodingInfo(String encoding) {
-        if (encoding == null)
-            return new EncodingInfo(null, DefaultLastPrintable);
-        for (int i = 0;  i < _encodings.length;  i++) {
-            if (_encodings[i].name.equalsIgnoreCase(encoding))
-                return _encodings[i];
+    static EncodingInfo getEncodingInfo(String encoding, boolean allowJavaNames) throws UnsupportedEncodingException {
+        EncodingInfo eInfo = null;
+        if (encoding == null) {
+            if((eInfo = (EncodingInfo)_encodings.get(DEFAULT_ENCODING)) != null) 
+                return eInfo;
+            eInfo = new EncodingInfo(EncodingMap.getJava2IANAMapping(DEFAULT_ENCODING), DEFAULT_ENCODING, LAST_PRINTABLE_UNICODE);
+            _encodings.put(DEFAULT_ENCODING, eInfo);
+            return eInfo;
         }
-        return new SieveEncodingInfo(encoding, DefaultLastPrintable);
+        // need to convert it to upper case:
+        encoding = encoding.toUpperCase();
+        String jName = EncodingMap.getIANA2JavaMapping(encoding);
+        if(jName == null) {
+            // see if the encoding passed in is a Java encoding name.
+            if(allowJavaNames ) {
+                EncodingInfo.testJavaEncodingName(encoding);
+                if((eInfo = (EncodingInfo)_encodings.get(encoding)) != null) 
+                    return eInfo;
+                // is it known to be unicode-compliant?
+                int i=0;
+                for(; i<UNICODE_ENCODINGS.length; i++) {
+                    if(UNICODE_ENCODINGS[i].equalsIgnoreCase(encoding)) {
+                        eInfo = new EncodingInfo(EncodingMap.getJava2IANAMapping(encoding), encoding, LAST_PRINTABLE_UNICODE);
+                        break;
+                    }
+                }
+                if(i == UNICODE_ENCODINGS.length) {
+                    eInfo = new EncodingInfo(EncodingMap.getJava2IANAMapping(encoding), encoding, DEFAULT_LAST_PRINTABLE);
+                }
+                _encodings.put(encoding, eInfo); 
+                return eInfo;
+            } else {
+                throw new UnsupportedEncodingException(encoding);
+            }
+        }
+        if ((eInfo = (EncodingInfo)_encodings.get(jName)) != null)
+            return eInfo;
+        // have to create one...
+        // is it known to be unicode-compliant?
+        int i=0;
+        for(; i<UNICODE_ENCODINGS.length; i++) {
+            if(UNICODE_ENCODINGS[i].equalsIgnoreCase(jName)) {
+                eInfo = new EncodingInfo(encoding, jName, LAST_PRINTABLE_UNICODE);
+                break;
+            }
+        }
+        if(i == UNICODE_ENCODINGS.length) {
+            eInfo = new EncodingInfo(encoding, jName, DEFAULT_LAST_PRINTABLE);
+        }
+        _encodings.put(jName, eInfo); 
+        return eInfo;
     }
 
     static final String JIS_DANGER_CHARS
@@ -101,37 +160,4 @@ public class Encodings
     +"\u2014\u2015\u2016\u2026\u203e\u203e\u2225\u222f\u301c"
     +"\uff3c\uff5e\uffe0\uffe1\uffe2\uffe3";
 
-    /**
-     * Constructs a list of all the supported encodings.
-     */
-    private static final EncodingInfo[] _encodings = new EncodingInfo[] {
-        new EncodingInfo("ASCII", 0x7F),
-        new EncodingInfo("US-ASCII", 0x7F),
-        new EncodingInfo("ISO-8859-1", 0xFF),
-        new EncodingInfo("ISO-8859-2", 0xFF),
-        new EncodingInfo("ISO-8859-3", 0xFF),
-        new EncodingInfo("ISO-8859-4", 0xFF),
-        new EncodingInfo("ISO-8859-5", 0xFF),
-        new EncodingInfo("ISO-8859-6", 0xFF),
-        new EncodingInfo("ISO-8859-7", 0xFF),
-        new EncodingInfo("ISO-8859-8", 0xFF),
-        new EncodingInfo("ISO-8859-9", 0xFF),
-        /**
-         * Does JDK's converter supprt surrogates?
-         * A Java encoding name "UTF-8" is suppoted by JDK 1.2 or later.
-         */
-        new EncodingInfo("UTF-8", "UTF8", 0x10FFFF),
-        /**
-         * JDK 1.1 supports "Shift_JIS" as an alias of "SJIS".
-         * But JDK 1.2 treats "Shift_JIS" as an alias of "MS932".
-         * The JDK 1.2's behavior is invalid against IANA registrations.
-         */
-        new SieveEncodingInfo("Shift_JIS", "SJIS", 0x7F, JIS_DANGER_CHARS),
-        /**
-         * "MS932" is supported by JDK 1.2 or later.
-         */
-        new SieveEncodingInfo("Windows-31J", "MS932", 0x7F, JIS_DANGER_CHARS),
-        new SieveEncodingInfo("EUC-JP", null, 0x7F, JIS_DANGER_CHARS),
-        new SieveEncodingInfo("ISO-2022-JP", null, 0x7F, JIS_DANGER_CHARS),
-    };
 }
