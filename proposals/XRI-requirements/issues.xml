@@ -2,7 +2,7 @@
 <!-- edited with XML Spy v3.0 (http://www.xmlspy.com) by Edward Staub (private) -->
 <?xml-stylesheet type="text/xsl" href="issues.xsl"?>
 <!DOCTYPE requirementCatalog SYSTEM "issues.dtd">
-<requirementCatalog date="29 July 2000" version="1.3">
+<requirementCatalog date="6 August 2000" version="1.4">
 	<!-- Checked apache general list through messages 2091 through 2375 -->
 	<!-- Checked apache xerces-j-dev list messages 1160 through 1380 -->
 	<categories>
@@ -19,26 +19,21 @@
 			<def>The code shall be maintainable and simple to read.</def>
 			<seeAlso id="5"/>
 			<refs>
-				<ref set="gen" id="2091"> Above all, this is the primary goal 
-      for any openly developed project as without the ability to read the 
-      code, it's impossible for people to contribute and get involved.</ref>
+				<ref set="gen" id="2091"> Above all, this is the primary goal        for any openly developed project as without the ability to read the        code, it's impossible for people to contribute and get involved.</ref>
 				<ref set="gen" id="2138"/>
 				<ref set="gen" id="2186">[current code too complex, scares off users]</ref>
-				<ref set="gen" id="2209">I don't think I am [willing to trade off some performance for clearly written code]. Performance is too damned important in the XML 
-world</ref>
-				<ref set="gen" id="2220">You're not going to get a diverse developer community built around code that 
-is too damned hard to read... </ref>
+				<ref set="gen" id="2209">I don't think I am [willing to trade off some performance for clearly written code]. Performance is too damned important in the XML  world</ref>
+				<ref set="gen" id="2220">You're not going to get a diverse developer community built around code that  is too damned hard to read... </ref>
 				<ref set="gen" id="2311"/>
 			</refs>
 		</req>
 		<req id="2" strength="soft" cat="Memory">
-			<def>The parser should have the smallest possible memory footprint.</def>
+			<def>The parser should have a competitive memory footprint (competitive
+against the other Java based parsers out there).</def>
 			<seeAlso id="3"/>
-			<seeAlso id="24" type="Conflict"/>
 			<edReqNote>This needs refinement of target applications, quantification of sizes.</edReqNote>
 			<refs>
-				<ref set="gen" id="2091">This means small distribution size (JAR file) 
-      and small memory footprint.</ref>
+				<ref set="gen" id="2091">This means small distribution size (JAR file)        and small memory footprint.</ref>
 				<ref set="gen" id="2203"/>
 				<ref set="gen" id="2341"/>
 				<ref set="gen" id="2345"/>
@@ -49,26 +44,15 @@ is too damned hard to read... </ref>
 			<seeAlso id="2"/>
 			<seeAlso id="13"/>
 			<refs>
-				<ref set="gen" id="2091">It should be possible to build a parser as a set of Jar files 
-      so that a smaller parser can be assembled which fits the need of a 
-      particular implementation. For example, in TV sets do you really need 
-      validation?</ref>
-				<ref set="gen" id="2223">Where I am now we use XML as a wire format, so the data volume is small, 
-and parsing takes place on the client (the customer's e-commerce 
-environment) and on the server. Small footprint (memory *and* disk) 
-are much more important in this context than speed or even validation. 
-</ref>
+				<ref set="gen" id="2091">It should be possible to build a parser as a set of Jar files        so that a smaller parser can be assembled which fits the need of a        particular implementation. For example, in TV sets do you really need        validation?</ref>
+				<ref set="gen" id="2223">Where I am now we use XML as a wire format, so the data volume is small,  and parsing takes place on the client (the customer's e-commerce  environment) and on the server. Small footprint (memory *and* disk)  are much more important in this context than speed or even validation.  </ref>
 				<ref set="gen" id="2223">... many applications could benefit ...</ref>
-<ref set="xdev" id="1324">"small-but-performant-ambitious" 
-devices vs. "as-small-and-cheap-as-possible" devices</ref>
-<ref set="xdev" id="1361">I [am] a proponent [of support for] "small-but-perfrormant-ambitious", not 
-"as-small-and-cheap-as-possible" [devices]
-</ref>
+				<ref set="xdev" id="1324">"small-but-performant-ambitious"  devices vs. "as-small-and-cheap-as-possible" devices</ref>
+				<ref set="xdev" id="1361">I [am] a proponent [of support for] "small-but-perfrormant-ambitious", not  "as-small-and-cheap-as-possible" [devices] </ref>
 			</refs>
 		</req>
 		<req id="4" status="approved" strength="hard" cat="Speed">
-			<def>The parser shall run well on all virutal machines and
-			shall not be optimized toward a particular virtual machine.</def>
+			<def>The parser shall run well on all virutal machines and 			shall not be optimized toward a particular virtual machine.</def>
 			<refs>
 				<ref set="gen" id="2091"/>
 				<ref set="xdev" id="1299"/>
@@ -76,9 +60,7 @@ devices vs. "as-small-and-cheap-as-possible" devices</ref>
 			</refs>
 		</req>
 		<req id="5" status="approved" strength="soft" cat="Quality">
-			<def>Optimizations that interfere with readability, 
-      modularity, or size should be shunned. 
-</def>
+			<def>Optimizations that interfere with readability,        modularity, or size should be shunned.  </def>
 			<seeAlso id="1"/>
 			<refs>
 				<ref set="gen" id="2091"/>
@@ -89,20 +71,14 @@ devices vs. "as-small-and-cheap-as-possible" devices</ref>
 			<seeAlso id="3"/>
 			<edReqNote>This needs refinement of target applications, quantification of sizes.</edReqNote>
 			<refs>
-				<ref set="gen" id="2091">This means small distribution size (JAR file) 
-      and small memory footprint. 
-</ref>
-				<ref set="gen" id="2093">These two requirements [small memory footprint, small jar size -ed] are in direct conflict.  
-</ref>
+				<ref set="gen" id="2091">This means small distribution size (JAR file)        and small memory footprint.  </ref>
+				<ref set="gen" id="2093">These two requirements [small memory footprint, small jar size -ed] are in direct conflict.   </ref>
 			</refs>
 		</req>
 		<req id="7" strength="soft" cat="Quality">
 			<def>The design of the parser should be documented, with diagrams where they are more expressive than text.</def>
 			<refs>
-				<ref set="gen" id="2104">... would benefit greatly from requirements and design documentation; most especially some diagrams. I find that a dozen or so good diagrams often do a better job of 
-conveying the design and, perhaps more importantly, the design approach or 
-philosophy, than written documents. 
-</ref>
+				<ref set="gen" id="2104">... would benefit greatly from requirements and design documentation; most especially some diagrams. I find that a dozen or so good diagrams often do a better job of  conveying the design and, perhaps more importantly, the design approach or  philosophy, than written documents.  </ref>
 			</refs>
 		</req>
 		<req id="8" strength="soft" cat="Other">
@@ -130,22 +106,13 @@ philosophy, than written documents.
 		<req id="11" strength="soft" cat="Other">
 			<def>Development should be coordinated with xerces-c.</def>
 			<refs>
-				<ref set="gen" id="2133">I'd also like to see this be coordinated with the xerces-c developers ... it would be 
-nice to keep the two parsers in sync so that changes to one parser and 
-relatively easy to implement in the other. 		
-</ref>
+				<ref set="gen" id="2133">I'd also like to see this be coordinated with the xerces-c developers ... it would be  nice to keep the two parsers in sync so that changes to one parser and  relatively easy to implement in the other. 		 </ref>
 				<ref set="gen" id="2144">I disagree...</ref>
-				<ref set="gen" id="2161">Java is a very different language from C++, and you need 
-different strategies. 
-</ref>
-				<ref set="gen" id="2182">...there's much to be gained by keeping the 
-overall architecture and design the same between the two versions. </ref>
+				<ref set="gen" id="2161">Java is a very different language from C++, and you need  different strategies.  </ref>
+				<ref set="gen" id="2182">...there's much to be gained by keeping the  overall architecture and design the same between the two versions. </ref>
 				<ref set="gen" id="2194">[forcing deep similarity is bad]</ref>
-				<ref set="gen" id="2222">...trying to find one design that fits both 
-languages well will produce one design that doesn't quite fit either 
-language. </ref>
-				<ref set="gen" id="2241">Let's push for high-level designs that 
-can accommodate any OO language...</ref>
+				<ref set="gen" id="2222">...trying to find one design that fits both  languages well will produce one design that doesn't quite fit either  language. </ref>
+				<ref set="gen" id="2241">Let's push for high-level designs that  can accommodate any OO language...</ref>
 				<ref set="gen" id="2246"/>
 				<ref set="gen" id="2248"/>
 			</refs>
@@ -160,18 +127,7 @@ can accommodate any OO language...</ref>
 		</req>
 		<req id="13a" strength="soft" cat="Features">
 			<def>
-<br/>Read-only, memory conservative, high performance DOM subset. In some 
-ways, this is optional, since the alternative is that the XSLT processor 
-implement it's own DOM, as it does today. But it would be neat and simpler 
-if only one DOM implementation needed to exist. 
-<br/>  a) Document-order indexes or API as a DOM extension. I know of few or 
-no conformant XSLT processors that can do without this. 
-<br/>  b) [optional] isWhite() method as a DOM extensions (pure telling of 
-whether or not the text contains non-whitespace), for performance reasons. 
-<br/>  c) Some sort of weak reference, where nodes could be released if not 
-referenced, and then rebuilt if requested. For performance and memory 
-footprint. 
-</def>
+				<br/>Read-only, memory conservative, high performance DOM subset. In some  ways, this is optional, since the alternative is that the XSLT processor  implement it's own DOM, as it does today. But it would be neat and simpler  if only one DOM implementation needed to exist.  <br/>  a) Document-order indexes or API as a DOM extension. I know of few or  no conformant XSLT processors that can do without this.  <br/>  b) [optional] isWhite() method as a DOM extensions (pure telling of  whether or not the text contains non-whitespace), for performance reasons.  <br/>  c) Some sort of weak reference, where nodes could be released if not  referenced, and then rebuilt if requested. For performance and memory  footprint.  </def>
 			<refs>
 				<ref set="gen" id="2203"/>
 				<ref set="gen" id="2296"/>
@@ -179,8 +135,7 @@ footprint.
 		</req>
 		<req id="13b" strength="soft" cat="Features">
 			<def>
-<br/>parse-next function, with added control over buffer size. 
-</def>
+				<br/>parse-next function, with added control over buffer size.  </def>
 			<refs>
 				<ref set="gen" id="2203"/>
 				<ref set="gen" id="2296"/>
@@ -188,9 +143,7 @@ footprint.
 		</req>
 		<req id="13c" strength="soft" cat="Features">
 			<def>
-<br/>Some sort of way to tell if a SAX char buffer is going to be 
-overwritten, so data doesn't have to be copied until this occurs. 
-</def>
+				<br/>Some sort of way to tell if a SAX char buffer is going to be  overwritten, so data doesn't have to be copied until this occurs.  </def>
 			<refs>
 				<ref set="gen" id="2203"/>
 				<ref set="gen" id="2296"/>
@@ -198,8 +151,7 @@ overwritten, so data doesn't have to be copied until this occurs.
 		</req>
 		<req id="13d" strength="soft" cat="Features">
 			<def>
-<br/>Serialization support, as is currently in Assaf's classes. 
-</def>
+				<br/>Serialization support, as is currently in Assaf's classes.  </def>
 			<refs>
 				<ref set="gen" id="2203"/>
 				<ref set="gen" id="2296"/>
@@ -207,9 +159,7 @@ overwritten, so data doesn't have to be copied until this occurs.
 		</req>
 		<req id="13e" strength="soft" cat="Features">
 			<def>
-<br/>Schema data-type support, which will be needed for XSLT2, and Xalan 2.0 
-extensions.
-</def>
+				<br/>Schema data-type support, which will be needed for XSLT2, and Xalan 2.0  extensions. </def>
 			<refs>
 				<ref set="gen" id="2203"/>
 				<ref set="gen" id="2296"/>
@@ -217,10 +167,7 @@ extensions.
 		</req>
 		<req id="13f" strength="soft" cat="Features">
 			<def>
-<br/>Small core footprint for standalone, compiled stylesheet capability, for 
-use on small devices. This would need to include the Serializer. I'm not 
-sure if this should really be a separate micro-parser?  
-</def>
+				<br/>Small core footprint for standalone, compiled stylesheet capability, for  use on small devices. This would need to include the Serializer. I'm not  sure if this should really be a separate micro-parser?   </def>
 			<refs>
 				<ref set="gen" id="2203"/>
 				<ref set="gen" id="2296"/>
@@ -233,33 +180,26 @@ sure if this should really be a separate micro-parser?
 			</refs>
 		</req>
 		<req id="15" status="approved" strength="hard" cat="Standards">
-			<def>
-The parser shall support namespaces.</def>
+			<def> The parser shall support namespaces.</def>
 			<refs>
 				<ref set="gen" id="2243"/>
 			</refs>
 		</req>
 		<req id="16" status="approved" strength="hard" cat="Features">
-			<def>
-The parser shall support DOM Level 2.
-</def>
+			<def> The parser shall support DOM Level 2. </def>
 			<refs>
 				<ref set="gen" id="2243"/>
 			</refs>
 		</req>
 		<req id="18" status="approved" strength="hard" cat="Standards">
-			<def>
-The parser shall support XML Schema.
-</def>
+			<def> The parser shall support XML Schema. </def>
 			<refs>
 				<ref set="gen" id="2242"/>
 				<ref set="gen" id="2243"/>
 			</refs>
 		</req>
 		<req id="19" status="approved" strength="hard" cat="Standards">
-			<def>
-The parser shall support XPath.
-</def>
+			<def> The parser shall support XPath. </def>
 			<refs>
 				<ref set="gen" id="2245"/>
 				<ref set="gen" id="2275"/>
@@ -270,9 +210,7 @@ The parser shall support XPath.
 			</refs>
 		</req>
 		<req id="20" strength="soft" cat="Standards">
-			<def>
-The parser should support XInclude.
-</def>
+			<def> The parser should support XInclude. </def>
 			<refs>
 				<ref set="gen" id="2245">+1</ref>
 				<ref set="gen" id="2271">+1</ref>
@@ -280,86 +218,56 @@ The parser should support XInclude.
 			</refs>
 		</req>
 		<req id="21" strength="soft" cat="Features">
-			<def>
-The parser should support write validation of a DOM tree or revalidation.
-</def>
+			<def> The parser should support write validation of a DOM tree or revalidation. </def>
 			<refs>
 				<ref set="gen" id="2242"/>
 			</refs>
 		</req>
 		<req id="22" strength="hard" cat="Standards">
-			<def>
-The parser shall support grammar access for both DTD and Schema.
-</def>
+			<def> The parser shall support grammar access for both DTD and Schema. </def>
 			<seeAlso id="13"/>
 			<refs>
 				<ref set="gen" id="2242"/>
 			</refs>
 		</req>
 		<req id="23" strength="soft" cat="Speed">
-			<def>
-No significant speed penalty should be invoked for unused features, notably validation.
-When not validating, the parser should run almost as fast as a non-validating parser.
-</def>
+			<def> No significant speed penalty should be invoked for unused features, notably validation. When not validating, the parser should run almost as fast as a non-validating parser. </def>
 			<seeAlso id="10"/>
 			<refs/>
 		</req>
 		<req id="24" strength="soft" cat="Speed">
-			<def>
-The parser should provide best-of-breed performance across all JIT's (not just Hotspot).
-</def>
-			<seeAlso id="2" type="Conflict"/>
+			<def> The parser should provide best-of-breed performance across all JIT's (not just Hotspot). Such performance
+shall not come at the expense of requirement 5.</def>
+			<seeAlso id="5"/>
 			<refs>
 				<ref set="xdev" id="1317">-1 (on JDK 1.1)</ref>
-				<ref set="xdev" id="1323">Fast enough to not notice that a parse happened for most data (10 lines to 
-10K).  To expand on that, when I have Ant read it's data from build.xml, I 
-shouldn't notice. If I send a bit of form encoded XML data to a server, and 
-then get some back, it shouldn't be appreciable considering the connection 
-cost. </ref>
+				<ref set="xdev" id="1323">Fast enough to not notice that a parse happened for most data (10 lines to  10K).  To expand on that, when I have Ant read it's data from build.xml, I  shouldn't notice. If I send a bit of form encoded XML data to a server, and  then get some back, it shouldn't be appreciable considering the connection  cost. </ref>
 			</refs>
 		</req>
 		<req id="25" strength="soft" cat="Speed">
-			<def>
-The parser should support grammar caching and precompilation.
-</def>
+			<def> The parser should support grammar caching and precompilation. </def>
 			<refs>
 				<ref set="gen" id="2242"/>
 				<ref set="gen" id="2261"/>
 			</refs>
 		</req>
-<!--		<req id="27" strength="soft" cat="Speed">
-			<def>
-The parser should provide mid to upper range validation performance across all JVMs.
-</def>
-			<refs>
-				<ref set="gen" id="2242"/>
-			</refs>
-		</req>
--->
+		<!--		<req id="27" strength="soft" cat="Speed"> 			<def> The parser should provide mid to upper range validation performance across all JVMs. </def> 			<refs> 				<ref set="gen" id="2242"/> 			</refs> 		</req> -->
 		<req id="28" strength="soft" cat="Features">
-			<def>
-The parser should provide a reasonable core (fast!) upon which to
-layer other API's.  Examples of such API's include SAX2, DOM, and JDOM
-</def>
+			<def> Xerces Native API.  The parser should provide a reasonable core API (fast!) upon which to layer other API's.  Examples of such API's include SAX2, DOM, and JDOM. </def>
 			<seeAlso id="10"/>
 			<refs>
 				<ref set="gen" id="2207"/>
-				<ref set="gen" id="2221">JDOM is an important up and coming API that already has established a large and rapidly growing groundswell of support and in the 
-developer community.</ref>
+				<ref set="gen" id="2221">JDOM is an important up and coming API that already has established a large and rapidly growing groundswell of support and in the  developer community.</ref>
 			</refs>
 		</req>
 		<req id="29" strength="soft" cat="Other">
-			<def>
-The project should produce testcases for both conformance and benchmarking. 
-</def>
+			<def> The project should produce testcases for both conformance and benchmarking.  </def>
 			<refs>
 				<ref set="gen" id="2242"/>
 			</refs>
 		</req>
 		<req id="30" status="rejected" strength="hard" cat="Standards">
-			<def>
-The parse shall support SAX 1
-</def>
+			<def> The parse shall support SAX 1 </def>
 			<refs>
 				<ref set="gen" id="2249">-1</ref>
 				<ref set="gen" id="2257">-1</ref>
@@ -367,16 +275,10 @@ The parse shall support SAX 1
 			</refs>
 		</req>
 		<req id="31" strength="soft" cat="Features">
-			<def>
-The core parser should not directly support any tree model.
-</def>
+			<def> The core parser should not directly support any tree model. </def>
 			<seeAlso id="10"/>
 			<refs>
-				<ref set="gen" id="2154">My understanding of the design, which I think is good, is that the 
-"core" actually doesn't directly support any tree model. 
-<br/>                API Layer JDOM DOM SAX2 
-<br/>               Core Layer Java parser code
-</ref>
+				<ref set="gen" id="2154">My understanding of the design, which I think is good, is that the  "core" actually doesn't directly support any tree model.  <br/>                API Layer JDOM DOM SAX2  <br/>               Core Layer Java parser code </ref>
 				<ref set="gen" id="2263"/>
 				<ref set="gen" id="2326"/>
 				<ref set="xdev" id="1169"/>
@@ -389,9 +291,7 @@ The core parser should not directly support any tree model.
 			</refs>
 		</req>
 		<req id="32" status="rejected" strength="hard" cat="Standards">
-			<def>
-The parser shall support Java 1.1
-</def>
+			<def> The parser shall support Java 1.1 </def>
 			<refs>
 				<ref set="gen" id="2249">-1</ref>
 				<ref set="gen" id="2257">-1</ref>
@@ -401,29 +301,22 @@ The parser shall support Java 1.1
 			</refs>
 		</req>
 		<req id="33" strength="soft" cat="Features">
-			<def>
-The parser should support loading and validating only certainrequested portions of a document -- a useful feature 
-when dealing with large xml databases, for example.   See the W3C
-<a href="http://www.w3.org/TR/WD-xml-fragment"><em>XML Fragement Interchange</em></a> Working Draft.
-</def>
+			<def> The parser should support loading and validating only certainrequested portions of a document -- a useful feature  when dealing with large xml databases, for example.   See the W3C <a href="http://www.w3.org/TR/WD-xml-fragment">
+					<em>XML Fragement Interchange</em>
+				</a> Working Draft. </def>
 			<refs>
 				<ref set="gen" id="2276"/>
 			</refs>
 		</req>
 		<req id="34" strength="hard" cat="Standards">
-			<def>
-The parser shall support the XML 
-Information Set.
-</def>
+			<def> The parser shall support the XML  Information Set. </def>
 			<refs>
 				<ref set="gen" id="2298">+1</ref>
 				<ref set="gen" id="2321">+1</ref>
 			</refs>
 		</req>
 		<req id="35" strength="soft" cat="Features">
-			<def>
-The parser should support pull model parsing.
-</def>
+			<def> The parser should support pull model parsing. </def>
 			<refs>
 				<ref set="gen" id="2310"/>
 				<ref set="gen" id="2323"/>
@@ -432,36 +325,21 @@ The parser should support pull model parsing.
 				<ref set="gen" id="2340"/>
 			</refs>
 		</req>
-		<req id="36" strength="soft" cat="Features">
-			<def>
-The parser should support compilation of a high-speed customized parser based on a W3C schema.
-</def>
-			<refs>
-				<ref set="gen" id="2339"/>
-			</refs>
-		</req>
 		<req id="37" strength="soft" cat="Features">
-			<def>
-The DOM should emit events to interested listeners when changes are made to the DOM
-</def>
+			<def> The DOM should emit events to interested listeners when changes are made to the DOM </def>
 			<refs>
 				<ref set="xdev" id="1201"/>
 			</refs>
 		</req>
 		<req id="38" strength="soft" cat="Features">
-			<def>
-The parser should support <a href="http://www.xml.gr.jp/relax/"><em>RELAX</em></a>.
-</def>
-			<refs>
-			</refs>
+			<def> The parser should support <a href="http://www.xml.gr.jp/relax/">
+					<em>RELAX</em>
+				</a>. </def>
+			<refs/>
 		</req>
 		<req id="39" strength="soft" cat="Features">
-			<def>
-The parser should allow for automatic detection of
-compressed/encrypted documents.
-</def>
-			<refs>
-			</refs>
+			<def> The parser should allow for automatic detection of compressed/encrypted documents. </def>
+			<refs/>
 		</req>
 	</requirements>
 	<mailHeaderSets>

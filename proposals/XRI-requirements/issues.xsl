@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- edited with XML Spy v3.0 (http://www.xmlspy.com) by Edward Staub (private) -->
 <!-- define nbsp char entity for output -->
 <!DOCTYPE menu [
 	<!ENTITY nbsp "&#160;">
@@ -9,11 +8,11 @@
 	<xsl:template match="/">
 		<html>
 			<head>
-				<title>Proposed Xerces2 / XRI Requirements -  <xsl:value-of select="/requirementCatalog/@date"/>
+				<title>Proposed Xerces2 Requirements -  <xsl:value-of select="/requirementCatalog/@date"/>
 				</title>
 			</head>
 			<body bgcolor="#FFFFFF">
-				<h1>Proposed Xerces2 / XRI Requirements</h1>
+				<h1>Proposed Xerces2 Requirements</h1>
 				<h4>Date: <xsl:value-of select="/requirementCatalog/@date"/>
 					<br/>
   Editors: &nbsp;&nbsp;<a href="mailto:estaub@mediaone.net">Ed Staub</a>&nbsp;&nbsp;<a href="mailto:twleung@sauria.com">Ted Leung</a>
@@ -27,8 +26,8 @@
 				<dl>
 					<dt>Possible &quot;hardness&quot; values are:</dt>
 					<dd>
-						<b>hard</b> - XRI must and shall meet this requirement<br/>
-						<b>soft</b> - XRI should meet this requirement, but it may be dropped 
+						<b>hard</b> - Xerces2 must and shall meet this requirement<br/>
+						<b>soft</b> - Xerces2 should meet this requirement, but it may be dropped 
     because of conflicting requirements or time pressures</dd>
 					<dt>
 						<br/>
