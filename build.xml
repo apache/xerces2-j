@@ -274,7 +274,7 @@ Copyright:
     <mkdir dir="${build.tests}"/>
     <copy todir="${build.tests}">
         <fileset dir="${tests.dir}"
-		 excludes="dom/rename/**" />
+		 excludes="dom/rename/**, dom/dom3/**" />
     </copy>
     <javac srcdir="${build.tests}"
            destdir="${build.dest}"
@@ -665,6 +665,14 @@ Copyright:
           classpath="${build.dir}/classes"
           classname="dom.ids.Test"
           failOnError="yes">
+    </java>
+    <echo message="Running dom.serialization.Test ..." />
+    <java fork="yes"
+          classpath="${build.dir}/classes"
+          classname="dom.serialization.Test"
+          failOnError="yes"
+          args="${data.dir}/personal.xml out.xml">
+
     </java>
   </target>
 
@@ -1112,6 +1120,20 @@ Copyright:
           classname="dom.DTest"
           failOnError="yes">
     </java>
+    <echo message="Running dom.serialization.Test ..." />
+    <java fork="yes"
+          classpath="${build.dir}/classes"
+          classname="dom.serialization.Test"
+          failOnError="yes">
+           <arg value="${data.dir}/personal.xml"/>
+           <arg value="out.xml"/>
+    </java>
+    <java fork="yes"
+          classpath="${build.dir}/classes"
+          classname="dom.dom3.Test"
+          failOnError="yes">
+    </java>
+
   </target>
 
   <!-- =================================================================== -->
