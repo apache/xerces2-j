@@ -808,6 +808,7 @@ public class TraverseSchema implements
         }
 
 		if (root == null) return; // nothing to be redefined, so just continue; specs disallow an error here.
+
 		// now if root isn't null, it'll contain the root of the schema we need to redefine.  
 		// We do this in two phases:  first, we look through the children of
 		// redefineDecl.  Each one will correspond to an element of the
@@ -835,12 +836,7 @@ public class TraverseSchema implements
         else {
 			// targetNamespace is right, so let's do the renaming...
 			// and let's keep in mind that the targetNamespace of the redefined
-			// elements is that of the redefined schema!
-			int oldTargetNSURI = fTargetNSURI;
-			String oldTargetNSURIString = fTargetNSURIString;
-
-			fTargetNSURI = fStringPool.addSymbol(redefinedTargetNSURIString);
-			fTargetNSURIString = redefinedTargetNSURIString;
+			// elements is that of the redefined schema!  
             boolean saveElementDefaultQualified = fElementDefaultQualified;
             boolean saveAttributeDefaultQualified = fAttributeDefaultQualified;
             int saveScope = fCurrentScope;
@@ -880,10 +876,7 @@ public class TraverseSchema implements
             fCurrentScope = saveScope;
             fElementDefaultQualified = saveElementDefaultQualified;
             fAttributeDefaultQualified = saveAttributeDefaultQualified;
-            fSchemaRootElement = saveRoot;
-			fTargetNSURI = oldTargetNSURI;
-			fTargetNSURIString = oldTargetNSURIString;
-
+            fSchemaRootElement = saveRoot; 
 		}
     } // traverseRedefine
 	// the purpose of this method is twofold:  1.  To find and appropriately modify all information items
@@ -941,7 +934,7 @@ public class TraverseSchema implements
             			reportGenericSchemaError("a complexType child of a <redefine> must have a restriction or extension element as a grandchild");
 					else {
             			String greatGrandKidName = greatGrandKid.getLocalName();
-						if(!greatGrandKidName.equals(SchemaSymbols.ELT_RESTRICTION) ||
+						if(!greatGrandKidName.equals(SchemaSymbols.ELT_RESTRICTION) && 
 								!greatGrandKidName.equals(SchemaSymbols.ELT_EXTENSION))
             				// REVISIT: Localize
             				reportGenericSchemaError("a complexType child of a <redefine> must have a restriction or extension element as a grandchild");
@@ -3212,7 +3205,9 @@ public class TraverseSchema implements
                     reportGenericSchemaError ( "Couldn't find top level attribute " + ref);
             }
             return -1;
-        }
+        } else if (attNameStr.equals(""))
+			// REVISIT:  localize 
+       	    reportGenericSchemaError ( "An attribute must have a ref or a name!");
 
         if (datatype.equals("")) {
             if (simpleTypeChild != null) { 
@@ -3634,15 +3629,15 @@ public class TraverseSchema implements
 	// <annotation> or <simpleType> group is present.
 	private Element findAttributeSimpleType(Element attrDecl) throws Exception {
 		Element child = XUtil.getFirstChildElement(attrDecl);
-	    	if (child == null)
+	   	if (child == null)
 	   		return null;
 		if (child.getLocalName().equals(SchemaSymbols.ELT_SIMPLETYPE))
 			return child;
-			if (child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
-   	 			traverseAnnotationDecl(child);
-				child = XUtil.getNextSiblingElement(child);
-			}
-	    	if (child == null)
+		if (child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
+   	 		traverseAnnotationDecl(child);
+			child = XUtil.getNextSiblingElement(child);
+		}
+	   	if (child == null)
 	   		return null;
 		if (child.getLocalName().equals(SchemaSymbols.ELT_SIMPLETYPE) &&
 				XUtil.getNextSiblingElement(child) == null) 
@@ -3825,7 +3820,10 @@ public class TraverseSchema implements
                 }
             }
             return eltName;
-        }
+        } else if (name.equals(""))
+            // REVISIT: Localize
+            reportGenericSchemaError("a local element must have a name or a ref attribute present");
+
                 
         // Handle the substitutionGroup
         Element substitutionGroupElementDecl = null;
