@@ -525,7 +525,7 @@ public class DTDGrammar
         if ( DEBUG ) {
             System.out.println("defaultvalue = " + defaultValue.toString() );
         }
-        fSimpleType.defaultValue      = defaultValue.length >= 0 ?  defaultValue.toString() : null;
+        fSimpleType.defaultValue      = defaultValue!=null ?  defaultValue.toString() : null;
         fSimpleType.enumeration       = enumeration;
 
         Hashtable facets = new Hashtable();

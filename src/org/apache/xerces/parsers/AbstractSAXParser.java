@@ -847,7 +847,7 @@ public abstract class AbstractSAXParser
                     str.append(')');
                     type = str.toString();
                 }
-                String value = defaultValue.toString();
+                String value = (defaultValue==null) ? null : defaultValue.toString();
                 fDeclHandler.attributeDecl(elementName, attributeName,
                                            type, defaultType, value);
             }

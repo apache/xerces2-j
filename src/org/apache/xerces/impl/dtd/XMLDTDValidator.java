@@ -1358,7 +1358,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                               String defaultType, XMLString defaultValue)
     throws XNIException {
 
-        if (type != fCDATASymbol) {
+        if (type != fCDATASymbol && defaultValue != null) {
             normalizeDefaultAttrValue(defaultValue);
         }
 
