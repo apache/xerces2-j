@@ -377,7 +377,8 @@ Copyright:
                            org.apache.xerces.impl.*,
                            org.apache.xerces.jaxp,
                            org.apache.xerces.parsers,
-                           org.apache.xerces.util'
+                           org.apache.xerces.util,
+                           org.apache.xerces.xinclude'
       locale='en_US'
       sourcepath='${build.src}' destdir='${build.dir}/docs/javadocs/xerces2'
       author='true' version='true'
