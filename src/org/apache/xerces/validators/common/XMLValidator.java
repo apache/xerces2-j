@@ -1840,13 +1840,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
         fNamespacesScope.increaseDepth();
 
-        Vector schemaCandidateURIs = null;
+        //Vector schemaCandidateURIs = null;
         Hashtable locationUriPairs = null;
         
-        if (fValidating) {
-            schemaCandidateURIs = new Vector();
-            locationUriPairs = new Hashtable(); 
-        }
         if (fAttrListHandle != -1) {
             int index = attrList.getFirstAttr(fAttrListHandle);
             while (index != -1) {
@@ -1869,6 +1865,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                         int uri = fStringPool.addSymbol(attrList.getAttValue(index));
                         fNamespacesScope.setNamespaceForPrefix(nsPrefix, uri);
 
+                        /***
                         if (fValidating && fSchemaValidation) {
                             boolean seeXsi = false;
                             String attrValue = fStringPool.toString(attrList.getAttValue(index));
@@ -1879,9 +1876,13 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                             }
 
                             if (!seeXsi) {
+                                if (schemaCandidateURIs == null) {
+                                    schemaCandidateURIs = new Vector();
+                                }
                                 schemaCandidateURIs.addElement( fStringPool.toString(uri) );
                             }
                         }
+                        /***/
                     }
                 }
                 index = attrList.getNextAttr(index);
@@ -1918,6 +1919,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                 parseSchemaLocation(fStringPool.toString(attrList.getAttValue(index)), locationUriPairs);
                             }
                             else if (localpart == fStringPool.addSymbol(SchemaSymbols.XSI_NONAMESPACESCHEMALOCACTION))  {
+                                if (locationUriPairs == null) {
+                                    locationUriPairs = new Hashtable();
+                                }
                                 locationUriPairs.put(fStringPool.toString(attrList.getAttValue(index)), "");
                                 if (fNamespacesScope != null) {
                                     //bind prefix "" to URI "" in this case
@@ -1933,13 +1937,15 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 }
 
                 // try to resolve all the grammars here
-                Enumeration locations = locationUriPairs.keys();
+                if (locationUriPairs != null) {
+                    Enumeration locations = locationUriPairs.keys();
 
-                while (locations.hasMoreElements()) {
-                    String loc = (String) locations.nextElement();
-                    String uri = (String) locationUriPairs.get(loc);
-                    resolveSchemaGrammar( loc, uri);
-                    schemaCandidateURIs.removeElement(uri);
+                    while (locations.hasMoreElements()) {
+                        String loc = (String) locations.nextElement();
+                        String uri = (String) locationUriPairs.get(loc);
+                        resolveSchemaGrammar( loc, uri);
+                        //schemaCandidateURIs.removeElement(uri);
+                    }
                 }
 
                 //TO DO: This should be a feature that can be turned on or off
