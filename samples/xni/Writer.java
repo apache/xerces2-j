@@ -115,9 +115,9 @@ public class Writer
 
     // default settings
 
-    /** Default parser configuration (org.apache.xerces.parsers.StandardParserConfiguration). */
+    /** Default parser configuration (org.apache.xerces.parsers.IntegratedParserConfiguration). */
     protected static final String DEFAULT_PARSER_CONFIG =
-        "org.apache.xerces.parsers.StandardParserConfiguration";
+        "org.apache.xerces.parsers.IntegratedParserConfiguration";
 
     /** Default namespaces support (true). */
     protected static final boolean DEFAULT_NAMESPACES = true;

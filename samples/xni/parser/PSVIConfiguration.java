@@ -61,7 +61,7 @@ package xni.parser;
 import xni.PSVIWriter;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
-import org.apache.xerces.parsers.StandardParserConfiguration;
+import org.apache.xerces.parsers.IntegratedParserConfiguration;
 import org.apache.xerces.util.SymbolTable;
 
 import org.apache.xerces.xni.parser.XMLComponentManager;
@@ -74,7 +74,7 @@ import org.apache.xerces.xni.parser.XMLComponentManager;
  * @author Elena Litani, IBM
  * @version $Id$
  */
-public class PSVIConfiguration extends StandardParserConfiguration {
+public class PSVIConfiguration extends IntegratedParserConfiguration {
 
 
      /** PSVI Writer */
@@ -160,4 +160,4 @@ public class PSVIConfiguration extends StandardParserConfiguration {
         return new PSVIWriter();
     }
 
-} // class StandardParserConfiguration
+} // class PSVIConfiguration

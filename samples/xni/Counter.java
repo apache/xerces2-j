@@ -124,9 +124,9 @@ public class Counter
 
     // default settings
 
-    /** Default parser configuration (org.apache.xerces.parsers.StandardParserConfiguration). */
+    /** Default parser configuration (org.apache.xerces.parsers.IntegratedParserConfiguration). */
     protected static final String DEFAULT_PARSER_CONFIG =
-        "org.apache.xerces.parsers.StandardParserConfiguration";
+        "org.apache.xerces.parsers.IntegratedParserConfiguration";
 
     /** Default repetition (1). */
     protected static final int DEFAULT_REPETITION = 1;
