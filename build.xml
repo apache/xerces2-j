@@ -364,19 +364,32 @@ Copyright:
     
   </target>
 
+
+  <target name="javadoc-replace" unless="additional.param">
+    <replace token="@xerces.internal" dir="${build.src}">
+      <replacevalue><![CDATA[<DL><DT><H1 style="font-size:110%">INTERNAL:</H1><DD>This type should not be directly used by the user. The methods/fields defined can be altered or removed at any time.</DD></DT></DL>]]></replacevalue>
+    </replace>
+  	
+    <replace token="@xerces.experimental" dir="${build.src}">
+      <replacevalue><![CDATA[<DL><DT><H1 style="font-size:150%">EXPERIMENTAL:</H1><DD>This interface should not be considered stable. It is likely to be altered or replaced in the future.</DD></DT></DL>]]></replacevalue>
+    </replace>
+  </target>
+	
   <!-- =================================================================== -->
   <!-- Creates the API documentation                                       -->
   <!-- =================================================================== -->
   <target name="javadocs" depends="prepare-src">	
-  
+  		
+    <condition property="additional.param" value=" @${tools.dir}\bin\xerces2taglets.opt -tagletpath ${tools.dir}\bin\xerces2taglets.jar">
+      <available classname="com.sun.tools.doclets.Taglet"/>
+    </condition>
+  	
+    <antcall target="javadoc-replace" />
+  	
     <condition property="additional.param" value="">
       <not>
         <available classname="com.sun.tools.doclets.Taglet"/>
       </not>
-    </condition>
-		
-    <condition property="additional.param" value=" @${tools.dir}\bin\xerces2taglets.opt -tagletpath ${tools.dir}\bin\xerces2taglets.jar">
-      <available classname="com.sun.tools.doclets.Taglet"/>
     </condition>
   	
     <mkdir dir='${build.dir}/docs/javadocs/api'/>
