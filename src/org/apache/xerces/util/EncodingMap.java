@@ -63,7 +63,8 @@ import java.util.Hashtable;
  * EncodingMap is a convenience class which handles conversions between 
  * IANA encoding names and Java encoding names, and vice versa. The
  * encoding names used in XML instance documents <strong>must</strong>
- * be the IANA encoding names specified.
+ * be the IANA encoding names specified or one of the aliases for those names
+ * which IANA defines.
  * <p>
  * <TABLE BORDER="0" WIDTH="100%">
  *  <TR>
@@ -381,7 +382,7 @@ import java.util.Hashtable;
  *      </TD>
  *  </TR>
  *  <TR>
- *      <TD WIDTH="33%">EBCDIC: Yogoslavia</TD>
+ *      <TD WIDTH="33%">EBCDIC: Yugoslavia</TD>
  *      <TD WIDTH="15%">
  *          <P ALIGN="CENTER">ebcdic-cp-yu
  *      </TD>
@@ -531,6 +532,7 @@ public class EncodingMap {
         fIANA2JavaMap.put("EBCDIC-CP-US",    "CP037");
         fIANA2JavaMap.put("EBCDIC-CP-CA",    "CP037");
         fIANA2JavaMap.put("EBCDIC-CP-NL",    "CP037");
+        fIANA2JavaMap.put("EBCDIC-CP-WT",    "CP037");
         fIANA2JavaMap.put("EBCDIC-CP-DK",    "CP277");
         fIANA2JavaMap.put("EBCDIC-CP-NO",    "CP277");
         fIANA2JavaMap.put("EBCDIC-CP-FI",    "CP278");
@@ -542,6 +544,9 @@ public class EncodingMap {
         fIANA2JavaMap.put("EBCDIC-CP-AR1",   "CP420");
         fIANA2JavaMap.put("EBCDIC-CP-HE",    "CP424");
         fIANA2JavaMap.put("EBCDIC-CP-CH",    "CP500");
+        fIANA2JavaMap.put("EBCDIC-CP-BE",    "CP500"); 
+        fIANA2JavaMap.put("CP-AR",        "CP868");
+        fIANA2JavaMap.put("CP-GR",        "CP869");
         fIANA2JavaMap.put("EBCDIC-CP-ROECE", "CP870");
         fIANA2JavaMap.put("EBCDIC-CP-YU",    "CP870");
         fIANA2JavaMap.put("EBCDIC-CP-IS",    "CP871");
@@ -551,17 +556,95 @@ public class EncodingMap {
         fIANA2JavaMap.put("GB2312",          "GB2312");
         fIANA2JavaMap.put("ISO-2022-JP",     "JIS");
         fIANA2JavaMap.put("ISO-2022-KR",     "ISO2022KR");
-        fIANA2JavaMap.put("ISO-8859-1",      "8859_1");
-        fIANA2JavaMap.put("ISO-8859-2",      "8859_2");
-        fIANA2JavaMap.put("ISO-8859-3",      "8859_3");
-        fIANA2JavaMap.put("ISO-8859-4",      "8859_4");
-        fIANA2JavaMap.put("ISO-8859-5",      "8859_5");
-        fIANA2JavaMap.put("ISO-8859-6",      "8859_6");
-        fIANA2JavaMap.put("ISO-8859-7",      "8859_7");
-        fIANA2JavaMap.put("ISO-8859-8",      "8859_8");
-        fIANA2JavaMap.put("ISO-8859-9",      "8859_9");
+        fIANA2JavaMap.put("ISO-2022-CN",     "ISO2022CN");
+
+        fIANA2JavaMap.put("X0201",  "JIS0201");
+        fIANA2JavaMap.put("X0208",  "JIS0208");
+        fIANA2JavaMap.put("X0212",  "JIS0212");
+        fIANA2JavaMap.put("ISO-IR-159",  "JIS0212");
+        fIANA2JavaMap.put("SHIFT_JIS",       "SJIS");
+        fIANA2JavaMap.put("MS_Kanji",       "SJIS");
+
+	    // Add support for Cp1252 and its friends
+        fIANA2JavaMap.put("WINDOWS-1250",   "Cp1250");
+        fIANA2JavaMap.put("WINDOWS-1251",   "Cp1251");
+        fIANA2JavaMap.put("WINDOWS-1252",   "Cp1252");
+        fIANA2JavaMap.put("WINDOWS-1253",   "Cp1253");
+        fIANA2JavaMap.put("WINDOWS-1254",   "Cp1254");
+        fIANA2JavaMap.put("WINDOWS-1255",   "Cp1255");
+        fIANA2JavaMap.put("WINDOWS-1256",   "Cp1256");
+        fIANA2JavaMap.put("WINDOWS-1257",   "Cp1257");
+        fIANA2JavaMap.put("WINDOWS-1258",   "Cp1258");
+        fIANA2JavaMap.put("TIS-620",   "TIS620");
+
+        fIANA2JavaMap.put("ISO-8859-1",      "ISO8859_1"); 
+        fIANA2JavaMap.put("ISO-IR-100",      "ISO8859_1");
+        fIANA2JavaMap.put("ISO_8859-1",      "ISO8859_1");
+        fIANA2JavaMap.put("LATIN1",      "ISO8859_1");
+        fIANA2JavaMap.put("L1",      "ISO8859_1");
+        fIANA2JavaMap.put("IBM819",      "ISO8859_1");
+        fIANA2JavaMap.put("CP819",      "ISO8859_1");
+
+        fIANA2JavaMap.put("ISO-8859-2",      "ISO8859_2"); 
+        fIANA2JavaMap.put("ISO-IR-101",      "ISO8859_2");
+        fIANA2JavaMap.put("ISO_8859-2",      "ISO8859_2");
+        fIANA2JavaMap.put("LATIN2",      "ISO8859_2");
+        fIANA2JavaMap.put("L2",      "ISO8859_2");
+
+        fIANA2JavaMap.put("ISO-8859-3",      "ISO8859_3"); 
+        fIANA2JavaMap.put("ISO-IR-109",      "ISO8859_3");
+        fIANA2JavaMap.put("ISO_8859-3",      "ISO8859_3");
+        fIANA2JavaMap.put("LATIN3",      "ISO8859_3");
+        fIANA2JavaMap.put("L3",      "ISO8859_3");
+
+        fIANA2JavaMap.put("ISO-8859-4",      "ISO8859_4"); 
+        fIANA2JavaMap.put("ISO-IR-110",      "ISO8859_4");
+        fIANA2JavaMap.put("ISO_8859-4",      "ISO8859_4");
+        fIANA2JavaMap.put("LATIN4",      "ISO8859_4");
+        fIANA2JavaMap.put("L4",      "ISO8859_4");
+
+        fIANA2JavaMap.put("ISO-8859-5",      "ISO8859_5"); 
+        fIANA2JavaMap.put("ISO-IR-144",      "ISO8859_5");
+        fIANA2JavaMap.put("ISO_8859-5",      "ISO8859_5");
+        fIANA2JavaMap.put("CYRILLIC",      "ISO8859_5");
+
+        fIANA2JavaMap.put("ISO-8859-6",      "ISO8859_6"); 
+        fIANA2JavaMap.put("ISO-IR-127",      "ISO8859_6");
+        fIANA2JavaMap.put("ISO_8859-6",      "ISO8859_6");
+        fIANA2JavaMap.put("ECMA-114",      "ISO8859_6");
+        fIANA2JavaMap.put("ASMO-708",      "ISO8859_6");
+        fIANA2JavaMap.put("ARABIC",      "ISO8859_6");
+
+        fIANA2JavaMap.put("ISO-8859-7",      "ISO8859_7"); 
+        fIANA2JavaMap.put("ISO-IR-126",      "ISO8859_7");
+        fIANA2JavaMap.put("ISO_8859-7",      "ISO8859_7");
+        fIANA2JavaMap.put("ELOT_928",      "ISO8859_7");
+        fIANA2JavaMap.put("ECMA-118",      "ISO8859_7");
+        fIANA2JavaMap.put("GREEK",      "ISO8859_7");
+        fIANA2JavaMap.put("GREEK8",      "ISO8859_7");
+
+        fIANA2JavaMap.put("ISO-8859-8",      "ISO8859_8"); 
+        fIANA2JavaMap.put("ISO-8859-8-I",      "ISO8859_8"); // added since this encoding only differs w.r.t. presentation 
+        fIANA2JavaMap.put("ISO-IR-138",      "ISO8859_8");
+        fIANA2JavaMap.put("ISO_8859-8",      "ISO8859_8");
+        fIANA2JavaMap.put("HEBREW",      "ISO8859_8");
+
+        fIANA2JavaMap.put("ISO-8859-9",      "ISO8859_9"); 
+        fIANA2JavaMap.put("ISO-IR-148",      "ISO8859_9");
+        fIANA2JavaMap.put("ISO_8859-9",      "ISO8859_9");
+        fIANA2JavaMap.put("LATIN5",      "ISO8859_9");
+        fIANA2JavaMap.put("L5",      "ISO8859_9");
+
         fIANA2JavaMap.put("KOI8-R",          "KOI8_R");
-        fIANA2JavaMap.put("US-ASCII",        "8859_1"); // ?
+        fIANA2JavaMap.put("US-ASCII",        "ASCII"); 
+        fIANA2JavaMap.put("ISO-IR-6",        "ASCII");
+        fIANA2JavaMap.put("ANSI_X3.4-1986",        "ASCII");
+        fIANA2JavaMap.put("ISO_646.IRV:1991",        "ASCII");
+        fIANA2JavaMap.put("ASCII",        "ASCII");
+        fIANA2JavaMap.put("ISO646-US",        "ASCII");
+        fIANA2JavaMap.put("US",        "ASCII");
+        fIANA2JavaMap.put("IBM367",        "ASCII");
+        fIANA2JavaMap.put("CP367",        "ASCII");
         fIANA2JavaMap.put("UTF-8",           "UTF8");
         fIANA2JavaMap.put("UTF-16",           "Unicode");
 
@@ -571,23 +654,18 @@ public class EncodingMap {
                                                 
         // add Java to IANA encoding mappings
         //fJava2IANAMap.put("8859_1",    "US-ASCII"); // ?
-        fJava2IANAMap.put("8859_1",    "ISO-8859-1");
-        fJava2IANAMap.put("8859_2",    "ISO-8859-2");
-        fJava2IANAMap.put("8859_3",    "ISO-8859-3");
-        fJava2IANAMap.put("8859_4",    "ISO-8859-4");
-        fJava2IANAMap.put("8859_5",    "ISO-8859-5");
-        fJava2IANAMap.put("8859_6",    "ISO-8859-6");
-        fJava2IANAMap.put("8859_7",    "ISO-8859-7");
-        fJava2IANAMap.put("8859_8",    "ISO-8859-8");
-        fJava2IANAMap.put("8859_9",    "ISO-8859-9");
-        fJava2IANAMap.put("BIG5",      "Big5");
+        fJava2IANAMap.put("ISO8859_1",    "ISO-8859-1");
+        fJava2IANAMap.put("ISO8859_2",    "ISO-8859-2");
+        fJava2IANAMap.put("ISO8859_3",    "ISO-8859-3");
+        fJava2IANAMap.put("ISO8859_4",    "ISO-8859-4");
+        fJava2IANAMap.put("ISO8859_5",    "ISO-8859-5");
+        fJava2IANAMap.put("ISO8859_6",    "ISO-8859-6");
+        fJava2IANAMap.put("ISO8859_7",    "ISO-8859-7");
+        fJava2IANAMap.put("ISO8859_8",    "ISO-8859-8");
+        fJava2IANAMap.put("ISO8859_9",    "ISO-8859-9");
+        fJava2IANAMap.put("Big5",      "BIG5");
         fJava2IANAMap.put("CP037",     "EBCDIC-CP-US");
-        fJava2IANAMap.put("CP037",     "EBCDIC-CP-CA");
-        fJava2IANAMap.put("CP037",     "EBCDIC-CP-NL");
-        fJava2IANAMap.put("CP277",     "EBCDIC-CP-DK");
-        fJava2IANAMap.put("CP277",     "EBCDIC-CP-NO");
         fJava2IANAMap.put("CP278",     "EBCDIC-CP-FI");
-        fJava2IANAMap.put("CP278",     "EBCDIC-CP-SE");
         fJava2IANAMap.put("CP280",     "EBCDIC-CP-IT");
         fJava2IANAMap.put("CP284",     "EBCDIC-CP-ES");
         fJava2IANAMap.put("CP285",     "EBCDIC-CP-GB");
@@ -596,18 +674,21 @@ public class EncodingMap {
         fJava2IANAMap.put("CP424",     "EBCDIC-CP-HE");
         fJava2IANAMap.put("CP500",     "EBCDIC-CP-CH");
         fJava2IANAMap.put("CP870",     "EBCDIC-CP-ROECE");
-        fJava2IANAMap.put("CP870",     "EBCDIC-CP-YU");
         fJava2IANAMap.put("CP871",     "EBCDIC-CP-IS");
         fJava2IANAMap.put("CP918",     "EBCDIC-CP-AR2");
         fJava2IANAMap.put("EUCJIS",    "EUC-JP");
         fJava2IANAMap.put("GB2312",    "GB2312");
         fJava2IANAMap.put("ISO2022KR", "ISO-2022-KR");
+        fJava2IANAMap.put("ISO2022CN", "ISO-2022-CN");
         fJava2IANAMap.put("JIS",       "ISO-2022-JP");
         fJava2IANAMap.put("KOI8_R",    "KOI8-R");
         fJava2IANAMap.put("KSC5601",   "EUC-KR");
-        fJava2IANAMap.put("SJIS",      "Shift_JIS");
+        fJava2IANAMap.put("SJIS",      "SHIFT_JIS");
         fJava2IANAMap.put("UTF8",      "UTF-8");
         fJava2IANAMap.put("Unicode",   "UTF-16");
+        fJava2IANAMap.put("JIS0201",  "X0201");
+        fJava2IANAMap.put("JIS0208",  "X0208");
+        fJava2IANAMap.put("JIS0212",  "ISO-IR-159");
 
     } // <clinit>()
 
