@@ -1705,9 +1705,9 @@ public class XMLSchemaValidator
             while (t.hasMoreTokens()) {
                 namespace = t.nextToken ();
                 if (!t.hasMoreTokens()) {
-                    // REVISIT: new error code
                     fXSIErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                                  "General", new Object[]{"No matching location hint for namespace '" + namespace + "' in attribute schemaLocation"},
+                                                  "SchemaLocation",
+                                                  new Object[]{sLocation},
                                                   XMLErrorReporter.SEVERITY_WARNING);
                     break;
                 }

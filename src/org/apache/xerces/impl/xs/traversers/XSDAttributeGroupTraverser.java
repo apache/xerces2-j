@@ -103,7 +103,7 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
 
         // ref should be here.
         if (refAttr == null) {
-            reportGenericSchemaError("Local attributeGroup declaration should have ref.");
+            reportSchemaError("s4s-att-must-appear", new Object[]{"attributeGroup (local)", "ref"});
             fAttrChecker.returnAttrArray(attrValues, schemaDoc);
             return null;
         }
@@ -145,7 +145,7 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
 
         // global declaration must have a name
         if (nameAttr == null) {
-            reportGenericSchemaError("Global attributeGroup declaration must have a name.");
+            reportSchemaError("s4s-att-must-appear", new Object[]{"attributeGroup (global)", "name"});
             nameAttr = "no name";
         }
 

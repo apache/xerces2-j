@@ -506,14 +506,6 @@ abstract class XSDAbstractTraverser {
                                    XMLErrorReporter.SEVERITY_ERROR);
     }
 
-    // REVISIT: is it how we want to handle error reporting?
-    void reportGenericSchemaError (String error) {
-        fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                   "General",
-                                   new Object[]{error},
-                                   XMLErrorReporter.SEVERITY_ERROR);
-    }
-
     /**
      * Element/Attribute traversers call this method to check whether
      * the type is NOTATION without enumeration facet

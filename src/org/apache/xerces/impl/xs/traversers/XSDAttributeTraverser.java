@@ -310,8 +310,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
             if (type != null && type.getXSType() == XSTypeDecl.SIMPLE_TYPE)
                 attrType = (XSSimpleType)type;
             else
-                // REVISIT: what should be the error code here
-                reportGenericSchemaError("the type for attribute '"+nameAtt+"' must be a simpleType");
+                reportSchemaError("src-resolve", new Object[]{typeAtt.rawname, "simpleType definition"});
         }
 
         if (attrType == null) {

@@ -103,7 +103,7 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
 
         // ref should be here.
         if (refAttr == null) {
-            reportGenericSchemaError("Local group declaration should have ref.");
+            reportSchemaError("s4s-att-must-appear", new Object[]{"group (local)", "ref"});
         } else {
             // get global decl
             // index is a particle index.
@@ -112,7 +112,7 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
 
         // no children are allowed
         if (DOMUtil.getFirstChildElement(elmNode) != null) {
-            reportGenericSchemaError("Local group declaration cannot have a child.");
+            reportSchemaError("s4s-elt-must-match", new Object[]{"group (local)", "(annotation?)"});
         }
 
         int minOccurs = minAttr.intValue();
@@ -154,7 +154,7 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
 
         // must have a name
         if (strNameAttr == null) {
-            reportGenericSchemaError("Global group declaration must have a name.");
+            reportSchemaError("s4s-att-must-appear", new Object[]{"group (global)", "name"});
         }
 
         XSGroupDecl group = null;
@@ -163,7 +163,7 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
         // must have at least one child
         Element l_elmChild = DOMUtil.getFirstChildElement(elmNode);
         if (l_elmChild == null) {
-            reportGenericSchemaError("Global group declaration must have a child.");
+            reportSchemaError("s4s-elt-must-match", new Object[]{"group (global)", "(annotation?, (all | choice | sequence))"});
         } else {
             String childName = l_elmChild.getLocalName();
             if (childName.equals(SchemaSymbols.ELT_ANNOTATION)) {
@@ -174,7 +174,7 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
             }
 
             if (l_elmChild == null) {
-                reportGenericSchemaError("Global group element must have a child <all>, <choice> or <sequence>.");
+                reportSchemaError("s4s-elt-must-match", new Object[]{"group (global)", "(annotation?, (all | choice | sequence))"});
             } else if (childName.equals(SchemaSymbols.ELT_ALL)) {
                 particle = traverseAll(l_elmChild, schemaDoc, grammar, CHILD_OF_GROUP);
             } else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {

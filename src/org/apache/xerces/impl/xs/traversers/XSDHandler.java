@@ -344,7 +344,7 @@ public class XSDHandler {
                                      String schemaHint) {
 
         // first phase:  construct trees.
-        Document schemaRoot = getSchema(schemaNamespace, schemaHint, null, true, true);
+        Document schemaRoot = getSchema(schemaNamespace, schemaHint, null, true, INSTANCE);
         if (schemaRoot == null) {
             // something went wrong right off the hop
             return null;
@@ -441,7 +441,7 @@ public class XSDHandler {
                 fAttributeChecker.returnAttrArray(includeAttrs, currSchemaInfo);
                 // consciously throw away whether was a duplicate; don't care.
                 // pass the systemId of the current document as the base systemId
-                newSchemaRoot = getSchema(schemaNamespace, schemaHint, (String)fDoc2SystemId.get(schemaRoot), false, true);
+                newSchemaRoot = getSchema(schemaNamespace, schemaHint, (String)fDoc2SystemId.get(schemaRoot), false, IMPORT);
             }
             else if ((localName.equals(SchemaSymbols.ELT_INCLUDE)) ||
                      (localName.equals(SchemaSymbols.ELT_REDEFINE))) {
@@ -457,10 +457,12 @@ public class XSDHandler {
                             "<include> or <redefine>", "schemaLocation"});
                 // pass the systemId of the current document as the base systemId
                 boolean mustResolve = false;
+                short referType = INCLUDE;
                 if(localName.equals(SchemaSymbols.ELT_REDEFINE)) {
                     mustResolve = nonAnnotationContent(child);
+                    referType = REDEFINE;
                 }
-                newSchemaRoot = getSchema(null, schemaHint, (String)fDoc2SystemId.get(schemaRoot), mustResolve, false);
+                newSchemaRoot = getSchema(null, schemaHint, (String)fDoc2SystemId.get(schemaRoot), mustResolve, referType);
                 schemaNamespace = currSchemaInfo.fTargetNamespace;
             }
             else {
@@ -1009,6 +1011,14 @@ public class XSDHandler {
         fKeyrefNamespaceContext[fKeyrefStackPos++] = schemaDoc.fNamespaceSupport.getEffectiveLocalContext();
     } // storeKeyref (Element, XSDocumentInfo, XSElementDecl): void
 
+    // all possible ways of referring to a schema document
+    private static short INSTANCE = 0;
+    private static short IMPORT   = 1;
+    private static short INCLUDE  = 2;
+    private static short REDEFINE = 3;
+    private static String[] ERROR_CODES = {"schema_reference.4", "src-import.0",
+                                           "src-include.0", "src-redefine.0"};
+    
     // This method is responsible for schema resolution.  If it finds
     // a schema document that the XMLEntityResolver resolves to with
     // the given namespace and hint, it returns it.  It returns true
@@ -1016,12 +1026,13 @@ public class XSDHandler {
     // otherwise.  schemaDoc is null if and only if no schema document
     // was resolved to.
     private Document getSchema(String schemaNamespace, String schemaHint,
-                               String baseSystemId, boolean mustResolve, boolean useProperties) {
+                               String baseSystemId, boolean mustResolve, short referType) {
         // contents of this method will depend on the system we adopt for entity resolution--i.e., XMLEntityHandler, EntityHandler, etc.
         XMLInputSource schemaSource=null;
         Document schemaDoc = null;
         try {
-            schemaSource = fLocationResolver.resolveEntity(schemaNamespace, schemaHint, baseSystemId, useProperties);
+            schemaSource = fLocationResolver.resolveEntity(schemaNamespace, schemaHint, baseSystemId,
+                                                           referType == INSTANCE || referType == IMPORT);
             // REVISIT: when the system id and byte stream and character stream
             //          of the input source are all null, it's
             //          impossible to find the schema document. so we skip in
@@ -1060,22 +1071,10 @@ public class XSDHandler {
             }
 
         }
-        catch (java.io.FileNotFoundException ex) {
-            fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                       "General",
-                                       new Object[]{"file not found: " + schemaHint},
-                                       // when using namespace, then hint is optional,
-                                       // and it's not an error if the file is not found
-                                       // but if not using namespace (include),
-                                       // it's a warning if the file is not found.
-                                       mustResolve ?
-                                       XMLErrorReporter.SEVERITY_ERROR: 
-                                       XMLErrorReporter.SEVERITY_WARNING); 
-        }
         catch (IOException ex) {
             fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                       "General",
-                                       new Object[]{"Error encountered reading schema document " + schemaHint},
+                                       ERROR_CODES[referType],
+                                       new Object[]{schemaHint},
                                        // when using namespace, then hint is optional,
                                        // and it's not an error if the file is not found
                                        // but if not using namespace (include),

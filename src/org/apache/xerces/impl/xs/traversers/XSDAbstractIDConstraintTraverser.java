@@ -89,8 +89,7 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
         // check for <annotation> and get selector
         Element sElem = DOMUtil.getFirstChildElement(icElem);
         if(sElem == null) {
-            // REVISIT: localize
-            reportGenericSchemaError("The content of an identity constraint must match (annotation?, selector, field+)");
+            reportSchemaError("s4s-elt-must-match", new Object[]{"identity constraint", "(annotation?, selector, field+)"});
             return;
         }
 
@@ -102,16 +101,14 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
         }
         // if no more children report an error
         if(sElem == null) {
-            // REVISIT: localize
-            reportGenericSchemaError("The content of an identity constraint must match (annotation?, selector, field+)");
+            reportSchemaError("s4s-elt-must-match", new Object[]{"identity constraint", "(annotation?, selector, field+)"});
             return;
         }
         Object [] attrValues = fAttrChecker.checkAttributes(sElem, false, schemaDoc);
         
         // if more than one annotation report an error
         if(!DOMUtil.getLocalName(sElem).equals(SchemaSymbols.ELT_SELECTOR)) {
-            // REVISIT: localize
-            reportGenericSchemaError("The content of an identity constraint must match (annotation?, selector, field+)");
+            reportSchemaError("s4s-elt-must-match", new Object[]{"identity constraint", "(annotation?, selector, field+)"});
         }
         // and make sure <selector>'s content is fine:
         Element selChild = DOMUtil.getFirstChildElement(sElem);
@@ -123,7 +120,7 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
                 selChild = DOMUtil.getNextSiblingElement(selChild);
             }
             else {
-                reportGenericSchemaError("The content of an identity constraint must match (annotation?, selector, field+)");
+                reportSchemaError("s4s-elt-must-match", new Object[]{"identity constraint", "(annotation?, selector, field+)"});
             }
             if (selChild != null) {
                 reportSchemaError("src-identity-constraint.1", new Object [] {icElemAttrs[XSAttributeChecker.ATTIDX_NAME]});
@@ -145,8 +142,7 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
             ic.setSelector(selector);
         }
         catch (XPathException e) {
-            // REVISIT: Add error message.
-            reportGenericSchemaError(e.getMessage());
+            reportSchemaError("c-selector-xpath", new Object[]{sText, e.getLocalizedMessage()});
             // put back attr values...
             fAttrChecker.returnAttrArray(attrValues, schemaDoc);
             return;
@@ -158,16 +154,14 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
         // get fields
         Element fElem = DOMUtil.getNextSiblingElement(sElem);
         if(fElem == null) {
-            // REVISIT:  localize
-            reportGenericSchemaError("The content of an identity constraint must match (annotation?, selector, field+)");
+            reportSchemaError("s4s-elt-must-match", new Object[]{"identity constraint", "(annotation?, selector, field+)"});
         }
         while (fElem != null) {
             // General Attribute Checking
             attrValues = fAttrChecker.checkAttributes(fElem, false, schemaDoc);
 
             if(!DOMUtil.getLocalName(fElem).equals(SchemaSymbols.ELT_FIELD))
-                // REVISIT: localize
-                reportGenericSchemaError("The content of an identity constraint must match (annotation?, selector, field+)");
+                reportSchemaError("s4s-elt-must-match", new Object[]{"identity constraint", "(annotation?, selector, field+)"});
             
             // and make sure <field>'s content is fine:
             Element fieldChild = DOMUtil.getFirstChildElement(fElem);
@@ -194,8 +188,7 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
                 ic.addField(field);
             }
             catch (XPathException e) {
-                // REVISIT: Add error message.
-                reportGenericSchemaError(e.getMessage());
+                reportSchemaError("c-fields-xpaths", new Object[]{fText, e.getLocalizedMessage()});
                 // put back attr values...
                 fAttrChecker.returnAttrArray(attrValues, schemaDoc);
                 return;
