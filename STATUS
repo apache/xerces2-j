@@ -4,6 +4,8 @@ There are lots of things that need to be done:
 
 Here are some things at the top of my list (in no particular order):
 
+* move documentation from xml-site to xml-xerces
+
 * Binary build for v1.0.1
 
 * Additional Support for W3C XML schema.  There's both the structures
