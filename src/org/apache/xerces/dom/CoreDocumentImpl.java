@@ -116,13 +116,16 @@ import org.w3c.dom.ls.DocumentLS;
  * @since  PR-DOM-Level-1-19980818.
  */
 
-/**TODO:: Change XML11Char method names similar to XMLChar. That will prevent lot
- * of dirty version checking code.
- */
 
 public class CoreDocumentImpl
 extends ParentNode implements Document, DocumentLS {
     
+	/**TODO::
+	 * 1. Change XML11Char method names similar to XMLChar. That will prevent lot
+	 * of dirty version checking code.
+	 * 
+	 * 2. IMO during cloneNode qname/isXMLName check should not be made.
+	 */
     //
     // Constants
     //
@@ -1274,13 +1277,6 @@ extends ParentNode implements Document, DocumentLS {
     String systemID)
     throws DOMException {
         
-        //TODO::  should we be checking qualified name as NCName
-        //TODO::  will be fixing in next checkin
-        
-        if (errorChecking && !isXMLName(qualifiedName,xml11Version)) {
-            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_CHARACTER_ERR", null);
-            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
-        }
         return new DocumentTypeImpl(this, qualifiedName, publicID, systemID);
         
     } // createDocumentType(String):DocumentType
@@ -2016,14 +2012,8 @@ extends ParentNode implements Document, DocumentLS {
      * elements and attributes and so on using the XMLCharacterProperties
      * utility class
      */
-    public static boolean isXMLName(String s) {
-        if (s == null) {
-            return false;
-        }
-        return XMLChar.isValidName(s);
-    }
     
-    public static boolean isXMLName(String s, boolean xml11Version) {
+    protected boolean isXMLName(String s, boolean xml11Version) {
         
         if (s == null) {
             return false;
