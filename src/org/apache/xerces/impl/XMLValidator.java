@@ -1887,7 +1887,9 @@ public class XMLValidator
                 changedByNormalization = normalizeAttrValue(attributes, i);
                 attrValue = attributes.getValue(i);
                 if (fValidation && fStandaloneIsYes
-                    && changedByNormalization) {
+                    && changedByNormalization 
+                    && ((DTDGrammar) fCurrentGrammar).getAttributeDeclIsExternal(position)
+                    ) {
                     // check VC: Standalone Document Declaration
                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                "MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE",
