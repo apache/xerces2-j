@@ -63,7 +63,7 @@ import org.apache.xerces.dom3.DOMErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import org.apache.xerces.dom.DOMImplementationImpl;
+import org.apache.xerces.dom.ASDOMImplementationImpl;
 import org.apache.xerces.dom3.as.DOMImplementationAS;
 import org.apache.xerces.dom3.as.ASModel;
 import org.apache.xerces.dom3.as.DOMASBuilder;
@@ -132,7 +132,7 @@ public class ASBuilder implements DOMErrorHandler {
             System.exit(1);
         }
         // get DOM implementation
-        DOMImplementationAS domImpl = (DOMImplementationAS)DOMImplementationImpl.getDOMImplementation();
+        DOMImplementationAS domImpl = (DOMImplementationAS)ASDOMImplementationImpl.getDOMImplementation();
         // create a new parser, and set the error handler
         DOMASBuilder parser = domImpl.createDOMASBuilder();
         parser.setErrorHandler(new ASBuilder());
