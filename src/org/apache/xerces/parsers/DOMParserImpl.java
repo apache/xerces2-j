@@ -775,6 +775,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
 			parameters.add(Constants.DOM_CDATA_SECTIONS);
 			parameters.add(Constants.DOM_CANONICAL_FORM);
 			parameters.add(Constants.DOM_NAMESPACE_DECLARATIONS);
+            parameters.add(Constants.DOM_SPLIT_CDATA);
 
 			parameters.add(Constants.DOM_ENTITIES);
 			parameters.add(Constants.DOM_VALIDATE_IF_SCHEMA);
