@@ -128,10 +128,19 @@ public class ExceptionMessages extends ListResourceBundle {
         { "UTL001", "cannot happen 20" },
         { "UTL002", "cannot happen 21" },
         { "UTL003", "untested 1" },
-        { "UTL004", "untested 2" }
+        { "UTL004", "untested 2" },
 
         //org.apache.xerces.validators
-               
+
+        { "VAL001", "Element stack underflow" },
+        { "VAL002", "getValidatorForAttType ({0})" },
+        { "VAL003", "cannot happen 26" },
+        { "VAL004", "cannot happen 27" },
+        { "VAL005", "cannot happen 28" },
+        { "VAL006", "cannot happen 29" },
+        { "VAL007", "cannot happen 30" },
+        { "VAL008", "cannot happen 1" }
+
         
     };
     /** Returns the list resource bundle contents. */

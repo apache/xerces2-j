@@ -790,7 +790,7 @@ public final class DTDValidator
             }
         }
         if (fElementDepth-- < 0)
-            throw new RuntimeException("Element stack underflow");
+            throw new RuntimeException("VAL001 Element stack underflow");
         if (fElementDepth < 0) {
             fCurrentElementType = -1;
             fCurrentElementIndex = -1;
@@ -2701,7 +2701,7 @@ public final class DTDValidator
                 fAttValidatorENUMERATION = new AttValidatorENUMERATION();
             return fAttValidatorENUMERATION;
         }
-        throw new RuntimeException("getValidatorForAttType(" + fStringPool.toString(attType) + ")");
+        throw new RuntimeException("VAL002 getValidatorForAttType(" + fStringPool.toString(attType) + ")");
     }
     private int getAttDef(int elementType, int attrName) {
         int elementIndex = fStringPool.getDeclaration(elementType);
