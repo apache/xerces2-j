@@ -107,9 +107,9 @@ import org.w3c.dom.*;
  * @author Elena Litani, IBM
  * @version $Id$
  */
-public class DOMNormalizer implements XMLGrammarPool  {
+public class DOMNormalizer implements XMLGrammarPool {
 
-    
+
     //
     // REVISIT:  
     // 1. Send all appropriate calls for entity reference content.
@@ -120,11 +120,11 @@ public class DOMNormalizer implements XMLGrammarPool  {
     //   b) add element default content: retrieve from augementations (PSVI Element schemaDefault)
     //   c) replace values of attributes: the augmentations for attributes have the values.
     //
-    
+
     //
     // constants
     //
-    /** Debug normalize document*/    
+    /** Debug normalize document*/
     protected final static boolean DEBUG_ND = false;
     /** Debug namespace fix up algorithm*/
     protected final static boolean DEBUG = false;
@@ -135,12 +135,12 @@ public class DOMNormalizer implements XMLGrammarPool  {
 
     /** Property identifier: error handler. */
     protected static final String ERROR_HANDLER = 
-        Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_HANDLER_PROPERTY;
+    Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_HANDLER_PROPERTY;
 
     /** Property identifier: symbol table. */
     protected static final String SYMBOL_TABLE = 
-        Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
-    
+    Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
+
     //
     // Data
     //
@@ -163,6 +163,9 @@ public class DOMNormalizer implements XMLGrammarPool  {
     // counter for new prefix names
     protected int fNamespaceCounter = 1;
 
+    // Validation against namespace aware grammar
+    protected boolean fNamespaceValidation = false;
+
     /** stores namespaces in scope */
     protected final NamespaceSupport fNamespaceBinder = new NamespaceSupport();
 
@@ -174,6 +177,8 @@ public class DOMNormalizer implements XMLGrammarPool  {
 
     /** DOM Error object */
     protected final DOMErrorImpl fDOMError = new DOMErrorImpl();
+
+
 
     // 
     // Constructor
@@ -192,6 +197,8 @@ public class DOMNormalizer implements XMLGrammarPool  {
         if (fSymbolTable == null) {
             fSymbolTable = new SymbolTable();
         }
+
+        fNamespaceValidation = componentManager.getFeature(DOMValidationConfiguration.SCHEMA);
         fNamespaceBinder.reset(fSymbolTable);
         fNamespaceBinder.declarePrefix(fEmptySymbol, fEmptySymbol);
         fNamespaceCounter = 1;
@@ -199,30 +206,32 @@ public class DOMNormalizer implements XMLGrammarPool  {
         fXmlnsSymbol = fSymbolTable.addSymbol("xmlns");
         fEmptySymbol=fSymbolTable.addSymbol("");
 
+
         if (fValidationHandler != null) {
             ((XMLComponent)fValidationHandler).reset(componentManager);
             // REVISIT: how to pass and reuse namespace binder in the XML Schema validator?
         }
     }
 
-    protected void setValidationHandler (RevalidationHandler validator){
+    protected final void setValidationHandler (RevalidationHandler validator){
         this.fValidationHandler = validator;
-        
+
     }
 
     /**
      * Normalizes document.
      * Note: reset() must be called before this method.
      */
-    protected void normalizeDocument(CoreDocumentImpl document){
+    protected final void normalizeDocument(CoreDocumentImpl document){
         if (fSymbolTable == null) {
             // reset was not called
             return;
         }
+
         fDocument = document;
         fErrorHandler = fDocument.getErrorHandler();
-        
-        if (fValidationHandler != null) { 
+
+        if (fValidationHandler != null) {
             fValidationHandler.setBaseURI(fDocument.fDocumentURI);
             fValidationHandler.startDocument(null, fDocument.encoding, null);
         }
@@ -236,7 +245,7 @@ public class DOMNormalizer implements XMLGrammarPool  {
             }
         }
 
-        if (fValidationHandler != null) {        
+        if (fValidationHandler != null) {
             fValidationHandler.endDocument(null);
         }
         // reset symbol table
@@ -259,7 +268,7 @@ public class DOMNormalizer implements XMLGrammarPool  {
      *               to normalize again starting on the node returned.
      * @return 
      */
-    protected Node normalizeNode (Node node){
+    protected final Node normalizeNode (Node node){
 
         // REVISIT: should we support other DOM implementations?
         //          if so we should not depend on Xerces specific classes
@@ -295,13 +304,12 @@ public class DOMNormalizer implements XMLGrammarPool  {
                 AttributeMap attributes = (elem.hasAttributes()) ? (AttributeMap) elem.getAttributes() : null; 
 
                 // fix namespaces and remove default attributes
-                if ((fDocument.features & CoreDocumentImpl.NSPROCESSING) !=0) {
+                if ((fDocument.features & CoreDocumentImpl.NAMESPACES) !=0) {
                     // fix namespaces
                     // normalize attribute values
                     // remove default attributes
                     namespaceFixUp(elem, attributes);
-                } 
-                else {
+                } else {
                     if ( attributes!=null ) {
                         for ( int i=0; i<attributes.getLength(); ++i ) {
                             Attr attr = (Attr)attributes.item(i);
@@ -473,11 +481,11 @@ public class DOMNormalizer implements XMLGrammarPool  {
                     if (fValidationHandler != null) {
                         short nextType = (next != null)?next.getNodeType():-1;
                         if (!(((fDocument.features & CoreDocumentImpl.ENTITIES) == 0 &&
-                             nextType == Node.ENTITY_NODE) ||
-                            ((fDocument.features & CoreDocumentImpl.COMMENTS) == 0 &&
-                             nextType == Node.COMMENT_NODE) ||
-                            ((fDocument.features & CoreDocumentImpl.CDATA) == 0) &&
-                            nextType == Node.CDATA_SECTION_NODE)){
+                               nextType == Node.ENTITY_NODE) ||
+                              ((fDocument.features & CoreDocumentImpl.COMMENTS) == 0 &&
+                               nextType == Node.COMMENT_NODE) ||
+                              ((fDocument.features & CoreDocumentImpl.CDATA) == 0) &&
+                              nextType == Node.CDATA_SECTION_NODE)) {
                             fValidationHandler.characterData(node.getNodeValue(), null);
                             if (DEBUG_ND) {
                                 System.out.println("=====>characterData(),"+nextType);
@@ -497,7 +505,7 @@ public class DOMNormalizer implements XMLGrammarPool  {
         return null;
     }
 
-    protected void expandEntityRef (Node node, Node parent, Node reference){
+    protected final void expandEntityRef (Node node, Node parent, Node reference){
         Node kid, next;
         for (kid = node.getFirstChild(); kid != null; kid = next) {
             next = kid.getNextSibling();
@@ -509,31 +517,106 @@ public class DOMNormalizer implements XMLGrammarPool  {
         }
     }
 
-    protected void namespaceFixUp (ElementImpl element, AttributeMap attributes){
+    protected final void namespaceFixUp (ElementImpl element, AttributeMap attributes){
         if (DEBUG) {
             System.out.println("[ns-fixup] element:" +element.getNodeName()+
                                " uri: "+element.getNamespaceURI());
         }
-        String uri = element.getNamespaceURI();
-        String prefix = element.getPrefix();
+
+        // ------------------------------------
+        // pick up local namespace declarations
+        // <xsl:stylesheet xmlns:xsl="http://xslt">
+        //   <!-- add the following via DOM 
+        //          body is bound to http://xslt
+        //    -->
+        //   <xsl:body xmlns:xsl="http://bound"/>
+        //
+        // ------------------------------------
+
+        String localUri, value, name, uri, prefix;
+        if (attributes != null) {
+
+            // Record all valid local declarations
+            for (int k=0; k < attributes.getLength(); k++) {
+                Attr attr = (Attr)attributes.getItem(k);
+                uri = attr.getNamespaceURI();
+                if (uri != null && uri.equals(NamespaceSupport.XMLNS_URI)) {
+                    // namespace attribute
+                    value = attr.getNodeValue();
+                    if (value == null) {
+                        value=fEmptySymbol;
+                    }
+
+                    // Check for invalid namespace declaration:
+                    if (value.equals(NamespaceSupport.XMLNS_URI)) {
+                        if (fErrorHandler != null) {
+                            modifyDOMError("No prefix other than 'xmlns' can be bound to 'http://www.w3.org/2000/xmlns/' namespace name", 
+                                           DOMError.SEVERITY_ERROR, attr);
+                            boolean continueProcess = fErrorHandler.handleError(fDOMError);
+                            if (!continueProcess) {
+                                // stop the namespace fixup and validation
+                                throw new RuntimeException("Stopped at user request");
+                            }
+                        }
+                    } else {
+                        prefix = attr.getPrefix();
+                        prefix = (prefix == null || 
+                                  prefix.length() == 0) ? fEmptySymbol :fSymbolTable.addSymbol(prefix);
+                        String localpart = fSymbolTable.addSymbol( attr.getLocalName());
+                        if (prefix == fXmlnsSymbol) { //xmlns:prefix
+
+                            value = fSymbolTable.addSymbol(value);
+                            if (value.length() != 0) {
+                                fNamespaceBinder.declarePrefix(localpart, value);
+                                fLocalNSBinder.declarePrefix(localpart, value);
+
+                                if (fValidationHandler != null) {
+                                    fValidationHandler.startPrefixMapping(localpart, value, null);
+                                }
+                            } else {
+                                // REVISIT: issue error on invalid declarations
+                                //          xmlns:foo = ""
+
+                            }
+                            removeDefault (attr, attributes);
+                            continue;
+                        } else { // (localpart == fXmlnsSymbol && prefix == fEmptySymbol)  -- xmlns
+                            // empty prefix is always bound ("" or some string)
+                            value = fSymbolTable.addSymbol(value);
+                            fLocalNSBinder.declarePrefix(fEmptySymbol, value);
+                            fNamespaceBinder.declarePrefix(fEmptySymbol, value);
+
+                            if (fValidationHandler != null) {
+                                fValidationHandler.startPrefixMapping(fEmptySymbol, value, null);
+                            }
+                            removeDefault (attr, attributes);
+                            continue;
+                        }
+                    }  // end-else: valid declaration
+                } // end-if: namespace attribute
+
+            }
+        }
+
+
+
         // ---------------------------------------------------------
         // Fix up namespaces for element: per DOM L3 
         // Need to consider the following cases:
         //
-        // case 1: <foo:elem xmlns:ns1="myURI" xmlns="default"/> 
-        // Assume "foo", "ns1" are declared on the parent. We should not miss 
-        // redeclaration for both "ns1" and default namespace. To solve this 
-        // we add a local binder that stores declaration only for current element.
-        // This way we avoid outputing duplicate declarations for the same element
-        // as well as we are not omitting redeclarations.
-        //
-        // case 2: <elem xmlns="" xmlns="default"/> 
-        // We need to bind default namespace to empty string, to be able to 
-        // omit duplicate declarations for the same element
+        // case 1: <xsl:stylesheet xmlns:xsl="http://xsl">
+        // We create another element body bound to the "http://xsl" namespace
+        // as well as namespace attribute rebounding xsl to another namespace.
+        // <xsl:body xmlns:xsl="http://another">
+        // Need to make sure that the new namespace decl value is changed to 
+        // "http://xsl"
         //
         // ---------------------------------------------------------
         // check if prefix/namespace is correct for current element
         // ---------------------------------------------------------
+
+        uri = element.getNamespaceURI();
+        prefix = element.getPrefix();
         if (uri != null) {  // Element has a namespace
             uri = fSymbolTable.addSymbol(uri);
             prefix = (prefix == null || 
@@ -541,8 +624,7 @@ public class DOMNormalizer implements XMLGrammarPool  {
             if (fNamespaceBinder.getURI(prefix) == uri) {
                 // The xmlns:prefix=namespace or xmlns="default" was declared at parent.
                 // The binder always stores mapping of empty prefix to "".
-            }
-            else {
+            } else {
                 // the prefix is either undeclared 
                 // or
                 // conflict: the prefix is bound to another URI
@@ -554,38 +636,26 @@ public class DOMNormalizer implements XMLGrammarPool  {
                     fValidationHandler.startPrefixMapping(prefix, uri, null);
                 }
             }
-        }
-        else { // Element has no namespace
+        } else { // Element has no namespace
             String tagName = element.getNodeName();
             int colon = tagName.indexOf(':');
             if (colon > -1) {
-                //  DOM Level 1 node!
-                int colon2 = tagName.lastIndexOf(':');
-                if (colon != colon2) {
-                    //not a QName: report an error
-                    if (fErrorHandler != null) {
-                        // REVISIT: the namespace fix up will be done only in case namespace 
-                        // processing was performed.
-                        modifyDOMError("Element's name is not a QName: "+tagName, DOMError.SEVERITY_ERROR, element);
-                        boolean continueProcess = fErrorHandler.handleError(fDOMError);
-                        // REVISIT: should we terminate upon request?                        
+                //  Error situation: DOM Level 1 node!
+                boolean continueProcess = true;
+                if (fErrorHandler != null) {
+                    if (fNamespaceValidation) {
+                        modifyDOMError("DOM Level 1 node: "+tagName, DOMError.SEVERITY_FATAL_ERROR, element);
+                        fErrorHandler.handleError(fDOMError);
+                    } else {
+                        modifyDOMError("DOM Level 1 node: "+tagName, DOMError.SEVERITY_ERROR, element);
+                        continueProcess = fErrorHandler.handleError(fDOMError);
                     }
-                    
                 }
-                else {
-                    // A valid QName however element is not bound to namespace
-                    // REVISIT: should we report an error in case prefix is not bound to anything?
-                    if (fErrorHandler != null) {
-                        modifyDOMError("Element <"+tagName+
-                                       "> does not belong to any namespace: prefix could be undeclared or bound to some namespace", 
-                                       DOMError.SEVERITY_WARNING, element);
-                        boolean continueProcess = fErrorHandler.handleError(fDOMError);
-                        // REVISIT: should we terminate upon request?                        
-                    }
-                    
+                if (fNamespaceValidation || !continueProcess) {
+                    // stop the namespace fixup and validation
+                    throw new RuntimeException("DOM Level 1 node: "+tagName);
                 }
-            }
-            else { // uri=null and no colon (DOM L2 node)
+            } else { // uri=null and no colon (DOM L2 node)
                 uri = fNamespaceBinder.getURI(fEmptySymbol);
                 if (uri !=null && uri.length() > 0) {
                     // undeclare default namespace declaration (before that element
@@ -604,20 +674,7 @@ public class DOMNormalizer implements XMLGrammarPool  {
         // Fix up namespaces for attributes: per DOM L3 
         // check if prefix/namespace is correct the attributes
         // -----------------------------------------
-        String localUri, value, name;
         if (attributes != null) {
-
-            // REVISIT: common code for handling namespace attributes for DOM L2 nodes
-            //          and DOM L1 nodes. Currently because we don't skip invalid declarations
-            //          for L1, we might output more namespace declarations than we would have
-            //          if namespace processing was performed (duplicate decls on different elements)
-            // Open issues:
-            // 1. Is it allowed to mix DOM L1 with DOM L2 nodes
-            // 2. Should we skip invalid namespace declarations or attributes not with QName
-            //    [what should be the default behaviour]
-            // 3. What should happen if the tree is DOM L1 tree (no namespace processing was
-            //    performed)? Should we attempt any fixup??
-            //
 
             // clone content of the attributes
             attributes.cloneMap(fAttributeList);
@@ -626,7 +683,7 @@ public class DOMNormalizer implements XMLGrammarPool  {
                 Attr attr = (Attr) fAttributeList.elementAt(i);
                 // normalize attribute value
                 attr.normalize();
-                
+
                 if (DEBUG) {
                     System.out.println("==>[ns-fixup] process attribute: "+attr.getNodeName());
                 }
@@ -645,48 +702,22 @@ public class DOMNormalizer implements XMLGrammarPool  {
                               prefix.length() == 0) ? fEmptySymbol :fSymbolTable.addSymbol(prefix);
                     String localpart = fSymbolTable.addSymbol( attr.getLocalName());
 
-                    // check if attribute is a namespace decl 
-                    if (prefix == fXmlnsSymbol) { //xmlns:prefix
-                        uri =  fNamespaceBinder.getURI(localpart);    // global prefix mapping
-                        localUri = fLocalNSBinder.getURI(localpart);  // local prefix mapping
-                        value = fSymbolTable.addSymbol(value);
-                        if (uri == null || localUri == null) {
-                            if (value.length() != 0) { 
-                                fNamespaceBinder.declarePrefix(localpart, value);
-                                fLocalNSBinder.declarePrefix(localpart, value);
-
-                                if (fValidationHandler != null) {
-                                    fValidationHandler.startPrefixMapping(localpart, value, null);
-                                }
-                            } else {
-                                // REVISIT: we issue error on invalid declarations
-                                //          xmlns:foo = ""
-
-                            }
-                        }
-                        removeDefault(attr, attributes);
+                    // ---------------------------------------
+                    // skip namespace declarations 
+                    // ---------------------------------------
+                    if (uri != null && uri.equals(NamespaceSupport.XMLNS_URI)) {
                         continue;
                     }
-                    else if (localpart == fXmlnsSymbol && prefix == fEmptySymbol) { // xmlns
-                        // empty prefix is always bound ("" or some string)
-                        uri = fNamespaceBinder.getURI(fEmptySymbol);
-                        localUri=fLocalNSBinder.getURI(fEmptySymbol);
-                        value = fSymbolTable.addSymbol(value);
-                        if (localUri == null) {
-                            // there was no local default ns decl
-                            fLocalNSBinder.declarePrefix(fEmptySymbol, value);
-                            fNamespaceBinder.declarePrefix(fEmptySymbol, value);
 
-                            if (fValidationHandler != null) {
-                                fValidationHandler.startPrefixMapping(fEmptySymbol, value, null);
-                            }
-                            
-                        }
-                        removeDefault(attr, attributes);
+
+                    // ---------------------------------------
+                    // remove default attributes
+                    // ---------------------------------------
+                    if (removeDefault(attr, attributes)) {
                         continue;
                     }
-                    // we don't need to fix anything for default attributes
-                    removeDefault(attr, attributes);
+
+
                     uri = fSymbolTable.addSymbol(uri);
 
                     // find if for this prefix a URI was already declared
@@ -697,24 +728,31 @@ public class DOMNormalizer implements XMLGrammarPool  {
                         // OR
                         // attribute prefix is not declared
                         // OR
-                        // conflict: attr URI does not match the prefix in scope
+                        // conflict: attribute has a prefix that conficlicts with a binding
+                        //           already active in scope
 
                         name  = attr.getNodeName();
                         // Find if any prefix for attributes namespace URI is available
                         // in the scope
                         String declaredPrefix = fNamespaceBinder.getPrefix(uri);
-                        if (declaredPrefix == null || declaredPrefix == fEmptySymbol) {
-                            // could not find a prefix/prefix is empty string
-                            if (DEBUG) {
-                                System.out.println("==> cound not find prefix for the attribute: " +prefix);
-                            }
-                            if (prefix != fEmptySymbol) {
-                                // no need to create a new prefix:
-                                // use the one on the attribute
-                            }
-                            else {
-                                // create new prefix
-                                prefix = PREFIX +fNamespaceCounter++; 
+                        if (declaredPrefix !=null && declaredPrefix !=fEmptySymbol) {
+
+                            // use the prefix that was found (declared previously for this URI
+                            prefix = declaredPrefix;
+                        } else {
+                            if (prefix != fEmptySymbol && fLocalNSBinder.getURI(prefix) == null) {
+                                // the current prefix is not null and it has no in scope declaration
+
+                                // use this prefix
+                            } else {
+
+                                // find a prefix following the pattern "NS" +index (starting at 1)
+                                // make sure this prefix is not declared in the current scope.
+                                prefix = fSymbolTable.addSymbol(PREFIX +fNamespaceCounter++);
+                                while (fLocalNSBinder.getURI(prefix)!=null) {
+                                    prefix = fSymbolTable.addSymbol(PREFIX +fNamespaceCounter++);
+                                }
+
                             }
                             // add declaration for the new prefix
                             addNamespaceDecl(prefix, uri, element);
@@ -726,94 +764,40 @@ public class DOMNormalizer implements XMLGrammarPool  {
                                 fValidationHandler.startPrefixMapping(prefix, uri, null);
                             }
                         }
-                        else {
-                            // use the prefix that was found (declared previously for this URI
-                            prefix = declaredPrefix;
-                        }
+
                         // change prefix for this attribute
                         attr.setPrefix(prefix);
                     }
-                }
-                else { // attribute uri == null
+                } else { // attribute uri == null
 
                     // data
                     int colon = name.indexOf(':');
-                    int colon2 = name.lastIndexOf(':');
-                    //
-                    // process namespace declarations
-                    //
-                    if (name.startsWith(fXmlnsSymbol)) {
-                        //
-                        //  DOM Level 1 node!
-                        // 
-                        if (colon < 0) {  // xmlns decl
-                            // empty prefix is always bound ("" or some string)
-                            uri = fNamespaceBinder.getURI(fEmptySymbol); 
-                            localUri=fLocalNSBinder.getURI(fEmptySymbol);
-                            if (localUri == null) {
-                                value = fSymbolTable.addSymbol(value);
-                                fNamespaceBinder.declarePrefix(fEmptySymbol, value);
-                                fLocalNSBinder.declarePrefix(fEmptySymbol, value);
-                                removeDefault(attr, attributes);
-                            }
-                            continue;
-                        }
-                        else if (colon == colon2) { // xmlns:prefix decl
-                            // get prefix
-                            prefix = name.substring(6);
-                            prefix = (prefix.length() ==0) ? fEmptySymbol :fSymbolTable.addSymbol(prefix);
-                            if (prefix.length() == 0) {
-                                // REVISIT: report an error - invalid namespace declaration
-                                
-                            }
-                            else if (value.length() == 0) {
-                                // REVISIT: report an error
-                            }
 
-                            uri =  fNamespaceBinder.getURI(prefix);    // global prefix mapping
-                            localUri = fLocalNSBinder.getURI(prefix);  // local prefix mapping
-                            if (uri == null || localUri == null) {
-                                // REVISIT: we are skipping invalid decls
-                                //          xmlns:foo = ""
-                                if (value.length() != 0) { 
-                                    value = fSymbolTable.addSymbol(value);
-                                    fNamespaceBinder.declarePrefix(prefix, value);
-                                    fLocalNSBinder.declarePrefix(prefix, value);
-                                   
-                                }
-                                // REVISIT: only if we can skip continue;
-                            }
-                        }
-                    }
-                    // remove default attribute
-                    removeDefault(attr, attributes);
                     if (colon > -1) {
-                        //
-                        //  DOM Level 1 node!
-                        // 
-                        if (colon != colon2) {
-                            //REVISIT: not a QName: report an error
-                            if (fErrorHandler != null) {
-                                modifyDOMError("Attribute's name is not a QName: "+name, DOMError.SEVERITY_ERROR, attr);
-                                boolean continueProcess = fErrorHandler.handleError(fDOMError);
-                                // REVISIT: stop?
-                            } 
-
-                        }
-                        else {
-                            // REVISIT: if we got here no namespace processing was performed
-                            // report warnings
-                            if (fErrorHandler != null) {
-                                modifyDOMError("Attribute '"+name+"' does not belong to any namespace: prefix could be undeclared or bound to some namespace", 
-                                DOMError.SEVERITY_WARNING, attr);
-                                boolean continueProcess = fErrorHandler.handleError(fDOMError);
+                        // It is an error if document has DOM L1 nodes.
+                        boolean continueProcess = true;
+                        if (fErrorHandler != null) {
+                            if (fNamespaceValidation) {
+                                modifyDOMError("DOM Level 1 node: "+name, DOMError.SEVERITY_FATAL_ERROR, attr);
+                                fErrorHandler.handleError(fDOMError);
+                            } else {
+                                modifyDOMError("DOM Level 1 node: "+name, DOMError.SEVERITY_ERROR, attr);
+                                continueProcess = fErrorHandler.handleError(fDOMError);
                             }
                         }
-                        
-                    }
-                    else { 
+                        if (fNamespaceValidation || !continueProcess) {
+                            // stop the namespace fixup and validation
+                            throw new RuntimeException("DOM Level 1 node");
+                        }
+
+                    } else {
                         // uri=null and no colon
                         // no fix up is needed: default namespace decl does not 
+
+                        // ---------------------------------------
+                        // remove default attributes
+                        // ---------------------------------------
+                        removeDefault(attr, attributes);
                     }
                 }
             }
@@ -833,7 +817,7 @@ public class DOMNormalizer implements XMLGrammarPool  {
      * @exception IOException
      */
 
-    protected void addNamespaceDecl(String prefix, String uri, ElementImpl element){
+    protected final void addNamespaceDecl(String prefix, String uri, ElementImpl element){
         if (DEBUG) {
             System.out.println("[ns-fixup] addNamespaceDecl ["+prefix+"]");
         }
@@ -842,8 +826,7 @@ public class DOMNormalizer implements XMLGrammarPool  {
                 System.out.println("=>add xmlns=\""+uri+"\" declaration");
             }
             element.setAttributeNS(NamespaceSupport.XMLNS_URI, "xmlns", uri);             
-        }
-        else {
+        } else {
             if (DEBUG) {
                 System.out.println("=>add xmlns:"+prefix+"=\""+uri+"\" declaration");
             }
@@ -851,7 +834,7 @@ public class DOMNormalizer implements XMLGrammarPool  {
         }
     }
 
-    protected void removeDefault (Attr attribute, AttributeMap attrMap){
+    protected final boolean removeDefault (Attr attribute, AttributeMap attrMap){
         if ((fDocument.features & CoreDocumentImpl.DEFAULTS) != 0) {
             // remove default attributes
             if (!attribute.getSpecified()) {
@@ -859,22 +842,24 @@ public class DOMNormalizer implements XMLGrammarPool  {
                     System.out.println("==>remove default attr: "+attribute.getNodeName());
                 }
                 attrMap.removeItem(attribute, false);
+                return true;
             }
         }
+        return false;
     }
 
 
-    protected DOMError modifyDOMError(String message, short severity, Node node){
-            fDOMError.reset();
-            fDOMError.setMessage(message);
-            fDOMError.setSeverity(severity);
-            // REVISIT: do we need to create a new locator for each error??
-            fDOMError.setLocator(new DOMLocatorImpl(-1, -1, -1, node, null));
-            return fDOMError;
-        
+    protected final DOMError modifyDOMError(String message, short severity, Node node){
+        fDOMError.reset();
+        fDOMError.setMessage(message);
+        fDOMError.setSeverity(severity);
+        // REVISIT: do we need to create a new locator for each error??
+        fDOMError.setLocator(new DOMLocatorImpl(-1, -1, -1, node, null));
+        return fDOMError;
+
     }
 
-    protected void updateQName (Node node, QName qname){
+    protected final void updateQName (Node node, QName qname){
 
         String prefix    = node.getPrefix();
         String namespace = node.getNamespaceURI();
@@ -888,7 +873,7 @@ public class DOMNormalizer implements XMLGrammarPool  {
     }
 
     protected final class XMLAttributesProxy 
-        implements XMLAttributes{
+    implements XMLAttributes {
         protected AttributeMap fAttributes;
         protected CoreDocumentImpl fDocument;
         protected ElementImpl fElement;
@@ -934,14 +919,14 @@ public class DOMNormalizer implements XMLGrammarPool  {
             // REVISIT: implement
         }
 
-        
+
         public void removeAttributeAt(int attrIndex){
             // REVISIT: implement
         }
 
 
         public int getLength(){
-            return (fAttributes != null)?fAttributes.getLength():0;
+            return(fAttributes != null)?fAttributes.getLength():0;
         }
 
 
@@ -1016,7 +1001,7 @@ public class DOMNormalizer implements XMLGrammarPool  {
 
         public String getValue(int index){
             return fAttributes.item(index).getNodeValue();
-        
+
         }
 
 
@@ -1029,7 +1014,7 @@ public class DOMNormalizer implements XMLGrammarPool  {
         public String getValue(String uri, String localName){            
             if (fAttributes != null) {
                 Node node =  fAttributes.getNamedItemNS(uri, localName);
-                return (node != null)? node.getNodeValue():null;
+                return(node != null)? node.getNodeValue():null;
             }
             return null;
         }
@@ -1037,7 +1022,7 @@ public class DOMNormalizer implements XMLGrammarPool  {
 
         public void setNonNormalizedValue(int attrIndex, String attrValue){
             // REVISIT: implement
-            
+
         }
 
 
@@ -1054,11 +1039,11 @@ public class DOMNormalizer implements XMLGrammarPool  {
         }
 
         public boolean isSpecified(int attrIndex){
-            return ((Attr)fAttributes.getItem(attrIndex)).getSpecified();
+            return((Attr)fAttributes.getItem(attrIndex)).getSpecified();
         }
 
         public Augmentations getAugmentations (int attributeIndex){
-            return (Augmentations)fAugmentations.elementAt(attributeIndex);
+            return(Augmentations)fAugmentations.elementAt(attributeIndex);
         }
 
         public Augmentations getAugmentations (String uri, String localPart){ 

@@ -181,7 +181,7 @@ public class CoreDocumentImpl
     /** Normalization features*/
     protected short features = 0;
     
-    protected final static short NSPROCESSING        = 0x1<<0;
+    protected final static short NAMESPACES          = 0x1<<0;
     protected final static short DTNORMALIZATION     = 0x1<<1;
     protected final static short ENTITIES            = 0x1<<2;
     protected final static short CDATA               = 0x1<<3;
@@ -296,9 +296,9 @@ public class CoreDocumentImpl
         super(null);
         ownerDocument = this;
         allowGrammarAccess = grammarAccess;
-        // set default values for normalization features
-
-        features |= NSPROCESSING; //namespace processing was performed.
+        
+        // set default values for normalization features        
+        features |= NAMESPACES;
         features |= ENTITIES;
         features |= COMMENTS;
         features |= DTNORMALIZATION;
@@ -1028,18 +1028,19 @@ public class CoreDocumentImpl
             domNormalizer = new DOMNormalizer();
         }
 
-        if ((features & VALIDATION) != 0) {
 
-            if (fConfiguration == null) {
-                // if symbol table is not available                
-                // it will be created by the configuration
-                fConfiguration =  new DOMValidationConfiguration(fSymbolTable);
-            }
-            if (fErrorHandlerWrapper.getErrorHandler() !=null) {           
-                fConfiguration.setErrorHandler(fErrorHandlerWrapper);
-            }
+        if (fConfiguration == null) {
+            // if symbol table is not available                
+            // it will be created by the configuration
+            fConfiguration =  new DOMValidationConfiguration(fSymbolTable);
+        }
+        if (fErrorHandlerWrapper.getErrorHandler() !=null) {           
+            fConfiguration.setErrorHandler(fErrorHandlerWrapper);
+        }
             // resets components.
             fConfiguration.reset();
+
+        if ((features & VALIDATION) != 0) {
             // REVISIT: validation is performed only against one type of grammar
             //          if doctype is available -- DTD validation
             //          otherwise XML Schema validation.
@@ -1055,11 +1056,18 @@ public class CoreDocumentImpl
             if (fGrammar != null) {
                 fConfiguration.setProperty(DOMValidationConfiguration.GRAMMAR_POOL, domNormalizer);
             }
-        } else { // remove validation handler
+        } 
+        else { // remove validation handler
                 domNormalizer.setValidationHandler(null);
         }
         domNormalizer.reset(fConfiguration);
-        domNormalizer.normalizeDocument(this);
+        try {
+            domNormalizer.normalizeDocument(this);
+        }
+        catch (RuntimeException e){
+            // fatal error occured
+        }
+        
         if ((features & VALIDATION) != 0) {
            CoreDOMImplementationImpl.singleton.releaseValidator(XMLGrammarDescription.XML_SCHEMA);
         }
@@ -1071,10 +1079,6 @@ public class CoreDocumentImpl
         // REVISIT: Implement to optimize when normalization is required 
         //
         return true;
-    }
-
-    public void setNamespaceProcessing(boolean value){
-        features = (short) (value ? flags | NSPROCESSING : flags & ~NSPROCESSING);
     }
 
     /**
@@ -1090,11 +1094,13 @@ public class CoreDocumentImpl
         if (name.equals(Constants.DOM_COMMENTS)) {
                features = (short) (state ? features | COMMENTS : features & ~COMMENTS);
 
-        
         } else if (name.equals(Constants.DOM_DATATYPE_NORMALIZATION)) {
             // REVISIT: datatype-normalization only takes effect if validation is on
                features = (short) (state ? features | DTNORMALIZATION : features & ~DTNORMALIZATION);
-        
+
+        } else if (name.equals(Constants.DOM_NAMESPACES)) {
+            features = (short)(state ? features | NAMESPACES : features & ~NAMESPACES);
+
         } else if (name.equals(Constants.DOM_CDATA_SECTIONS)) {
             features = (short) (state ? features | CDATA : features & ~CDATA);
         
@@ -1151,8 +1157,10 @@ public class CoreDocumentImpl
         if (name.equals(Constants.DOM_COMMENTS)) {
                return (features & COMMENTS) != 0;
 
-        
-        } else if (name.equals(Constants.DOM_DATATYPE_NORMALIZATION)) {
+        } else if (name.equals(Constants.DOM_NAMESPACES)) {
+               return (features & NAMESPACES) != 0;
+
+        }else if (name.equals(Constants.DOM_DATATYPE_NORMALIZATION)) {
             // REVISIT: datatype-normalization only takes effect if validation is on
                return (features & DTNORMALIZATION) != 0;
         
@@ -1197,7 +1205,8 @@ public class CoreDocumentImpl
             name.equals(Constants.DOM_CDATA_SECTIONS) ||
             name.equals(Constants.DOM_ENTITIES) ||
             name.equals(Constants.DOM_DISCARD_DEFAULT_CONTENT) ||
-            name.equals(Constants.DOM_SPLIT_CDATA)) {
+            name.equals(Constants.DOM_SPLIT_CDATA) ||
+            name.equals(Constants.DOM_NAMESPACES)) {
                return true;        
         } else if (name.equals(Constants.DOM_INFOSET) || 
                    name.equals(Constants.DOM_NORMALIZE_CHARACTERS) ||
