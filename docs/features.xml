@@ -5,12 +5,13 @@
 	<s2 title="Setting Features">
         <anchor name="features"/>
 		<p>To set a feature on either org.apache.xerces.parsers.SAXParser or 
-		org.apache.xerces.parsers.DOMParser, you should use the SAX2 Configurable 
-		interface (org.xml.sax.Configurable).</p>
-		<p>For example, to turn on the validation feature, do:</p>
+		org.apache.xerces.parsers.DOMParser, you should use the SAX2 
+		method <code>setFeature(String,boolean)</code>. To query a
+		feature, use the SAX2 method <code>getFeature(String)</code>.</p>
+		<p>For example, to turn on validation:</p>
 <source>SAXParser p=new SAXParser();
 try {
-  p.setFeature("http://xml.org/sax/features/validation",true);
+  p.setFeature("http://xml.org/sax/features/validation", true);
 } catch (SAXException e) {
   System.out.println("error in setting up parser feature");
 }</source>
