@@ -117,7 +117,7 @@ implements XMLDTDHandler, XMLDTDContentModelHandler {
     // debugging
 
     /** Debug DTDGrammar. */
-    private static final boolean DEBUG_SCANNER_STATE = false;
+    private static final boolean fDebugDTDGrammar = false;
 
     //
     // Constructors
@@ -248,8 +248,10 @@ implements XMLDTDHandler, XMLDTDContentModelHandler {
     throws SAXException {
         fCurrentElementIndex = createElementDecl();//create element decl
         
-        System.out.println(  "name = " + fElementDecl.name.localpart );
-        System.out.println(  "Type = " + fElementDecl.type );
+        if( this.fDebugDTDGrammar == true ){
+             System.out.println(  "name = " + fElementDecl.name.localpart );
+             System.out.println(  "Type = " + fElementDecl.type );
+        }
         
         setElementDecl(fCurrentElementIndex, fElementDecl );//set internal structure
     } // elementDecl
