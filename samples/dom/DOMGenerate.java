@@ -75,7 +75,7 @@ import  java.io.*;
  * @author Jeffrey Rodriguez
  * @version $id$
  */
-public class generateXMLNew {
+public class DOMGenerate {
     public static void main( String[] argv ) {
         try {
             Document doc= new DocumentImpl();
