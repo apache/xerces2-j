@@ -145,8 +145,8 @@ public class XMLDTDScanner
     private XMLStringBuffer fStringBuffer2 = new XMLStringBuffer();
 
     private int[] fOpStack = new int[5];
-    private int fDepth;
-
+    private int fContentDepth;
+    private int fPEDepth;
     private int fIncludeSectDepth;
 
     private XMLString fDefaultValue = new XMLString();
@@ -306,6 +306,7 @@ public class XMLDTDScanner
         // reset state related data
         fScanningExtSubset = false;
         fStartDTDCalled = false;
+        fPEDepth = 0;
         fIncludeSectDepth = 0;
 
         // save built-in symbols
@@ -398,6 +399,9 @@ public class XMLDTDScanner
                 fDTDHandler.startDTD();
             }
         }
+        else if (name.charAt(0) == '%') {
+            fPEDepth++;
+        }
 
         // call handler
         if (fDTDHandler != null) {
@@ -424,6 +428,9 @@ public class XMLDTDScanner
             if (fDTDHandler != null) {
                 fDTDHandler.endDTD();
             }
+        }
+        else if (name.charAt(0) == '%') {
+            fPEDepth--;
         }
 
     } // endEntity(String)
@@ -712,7 +719,7 @@ public class XMLDTDScanner
         if (fDTDContentModelHandler != null) {
             fDTDContentModelHandler.childrenStartGroup();
         }
-        fDepth = 0;
+        fContentDepth = 0;
         int currentOp = 0;
         int c;
         do {
@@ -727,7 +734,7 @@ public class XMLDTDScanner
                 // push current op on stack and reset it
                 pushOpStack(currentOp);
                 currentOp = 0;
-                fDepth++;
+                fContentDepth++;
             }
             else if (c == ')') {
                 // call handler
@@ -738,7 +745,7 @@ public class XMLDTDScanner
                 fStringBuffer.append(')');
                 // restore previous op
                 currentOp = popOpStack();
-                fDepth--;
+                fContentDepth--;
             }
             else if (c == ',') {
                 if (currentOp == 0) {
@@ -806,7 +813,7 @@ public class XMLDTDScanner
                 fStringBuffer.append(childName);
             }
             skipSeparator(false, fScanningExtSubset);
-        } while (fDepth >= 0);
+        } while (fContentDepth >= 0);
 
         // occurence operator
         c = fEntityScanner.peekChar();
@@ -1117,33 +1124,76 @@ public class XMLDTDScanner
      */
     private final void scanEntityDecl() throws IOException, SAXException {
 
-        // REVISIT: need to support PEREFs here!
-        // spaces
-        if (!fEntityScanner.skipSpaces()) {
-            // REVISIT: report error
+        boolean isPEDecl = false;
+        boolean sawPERef = false;
+        if (fEntityScanner.skipSpaces()) {
+            if (!fEntityScanner.skipChar('%')) {
+                isPEDecl = false; // <!ENTITY x "x">
+            } else if (skipSpaces()) {
+                skipSeparator(false, fScanningExtSubset); // <!ENTITY % x "x">
+                isPEDecl = true;
+            } else if (!fScanningExtSubset) {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "MSG_SPACE_REQUIRED_BEFORE_ENTITY_NAME_IN_PEDECL",
+                                           null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                isPEDecl = true;
+            } else if (fEntityScanner.peekChar() == '%') {
+                // <!ENTITY %%x; "x"> is legal
+                skipSeparator(false, fScanningExtSubset);
+                isPEDecl = true;
+            } else {
+                sawPERef = true;
+            }
+        } else if (!fScanningExtSubset || !fEntityScanner.skipChar('%')) {
+            // <!ENTITY[^ ]...> or <!ENTITY[^ %]...>
             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "MSG_SPACE_REQUIRED_BEFORE_ENTITY_NAME_IN_ENTITYDECL",
+                                       "MSG_SPACE_REQUIRED_BEFORE_ENTITY_NAME_IN_PEDECL",
                                        null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            isPEDecl = false;
+        } else if (fEntityScanner.skipSpaces()) {
+            // <!ENTITY% ...>
+            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                       "MSG_SPACE_REQUIRED_BEFORE_PERCENT_IN_PEDECL",
+                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            isPEDecl = false;
+        } else {
+            sawPERef = true;
+        }
+        if (sawPERef) {
+            while (true) {
+                String peName = fEntityScanner.scanName();
+                if (peName == null) {
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "MSG_NAME_REQUIRED_IN_PEREFRENCE",
+                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                } else if (!fEntityScanner.skipChar(';')) {
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "MSG_SEMICOLON_REQUIRED_IN_PEREFERENCE",
+                                               null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                } else {
+                    fEntityManager.startEntity(fSymbolTable.addSymbol("%" + peName), false);
+                }
+                fEntityScanner.skipSpaces();
+                if (!fEntityScanner.skipChar('%'))
+                    break;
+                if (!isPEDecl) {
+                    if (skipSpaces()) {
+                        skipSeparator(false, fScanningExtSubset);
+                        isPEDecl = true;
+                        break;
+                    }
+                    isPEDecl = fEntityScanner.skipChar('%');
+                }
+            }
         }
 
         // name
-        String name = null;
-        boolean parameter = false;
-        if (fEntityScanner.skipChar('%')) {
-            if (!skipSeparator(true, fScanningExtSubset)) {
-                // REVISIT: report error
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "MSG_SPACE_REQUIRED_BEFORE_ENTITY_NAME_IN_ENTITYDECL",
-                                           null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-            }
-            parameter = true;
-        }
-        name = fEntityScanner.scanName();
+        String name = fEntityScanner.scanName();
         if (name == null) {
             // REVISIT: report error
             throw new SAXException("expected entity name");
         }
-        if (parameter) {
+        if (isPEDecl) {
             name = "%" + name;
         }
 
@@ -1223,7 +1273,7 @@ public class XMLDTDScanner
 
         // NDATA
         String notation = null;
-        if (systemId != null && !parameter && fEntityScanner.skipString("NDATA")) {
+        if (systemId != null && !isPEDecl && fEntityScanner.skipString("NDATA")) {
             // spaces
             if (!skipSeparator(true, fScanningExtSubset)) {
                 // REVISIT: report error
@@ -1624,6 +1674,16 @@ public class XMLDTDScanner
                                                        null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
                         }
                     }
+                    else {
+                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                   "MarkupNotRecognizedInDTD",
+                                                   null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    }
+                }
+                else {
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "MarkupNotRecognizedInDTD",
+                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 }
             }
             else if (fIncludeSectDepth > 0 && fEntityScanner.skipChar(']')) {
@@ -1661,7 +1721,7 @@ public class XMLDTDScanner
      * Skip separator. This is typically just whitespace but it can also be one
      * or more parameter entity references.
      * <p>
-     * If there are some this "expand them" by calling the corresponding entity
+     * If there are some it "expands them" by calling the corresponding entity
      * from the entity manager.
      * <p>
      * This is recursive and will process has many refs as possible.
@@ -1670,18 +1730,16 @@ public class XMLDTDScanner
      *                      found
      * @param lookForPERefs Specify whether parameter entity references should
      *                      be looked for
-     * @return whether any leading whitespace was found.
+     * @return True if any leading whitespace was found or the end of a
+     *         parameter entity was crossed.
      */
-    private boolean skipSeparator(boolean spaceRequired,
-                                  boolean lookForPERefs)
+    private boolean skipSeparator(boolean spaceRequired, boolean lookForPERefs)
         throws IOException, SAXException
     {
+        int depth = fPEDepth;
         boolean sawSpace = fEntityScanner.skipSpaces();
-        if (!lookForPERefs) {
-            return !spaceRequired || sawSpace;
-        }
-        if (!fEntityScanner.skipChar('%')) {
-            return !spaceRequired || sawSpace;
+        if (!lookForPERefs || !fEntityScanner.skipChar('%')) {
+            return !spaceRequired || sawSpace || (depth != fPEDepth);
         }
         while (true) {
             String name = fEntityScanner.scanName();
@@ -1701,17 +1759,29 @@ public class XMLDTDScanner
         }
     }
 
+    /**
+     * Skip spaces or parameter entity reference edge.
+     *
+     * @return True if any whitespace was found or the end of a parameter
+     *         entity was crossed.
+     */
+    private boolean skipSpaces() throws IOException, SAXException {
+        int depth = fPEDepth;
+        return fEntityScanner.skipSpaces() || (depth != fPEDepth);
+    }
+
+
     private final void pushOpStack(int c) {
-        if (fOpStack.length == fDepth) {
-            int[] newStack = new int[fDepth * 2];
-            System.arraycopy(fOpStack, 0, newStack, 0, fDepth);
+        if (fOpStack.length == fContentDepth) {
+            int[] newStack = new int[fContentDepth * 2];
+            System.arraycopy(fOpStack, 0, newStack, 0, fContentDepth);
             fOpStack = newStack;
         }
-        fOpStack[fDepth] = c;
+        fOpStack[fContentDepth] = c;
     }
 
     private final int popOpStack() {
-        return fOpStack[fDepth];
+        return fOpStack[fContentDepth];
     }
 
     private final void ensureEnumerationSize(int size) {
