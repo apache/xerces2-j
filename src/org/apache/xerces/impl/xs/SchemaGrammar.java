@@ -400,10 +400,14 @@ public class SchemaGrammar {
     private int fCTCount = 0;
     private XSComplexTypeDecl[] fComplexTypeDecls = new XSComplexTypeDecl[INITIAL_SIZE];
 
+    // a flag to indicate whether we need to check 3 constraints against each
+    // complex type, or only need to check UPA.
+    boolean fOnlyCheckUPA = false;
+
     /**
      * add one complex type decl: for later constraint checking
      */
-    final void addComplexTypeDecl(XSComplexTypeDecl decl) {
+    public final void addComplexTypeDecl(XSComplexTypeDecl decl) {
         if (fCTCount == fComplexTypeDecls.length)
             fComplexTypeDecls = resize(fComplexTypeDecls, fCTCount+INC_SIZE);
         fComplexTypeDecls[fCTCount++] = decl;
@@ -412,10 +416,19 @@ public class SchemaGrammar {
     /**
      * get all complex type decls: for later constraint checking
      */
-    final XSComplexTypeDecl[] getAllComplexTypeDecls() {
+    final XSComplexTypeDecl[] getUncheckedComplexTypeDecls() {
         if (fCTCount < fComplexTypeDecls.length)
             fComplexTypeDecls = resize(fComplexTypeDecls, fCTCount);
         return fComplexTypeDecls;
+    }
+
+    /**
+     * after the first-round checking, some types don't need to be checked
+     * against UPA again. here we trim the array to the proper size.
+     */
+    final void setUncheckedTypeNum(int newSize) {
+        fCTCount = newSize;
+        fComplexTypeDecls = resize(fComplexTypeDecls, fCTCount);
     }
 
     // used to store all substitution group information declared in
