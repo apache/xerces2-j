@@ -776,6 +776,32 @@ public class TraverseSchema implements
                int groupScope = ((Integer)fTopLevelElementsRefdFromGroup.elementAt(j+1)).intValue();
                checkConsistentElements(eltName, groupScope);     
             }
+
+            // Loop thru all of the complexTypes, and for any derived by restriction,
+            // do particle derivation checking
+            int count = fComplexTypeRegistry.size();
+            Enumeration enum = fComplexTypeRegistry.elements();
+
+            ComplexTypeInfo typeInfo,baseTypeInfo;
+            while (enum.hasMoreElements ()) {
+               typeInfo = (TraverseSchema.ComplexTypeInfo)enum.nextElement();
+               baseTypeInfo = typeInfo.baseComplexTypeInfo;
+               
+               if (typeInfo.derivedBy == SchemaSymbols.RESTRICTION && 
+                   baseTypeInfo!=null &&
+                   typeInfo.contentSpecHandle>-1) {
+                 try {
+                    checkParticleDerivationOK(typeInfo.contentSpecHandle,
+                         typeInfo.scopeDefined, baseTypeInfo.contentSpecHandle,
+                         baseTypeInfo.scopeDefined,baseTypeInfo);
+                 }
+                 catch (ParticleRecoverableError e) {
+                    String message = e.getMessage();
+                    reportGenericSchemaError("ComplexType '" + typeInfo.typeName + "': " + message);
+                 }
+               }
+            }
+
         }
 
     } // traverseSchema(Element)
@@ -4154,21 +4180,13 @@ public class TraverseSchema implements
               }
 
               //
-              // The hairy derivation by restriction particle constraints
-              // derivation-ok-restriction 5.3
+              // Delay derivation by restriction particle constraint checking until 
+              // the whole schema has been processed.  We need to do this because: 
+              //  - top-level element declarations are not processed until traversed 
+              //    thru the main traverseSchema walk.   
+              //   
               //
-              else {
 
-                try {
-                  checkParticleDerivationOK(typeInfo.contentSpecHandle,fCurrentScope,
-                       baseContentSpecHandle,typeInfo.baseComplexTypeInfo.scopeDefined,
-                      typeInfo.baseComplexTypeInfo);
-                }
-                catch (ParticleRecoverableError e) {
-                   String message = e.getMessage();
-                   throw new ComplexTypeRecoverableError(message);
-                }
-              }
            }
            //-------------------------------------------------------------
            // EXTENSION
