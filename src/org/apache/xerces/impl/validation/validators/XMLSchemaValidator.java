@@ -107,16 +107,25 @@ public class XMLSchemaValidator
     /**
      * The start of the document.
      *
+     * @param systemId The system identifier of the entity if the entity
+     *                 is external, null otherwise.
+     * @param encoding The auto-detected IANA encoding name of the entity
+     *                 stream. This value will be null in those situations
+     *                 where the entity encoding is not auto-detected (e.g.
+     *                 internal entities or a document entity that is
+     *                 parsed from a java.io.Reader).
+     *     
      * @throws SAXException Thrown by handler to signal an error.
      */
-    public void startDocument() throws SAXException {
+    public void startDocument(String systemId, String encoding) 
+        throws SAXException {
 
         // call handlers
         if (fDocumentHandler != null) {
-            fDocumentHandler.startDocument();
+            fDocumentHandler.startDocument(systemId, encoding);
         }
-    
-    } // startDocument()
+
+    } // startDocument(String,String)
 
     /**
      * Notifies of the presence of an XMLDecl line in the document. If
