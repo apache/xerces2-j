@@ -65,6 +65,7 @@ import java.util.Stack;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLEntityScanner;
 import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.util.XMLStringBuffer;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLChar;
@@ -639,11 +640,16 @@ public class XMLDocumentScanner
         // end
         if (!fEntityScanner.skipChar('?')) {
             // REVISIT: report error
-            throw new SAXException("expected '?'");
+            //throw new SAXException("expected '?'");
+            fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "XMLDeclUnterminated", 
+                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
         if (!fEntityScanner.skipChar('>')) {
             // REVISIT: report error
-            throw new SAXException("expected '>'");
+            // throw new SAXException("expected '>'");
+            fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "XMLDeclUnterminated", 
+                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+
         }
 
         // call handler

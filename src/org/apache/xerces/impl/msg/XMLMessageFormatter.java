@@ -127,7 +127,7 @@ public class XMLMessageFormatter implements MessageFormatter {
             throw new MissingResourceException(msg, "org.apache.xerces.impl.msg.XMLMessages", key);
         }
 
-        return null;
+        return msg;
     }
 
 }

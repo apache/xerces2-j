@@ -63,6 +63,7 @@ import java.io.Reader;
 import java.util.Locale;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.XMLComponentManager;
 import org.xml.sax.EntityResolver;
@@ -144,13 +145,14 @@ public abstract class XMLParser
 
         // create and register components
         fSymbolTable = symbolTable;
-        fProperties.put(XERCES_PROPERTIES_PREFIX + "symbol-table",
+        fProperties.put(XERCES_PROPERTIES_PREFIX + "internal/symbol-table",
                         fSymbolTable);
         fEntityManager = new XMLEntityManager();
-        fProperties.put(XERCES_PROPERTIES_PREFIX + "entity-manager",
+        fProperties.put(XERCES_PROPERTIES_PREFIX + "internal/entity-manager",
                         fEntityManager);
         fErrorReporter = new XMLErrorReporter( fEntityManager.getEntityScanner() );
-        fProperties.put(XERCES_PROPERTIES_PREFIX + "error-reporter",
+        fErrorReporter.putMessageFormatter(XMLMessageFormatter.XML_DOMAIN, new XMLMessageFormatter());
+        fProperties.put(XERCES_PROPERTIES_PREFIX + "internal/error-reporter",
                         fErrorReporter);
 
         // set features to their default values
