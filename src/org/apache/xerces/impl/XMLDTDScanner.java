@@ -1267,13 +1267,11 @@ public class XMLDTDScanner
 
         // register entity and make callback
         if (systemId != null) {
-            if (!fEntityManager.isEntityDeclared(name)) {
-                if (notation != null) {
-                    fEntityManager.addUnparsedEntity(name, publicId, systemId, notation);
-                }
-                else {
-                    fEntityManager.addExternalEntity(name, publicId, systemId, null);
-                }
+            if (notation != null) {
+                fEntityManager.addUnparsedEntity(name, publicId, systemId, notation);
+            }
+            else {
+                fEntityManager.addExternalEntity(name, publicId, systemId, null);
             }
             if (fDTDHandler != null) {
                 if (notation != null) {
@@ -1285,9 +1283,7 @@ public class XMLDTDScanner
             }
         }
         else {
-            if (!fEntityManager.isEntityDeclared(name)) {
-                fEntityManager.addInternalEntity(name, text);
-            }
+            fEntityManager.addInternalEntity(name, text);
             if (fDTDHandler != null) {
                 // REVISIT: Change API for internal entity
                 fStringBuffer.clear();

@@ -71,6 +71,9 @@ import java.net.URL;
 import java.util.Hashtable;
 import java.util.Stack;
 
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.msg.XMLMessageFormatter;
+
 import org.apache.xerces.util.EncodingMap;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.URI;
@@ -97,8 +100,12 @@ import org.xml.sax.SAXNotSupportedException;
  * This component requires the following features and properties from the
  * component manager that uses it:
  * <ul>
+ *  <li>http://xml.org/sax/features/validation</li>
+ *  <li>http://xml.org/sax/features/external-general-entities</li>
+ *  <li>http://xml.org/sax/features/external-parameter-entities</li>
  *  <li>http://apache.org/xml/properties/internal/entity-resolver</li>
  *  <li>http://apache.org/xml/properties/internal/symbol-table</li>
+ *  <li>http://apache.org/xml/properties/internal/error-reporter</li>
  * </ul>
  *
  *
@@ -158,6 +165,32 @@ public class XMLEntityManager
      */
     protected SymbolTable fSymbolTable;
 
+    /**
+     * Error reporter. This property identifier is:
+     * http://apache.org/xml/properties/internal/error-reporter
+     */
+    protected XMLErrorReporter fErrorReporter;
+
+    // features
+
+    /** 
+     * Validation. This feature identifier is:
+     * http://xml.org/sax/features/validation
+     */
+    protected boolean fValidation;
+
+    /** 
+     * External general entities. This feature identifier is:
+     * http://xml.org/sax/features/external-general-entities
+     */
+    protected boolean fExternalGeneralEntities;
+
+    /** 
+     * External parameter entities. This feature identifier is:
+     * http://xml.org/sax/features/external-parameter-entities
+     */
+    protected boolean fExternalParameterEntities;
+
     // handlers
 
     /** Entity handler. */
@@ -202,34 +235,46 @@ public class XMLEntityManager
     } // setEntityHandler(XMLEntityHandler)
 
     /**
-     * addInternalEntity
+     * Adds an internal entity declaration. 
+     * <p>
+     * <strong>Note:</strong> This method ignores subsequent entity
+     * declarations.
      * 
-     * @param name 
-     * @param text 
+     * @param name The name of the entity.
+     * @param text The text of the entity.
      */
     public void addInternalEntity(String name, String text) {
-        Entity entity = new InternalEntity(name, text);
-        fEntities.put(name, entity);
+        if (!fEntities.containsKey(name)) {
+            Entity entity = new InternalEntity(name, text);
+            fEntities.put(name, entity);
+        }
     } // addInternalEntity(String,String)
 
     /**
-     * addExternalEntity
+     * Adds an external entity declaration.
+     * <p>
+     * <strong>Note:</strong> This method ignores subsequent entity
+     * declarations.
      * 
      * @param name 
      * @param publicId 
      * @param systemId 
      * @param baseSystemId 
-     * @param notation
      */
     public void addExternalEntity(String name, 
                                   String publicId, String systemId, 
                                   String baseSystemId) {
-        Entity entity = new ExternalEntity(name, publicId, systemId, baseSystemId, null);
-        fEntities.put(name, entity);
+        if (!fEntities.containsKey(name)) {
+            Entity entity = new ExternalEntity(name, publicId, systemId, baseSystemId, null);
+            fEntities.put(name, entity);
+        }
     } // addExternalEntity(String,String,String,String)
 
     /**
-     * addUnparsedEntity
+     * Adds an unparsed entity declaration.
+     * <p>
+     * <strong>Note:</strong> This method ignores subsequent entity
+     * declarations.
      * 
      * @param name 
      * @param publicId 
@@ -240,11 +285,14 @@ public class XMLEntityManager
     public void addUnparsedEntity(String name, 
                                   String publicId, String systemId,
                                   String notation) {
-        Entity entity = new ExternalEntity(name, publicId, systemId, null, notation);
-        fEntities.put(name, entity);
+        if (!fEntities.containsKey(name)) {
+            Entity entity = new ExternalEntity(name, publicId, systemId, null, notation);
+            fEntities.put(name, entity);
+        }
     } // addUnparsedEntity(String,String,String,String)
 
     /** Returns the values for an external entity. */
+    /***
     public boolean getExternalEntity(String name, ExternalEntity externalEntity) {
         Entity entity = (Entity)fEntities.get(name);
         if (entity != null && entity.isExternal()) {
@@ -253,8 +301,10 @@ public class XMLEntityManager
         }
         return false;
     } // getExternalEntity(String,ExternalEntity):boolean
+    /***/
 
     /** Returns the values for an internal entity. */
+    /***
     public boolean getInternalEntity(String name, InternalEntity internalEntity) {
         Entity entity = (Entity)fEntities.get(name);
         if (entity != null && !entity.isExternal()) {
@@ -263,16 +313,21 @@ public class XMLEntityManager
         }
         return false;
     } // getInternalEntity(String,InternalEntity):boolean
+    /***/
 
     /** Returns true if the specified entity is declared. */
+    /***
     public boolean isEntityDeclared(String name) {
         return fEntities.get(name) != null;
     } // isEntityDeclared(String):boolean
+    /***/
 
     /** Returns true if the specified entity is internal. */
+    /***
     public boolean isEntityExternal(String name) {
         return ((Entity)fEntities.get(name)).isExternal();
     } // isEntityExternal(String):boolean
+    /***/
 
     /**
      * resolveEntity
@@ -328,8 +383,82 @@ public class XMLEntityManager
     public void startEntity(String entityName) 
         throws IOException, SAXException {
 
-        // resolve external entity
+        // was entity declared?
         Entity entity = (Entity)fEntities.get(entityName);
+        boolean external = entity.isExternal();
+        if (entity == null) {
+            if (fValidation) {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "EntityNotDeclared",
+                                           new Object[] { entityName },
+                                           XMLErrorReporter.SEVERITY_ERROR);
+            }
+            if (fEntityHandler != null) {
+                final String publicId = null;
+                final String systemId = null;
+                final String encoding = null;
+                fEntityHandler.startEntity(entityName, publicId, systemId, encoding);
+                fEntityHandler.endEntity(entityName);
+            }
+            return;
+        }
+
+        // is entity recursive?
+        int size = fEntityStack.size();
+        for (int i = size - 1; i >= 0; i--) {
+            Entity activeEntity = (Entity)fEntityStack.elementAt(i);
+            if (activeEntity.name == entityName) {
+                String path = entityName;
+                for (int j = i + 1; j < size; j++) {
+                    activeEntity = (Entity)fEntityStack.elementAt(j);
+                    path = path + " -> " + activeEntity.name;
+                }
+                path = path + " -> " + entityName;
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "RecursiveReference",
+                                           new Object[] { entityName, path },
+                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                if (fEntityHandler != null) {
+                    String publicId = null;
+                    String systemId = null;
+                    final String encoding = null;
+                    if (external) {
+                        ExternalEntity externalEntity = (ExternalEntity)entity;
+                        publicId = externalEntity.publicId;
+                        systemId = externalEntity.systemId;
+                    }
+                    fEntityHandler.startEntity(entityName, publicId, systemId, encoding);
+                    fEntityHandler.endEntity(entityName);
+                }
+                return;
+            }
+        }
+
+        // does the application want to skip external entities?
+        if (external) {
+            boolean unparsed = external
+                             ? ((ExternalEntity)entity).notation != null 
+                             : false;
+            boolean parameter = entityName.startsWith("%");
+            boolean general = !parameter;
+            if (unparsed || (general && !fExternalGeneralEntities) ||
+                (parameter && !fExternalParameterEntities)) {
+                if (fEntityHandler != null) {
+                    String publicId = null;
+                    String systemId = null;
+                    final String encoding = null;
+                    if (external) {
+                        ExternalEntity externalEntity = (ExternalEntity)entity;
+                        publicId = externalEntity.publicId;
+                        systemId = externalEntity.systemId;
+                    }
+                    fEntityHandler.startEntity(entityName, publicId, systemId, encoding);
+                    fEntityHandler.endEntity(entityName);
+                }
+            }
+        }
+
+        // resolve external entity
         XMLInputSource xmlInputSource = null;
         if (entity.isExternal()) {
             ExternalEntity externalEntity = (ExternalEntity)entity;
@@ -392,7 +521,17 @@ public class XMLEntityManager
     public void reset(XMLComponentManager componentManager)
         throws SAXException {
 
-        // Xerces properties
+        // sax features
+        final String VALIDATION = Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
+        fValidation = componentManager.getFeature(VALIDATION);
+
+        final String EXTERNAL_GENERAL_ENTITIES = Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_GENERAL_ENTITIES_FEATURE;
+        fExternalGeneralEntities = componentManager.getFeature(EXTERNAL_GENERAL_ENTITIES);
+
+        final String EXTERNAL_PARAMETER_ENTITIES = Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_PARAMETER_ENTITIES_FEATURE;
+        fExternalParameterEntities = componentManager.getFeature(EXTERNAL_PARAMETER_ENTITIES);
+
+        // xerces properties
         final String ENTITY_RESOLVER = Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
         fEntityResolver = (EntityResolver)componentManager.getProperty(ENTITY_RESOLVER);
         final String SYMBOL_TABLE = Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
@@ -814,7 +953,7 @@ public class XMLEntityManager
      *
      * @author Andy Clark, IBM
      */
-    public static abstract class Entity {
+    protected static abstract class Entity {
 
         //
         // Data
@@ -861,7 +1000,7 @@ public class XMLEntityManager
      *
      * @author Andy Clark, IBM
      */
-    public static class InternalEntity
+    protected static class InternalEntity
         extends Entity {
 
         //
@@ -920,7 +1059,7 @@ public class XMLEntityManager
      *
      * @author Andy Clark, IBM
      */
-    public static class ExternalEntity 
+    protected static class ExternalEntity 
         extends Entity {
         
         //
