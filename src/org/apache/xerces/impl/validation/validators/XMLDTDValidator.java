@@ -78,6 +78,7 @@ import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 
+import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
@@ -150,10 +151,10 @@ public class XMLDTDValidator
      *                      SAXNotRecognizedException or a
      *                      SAXNotSupportedException.
      */
-    public void reset(XMLComponentManager configurationManager)
-        throws SAXException {
+    public void reset(XMLComponentManager componentManager)
+        throws XMLConfigurationException {
         
-        super.reset(configurationManager);
+        super.reset(componentManager);
 
         for (int i = 0; i < fElementQNamePartsStack.length; i++) {
             fElementQNamePartsStack[i] = new QName();
@@ -163,7 +164,7 @@ public class XMLDTDValidator
         fElementDepth = -1;
 
     } // reset(XMLComponentManager)
-
+     
 
     //
     // XMLDocumentHandler methods
