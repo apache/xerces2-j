@@ -518,8 +518,9 @@ import java.io.Serializable;
         tempString = path.substring(0, path.indexOf("/../"));
         segIndex = tempString.lastIndexOf('/');
         if (segIndex != -1) {
-          if (!tempString.substring(segIndex++).equals("..")) {
-            path = path.substring(0, segIndex).concat(path.substring(index+4));
+          if (!tempString.substring(segIndex).equals("..")) {
+            path = path.substring(0, segIndex+1).concat(path.substring(index+4));
+            index = segIndex;
           }
           else
             index += 4;
