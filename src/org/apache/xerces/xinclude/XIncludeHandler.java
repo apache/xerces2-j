@@ -1357,10 +1357,12 @@ public class XIncludeHandler
         // Verify that if an accept and/or an accept-language attribute exist
         // that the value(s) don't contain disallowed characters.
         if (accept != null && !isValidInHTTPHeader(accept)) {
-        	reportFatalError("AcceptMalformed", null);
+            reportFatalError("AcceptMalformed", null);
+            accept = null;
         }
         if (acceptLanguage != null && !isValidInHTTPHeader(acceptLanguage)) {
             reportFatalError("AcceptLanguageMalformed", null);
+            acceptLanguage = null;
         }
 
         XMLInputSource includedSource = null;
