@@ -88,6 +88,10 @@ public class XMLElementDecl {
     // enclosingScope where this element is declared, should always be -1 with DTD Validation.
     public int enclosingScope;
 
+    // Attribute List Head and Tail Index
+    public int firstAttributeDeclIndex;
+    public int lastAttributeDeclIndex;
+
     //
     // Constructors
     //
@@ -111,6 +115,8 @@ public class XMLElementDecl {
         contentSpecIndex = -1;
         contentModelValidator = null;
 	enclosingScope = -1;
+        firstAttributeDeclIndex = -1;
+        lastAttributeDeclIndex = -1;
     }
 
     public void setValues(XMLElementDecl elementDecl) {
@@ -120,6 +126,8 @@ public class XMLElementDecl {
         contentSpecIndex = elementDecl.contentSpecIndex;
         contentModelValidator = elementDecl.contentModelValidator;
 	enclosingScope = elementDecl.enclosingScope;
+	firstAttributeDeclIndex = elementDecl.firstAttributeDeclIndex;
+	lastAttributeDeclIndex = elementDecl.lastAttributeDeclIndex;
     }
 
     //
