@@ -999,7 +999,7 @@ public class XMLEntityScanner implements XMLLocator {
 
         boolean bNextEntity = false;
 
-        while ((fCurrentEntity.position >= fCurrentEntity.count - delimLen)
+        while ((fCurrentEntity.position > fCurrentEntity.count - delimLen)
             && (!bNextEntity))
         {
           System.arraycopy(fCurrentEntity.ch,
@@ -1013,8 +1013,8 @@ public class XMLEntityScanner implements XMLLocator {
           fCurrentEntity.startPosition = 0;
         }
 
-        if (fCurrentEntity.position >= fCurrentEntity.count - delimLen) {
-            // something must be wrong with the input:  e.g., file ends  an unterminated comment
+        if (fCurrentEntity.position > fCurrentEntity.count - delimLen) {
+            // something must be wrong with the input:  e.g., file ends in an unterminated comment
             int length = fCurrentEntity.count - fCurrentEntity.position;
             buffer.append (fCurrentEntity.ch, fCurrentEntity.position, length); 
             fCurrentEntity.columnNumber += fCurrentEntity.count;
