@@ -60,6 +60,8 @@ package org.apache.xerces.dom;
 import org.w3c.dom.Entity;
 import org.w3c.dom.Node;
 
+import org.w3c.dom.DOMException;
+
 /**
  * Entity nodes hold the reference data for an XML Entity -- either
  * parsed or unparsed. The nodeName (inherited from Node) will contain
@@ -319,5 +321,16 @@ public class EntityImpl
     	notationName = name;
 
     } // setNotationName(String)
+    
+    /**
+     * Sets the node value.
+     * @throws DOMException(NO_MODIFICATION_ALLOWED_ERR)
+     */
+    public void setNodeValue(String x) 
+                throws DOMException {
+        throw new DOMException( DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                  "Entity nodes are read only" );
+    }
+
 
 } // class EntityImpl

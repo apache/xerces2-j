@@ -359,5 +359,15 @@ public class DocumentTypeImpl
         }
     	return elements;
     }
+    
+    /**
+     * Sets the node value.
+     * @throws DOMException(NO_MODIFICATION_ALLOWED_ERR)
+     */
+    public void setNodeValue(String x) 
+                throws DOMException {
+        throw new DOMException( DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                  "DocumentType nodes are read only" );
+    }
 
 } // class DocumentTypeImpl

@@ -63,6 +63,8 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import org.w3c.dom.DOMException;
+
 /**
  * EntityReference models the XML &entityname; syntax, when used for
  * entities defined by the DOM. Entities hardcoded into XML, such as
@@ -304,5 +306,15 @@ public class EntityReferenceImpl
     	}
     }
      /***/
+     
+    /**
+     * Sets the node value.
+     * @throws DOMException(NO_MODIFICATION_ALLOWED_ERR)
+     */
+    public void setNodeValue(String x) 
+                throws DOMException {
+        throw new DOMException( DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                  "Entity Reference nodes are read only" );
+    }
     
 } // class EntityReferenceImpl
