@@ -186,7 +186,7 @@ public class NotationImpl
         }
         if (baseURI != null && baseURI.length() != 0 ) {// attribute value is always empty string
             try {
-                baseURI = new URI(baseURI).toString();
+                return new URI(baseURI).toString();
             }
             catch (org.apache.xerces.util.URI.MalformedURIException e){
                 // REVISIT: what should happen in this case?
