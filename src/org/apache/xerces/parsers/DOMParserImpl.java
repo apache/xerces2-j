@@ -410,9 +410,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
         }
         else { // set properties
             if (name.equalsIgnoreCase (Constants.DOM_ERROR_HANDLER)) {
-                // REVISIT: we should probably allow unsetting error-handler
-                if (value == null) return;
-                if (value instanceof DOMErrorHandler) {
+                if (value instanceof DOMErrorHandler || value == null) {
                     try {
                         fErrorHandler = new DOMErrorHandlerWrapper ((DOMErrorHandler) value);
                         fConfiguration.setProperty (ERROR_HANDLER, fErrorHandler);
@@ -431,7 +429,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
 
             }
             else if (name.equalsIgnoreCase (Constants.DOM_RESOURCE_RESOLVER)) {
-                if (value instanceof LSResourceResolver) {
+                if (value instanceof LSResourceResolver || value == null) {
                     try {
                         fConfiguration.setProperty (ENTITY_RESOLVER, new DOMEntityResolverWrapper ((LSResourceResolver) value));
                     }

@@ -129,7 +129,9 @@ implements XMLErrorHandler, DOMErrorHandler {
             locator.fUri = exception.getExpandedSystemId();
             locator.fRelatedNode = fCurrentNode;
         }
-        fDomErrorHandler.handleError(fDOMError); 
+        if (fDomErrorHandler != null) {
+            fDomErrorHandler.handleError(fDOMError);
+        } 
     } // warning(String,String,XMLParseException)
 
     /**
@@ -161,7 +163,9 @@ implements XMLErrorHandler, DOMErrorHandler {
             locator.fUri = exception.getExpandedSystemId();
             locator.fRelatedNode= fCurrentNode;
         }
-        fDomErrorHandler.handleError(fDOMError); 
+        if (fDomErrorHandler != null) {
+            fDomErrorHandler.handleError(fDOMError);
+        }
     } // error(String,String,XMLParseException)
 
     /**
@@ -201,7 +205,9 @@ implements XMLErrorHandler, DOMErrorHandler {
             locator.fUri = exception.getExpandedSystemId();
             locator.fRelatedNode = fCurrentNode;
         }
-        fDomErrorHandler.handleError(fDOMError); 
+        if (fDomErrorHandler != null) {
+            fDomErrorHandler.handleError(fDOMError);
+        } 
     } // fatalError(String,String,XMLParseException)
 
 

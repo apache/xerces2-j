@@ -605,7 +605,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
         }
         else { // set properties
             if (name.equalsIgnoreCase(Constants.DOM_ERROR_HANDLER)) {
-                if (value instanceof DOMErrorHandler) {
+                if (value instanceof DOMErrorHandler || value == null) {
                     fErrorHandlerWrapper.setErrorHandler((DOMErrorHandler)value);
                     setErrorHandler(fErrorHandlerWrapper);
                 }
@@ -621,7 +621,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                 }
             }
             else if (name.equalsIgnoreCase(Constants.DOM_RESOURCE_RESOLVER)) {
-                if (value instanceof LSResourceResolver) {
+                if (value instanceof LSResourceResolver || value == null) {
                     try {
                         setEntityResolver(new DOMEntityResolverWrapper((LSResourceResolver) value));
                     }
