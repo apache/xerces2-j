@@ -2286,7 +2286,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         if (fGrammarIsSchemaGrammar && elementIndex != -1) {
             String anotherSchemaURI = ((SchemaGrammar)fGrammar).getElementFromAnotherSchemaURI(elementIndex);
             if (anotherSchemaURI != null) {
-                fCurrentSchemaURI = fStringPool.addSymbol(anotherSchemaURI);
+                fGrammarNameSpaceIndex = fCurrentSchemaURI = fStringPool.addSymbol(anotherSchemaURI);
                 switchGrammar(fCurrentSchemaURI);
             }
         }
