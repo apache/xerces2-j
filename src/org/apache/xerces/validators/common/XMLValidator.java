@@ -1373,6 +1373,10 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     /** Initialize. */
     private void init() {
 
+        fEmptyURI = fStringPool.addSymbol("");
+        fXsiURI = fStringPool.addSymbol(SchemaSymbols.URI_XSI);
+
+
         fEMPTYSymbol = fStringPool.addSymbol("EMPTY");
         fANYSymbol = fStringPool.addSymbol("ANY");
         fMIXEDSymbol = fStringPool.addSymbol("MIXED");
