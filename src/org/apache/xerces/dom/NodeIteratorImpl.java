@@ -300,6 +300,10 @@ public class NodeIteratorImpl implements NodeIterator {
             }
         }
             
+        if (node == fRoot) { //if Root has no kids
+            return null;
+        }
+
         // if hasSibling, return sibling
         result = node.getNextSibling();
         if (result != null) return result;
