@@ -416,13 +416,14 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
             "",
             "http://www.w3.org/2001/05/XMLInfoset");
 
-        if (fDocumentHandler != null) {
-            fDocumentHandler.startDocument(
-                locator,
-                "UTF-8",
-                fPSVINamespaceContext,
-                null);
-        }
+        if (fDocumentHandler == null)
+            return;
+
+        fDocumentHandler.startDocument(
+            locator,
+            "UTF-8",
+            fPSVINamespaceContext,
+            null);
 
         Vector attributes = new Vector();
         attributes.add("xmlns:xsi");
@@ -456,6 +457,9 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         String standalone,
         Augmentations augs)
         throws XNIException {
+        if (fDocumentHandler == null)
+            return;
+
         sendElementEvent("characterEncodingScheme", encoding);
         sendElementEvent("standalone", standalone);
         sendElementEvent("version", version);
@@ -479,6 +483,9 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         String systemId,
         Augmentations augs)
         throws XNIException {
+        if (fDocumentHandler == null)
+            return;
+
         checkForChildren();
         sendIndentedElement("docTypeDeclaration");
         if (publicId != null)
@@ -498,6 +505,9 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
      */
     public void comment(XMLString text, Augmentations augs)
         throws XNIException {
+        if (fDocumentHandler == null)
+            return;
+
         checkForChildren();
         sendIndentedElement("comment");
         sendElementEvent("content", text);
@@ -526,6 +536,9 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         XMLString data,
         Augmentations augs)
         throws XNIException {
+        if (fDocumentHandler == null)
+            return;
+
         checkForChildren();
         sendIndentedElement("processingInstruction");
         sendElementEvent("target", target);
@@ -553,8 +566,9 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         XMLAttributes attributes,
         Augmentations augs)
         throws XNIException {
-        if (attributes == null)
-            System.err.println("null attributes!");
+        if (fDocumentHandler == null)
+            return;
+
         checkForChildren();
 
         _elementState.push(new ElementState(true));
@@ -585,6 +599,9 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         XMLAttributes attributes,
         Augmentations augs)
         throws XNIException {
+        if (fDocumentHandler == null)
+            return;
+
         sendIndentedElement("element");
         sendElementEvent("namespaceName", element.uri);
         sendElementEvent("localName", element.localpart);
@@ -612,6 +629,9 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
      */
     public void characters(XMLString text, Augmentations augs)
         throws XNIException {
+        if (fDocumentHandler == null)
+            return;
+
         checkForChildren();
         sendIndentedElement("character");
         sendElementEvent("textContent", text);
@@ -635,6 +655,9 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
      */
     public void ignorableWhitespace(XMLString text, Augmentations augs)
         throws XNIException {
+        if (fDocumentHandler == null)
+            return;
+
         if (fIncludeIgnorableWhitespace) {
             this.characters(text, augs);
         }
@@ -650,6 +673,9 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
      */
     public void endElement(QName element, Augmentations augs)
         throws XNIException {
+        if (fDocumentHandler == null)
+            return;
+
         ElementState fElementState = (ElementState)_elementState.peek();
         if (fElementState.isEmpty) {
             sendEmptyElementEvent("children");
@@ -693,6 +719,9 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void endDocument(Augmentations augs) throws XNIException {
+        if (fDocumentHandler == null)
+            return;
+
         sendUnIndentedElement("children");
         sendElementEvent("documentElement");
         // these aren't relevent for PSVI
@@ -1752,7 +1781,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
             return;
         processPSVIElementRef("psv:elementDeclaration", elem);
     }
-    
+
     private void processPSVIElementDeclarationOrRef(XSElementDeclaration elem) {
         if (elem == null)
             return;
@@ -1760,13 +1789,13 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         // we always want to print references
         if (elem.getScope() == XSConstants.SCOPE_GLOBAL
             || fDefined.contains(this.getID(elem))) {
-                processPSVIElementDeclarationRef(elem);
+            processPSVIElementDeclarationRef(elem);
         }
         else {
             processPSVIElementDeclaration(elem);
         }
     }
-    
+
     /**
      * This method writes an empty element at the current indent level.
      *
