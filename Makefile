@@ -1,6 +1,6 @@
 include ./src/Makefile.incl
 
-all: compile jars apidocs package
+all: compile jars docs apidocs package
 
 compile: compile_src compile_samples
 package: package_bin package_src 
@@ -19,21 +19,25 @@ jars: compile
 	${MKDIR} bin
 	${MAKE} -C src jars
 
+docs: src/classfiles_updated
+	echo Building Stylebook docs in docs directory
+	java org.apache.stylebook.StyleBook "targetDirectory=docs/html" docs/docs-book.xml ../../xml-stylebook/styles/apachexml
+
 apidocs:
-	echo Building apiDocs in docs directory
+	echo Building apiDocs in docs directory.
 	${MKDIR} docs/apiDocs
 	${MAKE} -C src apidocs
 
 package_bin: jars apidocs ${BINZIPFILE}
 ${BINZIPFILE}: ./src/classfiles_updated
 
-	echo Building a zip file and a tar.gz file 
+	echo Building a jar file.
 	${MKDIR} bin
 	${CP} -r docs bin
 	${CP} -r data bin
+	${RM} -r bin/data/CVS
 	mv bin xerces-${PRODUCTVERSION}
-	zip -r ${BINZIPFILE} xerces-${PRODUCTVERSION}
-	tar cvf ${BINTARFILE} xerces-${PRODUCTVERSION} ; gzip -f ${BINTARFILE}
+	jar cvf ${BINJARFILE} xerces-${PRODUCTVERSION} 
 	mv xerces-${PRODUCTVERSION} bin
 
 package_src: ./source/src/Makefile
@@ -41,13 +45,15 @@ package_src: ./source/src/Makefile
 
 	${MAKE} -C src package_src
 	${CP} -r data source
+	${RM} -r source/data/CVS
 	mv source xerces-${PRODUCTVERSION}
-	zip -r ${SRCZIPFILE} xerces-${PRODUCTVERSION}
-	tar cvf ${SRCTARFILE} xerces-${PRODUCTVERSION} ; gzip -f ${SRCTARFILE}
+	jar cvf ${SRCJARFILE} xerces-${PRODUCTVERSION} 
 	mv xerces-${PRODUCTVERSION} source
 
 clean:
 	${MAKE} -C src clean
 	${MAKE} -C samples clean
+	${RM} -rf bin class source docs/apiDocs docs/html
+	${RM} ${BINJARFILE} ${SRCJARFILE}
 
 
