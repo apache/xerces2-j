@@ -405,8 +405,11 @@ NamespacesScope.NamespacesHandler {
 
    public void setGrammarResolver(GrammarResolver grammarResolver){
       fGrammarResolver = grammarResolver;
+        if (fValidating) { //optimization -el
       initDataTypeValidators();
    }
+
+    }
 
    //
    // Public methods
@@ -464,7 +467,12 @@ NamespacesScope.NamespacesHandler {
          fDynamicDisabledByValidation = true;
       }
       fValidating = fValidationEnabled;
-   }
+        //optimization:  don't create unnecessary DatatypeValidators. - el
+        if (fValidating) {
+            initDataTypeValidators();
+        }
+
+    }
 
    /** Returns true if validation is enabled. */
    public boolean getValidationEnabled() {
@@ -495,7 +503,11 @@ NamespacesScope.NamespacesHandler {
          fValidationEnabledByDynamic = true;
       }
       fValidating = fValidationEnabled;
-   }
+        //optimization:  don't create unnecessary DatatypeValidators. - el
+        if (fValidating) {
+            initDataTypeValidators();
+        }
+    }
 
    /** Returns true if validation is dynamic. */
    public boolean getDynamicValidationEnabled() {
@@ -1027,23 +1039,18 @@ NamespacesScope.NamespacesHandler {
          //
          if (fValidating ) {
             try {
-               this.fValIDRef.validate( null, this.fValidateIDRef );   
+                    this.fValIDRef.validate( null, this.fValidateIDRef ); //Do final IDREF validation round  
                this.fValIDRefs.validate( null, this.fValidateIDRef );
+
+                    this.fValID.validate( null, this.fResetID );//Reset ID, IDREF, IDREFS validators here
+                    this.fValIDRef.validate(null, this.fResetIDRef );
+                    this.fValIDRefs.validate(null, this.fResetID );
+
             } catch ( InvalidDatatypeValueException ex ) {
                reportRecoverableXMLError( ex.getMajorCode(), ex.getMinorCode(), 
                                           ex.getMessage() ); 
-
-
+                }
             }
-         }
-
-         try {//Reset datatypes state
-            this.fValID.validate( null, this.fResetID );
-            this.fValIDRef.validate(null, this.fResetIDRef );
-            this.fValIDRefs.validate(null, this.fResetID );
-         } catch ( InvalidDatatypeValueException ex ) {
-            System.err.println("Error re-Initializing: ID,IDRef,IDRefs pools" );
-         }
          return;
       }
 
@@ -1091,8 +1098,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                  fGrammar = null;
                  fGrammarIsSchemaGrammar = false;
                  fGrammarIsDTDGrammar = false;
-             }
-             else if ( !switchGrammar(fGrammarNameSpaceIndex) ) {
+                } else if (!switchGrammar(fGrammarNameSpaceIndex)) {
                      reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR, 
                                                "Grammar with uri 1: " + fStringPool.toString(fGrammarNameSpaceIndex) 
                                                + " , can not found");
@@ -1443,14 +1449,16 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
    /** Reset pool. */
    private void poolReset() {
+        //System.out.println("We reset" );
+        if (fValidating) { // - el
       try {
-         //System.out.println("We reset" );
          this.fValID.validate( null, this.fResetID );
          this.fValIDRef.validate(null, this.fResetIDRef );
          this.fValIDRefs.validate(null, this.fResetIDRef );
-      } catch ( InvalidDatatypeValueException ex ) {
+            } catch (InvalidDatatypeValueException ex) { //should use error reporter
          System.err.println("Error re-Initializing: ID,IDRef,IDRefs pools" );
       }
+        }
    } // poolReset()
 
    /** Reset common. */
@@ -1521,28 +1529,43 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
       fEpsilonIndex = fStringPool.addSymbol("<<CMNODE_EPSILON>>");
       fXMLLang = fStringPool.addSymbol("xml:lang");
 
-      initDataTypeValidators();
+        //optimization - must be called ONLY if validation is turned off. -el
+        //initDataTypeValidators();
 
    } // init()
 
+    /**
+    * This method should only be invoked when validation
+    * is turn on.
+    * fDataTypeReg object of type DatatypeValidatorFactoryImpl
+    * needs to be initialized.
+    * In the XMLValidator the table will be by default
+    * first initialized to 9 validators used by DTD
+    * validation.
+    * These Validators are known.
+    * Later on if we ever find a Schema and need to do
+    * Schema validation then we will expand this 
+    * registry table of fDataTypeReg.
+    */
    private void initDataTypeValidators() {
        try {
            //Initialize Validators
            //Datatype Registry
            if ( fGrammarResolver != null ) {
                fDataTypeReg = (DatatypeValidatorFactoryImpl) fGrammarResolver.getDatatypeRegistry();
-           }
+                fDataTypeReg.initializeRegistry( DatatypeValidatorFactoryImpl.PARTIALDTDATTRIBUTESET );
+            }
            if ( fDataTypeReg != null ) {
                fDataTypeReg.resetRegistry();
 
-               fValID       = this.fDataTypeReg.getDatatypeValidator("ID" );
-               fValIDRef    = this.fDataTypeReg.getDatatypeValidator("IDREF" );
-               fValIDRefs   = this.fDataTypeReg.getDatatypeValidator("IDREFS" );
-               fValENTITY   = this.fDataTypeReg.getDatatypeValidator("ENTITY" );
-               fValENTITIES = this.fDataTypeReg.getDatatypeValidator("ENTITIES" );
-               fValNMTOKEN  = this.fDataTypeReg.getDatatypeValidator("NMTOKEN");
-               fValNMTOKENS = this.fDataTypeReg.getDatatypeValidator("NMTOKENS");
-               fValNOTATION = this.fDataTypeReg.getDatatypeValidator("NOTATION" );
+                fValID       = fDataTypeReg.getDatatypeValidator("ID" );
+                fValIDRef    = fDataTypeReg.getDatatypeValidator("IDREF" );
+                fValIDRefs   = fDataTypeReg.getDatatypeValidator("IDREFS" );
+                fValENTITY   = fDataTypeReg.getDatatypeValidator("ENTITY" );
+                fValENTITIES = fDataTypeReg.getDatatypeValidator("ENTITIES" );
+                fValNMTOKEN  = fDataTypeReg.getDatatypeValidator("NMTOKEN");
+                fValNMTOKENS = fDataTypeReg.getDatatypeValidator("NMTOKENS");
+                fValNOTATION = fDataTypeReg.getDatatypeValidator("NOTATION" );
 
 
                //Initialize ENTITY & ENTITIES Validatorh
@@ -2258,9 +2281,15 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                   reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR, "Schema in " + loc + " has a different target namespace " + 
                                             "from the one specified in the instance document :" + uri); 
                }
+
                grammar = new SchemaGrammar();
                grammar.setGrammarDocument(document);
   
+
+                    //At this point we should expand the registry table.
+
+
+
          	   // pass parser's entity resolver (local Resolver), which also has reference to user's 
          	   // entity resolver, and also can fall-back to entityhandler's expandSystemId()
          	   

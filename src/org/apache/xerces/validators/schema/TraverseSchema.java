@@ -530,6 +530,8 @@ public class TraverseSchema implements
         fGrammarResolver = grammarResolver;
         fDatatypeRegistry = (DatatypeValidatorFactoryImpl) fGrammarResolver.getDatatypeRegistry();
 
+        fDatatypeRegistry.initializeRegistry( DatatypeValidatorFactoryImpl.FULLSCHEMASET );//we need to expand registry here
+
         if (root == null) { 
             // REVISIT: Anything to do?
             return;

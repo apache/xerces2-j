@@ -86,8 +86,9 @@ public class GrammarResolverImpl implements GrammarResolver {
      */
     private Hashtable fGrammarRegistry    = new Hashtable();//This class keeps a hashtable of references to Grammar structures
 
-    private DatatypeValidatorFactoryImpl fDataTypeReg = new DatatypeValidatorFactoryImpl();
-
+    //optimization -el
+    //private DatatypeValidatorFactoryImpl fDataTypeReg = new DatatypeValidatorFactoryImpl();
+    private DatatypeValidatorFactoryImpl fDataTypeReg;
     //
     // Constructors
     //
@@ -112,6 +113,9 @@ public class GrammarResolverImpl implements GrammarResolver {
     }
 
     public DatatypeValidatorFactory getDatatypeRegistry(){
+        if (fDataTypeReg == null) {   //optimization -el
+            fDataTypeReg = new DatatypeValidatorFactoryImpl();
+        }
         return fDataTypeReg;
     }
 
@@ -202,7 +206,10 @@ public class GrammarResolverImpl implements GrammarResolver {
      */
     public void clearGrammarResolver() { 
         fGrammarRegistry.clear();
-        fDataTypeReg.resetRegistry();
+        if (fDataTypeReg != null) {     //optimization -el
+             fDataTypeReg.resetRegistry();
+        }
+       
     }
 
 
