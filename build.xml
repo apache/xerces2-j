@@ -115,7 +115,15 @@ Copyright:
   <!-- Compiles the source directory                                       -->
   <!-- =================================================================== -->
   <target name="compile" depends="prepare-src">
-    <javac srcdir="${build.src}" destdir="${build.dest}" debug="${debug}"/>
+    <javac srcdir="${build.src}" destdir="${build.dest}" debug="${debug}">
+      <exclude name="**/DatatypeValidatorFactory.java"/>
+      <exclude name="**/SchemaImporter.java"/>
+      <exclude name="**/RevalidatingDOMParser.java"/>
+      <exclude name="**/DatatypeContentModel.java"/>
+      <exclude name="**/TraverseSchema.java"/>
+      <exclude name="**/ComplexTypeInfo.java"/>
+      <exclude name="**/DTDImporter.java"/>
+    </javac>
   </target>
 
   <!-- =================================================================== -->
