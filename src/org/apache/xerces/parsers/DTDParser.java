@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999-2001 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -60,6 +60,7 @@ package org.apache.xerces.parsers;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
+import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.impl.XMLDTDScanner;
 import org.apache.xerces.impl.validation.grammars.DTDGrammar;
@@ -155,8 +156,8 @@ public abstract class DTDParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDTD() throws XNIException {
-    } // startDTD
+    public void startDTD(XMLLocator locator) throws XNIException {
+    } // startDTD(XMLLocator)
 
     /**
      * A comment.

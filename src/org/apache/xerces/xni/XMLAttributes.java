@@ -169,6 +169,28 @@ public interface XMLAttributes {
     public int getLength();
 
     /**
+     * Look up the index of an attribute by XML 1.0 qualified name.
+     *
+     * @param qName The qualified (prefixed) name.
+     *
+     * @return The index of the attribute, or -1 if it does not
+     *         appear in the list.
+     */
+    public int getIndex(String qName);
+
+    /**
+     * Look up the index of an attribute by Namespace name.
+     *
+     * @param uri       The Namespace URI, or the empty string if
+     *                  the name has no Namespace URI.
+     * @param localName The attribute's local name.
+     *
+     * @return The index of the attribute, or -1 if it does not
+     *         appear in the list.
+     */
+    public int getIndex(String uri, String localPart);
+
+    /**
      * Sets the name of the attribute at the specified index.
      * 
      * @param attrIndex The attribute index.
@@ -442,27 +464,5 @@ public interface XMLAttributes {
      * @param entityIndex The entity index.
      */
     public int getEntityLength(int attrIndex, int entityIndex);
-
-    /**
-     * Look up the index of an attribute by XML 1.0 qualified name.
-     *
-     * @param qName The qualified (prefixed) name.
-     *
-     * @return The index of the attribute, or -1 if it does not
-     *         appear in the list.
-     */
-    public int getIndex(String qName);
-
-    /**
-     * Look up the index of an attribute by Namespace name.
-     *
-     * @param uri       The Namespace URI, or the empty string if
-     *                  the name has no Namespace URI.
-     * @param localName The attribute's local name.
-     *
-     * @return The index of the attribute, or -1 if it does not
-     *         appear in the list.
-     */
-    public int getIndex(String uri, String localPart);
 
 } // interface XMLAttributes
