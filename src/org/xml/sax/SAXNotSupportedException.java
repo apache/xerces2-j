@@ -1,20 +1,30 @@
 // SAXNotSupportedException.java - unsupported feature or value.
-// $Id: SAXNotSupportedException.java,v 1.1.1.1 1999/08/26 15:51:09 twl Exp $
+// Written by David Megginson, sax@megginson.com
+// NO WARRANTY!  This class is in the Public Domain.
+
+// $Id: SAXNotSupportedException.java,v 1.3 2000/01/22 16:27:04 david Exp $
+
 
 package org.xml.sax;
 
 /**
  * Exception class for an unsupported operation.
  *
- * A SAX2 parser that implements the Configurable interface
- * will throw this exception when it recognizes a
- * feature or property identifier, but cannot perform the
- * requested operation (setting a state or value).  Other
- * SAX2 applications and extentions may use this class
- * for similar purposes.
+ * <blockquote>
+ * <em>This module, both source code and documentation, is in the
+ * Public Domain, and comes with <strong>NO WARRANTY</strong>.</em>
+ * </blockquote>
  *
- * @author David Megginson &lt;david@megginson.com&gt;
- * @version
+ * <p>An XMLReader will throw this exception when it recognizes a
+ * feature or property identifier, but cannot perform the requested
+ * operation (setting a state or value).  Other SAX2 applications and
+ * extentions may use this class for similar purposes.</p>
+ *
+ * @since SAX 2.0
+ * @author David Megginson, 
+ *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
+ * @version 2.0beta
+ * @see org.xml.sax.SAXNotRecognizedException 
  */
 public class SAXNotSupportedException extends SAXException
 {

@@ -1,18 +1,30 @@
 // SAXNotRecognizedException.java - unrecognized feature or value.
-// $Id: SAXNotRecognizedException.java,v 1.1.1.1 1999/08/26 15:51:09 twl Exp $
+// Written by David Megginson, sax@megginson.com
+// NO WARRANTY!  This class is in the Public Domain.
+
+// $Id: SAXNotRecognizedException.java,v 1.2 2000/01/22 16:26:51 david Exp $
+
 
 package org.xml.sax;
+
 
 /**
  * Exception class for an unrecognized identifier.
  *
- * A SAX2 parser that implements the Configurable interface
- * will throw this exception when it finds an unrecognized
- * feature or property identifier; SAX applications and extensions
- * may use this class for other, similar purposes.
+ * <blockquote>
+ * <em>This module, both source code and documentation, is in the
+ * Public Domain, and comes with <strong>NO WARRANTY</strong>.</em>
+ * </blockquote>
  *
- * @author David Megginson &lt;david@megginson.com&gt;
- * @version
+ * <p>An XMLReader will throw this exception when it finds an
+ * unrecognized feature or property identifier; SAX applications and
+ * extensions may use this class for other, similar purposes.</p>
+ *
+ * @since SAX 2.0
+ * @author David Megginson, 
+ *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
+ * @version 2.0beta 
+ * @see org.xml.sax.SAXNotSupportedException
  */
 public class SAXNotRecognizedException extends SAXException
 {
