@@ -67,6 +67,12 @@
      </note>
      <submitter name='Michael Glavassevich'/>
     </fix>
+    <add>
+     <note>
+      Implemented a feature that allows schema annotations to be validated.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </add>
     <fix>
      <note>
       Fixed numerous schema related bugs.
