@@ -1,5 +1,5 @@
 /*
- * Copyright 2001, 2002,2004 The Apache Software Foundation.
+ * Copyright 2001, 2002, 2004 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,10 @@ import org.apache.xerces.dom3.DOMLocator;
 import org.apache.xerces.dom3.DOMErrorHandler;
 import org.apache.xerces.dom.DOMErrorImpl;
 import org.apache.xerces.dom.DOMLocatorImpl;
+import org.apache.xerces.impl.msg.XMLMessageFormatter;
 
 import java.io.PrintWriter;
+import java.util.Hashtable;
 
 /**
  * This class handles DOM errors .
@@ -46,9 +48,11 @@ import java.io.PrintWriter;
 //          I think we can avoid this indirection if we modify XMLErrorReporter. --el
 
 public class DOMErrorHandlerWrapper
-implements XMLErrorHandler, DOMErrorHandler {
+    implements XMLErrorHandler, DOMErrorHandler {
 
-
+    /** Map for converting internal error codes to DOM error types. **/
+    private static Hashtable fgDOMErrorTypeTable;
+    
     // It keeps the reference of DOMErrorHandler of application
     protected DOMErrorHandler fDomErrorHandler;
 
@@ -62,8 +66,20 @@ implements XMLErrorHandler, DOMErrorHandler {
     // @see DOMNormalizer.
     public Node fCurrentNode;
 
+    /** Error code for comparisons. **/
+    protected final XMLErrorCode fErrorCode = new XMLErrorCode(null, null);
+    
     protected final DOMErrorImpl fDOMError = new DOMErrorImpl();
-
+    
+    static {
+        // initialize error type table: internal error codes (represented by domain and key) need to be mapped to a DOM error type.
+        fgDOMErrorTypeTable = new Hashtable();   
+        fgDOMErrorTypeTable.put(new XMLErrorCode(XMLMessageFormatter.XML_DOMAIN, "DoctypeNotAllowed"), "doctype-not-allowed");
+        fgDOMErrorTypeTable.put(new XMLErrorCode(XMLMessageFormatter.XML_DOMAIN, "ElementUnterminated"), "wf-invalid-character-in-node-name");
+        fgDOMErrorTypeTable.put(new XMLErrorCode(XMLMessageFormatter.XML_DOMAIN, "EncodingDeclInvalid"), "unsupported-encoding");
+        fgDOMErrorTypeTable.put(new XMLErrorCode(XMLMessageFormatter.XML_DOMAIN, "EqRequiredInAttribute"), "wf-invalid-character-in-node-name");
+        fgDOMErrorTypeTable.put(new XMLErrorCode(XMLMessageFormatter.XML_DOMAIN, "LessthanInAttValue"), "wf-invalid-character");
+    }
 
     //
     // Constructors
@@ -196,7 +212,9 @@ implements XMLErrorHandler, DOMErrorHandler {
                            XMLParseException exception) throws XNIException {
         fDOMError.fSeverity = DOMError.SEVERITY_FATAL_ERROR;
         fDOMError.fException = exception;
-        fDOMError.fType = key;         
+        fErrorCode.setValues(domain, key);
+        String domErrorType = (String) fgDOMErrorTypeTable.get(fErrorCode);
+        fDOMError.fType = (domErrorType != null) ? domErrorType : key;
         fDOMError.fRelatedData = fDOMError.fMessage = exception.getMessage();
         DOMLocatorImpl locator = fDOMError.fLocator;
         if (locator != null) {
