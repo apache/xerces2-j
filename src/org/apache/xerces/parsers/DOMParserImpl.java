@@ -356,6 +356,8 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                     fConfiguration.setFeature (DISALLOW_DOCTYPE_DECL_FEATURE, state);
                 }
                 else if (name.equals (Constants.DOM_SUPPORTED_MEDIATYPES_ONLY)
+                || name.equals(Constants.DOM_NORMALIZE_CHARACTERS)
+                || name.equals (Constants.DOM_CHECK_CHAR_NORMALIZATION)
                 || name.equals (Constants.DOM_CANONICAL_FORM)) {
                     if (state) { // true is not supported
                         String msg =
@@ -446,6 +448,8 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
         }
         else { // set properties
             if (name.equals (Constants.DOM_ERROR_HANDLER)) {
+                // REVISIT: we should probably allow unsetting error-handler
+                if (value == null) return;
                 if (value instanceof DOMErrorHandler) {
                     try {
                         fErrorHandler = new DOMErrorHandlerWrapper ((DOMErrorHandler) value);
@@ -646,6 +650,10 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
             return (fConfiguration.getFeature(CREATE_CDATA_NODES_FEATURE))
                 ? Boolean.TRUE : Boolean.FALSE;
         }
+        else if (name.equals(Constants.DOM_CHECK_CHAR_NORMALIZATION ) ||
+                 name.equals(Constants.DOM_NORMALIZE_CHARACTERS)){
+            return Boolean.FALSE;
+        }
         else if (name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
         || name.equals (Constants.DOM_WELLFORMED)
         || name.equals (Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)
@@ -702,6 +710,8 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
         if(value instanceof Boolean){
             boolean state = ((Boolean)value).booleanValue ();
             if ( name.equals (Constants.DOM_SUPPORTED_MEDIATYPES_ONLY)
+            || name.equals(Constants.DOM_NORMALIZE_CHARACTERS)
+            || name.equals(Constants.DOM_CHECK_CHAR_NORMALIZATION )
             || name.equals (Constants.DOM_CANONICAL_FORM) ) {
                 // true is not supported
                 return (state) ? false : true;

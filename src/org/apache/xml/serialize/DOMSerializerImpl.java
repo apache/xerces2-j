@@ -165,7 +165,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
         features |= COMMENTS;
         features |= CDATA;
         features |= SPLITCDATA;
-        features |=  WELLFORMED;
+        features |= WELLFORMED;
         features |= NSDECL;
         features |= DOM_ELEMENT_CONTENT_WHITESPACE;
         features |= DISCARDDEFAULT;
@@ -420,8 +420,12 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
             return (features & SPLITCDATA) != 0 ? Boolean.TRUE : Boolean.FALSE;
         } else if (name.equals(Constants.DOM_WELLFORMED)) {
             return (features & WELLFORMED) != 0 ? Boolean.TRUE : Boolean.FALSE;
-        } else if (name.equals(Constants.DOM_ELEMENT_CONTENT_WHITESPACE)) {
+        } else if (name.equals(Constants.DOM_ELEMENT_CONTENT_WHITESPACE) ||
+                   name.equals(Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)
+                    || name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)) {
             return Boolean.TRUE;
+        }else if (name.equals(Constants.DOM_DISCARD_DEFAULT_CONTENT)){
+            return ((features & DISCARDDEFAULT)!=0)?Boolean.TRUE:Boolean.FALSE;
         }else if (name.equals(Constants.DOM_INFOSET)){
             if ((features & ENTITIES) == 0 &&
                  (features & CDATA) ==0 &&
@@ -435,7 +439,10 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                 || name.equals(Constants.DOM_NORMALIZE_CHARACTERS)
                 || name.equals(Constants.DOM_CANONICAL_FORM)
                 || name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)
-                || name.equals(Constants.DOM_CHECK_CHAR_NORMALIZATION)) {
+                || name.equals(Constants.DOM_CHECK_CHAR_NORMALIZATION)
+                || name.equals(Constants.DOM_VALIDATE)
+                || name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)
+                || name.equals(Constants.DOM_DATATYPE_NORMALIZATION)) {
             return Boolean.FALSE;
         } else if (name.equals(Constants.DOM_ERROR_HANDLER)) {
             return fErrorHandler;
