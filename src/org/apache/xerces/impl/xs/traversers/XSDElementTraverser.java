@@ -118,7 +118,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
             }
             fSchemaHandler.fillInLocalElemInfo(elmDecl, schemaDoc, allContextFlags, parent, particle);
         } else {
-            traverseLocal(particle, elmDecl, schemaDoc, grammar, allContextFlags, parent);
+            traverseLocal(particle, elmDecl, schemaDoc, grammar, allContextFlags, parent, null);
             // If it's an empty particle, return null.
             if (particle.fType == XSParticleDecl.PARTICLE_EMPTY)
                 particle = null;
@@ -140,8 +140,11 @@ class XSDElementTraverser extends XSDAbstractTraverser {
             XSDocumentInfo schemaDoc,
             SchemaGrammar grammar,
             int allContextFlags,
-            XSObject parent) {
+            XSObject parent,
+            String[] localNSDecls) {
         
+        if (localNSDecls != null)
+            schemaDoc.fNamespaceSupport.setEffectiveContext(localNSDecls);
         // General Attribute Checking
         Object[] attrValues = fAttrChecker.checkAttributes(elmDecl, false, schemaDoc);
         
