@@ -112,8 +112,8 @@ public interface XSComplexTypeDefinition extends XSTypeDefinition {
     /**
      * [content type]: one of empty (<code>CONTENTTYPE_EMPTY</code>), a simple 
      * type definition (<code>CONTENTTYPE_SIMPLE</code>), mixed (
-     * <code>CONTENTTYPE_EMPTY</code>), or element-only (
-     * <code>CONTENTTYPE_EMPTY</code>). 
+     * <code>CONTENTTYPE_MIXED</code>), or element-only (
+     * <code>CONTENTTYPE_ELEMENT</code>). 
      */
     public short getContentType();
 
