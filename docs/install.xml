@@ -38,7 +38,7 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
     <td>Jar file containing all the standard API&apos;s implemented by
     the parser.  Currently, &ParserName; supports DOM level 2, SAX
     2.0 R2 PR1, and the <code>javax.xml.parsers</code> part of JAXP
-    1.1.  </td>
+    1.2.  </td>
    </tr>
    <tr>
     <td>xercesSamples.jar</td>

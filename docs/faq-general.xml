@@ -43,7 +43,7 @@
         </p>
         <ul>
         <li><code>xmlParserAPIs.jar</code> contains the DOM level 2,
-        SAX 2.0 and JAXP 1.1 API&apos;s;</li>
+        SAX 2.0 and the parsing component of JAXP 1.2 API&apos;s;</li>
         <li><code>xercesImpl.jar</code> contains the implementation of
         these API&apos;s as well as the XNI API.
         </li>
