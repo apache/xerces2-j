@@ -68,6 +68,7 @@ import org.xml.sax.SAXException;
 import java.util.Hashtable;
 
 import org.apache.xerces.parsers.DOMParser;
+import org.apache.xerces.impl.Constants;
 
 /**
  * @author Rajiv Mordani
@@ -78,7 +79,16 @@ public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
     private Hashtable attributes;
 
     public DocumentBuilderFactoryImpl() {
-   	 
+        // Default Xerces2 configuration automatically enables XML Schema
+        // validation which is not backward compatible w/ JAXP so turn it
+        // off by default
+        try {
+            setAttribute(Constants.XERCES_FEATURE_PREFIX +
+                         Constants.SCHEMA_VALIDATION_FEATURE, Boolean.FALSE);
+        } catch (IllegalArgumentException x) {
+            // Assume this is b/c parser does not support this feature and
+            // so we just ignore it
+        }
     }
 
     /**
