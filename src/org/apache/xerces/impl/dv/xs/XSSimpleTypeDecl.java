@@ -2113,7 +2113,9 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 	
 	public ShortList getEnumerationTypeList() {
 		if (fEnumerationTypeList == null) {
-			fEnumerationTypeList = new ShortListImpl (fEnumerationType, fEnumerationType.length);
+            if (fEnumerationType == null)
+                return null;
+            fEnumerationTypeList = new ShortListImpl (fEnumerationType, fEnumerationType.length);
 		}
 		return fEnumerationTypeList;
 	}
