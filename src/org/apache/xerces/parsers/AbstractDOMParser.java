@@ -811,7 +811,9 @@ public abstract class AbstractDOMParser
                     if (nodeType == Node.ENTITY_NODE) {
                         String nodeName = fDeferredDocumentImpl.getNodeName(dtChildIndex, false);
                         if (nodeName.equals(name)) {
-                            entityIndex = dtChildIndex;
+                            if (fDeferredDocumentImpl.getLastChild(dtChildIndex, false) == -1) {
+                                entityIndex = dtChildIndex;
+                            }
                             break;
                         }
                     }

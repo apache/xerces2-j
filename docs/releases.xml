@@ -8,7 +8,10 @@
   </desc>
   <changes>
    <fix>
-    <note>Added missing default attribute values in the DOM.</note>
+    <note>
+     Added missing default attribute values in the DOM and fixed 
+     double entity value bug in deferred DOM.
+    </note>
     <submitter name='Andy Clark'/>
    </fix>
    <fix>
