@@ -46,6 +46,8 @@
        id='faq-dom' source='faq-dom.xml'/>
   <faq title='Using XML Schemas' 
        id='faq-xs' source='faq-xs.xml'/>
+  <faq title='Using XInclude' 
+       id='faq-xinclude' source='faq-xinclude.xml'/>
   <faq title='Performance FAQs' 
        id='faq-performance' source='faq-performance.xml'/>
   <faq title='FAQs for Contributors' id='faq-contributing' source='faq-contributing.xml'/>

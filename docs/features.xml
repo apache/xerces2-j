@@ -322,8 +322,8 @@ catch (SAXException e) {
     application/documents to be truly portable across different XML processors.
    </note>
   </feature>
-
  </fcategory>
+
  <fcategory name='DOM Features'>
   <feature name='http://apache.org/xml/features/dom/defer-node-expansion'
            id="dom.defer-node-expansion">
@@ -418,6 +418,40 @@ catch (SAXException e) {
     &ParserName; always internalizes all strings mentioned above
     using the <code>String#intern()</code> method. This feature
     can only be set to true.
+   </note>
+  </feature>
+ </fcategory>
+ <fcategory name='XInclude Features (Experimental)'>
+   <feature name='http://xml.org/sax/features/allow-dtd-events-after-endDTD'
+           id='allow-dtd-events-after-endDTD'>
+   <true>
+    Allows <code>notationDecl</code> and <code>unparsedEntityDecl</code> events to
+    be sent in the XNI pipeline after the <code>endDTD</code> event has been sent.
+   </true>
+   <false>
+    Ensures that <code>notationDecl</code> and <code>unparsedEntityDecl</code> events
+    are not sent after the <code>endDTD</code> event has been sent (default SAX behaviour).
+   </false>
+   <default value='true**'/>
+   <note>
+    The default value for this feature is true, <emph>except</emph> when using SAX,
+    because SAX requires that no DTD events be sent after the <code>endDTD</code>
+    event.  Thus, in order to maintain SAX compatibility,
+    this feature cannot be true by default for SAX. Setting this feature to false
+    can result in loss of information, if notations and unparsed entities were
+    needed to resolve references in the document.
+   </note>
+   <note>
+    This feature is only relevant when XInclude processing is being done.  Due to the
+    nature of implementing XInclude in a stream-based API, it is not possible to know
+    the complete set of required unparsed entities and notations before the <code>endDTD</code>
+    event from the source document is sent.  If an <code>XIncludeHandler</code> is
+    not present in your pipeline, the value of this feature is irrelevant.
+   </note>
+   <note>
+    This feature is currently experimental, and might be removed or changed in the
+    next release. If you have any concerns or suggestions about its use, please
+    contact the xerces-j-user mailing list.
    </note>
   </feature>
  </fcategory>

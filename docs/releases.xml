@@ -1,10 +1,10 @@
-<?xml version='1.0' encoding='UTF-8'?>
+﻿<?xml version='1.0' encoding='UTF-8'?>
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
   <release version='&ParserName; 2.5.0'>
    <desc>
-    TBD
+    This release provides a partial implementation of W3C XInclude specification as well as adds annotation support for the XML Schema component API. In addition to fixing many bugs, this release also brings Xerces into compliance with the most recent work of the W3C DOM working group on DOM level 3 Core and Load/Save, and includes additional fixes related to the XML 1.1 specification.
    </desc>
    <changes>
    <fix>
@@ -27,12 +27,53 @@
     </note>
     <submitter name="Michael Glavassevich"/>
    </fix>
+   <fix>
+    <note>
+     Fixed performance issue for attributes with large value field.
+    </note>
+    <submitter name="Thomas DeWeese"/>
+   </fix>
+    <update>
+    <note>
+     Implemented the latest DOM Level 3 
+     <jump href="http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609/">Core</jump> and 
+     <jump href="http://www.w3.org/TR/2003/WD-DOM-Level-3-LS-20030619/">Load and Save</jump> drafts in Last Call.
+    </note>
+    <submitter name="Elena Litani, Gopal Sharma"/>
+   </update>
    <update>
     <note>
-        Added annotation support to the XML Schema component model API implementation.
+        Added annotation support to the XML Schema component model API implementation. Modified the PSVI API to allow exposing facets as objects.
     </note>
-    <submitter name="Neil Graham"/>
+    <submitter name="Neil Graham, Elena Litani"/>
    </update>
+   <update>
+    <note>
+        Added preliminary XInclude implementation, excluding support for XPointer and
+        XML Base specifications.
+    </note>
+    <submitter name="Peter McCracken, Arun Yadav, Elena Litani"/>
+   </update>
+   <update>
+    <note>
+        Modified PSVIWriter to output all PSVI information.  Changed it to output to
+        an XNI event stream rather than a file.
+    </note>
+    <submitter name="Peter McCracken, Neil Graham"/>
+   </update>
+   <fix>
+    <note>
+        Modified error messages for Schema validation.
+    </note>
+    <submitter name="Peter McCracken, Sandy Gao"/>
+   </fix>
+
+   <fix>
+    <note>
+     Fixed various bugs.
+    </note>
+    <submitter name='Neil Delima, Neil Graham, Elena Litani, Michael Glavassevich, K. Venugopal'/>
+   </fix>
    </changes>
   </release>
   <release version='&ParserName; 2.4.0'>

@@ -21,6 +21,7 @@
  <faq title='Overriding Default Parser Configuration'>
   <q>How do I change the default parser configuration?</q>
   <a>
+   <anchor name="override-default-config"/>
    <p>
     It is possible to override the default parser configuration used
     by the Xerces2 parsers without writing any code or changing the
