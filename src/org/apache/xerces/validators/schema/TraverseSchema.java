@@ -504,6 +504,19 @@ public class TraverseSchema implements
             // REVISIT: Anything to do?
             return;
         }
+        
+
+        //Make sure namespace binding is defaulted
+        String rootPrefix = root.getPrefix();
+        if( rootPrefix == null || rootPrefix.length() == 0 ){
+            String xmlns = root.getAttribute("xmlns");
+            if( xmlns.length() == 0 )
+                root.setAttribute("xmlns", SchemaSymbols.URI_SCHEMAFORSCHEMA );
+        }
+
+
+
+
 
         //Retrieve the targetnamespace URI information
         fTargetNSURIString = root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE);
