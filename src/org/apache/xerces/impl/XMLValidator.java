@@ -1874,6 +1874,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                                                    args, XMLErrorReporter.SEVERITY_ERROR);
                     }
                 }
+                
                 if (fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_ENTITY ||
                     fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_ENUMERATION ||
                     fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_ID ||
@@ -1883,6 +1884,9 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                    ) {
                     validateDTDattribute(element, attrValue, fTempAttDecl);
                 }
+                 System.out.println("name = " + fTempAttDecl.name + " Value = >>" + attrValue + "<<" );
+             
+
             }
         }
 
@@ -1898,6 +1902,8 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
     private String validateDTDattribute(QName element, String attValue, 
                                         XMLAttributeDecl attributeDecl) throws SAXException {
         //AttributeValidator av = null;
+
+        System.out.println("name = " + attributeDecl.name + " Value = " + attValue );
 
         switch (attributeDecl.simpleType.type) {
         
