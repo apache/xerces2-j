@@ -110,18 +110,18 @@ public class StringValidator implements DatatypeValidator {
             return;
 
         StringTokenizer parsedList = null;
-
         if( _derivedBy == DatatypeValidator.DERIVED_BY_RESTRICTION  ){ 
-            parsedList = new StringTokenizer( content );
+            checkContent( content );
+
+        } else {
+            StringTokenizer parsedList = new StringTokenizer( content );
             try {
-                while ( parsedList.hasMoreTokens() ) {
-                    checkContentList( parsedList.nextToken() );
-                }
+               while ( parsedList.hasMoreTokens() ) {
+                   checkContentList( parsedList.nextToken() );
+               }
             } catch ( NoSuchElementException e ) {
                 e.printStackTrace();
             }
-        } else {
-            checkContent( content );
         }
     }
 
