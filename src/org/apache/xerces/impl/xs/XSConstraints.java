@@ -65,6 +65,7 @@ import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.models.XSCMValidator;
 import org.apache.xerces.impl.validation.ValidationContext;
+import org.apache.xerces.util.SymbolHash;
 import java.util.Vector;
 
 /**
@@ -330,6 +331,7 @@ public class XSConstraints {
         int keepType;
         // i: grammar; j: type; k: error
         // for all grammars
+        SymbolHash elemTable = new SymbolHash();
         for (int i = grammars.length-1, j, k; i >= 0; i--) {
             // get whether only check UPA, and types need to be checked
             keepType = 0;
@@ -340,6 +342,19 @@ public class XSConstraints {
                 // if only do UPA checking, skip the other two constraints
                 if (!fullChecked) {
                 // 1. Element Decl Consistent
+                  if (types[j].fParticle!=null) {
+                    elemTable.clear();
+                    try {
+                      checkElementDeclsConsistent(types[j], types[j].fParticle,
+                                                  elemTable, SGHandler);
+                    }
+                    catch (XMLSchemaException e) {
+                      errorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                                e.getKey(),
+                                                e.getArgs(),
+                                                XMLErrorReporter.SEVERITY_ERROR);
+                    }
+                  }
                 }
 
                 // 2. Particle Derivation
@@ -407,6 +422,75 @@ public class XSConstraints {
         }
     }
 
+    /*
+       Check that a given particle is a valid restriction of a base particle.
+    */
+
+    public static void checkElementDeclsConsistent(XSComplexTypeDecl type,
+                                     XSParticleDecl particle,
+                                     SymbolHash elemDeclHash,
+                                     SubstitutionGroupHandler sgHandler) 
+                                     throws XMLSchemaException {
+
+       // check for elements in the tree with the same name and namespace           
+
+       int pType = particle.fType;
+
+       if (pType == XSParticleDecl.PARTICLE_EMPTY ||
+           pType == XSParticleDecl.PARTICLE_WILDCARD)
+          return;
+
+       if (pType == XSParticleDecl.PARTICLE_ELEMENT) {
+          XSElementDecl elem = (XSElementDecl)(particle.fValue);
+          findElemInTable(type, elem, elemDeclHash);
+
+          if (elem.isGlobal()) {
+             // Check for subsitution groups.  
+             XSElementDecl[] subGroup = sgHandler.getSubstitutionGroup(elem);
+             for (int i = 0; i < subGroup.length; i++) {
+               findElemInTable(type, subGroup[i], elemDeclHash); 
+             }
+          }
+          return;
+       }
+
+       XSParticleDecl left = (XSParticleDecl)particle.fValue;
+       checkElementDeclsConsistent(type, left, elemDeclHash, sgHandler);
+
+       XSParticleDecl right = (XSParticleDecl)particle.fOtherValue;
+       if (right != null) {
+         checkElementDeclsConsistent(type, right, elemDeclHash, sgHandler);
+       }
+       
+    }
+
+    public static void findElemInTable(XSComplexTypeDecl type, XSElementDecl elem, 
+                                       SymbolHash elemDeclHash) 
+                                       throws XMLSchemaException {
+
+        // How can we avoid this concat?  LM. 
+        String name = elem.fName + "," + elem.fTargetNamespace;
+
+        XSElementDecl existingElem = null;
+        if ((existingElem = (XSElementDecl)(elemDeclHash.get(name))) == null) {
+          // just add it in
+          elemDeclHash.put(name, elem);
+        }
+        else {
+          // If this is the same check element, we're O.K. 
+          if (elem == existingElem) 
+            return;
+
+          if (elem.fType != existingElem.fType) {
+            // Types are not the same 
+            throw new XMLSchemaException("cos-element-consistent", 
+                      new Object[] {type.fName, name});
+
+          }
+        }
+    }
+
+    // Invoke particleValidRestriction with a substitution group handler for each
     /*
        Check that a given particle is a valid restriction of a base particle.
     */
