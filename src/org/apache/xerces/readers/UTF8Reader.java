@@ -804,18 +804,17 @@ final class UTF8Reader extends XMLEntityReader {
         } else if (b0 >= 0x80) {
             fCharacterCounter++;
             int b1 = loadNextByte();
+            int b2 = 0;
             if ((0xe0 & b0) == 0xc0) { // 110yyyyy 10xxxxxx
                 ch = ((0x1f & b0)<<6) + (0x3f & b1);
+            } else if( (0xf0 & b0) == 0xe0 ) { 
+                b2 = loadNextByte();
+                ch = ((0x0f & b0)<<12) + ((0x3f & b1)<<6) + (0x3f & b2);
             } else if(( 0xf8 & b0 ) == 0xf0 ){
-                int b2 = loadNextByte();
-                if ((0xf0 & b0) == 0xe0) { // 1110zzzz 10yyyyyy 10xxxxxx
-                    // if ((ch >= 0xD800 && ch <= 0xDFFF) || ch >= 0xFFFE)
-                    ch = ((0x0f & b0)<<12) + ((0x3f & b1)<<6) + (0x3f & b2);
-                } else {
-                    int b3 = loadNextByte(); // 11110uuu 10uuzzzz 10yyyyyy 10xxxxxx
-                    ch = ((0x0f & b0)<<18) + ((0x3f & b1)<<12)
+                b2 = loadNextByte();
+                int b3 = loadNextByte(); // 11110uuu 10uuzzzz 10yyyyyy 10xxxxxx
+                ch = ((0x0f & b0)<<18) + ((0x3f & b1)<<12)
                          + ((0x3f & b2)<<6) + (0x3f & b3);
-                }
             }
         }
         loadNextByte();
