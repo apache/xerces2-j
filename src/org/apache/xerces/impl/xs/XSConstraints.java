@@ -788,9 +788,9 @@ public class XSConstraints {
               // All:Any NSRecurseCheckCardinality
               case XSParticleDecl.PARTICLE_WILDCARD:
               {
-                 if (dMinEffectiveTotalRange != OCCURRENCE_UNKNOWN)
+                 if (dMinEffectiveTotalRange == OCCURRENCE_UNKNOWN)
                     dMinEffectiveTotalRange = dParticle.minEffectiveTotalRange();
-                 if (dMaxEffectiveTotalRange != OCCURRENCE_UNKNOWN)
+                 if (dMaxEffectiveTotalRange == OCCURRENCE_UNKNOWN)
                     dMaxEffectiveTotalRange = dParticle.maxEffectiveTotalRange();
 
                  checkNSRecurseCheckCardinality(dChildren, dMinEffectiveTotalRange,
@@ -831,9 +831,9 @@ public class XSConstraints {
               // Choice:Any NSRecurseCheckCardinality
               case XSParticleDecl.PARTICLE_WILDCARD:
               {
-                 if (dMinEffectiveTotalRange != OCCURRENCE_UNKNOWN)
+                 if (dMinEffectiveTotalRange == OCCURRENCE_UNKNOWN)
                     dMinEffectiveTotalRange = dParticle.minEffectiveTotalRange();
-                 if (dMaxEffectiveTotalRange != OCCURRENCE_UNKNOWN)
+                 if (dMaxEffectiveTotalRange == OCCURRENCE_UNKNOWN)
                     dMaxEffectiveTotalRange = dParticle.maxEffectiveTotalRange();
 
                  checkNSRecurseCheckCardinality(dChildren, dMinEffectiveTotalRange,
@@ -874,9 +874,9 @@ public class XSConstraints {
               // Choice:Any NSRecurseCheckCardinality
               case XSParticleDecl.PARTICLE_WILDCARD:
               {
-                 if (dMinEffectiveTotalRange != OCCURRENCE_UNKNOWN)
+                 if (dMinEffectiveTotalRange == OCCURRENCE_UNKNOWN)
                     dMinEffectiveTotalRange = dParticle.minEffectiveTotalRange();
-                 if (dMaxEffectiveTotalRange != OCCURRENCE_UNKNOWN)
+                 if (dMaxEffectiveTotalRange == OCCURRENCE_UNKNOWN)
                     dMaxEffectiveTotalRange = dParticle.maxEffectiveTotalRange();
 
                  checkNSRecurseCheckCardinality(dChildren, dMinEffectiveTotalRange,
