@@ -320,7 +320,7 @@ extends XMLDocumentScannerImpl {
             if (qname.uri == fUri[i] && fLocalpart[i].equals(qname.localpart)) {
                 fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
                                            "AttributeNSNotUnique",
-                                           new Object[]{fElementQName.rawname,qname.uri, qname.uri},
+                                           new Object[]{fElementQName.rawname,qname.rawname, qname.uri},
                                            XMLErrorReporter.SEVERITY_FATAL_ERROR);
             }
         }
