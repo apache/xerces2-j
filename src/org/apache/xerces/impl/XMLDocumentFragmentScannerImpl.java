@@ -1544,6 +1544,7 @@ public class XMLDocumentFragmentScannerImpl
                             else {
                                 reportFatalError("MarkupNotRecognizedInContent",
                                                  null);
+                                setScannerState(SCANNER_STATE_CONTENT);                 
                             }
                             break;
                         }
