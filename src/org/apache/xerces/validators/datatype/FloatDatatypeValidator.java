@@ -211,7 +211,7 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
                     }
                 }
             } else { //derivation by list  - WORK TO DO
-                System.out.println( "inside derive by list" );
+                //System.out.println( "inside derive by list" );
 
             }
         }// End facet setup
@@ -328,13 +328,22 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
 
             float f = 0;
             try {
+                //System.out.println("content = " + content );
                 f = Float.valueOf(content).floatValue();
-                System.out.println("f = " + f );
+                //System.out.println("f = " + f );
             } catch (NumberFormatException nfe) {
-                throw new InvalidDatatypeValueException(
-                                                       getErrorString(DatatypeMessageProvider.NotReal,
-                                                                      DatatypeMessageProvider.MSG_NONE,
-                                                                      new Object [] { content}));
+                if( content.equals("INF") ){
+                    f=Float.POSITIVE_INFINITY;
+                } else if( content.equals("-INF") ){
+                    f=Float.NEGATIVE_INFINITY;
+                } else if( content.equals("NaN" ) ) {
+                    f=Float.NaN;
+                } else {
+                    throw new InvalidDatatypeValueException(
+                                  getErrorString(DatatypeMessageProvider.NotReal,
+                                                 DatatypeMessageProvider.MSG_NONE,
+                                                           new Object [] { content}));
+                }
             }
             boundsCheck(f);
 

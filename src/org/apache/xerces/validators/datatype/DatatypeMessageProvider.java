@@ -155,8 +155,9 @@ public class DatatypeMessageProvider implements XMLMessageProvider {
         ScaleLargerThanPrecision = 15,
         PrecisionExceeded = 16,
         ScaleExceeded = 17,
+        NotFloat = 18,
        // ...
-        MSG_MAX_CODE = 18;
+        MSG_MAX_CODE = 19;
 
     //
     // Minor Codes
@@ -183,6 +184,8 @@ public class DatatypeMessageProvider implements XMLMessageProvider {
         "ScaleLargerThanPrecision",     //  15, "Scale Facet must be less than or equal to Precision Facet"
         "PrecisionExceeded",            //  16, "{0} has exceeded the precision Facet {1}"},
         "ScaleExceeded",                //  17, "{0} has execeed the scale Facet {1}"},
+        "NotFloat"                     //  18, "{0} is not a float."
+
     };
 
 }
