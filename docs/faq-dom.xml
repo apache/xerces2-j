@@ -417,7 +417,7 @@ builder.setErrorHandler(handler);</source>
      element and attribute nodes. The type information depends on the document schema and is only available
      if Xerces was able to find the corresponding grammar (DOM Level 3 <code>validate</code> or 
      <code>validate-if-schema</code> feature must be turned on).  
-     If you need to access the full PSVI in the DOM please refer to <jump href="faq-xs.html#faq-5">Using XML Schemas</jump>.
+     If you need to access the full PSVI in the DOM please refer to <link idref='faq-xs' anchor='dom3-psvi'>Using XML Schemas</link>.
       </p>
     </a>
   </faq>
