@@ -21,9 +21,10 @@ Copyright:
   <target name="init">
     <property name='parser.Name' value='Xerces-J'/>
     <property name='parser.name' value='xerces-j'/>
-    <property name='parser.Version' value='2.0.0 (betaX)'/>
-    <property name='parser.version' value='2.0.0.betaX'/>
-    <property name='parser_version' value='2_0_0_betaX'/>
+    <property name='parser.shortname' value='xerces'/>
+    <property name='parser.Version' value='2.0.0 (14 Oct 2001)'/>
+    <property name='parser.version' value='2.0.0.20011014'/>
+    <property name='parser_version' value='2_0_0_20011014'/>
 
     <property name='jar.parser' value='xerces.jar'/>
     <property name='jar.samples' value='xercesSamples.jar'/>
@@ -61,8 +62,8 @@ Copyright:
     <property name="build.data" value="${build.dir}/data"/>
     <property name="build.javadocs" value="${build.dir}/docs/javadocs"/>
 
-    <property name="distsrc.dir" value="${build.dir}/${parser.name}-${parser_version}"/>
-    <property name="distbin.dir" value="${build.dir}/${parser.name}-${parser_version}"/>
+    <property name="distsrc.dir" value="${build.dir}/${parser.shortname}-${parser_version}"/>
+    <property name="distbin.dir" value="${build.dir}/${parser.shortname}-${parser_version}"/>
 
     <filter token="year" value="${year}"/>
     <filter token="version" value="${parser.Version}"/>
