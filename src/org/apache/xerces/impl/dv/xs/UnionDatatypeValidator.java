@@ -78,6 +78,9 @@ import org.apache.xerces.impl.validation.ValidationContext;
  */
 public class UnionDatatypeValidator extends AbstractDatatypeValidator {
 
+    // REVISIT: temprory solution for the base type of union.
+    private boolean fIsRestriction = false;
+
     private Vector  fBaseValidators   = null; // union collection of validators
     private int fValidatorsSize = 0;
     private Vector     fEnumeration      = null;
@@ -94,6 +97,7 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
                                     boolean derivedBy, XMLErrorReporter reporter )   {
         fErrorReporter = reporter;
         fBaseValidator = base;
+        fIsRestriction = true;
         //facets allowed are: pattern & enumeration
         try{
 
@@ -141,6 +145,7 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
 
     public UnionDatatypeValidator ( Vector base, XMLErrorReporter reporter)  {
         fErrorReporter = reporter;
+        fIsRestriction = false;
         if ( base !=null ) {
             fValidatorsSize = base.size();
             fBaseValidators = base;
@@ -185,7 +190,8 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
     }
 
     public int compare( String value1, String value2 ){
-        if (fBaseValidator instanceof UnionDatatypeValidator) {
+        //if (fBaseValidator instanceof UnionDatatypeValidator) {
+        if (fIsRestriction) {
             return this.fBaseValidator.compare(value1, value2);
         }
         //union datatype
@@ -262,7 +268,8 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
         int index = -1; //number of validators
         boolean valid=false;
         DatatypeValidator currentDV = null;
-        if (fBaseValidator instanceof UnionDatatypeValidator) {  //restriction  of union datatype
+        //if (fBaseValidator instanceof UnionDatatypeValidator) {  //restriction  of union datatype
+        if (fIsRestriction) {
             if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
                 if ( fRegex == null || fRegex.matches( content) == false )
                     throw new InvalidDatatypeValueException("Value '"+content+
