@@ -150,7 +150,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
     public void setParameter(String name, Object value) throws DOMException {
         if (value instanceof Boolean) {
             boolean state = ((Boolean) value).booleanValue();
-            if (name.equals(Constants.DOM_INFOSET)){
+            if (name.equalsIgnoreCase(Constants.DOM_INFOSET)){
                 if (state){
                     features &=~ENTITIES;
                     features &=~CDATA;
@@ -159,55 +159,55 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                     features |=COMMENTS;                 
                 }
                 // false does not have any effect
-            } else if (name.equals(Constants.DOM_XMLDECL)) {
+            } else if (name.equalsIgnoreCase(Constants.DOM_XMLDECL)) {
                 features =
                     (short) (state ? features | XMLDECL : features & ~XMLDECL);                
-            } else if (name.equals(Constants.DOM_NAMESPACES)) {
+            } else if (name.equalsIgnoreCase(Constants.DOM_NAMESPACES)) {
                 features =
                     (short) (state
                         ? features | NAMESPACES
                         : features & ~NAMESPACES);
                 serializer.fNamespaces = state;
-            } else if (name.equals(Constants.DOM_SPLIT_CDATA)) {
+            } else if (name.equalsIgnoreCase(Constants.DOM_SPLIT_CDATA)) {
                 features =
                     (short) (state
                         ? features | SPLITCDATA
                         : features & ~SPLITCDATA);
-            } else if (name.equals(Constants.DOM_DISCARD_DEFAULT_CONTENT)) {
+            } else if (name.equalsIgnoreCase(Constants.DOM_DISCARD_DEFAULT_CONTENT)) {
                 features =
                     (short) (state
                         ? features | DISCARDDEFAULT
                         : features & ~DISCARDDEFAULT);
-            } else if (name.equals(Constants.DOM_WELLFORMED)) {
+            } else if (name.equalsIgnoreCase(Constants.DOM_WELLFORMED)) {
                 features =
                     (short) (state
                         ? features | WELLFORMED
                         : features & ~WELLFORMED);
-            } else if (name.equals(Constants.DOM_ENTITIES)){
+            } else if (name.equalsIgnoreCase(Constants.DOM_ENTITIES)){
                 features =
                     (short) (state
                         ? features | ENTITIES
                         : features & ~ENTITIES);
             }
-            else if (name.equals(Constants.DOM_CDATA_SECTIONS)){
+            else if (name.equalsIgnoreCase(Constants.DOM_CDATA_SECTIONS)){
                 features =
                     (short) (state
                         ? features | CDATA
                         : features & ~CDATA);
                         }
-            else if (name.equals(Constants.DOM_COMMENTS)){
+            else if (name.equalsIgnoreCase(Constants.DOM_COMMENTS)){
                 features =
                      (short) (state
                          ? features | COMMENTS
                          : features & ~COMMENTS);
             }
-                else if (name.equals(Constants.DOM_CANONICAL_FORM)
-                    || name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)
-                    || name.equals(Constants.DOM_VALIDATE)
-                    || name.equals(Constants.DOM_CHECK_CHAR_NORMALIZATION)
-                    || name.equals(Constants.DOM_DATATYPE_NORMALIZATION)
-                    || name.equals(Constants.DOM_FORMAT_PRETTY_PRINT)
-                    || name.equals(Constants.DOM_NORMALIZE_CHARACTERS)) {
+                else if (name.equalsIgnoreCase(Constants.DOM_CANONICAL_FORM)
+                    || name.equalsIgnoreCase(Constants.DOM_VALIDATE_IF_SCHEMA)
+                    || name.equalsIgnoreCase(Constants.DOM_VALIDATE)
+                    || name.equalsIgnoreCase(Constants.DOM_CHECK_CHAR_NORMALIZATION)
+                    || name.equalsIgnoreCase(Constants.DOM_DATATYPE_NORMALIZATION)
+                    || name.equalsIgnoreCase(Constants.DOM_FORMAT_PRETTY_PRINT)
+                    || name.equalsIgnoreCase(Constants.DOM_NORMALIZE_CHARACTERS)) {
                 // true is not supported
                 if (state) {
                     String msg =
@@ -218,9 +218,9 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                     throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
                 }
             } else if (
-                name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
-                    || name.equals(Constants.DOM_ELEMENT_CONTENT_WHITESPACE)
-                    || name.equals(Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)) {
+                name.equalsIgnoreCase(Constants.DOM_NAMESPACE_DECLARATIONS)
+                    || name.equalsIgnoreCase(Constants.DOM_ELEMENT_CONTENT_WHITESPACE)
+                    || name.equalsIgnoreCase(Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)) {
                 // false is not supported
                 if (!state) {
                     String msg =
@@ -238,7 +238,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                         new Object[] { name });
                 throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
             }
-        } else if (name.equals(Constants.DOM_ERROR_HANDLER)) {
+        } else if (name.equalsIgnoreCase(Constants.DOM_ERROR_HANDLER)) {
             if (value == null || value instanceof DOMErrorHandler) {
                 fErrorHandler = (DOMErrorHandler)value;
             } else {
@@ -251,9 +251,9 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                 throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
             }
         } else if (
-            name.equals(Constants.DOM_RESOURCE_RESOLVER)
-                || name.equals(Constants.DOM_SCHEMA_LOCATION)
-                || name.equals(Constants.DOM_SCHEMA_TYPE)
+            name.equalsIgnoreCase(Constants.DOM_RESOURCE_RESOLVER)
+                || name.equalsIgnoreCase(Constants.DOM_SCHEMA_LOCATION)
+                || name.equalsIgnoreCase(Constants.DOM_SCHEMA_TYPE)
                 && value != null) {
             String msg =
                 DOMMessageFormatter.formatMessage(
@@ -277,36 +277,36 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
 	public boolean canSetParameter(String name, Object state) {
 		if (state instanceof Boolean){
 			boolean value = ((Boolean)state).booleanValue();
-			if (name.equals(Constants.DOM_NAMESPACES)
-			|| name.equals(Constants.DOM_SPLIT_CDATA)
-			|| name.equals(Constants.DOM_DISCARD_DEFAULT_CONTENT)
-			|| name.equals(Constants.DOM_XMLDECL)
-            || name.equals(Constants.DOM_WELLFORMED)
-            || name.equals(Constants.DOM_INFOSET)
-            || name.equals(Constants.DOM_ENTITIES)
-            || name.equals(Constants.DOM_CDATA_SECTIONS)
-            || name.equals(Constants.DOM_COMMENTS)){
+			if (name.equalsIgnoreCase(Constants.DOM_NAMESPACES)
+			|| name.equalsIgnoreCase(Constants.DOM_SPLIT_CDATA)
+			|| name.equalsIgnoreCase(Constants.DOM_DISCARD_DEFAULT_CONTENT)
+			|| name.equalsIgnoreCase(Constants.DOM_XMLDECL)
+            || name.equalsIgnoreCase(Constants.DOM_WELLFORMED)
+            || name.equalsIgnoreCase(Constants.DOM_INFOSET)
+            || name.equalsIgnoreCase(Constants.DOM_ENTITIES)
+            || name.equalsIgnoreCase(Constants.DOM_CDATA_SECTIONS)
+            || name.equalsIgnoreCase(Constants.DOM_COMMENTS)){
 	            // both values supported
 				return true;
 			}
-			else if (name.equals(Constants.DOM_CANONICAL_FORM)
-			    || name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)
-			    || name.equals(Constants.DOM_VALIDATE)
-			    || name.equals(Constants.DOM_CHECK_CHAR_NORMALIZATION)
-			    || name.equals(Constants.DOM_DATATYPE_NORMALIZATION)
-			    || name.equals(Constants.DOM_FORMAT_PRETTY_PRINT)
-			    || name.equals(Constants.DOM_NORMALIZE_CHARACTERS)) {
+			else if (name.equalsIgnoreCase(Constants.DOM_CANONICAL_FORM)
+			    || name.equalsIgnoreCase(Constants.DOM_VALIDATE_IF_SCHEMA)
+			    || name.equalsIgnoreCase(Constants.DOM_VALIDATE)
+			    || name.equalsIgnoreCase(Constants.DOM_CHECK_CHAR_NORMALIZATION)
+			    || name.equalsIgnoreCase(Constants.DOM_DATATYPE_NORMALIZATION)
+			    || name.equalsIgnoreCase(Constants.DOM_FORMAT_PRETTY_PRINT)
+			    || name.equalsIgnoreCase(Constants.DOM_NORMALIZE_CHARACTERS)) {
 				// true is not supported
 				return !value;
 			}
-			else if (name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
-			        || name.equals(Constants.DOM_ELEMENT_CONTENT_WHITESPACE)
-			        || name.equals(Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)) {
+			else if (name.equalsIgnoreCase(Constants.DOM_NAMESPACE_DECLARATIONS)
+			        || name.equalsIgnoreCase(Constants.DOM_ELEMENT_CONTENT_WHITESPACE)
+			        || name.equalsIgnoreCase(Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)) {
 				// false is not supported
 				return value;
 			        }
 		}
-		else if (name.equals(Constants.DOM_ERROR_HANDLER) &&
+		else if (name.equalsIgnoreCase(Constants.DOM_ERROR_HANDLER) &&
 				state == null || state instanceof DOMErrorHandler){
 			return true;
 		}
@@ -365,27 +365,27 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
      * Getter for boolean and object parameters
      */
     public Object getParameter(String name) throws DOMException {
-        if (name.equals(Constants.DOM_COMMENTS)) {
+        if (name.equalsIgnoreCase(Constants.DOM_COMMENTS)) {
             return ((features & COMMENTS) != 0) ? Boolean.TRUE : Boolean.FALSE;
-        } else if (name.equals(Constants.DOM_NAMESPACES)) {
+        } else if (name.equalsIgnoreCase(Constants.DOM_NAMESPACES)) {
             return (features & NAMESPACES) != 0 ? Boolean.TRUE : Boolean.FALSE;
-        } else if (name.equals(Constants.DOM_XMLDECL)) {
+        } else if (name.equalsIgnoreCase(Constants.DOM_XMLDECL)) {
             return (features & XMLDECL) != 0 ? Boolean.TRUE : Boolean.FALSE;
-        } else if (name.equals(Constants.DOM_CDATA_SECTIONS)) {
+        } else if (name.equalsIgnoreCase(Constants.DOM_CDATA_SECTIONS)) {
             return (features & CDATA) != 0 ? Boolean.TRUE : Boolean.FALSE;
-        } else if (name.equals(Constants.DOM_ENTITIES)) {
+        } else if (name.equalsIgnoreCase(Constants.DOM_ENTITIES)) {
             return (features & ENTITIES) != 0 ? Boolean.TRUE : Boolean.FALSE;
-        } else if (name.equals(Constants.DOM_SPLIT_CDATA)) {
+        } else if (name.equalsIgnoreCase(Constants.DOM_SPLIT_CDATA)) {
             return (features & SPLITCDATA) != 0 ? Boolean.TRUE : Boolean.FALSE;
-        } else if (name.equals(Constants.DOM_WELLFORMED)) {
+        } else if (name.equalsIgnoreCase(Constants.DOM_WELLFORMED)) {
             return (features & WELLFORMED) != 0 ? Boolean.TRUE : Boolean.FALSE;
-        } else if (name.equals(Constants.DOM_ELEMENT_CONTENT_WHITESPACE) ||
-                   name.equals(Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)
-                    || name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)) {
+        } else if (name.equalsIgnoreCase(Constants.DOM_ELEMENT_CONTENT_WHITESPACE) ||
+                   name.equalsIgnoreCase(Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)
+                    || name.equalsIgnoreCase(Constants.DOM_NAMESPACE_DECLARATIONS)) {
             return Boolean.TRUE;
-        }else if (name.equals(Constants.DOM_DISCARD_DEFAULT_CONTENT)){
+        }else if (name.equalsIgnoreCase(Constants.DOM_DISCARD_DEFAULT_CONTENT)){
             return ((features & DISCARDDEFAULT)!=0)?Boolean.TRUE:Boolean.FALSE;
-        }else if (name.equals(Constants.DOM_INFOSET)){
+        }else if (name.equalsIgnoreCase(Constants.DOM_INFOSET)){
             if ((features & ENTITIES) == 0 &&
                  (features & CDATA) ==0 &&
                  (features & NAMESPACES) !=0 &&
@@ -394,21 +394,21 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                      return Boolean.TRUE;
                  }                 
                  return Boolean.FALSE;
-        } else if (name.equals (Constants.DOM_FORMAT_PRETTY_PRINT)
-                || name.equals(Constants.DOM_NORMALIZE_CHARACTERS)
-                || name.equals(Constants.DOM_CANONICAL_FORM)
-                || name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)
-                || name.equals(Constants.DOM_CHECK_CHAR_NORMALIZATION)
-                || name.equals(Constants.DOM_VALIDATE)
-                || name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)
-                || name.equals(Constants.DOM_DATATYPE_NORMALIZATION)) {
+        } else if (name.equalsIgnoreCase (Constants.DOM_FORMAT_PRETTY_PRINT)
+                || name.equalsIgnoreCase(Constants.DOM_NORMALIZE_CHARACTERS)
+                || name.equalsIgnoreCase(Constants.DOM_CANONICAL_FORM)
+                || name.equalsIgnoreCase(Constants.DOM_VALIDATE_IF_SCHEMA)
+                || name.equalsIgnoreCase(Constants.DOM_CHECK_CHAR_NORMALIZATION)
+                || name.equalsIgnoreCase(Constants.DOM_VALIDATE)
+                || name.equalsIgnoreCase(Constants.DOM_VALIDATE_IF_SCHEMA)
+                || name.equalsIgnoreCase(Constants.DOM_DATATYPE_NORMALIZATION)) {
             return Boolean.FALSE;
-        } else if (name.equals(Constants.DOM_ERROR_HANDLER)) {
+        } else if (name.equalsIgnoreCase(Constants.DOM_ERROR_HANDLER)) {
             return fErrorHandler;
         } else if (
-            name.equals(Constants.DOM_RESOURCE_RESOLVER)
-                || name.equals(Constants.DOM_SCHEMA_LOCATION)
-                || name.equals(Constants.DOM_SCHEMA_TYPE)) {
+            name.equalsIgnoreCase(Constants.DOM_RESOURCE_RESOLVER)
+                || name.equalsIgnoreCase(Constants.DOM_SCHEMA_LOCATION)
+                || name.equalsIgnoreCase(Constants.DOM_SCHEMA_TYPE)) {
             String msg =
                 DOMMessageFormatter.formatMessage(
                     DOMMessageFormatter.DOM_DOMAIN,
