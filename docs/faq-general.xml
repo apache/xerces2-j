@@ -95,7 +95,9 @@ and xni.parser.PSVIConfiguration.
   <a>
    <ul>
     <li>UTF-8</li>
-    <li>UTF-16 Big Endian, UTF-16 Little Endian</li>
+    <li>UTF-16 Big Endian and Little Endian</li>
+    <li>UCS-2 (ISO-10646-UCS-2) Big Endian and Little Endian</li>
+    <li>UCS-4 (ISO-10646-UCS-4) Big Endian and Little Endian</li>
     <li>IBM-1208</li>
     <li>ISO Latin-1 (ISO-8859-1)</li>
     <li>
@@ -146,7 +148,6 @@ and xni.parser.PSVIConfiguration.
       <li>EBCDIC Arabic (ebcdic-cp-ar1)</li>
      </ul>
    </ul>
-   <note>UCS-4 is not yet supported, but it is hoped that support will be available soon.</note>
   </a>
  </faq>
  
