@@ -5,7 +5,7 @@
 	<s2 title="&javaparsernamelong; &javaparserversion; Release">
 		<p>The &javaparsernamelong; &javaparserversion; supports 
 		<jump href="http://www.w3.org/TR/1998/REC-xml-19980210">XML 1.0</jump> 
-		recommendation and the contains advanced parser functionality, such as 
+		recommendation and contains advanced parser functionality, such as 
 		<jump href="http://www.w3.org/XML/Group/Schemas.html">XML Schema</jump>, 
 		<jump href="http://www.w3.org/TR/DOM-Level-2/">DOM Level 2 version 1.0</jump>, and 
 		<jump href="http://www.megginson.com/SAX/SAX2/">SAX Version 2</jump>, 
@@ -19,7 +19,7 @@
 		Watch <jump href="http://xml.apache.org">xml.apache.org</jump> 
 		for new updates.  -->
 		
-        Note that because some of the standards, 
+        Note that because some of the standards
 		are still not complete, the stable API will definitely be 
 		different from its current form in &javaparsername; &javaparserversion;. 
 		This is your chance to give us 
@@ -30,11 +30,14 @@
         <p>The &javaparserversion; release benefits from the
         <jump href="http:://xml.apache.org">xml.apache.org</jump> collaboration.  
 		It includes Assaf Arkin&apos;s serialization and HTML DOM contributions. 
-		See the <link idref="releases">release</link> information</p>
+		See the <link idref="releases">release</link> information.</p>
 	</s2>
 	<s2 title="License Information">
 		<p>The &javaparsername; &javaparserversion; release is available in both source code
-			and precompiled binary (JAR files) form.</p>
+		and precompiled binary (JAR files) form. Both &javaparsername; 
+                packages are made available under the <jump href='../../License.html'>Apache
+                Software License</jump>.
+                </p>
 	</s2>
 	<s2 title="Applications of the &javaparsername; Parser">
 		<p>The rich generating and validating capabilities allow the &javaparsername; 
@@ -56,9 +59,10 @@
 		Schema Language in subsequent updates of &javaparsername;.</p>
 	</s2>
 	<s2 title="DOM Level 2 (alpha) Support">
-		<p>This release include support for the 
-		<jump href="http://www.w3.org/TR/WD-DOM-Level-2">DOM Level 2 Core</jump> and 
-		<jump href="http://www.w3.org/TR/WD-DOM-Level-2">DOM Level 2 Traversal</jump> APIs.</p>
+		<p>This release includes support for the 
+		<jump href="http://www.w3.org/TR/WD-DOM-Level-2">DOM Level 2</jump>.
+                As of this writing, the DOM Level 2 specification is now a
+                Candidate Recommendation.</p>
 	</s2>
 	<s2 title="SAX 2 (alpha) Support">
 		<p>This release includes support for the <jump href="http://www.megginson.com/SAX/SAX2/">
