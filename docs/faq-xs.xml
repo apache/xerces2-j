@@ -190,7 +190,7 @@ PSVIProvider psviProvider = (PSVIProvider)parser;</source>
   </faq>
 
  <faq title="Using XSLoader to get an XSModel">
-  <q>Can I parse and query XML Schema component in memory</q>
+  <q>Can I parse and query XML Schema components in memory?</q>
   <a>
    <p>
        Yes, the <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040122/">XML Schema API</jump>

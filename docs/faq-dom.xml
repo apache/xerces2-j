@@ -184,42 +184,47 @@ String str = writer.writeToString(document);</source>
 
 
   <faq title="XML Schema API and DOM">
-  <q>How do I retrieve PSVI from the DOM</q>
+  <q>How do I retrieve PSVI from the DOM?</q>
 <a> <anchor name="xsdom"/>
 <p>By default Xerces does not store the PSVI information in the DOM tree. </p>
 <p>
-The following source shows you how to parse an XML document (using JAXP) and and retrieve PSVI (using <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040122/">XML Schema API</jump>):
+The following source shows you how to parse an XML document (using JAXP) and how to retrieve PSVI (using the <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040122/">XML Schema API</jump>):
 <source>
 //<code>dbf</code> is JAXP DocumentBuilderFactory
 
 // all of the following features must be set:
 dbf.setNamespaceAware(true);
 dbf.setValidating(true);
-dbf.setAttribute("http://apache.org/xml/features/validation/schema", Boolean.TRUE);
+dbf.setAttribute("http://apache.org/xml/features/validation/schema", 
+    Boolean.TRUE);
 
-// you also must specify Xerces PSVI DOM implementation "org.apache.xerces.dom.PSVIDocumentImpl"
-dbf.setAttribute("http://apache.org/xml/properties/dom/document-class-name", "org.apache.xerces.dom.PSVIDocumentImpl");
+// you also must specify Xerces PSVI DOM implementation
+// "org.apache.xerces.dom.PSVIDocumentImpl"
+dbf.setAttribute("http://apache.org/xml/properties/dom/document-class-name", 
+    "org.apache.xerces.dom.PSVIDocumentImpl");
 
 ...            
 Document doc = db.parse(args[0]);
-if (doc.getDocumentElement().isSupported("psvi", "1.0")){              ElementPSVI psviElem = (ElementPSVI)doc.getDocumentElement();
-        XSElementDeclaration decl = psviElem.getElementDeclaration();
-        ...
+if (doc.getDocumentElement().isSupported("psvi", "1.0")){
+    ElementPSVI psviElem = (ElementPSVI)doc.getDocumentElement();
+    XSElementDeclaration decl = psviElem.getElementDeclaration();
+    ...
 }</source>
 </p>
-<p>If you want to build the DOM tree in memory and be able to access the PSVI information you need to start by instantiating org.apache.xerces.dom.PSVIDocumentImpl or use DOM Level 3 API as shown in the following example:</p>
+<p>If you want to build the DOM tree in memory and be able to access the PSVI information you need to start by instantiating org.apache.xerces.dom.PSVIDocumentImpl or you need to use the DOM Level 3 API as shown in the following example:</p>
 <source>
 System.setProperty(DOMImplementationRegistry.PROPERTY,
-                "org.apache.xerces.dom.DOMXSImplementationSourceImpl");
+    "org.apache.xerces.dom.DOMXSImplementationSourceImpl");
    
 DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
 
-DOMImplementation impl = (DOMImplementation) registry.getDOMImplementation("psvi");
+DOMImplementation impl = 
+    (DOMImplementation) registry.getDOMImplementation("psvi");
 </source>
 
-The PSVI information will not be added or modified as you modify the tree in memory. Instead, you if you want to get updated PSVI information, you need validate your DOM in memory using <jump href="http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107/core.html#Document3-normalizeDocument">normalizeDocument</jump> method as described in the <jump href="#xsrevalidate">next question</jump>.
+The PSVI information will not be added or modified as you modify the tree in memory. Instead, if you want to get updated PSVI information, you need to validate your DOM in memory using the <jump href="http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107/core.html#Document3-normalizeDocument">normalizeDocument</jump> method as described in the <jump href="#xsrevalidate">next question</jump>.
 
-<p>You can find more information about how to use the XML Schema API <jump href="faq-xs.html">here</jump></p>
+<p>You can find more information about how to use the XML Schema API <jump href="faq-xs.html">here</jump>.</p>
 </a>
 </faq>
 
@@ -298,7 +303,7 @@ document.normalizeDocument();</source>
   </faq>
 
   <faq title='Handling Errors in DOM'>
-    <q>How do handle errors?</q>
+    <q>How do I handle errors?</q>
     <a>
       <p>
 	You should register an error handler with the parser by supplying

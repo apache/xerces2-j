@@ -33,7 +33,7 @@
     </fix>
     <update>
      <note>
-      Implemented the well-formness checking for LSSerializer (DOM Level 3)
+      Implemented well-formedness checking for LSSerializer (DOM Level 3).
      </note>
      <submitter name='Elena Litani'/>
     </update>

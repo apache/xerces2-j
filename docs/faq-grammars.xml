@@ -372,10 +372,12 @@ DocumentBuilder builder = // JAXP factory invocation
     </ol>
   </a>
  </faq>
- <faq title="Using XSLoader to get an XSModel">
+ <faq title="Alternative method for getting an XSModel">
   <q>Is there an alternative method for getting an XSModel?</q>
   <a>
    <p>
-       Yes, for more information see <jump href="faq-xs.html">XML Schema FAQ</jump></p>  </a>
+    Yes, for more information see the <jump href="faq-xs.html">XML Schema FAQ</jump>.
+   </p>
+  </a>
  </faq>
 </faqs>
