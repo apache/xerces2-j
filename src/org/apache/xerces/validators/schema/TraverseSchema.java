@@ -848,6 +848,10 @@ public class TraverseSchema implements
                                          +targetNSURI+"'");
             }
             else {
+                // We not creating another TraverseSchema object to compile
+                // the included schema file, because the scope count, anon-type count
+                // should not be reset for a included schema, this can be fixed by saving 
+                // the counters in the Schema Grammar, 
                 boolean saveElementDefaultQualified = fElementDefaultQualified;
                 boolean saveAttributeDefaultQualified = fAttributeDefaultQualified;
                 int saveScope = fCurrentScope;
