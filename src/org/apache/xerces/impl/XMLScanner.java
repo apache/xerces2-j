@@ -555,7 +555,9 @@ public abstract class XMLScanner
 
 
     /**
-     * Scans a character reference.
+     * Scans a character reference and append the corresponding chars to the
+     * specified buffer.
+     *
      * <p>
      * <pre>
      * [66] CharRef ::= '&#' [0-9]+ ';' | '&#x' [0-9a-fA-F]+ ';'
@@ -564,9 +566,11 @@ public abstract class XMLScanner
      * <strong>Note:</strong> This method uses fStringBuffer, anything in it
      * at the time of calling is lost.
      *
+     * @param buf the character buffer to append chars to
+     *
      * @return the character value
      */
-    protected int scanCharReferenceValue() 
+    protected int scanCharReferenceValue(XMLStringBuffer buf) 
         throws IOException, SAXException {
 
         // scan hexadecimal value
@@ -626,7 +630,49 @@ public abstract class XMLScanner
                                            Integer.toString(value, 16) },
                                        XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
+
+        // append corresponding chars to the given buffer
+        if (!XMLChar.isSupplemental(value)) {
+            buf.append((char) value);
+        }
+        else {
+            // character is supplemental, split it into surrogate chars
+            buf.append(XMLChar.highSurrogate(value));
+            buf.append(XMLChar.lowSurrogate(value));
+        }
+
         return value;
     }
+
+
+    /**
+     * Scans surrogates and append them to the specified buffer.
+     * <p>
+     * <strong>Note:</strong> This assumes the current char has already been
+     * identified as a high surrogate.
+     *
+     * @returns True if it succeeded.
+     */
+    protected boolean scanSurrogates(XMLStringBuffer buf)
+        throws IOException, SAXException {
+
+        int high = fEntityScanner.scanChar();
+        int low = fEntityScanner.peekChar();
+        if (!XMLChar.isLowSurrogate(low)) {
+            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
+                                       "InvalidCharInContent",
+                                       new Object[] {Integer.toString(high, 16)},
+                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            return false;
+        }
+        fEntityScanner.scanChar();
+
+        // fill in the buffer
+        buf.append((char)high);
+        buf.append((char)low);
+
+        return true;
+
+    } // scanSurrogates():boolean
 
 } // class XMLScanner

@@ -1674,8 +1674,7 @@ public class XMLDTDScanner
                 fStringBuffer2.append(fString);
                 if (fEntityScanner.skipChar('&')) {
                     if (fEntityScanner.skipChar('#')) {
-                        char c = (char) scanCharReferenceValue();
-                        fStringBuffer2.append(c);
+                        scanCharReferenceValue(fStringBuffer2);
                     }
                     else {
                         fStringBuffer2.append('&');
@@ -1708,7 +1707,10 @@ public class XMLDTDScanner
                 }
                 else {
                     int c = fEntityScanner.peekChar();
-                    if (XMLChar.isInvalid(c)) {
+                    if (XMLChar.isHighSurrogate(c)) {
+                        scanSurrogates(fStringBuffer2);
+                    }
+                    else if (XMLChar.isInvalid(c)) {
                         fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                    "InvalidCharInLiteral",
                                                    new Object[] { Integer.toHexString(c) },
