@@ -406,7 +406,7 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
     // reset all objects that "belong" to this one.
     public void reset () {
         fGrammarBucket.reset(); 
-        //we should retreive the initial grammar set given by the applicaion
+        //we should retreive the initial grammar set given by the application
         //to the parser and put it in local grammar bucket.
 
         if(fGrammarPool != null) {
@@ -452,8 +452,11 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
      */
     public Grammar loadGrammar(XMLInputSource source)
                 throws IOException, XNIException {
+        reset();
         XSDDescription desc = new XSDDescription();
         desc.fContextType = XSDDescription.CONTEXT_PREPARSE;
+        desc.setBaseSystemId(source.getBaseSystemId());
+        desc.setLiteralSystemId( source.getSystemId());
         // none of the other fields make sense for preparsing
         Hashtable locationPairs = new Hashtable();
         if(!tokenizeSchemaLocationStr(fExternalSchemas, locationPairs)) {

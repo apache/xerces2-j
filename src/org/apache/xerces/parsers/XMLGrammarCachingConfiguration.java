@@ -63,11 +63,14 @@ import org.apache.xerces.impl.Constants;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.Grammar;
+import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.util.XMLGrammarPoolImpl;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.XMLSchemaLoader;
 import org.apache.xerces.impl.xs.XSMessageFormatter;
+import org.apache.xerces.impl.dtd.XMLDTDLoader;
+import org.apache.xerces.impl.dtd.DTDGrammar;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.SynchronizedSymbolTable;
 import org.apache.xerces.xni.XNIException;
@@ -139,6 +142,9 @@ public class XMLGrammarCachingConfiguration
     // variables needed for caching schema grammars.  
     protected XMLSchemaLoader fSchemaLoader;
 
+    // the DTD grammar loader
+    protected XMLDTDLoader fDTDLoader;
+
     //
     // Constructors
     //
@@ -208,6 +214,9 @@ public class XMLGrammarCachingConfiguration
         // create and register missing components
         fSchemaLoader = new XMLSchemaLoader(fSymbolTable);
         fSchemaLoader.setProperty(XMLGRAMMAR_POOL, fGrammarPool);
+
+        // and set up the DTD loader too:
+        fDTDLoader = new XMLDTDLoader(fSymbolTable, fGrammarPool);
     } // <init>(SymbolTable,XMLGrammarPool, XMLComponentManager)
 
     //
@@ -277,11 +286,14 @@ public class XMLGrammarCachingConfiguration
      */
     public Grammar parseGrammar(String type, XMLInputSource
                 is) throws XNIException, IOException {
-        // REVISIT:  for now, don't know what to do with DTD's...
-        if(!type.equals(XMLGrammarDescription.XML_SCHEMA))
-            return null;
-        // by default, make all XMLGrammarPoolImpl's schema grammars available to fSchemaHandler
-        return parseXMLSchema(is);
+        if(type.equals(XMLGrammarDescription.XML_SCHEMA)) {
+            // by default, make all XMLGrammarPoolImpl's schema grammars available to fSchemaHandler
+            return parseXMLSchema(is);
+        } else if(type.equals(XMLGrammarDescription.XML_DTD)) {
+            return parseDTD(is);
+        }
+        // don't know this grammar...
+        return null;
     } // parseGrammar(String, XMLInputSource):  Grammar
 
     //
@@ -337,8 +349,10 @@ public class XMLGrammarCachingConfiguration
      */
     SchemaGrammar parseXMLSchema(XMLInputSource is) 
                 throws IOException {
-
-        fSchemaLoader.setEntityResolver(getEntityResolver());
+        XMLEntityResolver resolver = getEntityResolver();
+        if(resolver != null) {
+            fSchemaLoader.setEntityResolver(resolver);
+        }
         fSchemaLoader.setProperty(ERROR_REPORTER, fErrorReporter);
 
         String propPrefix = Constants.XERCES_PROPERTY_PREFIX;
@@ -353,7 +367,6 @@ public class XMLGrammarCachingConfiguration
         // Should check whether the grammar with this namespace is already in
         // the grammar resolver. But since we don't know the target namespace
         // of the document here, we leave such check to XSDHandler
-        fSchemaLoader.reset();
         SchemaGrammar grammar = (SchemaGrammar)fSchemaLoader.loadGrammar(is);
         // by default, hand it off to the grammar pool
         if (grammar != null) {
@@ -364,6 +377,30 @@ public class XMLGrammarCachingConfiguration
         return grammar;
 
     } // parseXMLSchema(XMLInputSource) :  SchemaGrammar
+
+    /* This method parses an external DTD entity.
+     */
+    DTDGrammar parseDTD(XMLInputSource is) 
+                throws IOException {
+        XMLEntityResolver resolver = getEntityResolver();
+        if(resolver != null) {
+            fDTDLoader.setEntityResolver(resolver);
+        }
+        fDTDLoader.setProperty(ERROR_REPORTER, fErrorReporter);
+
+        // Should check whether the grammar with this namespace is already in
+        // the grammar resolver. But since we don't know the target namespace
+        // of the document here, we leave such check to the application...
+        DTDGrammar grammar = (DTDGrammar)fDTDLoader.loadGrammar(is);
+        // by default, hand it off to the grammar pool
+        if (grammar != null) {
+            fGrammarPool.cacheGrammars(XMLGrammarDescription.XML_DTD,
+                                      new Grammar[]{grammar});
+        }
+        
+        return grammar;
+
+    } // parseXMLDTD(XMLInputSource) :  DTDGrammar
 
 
 } // class XMLGrammarCachingConfiguration

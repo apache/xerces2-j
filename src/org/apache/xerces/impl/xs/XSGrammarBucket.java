@@ -144,6 +144,7 @@ public class XSGrammarBucket {
                 gs = sg1.getImportedGrammars();
                 // for all grammars imported by sg2, but not in the vector
                 // we add them to the vector
+                if(gs == null) continue;
                 for (int j = gs.size() - 1; j >= 0; j--) {
                     sg2 = (SchemaGrammar)gs.elementAt(j);
                     if (!grammars.contains(sg2))

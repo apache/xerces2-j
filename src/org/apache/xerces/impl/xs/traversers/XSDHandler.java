@@ -344,12 +344,12 @@ public class XSDHandler {
             fSchemaParser.setPool(fDOMPool);
         }
 
+        short referType = desc.getContextType();
         String schemaNamespace = desc.getTargetNamespace();
         // handle empty string URI as null
         if (schemaNamespace != null) {
             schemaNamespace = fSymbolTable.addSymbol(schemaNamespace);
         }
-        short referType = desc.getContextType();
 
         // before parsing a schema, need to clear registries associated with
         // parsing schemas
@@ -363,8 +363,22 @@ public class XSDHandler {
             // something went wrong right off the hop
             return null;
         }
+        if ( schemaNamespace == null && referType == XSDDescription.CONTEXT_PREPARSE) {
+            Element schemaElem = DOMUtil.getRoot(schemaRoot);
+            schemaNamespace = DOMUtil.getAttrValue(schemaElem, SchemaSymbols.ATT_TARGETNAMESPACE);
+            if(schemaNamespace != null && schemaNamespace.length() > 0) {
+                fSymbolTable.addSymbol(schemaNamespace);
+                desc.setTargetNamespace(schemaNamespace);
+                String schemaId = XMLEntityManager.expandSystemId(desc.getLiteralSystemId(), desc.getBaseSystemId());
+                XSDKey key = new XSDKey(schemaId, referType, schemaNamespace);
+                fTraversed.put(key, schemaRoot );
+                if (schemaId != null) {
+                    fDoc2SystemId.put(schemaRoot, schemaId );
+                }
+            }
+        } 
 
-        // before constructing tress and traversing a schema, need to reset
+        // before constructing trees and traversing a schema, need to reset
         // all traversers and clear all registries
         prepareForTraverse();
 
@@ -518,9 +532,8 @@ public class XSDHandler {
                     return null;
                 }
             }
-            // for preparse, callerTNS is null, so it's not possible;
             // for instance and import, the two NS's must be the same
-            else if (callerTNS != currSchemaInfo.fTargetNamespace) {
+            else if (referType != XSDDescription.CONTEXT_PREPARSE && callerTNS != currSchemaInfo.fTargetNamespace) {
                 reportSchemaError(NS_ERROR_CODES[referType][secondIdx],
                                   new Object [] {callerTNS, currSchemaInfo.fTargetNamespace},
                                   DOMUtil.getRoot(schemaRoot));
