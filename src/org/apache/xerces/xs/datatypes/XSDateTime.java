@@ -26,39 +26,49 @@ package org.apache.xerces.xs.datatypes;
  * @version $Id$
  */
 public interface XSDateTime {
-    
-    /**
-     * @return year
-     */
-    public int getYear();
-    
-    /**
-     * @return month
-     */
-    public int getMonth();
-    
-    /**
-     * @return day
-     */
-    public int getDay();
-    
-    /**
-     * @return hour
-     */
-    public int getHour();
-    
-    /**
-     * @return minutes
-     */
-    public int getMinutes();
-    
-    /**
-     * @return seconds
-     */
-    public double getSeconds();
-    
-    /**
-     * @return boolean
-     */
-    public boolean hasTimeZone();
+	
+	/**
+	 * @return year
+	 */
+	public int getYear();
+	
+	/**
+	 * @return month
+	 */
+	public int getMonth();
+	
+	/**
+	 * @return day
+	 */
+	public int getDay();
+	
+	/**
+	 * @return hour
+	 */
+	public int getHour();
+	
+	/**
+	 * @return minutes
+	 */
+	public int getMinutes();
+	
+	/**
+	 * @return seconds
+	 */
+	public double getSeconds();
+	
+	/**
+	 * @return boolean
+	 */
+	public boolean hasTimeZone();
+	
+	/**
+	 * @return int
+	 */
+	public int getTimeZoneHr();
+	
+	/**
+	 * @return int
+	 */
+	public int getTimeZoneMin();
 }
