@@ -57,6 +57,7 @@
 
 package sax;                    
                     
+import util.Arguments;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -86,6 +87,12 @@ public class SAX2Writer
     /** Default parser name. */
     private static final String 
         DEFAULT_PARSER_NAME = "org.apache.xerces.parsers.SAXParser";
+
+
+    private static boolean setValidation    = false; //defaults
+    private static boolean setNameSpaces    = true;
+    private static boolean setSchemaSupport = true;
+
 
     //
     // Data
@@ -128,6 +135,15 @@ public class SAX2Writer
             DefaultHandler handler = new SAX2Writer(canonical);
 
             XMLReader parser = (XMLReader)Class.forName(parserName).newInstance();
+
+            parser.setFeature( "http://xml.org/sax/features/validation", 
+                                                setValidation);
+            parser.setFeature( "http://xml.org/sax/features/namespaces",
+                                                setNameSpaces );
+            parser.setFeature( "http://apache.org/xml/features/validation/schema",
+                                                setSchemaSupport );
+
+
             parser.setContentHandler(handler);
             parser.setErrorHandler(handler);
             parser.parse(uri);
@@ -338,62 +354,80 @@ public class SAX2Writer
 
     /** Main program entry point. */
     public static void main(String argv[]) {
+       Arguments argopt = new Arguments();
+       argopt.setUsage( new String[] 
+                        { "usage: java sax.SAX2Writer (options) uri ...","",
+                            "options:",
+                            "  -p name  Specify SAX parser by name.",
+                            "           Default parser: "+DEFAULT_PARSER_NAME,
+                            "  -c       Canonical XML output.",
+                            "  -v       Turn on validation.",
+                            "  -w       Warmup the parser before timing.",
+                            "  -n turn on  Namespace  - default",
+                            "  -s turn on  Schema support - default",
+                            "  -N turn off Namespace",
+                            "  -V turn off Validation",
+                            "  -h       This help screen."}  );
 
-        // is there anything to do?
-        if (argv.length == 0) {
-            printUsage();
-            System.exit(1);
-        }
 
-        // vars
-        String  parserName = DEFAULT_PARSER_NAME;
-        boolean canonical  = false;
+       // is there anything to do?
+       if (argv.length == 0) {
+           argopt.printUsage();
+           System.exit(1);
+       }
 
-        // check parameters
-        for (int i = 0; i < argv.length; i++) {
-            String arg = argv[i];
+       // vars
+       boolean canonical  = false;
+       String  parserName = DEFAULT_PARSER_NAME;
 
-            // options
-            if (arg.startsWith("-")) {
-                if (arg.equals("-p")) {
-                    if (i == argv.length - 1) {
-                        System.err.println("error: missing parser name");
-                        System.exit(1);
-                    }
-                    parserName = argv[++i];
-                    continue;
-                }
 
-                if (arg.equals("-c")) {
-                    canonical = true;
-                    continue;
-                }
+       argopt.parseArgumentTokens(argv);
 
-                if (arg.equals("-h")) {
-                    printUsage();
-                    System.exit(1);
-                }
-            }
+       int   c;
+       while ( (c =  argopt.getArguments()) != -1 ){
+           switch (c) {
+           case 'c':
+               canonical     = true;
+               break;
+           case 'C':
+               canonical     = false;
+               break;
+           case 'v':
+               setValidation = true;
+               break;
+           case 'V':
+               setValidation = false;
+               break;
+           case 'N':
+               setNameSpaces = false;
+               break;
+           case 'n':
+               setNameSpaces = true;
+               break;
+           case 'p':
+               parserName = argopt.getStringParameter();
+               break;
+           case 's':
+               setSchemaSupport = true;
+               break;
+           case 'S':
+               setSchemaSupport = false;
+               break;
+           case '?':
+           case 'h':
+           case '-':
+               argopt.printUsage();
+               System.exit(1);
+               break;
+           default:
+               break;
+           }
+       }
 
-            // print uri
-            System.err.println(arg+':');
-            print(parserName, arg, canonical);
-            System.out.println();
-        }
+       // print 
+      String arg = argopt.getStringParameter();
+      System.err.println(arg+':');
+      print(parserName, arg, canonical);
 
     } // main(String[])
-
-    /** Prints the usage. */
-    private static void printUsage() {
-
-        System.err.println("usage: java sax.SAX2Writer (options) uri ...");
-        System.err.println();
-        System.err.println("options:");
-        System.err.println("  -p name  Specify SAX parser by name.");
-        System.err.println("           Default parser: "+DEFAULT_PARSER_NAME);
-        System.err.println("  -c       Canonical XML output.");
-        System.err.println("  -h       This help screen.");
-
-    } // printUsage()
-
 } // class SAX2Writer

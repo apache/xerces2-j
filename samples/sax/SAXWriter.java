@@ -370,6 +370,7 @@ extends HandlerBase {
                              "options:",
                              "  -p name  Specify SAX parser by name.",
                              "           Default parser: "+DEFAULT_PARSER_NAME,
+                             "  -c       Canonical XML output.",
                              "  -v       Turn on validation.",
                              "  -w       Warmup the parser before timing.",
                              "  -n turn on  Namespace  - default",
@@ -386,13 +387,21 @@ extends HandlerBase {
         }
 
         // vars
+        boolean canonical  = false;
         String  parserName = DEFAULT_PARSER_NAME;
+
 
         argopt.parseArgumentTokens(argv);
 
         int   c;
         while ( (c =  argopt.getArguments()) != -1 ){
             switch (c) {
+            case 'c':
+                canonical     = true;
+                break;
+            case 'C':
+                canonical     = false;
+                break;
             case 'v':
                 setValidation = true;
                 break;
@@ -426,10 +435,9 @@ extends HandlerBase {
         }
 
         // print 
-        for ( int j = 0; j<argopt.stringParameterLeft(); j++){
-            print(parserName, argopt.getStringParameter(), setValidation);
-        }
-
+       String arg = argopt.getStringParameter();
+       System.err.println(arg+':');
+       print(parserName, arg, canonical);
 
         ///
 
