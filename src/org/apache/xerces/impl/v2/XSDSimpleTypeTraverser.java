@@ -411,7 +411,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             newDV = new UnionDatatypeValidator(dTValidators);
         }
 
-        if (newDV != null) {
+        if (newDV != null && isGlobal) {
             newDV.setFinalSet(finalProperty);
             ((AbstractDatatypeValidator)newDV).fLocalName = nameProperty;
             fGrammar.addGlobalTypeDecl(newDV);

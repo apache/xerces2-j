@@ -582,6 +582,20 @@ public class XSAttributeChecker {
         oneEle = new OneElement (attrList);
         fEleAttrsMapG.put(SchemaSymbols.ELT_COMPLEXTYPE, oneEle);
 
+        // for element "notation" - local name
+        attrList = new Hashtable();
+        // id = ID
+        attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
+        // name = NCName
+        attrList.put(SchemaSymbols.ATT_NAME, allAttrs[ATT_NAME_R]);
+        // public = A public identifier, per ISO 8879
+        attrList.put(SchemaSymbols.ATT_PUBLIC, allAttrs[ATT_PUBLIC_R]);
+        // system = anyURI
+        attrList.put(SchemaSymbols.ATT_SYSTEM, allAttrs[ATT_SYSTEM_N]);
+        oneEle = new OneElement (attrList);        
+        fEleAttrsMapG.put(SchemaSymbols.ELT_NOTATION, oneEle);
+
+
         // for element "complexType" - local name
         attrList = new Hashtable();
         // id = ID
@@ -754,19 +768,6 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_XPATH, allAttrs[ATT_XPATH1_R]);
         oneEle = new OneElement (attrList);
         fEleAttrsMapN.put(SchemaSymbols.ELT_FIELD, oneEle);
-
-        // for element "notation" - local name
-        attrList = new Hashtable();
-        // id = ID
-        attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
-        // name = NCName
-        attrList.put(SchemaSymbols.ATT_NAME, allAttrs[ATT_NAME_R]);
-        // public = A public identifier, per ISO 8879
-        attrList.put(SchemaSymbols.ATT_PUBLIC, allAttrs[ATT_PUBLIC_R]);
-        // system = anyURI
-        attrList.put(SchemaSymbols.ATT_SYSTEM, allAttrs[ATT_SYSTEM_N]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapN.put(SchemaSymbols.ELT_NOTATION, oneEle);
 
         // for element "annotation" - global
         attrList = new Hashtable();
@@ -979,7 +980,6 @@ public class XSAttributeChecker {
                                     XSDocumentInfo schemaDoc) {
         if (element == null)
             return null;
-
         // update NamespaceSupport
         resolveNamespace(element, schemaDoc.fNamespaceSupport);
 
@@ -1005,6 +1005,7 @@ public class XSAttributeChecker {
         // get desired attribute list of this element
         OneElement oneEle = (OneElement)eleAttrsMap.get(elName);
         if (oneEle == null) {
+            
             reportSchemaError ("s4s-elt-invalid", new Object[] {elName});
             return null;
         }
@@ -1118,7 +1119,6 @@ public class XSAttributeChecker {
                     attrValues[oneAttr.valueIndex] = oneAttr.dfltValue;
             }
         }
-
         // traverse all required attributes
         OneAttr[] reqAttrs = oneEle.attrArray;
         for (int i = 0; i < reqAttrs.length; i++) {

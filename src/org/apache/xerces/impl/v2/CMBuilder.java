@@ -296,12 +296,14 @@ public class CMBuilder {
             }
 
         }
-		 else if (type == XSParticleDecl.PARTICLE_ALL) {
+	else if (type == XSParticleDecl.PARTICLE_ALL) {
         
             XSParticleDecl left = (XSParticleDecl)particle.fValue;
             XSParticleDecl right = (XSParticleDecl)particle.fOtherValue;
             
             XSAllCM allContent = new XSAllCM(false);
+
+            System.out.println("***********"+particle.toString());
             gatherAllLeaves (left, allContent);
             gatherAllLeaves (right, allContent);
             return allContent;
@@ -431,23 +433,20 @@ public class CMBuilder {
      */
      private void gatherAllLeaves(XSParticleDecl particle,
                                         XSAllCM allContent) {
-
-        XSParticleDecl left = (XSParticleDecl) particle.fValue;
-        XSParticleDecl right = (XSParticleDecl) particle.fOtherValue;
+        Object left = particle.fValue;
+        Object right = particle.fOtherValue;        
         int type = particle.fType;
 
         if (type == XSParticleDecl.PARTICLE_ALL) {
           
             // At an all node, visit left and right subtrees
-          
-            gatherAllLeaves (left, allContent);
-            gatherAllLeaves (right, allContent);
+            gatherAllLeaves ((XSParticleDecl)left, allContent);
+            gatherAllLeaves ((XSParticleDecl) particle.fOtherValue, allContent);
         }
         else if (type == XSParticleDecl.PARTICLE_ELEMENT) {
           
             // At leaf, add the element to list of elements permitted in the all
-          
-            allContent.addElement ((XSElementDecl)(particle.fValue), false);
+            allContent.addElement ((XSElementDecl)left, false);
         }
         else if (type == XSParticleDecl.PARTICLE_ZERO_OR_ONE) {
           
@@ -455,17 +454,17 @@ public class CMBuilder {
             // that was specified with minOccurs=0, maxOccurs=1
             // Add the optional element to list of elements permitted in the all
           
-            if (left.fType == XSParticleDecl.PARTICLE_ELEMENT) {
-          		   allContent.addElement ((XSElementDecl)left.fValue, true);
+            if (((XSParticleDecl)left).fType == XSParticleDecl.PARTICLE_ELEMENT) {
+                allContent.addElement ((XSElementDecl)(((XSParticleDecl)left).fValue), true);
             }
             else {
-          		   // report error
-		 		   throw new RuntimeException("ImplementationMessages.VAL_CST");
+            // report error
+		throw new RuntimeException("ImplementationMessages.VAL_CST");
             }		  		 
         }
         else { 
             // report error
-            throw new RuntimeException("ImplementationMessages.VAL_CST");
+            throw new RuntimeException("ImplementationMessages.VAL_CSTA");
         }
     }
 

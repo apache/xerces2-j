@@ -90,12 +90,11 @@ class  XSDNotationTraverser extends XSDAbstractTraverser {
 
         // General Attribute Checking for elmNode
         Object[] attrValues = fAttrChecker.checkAttributes(elmNode, true, schemaDoc);
-
         //get attributes
         String  nameAttr   = (String) attrValues[XSAttributeChecker.ATTIDX_NAME];
+
         String  publicAttr = (String) attrValues[XSAttributeChecker.ATTIDX_PUBLIC];
         String  systemAttr = (String) attrValues[XSAttributeChecker.ATTIDX_SYSTEM];
-
         if (nameAttr.length() == 0) {
             //REVISIT: update error message
             reportGenericSchemaError("<notation> must have a name");
@@ -129,7 +128,7 @@ class  XSDNotationTraverser extends XSDAbstractTraverser {
                                            XMLErrorReporter.SEVERITY_ERROR);
             }
         }
-
+        grammar.addGlobalNotationDecl(notation);
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
         return notation;
