@@ -125,7 +125,7 @@ public final class XMLSerializer
     public XMLSerializer( OutputFormat format )
     {
         super( format != null ? format : new OutputFormat( Method.XML, null, false ) );
-        format.setMethod( Method.XML );
+        _format.setMethod( Method.XML );
     }
 
 
