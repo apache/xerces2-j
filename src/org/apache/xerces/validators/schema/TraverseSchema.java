@@ -5433,30 +5433,43 @@ public class TraverseSchema implements
                 seeParticle = true;
 
             } 
-            else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
-                index = traverseGroupDecl(child);
-                if (index == -1) 
-                    continue;
-                seeParticle = true;
-
-            } 
-            else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
-                    index = traverseChoice(child);
+            // For CR implementation, only elements are permitted
+            // TODO - should rewrite this...
+            //
+            else if (CR_IMPL) {
+                reportGenericSchemaError("Content of all group is restricted to elements only.  '" +  
+               
+                childName + "' was seen");
+                break;
+                
+            }
+            else {
+               
+                if (childName.equals(SchemaSymbols.ELT_GROUP)) {
+                    index = traverseGroupDecl(child);
+                    if (index == -1) 
+                        continue;
                     seeParticle = true;
 
-            } 
-            else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
-                index = traverseSequence(child);
-                seeParticle = true;
+                } 
+                else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
+                        index = traverseChoice(child);
+                        seeParticle = true;
 
-            } 
-            else if (childName.equals(SchemaSymbols.ELT_ANY)) {
-                index = traverseAny(child);
-                seeParticle = true;
-            } 
-            else {
-                reportSchemaError(SchemaMessageProvider.GroupContentRestricted,
-                                  new Object [] { "group", childName });
+                } 
+                else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
+                    index = traverseSequence(child);
+                    seeParticle = true;
+
+                } 
+                else if (childName.equals(SchemaSymbols.ELT_ANY)) {
+                    index = traverseAny(child);
+                    seeParticle = true;
+                } 
+                else {
+                    reportSchemaError(SchemaMessageProvider.GroupContentRestricted,
+                                      new Object [] { "group", childName });
+                }
             }
 
             if (seeParticle) {
