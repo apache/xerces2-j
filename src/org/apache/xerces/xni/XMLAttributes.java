@@ -259,4 +259,71 @@ public interface XMLAttributes
      */
     public int getEntityLength(int attrIndex, int entityIndex);
 
+    //
+    // Attributes and AttributeList methods
+    //
+
+    // NOTE: The methods shared by both the SAX Attributes and
+    //       AttributeList interfaces must be repeated in this
+    //       interface due to a compiler bug in javac (JDK 1.1.8)
+    //       that thinks that the XMLAttributes#getLength():int 
+    //       method and other shared methods are ambiguous. 
+    //       Simply including this method prototypes explicitly
+    //       works around the problem. -Ac
+
+    /**
+     * Returns the number of attributes in the list.
+     * <p>
+     * Once you know the number of attributes, you can iterate
+     * through the list.
+     *
+     * @see #getURI(int)
+     * @see #getLocalName(int)
+     * @see #getQName(int)
+     * @see #getType(int)
+     * @see #getValue(int)
+     */
+    public int getLength();
+
+    /**
+     * Look up an attribute's type by index.
+     * <p>
+     * The attribute type is one of the strings "CDATA", "ID",
+     * "IDREF", "IDREFS", "NMTOKEN", "NMTOKENS", "ENTITY", "ENTITIES",
+     * or "NOTATION" (always in upper case).
+     * <p>
+     * If the parser has not read a declaration for the attribute,
+     * or if the parser does not report attribute types, then it must
+     * return the value "CDATA" as stated in the XML 1.0 Recommentation
+     * (clause 3.3.3, "Attribute-Value Normalization").
+     * <p>
+     * For an enumerated attribute that is not a notation, the
+     * parser will report the type as "NMTOKEN".
+     *
+     * @param index The attribute index (zero-based).
+     *
+     * @return The attribute's type as a string, or null if the
+     *         index is out of range.
+     *
+     * @see #getLength
+     */
+    public String getType(int index);
+
+    /**
+     * Look up an attribute's value by index.
+     * <p>
+     * If the attribute value is a list of tokens (IDREFS,
+     * ENTITIES, or NMTOKENS), the tokens will be concatenated
+     * into a single string with each token separated by a
+     * single space.
+     *
+     * @param index The attribute index (zero-based).
+     *
+     * @return The attribute's value as a string, or null if the
+     *         index is out of range.
+     *
+     * @see #getLength
+     */
+    public String getValue(int index);
+
 } // interface XMLAttributes
