@@ -61,6 +61,7 @@ import java.util.Vector;
 
 import org.apache.xerces.impl.xs.psvi.XSAnnotation;
 import org.apache.xerces.impl.xs.psvi.XSObjectList;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 
 /**
  * The class used to pass all facets to {@link XSSimpleType#applyFacets}.
@@ -147,7 +148,7 @@ public class XSFacets {
     public XSAnnotation whiteSpaceAnnotation;
     public XSAnnotation totalDigitsAnnotation;
     public XSAnnotation fractionDigitsAnnotation;
-    public XSObjectList patternAnnotations;
+    public XSObjectListImpl patternAnnotations;
     public XSObjectList enumAnnotations;
     public XSAnnotation maxInclusiveAnnotation;
     public XSAnnotation maxExclusiveAnnotation;
