@@ -1176,67 +1176,67 @@ public abstract class AbstractSAXParser
     public void setFeature(String featureId, boolean state)
         throws SAXNotRecognizedException, SAXNotSupportedException {
 
-        //
-        // SAX2 Features
-        //
-
-        if (featureId.startsWith(Constants.SAX_FEATURE_PREFIX)) {
-            String feature = featureId.substring(Constants.SAX_FEATURE_PREFIX.length());
-
-            // http://xml.org/sax/features/namespaces
-            if (feature.equals(Constants.NAMESPACES_FEATURE)) {
-                fConfiguration.setFeature(featureId, state);
-                fNamespaces = state;
-                return;
-            }
-            // http://xml.org/sax/features/namespace-prefixes
-            //   controls the reporting of raw prefixed names and Namespace 
-            //   declarations (xmlns* attributes): when this feature is false 
-            //   (the default), raw prefixed names may optionally be reported, 
-            //   and xmlns* attributes must not be reported.
-            //
-            if (feature.equals(Constants.NAMESPACE_PREFIXES_FEATURE)) {
-                fConfiguration.setFeature(featureId, state);
-                fNamespacePrefixes = state;
-                return;
-            }
-            // http://xml.org/sax/features/string-interning
-            //   controls the use of java.lang.String#intern() for strings
-            //   passed to SAX handlers.
-            //
-            if (feature.equals(Constants.STRING_INTERNING_FEATURE)) {
-                if (state) {
-                    // REVISIT: Localize this error message. -Ac
-                    throw new SAXNotSupportedException(
-                        "PAR018 " + state + " state for feature \"" + featureId
-                        + "\" is not supported.\n" + state + '\t' + featureId);
-                }
-                return;
-            }
-   
-            //
-            // Drop through and perform default processing
-            //
-        }
-
-        //
-        // Xerces Features
-        //
-
-        /*
-        else if (featureId.startsWith(XERCES_FEATURES_PREFIX)) {
-            String feature = featureId.substring(XERCES_FEATURES_PREFIX.length());
-            //
-            // Drop through and perform default processing
-            //
-        }
-        */
-
-        //
-        // Default handling
-        //
-
         try {
+            //
+            // SAX2 Features
+            //
+    
+            if (featureId.startsWith(Constants.SAX_FEATURE_PREFIX)) {
+                String feature = featureId.substring(Constants.SAX_FEATURE_PREFIX.length());
+    
+                // http://xml.org/sax/features/namespaces
+                if (feature.equals(Constants.NAMESPACES_FEATURE)) {
+                    fConfiguration.setFeature(featureId, state);
+                    fNamespaces = state;
+                    return;
+                }
+                // http://xml.org/sax/features/namespace-prefixes
+                //   controls the reporting of raw prefixed names and Namespace 
+                //   declarations (xmlns* attributes): when this feature is false 
+                //   (the default), raw prefixed names may optionally be reported, 
+                //   and xmlns* attributes must not be reported.
+                //
+                if (feature.equals(Constants.NAMESPACE_PREFIXES_FEATURE)) {
+                    fConfiguration.setFeature(featureId, state);
+                    fNamespacePrefixes = state;
+                    return;
+                }
+                // http://xml.org/sax/features/string-interning
+                //   controls the use of java.lang.String#intern() for strings
+                //   passed to SAX handlers.
+                //
+                if (feature.equals(Constants.STRING_INTERNING_FEATURE)) {
+                    if (state) {
+                        // REVISIT: Localize this error message. -Ac
+                        throw new SAXNotSupportedException(
+                            "PAR018 " + state + " state for feature \"" + featureId
+                            + "\" is not supported.\n" + state + '\t' + featureId);
+                    }
+                    return;
+                }
+       
+                //
+                // Drop through and perform default processing
+                //
+            }
+    
+            //
+            // Xerces Features
+            //
+    
+            /*
+            else if (featureId.startsWith(XERCES_FEATURES_PREFIX)) {
+                String feature = featureId.substring(XERCES_FEATURES_PREFIX.length());
+                //
+                // Drop through and perform default processing
+                //
+            }
+            */
+    
+            //
+            // Default handling
+            //
+
             fConfiguration.setFeature(featureId, state);
         }
         catch (XMLConfigurationException e) {
@@ -1268,50 +1268,50 @@ public abstract class AbstractSAXParser
     public boolean getFeature(String featureId)
         throws SAXNotRecognizedException, SAXNotSupportedException {
 
-        //
-        // SAX2 Features
-        //
-
-        if (featureId.startsWith(Constants.SAX_FEATURE_PREFIX)) {
-            String feature =
-                featureId.substring(Constants.SAX_FEATURE_PREFIX.length());
-
-            // http://xml.org/sax/features/namespace-prefixes
-            //   controls the reporting of raw prefixed names and Namespace 
-            //   declarations (xmlns* attributes): when this feature is false 
-            //   (the default), raw prefixed names may optionally be reported, 
-            //   and xmlns* attributes must not be reported.
-            //
-            if (feature.equals(Constants.NAMESPACE_PREFIXES_FEATURE)) {
-                boolean state = fConfiguration.getFeature(featureId);
-                return state;
-            }
-            // http://xml.org/sax/features/string-interning
-            //   controls the use of java.lang.String#intern() for strings
-            //   passed to SAX handlers.
-            //
-            if (feature.equals(Constants.STRING_INTERNING_FEATURE)) {
-                return false;
-            }
-
-            //
-            // Drop through and perform default processing
-            //
-        }
-
-        //
-        // Xerces Features
-        //
-
-        /*
-        else if (featureId.startsWith(XERCES_FEATURES_PREFIX)) {
-            //
-            // Drop through and perform default processing
-            //
-        }
-        */
-
         try {
+            //
+            // SAX2 Features
+            //
+
+            if (featureId.startsWith(Constants.SAX_FEATURE_PREFIX)) {
+                String feature =
+                    featureId.substring(Constants.SAX_FEATURE_PREFIX.length());
+
+                // http://xml.org/sax/features/namespace-prefixes
+                //   controls the reporting of raw prefixed names and Namespace 
+                //   declarations (xmlns* attributes): when this feature is false 
+                //   (the default), raw prefixed names may optionally be reported, 
+                //   and xmlns* attributes must not be reported.
+                //
+                if (feature.equals(Constants.NAMESPACE_PREFIXES_FEATURE)) {
+                    boolean state = fConfiguration.getFeature(featureId);
+                    return state;
+                }
+                // http://xml.org/sax/features/string-interning
+                //   controls the use of java.lang.String#intern() for strings
+                //   passed to SAX handlers.
+                //
+                if (feature.equals(Constants.STRING_INTERNING_FEATURE)) {
+                    return false;
+                }
+
+                //
+                // Drop through and perform default processing
+                //
+            }
+
+            //
+            // Xerces Features
+            //
+
+            /*
+            else if (featureId.startsWith(XERCES_FEATURES_PREFIX)) {
+                //
+                // Drop through and perform default processing
+                //
+            }
+            */
+
             return fConfiguration.getFeature(featureId);
         }
         catch (XMLConfigurationException e) {
@@ -1344,93 +1344,93 @@ public abstract class AbstractSAXParser
     public void setProperty(String propertyId, Object value)
         throws SAXNotRecognizedException, SAXNotSupportedException {
 
-        //
-        // SAX2 core properties
-        //
-
-        if (propertyId.startsWith(Constants.SAX_PROPERTY_PREFIX)) {
-            String property =
-                propertyId.substring(Constants.SAX_PROPERTY_PREFIX.length());
-            //
-            // http://xml.org/sax/properties/lexical-handler
-            // Value type: org.xml.sax.ext.LexicalHandler
-            // Access: read/write, pre-parse only
-            //   Set the lexical event handler.
-            //
-            if (property.equals(Constants.LEXICAL_HANDLER_PROPERTY)) {
-                try {
-                    setLexicalHandler((LexicalHandler)value);
-                }
-                catch (ClassCastException e) {
-                    // REVISIT: Localize this error message. -ac
-                    throw new SAXNotSupportedException(
-                    "PAR012 For propertyID \""
-                    +propertyId+"\", the value \""
-                    +value+"\" cannot be cast to LexicalHandler."
-                    +'\n'+propertyId+'\t'+value+"\tLexicalHandler");
-                }
-                return;
-            }
-            //
-            // http://xml.org/sax/properties/declaration-handler
-            // Value type: org.xml.sax.ext.DeclHandler
-            // Access: read/write, pre-parse only
-            //   Set the DTD declaration event handler.
-            //
-            if (property.equals(Constants.DECLARATION_HANDLER_PROPERTY)) {
-                try {
-                    setDeclHandler((DeclHandler)value);
-                }
-                catch (ClassCastException e) {
-                    // REVISIT: Localize this error message. -ac
-                    throw new SAXNotSupportedException(
-                    "PAR012 For propertyID \""
-                    +propertyId+"\", the value \""
-                    +value+"\" cannot be cast to DeclHandler."
-                    +'\n'+propertyId+'\t'+value+"\tDeclHandler"
-                    );
-                }
-                return;
-            }
-            //
-            // http://xml.org/sax/properties/dom-node
-            // Value type: DOM Node
-            // Access: read-only
-            //   Get the DOM node currently being visited, if the SAX parser is
-            //   iterating over a DOM tree.  If the parser recognises and
-            //   supports this property but is not currently visiting a DOM
-            //   node, it should return null (this is a good way to check for
-            //   availability before the parse begins).
-            //
-            if (property.equals(Constants.DOM_NODE_PROPERTY)) {
-                // REVISIT: Localize this error message. -ac
-                throw new SAXNotSupportedException(
-                    "PAR013 Property \""+propertyId+"\" is read only."
-                    +'\n'+propertyId
-                    ); // read-only property
-            }
-            //
-            // Drop through and perform default processing
-            //
-        }
-
-        //
-        // Xerces Properties
-        //
-
-        /*
-        else if (propertyId.startsWith(XERCES_PROPERTIES_PREFIX)) {
-            //
-            // Drop through and perform default processing
-            //
-        }
-        */
-
-        //
-        // Perform default processing
-        //
-
         try {
+            //
+            // SAX2 core properties
+            //
+
+            if (propertyId.startsWith(Constants.SAX_PROPERTY_PREFIX)) {
+                String property =
+                    propertyId.substring(Constants.SAX_PROPERTY_PREFIX.length());
+                //
+                // http://xml.org/sax/properties/lexical-handler
+                // Value type: org.xml.sax.ext.LexicalHandler
+                // Access: read/write, pre-parse only
+                //   Set the lexical event handler.
+                //
+                if (property.equals(Constants.LEXICAL_HANDLER_PROPERTY)) {
+                    try {
+                        setLexicalHandler((LexicalHandler)value);
+                    }
+                    catch (ClassCastException e) {
+                        // REVISIT: Localize this error message. -ac
+                        throw new SAXNotSupportedException(
+                        "PAR012 For propertyID \""
+                        +propertyId+"\", the value \""
+                        +value+"\" cannot be cast to LexicalHandler."
+                        +'\n'+propertyId+'\t'+value+"\tLexicalHandler");
+                    }
+                    return;
+                }
+                //
+                // http://xml.org/sax/properties/declaration-handler
+                // Value type: org.xml.sax.ext.DeclHandler
+                // Access: read/write, pre-parse only
+                //   Set the DTD declaration event handler.
+                //
+                if (property.equals(Constants.DECLARATION_HANDLER_PROPERTY)) {
+                    try {
+                        setDeclHandler((DeclHandler)value);
+                    }
+                    catch (ClassCastException e) {
+                        // REVISIT: Localize this error message. -ac
+                        throw new SAXNotSupportedException(
+                        "PAR012 For propertyID \""
+                        +propertyId+"\", the value \""
+                        +value+"\" cannot be cast to DeclHandler."
+                        +'\n'+propertyId+'\t'+value+"\tDeclHandler"
+                        );
+                    }
+                    return;
+                }
+                //
+                // http://xml.org/sax/properties/dom-node
+                // Value type: DOM Node
+                // Access: read-only
+                //   Get the DOM node currently being visited, if the SAX parser is
+                //   iterating over a DOM tree.  If the parser recognises and
+                //   supports this property but is not currently visiting a DOM
+                //   node, it should return null (this is a good way to check for
+                //   availability before the parse begins).
+                //
+                if (property.equals(Constants.DOM_NODE_PROPERTY)) {
+                    // REVISIT: Localize this error message. -ac
+                    throw new SAXNotSupportedException(
+                        "PAR013 Property \""+propertyId+"\" is read only."
+                        +'\n'+propertyId
+                        ); // read-only property
+                }
+                //
+                // Drop through and perform default processing
+                //
+            }
+
+            //
+            // Xerces Properties
+            //
+
+            /*
+            else if (propertyId.startsWith(XERCES_PROPERTIES_PREFIX)) {
+                //
+                // Drop through and perform default processing
+                //
+            }
+            */
+
+            //
+            // Perform default processing
+            //
+
             fConfiguration.setProperty(propertyId, value);
         }
         catch (XMLConfigurationException e) {
@@ -1462,70 +1462,70 @@ public abstract class AbstractSAXParser
     public Object getProperty(String propertyId)
         throws SAXNotRecognizedException, SAXNotSupportedException {
 
-        //
-        // SAX2 core properties
-        //
-
-        if (propertyId.startsWith(Constants.SAX_PROPERTY_PREFIX)) {
-            String property =
-                propertyId.substring(Constants.SAX_PROPERTY_PREFIX.length());
-            //
-            // http://xml.org/sax/properties/lexical-handler
-            // Value type: org.xml.sax.ext.LexicalHandler
-            // Access: read/write, pre-parse only
-            //   Set the lexical event handler.
-            //
-            if (property.equals(Constants.LEXICAL_HANDLER_PROPERTY)) {
-                return getLexicalHandler();
-            }
-            //
-            // http://xml.org/sax/properties/declaration-handler
-            // Value type: org.xml.sax.ext.DeclHandler
-            // Access: read/write, pre-parse only
-            //   Set the DTD declaration event handler.
-            //
-            if (property.equals(Constants.DECLARATION_HANDLER_PROPERTY)) {
-                return getDeclHandler();
-            }
-            //
-            // http://xml.org/sax/properties/dom-node
-            // Value type: DOM Node
-            // Access: read-only
-            //   Get the DOM node currently being visited, if the SAX parser is
-            //   iterating over a DOM tree.  If the parser recognises and
-            //   supports this property but is not currently visiting a DOM
-            //   node, it should return null (this is a good way to check for
-            //   availability before the parse begins).
-            //
-            if (property.equals(Constants.DOM_NODE_PROPERTY)) {
-                // REVISIT: Localize this error message. -Ac
-                throw new SAXNotSupportedException(
-                "PAR014 Cannot getProperty(\""+propertyId
-                +"\". No DOM Tree exists.\n"+propertyId
-                ); // we are not iterating a DOM tree
-            }
-            //
-            // Drop through and perform default processing
-            //
-        }
-
-        //
-        // Xerces properties
-        //
-
-        /*
-        else if (propertyId.startsWith(XERCES_PROPERTIES_PREFIX)) {
-            //
-            // Drop through and perform default processing
-            //
-        }
-        */
-
-        //
-        // Perform default processing
-        //
-
         try {
+            //
+            // SAX2 core properties
+            //
+
+            if (propertyId.startsWith(Constants.SAX_PROPERTY_PREFIX)) {
+                String property =
+                    propertyId.substring(Constants.SAX_PROPERTY_PREFIX.length());
+                //
+                // http://xml.org/sax/properties/lexical-handler
+                // Value type: org.xml.sax.ext.LexicalHandler
+                // Access: read/write, pre-parse only
+                //   Set the lexical event handler.
+                //
+                if (property.equals(Constants.LEXICAL_HANDLER_PROPERTY)) {
+                    return getLexicalHandler();
+                }
+                //
+                // http://xml.org/sax/properties/declaration-handler
+                // Value type: org.xml.sax.ext.DeclHandler
+                // Access: read/write, pre-parse only
+                //   Set the DTD declaration event handler.
+                //
+                if (property.equals(Constants.DECLARATION_HANDLER_PROPERTY)) {
+                    return getDeclHandler();
+                }
+                //
+                // http://xml.org/sax/properties/dom-node
+                // Value type: DOM Node
+                // Access: read-only
+                //   Get the DOM node currently being visited, if the SAX parser is
+                //   iterating over a DOM tree.  If the parser recognises and
+                //   supports this property but is not currently visiting a DOM
+                //   node, it should return null (this is a good way to check for
+                //   availability before the parse begins).
+                //
+                if (property.equals(Constants.DOM_NODE_PROPERTY)) {
+                    // REVISIT: Localize this error message. -Ac
+                    throw new SAXNotSupportedException(
+                    "PAR014 Cannot getProperty(\""+propertyId
+                    +"\". No DOM Tree exists.\n"+propertyId
+                    ); // we are not iterating a DOM tree
+                }
+                //
+                // Drop through and perform default processing
+                //
+            }
+
+            //
+            // Xerces properties
+            //
+
+            /*
+            else if (propertyId.startsWith(XERCES_PROPERTIES_PREFIX)) {
+                //
+                // Drop through and perform default processing
+                //
+            }
+            */
+
+            //
+            // Perform default processing
+            //
+
             return fConfiguration.getProperty(propertyId);
         }
         catch (XMLConfigurationException e) {
