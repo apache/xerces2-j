@@ -262,7 +262,7 @@ public class XMLSchemaValidator
     // Augmentations parameter if one is null, to save ourselves from
     // having to create this object continually, it is created here.
     // If it is not present in calls that we're passing on, we *must*
-    // clear this before we introduce it into the pipeline.  
+    // clear this before we introduce it into the pipeline.
     protected final AugmentationsImpl fAugmentations = new AugmentationsImpl();
 
     // this is included for the convenience of handleEndElement
@@ -368,17 +368,17 @@ public class XMLSchemaValidator
     protected String fExternalSchemas = null;
     protected String fExternalNoNamespaceSchema = null;
 
-	//JAXP Schema Source property
-	protected Object fJaxpSchemaSource = null ;
+    //JAXP Schema Source property
+    protected Object fJaxpSchemaSource = null ;
 
-	//ResourceIdentifier for use in calling EntityResolver
-	XMLResourceIdentifierImpl fResourceIdentifier = new XMLResourceIdentifierImpl();
-	
+    //ResourceIdentifier for use in calling EntityResolver
+    XMLResourceIdentifierImpl fResourceIdentifier = new XMLResourceIdentifierImpl();
+
     /** Schema Grammar Description passed,  to give a chance to application to supply the Grammar */
     protected final XSDDescription fXSDDescription = new XSDDescription() ;
     protected final Hashtable fLocationPairs = new Hashtable() ;
     protected final LocationArray fNoNamespaceLocationArray = new LocationArray();
-    
+
     // handlers
 
     /** Document handler. */
@@ -588,7 +588,7 @@ public class XMLSchemaValidator
         Augmentations modifiedAugs = handleStartElement(element, attributes, augs);
 
         // we need to save PSVI information: because it will be reset in the
-        // handleEndElement(): type, notation, validation context        
+        // handleEndElement(): type, notation, validation context
         XSTypeDecl type = fCurrentPSVI.fTypeDecl;
         XSNotationDecl notation = fCurrentPSVI.fNotation;
         String vContext = fCurrentPSVI.fValidationContext;
@@ -597,7 +597,7 @@ public class XMLSchemaValidator
         // doesn't have any text content, change emptyElement call to
         // start + characters + end
         modifiedAugs = handleEndElement(element, modifiedAugs);
-        
+
         // call handlers
         if (fDocumentHandler != null) {
             fCurrentPSVI.fTypeDecl = type;
@@ -609,7 +609,7 @@ public class XMLSchemaValidator
                 fDocumentHandler.startElement(element, attributes, modifiedAugs);
                 fDocumentHandler.characters(fDefaultValue, modifiedAugs);
                 fDocumentHandler.endElement(element, modifiedAugs);
-            }            
+            }
        }
     } // emptyElement(QName,XMLAttributes, Augmentations)
 
@@ -622,7 +622,7 @@ public class XMLSchemaValidator
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void characters(XMLString text, Augmentations augs) throws XNIException {
-        
+
         boolean emptyAug = false;
         if (augs == null) {
             emptyAug = true;
@@ -633,10 +633,11 @@ public class XMLSchemaValidator
         fCurrentPSVI = (ElementPSVImpl)augs.getItem(Constants.ELEMENT_PSVI);
         if (fCurrentPSVI == null) {
             fCurrentPSVI = fElemPSVI;
-            fCurrentPSVI.reset();
             augs.putItem(Constants.ELEMENT_PSVI, fCurrentPSVI);
         }
-
+        else {
+            fCurrentPSVI.reset();
+        }
 
         handleCharacters(text);
         // call handlers
@@ -649,7 +650,7 @@ public class XMLSchemaValidator
                 if (!emptyAug) {
                     fDocumentHandler.characters(fEmptyXMLStr, augs);
                 }
-            } else {            
+            } else {
                 fDocumentHandler.characters(text, augs);
             }
         }
@@ -699,7 +700,7 @@ public class XMLSchemaValidator
             } else {
                 fDocumentHandler.characters(fDefaultValue, modifiedAugs);
                 fDocumentHandler.endElement(element, modifiedAugs);
-            }            
+            }
         }
     } // endElement(QName, Augmentations)
 
@@ -731,7 +732,7 @@ public class XMLSchemaValidator
     public void startCDATA(Augmentations augs) throws XNIException {
 
 
-        // REVISIT: what should we do here if schema normalization is on?? 
+        // REVISIT: what should we do here if schema normalization is on??
         fInCDATA = true;
         // call handlers
         if (fDocumentHandler != null) {
@@ -767,12 +768,12 @@ public class XMLSchemaValidator
     public void endDocument(Augmentations augs) throws XNIException {
 
         handleEndDocument();
-        
+
         //return the final set of grammars validator ended up with
         if(fGrammarPool != null){
-            fGrammarPool.cacheGrammars(XMLGrammarDescription.XML_SCHEMA , fGrammarBucket.getGrammars() ) ;       
+            fGrammarPool.cacheGrammars(XMLGrammarDescription.XML_SCHEMA , fGrammarBucket.getGrammars() ) ;
         }
-        
+
         // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.endDocument(augs);
@@ -789,7 +790,7 @@ public class XMLSchemaValidator
      * <p>
      * <strong>Note:</strong> This method is not called for entity references
      * appearing as part of attribute values.
-     * 
+     *
      * @param name     The name of the general entity.
      * @param identifier The resource identifier.
      * @param encoding The auto-detected IANA encoding name of the entity
@@ -798,15 +799,15 @@ public class XMLSchemaValidator
      *                 internal entities or a document entity that is
      *                 parsed from a java.io.Reader).
      * @param augs     Additional information that may include infoset augmentations
-     *                 
+     *
      * @exception XNIException Thrown by handler to signal an error.
      */
     public void startGeneralEntity(String name,
                                    XMLResourceIdentifier identifier,
                                    String encoding,
                                    Augmentations augs) throws XNIException {
-        
-        // REVISIT: what should happen if normalize_data_ is on?? 
+
+        // REVISIT: what should happen if normalize_data_ is on??
         fEntityRef = true;
         // call handlers
         if (fDocumentHandler != null) {
@@ -896,10 +897,10 @@ public class XMLSchemaValidator
      * <p>
      * <strong>Note:</strong> This method is not called for entity references
      * appearing as part of attribute values.
-     * 
+     *
      * @param name   The name of the entity.
      * @param augs   Additional information that may include infoset augmentations
-     *               
+     *
      * @exception XNIException
      *                   Thrown by handler to signal an error.
      */
@@ -933,20 +934,20 @@ public class XMLSchemaValidator
 
 
     // Schema Normalization
-    
+
     private static final boolean DEBUG_NORMALIZATION = false;
     // temporary empty string buffer.
     private final XMLString fEmptyXMLStr = new XMLString(null, 0, -1);
     // temporary character buffer, and empty string buffer.
     private static final int BUFFER_SIZE = 20;
     private char[] fCharBuffer =  new char[BUFFER_SIZE];
-    private final StringBuffer fNormalizedStr = new StringBuffer();    
+    private final StringBuffer fNormalizedStr = new StringBuffer();
     private final XMLString fXMLString = new XMLString(fCharBuffer, 0, -1);
     private boolean fFirstChunk = true; // got first chunk in characters() (SAX)
     private boolean fTrailing = false;  // Previous chunk had a trailing space
     private short fWhiteSpace = -1;  //whiteSpace: preserve/replace/collapse
     private boolean fUnionType = false;
-    
+
 
     /** Schema grammar resolver. */
     final XSGrammarBucket fGrammarBucket;
@@ -975,9 +976,6 @@ public class XMLSchemaValidator
     /** String representation of the validation root. */
     // REVISIT: what do we store here? QName, XPATH, some ID? use rawname now.
     String fValidationRoot;
-
-    /** The depth of the validaton root from the root element. */
-    int fValidationRootDepth;
 
     /** Skip validation. */
     int fSkipValidationDepth;
@@ -1186,17 +1184,17 @@ public class XMLSchemaValidator
 
         // get JAXP schema source property
         fJaxpSchemaSource = componentManager.getProperty(JAXP_SCHEMA_SOURCE);
-	fResourceIdentifier.clear();
-	
+    fResourceIdentifier.clear();
+
         // clear grammars, and put the one for schema namespace there
         fGrammarBucket.reset();
         fGrammarPool = (XMLGrammarPool)componentManager.getProperty(XMLGRAMMAR_POOL);
-        
+
         //we should retreive the initial grammar set given by the applicaion
-        //to the parser and put it in local grammar bucket. 
-        
+        //to the parser and put it in local grammar bucket.
+
         if(fGrammarPool != null) {
-            
+
             Grammar [] initialGrammars = fGrammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA);
             for (int i = 0; i < initialGrammars.length; i++) {
                 fGrammarBucket.putGrammar((SchemaGrammar)(initialGrammars[i]));
@@ -1206,10 +1204,10 @@ public class XMLSchemaValidator
         // clear things in substitution group handler
         fSubGroupHandler.reset();
 
-	//REVISIT: we are passing externalSchema and noNamespaceExternalSchema locations to XSDHandler , where
-	//it stores namespace and location values.. now we are doing the same in XMLSchemaValidator, 
-	//we can pass the refernce of fLocationPairs and noNamespaceLocationPairs -nb
-	
+    //REVISIT: we are passing externalSchema and noNamespaceExternalSchema locations to XSDHandler , where
+    //it stores namespace and location values.. now we are doing the same in XMLSchemaValidator,
+    //we can pass the refernce of fLocationPairs and noNamespaceLocationPairs -nb
+
         // reset schema handler and all traversal objects
         fSchemaHandler.reset(fXSIErrorReporter.fErrorReporter,
                              fEntityResolver, fSymbolTable,
@@ -1220,7 +1218,7 @@ public class XMLSchemaValidator
         fXSDDescription.reset() ;
         fLocationPairs.clear();
         fNoNamespaceLocationArray.resize(0 , 2) ;
-        
+
         // initialize state
         fCurrentElemDecl = null;
         fNil = false;
@@ -1231,7 +1229,6 @@ public class XMLSchemaValidator
         fBuffer.setLength(0);
         fSawCharacters=false;
         fSawChildren=false;
-        fValidationRootDepth = -1;
         fValidationRoot = null;
         fSkipValidationDepth = -1;
         fPartialValidationDepth = -1;
@@ -1405,8 +1402,8 @@ public class XMLSchemaValidator
                 int length = fNormalizedStr.length();
                 if (length > 0) {
                     if (!fFirstChunk && (fWhiteSpace==XSSimpleType.WS_COLLAPSE) ) {
-                        if (fTrailing) { 
-                            // previous chunk ended on whitespace 
+                        if (fTrailing) {
+                            // previous chunk ended on whitespace
                             // insert whitespace
                          fNormalizedStr.insert(0, ' ');
                         } else if (spaces == 1 || spaces == 3) {
@@ -1430,18 +1427,18 @@ public class XMLSchemaValidator
               }
         }
 
-        if (DEBUG) {        
+        if (DEBUG) {
          System.out.println("==>characters()"+fCurrentType.getTypeName()+":"+mixed);
         }
 
         if (mixed || fWhiteSpace !=-1 || fUnionType) {
-            // don't check characters: since it is either 
+            // don't check characters: since it is either
             // a) mixed content model - we don't care if there were some characters
             // b) simpleType/simpleContent - in which case it is data in ELEMENT content
         }
         else  {
 
-            if (DEBUG) {        
+            if (DEBUG) {
              System.out.println("==>check for whitespace");
             }
             // data outside of element content
@@ -1451,12 +1448,12 @@ public class XMLSchemaValidator
                     break;
                 }
             }
-        } 
+        }
 
 
         // we saw first chunk of characters
         fFirstChunk = false;
-        
+
         // save normalized value for validation purposes
         if (fNil) {
             // if element was nil and there is some character data
@@ -1464,13 +1461,13 @@ public class XMLSchemaValidator
             // otherwise error does not make much sense
             fCurrentPSVI.fNormalizedValue = null;
             fBuffer.append(text.toString());
-        } 
+        }
         if (normalizedStr != null) {
             fBuffer.append(normalizedStr);
         } else {
             fBuffer.append(text.toString());
         }
-        
+
 
         if (!allWhiteSpace) {
             fSawCharacters = true;
@@ -1486,7 +1483,7 @@ public class XMLSchemaValidator
 
     /**
      * Normalize whitespace in an XMLString according to the rules defined
-     * in XML Schema specifications.     
+     * in XML Schema specifications.
      * @param value    The string to normalize.
      * @param collapse replace or collapse
      * @returns 0 if no triming is done or if there is neither leading nor
@@ -1557,7 +1554,7 @@ public class XMLSchemaValidator
     /** Handle element. */
     Augmentations handleStartElement(QName element, XMLAttributes attributes, Augmentations augs) {
 
-        // should really determine whether a null augmentation is to 
+        // should really determine whether a null augmentation is to
         // be returned on a case-by-case basis, rather than assuming
         // this method will always produce augmentations...
         if(augs == null) {
@@ -1595,7 +1592,7 @@ public class XMLSchemaValidator
                 }
             }
         }
-        
+
         // push error reporter context: record the current position
         fXSIErrorReporter.pushContext();
 
@@ -1617,20 +1614,20 @@ public class XMLSchemaValidator
             // thus we will not validate in the case dynamic feature is on or we found dtd grammar
             fDoValidation = fValidation && !(fValidationManager.isGrammarFound() || fDynamicValidation);
 
-            
+
             //store the external schema locations, these locations will be set at root element, so any other
-            // schemaLocation declaration for the same namespace will be effectively ignored.. becuase we 
+            // schemaLocation declaration for the same namespace will be effectively ignored.. becuase we
             // choose to take first location hint available for a particular namespace.
 
             storeLocations(fExternalSchemas, fExternalNoNamespaceSchema) ;
-            
+
             //REVISIT: this JAXP processing shouldn't be done
             //in XMLSchemaValidator but in a separate component responsible for pre-parsing grammars
-            // and SchemaValidator should be given these preParsed grammars before this component 
+            // and SchemaValidator should be given these preParsed grammars before this component
             //attempts to validate -nb.
-            
+
             processJAXPSchemaSource( fJaxpSchemaSource , fEntityResolver );
-            
+
             // parse schemas specified via schema location properties
             //parseSchemas(fExternalSchemas, fExternalNoNamespaceSchema);
         }
@@ -1647,14 +1644,13 @@ public class XMLSchemaValidator
 
         String sLocation = attributes.getValue(URI_XSI, XSI_SCHEMALOCATION);
         String nsLocation = attributes.getValue(URI_XSI, XSI_NONAMESPACESCHEMALOCATION);
-        
         //store the location hints..  we need to do it so that we can defer the loading of grammar until
         //there is a reference to a component from that namespace. To provide location hints to the
         //application for a namespace
         storeLocations(sLocation, nsLocation) ;
-        
-        //REVISIT: We should do the same in XSDHandler also... we should not 
-        //load the actual grammar (eg. import) unless there is reference to it. 
+
+        //REVISIT: We should do the same in XSDHandler also... we should not
+        //load the actual grammar (eg. import) unless there is reference to it.
         //parseSchemas(sLocation, nsLocation);
 
         // REVISIT: we should not rely on presence of
@@ -1720,13 +1716,13 @@ public class XMLSchemaValidator
         // try again to get the element decl
         if (fCurrentElemDecl == null) {
 
-        	//try to find schema grammar by different means..
+            //try to find schema grammar by different means..
             SchemaGrammar sGrammar = findSchemaGrammar(XSDDescription.CONTEXT_ELEMENT , element.uri , null , element, attributes ) ;
-                    
+
             if (sGrammar != null){
                 fCurrentElemDecl = sGrammar.getGlobalElementDecl(element.localpart);
             }
-            
+
         }
 
         // Element Locally Valid (Element)
@@ -1749,9 +1745,10 @@ public class XMLSchemaValidator
         // if the element decl is not found
         if (fCurrentType == null) {
             if (fDoValidation) {
-                // if this is no validation root, report an error, because
+                // if this is the validation root, report an error, because
                 // we can't find eith decl or type for this element
-                if (fValidationRootDepth == -1) {
+                // REVISIT: should we report error, or warning?
+                if (fElementDepth == 0) {
                     // report error, because it's root element
                     reportSchemaError("cvc-elt.1", new Object[]{element.rawname});
                 }
@@ -1763,18 +1760,15 @@ public class XMLSchemaValidator
                 }
             }
             // no element decl or type found for this element.
-            // if there is a validation root, then skip the whole element
-            // because we choose not to do lax acssessment
-            // otherwise, don't skip sub-elements
-            if (fValidationRootDepth >= 0)
-                fSkipValidationDepth = fElementDepth;
-            return augs;
+            // Allowed by the spec, we can choose to either laxly assess this
+            // element, or to skip it. Now we choose lax assessment.
+            // REVISIT: IMO, we should perform lax assessment when validation
+            // feature is on, and skip when dynamic validation feature is on.
+            fCurrentType = SchemaGrammar.fAnyType;
         }
 
-        // we found a decl or a type, but there is no vlaidatoin root,
         // make the current element validation root
-        if (fValidationRootDepth == -1) {
-            fValidationRootDepth = fElementDepth;
+        if (fElementDepth == 0) {
             fValidationRoot = element.rawname;
         }
 
@@ -1792,14 +1786,14 @@ public class XMLSchemaValidator
             if (ctype.isAbstractType()) {
                 reportSchemaError("cvc-type.2", new Object[]{"Element " + element.rawname + " is declared with a type that is abstract.  Use xsi:type to specify a non-abstract type"});
             }
-            if (fNormalizeData) {        
+            if (fNormalizeData) {
                 // find out if the content type is simple and if variety is union
                 // to be able to do character normalization
-                if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE) { 
+                if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE) {
                         if (ctype.fXSSimpleType.getVariety() == XSSimpleType.VARIETY_UNION) {
                             fUnionType = true;
                         } else {
-                            try {                            
+                            try {
                                 fWhiteSpace = ctype.fXSSimpleType.getWhitespace();
                             } catch (DatatypeException e){
                                 // do nothing
@@ -1823,7 +1817,7 @@ public class XMLSchemaValidator
              }
         }
 
-    
+
         // then try to get the content model
         fCurrentCM = null;
         if (fCurrentType.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
@@ -1886,10 +1880,10 @@ public class XMLSchemaValidator
 
     } // handleStartElement(QName,XMLAttributes,boolean)
 
-	
+
     /**
      *  Handle end element. If there is not text content, and there is a
-     *  {value constraint} on the corresponding element decl, then 
+     *  {value constraint} on the corresponding element decl, then
      * set the fDefaultValue XMLString representing the default value.
      */
     Augmentations handleEndElement(QName element, Augmentations augs) {
@@ -1907,8 +1901,7 @@ public class XMLSchemaValidator
         fCurrentPSVI.reset();
 
         // if we are skipping, return
-        // if there is no validation root, return
-        if (fSkipValidationDepth >= 0 || fValidationRootDepth == -1) {
+        if (fSkipValidationDepth >= 0) {
             // but if this is the top element that we are skipping,
             // restore the states.
             if (fSkipValidationDepth == fElementDepth &&
@@ -1992,14 +1985,12 @@ public class XMLSchemaValidator
         fValueStoreCache.endElement();
 
         // have we reached the end tag of the validation root?
-        if (fValidationRootDepth == fElementDepth) {
-            fValidationRootDepth = -1;
-            fValidationRoot = null;
-
+        if (fElementDepth == 0) {
             if (fDoValidation) {
                 // 7 If the element information item is the validation root, it must be valid per Validation Root Valid (ID/IDREF) (3.3.4).
-                if (fValidationState.checkIDRefID() != null) {
-                    reportSchemaError("ValidationRoot", null);
+                String invIdRef = fValidationState.checkIDRefID();
+                if (invIdRef != null) {
+                    reportSchemaError("cvc-id.1", new Object[]{invIdRef});
                 }
             }
             fValidationState.resetIDTables();
@@ -2080,61 +2071,50 @@ public class XMLSchemaValidator
     }
 
     private class LocationArray{
-    
+
         int length ;
         String [] locations = new String[2];
-        
+
         public void resize(int oldLength , int newLength){
             String [] temp = new String[newLength] ;
             System.arraycopy(locations, 0, temp, 0, Math.min(oldLength, newLength));
             locations = temp ;
             length = oldLength ;
         }
-        
+
         public void setLocation(String location){
             if(length >= locations.length ){
                 resize(length, length*2);
-            }                        
-            locations[length++] = location ;                    
+            }
+            //REVISIT:should we expanded location hints??
+            locations[length++] = XMLEntityManager.expandSystemId(location, null);
         }//setLocation()
-        
+
         public String [] getLocationArray(){
-	//REVISIT:should we expanded location hints before returning ??            
-	
-	/**
-         if(length < locations.length ){
-            resize(locations.length, length);
-         }
-         */
-         
-         String [] temp = new String[length] ;
-         for(int i = 0 ; i < length ; i++){
-         	temp[i] = XMLEntityManager.expandSystemId( locations[i] , null) ;         
-         }
-         
-         return locations = temp ;
-         
+            if(length < locations.length ){
+                resize(locations.length, length);
+            }
+            return locations;
         }//getLocationArray()
-        
-        //REVISIT: we are returning the first location hint available for a particular namespace.. is it the right thing to do ??
+
         public String getFirstLocation(){
-            return locations[0] ;
+            return length > 0 ? locations[0] : null;
         }
-        
+
         public int getLength(){
             return length ;
         }
-        
+
     } //locationArray
-    
+
     void storeLocations(String sLocation, String nsLocation){
-        
+
         if (sLocation != null) {
             StringTokenizer t = new StringTokenizer(sLocation, " \n\t\r");
             String namespace, location;
             while (t.hasMoreTokens()) {
                 namespace = fSymbolTable.addSymbol(t.nextToken ());
-                
+
                 if (!t.hasMoreTokens()) {
                     fXSIErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                                   "SchemaLocation",
@@ -2142,118 +2122,117 @@ public class XMLSchemaValidator
                                                   XMLErrorReporter.SEVERITY_WARNING);
                     break;
                 }
-                
+
                 Object locationArray = fLocationPairs.get(namespace) ;
-                
+
                 if(locationArray == null){
                     locationArray = new LocationArray() ;
                     //add it into hashtable...
                     fLocationPairs.put(namespace, locationArray);
                 }
-                                
+
                 location = t.nextToken();
                 ((LocationArray)locationArray).setLocation(location);
             }
-            
+
         }
         if (nsLocation != null) {
-        	fNoNamespaceLocationArray.setLocation(nsLocation);
+            fNoNamespaceLocationArray.setLocation(nsLocation);
         }
-            
+
     }//storeLocations
 
-	
-	//this is the function where logic of retrieving grammar is written , parser first tries to get the grammar from
-	//the local pool, if not in local pool, it gives chance to application to be able to retrieve the grammar, then it 
-	//tries to parse the grammar using location hints from the give namespace.
-	SchemaGrammar findSchemaGrammar(short contextType , String namespace , QName enclosingElement, QName triggeringComponet, XMLAttributes attributes ){		
-		SchemaGrammar grammar = null ;		
-		//get the grammar from local pool...
-            	grammar = fGrammarBucket.getGrammar(namespace);            	
-            	if( grammar == null){
-            		// give a chance to application to be able to retreive the grammar.
-            		grammar = getSchemaGrammarFromAppl( contextType , namespace , enclosingElement , triggeringComponet , attributes);              		
-            		if(grammar == null){
-				// try to parse the grammar using location hints from that namespace..            		
-            			grammar = parseSchema(namespace , contextType);
-            		}
-            		else{
-            			return grammar ;            		
-            		}            		            	
-            	}
-            	else{
-			return grammar ;            	            		
-            	}		
-		return grammar ;				
-                
-	}//findSchemaGrammar
-	
-	// give a chance to application to be able to retreive the grammar.
-	SchemaGrammar getSchemaGrammarFromAppl(short contextType , String namespace , QName enclosingElement, QName triggeringComponet, XMLAttributes attribute ){
-            
+
+    //this is the function where logic of retrieving grammar is written , parser first tries to get the grammar from
+    //the local pool, if not in local pool, it gives chance to application to be able to retrieve the grammar, then it
+    //tries to parse the grammar using location hints from the give namespace.
+    SchemaGrammar findSchemaGrammar(short contextType , String namespace , QName enclosingElement, QName triggeringComponet, XMLAttributes attributes ){
+        SchemaGrammar grammar = null ;
+        //get the grammar from local pool...
+        grammar = fGrammarBucket.getGrammar(namespace);
+        if( grammar == null){
+            // give a chance to application to be able to retreive the grammar.
+            grammar = getSchemaGrammarFromAppl( contextType , namespace , enclosingElement , triggeringComponet , attributes);
+            if(grammar == null){
+        // try to parse the grammar using location hints from that namespace..
+                grammar = parseSchema(namespace , contextType);
+            }
+            else{
+                return grammar ;
+            }
+        }
+        else{
+            return grammar ;
+        }
+        return grammar ;
+
+    }//findSchemaGrammar
+
+    // give a chance to application to be able to retreive the grammar.
+    SchemaGrammar getSchemaGrammarFromAppl(short contextType , String namespace , QName enclosingElement, QName triggeringComponet, XMLAttributes attribute ){
+
             //REVISIT: construct empty pool... we dont have to check for the null condition
             //give a chance to application to be able to retreive the grammar.
             if(fGrammarPool != null){
 
                 fXSDDescription.reset() ;
                 fXSDDescription.fContextType = contextType ;
-                fXSDDescription.fTargetNamespace = namespace ;   
-                fXSDDescription.fEnclosedElementName = enclosingElement ;   
+                fXSDDescription.fTargetNamespace = namespace ;
+                fXSDDescription.fEnclosedElementName = enclosingElement ;
                 fXSDDescription.fTriggeringComponent = triggeringComponet ;
-                fXSDDescription.fAttributes = attribute ;                
-                
-                Object locationArray = null ; 
-                if( namespace != null){               
-                	locationArray = fLocationPairs.get(namespace) ;                
-                	if(locationArray != null){
-                    		String [] temp = ((LocationArray)locationArray).getLocationArray() ;
-                    		fXSDDescription.fLocationHints = new String [temp.length] ;
-                    		System.arraycopy(temp, 0 , fXSDDescription.fLocationHints, 0, temp.length );                    
-                	}
+                fXSDDescription.fAttributes = attribute ;
+
+                Object locationArray = null ;
+                if( namespace != null){
+                    locationArray = fLocationPairs.get(namespace) ;
+                    if(locationArray != null){
+                            String [] temp = ((LocationArray)locationArray).getLocationArray() ;
+                            fXSDDescription.fLocationHints = new String [temp.length] ;
+                            System.arraycopy(temp, 0 , fXSDDescription.fLocationHints, 0, temp.length );
+                    }
                 }else{
 
-                    	String [] temp = fNoNamespaceLocationArray.getLocationArray() ;
-                    	fXSDDescription.fLocationHints = new String [temp.length] ;
-                    	System.arraycopy(temp, 0 , fXSDDescription.fLocationHints, 0, temp.length );                                                    	
-                }                             
+                        String [] temp = fNoNamespaceLocationArray.getLocationArray() ;
+                        fXSDDescription.fLocationHints = new String [temp.length] ;
+                        System.arraycopy(temp, 0 , fXSDDescription.fLocationHints, 0, temp.length );
+                }
 
                 return (SchemaGrammar)fGrammarPool.retrieveGrammar(fXSDDescription);
-                
+
             }
             else{
-            	return (SchemaGrammar)null ;
+                return (SchemaGrammar)null ;
             }
-	
-	}//getGrammarFromAppl
 
-	//this function will search for the first location hint available with the parser for given namespace
-	//and tries to parse the grammar using that location hint
+    }//getGrammarFromAppl
+
+    //this function will search for the first location hint available with the parser for given namespace
+    //and tries to parse the grammar using that location hint
 
     SchemaGrammar parseSchema(String namespace, short reference){
-    
-                String locationHint = null ;
-                LocationArray locationArray = null ;
-                SchemaGrammar grammar = null ;
-                
-                if(namespace != null){               
-                    locationArray = (LocationArray)fLocationPairs.get(namespace) ;
-                	if(locationArray != null){                    
-                    		//REVISIT: we are returning the first location hint available for a particular namespace.. is it the right thing to do ??
-                    		locationHint = locationArray.getFirstLocation() ;
-                    	}
-                }else{
-                    locationHint = fNoNamespaceLocationArray.getFirstLocation() ;
-                }
-                
-                if(!(namespace == null && locationHint == null)){
 
-                    grammar = fSchemaHandler.parseSchema(namespace, locationHint , reference);    
-		}    
-		
-		return grammar ;
-                
+        String locationHint = null ;
+        LocationArray locationArray = null ;
+        SchemaGrammar grammar = null ;
+
+        if(namespace != null){
+            locationArray = (LocationArray)fLocationPairs.get(namespace) ;
+            if(locationArray != null){
+                locationHint = locationArray.getFirstLocation() ;
+            }
+        }else{
+            locationHint = fNoNamespaceLocationArray.getFirstLocation() ;
+        }
+
+        // REVISIT: we should pass a XSDGrammarDescription to this method
+        if(!(namespace == null && locationHint == null)){
+            grammar = fSchemaHandler.parseSchema(namespace, locationHint , reference);
+        }
+
+        return grammar ;
+
     } //parseSchema
-    
+
     void parseSchemas(String sLocation, String nsLocation) {
         if (sLocation != null) {
             StringTokenizer t = new StringTokenizer(sLocation, " \n\t\r");
@@ -2268,20 +2247,20 @@ public class XMLSchemaValidator
                     break;
                 }
                 location = t.nextToken();
-                
-                if (fGrammarBucket.getGrammar(namespace) == null) {                
+
+                if (fGrammarBucket.getGrammar(namespace) == null) {
                     fSchemaHandler.parseSchema(namespace, location,
                                            XSDDescription.CONTEXT_INSTANCE);
                 }
             }
         }
         if (nsLocation != null) {
-            if (fGrammarBucket.getGrammar(null) == null){  
+            if (fGrammarBucket.getGrammar(null) == null){
                 fSchemaHandler.parseSchema(null, nsLocation, XSDDescription.CONTEXT_INSTANCE);
-                
+
             }
         }
-        
+
     }//parseSchemas(String,String)
 
 
@@ -2322,14 +2301,14 @@ public class XMLSchemaValidator
             // String value is treated as a URI that is passed through the
             // EntityResolver
             String loc = (String) val;
-            
+
             if (entityResolver != null) {
-            
+
                 fResourceIdentifier.setValues(null, loc, null, null);
                 XMLInputSource xis = null;
                 try {
                     xis = entityResolver.resolveEntity(fResourceIdentifier);
-                } catch (IOException ex) {                    
+                } catch (IOException ex) {
                     reportSchemaError("schema_reference.4",
                                       new Object[] { loc });
                 }
@@ -2350,7 +2329,7 @@ public class XMLSchemaValidator
             InputStream is = null;
             try {
                 is = new BufferedInputStream(new FileInputStream(file));
-            } catch (FileNotFoundException ex) {                
+            } catch (FileNotFoundException ex) {
                 reportSchemaError("schema_reference.4",
                                   new Object[] { file.toString() });
             }
@@ -2360,9 +2339,9 @@ public class XMLSchemaValidator
             XMLConfigurationException.NOT_SUPPORTED, JAXP_SCHEMA_SOURCE);
     }
 
-    
+
      //Convert a SAX InputSource to an equivalent XNI XMLInputSource
-    
+
     private static XMLInputSource SAX2XMLInputSource(InputSource sis) {
         String publicId = sis.getPublicId();
         String systemId = sis.getSystemId();
@@ -2406,9 +2385,9 @@ public class XMLSchemaValidator
         }
         // if it's not schema built-in types, then try to get a grammar
         if (type == null) {
-        	//try to find schema grammar by different means....
+            //try to find schema grammar by different means....
             SchemaGrammar grammar = findSchemaGrammar( XSDDescription.CONTEXT_XSITYPE , typeName.uri , element , typeName , attributes);
-	
+
             if (grammar != null)
                 type = grammar.getGlobalTypeDecl(typeName.localpart);
         }
@@ -2609,13 +2588,13 @@ public class XMLSchemaValidator
                     continue;
 
 
-		//try to find grammar by different means...
-            	SchemaGrammar grammar = findSchemaGrammar( XSDDescription.CONTEXT_ATTRIBUTE , fTempQName.uri , element , fTempQName , attributes); 
-                
+        //try to find grammar by different means...
+                SchemaGrammar grammar = findSchemaGrammar( XSDDescription.CONTEXT_ATTRIBUTE , fTempQName.uri , element , fTempQName , attributes);
+
                 if (grammar != null){
                     currDecl = grammar.getGlobalAttributeDecl(fTempQName.localpart);
                 }
-                
+
                 // if can't find
                 if (currDecl == null) {
                     // if strict, report error
@@ -2684,14 +2663,14 @@ public class XMLSchemaValidator
                     ((XSAtomicSimpleType)attDV).getPrimitiveKind() == XSAtomicSimpleType.PRIMITIVE_NOTATION){
                    QName qName = (QName)actualValue;
                    SchemaGrammar grammar = fGrammarBucket.getGrammar(qName.uri);
-                   
-                   
-                   //REVISIT: is it possible for the notation to be in different namespace than the attribute 
+
+
+                   //REVISIT: is it possible for the notation to be in different namespace than the attribute
                    //with which it is associated, CHECK !!  <fof n1:att1 = "n2:notation1" ..>
                    // should we give chance to the application to be able to  retrieve a grammar - nb
-                   //REVISIT: what would be the triggering component here.. if it is attribute value that 
+                   //REVISIT: what would be the triggering component here.. if it is attribute value that
                    // triggered the loading of grammar ?? -nb
-                   
+
                    if (grammar != null)
                        fCurrentPSVI.fNotation = grammar.getNotationDecl(qName.localpart);
                 }
@@ -2826,7 +2805,7 @@ public class XMLSchemaValidator
 
             // PSVI: specified
             fCurrentPSVI.fSpecified = false;
-            
+
             int bufLen = fCurrentElemDecl.fDefault.normalizedValue.length();
             char [] chars = new char[bufLen];
             fCurrentElemDecl.fDefault.normalizedValue.getChars(0, bufLen, chars, 0);
@@ -2929,7 +2908,7 @@ public class XMLSchemaValidator
         if (fUnionType) {
             // for union types we need to send data because we delayed sending this data
             // when we received it in the characters() call.
-            // XMLString will inlude non-normalized value, PSVIElement will include 
+            // XMLString will inlude non-normalized value, PSVIElement will include
             // normalized value
             int bufLen = textContent.length();
             if (bufLen >= BUFFER_SIZE) {
@@ -2951,7 +2930,7 @@ public class XMLSchemaValidator
             if (!fNil) {
                 XSSimpleType dv = (XSSimpleType)fCurrentType;
                 try {
-                
+
                     if (!fNormalizeData || fUnionType) {
                         fValidationState.setNormalizationRequired(true);
                     }
@@ -2961,7 +2940,7 @@ public class XMLSchemaValidator
                     fCurrentPSVI.fNormalizedValue = fValidatedInfo.normalizedValue;
                     // PSVI: memberType
                     fCurrentPSVI.fMemberType = fValidatedInfo.memberType;
-                    
+
                     if (fDocumentHandler != null && fUnionType) {
                         // send normalized values
                         // at this point we should only rely on normalized value
@@ -3009,7 +2988,7 @@ public class XMLSchemaValidator
                     reportSchemaError("cvc-complex-type.2.2", new Object[]{element.rawname});
                 XSSimpleType dv = ctype.fXSSimpleType;
                 try {
-                    
+
                     if (!fNormalizeData || fUnionType) {
                         fValidationState.setNormalizationRequired(true);
                     }
@@ -3020,7 +2999,7 @@ public class XMLSchemaValidator
                     fCurrentPSVI.fNormalizedValue = fValidatedInfo.normalizedValue;
                     // PSVI: memberType
                     fCurrentPSVI.fMemberType = fValidatedInfo.memberType;
-                    
+
                     if (fDocumentHandler != null && fUnionType) {
                         fAugmentations.putItem(Constants.ELEMENT_PSVI, fCurrentPSVI);
                         fDocumentHandler.characters(fXMLString, fAugmentations);
