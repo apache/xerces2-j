@@ -615,7 +615,7 @@ public class TraverseSchema implements
             } else if (name.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
                 //traverseAttributeGroupDecl(child);
             } else if (name.equals( SchemaSymbols.ELT_ATTRIBUTE ) ) {
-                //traverseAttributeDecl( child );
+                traverseAttributeDecl( child, null );
             } else if (name.equals( SchemaSymbols.ELT_WILDCARD) ) {
                 traverseWildcardDecl( child);
             } else if (name.equals(SchemaSymbols.ELT_GROUP) && child.getAttribute(SchemaSymbols.ATT_REF).equals("")) {
@@ -884,7 +884,7 @@ public class TraverseSchema implements
             } else if (name.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
                 //traverseAttributeGroupDecl(child);
             } else if (name.equals( SchemaSymbols.ELT_ATTRIBUTE ) ) {
-                //traverseAttributeDecl( child );
+                traverseAttributeDecl( child, null );
             } else if (name.equals( SchemaSymbols.ELT_WILDCARD) ) {
                 traverseWildcardDecl( child);
             } else if (name.equals(SchemaSymbols.ELT_GROUP) && child.getAttribute(SchemaSymbols.ATT_REF).equals("")) {
@@ -1207,11 +1207,177 @@ public class TraverseSchema implements
     * </anyAttribute>
     */
     private XMLAttributeDecl traverseAnyAttribute(Element anyAttributeDecl) throws Exception {
-        int type = 0;
+        XMLAttributeDecl anyAttDecl = new XMLAttributeDecl();
         String processContents = anyAttributeDecl.getAttribute(SchemaSymbols.ATT_PROCESSCONTENTS).trim();
         String namespace = anyAttributeDecl.getAttribute(SchemaSymbols.ATT_NAMESPACE).trim();
+        String curTargetUri = anyAttributeDecl.getOwnerDocument().getDocumentElement().getAttribute("targetNamespace");
 
-        return null;
+        if ( namespace.length() == 0 || namespace.equals(SchemaSymbols.ATTVAL_TWOPOUNDANY) ) {
+            anyAttDecl.type = XMLAttributeDecl.TYPE_ANY_ANY;
+        } 
+        else if (namespace.equals(SchemaSymbols.ATTVAL_TWOPOUNDOTHER)) {
+            anyAttDecl.type = XMLAttributeDecl.TYPE_ANY_OTHER;
+            anyAttDecl.name.uri = fStringPool.addSymbol(curTargetUri);
+        }
+        else if (namespace.equals(SchemaSymbols.ATTVAL_TWOPOUNDLOCAL)) {
+            anyAttDecl.type = XMLAttributeDecl.TYPE_ANY_LOCAL;
+        }
+        else if (namespace.length() > 0){
+            anyAttDecl.type = XMLAttributeDecl.TYPE_ANY_LIST;
+
+            StringTokenizer tokenizer = new StringTokenizer(namespace);
+            int aStringList = fStringPool.startStringList();
+            Vector tokens = new Vector();
+            while (tokenizer.hasMoreElements()) {
+                String token = tokenizer.nextToken();
+                if (token.equals("##targetNamespace")) {
+                    token = curTargetUri;
+                }
+                if (!fStringPool.addStringToList(aStringList, fStringPool.addSymbol(token))){
+                    reportGenericSchemaError("Internal StringPool error when reading the "+
+                                             "namespace attribute for anyattribute declaration");
+                }
+            }
+            fStringPool.finishStringList(aStringList);
+
+            anyAttDecl.enumeration = aStringList;
+        }
+        else {
+            // REVISIT: Localize
+            reportGenericSchemaError("Empty namespace attribute for anyattribute declaration");
+        }
+
+        // default processContents is "strict";
+        anyAttDecl.defaultType = XMLAttributeDecl.PROCESSCONTENTS_STRICT;
+
+        if (processContents.equals(SchemaSymbols.ATTVAL_SKIP)){
+            anyAttDecl.defaultType = XMLAttributeDecl.PROCESSCONTENTS_SKIP;
+        }
+        else if (processContents.equals(SchemaSymbols.ATTVAL_LAX)) {
+            anyAttDecl.defaultType = XMLAttributeDecl.PROCESSCONTENTS_LAX;
+        }
+
+        return anyAttDecl; 
+    }
+
+    private XMLAttributeDecl mergeTwoAnyAttribute(XMLAttributeDecl oneAny, XMLAttributeDecl anotherAny) {
+        if (oneAny.type == -1) {
+            return oneAny;
+        }
+        if (anotherAny.type == -1) {
+            return anotherAny;
+        }
+
+        if (oneAny.type == XMLAttributeDecl.TYPE_ANY_ANY) {
+            return anotherAny;
+        }
+
+        if (anotherAny.type == XMLAttributeDecl.TYPE_ANY_ANY) {
+            return oneAny;
+        }
+
+        if (oneAny.type == XMLAttributeDecl.TYPE_ANY_OTHER) {
+            if (anotherAny.type == XMLAttributeDecl.TYPE_ANY_OTHER) {
+
+                if ( anotherAny.name.uri == oneAny.name.uri ) {
+                    return oneAny;
+                }
+                else {
+                    oneAny.type = -1;
+                    return oneAny;
+                }
+
+            }
+            else if (anotherAny.type == XMLAttributeDecl.TYPE_ANY_LOCAL) {
+                return anotherAny;
+            }
+            else if (anotherAny.type == XMLAttributeDecl.TYPE_ANY_LIST) {
+                if (!fStringPool.stringInList(anotherAny.enumeration, oneAny.name.uri) ) {
+                    return anotherAny;
+                }
+                else {
+                    int[] anotherAnyURIs = fStringPool.stringListAsIntArray(anotherAny.enumeration);
+                    int newList = fStringPool.startStringList();
+                    for (int i=0; i< anotherAnyURIs.length; i++) {
+                        if (anotherAnyURIs[i] != oneAny.name.uri ) {
+                            fStringPool.addStringToList(newList, anotherAnyURIs[i]);
+                        }
+                    }
+                    fStringPool.finishStringList(newList);
+                    anotherAny.enumeration = newList;
+                    return anotherAny;
+                }
+            }
+        }
+
+        if (oneAny.type == XMLAttributeDecl.TYPE_ANY_LOCAL) {
+            if ( anotherAny.type == XMLAttributeDecl.TYPE_ANY_OTHER
+                || anotherAny.type == XMLAttributeDecl.TYPE_ANY_LOCAL) {
+                return oneAny;
+            }
+            else if (anotherAny.type == XMLAttributeDecl.TYPE_ANY_LIST) {
+                oneAny.type = -1;
+                return oneAny;
+            }
+        }
+
+        if (oneAny.type == XMLAttributeDecl.TYPE_ANY_LIST) {
+            if ( anotherAny.type == XMLAttributeDecl.TYPE_ANY_OTHER){
+                if (!fStringPool.stringInList(oneAny.enumeration, anotherAny.name.uri) ) {
+                    return oneAny;
+                }
+                else {
+                    int[] oneAnyURIs = fStringPool.stringListAsIntArray(oneAny.enumeration);
+                    int newList = fStringPool.startStringList();
+                    for (int i=0; i< oneAnyURIs.length; i++) {
+                        if (oneAnyURIs[i] != anotherAny.name.uri ) {
+                            fStringPool.addStringToList(newList, oneAnyURIs[i]);
+                        }
+                    }
+                    fStringPool.finishStringList(newList);
+                    oneAny.enumeration = newList;
+                    return oneAny;
+                }
+
+            }
+            else if ( anotherAny.type == XMLAttributeDecl.TYPE_ANY_LOCAL) {
+                oneAny.type = -1;
+                return oneAny;
+            }
+            else if (anotherAny.type == XMLAttributeDecl.TYPE_ANY_LIST) {
+                int[] result = intersect2sets( fStringPool.stringListAsIntArray(oneAny.enumeration), 
+                                               fStringPool.stringListAsIntArray(anotherAny.enumeration));
+                int newList = fStringPool.startStringList();
+                for (int i=0; i<result.length; i++) {
+                    fStringPool.addStringToList(newList, result[i]);
+                }
+                fStringPool.finishStringList(newList);
+                oneAny.enumeration = newList;
+                return oneAny;
+            }
+        }
+
+        // should never go there;
+        return oneAny;
+    }
+
+    int[] intersect2sets(int[] one, int[] theOther){
+        int[] result = new int[(one.length>theOther.length?one.length:theOther.length)];
+
+        // simple implemention, 
+        int count = 0;
+        for (int i=0; i<one.length; i++) {
+            for(int j=0; j<theOther.length; j++) {
+                if (one[i]==theOther[j]) {
+                    result[count++] = one[i];
+                }
+            }
+        }
+
+        int[] result2 = new int[count];
+        System.arraycopy(result, 0, result2, 0, count);
+
+        return result2;
     }
 
     /**
@@ -1615,6 +1781,7 @@ public class TraverseSchema implements
                     //REVISIT, do nothing for annotation for now.
                 } 
                 else if (childName.equals(SchemaSymbols.ELT_ANYATTRIBUTE)) {
+                    break;
                     //REVISIT, do nothing for attribute wildcard for now.
                 } 
                 else { // datatype qual 
@@ -1734,6 +1901,9 @@ public class TraverseSchema implements
 
 
         // (attribute | attrGroupRef)*
+        XMLAttributeDecl attWildcard = null;
+        Vector anyAttDecls = new Vector();
+
         for (child = XUtil.getFirstChildElement(complexTypeDecl);
              child != null;
              child = XUtil.getNextSiblingElement(child)) {
@@ -1761,16 +1931,49 @@ public class TraverseSchema implements
                                              " can't have any attribute children at all");
                     break;
                 }
-                traverseAttributeGroupDecl(child,typeInfo);
+                traverseAttributeGroupDecl(child,typeInfo,anyAttDecls);
+            }
+            else if ( childName.equals(SchemaSymbols.ELT_ANYATTRIBUTE) ) { 
+                attWildcard = traverseAnyAttribute(child);
             }
         }
 
+        if (attWildcard != null) {
+            XMLAttributeDecl fromGroup = null;
+            final int count = anyAttDecls.size();
+            if ( count > 0) {
+                fromGroup = (XMLAttributeDecl) anyAttDecls.elementAt(0);
+                for (int i=1; i<count; i++) {
+                    fromGroup = mergeTwoAnyAttribute(fromGroup,(XMLAttributeDecl)anyAttDecls.elementAt(i));
+                }
+            }
+            if (fromGroup != null) {
+                int saveProcessContents = attWildcard.defaultType;
+                attWildcard = mergeTwoAnyAttribute(attWildcard, fromGroup);
+                attWildcard.defaultType = saveProcessContents;
+            }
+        }
+        else {
+            //REVISIT: unclear in the Scheme Structures 4.3.3 what to do in this case
+        }
+
         // merge in base type's attribute decls
+        XMLAttributeDecl baseAttWildcard = null;
         if (baseTypeInfo != null && baseTypeInfo.attlistHead > -1 ) {
             int attDefIndex = baseTypeInfo.attlistHead;
             while ( attDefIndex > -1 ) {
                 fTempAttributeDecl.clear();
                 fSchemaGrammar.getAttributeDecl(attDefIndex, fTempAttributeDecl);
+                if (fTempAttributeDecl.type == XMLAttributeDecl.TYPE_ANY_ANY 
+                    ||fTempAttributeDecl.type == XMLAttributeDecl.TYPE_ANY_LIST
+                    ||fTempAttributeDecl.type == XMLAttributeDecl.TYPE_ANY_LOCAL 
+                    ||fTempAttributeDecl.type == XMLAttributeDecl.TYPE_ANY_OTHER ) {
+                    if (attWildcard == null) {
+                        baseAttWildcard = fTempAttributeDecl;
+                    }
+                    attDefIndex = fSchemaGrammar.getNextAttributeDeclIndex(attDefIndex);
+                    continue;
+                }
                 // if found a duplicate, if it is derived by restriction. then skip the one from the base type
                 /**/
                 int temp = fSchemaGrammar.getAttributeDeclIndex(typeInfo.templateElementIndex, fTempAttributeDecl.name);
@@ -1781,16 +1984,36 @@ public class TraverseSchema implements
                     }
                 }
                 /**/
-                //REVISIT:
-                // int enumeration = ????
                 fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
                                           fTempAttributeDecl.name, fTempAttributeDecl.type, 
-                                          -1, fTempAttributeDecl.defaultType, 
+                                          fTempAttributeDecl.enumeration, fTempAttributeDecl.defaultType, 
                                           fTempAttributeDecl.defaultValue, 
                                           fTempAttributeDecl.datatypeValidator,
                                           fTempAttributeDecl.list);
                 attDefIndex = fSchemaGrammar.getNextAttributeDeclIndex(attDefIndex);
             }
+        }
+        // att wildcard will inserted after all attributes were processed
+        if (attWildcard != null) {
+            if (attWildcard.type != -1) {
+                fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
+                                          attWildcard.name, attWildcard.type, 
+                                          attWildcard.enumeration, attWildcard.defaultType, 
+                                          attWildcard.defaultValue, 
+                                          attWildcard.datatypeValidator,
+                                          attWildcard.list);
+            }
+            else {
+                //REVISIT: unclear in Schema spec if should report error here.
+            }
+        }
+        else if (baseAttWildcard != null) {
+            fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
+                                      baseAttWildcard.name, baseAttWildcard.type, 
+                                      baseAttWildcard.enumeration, baseAttWildcard.defaultType, 
+                                      baseAttWildcard.defaultValue, 
+                                      baseAttWildcard.datatypeValidator,
+                                      baseAttWildcard.list);
         }
 
         typeInfo.attlistHead = fSchemaGrammar.getFirstAttributeDeclIndex(typeInfo.templateElementIndex);
@@ -2222,10 +2445,12 @@ public class TraverseSchema implements
         }
 
         // add attribute to attr decl pool in fSchemaGrammar, 
-        fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
-                                  attQName, attType, 
-                                  dataTypeSymbol, attDefaultType, 
-                                  fStringPool.toString( attDefaultValue), dv, attIsList);
+        if (typeInfo != null) {
+            fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
+                                      attQName, attType, 
+                                      dataTypeSymbol, attDefaultType, 
+                                      fStringPool.toString( attDefaultValue), dv, attIsList);
+        }
         return -1;
     } // end of method traverseAttribute
 
@@ -2254,12 +2479,14 @@ public class TraverseSchema implements
         }
 
 
-        fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
-                                  tempAttrDecl.name, tempAttrDecl.type,
-                                  -1, tempAttrDecl.defaultType,
-                                  tempAttrDecl.defaultValue, 
-                                  tempAttrDecl.datatypeValidator, 
-                                  tempAttrDecl.list);
+        if (typeInfo!= null) {
+            fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
+                                      tempAttrDecl.name, tempAttrDecl.type,
+                                      -1, tempAttrDecl.defaultType,
+                                      tempAttrDecl.defaultValue, 
+                                      tempAttrDecl.datatypeValidator, 
+                                      tempAttrDecl.list);
+        }
 
 
         return 0;
@@ -2275,7 +2502,7 @@ public class TraverseSchema implements
     * </>
     * 
     */
-    private int traverseAttributeGroupDecl( Element attrGrpDecl, ComplexTypeInfo typeInfo ) throws Exception {
+    private int traverseAttributeGroupDecl( Element attrGrpDecl, ComplexTypeInfo typeInfo, Vector anyAttDecls ) throws Exception {
         // attribute name
         int attGrpName = fStringPool.addSymbol(attrGrpDecl.getAttribute(SchemaSymbols.ATT_NAME));
         
@@ -2298,7 +2525,7 @@ public class TraverseSchema implements
             String uriStr = resolvePrefixToURI(prefix);
             if (!uriStr.equals(fTargetNSURIString)) {
                 
-                traverseAttributeGroupDeclFromAnotherSchema(localpart, uriStr, typeInfo);
+                traverseAttributeGroupDeclFromAnotherSchema(localpart, uriStr, typeInfo, anyAttDecls);
 
                 return -1;
                 // TO DO 
@@ -2308,7 +2535,7 @@ public class TraverseSchema implements
             }
             Element referredAttrGrp = getTopLevelComponentByName(SchemaSymbols.ELT_ATTRIBUTEGROUP,localpart);
             if (referredAttrGrp != null) {
-                traverseAttributeGroupDecl(referredAttrGrp, typeInfo);
+                traverseAttributeGroupDecl(referredAttrGrp, typeInfo, anyAttDecls);
             }
             else {
                 // REVISIT: Localize
@@ -2324,7 +2551,11 @@ public class TraverseSchema implements
                 traverseAttributeDecl(child, typeInfo);
             }
             else if ( child.getNodeName().equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ) {
-                traverseAttributeGroupDecl(child, typeInfo);
+                traverseAttributeGroupDecl(child, typeInfo,anyAttDecls);
+            }
+            else if ( child.getNodeName().equals(SchemaSymbols.ELT_ANYATTRIBUTE) ) {
+                anyAttDecls.addElement(traverseAnyAttribute(child));
+                break;
             }
             else if (child.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION) ) {
                 // REVISIT: what about appInfo
@@ -2333,7 +2564,9 @@ public class TraverseSchema implements
         return -1;
     } // end of method traverseAttributeGroup
     
-    private int traverseAttributeGroupDeclFromAnotherSchema( String attGrpName , String uriStr, ComplexTypeInfo typeInfo ) throws Exception {
+    private int traverseAttributeGroupDeclFromAnotherSchema( String attGrpName , String uriStr, 
+                                                             ComplexTypeInfo typeInfo,
+                                                             Vector anyAttDecls ) throws Exception {
         
         SchemaGrammar aGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(uriStr);
         if (uriStr == null || aGrammar == null || ! (aGrammar instanceof SchemaGrammar) ) {
@@ -2379,7 +2612,11 @@ public class TraverseSchema implements
                     traverseAttributeDecl(child, typeInfo);
             }
             else if ( child.getNodeName().equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ) {
-                traverseAttributeGroupDecl(child, typeInfo);
+                traverseAttributeGroupDecl(child, typeInfo, anyAttDecls);
+            }
+            else if ( child.getNodeName().equals(SchemaSymbols.ELT_ANYATTRIBUTE) ) {
+                anyAttDecls.addElement(traverseAnyAttribute(child));
+                break;
             }
             else if (child.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION) ) {
                 // REVISIT: what about appInfo

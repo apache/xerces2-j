@@ -629,6 +629,21 @@ public final class StringPool {
             sb.append(')');
         return sb.toString();
     }
+    public int[] stringListAsIntArray(int stringListIndex) {
+        int chunk = stringListIndex >> CHUNK_SHIFT;
+        int index = stringListIndex & CHUNK_MASK;
+        int len = stringListLength(stringListIndex);
+
+        int[] ia = new int[len];
+        for (int i=0; i<len; i++) {
+            ia[i] = fStringList[chunk][index];
+            if (++index == CHUNK_SIZE) {
+                chunk++;
+                index = 0;
+            }
+        }
+        return ia;
+    }
     //
     //
     //

@@ -430,8 +430,7 @@ public class SchemaGrammar extends Grammar{
         fTempAttributeDecl.defaultType = attDefaultType;
         fTempAttributeDecl.defaultValue = attDefaultValue;
         fTempAttributeDecl.list = isList;
-        // TO DO: what about enumeration?
-        // setAttributeDecl(attrDeclIndex,fTempAttributeDecl);
+        fTempAttributeDecl.enumeration = enumeration;
 
         super.setAttributeDecl(templateElementIndex, attrDeclIndex, fTempAttributeDecl);
     }

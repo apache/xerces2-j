@@ -4,6 +4,7 @@
 <s1 title="Releases">
     <s2 title='July 17, 2000'>
         <ul>
+           <li>Added "anyAttribute" support for Schema [ericye]</li>           
            <li>Added "xsi:type" support for Schema [ericye]</li>
            <li>Added full equivClass support for Schema [ericye]</li>
            <li>Fixed "form" attribute behavior to be fully compilant with Schema Spec [ericye]</li>

@@ -45,11 +45,11 @@
             <li>Simple type definitions</li>
             <li>Complex type definitions</li>
             <li>Wildcards: any</li>
+            <li>Wildcards: anyAttribute</li>
         </ul>
     </s2>
     <s2 title='Components NOT Supported'>
         <ul>
-            <li>Wildcards: anyAttribute</li>
             <li>Identity constraints: unique, key, keyref</li>
             <li>Notation declaration</li>
             <li>Annotation (ignored)</li>

@@ -1653,10 +1653,33 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             int attDefIndex = fGrammar.getFirstAttributeDeclIndex(elementIndex);
             while (attDefIndex != -1) {
                 fGrammar.getAttributeDecl(attDefIndex, fTempAttDecl);
+                    
                 if (fTempAttDecl.name.localpart == attribute.localpart &&
                     fTempAttDecl.name.uri == attribute.uri ) {
                     return attDefIndex;
                 }
+
+                if (fGrammarIsSchemaGrammar){
+                    if (fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_ANY){ 
+                        return attDefIndex;
+                    }
+                    else if (fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_LOCAL) {
+                        if (attribute.uri == -1) {
+                            return attDefIndex;
+                        }
+                    }
+                    else if (fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_OTHER) {
+                        if (attribute.uri != fTempAttDecl.name.uri) {
+                            return attDefIndex;
+                        }
+                    }
+                    else if (fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_LIST) {
+                        if (fStringPool.stringInList(fTempAttDecl.enumeration, attribute.uri)) {
+                            return attDefIndex;
+                        }
+                    }
+                }
+
                 attDefIndex = fGrammar.getNextAttributeDeclIndex(attDefIndex);
             }
         }
@@ -2415,8 +2438,89 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
                             validateDTDattribute(element, attrList.getAttValue(index), fTempAttDecl);
                         }
+                           
+                        // check to see if this attribute matched an attribute wildcard
+                        if ( fGrammarIsSchemaGrammar && 
+                             (fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_ANY 
+                            ||fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_LIST
+                            ||fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_LOCAL 
+                            ||fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_OTHER) ) {
 
-                        if (fTempAttDecl.datatypeValidator == null) {
+                            if (fTempAttDecl.defaultType == XMLAttributeDecl.PROCESSCONTENTS_SKIP) {
+                                // attribute should just be bypassed, 
+                            }
+                            else if ( fTempAttDecl.defaultType == XMLAttributeDecl.PROCESSCONTENTS_STRICT
+                                      || fTempAttDecl.defaultType == XMLAttributeDecl.PROCESSCONTENTS_LAX)  {
+
+                                boolean reportError = false;
+                                boolean processContentStrict = fTempAttDecl.defaultType == XMLAttributeDecl.PROCESSCONTENTS_STRICT;
+
+                                if (fTempQName.uri == -1) {
+                                    if (processContentStrict) {
+                                        reportError = true;
+                                    }
+                                }
+                                else {
+                                    Grammar aGrammar = fGrammarResolver.getGrammar(fStringPool.toString(fTempQName.uri));
+                                    if (aGrammar == null || !(aGrammar instanceof SchemaGrammar) ) {
+                                        if (processContentStrict) {
+                                            reportError = true;
+                                        }
+                                    }
+                                    else {
+                                        SchemaGrammar sGrammar = (SchemaGrammar) aGrammar;
+                                        Hashtable attRegistry = sGrammar.getAttirubteDeclRegistry();
+                                        if (attRegistry == null) {
+                                            if (processContentStrict) {
+                                                reportError = true;
+                                            }
+                                        }
+                                        else {
+                                            XMLAttributeDecl attDecl = (XMLAttributeDecl) attRegistry.get(fStringPool.toString(fTempQName.localpart));
+                                            if (attDecl == null) {
+                                                if (processContentStrict) {
+                                                    reportError = true;
+                                                }
+                                            }
+                                            else {
+                                                DatatypeValidator attDV = attDecl.datatypeValidator;
+                                                if (attDV == null) {
+                                                    if (processContentStrict) {
+                                                        reportError = true;
+                                                    }
+                                                }
+                                                else {
+                                                    try {
+                                                        attDV.validate(fStringPool.toString(attrList.getAttValue(index)), null );
+                                                    }
+                                                    catch (InvalidDatatypeValueException idve) {
+                                                        fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                                                                   SchemaMessageProvider.SCHEMA_DOMAIN,
+                                                                                   SchemaMessageProvider.DatatypeError,
+                                                                                   SchemaMessageProvider.MSG_NONE,
+                                                                                   new Object [] { idve.getMessage() },
+                                                                                   XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                if (reportError) {
+                                    Object[] args = { fStringPool.toString(element.rawname),
+                                        "ANY---"+fStringPool.toString(attrList.getAttrName(index)) };
+
+                                    fErrorReporter.reportError(fAttrNameLocator,    
+                                                               XMLMessages.XML_DOMAIN,
+                                                               XMLMessages.MSG_ATTRIBUTE_NOT_DECLARED,
+                                                               XMLMessages.VC_ATTRIBUTE_VALUE_TYPE,
+                                                               args,
+                                                               XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+
+                                }
+                            }
+                        }
+                        else if (fTempAttDecl.datatypeValidator == null) {
                             Object[] args = { fStringPool.toString(element.rawname),
                                               fStringPool.toString(attrList.getAttrName(index)) };
                             System.out.println("[Error] Datatypevalidator for attribute " + fStringPool.toString(attrList.getAttrName(index))
