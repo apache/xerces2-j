@@ -82,7 +82,7 @@ public abstract class Grammar {
     private  String                fGrammarID       = null;
     private  Document              fGrammarDocument = null;
     private StringPool             fStringPool      = null;
-    private  arrayRepresentation   fGrammarArrayRepresentation = null;
+    private  ArrayRepresentation   fGrammarArrayRepresentation = null;
 
     public Grammar( String grammarID ) {
         fGrammarID = grammarID;
