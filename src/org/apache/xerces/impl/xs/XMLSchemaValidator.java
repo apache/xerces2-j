@@ -75,12 +75,13 @@ import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.ValidationState;
 import org.apache.xerces.impl.XMLEntityManager;
 
-import java.io.IOException;
+
 import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.IntStack;
+import org.apache.xerces.util.XMLResourceIdentifierImpl;
 
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
@@ -107,11 +108,20 @@ import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.psvi.ElementPSVI;
 import org.apache.xerces.xni.psvi.AttributePSVI;
 
+import org.xml.sax.InputSource ;
+
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Stack;
 import java.util.Vector;
 import java.util.StringTokenizer;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.BufferedInputStream;
+import java.io.Reader;
+import java.io.InputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 /**
  * The DTD validator. The validator implements a document
@@ -358,6 +368,12 @@ public class XMLSchemaValidator
     protected String fExternalSchemas = null;
     protected String fExternalNoNamespaceSchema = null;
 
+	//JAXP Schema Source property
+	protected Object fJaxpSchemaSource = null ;
+
+	//ResourceIdentifier for use in calling EntityResolver
+	XMLResourceIdentifierImpl fResourceIdentifier = new XMLResourceIdentifierImpl();
+	
     /** Schema Grammar Description passed,  to give a chance to application to supply the Grammar */
     protected final XSDDescription fXSDDescription = new XSDDescription() ;
     protected final Hashtable fLocationPairs = new Hashtable() ;
@@ -1169,9 +1185,9 @@ public class XMLSchemaValidator
         fExternalNoNamespaceSchema = (String)componentManager.getProperty(SCHEMA_NONS_LOCATION);
 
         // get JAXP schema source property
-        Object jaxpSchemaSource = componentManager.getProperty(
-                JAXP_SCHEMA_SOURCE);
-
+        fJaxpSchemaSource = componentManager.getProperty(JAXP_SCHEMA_SOURCE);
+	fResourceIdentifier.clear();
+	
         // clear grammars, and put the one for schema namespace there
         fGrammarBucket.reset();
         fGrammarPool = (XMLGrammarPool)componentManager.getProperty(XMLGRAMMAR_POOL);
@@ -1198,7 +1214,7 @@ public class XMLSchemaValidator
         fSchemaHandler.reset(fXSIErrorReporter.fErrorReporter,
                              fEntityResolver, fSymbolTable,
                              fExternalSchemas, fExternalNoNamespaceSchema,
-                             jaxpSchemaSource, fGrammarPool);
+                             fGrammarPool);
 
         //reset XSDDescripton
         fXSDDescription.reset() ;
@@ -1607,6 +1623,13 @@ public class XMLSchemaValidator
             // choose to take first location hint available for a particular namespace.
 
             storeLocations(fExternalSchemas, fExternalNoNamespaceSchema) ;
+            
+            //REVISIT: this JAXP processing shouldn't be done
+            //in XMLSchemaValidator but in a separate component responsible for pre-parsing grammars
+            // and SchemaValidator should be given these preParsed grammars before this component 
+            //attempts to validate -nb.
+            
+            processJAXPSchemaSource( fJaxpSchemaSource , fEntityResolver );
             
             // parse schemas specified via schema location properties
             //parseSchemas(fExternalSchemas, fExternalNoNamespaceSchema);
@@ -2260,6 +2283,104 @@ public class XMLSchemaValidator
         }
         
     }//parseSchemas(String,String)
+
+
+    /**
+     * Translate the various JAXP SchemaSource property types to XNI
+     * XMLInputSource.  Valid types are: String, org.xml.sax.InputSource,
+     * InputStream, File, or Object[] of any of previous types.
+     */
+
+    private void processJAXPSchemaSource(Object val, XMLEntityResolver xer) {
+        if (val == null) {
+            return;
+        }
+
+        Class componentType = val.getClass().getComponentType();
+        if (componentType == null) {
+            // Not an array
+            fSchemaHandler.parseSchema(null, XSD2XMLInputSource(val, xer),
+                        XSDDescription.CONTEXT_PREPARSE);
+            return ;
+        } else if (componentType != Object.class) {
+            // Not an Object[]
+            throw new XMLConfigurationException(
+                XMLConfigurationException.NOT_SUPPORTED, JAXP_SCHEMA_SOURCE);
+        }
+
+        Object[] objArr = (Object[]) val;
+        for (int i = 0; i < objArr.length; i++) {
+            fSchemaHandler.parseSchema(null, XSD2XMLInputSource(objArr[i], xer),
+                        XSDDescription.CONTEXT_PREPARSE);
+        }
+    }
+
+    private XMLInputSource XSD2XMLInputSource(
+            Object val, XMLEntityResolver entityResolver)
+    {
+        if (val instanceof String) {
+            // String value is treated as a URI that is passed through the
+            // EntityResolver
+            String loc = (String) val;
+            
+            if (entityResolver != null) {
+            
+                fResourceIdentifier.setValues(null, loc, null, null);
+                XMLInputSource xis = null;
+                try {
+                    xis = entityResolver.resolveEntity(fResourceIdentifier);
+                } catch (IOException ex) {                    
+                    reportSchemaError("schema_reference.4",
+                                      new Object[] { loc });
+                }
+                if (xis == null) {
+                    // REVISIT: can this happen?
+                    // Treat value as a URI and pass in as systemId
+                    return new XMLInputSource(null, loc, null);
+                }
+                return xis;
+            }
+        } else if (val instanceof InputSource) {
+            return SAX2XMLInputSource((InputSource) val);
+        } else if (val instanceof InputStream) {
+            return new XMLInputSource(null, null, null,
+                                      (InputStream) val, null);
+        } else if (val instanceof File) {
+            File file = (File) val;
+            InputStream is = null;
+            try {
+                is = new BufferedInputStream(new FileInputStream(file));
+            } catch (FileNotFoundException ex) {                
+                reportSchemaError("schema_reference.4",
+                                  new Object[] { file.toString() });
+            }
+            return new XMLInputSource(null, null, null, is, null);
+        }
+        throw new XMLConfigurationException(
+            XMLConfigurationException.NOT_SUPPORTED, JAXP_SCHEMA_SOURCE);
+    }
+
+    
+     //Convert a SAX InputSource to an equivalent XNI XMLInputSource
+    
+    private static XMLInputSource SAX2XMLInputSource(InputSource sis) {
+        String publicId = sis.getPublicId();
+        String systemId = sis.getSystemId();
+
+        Reader charStream = sis.getCharacterStream();
+        if (charStream != null) {
+            return new XMLInputSource(publicId, systemId, null, charStream,
+                                      null);
+        }
+
+        InputStream byteStream = sis.getByteStream();
+        if (byteStream != null) {
+            return new XMLInputSource(publicId, systemId, null, byteStream,
+                                      sis.getEncoding());
+        }
+
+        return new XMLInputSource(publicId, systemId, null);
+    }
 
     void getAndCheckXsiType(QName element, String xsiType, XMLAttributes attributes) {
         // This method also deals with clause 1.2.1.2 of the constraint

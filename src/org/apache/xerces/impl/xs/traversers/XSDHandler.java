@@ -1384,7 +1384,7 @@ public class XSDHandler {
                       SymbolTable symbolTable,
                       String externalSchemaLocation,
                       String externalNoNSSchemaLocation,
-                      Object jaxpSchemaSource, XMLGrammarPool grammarPool) {
+                      XMLGrammarPool grammarPool) {
 
         fErrorReporter = errorReporter;
         fSymbolTable = symbolTable;
@@ -1400,108 +1400,10 @@ public class XSDHandler {
         }
         catch (Exception e) {
         }
-
-        processJAXPSchemaSource(jaxpSchemaSource, entityResolver);
+	
+	//now this part is done in XMLSchemaValidator
+        //processJAXPSchemaSource(jaxpSchemaSource, entityResolver);
     } // reset(ErrorReporter, EntityResolver, SymbolTable)
-
-    /**
-     * Translate the various JAXP SchemaSource property types to XNI
-     * XMLInputSource.  Valid types are: String, org.xml.sax.InputSource,
-     * InputStream, File, or Object[] of any of previous types.
-     */
-    private void processJAXPSchemaSource(Object val, XMLEntityResolver xer) {
-        if (val == null) {
-            return;
-        }
-
-        Class componentType = val.getClass().getComponentType();
-        if (componentType == null) {
-            // Not an array
-            parseSchema(null, XSD2XMLInputSource(val, xer),
-                        XSDDescription.CONTEXT_PREPARSE);
-            return ;
-        } else if (componentType != Object.class) {
-            // Not an Object[]
-            throw new XMLConfigurationException(
-                XMLConfigurationException.NOT_SUPPORTED, JAXP_SCHEMA_SOURCE);
-        }
-
-        Object[] objArr = (Object[]) val;
-        for (int i = 0; i < objArr.length; i++) {
-            parseSchema(null, XSD2XMLInputSource(objArr[i], xer),
-                        XSDDescription.CONTEXT_PREPARSE);
-        }
-    }
-
-    private XMLInputSource XSD2XMLInputSource(
-            Object val, XMLEntityResolver entityResolver)
-    {
-        if (val instanceof String) {
-            // String value is treated as a URI that is passed through the
-            // EntityResolver
-            String loc = (String) val;
-            if (entityResolver != null) {
-                String expandedLoc = XMLEntityManager.expandSystemId(loc);
-                fResourceIdentifier.setValues(null, loc, null, expandedLoc);
-                XMLInputSource xis = null;
-                try {
-                    xis = entityResolver.resolveEntity(fResourceIdentifier);
-                } catch (IOException ex) {
-                    short referType = XSDDescription.CONTEXT_PREPARSE;
-                    reportSchemaError(DOC_ERROR_CODES[referType],
-                                      new Object[] { loc },
-                                      null);
-                }
-                if (xis == null) {
-                    // REVISIT: can this happen?
-                    // Treat value as a URI and pass in as systemId
-                    return new XMLInputSource(null, loc, null);
-                }
-                return xis;
-            }
-        } else if (val instanceof InputSource) {
-            return SAX2XMLInputSource((InputSource) val);
-        } else if (val instanceof InputStream) {
-            return new XMLInputSource(null, null, null,
-                                      (InputStream) val, null);
-        } else if (val instanceof File) {
-            File file = (File) val;
-            InputStream is = null;
-            try {
-                is = new BufferedInputStream(new FileInputStream(file));
-            } catch (FileNotFoundException ex) {
-                short referType = XSDDescription.CONTEXT_PREPARSE;
-                reportSchemaError(DOC_ERROR_CODES[referType],
-                                  new Object[] { file.toString() },
-                                  null);
-            }
-            return new XMLInputSource(null, null, null, is, null);
-        }
-        throw new XMLConfigurationException(
-            XMLConfigurationException.NOT_SUPPORTED, JAXP_SCHEMA_SOURCE);
-    }
-
-    /**
-     * Convert a SAX InputSource to an equivalent XNI XMLInputSource
-     */
-    private static XMLInputSource SAX2XMLInputSource(InputSource sis) {
-        String publicId = sis.getPublicId();
-        String systemId = sis.getSystemId();
-
-        Reader charStream = sis.getCharacterStream();
-        if (charStream != null) {
-            return new XMLInputSource(publicId, systemId, null, charStream,
-                                      null);
-        }
-
-        InputStream byteStream = sis.getByteStream();
-        if (byteStream != null) {
-            return new XMLInputSource(publicId, systemId, null, byteStream,
-                                      sis.getEncoding());
-        }
-
-        return new XMLInputSource(publicId, systemId, null);
-    }
 
     /**
      * Traverse all the deferred local elements. This method should be called
