@@ -1706,7 +1706,7 @@ public class XMLEntityManager
          * @throws SAXException Thrown by entity handler to signal an error
          *                      when the end of an entity is reached.
          */
-        public int scanAttContent(int quote, XMLString content)
+        public int scanLiteral(int quote, XMLString content)
             throws IOException, SAXException {
     
             if (fCurrentEntity.position == fCurrentEntity.count) {
@@ -1717,7 +1717,7 @@ public class XMLEntityManager
                 load(1, true);
             }
             if (DEBUG_PRINT) {
-                System.out.print("(scanAttContent, '"+(char)quote+"': ");
+                System.out.print("(scanLiteral, '"+(char)quote+"': ");
                 print();
                 System.out.println();
             }
@@ -1741,13 +1741,13 @@ public class XMLEntityManager
                 c = fCurrentEntity.ch[fCurrentEntity.position];
             }
             if (DEBUG_PRINT) {
-                System.out.print(")scanAttContent, '"+(char)quote+"': ");
+                System.out.print(")scanLiteral, '"+(char)quote+"': ");
                 print();
                 System.out.println(" -> '"+(char)c+"'");
             }
             return c;
     
-        } // scanAttContent(int,XMLString):int
+        } // scanLiteral(int,XMLString):int
     
         /**
          * Scans a range of character data up to the specicied delimiter, 

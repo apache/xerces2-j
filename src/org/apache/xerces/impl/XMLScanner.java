@@ -382,7 +382,7 @@ public abstract class XMLScanner
         }
         fEntityScanner.scanChar();
         // REVISIT: fix this
-        fEntityScanner.scanAttContent(quote, value);
+        fEntityScanner.scanLiteral(quote, value);
         if (!fEntityScanner.skipChar(quote)) {
             fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "CloseQuoteMissingInTextDecl", 
                                        new Object[]{name}, XMLErrorReporter.SEVERITY_FATAL_ERROR);

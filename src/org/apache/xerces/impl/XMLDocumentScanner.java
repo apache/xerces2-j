@@ -642,11 +642,11 @@ public class XMLDocumentScanner
                 fEntityScanner.scanChar();
                 // REVISIT: do right
                 XMLString value = fString;
-                if (fEntityScanner.scanAttContent(quote, fString) != quote) {
+                if (fEntityScanner.scanLiteral(quote, fString) != quote) {
                     fStringBuffer.clear();
                     do {
                         fStringBuffer.append(fString);
-                    } while (fEntityScanner.scanAttContent(quote, fString) != quote);
+                    } while (fEntityScanner.scanLiteral(quote, fString) != quote);
                     fStringBuffer.append(fString);
                     value = fStringBuffer;
                 }
@@ -672,11 +672,11 @@ public class XMLDocumentScanner
                 fEntityScanner.scanChar();
                 // REVISIT: do right
                 XMLString value = fString;
-                if (fEntityScanner.scanAttContent(quote, fString) != quote) {
+                if (fEntityScanner.scanLiteral(quote, fString) != quote) {
                     fStringBuffer.clear();
                     do {
                         fStringBuffer.append(fString);
-                    } while (fEntityScanner.scanAttContent(quote, fString) != quote);
+                    } while (fEntityScanner.scanLiteral(quote, fString) != quote);
                     fStringBuffer.append(fString);
                     value = fStringBuffer;
                 }
@@ -700,11 +700,11 @@ public class XMLDocumentScanner
                 fEntityScanner.scanChar();
                 // REVISIT: do right
                 value = fString;
-                if (fEntityScanner.scanAttContent(quote, fString) != quote) {
+                if (fEntityScanner.scanLiteral(quote, fString) != quote) {
                     fStringBuffer.clear();
                     do {
                         fStringBuffer.append(fString);
-                    } while (fEntityScanner.scanAttContent(quote, fString) != quote);
+                    } while (fEntityScanner.scanLiteral(quote, fString) != quote);
                     fStringBuffer.append(fString);
                     value = fStringBuffer;
                 }
@@ -913,7 +913,7 @@ public class XMLDocumentScanner
         final String CDATA = fSymbolTable.addSymbol("CDATA");
         attributes.setAttribute(fAttributeQName, CDATA, null);
         XMLString value = fString;
-        if (fEntityScanner.scanAttContent(quote, fString) != quote) {
+        if (fEntityScanner.scanLiteral(quote, fString) != quote) {
             fStringBuffer.clear();
             do {
                 fStringBuffer.append(fString);
@@ -922,7 +922,7 @@ public class XMLDocumentScanner
                     // TODO: handle entities in value
                 }
                 /***/
-            } while (fEntityScanner.scanAttContent(quote, fString) != quote);
+            } while (fEntityScanner.scanLiteral(quote, fString) != quote);
             fStringBuffer.append(fString);
             value = fStringBuffer;
         }

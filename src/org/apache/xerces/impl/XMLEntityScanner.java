@@ -262,7 +262,7 @@ public abstract class XMLEntityScanner
      * @throws SAXException Thrown by entity handler to signal an error
      *                      when the end of an entity is reached.
      */
-    public abstract int scanAttContent(int quote, XMLString content) 
+    public abstract int scanLiteral(int quote, XMLString content) 
         throws IOException, SAXException;
     
     /**
