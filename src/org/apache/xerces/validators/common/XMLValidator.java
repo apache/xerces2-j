@@ -2291,9 +2291,8 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
          	   // pass parser's entity resolver (local Resolver), which also has reference to user's 
          	   // entity resolver, and also can fall-back to entityhandler's expandSystemId()
-         	   
                tst = new TraverseSchema( root, fStringPool, (SchemaGrammar)grammar, fGrammarResolver, fErrorReporter, source.getSystemId(), currentER);
-               fGrammarResolver.putGrammar(document.getDocumentElement().getAttribute("targetNamespace"), grammar);
+               fGrammarResolver.putGrammar(root.getAttribute("targetNamespace"), grammar);
             }
          } catch (Exception e) {
             e.printStackTrace(System.err);
@@ -2428,7 +2427,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
          }
       case XMLAttributeDecl.TYPE_ENUMERATION: {
             String enumeration = fStringPool.stringListAsString(attrDecl.enumeration);
-            return fStringPool.addString(enumeration);
+            return fStringPool.addSymbol(enumeration);
          }
       case XMLAttributeDecl.TYPE_ID: {
             return fIDSymbol;
@@ -2562,7 +2561,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
          if ( fGrammar != null ) {
             if (DEBUG_SCHEMA_VALIDATION) {
                System.out.println("*******Lookup element: uri: " + fStringPool.toString(element.uri)+
-                                  "localpart: '" + fStringPool.toString(element.localpart)
+                                  " localpart: '" + fStringPool.toString(element.localpart)
                                   +"' and scope : " + fCurrentScope+"\n");
             }
 
