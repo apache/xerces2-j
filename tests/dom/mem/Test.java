@@ -125,7 +125,7 @@ public class Test {
 
     public static void main(String argv[])
     {
-    System.out.print("DOM Memory Test.\n");
+    System.out.println("DOM Memory Test...");
 
     //
     //  Test Doc01      Create a new empty document
@@ -1328,5 +1328,48 @@ public class Test {
         Assertion.assert(t2.getNextSibling() == null);
     }
 
+
+    //
+    // isEqualNode
+    // Note: we rely on setTextContent to work properly, in case of errors
+    // make sure it is the case first.
+
+    {
+        DOMImplementation impl = DOMImplementationImpl.getDOMImplementation();
+
+        Document doc = impl.createDocument(null, "root", null);
+        Node3 root = (Node3) doc.getDocumentElement();
+
+        Node3 n1 = (Node3) doc.createElement("el");
+        n1.setTextContent("yo!");
+
+        Node3 n2 = (Node3) doc.createElement("el");
+        n2.setTextContent("yo!");
+
+        Assertion.assert(n1.isEqualNode(n2, false) == true);
+        Assertion.assert(n1.isEqualNode(n2, true) == true);
+
+        n2.setTextContent("yoyo!");
+        Assertion.assert(n1.isEqualNode(n2, false) == true);
+        Assertion.assert(n1.isEqualNode(n2, true) == false);
+
+        ((Element) n1).setAttribute("a1", "v1");
+        ((Element) n1).setAttributeNS("uri", "a2", "v2");
+        ((Element) n2).setAttribute("a1", "v1");
+        ((Element) n2).setAttributeNS("uri", "a2", "v2");
+        Assertion.assert(n1.isEqualNode(n2, false) == true);
+
+        ((Element) n2).setAttribute("a1", "v2");
+        Assertion.assert(n1.isEqualNode(n2, false) == false);
+
+        root.appendChild(n1);
+        root.appendChild(n2);
+
+        Node3 clone = (Node3) root.cloneNode(true);
+        Assertion.assert(clone.isEqualNode(root, true) == true);
+
+    }
+
+    System.out.println("done.");
     };
 }    
