@@ -11,7 +11,7 @@
 			The
 			<jump href="http://www.w3.org/DOM/DOMTR#DOML3">DOM Level 3</jump>
 			specification is at the stage of
-			<strong>Working Draft</strong>, which represents work in progress and thus may be
+			<strong>Working Draft in Last Call</strong>, which represents work in progress and thus may be
 			updated, replaced, or obsoleted by other documents at any
 			time.
 
@@ -23,8 +23,8 @@
 	<s2 title="Introduction">
 		<p>
 			The &ParserNameLong; &ParserVersion; contains an implementation of 
-			the Document Object Model Level 3 <jump href="http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/">Core</jump> 
-			and Document Object Model Level 3 <jump href="http://www.w3.org/TR/2003/WD-DOM-Level-3-LS-20030226/">Load and Save</jump> Working drafts.
+			the Document Object Model Level 3 <jump href="http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609/">Core</jump> 
+			and Document Object Model Level 3 <jump href="http://www.w3.org/TR/2003/WD-DOM-Level-3-LS-20030619/">Load and Save</jump> Working drafts.
 			To learn how to program with the DOM Level 3 see <jump href="samples-dom.html#DOM3">dom.DOM3</jump> sample.
 		</p>
 		<p>
@@ -41,42 +41,15 @@
 	</s2>
 
 	<s2 title='Implementation of DOM Level 3 Core'>
-		<p>All of the DOM Level 3 Core functionality is implemented, including:</p>
+            <p>Missing functionality:</p>
+             <ul>
+			<li><strong>DOMConfiguration "infoset"</strong> parameter - value "true" is not supported. </li>
+			<li><strong>DOMConfiguration "well-formed"</strong> parameter - value "true" is not supported.</li>
 
-		<ul>
-			<li>
-				<strong>DOMImplementationRegistry</strong>
-				<jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20030226/core.html#Bootstrap">Bootstrapping</jump>
-				-- lets an application find an implementation, based on the specific features it requires.
-			</li>
-
-			<li>
-				<strong>DOMConfiguration</strong> 
-				-- using configuration users can set different parameters for the Document.
-			</li>
-			<li>
-				<strong>Element</strong> setIdAttribute, setIdAttributeNS, setIdAttributeNode
-				-- allows to set an <code>ID</code> attribute for the current element.
-			</li>
-			<li>
-				<strong>TypeInfo</strong> 
-				-- exposes type information in the DOM tree.
-			</li>
-			<li>
-			 	<strong>Node</strong> <jump href="http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/core.html#Node3-compareDocumentPosition">compareDocumentPosition</jump>
-			 	-- compares a node with this node with regard to their position in the tree and according to the document order.
-
-			</li>
-			<li>
-				<em>DOMError</em>, <em>DOMErrorHandler</em>, <em>DOMLocator</em>, <em>UserDataHandler</em> 
-				-- users can register error and user data handlers.
-			</li>
-		</ul>
-
+             </ul>
+              
 		<p>
-			The
-			<code>parameters</code>
-			supported are:
+			The <code>parameters</code> supported are:
 		</p>
 		<ul>
 			<li>
@@ -88,7 +61,7 @@
 			<li>
 				<strong>entity-resolver</strong>
 				[
-				<em>DOMEntityResolver</em>
+				<em>DOMResourceResolver</em>
 				]
 			</li>
 			<li>
@@ -200,6 +173,9 @@
 				To access the information, cast dom.Element to org.apache.xerces.xni.psvi.ElementPSVI and dom.Attr to org.apache.xerces.xni.psvi.AttributePSVI.
 			</li>
 
+
+
+
 		</ul>
 	</s2>
 
@@ -208,11 +184,12 @@
 		<ul>
 
     		<li>
-    			<strong>DOMBuilder</strong> <jump href="http://www.w3.org/TR/2003/WD-DOM-Level-3-LS-20030226/load-save.html#LS-DOMBuilder-parseWithContext">
+    			<strong>DOMParser</strong> <jump href="http://www.w3.org/TR/2003/WD-DOM-Level-3-LS-20030226/load-save.html#LS-DOMBuilder-parseWithContext">
     			parserWithContext</jump>
     			 -- not supported.
 	    	</li>
-			<li><strong>DOMImplementationLS</strong> <jump href="http://www.w3.org/TR/2003/WD-DOM-Level-3-LS-20030226/load-save.html#LS-DOMIMplementationLS-MODE_SYNC">
+            <li><strong>DocumentLS, ElementLS</strong> - convenience interfaces are not supported.</li>
+	      <li><strong>DOMImplementationLS</strong> <jump href="http://www.w3.org/TR/2003/WD-DOM-Level-3-LS-20030226/load-save.html#LS-DOMIMplementationLS-MODE_SYNC">
 			MODE_ASYNCHRONOUS</jump> 
 				-- not supported.
 			</li>

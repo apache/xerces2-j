@@ -18,18 +18,17 @@
       <link idref='xni'>XNI Manual</link>.
     </p>
     <p>
-      Xerces 2 is a <jump href='http://www.w3.org/TR/xmlschema-1/#key-fullyConforming'>
+      Xerces2 is a <jump href='http://www.w3.org/TR/xmlschema-1/#key-fullyConforming'>
 	fully conforming</jump> XML Schema processor. 
       For more information, refer to the <link idref='xml-schema'>
 	XML Schema</link> page. 
     </p>
     <p>
-      Xerces 2 also provides an experimental implementation of the Document Object Model Level 3  
-      Core and Load/Save Working Drafts. 
-      For more information, refer to the <link idref='dom3'>DOM Level 3 Implementation</link> page. 
+      Xerces2 also provides an <link idref='dom3'>experimental implementation</link> of the Document       Object Model Level 3 Core and Load/Save Working Drafts and provides a <link idref='faq-xinclude'>partial implementation</link> of the XML Inclusions (XInclude) W3C Candidate Recommendation.  
     </p>
 
-    <p>Xerces is now able to parse documents written according to the
+
+    <p>Xerces2 is now able to parse documents written according to the
         <jump href="http://www.w3.org/TR/xml11/">
         XML 1.1 Candidate Recommendation</jump>, except that 
         it does not yet provide an option to enable normalization checking as described
@@ -40,6 +39,7 @@
         and will correctly serialize XML 1.1 documents if the DOM level
         3 load/save API's are in use.
     </p>
+
 
   </s2>
   <s2 title='Features of This Release'>
@@ -100,12 +100,12 @@
   <s2 title='Changes from Previous Release'>
     
     <p>
-      The &ParserNameLong; &ParserVersion; fixes bugs and changes the XNI as follows:
+      The &ParserNameLong; &ParserVersion; fixes bugs and adds the following functionality:
     </p>
     
     <ul>
-      <li>Added set/getNamespace methods to the xni.XMLResourceIdentifier interface.</li>
-      <li>Added getEncoding method to the xni.XMLLocator interface.</li>
+      <li>Added partial implementation for W3C XInclude specification.</li>
+      <li>Added implementation for exposing XML Schema annotations.</li>
     </ul>
     <p>
       

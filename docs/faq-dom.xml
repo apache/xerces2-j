@@ -63,6 +63,7 @@
     <a>    <anchor name="dom3-run"/>
     <p>Use the <jump href="http://java.sun.com/j2se/1.4/docs/guide/standards/">
     Endorsed Standards Override Mechanism</jump> to specify dom3-xml-apis.jar.
+    More complete description is available <jump href="http://xml.apache.org/xalan-j/faq.html#faq-N100CB">here</jump>.
     </p>
     </a>
   </faq>

@@ -1,6 +1,13 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE faqs SYSTEM 'dtd/faqs.dtd'>
 <faqs title='General FAQs'>
+  <faq title="Querying Xerces Version">
+    <q>How do I find out which Xerces version I am using?</q>
+    <a> <p>To find out the release version of Xerces, execute the following:
+         <code>java org.apache.xerces.impl.Version</code>.
+    </p>
+    </a>
+  </faq>
   <faq title="Bugzilla">
     <q>How do I use Bugzilla to report bugs?</q>
     <a> <p>
