@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -107,7 +107,7 @@ public class SchemaMessages extends ListResourceBundle {
         { "KeyNotFound", "Key with value [{0}] not found for identity constraint of element \"{1}\"." },
         { "UnknownField", "Internal identity constraint error; unknown field \"{0}\"." },
         { "KeyRefReferNotFound", "Key reference declaration \"{0}\" refers to unknown key with name \"{1}\"." },
-        { "FixedDiffersFromActual", "The content of this element is not equivalent to the value of the \"fixed\" attribute in the element's declaration in the schema."}, 
+        { "FixedDiffersFromActual", "The content of this element is not equivalent to the value of the \"fixed\" attribute in the element's declaration in the schema."},
         // simpleType
         {"InvalidBaseType", "itemType \"{0}\" must have a variety of atomic or union"},
         {"FieldMultipleMatch", "Identity constraint error:  field \"{0}\" matches more than one value within the scope of its selector; fields must match unique values"},
@@ -122,9 +122,13 @@ public class SchemaMessages extends ListResourceBundle {
         {"MinMaxOnGroupChild", "Error:  The child of a model group definition must not specify either the minOccurs or maxOccurs attribute."},
         {"BadMinMaxForAllGp", "Error:  cos-all-limited.1.2:  The {0} attribute of a model group with \"all\" compositor that is part of a pair that is the content type of a complex type definition must have the value one.  The value \"{1}\" is incorrect."},
         {"SchemaLocation", "Value \"{0}\" is not valid 'schemaLocation' syntax. anyURI must be followed by schema file"},
-
+        {"UniqueParticleAttribution", "Error: cos-nonambig: ({0}) and ({1}) violate the \"Unique Particle Attribution\" rule."},
+        {"Con3X3ElementAppearance", "Error: constraint 3.x.3: Element ''{0}'' cannot appear here."},
+        {"Con3X3AttributeAppearance", "Error: constraint 3.x.3: Attribute ''{1}'' cannot appear in element ''{0}''."},
+        {"Con3X3AttributeMustAppear", "Error: constraint 3.x.3: Attribute ''{1}'' must appear in element ''{0}''."},
+        {"Con3X3AttributeInvalidValue", "Error: constraint 3.x.3: Invalid attribute value for ''{1}'' in element ''{0}'': {2}."},
     };
-    
+
     /** Returns the list resource bundle contents. */
     public Object[][] getContents() {
         return CONTENTS;

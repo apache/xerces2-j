@@ -177,40 +177,32 @@ public class ElementWildcard {
         boolean ret = conflic(type1, local1, uri1, type2, local2, uri2, comparator);
 
         if (ret && comparator != null) {
-            String elements = getString (type1, local1, uri1,
-                                         type2, local2, uri2,
-                                         comparator.getStringPool());
+            StringPool stringPool = comparator.getStringPool();
             XMLErrorReporter err = comparator.getErrorReporter();
             err.reportError(err.getLocator(),
                             SchemaMessageProvider.SCHEMA_DOMAIN,
-                            SchemaMessageProvider.GenericError,
+                            SchemaMessageProvider.UniqueParticleAttribution,
                             SchemaMessageProvider.MSG_NONE,
-                            new Object[]{elements},
+                            new Object[]{eleString(type1, local1, uri1, stringPool),
+                                         eleString(type2, local2, uri2, stringPool)},
                             XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
         }
 
         return ret;
     }
+
     private static String eleString(int type, int local, int uri, StringPool stringPool) {
         switch (type & 0x0f) {
         case XMLContentSpec.CONTENTSPECNODE_LEAF:
-            return stringPool.toString(uri) + ":" + stringPool.toString(local);
+            return stringPool.toString(uri) + "," + stringPool.toString(local);
         case XMLContentSpec.CONTENTSPECNODE_ANY:
-            return "##any:*";
+            return "##any,*";
         case XMLContentSpec.CONTENTSPECNODE_ANY_NS:
-            return  stringPool.toString(uri) + ":*";
+            return  "##any(" + stringPool.toString(uri) + "),*";
         case XMLContentSpec.CONTENTSPECNODE_ANY_OTHER:
-            return "##other(" + stringPool.toString(uri) + "):*";
+            return "##other(" + stringPool.toString(uri) + "),*";
         }
 
         return "";
-    }
-
-    private static String getString(int type1, int local1, int uri1,
-                                    int type2, int local2, int uri2,
-                                    StringPool stringPool) {
-        return "cos-nonambig: (" + eleString(type1, local1, uri1, stringPool) +
-               ") and (" + eleString(type2, local2, uri2, stringPool) +
-               ") violate the \"Unique Particle Attribution\" rule";
     }
 } // class ElementWildcard

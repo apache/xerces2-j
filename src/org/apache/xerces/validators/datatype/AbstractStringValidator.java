@@ -526,7 +526,7 @@ public abstract class AbstractStringValidator extends AbstractDatatypeValidator 
                 last = middle;
         }
 
-        return ((first/2)*2)==first;
+        return (first%2) == 0;
     }
 
     private static final char[] NAMECHARS = {

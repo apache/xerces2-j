@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -132,7 +132,7 @@ public class SchemaMessageProvider implements XMLMessageProvider {
     //
     // Major codes
     //
-    public static final int 
+    public static final int
         MSG_BAD_MAJORCODE = 0,              //  majorCode parameter to createMessage was out of bounds
         MSG_FORMAT_FAILURE = 1,             //  exception thrown during messageFormat call
         NoValidatorFor = 2,
@@ -177,7 +177,7 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         InvalidBaseType = 39,
         FieldMultipleMatch = 40,
         KeyRefOutOfScope = 41,
-        AbsentKeyValue = 42, 
+        AbsentKeyValue = 42,
         KeyMatchesNillable = 43,
         BadMinMaxForAllElem = 44,
         BadMinMaxForGroupWithAll = 45,
@@ -187,9 +187,14 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         MinMaxOnGroupChild = 49,
         BadMinMaxForAllGp = 50,
         SchemaLocation = 51,
+        UniqueParticleAttribution = 52,
+        Con3X3ElementAppearance = 53,
+        Con3X3AttributeAppearance = 54,
+        Con3X3AttributeMustAppear = 55,
+        Con3X3AttributeInvalidValue = 56,
         // ...
 
-        MSG_MAX_CODE = 52;
+        MSG_MAX_CODE = 57;
     //
     // Minor Codes
     //
@@ -200,10 +205,10 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         "BadMajorCode",                 //   0, "The majorCode parameter to createMessage was out of bounds."
         "FormatFailed",                 //   1, "An internal error occurred while formatting the following message:"
         "NoValidatorFor",               //   2, "No validator for datatype {0}"
-        "IncorrectDatatype",            //   3, "Incorrect datatype: {0}" 
+        "IncorrectDatatype",            //   3, "Incorrect datatype: {0}"
         "AttMissingType",               //   4, "The {0} attribute must appear with a type attribute."
         "NotADatatype",                 //   5, "{0} is not a datatype."
-        "TextOnlyContentWithType",      //   6, "The content attribute must be 'textOnly' if you specify a type attribute." 
+        "TextOnlyContentWithType",      //   6, "The content attribute must be 'textOnly' if you specify a type attribute."
         "FeatureUnsupported",           //   7, "{0} is unsupported"
         "NestedOnlyInElemOnly",         //   8, "Nested Element decls only allowed in elemOnly content"
         "EltRefOnlyInMixedElemOnly",    //   9, "Element references only allowed in mixed or elemOnly content"
@@ -212,13 +217,13 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         "DatatypeWithType",             //  12, "Datatype qualifiers can only be used if you specify a type attribute."},
         "DatatypeQualUnsupported",      //  13, "The datatype qualifier {0} is not supported."
         "GroupContentRestricted",       //  14, "Error: {0} content must be one of choice, all or sequence.  Saw {1}"
-        "UnknownBaseDatatype",          //  15, "Unknown base type {0} for type {1}." }, 
+        "UnknownBaseDatatype",          //  15, "Unknown base type {0} for type {1}." },
         "BadAttWithRef",                //  16, "ref cannot appear with any of type, abstract, block, final, nillable, default or fixed"},
         "NoContentForRef",              //  17, "Cannot have child content for an element declaration that has a ref attribute"
         "IncorrectDefaultType",         //  18, "Incorrect type for {0}'s default value: {1}"
         "IllegalAttContent",            //  19, "Illegal content {0} in attribute group"
         "ValueNotInteger",              //  20, "Value of {0} is not an integer"
-        "DatatypeError",                //  21, "Datatype error {0}." 
+        "DatatypeError",                //  21, "Datatype error {0}."
         "TypeAlreadySet",               //  22, "The type of the element has already been declared."
         "GenericError",                 //  23, "Schema error: {0}."
         "UnclassifiedError",            //  24, "Unclassified error."
@@ -240,8 +245,8 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         "InvalidBaseType",
         "FieldMultipleMatch",
         "KeyRefOutOfScope",
-        "AbsentKeyValue", 
-        "KeyMatchesNillable", 
+        "AbsentKeyValue",
+        "KeyMatchesNillable",
         "BadMinMaxForAllElem",
         "BadMinMaxForGroupWithAll",
         "SeqChoiceContentRestricted",
@@ -250,6 +255,11 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         "MinMaxOnGroupChild",
         "BadMinMaxForAllGp",
         "SchemaLocation",
+        "UniqueParticleAttribution",
+        "Con3X3ElementAppearance",
+        "Con3X3AttributeAppearance",
+        "Con3X3AttributeMustAppear",
+        "Con3X3AttributeInvalidValue",
         // END
     };
 }

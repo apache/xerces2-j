@@ -937,8 +937,8 @@ public class GeneralAttrCheck {
         // get desired attribute list of this element
         OneElement oneEle = (OneElement)fEleAttrsMap.get(name);
         if (oneEle == null) {
-            reportSchemaError (SchemaMessageProvider.GenericError,
-                               new Object[] {"Element '"+elName+"' cannot appear here"});
+            reportSchemaError (SchemaMessageProvider.Con3X3ElementAppearance,
+                               new Object[] {elName});
             return null;
         }
 
@@ -968,8 +968,8 @@ public class GeneralAttrCheck {
                 // and not allowed on "document" and "appInfo"
                 if (attrURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) ||
                     !oneEle.allowNonSchemaAttr) {
-                    reportSchemaError (SchemaMessageProvider.GenericError,
-                                       new Object[] {"Attribute '"+attrName+"' cannot appear in '"+elName+"'"});
+                    reportSchemaError (SchemaMessageProvider.Con3X3AttributeAppearance,
+                                       new Object[] {elName, attrName});
                 } else {
                     // for attributes from other namespace
                     // store them in a list, and TRY to validate them after
@@ -980,9 +980,12 @@ public class GeneralAttrCheck {
                     Vector values = (Vector)fNonSchemaAttrs.get(attrRName);
                     if (values == null) {
                         values = new Vector();
+                        values.addElement(attrName);
+                        values.addElement(elName);
                         values.addElement(attrVal);
                         fNonSchemaAttrs.put(attrRName, values);
                     } else {
+                        values.addElement(elName);
                         values.addElement(attrVal);
                     }
                 }
@@ -992,8 +995,8 @@ public class GeneralAttrCheck {
             // check whether this attribute is allowed
             OneAttr oneAttr = (OneAttr)attrList.get(attrName);
             if (oneAttr == null) {
-                reportSchemaError (SchemaMessageProvider.GenericError,
-                                   new Object[] {"Attribute '"+attrName+"' cannot appear in '"+elName+"'"});
+                reportSchemaError (SchemaMessageProvider.Con3X3AttributeAppearance,
+                                   new Object[] {elName, attrName});
                 continue;
             }
 
@@ -1019,9 +1022,8 @@ public class GeneralAttrCheck {
                     attrValues.put(attrName, new Object[] {attrVal, Boolean.FALSE});
                 }
             } catch(InvalidDatatypeValueException ide) {
-                reportSchemaError (SchemaMessageProvider.GenericError,
-                                   new Object[] {"Invalid attribute value '"+attrVal+"' for '"+
-                                   attrName+"' in '"+ elName +"': " + ide.getLocalizedMessage()});
+                reportSchemaError (SchemaMessageProvider.Con3X3AttributeInvalidValue,
+                                   new Object[] {elName, attrName, ide.getLocalizedMessage()});
             }
         }
 
@@ -1036,8 +1038,8 @@ public class GeneralAttrCheck {
 
             // if the attribute is required, report an error
             if (oneAttr.optdflt == ATT_REQUIRED) {
-                reportSchemaError (SchemaMessageProvider.GenericError,
-                                   new Object[] {"Attribute '"+oneAttr.name+"' must appear in '"+elName+"'"});
+                reportSchemaError (SchemaMessageProvider.Con3X3AttributeMustAppear,
+                                   new Object[] {elName, oneAttr.name});
             }
             // if the attribute is optional with default value, apply it
             else if (oneAttr.optdflt == ATT_OPT_DFLT) {
@@ -1253,20 +1255,20 @@ public class GeneralAttrCheck {
 
             // get all values appeared with this attribute name
             Vector values = (Vector)fNonSchemaAttrs.get(attrRName);
-            String attrVal;
+            String elName, attrVal;
             String attrName = (String)values.elementAt(0);
             // for each of the values
             int count = values.size();
-            for (int i = 1; i < count; i++) {
+            for (int i = 1; i < count; i += 2) {
                 // normalize it according to the whiteSpace facet
-                attrVal = normalize((String)values.elementAt(i), dv.getWSFacet());
+                elName = (String)values.elementAt(i);
+                attrVal = normalize((String)values.elementAt(i+1), dv.getWSFacet());
                 try {
                     // and validate it using the DatatypeValidator
                     dv.validate(attrVal,null);
                 } catch(InvalidDatatypeValueException ide) {
-                    reportSchemaError (SchemaMessageProvider.GenericError,
-                                       new Object[] {"Invalid attribute value '"+attrVal+"' for '"+
-                                       attrName + "': " + ide.getLocalizedMessage()});
+                    reportSchemaError (SchemaMessageProvider.Con3X3AttributeInvalidValue,
+                                       new Object[] {elName, attrName, ide.getLocalizedMessage()});
                 }
             }
         }
