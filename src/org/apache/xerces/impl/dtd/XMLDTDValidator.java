@@ -2436,12 +2436,14 @@ public class XMLDTDValidator
             }
             case XMLSimpleType.TYPE_ENUMERATION: {
                 StringBuffer buffer = new StringBuffer();
+                buffer.append('(');
                 for (int i=0; i<attrDecl.simpleType.enumeration.length ; i++) {
                     if (i > 0) {
                         buffer.append("|");
                     }
                     buffer.append(attrDecl.simpleType.enumeration[i]);
                 }
+                buffer.append(')');
                 return fSymbolTable.addSymbol(buffer.toString());
             }
             case XMLSimpleType.TYPE_ID: {
