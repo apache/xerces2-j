@@ -198,7 +198,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         }
 
         if (content == null) {
-            reportGenericSchemaError("no child element found for simpleType '"+ nameProperty+"'");
+            reportSchemaError("dt-simpleType", new Object[]{SchemaSymbols.ELT_SIMPLETYPE, nameProperty, "(annotation?, (restriction | list | union))"});
             return null;
         }
 
@@ -224,7 +224,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             baseTypeName = (QName)contentAttrs[XSAttributeChecker.ATTIDX_ITEMTYPE];
             list = true;
             if (fListName.length() != 0) { // parent is <list> datatype
-                reportCosListOfAtomic();
+                reportCosListOfAtomic(nameProperty);
                 return null;
             }
             else {
@@ -250,18 +250,10 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         }
         else {
             Object[] args = { varietyProperty};
-            fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                       "FeatureUnsupported",
-                                       args, XMLErrorReporter.SEVERITY_ERROR);
+            reportSchemaError("dt-unsupported-derivation", args);
         }
         if (DOMUtil.getNextSiblingElement(content) != null) {
-            // REVISIT: Localize
-
-            Object[] args = { qualifiedName};
-            fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                       "InvalidSTContent",
-                                       args, XMLErrorReporter.SEVERITY_ERROR);
-
+            reportSchemaError("dt-simpleType", new Object[]{SchemaSymbols.ELT_SIMPLETYPE, nameProperty, "(annotation?, (restriction | list | union))"});
         }
 
         DatatypeValidator baseValidator = null;
@@ -282,7 +274,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                 }
             }
             if (content == null) {
-                reportGenericSchemaError("no child element found for simpleType '"+ nameProperty+"'");
+                reportSchemaError("dt-simpleType", new Object[]{SchemaSymbols.ELT_SIMPLETYPE, nameProperty, "(annotation?, (restriction | list | union))"});
                 return null;
             }
             if (DOMUtil.getLocalName(content).equals( SchemaSymbols.ELT_SIMPLETYPE )) {
@@ -292,20 +284,14 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                 }
                 if (baseValidator == null) {
                     Object[] args = {content.getAttribute( SchemaSymbols.ATT_BASE )};
-                    fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                               "UnknownBaseDatatype",
-                                               args,
-                                               XMLErrorReporter.SEVERITY_ERROR);
-                    return null;
+                    reportSchemaError("dt-unknown-basetype", args);
+                    return (DatatypeValidator)SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_STRING);
                 }
             }
             else {
                 Object[] args = { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )};
-                fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                           "ListUnionRestrictionError",
-                                           args,
-                                           XMLErrorReporter.SEVERITY_ERROR);
-                return null;
+                reportSchemaError("dt-simpleType",new Object[]{SchemaSymbols.ELT_SIMPLETYPE, nameProperty, "(annotation?, (restriction | list | union))"});
+                return (DatatypeValidator)SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_STRING);
             }
         } //end - must see simpleType?
         else {
@@ -329,7 +315,8 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                 }
                 baseValidator = findDTValidator ( simpleTypeDecl, baseTypeName, baseRefContext);
                 if (baseValidator == null) {
-                    reportGenericSchemaError("base type not found: '"+baseTypeName.uri+","+baseTypeName.localpart+"'");
+                    Object[] args = { content.getAttribute( SchemaSymbols.ATT_BASE ), nameProperty};
+                    reportSchemaError("dt-unknown-basetype", args);
                     baseValidator = (DatatypeValidator)SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_STRING);
                 }
                 // ------------------------------
@@ -337,7 +324,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                 // ------------------------------
                 if (fListName.length() != 0) {
                     if (baseValidator instanceof ListDatatypeValidator) {
-                        reportCosListOfAtomic();
+                        reportCosListOfAtomic(nameProperty);
                         return null;
                     }
                     //-----------------------------------------------------
@@ -345,7 +332,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                     // at Union validators to make sure that List is not one of them
                     //-----------------------------------------------------
                     if (isListDatatype(baseValidator)) {
-                        reportCosListOfAtomic();
+                        reportCosListOfAtomic(nameProperty);
                         return null;
 
                     }
@@ -392,7 +379,8 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                 }
                 if (content !=null) {
                     if (DOMUtil.getLocalName(content).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                        reportGenericSchemaError(nameProperty+" union should match the content Content: (annotation?, (simpleType*)");
+                        Object[] args = {nameProperty};
+                        reportSchemaError("dt-union-memberType", args);
                     }
                 }
             }
@@ -400,17 +388,14 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                 baseValidator = traverseLocal(content, fSchemaDoc, fGrammar);
                 if (baseValidator != null) {
                     if (fListName.length() != 0 && baseValidator instanceof ListDatatypeValidator) {
-                        reportCosListOfAtomic();
+                        reportCosListOfAtomic(nameProperty);
                         return null;
                     }
                     dTValidators.addElement((DatatypeValidator)baseValidator);
                 }
                 if (baseValidator == null) {
-                    Object[] args = { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_BASE ), simpleTypeDecl.getAttribute(SchemaSymbols.ATT_NAME)};
-                    fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                               "UnknownBaseDatatype",
-                                               args,
-                                               XMLErrorReporter.SEVERITY_ERROR);
+                    Object[] args = { content.getAttribute( SchemaSymbols.ATT_BASE ), nameProperty};
+                    reportSchemaError("dt-unknown-basetype", args);
                     baseValidator = (DatatypeValidator)SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_STRING);
                 }
                 content   = DOMUtil.getNextSiblingElement( content );
@@ -433,6 +418,30 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             }
             fFacetData = fi.facetdata;
         }
+        else if (list && content!=null) {
+            // report error - must not have any children!
+            if (baseTypeName !=null) {
+                // traverse annotation if any
+                if (DOMUtil.getLocalName(content).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                    traverseAnnotationDecl(content, attrValues, false, schemaDoc);
+                    content = DOMUtil.getNextSiblingElement(content);
+                }
+                if (content !=null) {
+                        Object[] args = {nameProperty};
+                        reportSchemaError("dt-list-itemType", args);
+                }
+
+            }
+            else {
+                reportSchemaError("s4s-elt-must-match", new Object[]{SchemaSymbols.ELT_LIST, "(annotation?, (simpleType?))"});
+            }
+        }
+        else if (union && content!=null) {
+            //report error - must not have any children!
+                reportSchemaError("s4s-elt-must-match", new Object[]{SchemaSymbols.ELT_UNION, "(annotation?, (simpleType?))"});
+        }
+
+
         // REVISIT: constructors in the datatypes rely on the fact that facets hashtable is not null.
         //          (see inheriting base type facets).
         if (fFacetData== null) {
@@ -455,20 +464,12 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             fGrammar.addGlobalTypeDecl(newDV);
         }
 
-        if (content != null) {
-            Object[] args = { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )};
-            fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                       "ListUnionRestrictionError",
-                                       args,
-                                       XMLErrorReporter.SEVERITY_ERROR);
-        }
-
         return newDV;
     }
 
 
-    private void reportCosListOfAtomic () {
-        reportGenericSchemaError("cos-list-of-atomic: The itemType must have a {variety} of atomic or union (in which case all the {member type definitions} must be atomic)");
+    private void reportCosListOfAtomic (String qualifiedName) {
+        reportSchemaError("cos-list-of-atomic", new Object[]{qualifiedName});
         fListName=SchemaSymbols.EMPTY_STRING;
     }
 
@@ -483,22 +484,15 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             baseTypeStr.localpart.equals(SchemaSymbols.ATTVAL_ANYSIMPLETYPE) &&
             baseRefContext == SchemaSymbols.RESTRICTION) {
             String base = baseTypeStr.localpart;
-            fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                       "UnknownBaseDatatype",
-                                       new Object[] {
-                                       DOMUtil.getAttrValue(elm, SchemaSymbols.ATT_NAME), DOMUtil.getAttrValue(elm, SchemaSymbols.ATT_BASE)},
-                                       XMLErrorReporter.SEVERITY_ERROR);
-
+            reportSchemaError("dt-unknown-basetype", new Object[] {
+                                       DOMUtil.getAttrValue(elm, SchemaSymbols.ATT_NAME), DOMUtil.getAttrValue(elm, SchemaSymbols.ATT_BASE)});
             return  (DatatypeValidator)SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_STRING);
         }
         DatatypeValidator baseValidator = null;
         baseValidator = (DatatypeValidator)fSchemaHandler.getGlobalDecl(fSchemaDoc, fSchemaHandler.TYPEDECL_TYPE, baseTypeStr);
         if (baseValidator != null) {
             if ((baseValidator.getFinalSet() & baseRefContext) != 0) {
-                fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                           "RestrictionBaseFinal",
-                                           new Object[] { baseTypeStr.rawname },
-                                           XMLErrorReporter.SEVERITY_ERROR);
+                reportSchemaError("dt-restiction-final",new Object[] { baseTypeStr.rawname} );
             }
         }
         return baseValidator;
