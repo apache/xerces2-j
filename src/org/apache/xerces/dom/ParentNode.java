@@ -693,7 +693,9 @@ public abstract class ParentNode
             removeChild(child);
         }
         // create a Text node to hold the given content
-        appendChild(ownerDocument().createTextNode(textContent));
+        if (textContent != null){
+            appendChild(ownerDocument().createTextNode(textContent));
+        }
     }
 
     //

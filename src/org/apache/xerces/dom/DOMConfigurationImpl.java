@@ -125,7 +125,8 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
     protected static final String NORMALIZE_DATA = 
         Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_NORMALIZED_VALUE;
         
-    protected static final String PSVI = 
+    /** sending psvi in the pipeline */
+    protected static final String SEND_PSVI = 
         Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_AUGMENT_PSVI;
 
     
@@ -185,6 +186,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
     protected final static short SPLITCDATA          = 0x1<<5;
     protected final static short COMMENTS            = 0x1<<6;
     protected final static short VALIDATE            = 0x1<<7;
+    protected final static short PSVI                = 0x1<<8;
 
     // components
 
@@ -249,7 +251,9 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
             XERCES_NAMESPACES,
             SCHEMA,
             DYNAMIC_VALIDATION,
-            NORMALIZE_DATA
+            NORMALIZE_DATA,
+            SEND_PSVI,
+            Constants.DOM_DISCARD_DEFAULT_CONTENT
         };
         addRecognizedFeatures(recognizedFeatures);
 
@@ -257,8 +261,10 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
         setFeature(XERCES_VALIDATION, false);
         setFeature(SCHEMA, false);
         setFeature(DYNAMIC_VALIDATION, false);
-        setFeature(NORMALIZE_DATA, true);
+        setFeature(NORMALIZE_DATA, false);
         setFeature(XERCES_NAMESPACES, true);
+        setFeature(Constants.DOM_DISCARD_DEFAULT_CONTENT, true);
+        setFeature(SEND_PSVI, true);
 
         // add default recognized properties
         final String[] recognizedProperties = {
@@ -279,7 +285,6 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
         features |= NAMESPACES;
         features |= ENTITIES;
         features |= COMMENTS;
-        features |= DTNORMALIZATION;
         features |= CDATA;
         features |= DEFAULTS;
         features |= SPLITCDATA;
@@ -549,24 +554,23 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 
             }
             else if (name.equals(Constants.DOM_DATATYPE_NORMALIZATION)) {
-                // REVISIT: datatype-normalization only takes effect if validation is on
+                setFeature(NORMALIZE_DATA, state);
                 features =
                     (short) (state ? features | DTNORMALIZATION : features & ~DTNORMALIZATION);
 
             }
             else if (name.equals(Constants.DOM_NAMESPACES)) {
                 features = (short) (state ? features | NAMESPACES : features & ~NAMESPACES);
-
             }
             else if (name.equals(Constants.DOM_CDATA_SECTIONS)) {
                 features = (short) (state ? features | CDATA : features & ~CDATA);
-
             }
             else if (name.equals(Constants.DOM_ENTITIES)) {
                 features = (short) (state ? features | ENTITIES : features & ~ENTITIES);
 
             }
             else if (name.equals(Constants.DOM_DISCARD_DEFAULT_CONTENT)) {
+                setFeature (Constants.DOM_DISCARD_DEFAULT_CONTENT, state);
                 features = (short) (state ? features | DEFAULTS : features & ~DEFAULTS);
 
             }
@@ -603,11 +607,11 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                 }
 
             }
-            else if (name.equals(Constants.DOM_PSVI)){
-                try {
-                    setFeature(PSVI, state);
-                }
-                catch (XMLConfigurationException e){
+            else if (name.equals(SEND_PSVI) ){
+                // REVISIT: turning augmentation of PSVI is not support,
+                // because in this case we won't be able to retrieve element
+                // default value.
+                if (!state) { // false is not supported
                     String msg =
                         DOMMessageFormatter.formatMessage(
                             DOMMessageFormatter.DOM_DOMAIN,
@@ -615,6 +619,9 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                             new Object[] { name });
                     throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
                 }
+            }
+            else if (name.equals(Constants.DOM_PSVI)){
+                  features = (short) (state ? features | PSVI : features & ~PSVI);
             }
             else {
                 String msg =
@@ -641,8 +648,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                             new Object[] { name });
                     throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
                 }
-            }
-        
+            }       
             else if (name.equals(Constants.DOM_ENTITY_RESOLVER)) {
                 if (value instanceof DOMEntityResolver) {
                     try {
@@ -819,6 +825,13 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 				|| name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)) {
 			return Boolean.FALSE;
 		}
+        else if (name.equals(SEND_PSVI)) {
+            return Boolean.TRUE;
+
+        }
+        else if (name.equals(Constants.DOM_PSVI)) {
+            return (features & PSVI) != 0 ? Boolean.TRUE : Boolean.FALSE;
+        }
 		else if (
 			name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
 				|| name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)) {
@@ -883,9 +896,9 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 			}
 			return false;
 		}
-		else if (
-			name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
-				|| name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)) {
+		else if ( name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
+				|| name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)
+                || name.equals(SEND_PSVI)) {
 			return (state == Boolean.TRUE) ? true : false;
 
 		}

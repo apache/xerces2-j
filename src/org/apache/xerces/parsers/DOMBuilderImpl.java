@@ -188,7 +188,8 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
             Constants.DOM_INFOSET,
             Constants.DOM_NAMESPACE_DECLARATIONS,
             Constants.DOM_SUPPORTED_MEDIATYPES_ONLY,
-            Constants.DOM_CERTIFIED
+            Constants.DOM_CERTIFIED,
+            Constants.DOM_DISCARD_DEFAULT_CONTENT
         };
 
         fConfiguration.addRecognizedFeatures(domRecognizedFeatures);
@@ -203,6 +204,7 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
         fConfiguration.setFeature(Constants.DOM_INFOSET, false);
         fConfiguration.setFeature(Constants.DOM_NAMESPACE_DECLARATIONS, true);
         fConfiguration.setFeature(Constants.DOM_SUPPORTED_MEDIATYPES_ONLY, false);
+        fConfiguration.setFeature(Constants.DOM_DISCARD_DEFAULT_CONTENT, true);
         
         // REVISIT: by default Xerces assumes that input is certified.
         //          default is different from the one specified in the DOM spec
@@ -210,15 +212,6 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
 
         // Xerces datatype-normalization feature is on by default
         fConfiguration.setFeature( NORMALIZE_DATA, false ); 
-
-
-        // REVISIT: we need to be able to validate against XMLSchema ONLY if
-        //          schemaType equal XML Schema namespace, even if
-        //          DOCTYPE is present.
-        //          This is similar to JAXP schemaLanguage property.         
-
-        
-
     } // <init>(XMLParserConfiguration)
 
     /**
@@ -693,9 +686,8 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
                 DOMErrorImpl error = new DOMErrorImpl();
                 error.fException = e;
                 error.fMessage = e.getMessage();
-                error.fSeverity = error.SEVERITY_ERROR;
+                error.fSeverity = error.SEVERITY_FATAL_ERROR;
                 fErrorHandler.getErrorHandler().handleError(error);
-
             }
             if (DEBUG) {            
                e.printStackTrace();
@@ -721,7 +713,7 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
                 DOMErrorImpl error = new DOMErrorImpl();
                 error.fException = e;
                 error.fMessage = e.getMessage();
-                error.fSeverity = error.SEVERITY_ERROR;
+                error.fSeverity = error.SEVERITY_FATAL_ERROR;
                 fErrorHandler.getErrorHandler().handleError(error);
 
             }

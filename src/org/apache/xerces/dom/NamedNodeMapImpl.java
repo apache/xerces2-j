@@ -595,6 +595,10 @@ public class NamedNodeMapImpl
         
         return list;
     }
+    
+     protected int getNamedItemIndex(String namespaceURI, String localName) {
+        return findNamePoint(namespaceURI, localName);
+     }
 
     /**
       * NON-DOM remove all elements from this map

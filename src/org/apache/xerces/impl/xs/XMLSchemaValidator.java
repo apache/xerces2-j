@@ -314,6 +314,8 @@ public class XMLSchemaValidator
     // to indicate whether we are in the scope of entity reference or CData
     protected boolean fEntityRef = false;
     protected boolean fInCDATA = false;
+    // DOM Level 3: discard default attributes (
+    protected boolean fDiscardDefaults = false;
 
     // properties
 
@@ -707,7 +709,7 @@ public class XMLSchemaValidator
 
         // call handlers
         if (fDocumentHandler != null) {
-            if (!fSchemaElementDefault || fDefaultValue == null) {
+            if (fDiscardDefaults || !fSchemaElementDefault || fDefaultValue == null) {
                 fDocumentHandler.emptyElement(element, attributes, modifiedAugs);
             } else {
                 fDocumentHandler.startElement(element, attributes, modifiedAugs);
@@ -1308,6 +1310,14 @@ public class XMLSchemaValidator
         catch (XMLConfigurationException e){
             fSchemaType = null;
         }
+        
+        try {
+            fDiscardDefaults = componentManager.getFeature(Constants.DOM_DISCARD_DEFAULT_CONTENT);       
+        }
+        catch (XMLConfigurationException e){
+            fDiscardDefaults = false;
+        }
+        
         
         fEntityResolver = (XMLEntityResolver)componentManager.getProperty(ENTITY_MANAGER);
         fSchemaLoader.setEntityResolver(fEntityResolver);
@@ -1993,7 +2003,7 @@ public class XMLSchemaValidator
         processAttributes(element, attributes, attrGrp);
 
         // add default attributes
-        if (attrGrp != null) {
+        if (attrGrp != null && !fDiscardDefaults) {
             addDefaultAttributes(element, attributes, attrGrp);
         }
 
@@ -2659,7 +2669,6 @@ public class XMLSchemaValidator
                 reportSchemaError("cvc-complex-type.3.1", new Object[]{element.rawname, fTempQName.rawname, attrValue});
             }
         }
-
         if (fAugPSVI) {
             // PSVI: attribute declaration
             attrPSVI.fDeclaration = currDecl;
@@ -2744,10 +2753,11 @@ public class XMLSchemaValidator
                     attrs.setSchemaId(attrIndex, schemaId);
                 }
 
+                    
                 if (fAugPSVI) {
+                    
                     // PSVI: attribute is "schema" specified
                     Augmentations augs = attributes.getAugmentations(attrIndex);
-
                     AttributePSVImpl attrPSVI = new AttributePSVImpl();
                     augs.putItem(Constants.ATTRIBUTE_PSVI, attrPSVI);
 

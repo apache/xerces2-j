@@ -71,12 +71,7 @@ import org.w3c.dom.*;
  * @version $Id$
  */
 public class PSVIDocumentImpl extends DocumentImpl {
-    
-    /** Recognized features. */
-    private static final String[] RECOGNIZED_FEATURES = {
-        DOMConfigurationImpl.PSVI
-        };
-
+   
 
     /**
      * Create a document.
@@ -132,7 +127,6 @@ public class PSVIDocumentImpl extends DocumentImpl {
      */
     public DOMConfiguration getConfig(){
         super.getConfig();
-        fConfiguration.addRecognizedFeatures(RECOGNIZED_FEATURES);
         return fConfiguration;
     }
     

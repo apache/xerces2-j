@@ -58,45 +58,35 @@
 package org.apache.xerces.dom;
 
 
-import org.apache.xerces.dom3.DOMErrorHandler;
-import org.apache.xerces.dom3.DOMError;
+import java.util.Vector;
 
+import org.apache.xerces.dom3.DOMError;
+import org.apache.xerces.dom3.DOMErrorHandler;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.RevalidationHandler;
 import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLSymbols;
-import org.apache.xerces.parsers.AbstractXMLDocumentParser;
-
-
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
-import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLAttributes;
-import org.apache.xerces.xni.XMLResourceIdentifier;
+import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLLocator;
+import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
-import org.apache.xerces.xni.parser.XMLComponent;
-import org.apache.xerces.xni.parser.XMLComponentManager;
-import org.apache.xerces.xni.parser.XMLConfigurationException;
-import org.apache.xerces.xni.parser.XMLErrorHandler;
-import org.apache.xerces.xni.parser.XMLDocumentSource;
-import org.apache.xerces.xni.psvi.ElementPSVI;
-import org.apache.xerces.xni.psvi.AttributePSVI;
-
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
-import org.apache.xerces.xni.grammars.XMLGrammarPool;
-import org.apache.xerces.xni.grammars.Grammar;
-
-import org.w3c.dom.Node;
-import org.w3c.dom.Element;
+import org.apache.xerces.xni.parser.XMLComponent;
+import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLDocumentSource;
+import org.apache.xerces.xni.psvi.AttributePSVI;
+import org.apache.xerces.xni.psvi.ElementPSVI;
 import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.Text;
-import java.util.Vector;
 
 /**
  * This class adds implementation for normalizeDocument method.
@@ -123,19 +113,14 @@ import java.util.Vector;
  * @author Elena Litani, IBM
  * @version $Id$
  */
-public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
+public class DOMNormalizer implements XMLDocumentHandler {
 
 
     //
-    // REVISIT:  
-    // 1. Send all appropriate calls for entity reference content.
-    // 2. If datatype-normalization feature is on:
-    //   a) replace values of text nodes with normalized value:
-    //     need to pass to documentHandler augmentations that will be filled in 
-    //     during validation process.
-    //   b) add element default content: retrieve from augementations (PSVI Element schemaDefault)
-    //   c) replace values of attributes: the augmentations for attributes have the values.
-    //
+    // REVISIT: 
+    // 1. For element content we need to perform "2.11 End-of-Line Handling",
+    //    see normalizeAttributeValue, characterData()
+    // 2. Send all appropriate calls for entity reference content (?).
 
     //
     // constants
@@ -144,6 +129,8 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
     protected final static boolean DEBUG_ND = false;
     /** Debug namespace fix up algorithm*/
     protected final static boolean DEBUG = false;
+    /** Debug document handler events */
+    protected final static boolean DEBUG_EVENTS = false;
 
     /** prefix added by namespace fixup algorithm should follow a pattern "NS" + index*/
     protected final static String PREFIX = "NS";
@@ -191,6 +178,9 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
     /** for setting the PSVI */
     protected Node fCurrentNode = null;
     private QName fAttrQName = new QName();
+    
+    // attribute value normalization
+    final XMLString fNormalizedValue = new XMLString(new char[16], 0, 0);
 
     // 
     // Constructor
@@ -225,40 +215,50 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
 			fConfiguration.setFeature(DOMConfigurationImpl.SCHEMA, true);
 			// report fatal error on DOM Level 1 nodes
 			fNamespaceValidation = true;
+            
 			// check if we need to fill in PSVI
-			try {
-				fPSVI = fConfiguration.getFeature(DOMConfigurationImpl.PSVI);
-			}
-			catch (XMLConfigurationException e) {
-				fPSVI = false;
-			}
+            fPSVI = ((fConfiguration.features & DOMConfigurationImpl.PSVI) !=0)?true:false;
 			// REVISIT: pass namespace context to the XML Schema validator
 			 ((XMLComponent) fValidationHandler).reset(fConfiguration);
 		}
 
-		fErrorHandler = (DOMErrorHandler)fConfiguration.getParameter("error-handler");
+		fErrorHandler = (DOMErrorHandler) fConfiguration.getParameter("error-handler");
 		if (fValidationHandler != null) {
 			fValidationHandler.setBaseURI(fDocument.fDocumentURI);
 			fValidationHandler.setDocumentHandler(this);
 			fValidationHandler.startDocument(null, fDocument.encoding, fNamespaceContext, null);
 
 		}
+		try {
+			Node kid, next;
+			for (kid = fDocument.getFirstChild(); kid != null; kid = next) {
+				next = kid.getNextSibling();
+				kid = normalizeNode(kid);
+				if (kid != null) { // don't advance
+					next = kid;
+				}
+			}
 
-		Node kid, next;
-		for (kid = fDocument.getFirstChild(); kid != null; kid = next) {
-			next = kid.getNextSibling();
-			kid = normalizeNode(kid);
-			if (kid != null) { // don't advance
-				next = kid;
+			// release resources
+			if (fValidationHandler != null) {
+				fValidationHandler.endDocument(null);
+				// REVISIT: only validation against XML Schema occurs
+				CoreDOMImplementationImpl.singleton.releaseValidator(
+					XMLGrammarDescription.XML_SCHEMA);
+				fValidationHandler = null;
 			}
 		}
+		catch (RuntimeException e) {
+			// fatal error occured
+			modifyDOMError(
+				"Runtime exception: " + e.getMessage(),
+				DOMError.SEVERITY_FATAL_ERROR,
+				null);
 
-		// release resources
-		if (fValidationHandler != null) {
-			fValidationHandler.endDocument(null);
-			// REVISIT: only validation against XML Schema occurs
-			CoreDOMImplementationImpl.singleton.releaseValidator(XMLGrammarDescription.XML_SCHEMA);
-			fValidationHandler = null;
+			this.fErrorHandler.handleError(fDOMError);
+			if (true) {
+				e.printStackTrace();
+			}
 		}
 
 	}
@@ -326,6 +326,8 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
                             Attr attr = (Attr)attributes.item(i);
                             removeDefault(attr, attributes);
                             attr.normalize();
+                            // XML 1.0 attribute value normalization
+                            normalizeAttributeValue(attr.getValue(), attr);                            
                         }
                     }
                 }
@@ -335,7 +337,6 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
                     //         or rely on the PSVI information.
                     fAttrProxy.setAttributes(attributes, fDocument, elem);
                     updateQName(elem, fQName); // updates global qname
-                    //
                     // set error node in the dom error wrapper
                     // so if error occurs we can report an error node
                     fConfiguration.fErrorHandlerWrapper.fCurrentNode = node;
@@ -588,6 +589,8 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
                             }
                         }
                     } else {
+                        // XML 1.0 Attribute value normalization
+                        value = normalizeAttributeValue(value, attr);
                         prefix = attr.getPrefix();
                         prefix = (prefix == null || 
                                   prefix.length() == 0) ? XMLSymbols.EMPTY_STRING :fSymbolTable.addSymbol(prefix);
@@ -695,14 +698,13 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
             // clone content of the attributes
             attributes.cloneMap(fAttributeList);
             for (int i = 0; i < fAttributeList.size(); i++) {
-
                 Attr attr = (Attr) fAttributeList.elementAt(i);
-                // normalize attribute value
-                attr.normalize();
 
                 if (DEBUG) {
                     System.out.println("==>[ns-fixup] process attribute: "+attr.getNodeName());
                 }
+                // normalize attribute value
+                attr.normalize();                
                 value = attr.getValue();
                 name = attr.getNodeName();                
                 uri = attr.getNamespaceURI();
@@ -734,6 +736,8 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
                     if (removeDefault(attr, attributes)) {
                         continue;
                     }
+                    // XML 1.0 Attribute value normalization
+                    value = normalizeAttributeValue(value, attr);
 
 
                     uri = fSymbolTable.addSymbol(uri);
@@ -786,7 +790,8 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
 
                     // data
                     int colon = name.indexOf(':');
-
+                    // XML 1.0 Attribute value normalization
+                    value = normalizeAttributeValue(value, attr);
                     if (colon > -1) {
                         // It is an error if document has DOM L1 nodes.
                         boolean continueProcess = true;
@@ -884,6 +889,60 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
         qname.rawname = fSymbolTable.addSymbol(node.getNodeName()); 
         qname.uri =  (namespace != null)?fSymbolTable.addSymbol(namespace):null;
     }
+
+	/**
+	 * Performs partial XML 1.0 attribute value normalization and replaces
+     * attribute value if the value is changed after the normalization.
+     * DOM defines that normalizeDocument acts as if the document was going 
+     * through a save and load cycle, given that serializer will not escape
+     * any '\n' or '\r' characters on load those will be normalized.
+     * Thus during normalize document we need to do the following:
+     * - perform "2.11 End-of-Line Handling"
+     * - replace #xD, #xA, #x9 with #x20 (white space).
+     * Note: This alg. won't attempt to resolve entity references or character entity 
+     * references, since '&' will be escaped during serialization and during loading
+     * this won't be recognized as entity reference, i.e. attribute value "&foo;" will 
+     * be serialized as "&amp;foo;" and thus after loading will be "&foo;" again.
+	 * @param value current attribute value
+	 * @param attr current attribute
+	 * @return String the value (could be original if normalization did not change 
+     * the string)
+	 */
+    final String normalizeAttributeValue(String value, Attr attr) {
+        if (!attr.getSpecified()){
+            // specified attributes should already have a normalized form
+            // since those were added by validator
+            return value;
+        }
+        int end = value.length();
+        // ensure capacity 
+        if (fNormalizedValue.ch.length < end) {
+            fNormalizedValue.ch = new char[end];
+        }
+        fNormalizedValue.length = 0;
+        boolean normalized = false;
+        for (int i = 0; i < end; i++) {
+            char c = value.charAt(i);
+            if (c==0x0009 || c==0x000A) {
+               fNormalizedValue.ch[fNormalizedValue.length++] = ' '; 
+               normalized = true;
+            }
+            else if(c==0x000D){
+               normalized = true;
+               fNormalizedValue.ch[fNormalizedValue.length++] = ' ';
+               int next = i+1;
+               if (next < end && value.charAt(next)==0x000A) i=next; // skip following xA
+            }
+            else {
+                fNormalizedValue.ch[fNormalizedValue.length++] = c;
+            }
+        }
+        if (normalized){
+           value = fNormalizedValue.toString();
+           attr.setValue(value);
+        }
+        return value;
+    }
   
     protected final class XMLAttributesProxy 
     implements XMLAttributes {
@@ -914,18 +973,37 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
         }
 
 
-        public int addAttribute(QName attrQName, String attrType, String attrValue){
-            Attr attr = fDocument.createAttributeNS(attrQName.uri,
-                                                    attrQName.rawname,
-                                                    attrQName.localpart);
-            attr.setValue(attrValue);
-            if (fAttributes == null) {
-                fAttributes = (AttributeMap)fElement.getAttributes();
+		/**
+         * This method adds default declarations
+		 * @see org.apache.xerces.xni.XMLAttributes#addAttribute(QName, String, String)
+		 */
+		public int addAttribute(QName qname, String attrType, String attrValue) {
+ 			int index = fElement.getXercesAttribute(qname.uri, qname.localpart);
+			// add defaults to the tree
+			if (index < 0) {
+                // the default attribute was removed by a user and needed to 
+                // be added back
+				AttrImpl attr = (AttrImpl)
+					((CoreDocumentImpl) fElement.getOwnerDocument()).createAttributeNS(
+						qname.uri,
+						qname.rawname,
+						qname.localpart);
+                // REVISIT: the following should also update ID table
+				index = fElement.setXercesAttributeNode(attr);
+				attr.setNodeValue(attrValue);
+				fAugmentations.insertElementAt(new AugmentationsImpl(), index);
+                attr.setSpecified(false);
+			}            
+			else {
+                // default attribute is in the tree
+                // we don't need to do anything since prefix was already fixed
+                // at the namespace fixup time and value must be same value, otherwise
+                // attribute will be treated as specified and we will never reach 
+                // this method.
+                
             }
-            int index = fElement.setXercesAttributeNode(attr);
-            fAugmentations.insertElementAt(new AugmentationsImpl(), index);
             return index;
-        }
+		}
 
 
         public void removeAllAttributes(){
@@ -1008,12 +1086,22 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
 
 
         public void setValue(int attrIndex, String attrValue){
-            // REVISIT: implement
+            // REVISIT: is this desired behaviour? 
+            // The values are updated in the case datatype-normalization is turned on
+            // in this case we need to make sure that specified attributes stay specified
+            
+            if (fAttributes != null){
+                AttrImpl attr = (AttrImpl)fAttributes.getItem(attrIndex);
+                boolean specified = attr.getSpecified();
+                attr.setValue(attrValue);
+                attr.setSpecified(specified);
+            
+            }
         }
 
 
         public String getValue(int index){
-            return fAttributes.item(index).getNodeValue();
+            return (fAttributes !=null)?fAttributes.item(index).getNodeValue():"";
 
         }
 
@@ -1024,7 +1112,7 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
         }
 
 
-        public String getValue(String uri, String localName){            
+        public String getValue(String uri, String localName){ 
             if (fAttributes != null) {
                 Node node =  fAttributes.getNamedItemNS(uri, localName);
                 return(node != null)? node.getNodeValue():null;
@@ -1046,7 +1134,6 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
 
 
         public void setSpecified(int attrIndex, boolean specified){
-            // REVISIT: this will be called after add attributes is called
             AttrImpl attr = (AttrImpl)fAttributes.getItem(attrIndex);
             attr.setSpecified(specified);
         }
@@ -1068,41 +1155,6 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
             // REVISIT: implement
             return null;
         }
-    }
-
-
-    //
-    // XML GrammarPool methods
-    //
-
-    // REVISIT: should DOMNormalizer implement grammar pool?
-    public Grammar[] retrieveInitialGrammarSet(String grammarType){
-        // REVISIT: should take into account grammarType
-        return null;
-
-    }
-
-
-    public void cacheGrammars(String grammarType, Grammar[] grammars){
-        // REVISIT: implement
-    }
-
-
-    public Grammar retrieveGrammar(XMLGrammarDescription desc){
-        return null;
-    }
-
-    public void lockPool(){
-        // REVISIT: implement
-    }
-
-
-    public void unlockPool(){
-        // REVISIT: implement
-    }
-
-    public void clear(){
-        // REVISIT: implement
     }
 
     // 
@@ -1222,26 +1274,45 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
      * @exception XNIException
      *                   Thrown by handler to signal an error.
      */
-    public void startElement(QName element, XMLAttributes attributes, Augmentations augs)
-        throws XNIException{
-        if (fPSVI) {
-            Element currentElement = (Element)fCurrentNode;
-            int attrCount = attributes.getLength();
-            for (int i = 0; i < attrCount; i++) {
-                attributes.getName(i, fAttrQName);
-                Attr attr = null;
-                //REVISIT: schema elements must be namespace aware.
-                //         DTD re-validation is not implemented yet..
-                attr = currentElement.getAttributeNodeNS(fAttrQName.uri,fAttrQName.localpart);
-
-                AttributePSVI attrPSVI = (AttributePSVI)attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI);
-                if (attrPSVI !=null) {
-                     ((PSVIAttrNSImpl)attr).setPSVI(attrPSVI);
-                }
-            }
+	public void startElement(QName element, XMLAttributes attributes, Augmentations augs)
+		throws XNIException {
+		//REVISIT: schema elements must be namespace aware.
+		//         DTD re-validation is not implemented yet.. 
+		Element currentElement = (Element) fCurrentNode;
+		int attrCount = attributes.getLength();
+        if (DEBUG_EVENTS) {
+            System.out.println("==>startElement: " +element+
+            " attrs.length="+attrCount);
         }
-    
-    }
+
+		for (int i = 0; i < attrCount; i++) {
+			attributes.getName(i, fAttrQName);
+			Attr attr = null;
+
+			attr = currentElement.getAttributeNodeNS(fAttrQName.uri, fAttrQName.localpart);
+			AttributePSVI attrPSVI =
+				(AttributePSVI) attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI);
+
+			if (attrPSVI != null) {
+				if (fPSVI) {
+					((PSVIAttrNSImpl) attr).setPSVI(attrPSVI);
+				}
+				if ((fConfiguration.features & DOMConfigurationImpl.DTNORMALIZATION) != 0) {
+					// datatype-normalization
+					// NOTE: The specified value MUST be set after we set
+					//       the node value because that turns the "specified"
+					//       flag to "true" which may overwrite a "false"
+					//       value from the attribute list.
+					boolean specified = attr.getSpecified();
+					attr.setValue(attrPSVI.getSchemaNormalizedValue());
+					if (!specified) {
+						((AttrImpl) attr).setSpecified(specified);
+					}
+				}
+			}
+		}
+	}
+
 
     /**
      * An empty element.
@@ -1253,11 +1324,15 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
      * @exception XNIException
      *                   Thrown by handler to signal an error.
      */
-    public void emptyElement(QName element, XMLAttributes attributes, Augmentations augs)
-        throws XNIException{
-        startElement(element, attributes, augs);
+	public void emptyElement(QName element, XMLAttributes attributes, Augmentations augs)
+		throws XNIException {
+        if (DEBUG_EVENTS) {
+            System.out.println("==>emptyElement: " +element);
+        }
+
+		startElement(element, attributes, augs);
         endElement(element, augs);
-    }
+	}
 
     /**
      * This method notifies the start of a general entity.
@@ -1356,20 +1431,36 @@ public class DOMNormalizer implements XMLGrammarPool, XMLDocumentHandler {
      * @exception XNIException
      *                   Thrown by handler to signal an error.
      */
-    public void endElement(QName element, Augmentations augs) throws XNIException{
-        if (fPSVI) {
+	public void endElement(QName element, Augmentations augs) throws XNIException {	
+        if (DEBUG_EVENTS) {
+			System.out.println("==>endElement: " + element);
+		}
         
-            ElementPSVI elementPSVI = (ElementPSVI)augs.getItem(Constants.ELEMENT_PSVI);
-            if (elementPSVI != null) {
-                
-                ((PSVIElementNSImpl)fCurrentNode).setPSVI(elementPSVI);
-                if (elementPSVI.getIsSchemaSpecified()) {
-                    // default value from XML Schema.
-                    fCurrentNode.setNodeValue(elementPSVI.getSchemaDefault());
-                }
-            }
-        }
-    }
+		ElementPSVI elementPSVI = (ElementPSVI) augs.getItem(Constants.ELEMENT_PSVI);
+		if (elementPSVI != null) {
+			ElementImpl elementNode = (ElementImpl) fCurrentNode;
+			if (fPSVI) {
+				((PSVIElementNSImpl) fCurrentNode).setPSVI(elementPSVI);
+			}
+			if ((fConfiguration.features & DOMConfigurationImpl.DEFAULTS) == 0) {
+				String normalizedValue = elementPSVI.getSchemaNormalizedValue();
+				if ((fConfiguration.features & DOMConfigurationImpl.DTNORMALIZATION) != 0) {
+					elementNode.setTextContent(normalizedValue);
+				}
+				else {
+					// NOTE: this is a hack: it is possible that DOM had an empty element
+					// and validator sent default value using characters(), which we don't 
+					// implement. Thus, here we attempt to add the default value.
+					String text = elementNode.getTextContent();
+					if (text.length() == 0) {
+						// default content could be provided
+						// REVISIT: should setTextConent(null) be allowed?
+						elementNode.setTextContent(normalizedValue);
+					}
+				}
+			}
+		}
+	}
 
     /**
      * The start of a CDATA section.

@@ -975,12 +975,7 @@ public class CoreDocumentImpl
             fConfiguration.reset();
         }
 
-        try {
-            domNormalizer.normalizeDocument(this, fConfiguration);
-        }
-        catch (RuntimeException e){
-            // fatal error occured
-        }
+        domNormalizer.normalizeDocument(this, fConfiguration);
         isNormalized(true);
     }
 
