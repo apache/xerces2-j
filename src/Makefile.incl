@@ -80,7 +80,7 @@ SRCJARFILE = ${PRODUCTNAME}-J-src.${PRODUCTVERSION_DOT}.jar
 .SUFFIXES: .class .java
 
 .java.class:
-	${JAVAC} -g -classpath "$(CLPATH)" $<
+	${JAVAC} -classpath "$(CLPATH)" $<
 	touch ${TOP}/src/classfiles_updated
 
 all:: dirs compile 
