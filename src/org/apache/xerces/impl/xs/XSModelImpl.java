@@ -39,22 +39,6 @@ import org.apache.xerces.util.SymbolHash;
 import org.apache.xerces.util.XMLSymbols;
 
 /**
- * @author elitani
- *
- * To change this generated comment edit the template variable "typecomment":
- * Window>Preferences>Java>Templates.
- * To enable and disable the creation of type comments go to
- * Window>Preferences>Java>Code Generation.
- */
-/**
- * @author elitani
- *
- * To change this generated comment edit the template variable "typecomment":
- * Window>Preferences>Java>Templates.
- * To enable and disable the creation of type comments go to
- * Window>Preferences>Java>Code Generation.
- */
-/**
  * Implements XSModel:  a read-only interface that represents an XML Schema,
  * which could be components from different namespaces.
  *
@@ -451,8 +435,10 @@ public class XSModelImpl implements XSModel {
         int currPos = 0;
         for (int i = 0; i < fGrammarCount; i++) {
             SchemaGrammar currGrammar = fGrammarList[i];
-            System.arraycopy(currGrammar.fAnnotations, 0, annotations, currPos, currGrammar.fNumAnnotations);
-            currPos += currGrammar.fNumAnnotations;
+            if (currGrammar.fNumAnnotations > 0) {
+                System.arraycopy(currGrammar.fAnnotations, 0, annotations, currPos, currGrammar.fNumAnnotations);
+                currPos += currGrammar.fNumAnnotations;
+            }
         }
         fAnnotations = new XSObjectListImpl(annotations, annotations.length);
         return fAnnotations;
