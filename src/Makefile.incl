@@ -35,6 +35,7 @@ PACKAGES = org.apache.xerces.parsers \
            org.w3c.dom.traversal \
            org.w3c.dom.html \
            org.xml.sax \
+           org.xml.sax.ext \
            org.xml.sax.helpers
 
 

@@ -3,12 +3,12 @@
 
 <s1 title="Installation">
 	<s2 title="Unpacking the files">
-		<p>&javaparsername; is packaged as a JAR file for all
-		platforms and operating systems.  You need to run the Java
+		<p>&javaparsername; is packaged as a ZIP file for all
+		platforms and operating systems.  You can run the Java
 		<ref>jar</ref> command to unpack the distribution.</p>
         <ul>
-			<li>jar xf &javaparsername;-bin.&javaparserversion;.jar</li>
-			<li>jar xf &javaparsername;-src.&javaparserversion;.jar</li>
+			<li>jar xf &javaparsername;-bin.&javaparserversion;.zip</li>
+			<li>jar xf &javaparsername;-src.&javaparserversion;.zip</li>
 			<li>This command creates a "&javaparserdirectory;" sub-directory in the current directory containing all the files.</li>
 		</ul>
 	</s2>

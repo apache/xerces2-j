@@ -41,7 +41,7 @@ ${BINZIPFILE}: ./src/classfiles_updated
 	${CP} LICENSE bin
 	${RM} bin/build.xml
 	mv bin xerces-${PRODUCTVERSION}
-	jar cvfM ${BINJARFILE} xerces-${PRODUCTVERSION} 
+	jar cvfM ${BINZIPFILE} xerces-${PRODUCTVERSION} 
 	mv xerces-${PRODUCTVERSION} bin
 
 package_src: ./source/src/Makefile
@@ -57,13 +57,13 @@ package_src: ./source/src/Makefile
 	${CP} LICENSE source
 	${RM} bin/build.xml
 	mv source xerces-${PRODUCTVERSION}
-	jar cvfM ${SRCJARFILE} xerces-${PRODUCTVERSION} 
+	jar cvfM ${SRCZIPFILE} xerces-${PRODUCTVERSION} 
 	mv xerces-${PRODUCTVERSION} source
 
 clean:
 	${MAKE} -C src clean
 	${MAKE} -C samples clean
 	${RM} -rf bin class source docs/apiDocs docs/html
-	${RM} ${BINJARFILE} ${SRCJARFILE}
+	${RM} ${BINZIPFILE} ${SRCZIPFILE}
 
 
