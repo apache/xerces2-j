@@ -2,9 +2,9 @@
 
 TARGETS=\
 	DatatypeContentModel.class\
-	SchemaImporter.class\
-	SchemaParser.class\
 	Schema.class\
+	SchemaGrammarResolver.class\
+	SchemaParser.class\
 	SchemaMessageProvider.class\
 	SchemaSymbols.class \
 	TraverseSchema.class \
