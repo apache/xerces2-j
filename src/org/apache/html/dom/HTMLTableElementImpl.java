@@ -106,7 +106,7 @@ public final class HTMLTableElementImpl
         section = getCaption();
         if ( section != null )
             return section;
-        section = new HTMLTableSectionElementImpl( (HTMLDocumentImpl) getOwnerDocument(), "CAPTION" );
+        section = new HTMLTableCaptionElementImpl( (HTMLDocumentImpl) getOwnerDocument(), "CAPTION" );
         appendChild( section );
         return section;
     }
