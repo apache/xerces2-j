@@ -940,7 +940,7 @@ public abstract class ChildAndParentNode
     private void writeObject(ObjectOutputStream out) throws IOException {
 
         // synchronize chilren
-        if (syncChildren() == false ) {
+        if (syncChildren()) {
             synchronizeChildren();
         }
         // write object
@@ -954,6 +954,11 @@ public abstract class ChildAndParentNode
 
         // perform default deseralization
         ois.defaultReadObject();
+
+        // hardset synchildren - so we don't try to sync- it does not make any sense
+        // to try to synchildren when we just desealize object.
+
+        syncChildren(false);
 
         // initialize transients
         nodeListLength = -1;
