@@ -276,6 +276,7 @@ public class XMLMessages extends ListResourceBundle {
 // Namespaces support
     // 4. Using Qualified Names
         { "PrefixDeclared", "The namespace prefix \"{0}\" was not declared." },
+        { "MSG_ATT_DEFAULT_INVALID", "The defaultValue \"{1}\" of attribute \"{0}\" is not legal as for the lexical constraints of this attribute type." },
     };
 
     /** Returns the list resource bundle contents. */

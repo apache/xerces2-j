@@ -309,6 +309,7 @@ public class XMLMessages implements XMLMessageProvider {
         MSG_PI_NOT_IN_ONE_ENTITY = 165,
         MSG_REFERENCE_UNTERMINATED = 166,
         MSG_PREFIX_DECLARED = 167,
+        MSG_ATT_DEFAULT_INVALID = 168,
 
         // ...
         MSG_MAX_CODE = 200;
@@ -482,6 +483,7 @@ public class XMLMessages implements XMLMessageProvider {
         "PINotInOneEntity",             // 165, "MSG_PI_MUST_BEGIN_AND_END_IN_THE_SAME_ENTITY"
         "ReferenceUnterminated",        // 166, "MSG_REFERENCE_UNTERMINATED"
         "PrefixDeclared",               // 167, "MSG_PREFIX_DECLARED"
+        "MSG_ATT_DEFAULT_INVALID",      // 168, "MSG_ATT_DEFAULT_INVALID"
 
         // ...
         ""                              //
@@ -633,6 +635,7 @@ public class XMLMessages implements XMLMessageProvider {
         P11_URI_FRAGMENT = 142,
         VC_ONE_NOTATION_PER_ELEMENT_TYPE = 143,
         NC_PREFIX_DECLARED = 144,
+        VC_ATTRIBUTE_DEFAULT_LEGAL = 145,
 
         // ...
         CONSTRAINT_MAX_CODE = 200;
