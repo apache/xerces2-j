@@ -123,6 +123,7 @@ Copyright:
     <echo message="   javadocs --> generates the API documentation (needs Java 1.2 or higher)"/>
     <echo message="   pack-src --> generates the source distributions of Xerces-Java (zip and tar.gz)"/>
     <echo message="   pack-bin --> generates the binary distributions of Xerces-Java (zip and tar.gz)"/>
+    <echo message="   all      --> generates the binary and source distributions of Xerces-Java"/>
     <echo message="   test     --> runs a sanity test on the sample files"/>
     <echo message="   clean    --> cleans up all generated files and directories"/>
     <echo message="   usage    --> provides help on using the build tool (default)"/>
@@ -149,11 +150,11 @@ Copyright:
     <mkdir dir="${build.dest}"/>
 
     <!-- copy src files -->
-    <copydir src="${src.dir}" dest="${build.src}"
-             excludes="**/Makefile **/Makefile.incl **/classfiles_updated **/CVS* **/*#*
+    <copydir src="${src.dir}" dest="${build.src}" includes="**/Makefile, **/Makefile.incl, javax/**, org/**"
+             excludes="**/classfiles_updated **/CVS* **/.#*
                        **/DatatypeValidatorFactory.java **/SchemaImporter.java
                        **/RevalidatingDOMParser.java **/DatatypeContentModel.java
-                       **/TraverseSchema.java **/ComplexTypeInfo.java **/DTDImporter.java "/>
+                       **/ComplexTypeInfo.java **/DTDImporter.java "/>
 	<deltree dir="${build.src}/whiteboard"/>
 
     <!-- substitute tokens as needed -->
@@ -186,7 +187,7 @@ Copyright:
   <!-- =================================================================== -->
   <target name="samples" depends="jar">
     <mkdir dir="${build.samples}"/>
-    <copydir src="${samples.dir}" dest="${build.samples}" excludes="**/Makefile"/>
+    <copydir src="${samples.dir}" dest="${build.samples}" />
     <javac srcdir="${build.samples}"
            destdir="${build.dest}"
            classpath="${build.dir}/${name}.jar"
@@ -247,8 +248,9 @@ Copyright:
     <mkdir dir="${distsrc.dir}/docs"/>
     <mkdir dir="${distsrc.dir}/samples"/>
 
-    <copydir src="${src.dir}" dest="${distsrc.dir}/src" excludes="**/CVS*, **/*.#*" includes="org/**"/>
-    <copydir src="${data.dir}" dest="${distsrc.dir}/data" excludes="**/CVS*, **/*.#*"/>
+    <copydir src="${src.dir}" dest="${distsrc.dir}/src" excludes="**/CVS*, **/.#*"
+             includes="**/Makefile, **/Makefile.incl, org/**"/>
+    <copydir src="${data.dir}" dest="${distsrc.dir}/data" excludes="**/CVS*, **/.#*"/>
     <copydir src="${docs.dir}" dest="${distsrc.dir}/docs"
              excludes="**/CVS*, **/*.#*, pdf/**, html/**, **/apiDocs*"/>
     <copydir src="${samples.dir}" dest="${distsrc.dir}/samples" excludes="**/CVS*, **/*.#*"/>
@@ -348,6 +350,12 @@ Copyright:
           classname="dom.TreeViewer"
           args="${data.dir}/personal.xml"/>
      -->
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Builds and packages sources and binary distributions                -->
+  <!-- =================================================================== -->
+  <target name="all" depends="pack-src, pack-bin">
   </target>
 
   <!-- =================================================================== -->
