@@ -995,6 +995,7 @@ public class DOMParser
             // copy schema grammar, if needed
             if (!fSeenRootElement) {
                 fSeenRootElement = true;
+                /*REVISIT - Grammar Access revisit
                 if (fGrammarAccess) {
                     Document schemaDocument = fValidator.getSchemaDocument();
                     if (schemaDocument != null) {
@@ -1007,6 +1008,7 @@ public class DOMParser
                         copyInto(schema, fDocumentTypeIndex);
                     }
                 }
+              */
             }
         }
 
@@ -1086,7 +1088,8 @@ public class DOMParser
             // copy schema grammar, if needed
             if (!fSeenRootElement) {
                 fSeenRootElement = true;
-                if (fDocumentImpl != null && fGrammarAccess) {
+                /* REVISIT Grammar Access
+                if (fDocumentImpl != null && fGrammarAccess)  {
                     Document schemaDocument = fValidator.getSchemaDocument();
                     if (schemaDocument != null) {
                         if (fDocumentType == null) {
@@ -1101,6 +1104,7 @@ public class DOMParser
                         XUtil.copyInto(schema, fDocumentType);
                     }
                 }
+               */
             }
         }
 
@@ -1444,6 +1448,8 @@ public class DOMParser
                 createDocumentType(rootElementName, publicString, systemString);
             fDocumentImpl.appendChild(fDocumentType);
 
+            /*  TODO - Grammar Access revisit
+
             if (fGrammarAccess) {
                 Element schema = fDocument.createElement("schema");
                 // REVISIT: What should the namespace be? -Ac
@@ -1454,7 +1460,8 @@ public class DOMParser
                 schema.setAttribute("exactDefault", "");
                 ((AttrImpl)schema.getAttributeNode("exactDefault")).setSpecified(false);
                 fDocumentType.appendChild(schema);
-            }
+            } */
+
         }
 
         // deferred expansion
@@ -1464,6 +1471,7 @@ public class DOMParser
                     createDocumentType(rootElement.rawname, publicId, systemId);
             fDeferredDocumentImpl.appendChild(fDocumentIndex, fDocumentTypeIndex);
 
+            /*REVISIT - Grammar Access
             if (fGrammarAccess) {
                 int handle = fAttrList.startAttrList();
                 fAttrList.addAttr(
@@ -1489,6 +1497,7 @@ public class DOMParser
                 // REVISIT: What should the namespace be? -Ac
                 fDeferredDocumentImpl.appendChild(fDocumentTypeIndex, schemaIndex);
             }
+            */
         }
 
     } // startDTD(int,int,int)
@@ -1534,7 +1543,7 @@ public class DOMParser
         //
         // Create element declaration
         //
-
+        /*REVISIT  Grammar Access
         if (fGrammarAccess) {
 
             if (fDeferredDocumentImpl != null) {
@@ -1781,6 +1790,7 @@ public class DOMParser
             } // if NOT defer-node-expansion
 
         } // if grammar-access
+       */
 
     } // elementDecl(int,String)
 
@@ -1833,7 +1843,7 @@ public class DOMParser
             //
             // Create attribute declaration
             //
-
+            /*REVISIT- Grammar Access
             if (fGrammarAccess) {
 
                 // get element declaration; create it if necessary
@@ -1885,6 +1895,7 @@ public class DOMParser
                         true,
                         false); // search
                     /***/
+            /*
                     fAttrList.addAttr(
                         fStringPool.addSymbol("minOccurs"),
                         fStringPool.addString("0"),
@@ -1963,6 +1974,7 @@ public class DOMParser
                     }
                 }
             }
+            */
 
         }
 
@@ -2006,7 +2018,7 @@ public class DOMParser
             //
             // Create attribute declaration
             //
-
+            /*REVISIT  Grammar Access
             if (fGrammarAccess) {
 
                 // get element declaration; create it if necessary
@@ -2086,6 +2098,7 @@ public class DOMParser
                     }
                 }
             }
+           */
 
         } // if NOT defer-node-expansion
 
@@ -2410,6 +2423,7 @@ public class DOMParser
             fDeferredDocumentImpl.appendChild(fDocumentTypeIndex, newNotationIndex);
 
             // create notation declaration
+            /*REVISIT  Grammar Access
             if (fGrammarAccess) {
                 int schemaIndex = getLastChildElement(fDocumentTypeIndex, "schema");
                 String notationName = fStringPool.toString(notationNameIndex);
@@ -2430,6 +2444,7 @@ public class DOMParser
                         false,
                         false); // search
                     /***/
+            /*
                     if (publicIdIndex == -1) {
                         publicIdIndex = 0; // empty string in string pool
                     }
@@ -2452,6 +2467,7 @@ public class DOMParser
                     fDeferredDocumentImpl.appendChild(schemaIndex, notationIndex);
                 }
             }
+            */
         }
 
         // full expansion
@@ -2473,6 +2489,7 @@ public class DOMParser
             fDocumentType.getNotations().setNamedItem(notationImpl);
 
             // create notation declaration
+            /*REVISIT Grammar access
             if (fGrammarAccess) {
                 Element schema = XUtil.getFirstChildElement(fDocumentType, "schema");
                 Element notation = XUtil.getFirstChildElement(schema, "notation", "name", notationName);
@@ -2491,6 +2508,7 @@ public class DOMParser
                     schema.appendChild(notation);
                 }
             }
+            */
         }
 
     } // notationDecl(int,int,int)
@@ -2505,6 +2523,7 @@ public class DOMParser
      * containing element, even when the content model contains a
      * single element reference.
      */
+    /*REVISIT Grammar access
     private Element createContentModel(XMLContentSpec contentSpec, XMLContentSpec.Node node) {
 
         Element model = createContentModel(contentSpec, node, 
@@ -2513,10 +2532,13 @@ public class DOMParser
 
     } // createContentModel(XMLContentSpec.Node):Element
 
+    */
+
     /**
      * This is the real <em>createContentModel</em> method. This is a
      * recursive solution.
      */
+    /*REVISIT Grammar Access
     private Element createContentModel(XMLContentSpec contentSpec,
                                        XMLContentSpec.Node node, 
                                        Document factory, 
@@ -2617,6 +2639,7 @@ public class DOMParser
 
     } // createContentModel(XMLContentSpec.Node,Element):Element
 
+      */
     /**
      * Sets the appropriate occurrence count attributes on the specified
      * model element.
