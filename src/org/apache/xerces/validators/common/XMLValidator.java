@@ -1865,7 +1865,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                         int uri = fStringPool.addSymbol(attrList.getAttValue(index));
                         fNamespacesScope.setNamespaceForPrefix(nsPrefix, uri);
 
-                        /***
                         if (fValidating && fSchemaValidation) {
                             boolean seeXsi = false;
                             String attrValue = fStringPool.toString(attrList.getAttValue(index));
@@ -1876,13 +1875,14 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                             }
 
                             if (!seeXsi) {
+                                /***
                                 if (schemaCandidateURIs == null) {
                                     schemaCandidateURIs = new Vector();
                                 }
                                 schemaCandidateURIs.addElement( fStringPool.toString(uri) );
+                                /***/
                             }
                         }
-                        /***/
                     }
                 }
                 index = attrList.getNextAttr(index);
@@ -1916,6 +1916,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
                             int localpart = attrList.getAttrLocalpart(index);
                             if (localpart == fStringPool.addSymbol(SchemaSymbols.XSI_SCHEMALOCACTION)) {
+                                if (locationUriPairs == null) {
+                                    locationUriPairs = new Hashtable();
+                                }
                                 parseSchemaLocation(fStringPool.toString(attrList.getAttValue(index)), locationUriPairs);
                             }
                             else if (localpart == fStringPool.addSymbol(SchemaSymbols.XSI_NONAMESPACESCHEMALOCACTION))  {
