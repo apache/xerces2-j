@@ -192,6 +192,9 @@ public class TraverseSchema implements
     private Hashtable fRedefineLocations = new Hashtable();
     private Vector fTraversedRedefineElements = new Vector();
 
+    //to store facets for simpleType
+    private Hashtable fFacetData = new Hashtable(10);
+
 
     private int fAnonTypeCount =0;
     private int fScopeCount=0;
@@ -1766,10 +1769,11 @@ public class TraverseSchema implements
         } // end - traverse Union
         
         
-        Hashtable facetData =null; 
+         
         int numFacets=0;
-        facetData        = new Hashtable();
+        fFacetData.clear();
         if (restriction && content != null) {
+            short flags = 0; // flag facets that have fixed="true"
             int numEnumerationLiterals = 0;
             Vector enumData  = new Vector();
             content = checkContent(simpleTypeDecl, content , true);
@@ -1828,20 +1832,57 @@ public class TraverseSchema implements
                             }
                         }
                         else {
-                            if ( facetData.containsKey(facet) )
+                            if ( fFacetData.containsKey(facet) )
                                 reportSchemaError(SchemaMessageProvider.DatatypeError,
                                                   new Object [] {"The facet '" + facet + "' is defined more than once."} );
-                             facetData.put(facet,content.getAttribute( SchemaSymbols.ATT_VALUE ));
+                             fFacetData.put(facet,content.getAttribute( SchemaSymbols.ATT_VALUE ));
+                             
+                             if (content.getAttribute( SchemaSymbols.ATT_FIXED).equals("true")){
+                                  // set fixed facet flags
+                                  // length - must remain const through derivation
+                                  // thus we don't care if it fixed
+                                  if ( facet.equals(SchemaSymbols.ELT_MINLENGTH) ) {
+                                      flags |= DatatypeValidator.FACET_MINLENGTH;
+                                  }
+                                  else if (facet.equals(SchemaSymbols.ELT_MAXLENGTH)) {
+                                      flags |= DatatypeValidator.FACET_MAXLENGTH;
+                                  }
+                                  else if (facet.equals(SchemaSymbols.ELT_MAXEXCLUSIVE)) {
+                                      flags |= DatatypeValidator.FACET_MAXEXCLUSIVE;
+                                  }
+                                  else if (facet.equals(SchemaSymbols.ELT_MAXINCLUSIVE)) {
+                                      flags |= DatatypeValidator.FACET_MAXINCLUSIVE;
+                                  }
+                                  else if (facet.equals(SchemaSymbols.ELT_MINEXCLUSIVE)) {
+                                      flags |= DatatypeValidator.FACET_MINEXCLUSIVE;
+                                  }
+                                  else if (facet.equals(SchemaSymbols.ELT_MININCLUSIVE)) {
+                                      flags |= DatatypeValidator.FACET_MININCLUSIVE;
+                                  }
+                                  else if (facet.equals(SchemaSymbols.ELT_TOTALDIGITS)) {
+                                      flags |= DatatypeValidator.FACET_TOTALDIGITS;
+                                  }
+                                  else if (facet.equals(SchemaSymbols.ELT_FRACTIONDIGITS)) {
+                                      flags |= DatatypeValidator.FACET_FRACTIONDIGITS;
+                                  }
+                                  else if (facet.equals(SchemaSymbols.ELT_WHITESPACE) &&
+                                           baseValidator instanceof StringDatatypeValidator) {
+                                      flags |= DatatypeValidator.FACET_WHITESPACE;
+                                  }
+                              }
                              checkContent(simpleTypeDecl, XUtil.getFirstChildElement( content ), true);
                         }
                 }
                     content = XUtil.getNextSiblingElement(content);
             }
             if (numEnumerationLiterals > 0) {
-                  facetData.put(SchemaSymbols.ELT_ENUMERATION, enumData);
+                  fFacetData.put(SchemaSymbols.ELT_ENUMERATION, enumData);
             }
             if (pattern !=null) {
-                facetData.put(SchemaSymbols.ELT_PATTERN, pattern.toString());
+                fFacetData.put(SchemaSymbols.ELT_PATTERN, pattern.toString());
+            }
+            if (flags != 0) {
+                fFacetData.put(DatatypeValidator.FACET_FIXED, new Short(flags));
             }
         }
 
@@ -1885,11 +1926,11 @@ public class TraverseSchema implements
            if( newValidator == null ) { // not previously registered
                if (list) {
                     fDatatypeRegistry.createDatatypeValidator( qualifiedName, baseValidator, 
-                                                               facetData,true);
+                                                               fFacetData,true);
                }
                else if (restriction) {
                    fDatatypeRegistry.createDatatypeValidator( qualifiedName, baseValidator,
-                                                               facetData,false);
+                                                               fFacetData,false);
                }
                else { //union
                    fDatatypeRegistry.createDatatypeValidator( qualifiedName, dTValidators);

@@ -4,6 +4,7 @@ TARGETS=\
 	AbstractDatatypeValidator.class\
 	AbstractNumericFacetValidator.class\
 	AbstractNumericValidator.class\
+	AbstractStringValidator.class\
 	AnyURIDatatypeValidator.class\
 	Base64BinaryDatatypeValidator.class\
 	BooleanDatatypeValidator.class\

@@ -132,10 +132,31 @@ public class DecimalDatatypeValidator extends AbstractNumericValidator {
 
         // check 4.3.11.c1 error: totalDigits > base.totalDigits
         if ( ((fFacetsDefined & DatatypeValidator.FACET_TOTALDIGITS) != 0) ) {
-            if ( (( ((DecimalDatatypeValidator)fBaseValidator).fFacetsDefined & DatatypeValidator.FACET_TOTALDIGITS) != 0) &&
-                 fTotalDigits > ((DecimalDatatypeValidator)fBaseValidator).fTotalDigits )
-                throw new InvalidDatatypeFacetException( "totalDigits value ='" + fTotalDigits + "' must be <= base.totalDigits value ='" +
+            if ( (( ((DecimalDatatypeValidator)fBaseValidator).fFacetsDefined & DatatypeValidator.FACET_TOTALDIGITS) != 0)){
+                if ((((DecimalDatatypeValidator)fBaseValidator).fFlags & DatatypeValidator.FACET_TOTALDIGITS) != 0 &&
+                     fTotalDigits != ((DecimalDatatypeValidator)fBaseValidator).fTotalDigits){
+                    throw new InvalidDatatypeFacetException("totalDigits value = '" + fTotalDigits + 
+                                                            "' must be equal to base.totalDigits value = '" +
+                                                            ((DecimalDatatypeValidator)fBaseValidator).fTotalDigits + 
+                                                            "' with attribute {fixed} = true" );
+                }
+                if (fTotalDigits > ((DecimalDatatypeValidator)fBaseValidator).fTotalDigits ){                
+                    throw new InvalidDatatypeFacetException( "totalDigits value ='" + fTotalDigits + "' must be <= base.totalDigits value ='" +
                                                          ((DecimalDatatypeValidator)fBaseValidator).fTotalDigits + "'." );
+                }
+            }
+        }
+        // check fixed value for fractionDigits
+        if ( ((fFacetsDefined & DatatypeValidator.FACET_FRACTIONDIGITS) != 0) ) {
+            if ( (( ((DecimalDatatypeValidator)fBaseValidator).fFacetsDefined & DatatypeValidator.FACET_FRACTIONDIGITS) != 0)){
+                if ((((DecimalDatatypeValidator)fBaseValidator).fFlags & DatatypeValidator.FACET_FRACTIONDIGITS) != 0 &&
+                     fFractionDigits != ((DecimalDatatypeValidator)fBaseValidator).fFractionDigits){
+                    throw new InvalidDatatypeFacetException("fractionDigits value = '" + fFractionDigits + 
+                                                            "' must be equal to base.fractionDigits value = '" +
+                                                            ((DecimalDatatypeValidator)fBaseValidator).fFractionDigits + 
+                                                            "' with attribute {fixed} = true" );
+                }
+            }
         }
     }
 

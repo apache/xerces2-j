@@ -73,329 +73,105 @@ import org.apache.xerces.utils.regex.RegularExpression;
  * @author Mark Swinkles - List Validation refactoring
  * @version $Id$
  */
-public class StringDatatypeValidator extends AbstractDatatypeValidator{
-    
-    private int        fLength          = 0;
-    private int        fMaxLength       = Integer.MAX_VALUE;
-    private int        fMinLength       = 0;
-    private Vector     fEnumeration     = null;
-    private short      fWhiteSpace      = DatatypeValidator.PRESERVE;
+public class StringDatatypeValidator extends AbstractStringValidator {
+
+    private short      fWhiteSpace;
 
     public  StringDatatypeValidator () throws InvalidDatatypeFacetException{
-        this( null, null, false ); // Native, No Facets defined, Restriction
+        this ( null, null, false ); // Native, No Facets defined, Restriction
 
     }
-
     public StringDatatypeValidator ( DatatypeValidator base, Hashtable facets,
                                      boolean derivedByList ) throws InvalidDatatypeFacetException {
 
-         // Set base type
-        fBaseValidator = base;
-
-        // list types are handled by ListDatatypeValidator, we do nothing here.
-        if ( derivedByList )
-            return;
-
-        // Set Facets if any defined
-        if ( facets != null  ){
-            for (Enumeration e = facets.keys(); e.hasMoreElements();) {
-                String key = (String) e.nextElement();
-
-                if ( key.equals(SchemaSymbols.ELT_LENGTH) ) {
-                    fFacetsDefined |= DatatypeValidator.FACET_LENGTH;
-                    String lengthValue = (String)facets.get(key);
-                    try {
-                        fLength     = Integer.parseInt( lengthValue );
-                    } catch (NumberFormatException nfe) {
-                        throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"' is invalid.");
-                    }
-                    // check 4.3.1.c0 must: length >= 0
-                    if ( fLength < 0 )
-                        throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"'  must be a nonNegativeInteger.");
-
-                } else if (key.equals(SchemaSymbols.ELT_MINLENGTH) ) {
-                    fFacetsDefined |= DatatypeValidator.FACET_MINLENGTH;
-                    String minLengthValue = (String)facets.get(key);
-                    try {
-                        fMinLength     = Integer.parseInt( minLengthValue );
-                    } catch (NumberFormatException nfe) {
-                        throw new InvalidDatatypeFacetException("minLength value '"+minLengthValue+"' is invalid.");
-                    }
-                    // check 4.3.2.c0 must: minLength >= 0
-                    if ( fMinLength < 0 )
-                        throw new InvalidDatatypeFacetException("minLength value '"+minLengthValue+"'  must be a nonNegativeInteger.");
-
-                } else if (key.equals(SchemaSymbols.ELT_MAXLENGTH) ) {
-                    fFacetsDefined |= DatatypeValidator.FACET_MAXLENGTH;
-                    String maxLengthValue = (String)facets.get(key);
-                    try {
-                        fMaxLength     = Integer.parseInt( maxLengthValue );
-                    } catch (NumberFormatException nfe) {
-                        throw new InvalidDatatypeFacetException("maxLength value '"+maxLengthValue+"' is invalid.");
-                    }
-                    // check 4.3.3.c0 must: maxLength >= 0
-                    if ( fMaxLength < 0 )
-                        throw new InvalidDatatypeFacetException("maxLength value '"+maxLengthValue+"'  must be a nonNegativeInteger.");
-
-
-                } else if (key.equals(SchemaSymbols.ELT_PATTERN)) {
-                    fFacetsDefined |= DatatypeValidator.FACET_PATTERN;
-                    fPattern = (String)facets.get(key);
-                    if( fPattern != null )
-                        fRegex = new RegularExpression(fPattern, "X");
-                } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
-                    fEnumeration = (Vector)facets.get(key);
-                    fFacetsDefined |= DatatypeValidator.FACET_ENUMERATION;
-                } else if (key.equals(SchemaSymbols.ELT_WHITESPACE)) {
-                    fFacetsDefined |= DatatypeValidator.FACET_WHITESPACE;
-                    String ws = (String)facets.get(key);
-                    // check 4.3.6.c0 must:
-                    // whiteSpace = preserve || whiteSpace = replace || whiteSpace = collapse
-                    if (ws.equals(SchemaSymbols.ATT_PRESERVE)) {
-                        fWhiteSpace = DatatypeValidator.PRESERVE;
-                    }
-                    else if (ws.equals(SchemaSymbols.ATT_REPLACE)) {
-                        fWhiteSpace = DatatypeValidator.REPLACE;
-                    }
-                    else if (ws.equals(SchemaSymbols.ATT_COLLAPSE)) {
-                        fWhiteSpace = DatatypeValidator.COLLAPSE;
-                    }
-                    else {
-                        throw new InvalidDatatypeFacetException("whiteSpace value '" + ws +
-                                                                "' must be one of 'preserve', 'replace', 'collapse'.");
-                    }
-                } else {
-                    throw new InvalidDatatypeFacetException( getErrorString(DatatypeMessageProvider.ILLEGAL_STRING_FACET,
-                                                                        DatatypeMessageProvider.MSG_NONE, new Object[] { key }));
-                }
-            }
-
-            if ( base != null ) {
-                // check 4.3.5.c0 must: enumeration values from the value space of base
-                if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 &&
-                     (fEnumeration != null) ) {
-                    int i = 0;
-                    try {
-                        for ( ; i < fEnumeration.size(); i++){
-                           ((StringDatatypeValidator)base).checkContent ((String)fEnumeration.elementAt(i), null, false);
-                        }
-                    } catch ( Exception idve ){
-                        throw new InvalidDatatypeFacetException( "Value of enumeration = '" + fEnumeration.elementAt(i) +
-                                                                 "' must be from the value space of base.");
-                    }
-                }
-            }
-
-            // check 4.3.1.c1 error: length & (maxLength | minLength)
-            if (((fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
-                if (((fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
-                    throw new InvalidDatatypeFacetException("It is an error for both length and maxLength to be members of facets." );
-                } else if (((fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ) {
-                    throw new InvalidDatatypeFacetException("It is an error for both length and minLength to be members of facets." );
-                }
-            }
-
-            // check 4.3.2.c1 must: minLength <= maxLength
-            if ( ( (fFacetsDefined & ( DatatypeValidator.FACET_MINLENGTH |
-                                        DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
-                if ( fMinLength > fMaxLength ) {
-                    throw new InvalidDatatypeFacetException( "Value of minLength = '" + fMinLength +
-                                                             "'must be <= the value of maxLength = '" + fMaxLength + "'.");
-                }
-            }
-
-            // if base type is string, check facets against base.facets, and inherit facets from base
-            if (base != null) {
-                StringDatatypeValidator strBase = (StringDatatypeValidator)base;
-
-                // check 4.3.1.c1 error: length & (base.maxLength | base.minLength)
-                if (((fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
-                    if (((strBase.fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
-                        throw new InvalidDatatypeFacetException("It is an error for both length and maxLength to be members of facets." );
-                    } else if (((strBase.fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ) {
-                        throw new InvalidDatatypeFacetException("It is an error for both length and minLength to be members of facets." );
-                    }
-                }
-
-                // check 4.3.1.c1 error: base.length & (maxLength | minLength)
-                if (((strBase.fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
-                    if (((fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
-                        throw new InvalidDatatypeFacetException("It is an error for both length and maxLength to be members of facets." );
-                    } else if (((fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ) {
-                        throw new InvalidDatatypeFacetException("It is an error for both length and minLength to be members of facets." );
-                    }
-                }
-
-                // check 4.3.2.c1 must: minLength <= base.maxLength
-                if (((fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) &&
-                    ((strBase.fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
-                    if ( fMinLength > strBase.fMaxLength ) {
-                        throw new InvalidDatatypeFacetException( "Value of minLength = '" + fMinLength +
-                                                                 "'must be <= the value of maxLength = '" + fMaxLength + "'.");
-                    }
-                }
-
-                // check 4.3.2.c1 must: base.minLength <= maxLength
-                if (((strBase.fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) &&
-                    ((fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
-                    if ( strBase.fMinLength > fMaxLength ) {
-                        throw new InvalidDatatypeFacetException( "Value of minLength = '" + fMinLength +
-                                                                 "'must be <= the value of maxLength = '" + fMaxLength + "'.");
-                    }
-                }
-
-                // check 4.3.1.c2 error: length != base.length
-                if ( (fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 &&
-                     (strBase.fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 ) {
-                    if ( fLength != strBase.fLength )
-                        throw new InvalidDatatypeFacetException( "Value of length = '" + fLength +
-                                                                 "' must be = the value of base.length = '" + strBase.fLength + "'.");
-                }
-                // check 4.3.2.c2 error: minLength < base.minLength
-                if ( (fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) != 0 &&
-                     (strBase.fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) != 0 ) {
-                    if ( fMinLength < strBase.fMinLength )
-                        throw new InvalidDatatypeFacetException( "Value of minLength = '" + fMinLength +
-                                                                 "' must be >= the value of base.minLength = '" + strBase.fMinLength + "'.");
-                }
-                // check 4.3.3.c1 error: maxLength > base.maxLength
-                if ( (fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 &&
-                     (strBase.fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 ) {
-                    if ( fMaxLength > strBase.fMaxLength )
-                        throw new InvalidDatatypeFacetException( "Value of maxLength = '" + fMaxLength +
-                                                                 "' must be <= the value of base.maxLength = '" + strBase.fMaxLength + "'.");
-                }
-                // check 4.3.6.c1 error:
-                // (whiteSpace = preserve || whiteSpace = replace) && base.whiteSpace = collapese or
-                // whiteSpace = preserve && base.whiteSpace = replace
-                if ( (fFacetsDefined & DatatypeValidator.FACET_WHITESPACE) != 0 &&
-                     (strBase.fFacetsDefined & DatatypeValidator.FACET_WHITESPACE) != 0 ) {
-                    if ( (fWhiteSpace == DatatypeValidator.PRESERVE ||
-                          fWhiteSpace == DatatypeValidator.REPLACE) &&
-                         strBase.fWhiteSpace == DatatypeValidator.COLLAPSE )
-                        throw new InvalidDatatypeFacetException( "It is an error if whiteSpace = 'preserve' or 'replace' and base.whiteSpace = 'collapse'.");
-
-                    if ( fWhiteSpace == DatatypeValidator.PRESERVE &&
-                         strBase.fWhiteSpace == DatatypeValidator.REPLACE )
-                        throw new InvalidDatatypeFacetException( "It is an error if whiteSpace = 'preserve' and base.whiteSpace = 'replace'.");
-                }
-
-                // inherit length
-                if ( (strBase.fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 ) {
-                    if ( (fFacetsDefined & DatatypeValidator.FACET_LENGTH) == 0 ) {
-                        fFacetsDefined |= DatatypeValidator.FACET_LENGTH;
-                        fLength = strBase.fLength;
-                    }
-                }
-                // inherit minLength
-                if ( (strBase.fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) != 0 ) {
-                    if ( (fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) == 0 ) {
-                        fFacetsDefined |= DatatypeValidator.FACET_MINLENGTH;
-                        fMinLength = strBase.fMinLength;
-                    }
-                }
-                // inherit maxLength
-                if ( (strBase.fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 ) {
-                    if ( (fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) == 0 ) {
-                        fFacetsDefined |= DatatypeValidator.FACET_MAXLENGTH;
-                        fMaxLength = strBase.fMaxLength;
-                    }
-                }
-                // inherit enumeration
-                if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) == 0 &&
-                     (strBase.fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 ) {
-                    fFacetsDefined |= DatatypeValidator.FACET_ENUMERATION;
-                    fEnumeration = strBase.fEnumeration;
-                }
-                // inherit whiteSpace
-                if ( (fFacetsDefined & DatatypeValidator.FACET_WHITESPACE) == 0 &&
-                     (strBase.fFacetsDefined & DatatypeValidator.FACET_WHITESPACE) != 0 ) {
-                    fFacetsDefined |= DatatypeValidator.FACET_WHITESPACE;
-                    fWhiteSpace = strBase.fWhiteSpace;
-                }
-            }
-        }// End of Facets Setting
+        super (base, facets, derivedByList); 
     }
+
+
+    protected void assignAdditionalFacets(String key, Hashtable facets)  throws InvalidDatatypeFacetException{
+        fWhiteSpace = DatatypeValidator.PRESERVE;
+        if ( key.equals(SchemaSymbols.ELT_WHITESPACE) ) {
+            fFacetsDefined |= DatatypeValidator.FACET_WHITESPACE;
+            String ws = (String)facets.get(key);
+            // check 4.3.6.c0 must:
+            // whiteSpace = preserve || whiteSpace = replace || whiteSpace = collapse
+            if ( ws.equals(SchemaSymbols.ATT_PRESERVE) ) {
+                fWhiteSpace = DatatypeValidator.PRESERVE;
+            }
+            else if ( ws.equals(SchemaSymbols.ATT_REPLACE) ) {
+                fWhiteSpace = DatatypeValidator.REPLACE;
+            }
+            else if ( ws.equals(SchemaSymbols.ATT_COLLAPSE) ) {
+                fWhiteSpace = DatatypeValidator.COLLAPSE;
+            }
+            else {
+                throw new InvalidDatatypeFacetException("whiteSpace value '" + ws +
+                                                        "' must be one of 'preserve', 'replace', 'collapse'.");
+            }
+        }
+        else {
+            throw new InvalidDatatypeFacetException( getErrorString(DatatypeMessageProvider.ILLEGAL_STRING_FACET,
+                                                                    DatatypeMessageProvider.MSG_NONE, new Object[] { key}));
+        }
+    }
+
+
+    protected void inheritAdditionalFacets() {
+        // inherit whiteSpace
+        if ( (fFacetsDefined & DatatypeValidator.FACET_WHITESPACE) == 0 &&
+             (((StringDatatypeValidator)fBaseValidator).fFacetsDefined & DatatypeValidator.FACET_WHITESPACE) != 0 ) {
+            fFacetsDefined |= DatatypeValidator.FACET_WHITESPACE;
+            fWhiteSpace = ((StringDatatypeValidator)fBaseValidator).fWhiteSpace;
+        }
+    }
+
+    //
+    // string needs to check constraints on whiteSpace
+    // check is done against fBaseValidator
+    //
+    protected void checkBaseFacetConstraints() throws InvalidDatatypeFacetException {
+        // check 4.3.6.c1 error:
+        // (whiteSpace = preserve || whiteSpace = replace) && base.whiteSpace = collapese or
+        // whiteSpace = preserve && base.whiteSpace = replace
+        
+        if ( (fFacetsDefined & DatatypeValidator.FACET_WHITESPACE) != 0 &&
+             (((StringDatatypeValidator)fBaseValidator).fFacetsDefined & DatatypeValidator.FACET_WHITESPACE) != 0 ) {
+                        if ( (((StringDatatypeValidator)fBaseValidator).fFlags & DatatypeValidator.FACET_WHITESPACE) != 0 &&
+                         fWhiteSpace != ((StringDatatypeValidator)fBaseValidator).fWhiteSpace ) {
+                        throw new InvalidDatatypeFacetException( "whiteSpace value = '" + whiteSpaceValue(fWhiteSpace) + 
+                                                                 "' must be equal to base.whiteSpace value = '" +
+                                                                 whiteSpaceValue(((StringDatatypeValidator)fBaseValidator).fWhiteSpace) + "' with attribute {fixed} = true" );
+            }
+            if ( (fWhiteSpace == DatatypeValidator.PRESERVE ||
+                  fWhiteSpace == DatatypeValidator.REPLACE) &&
+                 ((StringDatatypeValidator)fBaseValidator).fWhiteSpace == DatatypeValidator.COLLAPSE ){
+                throw new InvalidDatatypeFacetException( "It is an error if whiteSpace = 'preserve' or 'replace' and base.whiteSpace = 'collapse'.");
+            }
+            if ( fWhiteSpace == DatatypeValidator.PRESERVE &&
+                 ((StringDatatypeValidator)fBaseValidator).fWhiteSpace == DatatypeValidator.REPLACE )
+                throw new InvalidDatatypeFacetException( "It is an error if whiteSpace = 'preserve' and base.whiteSpace = 'replace'.");
+        }
+    }
+
 
     /**
      * return value of whiteSpace facet
      */
-    public short getWSFacet(){
+    public short getWSFacet() {
         return fWhiteSpace;
     }
 
-    /**
-     * validate that a string is a W3C string type
-     *
-     * @param content A string containing the content to be validated
-     * @param list
-     * @exception throws InvalidDatatypeException if the content is
-     *                   not a W3C string type
-     * @exception InvalidDatatypeValueException
-     */
-    public Object validate(String content, Object state)  throws InvalidDatatypeValueException {
-        checkContent( content, state, false );
-        return null;
-    }
 
-
-    private void checkContent( String content, Object state, boolean asBase )
-    throws InvalidDatatypeValueException {
-        // validate against parent type if any
-        if ( this.fBaseValidator != null ) {
-            // validate content as a base type
-                ((StringDatatypeValidator)fBaseValidator).checkContent(content, state, true);
-        }
-
-        // we check pattern first
-        if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
-            if ( fRegex == null || fRegex.matches( content) == false )
-                throw new InvalidDatatypeValueException("Value '"+content+
-                                                        "' does not match regular expression facet '" + fPattern + "'." );
-        }
-
-        // if this is a base validator, we only need to check pattern facet
-        // all other facet were inherited by the derived type
-        if (asBase)
-            return;
-
-        if ( (fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 ) {
-            if ( content.length() > fMaxLength ) {
-                throw new InvalidDatatypeValueException("Value '"+content+
-                                                        "' with length '"+content.length()+
-                                                        "' exceeds maximum length facet of '"+fMaxLength+"'.");
-            }
-        }
-        if ( (fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) != 0 ) {
-            if ( content.length() < fMinLength ) {
-                throw new InvalidDatatypeValueException("Value '"+content+
-                                                        "' with length '"+content.length()+
-                                                        "' is less than minimum length facet of '"+fMinLength+"'." );
-            }
-        }
-
-        if ( (fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 ) {
-            if ( content.length() != fLength ) {
-                throw new InvalidDatatypeValueException("Value '"+content+
-                                                        "' with length '"+content.length()+
-                                                        "' is not equal to length facet '"+fLength+"'.");
-            }
-        }
-
-        if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 &&
-             (fEnumeration != null) ) {
-            if ( fEnumeration.contains( content ) == false )
-                throw new InvalidDatatypeValueException("Value '"+content+"' must be one of "+fEnumeration);
-        }
-    }
-
-
-    public int compare( String value1, String value2 ){
+    public int compare( String value1, String value2 ) {
         Locale    loc       = Locale.getDefault();
         Collator  collator  = Collator.getInstance( loc );
         return collator.compare( value1, value2 );
     }
 
+    private String whiteSpaceValue (short ws){
+       return (ws != DatatypeValidator.PRESERVE)? 
+              (ws == DatatypeValidator.REPLACE)?"replace":"collapse":"preserve";
+    }
     /**
    * Returns a copy of this object.
    */
@@ -413,7 +189,8 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
             newObj.fWhiteSpace       =  this.fWhiteSpace;
             newObj.fEnumeration      =  this.fEnumeration;
             newObj.fFacetsDefined    =  this.fFacetsDefined;
-        } catch ( InvalidDatatypeFacetException ex) {
+        }
+        catch ( InvalidDatatypeFacetException ex ) {
             ex.printStackTrace();
         }
         return newObj;

@@ -73,13 +73,15 @@ import org.apache.xerces.utils.regex.RegularExpression;
 
 public abstract class AbstractDatatypeValidator implements DatatypeValidator, Cloneable {
 
-    protected Hashtable fFacets; // Hashtable of Facets Strings.
+    protected Hashtable         fFacets; // Hashtable of Facets Strings.
     protected DatatypeValidator fBaseValidator = null; 
-    protected String     fPattern         = null;
+    protected String            fPattern         = null;
     protected RegularExpression fRegex    = null;
-    protected short fFacetsDefined          = 0;
+    protected short             fFacetsDefined          = 0;
     protected DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
-    protected Locale              fLocale                 = null;
+    protected Locale            fLocale  = null;
+    protected short             fFlags = 0; //flags fixed facets
+    
      /**
      * Checks that "content" string is valid
      * datatype.

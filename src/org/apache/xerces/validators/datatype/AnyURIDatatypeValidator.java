@@ -58,12 +58,7 @@
 package org.apache.xerces.validators.datatype;
 
 import java.util.Hashtable;
-import java.util.Vector;
-import java.util.Enumeration;
 import org.apache.xerces.utils.URI;
-import org.apache.xerces.validators.schema.SchemaSymbols;
-import org.apache.xerces.utils.regex.RegularExpression;
-
 
 
 /**
@@ -77,281 +72,26 @@ import org.apache.xerces.utils.regex.RegularExpression;
  * @see Tim Berners-Lee, et. al. RFC 2396: Uniform Resource Identifiers (URI): Generic Syntax.. 1998 Available at: http://www.ietf.org/rfc/rfc2396.txt
  * @version  $Id$
  */
-public class AnyURIDatatypeValidator extends AbstractDatatypeValidator {
+public class AnyURIDatatypeValidator extends AbstractStringValidator {
     
-    private int       fLength          = 0;
-    private int       fMaxLength       = Integer.MAX_VALUE;
-    private int       fMinLength       = 0;
-    private Vector    fEnumeration     = null;
 
     public AnyURIDatatypeValidator () throws InvalidDatatypeFacetException{
-        this ( null, null, false ); // Native, No Facets defined, Restriction
+        super ( null, null, false ); // Native, No Facets defined, Restriction
     }
 
     public AnyURIDatatypeValidator ( DatatypeValidator base, Hashtable facets,
                                      boolean derivedByList ) throws InvalidDatatypeFacetException {
-
-         // Set base type
-        fBaseValidator = base;
-
-        // list types are handled by ListDatatypeValidator, we do nothing here.
-        if ( derivedByList )
-            return;
-
-        // Set Facets if any defined
-        if ( facets != null  ){
-            for (Enumeration e = facets.keys(); e.hasMoreElements();) {
-                String key = (String) e.nextElement();
-
-                if ( key.equals(SchemaSymbols.ELT_LENGTH) ) {
-                    fFacetsDefined |= DatatypeValidator.FACET_LENGTH;
-                    String lengthValue = (String)facets.get(key);
-                    try {
-                        fLength     = Integer.parseInt( lengthValue );
-                    } catch (NumberFormatException nfe) {
-                        throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"' is invalid.");
-                    }
-                    // check 4.3.1.c0 must: length >= 0
-                    if ( fLength < 0 )
-                        throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"'  must be a nonNegativeInteger.");
-
-                } else if (key.equals(SchemaSymbols.ELT_MINLENGTH) ) {
-                    fFacetsDefined |= DatatypeValidator.FACET_MINLENGTH;
-                    String minLengthValue = (String)facets.get(key);
-                    try {
-                        fMinLength     = Integer.parseInt( minLengthValue );
-                    } catch (NumberFormatException nfe) {
-                        throw new InvalidDatatypeFacetException("minLength value '"+minLengthValue+"' is invalid.");
-                    }
-                    // check 4.3.2.c0 must: minLength >= 0
-                    if ( fMinLength < 0 )
-                        throw new InvalidDatatypeFacetException("minLength value '"+minLengthValue+"'  must be a nonNegativeInteger.");
-
-                } else if (key.equals(SchemaSymbols.ELT_MAXLENGTH) ) {
-                    fFacetsDefined |= DatatypeValidator.FACET_MAXLENGTH;
-                    String maxLengthValue = (String)facets.get(key);
-                    try {
-                        fMaxLength     = Integer.parseInt( maxLengthValue );
-                    } catch (NumberFormatException nfe) {
-                        throw new InvalidDatatypeFacetException("maxLength value '"+maxLengthValue+"' is invalid.");
-                    }
-                    // check 4.3.3.c0 must: maxLength >= 0
-                    if ( fMaxLength < 0 )
-                        throw new InvalidDatatypeFacetException("maxLength value '"+maxLengthValue+"'  must be a nonNegativeInteger.");
-
-
-                } else if (key.equals(SchemaSymbols.ELT_PATTERN)) {
-                    fFacetsDefined |= DatatypeValidator.FACET_PATTERN;
-                    fPattern = (String)facets.get(key);
-                    if( fPattern != null )
-                        fRegex = new RegularExpression(fPattern, "X");
-                } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
-                    fEnumeration = (Vector)facets.get(key);
-                    fFacetsDefined |= DatatypeValidator.FACET_ENUMERATION;
-                } else {
-                        throw new InvalidDatatypeFacetException( getErrorString(DatatypeMessageProvider.ILLEGAL_ANYURI_FACET,
-                                                                                DatatypeMessageProvider.MSG_NONE, new Object[] { key }));                }
-            }
-
-            if ( base != null ) {
-                // check 4.3.5.c0 must: enumeration values from the value space of base
-                if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 &&
-                     (fEnumeration != null) ) {
-                    int i = 0;
-                    try {
-                        for ( ; i < fEnumeration.size(); i++) {
-                            base.validate ((String)fEnumeration.elementAt(i), null);
-                        }
-                    } catch ( Exception idve ){
-                        throw new InvalidDatatypeFacetException( "Value of enumeration = '" + fEnumeration.elementAt(i) +
-                                                                 "' must be from the value space of base.");
-                    }
-                }
-            }
-
-            // check 4.3.1.c1 error: length & (maxLength | minLength)
-            if (((fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
-                if (((fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
-                    throw new InvalidDatatypeFacetException("It is an error for both length and maxLength to be members of facets." );
-                } else if (((fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ) {
-                    throw new InvalidDatatypeFacetException("It is an error for both length and minLength to be members of facets." );
-                }
-            }
-
-            // check 4.3.2.c1 must: minLength <= maxLength
-            if ( ( (fFacetsDefined & ( DatatypeValidator.FACET_MINLENGTH |
-                                        DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
-                if ( fMinLength > fMaxLength ) {
-                    throw new InvalidDatatypeFacetException( "Value of minLength = '" + fMinLength +
-                                                             "'must be <= the value of maxLength = '" + fMaxLength + "'.");
-                }
-            }
-
-            // if base type is string, check facets against base.facets, and inherit facets from base
-            if (base != null && base instanceof AnyURIDatatypeValidator) {
-                AnyURIDatatypeValidator anyURIBase = (AnyURIDatatypeValidator)base;
-
-                // check 4.3.1.c1 error: length & (base.maxLength | base.minLength)
-                if (((fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
-                    if (((anyURIBase.fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
-                        throw new InvalidDatatypeFacetException("It is an error for both length and maxLength to be members of facets." );
-                    } else if (((anyURIBase.fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ) {
-                        throw new InvalidDatatypeFacetException("It is an error for both length and minLength to be members of facets." );
-                    }
-                }
-
-                // check 4.3.1.c1 error: base.length & (maxLength | minLength)
-                if (((anyURIBase.fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
-                    if (((fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
-                        throw new InvalidDatatypeFacetException("It is an error for both length and maxLength to be members of facets." );
-                    } else if (((fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ) {
-                        throw new InvalidDatatypeFacetException("It is an error for both length and minLength to be members of facets." );
-                    }
-                }
-
-                // check 4.3.2.c1 must: minLength <= base.maxLength
-                if (((fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) &&
-                    ((anyURIBase.fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
-                    if ( fMinLength > anyURIBase.fMaxLength ) {
-                        throw new InvalidDatatypeFacetException( "Value of minLength = '" + fMinLength +
-                                                                 "'must be <= the value of maxLength = '" + fMaxLength + "'.");
-                    }
-                }
-
-                // check 4.3.2.c1 must: base.minLength <= maxLength
-                if (((anyURIBase.fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) &&
-                    ((fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
-                    if ( anyURIBase.fMinLength > fMaxLength ) {
-                        throw new InvalidDatatypeFacetException( "Value of minLength = '" + fMinLength +
-                                                                 "'must be <= the value of maxLength = '" + fMaxLength + "'.");
-                    }
-                }
-
-                // check 4.3.1.c2 error: length != base.length
-                if ( (fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 &&
-                     (anyURIBase.fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 ) {
-                    if ( fLength != anyURIBase.fLength )
-                        throw new InvalidDatatypeFacetException( "Value of length = '" + fLength +
-                                                                 "' must be = the value of base.length = '" + anyURIBase.fLength + "'.");
-                }
-                // check 4.3.2.c2 error: minLength < base.minLength
-                if ( (fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) != 0 &&
-                     (anyURIBase.fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) != 0 ) {
-                    if ( fMinLength < anyURIBase.fMinLength )
-                        throw new InvalidDatatypeFacetException( "Value of minLength = '" + fMinLength +
-                                                                 "' must be >= the value of base.minLength = '" + anyURIBase.fMinLength + "'.");
-                }
-                // check 4.3.3.c1 error: maxLength > base.maxLength
-                if ( (fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 &&
-                     (anyURIBase.fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 ) {
-                    if ( fMaxLength > anyURIBase.fMaxLength )
-                        throw new InvalidDatatypeFacetException( "Value of maxLength = '" + fMaxLength +
-                                                                 "' must be <= the value of base.maxLength = '" + anyURIBase.fMaxLength + "'.");
-                }
-
-                // inherit length
-                if ( (anyURIBase.fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 ) {
-                    if ( (fFacetsDefined & DatatypeValidator.FACET_LENGTH) == 0 ) {
-                        fFacetsDefined |= DatatypeValidator.FACET_LENGTH;
-                        fLength = anyURIBase.fLength;
-                    }
-                }
-                // inherit minLength
-                if ( (anyURIBase.fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) != 0 ) {
-                    if ( (fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) == 0 ) {
-                        fFacetsDefined |= DatatypeValidator.FACET_MINLENGTH;
-                        fMinLength = anyURIBase.fMinLength;
-                    }
-                }
-                // inherit maxLength
-                if ( (anyURIBase.fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 ) {
-                    if ( (fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) == 0 ) {
-                        fFacetsDefined |= DatatypeValidator.FACET_MAXLENGTH;
-                        fMaxLength = anyURIBase.fMaxLength;
-                    }
-                }
-                // inherit enumeration
-                if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) == 0 &&
-                     (anyURIBase.fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 ) {
-                    fFacetsDefined |= DatatypeValidator.FACET_ENUMERATION;
-                    fEnumeration = anyURIBase.fEnumeration;
-                }
-            }
-        }// End of Facets Setting
+        super (base, facets, derivedByList); 
     }
 
-    /**
-     * Validates content to conform to a anyURI
-     * definition and to conform to the facets allowed
-     * for this datatype.
-     *
-     * @param content
-     * @param state
-     * @return
-     * @exception InvalidDatatypeValueException
-     */
-    public Object validate(String content, Object state)
-    throws InvalidDatatypeValueException
-    {
-        // validate content not as a base type
-        checkContent (content, state, false);
-        return null;
+    protected void assignAdditionalFacets(String key, Hashtable facets)  throws InvalidDatatypeFacetException{
+        throw new InvalidDatatypeFacetException( getErrorString(DatatypeMessageProvider.ILLEGAL_STRING_FACET,
+                                                        DatatypeMessageProvider.MSG_NONE, new Object[] { key }));
     }
 
-    private void checkContent(String content, Object state, boolean asBase)
-    throws InvalidDatatypeValueException
-    {
-        // validate against parent type if any
-        if ( this.fBaseValidator != null ) {
-            // validate content as a base type
-            if (fBaseValidator instanceof AnyURIDatatypeValidator) {
-                ((AnyURIDatatypeValidator)fBaseValidator).checkContent(content, state, true);
-            } else {
-                this.fBaseValidator.validate( content, state );
-            }
-        }
 
-        // we check pattern first
-        if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
-            if ( fRegex == null || fRegex.matches( content) == false )
-                throw new InvalidDatatypeValueException("Value '"+content+
-                                                        "' does not match regular expression facet '" + fPattern + "'." );
-        }
-
-        // if this is a base validator, we only need to check pattern facet
-        // all other facet were inherited by the derived type
-        if (asBase)
-            return;
-
-        if ( (fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 ) {
-            if ( content.length() > fMaxLength ) {
-                throw new InvalidDatatypeValueException("Value '"+content+
-                                                        "' with length '"+content.length()+
-                                                        "' exceeds maximum length facet of '"+fMaxLength+"'.");
-            }
-        }
-        if ( (fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) != 0 ) {
-            if ( content.length() < fMinLength ) {
-                throw new InvalidDatatypeValueException("Value '"+content+
-                                                        "' with length '"+content.length()+
-                                                        "' is less than minimum length facet of '"+fMinLength+"'." );
-            }
-        }
-
-        if ( (fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 ) {
-            if ( content.length() != fLength ) {
-                throw new InvalidDatatypeValueException("Value '"+content+
-                                                        "' with length '"+content.length()+
-                                                        "' is not equal to length facet '"+fLength+"'.");
-            }
-        }
-
-        if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 &&
-             (fEnumeration != null) ) {
-            if ( fEnumeration.contains( content ) == false )
-                throw new InvalidDatatypeValueException("Value '"+content+"' must be one of "+fEnumeration);
-        }
-
+    protected void checkValueSpace (String content) throws InvalidDatatypeValueException {
+        
         // check 3.2.17.c0 must: URI (rfc 2396/2723)
         try {
             URI uriContent = null;
@@ -363,23 +103,5 @@ public class AnyURIDatatypeValidator extends AbstractDatatypeValidator {
         }
     }
 
-    /**
-     * Compares two anyURIs for equality.
-     * This is not really well defined.
-     *
-     * @param content1
-     * @param content2
-     * @return
-     */
-    public int compare( String content1, String content2){
-        return 0;
-    }
-
-    /**
-     * Returns a copy of this object.
-     */
-    public Object clone() throws CloneNotSupportedException {
-        throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
-    }
 
 }

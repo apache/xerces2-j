@@ -87,6 +87,10 @@ public interface DatatypeValidator {
     public static final short FACET_PERIOD       = 0x1<<13;
     public static final short FACET_WHITESPACE   = 0x1<<14;
 
+    // _dummy_ facet that is passed with all other facets for a datatype
+    // its value flags the fixed facets
+    public static final String FACET_FIXED   = "fixed";
+    
     //2.4.2.6 whiteSpace - Datatypes 
     public static final short PRESERVE = 0;
     public static final short REPLACE  = 1;

@@ -58,10 +58,6 @@
 package org.apache.xerces.validators.datatype;
 
 import java.util.Hashtable;
-import java.util.Vector;
-import java.util.Enumeration;
-import org.apache.xerces.validators.schema.SchemaSymbols;
-import org.apache.xerces.utils.regex.RegularExpression;
 
 /**
  * NOTATIONValidator defines the interface that data type validators must obey.
@@ -73,25 +69,27 @@ import org.apache.xerces.utils.regex.RegularExpression;
  * @author Mark Swinkles - List Validation refactoring
  * @version $Id$
  */
-public class NOTATIONDatatypeValidator extends AbstractDatatypeValidator {
+public class NOTATIONDatatypeValidator extends AbstractStringValidator {
     
-    private int        fLength          = 0;
-    private int        fMaxLength       = Integer.MAX_VALUE;
-    private int        fMinLength       = 0;
-    private Vector     fEnumeration     = null;
 
     // for the QName validator
+    /*
     private static StringDatatypeValidator fgStrValidator  = null;
     private static AnyURIDatatypeValidator fgURIValidator  = null;
+    */
 
     public NOTATIONDatatypeValidator () throws InvalidDatatypeFacetException {
-        this( null, null, false ); // Native, No Facets defined, Restriction
+        this ( null, null, false ); // Native, No Facets defined, Restriction
     }
 
     public NOTATIONDatatypeValidator ( DatatypeValidator base, Hashtable facets,
          boolean derivedByList ) throws InvalidDatatypeFacetException {
 
+        super (base, facets, derivedByList);
         // make a string validator for NCName and anyURI
+
+        // REVISIT: do we really need to validate against value space..?
+        /*
         if ( fgStrValidator == null) {
             Hashtable strFacets = new Hashtable();
             strFacets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATT_COLLAPSE);
@@ -99,274 +97,20 @@ public class NOTATIONDatatypeValidator extends AbstractDatatypeValidator {
             fgStrValidator = new StringDatatypeValidator (null, strFacets, false);
             fgURIValidator = new AnyURIDatatypeValidator (null, null, false);
         }
-
-         // Set base type
-        fBaseValidator = base;
-
-        // list types are handled by ListDatatypeValidator, we do nothing here.
-        if ( derivedByList )
-            return;
-
-        // Set Facets if any defined
-        if ( facets != null  ){
-            for (Enumeration e = facets.keys(); e.hasMoreElements();) {
-                String key = (String) e.nextElement();
-
-                if ( key.equals(SchemaSymbols.ELT_LENGTH) ) {
-                    fFacetsDefined |= DatatypeValidator.FACET_LENGTH;
-                    String lengthValue = (String)facets.get(key);
-                    try {
-                        fLength     = Integer.parseInt( lengthValue );
-                    } catch (NumberFormatException nfe) {
-                        throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"' is invalid.");
-                    }
-                    // check 4.3.1.c0 must: length >= 0
-                    if ( fLength < 0 )
-                        throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"'  must be a nonNegativeInteger.");
-
-                } else if (key.equals(SchemaSymbols.ELT_MINLENGTH) ) {
-                    fFacetsDefined |= DatatypeValidator.FACET_MINLENGTH;
-                    String minLengthValue = (String)facets.get(key);
-                    try {
-                        fMinLength     = Integer.parseInt( minLengthValue );
-                    } catch (NumberFormatException nfe) {
-                        throw new InvalidDatatypeFacetException("minLength value '"+minLengthValue+"' is invalid.");
-                    }
-                    // check 4.3.2.c0 must: minLength >= 0
-                    if ( fMinLength < 0 )
-                        throw new InvalidDatatypeFacetException("minLength value '"+minLengthValue+"'  must be a nonNegativeInteger.");
-
-                } else if (key.equals(SchemaSymbols.ELT_MAXLENGTH) ) {
-                    fFacetsDefined |= DatatypeValidator.FACET_MAXLENGTH;
-                    String maxLengthValue = (String)facets.get(key);
-                    try {
-                        fMaxLength     = Integer.parseInt( maxLengthValue );
-                    } catch (NumberFormatException nfe) {
-                        throw new InvalidDatatypeFacetException("maxLength value '"+maxLengthValue+"' is invalid.");
-                    }
-                    // check 4.3.3.c0 must: maxLength >= 0
-                    if ( fMaxLength < 0 )
-                        throw new InvalidDatatypeFacetException("maxLength value '"+maxLengthValue+"'  must be a nonNegativeInteger.");
-
-
-                } else if (key.equals(SchemaSymbols.ELT_PATTERN)) {
-                    fFacetsDefined |= DatatypeValidator.FACET_PATTERN;
-                    fPattern = (String)facets.get(key);
-                    if( fPattern != null )
-                        fRegex = new RegularExpression(fPattern, "X");
-                } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
-                    fEnumeration = (Vector)facets.get(key);
-                    fFacetsDefined |= DatatypeValidator.FACET_ENUMERATION;
-                } else {
-                    throw new InvalidDatatypeFacetException( getErrorString(DatatypeMessageProvider.ILLEGAL_NOTATION_FACET,
-                                                                        DatatypeMessageProvider.MSG_NONE, new Object[] { key }));
-                }
-            }
-
-            if ( base != null ) {
-                // check 2.3.19.c1 must: derived NOTATION
-                if ( ((NOTATIONDatatypeValidator)base).fBaseValidator == null) {
-                    if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) == 0 )
-                        throw new InvalidDatatypeFacetException( "Enumeration facet is required data types directly derived from NOTATION.");
-                }
-
-                // check 4.3.5.c0 must: enumeration values from the value space of base
-                if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 &&
-                     (fEnumeration != null) ) {
-                    int i = 0;
-                    try {
-                        for ( ; i < fEnumeration.size(); i++) {
-                            base.validate ((String)fEnumeration.elementAt(i), null);
-                        }
-                    } catch ( Exception idve ){
-                        throw new InvalidDatatypeFacetException( "Value of enumeration = '" + fEnumeration.elementAt(i) +
-                                                                 "' must be from the value space of base.");
-                    }
-                }
-            }
-
-            // check 4.3.1.c1 error: length & (maxLength | minLength)
-            if (((fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
-                if (((fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
-                    throw new InvalidDatatypeFacetException("It is an error for both length and maxLength to be members of facets." );
-                } else if (((fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ) {
-                    throw new InvalidDatatypeFacetException("It is an error for both length and minLength to be members of facets." );
-                }
-            }
-
-            // check 4.3.2.c1 must: minLength <= maxLength
-            if ( ( (fFacetsDefined & ( DatatypeValidator.FACET_MINLENGTH |
-                                        DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
-                if ( fMinLength > fMaxLength ) {
-                    throw new InvalidDatatypeFacetException( "Value of minLength = '" + fMinLength +
-                                                             "'must be <= the value of maxLength = '" + fMaxLength + "'.");
-                }
-            }
-
-            // if base type is string, check facets against base.facets, and inherit facets from base
-            if (base != null) {
-                NOTATIONDatatypeValidator notationBase = (NOTATIONDatatypeValidator)base;
-
-                // check 4.3.1.c1 error: length & (base.maxLength | base.minLength)
-                if (((fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
-                    if (((notationBase.fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
-                        throw new InvalidDatatypeFacetException("It is an error for both length and maxLength to be members of facets." );
-                    } else if (((notationBase.fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ) {
-                        throw new InvalidDatatypeFacetException("It is an error for both length and minLength to be members of facets." );
-                    }
-                }
-
-                // check 4.3.1.c1 error: base.length & (maxLength | minLength)
-                if (((notationBase.fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
-                    if (((fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
-                        throw new InvalidDatatypeFacetException("It is an error for both length and maxLength to be members of facets." );
-                    } else if (((fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ) {
-                        throw new InvalidDatatypeFacetException("It is an error for both length and minLength to be members of facets." );
-                    }
-                }
-
-                // check 4.3.2.c1 must: minLength <= base.maxLength
-                if (((fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) &&
-                    ((notationBase.fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
-                    if ( fMinLength > notationBase.fMaxLength ) {
-                        throw new InvalidDatatypeFacetException( "Value of minLength = '" + fMinLength +
-                                                                 "'must be <= the value of maxLength = '" + fMaxLength + "'.");
-                    }
-                }
-
-                // check 4.3.2.c1 must: base.minLength <= maxLength
-                if (((notationBase.fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) &&
-                    ((fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
-                    if ( notationBase.fMinLength > fMaxLength ) {
-                        throw new InvalidDatatypeFacetException( "Value of minLength = '" + fMinLength +
-                                                                 "'must be <= the value of maxLength = '" + fMaxLength + "'.");
-                    }
-                }
-
-                // check 4.3.1.c2 error: length != base.length
-                if ( (fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 &&
-                     (notationBase.fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 ) {
-                    if ( fLength != notationBase.fLength )
-                        throw new InvalidDatatypeFacetException( "Value of length = '" + fLength +
-                                                                 "' must be = the value of base.length = '" + notationBase.fLength + "'.");
-                }
-                // check 4.3.2.c2 error: minLength < base.minLength
-                if ( (fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) != 0 &&
-                     (notationBase.fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) != 0 ) {
-                    if ( fMinLength < notationBase.fMinLength )
-                        throw new InvalidDatatypeFacetException( "Value of minLength = '" + fMinLength +
-                                                                 "' must be >= the value of base.minLength = '" + notationBase.fMinLength + "'.");
-                }
-                // check 4.3.3.c1 error: maxLength > base.maxLength
-                if ( (fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 &&
-                     (notationBase.fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 ) {
-                    if ( fMaxLength > notationBase.fMaxLength )
-                        throw new InvalidDatatypeFacetException( "Value of maxLength = '" + fMaxLength +
-                                                                 "' must be <= the value of base.maxLength = '" + notationBase.fMaxLength + "'.");
-                }
-
-                // inherit length
-                if ( (notationBase.fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 ) {
-                    if ( (fFacetsDefined & DatatypeValidator.FACET_LENGTH) == 0 ) {
-                        fFacetsDefined |= DatatypeValidator.FACET_LENGTH;
-                        fLength = notationBase.fLength;
-                    }
-                }
-                // inherit minLength
-                if ( (notationBase.fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) != 0 ) {
-                    if ( (fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) == 0 ) {
-                        fFacetsDefined |= DatatypeValidator.FACET_MINLENGTH;
-                        fMinLength = notationBase.fMinLength;
-                    }
-                }
-                // inherit maxLength
-                if ( (notationBase.fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 ) {
-                    if ( (fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) == 0 ) {
-                        fFacetsDefined |= DatatypeValidator.FACET_MAXLENGTH;
-                        fMaxLength = notationBase.fMaxLength;
-                    }
-                }
-                // inherit enumeration
-                if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) == 0 &&
-                     (notationBase.fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 ) {
-                    fFacetsDefined |= DatatypeValidator.FACET_ENUMERATION;
-                    fEnumeration = notationBase.fEnumeration;
-                }
-            }
-        }// End of Facets Setting
+        */
+        
     }
 
-    /**
-     * Checks that "content" string is valid
-     * datatype.
-     * If invalid a Datatype validation exception is thrown.
-     *
-     * @param content A string containing the content to be validated
-     * @param derivedBylist
-     *                Flag which is true when type
-     *                is derived by list otherwise it
-     *                it is derived by extension.
-     *
-     * @exception throws InvalidDatatypeException if the content is
-     *                   invalid according to the rules for the validators
-     * @exception InvalidDatatypeValueException
-     * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
-     */
-    public Object validate(String content, Object state ) throws InvalidDatatypeValueException{
-        checkContent (content, state, false);
-        return null;
+    protected void assignAdditionalFacets(String key, Hashtable facets)  throws InvalidDatatypeFacetException{
+        throw new InvalidDatatypeFacetException( getErrorString(DatatypeMessageProvider.ILLEGAL_STRING_FACET,
+                                                        DatatypeMessageProvider.MSG_NONE, new Object[] { key }));
     }
 
-    private void checkContent(String content, Object state, boolean asBase)
-    throws InvalidDatatypeValueException {
-        // validate against parent type if any
-        if ( this.fBaseValidator != null ) {
-            // validate content as a base type
-           ((NOTATIONDatatypeValidator)fBaseValidator).checkContent(content, state, true);
-        }
 
-        // we check pattern first
-        if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
-            if ( fRegex == null || fRegex.matches( content) == false )
-                throw new InvalidDatatypeValueException("Value '"+content+
-                                                        "' does not match regular expression facet '" + fPattern + "'." );
-        }
-
-        // if this is a base validator, we only need to check pattern facet
-        // all other facet were inherited by the derived type
-        if (asBase)
-            return;
-
-        if ( (fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 ) {
-            if ( content.length() > fMaxLength ) {
-                throw new InvalidDatatypeValueException("Value '"+content+
-                                                        "' with length '"+content.length()+
-                                                        "' exceeds maximum length facet of '"+fMaxLength+"'.");
-            }
-        }
-        if ( (fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) != 0 ) {
-            if ( content.length() < fMinLength ) {
-                throw new InvalidDatatypeValueException("Value '"+content+
-                                                        "' with length '"+content.length()+
-                                                        "' is less than minimum length facet of '"+fMinLength+"'." );
-            }
-        }
-
-        if ( (fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 ) {
-            if ( content.length() != fLength ) {
-                throw new InvalidDatatypeValueException("Value '"+content+
-                                                        "' with length '"+content.length()+
-                                                        "' is not equal to length facet '"+fLength+"'.");
-            }
-        }
-
-        if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 &&
-             (fEnumeration != null) ) {
-            if ( fEnumeration.contains( content ) == false )
-                throw new InvalidDatatypeValueException("Value '"+content+"' must be one of "+fEnumeration);
-        }
-
-        // check 3.2.19 must: "anyURI:NCName"
+    protected void checkValueSpace (String content) throws InvalidDatatypeValueException {
+        
+        // REVISIT: do we need to check 3.2.19: "anyURI:NCName"?        
+        /*
         try {
             int posColon = content.lastIndexOf(':');
             if (posColon >= 0)
@@ -375,13 +119,8 @@ public class NOTATIONDatatypeValidator extends AbstractDatatypeValidator {
         } catch (InvalidDatatypeValueException idve) {
             throw new InvalidDatatypeValueException("Value '"+content+"' is not a valid NOTATION");
         }
-    }
-
-  /**
-     * Returns a copy of this object.
-     */
-    public Object clone() throws CloneNotSupportedException {
-        throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
-    }
+        */
+    
+    }    
 
 }
