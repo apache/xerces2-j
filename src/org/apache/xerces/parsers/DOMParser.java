@@ -1158,7 +1158,8 @@ public class DOMParser
                 } else {
                     e.setAttribute(attrName, attrValue);
                 }
-                if (!xmlAttrList.isSpecified(attrHandle)) {
+                if (fDocumentImpl != null
+                    && !xmlAttrList.isSpecified(attrHandle)) {
                     ((AttrImpl)e.getAttributeNode(attrName))
                         .setSpecified(false);
                 }
