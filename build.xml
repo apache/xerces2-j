@@ -534,7 +534,7 @@ Copyright:
   <!-- =================================================================== -->
   <!-- Do a sanity test using samples                                      -->
   <!-- =================================================================== -->
-  <target name="test" depends="samples">
+  <target name="test" depends="tests">
     <echo message="Performing sanity test for ${parser.Name} ${parser.Version} ..." />
     <echo message="Using classpath=&apos;${build.dir}/classes&apos;" />
     <echo message="Running sax.Counter ..." />
@@ -585,6 +585,16 @@ Copyright:
           classname="dom.TreeViewer"
           args="${data.dir}/personal.xml"/>
      -->
+    <echo message="Running dom.mem.Test ..." />
+    <java fork="yes"
+          classpath="${build.dir}/classes"
+          classname="dom.mem.Test">
+    </java>
+    <echo message="Running dom.DTest ..." />
+    <java fork="yes"
+          classpath="${build.dir}/classes"
+          classname="dom.DTest">
+    </java>
   </target>
 
   <!-- =================================================================== -->
