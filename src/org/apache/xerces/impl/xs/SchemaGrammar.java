@@ -280,6 +280,12 @@ public class SchemaGrammar  extends Grammar {
     private int fCTCount = 0;
     private XSComplexTypeDecl[] fComplexTypeDecls = new XSComplexTypeDecl[INITIAL_SIZE];
 
+    // an array to store groups being redefined by restriction
+    // even-numbered elements are the derived groups, odd-numbered ones their bases
+    private static final int REDEFINED_GROUP_INIT_SIZE = 2; 
+    private int fRGCount = 0;
+    private XSGroupDecl[] fRedefinedGroupDecls = new XSGroupDecl[REDEFINED_GROUP_INIT_SIZE];
+
     // a flag to indicate whether we have checked the 3 constraints on this
     // grammar.
     boolean fFullChecked = false;
@@ -294,6 +300,17 @@ public class SchemaGrammar  extends Grammar {
     }
 
     /**
+     * add a group redefined by restriction: for later constraint checking
+     */
+    public final void addRedefinedGroupDecl(XSGroupDecl derived, XSGroupDecl base) {
+        if (fRGCount == fRedefinedGroupDecls.length)
+            // double array size each time.
+            fRedefinedGroupDecls = resize(fRedefinedGroupDecls, fRGCount << 2);
+        fRedefinedGroupDecls[fRGCount++] = derived;
+        fRedefinedGroupDecls[fRGCount++] = base;
+    }
+
+    /**
      * get all complex type decls: for later constraint checking
      */
     final XSComplexTypeDecl[] getUncheckedComplexTypeDecls() {
@@ -301,6 +318,16 @@ public class SchemaGrammar  extends Grammar {
             fComplexTypeDecls = resize(fComplexTypeDecls, fCTCount);
         return fComplexTypeDecls;
     }
+
+    /**
+     * get all redefined groups: for later constraint checking
+     */
+    final XSGroupDecl[] getRedefinedGroupDecls() {
+        if (fRGCount < fRedefinedGroupDecls.length)
+            fRedefinedGroupDecls = resize(fRedefinedGroupDecls, fRGCount);
+        return fRedefinedGroupDecls;
+    }
+
 
     /**
      * after the first-round checking, some types don't need to be checked
@@ -352,6 +379,12 @@ public class SchemaGrammar  extends Grammar {
 
     static final XSComplexTypeDecl[] resize(XSComplexTypeDecl[] oldArray, int newSize) {
         XSComplexTypeDecl[] newArray = new XSComplexTypeDecl[newSize];
+        System.arraycopy(oldArray, 0, newArray, 0, Math.min(oldArray.length, newSize));
+        return newArray;
+    }
+
+    static final XSGroupDecl[] resize(XSGroupDecl[] oldArray, int newSize) {
+        XSGroupDecl[] newArray = new XSGroupDecl[newSize];
         System.arraycopy(oldArray, 0, newArray, 0, Math.min(oldArray.length, newSize));
         return newArray;
     }

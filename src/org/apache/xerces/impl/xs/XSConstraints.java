@@ -318,6 +318,41 @@ public class XSConstraints {
             SGHandler.addSubstitutionGroup(grammars[i].getSubstitutionGroups());
         }
 
+        // before worrying about complexTypes, let's get
+        // groups redefined by restriction out of the way.
+        for (int g = grammars.length-1; g >= 0; g--) {
+            XSGroupDecl [] redefinedGroups = grammars[g].getRedefinedGroupDecls();
+            for(int i=0; i<redefinedGroups.length; ) {
+                XSGroupDecl derivedGrp = redefinedGroups[i++];
+                XSParticleDecl derivedParticle = derivedGrp.fParticle;
+                XSGroupDecl baseGrp = redefinedGroups[i++];
+                XSParticleDecl baseParticle = baseGrp.fParticle;
+                if(baseParticle == null) {
+                    if(derivedParticle != null) { // can't be a restriction!
+                        errorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                        "src-redefine.6.2.2",
+                                        new Object[]{derivedGrp.fName, "rcase-Recurse.2"},
+                                        XMLErrorReporter.SEVERITY_ERROR);
+                    } 
+                } else {
+                    try {
+                        particleValidRestriction(SGHandler, 
+                            derivedParticle, baseParticle);
+                    } catch (XMLSchemaException e) {
+                        String key = e.getKey();
+                        errorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                        key,
+                                        e.getArgs(),
+                                        XMLErrorReporter.SEVERITY_ERROR);
+                        errorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                        "src-redefine.6.2.2",
+                                        new Object[]{derivedGrp.fName, key},
+                                        XMLErrorReporter.SEVERITY_ERROR);
+                    }
+                }
+            }
+        }
+
         // for each complex type, check the 3 constraints.
         // types need to be checked
         XSComplexTypeDecl[] types;

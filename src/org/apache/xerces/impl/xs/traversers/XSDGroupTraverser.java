@@ -207,6 +207,17 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
                 grammar.addGlobalGroupDecl(group);
             }
         }
+        if(group != null) { 
+            // store groups redefined by restriction in the grammar so
+            // that we can get at them at full-schema-checking time.
+            Object redefinedGrp = fSchemaHandler.getGrpOrAttrGrpRedefinedByRestriction(XSDHandler.GROUP_TYPE,
+                new QName(fSchemaHandler.EMPTY_STRING, strNameAttr, strNameAttr, schemaDoc.fTargetNamespace),
+                schemaDoc);
+            if(redefinedGrp != null) {
+                // store in grammar
+                grammar.addRedefinedGroupDecl(group, (XSGroupDecl)redefinedGrp);
+            }
+        }
 
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
