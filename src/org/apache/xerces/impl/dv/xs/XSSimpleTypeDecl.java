@@ -1301,7 +1301,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         if (validatedInfo == null)
             validatedInfo = new ValidatedInfo();
         else
-            validatedInfo.reset();
+            validatedInfo.memberType = null;
 
         // first normalize string value, and convert it to actual value
         boolean needNormalize = context==null||context.needToNormalize();
@@ -1324,7 +1324,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         if (validatedInfo == null)
             validatedInfo = new ValidatedInfo();
         else
-            validatedInfo.reset();
+            validatedInfo.memberType = null;
 
         // first normalize string value, and convert it to actual value
         boolean needNormalize = context==null||context.needToNormalize();
