@@ -187,7 +187,6 @@ public class DoubleValidator implements DatatypeValidator {
                      key.equals(SchemaSymbols.ELT_LENGTH) ||
                      key.equals(SchemaSymbols.ELT_MINLENGTH) ||
                      key.equals(SchemaSymbols.ELT_MAXLENGTH) ||
-                     key.equals(SchemaSymbols.ELT_LITERAL) ||
                      key.equals(SchemaSymbols.ELT_PERIOD) ||
                      key.equals(SchemaSymbols.ELT_ENCODING) ||
                      key.equals(SchemaSymbols.ELT_PATTERN) )
