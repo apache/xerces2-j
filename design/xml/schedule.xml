@@ -85,46 +85,55 @@
   <task driver='jeffreyr'>
    <title>Storing basic DTD grammar information</title>
   </task>
-  <!-- REVISIT: re-group
-  <task>CachingParserPool (supporting GrammarPool)</task>
-  <task>XMLDTDScanner</task>
-  <task>XMLGrammarParser/DTDParser</task>
-  <task>GrammarPool</task>
-  <task>Grammar/DTDGrammar</task>
-  <task>XMLElementDecl</task>
-  <task>XMLAttributeDecl</task>
-  <task>XMLSimpleType</task>
-  <task>XMLEntityDecl</task>
-  <task>XMLNotationDecl</task>
-  -->
  </milestone>
  <milestone id='M3'>
-  <title>Parser with DTD scanning + datatypes validation</title>
+  <title>Parser with DTD scanning + datatypes and content model validation</title>
   <depends idref='M2'/>
-  <!-- REVISIT: re-group
-  <task>XMLValidator</task>
-  <task>DatatypeValidatorFactoryImpl</task>
-  <task>AbstractDatatypeValidator</task>
-  <task>StringDatatypeValidator</task>
-  <task>InvalidDatatypeFacetException</task>
-  <task>InvalidDatatypeValueException</task>
-  -->
+  <task driver='andyc'>
+   <title>Ever more documentation</title>
+   <detail>
+    Document parser configurations and how new components and 
+    configurations would be written and connected.
+   </detail>
+  </task>
+  <task driver='jeffreyr'>
+   <title>Datatype validators</title>
+   <detail>
+    Only those datatype validators needed for DTD grammars need to be
+    added. All DTD datatypes should work: CDATA, ENTITY, ENTITIES, ID,
+    IDREF, IDREFS, NMTOKEN, NMTOKENS, and NOTATION.
+   </detail>
+  </task>
+  <task driver='ericye'>
+   <title>Content model validators</title>
+   <detail>
+    This affects the following classes: 
+    SimpleContentModel, MixedContentModel, DFAContentModel.
+   </detail>
+  </task>
  </milestone>
  <milestone id='M4'>
-  <title>Parser with DTD scanning + datatypes and content model validation</title>
-  <depends idref='M3'/>
-  <!-- REVISIT: re-group
-  <task>SimpleContentModel</task>
-  <task>MixedContentModel</task>
-  <task>DFAContentModel</task>
-  -->
- </milestone>
- <milestone id='M5'>
   <title>Parser with DTD scanning and Schema parsing + validation</title>
-  <depends idref='M4'/>
-  <!-- REVISIT: re-group
-  <task>SchemaGrammar</task>
-  <task>SchemaParser</task>
-  -->
+  <depends idref='M3'/>
+  <task driver='lehors'>
+   <title>DOM implementation</title>
+   <detail>
+    Write the DOMParser to populate the DOM tree. Decide what should
+    be done with the "deferred" DOM implementation.
+   </detail>
+  </task>
+  <task driver='ericye'>
+   <title>Schema structures updated to current spec (22 Sep 2000)</title>
+   <detail>Can this be done without using the DOM?</detail>
+  </task>
+  <task driver='jeffreyr'>
+   <title>Schema datatypes updated to current spec (22 Sep 2000)</title>
+  </task>
+ </milestone>
+ <milestone id='M666'>
+  <title>Full Schema support</title>
+ </milestone>
+ <milestone id='M9999'>
+  <title>Party!</title>
  </milestone>
 </schedule>
