@@ -95,9 +95,15 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
 
         Object[] attrValues = fAttrChecker.checkAttributes(allDecl, false, schemaDoc);
 
-        Element content = DOMUtil.getFirstChildElement(allDecl);
-        Element child = checkContent(content, attrValues, schemaDoc);
+        Element child = DOMUtil.getFirstChildElement(allDecl);
 
+        if (child !=null) {
+            // traverse Annotation
+            if (child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
+                traverseAnnotationDecl(child, attrValues, false, schemaDoc);
+                child = DOMUtil.getNextSiblingElement(child);
+            }
+        }
         XSParticleDecl left = null;
         XSParticleDecl right = null;
         String childName = null;
@@ -229,9 +235,14 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
         // General Attribute Checking
         Object[] attrValues = fAttrChecker.checkAttributes(decl, false, schemaDoc);
 
-        Element content = DOMUtil.getFirstChildElement(decl);
-        Element child = checkContent(content, attrValues, schemaDoc);
-
+        Element child = DOMUtil.getFirstChildElement(decl);
+        if (child !=null) {
+            // traverse Annotation
+            if (child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
+                traverseAnnotationDecl(child, attrValues, false, schemaDoc);
+                child = DOMUtil.getNextSiblingElement(child);
+            }
+        }
         XSParticleDecl left = null;
         XSParticleDecl right = null;
         boolean hadContent = false;

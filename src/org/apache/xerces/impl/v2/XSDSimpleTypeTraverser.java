@@ -189,7 +189,14 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         //annotation?,(list|restriction|union)
         //----------------------------------------------------------------------
         Element content = DOMUtil.getFirstChildElement(simpleTypeDecl);
-        content = checkContent(content, attrValues, schemaDoc);
+        if (content != null) {
+            // traverse annotation if any
+            if (content.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
+                traverseAnnotationDecl(content, attrValues, false, schemaDoc);
+                content = DOMUtil.getNextSiblingElement(content);
+            }
+        }
+
         if (content == null) {
             reportGenericSchemaError("no child element found for simpleType '"+ nameProperty+"'");
             return null;
@@ -267,7 +274,13 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             content = DOMUtil.getFirstChildElement(content);
 
             //check content (annotation?, ...)
-            content = checkContent(content, contentAttrs, schemaDoc);
+            if (content != null) {
+                // traverse annotation if any
+                if (content.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
+                    traverseAnnotationDecl(content, attrValues, false, schemaDoc);
+                    content = DOMUtil.getNextSiblingElement(content);
+                }
+            }
             if (content == null) {
                 reportGenericSchemaError("no child element found for simpleType '"+ nameProperty+"'");
                 return null;
@@ -363,7 +376,18 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         if (union) {
             int index=size;
             if (memberTypes != null) {
-                content = checkContent(content, contentAttrs, schemaDoc);
+                if (content != null) {
+                    // traverse annotation if any
+                    if (content.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
+                        traverseAnnotationDecl(content, attrValues, false, schemaDoc);
+                        content = DOMUtil.getNextSiblingElement(content);
+                    }
+                }
+                if (content !=null) {
+                    if (content.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
+                        reportGenericSchemaError(nameProperty+" union should match the content Content: (annotation?, (simpleType*)");
+                    }
+                }
             }
             while (content!=null) {
                 baseValidator = traverseLocal(content, fSchemaDoc, fGrammar);

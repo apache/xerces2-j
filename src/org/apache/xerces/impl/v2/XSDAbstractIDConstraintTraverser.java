@@ -91,17 +91,39 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
         }
 
         // General Attribute Checking on sElem
-        sElem = checkContent( sElem, icElemAttrs, schemaDoc);
+        // first child could be an annotation
+        if (sElem.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
+            traverseAnnotationDecl(sElem, icElemAttrs, false, schemaDoc);
+            sElem = DOMUtil.getNextSiblingElement(sElem);
+        }
+        // if no more children report an error
+        if(sElem == null) {
+            // REVISIT: localize
+            reportGenericSchemaError("The content of an identity constraint must match (annotation?, selector, field+)");
+            return;
+        }
         Object [] attrValues = fAttrChecker.checkAttributes(sElem, false, schemaDoc);
-
+        
+        // if more than one annotation report an error
         if(!sElem.getLocalName().equals(SchemaSymbols.ELT_SELECTOR)) {
             // REVISIT: localize
             reportGenericSchemaError("The content of an identity constraint must match (annotation?, selector, field+)");
         }
         // and make sure <selector>'s content is fine:
-        Element selChild = checkContent(DOMUtil.getFirstChildElement(sElem), attrValues, schemaDoc);
-        if (selChild != null) {
-            reportSchemaError("src-identity-constraint.1", new Object [] {icElemAttrs[XSAttributeChecker.ATTIDX_NAME]});
+        Element selChild = DOMUtil.getFirstChildElement(sElem);
+        
+        if (selChild !=null) {
+            // traverse annotation if any
+            if (selChild.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
+                traverseAnnotationDecl(selChild, attrValues, false, schemaDoc);
+                selChild = DOMUtil.getNextSiblingElement(selChild);
+            }
+            else {
+                reportGenericSchemaError("The content of an identity constraint must match (annotation?, selector, field+)");
+            }
+            if (selChild != null) {
+                reportSchemaError("src-identity-constraint.1", new Object [] {icElemAttrs[XSAttributeChecker.ATTIDX_NAME]});
+            }
         }
 
         String sText = ((String)attrValues[XSAttributeChecker.ATTIDX_XPATH]);
@@ -142,8 +164,16 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
             if(!fElem.getLocalName().equals(SchemaSymbols.ELT_FIELD))
                 // REVISIT: localize
                 reportGenericSchemaError("The content of an identity constraint must match (annotation?, selector, field+)");
+            
             // and make sure <field>'s content is fine:
-            Element fieldChild = checkContent(DOMUtil.getFirstChildElement(fElem), attrValues, schemaDoc);
+            Element fieldChild = DOMUtil.getFirstChildElement(fElem);
+            if (fieldChild != null) {            
+                // traverse annotation
+                if (fieldChild.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
+                    traverseAnnotationDecl(fieldChild, attrValues, false, schemaDoc);
+                    fieldChild = DOMUtil.getNextSiblingElement(fieldChild);
+                }
+            }
             if (fieldChild != null) {
                 reportSchemaError("src-identity-constraint.1", new Object [] {icElemAttrs[XSAttributeChecker.ATTIDX_NAME]});
             }

@@ -113,9 +113,17 @@ class  XSDNotationTraverser extends XSDAbstractTraverser {
         notation.fSystemId = systemAttr;
 
         //check content
-        Element child = DOMUtil.getFirstChildElement(elmNode);
-        if (checkContent(child, attrValues, schemaDoc)!=null){
-             Object[] args = new Object [] { child.getLocalName() };
+        Element content = DOMUtil.getFirstChildElement(elmNode);
+
+        if (content != null) {
+            // traverse annotation if any
+            if (content.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
+                traverseAnnotationDecl(content, attrValues, false, schemaDoc);
+                content = DOMUtil.getNextSiblingElement(content);
+            }
+        }
+        if (content!=null){
+             Object[] args = new Object [] { content.getLocalName() };
              fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                            "NotationContentRestricted",
                                            args,
