@@ -608,13 +608,15 @@ public abstract class XMLScanner
      * @param attrIndex The index of the attribute to use from the list.
      * @param cdata Specifies whether the attribute is of type CDATA or not, so
      *              that the appropriate normalization can be performed.
+     * @param checkEntities Specifies whether undeclared entities should be
+     *                      checked.
      *
      * <strong>Note:</strong> This method uses fStringBuffer2, anything in it
      * at the time of calling is lost.
      **/
     protected void scanAttributeValue(XMLString value, String atName,
                                       XMLAttributes attributes, int attrIndex,
-                                      boolean cdata)
+                                      boolean cdata, boolean checkEntities)
         throws IOException, SAXException
     {
         // quote
@@ -741,6 +743,11 @@ public abstract class XMLScanner
                                                  new Object[] { entityName });
                             }
                             else {
+                                if (checkEntities &&
+                                    !fEntityManager.isDeclaredEntity(entityName)) {
+                                    reportFatalError("EntityNotDeclared",
+                                                     new Object[]{entityName});
+                                }
                                 fEntityManager.startEntity(entityName, false);
                             }
                         }

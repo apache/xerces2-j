@@ -528,6 +528,9 @@ public class XMLDTDScanner
     protected void startPE(String name, boolean literal) 
         throws IOException, SAXException {
         int depth = fPEDepth;
+        if (fValidation && !fEntityManager.isDeclaredEntity(name)) {
+            reportFatalError("EntityNotDeclared", new Object[]{name});
+        }
         fEntityManager.startEntity(fSymbolTable.addSymbol("%" + name),
                                    literal);
         // if we actually got a new entity and it's external
@@ -1199,7 +1202,8 @@ public class XMLDTDScanner
             }
             // AttValue 
             scanAttributeValue(defaultVal, atName,
-                               fAttributes, 0, type.equals("CDATA"));
+                               fAttributes, 0, type.equals("CDATA"),
+                               scanningInternalSubset());
         }
         return defaultType;
 

@@ -321,18 +321,13 @@ public class XMLEntityManager
      * Checks whether an entity given by name is external.
      *
      * @param entityName The name of the entity to check.
-     * @returns True if the entity is external.
+     * @returns True if the entity is external, false otherwise
+     *           (including when the entity is not declared).
      */
-    public boolean isExternalEntity(String entityName) throws SAXException {
+    public boolean isExternalEntity(String entityName) {
 
         Entity entity = (Entity)fEntities.get(entityName);
         if (entity == null) {
-            if (fValidation || !entityName.startsWith("%")) {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "EntityNotDeclared",
-                                           new Object[] { entityName },
-                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
-            }
             return false;
         }
         return entity.isExternal();
@@ -367,21 +362,28 @@ public class XMLEntityManager
      * Checks whether an entity given by name is unparsed.
      *
      * @param entityName The name of the entity to check.
-     * @returns True if the entity is unparsed.
+     * @returns True if the entity is unparsed, false otherwise
+     *          (including when the entity is not declared).
      */
-    public boolean isUnparsedEntity(String entityName) throws SAXException {
+    public boolean isUnparsedEntity(String entityName) {
 
         Entity entity = (Entity)fEntities.get(entityName);
         if (entity == null) {
-            if (fValidation || !entityName.startsWith("%")) {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "EntityNotDeclared",
-                                           new Object[] { entityName },
-                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
-            }
             return false;
         }
         return entity.isUnparsed();
+    }
+
+    /**
+     * Checks whether an entity given by name is declared.
+     *
+     * @param entityName The name of the entity to check.
+     * @returns True if the entity is declared, false otherwise.
+     */
+    public boolean isDeclaredEntity(String entityName) {
+
+        Entity entity = (Entity)fEntities.get(entityName);
+        return entity != null;
     }
 
     /**
@@ -458,12 +460,6 @@ public class XMLEntityManager
         // was entity declared?
         Entity entity = (Entity)fEntities.get(entityName);
         if (entity == null) {
-            if (fValidation || !entityName.startsWith("%")) {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "EntityNotDeclared",
-                                           new Object[] { entityName },
-                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
-            }
             if (fEntityHandler != null) {
                 final String publicId = null;
                 final String systemId = null;

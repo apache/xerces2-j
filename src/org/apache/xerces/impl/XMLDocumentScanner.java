@@ -815,8 +815,8 @@ public class XMLDocumentScanner
                 cdata = false;
             }
         }
-        scanAttributeValue(fString, fAttributeQName.rawname,
-                           attributes, attributes.getLength() - 1, cdata);
+        scanAttributeValue(fString, fAttributeQName.rawname, attributes,
+                           attributes.getLength() - 1, cdata, true);
         attributes.setValue(attributes.getLength() - 1, fString.toString());
 
         if (DEBUG_CONTENT_SCANNING) System.out.println("<<< scanAttribute()");
@@ -1053,6 +1053,9 @@ public class XMLDocumentScanner
             reportFatalError("ReferenceToUnparsedEntity", new Object[]{name});
         }
         else {
+            if (!fEntityManager.isDeclaredEntity(name)) {
+                reportFatalError("EntityNotDeclared", new Object[]{name});
+            }
             fEntityManager.startEntity(name, false);
         }
 
