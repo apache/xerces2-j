@@ -57,9 +57,6 @@ public final class Constants {
     /** External general entities feature ("external-general-entities "). */
     public static final String EXTERNAL_GENERAL_ENTITIES_FEATURE = "external-general-entities";
     
-    /** Generate synthetic annotations feature ("generate-synthetic-annotations"). */
-    public static final String GENERATE_SYNTHETIC_ANNOTATIONS_FEATURE = "generate-synthetic-annotations";
-    
     /** External parameter entities feature ("external-parameter-entities "). */
     public static final String EXTERNAL_PARAMETER_ENTITIES_FEATURE = "external-parameter-entities";
     
@@ -266,6 +263,12 @@ public final class Constants {
     
     /** Standard URI conformant feature ("standard-uri-conformant"). */
     public static final String STANDARD_URI_CONFORMANT_FEATURE = "standard-uri-conformant";
+    
+    /** Generate synthetic annotations feature ("generate-synthetic-annotations"). */
+    public static final String GENERATE_SYNTHETIC_ANNOTATIONS_FEATURE = "generate-synthetic-annotations";
+    
+    /** Validate annotations feature ("validate-annotations"). */
+    public static final String VALIDATE_ANNOTATIONS_FEATURE = "validate-annotations";
     
     /** Internal performance related feature: 
      * false - the parser settings (features/properties) have not changed between 2 parses
