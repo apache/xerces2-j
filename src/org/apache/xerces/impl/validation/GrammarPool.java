@@ -57,6 +57,7 @@
 
 package org.apache.xerces.impl.validation;
 
+import org.apache.xerces.impl.dtd.Grammar;
 import java.util.Hashtable;
 
 /**

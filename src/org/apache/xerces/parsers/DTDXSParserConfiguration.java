@@ -57,9 +57,9 @@
 
 package org.apache.xerces.parsers;
 
-import org.apache.xerces.impl.v2.SchemaValidator;
-import org.apache.xerces.impl.v2.XSMessageFormatter;
 import org.apache.xerces.impl.Constants;
+import org.apache.xerces.impl.xs.XMLSchemaValidator;
+import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.impl.validation.GrammarPool;
 import org.apache.xerces.parsers.StandardParserConfiguration;
 import org.apache.xerces.util.SymbolTable;
@@ -80,7 +80,7 @@ public class DTDXSParserConfiguration extends StandardParserConfiguration {
         Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_VALIDATOR_PROPERTY;
 
     /** XML Schema Validator. */
-    protected SchemaValidator fSchemaValidator;
+    protected XMLSchemaValidator fSchemaValidator;
 
     //
     // Constructors
@@ -141,8 +141,8 @@ public class DTDXSParserConfiguration extends StandardParserConfiguration {
     } // configurePipeline()
 
     /** Create a Schema validator. */
-    protected SchemaValidator createSchemaValidator() {
-        return new SchemaValidator();
+    protected XMLSchemaValidator createSchemaValidator() {
+        return new XMLSchemaValidator();
     } // createSchemaValidator():XMLSchemaValidator
 
 } // class StandardParserConfiguration

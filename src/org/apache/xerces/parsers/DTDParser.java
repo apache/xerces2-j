@@ -57,7 +57,7 @@
 
 package org.apache.xerces.parsers;
 
-import org.apache.xerces.impl.validation.grammars.DTDGrammar;
+import org.apache.xerces.impl.dtd.DTDGrammar;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;

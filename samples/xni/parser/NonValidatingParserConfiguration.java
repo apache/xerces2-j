@@ -57,7 +57,7 @@
 
 package xni.parser;
 
-import org.apache.xerces.impl.XMLDTDValidator;
+import org.apache.xerces.impl.dtd.XMLDTDValidator;
 import org.apache.xerces.impl.XMLNamespaceBinder;
 import org.apache.xerces.parsers.StandardParserConfiguration;
 import org.apache.xerces.util.SymbolTable;

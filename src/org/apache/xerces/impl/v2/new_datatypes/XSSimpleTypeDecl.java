@@ -63,8 +63,8 @@ import org.apache.xerces.impl.v2.datatypes.DatatypeMessageProvider;
 import org.apache.xerces.impl.v2.SchemaSymbols;
 import org.apache.xerces.impl.v2.msg.XMLMessages;
 import org.apache.xerces.util.XMLChar;
-import org.apache.xerces.util.XIntPool;
-import org.apache.xerces.util.XInt;
+import org.apache.xerces.impl.xs.util.XIntPool;
+import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.impl.v2.util.regex.RegularExpression;
 
 import java.util.Hashtable;
