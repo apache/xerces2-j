@@ -72,6 +72,10 @@ import org.apache.xerces.dom3.ls.DOMInputSource;
 import org.apache.xerces.parsers.DOMBuilderImpl;
 import org.apache.xml.serialize.XMLSerializer;
 
+// DOM Revalidation
+import org.apache.xerces.impl.DOMRevalidationHandler;
+import org.apache.xerces.impl.xs.XMLSchemaValidator;
+
 /**
  * The DOMImplementation class is description of a particular
  * implementation of the Document Object Model. As such its data is
@@ -98,16 +102,55 @@ implements DOMImplementation, DOMImplementationLS {
 
     /** Dom implementation singleton. */
     static CoreDOMImplementationImpl singleton = new CoreDOMImplementationImpl();
+    
+    DOMRevalidationHandler fDOMRevalidator = null;
 
+    boolean free = true;
 
     //
     // Public methods
     //
 
     /** NON-DOM: Obtain and return the single shared object */
-    public static DOMImplementation getDOMImplementation() {
+    static DOMImplementation getDOMImplementation() {
         return singleton;
     }  
+
+
+    /** NON-DOM */
+    synchronized DOMRevalidationHandler getValidator (String schemaType){
+        // REVISIT: implement a pool of validators to avoid long
+        //          waiting for several threads
+        //          implement retrieving grammar based on schemaType
+        if (fDOMRevalidator == null) {
+            fDOMRevalidator = new XMLSchemaValidator();
+        }
+        while (!isFree()) {
+            try { 
+                wait();
+            }
+            catch (InterruptedException e){
+                return new XMLSchemaValidator();
+            }
+        }
+        free = false;
+        return fDOMRevalidator;        
+    }
+
+    synchronized void releaseValidator(String schemaType){
+        // REVISIT: implement releasing grammar base on the schema type
+        notifyAll();
+        free = true;
+
+    }
+
+
+
+
+    final synchronized boolean isFree(){
+        return free;
+    }
+
 
     //
     // DOMImplementation methods

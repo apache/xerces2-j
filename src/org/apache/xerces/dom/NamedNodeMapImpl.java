@@ -564,6 +564,37 @@ public class NamedNodeMapImpl
         return item;
     }
 
+    protected Object getItem (int index){
+        if (nodes !=null) {
+            return nodes.elementAt(index);
+        }
+        return null;
+    }
+
+    protected int addItem (Node arg) {
+    	int i = findNamePoint(arg.getNamespaceURI(), arg.getLocalName());
+    	NodeImpl previous = null;
+    	if (i >= 0) {
+            previous = (NodeImpl) nodes.elementAt(i);
+            nodes.setElementAt(arg,i);
+    	} else {
+    	    // If we can't find by namespaceURI, localName, then we find by
+    	    // nodeName so we know where to insert.
+    	    i = findNamePoint(arg.getNodeName(),0);
+            if (i >=0) {
+                previous = (NodeImpl) nodes.elementAt(i);
+                nodes.insertElementAt(arg,i);
+            } else {
+                i = -1 - i; // Insert point (may be end of list)
+                if (null == nodes) {
+                    nodes = new Vector(5, 10);
+                }
+                nodes.insertElementAt(arg, i);
+            }
+        }
+        return i;        
+    }
+
     /**
      * NON-DOM: copy content of this map into the specified vector
      * 

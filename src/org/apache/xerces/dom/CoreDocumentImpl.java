@@ -83,9 +83,19 @@ import org.w3c.dom.events.Event;
 import org.w3c.dom.events.EventListener;
 import org.w3c.dom.events.EventTarget;
 
-import org.apache.xerces.util.XMLChar;
-import org.apache.xerces.dom3.UserDataHandler;
 
+import org.apache.xerces.dom3.UserDataHandler;
+import org.apache.xerces.dom3.DOMErrorHandler;
+import org.apache.xerces.impl.Constants;
+import org.apache.xerces.util.XMLChar;
+import org.apache.xerces.util.DOMErrorHandlerWrapper;
+import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.xni.parser.XMLErrorHandler;
+import org.apache.xerces.xni.parser.XMLEntityResolver;
+import org.apache.xerces.xni.parser.XMLParserConfiguration;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
+import org.apache.xerces.xni.grammars.Grammar;
+import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 
 /**
  * The Document interface represents the entire HTML or XML document.
@@ -118,10 +128,10 @@ public class CoreDocumentImpl
     //
     // Constants
     //
-
+    
     /** Serialization version. */
     static final long serialVersionUID = 0;
-
+    
     //
     // Data
     //
@@ -145,7 +155,7 @@ public class CoreDocumentImpl
 
     /**Experimental DOM Level 3 feature: Document version */
     protected String version;
-
+                                                                           
     /**Experimental DOM Level 3 feature: Document standalone */
     protected boolean standalone;
 
@@ -157,6 +167,25 @@ public class CoreDocumentImpl
 
     /** Identifiers. */
     protected Hashtable identifiers;
+
+    /** Normalization features*/
+    protected short features = 0;
+    
+    protected final static short NSPROCESSING        = 0x1<<0;
+    protected final static short DTNORMALIZATION     = 0x1<<1;
+    protected final static short ENTITIES            = 0x1<<2;
+    protected final static short CDATA               = 0x1<<3;
+    protected final static short DEFAULTS            = 0x1<<4;
+    protected final static short SPLITCDATA          = 0x1<<5;
+    protected final static short COMMENTS            = 0x1<<6;
+    protected final static short VALIDATION          = 0x1<<7;
+    
+    // DOM Revalidation 
+    protected DOMNormalizer domNormalizer = null;
+    protected DOMValidationConfiguration fConfiguration= null;
+    protected SymbolTable fSymbolTable = null;
+    protected XMLEntityResolver fEntityResolver = null;
+    protected Grammar fGrammar = null;
 
     /** Table for quick check of child insertion. */
     protected static int[] kidOK;
@@ -256,6 +285,15 @@ public class CoreDocumentImpl
         super(null);
         ownerDocument = this;
         allowGrammarAccess = grammarAccess;
+        // set default values for normalization features
+
+        features |= NSPROCESSING; //namespace processing was performed.
+        features |= ENTITIES;
+        features |= COMMENTS;
+        features |= DTNORMALIZATION;
+        features |= CDATA;
+        features |= DEFAULTS;
+        features |= SPLITCDATA;
     }
 
     /**
@@ -806,6 +844,250 @@ public class CoreDocumentImpl
     public String getDocumentURI(){
         return fDocumentURI;
     }
+
+
+    /**
+     * DOM Level 3 WD - Experimental.
+     * Retrieve error handler.      
+     */
+    public DOMErrorHandler getErrorHandler(){
+        DOMErrorHandler domErrorHandler = null;
+        try {
+            XMLErrorHandler errorHandler = fConfiguration.getErrorHandler();
+            if (errorHandler != null && 
+                errorHandler instanceof DOMErrorHandlerWrapper) {
+                domErrorHandler = ((DOMErrorHandlerWrapper)domErrorHandler).getErrorHandler();
+            }
+        } catch (Exception e) {
+
+        }
+        return domErrorHandler;
+    }
+    /**
+     * DOM Level 3 WD - Experimental.
+     * Set error handler. It will be called in teh event that an error
+     * is encountered while performing an operation on a document.
+     */
+    public void setErrorHandler(DOMErrorHandler errorHandler) {
+        try {
+            fConfiguration.setErrorHandler(new DOMErrorHandlerWrapper(errorHandler));
+        } catch (Exception e) {
+
+        }
+    }
+
+
+    /**
+      * NON-DOM: copy configuration properties from the parsing configuration.
+      * This method is called after the parsing is done 
+      */
+    public void copyConfigurationProperties(XMLParserConfiguration config){
+        // REVISIT: how should we copy symbol table?
+        //          it usually grows with the parser, do we need to carry all data per document?
+        fSymbolTable = (SymbolTable)config.getProperty(DOMValidationConfiguration.SYMBOL_TABLE);
+        fEntityResolver =  config.getEntityResolver();
+        
+        // REVISIT: store one grammar per document is not efficient and might not be enough
+        //          need to implement some grammar cashing possibly on DOM Implementation
+
+        XMLGrammarPool pool = (XMLGrammarPool)config.getProperty(DOMValidationConfiguration.GRAMMAR_POOL);
+        if (pool != null) {
+            // retrieve either a DTD or XML Schema grammar
+
+            if (docType != null) {
+                // retrieve DTD grammar
+                // pool.retrieveGrammar();
+            } else {
+                // retrieve XML Schema grammar based on teh namespace of the root element
+                String targetNamespace = this.docElement.getNamespaceURI();
+                // pool.retrieveGrammar();
+            }
+        }
+    }
+
+
+    /**
+     *  DOM Level 3 WD - Experimental
+     *  Normalize document.
+     */
+    public void normalizeDocument(){
+        // No need to normalize if already normalized.
+        if (isNormalized() && !isNormalizeDocRequired()) {
+            return;
+        }
+        if (needsSyncChildren()) {
+            synchronizeChildren();
+        }
+        if (domNormalizer == null) {
+            domNormalizer = new DOMNormalizer();
+        }
+
+        if ((features & VALIDATION) != 0) {
+
+            if (fConfiguration == null) {
+                fConfiguration =  new DOMValidationConfiguration(fSymbolTable);
+            }
+            fConfiguration.reset();
+            // REVISIT: validation is performed only against one type of grammar
+            //          if doctype is available -- DTD validation
+            //          otherwise XML Schema validation.
+
+            // set validation feature on the configuration
+            fConfiguration.setFeature(DOMValidationConfiguration.VALIDATION, true);
+            fConfiguration.setFeature(DOMValidationConfiguration.SCHEMA, true);
+           // set xml-schema validator handler
+            domNormalizer.setValidationHandler(
+                CoreDOMImplementationImpl.singleton.getValidator(XMLGrammarDescription.XML_SCHEMA));
+        
+
+            if (fGrammar != null) {
+                fConfiguration.setProperty(DOMValidationConfiguration.GRAMMAR_POOL, domNormalizer);
+            }
+        }
+        domNormalizer.reset(fConfiguration);
+        domNormalizer.normalizeDocument(this);
+        if ((features & VALIDATION) != 0) {
+           CoreDOMImplementationImpl.singleton.releaseValidator(XMLGrammarDescription.XML_SCHEMA);
+        }
+        isNormalized(true);
+    }
+
+    protected boolean isNormalizeDocRequired (){
+        
+        // REVISIT: Implement to optimize when normalization is required 
+        //
+        return true;
+    }
+
+    public void setNamespaceProcessing(boolean value){
+        features = (short) (value ? flags | NSPROCESSING : flags & ~NSPROCESSING);
+    }
+
+    /**
+     * DOM Level 3 WD - Experimental.
+     * setNormalizationFeature
+     */
+    public void setNormalizationFeature(String name, 
+                                        boolean state)
+                                        throws DOMException{
+
+        // REVISIT: Recognizes DOM L3 default features only.
+        //          Does not yet recognize Xerces features.
+        if (name.equals(Constants.DOM_COMMENTS)) {
+               features = (short) (state ? features | COMMENTS : features & ~COMMENTS);
+
+        
+        } else if (name.equals(Constants.DOM_DATATYPE_NORMALIZATION)) {
+            // REVISIT: datatype-normalization only takes effect if validation is on
+               features = (short) (state ? features | DTNORMALIZATION : features & ~DTNORMALIZATION);
+        
+        } else if (name.equals(Constants.DOM_CDATA_SECTIONS)) {
+            features = (short) (state ? features | CDATA : features & ~CDATA);
+        
+        } else if (name.equals(Constants.DOM_ENTITIES)) {
+            features = (short) (state ? features | ENTITIES : features & ~ENTITIES);
+        
+        } else if (name.equals(Constants.DOM_DISCARD_DEFAULT_CONTENT)) {
+            features = (short) (state ? features | DEFAULTS : features & ~DEFAULTS);
+        
+        } else if (name.equals(Constants.DOM_SPLIT_CDATA)) {
+            features = (short) (state ? features | SPLITCDATA : features & ~SPLITCDATA);
+        
+        } else if (name.equals(Constants.DOM_VALIDATE)) {
+            features = (short) (state ? features | VALIDATION : features & ~VALIDATION);
+            
+        } else if (name.equals(Constants.DOM_INFOSET) || 
+                   name.equals(Constants.DOM_NORMALIZE_CHARACTERS) ||
+                   name.equals(Constants.DOM_CANONICAL_FORM) ||
+                   name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)) {
+                if (state) { // true is not supported
+                    throw new DOMException(DOMException.NOT_SUPPORTED_ERR,"Feature \""+name+"\" cannot be set to \""+state+"\"");
+                }
+        } else if (name.equals(Constants.DOM_NAMESPACE_DECLARATIONS) ||
+                   name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)) {
+                if (!state) { // false is not supported
+                    throw new DOMException(DOMException.NOT_SUPPORTED_ERR,"Feature \""+name+"\" cannot be set to \""+state+"\"");
+                }
+        
+        } else {
+            throw new DOMException(DOMException.NOT_FOUND_ERR,"Feature \""+name+"\" not recognized");
+        }
+    }
+
+
+    /**
+     * DOM Level 3 WD - Experimental.
+     * getNormalizationFeature
+     */
+    public boolean getNormalizationFeature(String name)
+                                           throws DOMException{
+
+        // REVISIT: Recognizes DOM L3 default features only.
+        //          Does not yet recognize Xerces features.
+
+        if (name.equals(Constants.DOM_COMMENTS)) {
+               return (features & COMMENTS) != 0;
+
+        
+        } else if (name.equals(Constants.DOM_DATATYPE_NORMALIZATION)) {
+            // REVISIT: datatype-normalization only takes effect if validation is on
+               return (features & DTNORMALIZATION) != 0;
+        
+        } else if (name.equals(Constants.DOM_CDATA_SECTIONS)) {
+            return (features & CDATA) != 0;
+        
+        } else if (name.equals(Constants.DOM_ENTITIES)) {
+            return (features & ENTITIES) != 0;
+        
+        } else if (name.equals(Constants.DOM_DISCARD_DEFAULT_CONTENT)) {
+            return (features & DEFAULTS) != 0;
+        
+        } else if (name.equals(Constants.DOM_SPLIT_CDATA)) {
+            return (features & SPLITCDATA) != 0;
+        
+        } else if (name.equals(Constants.DOM_INFOSET) || 
+                   name.equals(Constants.DOM_NORMALIZE_CHARACTERS) ||
+                   name.equals(Constants.DOM_CANONICAL_FORM) ||
+                   name.equals(Constants.DOM_VALIDATE) ||
+                   name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)) {
+            return false;
+        } else if (name.equals(Constants.DOM_NAMESPACE_DECLARATIONS) ||
+                   name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)) {
+            return true;    
+        
+        } else {
+            throw new DOMException(DOMException.NOT_FOUND_ERR,"Feature \""+name+"\" not recognized");
+        }
+    }
+
+    /**
+     * DOM Level 3 WD - Experimental.
+     * canSetNormalizationFeature
+     */
+    public boolean canSetNormalizationFeature(String name, 
+                                              boolean state){
+        if (name.equals(Constants.DOM_COMMENTS) ||
+            name.equals(Constants.DOM_DATATYPE_NORMALIZATION) ||
+            name.equals(Constants.DOM_CDATA_SECTIONS) ||
+            name.equals(Constants.DOM_ENTITIES) ||
+            name.equals(Constants.DOM_DISCARD_DEFAULT_CONTENT) ||
+            name.equals(Constants.DOM_SPLIT_CDATA)) {
+               return true;        
+        } else if (name.equals(Constants.DOM_INFOSET) || 
+                   name.equals(Constants.DOM_NORMALIZE_CHARACTERS) ||
+                   name.equals(Constants.DOM_CANONICAL_FORM) ||
+                   name.equals(Constants.DOM_VALIDATE) ||
+                   name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)) {
+            return (state)?false:true;
+        } else if (name.equals(Constants.DOM_NAMESPACE_DECLARATIONS) ||
+                   name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)) {
+            return (state)?true:false;    
+        
+        } else {
+            throw new DOMException(DOMException.NOT_FOUND_ERR,"Feature \""+name+"\" not recognized");
+        }
+    }
+
     
     /**
      * DOM Level 3 WD - Experimental.

@@ -748,6 +748,18 @@ public class ElementImpl
     	return (Attr) attributes.setNamedItemNS(newAttr);
 
     } // setAttributeNodeNS(Attr):Attr
+
+    /**
+      * NON-DOM: sets attribute node for this element
+      */
+    protected int setXercesAttributeNode (Attr attr){
+
+        if (attributes == null) {
+            attributes = new AttributeMap(this, null);
+        }
+        return attributes.addItem(attr);
+
+    }
     
     /**
      * Introduced in DOM Level 2.

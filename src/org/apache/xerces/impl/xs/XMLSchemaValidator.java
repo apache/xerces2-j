@@ -57,6 +57,7 @@
 
 package org.apache.xerces.impl.xs;
 
+import org.apache.xerces.impl.DOMRevalidationHandler;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.dv.DatatypeException;
@@ -145,7 +146,7 @@ import java.io.IOException;
  * @version $Id$
  */
 public class XMLSchemaValidator
-             implements XMLComponent, XMLDocumentFilter, FieldActivator {
+             implements XMLComponent, XMLDocumentFilter, FieldActivator, DOMRevalidationHandler {
 
     //
     // Constants
@@ -379,10 +380,14 @@ public class XMLSchemaValidator
     protected final Hashtable fLocationPairs = new Hashtable() ;
     protected final LocationArray fNoNamespaceLocationArray = new LocationArray();
 
+    /** Base URI for the DOM revalidation*/
+    protected String fBaseURI = null;
+
     // handlers
 
     /** Document handler. */
     protected XMLDocumentHandler fDocumentHandler;
+    
 
     //
     // XMLComponent methods
@@ -544,7 +549,9 @@ public class XMLSchemaValidator
      */
     public void startPrefixMapping(String prefix, String uri, Augmentations augs)
     throws XNIException {
-
+        if (DEBUG) {
+            System.out.println("startPrefixMapping("+prefix+","+uri+")");
+        }
         handleStartPrefix(prefix, uri);
         // call handlers
         if (fDocumentHandler != null) {
@@ -717,6 +724,9 @@ public class XMLSchemaValidator
      */
     public void endPrefixMapping(String prefix, Augmentations augs) throws XNIException {
 
+        if (DEBUG) {
+            System.out.println("endPrefixMapping("+prefix+")");
+        }
         // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.endPrefixMapping(prefix, augs);
@@ -781,6 +791,117 @@ public class XMLSchemaValidator
         }
 
     } // endDocument(Augmentations)
+
+    //
+    // DOMRevalidationHandler methods
+    //
+
+    public void setBaseURI (String base){
+        fBaseURI = base;
+    }
+
+    public boolean characterData(String data, Augmentations augs){
+
+        // REVISIT: this methods basically duplicates implementation of 
+        //          handleCharacters(). We should be able to reuse some code
+
+        boolean allWhiteSpace = true;
+        String normalizedStr = null;
+        if (augs == null) {
+            augs = fAugmentations;
+            augs.clear();
+        }
+        // get PSVI object
+        fCurrentPSVI = (ElementPSVImpl)augs.getItem(Constants.ELEMENT_PSVI);
+        if (fCurrentPSVI == null) {
+            fCurrentPSVI = fElemPSVI;
+            augs.putItem(Constants.ELEMENT_PSVI, fCurrentPSVI);
+        }
+        else {
+            fCurrentPSVI.reset();
+        }
+
+        if (fNormalizeData && !fEntityRef && !fInCDATA) {
+            // if whitespace == -1 skip normalization, because it is a complexType
+            if (fWhiteSpace != -1 && fWhiteSpace != XSSimpleType.WS_PRESERVE) {
+                // normalize data
+                int spaces = normalizeWhitespace(data, fWhiteSpace == XSSimpleType.WS_COLLAPSE);
+                normalizedStr =  fNormalizedStr.toString();
+                fCurrentPSVI.fNormalizedValue = normalizedStr;
+            }
+        }
+
+        boolean mixed = false;
+        if (fCurrentType != null && fCurrentType.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
+            XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
+            if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
+                mixed = true;
+            }
+        }
+
+        if (DEBUG) {                
+            System.out.println("==>characters("+data+")," +fCurrentType.getName()+","+mixed);
+        }
+
+        if (mixed || fWhiteSpace !=-1 || fUnionType) {
+        // don't check characters: since it is either
+        // a) mixed content model - we don't care if there were some characters
+        // b) simpleType/simpleContent - in which case it is data in ELEMENT content
+        }
+        else  {
+            // data outside of element content
+            for (int i=0; i< data.length(); i++) {
+                if (!XMLChar.isSpace(data.charAt(i))) {
+                    allWhiteSpace = false;
+                    break;
+                }
+            }
+        }
+
+        // we saw first chunk of characters
+        fFirstChunk = false;
+
+        // save normalized value for validation purposes
+        if (fNil) {
+            // if element was nil and there is some character data
+            // we should expose it to the user
+            // otherwise error does not make much sense
+            fCurrentPSVI.fNormalizedValue = null;
+            fBuffer.append(data);
+        }
+        if (normalizedStr != null) {
+            fBuffer.append(normalizedStr);
+        } else {
+            fBuffer.append(data);
+        }
+
+
+        if (!allWhiteSpace) {
+            fSawCharacters = true;
+        }
+        //  call all active identity constraints
+        // REVISIT -IC: we need a matcher.characters(String)
+        int count = fMatcherStack.getMatcherCount();
+        XMLString text = null;
+        if (count > 0) {
+            //REVISIT-IC: Should we pass normalize data?
+            int bufLen = data.length();
+            char [] chars = new char[bufLen];
+            data.getChars(0, bufLen, chars, 0);
+            text = new XMLString(chars, 0, bufLen);
+        }
+        for (int i = 0; i < count; i++) {
+            XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
+            matcher.characters(text);
+        }
+
+        return allWhiteSpace;
+    }
+    
+    public void elementDefault(String data){
+        // no-op
+    }
+    
 
     //
     // XMLDocumentHandler and XMLDTDHandler methods
@@ -1086,7 +1207,6 @@ public class XMLSchemaValidator
 
     } // <init>()
 
-
     /*
      * Resets the component. The component can query the component manager
      * about any features and properties that affect the operation of the
@@ -1170,7 +1290,7 @@ public class XMLSchemaValidator
         }
 
         fEntityResolver = (XMLEntityResolver)componentManager.getProperty(ENTITY_MANAGER);
-
+        
         // initialize namespace support
         fNamespaceSupport.reset(fSymbolTable);
         fPushForNextBinding = true;
@@ -1180,17 +1300,33 @@ public class XMLSchemaValidator
         fValidationState.setSymbolTable(fSymbolTable);
 
         // get schema location properties
-        fExternalSchemas = (String)componentManager.getProperty(SCHEMA_LOCATION);
-        fExternalNoNamespaceSchema = (String)componentManager.getProperty(SCHEMA_NONS_LOCATION);
+        try {
+            fExternalSchemas = (String)componentManager.getProperty(SCHEMA_LOCATION);
+            fExternalNoNamespaceSchema = (String)componentManager.getProperty(SCHEMA_NONS_LOCATION);
+        } 
+        catch (XMLConfigurationException e) {
+            fExternalSchemas = null;
+            fExternalNoNamespaceSchema = null;
+        }
 
         // get JAXP schema source property
-        fJaxpSchemaSource = componentManager.getProperty(JAXP_SCHEMA_SOURCE);
+        try {        
+            fJaxpSchemaSource = componentManager.getProperty(JAXP_SCHEMA_SOURCE);
+        }
+        catch (XMLConfigurationException e){
+            fJaxpSchemaSource = null;
+
+        }
         fResourceIdentifier.clear();
 
         // clear grammars, and put the one for schema namespace there
         fGrammarBucket.reset();
-        fGrammarPool = (XMLGrammarPool)componentManager.getProperty(XMLGRAMMAR_POOL);
-
+        try {        
+            fGrammarPool = (XMLGrammarPool)componentManager.getProperty(XMLGRAMMAR_POOL);
+        }
+        catch (XMLConfigurationException e){
+            fGrammarPool = null;
+        }
         //we should retreive the initial grammar set given by the applicaion
         //to the parser and put it in local grammar bucket.
 
@@ -1268,6 +1404,7 @@ public class XMLSchemaValidator
         fInCDATA = false;
 
         fMatcherStack.clear();
+        fBaseURI = null;
 
         fValueStoreCache = new ValueStoreCache();
 
@@ -1449,7 +1586,7 @@ public class XMLSchemaValidator
         }
 
         if (DEBUG) {
-         System.out.println("==>characters()"+fCurrentType.getName()+":"+mixed);
+         System.out.println("==>characters("+text.toString()+")," +fCurrentType.getName()+","+mixed);
         }
 
         if (mixed || fWhiteSpace !=-1 || fUnionType) {
@@ -1458,10 +1595,6 @@ public class XMLSchemaValidator
             // b) simpleType/simpleContent - in which case it is data in ELEMENT content
         }
         else  {
-
-            if (DEBUG) {
-             System.out.println("==>check for whitespace");
-            }
             // data outside of element content
             for (int i=text.offset; i< text.offset+text.length; i++) {
                 if (!XMLChar.isSpace(text.ch[i])) {
@@ -1557,6 +1690,50 @@ public class XMLSchemaValidator
     }
 
 
+    private int normalizeWhitespace( String value, boolean collapse) {
+        boolean skipSpace = collapse;
+        boolean sawNonWS = false;
+        int leading = 0;
+        int trailing = 0;
+        int c;
+        int size = value.length();        
+        fNormalizedStr.setLength(0);
+        for (int i = 0; i < size; i++) {
+            c = value.charAt(i);
+            if (c == 0x20 || c == 0x0D || c == 0x0A || c == 0x09) {
+                if (!skipSpace) {
+                    // take the first whitespace as a space and skip the others
+                    fNormalizedStr.append(' ');
+                    skipSpace = collapse;
+                }
+                if (!sawNonWS) {
+                    // this is a leading whitespace, record it
+                    leading = 1;
+                }
+            }
+            else {
+                fNormalizedStr.append((char)c);
+                skipSpace = false;
+                sawNonWS = true;
+            }
+        }
+        if (skipSpace) {
+            c = fNormalizedStr.length();
+            if ( c != 0) {
+                // if we finished on a space trim it but also record it
+                fNormalizedStr.setLength (--c);
+                trailing = 2;
+            }
+            else if (leading != 0 && !sawNonWS) {
+                // if all we had was whitespace we skipped record it as
+                // trailing whitespace as well
+                trailing = 2;
+            }
+        }
+        return collapse ? leading + trailing : 0;
+    }
+
+
     // handle ignorable whitespace
     void handleIgnorableWhitespace(XMLString text) {
 
@@ -1604,7 +1781,7 @@ public class XMLSchemaValidator
             // at this point we assume that no XML schemas found in the instance document
             // thus we will not validate in the case dynamic feature is on or we found dtd grammar
             fDoValidation = fValidation && !(fValidationManager.isGrammarFound() || fDynamicValidation);
-
+            
             //store the external schema locations, these locations will be set at root element, so any other
             // schemaLocation declaration for the same namespace will be effectively ignored.. becuase we
             // choose to take first location hint available for a particular namespace.
@@ -1738,7 +1915,6 @@ public class XMLSchemaValidator
             //try to find schema grammar by different means..
             SchemaGrammar sGrammar = findSchemaGrammar(XSDDescription.CONTEXT_ELEMENT , 
                                                        element.uri , null , element, attributes ) ;
-
             if (sGrammar != null){
                 fCurrentElemDecl = sGrammar.getGlobalElementDecl(element.localpart);
             }
@@ -1901,6 +2077,9 @@ public class XMLSchemaValidator
      */
     Augmentations handleEndElement(QName element, Augmentations augs) {
 
+        if (DEBUG) {
+            System.out.println("==>handleEndElement:" +element);
+        }
         if(augs == null) { // again, always assume adding augmentations...
             augs = fAugmentations;
             augs.clear();
@@ -2120,7 +2299,6 @@ public class XMLSchemaValidator
     } //locationArray
 
     void storeLocations(String sLocation, String nsLocation){
-
         if (sLocation != null) {
             StringTokenizer t = new StringTokenizer(sLocation, " \n\t\r");
             String namespace, location;
@@ -2169,6 +2347,9 @@ public class XMLSchemaValidator
             fXSDDescription.fEnclosedElementName = enclosingElement ;
             fXSDDescription.fTriggeringComponent = triggeringComponet ;
             fXSDDescription.fAttributes = attributes ;
+            if (fBaseURI != null) {
+                fXSDDescription.setBaseSystemId(fBaseURI);
+            }
 
             Object locationArray = null ;
             if( namespace != null){
@@ -2408,6 +2589,9 @@ public class XMLSchemaValidator
         //         in this case we need to create/reset here all objects
         Augmentations augs = null;
         AttributePSVImpl attrPSVI = null;
+        if (DEBUG) {
+            System.out.println("==>processAttributes: " +attributes.getLength());
+        }
         for (int k=0;k<attributes.getLength();k++) {
             augs = attributes.getAugmentations(k);
             attrPSVI = (AttributePSVImpl) augs.getItem(Constants.ATTRIBUTE_PSVI);
@@ -2444,8 +2628,11 @@ public class XMLSchemaValidator
             int attCount = attributes.getLength();
 
             for (int index = 0; index < attCount; index++) {
-                attributes.getName(index, fTempQName);
 
+                if (DEBUG) {            
+                    System.out.println("==>process attribute: "+fTempQName);
+                }
+                attributes.getName(index, fTempQName);
                 // get attribute PSVI
                 attrPSVI = (AttributePSVImpl)attributes.getAugmentations(index).getItem(Constants.ATTRIBUTE_PSVI);
                 
@@ -2490,7 +2677,9 @@ public class XMLSchemaValidator
         // get the corresponding attribute decl
         for (int index = 0; index < attCount; index++) {
             attributes.getName(index, fTempQName);
-            
+            if (DEBUG) {            
+                System.out.println("==>process attribute: "+fTempQName);
+            }
             // get attribute PSVI 
             attrPSVI = (AttributePSVImpl)attributes.getAugmentations(index).getItem(Constants.ATTRIBUTE_PSVI);
             
@@ -2689,7 +2878,7 @@ public class XMLSchemaValidator
         // (3) add default attrs (FIXED and NOT_FIXED)
         //
         if (DEBUG) {
-            System.out.println("addDefaultAttributes: " + element);
+            System.out.println("==>addDefaultAttributes: " + element);
         }
         XSObjectList attrUses = attrGrp.getAttributeUses();
         int useCount = attrUses.getListLength();
@@ -2780,9 +2969,6 @@ public class XMLSchemaValidator
         }
         // fixed values are handled later, after xsi:type determined.
 
-        if (DEBUG) {
-            System.out.println("processElementContent:" +element);
-        }
 
         if (fCurrentElemDecl != null &&
             fCurrentElemDecl.getConstraintType() == XSConstants.VC_DEFAULT) {

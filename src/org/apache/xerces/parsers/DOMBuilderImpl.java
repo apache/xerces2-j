@@ -79,6 +79,7 @@ import org.apache.xerces.util.DOMEntityResolverWrapper;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.util.DOMErrorHandlerWrapper;
+import org.apache.xerces.util.XMLGrammarPoolImpl;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.XNIException;
@@ -102,30 +103,6 @@ import org.apache.xerces.xni.parser.XMLParserConfiguration;
 public class DOMBuilderImpl
 extends AbstractDOMParser implements DOMBuilder {
 
-    //
-    // Constants: DOM Level 3 feature ids
-    //
-
-    protected static final String DOM_CANONICAL_FORM = "canonical-form";
-    protected static final String DOM_CDATA_SECTIONS ="cdata-sections";
-    protected static final String DOM_COMMENTS = "comments"; 
-
-    // REVISIT: this feature seems to have no effect for Xerces
-    protected static final String DOM_CHARSET_OVERRIDES_XML_ENCODING = 
-    "charset-overrides-xml-encoding"; 
-
-    protected static final String DOM_DATATYPE_NORMALIZATION = "datatype-normalization"; 
-    protected static final String DOM_ENTITIES = "entities";
-    protected static final String DOM_INFOSET = "infoset";  
-    protected static final String DOM_NAMESPACES = "namespaces";
-    protected static final String DOM_NAMESPACE_DECLARATIONS = "namespace-declarations";
-    protected static final String DOM_SUPPORTED_MEDIATYPES_ONLY =
-    "supported-mediatypes-only";
-
-    protected static final String DOM_VALIDATE_IF_SCHEMA = "validate-if-schema";
-    protected static final String DOM_VALIDATE = "validate";
-    protected static final String DOM_WHITESPACE_IN_ELEMENT_CONTENT =
-    "whitespace-in-element-content"; 
 
 
     // SAX & Xerces feature ids
@@ -182,24 +159,24 @@ extends AbstractDOMParser implements DOMBuilder {
 
         // add recognized features
         final String[] domRecognizedFeatures = {
-            DOM_CANONICAL_FORM,
-            DOM_CDATA_SECTIONS,
-            DOM_CHARSET_OVERRIDES_XML_ENCODING,
-            DOM_INFOSET,
-            DOM_NAMESPACE_DECLARATIONS,
-            DOM_SUPPORTED_MEDIATYPES_ONLY
+            Constants.DOM_CANONICAL_FORM,
+            Constants.DOM_CDATA_SECTIONS,
+            Constants.DOM_CHARSET_OVERRIDES_XML_ENCODING,
+            Constants.DOM_INFOSET,
+            Constants.DOM_NAMESPACE_DECLARATIONS,
+            Constants.DOM_SUPPORTED_MEDIATYPES_ONLY
         };
 
         fConfiguration.addRecognizedFeatures(domRecognizedFeatures);
 
         // set default values
 
-        fConfiguration.setFeature(DOM_CANONICAL_FORM, false);
-        fConfiguration.setFeature(DOM_CDATA_SECTIONS, true);
-        fConfiguration.setFeature(DOM_CHARSET_OVERRIDES_XML_ENCODING, true);
-        fConfiguration.setFeature(DOM_INFOSET, false);
-        fConfiguration.setFeature(DOM_NAMESPACE_DECLARATIONS, true);
-        fConfiguration.setFeature(DOM_SUPPORTED_MEDIATYPES_ONLY, false);
+        fConfiguration.setFeature(Constants.DOM_CANONICAL_FORM, false);
+        fConfiguration.setFeature(Constants.DOM_CDATA_SECTIONS, true);
+        fConfiguration.setFeature(Constants.DOM_CHARSET_OVERRIDES_XML_ENCODING, true);
+        fConfiguration.setFeature(Constants.DOM_INFOSET, false);
+        fConfiguration.setFeature(Constants.DOM_NAMESPACE_DECLARATIONS, true);
+        fConfiguration.setFeature(Constants.DOM_SUPPORTED_MEDIATYPES_ONLY, false);
 
         // Xerces datatype-normalization feature is on by default
         fConfiguration.setFeature( NORMALIZE_DATA, false ); 
@@ -373,38 +350,38 @@ extends AbstractDOMParser implements DOMBuilder {
      */
     public void setFeature(String name, boolean state) throws DOMException {
         try {
-            if (name.equals(DOM_COMMENTS)) {
+            if (name.equals(Constants.DOM_COMMENTS)) {
                 fConfiguration.setFeature(INCLUDE_COMMENTS_FEATURE, state);
-            } else if (name.equals(DOM_DATATYPE_NORMALIZATION)) {
+            } else if (name.equals(Constants.DOM_DATATYPE_NORMALIZATION)) {
                 fConfiguration.setFeature(NORMALIZE_DATA, state);
-            } else if (name.equals(DOM_ENTITIES)) {
+            } else if (name.equals(Constants.DOM_ENTITIES)) {
                 fConfiguration.setFeature(CREATE_ENTITY_REF_NODES, state);
-            } else if (name.equals(DOM_INFOSET) || 
-                       name.equals(DOM_SUPPORTED_MEDIATYPES_ONLY) ||
-                       name.equals(DOM_CANONICAL_FORM)) {
+            } else if (name.equals(Constants.DOM_INFOSET) || 
+                       name.equals(Constants.DOM_SUPPORTED_MEDIATYPES_ONLY) ||
+                       name.equals(Constants.DOM_CANONICAL_FORM)) {
                 if (state) { // true is not supported
                     throw new DOMException(DOMException.NOT_SUPPORTED_ERR,"Feature \""+name+"\" cannot be set to \""+state+"\"");
                 }
-            } else if (name.equals(DOM_NAMESPACES)) {
+            } else if (name.equals(Constants.DOM_NAMESPACES)) {
                 fConfiguration.setFeature (NAMESPACES, state);
-            } else if (name.equals(DOM_CDATA_SECTIONS) ||
-                       name.equals(DOM_NAMESPACE_DECLARATIONS)) {
+            } else if (name.equals(Constants.DOM_CDATA_SECTIONS) ||
+                       name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)) {
                 if (!state) { // false is not supported
                     throw new DOMException(DOMException.NOT_SUPPORTED_ERR,"Feature \""+name+"\" cannot be set to \""+state+"\"");
                 }
-            } else if (name.equals(DOM_VALIDATE)) {
+            } else if (name.equals(Constants.DOM_VALIDATE)) {
                 fConfiguration.setFeature(VALIDATION_FEATURE, state);
 
                 // REVISIT: user can speficy schemaType
                 if (fSchemaType == XML_SCHEMA_VALIDATION) {
                     fConfiguration.setFeature(XMLSCHEMA, state);
                 }
-            } else if (name.equals(DOM_VALIDATE_IF_SCHEMA)) {
+            } else if (name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)) {
                 fConfiguration.setFeature(DYNAMIC_VALIDATION, state);
-            } else if (name.equals(DOM_WHITESPACE_IN_ELEMENT_CONTENT)) {
+            } else if (name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)) {
                 fConfiguration.setFeature(INCLUDE_IGNORABLE_WHITESPACE, state);             
             } else {
-                // DOM_CHARSET_OVERRIDES_XML_ENCODING feature
+                // Constants.DOM_CHARSET_OVERRIDES_XML_ENCODING feature
                 fConfiguration.setFeature(name, state);
             }
         } catch (XMLConfigurationException e) {
@@ -425,23 +402,23 @@ extends AbstractDOMParser implements DOMBuilder {
      *   the feature itself is not changed.
      */
     public boolean canSetFeature(String name, boolean state) {
-        if (name.equals(DOM_INFOSET) || 
-            name.equals(DOM_SUPPORTED_MEDIATYPES_ONLY) ||
-            name.equals(DOM_CANONICAL_FORM)) {
+        if (name.equals(Constants.DOM_INFOSET) || 
+            name.equals(Constants.DOM_SUPPORTED_MEDIATYPES_ONLY) ||
+            name.equals(Constants.DOM_CANONICAL_FORM)) {
             // true is not supported
             return(state)?false:true;
-        } else if (name.equals(DOM_CDATA_SECTIONS) ||
-                   name.equals(DOM_NAMESPACE_DECLARATIONS)) {
+        } else if (name.equals(Constants.DOM_CDATA_SECTIONS) ||
+                   name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)) {
             // false is not supported
             return(state)?true:false;
-        } else if (name.equals(DOM_CHARSET_OVERRIDES_XML_ENCODING) || 
-                   name.equals(DOM_COMMENTS) || 
-                   name.equals(DOM_DATATYPE_NORMALIZATION) ||
-                   name.equals(DOM_ENTITIES) ||
-                   name.equals(DOM_NAMESPACES) ||
-                   name.equals(DOM_VALIDATE) ||
-                   name.equals(DOM_VALIDATE_IF_SCHEMA) ||
-                   name.equals(DOM_WHITESPACE_IN_ELEMENT_CONTENT)) {
+        } else if (name.equals(Constants.DOM_CHARSET_OVERRIDES_XML_ENCODING) || 
+                   name.equals(Constants.DOM_COMMENTS) || 
+                   name.equals(Constants.DOM_DATATYPE_NORMALIZATION) ||
+                   name.equals(Constants.DOM_ENTITIES) ||
+                   name.equals(Constants.DOM_NAMESPACES) ||
+                   name.equals(Constants.DOM_VALIDATE) ||
+                   name.equals(Constants.DOM_VALIDATE_IF_SCHEMA) ||
+                   name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)) {
             return true;
         }
         return false;        
@@ -460,26 +437,26 @@ extends AbstractDOMParser implements DOMBuilder {
      *   recognize the feature name.
      */
     public boolean getFeature(String name) throws DOMException {
-        if (name.equals(DOM_COMMENTS)) {
+        if (name.equals(Constants.DOM_COMMENTS)) {
             return fConfiguration.getFeature(INCLUDE_COMMENTS_FEATURE);
-        } else if (name.equals(DOM_DATATYPE_NORMALIZATION)) {
+        } else if (name.equals(Constants.DOM_DATATYPE_NORMALIZATION)) {
             return fConfiguration.getFeature(NORMALIZE_DATA);
-        } else if (name.equals(DOM_ENTITIES)) {
+        } else if (name.equals(Constants.DOM_ENTITIES)) {
             return fConfiguration.getFeature(CREATE_ENTITY_REF_NODES);
-        } else if (name.equals(DOM_NAMESPACES)) {
+        } else if (name.equals(Constants.DOM_NAMESPACES)) {
             return fConfiguration.getFeature (NAMESPACES);
-        } else if (name.equals(DOM_VALIDATE)) {
+        } else if (name.equals(Constants.DOM_VALIDATE)) {
             return fConfiguration.getFeature(VALIDATION_FEATURE);
-        } else if (name.equals(DOM_VALIDATE_IF_SCHEMA)) {
+        } else if (name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)) {
             return fConfiguration.getFeature(DYNAMIC_VALIDATION);
-        } else if (name.equals(DOM_WHITESPACE_IN_ELEMENT_CONTENT)) {
+        } else if (name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)) {
             return fConfiguration.getFeature(INCLUDE_IGNORABLE_WHITESPACE);             
-        } else if (name.equals(DOM_NAMESPACE_DECLARATIONS) || 
-                   name.equals(DOM_CDATA_SECTIONS) ||
-                   name.equals(DOM_CANONICAL_FORM) ||
-                   name.equals(DOM_SUPPORTED_MEDIATYPES_ONLY) ||
-                   name.equals(DOM_INFOSET) ||
-                   name.equals(DOM_CHARSET_OVERRIDES_XML_ENCODING)) {
+        } else if (name.equals(Constants.DOM_NAMESPACE_DECLARATIONS) || 
+                   name.equals(Constants.DOM_CDATA_SECTIONS) ||
+                   name.equals(Constants.DOM_CANONICAL_FORM) ||
+                   name.equals(Constants.DOM_SUPPORTED_MEDIATYPES_ONLY) ||
+                   name.equals(Constants.DOM_INFOSET) ||
+                   name.equals(Constants.DOM_CHARSET_OVERRIDES_XML_ENCODING)) {
             return fConfiguration.getFeature(name);
         } else {
             throw new DOMException(DOMException.NOT_FOUND_ERR,"Feature \""+name+"\" not recognized");
@@ -494,6 +471,9 @@ extends AbstractDOMParser implements DOMBuilder {
      */
     public Document parseURI(String uri) throws Exception {
         XMLInputSource source = new XMLInputSource(null, uri, null);
+
+        // initialize grammar pool
+        initGrammarPool();
         try {        
             parse(source);
         } catch (Exception e){
@@ -514,6 +494,10 @@ extends AbstractDOMParser implements DOMBuilder {
 
         // need to wrap the DOMInputSource with an XMLInputSource
         XMLInputSource xmlInputSource = dom2xmlInputSource(is);
+
+
+        // initialize grammar pool
+        initGrammarPool();
         try {        
             parse(xmlInputSource);
         } catch (Exception e) {
@@ -523,6 +507,26 @@ extends AbstractDOMParser implements DOMBuilder {
             }
         }
         return getDocument();
+    }
+
+    protected void initGrammarPool(){
+
+        // REVISIT: do we want to use custome grammar pool to be able
+        //          to retrieve a grammar used in validation of the document
+        //          for dom revalidation?
+        
+        /*
+        fGrammarPool = (XMLGrammarPool)fConfiguration.getProperty(GRAMMAR_POOL);
+        if (fGrammarPool == null) {
+            fGrammarPool = new XMLGrammarPoolImpl();
+            // set our own grammar pool
+            fConfiguration.setProperty(GRAMMAR_POOL, fGrammarPool);
+        }
+        else {
+            //REVISIT: if user sets its own grammar pool do we do anything?
+        }
+        */
+        
     }
 
     /**

@@ -219,7 +219,9 @@ public abstract class CharacterDataImpl
         		DOMException.NO_MODIFICATION_ALLOWED_ERR,
         		"DOM001 Modification not allowed");
         }
-
+        if (data == null) {
+            return;
+        }
         if (needsSyncData()) {
             synchronizeData();
         }

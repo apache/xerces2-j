@@ -139,6 +139,37 @@ public final class Constants {
     /** Feature id: load as infoset. */
     public static final String LOAD_AS_INFOSET = "load-as-infoset";
 
+
+    //
+    // Constants: DOM Level 3 feature ids
+    //
+
+    public static final String DOM_CANONICAL_FORM = "canonical-form";
+    public static final String DOM_CDATA_SECTIONS ="cdata-sections";
+    public static final String DOM_COMMENTS = "comments"; 
+
+    // REVISIT: this feature seems to have no effect for Xerces
+    public static final String DOM_CHARSET_OVERRIDES_XML_ENCODING = 
+    "charset-overrides-xml-encoding"; 
+
+    public static final String DOM_DATATYPE_NORMALIZATION = "datatype-normalization"; 
+    public static final String DOM_ENTITIES = "entities";
+    public static final String DOM_INFOSET = "infoset";  
+    public static final String DOM_NAMESPACES = "namespaces";
+    public static final String DOM_NAMESPACE_DECLARATIONS = "namespace-declarations";
+    public static final String DOM_SUPPORTED_MEDIATYPES_ONLY =
+    "supported-mediatypes-only";
+
+    public static final String DOM_VALIDATE_IF_SCHEMA = "validate-if-schema";
+    public static final String DOM_VALIDATE = "validate";
+    public static final String DOM_WHITESPACE_IN_ELEMENT_CONTENT =
+    "whitespace-in-element-content";
+
+    // DOM Level 3 features defined in Core:
+    public static final String DOM_DISCARD_DEFAULT_CONTENT = "discard-default-content";
+    public static final String DOM_NORMALIZE_CHARACTERS    = "normalize-characters";
+    public static final String DOM_SPLIT_CDATA = "split-cdata-sections";
+
     // xerces features
 
     /** Xerces features prefix ("http://apache.org/xml/features/"). */
