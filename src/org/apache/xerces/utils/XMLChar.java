@@ -325,8 +325,8 @@ public class XMLChar {
         }
 
         // set Pubid characters
-        for (int i = 0; i < nameChar.length; i++) {
-            CHARS[nameChar[i]] |= MASK_PUBID;
+        for (int i = 0; i < pubidChar.length; i++) {
+            CHARS[pubidChar[i]] |= MASK_PUBID;
         }
         for (int i = 0; i < pubidRange.length; i += 2) {
             for (int j = pubidRange[i]; j < pubidRange[i + 1]; j++) {
