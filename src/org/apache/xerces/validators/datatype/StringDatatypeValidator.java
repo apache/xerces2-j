@@ -378,7 +378,9 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
 
 
         if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
-            RegularExpression regex = new RegularExpression(fPattern, "X" );
+            //System.out.println( "pattern = " + fPattern );
+            RegularExpression regex = new RegularExpression(fPattern );
+            //System.out.println("value = '" + content +"'."  );
             if ( regex.matches( content) == false )
                 throw new InvalidDatatypeValueException("Value'"+content+
                      "' does not match regular expression facet'" + fPattern + "'." );

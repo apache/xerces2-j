@@ -350,6 +350,7 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
         if( fDebug ) {
             System.out.println( "type = >" + type +"<");
             System.out.println( "fRegistry = >" + fRegistry +"<" );
+            simpleType = (AbstractDatatypeValidator) fRegistry.get(type);
         }
         if ( type != null && fRegistry != null
                           && fRegistry.containsKey( type ) == true ) {
