@@ -838,15 +838,45 @@ public abstract class BaseMarkupSerializer
             // If there is a document type, use the SAX events to
             // serialize it.
             docType = ( (Document) node ).getDoctype();
-            domImpl = ( (Document) node ).getImplementation();
-            if ( docType != null && domImpl.hasFeature( "XML", "2.0" ) ) {
-                String internal;
+            if (docType != null) {
+                // DOM Level 2 (or higher)
+                domImpl = ( (Document) node ).getImplementation();
+                try {
+                    String internal;
 
-                startDTD( docType.getName(), docType.getPublicId(), docType.getSystemId() );
-                internal = docType.getInternalSubset();
-                if ( internal != null && internal.length() > 0 )
-                    printText( internal, true );
-                endDTD();
+                    startDTD( docType.getName(), docType.getPublicId(), docType.getSystemId() );
+                    internal = docType.getInternalSubset();
+                    if ( internal != null && internal.length() > 0 )
+                        printText( internal, true );
+                    endDTD();
+                }
+                // DOM Level 1 -- does implementation have methods?
+                catch (NoSuchMethodError nsme) {
+                    Class docTypeClass = docType.getClass();
+
+                    String docTypePublicId = null;
+                    String docTypeSystemId = null;
+                    try {
+                        java.lang.reflect.Method getPublicId = docTypeClass.getMethod("getPublicId", null);
+                        if (getPublicId.getReturnType().equals(String.class)) {
+                            docTypePublicId = (String)getPublicId.invoke(docType, null);
+                        }
+                    }
+                    catch (Exception e) {
+                        // ignore
+                    }
+                    try {
+                        java.lang.reflect.Method getSystemId = docTypeClass.getMethod("getSystemId", null);
+                        if (getSystemId.getReturnType().equals(String.class)) {
+                            docTypeSystemId = (String)getSystemId.invoke(docType, null);
+                        }
+                    }
+                    catch (Exception e) {
+                        // ignore
+                    }
+                    startDTD( docType.getName(), docTypePublicId, docTypeSystemId);
+                    endDTD();
+                }
             }
             // !! Fall through
         case Node.DOCUMENT_FRAGMENT_NODE : {
