@@ -64,6 +64,7 @@ import java.io.UTFDataFormatException;
 
 import java.util.Locale;
 import org.apache.xerces.util.MessageFormatter;
+import org.apache.xerces.impl.msg.XMLMessageFormatter;
 
 /**
  * @author Andy Clark, IBM
@@ -111,6 +112,16 @@ public class UTF8Reader
     //
     // Constructors
     //
+
+    /** 
+     * Constructs a UTF-8 reader from the specified input stream 
+     * using the default buffer size.  Primarily for testing.
+     *
+     * @param inputStream The input stream.
+     */
+    public UTF8Reader(InputStream inputStream) {
+        this(inputStream, DEFAULT_BUFFER_SIZE, new XMLMessageFormatter(), Locale.getDefault());
+    } // <init>(InputStream, MessageFormatter)
 
     /** 
      * Constructs a UTF-8 reader from the specified input stream 
