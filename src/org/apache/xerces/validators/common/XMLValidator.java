@@ -351,7 +351,8 @@ public final class XMLValidator
     private boolean fFirstChunk = true; // got first chunk in characters() (SAX)
     private boolean fTrailing = false;  // Previous chunk had a trailing space
     private boolean fCollapse = false;  //collapse spaces
-    private StringBuffer fStringBuffer = new StringBuffer();  //temporary
+    private StringBuffer fStringBuffer = null;  //holds normalized str value
+    private StringBuffer fTempBuffer = null;  //holds unnormalized str value
     
 
 
@@ -715,15 +716,19 @@ public final class XMLValidator
      *          3 if there is both leading and trailing whitespace.
      */
    
-    private int normalizeWhitespace(char[] chars, int offset, int length, boolean collapse) {
+    private int normalizeWhitespace( StringBuffer chars, boolean collapse) {
+        int length = fTempBuffer.length(); 
+        if (fStringBuffer == null) {
+            fStringBuffer = new StringBuffer((CHUNK_SIZE>=length)?CHUNK_SIZE:length);
+        }
         fStringBuffer.setLength(0);
         boolean skipSpace = collapse;
         boolean sawNonWS = false;
         int leading = 0;
         int trailing = 0;
         int c;
-        for (int i = offset; i < length; i++) {
-            c = chars[i];
+        for (int i = 0; i < length; i++) {
+            c = chars.charAt(i);
             if (c == 0x20 || c == 0x0D || c == 0x0A || c == 0x09) {
                 if (!skipSpace) {
                     // take the first whitespace as a space and skip the others
@@ -786,7 +791,12 @@ public final class XMLValidator
             if (DEBUG_NORMALIZATION) {
                 System.out.println("Start schema datatype normalization");
             }
-            int spaces = normalizeWhitespace(chars, offset, length, fCollapse);
+            if (fTempBuffer == null) {
+                fTempBuffer = new StringBuffer((CHUNK_SIZE>=length)?CHUNK_SIZE:length);
+            }
+            fTempBuffer.setLength(0);
+            fTempBuffer.append(chars, offset, length);
+            int spaces = normalizeWhitespace(fTempBuffer, fCollapse);
             int nLength = fStringBuffer.length();
             if (nLength > 0) {
                 if (spaces != 0 && fCollapse) { //some normalization was done
@@ -824,7 +834,7 @@ public final class XMLValidator
             charDataInContent();
          }
          if (fBufferDatatype) {
-            fDatatypeBuffer.append(chars, offset, length);
+             fDatatypeBuffer.append(chars, offset, length);
          }
       }
       fDocumentHandler.characters(chars, offset, length);
@@ -837,7 +847,27 @@ public final class XMLValidator
             charDataInContent();
          }
          if (fBufferDatatype) {
-            fDatatypeBuffer.append(fStringPool.toString(data));
+
+             if (NORMALIZATION_ON) {
+                 fCollapse = true; //REVISIT: must be updated according to datatypes
+                 String str =  fStringPool.toString(data);
+                 int length = str.length();
+                 if (fTempBuffer == null) {
+                     fTempBuffer = new StringBuffer((CHUNK_SIZE>=length)?CHUNK_SIZE:length);
+                 }
+                 fTempBuffer.setLength(0);
+                 fTempBuffer.append(str);
+                 int spaces = normalizeWhitespace(fTempBuffer, fCollapse);
+                 if (spaces >0) {
+                     //normalization was done.
+                     fStringPool.releaseString(data);
+                     data = fStringPool.addString(fStringBuffer.toString());
+                 }
+                 fDatatypeBuffer.append(fStringBuffer.toString());
+             }
+             else {
+                 fDatatypeBuffer.append(fStringPool.toString(data));
+             }
          }
       }
       fDocumentHandler.characters(data);
