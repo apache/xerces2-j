@@ -795,6 +795,11 @@ public class RangeImpl  implements Range {
     }
     
     public void detach() {
+        if( fDetach) {
+            throw new DOMException(
+            DOMException.INVALID_STATE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_STATE_ERR", null));
+        }        
         fDetach = true;
         fDocument.removeRange(this);
     }
