@@ -180,7 +180,7 @@ Copyright:
     <javac srcdir="${build.samples}"
            excludes="**/DOMAddLines.java "
            destdir="${build.dest}"
-           classpath="${build.dir}/${name}.jar"
+           classpath="${build.dir}/classes"
            debug="${debug}"/>
   </target>
 
@@ -194,7 +194,7 @@ Copyright:
     </copy>
     <javac srcdir="${build.tests}"
            destdir="${build.dest}"
-           classpath="${build.dir}/${name}.jar"
+           classpath="${build.dir}/classes:./tools/junit.jar"
            debug="${debug}"/>
   </target>
 
@@ -221,7 +221,7 @@ Copyright:
   <target name="docs" depends="prepare, prepare-docs">
     <echo message="Building docs for ${Name} ${version} ..." />
     <java fork="yes"
-          classpath="${java.class.path}:${doc.generator.package}"
+          classpath="${java.class.path}:${doc.generator.package}:./tools/xalan.jar"
           classname="${doc.generator}"
           args="targetDirectory=${build.docs} ${docs.book} ${doc.style}"/>
   </target>
@@ -429,52 +429,56 @@ Copyright:
   </target>
 
   <!-- =================================================================== -->
-  <!-- Do a sanity test using xercesSamples.jar                            -->
+  <!-- Do a sanity test using samples                                      -->
   <!-- =================================================================== -->
-  <target name="test" depends="sampjar">
+  <target name="test" depends="samples">
     <echo message="Performing sanity test for ${Name} ${version} ..." />
-    <echo message="Using classpath=&apos;${build.dir}/${name}Samples.jar;${build.dir}/${name}.jar&apos;" />
+    <echo message="Using classpath=&apos;${build.dir}/classes&apos;" />
     <echo message="Running sax.Counter ..." />
     <java fork="yes"
-          classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar;"
-          classname="sax.Counter"
-          args="${data.dir}/personal.xml"/>
+          classpath="${build.dir}/classes"
+          classname="sax.Counter">
+       <arg value="${data.dir}/personal.xml"/>
+    </java>
     <echo message="Running sax.Writer ..." />
     <java fork="yes"
-          classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
-          classname="sax.Writer"
-          args="${data.dir}/personal.xml"/>
+          classpath="${build.dir}/classes"
+          classname="sax.Writer">
+       <arg value="${data.dir}/personal.xml"/>
+    </java>
     <echo message="Running dom.Counter ..." />
     <java fork="yes"
-          classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
-          classname="dom.Counter"
-          args="${data.dir}/personal.xml"/>
+          classpath="${build.dir}/classes"
+          classname="dom.Counter">
+       <arg value="${data.dir}/personal.xml"/>
+    </java>
     <echo message="Running dom.Writer ..." />
     <java fork="yes"
-          classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
-          classname="dom.Writer"
-          args="${data.dir}/personal.xml"/>
-    <echo message="Running DOMFilter ..." />
+          classpath="${build.dir}/classes"
+          classname="dom.Writer">
+       <arg value="${data.dir}/personal.xml"/>
+    </java>
     <!--
+    <echo message="Running DOMFilter ..." />
     <java fork="yes"
-          classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
+          classpath="${build.dir}/classes"
           classname="dom.DOMFilter"
           args="-p dom.wrappers.DOMParser ${data.dir}/personal.xml"/>
     -->
     <!-- The following are samples but not command-line applications.
     <echo message="Running IteratorView ..." />
     <java fork="yes"
-          classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
+          classpath="${build.dir}/classes"
           classname="dom.traversal.IteratorView"
           args="${data.dir}/personal.xml"/>
     <echo message="Running TreeWalkerView ..." />
     <java fork="yes"
-          classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
+          classpath="${build.dir}/classes"
           classname="dom.traversal.TreeWalkerView"
           args="${data.dir}/personal.xml"/>
     <echo message="Running TreeViewer ..." />
     <java fork="yes"
-          classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
+          classpath="${build.dir}/classes"
           classname="dom.TreeViewer"
           args="${data.dir}/personal.xml"/>
      -->
