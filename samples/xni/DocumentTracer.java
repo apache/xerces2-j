@@ -697,81 +697,72 @@ public class DocumentTracer
     //
 
     /** Start content model. */
-    public void startContentModel(String elementName, short type)
-        throws XNIException {
+    public void startContentModel(String elementName) throws XNIException {
 
         printIndent();
         fOut.print("startContentModel(");
         fOut.print("elementName=");
         printQuotedString(elementName);
-        fOut.print(',');
-        fOut.print("type=");
-        switch (type) {
-            case XMLDTDContentModelHandler.TYPE_ANY: {
-                fOut.print("TYPE_ANY");
-                break;
-            }
-            case XMLDTDContentModelHandler.TYPE_EMPTY: {
-                fOut.print("TYPE_EMPTY");
-                break;
-            }
-            case XMLDTDContentModelHandler.TYPE_MIXED: {
-                fOut.print("TYPE_MIXED");
-                break;
-            }
-            case XMLDTDContentModelHandler.TYPE_CHILDREN: {
-                fOut.print("TYPE_CHILDREN");
-                break;
-            }
-            default: {
-                fOut.print("??? ("+type+')');
-            }
-        }
         fOut.println(')');
         fOut.flush();
         fIndent++;
 
-    } // startContentModel(String,short)
+    } // startContentModel(String)
 
-    /** Mixed element. */
-    public void mixedElement(String elementName) throws XNIException {
+    /** Any. */
+    public void any() throws XNIException {
 
         printIndent();
-        fOut.print("mixedElement(");
-        fOut.print("elementName=");
-        printQuotedString(elementName);
-        fOut.println(')');
+        fOut.print("any()");
         fOut.flush();
 
-    } // mixedElement(String)
+    } // any()
 
-    /** Children start group. */
-    public void childrenStartGroup() throws XNIException {
+    /** Empty. */
+    public void empty() throws XNIException {
 
         printIndent();
-        fOut.println("childrenStartGroup()");
+        fOut.print("empty()");
+        fOut.flush();
+
+    } // empty()
+
+    /** Start group. */
+    public void startGroup() throws XNIException {
+
+        printIndent();
+        fOut.println("startGroup()");
         fOut.flush();
         fIndent++;
 
     } // childrenStartGroup()
 
-    /** Children element. */
-    public void childrenElement(String elementName) throws XNIException {
+    /** #PCDATA. */
+    public void pcdata() throws XNIException {
+    
+        printIndent();
+        fOut.println("pcdata()");
+        fOut.flush();
+
+    } // pcdata()
+
+    /** Element. */
+    public void element(String elementName) throws XNIException {
 
         printIndent();
-        fOut.print("childrenElement(");
+        fOut.print("element(");
         fOut.print("elementName=");
         printQuotedString(elementName);
         fOut.println(')');
         fOut.flush();
 
-    } // childrenElement(String)
+    } // element(String)
 
-    /** Children separator. */
-    public void childrenSeparator(short separator) throws XNIException {
+    /** separator. */
+    public void separator(short separator) throws XNIException {
 
         printIndent();
-        fOut.print("childrenSeparator(");
+        fOut.print("separator(");
         fOut.print("separator=");
         switch (separator) {
             case XMLDTDContentModelHandler.SEPARATOR_CHOICE: {
@@ -789,13 +780,13 @@ public class DocumentTracer
         fOut.println(')');
         fOut.flush();
 
-    } // childrenSeparator(short)
+    } // separator(short)
 
-    /** Children occurrence. */
-    public void childrenOccurrence(short occurrence) throws XNIException {
+    /** Occurrence. */
+    public void occurrence(short occurrence) throws XNIException {
 
         printIndent();
-        fOut.print("childrenOccurrence(");
+        fOut.print("occurrence(");
         fOut.print("occurrence=");
         switch (occurrence) {
             case XMLDTDContentModelHandler.OCCURS_ONE_OR_MORE: {
@@ -817,14 +808,14 @@ public class DocumentTracer
         fOut.println(')');
         fOut.flush();
 
-    } // childrenOccurrence(short)
+    } // occurrence(short)
 
-    /** Children end group. */
-    public void childrenEndGroup() throws XNIException {
+    /** End group. */
+    public void endGroup() throws XNIException {
 
         fIndent--;
         printIndent();
-        fOut.println("childrenEndGroup()");
+        fOut.println("endGroup()");
         fOut.flush();
 
     } // childrenEndGroup()
