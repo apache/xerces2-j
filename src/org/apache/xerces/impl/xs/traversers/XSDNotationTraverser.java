@@ -62,6 +62,9 @@ class  XSDNotationTraverser extends XSDAbstractTraverser {
             fAttrChecker.returnAttrArray(attrValues, schemaDoc);
             return null;
         }
+		
+		if (systemAttr == null && publicAttr == null)
+			reportSchemaError("s4s-att-must-appear", new Object[]{SchemaSymbols.ELT_NOTATION, "system or public"}, elmNode);
 
         XSNotationDecl notation = new XSNotationDecl();
         notation.fName = nameAttr;
