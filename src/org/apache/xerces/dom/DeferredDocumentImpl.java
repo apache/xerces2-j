@@ -1702,7 +1702,7 @@ public class DeferredDocumentImpl
     // utility methods
 
     /** Ensures that the internal tables are large enough. */
-    protected void ensureCapacity(int chunk, int index) {
+    protected void ensureCapacity(int chunk) {
         if (fNodeType == null) {
             // create buffers
             fNodeType       = new int[INITIAL_CHUNK_COUNT][];
@@ -1776,7 +1776,7 @@ public class DeferredDocumentImpl
         // ensure tables are large enough
         int chunk = fNodeCount >> CHUNK_SHIFT;
         int index = fNodeCount & CHUNK_MASK;
-        ensureCapacity(chunk, index);
+        ensureCapacity(chunk);
 
         // initialize node
         setChunkIndex(fNodeType, nodeType, chunk, index);
