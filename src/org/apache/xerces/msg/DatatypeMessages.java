@@ -79,7 +79,7 @@ public class DatatypeMessages extends ListResourceBundle {
         { "IllegalDecimalFacet", "Illegal Facet for decimal type." },
         { "UnknownFacet", "Unknown Facet: {0}." },
         { "InvalidEnumValue", "Invalid value for Enum constant: {0}." },
-        { "OutOfBounds", "{0} is out of bounds." },
+        { "OutOfBounds", "{0} is out of bounds:[ {1} {3} X  {4} {2} ]." },
         { "NotAnEnumValue", "{0} is not one of the specified enum values." },
         { "NotInteger", "{0} is not an integer." },
         { "IllegalIntegerFacet", "Illegal Facet for Integer type." },
