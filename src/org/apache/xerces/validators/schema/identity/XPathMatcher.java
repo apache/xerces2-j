@@ -154,9 +154,6 @@ public class XPathMatcher {
     /** String pool. */
     protected StringPool fStringPool;
 
-    // the Schema grammar that we're validating against.
-    protected SchemaGrammar fGrammar;
-
     /** Namespace scope. */
     protected NamespacesScope fNamespacesScope;
 
@@ -257,13 +254,11 @@ public class XPathMatcher {
      *
      * @throws SAXException Thrown by handler to signal an error.
      */
-    public void startDocumentFragment(StringPool stringPool,
-                                      SchemaGrammar grammar) 
+    public void startDocumentFragment(StringPool stringPool) 
         throws Exception {
         if (DEBUG_METHODS) {
             System.out.println(toString()+"#startDocumentFragment("+
                                "stringPool="+stringPool+','+
-                               "grammar="+fGrammar+
                                ")");
         }
 
@@ -278,7 +273,6 @@ public class XPathMatcher {
 
         // keep values
         fStringPool = stringPool;
-        fGrammar = grammar;
 
     } // startDocumentFragment(StringPool,SchemaGrammar)
 
@@ -289,11 +283,13 @@ public class XPathMatcher {
      * 
      * @param element    The name of the element.
      * @param attributes The element attributes.
-     * @param scope:  the scope of the current element
+     * @param eIndex:  the element index of the current element
+     * @param grammar:  the currently-active Schema Grammar
      *
      * @throws SAXException Thrown by handler to signal an error.
      */
-    public void startElement(QName element, XMLAttrList attributes, int handle, int scope)
+    public void startElement(QName element, XMLAttrList attributes, int handle, 
+                int eIndex, SchemaGrammar grammar)
         throws Exception {
         if (DEBUG_METHODS2) {
             System.out.println(toString()+"#startElement("+
@@ -430,10 +426,9 @@ public class XPathMatcher {
                                     fMatchedString = fStringPool.toString(avalue);
                                     // now, we have to go on the hunt for 
                                     // datatype validator; not an easy or pleasant task...
-                                    int eIndex = fGrammar.getElementDeclIndex(element, scope);
-                                    int attIndex = fGrammar.getAttributeDeclIndex(eIndex, aname);
+                                    int attIndex = grammar.getAttributeDeclIndex(eIndex, aname);
                                     XMLAttributeDecl tempAttDecl = new XMLAttributeDecl();
-                                    fGrammar.getAttributeDecl(attIndex, tempAttDecl);
+                                    grammar.getAttributeDecl(attIndex, tempAttDecl);
                                     DatatypeValidator aValidator = tempAttDecl.datatypeValidator;
                                     matched(fMatchedString, aValidator, false);
                                 }
@@ -490,12 +485,12 @@ public class XPathMatcher {
      * The end of an element.
      * 
      * @param element The name of the element.
-     * @param scope:  the scope of the element.  Needed so that we can look 
-     *      up its datatypeValidator.
+     * @param eIndex:  the elementDeclIndex of the current element;
+     *      needed so that we can look up its datatypeValidator.
      *
      * @throws SAXException Thrown by handler to signal an error.
      */
-    public void endElement(QName element, int scope) throws Exception {
+    public void endElement(QName element, int eIndex, SchemaGrammar grammar) throws Exception {
         if (DEBUG_METHODS2) {
             System.out.println(toString()+"#endElement("+
                                "element={"+
@@ -503,6 +498,7 @@ public class XPathMatcher {
                                "localpart="+fStringPool.toString(element.localpart)+','+
                                "rawname="+fStringPool.toString(element.rawname)+','+
                                "uri="+fStringPool.toString(element.uri)+
+                               "ID constraint="+fIDConstraint+
                                "})");
         }
         
@@ -520,11 +516,13 @@ public class XPathMatcher {
                 if (fBufferContent) {
                     fBufferContent = false;
                     fMatchedString = fMatchedBuffer.toString();
-                    int eIndex = fGrammar.getElementDeclIndex(element, scope); 
                     XMLElementDecl temp = new XMLElementDecl();
-                    fGrammar.getElementDecl(eIndex, temp);
+                    grammar.getElementDecl(eIndex, temp);
                     DatatypeValidator val = temp.datatypeValidator;
-                    matched(fMatchedString, val, (fGrammar.getElementDeclMiscFlags(eIndex) & SchemaSymbols.NILLABLE) != 0);
+                    if(temp != null) {
+                        matched(fMatchedString, val, (grammar.getElementDeclMiscFlags(eIndex) & SchemaSymbols.NILLABLE) != 0);
+                    } else 
+                        matched(fMatchedString, null, false);
                 }
                 clear();
             }

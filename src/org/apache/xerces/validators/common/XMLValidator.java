@@ -644,7 +644,7 @@ public final class XMLValidator
         field.setMayMatch(true);
         XPathMatcher matcher = field.createMatcher(valueStore);
         fMatcherStack.addMatcher(matcher);
-        matcher.startDocumentFragment(fStringPool, (SchemaGrammar)fGrammar);
+        matcher.startDocumentFragment(fStringPool);
         return matcher;
     } // activateField(Field):XPathMatcher
 
@@ -1171,7 +1171,7 @@ public final class XMLValidator
               if (DEBUG_IDENTITY_CONSTRAINTS) {
                   System.out.println("<IC>: "+matcher.toString()+"#startElement("+fStringPool.toString(element.rawname)+")");
               }
-              matcher.startElement(element, fAttrList, fAttrListHandle, fElementDepth);
+              matcher.startElement(element, fAttrList, fAttrListHandle, fCurrentElementIndex, (SchemaGrammar)fGrammar);
           }
       }
       
@@ -1246,12 +1246,14 @@ public final class XMLValidator
             System.out.println("<IC>: XMLValidator#activateSelectorFor("+selector+')');
         }
         FieldActivator activator = this;
+        if(selector == null)
+            return;
         XPathMatcher matcher = selector.createMatcher(activator);
         fMatcherStack.addMatcher(matcher);
         if (DEBUG_IDENTITY_CONSTRAINTS) {
             System.out.println("<IC>: "+matcher+"#startDocumentFragment()");
         }
-        matcher.startDocumentFragment(fStringPool, (SchemaGrammar)fGrammar);
+        matcher.startDocumentFragment(fStringPool);
     }
 
    private void pushContentLeafStack() throws Exception {
@@ -1375,7 +1377,7 @@ public final class XMLValidator
              if (DEBUG_IDENTITY_CONSTRAINTS) {
                  System.out.println("<IC>: "+matcher+"#endElement("+fStringPool.toString(fCurrentElement.rawname)+")");
              }
-             matcher.endElement(fCurrentElement, fElementDepth);
+             matcher.endElement(fCurrentElement, fCurrentElementIndex, (SchemaGrammar)fGrammar);
          }
          if (DEBUG_IDENTITY_CONSTRAINTS) {
              System.out.println("<IC>: popping context - element: "+fStringPool.toString(fCurrentElement.rawname));

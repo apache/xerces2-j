@@ -200,10 +200,9 @@ public class Selector {
         // XMLDocumentFragmentHandler methods
         //
     
-        public void startDocumentFragment(StringPool stringPool,
-                                          SchemaGrammar grammar)
+        public void startDocumentFragment(StringPool stringPool)
             throws Exception {
-            super.startDocumentFragment(stringPool,grammar);
+            super.startDocumentFragment(stringPool);
             fElementDepth = 0;
             fMatchedDepth = -1;
         } // startDocumentFragment(StringPool,NamespacesScope)
@@ -215,12 +214,15 @@ public class Selector {
          * 
          * @param element    The name of the element.
          * @param attributes The element attributes.
+         * @param handle:  beginning of the attribute list 
+         * @param elemIndex:  index of the element holding these attributes
+         * @param grammar:  the SchemaGrammar that all this is being validated by
          *
          * @throws SAXException Thrown by handler to signal an error.
          */
         public void startElement(QName element, XMLAttrList attributes, 
-                                 int handle, int scope) throws Exception {
-            super.startElement(element, attributes, handle, scope);
+                                 int handle, int elemIndex, SchemaGrammar grammar) throws Exception {
+            super.startElement(element, attributes, handle, elemIndex, grammar);
             fElementDepth++;
     
             // activate the fields, if selector is matched
@@ -231,14 +233,14 @@ public class Selector {
                 for (int i = 0; i < count; i++) {
                     Field field = fIdentityConstraint.getFieldAt(i);
                     XPathMatcher matcher = fFieldActivator.activateField(field);
-                    matcher.startElement(element, attributes, handle, scope);
+                    matcher.startElement(element, attributes, handle, elemIndex, grammar);
                 }
             }
     
         } // startElement(QName,XMLAttrList,int)
     
-        public void endElement(QName element, int scope) throws Exception {
-            super.endElement(element, scope);
+        public void endElement(QName element, int elemIndex, SchemaGrammar grammar) throws Exception {
+            super.endElement(element, elemIndex, grammar);
             if (fElementDepth-- == fMatchedDepth) {
                 fMatchedDepth = -1;
                 fFieldActivator.endValueScopeFor(fIdentityConstraint);
