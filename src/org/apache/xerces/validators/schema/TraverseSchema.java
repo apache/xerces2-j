@@ -143,8 +143,8 @@ public class TraverseSchema implements
         { SchemaSymbols.URI_SCHEMAFORSCHEMA, SchemaSymbols.ELT_KEY },
         { SchemaSymbols.URI_SCHEMAFORSCHEMA, SchemaSymbols.ELT_KEYREF },
     };
-    private static final String redefIdentifier = "_redefined";
-
+    // hopefully a string people will not use in their names very often...
+    private static final String redefIdentifier = "_fn3dktizrknc9pi";
     // Flags for handleOccurrences to indicate any special
     // restrictions on minOccurs and maxOccurs relating to "all".
     //    NOT_ALL_CONTEXT    - not processing an <all>
@@ -678,7 +678,7 @@ public class TraverseSchema implements
 
 
         //fScopeCount++;
-        fCurrentScope = -1;
+        // fCurrentScope = -1;
 
 
         //extract all top-level attribute, attributeGroup, and group Decls and put them in the 3 hasn table in the SchemaGrammar.
@@ -1028,7 +1028,7 @@ public class TraverseSchema implements
                 if (fSchemaInfoListRoot == null) {
                     fSchemaInfoListRoot = new SchemaInfo(fElementDefaultQualified, fAttributeDefaultQualified,
                         fBlockDefault, fFinalDefault,
-                        fCurrentScope, fCurrentSchemaURL, fSchemaRootElement,
+                        fCurrentSchemaURL, fSchemaRootElement,
                         fNamespacesScope, null, null);
                     fCurrentSchemaInfo = fSchemaInfoListRoot;
                 }
@@ -1038,7 +1038,7 @@ public class TraverseSchema implements
                 // and now we'd better save this stuff!
                 fCurrentSchemaInfo = new SchemaInfo(fElementDefaultQualified, fAttributeDefaultQualified,
                         fBlockDefault, fFinalDefault,
-                        fCurrentScope, fCurrentSchemaURL, fSchemaRootElement,
+                        fCurrentSchemaURL, fSchemaRootElement,
                         fNamespacesScope, fCurrentSchemaInfo.getNext(), fCurrentSchemaInfo);
                 (fCurrentSchemaInfo.getPrev()).setNext(fCurrentSchemaInfo);
                 traverseIncludedSchema(root);
@@ -1108,7 +1108,7 @@ public class TraverseSchema implements
         }
 
         //fScopeCount++;
-        fCurrentScope = -1;
+        //fCurrentScope = -1;
     } // traverseIncludedSchemaHeader
 
     private void traverseIncludedSchema(Element root) throws Exception {
@@ -1357,7 +1357,7 @@ public class TraverseSchema implements
             // and then save them...
             store.setNext(new SchemaInfo(fElementDefaultQualified, fAttributeDefaultQualified,
                     fBlockDefault, fFinalDefault,
-                    fCurrentScope, fCurrentSchemaURL, fSchemaRootElement,
+                    fCurrentSchemaURL, fSchemaRootElement,
                     fNamespacesScope, null, store));
             (store.getNext()).setPrev(store);
             fCurrentSchemaInfo = store.getNext();
@@ -1384,7 +1384,7 @@ public class TraverseSchema implements
         if (fSchemaInfoListRoot == null) {
             fSchemaInfoListRoot = new SchemaInfo(fElementDefaultQualified, fAttributeDefaultQualified,
                     fBlockDefault, fFinalDefault,
-                    fCurrentScope, fCurrentSchemaURL, fSchemaRootElement,
+                    fCurrentSchemaURL, fSchemaRootElement,
                     fNamespacesScope, null, null);
             openRedefinedSchema(redefineDecl, fSchemaInfoListRoot);
             if(!fRedefineSucceeded)
@@ -1883,6 +1883,8 @@ public class TraverseSchema implements
 
          if (importedGrammar == null) {
              importedGrammar = new SchemaGrammar();
+         } else {
+             return;
          }
 
          DOMParser parser = new IgnoreWhitespaceParser();
@@ -8673,20 +8675,18 @@ throws Exception {
         private String savedSchemaURL = fCurrentSchemaURL;
         private boolean saveElementDefaultQualified = fElementDefaultQualified;
         private boolean saveAttributeDefaultQualified = fAttributeDefaultQualified;
-        private int saveScope = fCurrentScope;
         private int saveBlockDefault = fBlockDefault;
         private int saveFinalDefault = fFinalDefault;
         private NamespacesScope saveNamespacesScope = fNamespacesScope;
 
         public SchemaInfo ( boolean saveElementDefaultQualified, boolean saveAttributeDefaultQualified,
                 int saveBlockDefault, int saveFinalDefault,
-                int saveScope, String savedSchemaURL, Element saveRoot,
+                String savedSchemaURL, Element saveRoot,
                 NamespacesScope saveNamespacesScope, SchemaInfo nextRoot, SchemaInfo prevRoot) {
             this.saveElementDefaultQualified = saveElementDefaultQualified;
             this.saveAttributeDefaultQualified = saveAttributeDefaultQualified;
             this.saveBlockDefault = saveBlockDefault;
             this.saveFinalDefault = saveFinalDefault;
-            this.saveScope  = saveScope ;
             this.savedSchemaURL = savedSchemaURL;
             this.saveRoot  = saveRoot ;
             if(saveNamespacesScope != null)
@@ -8711,7 +8711,6 @@ throws Exception {
         // NOTE:  this has side-effects!!!
         public void restore() {
             fCurrentSchemaURL = savedSchemaURL;
-            fCurrentScope = saveScope;
             fElementDefaultQualified = saveElementDefaultQualified;
             fAttributeDefaultQualified = saveAttributeDefaultQualified;
             fBlockDefault = saveBlockDefault;
