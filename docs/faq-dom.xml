@@ -344,5 +344,41 @@ document.normalizeDocument();
     </a>
   </faq>
 
+<faq title='Making getElementById() work'>
+  <q>Why does not getElementById()  work for documents validated against XML Schemas?</q>
+  <a>
+  <p>Make sure the <link idref='features' anchor="validation">validation feature</link> and the 
+<link idref='features' anchor="validation.schema">schema feature</link> are turned on before you parse a document.
+   
+  </p>
+  <p>Xerces does not <em>yet</em> provide a way to set an ID attribute after the document was loaded.
+  </p>
+  <!--
+   <p>According to the XML Schema specification, an instance document might have
+more than one <jump href="http://www.w3.org/TR/xmlschema-1/#key-vr">validation root</jump> and 
+it specifies that the 
+<jump href="http://www.w3.org/TR/xmlschema-1/#cvc-id">ID/IDREFS</jump> must be 
+unique within the context of a particular validation root, meaning that a 
+document may contain multiple identical ids. In this case, the output 
+of getElementById() is unspecified. On the other hand, if the document root is 
+a validation root of the document, getElementById() should work as expected.
 
+During loading there is no way (currently) so specify validation roots
+in Xerces, thus Xerces always treats the document root as validation
+root. 
+However, in the future it is possible to give XPath expression
+specifying at what elements validation should start. For example:
+
+<documentRoot> 
+<validationRoot_1>Some Data</validationRoot_1>
+<validationRoot_2>Some Data</validationRoot_2>
+<documentRoot>
+
+In this case, ID/IDREF must be unique in the scope of validationRoot_1
+or in scope of validationRoot_2, however ID/IDREF table might not be
+unique for documentRoot.
+-->
+  
+  </a>
+ </faq>
 </faqs>

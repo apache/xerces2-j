@@ -92,19 +92,7 @@
    </p>
   </a>
  </faq> 
-<faq title='IDs and XML Schemas'>
-  <q>Why does getElementById() not always work for documents validated against XML Schemas?</q>
-  <a>
-   <p>According to the XML Schema specification, an instance document might have
-more than one <jump href="http://www.w3.org/TR/xmlschema-1/#key-vr">validation root</jump> and 
-<jump href="http://www.w3.org/TR/xmlschema-1/#cvc-id">ID/IDREFS</jump> must be 
-unique only within the context of a particular validation root, meaning that a 
-document may potentially contain multiple identical ids. In this case, the output 
-of getElementById() is unspecified. On the other hand, if the document root is 
-a validation root of the document, getElementById() should work as expected.
-    </p>
-  </a>
- </faq>
+
  
 <faq title='PSVI'>
   <q>How do I get access to the PSVI?</q>
