@@ -587,7 +587,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                 }
             }
             else if (name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
-                    || name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)) {
+                        || name.equals(Constants.DOM_WELLFORMED)) {
                 if (!state) { // false is not supported
                     String msg =
                         DOMMessageFormatter.formatMessage(
@@ -821,9 +821,12 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 		else if (
 			name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
 				|| name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)) {
-			return Boolean.TRUE;
-
-		}
+			return Boolean.TRUE;    
+		}//well formed ness is always true
+        else if (name.equals(Constants.DOM_WELLFORMED)) {
+            return Boolean.TRUE ;
+        }
+        
 		else if (name.equals(Constants.DOM_ERROR_HANDLER)) {
             return fErrorHandlerWrapper.getErrorHandler();
 		}
@@ -862,6 +865,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
      * canSetParameter
      */
 	public boolean canSetParameter(String name, Object state) {
+        //parameters whose value can be set to either 'true' or 'false'
 		if (name.equals(Constants.DOM_COMMENTS)
 			|| name.equals(Constants.DOM_DATATYPE_NORMALIZATION)
 			|| name.equals(Constants.DOM_CDATA_SECTIONS)
@@ -870,20 +874,24 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 			|| name.equals(Constants.DOM_NAMESPACES)
 			|| name.equals(Constants.DOM_VALIDATE)) {
 			return (state instanceof Boolean) ? true : false;
-		}
+		}//parameter whose 'true' value can not be set.
 		else if (
 			name.equals(Constants.DOM_INFOSET)
 				|| name.equals(Constants.DOM_NORMALIZE_CHARACTERS)
 				|| name.equals(Constants.DOM_CANONICAL_FORM)
-				|| name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)) {
+				|| name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)                
+                ) {
 			if (state instanceof Boolean) {
 				return (state.equals(Boolean.TRUE)) ? false : true;
 			}
 			return false;
-		}
+		} //parameter whose 'false' value can not be set.
 		else if ( name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
 				|| name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)
-                || name.equals(SEND_PSVI)) {
+                || name.equals(SEND_PSVI)
+                //Xerces has no way to avoid well formed ness checks
+                || name.equals(Constants.DOM_WELLFORMED)
+                ) {
 			if (state instanceof Boolean) {
 				return (state.equals(Boolean.TRUE)) ? true : false;
 			}
