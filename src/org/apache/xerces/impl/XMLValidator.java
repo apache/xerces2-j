@@ -109,7 +109,7 @@ public class XMLValidator
     implements XMLComponent, 
                XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
-    //
+    //        
     // Data
     //
 
@@ -758,28 +758,26 @@ public class XMLValidator
             // (1) check that there was an element with a matching id for every
             //   IDREF and IDREFS attr (V_IDREF0)
             //
-            /**
-            if (fValidating ) {
+            
+            if (fValidation ) {
                 try {
-                    this.fValIDRef.validate( null, this.fValidateIDRef );   
-                    this.fValIDRefs.validate( null, this.fValidateIDRef );
+                    fValIDRef.validate();   
+                    fValIDRefs.validate();
                 } catch ( InvalidDatatypeValueException ex ) {
-                    reportRecoverableXMLError( ex.getMajorCode(), ex.getMinorCode(), 
-                                               ex.getMessage() ); 
-
-
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
+                                                    "IDNotUnique",
+                                                    new Object[]{ null, 
+                                                        ex.getMessage() },
+                                                    XMLErrorReporter.SEVERITY_ERROR);
                 }
             }
             
-            try {//Reset datatypes state
-               this.fValID.validate( null, this.fResetID );
-               this.fValIDRef.validate(null, this.fResetIDRef );
-               this.fValIDRefs.validate(null, this.fResetIDRef );
-            } catch ( InvalidDatatypeValueException ex ) {
-                System.err.println("Error re-Initializing: ID,IDRef,IDRefs pools" );
-            }
-            ***/
-            return;
+           fTableOfIDs.clear();
+           fValID.initialize( null);
+           fValIDRef.initialize(null);
+           fValIDRefs.initialize(null);
+           
+           return;
         }
 
         if (fNamespaces) { //If Namespace enable then localName != rawName
@@ -1755,7 +1753,7 @@ public class XMLValidator
                   fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_NMTOKEN ||
                   fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_NOTATION
                   ) {
-                  // validateDTDattribute(element, attrValue, fTempAttDecl);
+                  //validateDTDattribute(element, attrValue, fTempAttDecl);
               }
           }
       }
