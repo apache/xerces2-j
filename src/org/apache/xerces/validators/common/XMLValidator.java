@@ -1661,7 +1661,12 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             while (attDefIndex != -1) {
                 fGrammar.getAttributeDecl(attDefIndex, fTempAttDecl);
                     
-                if (fTempAttDecl.name.localpart == attribute.localpart &&
+                if (fGrammarIsDTDGrammar) {
+                    if (fTempAttDecl.name.rawname == attribute.rawname ) 
+                        return attDefIndex;
+                }
+                else 
+                    if (fTempAttDecl.name.localpart == attribute.localpart &&
                     fTempAttDecl.name.uri == attribute.uri ) {
                     return attDefIndex;
                 }
