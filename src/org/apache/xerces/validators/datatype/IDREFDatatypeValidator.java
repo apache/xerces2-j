@@ -86,7 +86,11 @@ public class IDREFDatatypeValidator extends StringDatatypeValidator {
             Hashtable strFacets = new Hashtable();
             strFacets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATT_COLLAPSE);
             strFacets.put(SchemaSymbols.ELT_PATTERN , "[\\i-[:]][\\c-[:]]*"  );
-            fgStrValidator = new StringDatatypeValidator (null, strFacets, false);
+            try{
+                fgStrValidator = new StringDatatypeValidator (null, strFacets, false);
+            }
+            catch (Exception e){
+            }
         }
     }
 
