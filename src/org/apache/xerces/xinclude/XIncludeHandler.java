@@ -31,6 +31,7 @@ import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.IntStack;
 import org.apache.xerces.util.ParserConfigurationSettings;
 import org.apache.xerces.util.SecurityManager;
+import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.URI;
 import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.util.XMLResourceIdentifierImpl;
@@ -135,22 +136,22 @@ public class XIncludeHandler
     public final static String CURRENT_BASE_URI = "currentBaseURI";
 
     // used for adding [base URI] attributes
-    public final static String XINCLUDE_BASE = "base";
+    public final static String XINCLUDE_BASE = "base".intern();
     public final static QName XML_BASE_QNAME =
         new QName(
             XMLSymbols.PREFIX_XML,
             XINCLUDE_BASE,
-            XMLSymbols.PREFIX_XML + ":" + XINCLUDE_BASE,
+            (XMLSymbols.PREFIX_XML + ":" + XINCLUDE_BASE).intern(),
             NamespaceContext.XML_URI);
     
     // used for adding [language] attributes
-    public final static String XINCLUDE_LANG = "lang";
+    public final static String XINCLUDE_LANG = "lang".intern();
     public final static QName XML_LANG_QNAME = 
         new QName(
-                XMLSymbols.PREFIX_XML,
-                XINCLUDE_LANG,
-                XMLSymbols.PREFIX_XML + ":" + XINCLUDE_LANG,
-                NamespaceContext.XML_URI);
+            XMLSymbols.PREFIX_XML,
+            XINCLUDE_LANG,
+            (XMLSymbols.PREFIX_XML + ":" + XINCLUDE_LANG).intern(),
+            NamespaceContext.XML_URI);
 
     public final static QName NEW_NS_ATTR_QNAME =
         new QName(
@@ -186,6 +187,10 @@ public class XIncludeHandler
     protected static final String ALLOW_UE_AND_NOTATION_EVENTS =
         Constants.SAX_FEATURE_PREFIX
             + Constants.ALLOW_DTD_EVENTS_AFTER_ENDDTD_FEATURE;
+    
+    /** Property identifier: symbol table. */
+    protected static final String SYMBOL_TABLE = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
 
     /** Property identifier: error reporter. */
     protected static final String ERROR_REPORTER =
@@ -244,6 +249,7 @@ public class XIncludeHandler
 
     protected XMLLocator fDocLocation;
     protected XIncludeNamespaceSupport fNamespaceContext;
+    protected SymbolTable fSymbolTable;
     protected XMLErrorReporter fErrorReporter;
     protected XMLEntityResolver fEntityResolver;
     protected SecurityManager fSecurityManager;
@@ -367,6 +373,21 @@ public class XIncludeHandler
             }
         }
         catch (XMLConfigurationException e) {
+        }
+        
+        // Get symbol table.
+        try {
+            SymbolTable value =
+                (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
+            if (value != null) {
+                fSymbolTable = value;
+                if (fChildConfig != null) {
+                    fChildConfig.setProperty(SYMBOL_TABLE, value);
+                }
+            }
+        }
+        catch (XMLConfigurationException e) {
+            fSymbolTable = null;
         }
 
         // Get error reporter.
@@ -523,6 +544,13 @@ public class XIncludeHandler
      */
     public void setProperty(String propertyId, Object value)
         throws XMLConfigurationException {
+        if (propertyId.equals(SYMBOL_TABLE)) {
+            fSymbolTable = (SymbolTable)value;
+            if (fChildConfig != null) {
+                fChildConfig.setProperty(propertyId, value);
+            }
+            return;
+        }
         if (propertyId.equals(ERROR_REPORTER)) {
             setErrorReporter((XMLErrorReporter)value);
             if (fChildConfig != null) {
@@ -1327,7 +1355,8 @@ public class XIncludeHandler
                         ObjectFactory.findClassLoader(),
                         true);
 
-                // use the same error reporter, entity resolver, and security manager.
+                // use the same symbol table, error reporter, entity resolver, and security manager.
+                if (fSymbolTable != null) fChildConfig.setProperty(SYMBOL_TABLE, fSymbolTable);
                 if (fErrorReporter != null) fChildConfig.setProperty(ERROR_REPORTER, fErrorReporter);
                 if (fEntityResolver != null) fChildConfig.setProperty(ENTITY_RESOLVER, fEntityResolver);
                 if (fSecurityManager != null) fChildConfig.setProperty(SECURITY_MANAGER, fSecurityManager);
@@ -1689,6 +1718,9 @@ public class XIncludeHandler
                         QName ns = (QName)NEW_NS_ATTR_QNAME.clone();
                         ns.localpart = prefix;
                         ns.rawname += prefix;
+                        ns.rawname = (fSymbolTable != null) ? 
+                            fSymbolTable.addSymbol(ns.rawname) :
+                            ns.rawname.intern();
                         attributes.addAttribute(
                             ns,
                             XMLSymbols.fCDATASymbol,
