@@ -274,7 +274,7 @@ public abstract class BaseSerializer
 	_format = format;
 	if ( writer == null )
 	    throw new NullPointerException( "Argument 'format' is null." );
-	_writer = new BufferedWriter( writer );
+	_writer = writer;
 
 	// Determine the last printable character based on the output format
 	_lastPrintable = _format.getLastPrintable();
@@ -820,7 +820,6 @@ public abstract class BaseSerializer
 	ElementState state;
 
 	state = content();
-	cdata = state.cdata;
 	// Check if text should be print as CDATA section or unescaped
 	// based on elements listed in the output format (the element
 	// state) or whether we are inside a CDATA section or entity.
@@ -1225,7 +1224,6 @@ public abstract class BaseSerializer
      */
     protected void printDoctypeURL( String url )
     {
-        StringBuffer    result;
         int                i;
 
         _text.append( '"' );
