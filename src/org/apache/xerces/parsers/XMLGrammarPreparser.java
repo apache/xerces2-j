@@ -315,10 +315,9 @@ public class XMLGrammarPreparser {
     // by a grammar loader of a particular type, it will have
     // to retrieve that loader and use the loader's setFeature method.
     public void setFeature(String featureId, boolean value) {
-        Enumeration keys = fLoaders.keys();
-        while(keys.hasMoreElements()){
-            Object key = keys.nextElement();
-            XMLGrammarLoader gl = (XMLGrammarLoader)fLoaders.get(key);
+        Enumeration loaders = fLoaders.elements();
+        while(loaders.hasMoreElements()){
+            XMLGrammarLoader gl = (XMLGrammarLoader)loaders.nextElement();
             try {
                 gl.setFeature(featureId, value);
             } catch(Exception e) {
@@ -335,10 +334,9 @@ public class XMLGrammarPreparser {
     // <p> <strong>An application should use the explicit method
     // in this class to set "standard" properties like error handler etc.</strong>
     public void setProperty(String propId, Object value) {
-        Enumeration keys = fLoaders.keys();
-        while(keys.hasMoreElements()){
-            Object key = keys.nextElement();
-            XMLGrammarLoader gl = (XMLGrammarLoader)fLoaders.get(key);
+        Enumeration loaders = fLoaders.elements();
+        while(loaders.hasMoreElements()){
+            XMLGrammarLoader gl = (XMLGrammarLoader)loaders.nextElement();
             try {
                 gl.setProperty(propId, value);
             } catch(Exception e) {
