@@ -280,11 +280,11 @@ public class XMLChar {
         };
 
         //
-        // SpecialChar ::= '<', '&', '\n', '\r'
+        // SpecialChar ::= '<', '&', '\n', '\r', ']'
         //
 
         int specialChar[] = {
-            '<', '&', '\n', '\r',
+            '<', '&', '\n', '\r', ']',
         };
 
         //
