@@ -107,6 +107,25 @@ catch (SAXException e) {
     property.
    </note>
   </property>
+  <property name='http://apache.org/xml/properties/input-buffer-size'
+            id='input-buffer-size'>
+   <desc>
+    The size of the input buffer in the readers. This determines how many
+    bytes to read for each chunk.
+   </desc>
+   <type>java.lang.Integer</type>
+   <access general='read-write'/>
+   <note>
+    Some tests indicate that a bigger buffer size can improve the parsing
+    performance for relatively large files. The default buffer size
+    in Xerces is 2K. This would give a good performance for small documents
+    (less than 10K). For documents larger than 10K, specifying the buffer
+    size to 4K or 8K will significantly improve the performance. But it's not
+    recommended to set it to a value larger than 16K. For really tiny
+    documents (1K, for example), you can also set it to a value less than 2K,
+    to get the best performance.
+   </note>
+  </property>
  </pcategory>
  <pcategory name='DOM Properties'>
   <property name='http://apache.org/xml/properties/dom/current-element-node'
