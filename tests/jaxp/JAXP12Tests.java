@@ -278,12 +278,5 @@ public class JAXP12Tests extends TestCase implements JAXPConstants {
         }
     }
 
-    /**
-     * Used to run a single test for debuggin.  Remove the "Debug" suffix.
-     */
-    public static Test suiteDebug() {
-        TestSuite suite = new TestSuite();
-        suite.addTest(new JAXP12Tests("testDomParseNoXSD"));
-        return suite;
-    }
+
 }
