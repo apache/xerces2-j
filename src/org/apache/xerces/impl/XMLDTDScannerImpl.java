@@ -1490,14 +1490,14 @@ public class XMLDTDScannerImpl
                 colonName.append(":");
                 colonName.append(fEntityScanner.scanName());
                 reportFatalError("ColonNotLegalWithNS", new Object[] {colonName.toString()});
-            } 
-            if (!skipSeparator(true, !scanningInternalSubset())) {
+                if (!skipSeparator(true, !scanningInternalSubset())) {
+                    reportFatalError("MSG_SPACE_REQUIRED_AFTER_ENTITY_NAME_IN_ENTITYDECL",
+                             new Object[]{name});
+                }
+            } else {
                 reportFatalError("MSG_SPACE_REQUIRED_AFTER_ENTITY_NAME_IN_ENTITYDECL",
                              new Object[]{name});
             }
-        } else {
-            reportFatalError("MSG_SPACE_REQUIRED_AFTER_ENTITY_NAME_IN_ENTITYDECL",
-                             new Object[]{name});
         }
 
         // external id
