@@ -18,7 +18,7 @@ STYLEBOOK_CLPATH = $(TOP)/tools/xalan-0.19.2.jar$(CLPATHSEP)$(TOP)/tools/xerces-
 SB_CLPATH = $(STYLEBOOK_CLPATH)$(CLPATHSEP)$(CLASSPATH)
 
 JAR = jar
-JAVAC = jikes +E -g
+JAVAC = javac
 ifeq ($(JDK12BIN),)
 JAVA12 = java
 JAVADOC12 = javadoc
@@ -47,7 +47,7 @@ SAMPLESJARFILE = xercesSamples.jar
 
 #define the package value	
 PACKAGES = \
-	org.apahce.xerces.framework \
+	org.apache.xerces.framework \
 	org.apache.xerces.parsers \
 	org.apache.xerces.dom \
 	org.apache.xerces.dom.events \
