@@ -69,6 +69,7 @@ package org.apache.xerces.validators.schema;
 public final  class SchemaSymbols {
     public static final String URI_XSI =  "http://www.w3.org/1999/XMLSchema-instance";
     public static final String XSI_SCHEMALOCACTION =  "schemaLocation";
+    public static final String XSI_NONAMESPACESCHEMALOCACTION =  "noNamespaceSchemaLocation";
 
     public static final String ELT_ALL =  "all";
     public static final String ELT_ANNOTATION =  "annotation";
@@ -166,4 +167,21 @@ public final  class SchemaSymbols {
     public static final String ATTVAL_URI =  "uri";
     public static final String ATTVAL_URIREFERENCE =  "uriReference";
     public static final String ATTVAL_EQUIVCLASS = "equivclass";
+
+
+    public static final int			EMPTY_SET = 0;		
+    public static final int			EXTENSION = 1;
+    public static final int			RESTRICTION = 2;
+    public static final int			REPRODUCTION = 4;
+    public static final int			LIST = 8;
+    public static final int			ENUMERATION = 16;
+    public static final int			EQUIVCLASS = 32;
+
+    public static final int			CHOICE = 0;			// group orders
+    public static final int			SEQUENCE = 1;		// group orders
+    public static final int			ALL = 2;			// group orders
+
+    public static final int			INFINITY = -1;		// used for maxOccurs
+
+
 }
