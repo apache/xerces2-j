@@ -322,9 +322,13 @@ implements Locator {
 
 
     /**
-     * skipString
+     * skipString - While no space 
      */
-    public void skipString() {
+    public void skipString() throws IOException {
+        while (  XMLChar.isSpace( this.fPushbackReader.read() ) == false ) {
+           fCharPosition++;
+       }
+
     } // skipString
 
     //
