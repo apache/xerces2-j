@@ -161,7 +161,7 @@ public class TraverseSchema implements
 
     /** Compile to true to debug identity constraints. */
     private static final boolean DEBUG_IDENTITY_CONSTRAINTS = false;
-    private static final boolean DEBUG_NEW_GROUP = false;
+    private static final boolean DEBUG_NEW_GROUP = true;
 
     /**
      * Compile to true to debug datatype validator lookup for
@@ -6388,12 +6388,12 @@ throws Exception {
                                                  eltName.localpart,fCurrentScope);
 
                if (existingEltNdx > -1) {
-                 if (!checkDuplicateElementTypes(existingEltNdx,eTypeInfo,edv)) {
+                 if (!checkDuplicateElementTypes(existingEltNdx,eTypeInfo,edv)) 
  
                     reportGenericSchemaError("duplicate element decl in the same scope with different types : " +
                                               fStringPool.toString(eltName.localpart));
                }
-               else 
+               else  {
                  fSchemaGrammar.cloneElementDecl(elementIndex,fCurrentScope);
                }
             }
@@ -7892,7 +7892,7 @@ throws Exception {
 
     private void findAndCreateElements(int csIndex, int scope) {
 
-        if (csIndex<0) {
+        if (csIndex<0 || fCurrentScope==TOP_LEVEL_SCOPE) {
            return;
         }
 
