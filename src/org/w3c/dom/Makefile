@@ -1,4 +1,3 @@
-include ../../../../src/Makefile.incl
 # Makefile for directory ./org/w3c/dom
 #
 # This makefile depends on the following environment variables
@@ -42,8 +41,6 @@ compile: ${TARGETS}
 
 .java.class:
 	${JAVAC} $<
-
-	touch ../../../../src/classfiles_updated
 
 clean:
 	${RM} *.class
