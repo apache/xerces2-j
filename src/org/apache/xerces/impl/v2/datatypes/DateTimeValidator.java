@@ -270,7 +270,9 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
                                                             "' does not match regular expression facet " + fRegex.getPattern() );
             }
             //validate against base type
-            ((DateTimeValidator)this.fBaseValidator).validateDate( date, content);
+            if (!(fBaseValidator instanceof AnySimpleType)) {            
+                ((DateTimeValidator)this.fBaseValidator).validateDate( date, content);
+            }
             if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION ) != 0 ) {
                 int count=0;
                 boolean valid = false;

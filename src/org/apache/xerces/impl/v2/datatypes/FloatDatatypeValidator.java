@@ -170,7 +170,7 @@ public class FloatDatatypeValidator extends AbstractNumericValidator {
     protected void checkContent(String content, Object state, Vector enumeration, boolean asBase)
     throws InvalidDatatypeValueException {
         // validate against parent type if any
-        if ( this.fBaseValidator != null ) {
+        if ( this.fBaseValidator != null && !(fBaseValidator instanceof AnySimpleType)) {
             // validate content as a base type
             ((FloatDatatypeValidator)fBaseValidator).checkContent(content, state, enumeration, true);
         }
