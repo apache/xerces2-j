@@ -7,6 +7,14 @@
         TBD
     </desc>
     <changes>
+        <update>
+          <note>
+          Added xni.XMLDocumentHandler.setDocumentSource/getDocumentSource and
+          XMLDocumentSource.getDocumentHandler methods to allow to modify Xerces 
+          pipeline dynamically.
+          </note>
+          <submitter name='Elena Litani'/>
+        </update>
         <add>
           <note>Store PSVI in DOM tree: when the new DOM document is used,
                 element/attribute nodes can be casted to Element/AttributePSVI
@@ -74,20 +82,36 @@
           <submitter name='Elena Litani'/>
         </add>
         <update>
+            <note>
+                Applied fixes to JAXP, SAX and internal
+                object factory code so that it behaves correctly
+                in environments where AccessControllers are being
+                used.  These fixes make it no longer possible to
+                compile Xerces under JDK 1.1.8.
+            </note>
+            <submitter name="Edwin Goei, Neil Graham"/>
+        </update>
+        <update>
           <note>Reorganize the code again to allow to build Xerces with DOM Level 3 support and 
              modifying the build.xml to replace import statements in the source code.
           </note>
           <submitter name='Elena Litani'/>
         </update>
-
         <update>
-          <note>
-          Added xni.XMLDocumentHandler.setDocumentSource/getDocumentSource and
-          XMLDocumentSource.getDocumentHandler methods to allow to modify Xerces 
-          pipeline dynamically.
-          </note>
-          <submitter name='Elena Litani'/>
+            <note>
+                Changed various parts of Xerces's implementation so
+                that it is now statically immutable.
+            </note>
+            <submitter name="Neil Graham"/>
         </update>
+
+        <fix>
+            <note>
+                Reorganized identity constraint support to improve both conformance 
+                and performance.
+            </note>
+            <submitter name="neil Graham"/>
+        </fix>
         <fix>
             <note>General bug fixes.
             </note>
