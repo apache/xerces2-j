@@ -2,9 +2,12 @@
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
-  <release version="TBD">
+  <release version="2.0.2">
     <desc>
-      This release fixes a number of bugs, and adds some functionality.
+      In this release, numerous bugs have been fixed.  Only one minor change in the Xerces
+      Native Interface is included (documented below); considerable
+      new functionality has also been added in terms of PSVI support, DOM level 3, and
+      grammar preparsing/caching.
     </desc>
     <changes>
       <add>
@@ -36,6 +39,14 @@
         <submitter name='Lisa Martin'/>
       </add>
       <add>
+        <note>Added XMLGrammarLoader interface to the xni.grammars package; refactor DTD and 
+          Schema validation code to create classes implementing this interface; created
+          a convenience class (XMLGrammarPreparser) that uses the new grammar loaders to permit grammar preparsing;
+          wrote a sample (xni.XMLGrammarBuilder) that demonstrates how all this works.
+        </note>
+        <submitter name="Neil Graham"/>
+      </add>
+      <add>
         <note>
           Reorganized the code in Xerces DOM implementation to expose DOM Level 3
           functionality via org.w3c.dom package.
@@ -60,6 +71,14 @@
 	  proxy class so that the parser and components can be properly layered.
 	</note>
 	<submitter name='Andy Clark'/>
+      </update>
+      <update>
+        <note>
+            Moved from the org.xml.sax.helpers.AttributesImpl shipped with SAX 2.0 to that
+            shipping in 2.0.1.  This solves problems encountered with creating empty
+            attribute lists.
+        </note>
+        <submitter name="Neil Graham"/>
       </update>
       <update>
 	<note>
