@@ -95,105 +95,121 @@ import org.apache.xerces.impl.validation.InvalidDatatypeValueException;
  * @see org.apache.xerces.impl.validation.grammars.DTDGrammar
  * @see org.apache.xerces.impl.validation.grammars.SchemaGrammar
  */
-public class ENTITYDatatypeValidator extends AbstractDatatypeValidator {
-   private DatatypeValidator        fBaseValidator    = null;
-   private Grammar                  fGrammar          = null;
-   private XMLEntityDecl            fEntityDecl       = new XMLEntityDecl();
+public class ENTITYDatatypeValidator extends AbstractDatatypeValidator 
+implements StatefullDatatypeValidator {
+    private DatatypeValidator        fBaseValidator    = null;
+    private Grammar                  fGrammar          = null;
+    private XMLEntityDecl            fEntityDecl       = new XMLEntityDecl();
 
-   public ENTITYDatatypeValidator () throws InvalidDatatypeFacetException {
-      this( null, null, false ); // Native, No Facets defined, Restriction
-   }
+    public ENTITYDatatypeValidator () throws InvalidDatatypeFacetException {
+        this( null, null, false ); // Native, No Facets defined, Restriction
+    }
 
-   public ENTITYDatatypeValidator ( DatatypeValidator base, Hashtable facets,
-                                    boolean derivedByList  ) throws InvalidDatatypeFacetException {
-      setBasetype( base ); // Set base type
-   }
+    public ENTITYDatatypeValidator ( DatatypeValidator base, Hashtable facets,
+                                     boolean derivedByList  ) throws InvalidDatatypeFacetException {
+        setBasetype( base ); // Set base type
+    }
 
 
-   /**
-    * <P>Checks that "content" string is valid
-    * datatype.
-    * If invalid a Datatype validation exception is thrown.</P>
-    * <P>The following constrain is checked:
-    * ENTITY values must match an unparsed entity 
-    * name that is declared in the schema.</P> 
-    * 
-    * @param content A string containing the content to be validated
-    * @param state
-    * @exception throws InvalidDatatypeException if the content is
-    *                   invalid according to the rules for the validators
-    * @exception InvalidDatatypeValueException
-    * @see org.apache.xerces.validators.datatype.InvalidDatatypeValueException
-    */
-   public void validate(String content, Object state ) throws InvalidDatatypeValueException{
-      int entityDeclIndex = -1;
-      if ( fGrammar == null ) {
-         InvalidDatatypeValueException error = 
-         new InvalidDatatypeValueException( "ERROR: ENTITYDatatype Validator: Failed Need to call initialize method with a valid Grammar reference" );//Need Message
-         throw error;
-      }
-
-      fEntityDecl.clear();//Reset Entity Decl struct
-
-      entityDeclIndex = fGrammar.getEntityDeclIndex( content );
-
-      if ( entityDeclIndex == -1 ) {
-         fGrammar.getEntityDecl( entityDeclIndex, fEntityDecl );
-         if ( fEntityDecl.notation != null ) {// not unparsed entity
+    /**
+     * <P>Checks that "content" string is valid
+     * datatype.
+     * If invalid a Datatype validation exception is thrown.</P>
+     * <P>The following constrain is checked:
+     * ENTITY values must match an unparsed entity 
+     * name that is declared in the schema.</P> 
+     * 
+     * @param content A string containing the content to be validated
+     * @param state
+     * @exception throws InvalidDatatypeException if the content is
+     *                   invalid according to the rules for the validators
+     * @exception InvalidDatatypeValueException
+     * @see org.apache.xerces.validators.datatype.InvalidDatatypeValueException
+     */
+    public void validate(String content, Object state ) throws InvalidDatatypeValueException{
+        int entityDeclIndex = -1;
+        if (fGrammar == null) {
             InvalidDatatypeValueException error = 
-            new InvalidDatatypeValueException( "ENTITY '"+ content +"' is not unparsed" );
+            new InvalidDatatypeValueException( "ERROR: ENTITYDatatype Validator: Failed Need to call initialize method with a valid Grammar reference" );//Need Message
             throw error;
-         }
-      } else {
-         InvalidDatatypeValueException error = 
-         new InvalidDatatypeValueException( "ENTITY '"+ content +"' is not valid" );
-         throw error;
-      }
-   }
+        }
+
+        fEntityDecl.clear();//Reset Entity Decl struct
+
+        entityDeclIndex = fGrammar.getEntityDeclIndex( content );
+
+        if (entityDeclIndex == -1) {
+            fGrammar.getEntityDecl( entityDeclIndex, fEntityDecl );
+            if (fEntityDecl.notation != null) {// not unparsed entity
+                InvalidDatatypeValueException error = 
+                new InvalidDatatypeValueException( "ENTITY '"+ content +"' is not unparsed" );
+                throw error;
+            }
+        } else {
+            InvalidDatatypeValueException error = 
+            new InvalidDatatypeValueException( "ENTITY '"+ content +"' is not valid" );
+            throw error;
+        }
+    }
+
+    /**
+     * A no-op method in this Datatype
+     */
+    public void validate(){
+    }
+
+
+
+    /**
+     * <P>Initializes internal Grammar reference
+     * This method is unique to ENTITYDatatypeValidator.</P>
+     * <P>This method should  be called before calling the
+     * validate method</P>
+     * 
+     * @param grammar
+     */
+    public void initialize( Object grammar ) {
+        fGrammar = (Grammar) grammar;
+    }
+
+    /**
+     * REVISIT
+     * Compares two Datatype for order
+     * 
+     * @return 
+     */
+    public int compare( String  content1, String content2) {
+        return -1;
+    }
+
+    public Hashtable getFacets() {
+        return null;
+    }
+
+    // Private methods start here
+
+    /**
+       * Returns a copy of this object.
+       */
+    public Object clone() throws CloneNotSupportedException {
+        throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
+    }
+
 
    /**
-    * <P>Initializes internal Grammar reference
-    * This method is unique to ENTITYDatatypeValidator.</P>
-    * <P>This method should  be called before calling the
-    * validate method</P>
-    * 
-    * @param grammar
+    * A no-op method in this validator
     */
-   public void initialize( Grammar grammar ){
-      fGrammar = grammar;
-   }
+    public Object getInternalStateInformation() {
+    return null;
+    }
 
-   /**
-    * REVISIT
-    * Compares two Datatype for order
-    * 
-    * @return 
-    */
-   public int compare( String  content1, String content2){
-      return -1;
-   }
-
-   public Hashtable getFacets(){
-      return null;
-   }
-
-   // Private methods start here
-
-   /**
-      * Returns a copy of this object.
-      */
-   public Object clone() throws CloneNotSupportedException {
-      throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
-   }
-
-
-   /**
-    * 
-    * @param base   the validator for this type's base type
-    */
-   private void setBasetype(DatatypeValidator base){
-      fBaseValidator = base;
-   }
+    /**
+     * 
+     * @param base   the validator for this type's base type
+     */
+    private void setBasetype(DatatypeValidator base) {
+        fBaseValidator = base;
+    }
 
 
 

@@ -80,6 +80,17 @@ import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDTDContentModelFilter;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
 
+import org.apache.xerces.impl.validation.DatatypeValidator;
+import org.apache.xerces.impl.validation.datatypes.DatatypeValidatorFactoryImpl;
+import org.apache.xerces.impl.validation.datatypes.ENTITYDatatypeValidator;
+import org.apache.xerces.impl.validation.datatypes.IDDatatypeValidator;
+import org.apache.xerces.impl.validation.datatypes.IDREFDatatypeValidator;
+import org.apache.xerces.impl.validation.datatypes.ListDatatypeValidator;
+import org.apache.xerces.impl.validation.InvalidDatatypeFacetException;
+import org.apache.xerces.impl.validation.InvalidDatatypeValueException;
+
+
+
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
@@ -208,6 +219,23 @@ public class XMLValidator
     private String fFIXEDSymbol ;
     private String fDATATYPESymbol ;
 
+
+    /** Datatype Registry and attribute validators */
+
+    private DatatypeValidatorFactoryImpl fDataTypeReg;
+    private IDDatatypeValidator          fValID;
+    private IDREFDatatypeValidator       fValIDRef;
+    private ListDatatypeValidator        fValIDRefs;
+    private ENTITYDatatypeValidator      fValENTITY;
+    private ListDatatypeValidator        fValENTITIES;
+    /*
+    private DatatypeValidator            fValNMTOKEN;
+    private DatatypeValidator            fValNMTOKENS;
+    private DatatypeValidator            fValNOTATION;
+    */
+
+
+
     /** DEBUG flags */
     private boolean DEBUG_ATTRIBUTES;
     private boolean DEBUG_ELEMENT_CHILDREN;
@@ -231,7 +259,7 @@ public class XMLValidator
      * 
      * @param componentManager The component manager.
      *
-     * @throws SAXException Thrown by component on initialization error.
+     * @throws SAXException Thrown by component on finitialization error.
      *                      For example, if a feature or property is
      *                      required for the operation of the component, the
      *                      component manager may throw a 
@@ -1991,6 +2019,33 @@ public class XMLValidator
         fREQUIREDSymbol = fSymbolTable.addSymbol("#REQUIRED");
         fFIXEDSymbol = fSymbolTable.addSymbol("#FIXED");
         fDATATYPESymbol = fSymbolTable.addSymbol("<<datatype>>");
+
+        //Initialize Validators
+        //Datatype Registry
+
+        fDataTypeReg = 
+        DatatypeValidatorFactoryImpl.getDatatypeRegistry();
+        fDataTypeReg.resetRegistry();
+
+        fValID       = (IDDatatypeValidator) fDataTypeReg.getDatatypeValidator("ID" );
+        fValIDRef    = (IDREFDatatypeValidator) fDataTypeReg.getDatatypeValidator("IDREF" );
+        fValIDRefs   = (ListDatatypeValidator) fDataTypeReg.getDatatypeValidator("IDREFS" );
+        fValENTITY   = (ENTITYDatatypeValidator) fDataTypeReg.getDatatypeValidator("ENTITY" );
+        fValENTITIES = (ListDatatypeValidator) fDataTypeReg.getDatatypeValidator("ENTITIES" );
+        /*
+        fValNMTOKEN  = fDataTypeReg.getDatatypeValidator("NMTOKEN");
+        fValNMTOKENS = fDataTypeReg.getDatatypeValidator("NMTOKENS");
+        fValNOTATION = fDataTypeReg.getDatatypeValidator("NOTATION" );
+        */
+
+
+        //Initialize ENTITY & ENTITIES Validatorh
+        
+        fValID.initialize(null);
+        fValIDRef.initialize( fValID.getInternalStateInformation() );
+        fValENTITY.initialize(fCurrentGrammar);
+        fValENTITIES.initialize(fCurrentGrammar);
+
     }
 
     /** ensure element stack capacity */

@@ -21,6 +21,7 @@ TARGETS=\
 	UnionDatatypeValidator.class \
 	URIReferenceDatatypeValidator.class \
 	RecurringDurationDatatypeValidator.class\
+	StatefullDatatypeValidator.class\
 	TimeDurationDatatypeValidator.class\
 	DatatypeValidatorFactoryImpl.class
 

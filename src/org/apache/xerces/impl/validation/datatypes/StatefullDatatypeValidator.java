@@ -55,103 +55,37 @@
  * <http://www.apache.org/>.
  */
 
-
 package org.apache.xerces.impl.validation.datatypes;
 
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Locale;
-import java.util.StringTokenizer;
-import org.apache.xerces.impl.validation.DatatypeValidator;
-import org.apache.xerces.impl.validation.grammars.SchemaSymbols;
-import org.apache.xerces.impl.validation.datatypes.regex.RegularExpression;
 import org.apache.xerces.impl.validation.InvalidDatatypeFacetException;
 import org.apache.xerces.impl.validation.InvalidDatatypeValueException;
-import org.apache.xerces.util.XMLChar;
-import java.util.NoSuchElementException;
+import org.apache.xerces.impl.validation.grammars.SchemaSymbols;
+
 
 
 /**
- * NOTATIONValidator defines the interface that data type validators must obey.
- * These validators can be supplied by the application writer and may be useful as
- * standalone code as well as plugins to the validator architecture.
+ * <P>StatefullDatatypeValidator validates that XML content is a W3C string type.</P>
+ * <P>This interface is implemented by classes that
+ * need to use statefull datatypes</P>
+ * <P>Most datatype are stateless in the sense that
+ * after instantiation all the information required for
+ * validation is passed to the datatype in the validate
+ * method as content</P>
+ * <P>A statefull datatype needs initialization, and 
+ * other stages of validation as well as information about
+ * the instance document<P>
  * 
- * @author Jeffrey Rodriguez-
+ * @author Jeffrey Rodriguez
  * @version $Id$
+ * @see org.apache.xerces.impl.validation.datatypes.ListDatatypeValidator
+ * @see org.apache.xerces.impl.validation.datatypes.IDDatatypeValidator
+ * @see org.apache.xerces.impl.validation.datatypes.IDREFDatatypeValidator
+ * @see org.apache.xerces.impl.validation.datatypes.ENTITYDatatypeValidator
+ * @see org.apache.xerces.impl.validation.DatatypeValidator
  */
- public class NOTATIONDatatypeValidator extends AbstractDatatypeValidator {
-    private DatatypeValidator fBaseValidator = null;
-
-    public NOTATIONDatatypeValidator () throws InvalidDatatypeFacetException {
-        this( null, null, false ); // Native, No Facets defined, Restriction
-    }
-
-    public NOTATIONDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
-         boolean derivedByList ) throws InvalidDatatypeFacetException {
-         setBasetype( base ); // Set base type 
-    }
-
-
-    /**
-     * Checks that "content" string is valid 
-     * datatype.
-     * If invalid a Datatype validation exception is thrown.
-     * 
-     * @param content A string containing the content to be validated
-     * @param derivedBylist
-     *                Flag which is true when type
-     *                is derived by list otherwise it
-     *                it is derived by extension.
-     *                
-     * @exception throws InvalidDatatypeException if the content is
-     *                   invalid according to the rules for the validators
-     * @exception InvalidDatatypeValueException
-     * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
-     */
-    public void validate(String content, Object state ) throws InvalidDatatypeValueException{
-    }
-
-    public Hashtable getFacets(){
-        return null;
-    }
-
-
-
-    /**
-    * set the locate to be used for error messages
-    */
-    public void setLocale(Locale locale){
-    }
-
-    /**
-     * REVISIT
-     * Compares two Datatype for order
-     * 
-     * @param o1
-     * @param o2
-     * @return 
-     */
-    public int compare( String content1, String content2){
-        return -1;
-    }
-  /**
-     * Returns a copy of this object.
-     */
-    public Object clone() throws CloneNotSupportedException {
-        throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
-    }
-
-    /**
-     * Name of base type as a string.
-     * A Native datatype has the string "native"  as its
-     * base type.
-     * 
-     * @param base   the validator for this type's base type
-     */
-
-    private void setBasetype(DatatypeValidator base){
-        fBaseValidator = base;
-    }
-
-
+public interface StatefullDatatypeValidator{
+     public void   validate() throws InvalidDatatypeValueException;
+     public void   initialize( Object documentInstanceInformation );
+     public Object getInternalStateInformation();
 }
+

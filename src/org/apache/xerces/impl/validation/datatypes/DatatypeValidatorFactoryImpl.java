@@ -431,14 +431,14 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
       DatatypeValidator  idData = tstRegistry.getDatatypeValidator( "ID" );
 
       if (  idData != null ) {
-         ((IDDatatypeValidator) idData).initialize();
+         ((IDDatatypeValidator) idData).initialize(null);
          try {
             idData.validate( "a1", null );
             idData.validate( "a2", null );
          } catch ( Exception ex ) {
             ex.printStackTrace();
          }
-         Hashtable tst = (Hashtable)((IDDatatypeValidator) idData).getTableIds();
+         Hashtable tst = (Hashtable)((IDDatatypeValidator) idData).getInternalStateInformation();
          if (tst != null) {
             System.out.println("Table of ID = " + tst.toString());
          }
@@ -455,7 +455,7 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
       DatatypeValidator idRefData = tstRegistry.getDatatypeValidator("IDREF" );
       if( idRefData != null ){
          IDREFDatatypeValidator refData = (IDREFDatatypeValidator) idRefData;
-         refData.initialize( ((IDDatatypeValidator) idData).getTableIds());
+         refData.initialize( ((IDDatatypeValidator) idData).getInternalStateInformation());
          try {
             refData.validate( "a1", null );
             refData.validate( "a2", null );

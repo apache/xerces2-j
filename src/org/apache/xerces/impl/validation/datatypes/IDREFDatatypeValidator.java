@@ -109,7 +109,8 @@ import java.util.NoSuchElementException;
  * @see org.apache.xerces.impl.validation.datatypes.AbstractDatatypeValidator
  * @see org.apache.xerces.impl.validation.DatatypeValidator
  */
-public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
+public class IDREFDatatypeValidator extends AbstractDatatypeValidator
+implements StatefullDatatypeValidator{
    private DatatypeValidator fBaseValidator    = null;
    private Hashtable              fTableOfId   = null; //This is pass to us through the state object
    private Hashtable              fTableIDRefs = null;
@@ -290,6 +291,13 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
    */
    public void setLocale(Locale locale) {
       fLocale = locale;
+   }
+
+   /**
+    * A no-op method in this validator
+    */
+   public Object getInternalStateInformation(){
+       return null;
    }
 
    private String getErrorString(int major, int minor, Object args[]) {

@@ -131,156 +131,166 @@ import java.util.NoSuchElementException;
  * @see org.apache.xerces.impl.validation.DatatypeValidator
  * @see org.apache.xerces.impl.validation.datatypes.IDREFDatatypeValidator
  */
-public class IDDatatypeValidator extends AbstractDatatypeValidator {
-   private DatatypeValidator       fBaseValidator;
-   private Object                  fNullValue;
-   private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
-   private Hashtable               fTableOfId;
-   private Locale                  fLocale;
+public class IDDatatypeValidator extends AbstractDatatypeValidator 
+implements StatefullDatatypeValidator {
+    private DatatypeValidator       fBaseValidator;
+    private Object                  fNullValue;
+    private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
+    private Hashtable               fTableOfId;
+    private Locale                  fLocale;
 
 
 
-   public IDDatatypeValidator () throws InvalidDatatypeFacetException {
-      this( null, null, false ); // Native, No Facets defined, Restriction
-   }
+    public IDDatatypeValidator () throws InvalidDatatypeFacetException {
+        this( null, null, false ); // Native, No Facets defined, Restriction
+    }
 
-   public IDDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
-                                boolean derivedByList ) throws InvalidDatatypeFacetException  {
-   }
-
-
-
-   /**
-    * Checks that "content" string is valid
-    * datatype.
-    * If invalid a Datatype validation exception is thrown.
-    * 
-    * @param content A string containing the content to be validated
-    * @param state  Generic Object state that can be use to pass
-    *               Structures
-    * @return 
-    * @exception throws InvalidDatatypeException if the content is
-    *                   invalid according to the rules for the validators
-    * @exception InvalidDatatypeValueException
-    * @see org.apache.xerces.validators.datatype.InvalidDatatypeValueException
-    */
-   public void validate(String content, Object state ) throws InvalidDatatypeValueException{
-
-      if (!XMLChar.isValidName(content) == true) {//Check if is valid key-[81] EncName ::= [A-Za-z] ([A-Za-z0-9._] | '-')*
-         InvalidDatatypeValueException error =  new
-                                                InvalidDatatypeValueException( "ID is not valid: " + content );
-         throw error;
-      }
-      if (!addId( content) ) { //It is OK to pass a null here
-         InvalidDatatypeValueException error = 
-         new InvalidDatatypeValueException( "ID '" + content +"'  has to be unique" );
-         throw error;
-      }
-   }
-
-   /**
-    * Initializes internal table of IDs used
-    * by ID datatype validator to keep track
-    * of ID's.
-    * This method is unique to IDDatatypeValidator.
-    */
-   public void initialize(){
-      if ( this.fTableOfId != null) {
-         this.fTableOfId.clear();
-      } else {
-         this.fTableOfId = new Hashtable();
-      }
-   }
-
-   /**
-    * REVISIT
-    * Compares two Datatype for order
-    * 
-    * @param o1
-    * @param o2
-    * @return 
-    */
-   public int compare( String content1, String content2){
-      return -1;
-   }
-
-   public Hashtable getFacets(){
-      return null;
-   }
-
-   /**
-      * Return a copy of this object.
-      */
-   public Object clone() throws CloneNotSupportedException {
-      throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
-   }
-
-   /**
-    * This method is unique to IDDatatypeValidator.
-    * It returns a reference to the internal ID table.
-    * This method should be used by the IDREF datatype
-    * validator which needs read access to ID table.
-    * 
-    * @return 
-    */
-   public Object getTableIds(){
-      return fTableOfId;
-   }
-
-
-   /**
-    * Name of base type as a string.
-    * A Native datatype has the string "native"  as its
-    * base type.
-    * 
-    * @param base   the validator for this type's base type
-    */
-   private void setBasetype(DatatypeValidator base){
-      fBaseValidator = base;
-   }
-
-   /**
-    * Adds validated ID to internal table of ID's.
-    * We check ID uniqueness constraint.
-    * 
-    * @param content
-    * @return    If ID validated is not unique we return a false and
-    *         then validate method throws a validation exception.
-    */
-   private boolean addId(String content) {
-      //System.out.println("Added ID = " + content );
-      if ( fTableOfId == null ) {
-         fTableOfId = new Hashtable();//Gain reference to table
-      } else if ( this.fTableOfId.containsKey( content ) ) {
-         //System.out.println("ID - it already has this key =" + content +"table = " + this.fTableOfId  );
-         return false;
-      }
-      if ( this.fNullValue == null ) {
-         fNullValue = new Object();
-      }
-      //System.out.println("Before putting content" + content );
-      try {
-         fTableOfId.put( content, fNullValue ); 
-      } catch ( Exception ex ) {
-         ex.printStackTrace();
-      }
-      return true;
-   } // addId(int):boolean
+    public IDDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
+                                 boolean derivedByList ) throws InvalidDatatypeFacetException  {
+    }
 
 
 
-   /**
-    * set the locate to be used for error messages
-    */
-   public void setLocale(Locale locale) {
-      fLocale = locale;
-   }
+    /**
+     * Checks that "content" string is valid
+     * datatype.
+     * If invalid a Datatype validation exception is thrown.
+     * 
+     * @param content A string containing the content to be validated
+     * @param state  Generic Object state that can be use to pass
+     *               Structures
+     * @return 
+     * @exception throws InvalidDatatypeException if the content is
+     *                   invalid according to the rules for the validators
+     * @exception InvalidDatatypeValueException
+     * @see org.apache.xerces.validators.datatype.InvalidDatatypeValueException
+     */
+    public void validate(String content, Object state ) throws InvalidDatatypeValueException{
+
+        if (!XMLChar.isValidName(content) == true) {//Check if is valid key-[81] EncName ::= [A-Za-z] ([A-Za-z0-9._] | '-')*
+            InvalidDatatypeValueException error =  new
+                                                   InvalidDatatypeValueException( "ID is not valid: " + content );
+            throw error;
+        }
+        if (!addId( content)) { //It is OK to pass a null here
+            InvalidDatatypeValueException error = 
+            new InvalidDatatypeValueException( "ID '" + content +"'  has to be unique" );
+            throw error;
+        }
+    }
+
+    /**
+     * A no-op method in this Datatype
+     */
+    public void validate() throws InvalidDatatypeValueException{
+    }
 
 
-   private String getErrorString(int major, int minor, Object args[]) {
-      //return fMessageProvider.createMessage(fLocale, major, minor, args);
-      return fMessageProvider.formatMessage(fLocale, null, null );
-   }
+    /**
+     * Initializes internal table of IDs used
+     * by ID datatype validator to keep track
+     * of ID's.
+     * This method is unique to IDDatatypeValidator.
+     * 
+     * @param state  This is a dummy parameter.
+     */
+    public void initialize( Object state) {
+        if (this.fTableOfId != null) {
+            this.fTableOfId.clear();
+        } else {
+            this.fTableOfId = new Hashtable();
+        }
+    }
+
+    /**
+     * REVISIT
+     * Compares two Datatype for order
+     * 
+     * @param o1
+     * @param o2
+     * @return 
+     */
+    public int compare( String content1, String content2) {
+        return -1;
+    }
+
+    public Hashtable getFacets() {
+        return null;
+    }
+
+    /**
+       * Return a copy of this object.
+       */
+    public Object clone() throws CloneNotSupportedException {
+        throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
+    }
+
+    /**
+     * This method is unique to IDDatatypeValidator.
+     * It returns a reference to the internal ID table.
+     * This method should be used by the IDREF datatype
+     * validator which needs read access to ID table.
+     * 
+     * @return 
+     */
+    public Object getInternalStateInformation() {
+        return fTableOfId;
+    }
+
+
+    /**
+     * Name of base type as a string.
+     * A Native datatype has the string "native"  as its
+     * base type.
+     * 
+     * @param base   the validator for this type's base type
+     */
+    private void setBasetype(DatatypeValidator base) {
+        fBaseValidator = base;
+    }
+
+    /**
+     * Adds validated ID to internal table of ID's.
+     * We check ID uniqueness constraint.
+     * 
+     * @param content
+     * @return    If ID validated is not unique we return a false and
+     *         then validate method throws a validation exception.
+     */
+    private boolean addId(String content) {
+        //System.out.println("Added ID = " + content );
+        if (fTableOfId == null) {
+            fTableOfId = new Hashtable();//Gain reference to table
+        } else if (this.fTableOfId.containsKey( content )) {
+            //System.out.println("ID - it already has this key =" + content +"table = " + this.fTableOfId  );
+            return false;
+        }
+        if (this.fNullValue == null) {
+            fNullValue = new Object();
+        }
+        //System.out.println("Before putting content" + content );
+        try {
+            fTableOfId.put( content, fNullValue ); 
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return true;
+    } // addId(int):boolean
+
+
+
+    /**
+     * set the locate to be used for error messages
+     */
+    public void setLocale(Locale locale) {
+        fLocale = locale;
+    }
+
+
+    private String getErrorString(int major, int minor, Object args[]) {
+        //return fMessageProvider.createMessage(fLocale, major, minor, args);
+        return fMessageProvider.formatMessage(fLocale, null, null );
+    }
 
 
 }

@@ -297,7 +297,7 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
 
         if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
             if ( fRegex == null || fRegex.matches( content) == false )
-                throw new InvalidDatatypeValueException("Value '"+content+
+               throw new InvalidDatatypeValueException("Value '"+content+
                                                         "' does not match regular expression facet '" + fPattern + "'." );
         }
     }
