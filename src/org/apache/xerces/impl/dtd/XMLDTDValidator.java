@@ -1318,6 +1318,7 @@ public class XMLDTDValidator
 
             String type = getAttributeTypeName(fTempAttDecl);
             attributes.setType(i, type);
+            attributes.getAugmentations(i).putItem(Constants.ATTRIBUTE_DECLARED, Boolean.TRUE);
 
             boolean changedByNormalization = false;
             String oldValue = attributes.getValue(i);

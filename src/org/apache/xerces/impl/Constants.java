@@ -272,12 +272,12 @@ public final class Constants {
     /** Standard URI conformant feature ("standard-uri-conformant"). */
     public static final String STANDARD_URI_CONFORMANT_FEATURE = "standard-uri-conformant";
     
-	/** Internal performance related feature: 
-	 * false - the parser settings (features/properties) have not changed between 2 parses
-	 * true - the parser settings have changed between 2 parses  
-	 * NOTE: this feature should only be set by the parser configuration.
-	 */
-	public static final String PARSER_SETTINGS = "internal/parser-settings";
+    /** Internal performance related feature: 
+     * false - the parser settings (features/properties) have not changed between 2 parses
+     * true - the parser settings have changed between 2 parses  
+     * NOTE: this feature should only be set by the parser configuration.
+     */
+    public static final String PARSER_SETTINGS = "internal/parser-settings";
 
     // xerces properties
 
@@ -361,6 +361,13 @@ public final class Constants {
 
     /* Attribute PSVI is stored in augmentations using string "ATTRIBUTE_PSVI" */
     public final static String ATTRIBUTE_PSVI = "ATTRIBUTE_PSVI";
+    
+    /** 
+     * Boolean indicating whether an attribute is declared in the DTD is stored 
+     * in augmentations using string "ATTRIBUTE_DECLARED". The absence of this
+     * augmentation indicates that the attribute was not declared in the DTD.
+     */
+    public final static String ATTRIBUTE_DECLARED = "ATTRIBUTE_DECLARED";
 
     // XML version constants 
     public final static short XML_VERSION_1_0 = 1;
