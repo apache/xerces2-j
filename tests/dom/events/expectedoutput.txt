@@ -96,18 +96,23 @@ EVT 46: 'DOMSubtreeModified' listener 'Root_E0' target 'Root_E0' while AT_TARGET
 EVT 47: 'DOMSubtreeModified' listener 'Root' target 'Root_E0' while BUBBLING... will bubble
 EVT 48: 'DOMSubtreeModified' listener '#document' target 'Root_E0' while BUBBLING... will bubble
 EVT 49: 'DOMAttrModified' listener '#document' target 'Root_E0' while CAPTURING... will bubble
+	relatedNode='Root_E0_A0="Updated A0 of E0, prepare to be acidulated."'
 	attrName='Root_E0_A0'
 	prevValue='Updated A0 of E0, prepare to be acidulated.'
 EVT 50: 'DOMAttrModified' listener 'Root' target 'Root_E0' while CAPTURING... will bubble
+	relatedNode='Root_E0_A0="Updated A0 of E0, prepare to be acidulated."'
 	attrName='Root_E0_A0'
 	prevValue='Updated A0 of E0, prepare to be acidulated.'
 EVT 51: 'DOMAttrModified' listener 'Root_E0' target 'Root_E0' while AT_TARGET... will bubble
+	relatedNode='Root_E0_A0="Updated A0 of E0, prepare to be acidulated."'
 	attrName='Root_E0_A0'
 	prevValue='Updated A0 of E0, prepare to be acidulated.'
 EVT 52: 'DOMAttrModified' listener 'Root' target 'Root_E0' while BUBBLING... will bubble
+	relatedNode='Root_E0_A0="Updated A0 of E0, prepare to be acidulated."'
 	attrName='Root_E0_A0'
 	prevValue='Updated A0 of E0, prepare to be acidulated.'
 EVT 53: 'DOMAttrModified' listener '#document' target 'Root_E0' while BUBBLING... will bubble
+	relatedNode='Root_E0_A0="Updated A0 of E0, prepare to be acidulated."'
 	attrName='Root_E0_A0'
 	prevValue='Updated A0 of E0, prepare to be acidulated.'
 EVT 54: 'DOMSubtreeModified' listener '#document' target 'Root_E0' while CAPTURING... will bubble
