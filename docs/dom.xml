@@ -2,7 +2,7 @@
 <!DOCTYPE s1 SYSTEM "./dtd/document.dtd">
 <s1 title="Document Object Model">
 <s2 title="Introduction">
-<p> The Xerces2 provides an implementation of the following W3C Document Object Model (DOM) Recommendations:</p>
+<p> Xerces2 provides an implementation of the following W3C Document Object Model (DOM) Recommendations:</p>
 <ul>
 <li><jump href='http://www.w3.org/TR/1998/REC-DOM-Level-1-19981001/'>DOM Level 1 Core and HTML</jump></li>
 <li><jump href='http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/'>DOM Level 2 Core</jump></li>

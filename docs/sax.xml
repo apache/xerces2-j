@@ -2,7 +2,8 @@
 <!DOCTYPE s1 SYSTEM "./dtd/document.dtd">
 <s1 title="SAX">
 <s2 title="Introduction">
-<p>SAX 1.0 and SAX 2.0 Information</p>
+<p> Xerces2 provides an implementation of SAX 2.0.1 and SAX2 Extensions 1.0.</p>
+<p> SAX 1.0 and SAX 2.0 information: </p>
 <ul>
 <li><jump href='http://www.saxproject.org/?selected=sax1'>SAX 1.0 Overview</jump></li>
 <li><jump href='http://www.saxproject.org/?selected=sax2'>SAX 2.0 Changes</jump></li>
