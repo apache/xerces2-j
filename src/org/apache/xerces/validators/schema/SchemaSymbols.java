@@ -70,6 +70,7 @@ public final  class SchemaSymbols {
     public static final String ELT_ALL =  "all";
     public static final String ELT_ANNOTATION =  "annotation";
     public static final String ELT_ANY =  "any";
+    public static final String ELT_WILDCARD = "any";
     public static final String ELT_ANYATTRIBUTE =  "anyAttribute";
     public static final String ELT_ATTRIBUTE =  "attribute";
     public static final String ELT_ATTRIBUTEGROUP =  "attributeGroup";
@@ -103,7 +104,9 @@ public final  class SchemaSymbols {
     public static final String ATT_BASE =  "base";
     public static final String ATT_BLOCK =  "block";
     public static final String ATT_BLOCKDEFAULT =  "blockDefault";
+    public static final String ATT_CONTENT  = "content";
     public static final String ATT_DEFAULT =  "default";
+    public static final String ATT_DERIVEDBY = "derivedBy";
     public static final String ATT_ELEMENTFORMDEFAULT =  "elementFormDefault";
     public static final String ATT_EQUIVCLASS =  "equivClass";
     public static final String ATT_FINAL =  "final";
@@ -123,6 +126,7 @@ public final  class SchemaSymbols {
     public static final String ATT_TARGETNAMESPACE =  "targetNamespace";
     public static final String ATT_TYPE =  "type";
     public static final String ATT_USE =  "use";
+    public static final String ATT_VALUE = "value";
     public static final String ATTVAL_TWOPOUNDANY =  "##any";
     public static final String ATTVAL_TWOPOUNDLOCAL =  "##local";
     public static final String ATTVAL_TWOPOUNDOTHER =  "##other";

@@ -7,6 +7,7 @@ TARGETS=\
 	Schema.class\
 	SchemaMessageProvider.class\
 	SchemaSymbols.class \
+	TraverseSchema.class \
 	XUtil.class
 
 DIRS = 

@@ -78,7 +78,7 @@ import  org.apache.xerces.validators.common.XMLContentModel;
  * 
  * @author Jeffrey Rodriguez
  */
-public abstract class Grammar {
+public  class Grammar {
     private  String                fGrammarID       = null;
     private  Document              fGrammarDocument = null;
     private StringPool             fStringPool      = null;
@@ -105,8 +105,11 @@ public abstract class Grammar {
 
 
 
-    abstract public void                populateGrammar( Node node );
-    abstract public Document            getGrammarDocument();
+    public void                populateGrammar( Node node ) {
+    }
+    public Document            getGrammarDocument() {
+        return null;
+    }
 
 
     /**
