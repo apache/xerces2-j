@@ -292,6 +292,11 @@ public class TraverseSchema implements
         //TO DO, do we need to do anything here?
     }
 
+    public boolean particleEmptiable(int contentSpecIndex) {
+       //TODO
+       return true;
+
+    }
     
 
     private String resolvePrefixToURI (String prefix) throws Exception  {
@@ -3338,22 +3343,22 @@ public class TraverseSchema implements
           String childName = complexContentChild.getLocalName();
 
           if (childName.equals(SchemaSymbols.ELT_GROUP)) {
-               index = expandContentModel(traverseGroupDecl(complexContentChild), 
+               index = handleOccurrences(traverseGroupDecl(complexContentChild), 
                                           complexContentChild);
                attrNode = XUtil.getNextSiblingElement(complexContentChild);
            }
            else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
-               index = expandContentModel(traverseSequence(complexContentChild), 
+               index = handleOccurrences(traverseSequence(complexContentChild), 
                                          complexContentChild);
                attrNode = XUtil.getNextSiblingElement(complexContentChild);
            }
            else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
-               index = expandContentModel(traverseChoice(complexContentChild), 
+               index = handleOccurrences(traverseChoice(complexContentChild), 
                                           complexContentChild);
                attrNode = XUtil.getNextSiblingElement(complexContentChild);
            }
            else if (childName.equals(SchemaSymbols.ELT_ALL)) {
-               index = expandContentModel(traverseAll(complexContentChild), 
+               index = handleOccurrences(traverseAll(complexContentChild), 
                                       complexContentChild);
                attrNode = XUtil.getNextSiblingElement(complexContentChild);
                //TO DO: REVISIT 
@@ -3378,15 +3383,34 @@ public class TraverseSchema implements
        if (typeInfo.baseComplexTypeInfo != null) {
            int baseContentSpecHandle = typeInfo.baseComplexTypeInfo.contentSpecHandle;
 
+           //-------------------------------------------------------------
+           // RESTRICTION
+           //-------------------------------------------------------------
            if (typeInfo.derivedBy == SchemaSymbols.RESTRICTION) {
               // check to see if the baseType permits derivation by restriction
               if((typeInfo.baseComplexTypeInfo.finalSet & SchemaSymbols.RESTRICTION) != 0)
                     throw new ComplexTypeRecoverableError("Derivation by restriction is forbidden by either the base type " + fStringPool.toString(baseName.localpart) + " or the schema");
                
+              // if the content is EMPTY, check that the base is correct 
+              // according to derivation-ok-restriction 5.2
+              if (typeInfo.contentSpecHandle==-2) {
+                 if (!(typeInfo.baseComplexTypeInfo.contentType==XMLElementDecl.TYPE_EMPTY ||
+                     particleEmptiable(baseContentSpecHandle))) {
+                    throw new ComplexTypeRecoverableError("derivation-ok-restrictoin.5.2 Content type of complexType is EMPTY but base is not EMPTY or does not have a particle which is emptiable");
+                 }
+              }
+                      
               //
-              //REVISIT: !!!really hairy stuff to check the particle derivation OK in 5.10
-              //checkParticleDerivationOK();
+              // The hairy derivation by restriction particle constraints
+              // derivation-ok-restriction 5.3
+              //
+              else {
+                //checkParticleDerivationOK();
+              }
            }
+           //-------------------------------------------------------------
+           // EXTENSION
+           //-------------------------------------------------------------
            else {
                // check to see if the baseType permits derivation by extension
                if((typeInfo.baseComplexTypeInfo.finalSet & SchemaSymbols.EXTENSION) != 0)
@@ -3798,7 +3822,9 @@ public class TraverseSchema implements
         }
     }
     
-    private int expandContentModel ( int index, Element particle) throws Exception {
+    // Checks constraints for minOccurs, maxOccurs and expands content model 
+    // accordingly
+    private int handleOccurrences ( int index, Element particle) throws Exception {
         
         String minOccurs = particle.getAttribute(SchemaSymbols.ATT_MINOCCURS).trim();
         String maxOccurs = particle.getAttribute(SchemaSymbols.ATT_MAXOCCURS).trim();    
@@ -3806,7 +3832,6 @@ public class TraverseSchema implements
         int min=1, max=1;
 
         // If minOccurs=maxOccurs=0, no component is specified
-       
         if(minOccurs.equals("0") && maxOccurs.equals("0")){
             return -2;
         }
@@ -3818,117 +3843,46 @@ public class TraverseSchema implements
                 maxOccurs = "1";
         }
 
-
-        int leafIndex = index;
-        //REVISIT: !!! minoccurs, maxoccurs.
-        if (minOccurs.equals("1")&& maxOccurs.equals("1")) {
-
+        try {
+            min = Integer.parseInt(minOccurs);
         }
-        else if (minOccurs.equals("0")&& maxOccurs.equals("1")) {
-            //zero or one
-            index = fSchemaGrammar.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE,
-                                                   index,
-                                                   -1,
-                                                   false);
+        catch (Exception e){
+            reportSchemaError(SchemaMessageProvider.GenericError,
+                              new Object [] { "illegal value for minOccurs or maxOccurs : '" +e.getMessage()+ "' "});
         }
-        else if (minOccurs.equals("0")&& maxOccurs.equals("unbounded")) {
-            //zero or more
-            index = fSchemaGrammar.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE,
-                                                   index,
-                                                   -1,
-                                                   false);
-        }
-        else if (minOccurs.equals("1")&& maxOccurs.equals("unbounded")) {
-            //one or more
-            index = fSchemaGrammar.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE,
-                                                   index,
-                                                   -1,
-                                                   false);
-        }
-        else if (maxOccurs.equals("unbounded") ) {
-            // >=2 or more
-            try {
-                min = Integer.parseInt(minOccurs);
-            }
-            catch (Exception e) {
-                reportSchemaError(SchemaMessageProvider.GenericError,
-                                  new Object [] { "illegal value for minOccurs : '" +e.getMessage()+ "' " });
-            }
-            if (min<2) {
-                //REVISIT: report Error here
-            }
 
-            // => a,a,..,a+
-            index = fSchemaGrammar.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE,
-                   index,
-                   -1,
-                   false);
-
-            for (int i=0; i < (min-1); i++) {
-                index = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ,
-                                                      leafIndex,
-                                                      index,
-                                                      false);
-            }
-
+        if (maxOccurs.equals("unbounded")) {
+           max = SchemaSymbols.OCCURRENCE_UNBOUNDED;
         }
         else {
-            // {n,m} => a,a,a,...(a),(a),...
-            try {
-                min = Integer.parseInt(minOccurs);
-                max = Integer.parseInt(maxOccurs);
-            }
-            catch (Exception e){
-                reportSchemaError(SchemaMessageProvider.GenericError,
-                                  new Object [] { "illegal value for minOccurs or maxOccurs : '" +e.getMessage()+ "' "});
-            }
+           try {
+               max = Integer.parseInt(maxOccurs);
+           }
+           catch (Exception e){
+               reportSchemaError(SchemaMessageProvider.GenericError,
+                                new Object [] { "illegal value for minOccurs or maxOccurs : '" +e.getMessage()+ "' "});
+           }
 
-            // Check that minOccurs isn't greater than maxOccurs.
-            // p-props-correct 2.1
-            if (min > max) {
-                reportGenericSchemaError("p-props-correct:2.1 Value of minOccurs '" + minOccurs + "' must not be greater than value of maxOccurs '" + maxOccurs +"'");
-            }
+           // Check that minOccurs isn't greater than maxOccurs.
+           // p-props-correct 2.1
+           if (min > max) {
+               reportGenericSchemaError("p-props-correct:2.1 Value of minOccurs '" + minOccurs + "' must not be greater than value of maxOccurs '" + maxOccurs +"'");
+           }
 
-            if (max < 1) {
-                reportGenericSchemaError("p-props-correct:2.2 Value of maxOccurs " + maxOccurs + " is invalid.  It must be greater than or equal to 1");
-            }
-
-              
-            if (min==0) {
-                int optional = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE,
-                                                                 leafIndex,
-                                                                 -1,
-                                                                 false);
-                index = optional;
-                for (int i=0; i < (max-min-1); i++) {
-                    index = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ,
-                                                              index,
-                                                              optional,
-                                                              false);
-                }
-            }
-            else {
-                for (int i=0; i<(min-1); i++) {
-                    index = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ,
-                                                          index,
-                                                          leafIndex,
-                                                          false);
-                }
-
-                int optional = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE,
-                                                                 leafIndex,
-                                                                 -1,
-                                                                 false);
-                for (int i=0; i < (max-min); i++) {
-                    index = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ,
-                                                              index,
-                                                              optional,
-                                                              false);
-                }
-            }
+           if (max < 1) {
+               reportGenericSchemaError("p-props-correct:2.2 Value of maxOccurs " + maxOccurs + " is invalid.  It must be greater than or equal to 1");
+           }
         }
 
-        return index;
+        if (fSchemaGrammar.getDeferContentSpecExpansion()) {
+          fSchemaGrammar.setContentSpecMinOccurs(index,min);
+          fSchemaGrammar.setContentSpecMaxOccurs(index,max);
+          return index;
+        }
+        else {
+          return fSchemaGrammar.expandContentModel(index,min,max);
+        }
+
     }
 
 
@@ -6206,7 +6160,7 @@ public class TraverseSchema implements
                               new Object [] { "group", childName });
         }
         if ( ! illegalChild && child != null) {
-            index = expandContentModel( index, child);
+            index = handleOccurrences( index, child);
         }
 
 	contentSpecHolder = new Integer(index);
@@ -6269,7 +6223,7 @@ public class TraverseSchema implements
                               new Object [] { "group", childName });
         }
         if ( ! illegalChild && child != null) {
-            index = expandContentModel( index, child);
+            index = handleOccurrences( index, child);
         }
 
 	contentSpecHolder = new Integer(index);
@@ -6354,7 +6308,7 @@ public class TraverseSchema implements
             }
 
             if (seeParticle) {
-                index = expandContentModel( index, child);
+                index = handleOccurrences( index, child);
             }
             if (left == -2) {
                 left = index;
@@ -6366,8 +6320,12 @@ public class TraverseSchema implements
             }
         }
 
-        if (hadContent && right != -2)
-            left = fSchemaGrammar.addContentSpecNode(csnType, left, right, false);
+        if (hadContent) {
+          if (right != -2) 
+              left = fSchemaGrammar.addContentSpecNode(csnType, left, right, false);
+          else if (fSchemaGrammar.getDeferContentSpecExpansion())
+              left = fSchemaGrammar.addContentSpecNode(csnType, left, -2, false);
+        }
 
         return left;
     }
@@ -6446,7 +6404,7 @@ public class TraverseSchema implements
             }
 
             if (seeParticle) {
-                index = expandContentModel( index, child);
+                index = handleOccurrences( index, child);
             }
             if (left == -2) {
                 left = index;
@@ -6458,9 +6416,13 @@ public class TraverseSchema implements
             }
         }
 
-        if (hadContent && right != -2)
-            left = fSchemaGrammar.addContentSpecNode(csnType, left, right, false);
 
+        if (hadContent) {
+          if (right != -2) 
+              left = fSchemaGrammar.addContentSpecNode(csnType, left, right, false);
+          else if (fSchemaGrammar.getDeferContentSpecExpansion())
+              left = fSchemaGrammar.addContentSpecNode(csnType, left, -2, false);
+        }
         return left;
     }
     
@@ -6517,7 +6479,7 @@ public class TraverseSchema implements
             }
 
             if (seeParticle) {
-                index = expandContentModel( index, child);
+                index = handleOccurrences( index, child);
             }
 			if (index != -2)  {
 	            try {
@@ -6562,6 +6524,10 @@ public class TraverseSchema implements
         System.arraycopy(initialArray, 0, targetArray, 0, size);
         
         if(targetArray.length == 1) {
+          if (fSchemaGrammar.getDeferContentSpecExpansion())
+            return fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE,
+              targetArray[0], -2, false);
+          else
             return targetArray[0];
         } else if (targetArray.length < 1) {
             return -2;

@@ -65,6 +65,7 @@
 package org.apache.xerces.validators.schema;
 
 import org.apache.xerces.framework.XMLContentSpec;
+import org.apache.xerces.validators.common.CMException;
 import org.apache.xerces.utils.NamespacesScope;
 import org.apache.xerces.utils.QName;
 import org.apache.xerces.framework.XMLContentSpec;
@@ -118,6 +119,11 @@ public class SchemaGrammar extends Grammar{
     private int fElementDeclFinalSet[][] = new int[INITIAL_CHUNK_COUNT][];
     private int fElementDeclMiscFlags[][] = new int[INITIAL_CHUNK_COUNT][];
 
+    // additional content spec tables
+    // used if deferContentSpecExansion is enabled
+    private int fContentSpecMinOccurs[][] = new int[INITIAL_CHUNK_COUNT][];
+    private int fContentSpecMaxOccurs[][] = new int[INITIAL_CHUNK_COUNT][];
+
     //ComplexType and SimpleTypeRegistries
     private Hashtable fComplexTypeRegistry = null;
     private Hashtable fAttributeDeclRegistry = null;
@@ -131,12 +137,21 @@ public class SchemaGrammar extends Grammar{
     private NamespacesScope fNamespacesScope = null;
     private String fTargetNamespaceURI = "";
 
+    // Set if we defer min/max expansion for content trees.   This is required if we 
+    // are doing particle derivation checking for schema.
+    private boolean deferContentSpecExpansion = false;
+ 
+
     //
     // Public methods
     //
 
     public NamespacesScope getNamespacesScope(){
         return fNamespacesScope;
+    }
+
+    public boolean getDeferContentSpecExpansion() {
+        return deferContentSpecExpansion;
     }
 
     public String getTargetNamespaceURI(){
@@ -248,12 +263,57 @@ public class SchemaGrammar extends Grammar{
         int index = elementDeclIndex & CHUNK_MASK;
         return fComplexTypeInfo[chunk][index];
     }
-
-
-
-    //
+    
     // Protected methods
     //
+
+    protected int convertContentSpecTree(int contentSpecIndex) {
+
+        // We may want to consider trying to combine this with buildSyntaxTree at some
+        // point (if possible)
+
+        if ((!deferContentSpecExpansion) || (contentSpecIndex<0)) {
+           return contentSpecIndex;
+        }
+
+        getContentSpec( contentSpecIndex, fTempContentSpecNode);
+
+        int minOccurs = getContentSpecMinOccurs(contentSpecIndex);
+        int maxOccurs = getContentSpecMaxOccurs(contentSpecIndex);
+
+        if (fTempContentSpecNode.type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+          return expandContentModel(contentSpecIndex,minOccurs,maxOccurs);
+        }
+        else if (fTempContentSpecNode.type == XMLContentSpec.CONTENTSPECNODE_CHOICE ||
+                 fTempContentSpecNode.type == XMLContentSpec.CONTENTSPECNODE_SEQ) {
+
+          int left = fTempContentSpecNode.value;
+          int right = fTempContentSpecNode.otherValue;
+          int type = fTempContentSpecNode.type;
+
+          left =  convertContentSpecTree(left); 
+
+          if (right == -2)  
+             return expandContentModel(left, minOccurs, maxOccurs);
+
+          right =  convertContentSpecTree(right); 
+
+          fTempContentSpecNode.type = type;
+          fTempContentSpecNode.value = left;
+          fTempContentSpecNode.otherValue = right;
+          setContentSpec(contentSpecIndex, fTempContentSpecNode);
+
+          return expandContentModel(contentSpecIndex, minOccurs, maxOccurs);
+        }
+        else
+          return contentSpecIndex;
+    }
+
+    public void setDeferContentSpecExpansion(boolean defer) {
+        deferContentSpecExpansion = defer;
+    }
+
+
     protected void  setAttributeDeclRegistry(Hashtable attrReg){
         fAttributeDeclRegistry = attrReg;
     }
@@ -376,6 +436,36 @@ public class SchemaGrammar extends Grammar{
         }
     }
 
+    protected void setContentSpecMinOccurs(int contentSpecIndex, int minOccurs) {
+        int chunk = contentSpecIndex >> CHUNK_SHIFT;
+        int index = contentSpecIndex & CHUNK_MASK;
+        ensureContentSpecCapacity(chunk);
+        if (contentSpecIndex > -1 ) {
+            fContentSpecMinOccurs[chunk][index] = minOccurs;
+        }
+    }
+
+    protected int getContentSpecMinOccurs(int contentSpecIndex) {
+        int chunk = contentSpecIndex >> CHUNK_SHIFT;
+        int index = contentSpecIndex & CHUNK_MASK;
+        return fContentSpecMinOccurs[chunk][index];
+    }
+
+    protected int getContentSpecMaxOccurs(int contentSpecIndex) {
+        int chunk = contentSpecIndex >> CHUNK_SHIFT;
+        int index = contentSpecIndex & CHUNK_MASK;
+        return fContentSpecMaxOccurs[chunk][index];
+    }
+
+    protected void setContentSpecMaxOccurs(int contentSpecIndex, int maxOccurs) {
+        int chunk = contentSpecIndex >> CHUNK_SHIFT;
+        int index = contentSpecIndex & CHUNK_MASK;
+        ensureContentSpecCapacity(chunk);
+        if (contentSpecIndex > -1 ) {
+            fContentSpecMaxOccurs[chunk][index] = maxOccurs;
+        }
+    }
+
     //add methods for TraverseSchema
     /**
      *@return elementDecl Index, 
@@ -468,15 +558,119 @@ public class SchemaGrammar extends Grammar{
         
         int contentSpecIndex = createContentSpec();
         setContentSpec(contentSpecIndex, fTempContentSpecNode);
+        setContentSpecMinOccurs(contentSpecIndex, 1);
+        setContentSpecMaxOccurs(contentSpecIndex, 1);
         return contentSpecIndex;
     }
                                                 
+    protected int expandContentModel(int index, int minOccurs, int maxOccurs) {
+  
+        int leafIndex = index;
+
+        if (minOccurs==1 && maxOccurs==1) {
+
+        }
+        else if (minOccurs==0 && maxOccurs==1) {
+            //zero or one
+            index = addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE,
+                                                   index,
+                                                   -1,
+                                                   false);
+        }
+        else if (minOccurs == 0 && maxOccurs==SchemaSymbols.OCCURRENCE_UNBOUNDED) {
+            //zero or more
+            index = addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE,
+                                                   index,
+                                                   -1,
+                                                   false);
+        }
+        else if (minOccurs == 1 && maxOccurs==SchemaSymbols.OCCURRENCE_UNBOUNDED) {
+            //one or more
+            index = addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE,
+                                                   index,
+                                                   -1,
+                                                   false);
+        }
+        else if (maxOccurs == SchemaSymbols.OCCURRENCE_UNBOUNDED) {
+            if (minOccurs<2) {
+                //REVISIT
+            }
+
+            // => a,a,..,a+
+            index = addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE,
+                   index,
+                   -1,
+                   false);
+
+            for (int i=0; i < (minOccurs-1); i++) {
+                index = addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ,
+                                                      leafIndex,
+                                                      index,
+                                                      false);
+            }
+
+        }
+        else {
+            // {n,m} => a,a,a,...(a),(a),...
+
+              
+            if (minOccurs==0) {
+                int optional = addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE,
+                                                                 leafIndex,
+                                                                 -1,
+                                                                 false);
+                index = optional;
+                for (int i=0; i < (maxOccurs-minOccurs-1); i++) {
+                    index = addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ,
+                                                              index,
+                                                              optional,
+                                                              false);
+                }
+            }
+            else {
+                for (int i=0; i<(minOccurs-1); i++) {
+                    index = addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ,
+                                                          index,
+                                                          leafIndex,
+                                                          false);
+                }
+
+                int optional = addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE,
+                                                                 leafIndex,
+                                                                 -1,
+                                                                 false);
+                for (int i=0; i < (maxOccurs-minOccurs); i++) {
+                    index = addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ,
+                                                              index,
+                                                              optional,
+                                                              false);
+                }
+            }
+        }
+
+        return index;
+    }
+
 
     //
     // Private methods
     //
 
     // ensure capacity
+
+    private boolean ensureContentSpecCapacity(int chunk) {
+        try {
+            return fContentSpecMinOccurs[chunk][0] == 0;
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            fContentSpecMinOccurs = resize(fContentSpecMinOccurs, fContentSpecMinOccurs.length * 2);
+            fContentSpecMaxOccurs = resize(fContentSpecMaxOccurs, fContentSpecMaxOccurs.length * 2);
+        } catch (NullPointerException ex) {
+            // ignore
+        }
+        fContentSpecMinOccurs[chunk] = new int[CHUNK_SIZE];
+        fContentSpecMaxOccurs[chunk] = new int[CHUNK_SIZE];
+        return true;
+    }
 
     private boolean ensureElementDeclCapacity(int chunk) {
         try {
