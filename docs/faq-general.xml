@@ -184,5 +184,20 @@ and xni.parser.PSVIConfiguration.
     server on which documents are kept is currently not running etc..
    </p>
   </a>
- </faq>  
+ </faq> 
+ 
+  <faq title='Incomplete character data is received via SAX'>
+  <q>Why SAX parser looses some character data or why the data is split 
+  into several chunks?</q>
+  <a>
+  <p>If you read the <jump href='http://www.saxproject.org/apidoc/org/xml/sax/ContentHandler.html#characters(char[],%20int,%20int)'>SAX</jump> 
+  documentation, you will find that SAX may deliver contiguous text as multiple calls to 
+characters(), for reasons having to do with parser efficiency and input 
+buffering. It is the programmer's responsibility to deal with that 
+appropriately, e.g. by accumulating text until the next non-characters() 
+event.
+ </p>
+  </a>
+  </faq>
+  
 </faqs>
