@@ -82,6 +82,7 @@ import org.apache.xerces.xni.parser.XMLParserConfiguration;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.w3c.dom.ls.LSException;
 import org.w3c.dom.ls.LSParser;
 import org.w3c.dom.ls.LSParserFilter;
 import org.w3c.dom.ls.LSResourceResolver;
@@ -824,7 +825,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
      * behavior is not defined by this specification.
      *
      */
-    public Document parseURI (String uri)  {
+    public Document parseURI (String uri) throws LSException {
         
         //If DOMParser insstance is already busy parsing another document when this
         // method is called, then raise INVALID_STATE_ERR according to DOM L3 LS spec
@@ -852,6 +853,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
             if (DEBUG) {
                 e.printStackTrace ();
             }
+            throw new LSException(LSException.PARSE_ERR, e.getMessage());
         }
         return getDocument ();
     }
@@ -861,7 +863,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
      * <code>LSInput</code>.
      *
      */
-    public Document parse (LSInput is) {
+    public Document parse (LSInput is) throws LSException {
         
         // need to wrap the LSInput with an XMLInputSource
         XMLInputSource xmlInputSource = dom2xmlInputSource (is);       
@@ -886,8 +888,9 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                 fErrorHandler.getErrorHandler ().handleError (error);
             }
             if (DEBUG) {
-                e.printStackTrace ();
-            }
+                            e.printStackTrace ();
+                        }
+            throw new LSException(LSException.PARSE_ERR, e.getMessage());         
         }
         
         return getDocument ();
@@ -913,7 +916,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
      *   hierarchy (i.e. a Document with more than one document element).
      */
     public Node parseWithContext (LSInput is, Node cnode,
-    short action) throws DOMException {
+    short action) throws DOMException, LSException {
         // REVISIT: need to implement.
         throw new DOMException (DOMException.NOT_SUPPORTED_ERR, "Not supported");
     }
