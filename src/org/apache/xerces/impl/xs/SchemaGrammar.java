@@ -64,6 +64,7 @@ import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.SymbolHash;
 
 import org.apache.xerces.xni.grammars.Grammar;
+import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 
 import java.util.Hashtable;
 
@@ -100,6 +101,9 @@ public class SchemaGrammar implements Grammar {
     //REVISIT: still need to decide on it.
     Hashtable fGlobalTypeDecls;
 
+    // the XMLGrammarDescription member
+    XSDDescription fGrammarDescription = null;
+
     //
     // Constructors
     //
@@ -109,10 +113,14 @@ public class SchemaGrammar implements Grammar {
      *
      * @param symbolTable
      * @param targetNamespace
+     * @param grammarDesc the XMLGrammarDescription corresponding to this objec
+     * 		at the least a systemId should always be known.
      */
-    public SchemaGrammar(SymbolTable symbolTable, String targetNamespace) {
+    public SchemaGrammar(SymbolTable symbolTable, String targetNamespace,
+    		XSDDescription grammarDesc) {
         fSymbolTable = symbolTable;
         fTargetNamespace = targetNamespace;
+        fGrammarDescription = grammarDesc;
 
         // REVISIT: do we know the numbers of the following global decls
         // when creating this grammar? If so, we can pass the numbers in,
@@ -140,6 +148,8 @@ public class SchemaGrammar implements Grammar {
     protected SchemaGrammar(SymbolTable symbolTable) {
         fSymbolTable = symbolTable;
         fTargetNamespace = SchemaSymbols.URI_SCHEMAFORSCHEMA;
+	//REVISIT:  will we ever need non-null values in this XSDDescription object?
+	fGrammarDescription = new XSDDescription();
 
         fGlobalAttrDecls  = new SymbolHash(1);
         fGlobalAttrGrpDecls = new SymbolHash(1);
@@ -155,9 +165,12 @@ public class SchemaGrammar implements Grammar {
     } // <init>(SymbolTable, boolean)
 
     // Grammar methods
-    public String getGrammarType() {
-        return Grammar.XML_SCHEMA;
-    } // getGrammarType():  String
+
+    // return the XMLGrammarDescription corresponding to this
+    // object
+    public XMLGrammarDescription getGrammarDescription() {
+        return fGrammarDescription;
+    } // getGrammarDescription():  XMLGrammarDescription
     // DTDGrammar methods
     public boolean isNamespaceAware () {
         return true;

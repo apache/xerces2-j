@@ -62,6 +62,7 @@ import java.util.Hashtable;
 
 import org.apache.xerces.impl.dtd.XMLAttributeDecl;
 import org.apache.xerces.impl.dtd.XMLNotationDecl;
+import org.apache.xerces.impl.dtd.XMLDTDDescription;
 import org.apache.xerces.impl.dtd.XMLEntityDecl;
 import org.apache.xerces.impl.dtd.XMLSimpleType;
 import org.apache.xerces.impl.dtd.models.CMNode;
@@ -79,6 +80,7 @@ import org.apache.xerces.util.SymbolTable;
 
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.grammars.Grammar;
+import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 
 /**
  * A generic grammar for use in validating XML documents. The Grammar
@@ -139,6 +141,9 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
 
     /** Symbol table. */
     private SymbolTable fSymbolTable;
+
+    // The XMLDTDDescription with which this Grammar is associated
+    protected XMLDTDDescription fGrammarDescription = null;
 
     /** Target namespace of grammar. */
     private String fTargetNamespace;
@@ -274,12 +279,16 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
     /** Default constructor. */
     protected AbstractDTDGrammar(SymbolTable symbolTable) {
         fSymbolTable = symbolTable;
+	// are there really situations in which this is a good idea???  - NG
+	fGrammarDescription = new XMLDTDDescription();
     } // <init>(SymbolTable)
 
     // Grammar methods
-    public String getGrammarType() {
-        return Grammar.XML_DTD;
-    } // getGrammarType():  String
+
+    // return the XMLDTDDescription object with which this is associated
+    public XMLGrammarDescription getGrammarDescription() {
+        return fGrammarDescription;
+    } // getGrammarDescription():  XMLGrammarDescription
 
     //
     // Public methods

@@ -61,6 +61,7 @@ import java.io.IOException;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
+import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.validation.XMLGrammarPoolImpl;
@@ -278,7 +279,7 @@ public class XMLGrammarCachingConfiguration
     public Grammar parseGrammar(String type, XMLInputSource
                 is) throws XNIException, IOException {
        // REVISIT:  for now, don't know what to do with DTD's...
-       if(!type.equals(Grammar.XML_SCHEMA))
+       if(!type.equals(XMLGrammarDescription.XML_SCHEMA))
             return null;
        if (fSchemaHandler == null) {
            fXSGrammarBucket = new XSGrammarBucket();
@@ -296,7 +297,7 @@ public class XMLGrammarCachingConfiguration
 
        fXSGrammarBucket.reset();
        // by default, make all XMLGrammarPoolImpl's schema grammars available to fSchemaHandler
-       SchemaGrammar [] grammars = (SchemaGrammar [])(fGrammarPool.retrieveInitialGrammarSet(Grammar.XML_SCHEMA));
+       SchemaGrammar [] grammars = (SchemaGrammar [])(fGrammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA));
        for(int i=0; i<grammars.length; i++ )
             fXSGrammarBucket.putGrammar(grammars[i]);
        fSubGroupHandler.reset();
@@ -312,7 +313,7 @@ public class XMLGrammarCachingConfiguration
            XSConstraints.fullSchemaChecking(fXSGrammarBucket, fSubGroupHandler, fCMBuilder, fErrorReporter);
        }
        // by default, hand it off to the grammar pool
-       fGrammarPool.cacheGrammars(Grammar.XML_SCHEMA, new Grammar [] {grammar});
+       fGrammarPool.cacheGrammars(XMLGrammarDescription.XML_SCHEMA, new Grammar [] {grammar});
        return grammar;
 
     }

@@ -58,6 +58,7 @@
 package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
+import org.apache.xerces.util.XMLResourceIdentifierImpl;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 
@@ -67,7 +68,8 @@ import org.apache.xerces.xni.XMLAttributes;
  * @author Neil Graham, IBM
  * @version $Id$
  */
-public class XSDDescription implements XMLGrammarDescription {
+public class XSDDescription extends XMLResourceIdentifierImpl 
+		implements XMLGrammarDescription {
     // used to indicate what triggered the call
     /**
      * Indicate that the current schema document is <include>d by another
@@ -120,34 +122,13 @@ public class XSDDescription implements XMLGrammarDescription {
      */
     public final static short CONTEXT_XSITYPE   = 7;
 
-    /** Returns the public identifier. */
-    public String getPublicId() {
-        return null;
-    }
-
-    /** Returns the expanded system identifier. */
-    public String getExpandedSystemId() {
-        return null;
-    }
-
-    /** Returns the literal system identifier. */
-    public String getLiteralSystemId() {
-        return null;
-    }
-
-    /** <p> Returns the base URI against which the literal SystemId is to be 
-        resolved. </p> */
-    public String getBaseSystemId() {
-        return null;
-    }
-
     /**
      * the type of the grammar (e.g., DTD or XSD);
      *  
      * @see org.apache.xerces.xni.grammars.Grammar
      */
     public String getGrammarType() {
-        return null;
+        return XMLGrammarDescription.XML_SCHEMA;
     }
 
     /**

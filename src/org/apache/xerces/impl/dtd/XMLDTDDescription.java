@@ -58,7 +58,6 @@
 package org.apache.xerces.impl.dtd;
 
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
-import org.apache.xerces.xni.grammars.Grammar;
 
 /*
  * All information specific to dTD grammars.  
@@ -103,7 +102,7 @@ public class XMLDTDDescription implements XMLGrammarDescription {
     } // getLiteralSystemId():  String
 
     public String getGrammarType () {
-        return Grammar.XML_DTD;
+        return XMLGrammarDescription.XML_DTD;
     } // getGrammarType():  String
 
     // return the root name of this DTD

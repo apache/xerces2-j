@@ -503,7 +503,10 @@ public class XSDHandler {
         currSchemaInfo.addAllowedNS(currSchemaInfo.fTargetNamespace);
 
         if (fGrammarBucket.getGrammar(currSchemaInfo.fTargetNamespace) == null) {
-            SchemaGrammar sg = new SchemaGrammar(fSymbolTable, currSchemaInfo.fTargetNamespace);
+            // REVISIT:  the grammar bucket should have been called
+            // already, when we first tried to do the import (not with
+            // preparse of course).  So this code should be moved!  - NG
+            SchemaGrammar sg = new SchemaGrammar(fSymbolTable, currSchemaInfo.fTargetNamespace, new XSDDescription());
             fGrammarBucket.putGrammar(sg);
         }
         // we got a grammar of the samenamespace in the bucket, should ignore this one
@@ -548,6 +551,14 @@ public class XSDHandler {
                 currSchemaInfo.addAllowedNS(schemaNamespace);
                 // consciously throw away whether was a duplicate; don't care.
                 // pass the systemId of the current document as the base systemId
+                // REVISIT:  We must consult the gtrammar bucket, then the gramar
+                // pool, and only then the entity resolver; this *must* be the
+                // order.  Therefore, the current sequence is *wrong*, since we
+                // consult the EntityResolver, only when we call constructTrees
+                // again consulting Grammar bucket.  So this code needs to be
+                // reworked - NG
+                // i.e., we need to create an XSDDescription, ask Grammar
+                // bucket, ask GrammarPool, then pass that along...
                 newSchemaRoot = getSchema(schemaNamespace, schemaHint, (String)fDoc2SystemId.get(schemaRoot), false, XSDDescription.CONTEXT_IMPORT);
             }
             else if ((localName.equals(SchemaSymbols.ELT_INCLUDE)) ||

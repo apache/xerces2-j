@@ -85,14 +85,8 @@ package org.apache.xerces.xni.grammars;
 
 public interface Grammar {
 
-    // initial set of grammar constants that some configurations will recognize;user
-    // components which create and/or recognize other types of grammars may
-    // certainly use their own constants in place of these (so long as
-    // their Grammar objects implement this interface).
-    public static final String XML_SCHEMA = "XSD";
-    public static final String XML_DTD = "DTD";
-
-    // return the type of this grammar
-    public String getGrammarType();
+    // get the <code>XMLGrammarDescription</code> associated with tihs
+    // object
+    public XMLGrammarDescription getGrammarDescription ();
 } // interface Grammar
 
