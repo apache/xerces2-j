@@ -16,6 +16,7 @@
   </category>
   <category name='Java I/O' package='java.io'>
    <class id='java-io-exception' name='IOException'/>
+   <class id='java-io-reader' name='Reader'/>
   </category>
   <category name='Java Utils' package='java.util'>
    <class id='java-empty-stack-exception' name='EmptyStackException'/>
@@ -241,39 +242,7 @@
  <!-- Category: BASE -->
  <category name='Base' package='&package;.framework'>
 
-  <!--
-  <class id='exception' name='XMLException'>
-   <extends>
-    <reference idref='java-exception'/>
-   </extends>
-   <constructor/>
-   <constructor>
-    <param name='message'>
-     <reference idref='java-string'/>
-    </param>
-   </constructor>
-   <constructor>
-    <param name='exception'>
-     <reference idref='java-exception'/>
-    </param>
-   </constructor>
-   <constructor>
-    <param name='message'>
-     <reference idref='java-string'/>
-    </param>
-    <param name='exception'>
-     <reference idref='java-exception'/>
-    </param>
-   </constructor>
-   <method name='getException'>
-    <returns>
-     <reference idref='java-exception'/>
-    </returns>
-   </method>
-  </class>
-  -->
-
-  <interface id='configurable' name='XMLConfigurable'>
+  <interface id='configurable' name='XMLComponent'>
    <method name='reset'>
     <param name='configurationManager'>
      <reference idref='configuration-manager'/>
@@ -312,7 +281,7 @@
    </method>
   </interface>
 
-  <interface id='configuration-manager' name='XMLConfigurationManager'>
+  <interface id='configuration-manager' name='XMLComponentManager'>
    <method name='getFeature'>
     <param name='featureId'>
      <reference idref='java-string'/>
@@ -450,6 +419,11 @@
      <primitive type='int'/>
     </param>
    </method>
+   <method name='append'>
+    <param name='s'>
+     <reference idref='string'/>
+    </param>
+   </method>
   </class>
 
  </category>
@@ -520,11 +494,6 @@
      <reference idref='message-formatter'/>
     </returns>
    </method>
-   <method name='setErrorHandler'>
-    <param name='errorHandler'>
-     <reference idref='sax-error-handler'/>
-    </param>
-   </method>
    <method name='reportError'>
     <param name='domain'>
      <reference idref='java-string'/>
@@ -556,9 +525,6 @@
     <reference idref='configurable'/>
    </implements>
    <implements>
-    <reference idref='entity-reader-change-listener'/>
-   </implements>
-   <implements>
     <reference idref='document-source'/>
    </implements>
    <field name='fSymbolTable'>
@@ -585,13 +551,6 @@
     <reference idref='document-handler'/>
    </field>
    <constructor/>
-   <!--
-   <method name='setDocumentHandler'>
-    <param name='documentHandler'>
-     <reference idref='document-handler'/>
-    </param>
-   </method>
-   -->
    <method name='scanDocument'>
     <param name='complete'>
      <primitive type='boolean'/>
@@ -606,6 +565,7 @@
      <reference idref='sax-exception'/>
     </throws>
    </method>
+   <!-- REVISIT
    <method name='scanDocumentFragment'>
     <param name='complete'>
      <primitive type='boolean'/>
@@ -620,6 +580,7 @@
      <reference idref='sax-exception'/>
     </throws>
    </method>
+   -->
   </class>
 
   <interface id='document-source' name='XMLDocumentSource'>
@@ -643,8 +604,8 @@
     <param name='encoding'>
      <reference idref='java-string'/>
     </param>
-    <param name='encodingSpecified'>
-     <primitive type='boolean'/>
+    <param name='actualEncoding'>
+     <reference idref='java-string'/>
     </param>
     <param name='standalone'>
      <reference idref='java-string'/>
@@ -655,7 +616,7 @@
    </method>
    <method name='doctypeDecl'>
     <param name='rootElement'>
-     <reference idref='qname'/>    
+     <reference idref='java-string'/>    
     </param>
     <param name='publicId'>
      <reference idref='java-string'/>
@@ -671,11 +632,6 @@
     <param name='text'>
      <reference idref='string'/>
     </param>
-    <!-- REVISIT: Could this be a way of not buffering stuff?
-    <param name='complete'>
-     <primitive type='boolean'/>
-    </param>
-    -->
     <throws>
      <reference idref='sax-exception'/>
     </throws>
@@ -691,7 +647,7 @@
      <reference idref='sax-exception'/>
     </throws>
    </method>
-   <method name='startNamespaceScope'>
+   <method name='startPrefixMapping'>
     <param name='prefix'>
      <reference idref='java-string'/>
     </param>
@@ -740,7 +696,7 @@
      <reference idref='sax-exception'/>
     </throws>
    </method>
-   <method name='endNamespaceScope'>
+   <method name='endPrefixMapping'>
     <param name='prefix'>
      <reference idref='java-string'/>
     </param>
@@ -748,21 +704,7 @@
      <reference idref='sax-exception'/>
     </throws>
    </method>
-   <method name='startEntityReference'>
-    <param name='name'>
-     <reference idref='java-string'/>
-    </param>
-    <param name='publicId'>
-     <reference idref='java-string'/>
-    </param>
-    <param name='systemId'>
-     <reference idref='java-string'/>
-    </param>
-    <throws>
-     <reference idref='sax-exception'/>
-    </throws>
-   </method>
-   <method name='endEntityReference'>
+   <method name='startEntity'>
     <param name='name'>
      <reference idref='java-string'/>
     </param>
@@ -770,12 +712,34 @@
      <reference idref='sax-exception'/>
     </throws>
    </method>
-   <method name='startCDATASection'>
+   <method name='textDecl'>
+    <param name='version'>
+     <reference idref='java-string'/>
+    </param>
+    <param name='encoding'>
+     <reference idref='java-string'/>
+    </param>
+    <param name='actualEncoding'>
+     <reference idref='java-string'/>
+    </param>
     <throws>
      <reference idref='sax-exception'/>
     </throws>
    </method>
-   <method name='endCDATASection'>
+   <method name='endEntity'>
+    <param name='name'>
+     <reference idref='java-string'/>
+    </param>
+    <throws>
+     <reference idref='sax-exception'/>
+    </throws>
+   </method>
+   <method name='startCDATA'>
+    <throws>
+     <reference idref='sax-exception'/>
+    </throws>
+   </method>
+   <method name='endCDATA'>
     <throws>
      <reference idref='sax-exception'/>
     </throws>
@@ -795,7 +759,7 @@
     <reference idref='sax-attributes'/>
    </implements>
    <constructor/>
-   <method name='addAttribute'>
+   <method name='setAttribute'>
     <param name='name'>
      <reference idref='qname'/>
     </param>
@@ -821,6 +785,11 @@
     </param>
     <param name='length'>
      <primitive type='int'/>
+    </param>
+   </method>
+   <method name='removeAttribute'>
+    <param name='name'>
+     <reference idref='qname'/>
     </param>
    </method>
    <method name='clear'/>
@@ -893,6 +862,17 @@
      <primitive type='int'/>
     </returns>
    </method>
+   <method name='getEntityName'>
+    <param name='attrIndex'>
+     <primitive type='int'/>
+    </param>
+    <param name='entityIndex'>
+     <primitive type='int'/>
+    </param>
+    <returns>
+     <reference idref='java-string'/>
+    </returns>
+   </method>
    <method name='getEntityOffset'>
     <param name='attrIndex'>
      <primitive type='int'/>
@@ -922,9 +902,6 @@
     <reference idref='configurable'/>
    </implements>
    <implements>
-    <reference idref='entity-reader-change-listener'/>
-   </implements>
-   <implements>
     <reference idref='dtd-source'/>
    </implements>
    <implements>
@@ -946,10 +923,6 @@
     <note>This field is initialized on reset.</note>
     <reference idref='grammar-pool'/>
    </field>
-   <field name='fNamespaces'>
-    <note>This field is initialized on reset.</note>
-    <primitive type='boolean'/>
-   </field>
    <field name='fDTDHandler'>
     <reference idref='dtd-handler'/>
    </field>
@@ -957,18 +930,6 @@
     <reference idref='dtd-content-model-handler'/>
    </field>
    <constructor/>
-   <!--
-   <method name='setDTDHandler'>
-    <param name='dtdHandler'>
-     <reference idref='dtd-handler'/>
-    </param>
-   </method>
-   <method name='setDTDContentModelHandler'>
-    <param name='dtdHandler'>
-     <reference idref='dtd-content-model-handler'/>
-    </param>
-   </method>
-   -->
    <method name='scanDTD'>
     <param name='complete'>
      <primitive type='boolean'/>
@@ -1063,8 +1024,8 @@
     </throws>
    </method>
    <method name='elementDecl'>
-    <param name='element'>
-     <reference idref='qname'/>
+    <param name='name'>
+     <reference idref='java-string'/>
     </param>
     <param name='contentModel'>
      <reference idref='string'/>
@@ -1074,22 +1035,22 @@
     </throws>
    </method>
    <method name='startAttlist'>
-    <param name='element'>
-     <reference idref='qname'/>
+    <param name='elementName'>
+     <reference idref='java-string'/>
     </param>
     <throws>
      <reference idref='sax-exception'/>
     </throws>
    </method>
    <method name='attributeDecl'>
-    <param name='element'>
-     <reference idref='qname'/>
+    <param name='elementName'>
+     <reference idref='java-string'/>
     </param>
-    <param name='attribute'>
-     <reference idref='qname'/>
+    <param name='attributeName'>
+     <reference idref='java-string'/>
     </param>
     <param name='type'>
-     <primitive type='short'/>
+     <reference idref='java-string'/>
     </param>
     <param name='enumeration'>
      <array>
@@ -1097,7 +1058,7 @@
      </array>
     </param>
     <param name='defaultType'>
-     <primitive type='short'/>
+     <reference idref='java-string'/>
     </param>
     <param name='defaultValue'>
      <reference idref='string'/>
@@ -1173,21 +1134,8 @@
      <reference idref='sax-exception'/>
     </throws>
    </method>
-   <method name='startParameterEntityReference'>
-    <param name='name'>
-     <reference idref='java-string'/>
-    </param>
-    <param name='publicId'>
-     <reference idref='java-string'/>
-    </param>
-    <param name='systemId'>
-     <reference idref='java-string'/>
-    </param>
-    <throws>
-     <reference idref='sax-exception'/>
-    </throws>
-   </method>
-   <method name='endParameterEntityReference'>
+   <!-- REVISIT: How do we handle these?
+   <method name='startParameterEntity'>
     <param name='name'>
      <reference idref='java-string'/>
     </param>
@@ -1195,7 +1143,16 @@
      <reference idref='sax-exception'/>
     </throws>
    </method>
-   <method name='startConditionalSection'>
+   <method name='endParameterEntity'>
+    <param name='name'>
+     <reference idref='java-string'/>
+    </param>
+    <throws>
+     <reference idref='sax-exception'/>
+    </throws>
+   </method>
+   -->
+   <method name='startConditional'>
     <param name='type'>
      <primitive type='short'/>
     </param>
@@ -1203,7 +1160,7 @@
      <reference idref='sax-exception'/>
     </throws>
    </method>
-   <method name='endConditionalSection'>
+   <method name='endConditional'>
     <throws>
      <reference idref='sax-exception'/>
     </throws>
@@ -1252,8 +1209,8 @@
     <primitive type='short'/>
    </constant>
    <method name='startContentModel'>
-    <param name='element'>
-     <reference idref='qname'/>
+    <param name='elementName'>
+     <reference idref='java-string'/>
     </param>
     <param name='type'>
      <primitive type='short'/>
@@ -1263,8 +1220,8 @@
     </throws>
    </method>
    <method name='mixedElement'>
-    <param name='element'>
-     <reference idref='qname'/>
+    <param name='elementName'>
+     <reference idref='java-string'/>
     </param>
     <throws>
      <reference idref='sax-exception'/>
@@ -1276,8 +1233,8 @@
     </throws>
    </method>
    <method name='childrenElement'>
-    <param name='element'>
-     <reference idref='qname'/>
+    <param name='elementName'>
+     <reference idref='java-string'/>
     </param>
     <throws>
      <reference idref='sax-exception'/>
@@ -1323,6 +1280,9 @@
    <implements>
     <reference idref='sax-locator'/>
    </implements>
+   <field name='fEntityResolver'>
+    <reference idref='sax-entity-resolver'/>
+   </field>
    <field name='fEntityReaders'>
     <collection>
      <collector>
@@ -1330,16 +1290,6 @@
      </collector>
      <items>
       <reference idref='entity-reader'/>
-     </items>
-    </collection>
-   </field>
-   <field name='fEntityReaderChangeListeners'>
-    <collection>
-     <collector>
-      <reference idref='java-vector'/>
-     </collector>
-     <items>
-      <reference idref='entity-reader-change-listener'/>
      </items>
     </collection>
    </field>
@@ -1351,6 +1301,9 @@
     <param name='systemId'>
      <reference idref='java-string'/>
     </param>
+    <param name='baseSystemId'>
+     <reference idref='java-string'/>
+    </param>
     <returns>
      <reference idref='sax-input-source'/>
     </returns>
@@ -1359,6 +1312,31 @@
     </throws>
     <throws>
      <reference idref='sax-exception'/>
+    </throws>
+   </method>
+   <method name='addEntity'>
+    <param name='name'>
+     <reference idref='java-string'/>
+    </param>
+    <param name='publicId'>
+     <reference idref='java-string'/>
+    </param>
+    <param name='systemId'>
+     <reference idref='java-string'/>
+    </param>
+    <param name='baseSystemId'>
+     <reference idref='java-string'/>
+    </param>
+   </method>
+   <method name='createEntityReader'>
+    <param name='entityName'>
+     <reference idref='java-string'/>
+    </param>
+    <returns>
+     <reference idref='entity-reader'/>
+    </returns>
+    <throws>
+     <reference idref='java-io-exception'/>
     </throws>
    </method>
    <method name='createEntityReader'>
@@ -1377,6 +1355,7 @@
      <reference idref='entity-reader'/>
     </param>
    </method>
+   <!-- REVISIT: Is this useful?
    <method name='peekEntityReader'>
     <param name='depth'>
      <primitive type='int'/>
@@ -1385,39 +1364,21 @@
      <reference idref='entity-reader'/>
     </returns>
    </method>
+   -->
    <method name='popEntityReader'>
     <returns>
      <reference idref='entity-reader'/>
     </returns>
    </method>
-   <method name='addEntityReaderChangeListener'>
-    <param name='entityReaderChangeListener'>
-     <reference idref='entity-reader-change-listener'/>
-    </param>
-   </method>
-   <method name='removeEntityReaderChangeListener'>
-    <param name='entityReaderChangeListener'>
-     <reference idref='entity-reader-change-listener'/>
-    </param>
-   </method>
   </class>
 
   <class id='entity-reader' name='XMLEntityReader'>
+   <extends>
+    <reference idref='java-io-reader'/>
+   </extends>
    <implements>
     <reference idref='sax-locator'/>
    </implements>
-   <constant name='SCAN_ATT_COMPLETE'>
-    <primitive type='short'/>
-   </constant>
-   <constant name='SCAN_ATT_CONTENT'>
-    <primitive type='short'/>
-   </constant>
-   <constant name='SCAN_ATT_ENTITY'>
-    <primitive type='short'/>
-   </constant>
-   <field name='fEntityManager'>
-    <reference idref='entity-manager'/>
-   </field>
    <field name='fInputSource'>
     <reference idref='sax-input-source'/>
    </field>
@@ -1434,9 +1395,6 @@
     <primitive type='long'/>
    </field>
    <constructor>
-    <param name='entityManager'>
-     <reference idref='entity-manager'/>
-    </param>
     <param name='inputSource'>
      <reference idref='sax-input-source'/>
     </param>
@@ -1451,115 +1409,7 @@
      <primitive type='long'/>
     </returns>
    </method>
-   <!-- REVISIT
-   <method name='lookingAtValidChar'>
-    <param name='consume'>
-     <primitive type='boolean'/>
-    </param>
-    <returns>
-     <primitive type='boolean'/>
-    </returns>
-    <throws>
-     <reference idref='java-io-exception'/>
-    </throws>
-   </method>
-   -->
-   <method name='lookingAtChar'>
-    <param name='c'>
-     <primitive type='char'/>
-    </param>
-    <param name='consume'>
-     <primitive type='boolean'/>
-    </param>
-    <returns>
-     <primitive type='boolean'/>
-    </returns>
-    <throws>
-     <reference idref='java-io-exception'/>
-    </throws>
-   </method>
-   <method name='lookingAtSpace'>
-    <param name='consume'>
-     <primitive type='boolean'/>
-    </param>
-    <returns>
-     <primitive type='boolean'/>
-    </returns>
-    <throws>
-     <reference idref='java-io-exception'/>
-    </throws>
-   </method>
-   <method name='scanName'>
-    <param name='name'>
-     <reference idref='string'/>
-    </param>
-    <returns>
-     <primitive type='boolean'/>
-    </returns>
-    <throws>
-     <reference idref='java-io-exception'/>
-    </throws>
-   </method>
-   <method name='scanQName'>
-    <param name='prefix'>
-     <reference idref='string'/>
-    </param>
-    <param name='localpart'>
-     <reference idref='string'/>
-    </param>
-    <param name='rawname'>
-     <reference idref='string'/>
-    </param>
-    <returns>
-     <primitive type='boolean'/>
-    </returns>
-    <throws>
-     <reference idref='java-io-exception'/>
-    </throws>
-   </method>
-   <method name='scanToChar'>
-    <param name='c'>
-     <primitive type='char'/>
-    </param>
-    <param name='text'>
-     <reference idref='string'/>
-    </param>
-    <returns>
-     <primitive type='boolean'/>
-    </returns>
-    <throws>
-     <reference idref='java-io-exception'/>
-    </throws>
-   </method>
-   <method name='scanContent'>
-    <param name='content'>
-     <reference idref='string'/>
-    </param>
-    <returns>
-     <primitive type='boolean'/>
-    </returns>
-    <throws>
-     <reference idref='java-io-exception'/>
-    </throws>
-   </method>
-   <method name='scanAttContent'>
-    <param name='quote'>
-     <primitive type='char'/>
-    </param>
-    <param name='content'>
-     <reference idref='string'/>
-    </param>
-    <returns>
-     <primitive type='short'/>
-    </returns>
-    <throws>
-     <reference idref='java-io-exception'/>
-    </throws>
-   </method>
-   <method name='scanCharRef'>
-    <param name='hexadecimal'>
-     <primitive type='boolean'/>
-    </param>
+   <method name='read'>
     <returns>
      <primitive type='int'/>
     </returns>
@@ -1567,36 +1417,20 @@
      <reference idref='java-io-exception'/>
     </throws>
    </method>
-   <method name='skipToChar'>
-    <param name='c'>
-     <primitive type='char'/>
-    </param>
-    <param name='consume'>
-     <primitive type='boolean'/>
-    </param>
-    <returns>
-     <primitive type='boolean'/>
-    </returns>
-    <throws>
-     <reference idref='java-io-exception'/>
-    </throws>
-   </method>
-   <method name='skipSpaces'>
-    <returns>
-     <primitive type='boolean'/>
-    </returns>
-    <throws>
-     <reference idref='java-io-exception'/>
-    </throws>
-   </method>
-   <method name='skipString'>
-    <param name='string'>
+   <method name='read'>
+    <param name='buffer'>
      <array>
       <primitive type='char'/>
      </array>
     </param>
+    <param name='offset'>
+     <primitive type='int'/>
+    </param>
+    <param name='length'>
+     <primitive type='int'/>
+    </param>
     <returns>
-     <primitive type='boolean'/>
+     <primitive type='int'/>
     </returns>
     <throws>
      <reference idref='java-io-exception'/>
@@ -1608,17 +1442,6 @@
     </throws>
    </method>
   </class>
-
-  <interface id='entity-reader-change-listener' name='XMLEntityReaderChangeListener'>
-   <method name='entityReaderChanged'>
-    <param name='reader'>
-     <reference idref='entity-reader'/>
-    </param>
-    <throws>
-     <reference idref='sax-exception'/>
-    </throws>
-   </method>
-  </interface>
 
  </category>
 
@@ -1683,7 +1506,7 @@
    </field>
    <constructor/>
    <method name='putGrammar'>
-    <param name='targetNamespace'>
+    <param name='key'>
      <reference idref='java-string'/>
     </param>
     <param name='grammar'>
@@ -1691,7 +1514,7 @@
     </param>
    </method>
    <method name='getGrammar'>
-    <param name='targetNamespace'>
+    <param name='key'>
      <reference idref='java-string'/>
     </param>
     <returns>
@@ -1699,7 +1522,7 @@
     </returns>
    </method>
    <method name='removeGrammar'>
-    <param name='targetNamespace'>
+    <param name='key'>
      <reference idref='java-string'/>
     </param>
     <returns>
@@ -1715,20 +1538,24 @@
    <field name='fTargetNamespace'>
     <reference idref='java-string'/>
    </field>
+   <!-- REVISIT
    <field name='fGrammarDocument'>
     <reference idref='dom-document'/>
    </field>
+   -->
    <constructor/>
    <method name='getTargetNamespace'>
     <returns>
      <reference idref='java-string'/>
     </returns>
    </method>
+   <!-- REVISIT
    <method name='getGrammarDocument'>
     <returns>
      <reference idref='dom-document'/>
     </returns>
    </method>
+   -->
    <method name='getElementDeclIndex'>
     <param name='elementDeclName'>
      <reference idref='java-string'/>
@@ -2086,6 +1913,9 @@
    <field name='systemId' visibility='public'>
     <reference idref='java-string'/>
    </field>
+   <field name='baseSystemId' visibility='public'>
+    <reference idref='java-string'/>
+   </field>
    <field name='notation' visibility='public'>
     <reference idref='java-string'/>
    </field>
@@ -2094,16 +1924,19 @@
    </field>
    <method name='setValues'>
     <param name='name'>
-    <reference idref='java-string'/>
+     <reference idref='java-string'/>
     </param>
     <param name='publicId'>
-    <reference idref='java-string'/>
+     <reference idref='java-string'/>
     </param>
     <param name='systemId'>
-    <reference idref='java-string'/>
+     <reference idref='java-string'/>
+    </param>
+    <param name='baseSystemId'>
+     <reference idref='java-string'/>
     </param>
     <param name='notation'>
-    <reference idref='java-string'/>
+     <reference idref='java-string'/>
     </param>
     <param name='isPE'>
      <primitive type='boolean'/>
@@ -2122,6 +1955,9 @@
    <field name='systemId' visibility='public'>
     <reference idref='java-string'/>
    </field>
+   <field name='baseSystemId' visibility='public'>
+    <reference idref='java-string'/>
+   </field>
    <method name='setValues'>
     <param name='name'>
     <reference idref='java-string'/>
@@ -2131,6 +1967,9 @@
     </param>
     <param name='systemId'>
     <reference idref='java-string'/>
+    </param>
+    <param name='baseSystemId'>
+     <reference idref='java-string'/>
     </param>
    </method>
    <method name='clear'/>
@@ -2555,14 +2394,6 @@
      <reference idref='java-string'/>
     </param>
    </constructor>
-   <!--
-   <method name='setDTDHandler'>
-    <reference idref='dtd-handler'/>
-   </method>
-   <method name='setDTDContentModelHandler'>
-    <reference idref='dtd-content-model-handler'/>
-   </method>
-   -->
   </class>
 
   <class id='schema-grammar' name='SchemaGrammar'>
@@ -3182,31 +3013,6 @@
     </param>
    </method>
    <method name='clear'/>
-  </class>
-
-  <class id='namespace-scope' name='NamespaceScope'>
-   <field name='fDepth'>
-    <primitive type='int'/>
-   </field>
-   <constructor/>
-   <method name='increaseDepth'/>
-   <method name='decreaseDepth'/>
-   <method name='setNamespaceForPrefix'>
-    <param name='prefix'>
-     <reference idref='java-string'/>
-    </param>
-    <param name='namespace'>
-     <reference idref='java-string'/>
-    </param>
-   </method>
-   <method name='getNamespaceForPrefix'>
-    <param name='prefix'>
-     <reference idref='java-string'/>
-    </param>
-    <returns>
-     <reference idref='java-string'/>
-    </returns>
-   </method>
   </class>
 
   <interface id='message-formatter' name='MessageFormatter'>
