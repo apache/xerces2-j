@@ -954,7 +954,7 @@ public class XPath {
          */
         public int nextToken() throws XPathException {
             if( fCurrentTokenIndex==fTokenCount )
-                throw new XPathException("c-xpath-general");
+                throw new XPathException("c-general-xpath");
             return fTokens[fCurrentTokenIndex++];
         }
         /**
@@ -966,7 +966,7 @@ public class XPath {
          */
         public int peekToken() throws XPathException {
             if( fCurrentTokenIndex==fTokenCount )
-                throw new XPathException("c-xpath-general");
+                throw new XPathException("c-general-xpath");
             return fTokens[fCurrentTokenIndex];
         }
         /**
@@ -978,7 +978,7 @@ public class XPath {
          */
         public String nextTokenAsString() throws XPathException {
             String s = getTokenString(nextToken());
-            if(s==null)     throw new XPathException("c-xpath-general");
+            if(s==null)     throw new XPathException("c-general-xpath");
             return s;
         }
         
