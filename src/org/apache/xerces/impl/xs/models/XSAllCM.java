@@ -78,54 +78,32 @@ public class XSAllCM implements XSCMValidator {
     // start the content model: did not see any children
     private static final short STATE_START = 0;
     private static final short STATE_VALID = 1;
+    private static final short STATE_CHILD = 1;
 
 
     //
     // Data
     //
 
-    private XSElementDecl fAllElements[] = new XSElementDecl[10];
-    private boolean fIsOptionalElement[] = new boolean[10];
+    private XSElementDecl fAllElements[];
+    private boolean fIsOptionalElement[];
     private boolean fHasOptionalContent = false;
-    // private boolean fIsMixed = false;
-
     private int fNumElements = 0;
-    private int fNumRequired = 0;
 
     //
     // Constructors
     //
 
-    public XSAllCM (boolean hasOptionalContent) {
+    public XSAllCM (boolean hasOptionalContent, int size) {
         fHasOptionalContent = hasOptionalContent;
+        fAllElements = new XSElementDecl[size];
+        fIsOptionalElement = new boolean[size];
     }
 
     public void addElement (XSElementDecl element, boolean isOptional) {
-
-        // resize arrays if necessary
-        if (fNumElements >= fAllElements.length) {
-            XSElementDecl newAllElements[] = new XSElementDecl [2*fAllElements.length];
-            boolean newIsOptionalElements[] =
-                                      new boolean[2*fIsOptionalElement.length];
-            System.arraycopy(fAllElements, 0, newAllElements, 0,
-                             fAllElements.length);
-            System.arraycopy(fIsOptionalElement, 0, newIsOptionalElements, 0,
-                             fIsOptionalElement.length);
-
-            fAllElements = newAllElements;
-            fIsOptionalElement = newIsOptionalElements;
-        }
-
         fAllElements[fNumElements] = element;
         fIsOptionalElement[fNumElements] = isOptional;
-
         fNumElements++;
-
-        // keeping track of the number of elements that are required
-        if (!isOptional) {
-            fNumRequired++;
-        }
-
     }
 
 
@@ -177,6 +155,9 @@ public class XSAllCM implements XSCMValidator {
             return findMatchingDecl(elementName, subGroupHandler);
         }
 
+        // seen child
+        currentState[0] = STATE_CHILD;
+        
         Object matchingDecl = null;
 
         for (int i = 0; i < fNumElements; i++) {
@@ -214,23 +195,17 @@ public class XSAllCM implements XSCMValidator {
 
         // If <all> has minOccurs of zero and there are
         // no children to validate, it is trivially valid
-
-        if (fHasOptionalContent && fNumElements == 0) {
+        if (fHasOptionalContent && state == STATE_START) {
             return true;
         }
-
-        int numRequiredSeen = 0;
 
         for (int i = 0; i < fNumElements; i++) {
-            if (!fIsOptionalElement[i] && currentState[i+1] != STATE_START)
-                numRequiredSeen++;
+            // if one element is required, but not present, then error
+            if (!fIsOptionalElement[i] && currentState[i+1] == STATE_START)
+                return false;
         }
 
-        if (fNumRequired == numRequiredSeen ) {
-            return true;
-        }
-
-        return false;
+        return true;
     }
 
     /**

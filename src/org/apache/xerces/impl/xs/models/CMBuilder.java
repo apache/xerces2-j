@@ -146,12 +146,11 @@ public class CMBuilder {
         if (particle.fMaxOccurs == 0)
             return null;
 
-        // create an all content model. the parameter indicates whether
-        // the <all> itself is optional        
-        XSAllCM allContent = new XSAllCM(particle.fMinOccurs == 0);
-        
         // get the model group, and add all children of it to the content model
         XSModelGroupImpl group = (XSModelGroupImpl)particle.fValue;
+        // create an all content model. the parameter indicates whether
+        // the <all> itself is optional        
+        XSAllCM allContent = new XSAllCM(particle.fMinOccurs == 0, group.fParticleCount);
         for (int i = 0; i < group.fParticleCount; i++) {
             // for all non-empty particles
             if (group.fParticles[i].fType != XSParticleDecl.PARTICLE_EMPTY &&
