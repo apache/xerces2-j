@@ -1052,19 +1052,24 @@ public class TraverseSchema implements
             int numEnumerationLiterals = 0;
             facetData        = new Hashtable();
             Vector enumData  = new Vector();
+            content = checkContent(simpleTypeDecl, content , true);
             while (content != null) { 
                 if (content.getNodeType() == Node.ELEMENT_NODE) {
-                    numFacets++;
-                    if (content.getLocalName().equals(SchemaSymbols.ELT_ENUMERATION)) {
+                        numFacets++;
+                        if (content.getLocalName().equals(SchemaSymbols.ELT_ENUMERATION)) {
                             numEnumerationLiterals++;
                             String enumVal = content.getAttribute(SchemaSymbols.ATT_VALUE);
                             enumData.addElement(enumVal);
-                            //Enumerations can have annotations ? ( 0 | 1 )
                             checkContent(simpleTypeDecl, XUtil.getFirstChildElement( content ), true);
-                    }
-                    else {
-                         facetData.put(content.getLocalName(),content.getAttribute( SchemaSymbols.ATT_VALUE ));
-                    }
+                        }
+                        else if (content.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
+                                  reportSchemaError(SchemaMessageProvider.ContentError,
+                                                    new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )});
+                        }
+                        else {
+                             facetData.put(content.getLocalName(),content.getAttribute( SchemaSymbols.ATT_VALUE ));
+                             checkContent(simpleTypeDecl, XUtil.getFirstChildElement( content ), true);
+                        }
                 }
                     content = XUtil.getNextSiblingElement(content);
             }
