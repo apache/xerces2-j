@@ -127,6 +127,7 @@ public class SchemaMessages extends ListResourceBundle {
         {"Con3X3AttributeAppearance", "Error: constraint 3.x.3: Attribute ''{1}'' cannot appear in element ''{0}''."},
         {"Con3X3AttributeMustAppear", "Error: constraint 3.x.3: Attribute ''{1}'' must appear in element ''{0}''."},
         {"Con3X3AttributeInvalidValue", "Error: constraint 3.x.3: Invalid attribute value for ''{1}'' in element ''{0}'': {2}."},
+		 {"CardinalityNotEqual", "Cardinality of Fields for keyref \"{0}\" and key \"{1}\" must match."},        
     };
 
     /** Returns the list resource bundle contents. */

@@ -192,9 +192,10 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         Con3X3AttributeAppearance = 54,
         Con3X3AttributeMustAppear = 55,
         Con3X3AttributeInvalidValue = 56,
+        CardinalityNotEqual = 57,
         // ...
 
-        MSG_MAX_CODE = 57;
+        MSG_MAX_CODE = 58;
     //
     // Minor Codes
     //
@@ -260,6 +261,7 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         "Con3X3AttributeAppearance",
         "Con3X3AttributeMustAppear",
         "Con3X3AttributeInvalidValue",
+        "CardinalityNotEqual",        
         // END
     };
 }

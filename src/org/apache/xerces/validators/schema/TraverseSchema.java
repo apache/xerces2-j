@@ -7417,6 +7417,10 @@ throws Exception {
 
         // add to element decl
         traverseIdentityConstraint(keyRef, krElem);
+        if(keyRef.getFieldCount() != kId.getFieldCount()){
+        		 reportSchemaError(SchemaMessageProvider.CardinalityNotEqual, new Object[]{krName,kName});
+        		 return ;
+        }
 
         // add key reference to element decl
         eDecl.keyRef.addElement(keyRef);
