@@ -793,45 +793,23 @@ class RegexParser {
     }
 
     protected RangeToken processBacksolidus_pP(int c) throws ParseException {
-        boolean positive = c == 'p';
-        this.next();
-        if (this.read() != T_CHAR)  throw this.ex("parser.atom.2", this.offset-1);
-        RangeToken tok;
-        switch (this.chardata) {
-          case 'L':                             // Letter
-            tok = Token.getRange("L", positive);  break;
-          case 'M':                             // Mark
-            tok = Token.getRange("M", positive);  break;
-          case 'N':                             // Number
-            tok = Token.getRange("N", positive);  break;
-          case 'Z':                             // Separator
-            tok = Token.getRange("Z", positive);  break;
-          case 'C':                             // Other
-            tok = Token.getRange("C", positive);  break;
-          case 'P':                             // Punctuation
-            tok = Token.getRange("P", positive);  break;
-          case 'S':                             // Symbol
-            tok = Token.getRange("S", positive);  break;
-          case '{':
-            // this.offset points the next of '{'.
-            //pstart = this.offset;
-            int namestart = this.offset;
-            int nameend = this.regex.indexOf('}', namestart);
-            if (nameend < 0)  throw this.ex("parser.atom.3", this.offset);
-            String pname = this.regex.substring(namestart, nameend);
-            this.offset = nameend+1;
-            tok = Token.getRange(pname, positive,
-                                 this.isSet(RegularExpression.XMLSCHEMA_MODE));
-            /*
-              if (this.isSet(RegularExpression.IGNORE_CASE))
-              tok = RangeToken.createCaseInsensitiveToken(tok);
-            */
-            break;
 
-          default:
+        this.next();
+        if (this.read() != T_CHAR || this.chardata != '{')
             throw this.ex("parser.atom.2", this.offset-1);
-        }
-        return tok;
+
+        // handle category escape
+        boolean positive = c == 'p';
+        int namestart = this.offset;
+        int nameend = this.regex.indexOf('}', namestart);
+
+        if (nameend < 0)
+            throw this.ex("parser.atom.3", this.offset);
+
+        String pname = this.regex.substring(namestart, nameend);
+        this.offset = nameend+1;
+
+        return Token.getRange(pname, positive, this.isSet(RegularExpression.XMLSCHEMA_MODE));
     }
 
     int processCIinCharacterClass(RangeToken tok, int c) {
