@@ -105,26 +105,28 @@ public abstract class CharacterDataImpl
      *  type if the client simply calls setNodeValue(value).
      */
     protected void setNodeValueInternal(String value, boolean replace) {
-    	if (isReadOnly()) {
+        
+        CoreDocumentImpl ownerDocument = ownerDocument();
+        
+        if (ownerDocument.errorChecking && isReadOnly()) {
             String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
             throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
         }
+        
         // revisit: may want to set the value in ownerDocument.
-    	// Default behavior, overridden in some subclasses
+        // Default behavior, overridden in some subclasses
         if (needsSyncData()) {
             synchronizeData();
         }
-
+        
         // keep old value for document notification
         String oldvalue = this.data;
-
-        CoreDocumentImpl ownerDocument = ownerDocument();
-
+        
         // notify document
         ownerDocument.modifyingCharacterData(this, replace);
-
-    	this.data = value;
-
+        
+        this.data = value;
+        
         // notify document
         ownerDocument.modifiedCharacterData(this, oldvalue, value, replace);
     }
@@ -221,43 +223,40 @@ public abstract class CharacterDataImpl
      * for use by application programs.
      */
     void internalDeleteData (int offset, int count, boolean replace)
-	throws DOMException {
-	
-    	if (isReadOnly()) {
-    		String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
-    		throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
-    	}
-
-    	if (count < 0) {
-    		String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INDEX_SIZE_ERR", null);
-    		throw new DOMException(DOMException.INDEX_SIZE_ERR, msg);
-    	}
-
-    	if (needsSyncData()) {
-    		synchronizeData();
-    	}
-    	int tailLength = Math.max(data.length() - count - offset, 0);
-    	try {
-    		String value = data.substring(0, offset) +
-            	(tailLength > 0
-            			? data.substring(offset + count, offset + count + tailLength) 
-            			: "");
-
+    throws DOMException {
         
-    		setNodeValueInternal(value, replace);      
-
-    		// notify document
-    		ownerDocument().deletedText(this, offset, count);
-    	}
-    	catch (StringIndexOutOfBoundsException e) {
-    		String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INDEX_SIZE_ERR", null);
-    		throw new DOMException(DOMException.INDEX_SIZE_ERR, msg);
-    	}
-	
+        CoreDocumentImpl ownerDocument = ownerDocument();
+        if (ownerDocument.errorChecking) {
+            if (isReadOnly()) {
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
+                throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
+            }
+            
+            if (count < 0) {
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INDEX_SIZE_ERR", null);
+                throw new DOMException(DOMException.INDEX_SIZE_ERR, msg);
+            }
+        }
+        
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+        int tailLength = Math.max(data.length() - count - offset, 0);
+        try {
+            String value = data.substring(0, offset) +
+            (tailLength > 0 ? data.substring(offset + count, offset + count + tailLength) : "");            
+            
+            setNodeValueInternal(value, replace);      
+            
+            // notify document
+            ownerDocument.deletedText(this, offset, count);
+        }
+        catch (StringIndexOutOfBoundsException e) {
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INDEX_SIZE_ERR", null);
+            throw new DOMException(DOMException.INDEX_SIZE_ERR, msg);
+        }
+        
     } // internalDeleteData(int,int,boolean)
-    	
-
-    
 
     /**
      * Insert additional characters into the data stored in this node,
@@ -283,31 +282,33 @@ public abstract class CharacterDataImpl
      * for use by application programs.
      */
     void internalInsertData (int offset, String data, boolean replace)
-	throws DOMException {
-	
-    	if (isReadOnly()) {
-    		String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
-    		throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
-    	}
-
-    	if (needsSyncData()) {
-    		synchronizeData();
-    	}
-    	try {
-    		String value =
-    			new StringBuffer(this.data).insert(offset, data).toString();
-
+    throws DOMException {
         
-    		setNodeValueInternal(value, replace);
-      
-    		// notify document
-    		ownerDocument().insertedText(this, offset, data.length());
-    	}
-    	catch (StringIndexOutOfBoundsException e) {
-    		String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INDEX_SIZE_ERR", null);
-    		throw new DOMException(DOMException.INDEX_SIZE_ERR, msg);
-    	}
-
+        CoreDocumentImpl ownerDocument = ownerDocument();
+        
+        if (ownerDocument.errorChecking && isReadOnly()) {
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
+        }
+        
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+        try {
+            String value =
+                new StringBuffer(this.data).insert(offset, data).toString();
+            
+            
+            setNodeValueInternal(value, replace);
+            
+            // notify document
+            ownerDocument.insertedText(this, offset, data.length());
+        }
+        catch (StringIndexOutOfBoundsException e) {
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INDEX_SIZE_ERR", null);
+            throw new DOMException(DOMException.INDEX_SIZE_ERR, msg);
+        }
+        
     } // internalInsertData(int,String,boolean)
 
     
@@ -337,34 +338,36 @@ public abstract class CharacterDataImpl
      * readonly.  
      */
     public void replaceData(int offset, int count, String data) 
-        throws DOMException {
-
+    throws DOMException {
+        
+        CoreDocumentImpl ownerDocument = ownerDocument();
+        
         // The read-only check is done by deleteData()
         // ***** This could be more efficient w/r/t Mutation Events,
         // specifically by aggregating DOMAttrModified and
         // DOMSubtreeModified. But mutation events are 
         // underspecified; I don't feel compelled
         // to deal with it right now.
-        if (isReadOnly()) {
+        if (ownerDocument.errorChecking && isReadOnly()) {
             String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
-                throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
         }
         
         if (needsSyncData()) {
             synchronizeData();
         }
-       
+        
         //notify document
-        ownerDocument().replacingData(this);
-
+        ownerDocument.replacingData(this);
+        
         // keep old value for document notification
         String oldvalue = this.data;
-               
+        
         internalDeleteData(offset, count, true);
         internalInsertData(offset, data, true);
-                
-        ownerDocument().replacedCharacterData(this, oldvalue, this.data);
-
+        
+        ownerDocument.replacedCharacterData(this, oldvalue, this.data);
+        
     } // replaceData(int,int,String)
 
     /**
