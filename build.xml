@@ -226,7 +226,7 @@ Copyright:
   <target name="sampjar" depends="samples">
     <jar jarfile="${build.dir}/${name}Samples.jar"
          basedir="${build.dest}"
-         includes="dom/**,sax/**,socket/**,ui/**,util/**"/>
+         includes="dom/**,sax/**,socket/**,ui/**"/>
   </target>
 
   <!-- =================================================================== -->
@@ -345,36 +345,26 @@ Copyright:
   <target name="test" depends="sampjar">
 	<echo message="Performing sanity test for ${Name} ${version} ..." />
 	<echo message="Using classpath=&apos;${build.dir}/${name}Samples.jar;${build.dir}/${name}.jar&apos;" />
-	<echo message="Running SAXCount ..." />
+	<echo message="Running sax.Counter ..." />
     <java fork="yes"
           classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar;"
-          classname="sax.SAXCount"
+          classname="sax.Counter"
           args="${data.dir}/personal.xml"/>
-	<echo message="Running SAX2Count ..." />
-    <java fork="yes"
-          classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar;"
-          classname="sax.SAX2Count"
-          args="${data.dir}/personal.xml"/>
-	<echo message="Running SAXWriter ..." />
+	<echo message="Running sax.Writer ..." />
     <java fork="yes"
           classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
-          classname="sax.SAXWriter"
+          classname="sax.Writer"
           args="${data.dir}/personal.xml"/>
-	<echo message="Running DOMCount ..." />
+	<echo message="Running dom.Counter ..." />
     <java fork="yes"
           classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
-          classname="dom.DOMCount"
+          classname="dom.Counter"
           args="${data.dir}/personal.xml"/>
-	<echo message="Running DOMWriter ..." />
+	<echo message="Running dom.Writer ..." />
     <java fork="yes"
           classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
-          classname="dom.DOMWriter"
+          classname="dom.Writer"
           args="${data.dir}/personal.xml"/>
-	<echo message="Running DOMFilter ..." />
-    <java fork="yes"
-          classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
-          classname="dom.DOMFilter"
-          args="-p dom.wrappers.DOMParser ${data.dir}/personal.xml"/>
     <!-- The following are samples but not command-line applications.
 	<echo message="Running IteratorView ..." />
     <java fork="yes"
