@@ -20,6 +20,7 @@ import org.w3c.dom.*;
 import org.apache.xerces.dom.*;
 
 /**
+ * @xerces.internal
  * @version $Id$
  * @author <a href="mailto:david@topware.com.tw">David Li</a>
  */

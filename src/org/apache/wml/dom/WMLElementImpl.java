@@ -19,6 +19,7 @@ import org.apache.xerces.dom.ElementImpl;
 import org.apache.wml.*;
 
 /**
+ * @xerces.internal
  * @version $Id$
  * @author <a href="mailto:david@topware.com.tw">David Li</a>
  */

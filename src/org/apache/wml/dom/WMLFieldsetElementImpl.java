@@ -18,6 +18,7 @@ package org.apache.wml.dom;
 import org.apache.wml.*;
 
 /**
+ * @xerces.internal
  * @version $Id$
  * @author <a href="mailto:david@topware.com.tw">David Li</a>
  */

@@ -25,6 +25,7 @@ import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
 
 /**
+ * @xerces.internal
  * @version $Id$
  * @author <a href="mailto:david@topware.com.tw">David Li</a>
  */
