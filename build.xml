@@ -1017,6 +1017,7 @@ Copyright:
                        **/v1/** **/v2/**
                        javax.xml.parsers.ConvertToURI.java
                        org/apache/xerces/dom3/*.java
+                       org/apache/xerces/dom3/bootstrap/*.java
                        org/apache/xerces/dom3/ls/**
                        org/w3c/dom/*.java">
         </fileset>
@@ -1039,6 +1040,8 @@ Copyright:
        <!-- DOM level 3 hack: replace import statements-->
      <replace file="${build.src}/org/apache/xerces/dom/NodeImpl.java"               	 	     	     token="org.apache.xerces.dom3" value="org.w3c.dom"/>
     <replace file="${build.src}/org/apache/xerces/dom/ElementImpl.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>    
+    <replace file="${build.src}/org/apache/xerces/dom/DOMImplementationListImpl.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
     <replace file="${build.src}/org/apache/xerces/dom/ElementNSImpl.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
