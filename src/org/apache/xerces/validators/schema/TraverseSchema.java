@@ -1423,6 +1423,7 @@ public class TraverseSchema implements
             int numEnumerationLiterals = 0;
             Vector enumData  = new Vector();
             content = checkContent(simpleTypeDecl, content , true);
+            StringBuffer pattern = null;
             String facet;
             while (content != null) { 
                 if (content.getNodeType() == Node.ELEMENT_NODE) {
@@ -1438,6 +1439,16 @@ public class TraverseSchema implements
                                   reportSchemaError(SchemaMessageProvider.ContentError,
                                                     new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )});
                         }
+                        else if (facet.equals(SchemaSymbols.ELT_PATTERN)) {
+                            if (pattern == null) {                                
+                                pattern = new StringBuffer (content.getAttribute( SchemaSymbols.ATT_VALUE ));
+                            }
+                            else { //datatypes: 5.2.4 pattern 
+                                pattern.append("|");
+                                pattern.append(content.getAttribute( SchemaSymbols.ATT_VALUE ));
+                                checkContent(simpleTypeDecl, XUtil.getFirstChildElement( content ), true);
+                            }
+                        }
                         else {
                              facetData.put(facet,content.getAttribute( SchemaSymbols.ATT_VALUE ));
                              checkContent(simpleTypeDecl, XUtil.getFirstChildElement( content ), true);
@@ -1447,6 +1458,9 @@ public class TraverseSchema implements
             }
             if (numEnumerationLiterals > 0) {
                   facetData.put(SchemaSymbols.ELT_ENUMERATION, enumData);
+            }
+            if (pattern !=null) {
+                facetData.put(SchemaSymbols.ELT_PATTERN, pattern.toString());
             }
         }
 
