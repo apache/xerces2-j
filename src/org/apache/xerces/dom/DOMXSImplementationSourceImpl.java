@@ -57,25 +57,20 @@
 
 package org.apache.xerces.dom;
 
-import java.util.StringTokenizer;
-
 import org.apache.xerces.dom3.DOMImplementationList;
-import org.apache.xerces.dom3.DOMImplementationSource;
 import org.apache.xerces.dom3.bootstrap.DOMImplementationListImpl;
+import org.apache.xerces.impl.xs.XSImplementationImpl;
 import org.w3c.dom.DOMImplementation;
 
 /**
- * Supply one the right implementation, based upon requested features. Each
- * implemented <code>DOMImplementationSource</code> object is listed in the
- * binding-specific list of available sources so that its
- * <code>DOMImplementation</code> objects are made available.
- * 
+ * Allows to retrieve <code>XSImplementation</code>, DOM Level 3 Core and LS implementations
+ * and PSVI implementation.
  * <p>See also the <a href='http://www.w3.org/2001/10/WD-DOM-Level-3-Core-20011017'>Document Object Model (DOM) Level 3 Core Specification</a>.
- * 
+ * @author Elena Litani, IBM
  * @version $Id$
  */
-public class DOMImplementationSourceImpl
-    implements DOMImplementationSource {
+public class DOMXSImplementationSourceImpl
+    extends DOMImplementationSourceImpl{
 
     /**
      * A method to request a DOM implementation.
@@ -87,18 +82,20 @@ public class DOMImplementationSourceImpl
      *   <code>null</code> if this source has none.
      */
     public DOMImplementation getDOMImplementation(String features) {
-        // first check whether the CoreDOMImplementation would do
-        DOMImplementation impl =
-            CoreDOMImplementationImpl.getDOMImplementation();
-        if (testImpl(impl, features)) {
-            return impl;
+        DOMImplementation impl = super.getDOMImplementation(features);
+        if (impl != null){
+        	return impl;
         }
-        // if not try the DOMImplementation
-        impl = DOMImplementationImpl.getDOMImplementation();
-        if (testImpl(impl, features)) {
-            return impl;
-        }
-
+		// if not try the PSVIDOMImplementation
+		impl = PSVIDOMImplementationImpl.getDOMImplementation();
+		if (testImpl(impl, features)) {
+			return impl;
+		}
+		// if not try the XSImplementation
+		impl = XSImplementationImpl.getDOMImplementation();
+		if (testImpl(impl, features)) {
+			return impl;
+		}
         
         return null;
     }
@@ -118,59 +115,17 @@ public class DOMImplementationSourceImpl
      */
     public DOMImplementationList getDOMImplementationList(String features) {
         // first check whether the CoreDOMImplementation would do
-        DOMImplementation impl = CoreDOMImplementationImpl.getDOMImplementation();
-        DOMImplementationListImpl list = new DOMImplementationListImpl();
+		DOMImplementationListImpl list = (DOMImplementationListImpl)super.getDOMImplementationList(features);
+		DOMImplementation impl = PSVIDOMImplementationImpl.getDOMImplementation();
+		if (testImpl(impl, features)) {
+			list.add(impl);
+		}
+        
+         impl = XSImplementationImpl.getDOMImplementation();
         if (testImpl(impl, features)) {
             list.add(impl);
         }
-        impl = DOMImplementationImpl.getDOMImplementation();
-        if (testImpl(impl, features)) {
-            list.add(impl);
-        }
-
-
         return list;
     }
 
-    boolean testImpl(DOMImplementation impl, String features) {
-       
-        StringTokenizer st = new StringTokenizer(features);
-        String feature = null;
-        String version = null;
- 
-        if (st.hasMoreTokens()) {
-           feature = st.nextToken();
-        }
-        while (feature != null) {
-           boolean isVersion = false;
-           if (st.hasMoreTokens()) {
-               char c;
-               version = st.nextToken();
-               c = version.charAt(0);
-               switch (c) {
-               case '0': case '1': case '2': case '3': case '4':
-               case '5': case '6': case '7': case '8': case '9':
-                   isVersion = true;
-               }
-           } else {
-               version = null;
-           }
-           if (isVersion) {
-               if (!impl.hasFeature(feature, version)) {
-                   return false;
-               }
-               if (st.hasMoreTokens()) {
-                   feature = st.nextToken();
-               } else {
-                   feature = null;
-               }
-           } else {
-               if (!impl.hasFeature(feature, null)) {
-                   return false;
-               }
-               feature = version;
-           }
-        }
-        return true;
-    }
 }
