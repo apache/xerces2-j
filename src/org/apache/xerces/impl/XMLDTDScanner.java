@@ -155,6 +155,8 @@ public class XMLDTDScanner
     private int[] fOpStack = new int[5];
     private int fDepth;
 
+    private XMLString defaultValue = new XMLString();
+
     // symbols
 
     private String fXmlSymbol;
@@ -476,7 +478,7 @@ public class XMLDTDScanner
      * @author Andy Clark, IBM
      * @author Arnaud  Le Hors, IBM
      */
-    protected boolean scanTextDecl(boolean complete) 
+    protected final boolean scanTextDecl(boolean complete) 
         throws IOException, SAXException {
 
         // scan XMLDecl
@@ -516,7 +518,7 @@ public class XMLDTDScanner
      * @param target The PI target
      * @param data The string to fill in with the data
      */
-    protected void scanPIData(String target, XMLString data) 
+    protected final void scanPIData(String target, XMLString data) 
         throws IOException, SAXException {
 
         super.scanPIData(target, data);
@@ -537,7 +539,7 @@ public class XMLDTDScanner
      * <p>
      * <strong>Note:</strong> Called after scanning past '&lt;!--'
      */
-    protected void scanComment() throws IOException, SAXException {
+    protected final void scanComment() throws IOException, SAXException {
 
         scanComment(fStringBuffer);
 
@@ -558,7 +560,7 @@ public class XMLDTDScanner
      * <p>
      * <strong>Note:</strong> Called after scanning past '&lt;!ELEMENT'
      */
-    protected void scanElementDecl() throws IOException, SAXException {
+    protected final void scanElementDecl() throws IOException, SAXException {
 
         // spaces
         if (!fEntityScanner.skipSpaces()) {
@@ -637,7 +639,7 @@ public class XMLDTDScanner
      *                       | '(' S? '#PCDATA' S? ')'  
      * </pre>
      */
-    protected void scanMixed() throws IOException, SAXException {
+    private final void scanMixed() throws IOException, SAXException {
 
         fStringBuffer.append("#PCDATA");
         fEntityScanner.skipSpaces();
@@ -683,7 +685,7 @@ public class XMLDTDScanner
      * [50]    seq       ::=    '(' S? cp ( S? ',' S? cp )* S? ')' 
      * </pre>
      */
-    protected void scanChildren() throws IOException, SAXException {
+    private final void scanChildren() throws IOException, SAXException {
         fDepth = 0;
         int currentOp = 0;
         int c;
@@ -759,24 +761,11 @@ public class XMLDTDScanner
      * <pre>
      * [52]  AttlistDecl    ::=   '<!ATTLIST' S Name AttDef* S? '>' 
      * [53]  AttDef         ::=   S Name S AttType S DefaultDecl 
-     * [54]  AttType        ::=   StringType | TokenizedType | EnumeratedType  
-     * [55]  StringType     ::=   'CDATA' 
-     * [56]  TokenizedType  ::=   'ID'
-     *                          | 'IDREF'
-     *                          | 'IDREFS'
-     *                          | 'ENTITY'
-     *                          | 'ENTITIES'
-     *                          | 'NMTOKEN'
-     *                          | 'NMTOKENS'
-     * [57]  EnumeratedType ::=    NotationType | Enumeration  
-     * [58]  NotationType ::= 'NOTATION' S '(' S? Name (S? '|' S? Name)* S? ')'
-     * [59]  Enumeration    ::=    '(' S? Nmtoken (S? '|' S? Nmtoken)* S? ')' 
-     * [60] DefaultDecl ::= '#REQUIRED' | '#IMPLIED' | (('#FIXED' S)? AttValue)
      * </pre>
      * <p>
      * <strong>Note:</strong> Called after scanning past '&lt;!ATTLIST'
      */
-    protected void scanAttlistDecl() throws IOException, SAXException {
+    protected final void scanAttlistDecl() throws IOException, SAXException {
 
         // spaces
         if (!fEntityScanner.skipSpaces()) {
@@ -815,158 +804,23 @@ public class XMLDTDScanner
                                            null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
             }
             // type
-            /*
-             * Watchout: the order here is important: when a string happens to
-             * be a substring of another string, the longer one needs to be
-             * looked for first!!
-             */
-            String type = null;
-            if (fEntityScanner.skipString("CDATA")) {
-                type = "CDATA";
-            }
-            else if (fEntityScanner.skipString("IDREFS")) {
-                type = "IDREFS";
-            }
-            else if (fEntityScanner.skipString("IDREF")) {
-                type = "IDREF";
-            }
-            else if (fEntityScanner.skipString("ID")) {
-                type = "ID";
-            }
-            else if (fEntityScanner.skipString("ENTITY")) {
-                type = "ENTITY";
-            }
-            else if (fEntityScanner.skipString("ENTITIES")) {
-                type = "ENTITIES";
-            }
-            else if (fEntityScanner.skipString("NMTOKENS")) {
-                type = "NMTOKENS";
-            }
-            else if (fEntityScanner.skipString("NMTOKEN")) {
-                type = "NMTOKEN";
-            }
-            else if (fEntityScanner.skipString("NOTATION")) {
-                fStringBuffer.clear();
-                fStringBuffer.append("NOTATION");
-                // spaces
-                if (!fEntityScanner.skipSpaces()) {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               "MSG_SPACE_REQUIRED_AFTER_ATTRIBUTE_NAME_IN_ATTRDECL",
-                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                }
-                // open paren
-                int c = fEntityScanner.peekChar();
-                if (c != '(') {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               "OPEN_PAREN_REQUIRED_AFTER_NOTAITON_IN_ATTRDECL",
-                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                }
-                fEntityScanner.scanChar();
-                fStringBuffer.append(" (");
-                c = 0;
-                do {
-                    String aName = fEntityScanner.scanName();
-                    if (aName == null) {
-                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                   "MSG_SPACE_REQUIRED_AFTER_NOTAITON_IN_ATTRDECL",
-                                                   null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                    }
-                    // REVISIT: need to build the enumeration String[] instead
-                    if (c != 0) {
-                        fStringBuffer.append('|');
-                    }
-                    fStringBuffer.append(aName);
-                    fEntityScanner.skipSpaces();
-                    c = fEntityScanner.scanChar();
-                } while (c == '|');
-                if (c != ')') {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               "CLOSE_PAREN_REQUIRED_AFTER_NOTAITON_IN_ATTRDECL",
-                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                }
-                fStringBuffer.append(')');
-                type = fStringBuffer.toString();
-            }
-            else {              // Enumeration
-                fStringBuffer.clear();
-                // open paren
-                int c = fEntityScanner.peekChar();
-                if (c != '(') {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               "OPEN_PAREN_REQUIRED_BEFORE_ENUMERATION_IN_ATTRDECL",
-                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                }
-                fEntityScanner.scanChar();
-                fStringBuffer.append(" (");
-                c = 0;
-                do {
-                    String token = fEntityScanner.scanNmtoken();
-                    if (token == null) {
-                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                   "NMTOKEN_REQUIRED_IN_ENUMERATION_IN_ATTRDECL",
-                                                   null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                    }
-                    // REVISIT: need to build the enumeration String[] instead
-                    if (c != 0) {
-                        fStringBuffer.append('|');
-                    }
-                    fStringBuffer.append(token);
-                    fEntityScanner.skipSpaces();
-                    c = fEntityScanner.scanChar();
-                } while (c == '|');
-                if (c != ')') {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               "CLOSE_PAREN_REQUIRED_AFTER_ENUMERATION_IN_ATTRDECL",
-                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                }
-                fStringBuffer.append(')');
-                type = fStringBuffer.toString();
-            }
+            String type = scanAttType();
+
             // spaces
             if (!fEntityScanner.skipSpaces()) {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "MSG_SPACE_REQUIRED_AFTER_ATTRIBUTE_TYPE_IN_ATTRDECL",
                                            null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
             }
+
             // default decl
-            String defaultType = null;
-            fString.clear();
-            if (fEntityScanner.skipString("#REQUIRED")) {
-                defaultType = "#REQUIRED";
-            }
-            else if (fEntityScanner.skipString("#IMPLIED")) {
-                defaultType = "#IMPLIED";
-            }
-            else {
-                if (fEntityScanner.skipString("#FIXED")) {
-                    defaultType = "#FIXED";
-                    // spaces
-                    if (!fEntityScanner.skipSpaces()) {
-                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                   "MSG_SPACE_REQUIRED_AFTER_ATTRIBUTE_DEFAULT_IN_ATTRDECL",
-                                                   null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                    }
-                }
-                // AttValue
-                // REVISIT: Do it right
-                int quote = fEntityScanner.scanChar();
-                if (quote != '\'' && quote != '"') {
-                    fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "QuoteRequiredInDecl", 
-                                                new Object[]{name}, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                }
-                // REVISIT: fix this
-                fEntityScanner.scanAttContent(quote, fString);
-                if (!fEntityScanner.skipChar(quote)) {
-                    fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "CloseQuoteMissingInDecl", 
-                                                new Object[]{name}, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                }
-            }
+            String defaultType = scanAttDefaultDecl(name, defaultValue);
 
             // call handler
             if (fDTDHandler != null) {
                 // REVISIT fix this
                 fDTDHandler.attributeDecl(elName, name, type, null,
-                                          defaultType, fString);
+                                          defaultType, defaultValue);
             }
             fEntityScanner.skipSpaces();
             // is it the end?
@@ -977,6 +831,191 @@ public class XMLDTDScanner
         } while(true);
 
     } // scanAttlistDecl()
+
+    /**
+     * Scans an attribute type definition
+     * <p>
+     * <pre>
+     * [54]  AttType        ::=   StringType | TokenizedType | EnumeratedType  
+     * [55]  StringType     ::=   'CDATA' 
+     * [56]  TokenizedType  ::=   'ID'
+     *                          | 'IDREF'
+     *                          | 'IDREFS'
+     *                          | 'ENTITY'
+     *                          | 'ENTITIES'
+     *                          | 'NMTOKEN'
+     *                          | 'NMTOKENS'
+     * [57]  EnumeratedType ::=    NotationType | Enumeration  
+     * [58]  NotationType ::= 'NOTATION' S '(' S? Name (S? '|' S? Name)* S? ')'
+     * [59]  Enumeration    ::=    '(' S? Nmtoken (S? '|' S? Nmtoken)* S? ')' 
+     * </pre>
+     * <p>
+     * <strong>Note:</strong> Called after scanning past '&lt;!ATTLIST'
+     */
+    private final String scanAttType() throws IOException, SAXException {
+
+        String type = null;
+        /*
+         * Watchout: the order here is important: when a string happens to
+         * be a substring of another string, the longer one needs to be
+         * looked for first!!
+         */
+        if (fEntityScanner.skipString("CDATA")) {
+            type = "CDATA";
+        }
+        else if (fEntityScanner.skipString("IDREFS")) {
+            type = "IDREFS";
+        }
+        else if (fEntityScanner.skipString("IDREF")) {
+            type = "IDREF";
+        }
+        else if (fEntityScanner.skipString("ID")) {
+            type = "ID";
+        }
+        else if (fEntityScanner.skipString("ENTITY")) {
+            type = "ENTITY";
+        }
+        else if (fEntityScanner.skipString("ENTITIES")) {
+            type = "ENTITIES";
+        }
+        else if (fEntityScanner.skipString("NMTOKENS")) {
+            type = "NMTOKENS";
+        }
+        else if (fEntityScanner.skipString("NMTOKEN")) {
+            type = "NMTOKEN";
+        }
+        else if (fEntityScanner.skipString("NOTATION")) {
+            fStringBuffer.clear();
+            fStringBuffer.append("NOTATION");
+            // spaces
+            if (!fEntityScanner.skipSpaces()) {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "MSG_SPACE_REQUIRED_AFTER_ATTRIBUTE_NAME_IN_ATTRDECL",
+                                           null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            }
+            // open paren
+            int c = fEntityScanner.peekChar();
+            if (c != '(') {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "OPEN_PAREN_REQUIRED_AFTER_NOTAITON_IN_ATTRDECL",
+                                           null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            }
+            fEntityScanner.scanChar();
+            fStringBuffer.append(" (");
+            c = 0;
+            do {
+                String aName = fEntityScanner.scanName();
+                if (aName == null) {
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                   "MSG_SPACE_REQUIRED_AFTER_NOTAITON_IN_ATTRDECL",
+                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                }
+                // REVISIT: need to build the enumeration String[] instead
+                if (c != 0) {
+                    fStringBuffer.append('|');
+                    }
+                fStringBuffer.append(aName);
+                fEntityScanner.skipSpaces();
+                c = fEntityScanner.scanChar();
+            } while (c == '|');
+            if (c != ')') {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "CLOSE_PAREN_REQUIRED_AFTER_NOTAITON_IN_ATTRDECL",
+                                           null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            }
+            fStringBuffer.append(')');
+            type = fStringBuffer.toString();
+        }
+        else {              // Enumeration
+            fStringBuffer.clear();
+            // open paren
+            int c = fEntityScanner.peekChar();
+            if (c != '(') {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "OPEN_PAREN_REQUIRED_BEFORE_ENUMERATION_IN_ATTRDECL",
+                                           null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            }
+            fEntityScanner.scanChar();
+            fStringBuffer.append(" (");
+            c = 0;
+            do {
+                String token = fEntityScanner.scanNmtoken();
+                if (token == null) {
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "NMTOKEN_REQUIRED_IN_ENUMERATION_IN_ATTRDECL",
+                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                }
+                // REVISIT: need to build the enumeration String[] instead
+                if (c != 0) {
+                    fStringBuffer.append('|');
+                }
+                fStringBuffer.append(token);
+                fEntityScanner.skipSpaces();
+                c = fEntityScanner.scanChar();
+            } while (c == '|');
+            if (c != ')') {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "CLOSE_PAREN_REQUIRED_AFTER_ENUMERATION_IN_ATTRDECL",
+                                           null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            }
+            fStringBuffer.append(')');
+            type = fStringBuffer.toString();
+        }
+        return type;
+
+    } // scanAttType():String
+
+
+    /**
+     * Scans an attribute default declaration
+     * <p>
+     * <pre>
+     * [60] DefaultDecl ::= '#REQUIRED' | '#IMPLIED' | (('#FIXED' S)? AttValue)
+     * </pre>
+     *
+     * @param name The name of the attribute being scanned.
+     * @param defaultVal The string to fill in with the default value.
+     */
+    protected final String scanAttDefaultDecl(String name,
+                                              XMLString defaultVal)
+        throws IOException, SAXException {
+
+        String defaultType = null;
+        fString.clear();
+        if (fEntityScanner.skipString("#REQUIRED")) {
+            defaultType = "#REQUIRED";
+        }
+        else if (fEntityScanner.skipString("#IMPLIED")) {
+            defaultType = "#IMPLIED";
+        }
+        else {
+            if (fEntityScanner.skipString("#FIXED")) {
+                defaultType = "#FIXED";
+                // spaces
+                if (!fEntityScanner.skipSpaces()) {
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "MSG_SPACE_REQUIRED_AFTER_ATTRIBUTE_DEFAULT_IN_ATTRDECL",
+                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                }
+            }
+            // AttValue
+            // REVISIT: Do it right
+            int quote = fEntityScanner.scanChar();
+            if (quote != '\'' && quote != '"') {
+                fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "QuoteRequiredInDecl", 
+                                            new Object[]{name}, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            }
+            // REVISIT: fix this
+            fEntityScanner.scanAttContent(quote, fString);
+            if (!fEntityScanner.skipChar(quote)) {
+                fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "CloseQuoteMissingInDecl", 
+                                            new Object[]{name}, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            }
+        }
+        defaultVal.setValues(fString);
+        return defaultType;
+
+    } // ScanAttDefaultDecl
 
     /**
      * Scans an entity declaration
@@ -994,7 +1033,7 @@ public class XMLDTDScanner
      * <p>
      * <strong>Note:</strong> Called after scanning past '&lt;!ENTITY'
      */
-    protected void scanEntityDecl() throws IOException, SAXException {
+    private final void scanEntityDecl() throws IOException, SAXException {
 
             // TODO: scan definition
             while (fEntityScanner.scanData(">", fString)) {
@@ -1018,7 +1057,7 @@ public class XMLDTDScanner
      * <p>
      * <strong>Note:</strong> Called after scanning past '&lt;!NOTATION'
      */
-    protected void scanNotationDecl() throws IOException, SAXException {
+    private final void scanNotationDecl() throws IOException, SAXException {
 
         // spaces
         if (!fEntityScanner.skipSpaces()) {
@@ -1146,7 +1185,7 @@ public class XMLDTDScanner
      *
      * @author Arnaud  Le Hors, IBM
      */
-    protected boolean scanDecls(boolean complete)
+    protected final boolean scanDecls(boolean complete)
             throws IOException, SAXException {
         
         boolean again;
@@ -1236,7 +1275,7 @@ public class XMLDTDScanner
         return complete;
     }
 
-    protected final void pushOpStack(int c) {
+    private final void pushOpStack(int c) {
         if (fOpStack.length == fDepth) {
             int[] newStack = new int[fDepth * 2];
             System.arraycopy(fOpStack, 0, newStack, 0, fDepth);
@@ -1245,7 +1284,7 @@ public class XMLDTDScanner
         fOpStack[fDepth] = c;
     }
 
-    protected final int popOpStack() {
+    private final int popOpStack() {
         return fOpStack[fDepth];
     }
 
