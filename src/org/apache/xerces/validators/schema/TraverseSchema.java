@@ -679,9 +679,7 @@ public class TraverseSchema implements
                 traverseImport(child); 
             } else if (name.equals(SchemaSymbols.ELT_REDEFINE)) {
                 fRedefineSucceeded = true; // presume worked until proven failed.
-                fNamespacesScope.increaseDepth();
                 traverseRedefine(child); 
-                fNamespacesScope.decreaseDepth();
             } else
                 break;
         }
@@ -1013,7 +1011,8 @@ public class TraverseSchema implements
                 if (fSchemaInfoListRoot == null) {
                     fSchemaInfoListRoot = new SchemaInfo(fElementDefaultQualified, fAttributeDefaultQualified, 
                         fBlockDefault, fFinalDefault,
-                        fCurrentScope, fCurrentSchemaURL, fSchemaRootElement, null, null);
+                        fCurrentScope, fCurrentSchemaURL, fSchemaRootElement, 
+                        fNamespacesScope, null, null);
                     fCurrentSchemaInfo = fSchemaInfoListRoot;
                 }
                 fSchemaRootElement = root;
@@ -1022,7 +1021,8 @@ public class TraverseSchema implements
                 // and now we'd better save this stuff!  
                 fCurrentSchemaInfo = new SchemaInfo(fElementDefaultQualified, fAttributeDefaultQualified, 
                         fBlockDefault, fFinalDefault, 
-                        fCurrentScope, fCurrentSchemaURL, fSchemaRootElement, fCurrentSchemaInfo.getNext(), fCurrentSchemaInfo);
+                        fCurrentScope, fCurrentSchemaURL, fSchemaRootElement, 
+                        fNamespacesScope, fCurrentSchemaInfo.getNext(), fCurrentSchemaInfo);
                 (fCurrentSchemaInfo.getPrev()).setNext(fCurrentSchemaInfo);
                 traverseIncludedSchema(root);
                 // there must always be a previous element!
@@ -1039,7 +1039,7 @@ public class TraverseSchema implements
         int scope = GeneralAttrCheck.ELE_CONTEXT_GLOBAL;
         Hashtable attrValues = fGeneralAttrCheck.checkAttributes(root, scope);
 
-        // Retrived the Namespace mapping from the schema element.
+        // Retrieved the Namespace mapping from the schema element.
         NamedNodeMap schemaEltAttrs = root.getAttributes();
         int i = 0;
         Attr sattr = null;
@@ -1056,7 +1056,7 @@ public class TraverseSchema implements
             if (attName.equals("xmlns")) {
 
                 String attValue = sattr.getValue();
-                fNamespacesScope.setNamespaceForPrefix( fStringPool.addSymbol(""),
+                fNamespacesScope.setNamespaceForPrefix( StringPool.EMPTY_STRING,
                                                         fStringPool.addSymbol(attValue) );
                 seenXMLNS = true;
             }
@@ -1119,9 +1119,7 @@ public class TraverseSchema implements
                 traverseImport(child); 
             } else if (name.equals(SchemaSymbols.ELT_REDEFINE)) {
                 fRedefineSucceeded = true; // presume worked until proven failed.
-                fNamespacesScope.increaseDepth();
                 traverseRedefine(child); 
-                fNamespacesScope.decreaseDepth();
             } else
                 break;
         }
@@ -1323,12 +1321,18 @@ public class TraverseSchema implements
             // elements is that of the redefined schema!  
             fSchemaRootElement = root;
             fCurrentSchemaURL = location;
+            fNamespacesScope = new NamespacesScope(this);
+            if((redefinedTargetNSURIString.length() == 0) && (root.getAttributeNode("xmlns") == null)) {
+                fNamespacesScope.setNamespaceForPrefix(StringPool.EMPTY_STRING, fTargetNSURI);
+            } else {
+            }
             // get default form xmlns bindings et al. 
             traverseIncludedSchemaHeader(root);
             // and then save them...
             store.setNext(new SchemaInfo(fElementDefaultQualified, fAttributeDefaultQualified, 
                     fBlockDefault, fFinalDefault, 
-                    fCurrentScope, fCurrentSchemaURL, fSchemaRootElement, null, store));
+                    fCurrentScope, fCurrentSchemaURL, fSchemaRootElement, 
+                    fNamespacesScope, null, store));
             (store.getNext()).setPrev(store);
             fCurrentSchemaInfo = store.getNext();
             fRedefineLocations.put((Object)location, store.getNext());
@@ -1347,17 +1351,20 @@ public class TraverseSchema implements
 
         // initialize storage areas...
         fRedefineAttributeGroupMap = new Hashtable();
+        NamespacesScope saveNSScope = (NamespacesScope)fNamespacesScope.clone();
 
         // only case in which need to save contents is when fSchemaInfoListRoot is null; otherwise we'll have
         // done this already one way or another.  
         if (fSchemaInfoListRoot == null) {
             fSchemaInfoListRoot = new SchemaInfo(fElementDefaultQualified, fAttributeDefaultQualified, 
                     fBlockDefault, fFinalDefault, 
-                    fCurrentScope, fCurrentSchemaURL, fSchemaRootElement, null, null);
+                    fCurrentScope, fCurrentSchemaURL, fSchemaRootElement, 
+                    fNamespacesScope, null, null);
             openRedefinedSchema(redefineDecl, fSchemaInfoListRoot);
             if(!fRedefineSucceeded)
                 return;
             fCurrentSchemaInfo = fSchemaInfoListRoot.getNext();
+            fNamespacesScope = (NamespacesScope)saveNSScope.clone();
 		    renameRedefinedComponents(redefineDecl,fSchemaInfoListRoot.getNext().getRoot(), fSchemaInfoListRoot.getNext());
         } else {
             // may have a chain here; need to be wary!  
@@ -1368,13 +1375,16 @@ public class TraverseSchema implements
             openRedefinedSchema(redefineDecl, fCurrentSchemaInfo);
             if(!fRedefineSucceeded)
                 return;
+            fNamespacesScope = (NamespacesScope)saveNSScope.clone();
 		    renameRedefinedComponents(redefineDecl,fCurrentSchemaInfo.getRoot(), fCurrentSchemaInfo);
         }
         // Now we have to march through our nicely-renamed schemas from the 
         // bottom up.  When we do these traversals other <redefine>'s may
         // perhaps be encountered; we leave recursion to sort this out.  
 
+        fCurrentSchemaInfo.restore();
         traverseIncludedSchema(fSchemaRootElement);
+        fNamespacesScope = (NamespacesScope)saveNSScope.clone();
         // and last but not least:  traverse our own <redefine>--the one all
         // this labour has been expended upon.  
         for (Element child = XUtil.getFirstChildElement(redefineDecl); child != null;
@@ -1618,9 +1628,14 @@ public class TraverseSchema implements
                             openRedefinedSchema(child, currSchema);
                             if(!fRedefineSucceeded)
                                 return;
+                            NamespacesScope saveNSS = (NamespacesScope)fNamespacesScope.clone();
+                            currSchema.restore();
                             if (validateRedefineNameChange(eltLocalname, oldName, newName+redefIdentifier, redefChild) &&
-                                    (currSchema.getNext() != null))
+                                    (currSchema.getNext() != null)) {
+                                currSchema.getNext().restore();
 	                            fixRedefinedSchema(eltLocalname, oldName, newName+redefIdentifier, fSchemaRootElement, currSchema.getNext());
+                            }
+                            fNamespacesScope = saveNSS;
             		        redefChild.setAttribute( SchemaSymbols.ATT_NAME, newName );
                             // and we now know we will traverse this, so set fTraversedRedefineElements appropriately...
                             fTraversedRedefineElements.addElement(newName);
@@ -8511,10 +8526,12 @@ throws Exception {
         private int saveScope = fCurrentScope;
         private int saveBlockDefault = fBlockDefault;
         private int saveFinalDefault = fFinalDefault;
+        private NamespacesScope saveNamespacesScope = fNamespacesScope;
 
         public SchemaInfo ( boolean saveElementDefaultQualified, boolean saveAttributeDefaultQualified,
                 int saveBlockDefault, int saveFinalDefault, 
-                int saveScope, String savedSchemaURL, Element saveRoot, SchemaInfo nextRoot, SchemaInfo prevRoot) {
+                int saveScope, String savedSchemaURL, Element saveRoot, 
+                NamespacesScope saveNamespacesScope, SchemaInfo nextRoot, SchemaInfo prevRoot) {
             this.saveElementDefaultQualified = saveElementDefaultQualified;
             this.saveAttributeDefaultQualified = saveAttributeDefaultQualified;
             this.saveBlockDefault = saveBlockDefault;
@@ -8522,6 +8539,8 @@ throws Exception {
             this.saveScope  = saveScope ;
             this.savedSchemaURL = savedSchemaURL;
             this.saveRoot  = saveRoot ;
+            if(saveNamespacesScope != null)
+                this.saveNamespacesScope  = (NamespacesScope)saveNamespacesScope.clone();
             this.nextRoot = nextRoot;
             this.prevRoot = prevRoot;
         }
@@ -8547,6 +8566,7 @@ throws Exception {
             fAttributeDefaultQualified = saveAttributeDefaultQualified;
             fBlockDefault = saveBlockDefault;
             fFinalDefault = saveFinalDefault;
+            fNamespacesScope = (NamespacesScope)saveNamespacesScope.clone();
             fSchemaRootElement = saveRoot; 
         }
     } // class SchemaInfo

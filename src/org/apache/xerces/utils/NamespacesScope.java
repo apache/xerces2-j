@@ -96,6 +96,21 @@ public class NamespacesScope {
         fNamespaceMappings[0] = new int[9];
         fNamespaceMappings[0][0] = 1;
     }
+    public NamespacesScope(NamespacesHandler handler, int elemDepth, int[][] map) { 
+        fHandler = handler;
+        fElementDepth = elemDepth;
+        if (map == null) {
+            fNamespaceMappings = new int[8][];
+            return;
+        }
+        fNamespaceMappings = new int[map.length][];
+        for(int i = 0; i <= fElementDepth; i++) {
+            if(map[i]!= null) {
+                fNamespaceMappings[i] = new int[map[i].length];
+                System.arraycopy(map[i], 0, fNamespaceMappings[i], 0, map[i].length);
+            }
+        }
+    } 
     /**
      * set the namespace URI for given prefix
      *
@@ -158,6 +173,11 @@ public class NamespacesScope {
         }
         fElementDepth--;
     }
+
+    // Object methods:
+    public Object clone() {
+        return new NamespacesScope(fHandler, fElementDepth, fNamespaceMappings);
+    } // end clone()
     private NamespacesHandler fHandler = null;
     private int fElementDepth = 0;
     private int[][] fNamespaceMappings = new int[8][];
