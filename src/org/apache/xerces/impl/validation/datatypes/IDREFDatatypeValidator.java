@@ -269,6 +269,7 @@ implements StatefullDatatypeValidator{
     * @exception InvalidDatatypeValueException
     */
    private void checkIdRefs() throws InvalidDatatypeValueException {
+
       if ( fTableIDRefs == null)
          return;
 
@@ -280,6 +281,7 @@ implements StatefullDatatypeValidator{
 
             InvalidDatatypeValueException error =  new
                                                    InvalidDatatypeValueException( key );
+            error.setKeyIntoReporter("MSG_ELEMENT_WITH_ID_REQUIRED" );
             throw error;
          }
       }

@@ -266,17 +266,23 @@ implements  StatefullDatatypeValidator {
                     throw new InvalidDatatypeValueException("Value '"+
                                                             content+"' must be one of "+fEnumeration);
             }
-
-            if (this.fDerivedByList) {
-                while (parsedList.hasMoreTokens()) {       //Check each token in list against base type
+            try {
+                if (this.fDerivedByList) {
+                    while (parsedList.hasMoreTokens()) {       //Check each token in list against base type
+                        if (this.fBaseValidator != null) {//validate against parent type if any
+                            this.fBaseValidator.validate( parsedList.nextToken(), state );
+                        }
+                    }
+                } else {
                     if (this.fBaseValidator != null) {//validate against parent type if any
-                        this.fBaseValidator.validate( parsedList.nextToken(), state );
+                        this.fBaseValidator.validate( content, state );
                     }
                 }
-            } else {
-                if (this.fBaseValidator != null) {//validate against parent type if any
-                    this.fBaseValidator.validate( content, state );
-                }
+            } catch (InvalidDatatypeValueException ex) { //Keep bubbling up exception but change content to list content
+                                                         //Unfortunately we need to throw a new Exception
+                InvalidDatatypeValueException error = new InvalidDatatypeValueException( content );//Need Message
+                error.setKeyIntoReporter( ex.getKeyIntoReporter() );
+                throw error;//type message repacked with the List content message
             }
 
         } catch (NoSuchElementException e) {
@@ -296,7 +302,7 @@ implements  StatefullDatatypeValidator {
      * @param documentInstanceState
      */
     public void initialize( Object documentInstanceState ) {
-        if (fBaseValidator instanceof StatefullDatatypeValidator ){
+        if (fBaseValidator instanceof StatefullDatatypeValidator) {
             ((StatefullDatatypeValidator)fBaseValidator).initialize( documentInstanceState ); 
         }
     }
@@ -321,7 +327,7 @@ implements  StatefullDatatypeValidator {
     public Object getInternalStateInformation() {
         Object value = null;
         if (fBaseValidator instanceof 
-           org.apache.xerces.impl.validation.datatypes.IDDatatypeValidator ) {
+            org.apache.xerces.impl.validation.datatypes.IDDatatypeValidator) {
             value = ((StatefullDatatypeValidator)fBaseValidator).getInternalStateInformation();
         }
         return value;

@@ -770,11 +770,12 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                     fValIDRef.validate();//Do final validation of IDREFS against IDs
                     fValIDRefs.validate();
                 } catch (InvalidDatatypeValueException ex) {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                               "IDNotUnique",
-                                               new Object[]{ null, 
-                                                   ex.getMessage()},
-                                               XMLErrorReporter.SEVERITY_ERROR);
+                String  key = ex.getKeyIntoReporter();
+
+                fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
+                                            key,
+                                            new Object[]{ ex.getMessage()},
+                                            XMLErrorReporter.SEVERITY_ERROR );
                 }
             }
 
