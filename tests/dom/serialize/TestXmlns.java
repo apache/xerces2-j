@@ -61,8 +61,8 @@ import java.io.StringWriter;
 import java.io.Writer;
 
 import org.apache.xerces.dom.DocumentImpl;
-import org.apache.xerces.dom3.ls.DOMWriter;
-import org.apache.xerces.dom3.ls.DOMImplementationLS;
+import org.w3c.dom.ls.DOMWriter;
+import org.w3c.dom.ls.DOMImplementationLS;
 import org.apache.xerces.dom.DOMImplementationImpl;
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.Serializer;

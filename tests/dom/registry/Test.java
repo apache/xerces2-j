@@ -69,7 +69,7 @@ import dom.util.Assertion;
 public class Test {
 
     public static void main(String argv[])
-    {
+    {                                  
         // set DOMImplementationSource
         System.setProperty(DOMImplementationRegistry.PROPERTY,
                           "org.apache.xerces.dom.DOMImplementationSourceImpl");

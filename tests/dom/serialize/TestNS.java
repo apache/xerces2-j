@@ -59,8 +59,8 @@ package dom.serialize;
 import  org.w3c.dom.*;
 
 import org.apache.xerces.dom.DOMImplementationImpl;
-import org.apache.xerces.dom3.ls.DOMWriter;
-import org.apache.xerces.dom3.ls.DOMImplementationLS;
+import org.w3c.dom.ls.DOMWriter;
+import org.w3c.dom.ls.DOMImplementationLS;
 import org.apache.xerces.parsers.*;
 import org.apache.xml.serialize.*;
 import java.io.*;
@@ -354,15 +354,15 @@ public class TestNS {
                 format.setPreserveSpace(true);
                 if (stdout) {
 
-                    XMLSerializer serializer = new XMLSerializer(System.out, format);
-                    serializer.asDOMSerializer();
+                    //XMLSerializer serializer = new XMLSerializer(System.out, format);
+                    //serializer.asDOMSerializer();
                     // serializer.serialize((Document)core);
                     writer.writeNode(System.out, core);
                 } else {
 
                     System.out.println("Serializing output to output.xml...");
-                    XMLSerializer toFile = new XMLSerializer (new FileWriter("output.xml"), format);
-                    toFile.asDOMSerializer();
+                    //XMLSerializer toFile = new XMLSerializer (new FileWriter("output.xml"), format);
+                    //toFile.asDOMSerializer();
                     //toFile.serialize((Document)core);
                     writer.writeNode(new FileOutputStream("output.xml"), core);
                 }
