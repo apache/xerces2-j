@@ -1837,6 +1837,8 @@ public class XMLDTDValidator
             // modify pipeline
             if (fDocumentSource !=null ) {
                 fDocumentSource.setDocumentHandler(fDocumentHandler);
+                if (fDocumentHandler != null)
+                    fDocumentHandler.setDocumentSource(fDocumentSource);
                 return true;
             }
         }
