@@ -57,6 +57,8 @@
 
 package org.apache.xerces.impl.xs;
 
+import org.apache.xerces.xni.parser.XMLComponent;
+import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
@@ -105,7 +107,7 @@ import org.apache.xerces.impl.xs.models.CMNodeFactory;
  * @version $Id$
  */
 
-public class XMLSchemaLoader implements XMLGrammarLoader {
+public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent {
 
     // Feature identifiers:
 
@@ -359,7 +361,7 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
      *                  recognized or cannot be set.
      */
     public void setProperty(String propertyId,
-                Object state) throws XMLConfigurationException, ClassCastException {
+                Object state) throws XMLConfigurationException {
         if(propertyId.equals( SYMBOL_TABLE)) {
             fSymbolTable = (SymbolTable)state;
         } else if(propertyId.equals( ERROR_REPORTER)) {
@@ -453,7 +455,7 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
             }
         }
         
-        if (useDeclPool) {
+        if (fUseDeclPool) {
             fDeclPool.reset();
             fCMBuilder.setDeclPool(fDeclPool);
             fSchemaHandler.setDeclPool(fDeclPool);
@@ -471,10 +473,8 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
     // useDeclPool is only set to true when the validator invokes the loader,
     // and there is no grammar pool. that is, the grammar will never be
     // exposed to the application.
-    private boolean useDeclPool = false;
-    public void setUseDeclPool(boolean use) {
-        useDeclPool = use;
-    }
+    private boolean fUseDeclPool = false;
+    
     
     /**
      * Returns a Grammar object by parsing the contents of the
@@ -861,6 +861,125 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
         }
 
     } //locationArray
+
+	/* (non-Javadoc)
+	 * @see org.apache.xerces.xni.parser.XMLComponent#getFeatureDefault(java.lang.String)
+	 */
+	public Boolean getFeatureDefault(String featureId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.apache.xerces.xni.parser.XMLComponent#getPropertyDefault(java.lang.String)
+	 */
+	public Object getPropertyDefault(String propertyId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.apache.xerces.xni.parser.XMLComponent#reset(org.apache.xerces.xni.parser.XMLComponentManager)
+	 */
+	public void reset(XMLComponentManager componentManager) throws XMLConfigurationException {
+		
+		fGrammarBucket.reset();
+		
+		// reinitialize grammar bucket
+		initGrammarBucket();
+        
+		if (fUseDeclPool) {
+			fDeclPool.reset();
+			fCMBuilder.setDeclPool(fDeclPool);
+			fSchemaHandler.setDeclPool(fDeclPool);
+		} else {
+			fCMBuilder.setDeclPool(null);
+			fSchemaHandler.setDeclPool(null);
+		}
+
+		fSubGroupHandler.reset();		
+		
+		if (componentManager == null)
+			return;
+		
+		// set error reporter
+		fErrorReporter = (XMLErrorReporter) componentManager.getProperty(ERROR_REPORTER);
+		// set symbol table
+		fSymbolTable = (SymbolTable) componentManager.getProperty(SYMBOL_TABLE);
+		// set full validation to false
+		fIsCheckedFully = false;
+		
+		fEntityResolver = (XMLEntityResolver) componentManager.getProperty(
+			Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_MANAGER_PROPERTY);
+			
+		// get schema location properties
+		try {
+			fExternalSchemas = (String) componentManager.getProperty(SCHEMA_LOCATION);
+			fExternalNoNSSchema =
+				(String) componentManager.getProperty(SCHEMA_NONS_LOCATION);
+		} catch (XMLConfigurationException e) {
+			fExternalSchemas = null;
+			fExternalNoNSSchema = null;
+		}
+		// get JAXP sources if available
+		try {
+			fJAXPSource = componentManager.getProperty(JAXP_SCHEMA_SOURCE);
+			fJAXPProcessed = false;
+
+		} catch (XMLConfigurationException e) {
+			fJAXPSource = null;
+			fJAXPProcessed = false;
+		}
+		
+		// clear grammars, and put the one for schema namespace there
+		try {
+			fGrammarPool = (XMLGrammarPool) componentManager.getProperty(XMLGRAMMAR_POOL);
+		} catch (XMLConfigurationException e) {
+			fGrammarPool = null;
+		}
+		
+		 fUseDeclPool = (fGrammarPool == null);
+		 
+		try {
+			fAllowJavaEncodings = componentManager.getFeature(ALLOW_JAVA_ENCODINGS);
+		} catch (XMLConfigurationException e) {
+		}
+		try {
+			fStrictURI = componentManager.getFeature(STANDARD_URI_CONFORMANT_FEATURE);
+		} catch (XMLConfigurationException e) {
+		}
+		
+		// get continue-after-fatal-error feature
+		try {
+			boolean fatalError = componentManager.getFeature(CONTINUE_AFTER_FATAL_ERROR);
+			fErrorReporter.setFeature(CONTINUE_AFTER_FATAL_ERROR, fatalError);
+		} catch (XMLConfigurationException e) {
+		}
+		initGrammarBucket();
+		fSchemaHandler.reset(fErrorReporter, fEntityResolver,
+				fSymbolTable, fGrammarPool, fAllowJavaEncodings, fStrictURI);
+		 
+		 
+	}
+	
+	private void initGrammarBucket(){
+		if(fGrammarPool != null) {
+			Grammar [] initialGrammars = fGrammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA);
+			for (int i = 0; i < initialGrammars.length; i++) {
+				// put this grammar into the bucket, along with grammars
+				// imported by it (directly or indirectly)
+				if (!fGrammarBucket.putGrammar((SchemaGrammar)(initialGrammars[i]), true)) {
+					// REVISIT: a conflict between new grammar(s) and grammars
+					// in the bucket. What to do? A warning? An exception?
+					fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+																 "GrammarConflict", null,
+																 XMLErrorReporter.SEVERITY_WARNING);
+				}
+			}
+		}
+	}
+	
+	
 
 } // XMLGrammarLoader
 

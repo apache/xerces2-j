@@ -374,25 +374,27 @@ public class XMLDocumentFragmentScannerImpl
         // sax features
         fAttributes.setNamespaces(fNamespaces);
 
-        // xerces features
-        try {
-            fNotifyBuiltInRefs = componentManager.getFeature(NOTIFY_BUILTIN_REFS);
-        }
-        catch (XMLConfigurationException e) {
-            fNotifyBuiltInRefs = false;
-        }
+		// initialize vars
+		fMarkupDepth = 0;
+		fCurrentElement = null;
+		fElementStack.clear();
+		fHasExternalDTD = false;
+		fStandalone = false;
 
-        // initialize vars
-        fMarkupDepth = 0;
-        fCurrentElement = null;
-        fElementStack.clear();
-        fHasExternalDTD = false;
-        fStandalone = false;
-
-        // setup dispatcher
-        setScannerState(SCANNER_STATE_CONTENT);
-        setDispatcher(fContentDispatcher);
+		// setup dispatcher
+		setScannerState(SCANNER_STATE_CONTENT);
+		setDispatcher(fContentDispatcher);
         
+
+        if (!fParserSettings) {
+            // xerces features
+            try {
+                fNotifyBuiltInRefs = componentManager.getFeature(NOTIFY_BUILTIN_REFS);
+            } catch (XMLConfigurationException e) {
+                fNotifyBuiltInRefs = false;
+            }
+        }
+
     } // reset(XMLComponentManager)
 
     /**

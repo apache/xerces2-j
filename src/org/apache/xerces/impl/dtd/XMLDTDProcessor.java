@@ -131,6 +131,9 @@ public class XMLDTDProcessor
     /** Feature identifier: warn on duplicate attdef */
     protected static final String WARN_ON_DUPLICATE_ATTDEF = 
         Constants.XERCES_FEATURE_PREFIX +Constants.WARN_ON_DUPLICATE_ATTDEF_FEATURE; 
+        
+	protected static final String PARSER_SETTINGS = 
+			Constants.XERCES_FEATURE_PREFIX + Constants.PARSER_SETTINGS;
 
     // property identifiers
 
@@ -313,51 +316,66 @@ public class XMLDTDProcessor
      *                      SAXNotRecognizedException or a
      *                      SAXNotSupportedException.
      */
-    public void reset(XMLComponentManager componentManager)
-            throws XMLConfigurationException {
+    public void reset(XMLComponentManager componentManager) throws XMLConfigurationException {
+       
+        boolean parser_settings;
+        try {
+            parser_settings = componentManager.getFeature(PARSER_SETTINGS);
+        } catch (XMLConfigurationException e) {
+            parser_settings = true;
+        }
+
+        if (!parser_settings) {
+            // parser settings have not been changed
+			reset();
+            return;
+        }
 
         // sax features
         try {
             fValidation = componentManager.getFeature(VALIDATION);
-        }
-        catch (XMLConfigurationException e) {
+        } catch (XMLConfigurationException e) {
             fValidation = false;
         }
         try {
-            fDTDValidation = !(componentManager.getFeature(Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE));
-        }
-        catch (XMLConfigurationException e) {
+            fDTDValidation =
+                !(componentManager
+                    .getFeature(
+                        Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE));
+        } catch (XMLConfigurationException e) {
             // must be in a schema-less configuration!
             fDTDValidation = true;
         }
 
         // Xerces features
-        
+
         try {
             fWarnDuplicateAttdef = componentManager.getFeature(WARN_ON_DUPLICATE_ATTDEF);
-        }
-        catch (XMLConfigurationException e) {
+        } catch (XMLConfigurationException e) {
             fWarnDuplicateAttdef = false;
         }
 
-
         // get needed components
-        fErrorReporter = (XMLErrorReporter)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.ERROR_REPORTER_PROPERTY);
-        fSymbolTable = (SymbolTable)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SYMBOL_TABLE_PROPERTY);
+        fErrorReporter =
+            (XMLErrorReporter) componentManager.getProperty(
+                Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY);
+        fSymbolTable =
+            (SymbolTable) componentManager.getProperty(
+                Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY);
         try {
-            fGrammarPool= (XMLGrammarPool)componentManager.getProperty(GRAMMAR_POOL);
+            fGrammarPool = (XMLGrammarPool) componentManager.getProperty(GRAMMAR_POOL);
         } catch (XMLConfigurationException e) {
             fGrammarPool = null;
         }
         try {
-            fValidator = (XMLDTDValidator)componentManager.getProperty(DTD_VALIDATOR);
+            fValidator = (XMLDTDValidator) componentManager.getProperty(DTD_VALIDATOR);
         } catch (XMLConfigurationException e) {
             fValidator = null;
         } catch (ClassCastException e) {
             fValidator = null;
         }
         // we get our grammarBucket from the validator...
-        if(fValidator != null) {
+        if (fValidator != null) {
             fGrammarBucket = fValidator.getGrammarBucket();
         } else {
             fGrammarBucket = null;
@@ -374,7 +392,17 @@ public class XMLDTDProcessor
 
         fNDataDeclNotations.clear();
 
-        init();
+        // datatype validators
+        if (fValidation) {
+
+            if (fNotationEnumVals == null) {
+                fNotationEnumVals = new Hashtable();
+            }
+            fNotationEnumVals.clear();
+
+            fTableOfIDAttributeNames = new Hashtable();
+            fTableOfNOTATIONAttributeNames = new Hashtable();
+        }
 
     }
     /**
@@ -1630,22 +1658,6 @@ public class XMLDTDProcessor
         return false;
     }
 
-    /** initialization */
-    private void init() {
-
-        // datatype validators
-        if (fValidation) {
-
-            if (fNotationEnumVals == null) {
-                fNotationEnumVals = new Hashtable(); 
-            }
-            fNotationEnumVals.clear();
-
-            fTableOfIDAttributeNames = new Hashtable();
-            fTableOfNOTATIONAttributeNames = new Hashtable();
-        }
-
-    } // init()
     
     protected boolean isValidNmtoken(String nmtoken) {
         return XMLChar.isValidNmtoken(nmtoken);

@@ -185,7 +185,10 @@ public class XMLSchemaValidator
 	/** Feature identifier: whether to continue parsing a schema after a fatal error is encountered */
 	protected static final String CONTINUE_AFTER_FATAL_ERROR =
 		Constants.XERCES_FEATURE_PREFIX + Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE;
-
+	
+	protected static final String PARSER_SETTINGS = 
+			Constants.XERCES_FEATURE_PREFIX + Constants.PARSER_SETTINGS;
+			
 	// property identifiers
 
 	/** Property identifier: symbol table. */
@@ -295,6 +298,7 @@ public class XMLSchemaValidator
 
 	// Validation features
 	protected boolean fDynamicValidation = false;
+	protected boolean fSchemaDynamicValidation = false;
 	protected boolean fDoValidation = false;
 	protected boolean fFullChecking = false;
 	protected boolean fNormalizeData = true;
@@ -1232,15 +1236,61 @@ public class XMLSchemaValidator
 	 *                      SAXNotSupportedException.
 	 */
 	public void reset(XMLComponentManager componentManager) throws XMLConfigurationException {
+        
+        
+		fIdConstraint = false;
+		//reset XSDDescription
+		fLocationPairs.clear();
 
+		// cleanup id table
+		fValidationState.resetIDTables();
+		
+		//pass the component manager to the factory..
+		nodeFactory.reset(componentManager);
+
+		// reset schema loader
+		fSchemaLoader.reset(componentManager);
+
+		// initialize state
+		fCurrentElemDecl = null;
+		fCurrentCM = null;
+		fCurrCMState = null;
+		fSkipValidationDepth = -1;
+		fNFullValidationDepth = -1;
+		fNNoneValidationDepth = -1;
+		fElementDepth = -1;
+		fSubElement = false;
+		fSchemaDynamicValidation = false;
+
+		// datatype normalization
+		fEntityRef = false;
+		fInCDATA = false;
+
+		fMatcherStack.clear();
+		fBaseURI = null;
+		
 		// get error reporter
 		fXSIErrorReporter.reset((XMLErrorReporter) componentManager.getProperty(ERROR_REPORTER));
-		fSchemaLoader.setProperty(ERROR_REPORTER, fXSIErrorReporter.fErrorReporter);
+        
+		boolean parser_settings;
+		try {
+			parser_settings = componentManager.getFeature(PARSER_SETTINGS);  	
+		}
+		catch (XMLConfigurationException e){
+			parser_settings = true;
+		}
+        
+		if (!parser_settings){
+			// parser settings have not been changed
+			fValidationManager.addValidationState(fValidationState);
+			return;
+		}
+        	
+
 
 		// get symbol table. if it's a new one, add symbols to it.
 		SymbolTable symbolTable = (SymbolTable) componentManager.getProperty(SYMBOL_TABLE);
 		if (symbolTable != fSymbolTable) {
-			fSchemaLoader.setProperty(SYMBOL_TABLE, symbolTable);
 			fSymbolTable = symbolTable;
 		}
 
@@ -1272,9 +1322,6 @@ public class XMLSchemaValidator
 		} catch (XMLConfigurationException e) {
 			fFullChecking = false;
 		}
-		// the validator will do full checking anyway; the loader should
-		// not (and in fact cannot) concern itself with this.
-		fSchemaLoader.setFeature(SCHEMA_FULL_CHECKING, false);
 
 		try {
 			fNormalizeData = componentManager.getFeature(NORMALIZE_DATA);
@@ -1302,18 +1349,11 @@ public class XMLSchemaValidator
 		}
 
 		fEntityResolver = (XMLEntityResolver) componentManager.getProperty(ENTITY_MANAGER);
-		fSchemaLoader.setEntityResolver(fEntityResolver);
 
 		fValidationManager = (ValidationManager) componentManager.getProperty(VALIDATION_MANAGER);
 		fValidationManager.addValidationState(fValidationState);
 		fValidationState.setSymbolTable(fSymbolTable);
 
-		fIdConstraint = false;
-		//reset XSDDescription
-		fLocationPairs.clear();
-
-		// cleanup id table
-		fValidationState.resetIDTables();
 
 		// get schema location properties
 		try {
@@ -1324,8 +1364,7 @@ public class XMLSchemaValidator
 			fExternalSchemas = null;
 			fExternalNoNamespaceSchema = null;
 		}
-		fSchemaLoader.setProperty(SCHEMA_LOCATION, fExternalSchemas);
-		fSchemaLoader.setProperty(SCHEMA_NONS_LOCATION, fExternalNoNamespaceSchema);
+		
 		// store the external schema locations. they are set when reset is called,
 		// so any other schemaLocation declaration for the same namespace will be
 		// effectively ignored. becuase we choose to take first location hint
@@ -1342,7 +1381,6 @@ public class XMLSchemaValidator
 			fJaxpSchemaSource = null;
 
 		}
-		fSchemaLoader.setProperty(JAXP_SCHEMA_SOURCE, fJaxpSchemaSource);
 		fResourceIdentifier.clear();
 
 		// clear grammars, and put the one for schema namespace there
@@ -1351,56 +1389,6 @@ public class XMLSchemaValidator
 		} catch (XMLConfigurationException e) {
 			fGrammarPool = null;
 		}
-		fSchemaLoader.setProperty(XMLGRAMMAR_POOL, fGrammarPool);
-		// only set useDeclPool to true when the validator invokes the loader,
-		// and there is no grammar pool. that is, the grammar will never be
-		// exposed to the application.
-		fSchemaLoader.setUseDeclPool(fGrammarPool == null);
-
-		// Copy the allow-java-encoding feature to the grammar loader.
-		// REVISIT: what other fetures/properties do we want to copy?
-		try {
-			boolean allowJavaEncodings = componentManager.getFeature(ALLOW_JAVA_ENCODINGS);
-			fSchemaLoader.setFeature(ALLOW_JAVA_ENCODINGS, allowJavaEncodings);
-		} catch (XMLConfigurationException e) {
-		}
-		try {
-			boolean strictURI = componentManager.getFeature(STANDARD_URI_CONFORMANT_FEATURE);
-			fSchemaLoader.setFeature(STANDARD_URI_CONFORMANT_FEATURE, strictURI);
-		} catch (XMLConfigurationException e) {
-		}
-
-		// get continue-after-fatal-error feature
-		try {
-			boolean fatalError = componentManager.getFeature(CONTINUE_AFTER_FATAL_ERROR);
-			fSchemaLoader.setFeature(CONTINUE_AFTER_FATAL_ERROR, fatalError);
-		} catch (XMLConfigurationException e) {
-		}
-
-		//pass the component manager to the factory..
-		nodeFactory.reset(componentManager);
-
-		// clear grammars, and put the one for schema namespace there
-		// logic for resetting grammar-related components moved
-		// to schema loader
-		fSchemaLoader.reset();
-
-		// initialize state
-		fCurrentElemDecl = null;
-		fCurrentCM = null;
-		fCurrCMState = null;
-		fSkipValidationDepth = -1;
-		fNFullValidationDepth = -1;
-		fNNoneValidationDepth = -1;
-		fElementDepth = -1;
-		fSubElement = false;
-
-		// datatype normalization
-		fEntityRef = false;
-		fInCDATA = false;
-
-		fMatcherStack.clear();
-		fBaseURI = null;
 
 		fState4XsiType.setSymbolTable(symbolTable);
 		fState4ApplyDefault.setSymbolTable(symbolTable);
@@ -1704,7 +1692,7 @@ public class XMLSchemaValidator
 				// if a DTD grammar is found, we do the same thing as Dynamic:
 				// if a schema grammar is found, validation is performed;
 				// otherwise, skip the whole document.
-				fDynamicValidation = true;
+				fSchemaDynamicValidation = true;
 			} else {
 				// [1] Either schemaType is DTD, and in this case validate/schema is turned off
 				// [2] Validating against XML Schemas only
@@ -1855,7 +1843,7 @@ public class XMLSchemaValidator
 			if (fElementDepth == 0) {
 				// for dynamic validation, skip the whole content,
 				// because no grammar was found.
-				if (fDynamicValidation) {
+				if (fDynamicValidation || fSchemaDynamicValidation) {
 					// no schema grammar was found, but it's either dynamic
 					// validation, or another kind of grammar was found (DTD,
 					// for example). The intended behavior here is to skip

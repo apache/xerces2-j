@@ -150,6 +150,8 @@ public class XMLDocumentScannerImpl
     /** property identifier:  NamespaceContext */
     protected static final String NAMESPACE_CONTEXT =
         Constants.XERCES_PROPERTY_PREFIX + Constants.NAMESPACE_CONTEXT_PROPERTY;
+        
+
 
     // recognized features and properties
 
@@ -299,6 +301,17 @@ public class XMLDocumentScannerImpl
         fDoctypePublicId = null;
         fDoctypeSystemId = null;
         fSeenDoctypeDecl = false;
+		fScanningDTD = false;
+       
+
+		if (!fParserSettings) {
+			// parser settings have not been changed
+			fNamespaceContext.reset();
+			// setup dispatcher
+			setScannerState(SCANNER_STATE_XML_DECL);
+			setDispatcher(fXMLDeclDispatcher);
+			return;
+		}
 
         // xerces features
         try {
@@ -331,9 +344,6 @@ public class XMLDocumentScannerImpl
             fNamespaceContext = new NamespaceSupport();
         }
         fNamespaceContext.reset();
-
-        // initialize vars
-        fScanningDTD = false;
         
         // setup dispatcher
         setScannerState(SCANNER_STATE_XML_DECL);

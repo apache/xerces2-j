@@ -271,6 +271,13 @@ public final class Constants {
 
     /** Standard URI conformant feature ("standard-uri-conformant"). */
     public static final String STANDARD_URI_CONFORMANT_FEATURE = "standard-uri-conformant";
+    
+	/** Internal performance related feature: 
+	 * false - the parser settings (features/properties) have not changed between 2 parses
+	 * true - the parser settings have changed between 2 parses  
+	 * NOTE: this feature should only be set by the parser configuration.
+	 */
+	public static final String PARSER_SETTINGS = "internal/parser-settings";
 
     // xerces properties
 
@@ -297,6 +304,7 @@ public final class Constants {
 
     /** Entity manager property ("internal/entity-manager"). */
     public static final String ENTITY_MANAGER_PROPERTY = "internal/entity-manager";
+    
 
     /** Input buffer size property ("input-buffer-size"). */
     public static final String BUFFER_SIZE_PROPERTY = "input-buffer-size";

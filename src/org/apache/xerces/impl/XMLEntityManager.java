@@ -155,6 +155,9 @@ public class XMLEntityManager
     /** Feature identifier: standard uri conformant */
     protected static final String STANDARD_URI_CONFORMANT =
     Constants.XERCES_FEATURE_PREFIX +Constants.STANDARD_URI_CONFORMANT_FEATURE;
+    
+	protected static final String PARSER_SETTINGS = 
+		Constants.XERCES_FEATURE_PREFIX + Constants.PARSER_SETTINGS;	
 
     // property identifiers
 
@@ -1099,15 +1102,15 @@ public class XMLEntityManager
         if(version == Constants.XML_VERSION_1_0) {
             if(fXML10EntityScanner == null) {
                 fXML10EntityScanner = new XMLEntityScanner();
-                fXML10EntityScanner.reset(fSymbolTable, this, fErrorReporter);
             }
+			fXML10EntityScanner.reset(fSymbolTable, this, fErrorReporter);
             fEntityScanner = fXML10EntityScanner;
             fEntityScanner.setCurrentEntity(fCurrentEntity);
         } else {
             if(fXML11EntityScanner == null) {
                 fXML11EntityScanner = new XML11EntityScanner();
-                fXML11EntityScanner.reset(fSymbolTable, this, fErrorReporter);
             }
+			fXML11EntityScanner.reset(fSymbolTable, this, fErrorReporter);
             fEntityScanner = fXML11EntityScanner;
             fEntityScanner.setCurrentEntity(fCurrentEntity);
         }
@@ -1165,6 +1168,19 @@ public class XMLEntityManager
      */
     public void reset(XMLComponentManager componentManager)
         throws XMLConfigurationException {
+        	
+		boolean parser_settings;
+		try {
+				parser_settings = componentManager.getFeature(PARSER_SETTINGS);
+		} catch (XMLConfigurationException e) {
+				parser_settings = true;
+		}
+
+		if (!parser_settings) {
+			// parser settings have not been changed
+			reset();
+			return;
+		}
 
         // sax features
         try {

@@ -116,6 +116,9 @@ public abstract class XMLScanner
     /** Feature identifier: notify character references. */
     protected static final String NOTIFY_CHAR_REFS =
         Constants.XERCES_FEATURE_PREFIX + Constants.NOTIFY_CHAR_REFS_FEATURE;
+	
+	protected static final String PARSER_SETTINGS = 
+				Constants.XERCES_FEATURE_PREFIX + Constants.PARSER_SETTINGS;
 
     // property identifiers
 
@@ -139,6 +142,7 @@ public abstract class XMLScanner
     //
     // Data
     //
+    
 
     // features
 
@@ -153,7 +157,10 @@ public abstract class XMLScanner
 
     /** Character references notification. */
     protected boolean fNotifyCharRefs = false;
-
+    
+    /** Internal parser-settings feature */
+	protected boolean fParserSettings = true;
+	
     // properties
 
     /** Symbol table. */
@@ -246,6 +253,18 @@ public abstract class XMLScanner
     public void reset(XMLComponentManager componentManager)
         throws XMLConfigurationException {
 
+		try {
+			fParserSettings = componentManager.getFeature(PARSER_SETTINGS);
+		} catch (XMLConfigurationException e) {
+			fParserSettings = true;
+		}
+
+		if (!fParserSettings) {
+			// parser settings have not been changed
+			init();
+			return;
+		}
+
         // Xerces properties
         fSymbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
         fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
@@ -271,6 +290,7 @@ public abstract class XMLScanner
         catch (XMLConfigurationException e) {
             fNotifyCharRefs = false;
         }
+        init();
 
     } // reset(XMLComponentManager)
 

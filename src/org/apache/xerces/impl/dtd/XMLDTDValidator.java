@@ -149,6 +149,9 @@ public class XMLDTDValidator
     /** Feature identifier: warn on duplicate attdef */
     protected static final String WARN_ON_DUPLICATE_ATTDEF = 
     Constants.XERCES_FEATURE_PREFIX +Constants.WARN_ON_DUPLICATE_ATTDEF_FEATURE; 
+    
+	protected static final String PARSER_SETTINGS = 
+		Constants.XERCES_FEATURE_PREFIX + Constants.PARSER_SETTINGS;	
 
 
 
@@ -455,6 +458,26 @@ public class XMLDTDValidator
 
         fRootElement.clear();
 
+		fValidationState.resetIDTables();
+		
+		fGrammarBucket.clear();
+		fElementDepth = -1;                      
+		fElementChildrenLength = 0;
+        
+        boolean parser_settings;
+        try {
+        	parser_settings = componentManager.getFeature(PARSER_SETTINGS);  	
+        }
+        catch (XMLConfigurationException e){
+        	parser_settings = true;
+        }
+        
+        if (!parser_settings){
+        	// parser settings have not been changed
+			fValidationManager.addValidationState(fValidationState);
+        	return;
+        }
+
         // sax features
         try {
             fNamespaces = componentManager.getFeature(NAMESPACES);
@@ -500,8 +523,7 @@ public class XMLDTDValidator
         }
 
         fValidationManager= (ValidationManager)componentManager.getProperty(VALIDATION_MANAGER);
-        fValidationManager.addValidationState(fValidationState);
-        fValidationState.resetIDTables();
+        fValidationManager.addValidationState(fValidationState);      
         fValidationState.setUsingNamespaces(fNamespaces);
         
         // get needed components
@@ -512,12 +534,9 @@ public class XMLDTDValidator
         } catch (XMLConfigurationException e) {
             fGrammarPool = null;
         }
-        fGrammarBucket.clear();
-        fDatatypeValidatorFactory = (DTDDVFactory)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX + Constants.DATATYPE_VALIDATOR_FACTORY_PROPERTY);
 
-        fElementDepth = -1;                      
-        fElementChildrenLength = 0;
-        init();
+        fDatatypeValidatorFactory = (DTDDVFactory)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX + Constants.DATATYPE_VALIDATOR_FACTORY_PROPERTY);
+		init();
 
     } // reset(XMLComponentManager)
 
