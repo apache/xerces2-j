@@ -165,6 +165,7 @@ public class DatatypeMessageProvider implements XMLMessageProvider {
     ILLEGAL_STRING_FACET     = counter++,
     ILLEGAL_LIST_FACET       = counter++,
     ILLEGAL_UNION_FACET      = counter++,
+    ILLEGAL_ANYSIMPLETYPE_FACET  = counter++,
 
     MSG_MAX_CODE = counter;
 
@@ -200,7 +201,8 @@ public class DatatypeMessageProvider implements XMLMessageProvider {
         "IllegalQNameFacet",
         "IllegalStringFacet",
         "IllegalListFacet",
-        "IllegalUnionFacet"
+        "IllegalUnionFacet",
+        "IllegalAnySimpleTypeFacet"
     };
 
 }

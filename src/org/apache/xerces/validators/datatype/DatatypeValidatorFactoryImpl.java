@@ -169,7 +169,8 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 //REVISIT: we want to create datatypes lazily
                 //         esspecially for the types that are not often used
                 //
-                fSchemaDatatypeRegistry.put("boolean",           new BooleanDatatypeValidator()  );
+                fSchemaDatatypeRegistry.put("anySimpleType",     new AnySimpleType());
+                fSchemaDatatypeRegistry.put("boolean",           new BooleanDatatypeValidator());
                 fSchemaDatatypeRegistry.put("float",             new FloatDatatypeValidator());
                 fSchemaDatatypeRegistry.put("double",            new DoubleDatatypeValidator());
                 fSchemaDatatypeRegistry.put("decimal",           new DecimalDatatypeValidator());
@@ -190,8 +191,6 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 if ( fRegistryExpanded == 0 ) {
                     initializeDTDRegistry(); //Initialize common Schema/DTD Datatype validator set if not already initialized
                 }
-
-                fDTDDatatypeRegistry.put("anySimpleType", getDatatypeValidator("string"));
 
                 Hashtable facets = new Hashtable (2);
                 facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATT_REPLACE);
