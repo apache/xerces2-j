@@ -1614,10 +1614,14 @@ public class CoreDocumentImpl
             case ATTRIBUTE_NODE: {
                 AttrImpl attr = (AttrImpl) node;
                 // remove node from wherever it is
-                attr.getOwnerElement().removeAttributeNode(attr);
-                // mark it as specified
+                if( attr.getOwnerElement() != null){
+                    //1. owner element attribute is set to null
+                    attr.getOwnerElement().removeAttributeNode(attr);
+                }
+                //2. specified flag is set to true
                 attr.isSpecified(true);
-                // change ownership
+
+                //3. change ownership
                 attr.setOwnerDocument(this);
                 break;
             }
