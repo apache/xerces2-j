@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2002,2004 The Apache Software Foundation.
+ * Copyright 2000-2002,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -174,14 +174,8 @@ public class SymbolTable {
         
         // search for identical symbol
         int bucket = hash(symbol) % fTableSize;
-        int length = symbol.length();
-        OUTER: for (Entry entry = fBuckets[bucket]; entry != null; entry = entry.next) {
-            if (length == entry.characters.length) {
-                for (int i = 0; i < length; i++) {
-                    if (symbol.charAt(i) != entry.characters[i]) {
-                        continue OUTER;
-                    }
-                }
+        for (Entry entry = fBuckets[bucket]; entry != null; entry = entry.next) {
+            if (entry.symbol.equals(symbol)) {
                 return entry.symbol;
             }
         }
@@ -248,14 +242,7 @@ public class SymbolTable {
      * @param symbol The symbol to hash.
      */
     public int hash(String symbol) {
-
-        int code = 0;
-        int length = symbol.length();
-        for (int i = 0; i < length; i++) {
-            code = code * 37 + symbol.charAt(i);
-        }
-        return code & 0x7FFFFFF;
-
+        return symbol.hashCode() & 0x7FFFFFF;
     } // hash(String):int
 
     /**
@@ -272,8 +259,8 @@ public class SymbolTable {
     public int hash(char[] buffer, int offset, int length) {
 
         int code = 0;
-        for (int i = 0; i < length; i++) {
-            code = code * 37 + buffer[offset + i];
+        for (int i = 0; i < length; ++i) {
+            code = code * 31 + buffer[offset + i];
         }
         return code & 0x7FFFFFF;
 
