@@ -25,8 +25,17 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
     <td>License for &ParserName;</td>
    </tr>
    <tr>
+    <td>LICENSE.resolver.txt</td>
+    <td>License for the XML Commons Resolver</td>
+   </tr>
+   <tr>
     <td>Readme.html</td>
     <td>Web page redirect to docs/html/index.html</td>
+   </tr>
+   <tr>
+    <td>resolver.jar</td>
+    <td>Jar file containing the XML Commons Resolver. Currently,
+    Resolver 1.1 is distributed with &ParserName;.</td>
    </tr>
    <tr>
     <td>xercesImpl.jar</td>
@@ -37,7 +46,7 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
     <td>xml-apis.jar</td>
     <td>Jar file containing all the standard API&apos;s implemented by
     the parser.  Currently, &ParserName; supports DOM level 2, SAX
-    2.0 R2 PR1, and the <code>javax.xml.parsers</code> part of JAXP
+    2.0.1, and the <code>javax.xml.parsers</code> part of JAXP
     1.2.  </td>
    </tr>
    <tr>
@@ -85,6 +94,10 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
    <tr>
     <td>LICENSE</td>
     <td>License for &ParserName;</td>
+   </tr>
+   <tr>
+    <td>LICENSE.resolver.txt</td>
+    <td>License for the XML Commons Resolver</td>
    </tr>
    <tr>
     <td>build.bat</td>
