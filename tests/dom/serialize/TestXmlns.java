@@ -82,7 +82,7 @@ public class TestXmlns {
 
             // Create a document.
             DocumentImpl document = new DocumentImpl();
-            document.setEncoding("utf-8");
+            document.setXmlEncoding("utf-8");
             // Create an element with a default namespace declaration.
             Element outerNode = document.createElement("outer");
             outerNode.setAttribute("xmlns", "myuri:");
