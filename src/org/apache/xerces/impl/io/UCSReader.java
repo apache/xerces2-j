@@ -81,10 +81,10 @@ public class UCSReader extends Reader {
      */
     public static final int DEFAULT_BUFFER_SIZE = 8192;
 
-    public static short UCS2LE = 1;
-    public static short UCS2BE = 2;
-    public static short UCS4LE = 4;
-    public static short UCS4BE = 8;
+    public static final short UCS2LE = 1;
+    public static final short UCS2BE = 2;
+    public static final short UCS4LE = 4;
+    public static final short UCS4BE = 8;
 
     //
     // Data
