@@ -489,7 +489,12 @@ public class TraverseSchema implements
         fStringPool = stringPool;
         fSchemaGrammar = schemaGrammar;
         fGrammarResolver = grammarResolver;
-        
+
+        if (root == null) { 
+            // REVISIT: Anything to do?
+            return;
+        }
+
         if (fGrammarResolver == null) {
             reportGenericSchemaError("Internal error: don't have a GrammarResolver for TraverseSchema");
         }
@@ -499,11 +504,6 @@ public class TraverseSchema implements
             fGrammarResolver.putGrammar(fTargetNSURIString, fSchemaGrammar);
         }
         
-
-        if (root == null) { 
-            // REVISIT: Anything to do?
-            return;
-        }
 
         //Retrieve the targetnamespace URI information
         fTargetNSURIString = root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE);
@@ -517,6 +517,8 @@ public class TraverseSchema implements
         int i = 0;
         Attr sattr = null;
 
+        fNamespacesScope.setNamespaceForPrefix( fStringPool.addSymbol(""),
+                                                fStringPool.addSymbol("") );
         while ((sattr = (Attr)schemaEltAttrs.item(i++)) != null) {
             String attName = sattr.getName();
             if (attName.startsWith("xmlns:")) {
@@ -702,8 +704,8 @@ public class TraverseSchema implements
                newValidator.setFacets(facetData, varietyProperty );
            fDatatypeRegistry.addValidator(fStringPool.toString(newSimpleTypeName),newValidator);
            } catch (Exception e) {
-               e.printStackTrace(System.err);
-           reportSchemaError(SchemaMessageProvider.DatatypeError,new Object [] { e.getMessage() });
+               //e.printStackTrace(System.err);
+               reportSchemaError(SchemaMessageProvider.DatatypeError,new Object [] { e.getMessage() });
            }
         return newSimpleTypeName;
     }
@@ -1268,8 +1270,8 @@ public class TraverseSchema implements
                 min = Integer.parseInt(minOccurs);
             }
             catch (Exception e) {
-                //REVISIT; error handling
-                e.printStackTrace();
+                reportSchemaError(SchemaMessageProvider.GenericError,
+                                  new Object [] { "illegal value for minOccurs : '" +e.getMessage()+ "' " });
             }
             if (min<2) {
                 //REVISIT: report Error here
@@ -1296,8 +1298,8 @@ public class TraverseSchema implements
                 max = Integer.parseInt(maxOccurs);
             }
             catch (Exception e){
-                //REVISIT; error handling
-                e.printStackTrace();
+                reportSchemaError(SchemaMessageProvider.GenericError,
+                                  new Object [] { "illegal value for minOccurs or maxOccurs : '" +e.getMessage()+ "' "});
             }
             for (int i=0; i<(min-1); i++) {
                 index = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ,
@@ -1710,6 +1712,7 @@ public class TraverseSchema implements
                 return new QName(-1,nameIndex,nameIndex,fTargetNSURI);
             }
         }
+
         int attrCount = 0;
         if (!ref.equals("")) attrCount++;
         if (!type.equals("")) attrCount++;
@@ -1728,10 +1731,17 @@ public class TraverseSchema implements
                 localpart = ref.substring(colonptr+1);
             }
             int localpartIndex = fStringPool.addSymbol(localpart);
+            String uriString = resolvePrefixToURI(prefix);
             QName eltName = new QName(  fStringPool.addSymbol(prefix),
                                       localpartIndex,
                                       fStringPool.addSymbol(ref),
-                                      fStringPool.addSymbol(resolvePrefixToURI(prefix)) );
+                                      fStringPool.addSymbol(uriString) );
+
+            //if from another schema, just return the element QName
+            if (! uriString.equals(fTargetNSURIString) ) {
+                return eltName;
+            }
+
             int elementIndex = fSchemaGrammar.getElementDeclIndex(localpartIndex, TOP_LEVEL_SCOPE);
             //if not found, traverse the top level element that if referenced
 
@@ -1920,7 +1930,7 @@ public class TraverseSchema implements
                                                          contentSpecType, contentSpecNodeIndex, 
                                                          attrListHead, dv);
         if ( DEBUGGING ) {
-            /***
+            /***/
             System.out.println("########elementIndex:"+elementIndex+" "+elementDecl.getAttribute(SchemaSymbols.ATT_NAME)
                                +" eltType:"+name+" contentSpecType:"+contentSpecType+
                                " SpecNodeIndex:"+ contentSpecNodeIndex +" enclosingScope: " +enclosingScope +

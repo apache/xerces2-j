@@ -3359,7 +3359,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         }
 
     }// parseSchemaLocaltion(String, Hashtable)
-    private void resolveSchemaGrammar( String loc, String uri) {
+    private void resolveSchemaGrammar( String loc, String uri) throws Exception{
 
         DOMParser parser = new DOMParser() {
             public void ignorableWhitespace(char ch[], int start, int length) {}
@@ -3382,7 +3382,8 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         }catch( IOException e ) {
             e.printStackTrace();
         }catch( SAXException e ) {
-            e.printStackTrace();
+            //e.printStackTrace();
+            reportRecoverableXMLError(167, 144, e.getMessage() );
         }
 
         Document     document   = parser.getDocument(); //Our Grammar
@@ -3394,15 +3395,19 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             }
 
             Element root   = document.getDocumentElement();// This is what we pass to TraverserSchema
-            if (uri == null || !uri.equals(root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE)) ) {
-                //TO DO : report error here
-                System.out.println("Schema in " + loc + " has a different target namespace " + 
-                                   "from the one specified in the instance document :" + uri); 
+            if (root == null) {
+                reportRecoverableXMLError(167, 144, "Can't get back Schema document's root element :" + loc); 
             }
-            if (fGrammar == null) {
-                fGrammar = new SchemaGrammar();
+            else {
+                if (uri == null || !uri.equals(root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE)) ) {
+                    reportRecoverableXMLError(167,144, "Schema in " + loc + " has a different target namespace " + 
+                                       "from the one specified in the instance document :" + uri); 
+                }
+                if (fGrammar == null) {
+                    fGrammar = new SchemaGrammar();
+                }
+                tst = new TraverseSchema( root, fStringPool, (SchemaGrammar)fGrammar, fGrammarResolver, fErrorReporter);
             }
-            tst = new TraverseSchema( root, fStringPool, (SchemaGrammar)fGrammar, fGrammarResolver, fErrorReporter);
         }
         catch (Exception e) {
             e.printStackTrace(System.err);
@@ -3410,7 +3415,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
     }
 
-    private void resolveSchemaGrammar(String uri){
+    private void resolveSchemaGrammar(String uri) throws Exception{
 
         resolveSchemaGrammar(uri, uri);
 
@@ -3556,6 +3561,15 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
                     }
                 }
+                //if still can't resolve it, try TOP_LEVEL_SCOPE AGAIN
+                if (element.uri == -1) {
+                    elementIndex = fGrammar.getElementDeclIndex(element.localpart, TOP_LEVEL_SCOPE);
+                    // REVISIT:
+                    // this is a hack to handle the situation where namespace prefix "" is bound to nothing, and there
+                    // is a "noNamespaceSchemaLocation" specified, and element 
+                    element.uri = fStringPool.addSymbol("");
+                }
+
                 /****/
                 if (elementIndex == -1)
                     if (DEBUG_SCHEMA_VALIDATION)
