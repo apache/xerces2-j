@@ -675,7 +675,7 @@ public class XML11DocumentScannerImpl
     } // isValidNameStartChar(int):  boolean
 
     protected boolean versionSupported(String version) {
-        return version.equals("1.1");
+        return (version.equals("1.1") || version.equals("1.0"));
     } // versionSupported(String):  boolean
 
 } // class XML11DocumentScannerImpl
