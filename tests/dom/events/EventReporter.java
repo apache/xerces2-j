@@ -60,99 +60,51 @@ package dom.events;
 import org.w3c.dom.*;
 import org.w3c.dom.events.*;
 
-public class Test
+class EventReporter implements EventListener
 {
-    EventReporter sharedReporter=new EventReporter();
+    boolean silent=false; // Toggle this to mask reports you don't care about
+    int count=0;
+    String[] phasename={"?","BUBBLING","CAPTURING","AT_TARGET","?"};
     
-    public static void main(String[] args)
+    public void on()
     {
-        Test met=new Test();
-        met.runTest();
+        System.out.println("\nEventReporter awakened:\n");
+        silent=false;
     }
-
-    void runTest()
+    public void off()
     {
-        Document doc=new org.apache.xerces.dom.DocumentImpl();
-        reportAllMutations(doc);
-        
-        Element root=addNoisyElement(doc,doc,0);
-        Element e=null;
-        int i;
-        
-        // Individual nodes
-        e=addNoisyElement(doc,root,0);
-        Attr a=addNoisyAttr(doc,e,0);
-        a.setNodeValue("Updated A0 of E0, prepare to be acidulated.");
-        NamedNodeMap nnm=e.getAttributes();
-        nnm.removeNamedItem(a.getName());
-        nnm.setNamedItem(a);
-        
-        // InsertedInto/RemovedFrom tests.
-        // ***** These do not currently cross the Attr/Element barrier.
-        // DOM spec is pretty clear on that, but this may not be the intent.
-        System.out.println("\nAdd/remove a preconstructed tree; tests AddedToDocument\n");
-        sharedReporter.off();
-        Element lateAdd=doc.createElement("lateAdd");
-        reportAllMutations(lateAdd);
-        e=lateAdd;
-        for(i=0;i<2;++i)
-        {
-            e=addNoisyElement(doc,e,i);
-            addNoisyAttr(doc,e,i);
-        }
-        sharedReporter.on();
-        root.appendChild(lateAdd);
-        root.removeChild(lateAdd);
-
-        System.out.println("\nReplace a preconstructed tree; tests AddedToDocument\n");
-
-        sharedReporter.off();
-        Node e0=root.replaceChild(lateAdd,root.getFirstChild());
-        sharedReporter.on();
-        root.replaceChild(e0,lateAdd);
-        
-
-        System.out.println("Done");
+        System.out.println("\nEventReporter muted\n");
+        silent=true;
     }
     
-    Element addNoisyElement(Document doc,Node parent,int index)
+    public void handleEvent(Event evt)
     {
-        String nodeName="Root";
-        if(parent!=doc)
-            nodeName=parent.getNodeName()+"_E"+index;
-        Element e=doc.createElement(nodeName);
-        reportAllMutations(e);
-        parent.appendChild(e);
-        return e;
-    }
-
-    Attr addNoisyAttr(Document doc,Element parent,int index)
-    {
-        String attrName=parent.getNodeName()+"_A"+index;
-        Attr a=doc.createAttribute(attrName);
-        reportAllMutations(a);
-        a.setNodeValue("Initialized A"+index+" of "+parent.getNodeName());
-        parent.setAttributeNode(a);
-        return a;
-    }
-    
-    void reportAllMutations(Node n)
-    {
-        String[] evtNames={
-            "DOMSubtreeModified","DOMAttrModified","DOMCharacterDataModified",
-            "DOMNodeInserted","DOMNodeRemoved",
-            "DOMNodeInsertedIntoDocument","DOMNodeRemovedFromDocument",
-            };
+        ++count;
+        if(silent)
+            return;
             
-        EventTarget t=(EventTarget)n;
-        
-        for(int i=evtNames.length-1;
-            i>=0;
-            --i)
+        System.out.print("EVT "+count+": '"+
+            evt.getType()+
+            "' listener '"+((Node)evt.getCurrentTarget()).getNodeName()+
+            "' target '"+((Node)evt.getTarget()).getNodeName()+
+            "' while "+phasename[evt.getEventPhase()] +
+            "... ");
+        if(evt.getBubbles()) System.out.print("will bubble");
+        if(evt.getCancelable()) System.out.print("can cancel");
+        System.out.print("\n");
+        if(evt instanceof MutationEvent)
         {
-            t.addEventListener(evtNames[i], sharedReporter, true);
-            t.addEventListener(evtNames[i], sharedReporter, false);
+            MutationEvent me=(MutationEvent)evt;
+            System.out.print("\t");
+            if(me.getRelatedNode()!=null)
+                System.out.print(" relatedNode='"+me.getRelatedNode()+"'");
+            if(me.getAttrName()!=null)
+                System.out.print(" attrName='"+me.getAttrName()+"'");
+            System.out.print("\n");
+            if(me.getPrevValue()!=null)
+                System.out.println("\t prevValue='"+me.getPrevValue()+"'");
+            if(me.getNewValue()!=null)
+                System.out.println("\t newValue='"+me.getNewValue()+"'");
         }
-
     }
 }
