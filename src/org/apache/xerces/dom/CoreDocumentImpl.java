@@ -140,7 +140,7 @@ public class CoreDocumentImpl
     /**Experimental DOM Level 3 feature: Document encoding */
     protected String encoding;
 
-    /**Experimental DOM Level 3 feature: Document encoding */
+    /**Experimental DOM Level 3 feature: Document actualEncoding */
     protected String actualEncoding;
 
     /**Experimental DOM Level 3 feature: Document version */
@@ -148,6 +148,9 @@ public class CoreDocumentImpl
 
     /**Experimental DOM Level 3 feature: Document standalone */
     protected boolean standalone;
+
+    /**Experimental DOM Level 3 feature: documentURI */
+    protected String fDocumentURI;
 
     /** Table for user data attached to this document nodes. */
     protected Hashtable userData;
@@ -780,6 +783,27 @@ public class CoreDocumentImpl
      */
     public boolean getStandalone() {
         return standalone;
+    }
+
+
+    /**
+     * DOM Level 3 WD - Experimental.
+     * The location of the document or <code>null</code> if undefined.
+     * <br>Beware that when the <code>Document</code> supports the feature 
+     * "HTML" , the href attribute of the HTML BASE element takes precedence 
+     * over this attribute.
+     * @since DOM Level 3
+     */
+    public String getDocumentURI(){
+        return fDocumentURI;
+    }
+
+    
+    /**
+     * DOM Level 3 WD - Experimental.
+     */
+    public void setDocumentURI(String documentURI){
+        fDocumentURI = documentURI;
     }
 
 
