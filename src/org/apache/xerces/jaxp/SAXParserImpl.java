@@ -87,11 +87,9 @@ import java.util.*;
  */
 public class SAXParserImpl extends javax.xml.parsers.SAXParser {
     private XMLReader xmlReader;
-    private Parser parser = null;
-
     private boolean validating = false;
     private boolean namespaceAware = false;
-    private String schemaLanguage = "DTD";
+    private String schemaLanguage = null;     // null means DTD
     
     /**
      * Create a SAX parser with the associated features
@@ -103,12 +101,6 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser {
         // Instantiate a SAXParser directly and not through SAX so that we
         // use the right ClassLoader
         xmlReader = new org.apache.xerces.parsers.SAXParser();
-
-        // Default Xerces2 configuration automatically enables XML Schema
-        // validation which is not backward compatible w/ JAXP so turn it
-        // off by default
-        xmlReader.setFeature(Constants.XERCES_FEATURE_PREFIX +
-                             Constants.SCHEMA_VALIDATION_FEATURE, false);
 
         // Validation
         validating = spf.isValidating();
@@ -160,15 +152,9 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser {
     }
 
     public Parser getParser() throws SAXException {
-        if (parser == null) {
-            // Adapt a SAX2 XMLReader into a SAX1 Parser
-            parser = new XMLReaderAdapter(xmlReader);
-
-            // Set a DocumentHandler that does nothing to avoid getting
-            // exceptions if no DocumentHandler is set by the app
-            parser.setDocumentHandler(new HandlerBase());
-        }
-        return parser;
+        // Xerces2 AbstractSAXParser implements SAX1 Parser
+        // assert(xmlReader instanceof Parser);
+        return (Parser) xmlReader;
     }
 
     /**
@@ -199,12 +185,12 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser {
             if (DocumentBuilderImpl.W3C_XML_SCHEMA.equals(value)) {
                 schemaLanguage = DocumentBuilderImpl.W3C_XML_SCHEMA;
                 xmlReader.setFeature(Constants.SAX_FEATURE_PREFIX +
-                                     Constants.VALIDATION_FEATURE, false);
+                                     Constants.VALIDATION_FEATURE, validating);
                 xmlReader.setFeature(Constants.XERCES_FEATURE_PREFIX +
                                      Constants.SCHEMA_VALIDATION_FEATURE,
-                                     validating);
-            } else if ("DTD".equals(value)) {
-                schemaLanguage = "DTD";
+                                     true);
+            } else if (value == null) {
+                schemaLanguage = null;
                 xmlReader.setFeature(Constants.SAX_FEATURE_PREFIX +
                                      Constants.VALIDATION_FEATURE, validating);
                 xmlReader.setFeature(Constants.XERCES_FEATURE_PREFIX +
