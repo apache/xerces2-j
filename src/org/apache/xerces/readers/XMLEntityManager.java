@@ -60,6 +60,8 @@ package org.apache.xerces.readers;
 import java.io.IOException;
 import org.apache.xerces.framework.XMLComponent;
 import org.apache.xerces.framework.XMLComponentManager;
+import org.apache.xerces.utils.SymbolTable;
+
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -83,8 +85,14 @@ public class XMLEntityManager
     /** fEntityResolver */
     protected EntityResolver   fEntityResolver;
 
-    /** fEntityReader */
-    protected XMLEntityScanner fEntityReader;
+    /** fEntityScanner */
+    protected XMLEntityScanner fEntityScanner;
+
+
+    /** Symbol table. */
+    protected SymbolTable fSymbolTable;
+
+
 
     //
     // Constructors
@@ -94,7 +102,7 @@ public class XMLEntityManager
      * 
      */
     public XMLEntityManager() {
-        fEntityReader = new XMLEntityScanner();
+        fEntityScanner = new XMLEntityScanner();
     }
 
     //
@@ -181,12 +189,8 @@ public class XMLEntityManager
      * 
      * @param inputSource 
      */
-    public void startEntity(InputSource inputSource) {
-        if( inputSource != null ){
-            this.fEntityReader.fInputSource = inputSource;//Sets the entityReader Document entity InputSource
-            this.fEntityReader.setXMLEntityReader();
-
-        }
+    public void startEntity(InputSource inputSource) throws IOException{
+        fEntityScanner.startEntity(inputSource);
 
     } // startEntity
 
@@ -196,7 +200,7 @@ public class XMLEntityManager
      * @return 
      */
     public XMLEntityScanner getEntityScanner() {
-        return this.fEntityReader;
+        return this.fEntityScanner;
     } // getEntityScanner
 
 
@@ -213,6 +217,10 @@ public class XMLEntityManager
      */
     public void reset(XMLComponentManager configurationManager)
         throws SAXException {
+        fEntityResolver = (EntityResolver)configurationManager.getProperty("http://apache.org/xml/properties/internal/entity-resolver");
+        fSymbolTable = (SymbolTable)configurationManager.getProperty("http://apache.org/xml/properties/internal/symbol-table");
+        fEntityScanner.setSymbolTable(fSymbolTable);
+
     } // reset
 
     /**
@@ -223,7 +231,7 @@ public class XMLEntityManager
      */
     public void setFeature(String featureId, boolean state)
         throws SAXNotRecognizedException, SAXNotSupportedException {
-            System.out.println( "called setFeature" );
+
     } // setFeature
 
     /**
@@ -234,7 +242,13 @@ public class XMLEntityManager
      */
     public void setProperty(String propertyId, Object value)
         throws SAXNotRecognizedException, SAXNotSupportedException {
-            System.out.println("Called setProperty" );
+            
+        if (propertyId.equals("http://apache.org/xml/properties/internal/symbol-table")) {
+            fSymbolTable = (SymbolTable)value;
+            fEntityScanner.setSymbolTable(fSymbolTable);
+        }
+
+            
     } // setProperty
 
 } // class XMLEntityManager

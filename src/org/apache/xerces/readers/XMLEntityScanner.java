@@ -64,8 +64,7 @@ import org.apache.xerces.utils.XMLChar;
 import org.apache.xerces.utils.SymbolTable;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
-import java.io.Reader;
-import java.io.PushbackReader;
+import java.io.*;
 import java.util.Vector;
 
 /**
@@ -74,6 +73,12 @@ import java.util.Vector;
  */
 public class XMLEntityScanner
 implements Locator {
+
+    // debugging
+
+    /** Debugging. */
+    private static final boolean DEBUG = false;
+
 
     //
     // Data
@@ -103,6 +108,16 @@ implements Locator {
 
     private   PushbackReader    fPushbackReader;
 
+
+    /** Reader. */
+    private PushbackReader fReader;
+
+
+    /** Character buffer. */
+    private char[] fBuffer = new char[1024];
+
+    /** Buffer length. */
+    private int fLength;
 
 
     //
@@ -158,8 +173,8 @@ implements Locator {
     throws IOException {
         int charToReturn;
 
-        charToReturn = this.fPushbackReader.read();
-        this.fPushbackReader.unread(charToReturn );//pushback character
+        charToReturn = read();
+        unread(charToReturn );//pushback character
         if (XMLChar.isValid( charToReturn ) ) {
             return charToReturn;
         } else {
@@ -176,7 +191,7 @@ implements Locator {
     throws IOException {
         int charToReturn;
 
-        charToReturn = this.fPushbackReader.read();//consume character
+        charToReturn = read();//consume character
         if (XMLChar.isValid( charToReturn ) ) {
             return charToReturn;
         } else {
@@ -194,12 +209,19 @@ implements Locator {
     public String scanNmtoken()
     throws IOException {
         int charValue;
+        boolean nmtoken = false;
         StringBuffer  buffer = new StringBuffer();
-        while ( XMLChar.isName( charValue = this.fPushbackReader.read() ) == true ) {
+        while ( XMLChar.isName( charValue = read() ) == true ) {
+            nmtoken = true;
             buffer.append( (char) (charValue & 0xffff ) );
             fCharPosition++;
         }
-        return buffer.toString();
+        String symbol = null;
+        if (nmtoken) {
+            symbol = fSymbolTable.addSymbol(buffer.toString());
+        }
+
+        return symbol;
     } // scanNmtoken
 
     /**
@@ -212,18 +234,24 @@ implements Locator {
     public String scanName()
     throws IOException {
         int charValue;
+        boolean name = false;
         StringBuffer  buffer = new StringBuffer();
-        if ( XMLChar.isNameStart( charValue = this.fPushbackReader.read() )== true) {
+        if ( XMLChar.isNameStart( charValue = read() )== true) {
+            name = true;
             buffer.append( (char) (charValue & 0xffff ) );
             fCharPosition++;
         } else {
             return null;//Did not find a NameStartChar 
         }
-        while ( XMLChar.isName( charValue = this.fPushbackReader.read() ) == true ) {
+        while ( XMLChar.isName( charValue = read() ) == true ) {
             buffer.append( (char) (charValue & 0xffff ) );
             fCharPosition++;
         }
-        return buffer.toString();
+        String symbol = null;
+        if (name) {
+            symbol = fSymbolTable.addSymbol(buffer.toString() );
+        }
+        return symbol;
     } // scanName
 
     /**
@@ -242,30 +270,34 @@ implements Locator {
      * @param qname
      * @exception IOException
      */
-    public void scanQName(QName qname)
+    public boolean scanQName(QName qname)
     throws IOException {
         int           charValue;
+        String prefix    = null;
+        String localpart = null;
+        String rawname   = null;
+
         StringBuffer  buffer = new StringBuffer();
 
-        charValue = this.fPushbackReader.read();
+        charValue = read();
         fCharPosition++;
 
         if ( XMLChar.isNameStart( charValue) == false ) {
             qname.clear();
-            return;
+            return false;
         }
         if ( charValue  == ':' ) {
             qname.clear();
-            return;
+            return false;
         }
 
         buffer.append( (char) (charValue & 0xffff ) );
         while ( true ) {
-            charValue = this.fPushbackReader.read();
+            charValue = read();
             fCharPosition++;
 
             if ( XMLChar.isName( charValue) == false ) {
-                this.fPushbackReader.unread( charValue );
+                unread( charValue );
                 fCharPosition--;
                 break;
             }
@@ -276,12 +308,17 @@ implements Locator {
         int length      = strQname.length();
         int prefixIndex = strQname.indexOf(':');
         qname.clear();
+        rawname = fSymbolTable.addSymbol(strQname);
+        fSymbolTable.addSymbol( rawname );
+
         qname.rawname   = strQname;
         if ( prefixIndex != -1 ) {
             qname.prefix    = strQname.substring(0, prefixIndex-1 );
+            fSymbolTable.addSymbol(qname.prefix);
             qname.localpart = strQname.substring(prefixIndex+1, length );
+            fSymbolTable.addSymbol(qname.localpart);
         }
-        return;
+        return true;
     } // scanQName
 
     /**
@@ -291,13 +328,28 @@ implements Locator {
      */
     public boolean scanContent(XMLString content)
     throws IOException {
+        fLength = 0;
+        while (peek() != '<' && peek() != '&') {
+            fBuffer[fLength++] = (char)read();
+            if (fLength == fBuffer.length) {
+                break;
+            }
+        }
+        content.setValues(fBuffer, 0, fLength);
+
+
+        // return true if more to come
+        return fLength == fBuffer.length;
+
+        /*
+        Work in Progress
         int       charValue;
         int       countScannedChars    = 0;
         char[]    scanContentArray   = new char[128];
 
 
         while ( countScannedChars < 128 ) {
-            charValue = this.fPushbackReader.read();
+            charValue = read();
             if ( charValue == '<' ) {
                 System.out.println( "<" );
             } else if ( charValue == '&' ) {
@@ -322,6 +374,7 @@ implements Locator {
             return true;
         else
             return false;
+            */
     } // scanContent
 
 
@@ -333,9 +386,19 @@ implements Locator {
      */
     public boolean scanAttContent(int quote, XMLString content)
     throws IOException {
+        fLength = 0;
+        while (peek() != quote) {
+            fBuffer[fLength++] = (char)read();
+            if (fLength == fBuffer.length) {
+                break;
+            }
+        }
+        content.setValues(fBuffer, 0, fLength);
 
+        // return true if more to come
+        return fLength == fBuffer.length;
 
-        return false;
+        //throw new RuntimeException("not implemented");
     } // scanAttContent
 
     public boolean scanData( String delimiter, XMLString content ) throws IOException {
@@ -348,15 +411,15 @@ implements Locator {
         boolean   foundDelimiter       = false;
 
         while ( countScannedChars < 128 ) {
-            charValue = this.fPushbackReader.read();
+            charValue = read();
             if ( charValue == delimiterCharArray[0] ) {
                 holdUnreadCandidates[0] = (char) charValue;
                 int i = 1;
                 for ( int candidateValue = 0;i<delimiterLength;i++) {
-                    candidateValue = this.fPushbackReader.read();
+                    candidateValue = read();
                     holdUnreadCandidates[i-1] = (char) candidateValue;
                     if ( candidateValue != delimiterCharArray[i] ) {
-                        this.fPushbackReader.unread(holdUnreadCandidates, 0, i );
+                        unread(holdUnreadCandidates, 0, i );
                         break;
                     }
                 }
@@ -391,7 +454,7 @@ implements Locator {
         int charValue;
 
         while (  XMLChar.isSpace(
-                                charValue = this.fPushbackReader.read() ) == true )  {
+                                charValue = read() ) == true ) {
             fCharPosition++;
             if ( charValue == 0x0a ) {
                 fLineNumber++;
@@ -400,7 +463,7 @@ implements Locator {
                 fColumnNumber++;
             }
         }
-        this.fPushbackReader.unread( charValue );//unread non-space
+        unread( charValue );//unread non-space
     } // skipSpaces
 
 
@@ -416,18 +479,18 @@ implements Locator {
         char[]  scannedChars      = new char[sLength];
 
         for ( int countScannedChars = 0; countScannedChars< sLength;) {
-            charValue = this.fPushbackReader.read();
+            charValue = read();
             if ( charValue == -1) {//EOF
                 if ( countScannedChars > 0) {
-                    this.fPushbackReader.unread(scannedChars, 0, countScannedChars);
+                    unread(scannedChars, 0, countScannedChars);
                     fCharPosition -= countScannedChars;
                 }
                 return false;
             } else if (charValue != skippedString[countScannedChars] ) {//not able to skip
                 if ( countScannedChars == 0 ) {
-                    this.fPushbackReader.unread( charValue ); 
+                    unread( charValue ); 
                 } else {
-                    this.fPushbackReader.unread(scannedChars, 0, countScannedChars);
+                    unread(scannedChars, 0, countScannedChars);
                 }
                 return false;
             }
@@ -483,6 +546,46 @@ implements Locator {
         return this.getColumnNumber();
     } // getColumnNumber
 
+
+    //
+    // Package methods
+    //
+
+    void startEntity(InputSource inputSource) throws IOException {
+
+        fInputSource = inputSource;
+
+        Reader reader = inputSource.getCharacterStream();
+        if (reader != null) {
+            fReader = new PushbackReader(reader, 32);
+            return;
+        }
+
+        InputStream stream = inputSource.getByteStream();
+        if (stream != null) {
+            reader = new InputStreamReader(stream);
+            fReader = new PushbackReader(reader, 32);
+            return;
+        }
+
+        String systemId = inputSource.getSystemId();
+        if (systemId != null) {
+            stream = new FileInputStream(systemId);
+            reader = new InputStreamReader(stream);
+            fReader = new PushbackReader(reader, 32);
+            return;
+        }
+
+        throw new FileNotFoundException(systemId);
+
+    } // startEntity
+
+    void setSymbolTable(SymbolTable symbolTable) {
+        fSymbolTable = symbolTable;
+    }
+
+
+
     protected void setXMLEntityReader(){
         Reader inSource =this.fInputSource.getCharacterStream();
         if ( inSource != null  ) {
@@ -491,5 +594,33 @@ implements Locator {
         }
     }
 
+    private int peek() throws IOException {
+        int c = fReader.read();
+        if (c == -1) {
+            throw new EOFException();
+        }
+        if (DEBUG) System.out.println("?"+(char)c);
+        fReader.unread(c);
+        return c;
+    }
+
+    private int read() throws IOException {
+        int c = fReader.read();
+        if (c == -1) {
+            throw new EOFException();
+        }
+        if (DEBUG) System.out.println("+"+(char)c);
+        return c;
+    }
+
+    private void unread(int c) throws IOException {
+        if (DEBUG) System.out.println("-"+(char)c);
+        fReader.unread(c);
+    }
+
+    private void unread(char[] ch, int offset, int length) throws IOException {
+        if (DEBUG) System.out.println("-"+new String(ch, offset, length));
+        fReader.unread(ch, offset, length);
+    }
 
 } // class XMLEntityScanner
