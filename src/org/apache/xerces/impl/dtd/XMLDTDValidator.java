@@ -2550,7 +2550,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                 return attrDecl.simpleType.list ? fIDREFSSymbol : fIDREFSymbol;
             }
         case XMLSimpleType.TYPE_NMTOKEN: {
-                return attrDecl.simpleType.list ? fNMTOKENSSymbol : fNMTOKENSSymbol;
+                return attrDecl.simpleType.list ? fNMTOKENSSymbol : fNMTOKENSymbol;
             }
         case XMLSimpleType.TYPE_NOTATION: {
                 return fNOTATIONSymbol;
