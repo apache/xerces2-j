@@ -458,7 +458,7 @@ public class TraverseSchema implements
         fSchemaRootElement = root;
         fStringPool = stringPool;
         fSchemaGrammar = schemaGrammar;
-	fGrammarResolver = grammarResolver;
+        fGrammarResolver = grammarResolver;
         
         if (root == null) { 
             // REVISIT: Anything to do?
@@ -479,7 +479,8 @@ public class TraverseSchema implements
 
         while ((sattr = (Attr)schemaEltAttrs.item(i++)) != null) {
             String attName = sattr.getName();
-System.out.println("attName of schema element : " + attName + " = " + sattr.getValue());
+//debugging
+//System.out.println("attName of schema element : " + attName + " = " + sattr.getValue());
             if (attName.startsWith("xmlns:")) {
                 String attValue = sattr.getValue();
                 String prefix = attName.substring(attName.indexOf(":")+1);
@@ -727,8 +728,8 @@ System.out.println("attName of schema element : " + attName + " = " + sattr.getV
         int complexTypeName      =  fStringPool.addSymbol(
                                                          complexTypeDecl.getAttribute( SchemaSymbols.ATT_NAME ));
         String typeName = complexTypeDecl.getAttribute(SchemaSymbols.ATT_NAME); 
-
-System.out.println("traversing complex Type : " + typeName +","+base+","+content+".");
+//debugging
+//System.out.println("traversing complex Type : " + typeName +","+base+","+content+".");
 
         if (typeName.equals("")) { // gensym a unique name
             //typeName = "http://www.apache.org/xml/xerces/internalType"+fTypeCount++;
@@ -944,7 +945,7 @@ System.out.println("traversing complex Type : " + typeName +","+base+","+content
             contentSpecType = XMLElementDecl.TYPE_CHILDREN;
             csnType = XMLContentSpec.CONTENTSPECNODE_SEQ;
             boolean mixedContent = false;
-	    //REVISIT: is the default content " elementOnly"
+            //REVISIT: is the default content " elementOnly"
             boolean elementContent = true;
             boolean textContent = false;
             left = -2;
@@ -968,8 +969,8 @@ System.out.println("traversing complex Type : " + typeName +","+base+","+content
                 // add #PCDATA leaf
 
                 left = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF,
-							 -1, // -1 means "#PCDATA" is name
-							 -1, false);
+                                                         -1, // -1 means "#PCDATA" is name
+                                                         -1, false);
                 csnType = XMLContentSpec.CONTENTSPECNODE_CHOICE;
             }
 
@@ -986,18 +987,19 @@ System.out.println("traversing complex Type : " + typeName +","+base+","+content
 
                 if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
                     if (mixedContent || elementContent) {
-System.out.println(" child element name " + child.getAttribute(SchemaSymbols.ATT_NAME));
-			QName eltQName = traverseElementDecl(child);
-			index = fSchemaGrammar.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_LEAF,
-								   eltQName.localpart,
-								   eltQName.uri, 
-								   false);
-			seeParticle = true;
+//debugging
+//System.out.println(" child element name " + child.getAttribute(SchemaSymbols.ATT_NAME));
+                        QName eltQName = traverseElementDecl(child);
+                        index = fSchemaGrammar.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_LEAF,
+                                                                   eltQName.localpart,
+                                                                   eltQName.uri, 
+                                                                   false);
+                        seeParticle = true;
 
-		    } 
-		    else {
-			reportSchemaError(SchemaMessageProvider.EltRefOnlyInMixedElemOnly, null);
-		    }
+                    } 
+                    else {
+                        reportSchemaError(SchemaMessageProvider.EltRefOnlyInMixedElemOnly, null);
+                    }
 
                 } 
                 else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
@@ -1075,10 +1077,10 @@ System.out.println(" child element name " + child.getAttribute(SchemaSymbols.ATT
 
         ComplexTypeInfo typeInfo = new ComplexTypeInfo();
         typeInfo.base = base;
-	int derivedByInt = -1;
-	if (derivedBy.length() > 0) {
+        int derivedByInt = -1;
+        if (derivedBy.length() > 0) {
             derivedByInt = parseComplexDerivedBy(derivedBy);
-	}
+        }
         typeInfo.derivedBy = derivedByInt;
         typeInfo.scopeDefined = scopeDefined; 
         typeInfo.contentSpecHandle = left;
@@ -1150,7 +1152,7 @@ System.out.println(" child element name " + child.getAttribute(SchemaSymbols.ATT
     private int expandContentModel ( int index, Element particle) throws Exception {
         
         String minOccurs = particle.getAttribute(SchemaSymbols.ATT_MINOCCURS);
-        String maxOccurs = particle.getAttribute(SchemaSymbols.ATT_MINOCCURS);    
+        String maxOccurs = particle.getAttribute(SchemaSymbols.ATT_MAXOCCURS);    
 
         int min=1, max=1;
 
@@ -1418,7 +1420,7 @@ System.out.println(" child element name " + child.getAttribute(SchemaSymbols.ATT
                     String type = fStringPool.toString(enumeration);
                     dv = fDatatypeRegistry.getValidatorFor(type);
                     if (dv != null) ;
-			//REVISIT
+                        //REVISIT
                         //dv.validate(fStringPool.toString(attDefaultValue));
                     else
                         reportSchemaError(SchemaMessageProvider.NoValidatorFor,
@@ -1614,7 +1616,8 @@ System.out.println(" child element name " + child.getAttribute(SchemaSymbols.ATT
 
 
         String name = elementDecl.getAttribute(SchemaSymbols.ATT_NAME);
-System.out.println("traversing element decl : " + name );
+//debugging
+//System.out.println("traversing element decl : " + name );
         String ref = elementDecl.getAttribute(SchemaSymbols.ATT_REF);
         String type = elementDecl.getAttribute(SchemaSymbols.ATT_TYPE);
         String minOccurs = elementDecl.getAttribute(SchemaSymbols.ATT_MINOCCURS);
@@ -1625,7 +1628,7 @@ System.out.println("traversing element decl : " + name );
         // form attribute
         String isQName = elementDecl.getAttribute(SchemaSymbols.ATT_EQUIVCLASS);
 
-	String fromAnotherSchema = null;
+        String fromAnotherSchema = null;
 
         if (isTopLevel(elementDecl)) {
         
@@ -1709,8 +1712,8 @@ System.out.println("traversing element decl : " + name );
 
                 haveAnonType = true;
             } else if (type.equals("")) { // "ur-typed" leaf
-		contentSpecType = XMLElementDecl.TYPE_ANY;
-		    //REVISIT: is this right?
+                contentSpecType = XMLElementDecl.TYPE_ANY;
+                    //REVISIT: is this right?
                 //contentSpecType = fStringPool.addSymbol("UR_TYPE");
                 // set occurrence count
                 contentSpecNodeIndex = -1;
@@ -1736,7 +1739,7 @@ System.out.println("traversing element decl : " + name );
             }
             String typeURI = resolvePrefixToURI(prefix);
             if (!typeURI.equals(fTargetNSURIString)) {
-		fromAnotherSchema = typeURI;
+                fromAnotherSchema = typeURI;
                 typeInfo = getTypeInfoFromNS(typeURI, localpart);
             }
             typeInfo = (ComplexTypeInfo) fComplexTypeRegistry.get(typeURI+","+localpart);
@@ -1786,11 +1789,16 @@ System.out.println("traversing element decl : " + name );
                 ComplexTypeInfo equivClassEltType = fSchemaGrammar.getElementComplexTypeInfo( equivClassElementDeclIndex );
             }
         }
-
+        // if element belongs to a compelx type
         if (typeInfo!=null) {
             contentSpecNodeIndex = typeInfo.contentSpecHandle;
             contentSpecType = typeInfo.contentType;
             scopeDefined = typeInfo.scopeDefined;
+        }
+        
+        // if element belongs to a simple type
+        if (dv!=null) {
+            contentSpecType = XMLElementDecl.TYPE_SIMPLE;
         }
         
         //
@@ -1814,7 +1822,7 @@ System.out.println("traversing element decl : " + name );
         
         int attrListHead = -1 ;
         
-	// copy up attribute decls from type object
+        // copy up attribute decls from type object
         if (typeInfo != null) {
             attrListHead = typeInfo.attlistHead;
         }
@@ -1828,16 +1836,17 @@ System.out.println("traversing element decl : " + name );
             fSchemaGrammar.setElementComplexTypeInfo(elementIndex, typeInfo);
         }
         else {
-	    fSchemaGrammar.setElementComplexTypeInfo(elementIndex, typeInfo);
+            fSchemaGrammar.setElementComplexTypeInfo(elementIndex, typeInfo);
 
             // REVISIT: should we report error from here?
         }
 
-	// mark element if its type belongs to different Schema.
-System.out.println(">>>>before setElementFromAnotherSchemaURI elementIndex: " + elementIndex);
-	fSchemaGrammar.setElementFromAnotherSchemaURI(elementIndex, fromAnotherSchema);
+        // mark element if its type belongs to different Schema.
+//debugging
+//System.out.println(">>>>before setElementFromAnotherSchemaURI elementIndex: " + elementIndex);
+        fSchemaGrammar.setElementFromAnotherSchemaURI(elementIndex, fromAnotherSchema);
 
-	
+        
         return eltQName;
 
     }// end of method traverseElementDecl(Element)
@@ -2493,10 +2502,10 @@ System.out.println(">>>>before setElementFromAnotherSchemaURI elementIndex: " + 
             if ( derivedByString.equals (SchemaSymbols.ATTVAL_LIST) ) {
                     return Schema.LIST;
             } 
-	    else if ( derivedByString.equals (SchemaSymbols.ATTVAL_RESTRICTION) ) {
+            else if ( derivedByString.equals (SchemaSymbols.ATTVAL_RESTRICTION) ) {
                     return Schema.RESTRICTION;
             }  
-	    else {
+            else {
                     reportGenericSchemaError ("SimpleType: Invalid value for 'derivedBy'");
                     return -1;
             }
@@ -2507,10 +2516,10 @@ System.out.println(">>>>before setElementFromAnotherSchemaURI elementIndex: " + 
             if ( derivedByString.equals (SchemaSymbols.ATTVAL_EXTENSION) ) {
                     return Schema.EXTENSION;
             } 
-	    else if ( derivedByString.equals (SchemaSymbols.ATTVAL_RESTRICTION) ) {
+            else if ( derivedByString.equals (SchemaSymbols.ATTVAL_RESTRICTION) ) {
                     return Schema.RESTRICTION;
             } 
-	    else {
+            else {
                     reportGenericSchemaError ( "ComplexType: Invalid value for 'derivedBy'" );
                     return -1;
             }
@@ -2530,7 +2539,7 @@ System.out.println(">>>>before setElementFromAnotherSchemaURI elementIndex: " + 
                     while (t.hasMoreTokens()) {
                             String token = t.nextToken ();
 
-			    if ( token.equals (SchemaSymbols.ATTVAL_RESTRICTION) ) {
+                            if ( token.equals (SchemaSymbols.ATTVAL_RESTRICTION) ) {
                                     if ( restrict == 0 ) {
                                             restrict = Schema.RESTRICTION;
                                     } else {
@@ -2542,11 +2551,11 @@ System.out.println(">>>>before setElementFromAnotherSchemaURI elementIndex: " + 
                                     } else {
                                             reportGenericSchemaError ("list in set twice");
                                     }
-			    }
-			    else {
-				reportGenericSchemaError (  "Invalid value (" + 
-							    finalString +
-							    ")" );
+                            }
+                            else {
+                                reportGenericSchemaError (  "Invalid value (" + 
+                                                            finalString +
+                                                            ")" );
                             }
                     }
 
@@ -2697,7 +2706,7 @@ System.out.println(">>>>before setElementFromAnotherSchemaURI elementIndex: " + 
     }
 
     private void reportGenericSchemaError (String error) throws Exception {
-	System.err.println("__TraverseSchemaError__ : " + error);	
+        System.err.println("__TraverseSchemaError__ : " + error);       
             // reportSchemaError (SchemaMessageProvider.GenericError, new Object[] { error });
     }
 
@@ -2709,11 +2718,11 @@ System.out.println(">>>>before setElementFromAnotherSchemaURI elementIndex: " + 
                                        SchemaMessageProvider.MSG_NONE,
                                        args,
                                        XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
-				       */
-	    System.out.println("__TraverseSchemaError__ : " + SchemaMessageProvider.fgMessageKeys[major]);
-	    for (int i=0; i< args.length ; i++) {
-		System.out.println((String)args[i]);	
-	    }
+                                       */
+            System.out.println("__TraverseSchemaError__ : " + SchemaMessageProvider.fgMessageKeys[major]);
+            for (int i=0; i< args.length ; i++) {
+                System.out.println((String)args[i]);    
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -2730,9 +2739,9 @@ System.out.println(">>>>before setElementFromAnotherSchemaURI elementIndex: " + 
             { "negative-integer", SchemaSymbols.ELT_MAXINCLUSIVE, "-1"}
         };
 
-	public DatatypeValidatorRegistry() {
+        public DatatypeValidatorRegistry() {
             initializeRegistry();
-	}
+        }
 
         void initializeRegistry() {
             Hashtable facets = null;
@@ -2822,7 +2831,6 @@ System.out.println(">>>>before setElementFromAnotherSchemaURI elementIndex: " + 
 
         TraverseSchema tst = null;
         try {
-	    System.out.println("I am geting the Schema Document");
             Element root   = document.getDocumentElement();// This is what we pass to TraverserSchema
             //serial.serialize( root );
             //System.out.println(outWriter.toString());

@@ -153,7 +153,8 @@ public class SchemaGrammar extends Grammar{
         if (elementDeclIndex < 0 ) {
             return null;
         }
-System.out.println("######In getElementFromAnotherSchemaURI, elementIndex:" + elementDeclIndex);
+// debugging
+//System.out.println("######In getElementFromAnotherSchemaURI, elementIndex:" + elementDeclIndex);
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex & CHUNK_MASK;
         return fFromAnotherSchemaURI[chunk][index];
@@ -209,29 +210,29 @@ System.out.println("######In getElementFromAnotherSchemaURI, elementIndex:" + el
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex & CHUNK_MASK;
         if ( ensureElementDeclCapacity(chunk) == true ) { // create an ElementDecl
-	    if (elementDeclIndex > -1 ) {
-		fScopeDefinedByElement[chunk][index] = scopeDefined;
-	    }
-	}
+            if (elementDeclIndex > -1 ) {
+                fScopeDefinedByElement[chunk][index] = scopeDefined;
+            }
+        }
     }
 
     protected  void setElementFromAnotherSchemaURI(int elementDeclIndex, String anotherSchemaURI) {
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex & CHUNK_MASK;
         if ( ensureElementDeclCapacity(chunk) == true ) { // create an ElementDecl
-	    if (elementDeclIndex > -1 ) {
-		fFromAnotherSchemaURI[chunk][index] = anotherSchemaURI;
-	    }
-	}
+            if (elementDeclIndex > -1 ) {
+                fFromAnotherSchemaURI[chunk][index] = anotherSchemaURI;
+            }
+        }
     }
     protected void setElementComplexTypeInfo(int elementDeclIndex, TraverseSchema.ComplexTypeInfo typeInfo){
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex & CHUNK_MASK;
         if ( ensureElementDeclCapacity(chunk) == true ) { // create an ElementDecl
-	    if (elementDeclIndex > -1 ) {
-		fComplexTypeInfo[chunk][index] = typeInfo;
-	    }
-	}
+            if (elementDeclIndex > -1 ) {
+                fComplexTypeInfo[chunk][index] = typeInfo;
+            }
+        }
     }
 
     //add methods for TraverseSchema
@@ -255,22 +256,23 @@ System.out.println("######In getElementFromAnotherSchemaURI, elementIndex:" + el
             //fTempElementDecl.firstAttributeDeclIndex = attrListHead;
             elementDeclIndex = createElementDecl();
             setElementDecl(elementDeclIndex,fTempElementDecl);
-	    setFirstAttributeDeclIndex(elementDeclIndex, attrListHead);
+            setFirstAttributeDeclIndex(elementDeclIndex, attrListHead);
             //note, this is the scope defined by the element, not its enclosing scope
             setElementDefinedScope(elementDeclIndex, scopeDefined);
-
-System.out.println("xxxxxEltIndex :" + elementDeclIndex + ", contentSpecType: " + contentSpecType);
+// debugging
+//System.out.println("xxxxxEltIndex :" + elementDeclIndex + ", contentSpecType: " + contentSpecType);
         }
 
-/***********************************************************************************************************
-*         XMLElementDecl fTempElementDecl = new XMLElementDecl();                                          *
-*         getElementDecl(elementDeclIndex, fTempElementDecl);                                              *
-* System.out.println("elementDeclIndex in addElementDecl : " + elementDeclIndex                            *
-*                    + " \n and itsName : '"                                                               *
-*                                + (fTempElementDecl.name.localpart)                                       *
-*                                +"' \n its ContentType:" + (fTempElementDecl.type)                        *
-*                                +"\n its ContentSpecIndex : " + fTempElementDecl.contentSpecIndex +"\n"); *
-***********************************************************************************************************/
+//debugging
+/*****
+         XMLElementDecl fTempElementDecl = new XMLElementDecl();                                          
+         getElementDecl(elementDeclIndex, fTempElementDecl);                                              
+ System.out.println("elementDeclIndex in addElementDecl : " + elementDeclIndex                            
+                    + " \n and itsName : '"                                                               
+                                + (fTempElementDecl.name.localpart)                                       
+                                +"' \n its ContentType:" + (fTempElementDecl.type)                        
+                                +"\n its ContentSpecIndex : " + fTempElementDecl.contentSpecIndex +"\n"); 
+/*****/
         return elementDeclIndex;
 
     }
@@ -301,10 +303,10 @@ System.out.println("xxxxxEltIndex :" + elementDeclIndex + ", contentSpecType: " 
         fTempContentSpecNode.value = value;
         fTempContentSpecNode.otherValue = otherValue;
         
-	int contentSpecIndex = createContentSpec();
+        int contentSpecIndex = createContentSpec();
         setContentSpec(contentSpecIndex, fTempContentSpecNode);
-
-System.out.println("^^^^^^^add ContentSpecTypeNode: " + contentSpecIndex+","+contentSpecType +","+value+","+otherValue);
+//debugging
+//System.out.println("^^^^^^^add ContentSpecTypeNode: " + contentSpecIndex+","+contentSpecType +","+value+","+otherValue);
 
         return contentSpecIndex;
     }
@@ -329,9 +331,9 @@ System.out.println("^^^^^^^add ContentSpecTypeNode: " + contentSpecIndex+","+con
             // ignore
         }
         fScopeDefinedByElement[chunk] = new int[CHUNK_SIZE];
-	for (int i=0; i<CHUNK_SIZE; i++) {
-	    fScopeDefinedByElement[chunk][i] = -2;
-	}
+        for (int i=0; i<CHUNK_SIZE; i++) {
+            fScopeDefinedByElement[chunk][i] = -2;
+        }
         fFromAnotherSchemaURI[chunk] = new String[CHUNK_SIZE];
         fComplexTypeInfo[chunk] = new TraverseSchema.ComplexTypeInfo[CHUNK_SIZE];
         return true;
