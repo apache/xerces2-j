@@ -866,9 +866,6 @@ public class GeneralAttrCheck {
     // used to store utility reference: error reproter. set via constructor.
     protected XMLErrorReporter fErrorReporter = null;
 
-    // used to store the list of simple type validators
-    protected DatatypeValidatorFactoryImpl fDatatypeRegistry;
-
     // used to store the mapping from processed element to attributes
     protected Hashtable fProcessedElements = new Hashtable();
 
@@ -879,7 +876,6 @@ public class GeneralAttrCheck {
     private GeneralAttrCheck() {}
     public GeneralAttrCheck (XMLErrorReporter er, DatatypeValidatorFactoryImpl datatypeRegistry) {
         fErrorReporter = er;
-        fDatatypeRegistry = fDatatypeRegistry;
         synchronized (getClass()) {
             if (fExtraDVs[DT_ANYURI] == null) {
                 // step 5: register all datatype validators for new types
