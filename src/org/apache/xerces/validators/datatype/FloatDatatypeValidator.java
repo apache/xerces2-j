@@ -264,7 +264,7 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
         if ( inUpperBound == false  || inLowerBound == false ) { // within bounds ?
             getErrorString(DatatypeMessageProvider.OutOfBounds,
                            DatatypeMessageProvider.MSG_NONE,
-                           new Object [] { new Float(f)});
+                           new Object [] { new Float(f), "","","",""}); //REVISIT
         }
     }
 

@@ -530,7 +530,7 @@ public class RecurringDurationDatatypeValidator extends AbstractDatatypeValidato
             throw new InvalidDatatypeFacetException(
                                                    getErrorString(DatatypeMessageProvider.OutOfBounds,
                                                                   DatatypeMessageProvider.MSG_NONE,
-                                                                  new Object [] { new Long(f)}));
+                                                                  new Object [] { new Long(f),"","","",""}));//Revisit
         }
     }
 
