@@ -405,9 +405,9 @@ public class RangeImpl  implements Range {
         
         // case 1: same container
         if (endPointA == endPointB) {
-            if (offsetA < offsetB) return -1;
+            if (offsetA < offsetB) return 1;
             if (offsetA == offsetB) return 0;
-            return 1;
+            return -1;
         }
         // case 2: Child C of container A is ancestor of B
         // This can be quickly tested by walking the parent chain of B
@@ -417,8 +417,8 @@ public class RangeImpl  implements Range {
         {
             if (p == endPointA) {
                 int index = indexOf(c, endPointA);
-                if (offsetA <= index) return -1;
-                return 1;
+                if (offsetA <= index) return 1;
+                return -1;
             }
         }
 
@@ -430,8 +430,8 @@ public class RangeImpl  implements Range {
         {
             if (p == endPointB) {
                 int index = indexOf(c, endPointB);
-                if (index < offsetB) return -1;
-                return 1;
+                if (index < offsetB) return 1;
+                return -1;
             }
         }
 
@@ -465,10 +465,10 @@ public class RangeImpl  implements Range {
              n = n.getNextSibling() )
         {
             if (n == endPointB) {
-                return -1;
+                return 1;
             }
         }
-        return 1;
+        return -1;
     }
     
     public void deleteContents()
