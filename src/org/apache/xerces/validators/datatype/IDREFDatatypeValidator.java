@@ -150,9 +150,6 @@ public class IDREFDatatypeValidator extends StringDatatypeValidator {
             }
              else if ( message.getDatatypeState() == IDREFDatatypeValidator.IDREF_STORE ) {
                 this.fTableOfId = (Hashtable) message.getDatatypeObject();
-            }
-        }
-
         // use StringDatatypeValidator to validate content against facets
         super.validate(content, state);
         // check if content is a valid NCName
@@ -165,16 +162,9 @@ public class IDREFDatatypeValidator extends StringDatatypeValidator {
             throw error;
         }
 
-        /*if (!XMLCharacterProperties.validName(content)) {//Check if is valid key
-
-            InvalidDatatypeValueException error = new InvalidDatatypeValueException( "IDREF is not valid" );//Need Message
-
-            error.setMinorCode(XMLMessages.MSG_IDREF_INVALID );
-            error.setMajorCode(XMLMessages.VC_IDREF);
-            throw error;//Need Message
-        }*/
-
         addIdRef( content, state);// We are storing IDs
+            }
+        }
 
         return null;
     }

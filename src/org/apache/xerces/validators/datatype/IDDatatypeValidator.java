@@ -151,15 +151,6 @@ public class IDDatatypeValidator extends StringDatatypeValidator {
             throw error;
         }
 
-        //Check if is valid key-[81] EncName ::= [A-Za-z] ([A-Za-z0-9._] | '-')*
-        /*if (!XMLCharacterProperties.validName(content)) {
-            InvalidDatatypeValueException error =  new
-                                                    InvalidDatatypeValueException( "ID is not valid: " + content );
-            error.setMinorCode(XMLMessages.MSG_ID_INVALID);
-            error.setMajorCode(XMLMessages.VC_ID);
-            throw error;
-        }*/
-
         if (!addId( content, IDStorage) ) {
             InvalidDatatypeValueException error =
             new InvalidDatatypeValueException( "ID '" + content +"'  has to be unique" );
