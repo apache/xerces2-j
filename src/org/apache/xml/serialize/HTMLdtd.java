@@ -178,7 +178,7 @@ final class HTMLdtd
      */
     public static boolean isEmptyTag( String tagName )
     {
-        // BR AREA LINK IMG PARAM HR INPUT COL BASE META BASEFONT ISINDEX
+        // BR AREA LINK IMG PARAM HR INPUT COL BASE META BASEFONT ISINDEX FRAME
 	/*
         return ( tagName.equals( "BR" ) || tagName.equals( "AREA" ) ||
                  tagName.equals( "LINK" ) || tagName.equals( "IMG" ) ||
@@ -359,6 +359,21 @@ final class HTMLdtd
         return false;
     }
 
+
+    /**
+     * Returns true if the specified attribute it a URI and should be
+     * escaped appropriately. In HTML URIs are escaped differently
+     * than normal attributes.
+     *
+     * @param tagName The element's tag name
+     * @param attrName The attribute's name
+     */
+    public static boolean isURI( String tagName, String attrName )
+    {
+	// Stupid checks.
+	return ( attrName.equalsIgnoreCase( "href" ) || attrName.equalsIgnoreCase( "src" ) );
+    }
+
         
     /**
      * Returns the value of an HTML character reference by its name. If the
@@ -535,7 +550,7 @@ final class HTMLdtd
 	defineElement( "DT", OPT_CLOSING | ONLY_OPENING | CLOSE_DD_DT );
 	defineElement( "FIELDSET", CLOSE_P );
 	defineElement( "FORM", CLOSE_P );
-	defineElement( "FRAME", OPT_CLOSING );
+	defineElement( "FRAME", EMPTY | OPT_CLOSING );
 	defineElement( "H1", CLOSE_P );
 	defineElement( "H2", CLOSE_P );
 	defineElement( "H3", CLOSE_P );
