@@ -92,6 +92,7 @@ import org.apache.xerces.xni.parser.XMLParserConfiguration;
  *
  * @author Pavani Mukthipudi, Sun Microsystems Inc.
  * @author Elena Litani, IBM
+ * @author Rahul Srivastava, Sun Microsystems Inc.
  *
  */
 
@@ -158,10 +159,6 @@ public class DOMBuilderImpl
     protected static final String WHITESPACE_IN_ELEMENT_CONTENT =
         "whitespace-in-element-content"; 
     
-    /** Feature id: create cdata nodes. */
-    protected static final String CREATE_CDATA_NODES =
-        "create-cdata-nodes";   
-    
     /** Feature id: comments. */
     protected static final String COMMENTS =
         "comments";  
@@ -220,9 +217,6 @@ public class DOMBuilderImpl
     /** Whitespace in element content */
     protected boolean fWhitespaceInElementContent;
     
-    /** Create CDATA nodes */
-    protected boolean fCreateCdataNodes;
-    
     /** Charset overrides xml encoding */
     protected boolean fCharsetOverridesXmlEncoding;
     
@@ -257,7 +251,6 @@ public class DOMBuilderImpl
             DATATYPE_NORMALIZATION,
             CREATE_ENTITY_NODES,
             WHITESPACE_IN_ELEMENT_CONTENT,
-            CREATE_CDATA_NODES,
             CHARSET_OVERRIDES_XML_ENCODING,
             LOAD_AS_INFOSET,
             SUPPORTED_MEDIATYPES_ONLY
@@ -272,7 +265,6 @@ public class DOMBuilderImpl
         fConfiguration.setFeature(DATATYPE_NORMALIZATION, false);
         fConfiguration.setFeature(CREATE_ENTITY_NODES, true);
         fConfiguration.setFeature(WHITESPACE_IN_ELEMENT_CONTENT, true);
-        fConfiguration.setFeature(CREATE_CDATA_NODES, true);
         fConfiguration.setFeature(CHARSET_OVERRIDES_XML_ENCODING, true);
         fConfiguration.setFeature(LOAD_AS_INFOSET, false);
         fConfiguration.setFeature(SUPPORTED_MEDIATYPES_ONLY, false);
@@ -308,7 +300,6 @@ public class DOMBuilderImpl
             fValidateAgainstDTD = fConfiguration.getFeature(VALIDATE_AGAINST_DTD);
             fDatatypeNormalization = fConfiguration.getFeature(DATATYPE_NORMALIZATION);
             fWhitespaceInElementContent = fConfiguration.getFeature(WHITESPACE_IN_ELEMENT_CONTENT);
-            fCreateCdataNodes = fConfiguration.getFeature(CREATE_CDATA_NODES);
             fCharsetOverridesXmlEncoding = fConfiguration.getFeature(CHARSET_OVERRIDES_XML_ENCODING);
             fLoadAsInfoset = fConfiguration.getFeature(LOAD_AS_INFOSET);
             fSupportedMediatypesOnly = fConfiguration.getFeature(SUPPORTED_MEDIATYPES_ONLY);
@@ -519,9 +510,6 @@ public class DOMBuilderImpl
     	    return false;
     	}
     	else if(name.equals(CREATE_ENTITY_NODES) && !state) {
-    	    return false;
-    	}
-    	else if(name.equals(CREATE_CDATA_NODES) && !state) {
     	    return false;
     	}
     	else if(name.equals(WHITESPACE_IN_ELEMENT_CONTENT) && !state) {

@@ -120,6 +120,9 @@ public final class Constants {
     /** Comments feature ("include-comments"). */
     public static final String INCLUDE_COMMENTS_FEATURE = "include-comments";
 
+    /** Create cdata nodes feature ("create-cdata-nodes"). */
+    public static final String CREATE_CDATA_NODES_FEATURE = "create-cdata-nodes";
+
     // xerces features
 
     /** Xerces features prefix ("http://apache.org/xml/features/"). */
