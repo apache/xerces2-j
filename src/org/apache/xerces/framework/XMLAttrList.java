@@ -188,8 +188,12 @@ public final class XMLAttrList
             chunk = fCurrentHandle >> CHUNK_SHIFT;
             index = fCurrentHandle & CHUNK_MASK;
             for (int attrIndex = fCurrentHandle; attrIndex < fAttrCount; attrIndex++) {
-                if (fStringPool.equalNames(fAttURI[chunk][index], attribute.uri) &&
-                    fStringPool.equalNames(fAttLocalpart[chunk][index], attribute.localpart)) {
+                // we only check on rawname, which results in bug 2250
+                // we should check uri+localpart, but uri is not ready at this point
+                // fix it later. ??? TO BE DONE
+                if (fStringPool.equalNames(fAttName[chunk][index], attribute.rawname)) {
+                //if (fStringPool.equalNames(fAttURI[chunk][index], attribute.uri) &&
+                //    fStringPool.equalNames(fAttLocalpart[chunk][index], attribute.localpart)) {
                     return -1;
                 }
                 if (++index == CHUNK_SIZE) {
