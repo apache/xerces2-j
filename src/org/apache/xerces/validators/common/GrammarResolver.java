@@ -70,24 +70,16 @@ import org.apache.xerces.validators.common.Grammar;
 
 public interface GrammarResolver {
     /**
-     *           Hashtable structure that represents a mapping
-     *           between Namespace and a Grammar
-     */
-    private Hashtable fGrammarRegistry    = new Hashtable();//This class keeps a hashtable of references to Grammar structures
-
-    /**
      * initializeGrammarRegistry - Gets call to register initial
      * grammars such as DTD - Schema
      */
-    private GrammarResolver() { // Part of the GrammarResolver singleton pattern
-    }
 
      /**
      * 
      * @return           Only instance of Grammar pool ( Singleton
      *         pattern).
      */
-    static public GrammarResolver instanceGrammarResolver();
+    public GrammarResolver instanceGrammarResolver();
 
 
 
@@ -115,7 +107,7 @@ public interface GrammarResolver {
      * @param grammar Grammar abstraction
      *                used by validator.
      */
-    public void putGrammar( String nameSpaceKey, Grammar grammar )
+    public void putGrammar( String nameSpaceKey, Grammar grammar );
 
     /**
      * Removes association of Namespace key and Grammar from                         
@@ -124,7 +116,7 @@ public interface GrammarResolver {
      * @param nameSpaceKey
      *               Name space key
      */
-    public Grammar removeGrammar( String nameSpaceKey ) 
+    public Grammar removeGrammar( String nameSpaceKey ); 
 
 
 
