@@ -873,7 +873,7 @@ extends ParentNode implements Document, DocumentLS {
      * Renaming node
      */
     public Node renameNode(Node n,String namespaceURI,String name)
-    										throws DOMException{
+    throws DOMException{
         
         if (n.getOwnerDocument() != this) {
             String msg = DOMMessageFormatter.formatMessage(
@@ -897,13 +897,13 @@ extends ParentNode implements Document, DocumentLS {
                             null);
                             throw new DOMException(DOMException.NAMESPACE_ERR, msg);
                         }
-						if (errorChecking && !isXMLName(name,xml11Version)) {
-							String msg = DOMMessageFormatter.formatMessage(
-								DOMMessageFormatter.DOM_DOMAIN,
-								"INVALID_CHARACTER_ERR", null);
-							throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
-										msg);
-        				}
+                        if (errorChecking && !isXMLName(name,xml11Version)) {
+                            String msg = DOMMessageFormatter.formatMessage(
+                            DOMMessageFormatter.DOM_DOMAIN,
+                            "INVALID_CHARACTER_ERR", null);
+                            throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
+                            msg);
+                        }
                         el.rename(name);
                     }
                     else {
