@@ -7,11 +7,12 @@
    are made from a series of parser components. This document
    details the XNI API for these components and how they are put
    together to construct a parser configuration in the following
-   section:
+   sections:
   </p>
   <ul>
    <li><link anchor='components'>Components</link></li>
    <li><link anchor='configurations'>Configurations</link></li>
+   <li><link anchor='pipelines'>Pipelines</link></li>
   </ul>
   <p>
    In addition, several <link anchor='examples'>examples</link>
@@ -531,6 +532,169 @@
     <tr><td><code>public int getColumnNumber();</code></td></tr>
    </table>
   </s3>
+ </s2>
+ <anchor name='pipelines'/>
+ <s2 title='Pipelines'>
+  <p>
+   The <link idref='xni-core'>Core Interfaces</link> provide
+   interfaces for the streaming information set. While these
+   interfaces are sufficient for communicating the document and
+   DTD information, it does not provide an easy way to construct
+   the pipeline or initiate the pipeline to start parsing an
+   XML document. The <code>org.apache.xerces.xni.parser</code> 
+   package has additional interfaces to fill exactly this need.
+  </p>
+  <p>
+   Each parser configuration can be thought of as two separate
+   pipelines: one for document information and one for DTD
+   information. Each pipeline starts with a scanner and is followed
+   by zero or more filters (objects that implement interfaces
+   to handle the incoming information as well as register
+   handlers for the outgoing information). The information that
+   comes out the end of the pipeline is usually forwarded by
+   the parser configuration to the registered handlers.
+  </p>
+  <p>
+   There are two scanner interfaces defined: the XMLDocumentScanner
+   and the XMLDTDScanner:
+  </p>
+  <anchor name='document-scanner'/>
+  <s3 title='Interface XMLDocumentScanner'>
+   <p>This interface defines an XML document scanner.</p>
+   <table>
+    <tr><th>Methods</th></tr>
+    <tr>
+     <td>
+      <code>
+       public void setInputSource(
+           <link anchor='input-source'>XMLInputSource</link> source
+           ) throws java.io.IOException;
+      </code>
+     </td>
+    </tr>
+    <tr>
+     <td>
+      <code>
+       public boolean scanDocument(boolean complete)
+           throws java.io.IOException, <link anchor='exception'>XNIException</link>;
+      </code>
+     </td>
+    </tr>
+   </table>
+  </s3>
+  <anchor name='dtd-scanner'/>
+  <s3 title='Interface XMLDTDScanner'>
+   <p>
+    This interface defines a DTD scanner. Typically, scanning of
+    the DTD internal subset is initiated from the XML document 
+    scanner so the input source is implicitly the same as the
+    one used by the document scanner. Therefore, the 
+    <code>setInputSource</code> method should only be called before
+    scanning of the DTD external subset.
+   </p>
+   <table>
+    <tr><th>Methods</th></tr>
+    <tr>
+     <td>
+      <code>
+       public void setInputSource(
+           <link anchor='input-source'>XMLInputSource</link> source
+           ) throws java.io.IOException;
+      </code>
+     </td>
+    </tr>
+    <tr>
+     <td>
+      <code>
+       public boolean scanDTDInternalSubset(
+           boolean complete,
+	   boolean standalone,
+	   boolean hasExternalSubset
+	   ) throws java.io.IOException, <link anchor='exception'>XNIException</link>;
+      </code>
+     </td>
+    </tr>
+    <tr>
+     <td>
+      <code>
+       public boolean scanDTDExternalSubset(
+           boolean complete
+	   ) throws java.io.IOException, <link anchor='exception'>XNIException</link>;
+      </code>
+     </td>
+    </tr>
+   </table>
+  </s3>
+  <p>
+   Notice how each scanner interface's scanning methods take a
+   <code>complete</code> parameter and returns a boolean. This
+   allows (but does not require) scanners that implement these
+   interfaces to provide "pull" parsing behaviour in which the
+   application drives the parser's operation instead of having
+   parsing events "pushed" to the registered handlers.
+  </p>
+  <p>
+   After the scanners, zero or filters may be present in a parser
+   configuration pipeline. A document pipeline filter implements the
+   <link idref='xni-core' anchor='document-handler'>XMLDocumentHandler</link>
+   interface from the XNI Core Interfaces as well as the
+   <link anchor='document-source'>XMLDocumentSource</link>
+   interface which allows filters to be chained together in
+   the pipeline. There are equivalents source interfaces for the
+   DTD information as well.
+  </p>
+  <anchor name='document-source'/>
+  <s3 title='Interface XMLDocumentSource'>
+   <p>This interface allows a document handler to be registered.</p>
+   <table>
+    <tr><th>Methods</th></tr>
+    <tr>
+     <td>
+      <code>
+       public void setDocumentHandler(
+           <link idref='xni-core' anchor='document-handler'>XMLDocumentHandler</link> handler
+           );
+      </code>
+     </td>
+    </tr>
+   </table>
+  </s3>
+  <anchor name='dtd-source'/>
+  <s3 title='Interface XMLDTDSource'>
+   <p>This interface allows a DTD handler to be registered.</p>
+   <table>
+    <tr><th>Methods</th></tr>
+    <tr>
+     <td>
+      <code>
+       public void setDTDHandler(
+           <link idref='xni-core' anchor='dtd-handler'>XMLDTDHandler</link> handler
+           );
+      </code>
+     </td>
+    </tr>
+   </table>
+  </s3>
+  <anchor name='dtd-content-model-source'/>
+  <s3 title='Interface XMLDTDContentModelSource'>
+   <p>This interface allows a DTD content model handler to be registered.</p>
+   <table>
+    <tr><th>Methods</th></tr>
+    <tr>
+     <td>
+      <code>
+       public void setDTDContentModelHandler(
+           <link idref='xni-core' anchor='dtd-content-model-handler'>XMLDTDContentModelHandler</link> handler
+           );
+      </code>
+     </td>
+    </tr>
+   </table>
+  </s3>
+  <p>
+   The next section gives some basic examples for using the XNI
+   framework to construct filters and parser configurations.
+  </p>
  </s2>
  <anchor name='examples'/>
  <s2 title='Examples'>
