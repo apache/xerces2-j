@@ -4,9 +4,23 @@
  <release version='NOT YET RELEASED'>
   <desc/>
   <changes>
+   <add>
+    <note>
+     Added documentation to the XNI Manual for re-using the Xerces2
+     parser components.
+    </note>
+    <submitter name='Andy Clark'/>
+   </add>
+   <update>
+    <note>
+     Moved Xerces 1.x to "xerces_j_1" branch and moved Xerces2 to the main 
+     trunk of the "xml-xerces" module.
+    </note>
+    <submitter name='Arnaud  Le Hors'/>
+   </update>
    <fix>
     <note>
-     Improved ability of document scanner to perform pull parsing.
+     Improved ability of document and DTD scanners to perform pull parsing.
     </note>
     <submitter name='Andy Clark'/>
    </fix>
