@@ -14,7 +14,7 @@ TARGETS=\
         XMLNotationDecl.class\
         XMLSimpleType.class
 
-DIRS = datatypes grammars models
+DIRS = datatypes grammars models validators
 
 
 TOP = ../../../../../..
