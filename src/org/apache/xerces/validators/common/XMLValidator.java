@@ -986,6 +986,7 @@ public final class XMLValidator
             if (fValidating ) {
                 try{
                     this.fValIDRef.validate( null, this.fValidateIDRef );   
+                    this.fValIDRefs.validate( null, this.fValidateIDRef );
                 }catch( InvalidDatatypeValueException ex ){
                     reportRecoverableXMLError( ex.getMajorCode(), ex.getMinorCode(), 
                                                ex.getMessage() ); 
@@ -2777,16 +2778,17 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                          fTempAttDecl.type == XMLAttributeDecl.TYPE_NMTOKEN ||
                                          fTempAttDecl.type == XMLAttributeDecl.TYPE_NOTATION)
                                         ) {
-
                                         validateDTDattribute(element, attrList.getAttValue(index), fTempAttDecl);
                                     }
-                                    if (fGrammarIsSchemaGrammar && 
-                                        (fTempAttDecl.type == XMLAttributeDecl.TYPE_ID ||
-                                         fTempAttDecl.type == XMLAttributeDecl.TYPE_IDREF )
-                                        ) {
+                                    // Now this code should be redundants
+                                    //if (fGrammarIsSchemaGrammar && 
+                                      //  (fTempAttDecl.type == XMLAttributeDecl.TYPE_ID ||
+                                        // fTempAttDecl.type == XMLAttributeDecl.TYPE_IDREF )
+                                        //) {
 
-                                        validateDTDattribute(element, attrList.getAttValue(index), fTempAttDecl);
-                                        }
+                                       // System.out.println("Before call to schema Gramm " );
+                                        //validateDTDattribute(element, attrList.getAttValue(index), fTempAttDecl);
+                                        //}
 
                                     // check to see if this attribute matched an attribute wildcard
                                     if ( fGrammarIsSchemaGrammar && 
