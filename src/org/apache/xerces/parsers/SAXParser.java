@@ -139,7 +139,7 @@ public class SAXParser
     public SAXParser(SymbolTable symbolTable, XMLGrammarPool grammarPool) {
         super((XMLParserConfiguration)ObjectFactory.createObject(
             "org.apache.xerces.xni.parser.XMLParserConfiguration",
-            "org.apache.xerces.parsers.XML11Configuration"
+            "org.apache.xerces.parsers.IntegratedParserConfiguration"
             ));
 
         // set features

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -124,9 +124,9 @@ public class Counter
 
     // default settings
 
-    /** Default parser configuration (org.apache.xerces.parsers.XML11Configuration). */
+    /** Default parser configuration (org.apache.xerces.parsers.IntegratedParserConfiguration). */
     protected static final String DEFAULT_PARSER_CONFIG =
-        "org.apache.xerces.parsers.XML11Configuration";
+        "org.apache.xerces.parsers.IntegratedParserConfiguration";
 
     /** Default repetition (1). */
     protected static final int DEFAULT_REPETITION = 1;

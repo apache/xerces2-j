@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 1999-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,7 +58,7 @@
 package xni;
 
 import org.apache.xerces.parsers.XMLGrammarPreparser;
-import org.apache.xerces.parsers.XML11Configuration;
+import org.apache.xerces.parsers.IntegratedParserConfiguration;
 import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLGrammarPoolImpl;
@@ -284,7 +284,7 @@ public class XMLGrammarBuilder {
         // Now we have a grammar pool and a SymbolTable; just
         // build a configuration and we're on our way!
         if(parserConfiguration == null) {
-            parserConfiguration = new XML11Configuration(sym, grammarPool);
+            parserConfiguration = new IntegratedParserConfiguration(sym, grammarPool);
         } else {
             // set GrammarPool and SymbolTable...
             parserConfiguration.setProperty(SYMBOL_TABLE, sym);

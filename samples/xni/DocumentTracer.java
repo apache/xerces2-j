@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000-2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2000-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -123,9 +123,9 @@ public class DocumentTracer
 
     // default settings
 
-    /** Default parser configuration (org.apache.xerces.parsers.XML11Configuration). */
+    /** Default parser configuration (org.apache.xerces.parsers.IntegratedParserConfiguration). */
     protected static final String DEFAULT_PARSER_CONFIG =
-        "org.apache.xerces.parsers.XML11Configuration";
+        "org.apache.xerces.parsers.IntegratedParserConfiguration";
 
     /** Default namespaces support (true). */
     protected static final boolean DEFAULT_NAMESPACES = true;

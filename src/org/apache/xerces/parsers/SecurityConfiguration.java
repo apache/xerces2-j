@@ -83,7 +83,7 @@ import org.apache.xerces.util.SymbolTable;
  *
  * @version $Id$
  */
-public class SecurityConfiguration extends XML11Configuration
+public class SecurityConfiguration extends IntegratedParserConfiguration
 {
 
     //
