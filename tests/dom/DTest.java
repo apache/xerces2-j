@@ -559,7 +559,8 @@ public static void main(String args[]) {
 	*/
 
 	} catch (Exception e) {
-		System.out.println("Exception is: " + e);
+		System.out.println("Exception is: ");
+		e.printStackTrace();
 		OK = false;
 		
 	}
@@ -668,18 +669,30 @@ public void testAttr(org.w3c.dom.Document document)
 
 //************************************************* ERROR TESTS
 	DTest tests = new DTest();
-//!! Throws HIERARCHY_REQUEST_ERR ****************	
-	//	doc.getDocumentElement().appendChild(attributeNode);
+        Assertion.assert(
+          tests.DOMExceptionsTest(document.getDocumentElement(),
+                                  "appendChild",
+                                  new Class[]{Node.class},
+                                  new Object[]{attributeNode},
+                                  DOMException.HIERARCHY_REQUEST_ERR));
 
-//!! Throws a NOT_FOUND_ERR	********
-	// 	attribute2 = doc.createAttribute("testAttribute2");
-	// 	doc.getDocumentElement().removeAttributeNode(attribute2);
+	attribute2 = document.createAttribute("testAttribute2");
+        Assertion.assert(
+          tests.DOMExceptionsTest(document.getDocumentElement(),
+                                  "removeAttributeNode",
+                                  new Class[]{Attr.class},
+                                  new Object[]{attribute2},
+                                  DOMException.NOT_FOUND_ERR));
 
-//!! Throws an INUSE_ATTRIBUTE_ERR ******
-	// 	Element element = (Element)doc.getLastChild().getLastChild();
-	// 	element.setAttributeNode(testAttribute );// Tests setNamedItem which generates error through justSetNamedItem.
+        Element element = (Element)document.getLastChild().getLastChild();
+        // Tests setNamedItem
+        Assertion.assert(
+          tests.DOMExceptionsTest(element,
+                                  "setAttributeNode",
+                                  new Class[]{Attr.class},
+                                  new Object[]{testAttribute},
+                                  DOMException.INUSE_ATTRIBUTE_ERR));
 	
-// For debugging*****		println("All Attr method calls worked correctly.");
 	if (! OK)
 		System.out.println("\n*****The Attr method calls listed above failed, all others worked correctly.*****");
 //	println("");
@@ -1082,8 +1095,15 @@ public void testDocument(org.w3c.dom.Document document)
 		OK = false;
 	}
 
+	// check on the ownerDocument of the cloned nodes
+	Document doc2 = (Document) node2;
+	Assertion.assert(doc2.getDocumentElement().getOwnerDocument() == doc2);
+
 	// Deep clone test comparison is also in testNode
-	
+
+	// try adding a new element to the cloned document
+	node2 = doc2.createElement("foo");
+	doc2.getDocumentElement().appendChild(node2);
 	
 // For debugging*****		println("All Document method calls worked correctly.");
 	if (!OK)
