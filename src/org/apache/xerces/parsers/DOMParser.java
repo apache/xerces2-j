@@ -2064,19 +2064,32 @@ public class DOMParser
                 }
 
                 // REVISIT: Check for uniqueness of element name? -Ac
-                // REVISIT: what about default attributes with URI? -ALH
 
                 // get attribute name and value index
                 String attrName      = fStringPool.toString(attributeDecl.rawname);
                 String attrValue     = fStringPool.toString(attDefaultValue);
 
                 // create attribute and set properties
-                AttrImpl attr = (AttrImpl)fDocumentImpl.createAttribute(attrName);
+                boolean nsEnabled = false;
+                try { nsEnabled = getNamespaces(); }
+                catch (SAXException s) {}
+                AttrImpl attr;
+                if (nsEnabled) {
+                    attr = (AttrImpl)fDocumentImpl.createAttributeNS(fStringPool.toString(attributeDecl.uri),attrName);
+                }
+                else{
+                    attr = (AttrImpl)fDocumentImpl.createAttribute(attrName);
+                }
                 attr.setValue(attrValue);
                 attr.setSpecified(false);
 
                 // add default attribute to element definition
-                elementDef.getAttributes().setNamedItem(attr);
+                if(nsEnabled){
+                    elementDef.getAttributes().setNamedItemNS(attr);
+                }
+                else{
+                    elementDef.getAttributes().setNamedItem(attr);
+                }
             }
 
             //
