@@ -21,8 +21,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
-import java.net.URL;
 import java.net.HttpURLConnection;
+import java.net.URL;
 import java.net.URLConnection;
 import java.util.Hashtable;
 import java.util.Locale;
@@ -1428,8 +1428,8 @@ public class XMLEntityManager
 
     // current value of the "user.dir" property
     private static String gUserDir;
-    // escaped value of the current "user.dir" property
-    private static String gEscapedUserDir;
+    // cached URI object for the current value of the escaped "user.dir" property stored as a URI
+    private static URI gUserDirURI;
     // which ASCII characters need to be escaped
     private static boolean gNeedEscaping[] = new boolean[128];
     // the first hex character if a character needs to be escaped
@@ -1463,13 +1463,13 @@ public class XMLEntityManager
     // special ASCII characters: 0x00~0x1F, 0x7F, ' ', '<', '>', '#', '%'
     // and '"'. It's a static method, so needs to be synchronized.
     // this method looks heavy, but since the system property isn't expected
-    // to change often, so in most cases, we only need to return the string
+    // to change often, so in most cases, we only need to return the URI
     // that was escaped before.
     // According to the URI spec, non-ASCII characters (whose value >= 128)
     // need to be escaped too.
     // REVISIT: don't know how to escape non-ASCII characters, especially
     // which encoding to use. Leave them for now.
-    private static synchronized String getUserDir() {
+    private static synchronized URI getUserDir() throws URI.MalformedURIException {
         // get the user.dir property
         String userDir = "";
         try {
@@ -1479,13 +1479,13 @@ public class XMLEntityManager
         }
 
         // return empty string if property value is empty string.
-        if (userDir.length() == 0)
-            return "";
+        if (userDir.length() == 0) 
+            return new URI("file", "", "", null, null);
         
         // compute the new escaped value if the new property value doesn't
         // match the previous one
-        if (userDir.equals(gUserDir)) {
-            return gEscapedUserDir;
+        if (gUserDirURI != null && userDir.equals(gUserDir)) {
+            return gUserDirURI;
         }
 
         // record the new value as the global property value
@@ -1531,7 +1531,7 @@ public class XMLEntityManager
                 bytes = userDir.substring(i).getBytes("UTF-8");
             } catch (java.io.UnsupportedEncodingException e) {
                 // should never happen
-                return userDir;
+                return new URI("file", "", userDir, null, null);
             }
             len = bytes.length;
 
@@ -1560,9 +1560,9 @@ public class XMLEntityManager
         if (!userDir.endsWith("/"))
             buffer.append('/');
         
-        gEscapedUserDir = buffer.toString();
+        gUserDirURI = new URI("file", "", buffer.toString(), null, null);
 
-        return gEscapedUserDir;
+        return gUserDirURI;
     }
 
     /**
@@ -1601,7 +1601,7 @@ public class XMLEntityManager
             URI base = null;
             // if there isn't a base uri, use the working directory
             if (baseSystemId == null || baseSystemId.length() == 0) {
-                base = new URI("file", "", getUserDir(), null, null);
+                base = getUserDir();
             }
             // otherwise, use the base uri
             else {
@@ -1610,9 +1610,7 @@ public class XMLEntityManager
                 }
                 catch (URI.MalformedURIException e) {
                     // assume "base" is also a relative uri
-                    String dir = getUserDir();
-                    dir = dir + baseSystemId;
-                    base = new URI("file", "", dir, null, null);
+                    base = new URI(getUserDir(), baseSystemId);
                 }
             }
             // absolutize the system id using the base
@@ -1646,8 +1644,7 @@ public class XMLEntityManager
         try {
             if (baseSystemId == null || baseSystemId.length() == 0 ||
                 baseSystemId.equals(systemId)) {
-                String dir = getUserDir();
-                base = new URI("file", "", dir, null, null);
+                base = getUserDir();
             }
             else {
                 try {
@@ -1660,9 +1657,7 @@ public class XMLEntityManager
                         base = new URI("file", "", fixURI(baseSystemId).trim(), null, null);
                     }
                     else {
-                        String dir = getUserDir();
-                        dir = dir + fixURI(baseSystemId);
-                        base = new URI("file", "", dir, null, null);
+                        base = new URI(getUserDir(), fixURI(baseSystemId));
                     }
                 }
              }
