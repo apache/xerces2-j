@@ -1079,7 +1079,7 @@ public class TraverseSchema implements
         parser.setEntityResolver( (fEntityResolver != null)? (fEntityResolver):(new Resolver()) );
         parser.setErrorHandler(  new ErrorHandler()
             {
-                public void fatalError(SAXParseException ex) throws SAXException {
+                public void error(SAXParseException ex) throws SAXException {
                     StringBuffer str = new StringBuffer();
                     String systemId_ = ex.getSystemId();
                     if (systemId_ != null) {
@@ -1094,7 +1094,7 @@ public class TraverseSchema implements
                         System.err.println("[Warning] "+
                                str.toString()+": "+ message);
                     } else { // do standard thing
-                        System.err.println("[Fatal Error] "+
+                        System.err.println("[Error] "+
                                str.toString()+":"+message);
                         throw ex;
                     }
@@ -1115,7 +1115,8 @@ public class TraverseSchema implements
         try {
             parser.parse( source );
         }catch( IOException e ) {
-            e.printStackTrace();
+            // we already produce warnings on IOExceptions!
+            // e.printStackTrace();
         }catch( SAXException e ) {
             //e.printStackTrace();
         }
@@ -2065,7 +2066,7 @@ public class TraverseSchema implements
          parser.setEntityResolver( (fEntityResolver != null)? (fEntityResolver):(new Resolver()) );
          parser.setErrorHandler( new ErrorHandler  ()
             {
-                public void fatalError(SAXParseException ex) throws SAXException {
+                public void error(SAXParseException ex) throws SAXException {
                     StringBuffer str = new StringBuffer();
                     String systemId_ = ex.getSystemId();
                     if (systemId_ != null) {
@@ -2080,7 +2081,7 @@ public class TraverseSchema implements
                         System.err.println("[Warning] "+
                                str.toString()+": "+ message);
                     } else { // do standard thing
-                        System.err.println("[Fatal Error] "+
+                        System.err.println("[Error] "+
                                str.toString()+":"+message);
                         throw ex;
                     }
@@ -2101,7 +2102,7 @@ public class TraverseSchema implements
          try {
              parser.parse( source );
          }catch( IOException e ) {
-             e.printStackTrace();
+             // e.printStackTrace();
          }catch( SAXException e ) {
              e.printStackTrace();
          }
@@ -9031,7 +9032,7 @@ throws Exception {
         }
 
         /** Error. */
-        public void error(SAXParseException ex) {
+        public void error(SAXParseException ex) throws SAXException {
             System.err.println("[Error] "+
                                getLocationString(ex)+": "+
                                ex.getMessage());
