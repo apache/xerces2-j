@@ -201,10 +201,12 @@ public class XMLVersionDetector {
                 return Constants.XML_VERSION_1_0;
             }
             scanner.skipSpaces();
-            if (scanner.scanChar() != '=') {
+            // Check if the next character is '='. If it is then consume it.
+            if (scanner.peekChar() != '=') {
                 fixupCurrentEntity(fEntityManager, fExpectedVersionString, 13);
                 return Constants.XML_VERSION_1_0;
             }
+            scanner.scanChar();
             scanner.skipSpaces();
             int quoteChar = scanner.scanChar();
             fExpectedVersionString[14] = (char) quoteChar;
