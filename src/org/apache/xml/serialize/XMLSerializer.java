@@ -790,12 +790,16 @@ extends BaseMarkupSerializer {
 
                     if (value.equals(NamespaceContext.XMLNS_URI)) {
                         if (fDOMErrorHandler != null) {
-                            modifyDOMError("No prefix other than 'xmlns' can be bound to 'http://www.w3.org/2000/xmlns/' namespace name", 
-                                           DOMError.SEVERITY_ERROR, attr);
+                            String msg = DOMMessageFormatter.formatMessage(
+                                DOMMessageFormatter.XML_DOMAIN,"CantBindXMLNS",null );
+                            modifyDOMError(msg,  DOMError.SEVERITY_ERROR, attr);
                             boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
                             if (!continueProcess) {
                                 // stop the namespace fixup and validation
-                                throw new RuntimeException("Stopped at user request");
+            	                throw new RuntimeException( 
+            	                    DOMMessageFormatter.formatMessage(
+            	                    DOMMessageFormatter.SERIALIZER_DOMAIN,
+            	                    "SerializationStopped", null));
                             }
                         }
                     } else {
@@ -900,13 +904,17 @@ extends BaseMarkupSerializer {
                 if (elem.getLocalName() == null) {
                     //  DOM Level 1 node!
                     if (fDOMErrorHandler != null) {
-                        // REVISIT: MSG modify error message
-                        modifyDOMError("DOM Level 1 Node: "+elem.getNodeName(), 
-                                           DOMError.SEVERITY_ERROR, elem);
+                        String msg = DOMMessageFormatter.formatMessage(
+                            DOMMessageFormatter.DOM_DOMAIN, "NullLocalElementName", 
+                            new Object[]{elem.getNodeName()});
+                        modifyDOMError(msg,DOMError.SEVERITY_ERROR, elem);
                         boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
                         // REVISIT: should we terminate upon request?
                         if (!continueProcess) {
-                            throw new RuntimeException("Process stoped at user request");
+                           throw new RuntimeException( 
+            	               DOMMessageFormatter.formatMessage(
+            	               DOMMessageFormatter.SERIALIZER_DOMAIN,
+            	               "SerializationStopped", null));
                         }
                     }
                 } else { // uri=null and no colon (DOM L2 node)
@@ -1057,12 +1065,17 @@ extends BaseMarkupSerializer {
                 } else { // attribute uri == null
                     if (attr.getLocalName() == null) {
                         if (fDOMErrorHandler != null) {
-                            modifyDOMError("DOM Level 1 Node: "+name, 
-                                           DOMError.SEVERITY_ERROR, attr);
+                            String msg = DOMMessageFormatter.formatMessage(
+                                DOMMessageFormatter.DOM_DOMAIN, 
+                                "NullLocalAttrName", new Object[]{attr.getNodeName()});                            
+                            modifyDOMError(msg, DOMError.SEVERITY_ERROR, attr);
                             boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
                             if (!continueProcess) {
                                 // stop the namespace fixup and validation
-                                throw new RuntimeException("Stopped at user request");
+                                throw new RuntimeException( 
+            	                   DOMMessageFormatter.formatMessage(
+            	                   DOMMessageFormatter.SERIALIZER_DOMAIN,
+            	                   "SerializationStopped", null));
                             }
                         }
                         printAttribute (name, value, attr.getSpecified());

@@ -908,13 +908,13 @@ public class DOMNormalizer implements XMLDocumentHandler {
                         if (fNamespaceValidation) {
                             String msg = DOMMessageFormatter.formatMessage(
                                 DOMMessageFormatter.DOM_DOMAIN, 
-                                "NullLocalElementName", new Object[]{element.getNodeName()});
+                                "NullLocalAttrName", new Object[]{attr.getNodeName()});
                             reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_FATAL_ERROR, null, 
-                                "NullLocalElementName");
+                                "NullLocalAttrName");
                         } else {
                             String msg = DOMMessageFormatter.formatMessage(
                                 DOMMessageFormatter.DOM_DOMAIN, 
-                                "NullLocalAttrName", new Object[]{element.getNodeName()});
+                                "NullLocalAttrName", new Object[]{attr.getNodeName()});
                             reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_ERROR, null, 
                                 "NullLocalAttrName");
                         }

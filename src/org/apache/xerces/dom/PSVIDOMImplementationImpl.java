@@ -146,7 +146,9 @@ public class PSVIDOMImplementationImpl extends CoreDOMImplementationImpl {
     {
     	if (doctype != null && doctype.getOwnerDocument() != null) {
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
-                                   "DOM005 Wrong document");
+                                   DOMMessageFormatter.formatMessage(
+                                   DOMMessageFormatter.XML_DOMAIN, 
+					               "WRONG_DOCUMENT_ERR", null));
         }
         DocumentImpl doc = new PSVIDocumentImpl(doctype);
         Element e = doc.createElementNS( namespaceURI, qualifiedName);

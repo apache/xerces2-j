@@ -73,6 +73,7 @@
 
 package org.apache.xml.serialize;
 
+import org.apache.xerces.dom.DOMMessageFormatter;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -240,7 +241,10 @@ public class HTMLSerializer
 
         try {
             if ( _printer == null )
-                throw new IllegalStateException( "SER002 No writer supplied for serializer" );
+            	throw new IllegalStateException( 
+				    DOMMessageFormatter.formatMessage(
+				    DOMMessageFormatter.SERIALIZER_DOMAIN,
+                    "NoWriterSupplied", null));
 
             state = getElementState();
             if ( isDocumentState() ) {
@@ -508,7 +512,11 @@ public class HTMLSerializer
 
         try {
             if ( _printer == null )
-                throw new IllegalStateException( "SER002 No writer supplied for serializer" );
+                throw new IllegalStateException( 
+				    DOMMessageFormatter.formatMessage(
+				    DOMMessageFormatter.SERIALIZER_DOMAIN,
+                    "NoWriterSupplied", null));
+
 
             state = getElementState();
             if ( isDocumentState() ) {

@@ -105,7 +105,7 @@ import org.w3c.dom.ls.LSSerializerFilter;
 
 
 /**
- * Implemenatation of DOM Level 3 org.w3c.ls.LSSerializer  by delegating serialization
+ * EXPERIMENTAL: Implemenatation of DOM Level 3 org.w3c.ls.LSSerializer  by delegating serialization
  * calls to <CODE>XMLSerializer</CODE>.
  * LSSerializer provides an API for serializing (writing) a DOM document out in an
  * XML document. The XML data is written to an output stream.
@@ -742,7 +742,10 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                             error.fSeverity = DOMError.SEVERITY_FATAL_ERROR;
                             ser.fDOMErrorHandler.handleError(error);
                         }
-                        throw new LSException(LSException.SERIALIZE_ERR, "no-output-specified");
+                        throw new LSException(LSException.SERIALIZE_ERR, 
+                            DOMMessageFormatter.formatMessage(
+                                DOMMessageFormatter.SERIALIZER_DOMAIN, 
+                                "no-output-specified", null));
                     }
                     else {
                         // URI was specified. Handle relative URIs.
@@ -804,7 +807,11 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
 				error.fSeverity = DOMError.SEVERITY_FATAL_ERROR;
                 ser.fDOMErrorHandler.handleError(error);
 			}
-			return false;
+            throw new LSException(LSException.SERIALIZE_ERR, 
+                DOMMessageFormatter.formatMessage(
+                    DOMMessageFormatter.SERIALIZER_DOMAIN, 
+                    "unsupported-encoding", null));			
+			//return false;
         } catch (RuntimeException e) {
             if (e == DOMNormalizer.abort){
                 // stopped at user request

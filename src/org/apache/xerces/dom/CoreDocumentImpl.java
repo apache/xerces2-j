@@ -521,7 +521,7 @@ extends ParentNode implements Document  {
                 return fXPathEvaluator;
             }
             catch (Exception e){
-                e.printStackTrace();
+                //e.printStackTrace();
                 return null;
             }
         }
@@ -548,8 +548,12 @@ extends ParentNode implements Document  {
     throws DOMException {
         
         if (errorChecking && !isXMLName(name,xml11Version)) {
-            throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
-            "DOM002 Illegal character");
+            String msg =
+                DOMMessageFormatter.formatMessage(
+                    DOMMessageFormatter.DOM_DOMAIN,
+                    "INVALID_CHARACTER_ERR",
+                    null);
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
         }
         return new AttrImpl(this, name);
         

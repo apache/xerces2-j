@@ -66,6 +66,7 @@ import org.apache.xerces.dom.DOMErrorImpl;
 import org.apache.xerces.dom.DeferredDocumentImpl;
 import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.dom.DocumentTypeImpl;
+import org.apache.xerces.dom.DOMMessageFormatter;
 import org.apache.xerces.dom.ElementDefinitionImpl;
 import org.apache.xerces.dom.ElementImpl;
 import org.apache.xerces.dom.ElementNSImpl;
@@ -368,19 +369,17 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
             ObjectFactory.findClassLoader (), true);
             //if (!_class.isAssignableFrom(Document.class)) {
             if (!Document.class.isAssignableFrom (_class)) {
-                // REVISIT: message
-                throw new IllegalArgumentException ("PAR002 Class, \"" +
-                documentClassName +
-                "\", is not of type org.w3c.dom.Document.\n" +
-                documentClassName);
+                throw new IllegalArgumentException (
+                    DOMMessageFormatter.formatMessage(
+                    DOMMessageFormatter.SERIALIZER_DOMAIN,
+                    "InvalidDocumentClassName", new Object [] {documentClassName}));
             }
         }
         catch (ClassNotFoundException e) {
-            // REVISIT: message
-            throw new IllegalArgumentException ("PAR003 Class, \"" +
-            documentClassName +
-            "\", not found.\n" +
-            documentClassName);
+            throw new IllegalArgumentException (
+                DOMMessageFormatter.formatMessage(
+                DOMMessageFormatter.SERIALIZER_DOMAIN,
+                "MissingDocumentClassName", new Object [] {documentClassName}));
         }
         
         // set document class name

@@ -63,6 +63,7 @@
 
 package org.apache.xml.serialize;
 
+import org.apache.xerces.dom.DOMMessageFormatter;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -412,8 +413,12 @@ public final class HTMLdtd
             _byName = new Hashtable();
             _byChar = new Hashtable();
             is = HTMLdtd.class.getResourceAsStream( ENTITIES_RESOURCE );
-            if ( is == null )
-                throw new RuntimeException( "SER003 The resource [" + ENTITIES_RESOURCE + "] could not be found.\n" + ENTITIES_RESOURCE);
+            if ( is == null ) {
+            	throw new RuntimeException( 
+				    DOMMessageFormatter.formatMessage(
+				    DOMMessageFormatter.SERIALIZER_DOMAIN,
+                    "ResourceNotFound", new Object[] {ENTITIES_RESOURCE}));
+            }    
             reader = new BufferedReader( new InputStreamReader( is, "ASCII" ) );
             line = reader.readLine();
             while ( line != null ) {
@@ -438,8 +443,10 @@ public final class HTMLdtd
             }
             is.close();
         }  catch ( Exception except ) {
-            throw new RuntimeException( "SER003 The resource [" + ENTITIES_RESOURCE + "] could not load: " +
-                                        except.toString() + "\n" + ENTITIES_RESOURCE + "\t" + except.toString());
+			throw new RuntimeException( 
+				DOMMessageFormatter.formatMessage(
+				DOMMessageFormatter.SERIALIZER_DOMAIN,
+                "ResourceNotLoaded", new Object[] {ENTITIES_RESOURCE, except.toString()}));        	
         } finally {
             if ( is != null ) {
                 try {

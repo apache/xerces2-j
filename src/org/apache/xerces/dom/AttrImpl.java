@@ -910,8 +910,8 @@ public class AttrImpl
         // Tail-call, should be optimizable
         if (hasStringValue()) {
             // we don't have any child per say so it can't be one of them!
-            throw new DOMException(DOMException.NOT_FOUND_ERR, 
-                                   "DOM008 Not found");
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_FOUND_ERR", null);
+            throw new DOMException(DOMException.NOT_FOUND_ERR, msg);            
         }
         return internalRemoveChild(oldChild, false);
     } // removeChild(Node) :Node
