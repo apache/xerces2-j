@@ -3483,7 +3483,8 @@ public class XMLSchemaValidator
                     String code = "KeyNotFound";
                     String value = toString(values);
                     String element = fIdentityConstraint.getElementName();
-                    reportSchemaError(code, new Object[]{value,element});
+                    String name = fIdentityConstraint.getName();
+                    reportSchemaError(code, new Object[]{name, value,element});
                 }
             }
 
