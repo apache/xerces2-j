@@ -179,15 +179,16 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         KeyRefOutOfScope = 41,
         AbsentKeyValue = 42, 
         KeyMatchesNillable = 43,
-        BadMinMaxForAll = 44,
+        BadMinMaxForAllElem = 44,
         BadMinMaxForGroupWithAll = 45,
         SeqChoiceContentRestricted = 46,
         AllContentRestricted = 47,
         AllContentLimited = 48,
         MinMaxOnGroupChild = 49,
+        BadMinMaxForAllGp = 50,
         // ...
 
-        MSG_MAX_CODE = 50;
+        MSG_MAX_CODE = 51;
     //
     // Minor Codes
     //
@@ -240,12 +241,13 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         "KeyRefOutOfScope",
         "AbsentKeyValue", 
         "KeyMatchesNillable", 
-        "BadMinMaxForAll",
+        "BadMinMaxForAllElem",
         "BadMinMaxForGroupWithAll",
         "SeqChoiceContentRestricted",
         "AllContentRestricted",
         "AllContentLimited",
         "MinMaxOnGroupChild",
+        "BadMinMaxForAllGp",
         // END
     };
 }

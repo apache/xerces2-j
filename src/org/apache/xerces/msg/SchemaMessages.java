@@ -114,12 +114,13 @@ public class SchemaMessages extends ListResourceBundle {
         {"KeyRefOutOfScope", "Identity Constraint error:  identity constraint \"{0}\" has a keyref which refers to a key or unique that is out of scope."},
         {"AbsentKeyValue", "Identity Constraint error (cvc-identity-constraint.4.2.1):  element \"{0}\" has a key with no value."},
         {"KeyMatchesNillable", "Identity Constraint error (cvc-identity-constraint.4.2.3):  element \"{0}\" has a key which matches an element which has nillable set to true."},
-        {"BadMinMaxForAll", "The {0} attribute of an element in an all schema component must have the value zero or one.  The value \"{1}\" is incorrect."},
-        {"BadMinMaxForGroupWithAll", "Error:  cos-all-limited:  The {0} attribute in a reference to a named model group whose content model is \"all\" must have the value one.  The value \"{1}\" is incorrect."},
-        {"SeqChoiceContentRestricted", "Error: {0} content must be zero or more of element, group, choice, sequence or any.  Saw \"{1}\"."},
+        {"BadMinMaxForAllElem", "cos-all-limited.2:  The {0} attribute of an element in an all schema component must have the value zero or one.  The value \"{1}\" is incorrect."},
+        {"BadMinMaxForGroupWithAll", "Error:  cos-all-limited.1.2:  The {0} attribute in a reference to a named model group whose content model is \"all\" must have the value one.  The value \"{1}\" is incorrect."},
+        {"SeqChoiceContentRestricted", "Error:  {0} content must be zero or more of element, group, choice, sequence or any.  Saw \"{1}\"."},
         {"AllContentRestricted", "Error:  The content of all is restricted to zero or more elements.  Saw \"{0}\"."},
-        {"AllContentLimited", "Error:  cos-all-limited: A group whose content is \"all\" must only appear as the content type of a complex type definition.  Saw group in \"{0}\"."},
+        {"AllContentLimited", "Error:  cos-all-limited.1.2: A group whose content is \"all\" must only appear as the content type of a complex type definition.  Saw group in \"{0}\"."},
         {"MinMaxOnGroupChild", "Error:  The child of a model group definition must not specify either the minOccurs or maxOccurs attribute."},
+        {"BadMinMaxForAllGp", "Error:  cos-all-limited.1.2:  The {0} attribute of a model group with \"all\" compositor that is part of a pair that is the content type of a complex type definition must have the value one.  The value \"{1}\" is incorrect."},
     };
     
     /** Returns the list resource bundle contents. */
