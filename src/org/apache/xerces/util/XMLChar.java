@@ -533,6 +533,28 @@ public class XMLChar {
         }
         return true;
     } // isValidName(String):boolean
+    
+    /*
+     * [7] Nmtoken ::= (NameChar)+
+     */
+    /**
+     * Check to see if a string is a valid Nmtoken according to [7]
+     * in the XML 1.0 Recommendation
+     *
+     * @param nmtoken string to check
+     * @return true if nmtoken is a valid Nmtoken 
+     */
+    public static boolean isValidNmtoken(String nmtoken) {
+        if (nmtoken.length() == 0)
+            return false;
+        for (int i = 0; i < nmtoken.length(); i++ ) {
+           char ch = nmtoken.charAt(i);
+           if(  ! isName( ch ) ){
+              return false;
+           }
+        }
+        return true;
+    } // isValidName(String):boolean
 
 
 
