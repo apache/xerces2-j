@@ -124,9 +124,6 @@ public class DFAContentModel
     /** The element map size. */
     private int fElemMapSize = 0;
 
-    /** Boolean to allow DTDs to validate even with namespace support. */
-    private boolean fDTD;
-
     /** Boolean to distinguish Schema Mixed Content */
     private boolean fMixed;
 
@@ -235,13 +232,11 @@ public class DFAContentModel
      *
      */
 
-    public DFAContentModel(CMNode syntaxTree, int leafCount, boolean dtd, boolean mixed) {
+    public DFAContentModel(CMNode syntaxTree, int leafCount, boolean mixed) {
         // Store away our index and pools in members
         //fStringPool = stringPool;
         fLeafCount = leafCount;
 
-
-        fDTD = dtd;
 
         // this is for Schema Mixed Content
         fMixed = mixed;
@@ -347,15 +342,8 @@ public class DFAContentModel
                 int type = fElemMapType[elemIndex] & 0x0f ;
                 if (type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
                     //System.out.println("fElemMap["+elemIndex+"]: "+fElemMap[elemIndex]);
-                    if (fDTD) {
-                        if (fElemMap[elemIndex].rawname == curElem.rawname) {
-                            break;
-                        }
-                    }
-                    else {
-                        if (fElemMap[elemIndex].uri==curElem.uri
-                             && fElemMap[elemIndex].localpart == curElem.localpart)
-                            break;
+                    if (fElemMap[elemIndex].rawname == curElem.rawname) {
+                        break;
                     }
                 }
                 else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
@@ -553,27 +541,14 @@ public class DFAContentModel
             int inIndex = 0;
             for (; inIndex < fElemMapSize; inIndex++)
             {
-                if (fDTD) {
-                    if (fElemMap[inIndex].rawname == element.rawname) {
-                        break;
-                    }
-                }
-                else {
-                    if (fElemMap[inIndex].uri == element.uri &&
-                        fElemMap[inIndex].localpart == element.localpart && 
-                        fElemMapType[inIndex] == fLeafListType[outIndex] )
-                        break;
+                if (fElemMap[inIndex].rawname == element.rawname) {
+                    break;
                 }
             }
 
             // If it was not in the list, then add it, if not the EOC node
             if (inIndex == fElemMapSize) {
-                //if (fDTD) {
-                //    fElemMap[fElemMapSize].setValues(-1, element.rawname, element.rawname, -1);
-                //}
-                //else {
-                    fElemMap[fElemMapSize].setValues(element);
-                //}
+                fElemMap[fElemMapSize].setValues(element);
                 fElemMapType[fElemMapSize] = fLeafListType[outIndex];
                 fElemMapSize++;
             }
@@ -595,18 +570,11 @@ public class DFAContentModel
 
 	for (int elemIndex = 0; elemIndex < fElemMapSize; elemIndex++) {
 	    for (int leafIndex = 0; leafIndex < fLeafCount; leafIndex++) {
-		final QName leaf = fLeafList[leafIndex].getElement();
-		final QName element = fElemMap[elemIndex];
-		if (fDTD) {
+		    final QName leaf = fLeafList[leafIndex].getElement();
+		    final QName element = fElemMap[elemIndex];
 		    if (leaf.rawname == element.rawname) {
-			fLeafSorter[fSortCount++] = leafIndex;
+			    fLeafSorter[fSortCount++] = leafIndex;
 		    }
-		}
-		else {
-		    if (leaf.uri == element.uri &&
-			leaf.localpart == element.localpart)
-			fLeafSorter[fSortCount++] = leafIndex;
-		}
 	    }
 	    fLeafSorter[fSortCount++] = -1;
 	}

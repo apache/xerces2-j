@@ -102,9 +102,6 @@ public class MixedContentModel
      */
     private boolean fOrdered;
 
-    /** Boolean to allow DTDs to validate even with namespace support. */
-    private boolean fDTD;
-
     //
     // Constructors
     //
@@ -120,7 +117,7 @@ public class MixedContentModel
      * @param dtd True if it is for a DTDGrammar.
      *
      */
-    public MixedContentModel(QName[] children, int[] type, int offset, int length , boolean ordered, boolean dtd) {
+    public MixedContentModel(QName[] children, int[] type, int offset, int length , boolean ordered) {
         // Make our own copy now, which is exactly the right size
         fCount = length;
         fChildren = new QName[fCount];
@@ -130,8 +127,6 @@ public class MixedContentModel
             fChildrenType[i] = type[offset + i];
         }
         fOrdered = ordered;
-
-        fDTD = dtd;
 
     }
 
@@ -179,16 +174,8 @@ public class MixedContentModel
                 // element must match
                 int type = fChildrenType[inIndex];
                 if (type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
-                    if (fDTD) {
-                        if (fChildren[inIndex].rawname != children[offset + outIndex].rawname) {
-                            return outIndex;
-                        }
-                    }
-                    else {
-                        if (fChildren[inIndex].uri != children[offset + outIndex].uri &&
-                            fChildren[inIndex].localpart != children[offset + outIndex].localpart) {
-                            return outIndex;
-                        }
+                    if (fChildren[inIndex].rawname != children[offset + outIndex].rawname) {
+                        return outIndex;
                     }
                 }
                 else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
@@ -230,15 +217,8 @@ public class MixedContentModel
                 {
                     int type = fChildrenType[inIndex];
                     if (type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
-                        if (fDTD) {
-                            if (curChild.rawname == fChildren[inIndex].rawname) {
-                                break;
-                            }
-                        }
-                        else {
-                            if (curChild.uri == fChildren[inIndex].uri &&
-                                curChild.localpart == fChildren[inIndex].localpart)
-                                break;
+                        if (curChild.rawname == fChildren[inIndex].rawname) {
+                            break;
                         }
                     }
                     else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {

@@ -124,9 +124,6 @@ public class SimpleContentModel
      */
     private int fOperator;
 
-    /** Boolean to allow DTDs to validate even with namespace support. */
-    private boolean fDTD;
-
     /* this is the EquivClassComparator object */
     //private EquivClassComparator comparator = null;
     
@@ -144,7 +141,7 @@ public class SimpleContentModel
      * @param dtd if it is for a DTDGrammar.
      *
      */
-    public SimpleContentModel(short operator, QName firstChild, QName secondChild, boolean dtd) {
+    public SimpleContentModel(short operator, QName firstChild, QName secondChild) {
         //
         //  Store away the children and operation. This is all we need to
         //  do the content model check.
@@ -159,7 +156,6 @@ public class SimpleContentModel
             fSecondChild.clear();
         }
         fOperator = operator;
-        fDTD = dtd;
     }
 
     //
@@ -203,15 +199,8 @@ public class SimpleContentModel
                     return 0;
 
                 // If the 0th child is not the right kind, report an error at 0
-                if (fDTD) {
-                    if (children[offset].rawname != fFirstChild.rawname) {
-                        return 0;
-                    }
-                }
-                else {
-                    if (children[offset].uri != fFirstChild.uri || 
-                        children[offset].localpart != fFirstChild.localpart)
-                        return 0;
+                if (children[offset].rawname != fFirstChild.rawname) {
+                    return 0;
                 }
 
                 // If more than one child, report an error at index 1
@@ -225,14 +214,7 @@ public class SimpleContentModel
                 //  then its an error at index 0.
                 //
                 if (length == 1) {
-                    if (fDTD) {
-                        if (children[offset].rawname != fFirstChild.rawname) {
-                            return 0;
-                        }
-                    }
-                    else {
-                        if (children[offset].uri != fFirstChild.uri || 
-                         children[offset].localpart != fFirstChild.localpart)
+                    if (children[offset].rawname != fFirstChild.rawname) {
                         return 0;
                     }
                 }
@@ -254,19 +236,9 @@ public class SimpleContentModel
                 //
                 if (length > 0)
                 {
-                    if (fDTD) {
-                        for (int index = 0; index < length; index++) {
-                            if (children[offset + index].rawname != fFirstChild.rawname) {
-                                return index;
-                            }
-                        }
-                    }
-                    else {
-                        for (int index = 0; index < length; index++)
-                        {
-                            if (children[offset + index].uri != fFirstChild.uri || 
-                                children[offset + index].localpart != fFirstChild.localpart)
-                                return index;
+                    for (int index = 0; index < length; index++) {
+                        if (children[offset + index].rawname != fFirstChild.rawname) {
+                            return index;
                         }
                     }
                 }
@@ -285,19 +257,9 @@ public class SimpleContentModel
                 //  are of the correct child type. If not, then report the index
                 //  of the first one that is not.
                 //
-                if (fDTD) {
-                    for (int index = 0; index < length; index++) {
-                        if (children[offset + index].rawname != fFirstChild.rawname) {
-                            return index;
-                        }
-                    }
-                }
-                else {
-                    for (int index = 0; index < length; index++)
-                    {
-                        if (children[offset + index].uri != fFirstChild.uri || 
-                            children[offset + index].localpart != fFirstChild.localpart)
-                            return index;
+                for (int index = 0; index < length; index++) {
+                    if (children[offset + index].rawname != fFirstChild.rawname) {
+                        return index;
                     }
                 }
                 break;
@@ -311,16 +273,9 @@ public class SimpleContentModel
                     return 0;
 
                 // If the zeroth element isn't one of our choices, error at 0
-                if (fDTD) {
-                    if ((children[offset].rawname != fFirstChild.rawname) &&
-                        (children[offset].rawname != fSecondChild.rawname)) {
-                        return 0;
-                    }
-                }
-                else {
-                    if ((children[offset].uri != fFirstChild.uri || children[offset].localpart != fFirstChild.localpart) &&
-                        (children[offset].uri != fSecondChild.uri || children[offset].localpart != fSecondChild.localpart))
-                        return 0;
+                if ((children[offset].rawname != fFirstChild.rawname) &&
+                    (children[offset].rawname != fSecondChild.rawname)) {
+                    return 0;
                 }
 
                 // If there is more than one element, then an error at 1
@@ -334,20 +289,11 @@ public class SimpleContentModel
                 //  we stored, in the stored order.
                 //
                 if (length == 2) {
-                    if (fDTD) {
-                        if (children[offset].rawname != fFirstChild.rawname) {
-                            return 0;
-                        }
-                        if (children[offset + 1].rawname != fSecondChild.rawname) {
-                            return 1;
-                        }
+                    if (children[offset].rawname != fFirstChild.rawname) {
+                        return 0;
                     }
-                    else {
-                        if (children[offset].uri != fFirstChild.uri || children[offset].localpart != fFirstChild.localpart)
-                            return 0;
-
-                        if (children[offset + 1].uri != fSecondChild.uri || children[offset + 1].localpart != fSecondChild.localpart)
-                            return 1;
+                    if (children[offset + 1].rawname != fSecondChild.rawname) {
+                        return 1;
                     }
                 }
                 else {
