@@ -122,9 +122,11 @@ public class AttributeMap extends NamedNodeMapImpl {
             throw new DOMExceptionImpl(DOMException.INUSE_ATTRIBUTE_ERR,
                                        "DOM009 Attribute already in use");
         }
+
         // set owner
         argn.ownerNode = ownerNode;
         argn.owned(true);
+
    	int i = findNamePoint(arg.getNodeName(),0);
     	NodeImpl previous = null;
     	if (i >= 0) {
@@ -179,6 +181,10 @@ public class AttributeMap extends NamedNodeMapImpl {
             throw new DOMExceptionImpl(DOMException.INUSE_ATTRIBUTE_ERR,
                                        "DOM009 Attribute already in use");
         }
+
+        // set owner
+        argn.ownerNode = ownerNode;
+        argn.owned(true);
 
     	int i = findNamePoint(argn.getNamespaceURI(), argn.getLocalName());
     	NodeImpl previous = null;
