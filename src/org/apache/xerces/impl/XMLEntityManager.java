@@ -72,6 +72,8 @@ import java.util.Hashtable;
 import java.util.Stack;
 
 import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.io.ASCIIReader;
+import org.apache.xerces.impl.io.UTF8Reader;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 
 import org.apache.xerces.util.EncodingMap;
@@ -598,105 +600,8 @@ public class XMLEntityManager
     } // setProperty(String,Object)
 
     //
-    // Protected methods
+    // Public static methods
     //
-
-    /**
-     * Starts an entity. 
-     */
-    protected void startEntity(String name, XMLInputSource xmlInputSource, 
-                               boolean literal) throws IOException, SAXException {
-
-        // get information
-        final String publicId = xmlInputSource.getPublicId();
-        final String systemId = xmlInputSource.getSystemId();
-        String encoding = xmlInputSource.getEncoding();
-
-        // create reader
-        InputStream stream = null;
-        Reader reader = xmlInputSource.getCharacterStream();
-        if (reader == null) {
-            stream = xmlInputSource.getByteStream();
-            if (stream == null) {
-                String expandedSystemId = xmlInputSource.getExpandedSystemId();
-                if (expandedSystemId == null) {
-                    final String baseSystemId = xmlInputSource.getBaseSystemId();
-                    expandedSystemId = expandSystemId(systemId, baseSystemId);
-                    xmlInputSource.setExpandedSystemId(expandedSystemId);
-                }
-                stream = new URL(expandedSystemId).openStream();
-            }
-                
-            // perform auto-detect of encoding
-            if (encoding == null) {
-                // read first four bytes and determine encoding
-                final byte[] b4 = new byte[4];
-                int count = stream.read(b4, 0, 4);
-                encoding = getJavaEncodingName(b4, count);
-
-                // push back the characters we read
-                PushbackInputStream pbstream = new PushbackInputStream(stream, 4);
-                pbstream.unread(b4, 0, count);
-                stream = pbstream;
-
-                // REVISIT: Should save the original input stream instead of
-                //          the pushback input stream so that when we swap out
-                //          the OneCharReader, we don't still have a method
-                //          indirection to get at the underlying bytes. -Ac
-            }
-
-            // create reader from input stream
-            // REVISIT: We can use customized readers here. -Ac
-            reader = new InputStreamReader(stream, encoding);
-
-            // REVISIT: Activate this reader once I've updated the
-            //          entity scanner. -Ac
-            //reader = new OneCharReader(reader);
-        }
-
-        // push entity on stack
-        if (fCurrentEntity != null) {
-            fEntityStack.push(fCurrentEntity);
-        }
-        fCurrentEntity = new ScannedEntity(name, publicId, systemId, 
-                                           stream, reader, encoding, 
-                                           literal);
-
-        // call handler
-        if (fEntityHandler != null) {
-            String ianaEncoding = encoding != null
-                                ? EncodingMap.getJava2IANAMapping(encoding)
-                                : null;
-            fEntityHandler.startEntity(name, publicId, systemId, ianaEncoding);
-        }
-
-    } // startEntity(String,XMLInputSource)
-
-    /**
-     * Ends an entity.
-     */
-    protected void endEntity() throws SAXException {
-
-        // call handler
-        if (DEBUG_PRINT) {
-            System.out.println("(endEntity: ");
-            print();
-            System.out.println();
-        }
-        if (fEntityHandler != null) {
-            fEntityHandler.endEntity(fCurrentEntity.name);
-        }
-
-        // pop stack
-        fCurrentEntity = fEntityStack.size() > 0
-                       ? (ScannedEntity)fEntityStack.pop() : null;
-        if (DEBUG_PRINT) {
-            System.out.println(")endEntity: ");
-            print();
-            System.out.println();
-        }
-
-    } // endEntity()
 
     /**
      * Expands a system id and returns the system id as a URI, if
@@ -800,22 +705,113 @@ public class XMLEntityManager
     } // expandSystemId(String,String):String
 
     //
-    // Private methods
+    // Protected methods
     //
 
     /**
-     * Returns the Java encoding name that is auto-detected from
+     * Starts an entity. 
+     */
+    protected void startEntity(String name, XMLInputSource xmlInputSource, 
+                               boolean literal) throws IOException, SAXException {
+
+        // get information
+        final String publicId = xmlInputSource.getPublicId();
+        final String systemId = xmlInputSource.getSystemId();
+        String encoding = xmlInputSource.getEncoding();
+
+        // create reader
+        InputStream stream = null;
+        Reader reader = xmlInputSource.getCharacterStream();
+        if (reader == null) {
+            stream = xmlInputSource.getByteStream();
+            if (stream == null) {
+                String expandedSystemId = xmlInputSource.getExpandedSystemId();
+                if (expandedSystemId == null) {
+                    final String baseSystemId = xmlInputSource.getBaseSystemId();
+                    expandedSystemId = expandSystemId(systemId, baseSystemId);
+                    xmlInputSource.setExpandedSystemId(expandedSystemId);
+                }
+                stream = new URL(expandedSystemId).openStream();
+            }
+                
+            // perform auto-detect of encoding
+            if (encoding == null) {
+                // read first four bytes and determine encoding
+                final byte[] b4 = new byte[4];
+                int count = stream.read(b4, 0, 4);
+                encoding = getEncodingName(b4, count);
+
+                // push back the characters we read
+                PushbackInputStream pbstream = new PushbackInputStream(stream, 4);
+                pbstream.unread(b4, 0, count);
+                stream = pbstream;
+
+                // REVISIT: Should save the original input stream instead of
+                //          the pushback input stream so that when we swap out
+                //          the OneCharReader, we don't still have a method
+                //          indirection to get at the underlying bytes. -Ac
+            }
+
+            // create reader from input stream
+            reader = createReader(stream, encoding);
+
+            // REVISIT: Activate this reader once I've updated the
+            //          entity scanner. -Ac
+            //reader = new OneCharReader(reader);
+        }
+
+        // push entity on stack
+        if (fCurrentEntity != null) {
+            fEntityStack.push(fCurrentEntity);
+        }
+        fCurrentEntity = new ScannedEntity(name, publicId, systemId, 
+                                           stream, reader, encoding, 
+                                           literal);
+
+        // call handler
+        if (fEntityHandler != null) {
+            fEntityHandler.startEntity(name, publicId, systemId, encoding);
+        }
+
+    } // startEntity(String,XMLInputSource)
+
+    /**
+     * Ends an entity.
+     */
+    protected void endEntity() throws SAXException {
+
+        // call handler
+        if (DEBUG_PRINT) {
+            System.out.println("(endEntity: ");
+            print();
+            System.out.println();
+        }
+        if (fEntityHandler != null) {
+            fEntityHandler.endEntity(fCurrentEntity.name);
+        }
+
+        // pop stack
+        fCurrentEntity = fEntityStack.size() > 0
+                       ? (ScannedEntity)fEntityStack.pop() : null;
+        if (DEBUG_PRINT) {
+            System.out.println(")endEntity: ");
+            print();
+            System.out.println();
+        }
+
+    } // endEntity()
+
+    /**
+     * Returns the IANA encoding name that is auto-detected from
      * the bytes specified.
      *
      * @param b4    The first four bytes of the input.
      * @param count The number of bytes actually read.
-     *
-     * @returns The Java encoding name.
      */
-    private static String getJavaEncodingName(byte[] b4, int count) {
+    protected String getEncodingName(byte[] b4, int count) {
 
         if (count < 2) {
-            return "UTF8";
+            return "UTF-8";
         }
 
         // UTF-16, with BOM
@@ -823,15 +819,15 @@ public class XMLEntityManager
         byte b1 = b4[1];
         if (b0 == 0xFE && b1 == 0xFF) {
             // UTF-16, big-endian
-            return "UnicodeBig";
+            return "UTF-16";
         }
         if (b0 == 0xFF && b1 == 0xFE) {
             // UTF-16, little-endian
-            return "UnicodeLittle";
+            return "UTF-16";
         }
 
         if (count < 4) {
-            return "UTF8";
+            return "UTF-8";
         }
 
         // other encodings
@@ -840,41 +836,78 @@ public class XMLEntityManager
         if (b0 == 0x00 && b1 == 0x00 && b2 == 0x00 && b3 == 0x3C) {
             // UCS-4, big endian (1234)
             // REVISIT: What should this be?
-            return "Unicode";
+            return "UCS-4";
         }
         if (b0 == 0x3C && b1 == 0x00 && b2 == 0x00 && b3 == 0x00) {
             // UCS-4, little endian (4321)
             // REVISIT: What should this be?
-            return "Unicode";
+            return "UCS-4";
         }
         if (b0 == 0x00 && b1 == 0x00 && b2 == 0x3C && b3 == 0x00) {
             // UCS-4, unusual octet order (2143)
             // REVISIT: What should this be?
-            return "Unicode";
+            return "UCS-4";
         }
         if (b0 == 0x00 && b1 == 0x3C && b2 == 0x00 && b3 == 0x00) {
             // UCS-4, unusual octect order (3412)
             // REVISIT: What should this be?
-            return "Unicode";
+            return "UCS-4";
         }
         if (b1 == 0x00 && b1 == 0x3C && b2 == 0x00 && b3 == 0x3F) {
             // UTF-16, big-endian, no BOM
             // REVISIT: What should this be?
-            return "Unicode";
+            return "UCS-4";
         }
         if (b1 == 0x3C && b1 == 0x00 && b2 == 0x3F && b3 == 0x00) {
             // UTF-16, little-endian, no BOM
-            return "UnicodeLittle";
+            return "UCS-4";
         }
         if (b1 == 0x4C && b1 == 0x6F && b2 == 0xA7 && b3 == 0x94) {
             // EBCDIC
-            return "DBCS_EBCDIC";
+            return "EBCDIC";
         }
 
         // default encoding
-        return "UTF8";
+        return "UTF-8";
 
-    } // getJavaEncodingName(byte[],int):String
+    } // getEncodingName(byte[],int):String
+
+    /**
+     * Creates a reader capable of reading the given input stream in
+     * the specified encoding.
+     *
+     * @param inputStream  The input stream.
+     * @param ianaEncoding The IANA encoding name that the input stream
+     *                     is encoded using.
+     *
+     * @return Returns a reader.
+     */
+    protected Reader createReader(InputStream inputStream, String ianaEncoding)
+        throws IOException {
+
+        // normalize encoding name
+        if (ianaEncoding == null) {
+            ianaEncoding = "UTF-8";
+        }
+        ianaEncoding = ianaEncoding.toUpperCase();
+
+        // try to use an optimized reader
+        if (ianaEncoding.equals("UTF-8")) {
+            return new UTF8Reader(inputStream, fBufferSize);
+        }
+        if (ianaEncoding.equals("US-ASCII")) {
+            return new ASCIIReader(inputStream, fBufferSize);
+        }
+
+        // try to use a Java reader
+        String javaEncoding = EncodingMap.getIANA2JavaMapping(ianaEncoding);
+        return new InputStreamReader(inputStream, javaEncoding);
+
+    } // createReader(InputStream,String):
+
+    //
+    // Protected static methods
+    //
 
     /**
      * Fixes a platform dependent filename to standard URI form.
@@ -883,7 +916,7 @@ public class XMLEntityManager
      *
      * @return Returns the fixed URI string.
      */
-    private static String fixURI(String str) {
+    protected static String fixURI(String str) {
 
         // handle platform dependent strings
         str = str.replace(java.io.File.separatorChar, '/');
@@ -903,6 +936,10 @@ public class XMLEntityManager
         return str;
 
     } // fixURI(String):String
+
+    //
+    // Package visible methods
+    //
 
     /** Prints the contents of the buffer. */
     final void print() {
