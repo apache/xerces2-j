@@ -106,8 +106,11 @@ public class XMLMessageFormatter implements MessageFormatter {
         throws MissingResourceException {
         
         if (fResourceBundle == null || locale != fLocale) {
-            if (locale != null)
+            if (locale != null) {
                 fResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLMessages", locale);
+                // memorize the most-recent locale
+                fLocale = locale;
+            }
             if (fResourceBundle == null)
                 fResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLMessages");
         }
