@@ -284,7 +284,7 @@ public abstract class BaseMarkupSerializer
     private OutputStream    _output;
 
     /** Current node that is being processed  */
-    private Node fCurrentNode = null;
+    protected Node fCurrentNode = null;
 
     
 
@@ -548,7 +548,7 @@ public abstract class BaseMarkupSerializer
             saveIndent = _printer.getNextIndent();
             _printer.setNextIndent( 0 );
             char ch;
-            for ( int index = 0 ; index < length ; ++index ) {
+            for ( int index = start ; index < length ; ++index ) {
                 ch = chars[index];
                 if ( ch == ']' && index + 2 < length &&
                      chars[ index + 1 ] == ']' && chars[ index + 2 ] == '>' ) {
@@ -566,7 +566,7 @@ public abstract class BaseMarkupSerializer
                     }
                     continue;
                 } else {
-                    if ( ( ch >= ' ' && _encodingInfo.isPrintable(ch) && ch != 0xF7 ) ||
+                    if ( ( ch >= ' ' && _encodingInfo.isPrintable((char)ch) && ch != 0xF7 ) ||
                         ch == '\n' || ch == '\r' || ch == '\t' ) {
                         _printer.printText((char)ch);
                     } else {
@@ -1470,7 +1470,7 @@ public abstract class BaseMarkupSerializer
     // Text pretty printing and formatting methods //
     //---------------------------------------------//
 
-    protected final void printCDATAText( String text ) throws IOException {
+    protected void printCDATAText( String text ) throws IOException {
         int length = text.length();
         char ch;
 
@@ -1515,7 +1515,7 @@ public abstract class BaseMarkupSerializer
                 }
                 continue;
             } else {
-                if ( ( ch >= ' ' && _encodingInfo.isPrintable(ch) && ch != 0xF7 ) ||
+                if ( ( ch >= ' ' && _encodingInfo.isPrintable((char)ch) && ch != 0xF7 ) ||
                      ch == '\n' || ch == '\r' || ch == '\t' ) {
                     _printer.printText((char)ch);
                 } else {
@@ -1530,7 +1530,7 @@ public abstract class BaseMarkupSerializer
     }
 
 
-    protected final void surrogates(int high, int low) throws IOException{
+    protected void surrogates(int high, int low) throws IOException{
         if (XMLChar.isHighSurrogate(high)) {
             if (!XMLChar.isLowSurrogate(low)) {
                 //Invalid XML
@@ -1690,7 +1690,7 @@ public abstract class BaseMarkupSerializer
             _printer.printText( '&' );
             _printer.printText( charRef );
             _printer.printText( ';' );
-        } else if ( ( ch >= ' ' && _encodingInfo.isPrintable(ch) && ch != 0xF7 ) ||
+        } else if ( ( ch >= ' ' && _encodingInfo.isPrintable((char)ch) && ch != 0xF7 ) ||
                     ch == '\n' || ch == '\r' || ch == '\t' ) {
             // Non printables are below ASCII space but not tab or line
             // terminator, ASCII delete, or above a certain Unicode threshold.
@@ -1875,7 +1875,7 @@ public abstract class BaseMarkupSerializer
         
     }
 
-    private boolean getFeature(String feature){
+    protected boolean getFeature(String feature){
         return ((Boolean)fFeatures.get(feature)).booleanValue();
     }
 
