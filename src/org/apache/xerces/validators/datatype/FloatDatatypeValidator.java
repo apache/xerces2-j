@@ -245,27 +245,69 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
     /*
      * check that a facet is in range, assumes that facets are compatible -- compatibility ensured by setFacets
      */
-    private void boundsCheck(float f) throws InvalidDatatypeValueException {
-        boolean inUpperBound = false;
-        boolean inLowerBound = false;
+    private void boundsCheck(float d) throws InvalidDatatypeValueException {
 
-        if ( isMaxInclusiveDefined ) {
-            inUpperBound = ( f <= fMaxInclusive );
-        } else if ( isMaxExclusiveDefined ) {
-            inUpperBound = ( f <  fMaxExclusive );
+        boolean minOk = false;
+        boolean maxOk = false;
+        String  upperBound =  (fMaxExclusive != Float.MAX_VALUE )? (   Float.toString( fMaxExclusive)) :
+                              ( ( fMaxInclusive != Float.MAX_VALUE )? Float.toString( fMaxInclusive):"");
+
+        String  lowerBound =  (fMinExclusive != Float.MIN_VALUE )? ( Float.toString( fMinExclusive ) ):
+                              (( fMinInclusive != Float.MIN_VALUE )? Float.toString( fMinInclusive ):""); 
+        String  lowerBoundIndicator = "";
+        String  upperBoundIndicator = "";
+
+
+        if ( isMaxInclusiveDefined) {
+            maxOk = (d <= fMaxInclusive);
+            upperBound          = Float.toString( fMaxInclusive );
+            if ( upperBound != null ) {
+                upperBoundIndicator = "<="; 
+            } else {
+                upperBound="";
+            }
+        } else if ( isMaxExclusiveDefined) {
+            maxOk = (d < fMaxExclusive );
+            upperBound = Float.toString(fMaxExclusive );
+            if ( upperBound != null ) {
+                upperBoundIndicator = "<";
+            } else {
+                upperBound = "";
+            }
+        } else {
+            maxOk = (!isMaxInclusiveDefined && ! isMaxExclusiveDefined);
         }
 
-        if ( isMinInclusiveDefined ) {
-            inLowerBound = ( f >= fMinInclusive );
-        } else if ( isMinExclusiveDefined ) {
-            inLowerBound = ( f >  fMinExclusive );
+
+
+        if ( isMinInclusiveDefined) {
+
+            minOk = (d >=  fMinInclusive );
+            lowerBound = Float.toString( fMinInclusive );
+            if ( lowerBound != null ) {
+                lowerBoundIndicator = "<=";
+            } else {
+                lowerBound = "";
+            }
+        } else if ( isMinExclusiveDefined) {
+            minOk = (d > fMinExclusive);
+            lowerBound = Float.toString( fMinExclusive  );
+            if ( lowerBound != null ) {
+                lowerBoundIndicator = "<";
+            } else {
+                lowerBound = "";
+            }
+        } else {
+            minOk = (!isMinInclusiveDefined && !isMinExclusiveDefined);
         }
 
-        if ( inUpperBound == false  || inLowerBound == false ) { // within bounds ?
-            getErrorString(DatatypeMessageProvider.OutOfBounds,
-                           DatatypeMessageProvider.MSG_NONE,
-                           new Object [] { new Float(f), "","","",""}); //REVISIT
-        }
+        if (!(minOk && maxOk))
+            throw new InvalidDatatypeValueException (
+                             getErrorString(DatatypeMessageProvider.OutOfBounds,
+                                  DatatypeMessageProvider.MSG_NONE,
+                                      new Object [] { Float.toString(d) ,  lowerBound ,
+                                          upperBound, lowerBoundIndicator, upperBoundIndicator}));
+
     }
 
     private void enumCheck(float v) throws InvalidDatatypeValueException {
