@@ -136,7 +136,7 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
 	public void setParameter(String name, Object value) throws DOMException {
 		if (serializer.fFeatures.containsKey(name)) {
 			// This is a feature
-			if (value instanceof Boolean) {
+			if (value == Boolean.TRUE || value == Boolean.FALSE){
 				if (canSetParameter(name, value)) {
 					serializer.fFeatures.put(name, value);
 					if (name.equals(Constants.DOM_XMLDECL)) {
@@ -331,7 +331,7 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
     public boolean writeNode(java.io.OutputStream destination, 
                              Node wnode) {
         // determine which serializer to use:
-        Document doc = (wnode instanceof Document)?(Document)wnode:wnode.getOwnerDocument();
+        Document doc = (wnode.getNodeType()== Node.DOCUMENT_NODE)?(Document)wnode:wnode.getOwnerDocument();
         Method getVersion = null;
         XMLSerializer ser = null;
         String ver = null;
@@ -403,7 +403,7 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
     public String writeToString(Node wnode)
     throws DOMException {
         // determine which serializer to use:
-        Document doc = (wnode instanceof Document)?(Document)wnode:wnode.getOwnerDocument();
+        Document doc = (wnode.getNodeType() == Node.DOCUMENT_NODE)?(Document)wnode:wnode.getOwnerDocument();
         Method getVersion = null;
         XMLSerializer ser = null;
         String ver = null;
