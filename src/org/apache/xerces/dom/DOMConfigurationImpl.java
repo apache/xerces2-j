@@ -483,7 +483,6 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
      * @see #setErrorHandler
      */
     public XMLErrorHandler getErrorHandler() {
-        // REVISIT: Should this be a property?
         return (XMLErrorHandler)fProperties.get(ERROR_HANDLER);
     } // getErrorHandler():XMLErrorHandler
 

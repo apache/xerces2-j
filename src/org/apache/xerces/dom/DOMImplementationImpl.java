@@ -57,7 +57,6 @@
 
 package org.apache.xerces.dom;
 
-import org.apache.xerces.util.ObjectFactory;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;

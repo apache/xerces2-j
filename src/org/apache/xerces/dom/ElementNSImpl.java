@@ -328,7 +328,7 @@ public class ElementNSImpl
                                      msg);
             }
             if (prefix != null && prefix.length() != 0) {
-                if (!ownerDocument().isXMLName(prefix,ownerDocument().isXML11Version())) {
+                if (!CoreDocumentImpl.isXMLName(prefix,ownerDocument().isXML11Version())) {
                     String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_CHARACTER_ERR", null);
                     throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
                 }
