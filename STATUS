@@ -2,68 +2,53 @@ This is the Status file for the Xerces for Java code base.
 
 There are lots of things that need to be done: 
 
-Here are some things at the top of my list (in no particular order):
-
-* Binary build for v1.0.2
-
-* Additional Support for W3C XML schema.  There's both the structures
-  spec and the datatypes spec.  There's a lot of work to do in the
-  structures area, and that's the area I'll be working on for the next
-  while.  There's also a lot of work to be done in the datatypes area,
-  and this would be a great place for someone to jump and get involved
-  in the code.
-
-* Support for the DOM Level 2 ranges spec.  Ralf Pfeiffer is looking
-  at this <DONE>
-
-* Reconciling the error messages between the C++ and Java versions of
-  Xerces. 
+* Additional Support for W3C XML schema.  (andyc, ericy, jeffr are
+	working on it)
 
 * Figuring out what support for DTD access should look like.  This
   version of Xerces supports access to the DTD via a special node in
   the DOM tree.  There's also room for a more programmatic API to the
-  DTD / Schema.  This is a meaty one.
+  DTD / Schema.  This is a meaty one, and would be a good place for
+  somebody to jump in and help.
 
 * Enabling support for a DTD Caching mechanism.  This would be
-  especially beneficial in a server environment 
+  especially beneficial in a server environment.  Part of the work
+  that helps Schema will help this. 
 
-* There's a bunch of work that needs to be done on the DOM
-  implementation.  There's a bunch of memory consumption work that
-  could be done. Andy Clark is looking at this. <DONE> [Q] Can more
-  be done?
+* Revalidation architecture work (i.e. How to validate, after a DOM
+  tree has been edited - we used to be able to do this...)
 
-* Revalidation architecture work
+* DOM Write validation (i.e. what is legal to insert here?)
 
-* DOM Write validation
-
-* Incorporation of features and improvements from other technology
-  contributions. 
-  
-  The first one is the printers proposal from Assaf Arkin. <DONE>
- 
 * refinement and extension of the incremental parsing API
 
-* scripts to build parser subconfigurations
+* scripts to build parser subconfigurations (i.e. if I don't need
+  WML/WAP, take it out of the jar)
 
 * additional configuration options.
 
-* performance, performance, performance.
+* performance, performance, performance.  Always need help here.
 
-* conformance, conformance, conformance.
+* conformance, conformance, conformance.  We're pretty darn good, but
+  we can always do better.
 
 * a bunch of things that haven't been thought of yet.
 
-* more documentation
+* more documentation.  The docs need to be updated, especially the FAQ.
 
-* more samples
+* more samples (lots, especially code fragments that accomplish specific
+  tasks)
 
-* kill bugs
+* kill bugs (always)
 
 * Major work on the build system.
   
   ANT vs Makefiles is the current discussion
+  Is ANT ready for us to use?  It has to get beyond the "compile everything"
+  stage, because we have files (e.g. for Schema) that should NOT be compiled
+  into the build yet.
 
 * Hook up JavaScript DOM API tests (see http://www.nist.gov/xml)
 
 * JAXP Wrappers for Xerces
-  pending resolution of licensing issues
+  [pending resolution of licensing issues]
