@@ -189,7 +189,7 @@ public class DeepNodeListImpl
     } // item(int):Node
 
     //
-    // Private methods
+    // Protected methods (might be overridden by an extending DOM)
     //
 
     /** 
@@ -197,7 +197,7 @@ public class DeepNodeListImpl
      * need to resort to recursion. NOTE THAT only Element nodes are matched
      * since we're specifically supporting getElementsByTagName().
      */
-    private Node nextMatchingElementAfter(Node current) {
+    protected Node nextMatchingElementAfter(Node current) {
 
 	    Node next;
 	    while (current != null) {
