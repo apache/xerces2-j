@@ -96,8 +96,7 @@ public final class XMLValidator
 {
 	// **** DEBUG ****
 	static XMLValidator schemaValidator = null;
-        static boolean DEBUG_TO_STDERR              = false;
-
+    static boolean DEBUG = false;
 	// **** DEBUG ****
 
 
@@ -220,10 +219,9 @@ public final class XMLValidator
 	}
 
 
-	private void DEBUG (String message)
+	private void print(String message)
 	{
-		//if ( this == schemaValidator ) {
-                if( DEBUG_TO_STDERR == true ) {
+		if ( this == schemaValidator ) {
 			System.err.println(message);
 		}
 	}
@@ -239,7 +237,7 @@ public final class XMLValidator
                              XMLDocumentHandler.DTDHandler dtdHandler)
     {
 		//****DEBUG****
-		DEBUG ("(GEN) XMLValidator.initHandlers\n");
+		if (DEBUG) print("(GEN) XMLValidator.initHandlers\n");
 		//****DEBUG****
 
         fSendCharDataAsCharArray = sendCharDataAsCharArray;
@@ -464,12 +462,14 @@ public final class XMLValidator
 		}
 
 		//****DEBUG****
-		String nsFlag = "";
-		if ( fNamespacesEnabled ) {
-			nsFlag = "NameSpacesEnabled";
-		}
+        if (DEBUG) {
+            String nsFlag = "";
+            if ( fNamespacesEnabled ) {
+                nsFlag = "NameSpacesEnabled";
+            }
 
-		DEBUG ("(SCN) XMLValidator.scanElementType: " + param("elementType",elementType) + nsFlag + "\n");
+            print("(SCN) XMLValidator.scanElementType: " + param("elementType",elementType) + nsFlag + "\n");
+        }
 		//****DEBUG****
 
         return elementType;
@@ -478,7 +478,7 @@ public final class XMLValidator
     public boolean scanExpectedElementType(XMLEntityHandler.EntityReader entityReader, char fastchar) throws Exception {
 
 		//****DEBUG****
-		DEBUG ("(SCN) XMLValidator.scanExpectedElementType ... \n");
+		if (DEBUG) print("(SCN) XMLValidator.scanExpectedElementType ... \n");
 		//****DEBUG****
 
         if (fCurrentElementCharArrayRange == null)
@@ -518,7 +518,7 @@ public final class XMLValidator
 		}
 
 		//****DEBUG****
-		DEBUG ("(SCN) XMLValidator.scanAttributeName: " + param("elementType",elementType) + param("attrName",attrName) + "\n");
+		if (DEBUG) print("(SCN) XMLValidator.scanAttributeName: " + param("elementType",elementType) + param("attrName",attrName) + "\n");
 		//****DEBUG****
 
         return attrName;
@@ -532,7 +532,7 @@ public final class XMLValidator
     public void callStartDocument() throws Exception {
 
 		//****DEBUG****
-		DEBUG ("\n(VAL) XMLValidator.callStartDocument\n");
+		if (DEBUG) print("\n(VAL) XMLValidator.callStartDocument\n");
 		//****DEBUG****
 
         if (!fCalledStartDocument) {
@@ -549,7 +549,7 @@ public final class XMLValidator
     public void callEndDocument() throws Exception {
 
 		//****DEBUG****
-		DEBUG ("(VAL) XMLValidator.callEndDocument\n\n");
+		if (DEBUG) print("(VAL) XMLValidator.callEndDocument\n\n");
 		//****DEBUG****
 
         if (fCalledStartDocument)
@@ -572,7 +572,7 @@ public final class XMLValidator
         //
 
 		//****DEBUG****
-		DEBUG ("(VAL) XMLValidator.callStartElement: " + param("elementType",elementType) + "\n");
+		if (DEBUG) print("(VAL) XMLValidator.callStartElement: " + param("elementType",elementType) + "\n");
 		//****DEBUG****
 
         if (!fSeenRootElement) {
@@ -639,7 +639,7 @@ public final class XMLValidator
     public void callEndElement(int readerId) throws Exception {
 
 		//****DEBUG****
-		DEBUG ("(VAL) XMLValidator.callEndElement: " + param("readerId",readerId) + "\n");
+		if (DEBUG) print("(VAL) XMLValidator.callEndElement: " + param("readerId",readerId) + "\n");
 		//****DEBUG****
 
         int elementType = fCurrentElementType;
@@ -702,7 +702,7 @@ public final class XMLValidator
     public boolean validVersionNum(String version) {
 
 		//****DEBUG****
-		DEBUG ("(VAL) XMLValidator.validVersionNum: version=" + version + "\n");
+		if (DEBUG) print("(VAL) XMLValidator.validVersionNum: version=" + version + "\n");
 		//****DEBUG****
 
         return XMLCharacterProperties.validVersionNum(version);
@@ -716,7 +716,7 @@ public final class XMLValidator
     public boolean validEncName(String encoding) {
 
 		//****DEBUG****
-		DEBUG ("(VAL) XMLValidator.validEncName: encoding=" + encoding + "\n");
+		if (DEBUG) print("(VAL) XMLValidator.validEncName: encoding=" + encoding + "\n");
 		//****DEBUG****
 
         return XMLCharacterProperties.validEncName(encoding);
@@ -730,7 +730,7 @@ public final class XMLValidator
     public void callStartCDATA() throws Exception {
 
 		//****DEBUG****
-		DEBUG ("(VAL) XMLValidator.callStartCDATA\n");
+		if (DEBUG) print("(VAL) XMLValidator.callStartCDATA\n");
 		//****DEBUG****
 
         fDocumentHandler.startCDATA();
@@ -744,7 +744,7 @@ public final class XMLValidator
     public void callEndCDATA() throws Exception {
 
 		//****DEBUG****
-		DEBUG ("(VAL) XMLValidator.callEndCDATA\n");
+		if (DEBUG) print("(VAL) XMLValidator.callEndCDATA\n");
 		//****DEBUG****
 
         fDocumentHandler.endCDATA();
@@ -758,7 +758,7 @@ public final class XMLValidator
     public void callCharacters(int ch) throws Exception {
 
 		//****DEBUG****
-		DEBUG ("(VAL) XMLValidator.callCharacters: ... \n");
+		if (DEBUG) print("(VAL) XMLValidator.callCharacters: ... \n");
 		//****DEBUG****
 
         if (fCharRefData == null)
@@ -807,11 +807,11 @@ public final class XMLValidator
     public void scanDoctypeDecl(boolean standalone) throws Exception {
 
 		//****DEBUG****
-		DEBUG ("(SCN) XMLValidator.scanDoctypeDecl\n");
+		if (DEBUG) print("(SCN) XMLValidator.scanDoctypeDecl\n");
 		//****DEBUG****
 
 		//****DEBUG****
-		DEBUG ("\n\n**** BEGIN DTD ****\n\n");
+		if (DEBUG) print("\n\n**** BEGIN DTD ****\n\n");
 		//****DEBUG****
 
         fScanningDTD = true;
@@ -838,7 +838,7 @@ public final class XMLValidator
         fScanningDTD = false;
 
 		//****DEBUG****
-		DEBUG ("\n\n**** END DTD ****\n\n");
+		if (DEBUG) print("\n\n**** END DTD ****\n\n");
 		//****DEBUG****
     }
 
@@ -857,7 +857,7 @@ public final class XMLValidator
         }
 
 		//****DEBUG****
-		DEBUG ("(SCN) XMLValidator.scanAttValue: " + param ("elementType",elementType) +  param ("attrName",attrName) + 
+		if (DEBUG) print("(SCN) XMLValidator.scanAttValue: " + param ("elementType",elementType) +  param ("attrName",attrName) + 
 							param ("attValue",attValue) + "\n" );
 		//****DEBUG****
 
@@ -882,13 +882,13 @@ public final class XMLValidator
                 }
 
 				//****DEBUG****
-				DEBUG ( "\n\n**** BEGIN SCHEMA ****\n\n" );
+				if (DEBUG) print( "\n\n**** BEGIN SCHEMA ****\n\n" );
 				//****DEBUG****
 
                 fSchemaImporter.loadSchema(is);
 
 				//****DEBUG****
-				DEBUG ( "\n\n**** END SCHEMA ****\n\n" );
+				if (DEBUG) print( "\n\n**** END SCHEMA ****\n\n" );
 				//****DEBUG****
 
                 fSchemaDocument = fSchemaImporter.getSchemaDocument();
@@ -953,7 +953,7 @@ public final class XMLValidator
 
     public void startNamespaceDeclScope(int prefix, int uri) throws Exception {
 		//****DEBUG****
-		DEBUG ("(VAL) XMLValidator.startNamespaceDeclScope: " + param("prefix",prefix) + param("uri",uri) + "\n");
+		if (DEBUG) print("(VAL) XMLValidator.startNamespaceDeclScope: " + param("prefix",prefix) + param("uri",uri) + "\n");
 		//****DEBUG****
         fDocumentHandler.startNamespaceDeclScope(prefix, uri);
     }
@@ -965,7 +965,7 @@ public final class XMLValidator
 
     public void endNamespaceDeclScope(int prefix) throws Exception {
 		//****DEBUG****
-		DEBUG ("(VAL) XMLValidator.endNamespaceDeclScope: " + param("prefix",prefix) + "\n");
+		if (DEBUG) print("(VAL) XMLValidator.endNamespaceDeclScope: " + param("prefix",prefix) + "\n");
 		//****DEBUG****
         fDocumentHandler.endNamespaceDeclScope(prefix);
     }
@@ -975,7 +975,7 @@ public final class XMLValidator
     //
     private void resetCommon(StringPool stringPool) throws Exception {
 		//****DEBUG****
-		DEBUG ("(POP) XMLValidator.resetCommon\n");
+		if (DEBUG) print("(POP) XMLValidator.resetCommon\n");
 		//****DEBUG****
         fStringPool = stringPool;
         fValidating = fValidationEnabled;
@@ -999,7 +999,7 @@ public final class XMLValidator
 
     private void init() {
 		//****DEBUG****
-		DEBUG ("(POP) XMLValidator.init\n");
+		if (DEBUG) print("(POP) XMLValidator.init\n");
 		//****DEBUG****
         fEMPTYSymbol = fStringPool.addSymbol("EMPTY");
         fANYSymbol = fStringPool.addSymbol("ANY");
@@ -1026,7 +1026,7 @@ public final class XMLValidator
     //
     public int normalizeAttValue(int elementType, int attrName, int attValue, int attType, int enumHandle) throws Exception {
 		//****DEBUG****
-		DEBUG ("(VAL) XMLValidator.normalizeAttValue: " + param("elementType",elementType) + param("attValue",attValue) +
+		if (DEBUG) print("(VAL) XMLValidator.normalizeAttValue: " + param("elementType",elementType) + param("attValue",attValue) +
 							param("attType",attType) + param("enumHandle",enumHandle) + "\n");
 		//****DEBUG****
         AttributeValidator av = getValidatorForAttType(attType);
@@ -1583,7 +1583,7 @@ public final class XMLValidator
     private void validateElementAndAttributes(int elementType, XMLAttrList attrList) throws Exception {
 
 		//****DEBUG****
-		DEBUG ("(VAL) XMLValidator.validateElementAndAttributes: " + param("elementType",elementType) + " !!!!\n");
+		if (DEBUG) print("(VAL) XMLValidator.validateElementAndAttributes: " + param("elementType",elementType) + " !!!!\n");
 		//****DEBUG****
 
         if (fElementDeclCount == 0 && fAttDefCount == 0 && !fValidating && !fNamespacesEnabled) {
@@ -1727,7 +1727,7 @@ public final class XMLValidator
     private void charDataInContent () {
 
 		//****DEBUG****
-		DEBUG ("(???) XMLValidator.charDataInContent\n");
+		if (DEBUG) print("(???) XMLValidator.charDataInContent\n");
 		//****DEBUG****
 
         int[] children = fElementChildren[fElementDepth];
@@ -1755,7 +1755,7 @@ public final class XMLValidator
     private int peekChildCount() {
 
 		//****DEBUG****
-		DEBUG ("(???) XMLValidator.peekChildCount\n");
+		if (DEBUG) print("(???) XMLValidator.peekChildCount\n");
 		//****DEBUG****
 
         return fElementChildCount[fElementDepth];
@@ -1769,7 +1769,7 @@ public final class XMLValidator
     private int[] peekChildren() {
 
 		//****DEBUG****
-		DEBUG ("(???) XMLValidator.peekChildren\n");
+		if (DEBUG) print("(???) XMLValidator.peekChildren\n");
 		//****DEBUG****
 
         return fElementChildren[fElementDepth];
@@ -1815,7 +1815,7 @@ public final class XMLValidator
     private int checkContent(int elementIndex, int childCount, int[] children) throws Exception
     {
 		//****DEBUG****
-		DEBUG ("(VAL) XMLValidator.checkContent: " + param("elementIndex",elementIndex) + "... \n");
+		if (DEBUG) print("(VAL) XMLValidator.checkContent: " + param("elementIndex",elementIndex) + "... \n");
 		//****DEBUG****
 
         // Get the element name index from the element
@@ -2011,7 +2011,7 @@ public final class XMLValidator
     {
 
 		//****DEBUG****
-		DEBUG ("(VAL) XMLValidator.whatCanGoHere: ...\n");
+		if (DEBUG) print("(VAL) XMLValidator.whatCanGoHere: ...\n");
 		//****DEBUG****
 
         //
@@ -2079,7 +2079,7 @@ public final class XMLValidator
     private XMLContentModel createChildModel(int elementIndex) throws CMException
     {
 		//****DEBUG****
-		DEBUG ("(POP) XMLValidator.createChildModel: " + param("elementIndex",elementIndex) + "\n");
+		if (DEBUG) print("(POP) XMLValidator.createChildModel: " + param("elementIndex",elementIndex) + "\n");
 		//****DEBUG****
 
         //
@@ -2185,7 +2185,7 @@ public final class XMLValidator
     private XMLContentModel getContentModel(int elementIndex) throws CMException
     {
 		//****DEBUG****
-		DEBUG ("(INF) XMLValidator.getContentModel: " + param("elementIndex",elementIndex) + "\n");
+		if (DEBUG) print("(INF) XMLValidator.getContentModel: " + param("elementIndex",elementIndex) + "\n");
 		//****DEBUG****
 
         // See if a content model already exists first
@@ -2307,7 +2307,7 @@ public final class XMLValidator
     private LocatorImpl getLocatorImpl(LocatorImpl fillin) {
 
 		//****DEBUG****
-		DEBUG ("(INF) XMLValidator.getLocatorImpl: ...\n");
+		if (DEBUG) print("(INF) XMLValidator.getLocatorImpl: ...\n");
 		//****DEBUG****
 
         Locator here = fErrorReporter.getLocator();
@@ -2338,7 +2338,7 @@ public final class XMLValidator
     private CMNode buildSyntaxTree(int startNode, XMLContentSpec.Node specNode) throws CMException
     {
 		//****DEBUG****
-		DEBUG ("(POP) XMLValidator.buildSyntaxTree: ... \n");
+		if (DEBUG) print("(POP) XMLValidator.buildSyntaxTree: ... \n");
 		//****DEBUG****
 
         // We will build a node at this level for the new tree
@@ -2433,7 +2433,7 @@ public final class XMLValidator
     private void makeContentList(int startNode, XMLContentSpec.Node specNode) throws CMException {
 
 		//****DEBUG****
-		DEBUG ("(POP) XMLValidator.makeContentList: ...\n");
+		if (DEBUG) print("(POP) XMLValidator.makeContentList: ...\n");
 		//****DEBUG****
 
         //
@@ -2481,7 +2481,7 @@ public final class XMLValidator
     private int buildContentList( int startNode, int count, XMLContentSpec.Node specNode) throws CMException
     {
 		//****DEBUG****
-		DEBUG ("(POP) XMLValidator.buildContentList: ...\n");
+		if (DEBUG) print("(POP) XMLValidator.buildContentList: ...\n");
 		//****DEBUG****
 
         // Get the content spec for the passed start node
@@ -2652,7 +2652,7 @@ public final class XMLValidator
     public int addElement(int elementType) {
 
 		//****DEBUG****
-		DEBUG ("(POP) XMLValidator.addElement: " + param("elementType",elementType) + "\n");
+		if (DEBUG) print("(POP) XMLValidator.addElement: " + param("elementType",elementType) + "\n");
 		//****DEBUG****
 
         int elementIndex = fStringPool.getDeclaration(elementType);
@@ -2680,7 +2680,7 @@ public final class XMLValidator
     public int addElementDecl(int elementType, int contentSpecType, int contentSpec, boolean isExternal) {
 
 		//****DEBUG****
-		DEBUG ("(POP) XMLValidator.addElementDecl: " + param("elementType",elementType) + "\n");
+		if (DEBUG) print("(POP) XMLValidator.addElementDecl: " + param("elementType",elementType) + "\n");
 		//****DEBUG****
 
 		//System.out.println("Pool " + this + " add " + decl.elementType + " (" + fStringPool.toString(decl.elementType) + ")");
@@ -2838,7 +2838,7 @@ public final class XMLValidator
     private int addContentSpecLeafNode(int nodeValue) throws Exception {
 
 		//****DEBUG****
-		DEBUG ("(POP) XMLValidator.addContentSpecLeafNode: " + param("nodeValue",nodeValue) + "\n");
+		if (DEBUG) print("(POP) XMLValidator.addContentSpecLeafNode: " + param("nodeValue",nodeValue) + "\n");
 		//****DEBUG****
 
         //
@@ -2880,7 +2880,7 @@ public final class XMLValidator
     public int addContentSpecNode(int nodeType, int nodeValue, int otherNodeValue, boolean mustBeUnique) throws Exception {
 
 		//****DEBUG****
-		DEBUG ("(POP) XMLValidator.addContentSpecNode: " + param("nodeType",nodeType) + param("nodeValue",nodeValue) + "\n");
+		if (DEBUG) print("(POP) XMLValidator.addContentSpecNode: " + param("nodeType",nodeType) + param("nodeValue",nodeValue) + "\n");
 		//****DEBUG****
 
         if (mustBeUnique) // REVISIT - merge these methods...
@@ -2984,7 +2984,7 @@ public final class XMLValidator
     private void appendContentSpecNode(int contentSpecIndex, StringBuffer sb, boolean noParen) {
 
 		//****DEBUG****
-		DEBUG ("(POP) XMLValidator.appendContentSpecNode: ...\n");
+		if (DEBUG) print("(POP) XMLValidator.appendContentSpecNode: ...\n");
 		//****DEBUG****
 
         int chunk = contentSpecIndex >> CHUNK_SHIFT;
@@ -3081,7 +3081,7 @@ public final class XMLValidator
     public int addAttDef(int elementIndex, int attName, int attType, int enumeration, int attDefaultType, int attDefaultValue, boolean isExternal) throws Exception {
 
 		//****DEBUG****
-		DEBUG ("(POP) XMLValidator.addAttDef\n");
+		if (DEBUG) print("(POP) XMLValidator.addAttDef\n");
 		//****DEBUG****
 
         //
@@ -3304,7 +3304,7 @@ public final class XMLValidator
     public void copyAtts(int fromElementType, int toElementType) {
 
 		//****DEBUG****
-		DEBUG ("(POP) XMLValidator.copyAtts: " + param("fromElementType",fromElementType) + param("toElementType",toElementType) + "\n");
+		if (DEBUG) print("(POP) XMLValidator.copyAtts: " + param("fromElementType",fromElementType) + param("toElementType",toElementType) + "\n");
 		//****DEBUG****
 
         int fromElement = fStringPool.getDeclaration(fromElementType);
@@ -3339,7 +3339,7 @@ public final class XMLValidator
     private int addDefaultAttributes(int elementIndex, XMLAttrList attrList, int attrIndex, boolean validationEnabled, boolean standalone) throws Exception {
 
 		//****DEBUG****
-		DEBUG ("(POP) XMLValidator.addDefaultAttributes\n");
+		if (DEBUG) print("(POP) XMLValidator.addDefaultAttributes\n");
 		//****DEBUG****
 
         //
@@ -3457,7 +3457,7 @@ public final class XMLValidator
     protected boolean addId (int idIndex) {
 
 		//****DEBUG****
-		DEBUG ("(POP) XMLValidator.addId" + param("idIndex",idIndex) + "\n");
+		if (DEBUG) print("(POP) XMLValidator.addId" + param("idIndex",idIndex) + "\n");
 		//****DEBUG****
 
 		//System.err.println("addId(" + fStringPool.toString(idIndex) + ") " + idIndex);
@@ -3480,7 +3480,7 @@ public final class XMLValidator
     protected void addIdRef(int idIndex) {
 
 		//****DEBUG****
-		DEBUG ("(POP) XMLValidator.addIdRef" + param("idIndex",idIndex) + "\n");
+		if (DEBUG) print("(POP) XMLValidator.addIdRef" + param("idIndex",idIndex) + "\n");
 		//****DEBUG****
 
 		//System.err.println("addIdRef(" + fStringPool.toString(idIndex) + ") " + idIndex);
@@ -3513,7 +3513,7 @@ public final class XMLValidator
     private void checkIdRefs() throws Exception {
 
 		//****DEBUG****
-		DEBUG ("(???) XMLValidator.checkIdRefs\n");
+		if (DEBUG) print("(???) XMLValidator.checkIdRefs\n");
 		//****DEBUG****
 
         if (fIdRefs == null)
@@ -3541,7 +3541,7 @@ public final class XMLValidator
     private void checkDeclaredElements() throws Exception {
 
 		//****DEBUG****
-		DEBUG ("(???) XMLValidator.checkDeclaredElements\n");
+		if (DEBUG) print("(???) XMLValidator.checkDeclaredElements\n");
 		//****DEBUG****
 
         for (int i = 0; i < fElementCount; i++) {
@@ -3566,7 +3566,7 @@ public final class XMLValidator
     private void checkDeclaredElements(int elementIndex, int contentSpecIndex) throws Exception {
         
 		//****DEBUG****
-		DEBUG ("(???) XMLValidator.checkDeclaredElements\n");
+		if (DEBUG) print("(???) XMLValidator.checkDeclaredElements\n");
 		//****DEBUG****
 
         // get spec type and value
