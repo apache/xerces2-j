@@ -243,13 +243,6 @@ public class Field {
                         val = (XSSimpleType)(type);
                     }
                 }
-                // REVISIT:  special case to handle elements with xs:anyType.
-                // This probably is not valid; need clarification from WG.  - NG
-                if(val == null && type == SchemaGrammar.fAnyType ) {
-                    // REVISIT:  this is why anyType shouldn't 
-                    // match fields!
-                    val = (XSSimpleType)SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_STRING);
-                }
             }
 
             if(val == null ) {

@@ -2955,10 +2955,6 @@ public class XMLSchemaValidator
                     reportSchemaError("cvc-complex-type.2.3", new Object[]{element.rawname});
                 }
             }
-            else if (ctype == SchemaGrammar.fAnyType) {
-                fCurrentPSVI.fNormalizedValue = textContent;
-                actualValue = textContent;
-            }
             // 2.4 If the {content type} is element-only or mixed, then the sequence of the element information item's element information item [children], if any, taken in order, is valid with respect to the {content type}'s particle, as defined in Element Sequence Locally Valid (Particle) (3.9.4).
             if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_ELEMENT ||
                 ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
