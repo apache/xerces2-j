@@ -151,6 +151,8 @@ public class XMLDTDScanner
     private boolean fStartDTDCalled = false;
 
     private boolean fScanningExtSubset;
+    
+    private boolean fEndOfDTD = false;
 
     private String[] fPseudoAttributeValues = new String[3];
 
@@ -329,6 +331,8 @@ public class XMLDTDScanner
             componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX
                                          + Constants.ERROR_REPORTER_PROPERTY);
 
+        fEndOfDTD = false;
+
         // save built-in symbols
         fXmlSymbol = fSymbolTable.addSymbol("xml");
         fXmlSpace = fSymbolTable.addSymbol("xml:space");
@@ -434,6 +438,10 @@ public class XMLDTDScanner
      */
     public void endEntity(String name)
         throws SAXException {
+
+        if (name.equals("[dtd]")) {
+            fEndOfDTD = true;
+        }
 
         // call handler
         if (fDTDHandler != null) {
@@ -1009,13 +1017,21 @@ public class XMLDTDScanner
                                             new Object[]{name}, XMLErrorReporter.SEVERITY_FATAL_ERROR);
             }
             // REVISIT: fix this
-            fEntityScanner.scanAttContent(quote, fString);
+            XMLString value = fString;
+            if (fEntityScanner.scanAttContent(quote, fString) != quote) {
+                fStringBuffer.clear();
+                do {
+                    fStringBuffer.append(fString);
+                } while (fEntityScanner.scanAttContent(quote, fString) != quote);
+                fStringBuffer.append(fString);
+                value = fStringBuffer;
+            }
             if (!fEntityScanner.skipChar(quote)) {
                 fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "CloseQuoteMissingInDecl", 
                                             new Object[]{name}, XMLErrorReporter.SEVERITY_FATAL_ERROR);
             }
+            defaultVal.setValues(value);
         }
-        defaultVal.setValues(fString);
         return defaultType;
 
     } // ScanAttDefaultDecl
@@ -1101,8 +1117,16 @@ public class XMLDTDScanner
             }
             fEntityScanner.scanChar();
             // REVISIT: do right
-            fEntityScanner.scanAttContent(quote, fString);
-            systemId = fString.toString();
+            XMLString value = fString;
+            if (fEntityScanner.scanAttContent(quote, fString) != quote) {
+                fStringBuffer.clear();
+                do {
+                    fStringBuffer.append(fString);
+                } while (fEntityScanner.scanAttContent(quote, fString) != quote);
+                fStringBuffer.append(fString);
+                value = fStringBuffer;
+            }
+            systemId = value.toString();
             if (!fEntityScanner.skipChar(quote)) {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "SystemIDUnterminated",
@@ -1123,8 +1147,16 @@ public class XMLDTDScanner
             }
             fEntityScanner.scanChar();
             // REVISIT: do right
-            fEntityScanner.scanAttContent(quote, fString);
-            publicId = fString.toString();
+            XMLString value = fString;
+            if (fEntityScanner.scanAttContent(quote, fString) != quote) {
+                fStringBuffer.clear();
+                do {
+                    fStringBuffer.append(fString);
+                } while (fEntityScanner.scanAttContent(quote, fString) != quote);
+                fStringBuffer.append(fString);
+                value = fStringBuffer;
+            }
+            publicId = value.toString();
             if (!fEntityScanner.skipChar(quote)) {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "PublicIDUnterminated",
@@ -1144,8 +1176,16 @@ public class XMLDTDScanner
                 }
                 fEntityScanner.scanChar();
                 // REVISIT: do right
-                fEntityScanner.scanAttContent(quote, fString);
-                systemId = fString.toString();
+                value = fString;
+                if (fEntityScanner.scanAttContent(quote, fString) != quote) {
+                    fStringBuffer.clear();
+                    do {
+                        fStringBuffer.append(fString);
+                    } while (fEntityScanner.scanAttContent(quote, fString) != quote);
+                    fStringBuffer.append(fString);
+                    value = fStringBuffer;
+                }
+                systemId = value.toString();
                 if (!fEntityScanner.skipChar(quote)) {
                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                "SystemIDUnterminated",
@@ -1196,7 +1236,7 @@ public class XMLDTDScanner
             switch (fScannerState) {
                 case SCANNER_STATE_MARKUP_DECL: {
                     fEntityScanner.skipSpaces();
-                    if (fEntityScanner.skipChar('<')) {
+                    if (!fEndOfDTD && fEntityScanner.skipChar('<')) {
                         if (fEntityScanner.skipChar('?')) {
                             setScannerState(SCANNER_STATE_PI);
                             again = true;
@@ -1235,9 +1275,11 @@ public class XMLDTDScanner
                             }
                         }
                     }
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               "MarkupNotRecognizedInProlog",
-                                               null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    if (!fEndOfDTD) {
+                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                   "MarkupNotRecognizedInProlog",
+                                                   null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    }
                     complete = false;
                     break;
                 }

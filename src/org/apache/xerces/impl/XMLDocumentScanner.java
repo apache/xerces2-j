@@ -665,8 +665,16 @@ public class XMLDocumentScanner
                 }
                 fEntityScanner.scanChar();
                 // REVISIT: do right
-                fEntityScanner.scanAttContent(quote, fString);
-                systemId = fString.toString();
+                XMLString value = fString;
+                if (fEntityScanner.scanAttContent(quote, fString) != quote) {
+                    fStringBuffer.clear();
+                    do {
+                        fStringBuffer.append(fString);
+                    } while (fEntityScanner.scanAttContent(quote, fString) != quote);
+                    fStringBuffer.append(fString);
+                    value = fStringBuffer;
+                }
+                systemId = value.toString();
                 if (!fEntityScanner.skipChar(quote)) {
                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                "SystemIDUnterminated",
@@ -687,8 +695,16 @@ public class XMLDocumentScanner
                 }
                 fEntityScanner.scanChar();
                 // REVISIT: do right
-                fEntityScanner.scanAttContent(quote, fString);
-                publicId = fString.toString();
+                XMLString value = fString;
+                if (fEntityScanner.scanAttContent(quote, fString) != quote) {
+                    fStringBuffer.clear();
+                    do {
+                        fStringBuffer.append(fString);
+                    } while (fEntityScanner.scanAttContent(quote, fString) != quote);
+                    fStringBuffer.append(fString);
+                    value = fStringBuffer;
+                }
+                publicId = value.toString();
                 if (!fEntityScanner.skipChar(quote)) {
                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                "PublicIDUnterminated",
@@ -707,8 +723,16 @@ public class XMLDocumentScanner
                 }
                 fEntityScanner.scanChar();
                 // REVISIT: do right
-                fEntityScanner.scanAttContent(quote, fString);
-                systemId = fString.toString();
+                value = fString;
+                if (fEntityScanner.scanAttContent(quote, fString) != quote) {
+                    fStringBuffer.clear();
+                    do {
+                        fStringBuffer.append(fString);
+                    } while (fEntityScanner.scanAttContent(quote, fString) != quote);
+                    fStringBuffer.append(fString);
+                    value = fStringBuffer;
+                }
+                systemId = value.toString();
                 if (!fEntityScanner.skipChar(quote)) {
                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                "SystemIDUnterminated",
@@ -745,6 +769,11 @@ public class XMLDocumentScanner
                                        XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
 
+        // call handler
+        if (fDocumentHandler != null) {
+            fDocumentHandler.doctypeDecl(name, publicId, systemId);
+        }
+
         // external subset
         if (systemId != null) {
             XMLInputSource xmlInputSource = 
@@ -754,11 +783,6 @@ public class XMLDocumentScanner
             final boolean complete = true;
             fDTDScanner.scanDTD(complete);
             fEntityManager.setEntityHandler(this);
-        }
-
-        // call handler
-        if (fDocumentHandler != null) {
-            fDocumentHandler.doctypeDecl(name, publicId, systemId);
         }
 
         // external subset
