@@ -1372,123 +1372,74 @@ public class XMLDTDScanner
     protected final boolean scanDecls(boolean complete)
             throws IOException, SAXException {
         
-        boolean again;
-        do {
-            again = false;
-            switch (fScannerState) {
-                case SCANNER_STATE_MARKUP_DECL: {
+        fEntityScanner.skipSpaces();
+        while (complete && fScannerState == SCANNER_STATE_MARKUP_DECL) {
+            if (fEntityScanner.skipChar('<')) {
+                if (fEntityScanner.skipChar('?')) {
+                    scanPI();
                     fEntityScanner.skipSpaces();
-                    if (fScannerState != SCANNER_STATE_END_OF_INPUT
-                        && fEntityScanner.skipChar('<')) {
-                        if (fEntityScanner.skipChar('?')) {
-                            setScannerState(SCANNER_STATE_PI);
-                            again = true;
-                            break;
-                        }
-                        else if (fEntityScanner.skipChar('!')) {
-                            if (fEntityScanner.skipChar('-')) {
-                                if (!fEntityScanner.skipChar('-')) {
-                                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                               "InvalidCommentStart",
-                                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                                }
-                                setScannerState(SCANNER_STATE_COMMENT);
-                                again = true;
-                                break;
-                            }
-                            else if (fEntityScanner.skipString("ELEMENT")) {
-                                setScannerState(SCANNER_STATE_ELEMENT_DECL);
-                                again = true;
-                                break;
-                            }
-                            else if (fEntityScanner.skipString("ATTLIST")) {
-                                setScannerState(SCANNER_STATE_ATTLIST_DECL);
-                                again = true;
-                                break;
-                            }
-                            else if (fEntityScanner.skipString("ENTITY")) {
-                                setScannerState(SCANNER_STATE_ENTITY_DECL);
-                                again = true;
-                                break;
-                            }
-                            else if (fEntityScanner.skipString("NOTATION")) {
-                                setScannerState(SCANNER_STATE_NOTATION_DECL);
-                                again = true;
-                                break;
-                            }
-                            else if (fEntityScanner.skipChar('[')) {
-                                setScannerState(SCANNER_STATE_CONDITIONAL_SECT);
-                                again = true;
-                                break;
-                            }
-                        }
-                    }
-                    else if (fIncludeSectDepth > 0
-                             && fEntityScanner.skipChar(']')) {
-                        // end of conditional section?
-                        if (!fEntityScanner.skipChar(']')
-                            || !fEntityScanner.skipChar('>')) {
+                    continue;
+                }
+                else if (fEntityScanner.skipChar('!')) {
+                    if (fEntityScanner.skipChar('-')) {
+                        if (!fEntityScanner.skipChar('-')) {
                             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                       "MSG_UNTERMINATED_SEQ",
+                                                       "InvalidCommentStart",
                                                        null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
                         }
-                        else {
-                            // call handler
-                            if (fDTDHandler != null) {
-                                fDTDHandler.endConditional();
-                            }
-                            // decreaseMarkupDepth();
-                        }
-                        fIncludeSectDepth--;
-                        break;
+                        scanComment();
+                        fEntityScanner.skipSpaces();
+                        continue;
                     }
-                    if (fScannerState != SCANNER_STATE_END_OF_INPUT) {
-                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                   "MarkupNotRecognizedInDTD",
-                                                   null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    else if (fEntityScanner.skipString("ELEMENT")) {
+                        scanElementDecl();
+                        fEntityScanner.skipSpaces();
+                        continue;
                     }
-                    complete = false;
-                    break;
-                }
-                case SCANNER_STATE_ELEMENT_DECL: {
-                    scanElementDecl();
-                    setScannerState(SCANNER_STATE_MARKUP_DECL);
-                    break;  
-                }
-                case SCANNER_STATE_ATTLIST_DECL: {
-                    scanAttlistDecl();
-                    setScannerState(SCANNER_STATE_MARKUP_DECL);
-                    break;  
-                }
-                case SCANNER_STATE_COMMENT: {
-                    scanComment();
-                    setScannerState(SCANNER_STATE_MARKUP_DECL);
-                    break;  
-                }
-                case SCANNER_STATE_PI: {
-                    scanPI();
-                    setScannerState(SCANNER_STATE_MARKUP_DECL);
-                    break;  
-                }
-                case SCANNER_STATE_ENTITY_DECL: {
-                    scanEntityDecl();
-                    setScannerState(SCANNER_STATE_MARKUP_DECL);
-                    break;  
-                }
-                case SCANNER_STATE_NOTATION_DECL: {
-                    scanNotationDecl();
-                    setScannerState(SCANNER_STATE_MARKUP_DECL);
-                    break;  
-                }
-                case SCANNER_STATE_CONDITIONAL_SECT: {
-                    scanConditionalSect();
-                    setScannerState(SCANNER_STATE_MARKUP_DECL);
-                    break;  
+                    else if (fEntityScanner.skipString("ATTLIST")) {
+                        scanAttlistDecl();
+                        fEntityScanner.skipSpaces();
+                        continue;
+                    }
+                    else if (fEntityScanner.skipString("ENTITY")) {
+                        scanEntityDecl();
+                        fEntityScanner.skipSpaces();
+                        continue;
+                    }
+                    else if (fEntityScanner.skipString("NOTATION")) {
+                        scanNotationDecl();
+                        fEntityScanner.skipSpaces();
+                        continue;
+                    }
+                    else if (fEntityScanner.skipChar('[')) {
+                        scanConditionalSect();
+                        fEntityScanner.skipSpaces();
+                        continue;
+                    }
                 }
             }
-        } while (complete || again);
-
-        return complete;
+            else if (fIncludeSectDepth > 0 && fEntityScanner.skipChar(']')) {
+                // end of conditional section?
+                if (!fEntityScanner.skipChar(']')
+                    || !fEntityScanner.skipChar('>')) {
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "MSG_UNTERMINATED_SEQ",
+                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                }
+                // call handler
+                if (fDTDHandler != null) {
+                    fDTDHandler.endConditional();
+                }
+                // decreaseMarkupDepth();
+                fIncludeSectDepth--;
+                fEntityScanner.skipSpaces();
+                continue;
+            }
+            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                       "MarkupNotRecognizedInDTD",
+                                       null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
+        }
+        return fScannerState != SCANNER_STATE_END_OF_INPUT;
     }
 
     private final void pushOpStack(int c) {
