@@ -68,14 +68,14 @@ import org.apache.xerces.readers.XMLEntityHandler;
 import org.apache.xerces.readers.XMLEntityReaderFactory;
 import org.apache.xerces.utils.ChunkyCharArray;
 import org.apache.xerces.utils.StringPool;
-
 import org.apache.xerces.utils.XMLMessageProvider;
 import org.apache.xerces.utils.XMLMessages;
 import org.apache.xerces.utils.ImplementationMessages;
+import org.apache.xerces.validators.common.GrammarResolver;
+import org.apache.xerces.validators.common.GrammarResolverImpl;
+import org.apache.xerces.validators.common.XMLValidator;
 import org.apache.xerces.validators.datatype.DatatypeMessageProvider;
 import org.apache.xerces.validators.schema.SchemaMessageProvider;
-
-import org.apache.xerces.validators.common.XMLValidator;
 
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
@@ -148,6 +148,8 @@ public class XMLParser implements XMLErrorReporter {
     // Data
     //
 
+    protected GrammarResolver fGrammarResolver = null;
+
     // state
 
     protected boolean fParseInProgress = false;
@@ -196,6 +198,9 @@ public class XMLParser implements XMLErrorReporter {
         fEntityHandler = new DefaultEntityHandler(fStringPool, fErrorReporter);
         fScanner = new XMLDocumentScanner(fStringPool, fErrorReporter, fEntityHandler, new ChunkyCharArray(fStringPool));
         fValidator = new XMLValidator(fStringPool, fErrorReporter, fEntityHandler, fScanner);
+        fGrammarResolver = new GrammarResolverImpl();
+        fScanner.setGrammarResolver(fGrammarResolver);
+        fValidator.setGrammarResolver(fGrammarResolver);
     }
 
     /**
@@ -305,6 +310,7 @@ public class XMLParser implements XMLErrorReporter {
 
     /** Reset parser instance so that it can be reused. */
     public void reset() throws Exception {
+        fGrammarResolver.clearGrammarResolver();
         fStringPool.reset();
         fEntityHandler.reset(fStringPool);
         fScanner.reset(fStringPool, new ChunkyCharArray(fStringPool));
@@ -365,6 +371,9 @@ public class XMLParser implements XMLErrorReporter {
                                                "http://xml.org/sax/features/validation");
         }
         try {
+            // REVISIT: [Q] Should the scanner tell the validator that
+            //              validation is on? -Ac
+            fScanner.setValidationEnabled(validate);
             fValidator.setValidationEnabled(validate);
         }
         catch (Exception ex) {
@@ -483,6 +492,9 @@ public class XMLParser implements XMLErrorReporter {
             throw new SAXNotSupportedException("PAR004 Cannot setFeature(http://xml.org/sax/features/namespaces): parse is in progress.\n"+
                                                "http://xml.org/sax/features/namespaces");
         }
+        fScanner.setNamespacesEnabled(process);
+        // REVISIT: [Q] Should the scanner tell the validator that namespace
+        //              processing is on? -Ac
         fValidator.setNamespacesEnabled(process);
     }
 
@@ -728,6 +740,9 @@ public class XMLParser implements XMLErrorReporter {
         fScanner.reset(fStringPool, new ChunkyCharArray(fStringPool));
         fValidator.resetOrCopy(fStringPool);
         fNeedReset = false;
+        fGrammarResolver = new GrammarResolverImpl();
+        fScanner.setGrammarResolver(fGrammarResolver);
+        fValidator.setGrammarResolver(fGrammarResolver);
     }
 
     //

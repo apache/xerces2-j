@@ -61,81 +61,100 @@ import java.util.Hashtable;
 import java.util.Locale;
 
 /**
- *
  * DataTypeValidator defines the interface that data type validators must obey.
  * These validators can be supplied by the application writer and may be useful as
  * standalone code as well as plugins to the validator architecture.
  * Note: there is no support for facets in this API, since we are trying to convince
  * W3C to remove facets from the data type spec.
- *
- * @author Ted Leung
- * @author Kito D. Mann -- changed the MAXLENGTH and MINLENGTH as per 12/17 spec.
- * @version
+ * 
+ * @author Jeffrey Rodriguez-
  */
-
 public interface DatatypeValidator {
-	
-	public static final String MININCLUSIVE = "minInclusive";
-	public static final String MINEXCLUSIVE = "minExclusive";
-	public static final String MAXINCLUSIVE = "maxInclusive";
-	public static final String MAXEXCLUSIVE = "maxExclusive";
-	
-	public static final String PRECISION = "precision";
-	public static final String SCALE = "scale";
-	
-	public static final String LENGTH = "length";
-    public static final String MINLENGTH = "minlength";
-	public static final String MAXLENGTH = "maxlength";
-	public static final String ENUMERATION = "enumeration";
-	public static final String LITERAL = "literal";
-	public static final String LEXICALREPRESENTATION = "lexicalRepresentation";
-	public static final String LEXICAL = "lexical";
-	public static final String ENCODING = "encoding";
-    public static final String PERIOD = "period";
-	public static final String PATTERN = "pattern";
-	
-	/**
-     * validate that a string matches a datatype
-     *
-     * validate returns true or false depending on whether the string content is an
-     * instance of the data type represented by this validator.
+    public static final int FACET_LENGTH       = 1;
+    public static final int FACET_MINLENGTH    = 1<<1;
+    public static final int FACET_MAXLENGTH    = 1<<2;
+    public static final int FACET_PATTERN      = 1<<3; 
+    public static final int FACET_ENUMERATION  = 1<<4;
+    public static final int FACET_MAXINCLUSIVE = 1<<5;
+    public static final int FACET_MAXEXCLUSIVE = 1<<6;
+    public static final int FACET_MININCLUSIVE = 1<<7;
+    public static final int FACET_MINEXCLUSIVE = 1<<8;
+    public static final int FACET_PRECISSION   = 1<<9;
+    public static final int FACET_SCALE        = 1<<10;
+    public static final int FACET_ENCODING     = 1<<11;
+    public static final int FACET_DURATION     = 1<<12;
+    public static final int FACET_PERIOD       = 1<<13;
+    public static final int DERIVED_BY_RESTRICTION   = 1;
+    public static final int DERIVED_BY_LIST          = 1<<1;
+
+
+
+    /**
+     * Checks that "content" string is valid 
+     * datatype.
+     * If invalid a Datatype validation exception is thrown.
      * 
      * @param content A string containing the content to be validated
-     *
+     * @param derivedBylist
+     *                Flag which is true when type
+     *                is derived by list otherwise it
+     *                it is derived by extension.
+     *                
      * @exception throws InvalidDatatypeException if the content is
-     *  invalid according to the rules for the validators
+     *                   invalid according to the rules for the validators
+     * @exception InvalidDatatypeValueException
+     * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
      */
-	public void validate(String content) throws InvalidDatatypeValueException;
-	
-	/**
-	 * set the facets for this datatype
-	 *
-	 * setFacets is responsible for ensuring that the supplied facets do not contradict each
-	 * other
-	 *
-	 * @param facets A hashtable where facet names are keys and facet values are stored
-	 *        in the hashtable.  Usually facet values are strings, except for the 
-	 *        enumeration facet.  The value for this facet is a Vector of strings, one
-	 *        per enumeration value
-	 *
-	 * @exception throws UnknownFacetException
-	 * @exception throws IllegalFacetException
-	 * @exception throws IllegalFacetValueException
-	 */
-	public void setFacets(Hashtable facets) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException; 
-	
-	/**
-	 * set the base type for this datatype
-	 *
-	 * @param base the validator for this type's base type
-	 *
-	 */
-	public void setBasetype(DatatypeValidator base);
+    public void validate(String content ) throws InvalidDatatypeValueException;
 
-
-	
     /**
-     * set the locate to be used for error messages
+     * set the facets for this datatype
+     * 
+     * setFacets is responsible for ensuring that the supplied facets do not contradict each
+     * other.
+     * 
+     * @param facets A hashtable where facet name Symbols  are keys and facet values are stored
+     *               in the hashtable.  Usually facet values are strings, except for the
+     *               enumeration facet.  The value for this facet is a Vector of strings, one
+     *               per enumeration value
+     * @exception throws UnknownFacetException
+     * @exception throws IllegalFacetException
+     * @exception throws IllegalFacetValueException
+     * @exception UnknownFacetException
+     * @exception IllegalFacetException
+     * @exception IllegalFacetValueException
+     * @exception ConstrainException
+     * @see org.apache.xerces.validators.schema.SchemaSymbols
+     * @see org.apache.xerces.validators.datatype.IllegalFacetException
+     * @see org.apache.xerces.validators.datatype.IllegalFacetValueException
+     * @see org.apache.xerces.validators.datatype.ConstrainException
      */
+    public void setFacets(Hashtable facets,String  derivationType ) throws UnknownFacetException, 
+        IllegalFacetException, IllegalFacetValueException,  ConstrainException; 
+
+    /**
+     * Name of base type as a string.
+     * A Native datatype has the string "native"  as its
+     * base type.
+     * 
+     * @param base   the validator for this type's base type
+     */
+    public void setBasetype(String base);
+
+
+    /**
+    * set the locate to be used for error messages
+    */
     public void setLocale(Locale locale);
+
+    /**
+     * REVISIT
+     * Compares two Datatype for order
+     * 
+     * @param o1
+     * @param o2
+     * @return 
+     */
+    public int compare( DatatypeValidator o1, DatatypeValidator o2);
+
 }

@@ -110,17 +110,6 @@ public final class StringPool {
     private int[][] fOffset = new int[INITIAL_CHUNK_COUNT][];
     private int[][] fLength = new int[INITIAL_CHUNK_COUNT][];
     private int[][] fCharsOffset = new int[INITIAL_CHUNK_COUNT][];
-    private int[][] fDeclaration = new int[INITIAL_CHUNK_COUNT][];
-    //
-    // QName arrays
-    //
-    private static final int QNAME_MASK = 0x60000000;
-    private static final int QNAME_FLAG = 0x40000000;
-    private int fQNameCount = 0;
-    private int[][] fFullName = new int[INITIAL_CHUNK_COUNT][];
-    private int[][] fPrefix = new int[INITIAL_CHUNK_COUNT][];
-    private int[][] fLocalPart = new int[INITIAL_CHUNK_COUNT][];
-    private int[][] fURI = new int[INITIAL_CHUNK_COUNT][];
     //
     // String Lists
     //
@@ -165,7 +154,6 @@ public final class StringPool {
             fSymbolTable[i] = null;
         fStringCount = 0;
         fStringFreeList = -1;
-        fQNameCount = 0;
         fStringListCount = 0;
         fActiveStringList = -1;
         fSymbolCache.reset();
@@ -196,9 +184,6 @@ public final class StringPool {
                 newInt = new int[chunk * 2][];
                 System.arraycopy(fCharsOffset, 0, newInt, 0, chunk);
                 fCharsOffset = newInt;
-                newInt = new int[chunk * 2][];
-                System.arraycopy(fDeclaration, 0, newInt, 0, chunk);
-                fDeclaration = newInt;
             } else {
                 String[] newString = new String[index * 2];
                 System.arraycopy(fString[chunk], 0, newString, 0, index);
@@ -215,9 +200,6 @@ public final class StringPool {
                 newInt = new int[index * 2];
                 System.arraycopy(fCharsOffset[chunk], 0, newInt, 0, index);
                 fCharsOffset[chunk] = newInt;
-                newInt = new int[index * 2];
-                System.arraycopy(fDeclaration[chunk], 0, newInt, 0, index);
-                fDeclaration[chunk] = newInt;
                 return true;
             }
         } catch (NullPointerException ex) {
@@ -227,7 +209,6 @@ public final class StringPool {
         fOffset[chunk] = new int[INITIAL_CHUNK_SIZE];
         fLength[chunk] = new int[INITIAL_CHUNK_SIZE];
         fCharsOffset[chunk] = new int[INITIAL_CHUNK_SIZE];
-        fDeclaration[chunk] = new int[INITIAL_CHUNK_SIZE];
         return true;
     }
     public int addString(String str) {
@@ -250,7 +231,6 @@ public final class StringPool {
         fOffset[chunk][index] = 0;
         fLength[chunk][index] = str.length();
         fCharsOffset[chunk][index] = -1;
-        fDeclaration[chunk][index] = -1;
         if (DEBUG_ADDITIONS)
             System.err.println("addString(" + str + ") " + stringIndex);
         return stringIndex;
@@ -276,7 +256,6 @@ public final class StringPool {
         fOffset[chunk][index] = offset;
         fLength[chunk][index] = length;
         fCharsOffset[chunk][index] = -1;
-        fDeclaration[chunk][index] = -1;
         if (DEBUG_ADDITIONS)
             System.err.println("addString(" + stringProducer.toString(offset, length) + ") " + stringIndex);
         return stringIndex;
@@ -330,7 +309,6 @@ public final class StringPool {
         fOffset[chunk][index] = -1;
         fLength[chunk][index] = slen;
         fCharsOffset[chunk][index] = startOffset;
-        fDeclaration[chunk][index] = -1;
 
         int hashcode = StringHasher.hashString(str, slen);
         int hc = hashcode % HASHTABLE_SIZE;
@@ -413,7 +391,6 @@ public final class StringPool {
         fStringProducer[chunk][index] = null;
         fOffset[chunk][index] = -1;
         fLength[chunk][index] = slen;
-        fDeclaration[chunk][index] = -1;
         fCharsOffset[chunk][index] = fSymbolCache.addSymbolToCache(str, slen, stringIndex);
 
         hashSymbol(bucket, hashcode, chunk, index);
@@ -460,7 +437,6 @@ public final class StringPool {
         fStringProducer[chunk][index] = null;
         fOffset[chunk][index] = -1;
         fLength[chunk][index] = slen;
-        fDeclaration[chunk][index] = -1;
         fCharsOffset[chunk][index] = fSymbolCache.addSymbolToCache(str, slen, stringIndex);
 
         hashSymbol(bucket, hashcode, chunk, index);
@@ -509,7 +485,6 @@ public final class StringPool {
         fStringProducer[chunk][index] = null;
         fOffset[chunk][index] = -1;
         fLength[chunk][index] = slen;
-        fDeclaration[chunk][index] = -1;
         fCharsOffset[chunk][index] = fSymbolCache.addSymbolToCache(str, slen, stringIndex);
 
         hashSymbol(bucket, hashcode, chunk, index);
@@ -518,8 +493,6 @@ public final class StringPool {
         return stringIndex;
     }
     public int addSymbol(int stringIndex) {
-        if ((stringIndex & QNAME_MASK) == QNAME_FLAG)
-            return stringIndex;
         if (stringIndex < 0 || stringIndex >= fStringCount)
             return -1;
         int chunk = stringIndex >> CHUNK_SHIFT;
@@ -535,41 +508,6 @@ public final class StringPool {
         }
         return addSymbol(s);
     }
-    public void setDeclaration(int stringIndex, int decl) {
-        if ((stringIndex & QNAME_MASK) == QNAME_FLAG) {
-            int qnameIndex = stringIndex & (~QNAME_FLAG);
-            if (qnameIndex < 0 || qnameIndex >= fQNameCount) {
-                return;
-            }
-            int chunk = qnameIndex >> CHUNK_SHIFT;
-            int index = qnameIndex & CHUNK_MASK;
-            setDeclaration(fFullName[chunk][index], decl);
-            return;
-        }
-        if (stringIndex < 0 || stringIndex >= fStringCount) {
-            return;
-        }
-        int chunk = stringIndex >> CHUNK_SHIFT;
-        int index = stringIndex & CHUNK_MASK;
-        fDeclaration[chunk][index] = decl;
-    }
-    public int getDeclaration(int stringIndex) {
-        if ((stringIndex & QNAME_MASK) == QNAME_FLAG) {
-            int qnameIndex = stringIndex & (~QNAME_FLAG);
-            if (qnameIndex < 0 || qnameIndex >= fQNameCount) {
-                return -1;
-            }
-            int chunk = qnameIndex >> CHUNK_SHIFT;
-            int index = qnameIndex & CHUNK_MASK;
-            return getDeclaration(fFullName[chunk][index]);
-        }
-        if (stringIndex < 0 || stringIndex >= fStringCount) {
-            return -1;
-        }
-        int chunk = stringIndex >> CHUNK_SHIFT;
-        int index = stringIndex & CHUNK_MASK;
-        return fDeclaration[chunk][index];
-    }
     //
     // Get characters for defined symbols
     //
@@ -582,19 +520,6 @@ public final class StringPool {
         return new CharArrayRange();
     }
     public void getCharArrayRange(int symbolIndex, CharArrayRange r) {
-        if ((symbolIndex & QNAME_MASK) == QNAME_FLAG) {
-            int qnameIndex = symbolIndex & (~QNAME_FLAG);
-            if (qnameIndex < 0 || qnameIndex >= fQNameCount) {
-                r.chars = null;
-                r.offset = -1;
-                r.length = -1;
-                return;
-            }
-            int chunk = qnameIndex >> CHUNK_SHIFT;
-            int index = qnameIndex & CHUNK_MASK;
-            getCharArrayRange(fFullName[chunk][index], r);
-            return;
-        }
         if (symbolIndex < 0 || symbolIndex >= fStringCount) {
             r.chars = null;
             r.offset = -1;
@@ -607,143 +532,10 @@ public final class StringPool {
         r.offset = fCharsOffset[chunk][index];
         r.length = fLength[chunk][index];
     }
-    //
-    // QName support
-    //
-    private boolean ensureQNameCapacity(int chunk, int index) {
-        try {
-            return fFullName[chunk][index] == 0;
-        } catch (ArrayIndexOutOfBoundsException ex) {
-            if (index == 0) {
-                int[][] newInt = new int[chunk * 2][];
-                System.arraycopy(fFullName, 0, newInt, 0, chunk);
-                fFullName = newInt;
-                newInt = new int[chunk * 2][];
-                System.arraycopy(fPrefix, 0, newInt, 0, chunk);
-                fPrefix = newInt;
-                newInt = new int[chunk * 2][];
-                System.arraycopy(fLocalPart, 0, newInt, 0, chunk);
-                fLocalPart = newInt;
-                newInt = new int[chunk * 2][];
-                System.arraycopy(fURI, 0, newInt, 0, chunk);
-                fURI = newInt;
-            } else {
-                int[] newInt = new int[index * 2];
-                System.arraycopy(fFullName[chunk], 0, newInt, 0, index);
-                fFullName[chunk] = newInt;
-                newInt = new int[index * 2];
-                System.arraycopy(fPrefix[chunk], 0, newInt, 0, index);
-                fPrefix[chunk] = newInt;
-                newInt = new int[index * 2];
-                System.arraycopy(fLocalPart[chunk], 0, newInt, 0, index);
-                fLocalPart[chunk] = newInt;
-                newInt = new int[index * 2];
-                System.arraycopy(fURI[chunk], 0, newInt, 0, index);
-                fURI[chunk] = newInt;
-                return true;
-            }
-        } catch (NullPointerException ex) {
-        }
-        fFullName[chunk] = new int[INITIAL_CHUNK_SIZE];
-        fPrefix[chunk] = new int[INITIAL_CHUNK_SIZE];
-        fLocalPart[chunk] = new int[INITIAL_CHUNK_SIZE];
-        fURI[chunk] = new int[INITIAL_CHUNK_SIZE];
-        return true;
-    }
-    public int addQName(int fullname, int prefix, int localpart) {
-        int qnameIndex;
-        int chunk;
-        int index;
-        qnameIndex = fQNameCount++;
-        chunk = qnameIndex >> CHUNK_SHIFT;
-        index = qnameIndex & CHUNK_MASK;
-        ensureQNameCapacity(chunk, index);
-        fFullName[chunk][index] = fullname;
-        fPrefix[chunk][index] = prefix;
-        fLocalPart[chunk][index] = localpart;
-        fURI[chunk][index] = -1;
-        if (DEBUG_ADDITIONS)
-            System.err.println("addQName(" + toString(fullname) + ", " + toString(prefix) + ", " + toString(localpart) + ") " + qnameIndex);
-        return qnameIndex | QNAME_FLAG;
-    }
-    public int getFullNameForQName(int nameIndex) {
-        if ((nameIndex & QNAME_MASK) != QNAME_FLAG)
-            return nameIndex;
-        int qnameIndex = nameIndex & (~QNAME_FLAG);
-        if (qnameIndex < 0 || qnameIndex >= fQNameCount)
-            return -1;
-        int chunk = qnameIndex >> CHUNK_SHIFT;
-        int index = qnameIndex & CHUNK_MASK;
-        return fFullName[chunk][index];
-    }
-    public int getPrefixForQName(int nameIndex) {
-        if ((nameIndex & QNAME_MASK) != QNAME_FLAG)
-            return -1;
-        int qnameIndex = nameIndex & (~QNAME_FLAG);
-        if (qnameIndex < 0 || qnameIndex >= fQNameCount)
-            return -1;
-        int chunk = qnameIndex >> CHUNK_SHIFT;
-        int index = qnameIndex & CHUNK_MASK;
-        return fPrefix[chunk][index];
-    }
-    public int getLocalPartForQName(int nameIndex) {
-        if ((nameIndex & QNAME_MASK) != QNAME_FLAG)
-            return nameIndex;
-        int qnameIndex = nameIndex & (~QNAME_FLAG);
-        if (qnameIndex < 0 || qnameIndex >= fQNameCount)
-            return -1;
-        int chunk = qnameIndex >> CHUNK_SHIFT;
-        int index = qnameIndex & CHUNK_MASK;
-        return fLocalPart[chunk][index];
-    }
-    public void setURIForQName(int nameIndex, int uriIndex) {
-        if ((nameIndex & QNAME_MASK) != QNAME_FLAG)
-            return;
-        int qnameIndex = nameIndex & (~QNAME_FLAG);
-        if (qnameIndex < 0 || qnameIndex >= fQNameCount)
-            return;
-        int chunk = qnameIndex >> CHUNK_SHIFT;
-        int index = qnameIndex & CHUNK_MASK;
-        fURI[chunk][index] = uriIndex;
-    }
-    public int getURIForQName(int nameIndex) {
-        if ((nameIndex & QNAME_MASK) != QNAME_FLAG)
-            return -1;
-        int qnameIndex = nameIndex & (~QNAME_FLAG);
-        if (qnameIndex < 0 || qnameIndex >= fQNameCount)
-            return -1;
-        int chunk = qnameIndex >> CHUNK_SHIFT;
-        int index = qnameIndex & CHUNK_MASK;
-        return fURI[chunk][index];
-    }
-    public boolean equalQNames(int qname1, int qname2) {
-        if ((qname1 & QNAME_MASK) != QNAME_FLAG || (qname2 & QNAME_MASK) != QNAME_FLAG)
-            return false;
-        int qnameIndex = qname1 & (~QNAME_FLAG);
-        int chunk1 = qnameIndex >> CHUNK_SHIFT;
-        int index1 = qnameIndex & CHUNK_MASK;
-        qnameIndex = qname2 & (~QNAME_FLAG);
-        int chunk2 = qnameIndex >> CHUNK_SHIFT;
-        int index2 = qnameIndex & CHUNK_MASK;
-        return (fFullName[chunk1][index1] == fFullName[chunk2][index2]);
-    }
     public boolean equalNames(int stringIndex1, int stringIndex2) {
         if (stringIndex1 == stringIndex2)
             return true;
-        boolean string1isQName = (stringIndex1 & QNAME_MASK) == QNAME_FLAG;
-        if (!string1isQName && (stringIndex2 & QNAME_MASK) != QNAME_FLAG)
-            return false;
-        if (string1isQName && (stringIndex2 & QNAME_MASK) == QNAME_FLAG)
-            return equalQNames(stringIndex1, stringIndex2);
-        int qnameIndex = stringIndex1;
-        if (!string1isQName) {
-            qnameIndex = stringIndex2;
-            stringIndex2 = stringIndex1;
-        }
-        qnameIndex = qnameIndex & (~QNAME_FLAG);
-        int chunk = qnameIndex >> CHUNK_SHIFT;
-        int index = qnameIndex & CHUNK_MASK;
-        return (fFullName[chunk][index] == stringIndex2);
+        return false;
     }
     //
     // String list support
@@ -855,8 +647,6 @@ public final class StringPool {
     //
     //
     public void releaseString(int stringIndex) {
-        if ((stringIndex & QNAME_MASK) == QNAME_FLAG)
-            return;
         if (stringIndex < 0 || stringIndex >= fStringCount)
             return;
         int chunk = stringIndex >> CHUNK_SHIFT;
@@ -878,14 +668,6 @@ public final class StringPool {
             }
         }
 
-        if ((stringIndex & QNAME_MASK) == QNAME_FLAG) {
-            int qnameIndex = stringIndex & (~QNAME_FLAG);
-            if (qnameIndex < 0 || qnameIndex >= fQNameCount)
-                return null;
-            int chunk = qnameIndex >> CHUNK_SHIFT;
-            int index = qnameIndex & CHUNK_MASK;
-            return toString(fFullName[chunk][index]);
-        }
         if (stringIndex < 0 || stringIndex >= fStringCount)
             return null;
         int chunk = stringIndex >> CHUNK_SHIFT;
@@ -903,14 +685,6 @@ public final class StringPool {
     //
     //
     public String orphanString(int stringIndex) {
-        if ((stringIndex & QNAME_MASK) == QNAME_FLAG) {
-            int qnameIndex = stringIndex & (~QNAME_FLAG);
-            if (qnameIndex < 0 || qnameIndex >= fQNameCount)
-                return null;
-            int chunk = qnameIndex >> CHUNK_SHIFT;
-            int index = qnameIndex & CHUNK_MASK;
-            return toString(fFullName[chunk][index]);
-        }
         if (stringIndex < 0 || stringIndex >= fStringCount)
             return null;
         int chunk = stringIndex >> CHUNK_SHIFT;

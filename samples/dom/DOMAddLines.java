@@ -70,6 +70,7 @@ import org.xml.sax.helpers.*;
 import org.apache.xerces.dom.NodeImpl;
 import org.apache.xerces.framework.XMLAttrList;
 import org.apache.xerces.parsers.DOMParser;
+import org.apache.xerces.utils.QName;
 
 /**
  * A sample of Adding lines to the DOM Node. This sample program illustrates:
@@ -226,9 +227,9 @@ public class DOMAddLines extends DOMParser  {
 
    /*   We override startElement callback  from DocumentHandler */
 
-   public void startElement(int elementNameIndex, XMLAttrList attrList, int attrListIndex) throws Exception 
+   public void startElement(QName elementQName, XMLAttrList attrList, int attrListIndex) throws Exception 
    {
-      super.startElement(elementNameIndex, attrList, attrListIndex);
+      super.startElement(elementQName, attrList, attrListIndex);
 
       NodeImpl node = null;
       try {

@@ -58,12 +58,21 @@
 package org.apache.xerces.framework;
 
 import org.apache.xerces.readers.XMLEntityHandler;
+import org.apache.xerces.readers.DefaultEntityHandler;
+import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.StringPool;
+import org.apache.xerces.utils.XMLCharacterProperties;
 import org.apache.xerces.utils.XMLMessages;
+import org.apache.xerces.validators.common.Grammar;
+import org.apache.xerces.validators.common.GrammarResolver;
+import org.apache.xerces.validators.common.XMLAttributeDecl;
+import org.apache.xerces.validators.common.XMLElementDecl;
+import org.apache.xerces.validators.dtd.DTDGrammar;
 
 import org.xml.sax.Locator;
 import org.xml.sax.SAXParseException;
 
+import java.util.StringTokenizer;
 /**
  * Default implementation of an XML DTD scanner.
  * <p>
@@ -172,6 +181,15 @@ public final class XMLDTDScanner {
     //
     // Instance Variables
     //
+    private DTDGrammar fDTDGrammar = null;
+    private GrammarResolver fGrammarResolver = null;
+    private boolean fNamespacesEnabled = false;
+    private boolean fValidationEnabled = false;
+    private XMLElementDecl fTempElementDecl = new XMLElementDecl();
+    private XMLAttributeDecl fTempAttributeDecl = new XMLAttributeDecl();
+    private QName fElementQName = new QName();
+    private QName fAttributeQName = new QName();
+    private QName fElementRefQName = new QName();
     private EventHandler fEventHandler = null;
     private StringPool fStringPool = null;
     private XMLErrorReporter fErrorReporter = null;
@@ -195,24 +213,6 @@ public final class XMLDTDScanner {
     private int fDefaultAttValueMark = -1;
     private int fEntityValueReader = -1;
     private int fEntityValueMark = -1;
-    private int fEMPTY = -1;
-    private int fANY = -1;
-    private int fMIXED = -1;
-    private int fCHILDREN = -1;
-    private int fCDATA = -1;
-    private int fID = -1;
-    private int fIDREF = -1;
-    private int fIDREFS = -1;
-    private int fENTITY = -1;
-    private int fENTITIES = -1;
-    private int fNMTOKEN = -1;
-    private int fNMTOKENS = -1;
-    private int fNOTATION = -1;
-    private int fENUMERATION = -1;
-    private int fREQUIRED = -1;
-    private int fIMPLIED = -1;
-    private int fFIXED = -1;
-    private int fDEFAULT = -1;
     private int fXMLSpace = -1;
     private int fDefault = -1;
     private int fPreserve = -1;
@@ -240,6 +240,17 @@ public final class XMLDTDScanner {
     public void setEventHandler(XMLDTDScanner.EventHandler eventHandler) {
         fEventHandler = eventHandler;
     }
+
+    /** Sets the grammar resolver. */
+    public void setGrammarResolver(GrammarResolver resolver) {
+        fGrammarResolver = resolver;
+    }
+
+    /** set fValidationEnabled  **/
+    public void setValidationEnabled(boolean enabled) {
+        fValidationEnabled = enabled;
+    }
+
     /**
      * Is the XMLDTDScanner reading from an external entity?
      *
@@ -329,24 +340,6 @@ public final class XMLDTDScanner {
         init();
     }
     private void init() {
-        fEMPTY = fStringPool.addSymbol("EMPTY");
-        fANY = fStringPool.addSymbol("ANY");
-        fMIXED = fStringPool.addSymbol("MIXED");
-        fCHILDREN = fStringPool.addSymbol("CHILDREN");
-        fCDATA = fStringPool.addSymbol("CDATA");
-        fID = fStringPool.addSymbol("ID");
-        fIDREF = fStringPool.addSymbol("IDREF");
-        fIDREFS = fStringPool.addSymbol("IDREFS");
-        fENTITY = fStringPool.addSymbol("ENTITY");
-        fENTITIES = fStringPool.addSymbol("ENTITIES");
-        fNMTOKEN = fStringPool.addSymbol("NMTOKEN");
-        fNMTOKENS = fStringPool.addSymbol("NMTOKENS");
-        fNOTATION = fStringPool.addSymbol("NOTATION");
-        fENUMERATION = fStringPool.addSymbol("ENUMERATION");
-        fREQUIRED = fStringPool.addSymbol("#REQUIRED");
-        fIMPLIED = fStringPool.addSymbol("#IMPLIED");
-        fFIXED = fStringPool.addSymbol("#FIXED");
-        fDEFAULT = fStringPool.addSymbol("");
         fXMLSpace = fStringPool.addSymbol("xml:space");
         fDefault = fStringPool.addSymbol("default");
         fPreserve = fStringPool.addSymbol("preserve");
@@ -362,30 +355,13 @@ public final class XMLDTDScanner {
      * more generic task of scanning the DTD-specific XML grammar.
      */
     public interface EventHandler {
-        /**
-         * Determine whether a string is a valid XML version number
-         *  
-         * @param version string to be checked
-         * @return true if version is a valid XML version number
-         * @exception java.lang.Exception
-         */
-        public boolean validVersionNum(String version) throws Exception;
-        /**
-         * Determine whether a string is a valid encoding name
-         *
-         * @param encoding string to be checked
-         * @return true if encoding is a valid encoding name
-         * @exception java.lang.Exception
-         */
-        public boolean validEncName(String encoding) throws Exception;
-        /**
-         * Determine if a string is a valid public identifier
-         *
-         * @param publicId string to be checked
-         * @return true if publicId is a valid public identifier
-         * @exception java.lang.Exception
-         */
-        public int validPublicId(String publicId) throws Exception;
+
+        /** Start of DTD. */
+        public void callStartDTD() throws Exception;
+
+        /** End of DTD. */
+        public void callEndDTD() throws Exception;
+
         /**
          * Signal the Text declaration of an external entity.
          *
@@ -402,7 +378,7 @@ public final class XMLDTDScanner {
          * @param systemId StringPool handle of the system id
          * @exception java.lang.Exception
          */
-        public void doctypeDecl(int rootElementType, int publicId, int systemId) throws Exception;
+        public void doctypeDecl(QName rootElement, int publicId, int systemId) throws Exception;
         /**
          * Called when the DTDScanner starts reading from the external subset
          *
@@ -424,7 +400,7 @@ public final class XMLDTDScanner {
          * @return handle to the element whose declaration was added
          * @exception java.lang.Exception
          */
-        public int addElementDecl(int elementType) throws Exception;
+        public int addElementDecl(QName elementDecl) throws Exception;
         /**
          * Add an element declaration
          *
@@ -434,7 +410,7 @@ public final class XMLDTDScanner {
          * @return handle to the element declaration that was added 
          * @exception java.lang.Exception
          */
-        public int addElementDecl(int elementType, int contentSpecType, int contentSpec) throws Exception;
+        public int addElementDecl(QName elementDecl, int contentSpecType, int contentSpec, boolean isExternal) throws Exception;
         /**
          * Add an attribute definition
          *
@@ -447,38 +423,40 @@ public final class XMLDTDScanner {
          * @return handle to the attribute definition
          * @exception java.lang.Exception
          */
-        public int addAttDef(int elementIndex, int attName, int attType, int enumeration, int attDefaultType, int attDefaultValue) throws Exception;
+        public int addAttDef(QName elementDecl, QName attributeDecl, 
+                             int attType, boolean attList, int enumeration, 
+                             int attDefaultType, int attDefaultValue, boolean isExternal) throws Exception;
         /**
-         * create an XMLContentSpec.Node for a leaf
+         * create an XMLContentSpec for a leaf
          *
          * @param nameIndex StringPool handle to the name (Element) for the node
-         * @return handle to the newly create XMLContentSpec.Node
+         * @return handle to the newly create XMLContentSpec
          * @exception java.lang.Exception
          */
         public int addUniqueLeafNode(int nameIndex) throws Exception;
         /**
-         * Create an XMLContentSpec.Node for a single non-leaf
+         * Create an XMLContentSpec for a single non-leaf
          * 
-         * @param nodeType the type of XMLContentSpec.Node to create - from XMLContentSpec.CONTENTSPECNODE_*
-         * @param nodeValue handle to an XMLContentSpec.Node
-         * @return handle to the newly create XMLContentSpec.Node
+         * @param nodeType the type of XMLContentSpec to create - from XMLContentSpec.CONTENTSPECNODE_*
+         * @param nodeValue handle to an XMLContentSpec
+         * @return handle to the newly create XMLContentSpec
          * @exception java.lang.Exception
          */
         public int addContentSpecNode(int nodeType, int nodeValue) throws Exception;
         /**
-         * Create an XMLContentSpec.Node for a two child leaf
+         * Create an XMLContentSpec for a two child leaf
          *
-         * @param nodeType the type of XMLContentSpec.Node to create - from XMLContentSpec.CONTENTSPECNODE_*
-         * @param leftNodeIndex handle to an XMLContentSpec.Node
-         * @param rightNodeIndex handle to an XMLContentSpec.Node
-         * @return handle to the newly create XMLContentSpec.Node
+         * @param nodeType the type of XMLContentSpec to create - from XMLContentSpec.CONTENTSPECNODE_*
+         * @param leftNodeIndex handle to an XMLContentSpec
+         * @param rightNodeIndex handle to an XMLContentSpec
+         * @return handle to the newly create XMLContentSpec
          * @exception java.lang.Exception
          */
         public int addContentSpecNode(int nodeType, int leftNodeIndex, int rightNodeIndex) throws Exception;
         /**
-         * Create a string representation of an XMLContentSpec.Node tree
+         * Create a string representation of an XMLContentSpec tree
          * 
-         * @param handle to an XMLContentSpec.Node
+         * @param handle to an XMLContentSpec
          * @return String representation of the content spec tree
          * @exception java.lang.Exception
          */
@@ -593,78 +571,6 @@ public final class XMLDTDScanner {
          */
         public void callProcessingInstruction(int piTarget, int piData) throws Exception;
         /**
-         * Scan an element type
-         *
-         * @param entityReader reader to read from
-         * @param fastchar hint - character likely to terminate the element type
-         * @return StringPool handle for the element type
-         * @exception java.lang.Exception
-         */
-        public int scanElementType(XMLEntityHandler.EntityReader entityReader, char fastchar) throws Exception;
-        /**
-         * Scan for an element type at a point in the grammar where parameter
-         * entity references are allowed.  If such a reference is encountered,
-         * the replacement text will be scanned, skipping any white space that
-         * may be found, expanding references in this manner until an element
-         * type is scanned, or we fail to find one.
-         *
-         * @param entityReader reader to read from
-         * @param fastchar hint - character likely to terminate the element type
-         * @return StringPool handle for the element type
-         * @exception java.lang.Exception
-         */
-        public int checkForElementTypeWithPEReference(XMLEntityHandler.EntityReader entityReader, char fastchar) throws Exception;
-        /**
-         * Scan for an attribute name at a point in the grammar where parameter
-         * entity references are allowed.  If such a reference is encountered,
-         * the replacement text will be scanned, skipping any white space that
-         * may be found, expanding references in this manner until an attribute
-         * name is scanned, or we fail to find one.
-         *
-         * @param entityReader reader to read from
-         * @param fastchar hint - character likely to terminate the attribute name
-         * @return StringPool handle for the attribute name
-         * @exception java.lang.Exception
-         */
-        public int checkForAttributeNameWithPEReference(XMLEntityHandler.EntityReader entityReader, char fastcheck) throws Exception;
-        /**
-         * Scan for a Name at a point in the grammar where parameter entity
-         * references are allowed.  If such a reference is encountered, the
-         * replacement text will be scanned, skipping any white space that
-         * may be found, expanding references in this manner until a name
-         * is scanned, or we fail to find one.
-         *
-         * @param entityReader reader to read from
-         * @param fastcheck hint - character likely to terminate the name
-         * @return StringPool handle for the name
-         * @exception java.lang.Exception
-         */
-        public int checkForNameWithPEReference(XMLEntityHandler.EntityReader entityReader, char fastcheck) throws Exception;
-        /**
-         * Scan for a name token at a point in the grammar where parameter
-         * entity references are allowed.  If such a reference is encountered,
-         * the replacement text will be scanned, skipping any white space that
-         * may be found, expanding references in this manner until a name
-         * token is scanned, or we fail to find one.
-         *
-         * @param entityReader reader to read from
-         * @param fastcheck hint - character likely to terminate the name token
-         * @return StringPool handle for the name token
-         * @exception java.lang.Exception
-         */
-        public int checkForNmtokenWithPEReference(XMLEntityHandler.EntityReader entityReader, char fastcheck) throws Exception;
-        /**
-         * Scan the default value for an attribute
-         * 
-         * @param elementType handle to the element type that owns the attribute
-         * @param attrName StringPool handle to the name of the attribute
-         * @param attType the attribute type
-         * @param enumeration StringPool handle to a string list containing enumeration values
-         * @return StringPool handle to the default value
-         * @exception java.lang.Exception
-         */
-        public int scanDefaultAttValue(int elementType, int attrName, int attType, int enumeration) throws Exception;
-        /**
          * Supports DOM Level 2 internalSubset additions.
          * Called when the internal subset is completely scanned.
          */
@@ -673,6 +579,52 @@ public final class XMLDTDScanner {
     //
     //
     //
+    
+    /** Report a recoverable xml error. */
+    protected void reportRecoverableXMLError(int majorCode, int minorCode, 
+                                             int stringIndex1) 
+        throws Exception {
+
+        Object[] args = { fStringPool.toString(stringIndex1) };
+        fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                   XMLMessages.XML_DOMAIN,
+                                   majorCode,
+                                   minorCode,
+                                   args,
+                                   XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+
+    } // reportRecoverableXMLError(int,int,int)
+
+    /** Report a recoverable xml error. */
+    protected void reportRecoverableXMLError(int majorCode, int minorCode, 
+                                         String string1) throws Exception {
+
+        Object[] args = { string1 };
+        fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                   XMLMessages.XML_DOMAIN,
+                                   majorCode,
+                                   minorCode,
+                                   args,
+                                   XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+
+    } // reportRecoverableXMLError(int,int,String)
+    
+    /** Report a recoverable xml error. */
+    protected void reportRecoverableXMLError(int majorCode, int minorCode, 
+                                             String string1, String string2) 
+        throws Exception {
+
+        Object[] args = { string1, string2 };
+        fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                   XMLMessages.XML_DOMAIN,
+                                   majorCode,
+                                   minorCode,
+                                   args,
+                                   XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+
+    } // reportRecoverableXMLError(int,int,String,String)
+    
+ 
     private void reportFatalXMLError(int majorCode, int minorCode) throws Exception {
         fErrorReporter.reportError(fErrorReporter.getLocator(),
                                    XMLMessages.XML_DOMAIN,
@@ -801,7 +753,28 @@ public final class XMLDTDScanner {
      * @exception java.lang.Exception
      */
     public void endOfInput(int entityNameIndex, boolean moreToFollow) throws Exception {
+        if (fValidationEnabled ) {
+            int readerDepth = fEntityHandler.getReaderDepth();
+            if (getReadingContentSpec()) {
+                int parenDepth = parenDepth();
+                if (readerDepth != parenDepth) {
+                    reportRecoverableXMLError(XMLMessages.MSG_IMPROPER_GROUP_NESTING,
+                                                XMLMessages.VC_PROPER_GROUP_PE_NESTING,
+                                                entityNameIndex);
+                }
+            } else {
+                int markupDepth = markupDepth();
+                if (readerDepth != markupDepth) {
+                    reportRecoverableXMLError(XMLMessages.MSG_IMPROPER_DECLARATION_NESTING,
+                                                XMLMessages.VC_PROPER_DECLARATION_PE_NESTING,
+                                                entityNameIndex);
+                }
+            }
+        }
+        //REVISIT, why are we doing this?
         moreToFollow = fReaderId != fExternalSubsetReader;
+
+//      System.out.println("current Scanner state " + getScannerState() +","+ fScannerState + moreToFollow);
         switch (fScannerState) {
         case SCANNER_STATE_INVALID:
             throw new RuntimeException("FWK004 XMLDTDScanner.endOfInput: cannot happen: 2"+"\n2");
@@ -960,7 +933,7 @@ public final class XMLDTDScanner {
                             sawDashDash = true;
                         }
                         decreaseMarkupDepth();
-                        fEventHandler.callComment(fEntityReader.addString(commentOffset, endOffset - commentOffset));
+                        fDTDGrammar.callComment(fEntityReader.addString(commentOffset, endOffset - commentOffset));
                         restoreScannerState(previousState);
                         return;
                     } else if (!sawDashDash) {
@@ -1048,7 +1021,7 @@ public final class XMLDTDScanner {
         }
         int piData = piDataLength == 0 ?
                      StringPool.EMPTY_STRING : fEntityReader.addString(piDataOffset, piDataLength);
-        fEventHandler.callProcessingInstruction(piTarget, piData);
+        fDTDGrammar.callProcessingInstruction(piTarget, piData);
     }
     //
     // From the standard:
@@ -1071,6 +1044,10 @@ public final class XMLDTDScanner {
      */
     public boolean scanDoctypeDecl() throws Exception
     {
+        //System.out.println("XMLDTDScanner#scanDoctypeDecl()");
+
+        fDTDGrammar = new DTDGrammar(fStringPool, fEventHandler);
+        fDTDGrammar.callStartDTD();
         increaseMarkupDepth();
         fEntityReader = fEntityHandler.getEntityReader();
         fReaderId = fEntityHandler.getReaderId();
@@ -1082,8 +1059,8 @@ public final class XMLDTDScanner {
             return false;
         }
         fEntityReader.skipPastSpaces();
-        int rootElementType = fEventHandler.scanElementType(fEntityReader, ' ');
-        if (rootElementType == -1) {
+        scanElementType(fEntityReader, ' ', fElementQName);
+        if (fElementQName.rawname == -1) {
             abortMarkup(XMLMessages.MSG_ROOT_ELEMENT_TYPE_REQUIRED,
                         XMLMessages.P28_ROOT_ELEMENT_TYPE_REQUIRED);
             return false;
@@ -1107,7 +1084,7 @@ public final class XMLDTDScanner {
             }
         } else
             lbrkt = fEntityReader.lookingAtChar('[', true);
-        fEventHandler.doctypeDecl(rootElementType, publicId, systemId);
+        fDTDGrammar.doctypeDecl(fElementQName, publicId, systemId);
         if (lbrkt) {
             scanDecls(false);
             fEntityReader.skipPastSpaces();
@@ -1116,14 +1093,23 @@ public final class XMLDTDScanner {
             if (fScannerState != SCANNER_STATE_END_OF_INPUT) {
                 abortMarkup(XMLMessages.MSG_DOCTYPEDECL_UNTERMINATED,
                             XMLMessages.P28_UNTERMINATED,
-                            rootElementType);
+                            fElementQName.rawname);
             }
             return false;
         }
+
         decreaseMarkupDepth();
 
-        if (scanExternalSubset)
-            fEventHandler.startReadingFromExternalSubset(publicId, systemId);
+        //System.out.println("  scanExternalSubset: "+scanExternalSubset);
+        if (scanExternalSubset) {
+            ((DefaultEntityHandler) fEntityHandler).startReadingFromExternalSubset( fStringPool.toString(publicId),
+                                                                                    fStringPool.toString(systemId),
+                                                                                    markupDepth());
+            fDTDGrammar.startReadingFromExternalSubset(publicId, systemId);
+        }
+
+        fGrammarResolver.putGrammar("", fDTDGrammar);
+
 
         return true;
     }
@@ -1197,9 +1183,12 @@ public final class XMLDTDScanner {
         boolean dataok = true;
         boolean fragment = false;
         while (!fEntityReader.lookingAtChar(qchar, false)) {
+//ericye
+//System.out.println("XMLDTDScanner#scanDoctypeDecl() 3333333, "+fReaderId+", " + fScannerState+", " +fExternalSubsetReader);
             if (fEntityReader.lookingAtChar('#', true)) {
                 fragment = true;
             } else if (!fEntityReader.lookingAtValidChar(true)) {
+//System.out.println("XMLDTDScanner#scanDoctypeDecl() 555555 scan state: " + fScannerState);
                 dataok = false;
                 int invChar = fEntityReader.scanInvalidChar();
                 if (fScannerState == SCANNER_STATE_END_OF_INPUT)
@@ -1307,7 +1296,7 @@ public final class XMLDTDScanner {
             int dataLength = fLiteralData.length() - dataOffset;
             fPubidLiteral = fLiteralData.addString(dataOffset, dataLength);
             String publicId = fStringPool.toString(fPubidLiteral);
-            int invCharIndex = fEventHandler.validPublicId(publicId);
+            int invCharIndex = validPublicId(publicId);
             if (invCharIndex >= 0) {
                 reportFatalXMLError(XMLMessages.MSG_PUBIDCHAR_ILLEGAL,
                                     XMLMessages.P12_INVALID_CHARACTER,
@@ -1363,10 +1352,11 @@ public final class XMLDTDScanner {
         boolean parseTextDecl = extSubset;
         int prevState = setScannerState(SCANNER_STATE_MARKUP_DECL);
         while (fScannerState == SCANNER_STATE_MARKUP_DECL) {
+
             boolean newParseTextDecl = false;
             if (!extSubset && fEntityReader.lookingAtChar(']', false)) {
                 int subsetLength = fEntityReader.currentOffset() - subsetOffset;
-                fEventHandler.internalSubset(fEntityReader.addString(subsetOffset, subsetLength));
+                fDTDGrammar.internalSubset(fEntityReader.addString(subsetOffset, subsetLength));
                 fEntityReader.lookingAtChar(']', true);
                 restoreScannerState(prevState);
                 return;
@@ -1403,8 +1393,9 @@ public final class XMLDTDScanner {
                             abortMarkup(XMLMessages.MSG_MARKUP_NOT_RECOGNIZED_IN_DTD,
                                         XMLMessages.P29_NOT_RECOGNIZED);
                         }
-                    } else if (fEntityReader.skippedString(element_string))
+                    } else if (fEntityReader.skippedString(element_string)) {
                         scanElementDecl();
+                    }
                     else if (fEntityReader.skippedString(attlist_string))
                         scanAttlistDecl();
                     else if (fEntityReader.skippedString(entity_string))
@@ -1489,8 +1480,15 @@ public final class XMLDTDScanner {
             }
             parseTextDecl = newParseTextDecl;
         }
-        if (extSubset)
-            fEventHandler.stopReadingFromExternalSubset();
+        if (extSubset) {
+
+            ((DefaultEntityHandler) fEntityHandler).stopReadingFromExternalSubset();
+
+            fDTDGrammar.stopReadingFromExternalSubset();
+            fDTDGrammar.callEndDTD();
+            // REVISIT: What should the namspace URI of a DTD be?
+            fGrammarResolver.putGrammar("", fDTDGrammar);
+        }
     }
     //
     // [64] ignoreSectContents ::= Ignore ('<![' ignoreSectContents ']]>' Ignore)*
@@ -1613,7 +1611,7 @@ public final class XMLDTDScanner {
                 version = result;
                 String versionString = fStringPool.toString(version);
                 if (!"1.0".equals(versionString)) {
-                    if (!fEventHandler.validVersionNum(versionString)) {
+                    if (!validVersionNum(versionString)) {
                         abortMarkup(XMLMessages.MSG_VERSIONINFO_INVALID,
                                     XMLMessages.P26_INVALID_VALUE,
                                     versionString);
@@ -1645,7 +1643,7 @@ public final class XMLDTDScanner {
                 //
                 encoding = result;
                 String encodingString = fStringPool.toString(encoding);
-                if (!fEventHandler.validEncName(encodingString)) {
+                if (!validEncName(encodingString)) {
                     abortMarkup(XMLMessages.MSG_ENCODINGDECL_INVALID,
                                 XMLMessages.P81_INVALID_VALUE,
                                 encodingString);
@@ -1664,21 +1662,25 @@ public final class XMLDTDScanner {
             return;
         }
         decreaseMarkupDepth();
-        fEventHandler.callTextDecl(version, encoding);
+        fDTDGrammar.callTextDecl(version, encoding);
         restoreScannerState(prevState);
     }
-    //
-    // [45] elementdecl ::= '<!ELEMENT' S Name S contentspec S? '>'
-    //
-    private void scanElementDecl() throws Exception
-    {
+
+    /**
+     * Scans an element declaration.
+     * <pre>
+     * [45] elementdecl ::= '&lt;!ELEMENT' S Name S contentspec S? '&gt;'
+     * </pre>
+     */
+    private void scanElementDecl() throws Exception {
+        
         if (!checkForPEReference(true)) {
             abortMarkup(XMLMessages.MSG_SPACE_REQUIRED_BEFORE_ELEMENT_TYPE_IN_ELEMENTDECL,
                         XMLMessages.P45_SPACE_REQUIRED);
             return;
         }
-        int elementType = fEventHandler.checkForElementTypeWithPEReference(fEntityReader, ' ');
-        if (elementType == -1) {
+        checkForElementTypeWithPEReference(fEntityReader, ' ', fElementQName);
+        if (fElementQName.rawname == -1) {
             abortMarkup(XMLMessages.MSG_ELEMENT_TYPE_REQUIRED_IN_ELEMENTDECL,
                         XMLMessages.P45_ELEMENT_TYPE_REQUIRED);
             return;
@@ -1686,19 +1688,19 @@ public final class XMLDTDScanner {
         if (!checkForPEReference(true)) {
             abortMarkup(XMLMessages.MSG_SPACE_REQUIRED_BEFORE_CONTENTSPEC_IN_ELEMENTDECL,
                         XMLMessages.P45_SPACE_REQUIRED,
-                        elementType);
+                        fElementQName.rawname);
             return;
         }
         int contentSpecType = -1;
         int contentSpec = -1;
         if (fEntityReader.skippedString(empty_string)) {
-            contentSpecType = fEMPTY;
+            contentSpecType = XMLElementDecl.TYPE_EMPTY;
         } else if (fEntityReader.skippedString(any_string)) {
-            contentSpecType = fANY;
+            contentSpecType = XMLElementDecl.TYPE_ANY;
         } else if (!fEntityReader.lookingAtChar('(', true)) {
             abortMarkup(XMLMessages.MSG_CONTENTSPEC_REQUIRED_IN_ELEMENTDECL,
                         XMLMessages.P45_CONTENTSPEC_REQUIRED,
-                        elementType);
+                        fElementQName.rawname);
             return;
         } else {
             int contentSpecReader = fReaderId;
@@ -1710,11 +1712,13 @@ public final class XMLDTDScanner {
             checkForPEReference(false);
             boolean skippedPCDATA = fEntityReader.skippedString(pcdata_string);
             if (skippedPCDATA) {
-                contentSpecType = fMIXED;
-                contentSpec = scanMixed(elementType);
+                contentSpecType = XMLElementDecl.TYPE_MIXED;
+                // REVISIT: Validation. Should we pass in QName?
+                contentSpec = scanMixed(fElementQName);
             } else {
-                contentSpecType = fCHILDREN;
-                contentSpec = scanChildren(elementType);
+                contentSpecType = XMLElementDecl.TYPE_CHILDREN;
+                // REVISIT: Validation. Should we pass in QName?
+                contentSpec = scanChildren(fElementQName);
             }
             boolean success = contentSpec != -1;
             restoreScannerState(prevState);
@@ -1733,74 +1737,146 @@ public final class XMLDTDScanner {
         if (!fEntityReader.lookingAtChar('>', true)) {
             abortMarkup(XMLMessages.MSG_ELEMENTDECL_UNTERMINATED,
                         XMLMessages.P45_UNTERMINATED,
-                        elementType);
+                        fElementQName.rawname);
             return;
         }
         decreaseMarkupDepth();
-        int elementIndex = fEventHandler.addElementDecl(elementType, contentSpecType, contentSpec);
-    }
-    //
-    // [51] Mixed ::= '(' S? '#PCDATA' (S? '|' S? Name)* S? ')*' | '(' S? '#PCDATA' S? ')'
-    //
-    // Called after scanning past '(' S? '#PCDATA'
-    //
-    private int scanMixed(int elementType) throws Exception
-    {
+        int elementIndex = fDTDGrammar.getElementDeclIndex(fElementQName.localpart, -1);
+        boolean elementDeclIsExternal = getReadingExternalEntity();
+        if (elementIndex == -1) {
+            elementIndex = fDTDGrammar.addElementDecl(fElementQName, contentSpecType, contentSpec, elementDeclIsExternal);
+            //System.out.println("XMLDTDScanner#scanElementDecl->DTDGrammar#addElementDecl: "+elementIndex+" ("+fElementQName.localpart+","+fStringPool.toString(fElementQName.localpart)+')');
+        }
+        else {
+            //now check if we already add this element Decl by foward reference
+            fDTDGrammar.getElementDecl(elementIndex, fTempElementDecl);
+            if (fTempElementDecl.type == -1) {
+                fTempElementDecl.type = contentSpecType;
+                fTempElementDecl.contentSpecIndex = contentSpec;
+                fDTDGrammar.setElementDeclDTD(elementIndex, fTempElementDecl);
+                fDTDGrammar.setElementDeclIsExternal(elementIndex, elementDeclIsExternal);
+            }
+            else {
+                //REVISIT, valiate VC duplicate element type. 
+                if ( fValidationEnabled )
+                    //&& 
+                    // (elemenetDeclIsExternal==fDTDGrammar.getElementDeclIsExternal(elementIndex)
+                {
+
+                    reportRecoverableXMLError(
+                        XMLMessages.MSG_ELEMENT_ALREADY_DECLARED,
+                        XMLMessages.VC_UNIQUE_ELEMENT_TYPE_DECLARATION,
+                        fStringPool.toString(fElementQName.rawname)
+                        );
+                }
+            }
+        }
+
+    } // scanElementDecl()
+
+    
+    /**
+     * Scans mixed content model. Called after scanning past '(' S? '#PCDATA'
+     * <pre>
+     * [51] Mixed ::= '(' S? '#PCDATA' (S? '|' S? Name)* S? ')*' | '(' S? '#PCDATA' S? ')'
+     * </pre>
+     */
+    private int scanMixed(QName element) throws Exception {
+
         int valueIndex = -1;  // -1 is special value for #PCDATA
         int prevNodeIndex = -1;
         boolean starRequired = false;
+        int[] valueSeen = new int[32];
+        int valueCount = 0;
+        boolean dupAttrType = false;
+        int nodeIndex = -1;
+
         while (true) {
-            int nodeIndex = fEventHandler.addUniqueLeafNode(valueIndex);
+            if (fValidationEnabled) {
+                for (int i=0; i<valueCount;i++) {
+                    if ( valueSeen[i] == valueIndex) {
+                        dupAttrType = true;
+                        break;
+                    }
+                }
+            }
+            if (dupAttrType && fValidationEnabled) {
+                reportRecoverableXMLError(XMLMessages.MSG_DUPLICATE_TYPE_IN_MIXED_CONTENT,
+                                          XMLMessages.VC_NO_DUPLICATE_TYPES,
+                                          valueIndex);
+                dupAttrType = false;
+
+            }
+            else {
+                try {
+                    valueSeen[valueCount] = valueIndex;
+                }
+                catch (ArrayIndexOutOfBoundsException ae) {
+                    int[] newArray = new int[valueSeen.length*2];
+                    System.arraycopy(valueSeen,0,newArray,0,valueSeen.length);
+                    valueSeen[valueCount] = valueIndex;
+                }
+                valueCount++;
+
+                nodeIndex = fDTDGrammar.addUniqueLeafNode(valueIndex);
+            }
+
             checkForPEReference(false);
             if (!fEntityReader.lookingAtChar('|', true)) {
                 if (!fEntityReader.lookingAtChar(')', true)) {
                     reportFatalXMLError(XMLMessages.MSG_CLOSE_PAREN_REQUIRED_IN_MIXED,
                                         XMLMessages.P51_CLOSE_PAREN_REQUIRED,
-                                        elementType);
+                                        element.rawname);
                     return -1;
                 }
                 decreaseParenDepth();
                 if (nodeIndex == -1) {
                     nodeIndex = prevNodeIndex;
                 } else if (prevNodeIndex != -1) {
-                    nodeIndex = fEventHandler.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE, prevNodeIndex, nodeIndex);
+                    nodeIndex = fDTDGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE, prevNodeIndex, nodeIndex);
                 }
                 if (fEntityReader.lookingAtChar('*', true)) {
-                    nodeIndex = fEventHandler.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE, nodeIndex);
+                    nodeIndex = fDTDGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE, nodeIndex);
                 } else if (starRequired) {
                     reportFatalXMLError(XMLMessages.MSG_MIXED_CONTENT_UNTERMINATED,
                                         XMLMessages.P51_UNTERMINATED,
-                                        fStringPool.toString(elementType),
-                                        fEventHandler.getContentSpecNodeAsString(nodeIndex));
+                                        fStringPool.toString(element.rawname),
+                                        fDTDGrammar.getContentSpecNodeAsString(nodeIndex));
                     return -1;
                 }
                 return nodeIndex;
             }
             if (nodeIndex != -1) {
                 if (prevNodeIndex != -1) {
-                    nodeIndex = fEventHandler.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE, prevNodeIndex, nodeIndex);
+                    nodeIndex = fDTDGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE, prevNodeIndex, nodeIndex);
                 }
                 prevNodeIndex = nodeIndex;
             }
             starRequired = true;
             checkForPEReference(false);
-            valueIndex = fEventHandler.checkForElementTypeWithPEReference(fEntityReader, ')');
+            checkForElementTypeWithPEReference(fEntityReader, ')', fElementRefQName);
+            valueIndex = fElementRefQName.rawname;
             if (valueIndex == -1) {
                 reportFatalXMLError(XMLMessages.MSG_ELEMENT_TYPE_REQUIRED_IN_MIXED_CONTENT,
                                     XMLMessages.P51_ELEMENT_TYPE_REQUIRED,
-                                    elementType);
+                                    element.rawname);
                 return -1;
             }
         }
-    }
-    //
-    // [47] children ::= (choice | seq) ('?' | '*' | '+')?
-    // [49] choice ::= '(' S? cp ( S? '|' S? cp )* S? ')'
-    // [50] seq ::= '(' S? cp ( S? ',' S? cp )* S? ')'
-    // [48] cp ::= (Name | choice | seq) ('?' | '*' | '+')?
-    //
-    private int scanChildren(int elementType) throws Exception
-    {
+
+    } // scanMixed(QName):int
+    
+    /**
+     * Scans a children content model.
+     * <pre>
+     * [47] children ::= (choice | seq) ('?' | '*' | '+')?
+     * [49] choice ::= '(' S? cp ( S? '|' S? cp )* S? ')'
+     * [50] seq ::= '(' S? cp ( S? ',' S? cp )* S? ')'
+     * [48] cp ::= (Name | choice | seq) ('?' | '*' | '+')?
+     * </pre>
+     */
+    private int scanChildren(QName element) throws Exception {
+        
         int depth = 1;
         initializeContentModelStack(depth);
         while (true) {
@@ -1811,33 +1887,34 @@ public final class XMLDTDScanner {
                 initializeContentModelStack(depth);
                 continue;
             }
-            int valueIndex = fEventHandler.checkForElementTypeWithPEReference(fEntityReader, ')');
+            checkForElementTypeWithPEReference(fEntityReader, ')', fElementRefQName);
+            int valueIndex = fElementRefQName.rawname;
             if (valueIndex == -1) {
                 reportFatalXMLError(XMLMessages.MSG_OPEN_PAREN_OR_ELEMENT_TYPE_REQUIRED_IN_CHILDREN,
                                     XMLMessages.P47_OPEN_PAREN_OR_ELEMENT_TYPE_REQUIRED,
-                                    elementType);
+                                    element.rawname);
                 return -1;
             }
-            fNodeIndexStack[depth] = fEventHandler.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF, valueIndex);
+            fNodeIndexStack[depth] = fDTDGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF, valueIndex);
             if (fEntityReader.lookingAtChar('?', true)) {
-                fNodeIndexStack[depth] = fEventHandler.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE, fNodeIndexStack[depth]);
+                fNodeIndexStack[depth] = fDTDGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE, fNodeIndexStack[depth]);
             } else if (fEntityReader.lookingAtChar('*', true)) {
-                fNodeIndexStack[depth] = fEventHandler.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE, fNodeIndexStack[depth]);
+                fNodeIndexStack[depth] = fDTDGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE, fNodeIndexStack[depth]);
             } else if (fEntityReader.lookingAtChar('+', true)) {
-                fNodeIndexStack[depth] = fEventHandler.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE, fNodeIndexStack[depth]);
+                fNodeIndexStack[depth] = fDTDGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE, fNodeIndexStack[depth]);
             }
             while (true) {
                 checkForPEReference(false);
                 if (fOpStack[depth] != XMLContentSpec.CONTENTSPECNODE_SEQ && fEntityReader.lookingAtChar('|', true)) {
                     if (fPrevNodeIndexStack[depth] != -1) {
-                        fNodeIndexStack[depth] = fEventHandler.addContentSpecNode(fOpStack[depth], fPrevNodeIndexStack[depth], fNodeIndexStack[depth]);
+                        fNodeIndexStack[depth] = fDTDGrammar.addContentSpecNode(fOpStack[depth], fPrevNodeIndexStack[depth], fNodeIndexStack[depth]);
                     }
                     fPrevNodeIndexStack[depth] = fNodeIndexStack[depth];
                     fOpStack[depth] = XMLContentSpec.CONTENTSPECNODE_CHOICE;
                     break;
                 } else if (fOpStack[depth] != XMLContentSpec.CONTENTSPECNODE_CHOICE && fEntityReader.lookingAtChar(',', true)) {
                     if (fPrevNodeIndexStack[depth] != -1) {
-                        fNodeIndexStack[depth] = fEventHandler.addContentSpecNode(fOpStack[depth], fPrevNodeIndexStack[depth], fNodeIndexStack[depth]);
+                        fNodeIndexStack[depth] = fDTDGrammar.addContentSpecNode(fOpStack[depth], fPrevNodeIndexStack[depth], fNodeIndexStack[depth]);
                     }
                     fPrevNodeIndexStack[depth] = fNodeIndexStack[depth];
                     fOpStack[depth] = XMLContentSpec.CONTENTSPECNODE_SEQ;
@@ -1846,20 +1923,20 @@ public final class XMLDTDScanner {
                     if (!fEntityReader.lookingAtChar(')', true)) {
                         reportFatalXMLError(XMLMessages.MSG_CLOSE_PAREN_REQUIRED_IN_CHILDREN,
                                             XMLMessages.P47_CLOSE_PAREN_REQUIRED,
-                                            elementType);
+                                            element.rawname);
                     }
                     decreaseParenDepth();
                     if (fPrevNodeIndexStack[depth] != -1) {
-                        fNodeIndexStack[depth] = fEventHandler.addContentSpecNode(fOpStack[depth], fPrevNodeIndexStack[depth], fNodeIndexStack[depth]);
+                        fNodeIndexStack[depth] = fDTDGrammar.addContentSpecNode(fOpStack[depth], fPrevNodeIndexStack[depth], fNodeIndexStack[depth]);
                     }
                     int nodeIndex = fNodeIndexStack[depth--];
                     fNodeIndexStack[depth] = nodeIndex;
                     if (fEntityReader.lookingAtChar('?', true)) {
-                        fNodeIndexStack[depth] = fEventHandler.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE, fNodeIndexStack[depth]);
+                        fNodeIndexStack[depth] = fDTDGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE, fNodeIndexStack[depth]);
                     } else if (fEntityReader.lookingAtChar('*', true)) {
-                        fNodeIndexStack[depth] = fEventHandler.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE, fNodeIndexStack[depth]);
+                        fNodeIndexStack[depth] = fDTDGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE, fNodeIndexStack[depth]);
                     } else if (fEntityReader.lookingAtChar('+', true)) {
-                        fNodeIndexStack[depth] = fEventHandler.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE, fNodeIndexStack[depth]);
+                        fNodeIndexStack[depth] = fDTDGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE, fNodeIndexStack[depth]);
                     }
                     if (depth == 0) {
                         return fNodeIndexStack[0];
@@ -1868,7 +1945,9 @@ public final class XMLDTDScanner {
             }
             checkForPEReference(false);
         }
-    }
+
+    } // scanChildren(QName):int
+
     //
     // [52] AttlistDecl ::= '<!ATTLIST' S Name AttDef* S? '>'
     // [53] AttDef ::= S Name S AttType S DefaultDecl
@@ -1881,13 +1960,18 @@ public final class XMLDTDScanner {
                         XMLMessages.P52_SPACE_REQUIRED);
             return;
         }
-        int elementTypeIndex = fEventHandler.checkForElementTypeWithPEReference(fEntityReader, ' ');
+        checkForElementTypeWithPEReference(fEntityReader, ' ', fElementQName);
+        int elementTypeIndex = fElementQName.rawname;
         if (elementTypeIndex == -1) {
             abortMarkup(XMLMessages.MSG_ELEMENT_TYPE_REQUIRED_IN_ATTLISTDECL,
                         XMLMessages.P52_ELEMENT_TYPE_REQUIRED);
             return;
         }
-        int elementIndex = fEventHandler.addElementDecl(elementTypeIndex);
+        int elementIndex = fDTDGrammar.getElementDeclIndex(fElementQName.localpart, -1);
+        if (elementIndex == -1) {
+            elementIndex = fDTDGrammar.addElementDecl(fElementQName);
+            //System.out.println("XMLDTDScanner#scanAttListDecl->DTDGrammar#addElementDecl: "+elementIndex+" ("+fElementQName.localpart+","+fStringPool.toString(fElementQName.localpart)+')');
+        }
         boolean sawSpace = checkForPEReference(true);
         if (fEntityReader.lookingAtChar('>', true)) {
             decreaseMarkupDepth();
@@ -1910,11 +1994,12 @@ public final class XMLDTDScanner {
             return;
         }
         while (true) {
-            int attDefName = fEventHandler.checkForAttributeNameWithPEReference(fEntityReader, ' ');
+            checkForAttributeNameWithPEReference(fEntityReader, ' ', fAttributeQName);
+            int attDefName = fAttributeQName.rawname;
             if (attDefName == -1) {
                 abortMarkup(XMLMessages.MSG_ATTRIBUTE_NAME_REQUIRED_IN_ATTDEF,
                             XMLMessages.P53_NAME_REQUIRED,
-                            elementTypeIndex);
+                            fElementQName.rawname);
                 return;
             }
             if (!checkForPEReference(true)) {
@@ -1923,22 +2008,25 @@ public final class XMLDTDScanner {
                 return;
             }
             int attDefType = -1;
+            boolean attDefList = false;
             int attDefEnumeration = -1;
             if (fEntityReader.skippedString(cdata_string)) {
-                attDefType = fCDATA;
+                attDefType = XMLAttributeDecl.TYPE_CDATA;
             } else if (fEntityReader.skippedString(id_string)) {
                 if (!fEntityReader.skippedString(ref_string)) {
-                    attDefType = fID;
+                    attDefType = XMLAttributeDecl.TYPE_ID;
                 } else if (!fEntityReader.lookingAtChar('S', true)) {
-                    attDefType = fIDREF;
+                    attDefType = XMLAttributeDecl.TYPE_IDREF;
                 } else {
-                    attDefType = fIDREFS;
+                    attDefType = XMLAttributeDecl.TYPE_IDREF;
+                    attDefList = true;
                 }
             } else if (fEntityReader.skippedString(entit_string)) {
                 if (fEntityReader.lookingAtChar('Y', true)) {
-                    attDefType = fENTITY;
+                    attDefType = XMLAttributeDecl.TYPE_ENTITY;
                 } else if (fEntityReader.skippedString(ies_string)) {
-                    attDefType = fENTITIES;
+                    attDefType = XMLAttributeDecl.TYPE_ENTITY;
+                    attDefList = true;
                 } else {
                     abortMarkup(XMLMessages.MSG_ATTTYPE_REQUIRED_IN_ATTDEF,
                                 XMLMessages.P53_ATTTYPE_REQUIRED,
@@ -1947,9 +2035,10 @@ public final class XMLDTDScanner {
                 }
             } else if (fEntityReader.skippedString(nmtoken_string)) {
                 if (fEntityReader.lookingAtChar('S', true)) {
-                    attDefType = fNMTOKENS;
+                    attDefType = XMLAttributeDecl.TYPE_NMTOKEN;
+                    attDefList = true;
                 } else {
-                    attDefType = fNMTOKEN;
+                    attDefType = XMLAttributeDecl.TYPE_NMTOKEN;
                 }
             } else if (fEntityReader.skippedString(notation_string)) {
                 if (!checkForPEReference(true)) {
@@ -1965,7 +2054,7 @@ public final class XMLDTDScanner {
                     return;
                 }
                 increaseParenDepth();
-                attDefType = fNOTATION;
+                attDefType = XMLAttributeDecl.TYPE_NOTATION;
                 attDefEnumeration = scanEnumeration(elementTypeIndex, attDefName, true);
                 if (attDefEnumeration == -1) {
                     skipPastEndOfCurrentMarkup();
@@ -1973,7 +2062,7 @@ public final class XMLDTDScanner {
                 }
             } else if (fEntityReader.lookingAtChar('(', true)) {
                 increaseParenDepth();
-                attDefType = fENUMERATION;
+                attDefType = XMLAttributeDecl.TYPE_ENUMERATION;
                 attDefEnumeration = scanEnumeration(elementTypeIndex, attDefName, false);
                 if (attDefEnumeration == -1) {
                     skipPastEndOfCurrentMarkup();
@@ -1994,9 +2083,9 @@ public final class XMLDTDScanner {
             int attDefDefaultType = -1;
             int attDefDefaultValue = -1;
             if (fEntityReader.skippedString(required_string)) {
-                attDefDefaultType = fREQUIRED;
+                attDefDefaultType = XMLAttributeDecl.DEFAULT_TYPE_REQUIRED;
             } else if (fEntityReader.skippedString(implied_string)) {
-                attDefDefaultType = fIMPLIED;
+                attDefDefaultType = XMLAttributeDecl.DEFAULT_TYPE_IMPLIED;
             } else {
                 if (fEntityReader.skippedString(fixed_string)) {
                     if (!fEntityReader.lookingAtSpace(true)) {
@@ -2006,10 +2095,22 @@ public final class XMLDTDScanner {
                         return;
                     }
                     fEntityReader.skipPastSpaces();
-                    attDefDefaultType = fFIXED;
+                    attDefDefaultType = XMLAttributeDecl.DEFAULT_TYPE_FIXED;
                 } else
-                    attDefDefaultType = fDEFAULT;
-                attDefDefaultValue = fEventHandler.scanDefaultAttValue(elementTypeIndex, attDefName, attDefType, attDefEnumeration);
+                    attDefDefaultType = XMLAttributeDecl.DEFAULT_TYPE_DEFAULT;
+                fElementQName.setValues(-1, elementTypeIndex, elementTypeIndex);
+                fAttributeQName.setValues(-1, attDefName, attDefName);
+                attDefDefaultValue = scanDefaultAttValue(fElementQName, fAttributeQName, 
+                                                         attDefType, 
+                                                         attDefEnumeration);
+
+                //normalize and check VC: Attribute Default Legal
+                if (attDefDefaultValue != -1 && attDefType != XMLAttributeDecl.TYPE_CDATA ) {
+                    attDefDefaultValue = normalizeDefaultAttValue( fAttributeQName, attDefDefaultValue, 
+                                                                attDefType, attDefEnumeration,
+                                                                attDefList);
+                }
+
                 if (attDefDefaultValue == -1) {
                     skipPastEndOfCurrentMarkup();
                     return;
@@ -2017,7 +2118,7 @@ public final class XMLDTDScanner {
             }
             if (attDefName == fXMLSpace) {
                 boolean ok = false;
-                if (attDefType == fENUMERATION) {
+                if (attDefType == XMLAttributeDecl.TYPE_ENUMERATION) {
                     int index = attDefEnumeration;
                     if (index != -1) {
                         ok = fStringPool.stringListLength(index) == 2 &&
@@ -2033,7 +2134,13 @@ public final class XMLDTDScanner {
             }
             sawSpace = checkForPEReference(true);
             if (fEntityReader.lookingAtChar('>', true)) {
-                int attDefIndex = fEventHandler.addAttDef(elementIndex, attDefName, attDefType, attDefEnumeration, attDefDefaultType, attDefDefaultValue);
+                int attDefIndex = addAttDef(fElementQName, fAttributeQName, 
+                                                        attDefType, attDefList, attDefEnumeration, 
+                                                        attDefDefaultType, attDefDefaultValue, 
+                                                        getReadingExternalEntity());
+                //System.out.println("XMLDTDScanner#scanAttlistDecl->DTDGrammar#addAttDef: "+attDefIndex+
+                //                   " ("+fElementQName.localpart+","+fStringPool.toString(fElementQName.rawname)+')'+
+                //                   " ("+fAttributeQName.localpart+","+fStringPool.toString(fAttributeQName.rawname)+')');
                 decreaseMarkupDepth();
                 return;
             }
@@ -2050,12 +2157,103 @@ public final class XMLDTDScanner {
                 }
             }
             if (fEntityReader.lookingAtChar('>', true)) {
-                int attDefIndex = fEventHandler.addAttDef(elementIndex, attDefName, attDefType, attDefEnumeration, attDefDefaultType, attDefDefaultValue);
+                int attDefIndex = addAttDef(fElementQName, fAttributeQName, 
+                                                        attDefType, attDefList, attDefEnumeration, 
+                                                        attDefDefaultType, attDefDefaultValue,
+                                                        getReadingExternalEntity() );
+                //System.out.println("XMLDTDScanner#scanAttlistDecl->DTDGrammar#addAttDef: "+attDefIndex+
+                //                   " ("+fElementQName.localpart+","+fStringPool.toString(fElementQName.rawname)+')'+
+                //                   " ("+fAttributeQName.localpart+","+fStringPool.toString(fAttributeQName.rawname)+')');
                 decreaseMarkupDepth();
                 return;
             }
-            int attDefIndex = fEventHandler.addAttDef(elementIndex, attDefName, attDefType, attDefEnumeration, attDefDefaultType, attDefDefaultValue);
+            int attDefIndex = addAttDef(fElementQName, fAttributeQName, 
+                                                    attDefType, attDefList, attDefEnumeration, 
+                                                    attDefDefaultType, attDefDefaultValue,
+                                                    getReadingExternalEntity());
+            //System.out.println("XMLDTDScanner#scanAttlistDecl->DTDGrammar#addAttDef: "+attDefIndex+
+            //                   " ("+fElementQName.localpart+","+fStringPool.toString(fElementQName.rawname)+')'+
+            //                   " ("+fAttributeQName.localpart+","+fStringPool.toString(fAttributeQName.rawname)+')');
         }
+    }
+
+    private int addAttDef(QName element, QName attribute, 
+                          int attDefType, boolean attDefList, int attDefEnumeration, 
+                          int attDefDefaultType, int attDefDefaultValue,
+                          boolean isExternal ) throws Exception {
+
+        int elementIndex = fDTDGrammar.getElementDeclIndex(element.localpart, -1);
+        if (elementIndex == -1) {
+            // REPORT Internal error here
+        }
+        else {
+            int attlistIndex = fDTDGrammar.getFirstAttributeDeclIndex(elementIndex);
+            int dupID = -1;
+            int dupNotation = -1;
+            while (attlistIndex != -1) {
+                fDTDGrammar.getAttributeDecl(attlistIndex, fTempAttributeDecl);
+
+                // REVISIT: Validation. Attributes are also tuples.
+                if (fStringPool.equalNames(fTempAttributeDecl.name.rawname, attribute.rawname)) {
+                    /******
+                    if (fWarningOnDuplicateAttDef) {
+                        Object[] args = { fStringPool.toString(fElementType[elemChunk][elemIndex]),
+                                          fStringPool.toString(attributeDecl.rawname) };
+                        fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                                   XMLMessages.XML_DOMAIN,
+                                                   XMLMessages.MSG_DUPLICATE_ATTDEF,
+                                                   XMLMessages.P53_DUPLICATE,
+                                                   args,
+                                                   XMLErrorReporter.ERRORTYPE_WARNING);
+                    }
+                    ******/
+                    return -1;
+                }
+
+                if (fValidationEnabled) {
+                    if (attDefType == XMLAttributeDecl.TYPE_ID && 
+                        fTempAttributeDecl.type == XMLAttributeDecl.TYPE_ID ) {
+                        dupID = fTempAttributeDecl.name.rawname;
+                    }
+                    if (attDefType == XMLAttributeDecl.TYPE_NOTATION 
+                        && fTempAttributeDecl.type == XMLAttributeDecl.TYPE_NOTATION) {
+                        dupNotation = fTempAttributeDecl.name.rawname;
+                    }
+                }
+                attlistIndex = fDTDGrammar.getNextAttributeDeclIndex(attlistIndex);
+            }
+            if (fValidationEnabled) {
+                if (dupID != -1) {
+                    Object[] args = { fStringPool.toString(element.rawname),
+                                      fStringPool.toString(dupID),
+                                      fStringPool.toString(attribute.rawname) };
+                    fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                               XMLMessages.XML_DOMAIN,
+                                               XMLMessages.MSG_MORE_THAN_ONE_ID_ATTRIBUTE,
+                                               XMLMessages.VC_ONE_ID_PER_ELEMENT_TYPE,
+                                               args,
+                                               XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+                    return -1;
+                }
+                if (dupNotation != -1) {
+                    Object[] args = { fStringPool.toString(element.rawname),
+                                      fStringPool.toString(dupNotation),
+                                      fStringPool.toString(attribute.rawname) };
+                    fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                               XMLMessages.XML_DOMAIN,
+                                               XMLMessages.MSG_MORE_THAN_ONE_NOTATION_ATTRIBUTE,
+                                               XMLMessages.VC_ONE_NOTATION_PER_ELEMENT_TYPE,
+                                               args,
+                                               XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+                    return -1;
+                }
+            }
+        }
+        return fDTDGrammar.addAttDef(element, attribute, 
+                                     attDefType, attDefList, attDefEnumeration, 
+                                     attDefDefaultType, attDefDefaultValue,
+                                     isExternal);
+
     }
     //
     // [58] NotationType ::= 'NOTATION' S '(' S? Name (S? '|' S? Name)* S? ')'
@@ -2063,12 +2261,12 @@ public final class XMLDTDScanner {
     //
     private int scanEnumeration(int elementType, int attrName, boolean isNotationType) throws Exception
     {
-        int enumIndex = fEventHandler.startEnumeration();
+        int enumIndex = fDTDGrammar.startEnumeration();
         while (true) {
             checkForPEReference(false);
             int nameIndex = isNotationType ?
-                            fEventHandler.checkForNameWithPEReference(fEntityReader, ')') :
-                            fEventHandler.checkForNmtokenWithPEReference(fEntityReader, ')');
+                            checkForNameWithPEReference(fEntityReader, ')') :
+                            checkForNmtokenWithPEReference(fEntityReader, ')');
             if (nameIndex == -1) {
                 if (isNotationType) {
                     reportFatalXMLError(XMLMessages.MSG_NAME_REQUIRED_IN_NOTATIONTYPE,
@@ -2081,13 +2279,25 @@ public final class XMLDTDScanner {
                                         elementType,
                                         attrName);
                 }
-                fEventHandler.endEnumeration(enumIndex);
+                fDTDGrammar.endEnumeration(enumIndex);
                 return -1;
             }
-            fEventHandler.addNameToEnumeration(enumIndex, elementType, attrName, nameIndex, isNotationType);
+            fDTDGrammar.addNameToEnumeration(enumIndex, elementType, attrName, nameIndex, isNotationType);
+            /*****/
+            if (isNotationType && !((DefaultEntityHandler)fEntityHandler).isNotationDeclared(nameIndex)) {
+                Object[] args = { fStringPool.toString(elementType),
+                    fStringPool.toString(attrName),
+                    fStringPool.toString(nameIndex) };
+                    ((DefaultEntityHandler)fEntityHandler).addRequiredNotation(nameIndex,
+                                                       fErrorReporter.getLocator(),
+                                                       XMLMessages.MSG_NOTATION_NOT_DECLARED_FOR_NOTATIONTYPE_ATTRIBUTE,
+                                                       XMLMessages.VC_NOTATION_DECLARED,
+                                                       args);
+            }
+            /*****/
             checkForPEReference(false);
             if (!fEntityReader.lookingAtChar('|', true)) {
-                fEventHandler.endEnumeration(enumIndex);
+                fDTDGrammar.endEnumeration(enumIndex);
                 if (!fEntityReader.lookingAtChar(')', true)) {
                     if (isNotationType) {
                         reportFatalXMLError(XMLMessages.MSG_NOTATIONTYPE_UNTERMINATED,
@@ -2119,21 +2329,21 @@ public final class XMLDTDScanner {
      * @return handle in the string pool for the default attribute value
      * @exception java.lang.Exception
      */
-    public int scanDefaultAttValue(int elementType, int attrName) throws Exception
+    public int scanDefaultAttValue(QName element, QName attribute) throws Exception
     {
         boolean single;
         if (!(single = fEntityReader.lookingAtChar('\'', true)) && !fEntityReader.lookingAtChar('\"', true)) {
             reportFatalXMLError(XMLMessages.MSG_QUOTE_REQUIRED_IN_ATTVALUE,
                                 XMLMessages.P10_QUOTE_REQUIRED,
-                                elementType,
-                                attrName);
+                                element.rawname,
+                                attribute.rawname);
             return -1;
         }
         int previousState = setScannerState(SCANNER_STATE_DEFAULT_ATTRIBUTE_VALUE);
         char qchar = single ? '\'' : '\"';
         fDefaultAttValueReader = fReaderId;
-        fDefaultAttValueElementType = elementType;
-        fDefaultAttValueAttrName = attrName;
+        fDefaultAttValueElementType = element.rawname;
+        fDefaultAttValueAttrName = attribute.rawname;
         boolean setMark = true;
         int dataOffset = fLiteralData.length();
         while (true) {
@@ -2204,8 +2414,8 @@ public final class XMLDTDScanner {
                 setMark = true;
                 reportFatalXMLError(XMLMessages.MSG_LESSTHAN_IN_ATTVALUE,
                                     XMLMessages.WFC_NO_LESSTHAN_IN_ATTVALUE,
-                                    elementType,
-                                    attrName);
+                                    element.rawname,
+                                    attribute.rawname);
                 continue;
             }
             //
@@ -2235,8 +2445,8 @@ public final class XMLDTDScanner {
                 if (invChar >= 0) {
                     reportFatalXMLError(XMLMessages.MSG_INVALID_CHAR_IN_ATTVALUE,
                                         XMLMessages.P10_INVALID_CHARACTER,
-                                        fStringPool.toString(elementType),
-                                        fStringPool.toString(attrName),
+                                        fStringPool.toString(element.rawname),
+                                        fStringPool.toString(attribute.rawname),
                                         Integer.toHexString(invChar));
                 }
                 continue;
@@ -2263,7 +2473,7 @@ public final class XMLDTDScanner {
                         XMLMessages.P82_SPACE_REQUIRED);
             return;
         }
-        int notationName = fEventHandler.checkForNameWithPEReference(fEntityReader, ' ');
+        int notationName = checkForNameWithPEReference(fEntityReader, ' ');
         if (notationName == -1) {
             abortMarkup(XMLMessages.MSG_NOTATION_NAME_REQUIRED_IN_NOTATIONDECL,
                         XMLMessages.P82_NAME_REQUIRED);
@@ -2287,7 +2497,18 @@ public final class XMLDTDScanner {
             return;
         }
         decreaseMarkupDepth();
-        int notationIndex = fEventHandler.addNotationDecl(notationName, fPubidLiteral, fSystemLiteral);
+        /****
+        System.out.println(fStringPool.toString(notationName)+","
+                           +fStringPool.toString(fPubidLiteral) + ","
+                           +fStringPool.toString(fSystemLiteral) + ","
+                           +getReadingExternalEntity());
+        /****/
+
+        int notationIndex = ((DefaultEntityHandler) fEntityHandler).addNotationDecl( notationName, 
+                                                                                     fPubidLiteral, 
+                                                                                     fSystemLiteral,
+                                                                                     getReadingExternalEntity());
+        fDTDGrammar.addNotationDecl(notationName, fPubidLiteral, fSystemLiteral);
     }
     //
     // [70] EntityDecl ::= GEDecl | PEDecl
@@ -2367,13 +2588,13 @@ public final class XMLDTDScanner {
                 }
             }
         }
-        int entityName = fEventHandler.checkForNameWithPEReference(fEntityReader, ' ');
+        int entityName = checkForNameWithPEReference(fEntityReader, ' ');
         if (entityName == -1) {
             abortMarkup(XMLMessages.MSG_ENTITY_NAME_REQUIRED_IN_ENTITYDECL,
                         XMLMessages.P70_REQUIRED_NAME);
             return;
         }
-        if (!fEventHandler.startEntityDecl(isPEDecl, entityName)) {
+        if (!fDTDGrammar.startEntityDecl(isPEDecl, entityName)) {
             skipPastEndOfCurrentMarkup();
             return;
         }
@@ -2381,7 +2602,7 @@ public final class XMLDTDScanner {
             abortMarkup(XMLMessages.MSG_SPACE_REQUIRED_AFTER_ENTITY_NAME_IN_ENTITYDECL,
                         XMLMessages.P70_REQUIRED_SPACE,
                         entityName);
-            fEventHandler.endEntityDecl();
+            fDTDGrammar.endEntityDecl();
             return;
         }
         if (isPEDecl) {
@@ -2390,7 +2611,7 @@ public final class XMLDTDScanner {
                 int value = scanEntityValue(single);
                 if (value == -1) {
                     skipPastEndOfCurrentMarkup();
-                    fEventHandler.endEntityDecl();
+                    fDTDGrammar.endEntityDecl();
                     return;
                 }
                 checkForPEReference(false);
@@ -2398,16 +2619,23 @@ public final class XMLDTDScanner {
                     abortMarkup(XMLMessages.MSG_ENTITYDECL_UNTERMINATED,
                                 XMLMessages.P72_UNTERMINATED,
                                 entityName);
-                    fEventHandler.endEntityDecl();
+                    fDTDGrammar.endEntityDecl();
                     return;
                 }
                 decreaseMarkupDepth();
-                fEventHandler.endEntityDecl();
-                int entityIndex = fEventHandler.addInternalPEDecl(entityName, value);
+                fDTDGrammar.endEntityDecl();
+
+                // a hack by Eric
+                //REVISIT
+                fDTDGrammar.addInternalPEDecl(entityName, value);
+                int entityIndex = ((DefaultEntityHandler) fEntityHandler).addInternalPEDecl(entityName, 
+                                                                                            value, 
+                                                                                            getReadingExternalEntity());
+
             } else {
                 if (!scanExternalID(false)) {
                     skipPastEndOfCurrentMarkup();
-                    fEventHandler.endEntityDecl();
+                    fDTDGrammar.endEntityDecl();
                     return;
                 }
                 checkForPEReference(false);
@@ -2415,12 +2643,18 @@ public final class XMLDTDScanner {
                     abortMarkup(XMLMessages.MSG_ENTITYDECL_UNTERMINATED,
                                 XMLMessages.P72_UNTERMINATED,
                                 entityName);
-                    fEventHandler.endEntityDecl();
+                    fDTDGrammar.endEntityDecl();
                     return;
                 }
                 decreaseMarkupDepth();
-                fEventHandler.endEntityDecl();
-                int entityIndex = fEventHandler.addExternalPEDecl(entityName, fPubidLiteral, fSystemLiteral);
+                fDTDGrammar.endEntityDecl();
+
+                //a hack by Eric
+                //REVISIT
+                fDTDGrammar.addExternalPEDecl(entityName, fPubidLiteral, fSystemLiteral);
+                int entityIndex = ((DefaultEntityHandler) fEntityHandler).addExternalPEDecl(entityName, 
+                                                                                            fPubidLiteral, 
+                                                                                            fSystemLiteral, getReadingExternalEntity());
             }
         } else {
             boolean single;
@@ -2428,7 +2662,7 @@ public final class XMLDTDScanner {
                 int value = scanEntityValue(single);
                 if (value == -1) {
                     skipPastEndOfCurrentMarkup();
-                    fEventHandler.endEntityDecl();
+                    fDTDGrammar.endEntityDecl();
                     return;
                 }
                 checkForPEReference(false);
@@ -2436,16 +2670,22 @@ public final class XMLDTDScanner {
                     abortMarkup(XMLMessages.MSG_ENTITYDECL_UNTERMINATED,
                                 XMLMessages.P71_UNTERMINATED,
                                 entityName);
-                    fEventHandler.endEntityDecl();
+                    fDTDGrammar.endEntityDecl();
                     return;
                 }
                 decreaseMarkupDepth();
-                fEventHandler.endEntityDecl();
-                int entityIndex = fEventHandler.addInternalEntityDecl(entityName, value);
+                fDTDGrammar.endEntityDecl();
+
+                //a hack by Eric
+                //REVISIT
+                fDTDGrammar.addInternalEntityDecl(entityName, value);
+                int entityIndex = ((DefaultEntityHandler) fEntityHandler).addInternalEntityDecl(entityName, 
+                                                                                                value, 
+                                                                                                getReadingExternalEntity());
             } else {
                 if (!scanExternalID(false)) {
                     skipPastEndOfCurrentMarkup();
-                    fEventHandler.endEntityDecl();
+                    fDTDGrammar.endEntityDecl();
                     return;
                 }
                 boolean unparsed = false;
@@ -2459,18 +2699,26 @@ public final class XMLDTDScanner {
                         abortMarkup(XMLMessages.MSG_ENTITYDECL_UNTERMINATED,
                                     XMLMessages.P72_UNTERMINATED,
                                     entityName);
-                        fEventHandler.endEntityDecl();
+                        fDTDGrammar.endEntityDecl();
                         return;
                     }
                     decreaseMarkupDepth();
-                    fEventHandler.endEntityDecl();
-                    int entityIndex = fEventHandler.addExternalEntityDecl(entityName, fPubidLiteral, fSystemLiteral);
+                    fDTDGrammar.endEntityDecl();
+
+                    //a hack by Eric
+                    //REVISIT
+                    fDTDGrammar.addExternalEntityDecl(entityName, fPubidLiteral, fSystemLiteral);
+                    int entityIndex = ((DefaultEntityHandler) fEntityHandler).addExternalEntityDecl(entityName, 
+                                                                                                    fPubidLiteral, 
+                                                                                                    fSystemLiteral, 
+                                                                                                    getReadingExternalEntity());
+
                 } else {
                     if (!fEntityReader.lookingAtSpace(true)) {
                         abortMarkup(XMLMessages.MSG_SPACE_REQUIRED_BEFORE_NOTATION_NAME_IN_UNPARSED_ENTITYDECL,
                                     XMLMessages.P76_SPACE_REQUIRED,
                                     entityName);
-                        fEventHandler.endEntityDecl();
+                        fDTDGrammar.endEntityDecl();
                         return;
                     }
                     fEntityReader.skipPastSpaces();
@@ -2481,7 +2729,7 @@ public final class XMLDTDScanner {
                         abortMarkup(XMLMessages.MSG_NOTATION_NAME_REQUIRED_FOR_UNPARSED_ENTITYDECL,
                                     XMLMessages.P76_REQUIRED,
                                     entityName);
-                        fEventHandler.endEntityDecl();
+                        fDTDGrammar.endEntityDecl();
                         return;
                     }
                     int notationName = fEntityReader.addSymbol(ndataOffset, ndataLength);
@@ -2490,12 +2738,27 @@ public final class XMLDTDScanner {
                         abortMarkup(XMLMessages.MSG_ENTITYDECL_UNTERMINATED,
                                     XMLMessages.P72_UNTERMINATED,
                                     entityName);
-                        fEventHandler.endEntityDecl();
+                        fDTDGrammar.endEntityDecl();
                         return;
                     }
                     decreaseMarkupDepth();
-                    fEventHandler.endEntityDecl();
-                    int entityIndex = fEventHandler.addUnparsedEntityDecl(entityName, fPubidLiteral, fSystemLiteral, notationName);
+                    fDTDGrammar.endEntityDecl();
+                    
+                    //a hack by Eric
+                    //REVISIT
+                    fDTDGrammar.addUnparsedEntityDecl(entityName, fPubidLiteral, fSystemLiteral, notationName);
+                    /****
+                    System.out.println("----addUnparsedEntity--- "+ fStringPool.toString(entityName)+","
+                                       +fStringPool.toString(notationName)+","
+                                       +fStringPool.toString(fPubidLiteral) + ","
+                                       +fStringPool.toString(fSystemLiteral) + ","
+                                       +getReadingExternalEntity());
+                    /****/
+                    int entityIndex = ((DefaultEntityHandler) fEntityHandler).addUnparsedEntityDecl(entityName, 
+                                                                                                    fPubidLiteral, 
+                                                                                                    fSystemLiteral, 
+                                                                                                    notationName, 
+                                                                                                    getReadingExternalEntity());
                 }
             }
         }
@@ -2692,4 +2955,256 @@ public final class XMLDTDScanner {
         fNodeIndexStack[depth] = -1;
         fPrevNodeIndexStack[depth] = -1;
     }
-}
+
+    private boolean validVersionNum(String version) {
+        return XMLCharacterProperties.validVersionNum(version);
+    }
+
+    private boolean validEncName(String encoding) {
+        return XMLCharacterProperties.validEncName(encoding);
+    }
+
+    private int validPublicId(String publicId) {
+        return XMLCharacterProperties.validPublicId(publicId);
+    }
+
+    private void scanElementType(XMLEntityHandler.EntityReader entityReader, 
+                                char fastchar, QName element) throws Exception {
+
+        if (!fNamespacesEnabled) {
+            element.clear();
+            element.localpart = entityReader.scanName(fastchar);
+            element.rawname = element.localpart;
+            return;
+        }
+        entityReader.scanQName(fastchar, element);
+        if (entityReader.lookingAtChar(':', false)) {
+            fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                       XMLMessages.XML_DOMAIN,
+                                       XMLMessages.MSG_TWO_COLONS_IN_QNAME,
+                                       XMLMessages.P5_INVALID_CHARACTER,
+                                       null,
+                                       XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
+            entityReader.skipPastNmtoken(' ');
+        }
+
+    } // scanElementType(XMLEntityHandler.EntityReader,char,QName)
+
+    public void checkForElementTypeWithPEReference(XMLEntityHandler.EntityReader entityReader, 
+                                                   char fastchar, QName element) throws Exception {
+
+        if (!fNamespacesEnabled) {
+            element.clear();
+            element.localpart = entityReader.scanName(fastchar);
+            element.rawname = element.localpart;
+            return;
+        }
+        entityReader.scanQName(fastchar, element);
+        if (entityReader.lookingAtChar(':', false)) {
+            fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                       XMLMessages.XML_DOMAIN,
+                                       XMLMessages.MSG_TWO_COLONS_IN_QNAME,
+                                       XMLMessages.P5_INVALID_CHARACTER,
+                                       null,
+                                       XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
+            entityReader.skipPastNmtoken(' ');
+        }
+
+    } // checkForElementTypeWithPEReference(XMLEntityHandler.EntityReader,char,QName)
+
+    public void checkForAttributeNameWithPEReference(XMLEntityHandler.EntityReader entityReader, 
+                                                     char fastchar, QName attribute) throws Exception {
+
+        if (!fNamespacesEnabled) {
+            attribute.clear();
+            attribute.localpart = entityReader.scanName(fastchar);
+            attribute.rawname = attribute.localpart;
+            return;
+        }
+
+        entityReader.scanQName(fastchar, attribute);
+        if (entityReader.lookingAtChar(':', false)) {
+            fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                       XMLMessages.XML_DOMAIN,
+                                       XMLMessages.MSG_TWO_COLONS_IN_QNAME,
+                                       XMLMessages.P5_INVALID_CHARACTER,
+                                       null,
+                                       XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
+            entityReader.skipPastNmtoken(' ');
+        }
+
+    } // checkForAttributeNameWithPEReference(XMLEntityHandler.EntityReader,char,QName)
+
+    public int checkForNameWithPEReference(XMLEntityHandler.EntityReader entityReader, char fastcheck) throws Exception {
+        //
+        // REVISIT - what does this have to do with PE references?
+        //
+        int valueIndex = entityReader.scanName(fastcheck);
+        return valueIndex;
+    }
+
+    public int checkForNmtokenWithPEReference(XMLEntityHandler.EntityReader entityReader, char fastcheck) throws Exception {
+        //
+        // REVISIT - what does this have to do with PE references?
+        //
+        int nameOffset = entityReader.currentOffset();
+        entityReader.skipPastNmtoken(fastcheck);
+        int nameLength = entityReader.currentOffset() - nameOffset;
+        if (nameLength == 0)
+            return -1;
+        int valueIndex = entityReader.addSymbol(nameOffset, nameLength);
+        return valueIndex;
+    }
+
+    public int scanDefaultAttValue(QName element, QName attribute, 
+                                   int attType, int enumeration) throws Exception {
+        /***/
+        if (fValidationEnabled && attType == XMLAttributeDecl.TYPE_ID) {
+            reportRecoverableXMLError(XMLMessages.MSG_ID_DEFAULT_TYPE_INVALID,
+                                      XMLMessages.VC_ID_ATTRIBUTE_DEFAULT,
+                                      fStringPool.toString(attribute.rawname));
+        }
+        /***/
+        int defaultAttValue = scanDefaultAttValue(element, attribute);
+        if (defaultAttValue == -1)
+            return -1;
+        // REVISIT
+        /***
+        if (attType != fCDATASymbol) {
+            // REVISIT: Validation. Should we pass in the element or is this
+            //          default attribute value normalization?
+            defaultAttValue = fValidator.normalizeAttValue(null, attribute, defaultAttValue, attType, enumeration);
+        }
+        /***/
+        return defaultAttValue;
+    }
+
+    public int normalizeDefaultAttValue( QName attribute, int defaultAttValue, 
+                                         int attType, int enumeration, 
+                                         boolean list) throws Exception {
+            //
+            // Normalize attribute based upon attribute type...
+            //
+            String attValue = fStringPool.toString(defaultAttValue);
+
+            if (list) {
+                StringTokenizer tokenizer = new StringTokenizer(attValue);
+                StringBuffer sb = new StringBuffer(attValue.length());
+                boolean ok = true;
+                if (tokenizer.hasMoreTokens()) {
+                    while (true) {
+                        String nmtoken = tokenizer.nextToken();
+                        if (attType == XMLAttributeDecl.TYPE_NMTOKEN) {
+                            if (fValidationEnabled && !XMLCharacterProperties.validNmtoken(nmtoken)) {
+                                ok = false;
+                            }
+                        }
+                        else if (attType == XMLAttributeDecl.TYPE_IDREF || attType == XMLAttributeDecl.TYPE_ENTITY) {
+                            if (fValidationEnabled && !XMLCharacterProperties.validName(nmtoken)) {
+                                ok = false;
+                            }
+                            // REVISIT: a Hack!!! THis is to pass SUN test /invalid/attr11.xml and attr12.xml
+                            // not consistent with XML1.0 spec VC: Attribute Default Legal
+                            if (fValidationEnabled && attType == XMLAttributeDecl.TYPE_ENTITY)
+                            if (! ((DefaultEntityHandler) fEntityHandler).isUnparsedEntity(defaultAttValue)) {
+                                reportRecoverableXMLError(XMLMessages.MSG_ENTITY_INVALID,
+                                                          XMLMessages.VC_ENTITY_NAME,
+                                                          fStringPool.toString(attribute.rawname), nmtoken);
+                            }
+
+                        }
+                        sb.append(nmtoken);
+                        if (!tokenizer.hasMoreTokens()) {
+                            break;
+                        }
+                        sb.append(' ');
+                    }
+                }
+                String newAttValue = sb.toString();
+                if (fValidationEnabled && (!ok || newAttValue.length() == 0)) {
+                    reportRecoverableXMLError(XMLMessages.MSG_ATT_DEFAULT_INVALID,
+                                              XMLMessages.VC_ATTRIBUTE_DEFAULT_LEGAL,
+                                              fStringPool.toString(attribute.rawname), newAttValue);
+                }
+                if (!newAttValue.equals(attValue)) {
+                    defaultAttValue = fStringPool.addString(newAttValue);
+                }
+                return defaultAttValue;
+            }
+            else {
+                String newAttValue = attValue.trim();
+
+                if (fValidationEnabled) {
+                    // REVISIT - can we release the old string?
+                    if (newAttValue != attValue) {
+                       defaultAttValue = fStringPool.addSymbol(newAttValue);
+                    } 
+                    else {
+                       defaultAttValue = fStringPool.addSymbol(defaultAttValue);
+                    }
+                    if (attType == XMLAttributeDecl.TYPE_ENTITY ||
+                        attType == XMLAttributeDecl.TYPE_ID ||
+                        attType == XMLAttributeDecl.TYPE_IDREF ||
+                        attType == XMLAttributeDecl.TYPE_NOTATION)  {
+
+                        // REVISIT: A Hack!!! THis is to pass SUN test /invalid/attr11.xml and attr12.xml
+                        // not consistent with XML1.0 spec VC: Attribute Default Legal
+                        if (attType == XMLAttributeDecl.TYPE_ENTITY)
+                        if (! ((DefaultEntityHandler) fEntityHandler).isUnparsedEntity(defaultAttValue)) {
+                            reportRecoverableXMLError(XMLMessages.MSG_ENTITY_INVALID,
+                                                      XMLMessages.VC_ENTITY_NAME,
+                                                      fStringPool.toString(attribute.rawname), newAttValue);
+                        }
+                        
+                        if (!XMLCharacterProperties.validName(newAttValue)) {
+                            reportRecoverableXMLError(XMLMessages.MSG_ATT_DEFAULT_INVALID,
+                                                      XMLMessages.VC_ATTRIBUTE_DEFAULT_LEGAL,
+                                                      fStringPool.toString(attribute.rawname), newAttValue);
+                        }
+
+                    }
+                    else if (attType == XMLAttributeDecl.TYPE_NMTOKEN ||
+                             attType == XMLAttributeDecl.TYPE_ENUMERATION ) {
+
+                        if (!XMLCharacterProperties.validNmtoken(newAttValue)) {
+                            reportRecoverableXMLError(XMLMessages.MSG_ATT_DEFAULT_INVALID,
+                                                      XMLMessages.VC_ATTRIBUTE_DEFAULT_LEGAL,
+                                                      fStringPool.toString(attribute.rawname), newAttValue);
+                        }
+                    }
+                    
+                    if (attType == XMLAttributeDecl.TYPE_NOTATION ||
+                        attType == XMLAttributeDecl.TYPE_ENUMERATION ) {
+
+                        if ( !fStringPool.stringInList(enumeration, defaultAttValue) ) {
+                            reportRecoverableXMLError(XMLMessages.MSG_ATT_DEFAULT_INVALID,
+                                                      XMLMessages.VC_ATTRIBUTE_DEFAULT_LEGAL,
+                                                      fStringPool.toString(attribute.rawname), newAttValue);
+                        }
+                    }
+
+                } 
+                else if (newAttValue != attValue) {
+                    // REVISIT - can we release the old string?
+                    defaultAttValue = fStringPool.addSymbol(newAttValue);
+                }
+            }
+
+            return defaultAttValue;
+    }
+    /***
+    public boolean scanDoctypeDecl(boolean standalone) throws Exception {
+        fStandaloneReader = standalone ? fEntityHandler.getReaderId() : -1;
+        fDeclsAreExternal = false;
+        if (!fDTDScanner.scanDoctypeDecl()) {
+            return false;
+        }
+        if (fDTDScanner.getReadingExternalEntity()) {
+            fDTDScanner.scanDecls(true);
+        }
+        fDTDHandler.endDTD();
+        return true;
+    }
+    /***/
+
+} // class XMLDTDScanner

@@ -6,12 +6,6 @@
      expansions, but just in case -->
 <!ENTITY % p ''> <!-- can be overriden in the internal subset of a
                       schema document to establish a namespace prefix -->
-<!ENTITY % dts ':dt'>
-<!ENTITY % dtp 'dt:'>
-<!ENTITY % dtpv '"%dtp;"'>
-<!ENTITY % dtnds 'xmlns%dts;'>
-<!ENTITY dtp %dtpv;>
-
 <!-- Define all the element names, with optional prefix -->
 <!ENTITY % simpleType "%p;simpleType">
 <!ENTITY % maxExclusive "%p;maxExclusive">
@@ -21,12 +15,13 @@
 <!ENTITY % precision "%p;precision">
 <!ENTITY % scale "%p;scale">
 <!ENTITY % length "%p;length">
-<!ENTITY % minlength "%p;minlength">
-<!ENTITY % maxlength "%p;maxlength">
+<!ENTITY % minLength "%p;minLength">
+<!ENTITY % maxLength "%p;maxLength">
 <!ENTITY % enumeration "%p;enumeration">
 <!ENTITY % pattern "%p;pattern">
 <!ENTITY % encoding "%p;encoding">
 <!ENTITY % period "%p;period">
+<!ENTITY % duration "%p;duration">
 
 <!-- Customisation entities for the ATTLIST of each element type.
      Define one of these if your schema takes advantage of the
@@ -40,12 +35,13 @@
 <!ENTITY % precisionAttrs ''>
 <!ENTITY % scaleAttrs ''>
 <!ENTITY % lengthAttrs ''>
-<!ENTITY % minlengthAttrs ''>
-<!ENTITY % maxlengthAttrs ''>
+<!ENTITY % minLengthAttrs ''>
+<!ENTITY % maxLengthAttrs ''>
 <!ENTITY % enumerationAttrs ''>
 <!ENTITY % patternAttrs ''>
 <!ENTITY % encodingAttrs ''>
 <!ENTITY % periodAttrs ''>
+<!ENTITY % durationAttrs ''>
 <!ENTITY % appinfoAttrs ''>
 <!ENTITY % documentationAttrs ''>
 
@@ -60,17 +56,15 @@
 <!ENTITY % URIref "CDATA">
 <!ENTITY % QName "CDATA">
 <!ENTITY % NCName "NMTOKEN">
-<!ENTITY % non-negative-integer "NMTOKEN">
+<!ENTITY % nonNegativeInteger "NMTOKEN">
 <!ENTITY % boolean "(true|false)">
-<!ENTITY % simpleDerivationChoice "(list|restriction|reproduction)">
-<!ENTITY % simpleDerivationSet "CDATA">
-      <!-- #all or space-separated list drawn from derivationChoice -->
+<!ENTITY % simpleDerivationChoice "(list|restriction)">
 
 <!-- Note that the use of 'facet' below is less restrictive than is
      really intended:  There should in fact be no more than one of each of
      minInclusive, minExclusive, maxInclusive, maxExclusive,
      precision, scale,
-     length, maxlength, minlength, encoding, period within datatype,
+     length, maxLength, minLength, encoding, period within datatype,
      and the min- and max- variants of Inclusive and Exclusive are
      mutually exclusive.
      On the other hand,  pattern and enumeration may repeat -->
@@ -80,8 +74,8 @@
 <!ENTITY % numeric '%precision; | %scale;'>
 <!ENTITY % ordered '%bounds; | %numeric;'>
 <!ENTITY % unordered
-   '%pattern; | %enumeration; | %length; | %maxlength; | %minlength;
-    | %encoding; | %period;'>
+   '%pattern; | %enumeration; | %length; | %maxLength; | %minLength;
+    | %encoding; | %period; | %duration;'>
 <!ENTITY % facet '%ordered; | %unordered;'>
 <!ENTITY % facetAttr 'value CDATA #REQUIRED'>
 <!ENTITY % facetModel '(%annotation;)?'>
@@ -89,8 +83,6 @@
 <!ATTLIST %simpleType;
     name      %NCName;                 #IMPLIED
     base      %QName;                  #REQUIRED
-    abstract  %boolean;                'false'
-    final     %simpleDerivationSet;    ''
     derivedBy %simpleDerivationChoice; 'restriction'
     %simpleTypeAttrs;>
 <!-- name is required at top level -->
@@ -119,12 +111,12 @@
 <!ELEMENT %length; %facetModel;>
 <!ATTLIST %length; %facetAttr;
           %lengthAttrs;>
-<!ELEMENT %minlength; %facetModel;>
-<!ATTLIST %minlength; %facetAttr;
-          %minlengthAttrs;>
-<!ELEMENT %maxlength; %facetModel;>
-<!ATTLIST %maxlength; %facetAttr;
-          %maxlengthAttrs;>
+<!ELEMENT %minLength; %facetModel;>
+<!ATTLIST %minLength; %facetAttr;
+          %minLengthAttrs;>
+<!ELEMENT %maxLength; %facetModel;>
+<!ATTLIST %maxLength; %facetAttr;
+          %maxLengthAttrs;>
 
 <!-- This one can be repeated -->
 <!ELEMENT %enumeration; %facetModel;>
@@ -142,6 +134,9 @@
 <!ELEMENT %period; %facetModel;>
 <!ATTLIST %period; %facetAttr;
           %periodAttrs;>
+<!ELEMENT %duration; %facetModel;>
+<!ATTLIST %duration; %facetAttr;
+          %durationAttrs;>
 
 <!-- Annotation is either application information or documentation -->
 <!-- By having these here they are available for datatypes as well
@@ -160,3 +155,4 @@
           source     %URIref;   #IMPLIED
           xml:lang   CDATA      #IMPLIED
           %documentationAttrs;>
+

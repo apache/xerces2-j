@@ -10,6 +10,9 @@ TARGETS=\
 	MixedContentModel.class\
 	SimpleContentModel.class\
 	XMLContentModel.class\
+	GrammarResolver.class \
+	GrammarResolverImpl.class \
+	Grammar.class \
 	XMLValidator.class
 
 

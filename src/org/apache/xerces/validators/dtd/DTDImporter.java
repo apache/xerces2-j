@@ -64,16 +64,23 @@ import org.apache.xerces.framework.XMLErrorReporter;
 import org.apache.xerces.readers.DefaultEntityHandler;
 import org.apache.xerces.readers.XMLEntityHandler;
 import org.apache.xerces.utils.ChunkyCharArray;
+import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.StringPool;
 import org.apache.xerces.utils.XMLCharacterProperties;
 import org.apache.xerces.utils.XMLMessages;
 import org.apache.xerces.validators.common.XMLValidator;
 
-public final class DTDImporter implements XMLDTDScanner.EventHandler
-{
+public final class DTDImporter 
+    implements XMLDTDScanner.EventHandler {
+
+    // REVISIT: DTDs don't have a namespace so we must bind the
+    //          empty namespace, "", so that validation works when
+    //          namespace processing is turned on.
+
     //
+    // Data
     //
-    //
+
     private StringPool fStringPool = null;
     private boolean fValidating = false;
     private int fStandaloneReader = -1;
@@ -86,14 +93,17 @@ public final class DTDImporter implements XMLDTDScanner.EventHandler
     private int fIDSymbol = -1;
     private boolean fDeclsAreExternal = false;
     private XMLValidator fValidator = null;
+
     //
+    // Constructors
     //
-    //
+
+    /** Constructs a DTD importer. */
     public DTDImporter(StringPool stringPool,
                        XMLErrorReporter errorReporter,
                        DefaultEntityHandler entityHandler,
-                       XMLValidator validator)
-    {
+                       XMLValidator validator) {
+
         fStringPool = stringPool;
         fErrorReporter = errorReporter;
         fEntityHandler = entityHandler;
@@ -101,13 +111,14 @@ public final class DTDImporter implements XMLDTDScanner.EventHandler
         fDTDScanner = new XMLDTDScanner(fStringPool, fErrorReporter, fEntityHandler, new ChunkyCharArray(fStringPool));
         fDTDScanner.setEventHandler(this);
         init();
-    }
-    /**
-     */
-    public void initHandlers(XMLDocumentHandler.DTDHandler dtdHandler)
-    {
+
+    } // <init>(StringPool,XMLErrorReporter,DefaultEntityHandler,XMLValidator)
+
+    /** Initialize handlers. */
+    public void initHandlers(XMLDocumentHandler.DTDHandler dtdHandler) {
         fDTDHandler = dtdHandler;
     }
+
     public void setValidating(boolean validating) {
         fValidating = validating;
     }
@@ -152,19 +163,6 @@ public final class DTDImporter implements XMLDTDScanner.EventHandler
         fDeclsAreExternal = fStandaloneReader != -1 && readerId != fStandaloneReader;
     }
 
-    public boolean scanDoctypeDecl(boolean standalone) throws Exception {
-        fStandaloneReader = standalone ? fEntityHandler.getReaderId() : -1;
-        fDeclsAreExternal = false;
-        if (!fDTDScanner.scanDoctypeDecl()) {
-            return false;
-        }
-        if (fDTDScanner.getReadingExternalEntity()) {
-            fDTDScanner.scanDecls(true);
-        }
-        fDTDHandler.endDTD();
-        return true;
-    }
-
     //
     // XMLDTDScanner.EventHandler interface
     //
@@ -203,55 +201,63 @@ public final class DTDImporter implements XMLDTDScanner.EventHandler
     //    public int scanDefaultAttValue(int elementType, int attrName, int attType, int enumeration) throws Exception;
     //    public void internalSubset(int internalSubset) throws Exception;
     //
-    public boolean validVersionNum(String version) {
-        return XMLCharacterProperties.validVersionNum(version);
-    }
-    public boolean validEncName(String encoding) {
-        return XMLCharacterProperties.validEncName(encoding);
-    }
-    public int validPublicId(String publicId) {
-        return XMLCharacterProperties.validPublicId(publicId);
-    }
     public void callTextDecl(int version, int encoding) throws Exception {
         fDTDHandler.textDecl(version, encoding);
     }
-    public void doctypeDecl(int rootElementType, int publicId, int systemId) throws Exception {
-        fValidator.setRootElementType(rootElementType);
-        fDTDHandler.startDTD(rootElementType, publicId, systemId);
+    public void doctypeDecl(QName rootElement, int publicId, int systemId) throws Exception {
+        rootElement.uri = StringPool.EMPTY_STRING; // REVISIT: DTD + Namespaces
+        fValidator.setRootElementType(rootElement);
+        fDTDHandler.startDTD(rootElement, publicId, systemId);
     }
-    public void startReadingFromExternalSubset(int publicId, int systemId) throws Exception {
-        fEntityHandler.startReadingFromExternalSubset(fStringPool.toString(publicId),
-                                                      fStringPool.toString(systemId),
-                                                      fDTDScanner.markupDepth());
-    }
-    public void stopReadingFromExternalSubset() throws Exception {
-        fEntityHandler.stopReadingFromExternalSubset();
-    }
-    public int addElementDecl(int elementType) throws Exception {
-        int elementIndex = fValidator.addElement(elementType);
+
+    /** Adds an element declaration. */ 
+    public int addElementDecl(QName elementDecl) throws Exception {
+        elementDecl.uri = StringPool.EMPTY_STRING; // REVISIT: DTD + Namespaces
+        int elementIndex = fValidator.addElement(elementDecl);
         return elementIndex;
     }
-    public int addElementDecl(int elementType, int contentSpecType, int contentSpec) throws Exception {
-        int elementIndex = fValidator.addElementDecl(elementType, contentSpecType, contentSpec, fDeclsAreExternal);
+
+    /** Adds an element declaration. */
+    public int addElementDecl(QName elementDecl, 
+                              int contentSpecType, int contentSpec) 
+        throws Exception {
+
+        elementDecl.uri = StringPool.EMPTY_STRING; // REVISIT: DTD + Namespaces
+        int elementIndex = fValidator.addElementDecl(elementDecl, contentSpecType, contentSpec, fDeclsAreExternal);
         if (elementIndex == -1) {
             if (fValidating) {
                 reportRecoverableXMLError(XMLMessages.MSG_ELEMENT_ALREADY_DECLARED,
                                           XMLMessages.VC_UNIQUE_ELEMENT_TYPE_DECLARATION,
-                                          elementType);
+                                          elementDecl.rawname);
             }
-        } else {
-            fDTDHandler.elementDecl(elementType, fValidator.getContentSpec(elementIndex));
+        } 
+        else {
+            fDTDHandler.elementDecl(elementDecl, fValidator.getContentSpec(elementIndex));
         }
         return elementIndex;
-    }
-    public int addAttDef(int elementIndex, int attName, int attType, int enumeration, int attDefaultType, int attDefaultValue) throws Exception {
-        int attDefIndex = fValidator.addAttDef(elementIndex, attName, attType, enumeration, attDefaultType, attDefaultValue, fDeclsAreExternal);
+
+    } // addElementDecl(QName,int,int):int
+
+    public int addAttDef(QName elementDecl, QName attributeDecl, 
+                         int attType, int enumeration, 
+                         int attDefaultType, int attDefaultValue) throws Exception {
+
+        elementDecl.uri = StringPool.EMPTY_STRING; // REVISIT: DTD + Namespaces
+        attributeDecl.uri = StringPool.EMPTY_STRING; // REVISIT: DTD + Namespaces
+        int attDefIndex = fValidator.addAttDef(elementDecl, attributeDecl, 
+                                               attType, enumeration, 
+                                               attDefaultType, attDefaultValue, 
+                                               fDeclsAreExternal);
         if (attDefIndex != -1) {
             String enumString = (enumeration == -1) ? null : fStringPool.stringListAsString(enumeration);
-            fDTDHandler.attlistDecl(fValidator.getElementType(elementIndex), attName, attType, enumString, attDefaultType, attDefaultValue);
+            fDTDHandler.attlistDecl(elementDecl, attributeDecl, 
+                                    attType, enumString, 
+                                    attDefaultType, attDefaultValue);
         }
         return attDefIndex;
-    }
+
+    } // addAttDef(QName,QName,int,int,int,int):int
+
     public int addUniqueLeafNode(int nodeValue) throws Exception {
         int csn = fValidator.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF, nodeValue, -1, true);
         if (csn == -1 && fValidating) {
@@ -341,87 +347,7 @@ public final class DTDImporter implements XMLDTDScanner.EventHandler
     public void callProcessingInstruction(int target, int data) throws Exception {
         fDTDHandler.processingInstruction(target, data);
     }
-    public int scanElementType(XMLEntityHandler.EntityReader entityReader, char fastchar) throws Exception {
-        if (!fNamespacesEnabled) {
-            return entityReader.scanName(fastchar);
-        }
-        int elementType = entityReader.scanQName(fastchar);
-        if (entityReader.lookingAtChar(':', false)) {
-            fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                       XMLMessages.XML_DOMAIN,
-                                       XMLMessages.MSG_TWO_COLONS_IN_QNAME,
-                                       XMLMessages.P5_INVALID_CHARACTER,
-                                       null,
-                                       XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
-            entityReader.skipPastNmtoken(' ');
-        }
-        return elementType;
-    }
-    public int checkForElementTypeWithPEReference(XMLEntityHandler.EntityReader entityReader, char fastchar) throws Exception {
-        if (!fNamespacesEnabled) {
-            return entityReader.scanName(fastchar);
-        }
-        int elementType = entityReader.scanQName(fastchar);
-        if (entityReader.lookingAtChar(':', false)) {
-            fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                       XMLMessages.XML_DOMAIN,
-                                       XMLMessages.MSG_TWO_COLONS_IN_QNAME,
-                                       XMLMessages.P5_INVALID_CHARACTER,
-                                       null,
-                                       XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
-            entityReader.skipPastNmtoken(' ');
-        }
-        return elementType;
-    }
-    public int checkForAttributeNameWithPEReference(XMLEntityHandler.EntityReader entityReader, char fastchar) throws Exception {
-        if (!fNamespacesEnabled) {
-            return entityReader.scanName(fastchar);
-        }
-        int attrName = entityReader.scanQName(fastchar);
-        if (entityReader.lookingAtChar(':', false)) {
-            fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                       XMLMessages.XML_DOMAIN,
-                                       XMLMessages.MSG_TWO_COLONS_IN_QNAME,
-                                       XMLMessages.P5_INVALID_CHARACTER,
-                                       null,
-                                       XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
-            entityReader.skipPastNmtoken(' ');
-        }
-        return attrName;
-    }
-    public int checkForNameWithPEReference(XMLEntityHandler.EntityReader entityReader, char fastcheck) throws Exception {
-        //
-        // REVISIT - what does this have to do with PE references?
-        //
-        int valueIndex = entityReader.scanName(fastcheck);
-        return valueIndex;
-    }
-    public int checkForNmtokenWithPEReference(XMLEntityHandler.EntityReader entityReader, char fastcheck) throws Exception {
-        //
-        // REVISIT - what does this have to do with PE references?
-        //
-        int nameOffset = entityReader.currentOffset();
-        entityReader.skipPastNmtoken(fastcheck);
-        int nameLength = entityReader.currentOffset() - nameOffset;
-        if (nameLength == 0)
-            return -1;
-        int valueIndex = entityReader.addSymbol(nameOffset, nameLength);
-        return valueIndex;
-    }
-    public int scanDefaultAttValue(int elementType, int attrName, int attType, int enumeration) throws Exception {
-        if (fValidating && attType == fIDSymbol) {
-            reportRecoverableXMLError(XMLMessages.MSG_ID_DEFAULT_TYPE_INVALID,
-                                      XMLMessages.VC_ID_ATTRIBUTE_DEFAULT,
-                                      attrName);
-        }
-        int defaultAttValue = fDTDScanner.scanDefaultAttValue(elementType, attrName);
-        if (defaultAttValue == -1)
-            return -1;
-        if (attType != fCDATASymbol) {
-            defaultAttValue = fValidator.normalizeAttValue(-1, attrName, defaultAttValue, attType, enumeration);
-        }
-        return defaultAttValue;
-    }
+
     public void internalSubset(int internalSubset) throws Exception {
         fDTDHandler.internalSubset(internalSubset);
     }

@@ -66,6 +66,7 @@ import java.util.Vector;
 
 import org.apache.xerces.framework.XMLErrorReporter;
 import org.apache.xerces.utils.ImplementationMessages;
+import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.StringPool;
 import org.apache.xerces.utils.XMLCharacterProperties;
 import org.apache.xerces.utils.XMLMessages;
@@ -1080,13 +1081,13 @@ public class DefaultEntityHandler
         public boolean scanExpectedName(char fastcheck, StringPool.CharArrayRange expectedName) {
             return false;
         }
-        public int scanQName(char fastcheck) {
-            return -1;
+        public void scanQName(char fastcheck, QName qname) {
+            qname.clear();
         }
         public int scanName(char fastcheck) {
             return -1;
         }
-        public int scanContent(int elementType) throws Exception {
+        public int scanContent(QName element) throws Exception {
             return XMLEntityHandler.CONTENT_RESULT_INVALID_CHAR;
         }
     }

@@ -783,7 +783,7 @@ class Token implements java.io.Serializable {
                         type = CHAR_SYMBOL;
                         break;
                       default:
-                        throw new RuntimeException("com.ibm.regex.Token#getRange(): Unknown Unicode category: "+type);
+                        throw new RuntimeException("org.apache.xerces.utils.regex.Token#getRange(): Unknown Unicode category: "+type);
                     }
                     ranges[type].addRange(i, i);
                 } // for all characters

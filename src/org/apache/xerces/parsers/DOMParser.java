@@ -67,6 +67,7 @@ import org.apache.xerces.framework.XMLContentSpec;
 import org.apache.xerces.framework.XMLDocumentHandler;
 import org.apache.xerces.framework.XMLParser;
 import org.apache.xerces.readers.XMLEntityHandler;
+import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.StringPool;
 import org.apache.xerces.validators.schema.XUtil;
 
@@ -103,6 +104,7 @@ import org.xml.sax.SAXNotSupportedException;
 /**
  * DOMParser provides a parser which produces a W3C DOM tree as its output
  *
+ * 
  * @version $Id$
  */
 public class DOMParser
@@ -967,14 +969,18 @@ public class DOMParser
     
 
     /** Start element. */
-    public void startElement(int elementTypeIndex,
+    public void startElement(QName elementQName,
                              XMLAttrList xmlAttrList, int attrListIndex)
         throws Exception {
 
         // deferred expansion
         if (fDeferredDocumentImpl != null) {
 
-            int element = fDeferredDocumentImpl.createElement(elementTypeIndex, xmlAttrList, attrListIndex);
+            int element =
+                fDeferredDocumentImpl.createElement(elementQName.rawname,
+                                                    elementQName.uri,
+                                                    xmlAttrList,
+                                                    attrListIndex);
             fDeferredDocumentImpl.appendChild(fCurrentNodeIndex, element);
             fCurrentNodeIndex = element;
             fWithinElement = true;
@@ -992,11 +998,12 @@ public class DOMParser
             // copy schema grammar, if needed
             if (!fSeenRootElement) {
                 fSeenRootElement = true;
+                /*REVISIT - Grammar Access revisit
                 if (fGrammarAccess) {
                     Document schemaDocument = fValidator.getSchemaDocument();
                     if (schemaDocument != null) {
                         if (fDocumentTypeIndex == -1) {
-                            fDocumentTypeIndex = fDeferredDocumentImpl.createDocumentType(elementTypeIndex, -1, -1);
+                            fDocumentTypeIndex = fDeferredDocumentImpl.createDocumentType(elementQName.rawname, -1, -1);
                             fDeferredDocumentImpl.appendChild(0, fDocumentTypeIndex);
                         }
 
@@ -1004,6 +1011,7 @@ public class DOMParser
                         copyInto(schema, fDocumentTypeIndex);
                     }
                 }
+              */
             }
         }
 
@@ -1014,12 +1022,13 @@ public class DOMParser
             try { nsEnabled = getNamespaces(); }
             catch (SAXException s) {}
 
-            String elementName = fStringPool.toString(elementTypeIndex);
+            String elementName = fStringPool.toString(elementQName.rawname);
             Element e;
             if (nsEnabled) {
                 e = fDocument.createElementNS(
-                        fStringPool.toString(fStringPool.getURIForQName(elementTypeIndex)),
-                        fStringPool.toString(elementTypeIndex)
+                        // REVISIT: Make sure uri is filled in by caller.
+                        fStringPool.toString(elementQName.uri),
+                        fStringPool.toString(elementQName.localpart)
                     );
             } else {
                 e = fDocument.createElement(elementName);
@@ -1029,13 +1038,13 @@ public class DOMParser
                 if (nsEnabled) {
                     int attName = xmlAttrList.getAttrName(attrHandle);
                     String attNameStr = fStringPool.toString(attName);
-		    int nsURIIndex = fStringPool.getURIForQName(attName);
+		    int nsURIIndex = xmlAttrList.getAttrURI(attrHandle);
 		    String namespaceURI = fStringPool.toString(nsURIIndex);
 		    // DOM Level 2 wants all namespace declaration attributes
 		    // to be bound to "http://www.w3.org/2000/xmlns/"
 		    // So as long as the XML parser doesn't do it, it needs to
 		    // done here.
-		    int prefixIndex = fStringPool.getPrefixForQName(attName);
+		    int prefixIndex = xmlAttrList.getAttrPrefix(attrHandle);
 		    String prefix = fStringPool.toString(prefixIndex);
 		    if (namespaceURI == null) {
 			if (prefix != null) {
@@ -1048,13 +1057,15 @@ public class DOMParser
 		    }
                     e.setAttributeNS(namespaceURI,
 				     attNameStr,
-                                     fStringPool.toString(xmlAttrList.getAttValue(attrHandle)));
+                                     xmlAttrList.getValue(attrHandle));
                 } else {
                     String attrName = fStringPool.toString(xmlAttrList.getAttrName(attrHandle));
                     String attrValue = fStringPool.toString(xmlAttrList.getAttValue(attrHandle));
                     e.setAttribute(attrName, attrValue);
-                    if (fDocumentImpl != null && !xmlAttrList.isSpecified(attrHandle)) {
-                        ((AttrImpl)e.getAttributeNode(attrName)).setSpecified(false);
+                    if (fDocumentImpl != null
+                        && !xmlAttrList.isSpecified(attrHandle)) {
+                        ((AttrImpl)e.getAttributeNode(attrName))
+                            .setSpecified(false);
                     }
                 }
                 attrHandle = xmlAttrList.getNextAttr(attrHandle);
@@ -1080,7 +1091,8 @@ public class DOMParser
             // copy schema grammar, if needed
             if (!fSeenRootElement) {
                 fSeenRootElement = true;
-                if (fDocumentImpl != null && fGrammarAccess) {
+                /* REVISIT Grammar Access
+                if (fDocumentImpl != null && fGrammarAccess)  {
                     Document schemaDocument = fValidator.getSchemaDocument();
                     if (schemaDocument != null) {
                         if (fDocumentType == null) {
@@ -1095,13 +1107,14 @@ public class DOMParser
                         XUtil.copyInto(schema, fDocumentType);
                     }
                 }
+               */
             }
         }
 
-    } // startElement(int,XMLAttrList,int)
+    } // startElement(QName,XMLAttrList,int)
 
     /** End element. */
-    public void endElement(int elementTypeIndex)
+    public void endElement(QName elementQName)
         throws Exception {
 
         // deferred node expansion
@@ -1116,7 +1129,7 @@ public class DOMParser
             fWithinElement = false;
         }
 
-    } // endElement(int)
+    } // endElement(QName)
 
     /** Characters. */
     public void characters(int dataIndex)
@@ -1441,17 +1454,19 @@ public class DOMParser
      *  This function will be called when a &lt;!DOCTYPE...&gt; declaration is
      *  encountered.
      */
-    public void startDTD(int rootElementType, int publicId, int systemId)
+    public void startDTD(QName rootElement, int publicId, int systemId)
         throws Exception {
 
         // full expansion
         if (fDocumentImpl != null) {
-            String rootElementName = fStringPool.toString(rootElementType);
+            String rootElementName = fStringPool.toString(rootElement.rawname);
             String publicString = fStringPool.toString(publicId);
             String systemString = fStringPool.toString(systemId);
             fDocumentType = fDocumentImpl.
                 createDocumentType(rootElementName, publicString, systemString);
             fDocumentImpl.appendChild(fDocumentType);
+
+            /*  TODO - Grammar Access revisit
 
             if (fGrammarAccess) {
                 Element schema = fDocument.createElement("schema");
@@ -1463,16 +1478,18 @@ public class DOMParser
                 schema.setAttribute("exactDefault", "");
                 ((AttrImpl)schema.getAttributeNode("exactDefault")).setSpecified(false);
                 fDocumentType.appendChild(schema);
-            }
+            } */
+
         }
 
         // deferred expansion
         else if (fDeferredDocumentImpl != null) {
             fDocumentTypeIndex =
                 fDeferredDocumentImpl.
-                    createDocumentType(rootElementType, publicId, systemId);
+                    createDocumentType(rootElement.rawname, publicId, systemId);
             fDeferredDocumentImpl.appendChild(fDocumentIndex, fDocumentTypeIndex);
 
+            /*REVISIT - Grammar Access
             if (fGrammarAccess) {
                 int handle = fAttrList.startAttrList();
                 fAttrList.addAttr(
@@ -1498,6 +1515,7 @@ public class DOMParser
                 // REVISIT: What should the namespace be? -Ac
                 fDeferredDocumentImpl.appendChild(fDocumentTypeIndex, schemaIndex);
             }
+            */
         }
 
     } // startDTD(int,int,int)
@@ -1531,19 +1549,19 @@ public class DOMParser
     /**
      * &lt;!ELEMENT Name contentspec&gt;
      */
-    public void elementDecl(int elementTypeIndex, XMLContentSpec contentSpec)
+    public void elementDecl(QName elementDecl, XMLContentSpec contentSpec)
         throws Exception {
 
         if (DEBUG_ATTLIST_DECL) {
             String contentModel = contentSpec.toString();
-            System.out.println("elementDecl(" + fStringPool.toString(elementTypeIndex) + ", " +
+            System.out.println("elementDecl(" + fStringPool.toString(elementDecl.rawname) + ", " +
                                                 contentModel + ")");
         }
 
         //
         // Create element declaration
         //
-
+        /*REVISIT  Grammar Access
         if (fGrammarAccess) {
 
             if (fDeferredDocumentImpl != null) {
@@ -1554,7 +1572,7 @@ public class DOMParser
 
                 // get element declaration; create if necessary
                 int schemaIndex = getLastChildElement(fDocumentTypeIndex, "schema");
-                String elementName = fStringPool.toString(elementTypeIndex);
+                String elementName = fStringPool.toString(elementDecl.rawname);
                 int elementIndex = getLastChildElement(schemaIndex, "element", "name", elementName);
                 if (elementIndex == -1) {
                     int handle = fAttrList.startAttrList();
@@ -1693,7 +1711,7 @@ public class DOMParser
 
                 // get element declaration; create if necessary
                 Element schema = XUtil.getFirstChildElement(fDocumentType, "schema");
-                String elementName = fStringPool.toString(elementTypeIndex);
+                String elementName = fStringPool.toString(elementDecl.rawname);
                 Element element = XUtil.getFirstChildElement(schema, "element", "name", elementName);
                 if (element == null) {
                     element = fDocument.createElement("element");
@@ -1790,21 +1808,21 @@ public class DOMParser
             } // if NOT defer-node-expansion
 
         } // if grammar-access
+       */
 
     } // elementDecl(int,String)
 
     /**
      * &lt;!ATTLIST Name AttDef&gt;
      */
-    public void attlistDecl(int elementTypeIndex,
-                            int attrNameIndex, int attType,
-                            String enumString,
+    public void attlistDecl(QName elementDecl, QName attributeDecl, 
+                            int attType, String enumString,
                             int attDefaultType, int attDefaultValue)
         throws Exception {
 
         if (DEBUG_ATTLIST_DECL) {
-            System.out.println("attlistDecl(" + fStringPool.toString(elementTypeIndex) + ", " +
-                                                fStringPool.toString(attrNameIndex) + ", " +
+            System.out.println("attlistDecl(" + fStringPool.toString(elementDecl.rawname) + ", " +
+                                                fStringPool.toString(attributeDecl.rawname) + ", " +
                                                 fStringPool.toString(attType) + ", " +
                                                 enumString + ", " +
                                                 fStringPool.toString(attDefaultType) + ", " +
@@ -1822,16 +1840,20 @@ public class DOMParser
                 }
 
                 // get element definition
-                int elementDefIndex  = fDeferredDocumentImpl.lookupElementDefinition(elementTypeIndex);
+                int elementDefIndex  = fDeferredDocumentImpl.lookupElementDefinition(elementDecl.rawname);
 
                 // create element definition if not already there
                 if (elementDefIndex == -1) {
-                    elementDefIndex = fDeferredDocumentImpl.createElementDefinition(elementTypeIndex);
+                    elementDefIndex = fDeferredDocumentImpl.createElementDefinition(elementDecl.rawname);
                     fDeferredDocumentImpl.appendChild(fDocumentTypeIndex, elementDefIndex);
                 }
 
                 // add default attribute
-                int attrIndex = fDeferredDocumentImpl.createAttribute(attrNameIndex, attDefaultValue, false);
+                int attrIndex =
+                   fDeferredDocumentImpl.createAttribute(attributeDecl.rawname,
+                                                         attributeDecl.uri,
+                                                         attDefaultValue,
+                                                         false);
                 fDeferredDocumentImpl.appendChild(elementDefIndex, attrIndex);
 
             }
@@ -1839,12 +1861,12 @@ public class DOMParser
             //
             // Create attribute declaration
             //
-
+            /*REVISIT- Grammar Access
             if (fGrammarAccess) {
 
                 // get element declaration; create it if necessary
                 int schemaIndex = getLastChildElement(fDocumentTypeIndex, "schema");
-                String elementName = fStringPool.toString(elementTypeIndex);
+                String elementName = fStringPool.toString(elementDecl.rawname);
                 int elementIndex = getLastChildElement(schemaIndex, "element", "name", elementName);
                 if (elementIndex == -1) {
                     int handle = fAttrList.startAttrList();
@@ -1873,7 +1895,7 @@ public class DOMParser
                 }
 
                 // create attribute and set its attributes
-                String attributeName = fStringPool.toString(attrNameIndex);
+                String attributeName = fStringPool.toString(attributeDecl.rawname);
                 int attributeIndex = getLastChildElement(elementIndex, "attribute", "name", attributeName);
                 if (attributeIndex == -1) {
                     int handle = fAttrList.startAttrList();
@@ -1891,6 +1913,7 @@ public class DOMParser
                         true,
                         false); // search
                     /***/
+            /*
                     fAttrList.addAttr(
                         fStringPool.addSymbol("minOccurs"),
                         fStringPool.addString("0"),
@@ -1969,6 +1992,7 @@ public class DOMParser
                     }
                 }
             }
+            */
 
         }
 
@@ -1983,7 +2007,7 @@ public class DOMParser
                 }
 
                 // get element name
-                String elementName = fStringPool.toString(elementTypeIndex);
+                String elementName = fStringPool.toString(elementDecl.rawname);
 
                 // get element definition node
                 NamedNodeMap elements = ((DocumentTypeImpl)fDocumentType).getElements();
@@ -1994,9 +2018,10 @@ public class DOMParser
                 }
 
                 // REVISIT: Check for uniqueness of element name? -Ac
+                // REVISIT: what about default attributes with URI? -ALH
 
                 // get attribute name and value index
-                String attrName      = fStringPool.toString(attrNameIndex);
+                String attrName      = fStringPool.toString(attributeDecl.rawname);
                 String attrValue     = fStringPool.toString(attDefaultValue);
 
                 // create attribute and set properties
@@ -2011,12 +2036,12 @@ public class DOMParser
             //
             // Create attribute declaration
             //
-
+            /*REVISIT  Grammar Access
             if (fGrammarAccess) {
 
                 // get element declaration; create it if necessary
                 Element schema = XUtil.getFirstChildElement(fDocumentType, "schema");
-                String elementName = fStringPool.toString(elementTypeIndex);
+                String elementName = fStringPool.toString(elementDecl.rawname);
                 Element element = XUtil.getFirstChildElement(schema, "element", "name", elementName);
                 if (element == null) {
                     element = fDocument.createElement("element");
@@ -2035,7 +2060,7 @@ public class DOMParser
                 }
 
                 // create attribute and set its attributes
-                String attributeName = fStringPool.toString(attrNameIndex);
+                String attributeName = fStringPool.toString(attributeDecl.rawname);
                 Element attribute = XUtil.getFirstChildElement(element, "attribute", "name", attributeName);
                 if (attribute == null) {
                     attribute = fDocument.createElement("attribute");
@@ -2091,6 +2116,7 @@ public class DOMParser
                     }
                 }
             }
+           */
 
         } // if NOT defer-node-expansion
 
@@ -2415,6 +2441,7 @@ public class DOMParser
             fDeferredDocumentImpl.appendChild(fDocumentTypeIndex, newNotationIndex);
 
             // create notation declaration
+            /*REVISIT  Grammar Access
             if (fGrammarAccess) {
                 int schemaIndex = getLastChildElement(fDocumentTypeIndex, "schema");
                 String notationName = fStringPool.toString(notationNameIndex);
@@ -2435,6 +2462,7 @@ public class DOMParser
                         false,
                         false); // search
                     /***/
+            /*
                     if (publicIdIndex == -1) {
                         publicIdIndex = 0; // empty string in string pool
                     }
@@ -2457,6 +2485,7 @@ public class DOMParser
                     fDeferredDocumentImpl.appendChild(schemaIndex, notationIndex);
                 }
             }
+            */
         }
 
         // full expansion
@@ -2478,6 +2507,7 @@ public class DOMParser
             fDocumentType.getNotations().setNamedItem(notationImpl);
 
             // create notation declaration
+            /*REVISIT Grammar access
             if (fGrammarAccess) {
                 Element schema = XUtil.getFirstChildElement(fDocumentType, "schema");
                 Element notation = XUtil.getFirstChildElement(schema, "notation", "name", notationName);
@@ -2496,6 +2526,7 @@ public class DOMParser
                     schema.appendChild(notation);
                 }
             }
+            */
         }
 
     } // notationDecl(int,int,int)
@@ -2510,6 +2541,7 @@ public class DOMParser
      * containing element, even when the content model contains a
      * single element reference.
      */
+    /*REVISIT Grammar access
     private Element createContentModel(XMLContentSpec contentSpec, XMLContentSpec.Node node) {
 
         Element model = createContentModel(contentSpec, node, 
@@ -2518,10 +2550,13 @@ public class DOMParser
 
     } // createContentModel(XMLContentSpec.Node):Element
 
+    */
+
     /**
      * This is the real <em>createContentModel</em> method. This is a
      * recursive solution.
      */
+    /*REVISIT Grammar Access
     private Element createContentModel(XMLContentSpec contentSpec,
                                        XMLContentSpec.Node node, 
                                        Document factory, 
@@ -2622,6 +2657,7 @@ public class DOMParser
 
     } // createContentModel(XMLContentSpec.Node,Element):Element
 
+      */
     /**
      * Sets the appropriate occurrence count attributes on the specified
      * model element.

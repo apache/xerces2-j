@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,27 +55,98 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.validators.datatype;
+package org.apache.xerces.utils;
 
-interface InternalDatatypeValidator extends DatatypeValidator {
-	/**
-     * validate that a string matches a datatype
-     *
-     * validate returns true or false depending on whether the string content is an
-     * instance of the data type represented by this validator.
-     * 
-     * @param content A string containing the content to be validated
-     *
-     * @exception throws InvalidDatatypeException if the content is
-     *  invalid according to the rules for the validators
-     */
-	public void validate(int contentIndex) throws InvalidDatatypeValueException;
-	
-	/**
-	 * set the facets for this datatype
-	 *
-	 *
-	 */
-	public void setFacets(int facets[]) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException; 
+/**
+ * A light-weight hashtable class that takes 2 ints as key and 1 int as value
+ * @version
+ */
 
-}
+public final class Hash2intTable {
+    
+    
+    private static final int INITIAL_BUCKET_SIZE = 4;
+    private static final int HASHTABLE_SIZE = 128;
+    private int[][] fHashTable = new int[HASHTABLE_SIZE][];
+
+
+    public void put(int key1, int key2, int value) {
+        int hash = (key1+key2+1) % HASHTABLE_SIZE;
+        int[] bucket = fHashTable[hash];
+        
+        if (bucket == null) {
+            bucket = new int[1 + 3*INITIAL_BUCKET_SIZE];
+            bucket[0] = 1;
+            bucket[1] = key1;
+            bucket[2] = key2;
+            bucket[3] = value;
+            fHashTable[hash] = bucket;
+        } else {
+            int count = bucket[0];
+            int offset = 1 + 3*count;
+            if (offset == bucket.length) {
+                int newSize = count + INITIAL_BUCKET_SIZE;
+                int[] newBucket = new int[1 + 3*newSize];
+                System.arraycopy(bucket, 0, newBucket, 0, offset);
+                bucket = newBucket;
+                fHashTable[hash] = bucket;
+            }
+            boolean found = false;
+            int j=1;
+            for (int i=0; i<count; i++){
+                if ( bucket[j] == key1 && bucket[j+1] == key2) {
+                    bucket[j+2] = value;
+                    found = true;
+                    break;
+                }
+                j += 3;
+            }
+            if (! found) {
+                bucket[offset++] = key1;
+                bucket[offset++] = key2;
+                bucket[offset]= value;
+                bucket[0] = ++count;
+            }
+            
+        }
+    }
+
+    public int get(int key1, int key2) {
+        int hash = (key1+key2+1) % HASHTABLE_SIZE;
+        int[] bucket = fHashTable[hash];
+
+        if (bucket == null) {
+            return -1;
+        }
+        int count = bucket[0];
+
+        boolean found = false;
+        int j=1;
+        for (int i=0; i<count; i++){
+            if ( bucket[j] == key1 && bucket[j+1] == key2) {
+                found = true;
+                return bucket[j+2];
+            }
+            j += 3;
+        }
+        if (! found) {
+            return -1;
+        }
+        return -1;
+    }
+
+}  // class Hash2inTable
+
+  
+
+
+
+
+
+
+
+
+
+
+
+

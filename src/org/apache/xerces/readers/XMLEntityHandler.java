@@ -58,6 +58,7 @@
 package org.apache.xerces.readers;
 
 import org.apache.xerces.framework.XMLErrorReporter;
+import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.StringPool;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
@@ -639,11 +640,13 @@ public interface XMLEntityHandler extends Locator {
          *
          * @param fastcheck A character that is not a legal name character that is provided as a
          *                  hint to the reader of a character likely to terminate the Name.
+         * <!--
          * @return The <code>StringPool</code> handle for the QName that was scanned,
          *         or -1 if a name was not found at the current position within the input data.
+         * -->
          * @exception java.lang.Exception
          */
-        public int scanQName(char fastcheck) throws Exception;
+        public void scanQName(char fastcheck, QName qname) throws Exception;
 
         /**
          * Skip through the input while we are looking at character data.
@@ -666,6 +669,6 @@ public interface XMLEntityHandler extends Locator {
          *   CONTENT_RESULT_REFERENCE_END_OF_INPUT
          * @exception java.lang.Exception
          */
-        public int scanContent(int elementType) throws Exception;
+        public int scanContent(QName element) throws Exception;
     }
 }

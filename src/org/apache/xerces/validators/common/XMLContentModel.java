@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,17 +57,19 @@
 
 package org.apache.xerces.validators.common;
 
+import org.apache.xerces.utils.QName;
+
 /**
  * ContentModel is an interface that can be used by your own custom validators
  * to plug in various types of content models. It is used internally as well
  * for the same purposes.
- *
+ * <p>
  * Since there are a number of optimizations that can be used for simple or
  * special content models, this class provides the interface via which all of
  * the various content model types are managed. So the validation handler
  * class has a list of things derived from this class. It finds the one for
  * the desired element, then asks it to validate the element contents.
- *
+ * <p>
  * The validation interface from the scanner to the validation handle provides
  * a child count and an array of element name indices into the string pool.
  * So it is assumed that those same parameters will be passed to the content
@@ -75,7 +77,7 @@ package org.apache.xerces.validators.common;
  * this standard view of the elements to be validated.
  *
  * @author  Dean Roddey
- * @version
+ * @version $Id$
  */
 public interface XMLContentModel {
 
@@ -102,11 +104,8 @@ public interface XMLContentModel {
      *
      * @exception Exception Thrown on error.
      */
-    public int validateContent
-    (
-        int         childCount
-        , int[]     children
-    )   throws Exception;
+    public int validateContent(int childCount, 
+                               QName children[]) throws Exception;
 
     /**
      * Returns information about which elements can be placed at a particular point
@@ -136,9 +135,7 @@ public interface XMLContentModel {
      *
      * @see InsertableElementsInfo
      */
-    public int whatCanGoHere
-    (
-        boolean                     fullyValid
-        , InsertableElementsInfo    info
-    )   throws Exception;
-}
+    public int whatCanGoHere(boolean fullyValid, 
+                             InsertableElementsInfo info) throws Exception;
+
+} // interface XMLContentModel

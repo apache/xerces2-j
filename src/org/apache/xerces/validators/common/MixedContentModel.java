@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,6 +57,8 @@
 
 package org.apache.xerces.validators.common;
 
+import org.apache.xerces.utils.QName;
+
 /**
  * MixedContentModel is a derivative of the abstract content model base
  * class that handles the special case of mixed model elements. If an element
@@ -70,34 +72,68 @@ package org.apache.xerces.validators.common;
  * validate by just looking up each child being validated by looking it up
  * in the list.
  *
- * @version
+ * @version $Id$
  */
-public class MixedContentModel implements XMLContentModel
-{
-    // -----------------------------------------------------------------------
-    //  Constructors
-    // -----------------------------------------------------------------------
+public class MixedContentModel 
+    implements XMLContentModel {
+
+
+    //
+    // Data
+    //
+    
+    /** The count of possible children that we have to deal with. */
+    private int fCount;
+
+    /** The list of possible children that we have to accept. */
+    private QName fChildren[];
+
+    /** 
+     * True if mixed content model is ordered. DTD mixed content models
+     * are <em>always</em> unordered.
+     */
+    private boolean fOrdered;
+
+    //
+    // Constructors
+    //
 
     /**
      * Constructs a mixed content model.
      *
-     * @param declPool The element decl pool.
-     * @param elementIndex The element index into the pool.
+     * @param count The child count.
+     * @param childList The list of allowed children.
      *
      * @exception CMException Thrown if content model can't be built.
      */
-    public MixedContentModel(int count, int[] childList) throws CMException
-    {
-        // Make our own copy now, which is exactly the right size
-        fCount = count;
-        fChildren = new int[fCount];
-        System.arraycopy(childList, 0, fChildren, 0, count);
+    public MixedContentModel(int count, QName childList[]) throws CMException {
+        this(count, childList, false);
     }
 
+    /**
+     * Constructs a mixed content model.
+     *
+     * @param count The child count.
+     * @param childList The list of allowed children.
+     * @param ordered True if content must be ordered.
+     *
+     * @exception CMException Thrown if content model can't be built.
+     */
+    public MixedContentModel(int count, QName childList[],
+                             boolean ordered) throws CMException {
 
-    // -----------------------------------------------------------------------
-    //  Public, inherited methods
-    // -----------------------------------------------------------------------
+        // Make our own copy now, which is exactly the right size
+        fCount = count;
+        fChildren = new QName[fCount];
+        for (int i = 0; i < fCount; i++) {
+            fChildren[i] = new QName(childList[i]);
+        }
+
+    } // <init>(int,QName[],boolean)
+
+    //
+    // XMLContentModel methods
+    //
     
     /**
      * Check that the specified content is valid according to this
@@ -122,32 +158,60 @@ public class MixedContentModel implements XMLContentModel
      *
      * @exception Exception Thrown on error.
      */
-    public int validateContent(int childCount, int[] children) throws Exception
-    {
-        for (int outIndex = 0; outIndex < childCount; outIndex++)
-        {
-            // Get the current child out of the source index
-            final int curChild = children[outIndex];
-
-            // If its PCDATA, then we just accept that
-            if (curChild == -1)
-                continue;
-
-            // And try to find it in our list
+    public int validateContent(int childCount, QName children[]) 
+        throws Exception {
+        
+        // must match order
+        if (fOrdered) {
             int inIndex = 0;
-            for (; inIndex < fCount; inIndex++)
-            {
-                if (curChild == fChildren[inIndex])
-                    break;
-            }
+            for (int outIndex = 0; outIndex < childCount; outIndex++) {
 
-            // We did not find this one, so the validation failed
-            if (inIndex == fCount)
-                return outIndex;
+                // ignore mixed text
+                final QName curChild = children[outIndex];
+                if (curChild.localpart == -1) {
+                    continue;
+                }
+
+                // element must match
+                if (fChildren[inIndex].uri != children[outIndex].uri &&
+                    fChildren[inIndex].localpart != children[outIndex].localpart) {
+                    return outIndex;
+                }
+                
+                // advance index
+                inIndex++;
+            }
+        }
+
+        // can appear in any order
+        else {
+            for (int outIndex = 0; outIndex < childCount; outIndex++)
+            {
+                // Get the current child out of the source index
+                final QName curChild = children[outIndex];
+    
+                // If its PCDATA, then we just accept that
+                if (curChild.localpart == -1)
+                    continue;
+    
+                // And try to find it in our list
+                int inIndex = 0;
+                for (; inIndex < fCount; inIndex++)
+                {
+                    if (curChild.uri == fChildren[inIndex].uri &&
+                        curChild.localpart == fChildren[inIndex].localpart)
+                        break;
+                }
+
+                // We did not find this one, so the validation failed
+                if (inIndex == fCount)
+                    return outIndex;
+            }
         }
 
         // Everything seems to be in order, so return success
         return -1;
+
     }
 
     /**
@@ -218,7 +282,10 @@ public class MixedContentModel implements XMLContentModel
         if ((info.possibleChildren == null)
         ||  (info.possibleChildren.length < info.resultsCount))
         {
-            info.possibleChildren = new int[info.resultsCount];
+            info.possibleChildren = new QName[info.resultsCount];
+            for (int i = 0; i < info.possibleChildren.length; i++) {
+                info.possibleChildren[i] = new QName();
+            }
         }
 
         //
@@ -242,23 +309,11 @@ public class MixedContentModel implements XMLContentModel
         //
         for (int index = 0; index < fCount; index++)
         {
-            info.possibleChildren[index] = fChildren[index];
+            info.possibleChildren[index].setValues(fChildren[index]);
             info.results[index] = bStatus;
         }
 
         return -1;
     }
 
-
-    // -----------------------------------------------------------------------
-    //  Private data members
-    //
-    //  fCount
-    //      The count of possible children that we have to deal with.
-    //
-    //  fChildren
-    //      The list of possible children that we have to accept.
-    // -----------------------------------------------------------------------
-    private int             fCount;
-    private int[]           fChildren;
-};
+} // class MixedContentModel

@@ -1,9 +1,8 @@
-/* $Id$ */
 /*
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -61,6 +60,9 @@
  * duplicated. If you're changing this file you probably want to change
  * DeferredAttrImpl.java at the same time.
  */
+
+/* $Id$ */
+
 
 package org.apache.xerces.dom;
 
@@ -130,13 +132,24 @@ public final class DeferredAttrNSImpl
         // fluff data
         DeferredDocumentImpl ownerDocument =
 	    (DeferredDocumentImpl) this.ownerDocument;
-        int elementTypeName = ownerDocument.getNodeName(fNodeIndex);
+        int attrQName = ownerDocument.getNodeName(fNodeIndex);
         StringPool pool = ownerDocument.getStringPool();
-        name = pool.toString(elementTypeName);
-        specified(ownerDocument.getNodeValue(fNodeIndex) == 1);
+        name = pool.toString(attrQName);
 
-	String prefix = pool.toString(pool.getPrefixForQName(elementTypeName));
-	namespaceURI = pool.toString(pool.getURIForQName(elementTypeName));
+        // extract prefix and local part from QName
+        int index = name.indexOf(':');
+        String prefix;
+        if (index < 0) {
+            prefix = null;
+            localName = name;
+        } 
+        else {
+            prefix = name.substring(0, index); 
+            localName = name.substring(index + 1);
+        }
+
+        specified(ownerDocument.getNodeValue(fNodeIndex) == 1);
+	namespaceURI = pool.toString(ownerDocument.getNodeURI(attrQName));
 	// DOM Level 2 wants all namespace declaration attributes
 	// to be bound to "http://www.w3.org/2000/xmlns/"
 	// So as long as the XML parser doesn't do it, it needs to
@@ -150,7 +163,6 @@ public final class DeferredAttrNSImpl
 		namespaceURI = "http://www.w3.org/2000/xmlns/";
 	    }
 	}
-	localName = pool.toString(pool.getLocalPartForQName(elementTypeName));
 
     } // synchronizeData()
 

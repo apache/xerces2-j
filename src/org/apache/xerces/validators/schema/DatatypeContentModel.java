@@ -59,20 +59,22 @@ package org.apache.xerces.validators.schema;
 
 import org.apache.xerces.framework.XMLContentSpec;
 import org.apache.xerces.utils.StringPool;
-import org.apache.xerces.validators.common.XMLValidator;
+import org.apache.xerces.validators.common.Grammar;
 import org.apache.xerces.validators.common.XMLContentModel;
 import org.apache.xerces.validators.common.InsertableElementsInfo;
 import org.apache.xerces.validators.datatype.DatatypeValidator;
 import org.apache.xerces.validators.datatype.InvalidDatatypeValueException;
+import org.apache.xerces.utils.QName;
 
 /**
  * DatatypeContentModel provides a content model that knows
  * how to check content against datatypes
+ * @version $Id:
  */
 public class DatatypeContentModel implements XMLContentModel
 {
-    SchemaImporter.DatatypeValidatorRegistry fDatatypeRegistry = null;
-    XMLValidator fValidator = null;
+    TraverseSchema.DatatypeValidatorRegistry fDatatypeRegistry = null;
+    Grammar fGrammar = null;
     StringPool fStringPool = null;
     int fChild = -1;
 
@@ -82,13 +84,13 @@ public class DatatypeContentModel implements XMLContentModel
 
     /**
      */
-    public DatatypeContentModel(  SchemaImporter.DatatypeValidatorRegistry reg,
-                                  XMLValidator validator,
+    public DatatypeContentModel(  TraverseSchema.DatatypeValidatorRegistry reg,
+                                  Grammar grammar,
                                   StringPool stringPool,
                                   int childIndex)
     {
         fDatatypeRegistry = reg;
-        fValidator = validator;
+        fGrammar = grammar;
         fStringPool = stringPool;
         fChild = childIndex;
     }
@@ -121,7 +123,7 @@ public class DatatypeContentModel implements XMLContentModel
      *
      * @exception Exception Thrown on error.
      */
-    public int validateContent(int childCount, int[] children) throws Exception
+    public int validateContent(int childCount, QName[] children) throws Exception
     {
         boolean DEBUG_DATATYPES = false;
 /*
@@ -129,7 +131,7 @@ public class DatatypeContentModel implements XMLContentModel
             System.out.println("Checking content of datatype");
             String strTmp = fStringPool.toString(elementTypeIndex);
             int contentSpecIndex = fElementDeclPool.getContentSpec(elementIndex);
-            XMLContentSpec.Node csn = new XMLContentSpec.Node();
+            XMLContentSpec csn = new XMLContentSpec();
             fElementDeclPool.getContentSpecNode(contentSpecIndex, csn);
             String contentSpecString = fStringPool.toString(csn.value);
             System.out.println
@@ -154,13 +156,12 @@ public class DatatypeContentModel implements XMLContentModel
         }
 */
         try { // REVISIT - integrate w/ error handling
-            XMLContentSpec cs = fValidator.getContentSpec(fChild);
-            XMLContentSpec.Node csn = new XMLContentSpec.Node();
-            cs.getNode(cs.getHandle(), csn);
-            String type = fStringPool.toString(csn.value);
+            XMLContentSpec cs = new XMLContentSpec();
+	    fGrammar.getContentSpec(fChild,cs);
+            String type = fStringPool.toString(cs.value);
             DatatypeValidator v = fDatatypeRegistry.getValidatorFor(type);
             if (v != null) 
-                v.validate(fStringPool.toString(children[0]));
+                v.validate(fStringPool.toString(children[0].localpart));
             else
                 System.out.println("No validator for datatype "+type);
         } catch (InvalidDatatypeValueException idve) {

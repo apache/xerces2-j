@@ -142,6 +142,9 @@ public class DeferredDocumentImpl
     /** Node prev siblings. */
     protected transient int fNodePrevSib[][];
 
+    /** Node namespace URI. */
+    protected transient int fNodeURI[][];
+
     /** Identifier count. */
     protected transient int fIdCount;
 
@@ -311,13 +314,21 @@ public class DeferredDocumentImpl
     } // createEntityReference(int):int
 
     /** Creates an element node in the table. */
-    public int createElement(int elementNameIndex, XMLAttrList attrList, int attrListIndex) {
+    public int createElement(int elementNameIndex,
+                             XMLAttrList attrList, int attrListIndex) {
+        return createElement(elementNameIndex, -1, attrList, attrListIndex);
+    }
+
+    /** Creates an element node with a URI in the table. */
+    public int createElement(int elementNameIndex, int elementURIIndex,
+                             XMLAttrList attrList, int attrListIndex) {
 
         // create node
         int elementNodeIndex = createNode(Node.ELEMENT_NODE);
         int elementChunk     = elementNodeIndex >> CHUNK_SHIFT;
         int elementIndex     = elementNodeIndex & CHUNK_MASK;
         setChunkIndex(fNodeName, elementNameIndex, elementChunk, elementIndex);
+        setChunkIndex(fNodeURI, elementURIIndex, elementChunk, elementIndex);
 
         // create attributes
         if (attrListIndex != -1) {
@@ -330,9 +341,11 @@ public class DeferredDocumentImpl
                  index = attrList.getNextAttr(index)) {
 
                 // create attribute
-                int attrNodeIndex = createAttribute(attrList.getAttrName(index),
-                                                    attrList.getAttValue(index),
-                                                    attrList.isSpecified(index));
+                int attrNodeIndex =
+                    createAttribute(attrList.getAttrName(index),
+                                    attrList.getAttrURI(index),
+                                    attrList.getAttValue(index),
+                                    attrList.isSpecified(index));
                 int attrChunk = attrNodeIndex >> CHUNK_SHIFT;
                 int attrIndex  = attrNodeIndex & CHUNK_MASK;
                 setChunkIndex(fNodeParent, elementNodeIndex, attrChunk, attrIndex);
@@ -357,15 +370,22 @@ public class DeferredDocumentImpl
 
     } // createElement(int,XMLAttrList,int):int
 
-    /** Creates an attributes in the table. */
-    public int createAttribute(int attrNameIndex, int attrValueIndex,
-                               boolean specified) {
+    /** Creates an attribute in the table. */
+    public int createAttribute(int attrNameIndex,
+                               int attrValueIndex, boolean specified) {
+        return createAttribute(attrNameIndex, -1, attrValueIndex, specified);
+    }
+
+    /** Creates an attribute with a URI in the table. */
+    public int createAttribute(int attrNameIndex, int attrURIIndex,
+                               int attrValueIndex, boolean specified) {
 
         // create node
         int nodeIndex = createNode(NodeImpl.ATTRIBUTE_NODE);
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
         setChunkIndex(fNodeName, attrNameIndex, chunk, index);
+        setChunkIndex(fNodeURI, attrURIIndex, chunk, index);
         setChunkIndex(fNodeValue, specified ? 1 : 0, chunk, index);
 
         // append value as text node
@@ -1039,6 +1059,30 @@ public class DeferredDocumentImpl
 
     } // getNodeType(int):int
 
+    /** Returns the URI of the given node. */
+    public short getNodeURI(int nodeIndex) {
+        return getNodeURI(nodeIndex, true);
+    }
+
+    /** 
+     * Returns the URI of the given node. 
+     * @param True to free URI index.
+     */
+    public short getNodeURI(int nodeIndex, boolean free) {
+
+        if (nodeIndex == -1) {
+            return -1;
+        }
+
+        int chunk = nodeIndex >> CHUNK_SHIFT;
+        int index = nodeIndex & CHUNK_MASK;
+        if (free) {
+            return (short)clearChunkIndex(fNodeURI, chunk, index);
+        }
+        return (short)getChunkIndex(fNodeURI, chunk, index);
+
+    } // getNodeURI(int):int
+
     // identifier maintenance
 
     /** Registers an identifier name with a specified element node. */
@@ -1356,8 +1400,9 @@ public class DeferredDocumentImpl
             fNodeName       = new int[INITIAL_CHUNK_COUNT][];
             fNodeValue      = new int[INITIAL_CHUNK_COUNT][];
             fNodeParent     = new int[INITIAL_CHUNK_COUNT][];
-            fNodeLastChild = new int[INITIAL_CHUNK_COUNT][];
+            fNodeLastChild  = new int[INITIAL_CHUNK_COUNT][];
             fNodePrevSib    = new int[INITIAL_CHUNK_COUNT][];
+            fNodeURI        = new int[INITIAL_CHUNK_COUNT][];
         }
 
         // return true if table is already big enough
@@ -1392,6 +1437,10 @@ public class DeferredDocumentImpl
             newArray = new int[newsize][];
             System.arraycopy(fNodePrevSib, 0, newArray, 0, chunk);
             fNodePrevSib = newArray;
+
+            newArray = new int[newsize][];
+            System.arraycopy(fNodeURI, 0, newArray, 0, chunk);
+            fNodeURI = newArray;
         }
 
         catch (NullPointerException ex) {
@@ -1405,6 +1454,7 @@ public class DeferredDocumentImpl
         createChunk(fNodeParent, chunk);
         createChunk(fNodeLastChild, chunk);
         createChunk(fNodePrevSib, chunk);
+        createChunk(fNodeURI, chunk);
 
         // success
         return true;

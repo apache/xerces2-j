@@ -59,6 +59,7 @@ package org.apache.xerces.readers;
 
 import org.apache.xerces.framework.XMLErrorReporter;
 import org.apache.xerces.utils.ChunkyByteArray;
+import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.StringPool;
 
 import java.io.InputStreamReader;
@@ -247,13 +248,13 @@ final class UTF8Recognizer extends XMLDeclRecognizer {
         public boolean scanExpectedName(char fastcheck, StringPool.CharArrayRange expectedName) throws IOException {
             throw new IOException("RDR002 cannot happen");
         }
-        public int scanQName(char fastcheck) throws IOException {
+        public void scanQName(char fastcheck, QName qname) throws IOException {
             throw new IOException("RDR002 cannot happen");
         }
         public int scanName(char fastcheck) throws IOException {
             throw new IOException("RDR002 cannot happen");
         }
-        public int scanContent(int elementType) throws IOException {
+        public int scanContent(QName element) throws IOException {
             throw new IOException("RDR002 cannot happen");
         }
     }

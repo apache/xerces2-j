@@ -179,4 +179,5 @@ public class DatatypeMessageProvider implements XMLMessageProvider {
         "PrecisionExceeded",            //  16, "{0} has exceeded the precision Facet {1}"},
         "ScaleExceeded",                //  17, "{0} has execeed the scale Facet {1}"},
     };
+
 }

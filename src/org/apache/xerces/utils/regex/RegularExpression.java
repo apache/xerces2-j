@@ -355,7 +355,7 @@ import java.text.CharacterIterator;
  *       <dd>Grouping with capturing.
  * It make a group and applications can know
  * where in target text a group matched with methods of a <code>Match</code> instance
- * after <code><a href="#matches(java.lang.String, com.ibm.regex.Match)">matches(String,Match)</a></code>.
+ * after <code><a href="#matches(java.lang.String, org.apache.xerces.utils.regex.Match)">matches(String,Match)</a></code>.
  * The 0th group means whole of this regular expression.
  * The <VAR>N</VAR>th gorup is the inside of the <VAR>N</VAR>th left parenthesis.
  * 
@@ -533,28 +533,28 @@ public class RegularExpression implements java.io.Serializable {
     private Op compile(Token tok, Op next, boolean reverse) {
         Op ret;
         switch (tok.type) {
-          case Token.DOT:
+        case Token.DOT:
             ret = Op.createDot();
             ret.next = next;
             break;
 
-          case Token.CHAR:
+        case Token.CHAR:
             ret = Op.createChar(tok.getChar());
             ret.next = next;
             break;
 
-          case Token.ANCHOR:
+        case Token.ANCHOR:
             ret = Op.createAnchor(tok.getChar());
             ret.next = next;
             break;
 
-          case Token.RANGE:
-          case Token.NRANGE:
+        case Token.RANGE:
+        case Token.NRANGE:
             ret = Op.createRange(tok);
             ret.next = next;
             break;
 
-          case Token.CONCAT:
+        case Token.CONCAT:
             ret = next;
             if (!reverse) {
                 for (int i = tok.size()-1;  i >= 0;  i --) {
@@ -567,7 +567,7 @@ public class RegularExpression implements java.io.Serializable {
             }
             break;
 
-          case Token.UNION:
+        case Token.UNION:
             Op.UnionOp uni = Op.createUnion(tok.size());
             for (int i = 0;  i < tok.size();  i ++) {
                 uni.addElement(compile(tok.getChild(i), next, reverse));
@@ -575,8 +575,8 @@ public class RegularExpression implements java.io.Serializable {
             ret = uni;                          // ret.next is null.
             break;
 
-          case Token.CLOSURE:
-          case Token.NONGREEDYCLOSURE:
+        case Token.CLOSURE:
+        case Token.NONGREEDYCLOSURE:
             Token child = tok.getChild(0);
             int min = tok.getMin();
             int max = tok.getMax();
@@ -590,7 +590,7 @@ public class RegularExpression implements java.io.Serializable {
             if (min > 0 && max > 0)
                 max -= min;
             if (max > 0) {
-                                                // X{2,6} -> XX(X(X(XX?)?)?)?
+                // X{2,6} -> XX(X(X(XX?)?)?)?
                 ret = next;
                 for (int i = 0;  i < max;  i ++) {
                     Op.ChildOp q = Op.createQuestion(tok.type == Token.NONGREEDYCLOSURE);
@@ -619,21 +619,21 @@ public class RegularExpression implements java.io.Serializable {
             }
             break;
 
-          case Token.EMPTY:
+        case Token.EMPTY:
             ret = next;
             break;
 
-          case Token.STRING:
+        case Token.STRING:
             ret = Op.createString(tok.getString());
             ret.next = next;
             break;
 
-          case Token.BACKREFERENCE:
+        case Token.BACKREFERENCE:
             ret = Op.createBackReference(tok.getReferenceNumber());
             ret.next = next;
             break;
 
-          case Token.PAREN:
+        case Token.PAREN:
             if (tok.getParenNumber() == 0) {
                 ret = compile(tok.getChild(0), next, reverse);
             } else if (reverse) {
@@ -647,30 +647,30 @@ public class RegularExpression implements java.io.Serializable {
             }
             break;
 
-          case Token.LOOKAHEAD:
+        case Token.LOOKAHEAD:
             ret = Op.createLook(Op.LOOKAHEAD, next, compile(tok.getChild(0), null, false));
             break;
-          case Token.NEGATIVELOOKAHEAD:
+        case Token.NEGATIVELOOKAHEAD:
             ret = Op.createLook(Op.NEGATIVELOOKAHEAD, next, compile(tok.getChild(0), null, false));
             break;
-          case Token.LOOKBEHIND:
+        case Token.LOOKBEHIND:
             ret = Op.createLook(Op.LOOKBEHIND, next, compile(tok.getChild(0), null, true));
             break;
-          case Token.NEGATIVELOOKBEHIND:
+        case Token.NEGATIVELOOKBEHIND:
             ret = Op.createLook(Op.NEGATIVELOOKBEHIND, next, compile(tok.getChild(0), null, true));
             break;
 
-          case Token.INDEPENDENT:
+        case Token.INDEPENDENT:
             ret = Op.createIndependent(next, compile(tok.getChild(0), null, reverse));
             break;
 
-          case Token.MODIFIERGROUP:
+        case Token.MODIFIERGROUP:
             ret = Op.createModifier(next, compile(tok.getChild(0), null, reverse),
                                     ((Token.ModifierToken)tok).getOptions(),
                                     ((Token.ModifierToken)tok).getOptionsMask());
             break;
 
-          case Token.CONDITION:
+        case Token.CONDITION:
             Token.ConditionToken ctok = (Token.ConditionToken)tok;
             int ref = ctok.refNumber;
             Op condition = ctok.condition == null ? null : compile(ctok.condition, null, reverse);
@@ -679,68 +679,39 @@ public class RegularExpression implements java.io.Serializable {
             ret = Op.createCondition(next, ref, condition, yes, no);
             break;
 
-          default:
+        default:
             throw new RuntimeException("Unknown token type: "+tok.type);
         } // switch (tok.type)
         return ret;
     }
 
-    // ================================================================
 
-/* -*- java -*-
- *
- * (C) Copyright IBM Corp. 1998-2000  All rights reserved.
- *
- * US Government Users Restricted Rights Use, duplication or
- * disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
- *
- * The program is provided "as is" without any warranty express or
- * implied, including the warranty of non-infringement and the implied
- * warranties of merchantibility and fitness for a particular purpose.
- * IBM will not be liable for any damages suffered by you as a result
- * of using the Program. In no event will IBM be liable for any
- * special, indirect or consequential damages or lost profits even if
- * IBM has been advised of the possibility of their occurrence. IBM
- * will not be liable for any third party claims against you.
- */
-
-
-
-
-
-
-
-
-
-
-
-
-
+//Public
 
 /**
  *
  * @return true if the target is matched to this regular expression.
  */
-public boolean matches(char[]  target) {
-    return this.matches(target, 0,  target .length , (Match)null);
-}
+    public boolean matches(char[]  target) {
+        return this.matches(target, 0,  target .length , (Match)null);
+    }
 
 /**
  *
  * @return true if the target is matched to this regular expression.
  */
-public boolean matches(char[]  target, int start, int end) {
-    return this.matches(target, start, end, (Match)null);
-}
+    public boolean matches(char[]  target, int start, int end) {
+        return this.matches(target, start, end, (Match)null);
+    }
 
 /**
  *
  * @param match A Match instance for storing matching result.
  * @return Offset of the start position in <VAR>target</VAR>; or -1 if not match.
  */
-public boolean matches(char[]  target, Match match) {
-    return this.matches(target, 0,  target .length , match);
-}
+    public boolean matches(char[]  target, Match match) {
+        return this.matches(target, 0,  target .length , match);
+    }
 
 
 /**
@@ -750,714 +721,668 @@ public boolean matches(char[]  target, Match match) {
  */
 
 
+    public boolean matches(char[]  target, int start, int end, Match match) {
 
+        synchronized (this) {
+            if (this.operations == null)
+                this.prepare();
+            if (this.context == null)
+                this.context = new Context();
+        }
+        Context con = null;
+        synchronized (this.context) {
+            con = this.context.inuse ? new Context() : this.context;
+            con.reset(target, start, end, this.numberOfClosures);
+        }
+        if (match != null) {
+            match.setNumberOfGroups(this.nofparen);
+            match.setSource(target);
+        } else if (this.hasBackReferences) {
+            match = new Match();
+            match.setNumberOfGroups(this.nofparen);
+            // Need not to call setSource() because
+            // a caller can not access this match instance.
+        }
+        con.match = match;
 
+        if (this.isSet(this.options, XMLSCHEMA_MODE)) {
+            int matchEnd = this. matchCharArray (con, this.operations, con.start, 1, this.options);
+            //System.err.println("DEBUG: matchEnd="+matchEnd);
+            if (matchEnd == con.limit) {
+                if (con.match != null) {
+                    con.match.setBeginning(0, con.start);
+                    con.match.setEnd(0, matchEnd);
+                }
+                con.inuse = false;
+                return true;
+            }
+            return false;
+        }
 
-public boolean matches(char[]  target, int start, int end, Match match) {
+        /*
+         * The pattern has only fixed string.
+         * The engine uses Boyer-Moore.
+         */
+        if (this.fixedStringOnly) {
+            //System.err.println("DEBUG: fixed-only: "+this.fixedString);
+            int o = this.fixedStringTable.matches(target, con.start, con.limit);
+            if (o >= 0) {
+                if (con.match != null) {
+                    con.match.setBeginning(0, o);
+                    con.match.setEnd(0, o+this.fixedString.length());
+                }
+                con.inuse = false;
+                return true;
+            }
+            con.inuse = false;
+            return false;
+        }
 
-    synchronized (this) {
-        if (this.operations == null)
-            this.prepare();
-        if (this.context == null)
-            this.context = new Context();
-    }
-    Context con = null;
-    synchronized (this.context) {
-        con = this.context.inuse ? new Context() : this.context;
-        con.reset(target, start, end, this.numberOfClosures);
-    }
-    if (match != null) {
-        match.setNumberOfGroups(this.nofparen);
-        match.setSource(target);
-    } else if (this.hasBackReferences) {
-        match = new Match();
-        match.setNumberOfGroups(this.nofparen);
-                                                // Need not to call setSource() because
-                                                // a caller can not access this match instance.
-    }
-    con.match = match;
+        /*
+         * The pattern contains a fixed string.
+         * The engine checks with Boyer-Moore whether the text contains the fixed string or not.
+         * If not, it return with false.
+         */
+        if (this.fixedString != null) {
+            int o = this.fixedStringTable.matches(target, con.start, con.limit);
+            if (o < 0) {
+                //System.err.println("Non-match in fixed-string search.");
+                con.inuse = false;
+                return false;
+            }
+        }
 
-    if (this.isSet(this.options, XMLSCHEMA_MODE)) {
-        int matchEnd = this. matchCharArray (con, this.operations, con.start, 1, this.options);
-        //System.err.println("DEBUG: matchEnd="+matchEnd);
-        if (matchEnd == con.limit) {
+        int limit = con.limit-this.minlength;
+        int matchStart;
+        int matchEnd = -1;
+
+        /*
+         * Checks whether the expression starts with ".*".
+         */
+        if (this.operations.type == Op.CLOSURE && this.operations.getChild().type == Op.DOT) {
+            if (isSet(this.options, SINGLE_LINE)) {
+                matchStart = con.start;
+                matchEnd = this. matchCharArray (con, this.operations, con.start, 1, this.options);
+            } else {
+                boolean previousIsEOL = true;
+                for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
+                    int ch =  target [  matchStart ] ;
+                    if (isEOLChar(ch)) {
+                        previousIsEOL = true;
+                    } else {
+                        if (previousIsEOL) {
+                            if (0 <= (matchEnd = this. matchCharArray (con, this.operations,
+                                                                       matchStart, 1, this.options)))
+                                break;
+                        }
+                        previousIsEOL = false;
+                    }
+                }
+            }
+        }
+
+        /*
+         * Optimization against the first character.
+         */
+        else if (this.firstChar != null) {
+            //System.err.println("DEBUG: with firstchar-matching: "+this.firstChar);
+            RangeToken range = this.firstChar;
+            if (this.isSet(this.options, IGNORE_CASE)) {
+                range = this.firstChar.getCaseInsensitiveToken();
+                for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
+                    int ch =  target [  matchStart ] ;
+                    if (REUtil.isHighSurrogate(ch) && matchStart+1 < con.limit) {
+                        ch = REUtil.composeFromSurrogates(ch,  target [  matchStart+1 ] );
+                        if (!range.match(ch))  continue;
+                    } else {
+                        if (!range.match(ch)) {
+                            char ch1 = Character.toUpperCase((char)ch);
+                            if (!range.match(ch1))
+                                if (!range.match(Character.toLowerCase(ch1)))
+                                    continue;
+                        }
+                    }
+                    if (0 <= (matchEnd = this. matchCharArray (con, this.operations,
+                                                               matchStart, 1, this.options)))
+                        break;
+                }
+            } else {
+                for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
+                    int ch =  target [  matchStart ] ;
+                    if (REUtil.isHighSurrogate(ch) && matchStart+1 < con.limit)
+                        ch = REUtil.composeFromSurrogates(ch,  target [  matchStart+1 ] );
+                    if (!range.match(ch))  continue;
+                    if (0 <= (matchEnd = this. matchCharArray (con, this.operations,
+                                                               matchStart, 1, this.options)))
+                        break;
+                }
+            }
+        }
+
+        /*
+         * Straightforward matching.
+         */
+        else {
+            for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
+                if (0 <= (matchEnd = this. matchCharArray (con, this.operations, matchStart, 1, this.options)))
+                    break;
+            }
+        }
+
+        if (matchEnd >= 0) {
             if (con.match != null) {
-                con.match.setBeginning(0, con.start);
+                con.match.setBeginning(0, matchStart);
                 con.match.setEnd(0, matchEnd);
             }
             con.inuse = false;
             return true;
-        }
-        return false;
-    }
-
-    /*
-     * The pattern has only fixed string.
-     * The engine uses Boyer-Moore.
-     */
-    if (this.fixedStringOnly) {
-        //System.err.println("DEBUG: fixed-only: "+this.fixedString);
-        int o = this.fixedStringTable.matches(target, con.start, con.limit);
-        if (o >= 0) {
-            if (con.match != null) {
-                con.match.setBeginning(0, o);
-                con.match.setEnd(0, o+this.fixedString.length());
-            }
-            con.inuse = false;
-            return true;
-        }
-        con.inuse = false;
-        return false;
-    }
-
-    /*
-     * The pattern contains a fixed string.
-     * The engine checks with Boyer-Moore whether the text contains the fixed string or not.
-     * If not, it return with false.
-     */
-    if (this.fixedString != null) {
-        int o = this.fixedStringTable.matches(target, con.start, con.limit);
-        if (o < 0) {
-            //System.err.println("Non-match in fixed-string search.");
+        } else {
             con.inuse = false;
             return false;
         }
     }
 
-    int limit = con.limit-this.minlength;
-    int matchStart;
-    int matchEnd = -1;
-
-    /*
-     * Checks whether the expression starts with ".*".
-     */
-    if (this.operations.type == Op.CLOSURE && this.operations.getChild().type == Op.DOT) {
-        if (isSet(this.options, SINGLE_LINE)) {
-            matchStart = con.start;
-            matchEnd = this. matchCharArray (con, this.operations, con.start, 1, this.options);
-        } else {
-            boolean previousIsEOL = true;
-            for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
-                int ch =  target [  matchStart ] ;
-                if (isEOLChar(ch)) {
-                    previousIsEOL = true;
-                } else {
-                    if (previousIsEOL) {
-                        if (0 <= (matchEnd = this. matchCharArray (con, this.operations,
-                                                        matchStart, 1, this.options)))
-                            break;
-                    }
-                    previousIsEOL = false;
-                }
-            }
-        }
-    }
-
-    /*
-     * Optimization against the first character.
-     */
-    else if (this.firstChar != null) {
-        //System.err.println("DEBUG: with firstchar-matching: "+this.firstChar);
-        RangeToken range = this.firstChar;
-        if (this.isSet(this.options, IGNORE_CASE)) {
-            range = this.firstChar.getCaseInsensitiveToken();
-            for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
-                int ch =  target [  matchStart ] ;
-                if (REUtil.isHighSurrogate(ch) && matchStart+1 < con.limit) {
-                    ch = REUtil.composeFromSurrogates(ch,  target [  matchStart+1 ] );
-                    if (!range.match(ch))  continue;
-                } else {
-                    if (!range.match(ch)) {
-                        char ch1 = Character.toUpperCase((char)ch);
-                        if (!range.match(ch1))
-                            if (!range.match(Character.toLowerCase(ch1)))
-                                continue;
-                    }
-                }
-                if (0 <= (matchEnd = this. matchCharArray (con, this.operations,
-                                                matchStart, 1, this.options)))
-                    break;
-            }
-        } else {
-            for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
-                int ch =  target [  matchStart ] ;
-                if (REUtil.isHighSurrogate(ch) && matchStart+1 < con.limit)
-                    ch = REUtil.composeFromSurrogates(ch,  target [  matchStart+1 ] );
-                if (!range.match(ch))  continue;
-                if (0 <= (matchEnd = this. matchCharArray (con, this.operations,
-                                                matchStart, 1, this.options)))
-                    break;
-            }
-        }
-    }
-
-    /*
-     * Straightforward matching.
-     */
-    else {
-        for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
-            if (0 <= (matchEnd = this. matchCharArray (con, this.operations, matchStart, 1, this.options)))
-                break;
-        }
-    }
-
-    if (matchEnd >= 0) {
-        if (con.match != null) {
-            con.match.setBeginning(0, matchStart);
-            con.match.setEnd(0, matchEnd);
-        }
-        con.inuse = false;
-        return true;
-    } else {
-        con.inuse = false;
-        return false;
-    }
-}
-
 /**
  * @return -1 when not match; offset of the end of matched string when match.
  */
-private int matchCharArray (Context con, Op op, int offset, int dx, int opts) {
+    private int matchCharArray (Context con, Op op, int offset, int dx, int opts) {
+
+        char[] target = con.charTarget;
 
 
-
-
-
-
-    char[] target = con.charTarget;
-
-
-    while (true) {
-        if (op == null)
-            return offset;
-        if (offset > con.limit || offset < con.start)
-            return -1;
-        switch (op.type) {
-          case Op.CHAR:
-            if (isSet(opts, IGNORE_CASE)) {
-                int ch = op.getData();
-                if (dx > 0) {
-                    if (offset >= con.limit || !matchIgnoreCase(ch,  target [  offset ] ))
-                        return -1;
-                    offset ++;
-                } else {
-                    int o1 = offset-1;
-                    if (o1 >= con.limit || o1 < 0 || !matchIgnoreCase(ch,  target [  o1 ] ))
-                        return -1;
-                    offset = o1;
-                }
-            } else {
-                int ch = op.getData();
-                if (dx > 0) {
-                    if (offset >= con.limit || ch !=  target [  offset ] )
+        while (true) {
+            if (op == null)
+                return offset;
+            if (offset > con.limit || offset < con.start)
+                return -1;
+            switch (op.type) {
+            case Op.CHAR:
+                if (isSet(opts, IGNORE_CASE)) {
+                    int ch = op.getData();
+                    if (dx > 0) {
+                        if (offset >= con.limit || !matchIgnoreCase(ch,  target [  offset ] ))
                             return -1;
+                        offset ++;
+                    } else {
+                        int o1 = offset-1;
+                        if (o1 >= con.limit || o1 < 0 || !matchIgnoreCase(ch,  target [  o1 ] ))
+                            return -1;
+                        offset = o1;
+                    }
+                } else {
+                    int ch = op.getData();
+                    if (dx > 0) {
+                        if (offset >= con.limit || ch !=  target [  offset ] )
+                            return -1;
+                        offset ++;
+                    } else {
+                        int o1 = offset-1;
+                        if (o1 >= con.limit || o1 < 0 || ch !=  target [  o1 ] )
+                            return -1;
+                        offset = o1;
+                    }
+                }
+                op = op.next;
+                break;
+
+            case Op.DOT:
+                if (dx > 0) {
+                    if (offset >= con.limit)
+                        return -1;
+                    int ch =  target [  offset ] ;
+                    if (isSet(opts, SINGLE_LINE)) {
+                        if (REUtil.isHighSurrogate(ch) && offset+1 < con.limit)
+                            offset ++;
+                    } else {
+                        if (REUtil.isHighSurrogate(ch) && offset+1 < con.limit)
+                            ch = REUtil.composeFromSurrogates(ch,  target [  ++offset ] );
+                        if (isEOLChar(ch))
+                            return -1;
+                    }
                     offset ++;
                 } else {
                     int o1 = offset-1;
-                    if (o1 >= con.limit || o1 < 0 || ch !=  target [  o1 ] )
+                    if (o1 >= con.limit || o1 < 0)
                         return -1;
+                    int ch =  target [  o1 ] ;
+                    if (isSet(opts, SINGLE_LINE)) {
+                        if (REUtil.isLowSurrogate(ch) && o1-1 >= 0)
+                            o1 --;
+                    } else {
+                        if (REUtil.isLowSurrogate(ch) && o1-1 >= 0)
+                            ch = REUtil.composeFromSurrogates( target [  --o1 ] , ch);
+                        if (!isEOLChar(ch))
+                            return -1;
+                    }
                     offset = o1;
                 }
-            }
-            op = op.next;
-            break;
+                op = op.next;
+                break;
 
-          case Op.DOT:
-            if (dx > 0) {
-                if (offset >= con.limit)
-                    return -1;
-                int ch =  target [  offset ] ;
-                if (isSet(opts, SINGLE_LINE)) {
-                    if (REUtil.isHighSurrogate(ch) && offset+1 < con.limit)
-                        offset ++;
-                } else {
+            case Op.RANGE:
+            case Op.NRANGE:
+                if (dx > 0) {
+                    if (offset >= con.limit)
+                        return -1;
+                    int ch =  target [  offset ] ;
                     if (REUtil.isHighSurrogate(ch) && offset+1 < con.limit)
                         ch = REUtil.composeFromSurrogates(ch,  target [  ++offset ] );
-                    if (isEOLChar(ch))
-                        return -1;
-                }
-                offset ++;
-            } else {
-                int o1 = offset-1;
-                if (o1 >= con.limit || o1 < 0)
-                    return -1;
-                int ch =  target [  o1 ] ;
-                if (isSet(opts, SINGLE_LINE)) {
-                    if (REUtil.isLowSurrogate(ch) && o1-1 >= 0)
-                        o1 --;
+                    RangeToken tok = op.getToken();
+                    if (isSet(opts, IGNORE_CASE)) {
+                        tok = tok.getCaseInsensitiveToken();
+                        if (!tok.match(ch)) {
+                            if (ch >= 0x10000)  return -1;
+                            char uch;
+                            if (!tok.match(uch = Character.toUpperCase((char)ch))
+                                && !tok.match(Character.toLowerCase(uch)))
+                                return -1;
+                        }
+                    } else {
+                        if (!tok.match(ch))  return -1;
+                    }
+                    offset ++;
                 } else {
+                    int o1 = offset-1;
+                    if (o1 >= con.limit || o1 < 0)
+                        return -1;
+                    int ch =  target [  o1 ] ;
                     if (REUtil.isLowSurrogate(ch) && o1-1 >= 0)
                         ch = REUtil.composeFromSurrogates( target [  --o1 ] , ch);
-                    if (!isEOLChar(ch))
-                        return -1;
-                }
-                offset = o1;
-            }
-            op = op.next;
-            break;
-            
-          case Op.RANGE:
-          case Op.NRANGE:
-            if (dx > 0) {
-                if (offset >= con.limit)
-                    return -1;
-                int ch =  target [  offset ] ;
-                if (REUtil.isHighSurrogate(ch) && offset+1 < con.limit)
-                    ch = REUtil.composeFromSurrogates(ch,  target [  ++offset ] );
-                RangeToken tok = op.getToken();
-                if (isSet(opts, IGNORE_CASE)) {
-                    tok = tok.getCaseInsensitiveToken();
-                    if (!tok.match(ch)) {
-                        if (ch >= 0x10000)  return -1;
-                        char uch;
-                        if (!tok.match(uch = Character.toUpperCase((char)ch))
-                            && !tok.match(Character.toLowerCase(uch)))
-                            return -1;
+                    RangeToken tok = op.getToken();
+                    if (isSet(opts, IGNORE_CASE)) {
+                        tok = tok.getCaseInsensitiveToken();
+                        if (!tok.match(ch)) {
+                            if (ch >= 0x10000)  return -1;
+                            char uch;
+                            if (!tok.match(uch = Character.toUpperCase((char)ch))
+                                && !tok.match(Character.toLowerCase(uch)))
+                                return -1;
+                        }
+                    } else {
+                        if (!tok.match(ch))  return -1;
                     }
-                } else {
-                    if (!tok.match(ch))  return -1;
+                    offset = o1;
                 }
-                offset ++;
-            } else {
-                int o1 = offset-1;
-                if (o1 >= con.limit || o1 < 0)
-                    return -1;
-                int ch =  target [  o1 ] ;
-                if (REUtil.isLowSurrogate(ch) && o1-1 >= 0)
-                    ch = REUtil.composeFromSurrogates( target [  --o1 ] , ch);
-                RangeToken tok = op.getToken();
-                if (isSet(opts, IGNORE_CASE)) {
-                    tok = tok.getCaseInsensitiveToken();
-                    if (!tok.match(ch)) {
-                        if (ch >= 0x10000)  return -1;
-                        char uch;
-                        if (!tok.match(uch = Character.toUpperCase((char)ch))
-                            && !tok.match(Character.toLowerCase(uch)))
-                            return -1;
-                    }
-                } else {
-                    if (!tok.match(ch))  return -1;
-                }
-                offset = o1;
-            }
-            op = op.next;
-            break;
+                op = op.next;
+                break;
 
-          case Op.ANCHOR:
-            boolean go = false;
-            switch (op.getData()) {
-              case '^':
-                if (isSet(opts, MULTIPLE_LINES)) {
+            case Op.ANCHOR:
+                boolean go = false;
+                switch (op.getData()) {
+                case '^':
+                    if (isSet(opts, MULTIPLE_LINES)) {
+                        if (!(offset == con.start
+                              || offset > con.start && isEOLChar( target [  offset-1 ] )))
+                            return -1;
+                    } else {
+                        if (offset != con.start)
+                            return -1;
+                    }
+                    break;
+
+                case '@':                         // Internal use only.
+                    // The @ always matches line beginnings.
                     if (!(offset == con.start
                           || offset > con.start && isEOLChar( target [  offset-1 ] )))
                         return -1;
-                } else {
-                    if (offset != con.start)
-                        return -1;
-                }
-                break;
+                    break;
 
-              case '@':                         // Internal use only.
-                                                // The @ always matches line beginnings.
-                if (!(offset == con.start
-                      || offset > con.start && isEOLChar( target [  offset-1 ] )))
-                    return -1;
-                break;
+                case '$':
+                    if (isSet(opts, MULTIPLE_LINES)) {
+                        if (!(offset == con.limit
+                              || offset < con.limit && isEOLChar( target [  offset ] )))
+                            return -1;
+                    } else {
+                        if (!(offset == con.limit
+                              || offset+1 == con.limit && isEOLChar( target [  offset ] )
+                              || offset+2 == con.limit &&  target [  offset ]  == CARRIAGE_RETURN
+                              &&  target [  offset+1 ]  == LINE_FEED))
+                            return -1;
+                    }
+                    break;
 
-              case '$':
-                if (isSet(opts, MULTIPLE_LINES)) {
-                    if (!(offset == con.limit
-                          || offset < con.limit && isEOLChar( target [  offset ] )))
-                        return -1;
-                } else {
+                case 'A':
+                    if (offset != con.start)  return -1;
+                    break;
+
+                case 'Z':
                     if (!(offset == con.limit
                           || offset+1 == con.limit && isEOLChar( target [  offset ] )
                           || offset+2 == con.limit &&  target [  offset ]  == CARRIAGE_RETURN
-                                                   &&  target [  offset+1 ]  == LINE_FEED))
+                          &&  target [  offset+1 ]  == LINE_FEED))
                         return -1;
-                }
-                break;
-                
-              case 'A':
-                if (offset != con.start)  return -1;
+                    break;
+
+                case 'z':
+                    if (offset != con.limit)  return -1;
+                    break;
+
+                case 'b':
+                    if (con.length == 0)  return -1;
+                    {
+                        int after = getWordType(target, con.start, con.limit, offset, opts);
+                        if (after == WT_IGNORE)  return -1;
+                        int before = getPreviousWordType(target, con.start, con.limit, offset, opts);
+                        if (after == before)  return -1;
+                    }
+                    break;
+
+                case 'B':
+                    if (con.length == 0)
+                        go = true;
+                    else {
+                        int after = getWordType(target, con.start, con.limit, offset, opts);
+                        go = after == WT_IGNORE
+                             || after == getPreviousWordType(target, con.start, con.limit, offset, opts);
+                    }
+                    if (!go)  return -1;
+                    break;
+
+                case '<':
+                    if (con.length == 0 || offset == con.limit)  return -1;
+                    if (getWordType(target, con.start, con.limit, offset, opts) != WT_LETTER
+                        || getPreviousWordType(target, con.start, con.limit, offset, opts) != WT_OTHER)
+                        return -1;
+                    break;
+
+                case '>':
+                    if (con.length == 0 || offset == con.start)  return -1;
+                    if (getWordType(target, con.start, con.limit, offset, opts) != WT_OTHER
+                        || getPreviousWordType(target, con.start, con.limit, offset, opts) != WT_LETTER)
+                        return -1;
+                    break;
+                } // switch anchor type
+                op = op.next;
                 break;
 
-              case 'Z':
-                if (!(offset == con.limit
-                      || offset+1 == con.limit && isEOLChar( target [  offset ] )
-                      || offset+2 == con.limit &&  target [  offset ]  == CARRIAGE_RETURN
-                                               &&  target [  offset+1 ]  == LINE_FEED))
-                    return -1;
-                break;
-
-              case 'z':
-                if (offset != con.limit)  return -1;
-                break;
-
-              case 'b':
-                if (con.length == 0)  return -1;
+            case Op.BACKREFERENCE:
                 {
-                    int after = getWordType(target, con.start, con.limit, offset, opts);
-                    if (after == WT_IGNORE)  return -1;
-                    int before = getPreviousWordType(target, con.start, con.limit, offset, opts);
-                    if (after == before)  return -1;
+                    int refno = op.getData();
+                    if (refno <= 0 || refno >= this.nofparen)
+                        throw new RuntimeException("Internal Error: Reference number must be more than zero: "+refno);
+                    if (con.match.getBeginning(refno) < 0
+                        || con.match.getEnd(refno) < 0)
+                        return -1;                // ********
+                    int o2 = con.match.getBeginning(refno);
+                    int literallen = con.match.getEnd(refno)-o2;
+                    if (!isSet(opts, IGNORE_CASE)) {
+                        if (dx > 0) {
+                            if (!regionMatches(target, offset, con.limit, o2, literallen))
+                                return -1;
+                            offset += literallen;
+                        } else {
+                            if (!regionMatches(target, offset-literallen, con.limit, o2, literallen))
+                                return -1;
+                            offset -= literallen;
+                        }
+                    } else {
+                        if (dx > 0) {
+                            if (!regionMatchesIgnoreCase(target, offset, con.limit, o2, literallen))
+                                return -1;
+                            offset += literallen;
+                        } else {
+                            if (!regionMatchesIgnoreCase(target, offset-literallen, con.limit,
+                                                         o2, literallen))
+                                return -1;
+                            offset -= literallen;
+                        }
+                    }
+                }
+                op = op.next;
+                break;
+            case Op.STRING:
+                {
+                    String literal = op.getString();
+                    int literallen = literal.length();
+                    if (!isSet(opts, IGNORE_CASE)) {
+                        if (dx > 0) {
+                            if (!regionMatches(target, offset, con.limit, literal, literallen))
+                                return -1;
+                            offset += literallen;
+                        } else {
+                            if (!regionMatches(target, offset-literallen, con.limit, literal, literallen))
+                                return -1;
+                            offset -= literallen;
+                        }
+                    } else {
+                        if (dx > 0) {
+                            if (!regionMatchesIgnoreCase(target, offset, con.limit, literal, literallen))
+                                return -1;
+                            offset += literallen;
+                        } else {
+                            if (!regionMatchesIgnoreCase(target, offset-literallen, con.limit,
+                                                         literal, literallen))
+                                return -1;
+                            offset -= literallen;
+                        }
+                    }
+                }
+                op = op.next;
+                break;
+
+            case Op.CLOSURE:
+                {
+                    /*
+                     * Saves current position to avoid
+                     * zero-width repeats.
+                     */
+                    int id = op.getData();
+                    if (id >= 0) {
+                        int previousOffset = con.offsets[id];
+                        if (previousOffset < 0 || previousOffset != offset) {
+                            con.offsets[id] = offset;
+                        } else {
+                            con.offsets[id] = -1;
+                            op = op.next;
+                            break;
+                        }
+                    }
+
+                    int ret = this. matchCharArray (con, op.getChild(), offset, dx, opts);
+                    if (id >= 0)  con.offsets[id] = -1;
+                    if (ret >= 0)  return ret;
+                    op = op.next;
                 }
                 break;
 
-              case 'B':
-                if (con.length == 0)
-                    go = true;
-                else {
-                    int after = getWordType(target, con.start, con.limit, offset, opts);
-                    go = after == WT_IGNORE
-                        || after == getPreviousWordType(target, con.start, con.limit, offset, opts);
+            case Op.QUESTION:
+                {
+                    int ret = this. matchCharArray (con, op.getChild(), offset, dx, opts);
+                    if (ret >= 0)  return ret;
+                    op = op.next;
                 }
-                if (!go)  return -1;
                 break;
 
-              case '<':
-                if (con.length == 0 || offset == con.limit)  return -1;
-                if (getWordType(target, con.start, con.limit, offset, opts) != WT_LETTER
-                    || getPreviousWordType(target, con.start, con.limit, offset, opts) != WT_OTHER)
-                    return -1;
+            case Op.NONGREEDYCLOSURE:
+            case Op.NONGREEDYQUESTION:
+                {
+                    int ret = this. matchCharArray (con, op.next, offset, dx, opts);
+                    if (ret >= 0)  return ret;
+                    op = op.getChild();
+                }
                 break;
 
-              case '>':
-                if (con.length == 0 || offset == con.start)  return -1;
-                if (getWordType(target, con.start, con.limit, offset, opts) != WT_OTHER
-                    || getPreviousWordType(target, con.start, con.limit, offset, opts) != WT_LETTER)
-                    return -1;
-                break;
-            } // switch anchor type
-            op = op.next;
-            break;
+            case Op.UNION:
+                for (int i = 0;  i < op.size();  i ++) {
+                    int ret = this. matchCharArray (con, op.elementAt(i), offset, dx, opts);
+                    //System.err.println("UNION: "+i+", ret="+ret);
+                    if (ret >= 0)  return ret;
+                }
+                return -1;
 
-          case Op.BACKREFERENCE:
-            {
+            case Op.CAPTURE:
                 int refno = op.getData();
-                if (refno <= 0 || refno >= this.nofparen)
-                    throw new RuntimeException("Internal Error: Reference number must be more than zero: "+refno);
-                if (con.match.getBeginning(refno) < 0
-                    || con.match.getEnd(refno) < 0)
-                    return -1;                // ********
-                int o2 = con.match.getBeginning(refno);
-                int literallen = con.match.getEnd(refno)-o2;
-                if (!isSet(opts, IGNORE_CASE)) {
-                    if (dx > 0) {
-                        if (!regionMatches(target, offset, con.limit, o2, literallen))
-                            return -1;
-                        offset += literallen;
-                    } else {
-                        if (!regionMatches(target, offset-literallen, con.limit, o2, literallen))
-                            return -1;
-                        offset -= literallen;
-                    }
-                } else {
-                    if (dx > 0) {
-                        if (!regionMatchesIgnoreCase(target, offset, con.limit, o2, literallen))
-                            return -1;
-                        offset += literallen;
-                    } else {
-                        if (!regionMatchesIgnoreCase(target, offset-literallen, con.limit,
-                                                     o2, literallen))
-                            return -1;
-                        offset -= literallen;
-                    }
+                if (con.match != null && refno > 0) {
+                    int save = con.match.getBeginning(refno);
+                    con.match.setBeginning(refno, offset);
+                    int ret = this. matchCharArray (con, op.next, offset, dx, opts);
+                    if (ret < 0)  con.match.setBeginning(refno, save);
+                    return ret;
+                } else if (con.match != null && refno < 0) {
+                    int index = -refno;
+                    int save = con.match.getEnd(index);
+                    con.match.setEnd(index, offset);
+                    int ret = this. matchCharArray (con, op.next, offset, dx, opts);
+                    if (ret < 0)  con.match.setEnd(index, save);
+                    return ret;
                 }
-            }
-            op = op.next;
-            break;
-          case Op.STRING:
-            {
-                String literal = op.getString();
-                int literallen = literal.length();
-                if (!isSet(opts, IGNORE_CASE)) {
-                    if (dx > 0) {
-                        if (!regionMatches(target, offset, con.limit, literal, literallen))
-                            return -1;
-                        offset += literallen;
-                    } else {
-                        if (!regionMatches(target, offset-literallen, con.limit, literal, literallen))
-                            return -1;
-                        offset -= literallen;
-                    }
-                } else {
-                    if (dx > 0) {
-                        if (!regionMatchesIgnoreCase(target, offset, con.limit, literal, literallen))
-                            return -1;
-                        offset += literallen;
-                    } else {
-                        if (!regionMatchesIgnoreCase(target, offset-literallen, con.limit,
-                                                     literal, literallen))
-                            return -1;
-                        offset -= literallen;
-                    }
-                }
-            }
-            op = op.next;
-            break;
-
-          case Op.CLOSURE:
-            {
-                /*
-                 * Saves current position to avoid
-                 * zero-width repeats.
-                 */
-                int id = op.getData();
-                if (id >= 0) {
-                    int previousOffset = con.offsets[id];
-                    if (previousOffset < 0 || previousOffset != offset) {
-                        con.offsets[id] = offset;
-                    } else {
-                        con.offsets[id] = -1;
-                        op = op.next;
-                        break;
-                    }
-                }
-
-                int ret = this. matchCharArray (con, op.getChild(), offset, dx, opts);
-                if (id >= 0)  con.offsets[id] = -1;
-                if (ret >= 0)  return ret;
                 op = op.next;
-            }
-            break;
+                break;
 
-          case Op.QUESTION:
-            {
-                int ret = this. matchCharArray (con, op.getChild(), offset, dx, opts);
-                if (ret >= 0)  return ret;
+            case Op.LOOKAHEAD:
+                if (0 > this. matchCharArray (con, op.getChild(), offset, 1, opts))  return -1;
                 op = op.next;
-            }
-            break;
-
-          case Op.NONGREEDYCLOSURE:
-          case Op.NONGREEDYQUESTION:
-            {
-                int ret = this. matchCharArray (con, op.next, offset, dx, opts);
-                if (ret >= 0)  return ret;
-                op = op.getChild();
-            }
-            break;
-
-          case Op.UNION:
-            for (int i = 0;  i < op.size();  i ++) {
-                int ret = this. matchCharArray (con, op.elementAt(i), offset, dx, opts);
-                //System.err.println("UNION: "+i+", ret="+ret);
-                if (ret >= 0)  return ret;
-            }
-            return -1;
-
-          case Op.CAPTURE:
-            int refno = op.getData();
-            if (con.match != null && refno > 0) {
-                int save = con.match.getBeginning(refno);
-                con.match.setBeginning(refno, offset);
-                int ret = this. matchCharArray (con, op.next, offset, dx, opts);
-                if (ret < 0)  con.match.setBeginning(refno, save);
-                return ret;
-            } else if (con.match != null && refno < 0) {
-                int index = -refno;
-                int save = con.match.getEnd(index);
-                con.match.setEnd(index, offset);
-                int ret = this. matchCharArray (con, op.next, offset, dx, opts);
-                if (ret < 0)  con.match.setEnd(index, save);
-                return ret;
-            }
-            op = op.next;
-            break;
-
-          case Op.LOOKAHEAD:
-            if (0 > this. matchCharArray (con, op.getChild(), offset, 1, opts))  return -1;
-            op = op.next;
-            break;
-          case Op.NEGATIVELOOKAHEAD:
-            if (0 <= this. matchCharArray (con, op.getChild(), offset, 1, opts))  return -1;
-            op = op.next;
-            break;
-          case Op.LOOKBEHIND:
-            if (0 > this. matchCharArray (con, op.getChild(), offset, -1, opts))  return -1;
-            op = op.next;
-            break;
-          case Op.NEGATIVELOOKBEHIND:
-            if (0 <= this. matchCharArray (con, op.getChild(), offset, -1, opts))  return -1;
-            op = op.next;
-            break;
-
-          case Op.INDEPENDENT:
-            {
-                int ret = this. matchCharArray (con, op.getChild(), offset, dx, opts);
-                if (ret < 0)  return ret;
-                offset = ret;
+                break;
+            case Op.NEGATIVELOOKAHEAD:
+                if (0 <= this. matchCharArray (con, op.getChild(), offset, 1, opts))  return -1;
                 op = op.next;
-            }
-            break;
-
-          case Op.MODIFIER:
-            {
-                int localopts = opts;
-                localopts |= op.getData();
-                localopts &= ~op.getData2();
-                //System.err.println("MODIFIER: "+Integer.toString(opts, 16)+" -> "+Integer.toString(localopts, 16));
-                int ret = this. matchCharArray (con, op.getChild(), offset, dx, localopts);
-                if (ret < 0)  return ret;
-                offset = ret;
+                break;
+            case Op.LOOKBEHIND:
+                if (0 > this. matchCharArray (con, op.getChild(), offset, -1, opts))  return -1;
                 op = op.next;
-            }
-            break;
+                break;
+            case Op.NEGATIVELOOKBEHIND:
+                if (0 <= this. matchCharArray (con, op.getChild(), offset, -1, opts))  return -1;
+                op = op.next;
+                break;
 
-          case Op.CONDITION:
-            {
-                Op.ConditionOp cop = (Op.ConditionOp)op;
-                boolean matchp = false;
-                if (cop.refNumber > 0) {
-                    if (cop.refNumber >= this.nofparen)
-                        throw new RuntimeException("Internal Error: Reference number must be more than zero: "+cop.refNumber);
-                    matchp = con.match.getBeginning(cop.refNumber) >= 0
-                        && con.match.getEnd(cop.refNumber) >= 0;
-                } else {
-                    matchp = 0 <= this. matchCharArray (con, cop.condition, offset, dx, opts);
+            case Op.INDEPENDENT:
+                {
+                    int ret = this. matchCharArray (con, op.getChild(), offset, dx, opts);
+                    if (ret < 0)  return ret;
+                    offset = ret;
+                    op = op.next;
                 }
+                break;
 
-                if (matchp) {
-                    op = cop.yes;
-                } else if (cop.no != null) {
-                    op = cop.no;
-                } else {
-                    op = cop.next;
+            case Op.MODIFIER:
+                {
+                    int localopts = opts;
+                    localopts |= op.getData();
+                    localopts &= ~op.getData2();
+                    //System.err.println("MODIFIER: "+Integer.toString(opts, 16)+" -> "+Integer.toString(localopts, 16));
+                    int ret = this. matchCharArray (con, op.getChild(), offset, dx, localopts);
+                    if (ret < 0)  return ret;
+                    offset = ret;
+                    op = op.next;
                 }
-            }
-            break;
+                break;
 
-          default:
-            throw new RuntimeException("Unknown operation type: "+op.type);
-        } // switch (op.type)
-    } // while
-}
-    
-private static final int getPreviousWordType(char[]  target, int begin, int end,
-                                             int offset, int opts) {
-    int ret = getWordType(target, begin, end, --offset, opts);
-    while (ret == WT_IGNORE)
-        ret = getWordType(target, begin, end, --offset, opts);
-    return ret;
-}
+            case Op.CONDITION:
+                {
+                    Op.ConditionOp cop = (Op.ConditionOp)op;
+                    boolean matchp = false;
+                    if (cop.refNumber > 0) {
+                        if (cop.refNumber >= this.nofparen)
+                            throw new RuntimeException("Internal Error: Reference number must be more than zero: "+cop.refNumber);
+                        matchp = con.match.getBeginning(cop.refNumber) >= 0
+                                 && con.match.getEnd(cop.refNumber) >= 0;
+                    } else {
+                        matchp = 0 <= this. matchCharArray (con, cop.condition, offset, dx, opts);
+                    }
 
-private static final int getWordType(char[]  target, int begin, int end,
-                                     int offset, int opts) {
-    if (offset < begin || offset >= end)  return WT_OTHER;
-    return getWordType0( target [  offset ] , opts);
-}
+                    if (matchp) {
+                        op = cop.yes;
+                    } else if (cop.no != null) {
+                        op = cop.no;
+                    } else {
+                        op = cop.next;
+                    }
+                }
+                break;
 
-
-
-private static final boolean regionMatches(char[]  target, int offset, int limit,
-                                           String part, int partlen) {
-    if (offset < 0)  return false;
-    if (limit-offset < partlen)
-        return false;
-    int i = 0;
-    while (partlen-- > 0) {
-        if ( target [  offset++ ]  != part.charAt(i++))
-            return false;
+            default:
+                throw new RuntimeException("Unknown operation type: "+op.type);
+            } // switch (op.type)
+        } // while
     }
-    return true;
-}
 
-private static final boolean regionMatches(char[]  target, int offset, int limit,
-                                           int offset2, int partlen) {
-    if (offset < 0)  return false;
-    if (limit-offset < partlen)
-        return false;
-    int i = offset2;
-    while (partlen-- > 0) {
-        if ( target [  offset++ ]  !=  target [  i++ ] )
-            return false;
+    private static final int getPreviousWordType(char[]  target, int begin, int end,
+                                                 int offset, int opts) {
+        int ret = getWordType(target, begin, end, --offset, opts);
+        while (ret == WT_IGNORE)
+            ret = getWordType(target, begin, end, --offset, opts);
+        return ret;
     }
-    return true;
-}
+
+    private static final int getWordType(char[]  target, int begin, int end,
+                                         int offset, int opts) {
+        if (offset < begin || offset >= end)  return WT_OTHER;
+        return getWordType0( target [  offset ] , opts);
+    }
+
+
+
+    private static final boolean regionMatches(char[]  target, int offset, int limit,
+                                               String part, int partlen) {
+        if (offset < 0)  return false;
+        if (limit-offset < partlen)
+            return false;
+        int i = 0;
+        while (partlen-- > 0) {
+            if ( target [  offset++ ]  != part.charAt(i++))
+                return false;
+        }
+        return true;
+    }
+
+    private static final boolean regionMatches(char[]  target, int offset, int limit,
+                                               int offset2, int partlen) {
+        if (offset < 0)  return false;
+        if (limit-offset < partlen)
+            return false;
+        int i = offset2;
+        while (partlen-- > 0) {
+            if ( target [  offset++ ]  !=  target [  i++ ] )
+                return false;
+        }
+        return true;
+    }
 
 /**
  * @see java.lang.String#regionMatches
  */
-private static final boolean regionMatchesIgnoreCase(char[]  target, int offset, int limit,
-                                                     String part, int partlen) {
-    if (offset < 0)  return false;
-    if (limit-offset < partlen)
-        return false;
-    int i = 0;
-    while (partlen-- > 0) {
-        char ch1 =  target [  offset++ ] ;
-        char ch2 = part.charAt(i++);
-        if (ch1 == ch2)
-            continue;
-        char uch1 = Character.toUpperCase(ch1);
-        char uch2 = Character.toUpperCase(ch2);
-        if (uch1 == uch2)
-            continue;
-        if (Character.toLowerCase(uch1) != Character.toLowerCase(uch2))
+    private static final boolean regionMatchesIgnoreCase(char[]  target, int offset, int limit,
+                                                         String part, int partlen) {
+        if (offset < 0)  return false;
+        if (limit-offset < partlen)
             return false;
+        int i = 0;
+        while (partlen-- > 0) {
+            char ch1 =  target [  offset++ ] ;
+            char ch2 = part.charAt(i++);
+            if (ch1 == ch2)
+                continue;
+            char uch1 = Character.toUpperCase(ch1);
+            char uch2 = Character.toUpperCase(ch2);
+            if (uch1 == uch2)
+                continue;
+            if (Character.toLowerCase(uch1) != Character.toLowerCase(uch2))
+                return false;
+        }
+        return true;
     }
-    return true;
-}
 
-private static final boolean regionMatchesIgnoreCase(char[]  target, int offset, int limit,
-                                                     int offset2, int partlen) {
-    if (offset < 0)  return false;
-    if (limit-offset < partlen)
-        return false;
-    int i = offset2;
-    while (partlen-- > 0) {
-        char ch1 =  target [  offset++ ] ;
-        char ch2 =  target [  i++ ] ;
-        if (ch1 == ch2)
-            continue;
-        char uch1 = Character.toUpperCase(ch1);
-        char uch2 = Character.toUpperCase(ch2);
-        if (uch1 == uch2)
-            continue;
-        if (Character.toLowerCase(uch1) != Character.toLowerCase(uch2))
+    private static final boolean regionMatchesIgnoreCase(char[]  target, int offset, int limit,
+                                                         int offset2, int partlen) {
+        if (offset < 0)  return false;
+        if (limit-offset < partlen)
             return false;
+        int i = offset2;
+        while (partlen-- > 0) {
+            char ch1 =  target [  offset++ ] ;
+            char ch2 =  target [  i++ ] ;
+            if (ch1 == ch2)
+                continue;
+            char uch1 = Character.toUpperCase(ch1);
+            char uch2 = Character.toUpperCase(ch2);
+            if (uch1 == uch2)
+                continue;
+            if (Character.toLowerCase(uch1) != Character.toLowerCase(uch2))
+                return false;
+        }
+        return true;
     }
-    return true;
-}
-
-
-
-/* -*- java -*-
- *
- * (C) Copyright IBM Corp. 1998-2000  All rights reserved.
- *
- * US Government Users Restricted Rights Use, duplication or
- * disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
- *
- * The program is provided "as is" without any warranty express or
- * implied, including the warranty of non-infringement and the implied
- * warranties of merchantibility and fitness for a particular purpose.
- * IBM will not be liable for any damages suffered by you as a result
- * of using the Program. In no event will IBM be liable for any
- * special, indirect or consequential damages or lost profits even if
- * IBM has been advised of the possibility of their occurrence. IBM
- * will not be liable for any third party claims against you.
- */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1466,26 +1391,26 @@ private static final boolean regionMatchesIgnoreCase(char[]  target, int offset,
  *
  * @return true if the target is matched to this regular expression.
  */
-public boolean matches(String  target) {
-    return this.matches(target, 0,  target .length() , (Match)null);
-}
+    public boolean matches(String  target) {
+        return this.matches(target, 0,  target .length() , (Match)null);
+    }
 
 /**
  *
  * @return true if the target is matched to this regular expression.
  */
-public boolean matches(String  target, int start, int end) {
-    return this.matches(target, start, end, (Match)null);
-}
+    public boolean matches(String  target, int start, int end) {
+        return this.matches(target, start, end, (Match)null);
+    }
 
 /**
  *
  * @param match A Match instance for storing matching result.
  * @return Offset of the start position in <VAR>target</VAR>; or -1 if not match.
  */
-public boolean matches(String  target, Match match) {
-    return this.matches(target, 0,  target .length() , match);
-}
+    public boolean matches(String  target, Match match) {
+        return this.matches(target, 0,  target .length() , match);
+    }
 
 
 /**
@@ -1498,652 +1423,624 @@ public boolean matches(String  target, Match match) {
 
 
 
-public boolean matches(String  target, int start, int end, Match match) {
+    public boolean matches(String  target, int start, int end, Match match) {
 
-    synchronized (this) {
-        if (this.operations == null)
-            this.prepare();
-        if (this.context == null)
-            this.context = new Context();
-    }
-    Context con = null;
-    synchronized (this.context) {
-        con = this.context.inuse ? new Context() : this.context;
-        con.reset(target, start, end, this.numberOfClosures);
-    }
-    if (match != null) {
-        match.setNumberOfGroups(this.nofparen);
-        match.setSource(target);
-    } else if (this.hasBackReferences) {
-        match = new Match();
-        match.setNumberOfGroups(this.nofparen);
-                                                // Need not to call setSource() because
-                                                // a caller can not access this match instance.
-    }
-    con.match = match;
+        synchronized (this) {
+            if (this.operations == null)
+                this.prepare();
+            if (this.context == null)
+                this.context = new Context();
+        }
+        Context con = null;
+        synchronized (this.context) {
+            con = this.context.inuse ? new Context() : this.context;
+            con.reset(target, start, end, this.numberOfClosures);
+        }
+        if (match != null) {
+            match.setNumberOfGroups(this.nofparen);
+            match.setSource(target);
+        } else if (this.hasBackReferences) {
+            match = new Match();
+            match.setNumberOfGroups(this.nofparen);
+            // Need not to call setSource() because
+            // a caller can not access this match instance.
+        }
+        con.match = match;
 
-    if (this.isSet(this.options, XMLSCHEMA_MODE)) {
-        int matchEnd = this. matchString (con, this.operations, con.start, 1, this.options);
-        //System.err.println("DEBUG: matchEnd="+matchEnd);
-        if (matchEnd == con.limit) {
+        if (this.isSet(this.options, XMLSCHEMA_MODE)) {
+            int matchEnd = this. matchString (con, this.operations, con.start, 1, this.options);
+            //System.err.println("DEBUG: matchEnd="+matchEnd);
+            if (matchEnd == con.limit) {
+                if (con.match != null) {
+                    con.match.setBeginning(0, con.start);
+                    con.match.setEnd(0, matchEnd);
+                }
+                con.inuse = false;
+                return true;
+            }
+            return false;
+        }
+
+        /*
+         * The pattern has only fixed string.
+         * The engine uses Boyer-Moore.
+         */
+        if (this.fixedStringOnly) {
+            //System.err.println("DEBUG: fixed-only: "+this.fixedString);
+            int o = this.fixedStringTable.matches(target, con.start, con.limit);
+            if (o >= 0) {
+                if (con.match != null) {
+                    con.match.setBeginning(0, o);
+                    con.match.setEnd(0, o+this.fixedString.length());
+                }
+                con.inuse = false;
+                return true;
+            }
+            con.inuse = false;
+            return false;
+        }
+
+        /*
+         * The pattern contains a fixed string.
+         * The engine checks with Boyer-Moore whether the text contains the fixed string or not.
+         * If not, it return with false.
+         */
+        if (this.fixedString != null) {
+            int o = this.fixedStringTable.matches(target, con.start, con.limit);
+            if (o < 0) {
+                //System.err.println("Non-match in fixed-string search.");
+                con.inuse = false;
+                return false;
+            }
+        }
+
+        int limit = con.limit-this.minlength;
+        int matchStart;
+        int matchEnd = -1;
+
+        /*
+         * Checks whether the expression starts with ".*".
+         */
+        if (this.operations.type == Op.CLOSURE && this.operations.getChild().type == Op.DOT) {
+            if (isSet(this.options, SINGLE_LINE)) {
+                matchStart = con.start;
+                matchEnd = this. matchString (con, this.operations, con.start, 1, this.options);
+            } else {
+                boolean previousIsEOL = true;
+                for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
+                    int ch =  target .charAt(  matchStart ) ;
+                    if (isEOLChar(ch)) {
+                        previousIsEOL = true;
+                    } else {
+                        if (previousIsEOL) {
+                            if (0 <= (matchEnd = this. matchString (con, this.operations,
+                                                                    matchStart, 1, this.options)))
+                                break;
+                        }
+                        previousIsEOL = false;
+                    }
+                }
+            }
+        }
+
+        /*
+         * Optimization against the first character.
+         */
+        else if (this.firstChar != null) {
+            //System.err.println("DEBUG: with firstchar-matching: "+this.firstChar);
+            RangeToken range = this.firstChar;
+            if (this.isSet(this.options, IGNORE_CASE)) {
+                range = this.firstChar.getCaseInsensitiveToken();
+                for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
+                    int ch =  target .charAt(  matchStart ) ;
+                    if (REUtil.isHighSurrogate(ch) && matchStart+1 < con.limit) {
+                        ch = REUtil.composeFromSurrogates(ch,  target .charAt(  matchStart+1 ) );
+                        if (!range.match(ch))  continue;
+                    } else {
+                        if (!range.match(ch)) {
+                            char ch1 = Character.toUpperCase((char)ch);
+                            if (!range.match(ch1))
+                                if (!range.match(Character.toLowerCase(ch1)))
+                                    continue;
+                        }
+                    }
+                    if (0 <= (matchEnd = this. matchString (con, this.operations,
+                                                            matchStart, 1, this.options)))
+                        break;
+                }
+            } else {
+                for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
+                    int ch =  target .charAt(  matchStart ) ;
+                    if (REUtil.isHighSurrogate(ch) && matchStart+1 < con.limit)
+                        ch = REUtil.composeFromSurrogates(ch,  target .charAt(  matchStart+1 ) );
+                    if (!range.match(ch))  continue;
+                    if (0 <= (matchEnd = this. matchString (con, this.operations,
+                                                            matchStart, 1, this.options)))
+                        break;
+                }
+            }
+        }
+
+        /*
+         * Straightforward matching.
+         */
+        else {
+            for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
+                if (0 <= (matchEnd = this. matchString (con, this.operations, matchStart, 1, this.options)))
+                    break;
+            }
+        }
+
+        if (matchEnd >= 0) {
             if (con.match != null) {
-                con.match.setBeginning(0, con.start);
+                con.match.setBeginning(0, matchStart);
                 con.match.setEnd(0, matchEnd);
             }
             con.inuse = false;
             return true;
-        }
-        return false;
-    }
-
-    /*
-     * The pattern has only fixed string.
-     * The engine uses Boyer-Moore.
-     */
-    if (this.fixedStringOnly) {
-        //System.err.println("DEBUG: fixed-only: "+this.fixedString);
-        int o = this.fixedStringTable.matches(target, con.start, con.limit);
-        if (o >= 0) {
-            if (con.match != null) {
-                con.match.setBeginning(0, o);
-                con.match.setEnd(0, o+this.fixedString.length());
-            }
-            con.inuse = false;
-            return true;
-        }
-        con.inuse = false;
-        return false;
-    }
-
-    /*
-     * The pattern contains a fixed string.
-     * The engine checks with Boyer-Moore whether the text contains the fixed string or not.
-     * If not, it return with false.
-     */
-    if (this.fixedString != null) {
-        int o = this.fixedStringTable.matches(target, con.start, con.limit);
-        if (o < 0) {
-            //System.err.println("Non-match in fixed-string search.");
+        } else {
             con.inuse = false;
             return false;
         }
     }
 
-    int limit = con.limit-this.minlength;
-    int matchStart;
-    int matchEnd = -1;
-
-    /*
-     * Checks whether the expression starts with ".*".
-     */
-    if (this.operations.type == Op.CLOSURE && this.operations.getChild().type == Op.DOT) {
-        if (isSet(this.options, SINGLE_LINE)) {
-            matchStart = con.start;
-            matchEnd = this. matchString (con, this.operations, con.start, 1, this.options);
-        } else {
-            boolean previousIsEOL = true;
-            for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
-                int ch =  target .charAt(  matchStart ) ;
-                if (isEOLChar(ch)) {
-                    previousIsEOL = true;
-                } else {
-                    if (previousIsEOL) {
-                        if (0 <= (matchEnd = this. matchString (con, this.operations,
-                                                        matchStart, 1, this.options)))
-                            break;
-                    }
-                    previousIsEOL = false;
-                }
-            }
-        }
-    }
-
-    /*
-     * Optimization against the first character.
-     */
-    else if (this.firstChar != null) {
-        //System.err.println("DEBUG: with firstchar-matching: "+this.firstChar);
-        RangeToken range = this.firstChar;
-        if (this.isSet(this.options, IGNORE_CASE)) {
-            range = this.firstChar.getCaseInsensitiveToken();
-            for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
-                int ch =  target .charAt(  matchStart ) ;
-                if (REUtil.isHighSurrogate(ch) && matchStart+1 < con.limit) {
-                    ch = REUtil.composeFromSurrogates(ch,  target .charAt(  matchStart+1 ) );
-                    if (!range.match(ch))  continue;
-                } else {
-                    if (!range.match(ch)) {
-                        char ch1 = Character.toUpperCase((char)ch);
-                        if (!range.match(ch1))
-                            if (!range.match(Character.toLowerCase(ch1)))
-                                continue;
-                    }
-                }
-                if (0 <= (matchEnd = this. matchString (con, this.operations,
-                                                matchStart, 1, this.options)))
-                    break;
-            }
-        } else {
-            for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
-                int ch =  target .charAt(  matchStart ) ;
-                if (REUtil.isHighSurrogate(ch) && matchStart+1 < con.limit)
-                    ch = REUtil.composeFromSurrogates(ch,  target .charAt(  matchStart+1 ) );
-                if (!range.match(ch))  continue;
-                if (0 <= (matchEnd = this. matchString (con, this.operations,
-                                                matchStart, 1, this.options)))
-                    break;
-            }
-        }
-    }
-
-    /*
-     * Straightforward matching.
-     */
-    else {
-        for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
-            if (0 <= (matchEnd = this. matchString (con, this.operations, matchStart, 1, this.options)))
-                break;
-        }
-    }
-
-    if (matchEnd >= 0) {
-        if (con.match != null) {
-            con.match.setBeginning(0, matchStart);
-            con.match.setEnd(0, matchEnd);
-        }
-        con.inuse = false;
-        return true;
-    } else {
-        con.inuse = false;
-        return false;
-    }
-}
-
 /**
  * @return -1 when not match; offset of the end of matched string when match.
  */
-private int matchString (Context con, Op op, int offset, int dx, int opts) {
+    private int matchString (Context con, Op op, int offset, int dx, int opts) {
 
 
 
 
-    String target = con.strTarget;
+        String target = con.strTarget;
 
 
 
 
-    while (true) {
-        if (op == null)
-            return offset;
-        if (offset > con.limit || offset < con.start)
-            return -1;
-        switch (op.type) {
-          case Op.CHAR:
-            if (isSet(opts, IGNORE_CASE)) {
-                int ch = op.getData();
-                if (dx > 0) {
-                    if (offset >= con.limit || !matchIgnoreCase(ch,  target .charAt(  offset ) ))
-                        return -1;
-                    offset ++;
-                } else {
-                    int o1 = offset-1;
-                    if (o1 >= con.limit || o1 < 0 || !matchIgnoreCase(ch,  target .charAt(  o1 ) ))
-                        return -1;
-                    offset = o1;
-                }
-            } else {
-                int ch = op.getData();
-                if (dx > 0) {
-                    if (offset >= con.limit || ch !=  target .charAt(  offset ) )
+        while (true) {
+            if (op == null)
+                return offset;
+            if (offset > con.limit || offset < con.start)
+                return -1;
+            switch (op.type) {
+            case Op.CHAR:
+                if (isSet(opts, IGNORE_CASE)) {
+                    int ch = op.getData();
+                    if (dx > 0) {
+                        if (offset >= con.limit || !matchIgnoreCase(ch,  target .charAt(  offset ) ))
                             return -1;
+                        offset ++;
+                    } else {
+                        int o1 = offset-1;
+                        if (o1 >= con.limit || o1 < 0 || !matchIgnoreCase(ch,  target .charAt(  o1 ) ))
+                            return -1;
+                        offset = o1;
+                    }
+                } else {
+                    int ch = op.getData();
+                    if (dx > 0) {
+                        if (offset >= con.limit || ch !=  target .charAt(  offset ) )
+                            return -1;
+                        offset ++;
+                    } else {
+                        int o1 = offset-1;
+                        if (o1 >= con.limit || o1 < 0 || ch !=  target .charAt(  o1 ) )
+                            return -1;
+                        offset = o1;
+                    }
+                }
+                op = op.next;
+                break;
+
+            case Op.DOT:
+                if (dx > 0) {
+                    if (offset >= con.limit)
+                        return -1;
+                    int ch =  target .charAt(  offset ) ;
+                    if (isSet(opts, SINGLE_LINE)) {
+                        if (REUtil.isHighSurrogate(ch) && offset+1 < con.limit)
+                            offset ++;
+                    } else {
+                        if (REUtil.isHighSurrogate(ch) && offset+1 < con.limit)
+                            ch = REUtil.composeFromSurrogates(ch,  target .charAt(  ++offset ) );
+                        if (isEOLChar(ch))
+                            return -1;
+                    }
                     offset ++;
                 } else {
                     int o1 = offset-1;
-                    if (o1 >= con.limit || o1 < 0 || ch !=  target .charAt(  o1 ) )
+                    if (o1 >= con.limit || o1 < 0)
                         return -1;
+                    int ch =  target .charAt(  o1 ) ;
+                    if (isSet(opts, SINGLE_LINE)) {
+                        if (REUtil.isLowSurrogate(ch) && o1-1 >= 0)
+                            o1 --;
+                    } else {
+                        if (REUtil.isLowSurrogate(ch) && o1-1 >= 0)
+                            ch = REUtil.composeFromSurrogates( target .charAt(  --o1 ) , ch);
+                        if (!isEOLChar(ch))
+                            return -1;
+                    }
                     offset = o1;
                 }
-            }
-            op = op.next;
-            break;
+                op = op.next;
+                break;
 
-          case Op.DOT:
-            if (dx > 0) {
-                if (offset >= con.limit)
-                    return -1;
-                int ch =  target .charAt(  offset ) ;
-                if (isSet(opts, SINGLE_LINE)) {
-                    if (REUtil.isHighSurrogate(ch) && offset+1 < con.limit)
-                        offset ++;
-                } else {
+            case Op.RANGE:
+            case Op.NRANGE:
+                if (dx > 0) {
+                    if (offset >= con.limit)
+                        return -1;
+                    int ch =  target .charAt(  offset ) ;
                     if (REUtil.isHighSurrogate(ch) && offset+1 < con.limit)
                         ch = REUtil.composeFromSurrogates(ch,  target .charAt(  ++offset ) );
-                    if (isEOLChar(ch))
-                        return -1;
-                }
-                offset ++;
-            } else {
-                int o1 = offset-1;
-                if (o1 >= con.limit || o1 < 0)
-                    return -1;
-                int ch =  target .charAt(  o1 ) ;
-                if (isSet(opts, SINGLE_LINE)) {
-                    if (REUtil.isLowSurrogate(ch) && o1-1 >= 0)
-                        o1 --;
+                    RangeToken tok = op.getToken();
+                    if (isSet(opts, IGNORE_CASE)) {
+                        tok = tok.getCaseInsensitiveToken();
+                        if (!tok.match(ch)) {
+                            if (ch >= 0x10000)  return -1;
+                            char uch;
+                            if (!tok.match(uch = Character.toUpperCase((char)ch))
+                                && !tok.match(Character.toLowerCase(uch)))
+                                return -1;
+                        }
+                    } else {
+                        if (!tok.match(ch))  return -1;
+                    }
+                    offset ++;
                 } else {
+                    int o1 = offset-1;
+                    if (o1 >= con.limit || o1 < 0)
+                        return -1;
+                    int ch =  target .charAt(  o1 ) ;
                     if (REUtil.isLowSurrogate(ch) && o1-1 >= 0)
                         ch = REUtil.composeFromSurrogates( target .charAt(  --o1 ) , ch);
-                    if (!isEOLChar(ch))
-                        return -1;
-                }
-                offset = o1;
-            }
-            op = op.next;
-            break;
-            
-          case Op.RANGE:
-          case Op.NRANGE:
-            if (dx > 0) {
-                if (offset >= con.limit)
-                    return -1;
-                int ch =  target .charAt(  offset ) ;
-                if (REUtil.isHighSurrogate(ch) && offset+1 < con.limit)
-                    ch = REUtil.composeFromSurrogates(ch,  target .charAt(  ++offset ) );
-                RangeToken tok = op.getToken();
-                if (isSet(opts, IGNORE_CASE)) {
-                    tok = tok.getCaseInsensitiveToken();
-                    if (!tok.match(ch)) {
-                        if (ch >= 0x10000)  return -1;
-                        char uch;
-                        if (!tok.match(uch = Character.toUpperCase((char)ch))
-                            && !tok.match(Character.toLowerCase(uch)))
-                            return -1;
+                    RangeToken tok = op.getToken();
+                    if (isSet(opts, IGNORE_CASE)) {
+                        tok = tok.getCaseInsensitiveToken();
+                        if (!tok.match(ch)) {
+                            if (ch >= 0x10000)  return -1;
+                            char uch;
+                            if (!tok.match(uch = Character.toUpperCase((char)ch))
+                                && !tok.match(Character.toLowerCase(uch)))
+                                return -1;
+                        }
+                    } else {
+                        if (!tok.match(ch))  return -1;
                     }
-                } else {
-                    if (!tok.match(ch))  return -1;
+                    offset = o1;
                 }
-                offset ++;
-            } else {
-                int o1 = offset-1;
-                if (o1 >= con.limit || o1 < 0)
-                    return -1;
-                int ch =  target .charAt(  o1 ) ;
-                if (REUtil.isLowSurrogate(ch) && o1-1 >= 0)
-                    ch = REUtil.composeFromSurrogates( target .charAt(  --o1 ) , ch);
-                RangeToken tok = op.getToken();
-                if (isSet(opts, IGNORE_CASE)) {
-                    tok = tok.getCaseInsensitiveToken();
-                    if (!tok.match(ch)) {
-                        if (ch >= 0x10000)  return -1;
-                        char uch;
-                        if (!tok.match(uch = Character.toUpperCase((char)ch))
-                            && !tok.match(Character.toLowerCase(uch)))
-                            return -1;
-                    }
-                } else {
-                    if (!tok.match(ch))  return -1;
-                }
-                offset = o1;
-            }
-            op = op.next;
-            break;
+                op = op.next;
+                break;
 
-          case Op.ANCHOR:
-            boolean go = false;
-            switch (op.getData()) {
-              case '^':
-                if (isSet(opts, MULTIPLE_LINES)) {
+            case Op.ANCHOR:
+                boolean go = false;
+                switch (op.getData()) {
+                case '^':
+                    if (isSet(opts, MULTIPLE_LINES)) {
+                        if (!(offset == con.start
+                              || offset > con.start && isEOLChar( target .charAt(  offset-1 ) )))
+                            return -1;
+                    } else {
+                        if (offset != con.start)
+                            return -1;
+                    }
+                    break;
+
+                case '@':                         // Internal use only.
+                    // The @ always matches line beginnings.
                     if (!(offset == con.start
                           || offset > con.start && isEOLChar( target .charAt(  offset-1 ) )))
                         return -1;
-                } else {
-                    if (offset != con.start)
-                        return -1;
-                }
-                break;
+                    break;
 
-              case '@':                         // Internal use only.
-                                                // The @ always matches line beginnings.
-                if (!(offset == con.start
-                      || offset > con.start && isEOLChar( target .charAt(  offset-1 ) )))
-                    return -1;
-                break;
+                case '$':
+                    if (isSet(opts, MULTIPLE_LINES)) {
+                        if (!(offset == con.limit
+                              || offset < con.limit && isEOLChar( target .charAt(  offset ) )))
+                            return -1;
+                    } else {
+                        if (!(offset == con.limit
+                              || offset+1 == con.limit && isEOLChar( target .charAt(  offset ) )
+                              || offset+2 == con.limit &&  target .charAt(  offset )  == CARRIAGE_RETURN
+                              &&  target .charAt(  offset+1 )  == LINE_FEED))
+                            return -1;
+                    }
+                    break;
 
-              case '$':
-                if (isSet(opts, MULTIPLE_LINES)) {
-                    if (!(offset == con.limit
-                          || offset < con.limit && isEOLChar( target .charAt(  offset ) )))
-                        return -1;
-                } else {
+                case 'A':
+                    if (offset != con.start)  return -1;
+                    break;
+
+                case 'Z':
                     if (!(offset == con.limit
                           || offset+1 == con.limit && isEOLChar( target .charAt(  offset ) )
                           || offset+2 == con.limit &&  target .charAt(  offset )  == CARRIAGE_RETURN
-                                                   &&  target .charAt(  offset+1 )  == LINE_FEED))
+                          &&  target .charAt(  offset+1 )  == LINE_FEED))
                         return -1;
-                }
-                break;
-                
-              case 'A':
-                if (offset != con.start)  return -1;
+                    break;
+
+                case 'z':
+                    if (offset != con.limit)  return -1;
+                    break;
+
+                case 'b':
+                    if (con.length == 0)  return -1;
+                    {
+                        int after = getWordType(target, con.start, con.limit, offset, opts);
+                        if (after == WT_IGNORE)  return -1;
+                        int before = getPreviousWordType(target, con.start, con.limit, offset, opts);
+                        if (after == before)  return -1;
+                    }
+                    break;
+
+                case 'B':
+                    if (con.length == 0)
+                        go = true;
+                    else {
+                        int after = getWordType(target, con.start, con.limit, offset, opts);
+                        go = after == WT_IGNORE
+                             || after == getPreviousWordType(target, con.start, con.limit, offset, opts);
+                    }
+                    if (!go)  return -1;
+                    break;
+
+                case '<':
+                    if (con.length == 0 || offset == con.limit)  return -1;
+                    if (getWordType(target, con.start, con.limit, offset, opts) != WT_LETTER
+                        || getPreviousWordType(target, con.start, con.limit, offset, opts) != WT_OTHER)
+                        return -1;
+                    break;
+
+                case '>':
+                    if (con.length == 0 || offset == con.start)  return -1;
+                    if (getWordType(target, con.start, con.limit, offset, opts) != WT_OTHER
+                        || getPreviousWordType(target, con.start, con.limit, offset, opts) != WT_LETTER)
+                        return -1;
+                    break;
+                } // switch anchor type
+                op = op.next;
                 break;
 
-              case 'Z':
-                if (!(offset == con.limit
-                      || offset+1 == con.limit && isEOLChar( target .charAt(  offset ) )
-                      || offset+2 == con.limit &&  target .charAt(  offset )  == CARRIAGE_RETURN
-                                               &&  target .charAt(  offset+1 )  == LINE_FEED))
-                    return -1;
-                break;
-
-              case 'z':
-                if (offset != con.limit)  return -1;
-                break;
-
-              case 'b':
-                if (con.length == 0)  return -1;
+            case Op.BACKREFERENCE:
                 {
-                    int after = getWordType(target, con.start, con.limit, offset, opts);
-                    if (after == WT_IGNORE)  return -1;
-                    int before = getPreviousWordType(target, con.start, con.limit, offset, opts);
-                    if (after == before)  return -1;
+                    int refno = op.getData();
+                    if (refno <= 0 || refno >= this.nofparen)
+                        throw new RuntimeException("Internal Error: Reference number must be more than zero: "+refno);
+                    if (con.match.getBeginning(refno) < 0
+                        || con.match.getEnd(refno) < 0)
+                        return -1;                // ********
+                    int o2 = con.match.getBeginning(refno);
+                    int literallen = con.match.getEnd(refno)-o2;
+                    if (!isSet(opts, IGNORE_CASE)) {
+                        if (dx > 0) {
+                            if (!regionMatches(target, offset, con.limit, o2, literallen))
+                                return -1;
+                            offset += literallen;
+                        } else {
+                            if (!regionMatches(target, offset-literallen, con.limit, o2, literallen))
+                                return -1;
+                            offset -= literallen;
+                        }
+                    } else {
+                        if (dx > 0) {
+                            if (!regionMatchesIgnoreCase(target, offset, con.limit, o2, literallen))
+                                return -1;
+                            offset += literallen;
+                        } else {
+                            if (!regionMatchesIgnoreCase(target, offset-literallen, con.limit,
+                                                         o2, literallen))
+                                return -1;
+                            offset -= literallen;
+                        }
+                    }
+                }
+                op = op.next;
+                break;
+            case Op.STRING:
+                {
+                    String literal = op.getString();
+                    int literallen = literal.length();
+                    if (!isSet(opts, IGNORE_CASE)) {
+                        if (dx > 0) {
+                            if (!regionMatches(target, offset, con.limit, literal, literallen))
+                                return -1;
+                            offset += literallen;
+                        } else {
+                            if (!regionMatches(target, offset-literallen, con.limit, literal, literallen))
+                                return -1;
+                            offset -= literallen;
+                        }
+                    } else {
+                        if (dx > 0) {
+                            if (!regionMatchesIgnoreCase(target, offset, con.limit, literal, literallen))
+                                return -1;
+                            offset += literallen;
+                        } else {
+                            if (!regionMatchesIgnoreCase(target, offset-literallen, con.limit,
+                                                         literal, literallen))
+                                return -1;
+                            offset -= literallen;
+                        }
+                    }
+                }
+                op = op.next;
+                break;
+
+            case Op.CLOSURE:
+                {
+                    /*
+                     * Saves current position to avoid
+                     * zero-width repeats.
+                     */
+                    int id = op.getData();
+                    if (id >= 0) {
+                        int previousOffset = con.offsets[id];
+                        if (previousOffset < 0 || previousOffset != offset) {
+                            con.offsets[id] = offset;
+                        } else {
+                            con.offsets[id] = -1;
+                            op = op.next;
+                            break;
+                        }
+                    }
+
+                    int ret = this. matchString (con, op.getChild(), offset, dx, opts);
+                    if (id >= 0)  con.offsets[id] = -1;
+                    if (ret >= 0)  return ret;
+                    op = op.next;
                 }
                 break;
 
-              case 'B':
-                if (con.length == 0)
-                    go = true;
-                else {
-                    int after = getWordType(target, con.start, con.limit, offset, opts);
-                    go = after == WT_IGNORE
-                        || after == getPreviousWordType(target, con.start, con.limit, offset, opts);
+            case Op.QUESTION:
+                {
+                    int ret = this. matchString (con, op.getChild(), offset, dx, opts);
+                    if (ret >= 0)  return ret;
+                    op = op.next;
                 }
-                if (!go)  return -1;
                 break;
 
-              case '<':
-                if (con.length == 0 || offset == con.limit)  return -1;
-                if (getWordType(target, con.start, con.limit, offset, opts) != WT_LETTER
-                    || getPreviousWordType(target, con.start, con.limit, offset, opts) != WT_OTHER)
-                    return -1;
+            case Op.NONGREEDYCLOSURE:
+            case Op.NONGREEDYQUESTION:
+                {
+                    int ret = this. matchString (con, op.next, offset, dx, opts);
+                    if (ret >= 0)  return ret;
+                    op = op.getChild();
+                }
                 break;
 
-              case '>':
-                if (con.length == 0 || offset == con.start)  return -1;
-                if (getWordType(target, con.start, con.limit, offset, opts) != WT_OTHER
-                    || getPreviousWordType(target, con.start, con.limit, offset, opts) != WT_LETTER)
-                    return -1;
-                break;
-            } // switch anchor type
-            op = op.next;
-            break;
+            case Op.UNION:
+                for (int i = 0;  i < op.size();  i ++) {
+                    int ret = this. matchString (con, op.elementAt(i), offset, dx, opts);
+                    //System.err.println("UNION: "+i+", ret="+ret);
+                    if (ret >= 0)  return ret;
+                }
+                return -1;
 
-          case Op.BACKREFERENCE:
-            {
+            case Op.CAPTURE:
                 int refno = op.getData();
-                if (refno <= 0 || refno >= this.nofparen)
-                    throw new RuntimeException("Internal Error: Reference number must be more than zero: "+refno);
-                if (con.match.getBeginning(refno) < 0
-                    || con.match.getEnd(refno) < 0)
-                    return -1;                // ********
-                int o2 = con.match.getBeginning(refno);
-                int literallen = con.match.getEnd(refno)-o2;
-                if (!isSet(opts, IGNORE_CASE)) {
-                    if (dx > 0) {
-                        if (!regionMatches(target, offset, con.limit, o2, literallen))
-                            return -1;
-                        offset += literallen;
-                    } else {
-                        if (!regionMatches(target, offset-literallen, con.limit, o2, literallen))
-                            return -1;
-                        offset -= literallen;
-                    }
-                } else {
-                    if (dx > 0) {
-                        if (!regionMatchesIgnoreCase(target, offset, con.limit, o2, literallen))
-                            return -1;
-                        offset += literallen;
-                    } else {
-                        if (!regionMatchesIgnoreCase(target, offset-literallen, con.limit,
-                                                     o2, literallen))
-                            return -1;
-                        offset -= literallen;
-                    }
+                if (con.match != null && refno > 0) {
+                    int save = con.match.getBeginning(refno);
+                    con.match.setBeginning(refno, offset);
+                    int ret = this. matchString (con, op.next, offset, dx, opts);
+                    if (ret < 0)  con.match.setBeginning(refno, save);
+                    return ret;
+                } else if (con.match != null && refno < 0) {
+                    int index = -refno;
+                    int save = con.match.getEnd(index);
+                    con.match.setEnd(index, offset);
+                    int ret = this. matchString (con, op.next, offset, dx, opts);
+                    if (ret < 0)  con.match.setEnd(index, save);
+                    return ret;
                 }
-            }
-            op = op.next;
-            break;
-          case Op.STRING:
-            {
-                String literal = op.getString();
-                int literallen = literal.length();
-                if (!isSet(opts, IGNORE_CASE)) {
-                    if (dx > 0) {
-                        if (!regionMatches(target, offset, con.limit, literal, literallen))
-                            return -1;
-                        offset += literallen;
-                    } else {
-                        if (!regionMatches(target, offset-literallen, con.limit, literal, literallen))
-                            return -1;
-                        offset -= literallen;
-                    }
-                } else {
-                    if (dx > 0) {
-                        if (!regionMatchesIgnoreCase(target, offset, con.limit, literal, literallen))
-                            return -1;
-                        offset += literallen;
-                    } else {
-                        if (!regionMatchesIgnoreCase(target, offset-literallen, con.limit,
-                                                     literal, literallen))
-                            return -1;
-                        offset -= literallen;
-                    }
-                }
-            }
-            op = op.next;
-            break;
-
-          case Op.CLOSURE:
-            {
-                /*
-                 * Saves current position to avoid
-                 * zero-width repeats.
-                 */
-                int id = op.getData();
-                if (id >= 0) {
-                    int previousOffset = con.offsets[id];
-                    if (previousOffset < 0 || previousOffset != offset) {
-                        con.offsets[id] = offset;
-                    } else {
-                        con.offsets[id] = -1;
-                        op = op.next;
-                        break;
-                    }
-                }
-
-                int ret = this. matchString (con, op.getChild(), offset, dx, opts);
-                if (id >= 0)  con.offsets[id] = -1;
-                if (ret >= 0)  return ret;
                 op = op.next;
-            }
-            break;
+                break;
 
-          case Op.QUESTION:
-            {
-                int ret = this. matchString (con, op.getChild(), offset, dx, opts);
-                if (ret >= 0)  return ret;
+            case Op.LOOKAHEAD:
+                if (0 > this. matchString (con, op.getChild(), offset, 1, opts))  return -1;
                 op = op.next;
-            }
-            break;
-
-          case Op.NONGREEDYCLOSURE:
-          case Op.NONGREEDYQUESTION:
-            {
-                int ret = this. matchString (con, op.next, offset, dx, opts);
-                if (ret >= 0)  return ret;
-                op = op.getChild();
-            }
-            break;
-
-          case Op.UNION:
-            for (int i = 0;  i < op.size();  i ++) {
-                int ret = this. matchString (con, op.elementAt(i), offset, dx, opts);
-                //System.err.println("UNION: "+i+", ret="+ret);
-                if (ret >= 0)  return ret;
-            }
-            return -1;
-
-          case Op.CAPTURE:
-            int refno = op.getData();
-            if (con.match != null && refno > 0) {
-                int save = con.match.getBeginning(refno);
-                con.match.setBeginning(refno, offset);
-                int ret = this. matchString (con, op.next, offset, dx, opts);
-                if (ret < 0)  con.match.setBeginning(refno, save);
-                return ret;
-            } else if (con.match != null && refno < 0) {
-                int index = -refno;
-                int save = con.match.getEnd(index);
-                con.match.setEnd(index, offset);
-                int ret = this. matchString (con, op.next, offset, dx, opts);
-                if (ret < 0)  con.match.setEnd(index, save);
-                return ret;
-            }
-            op = op.next;
-            break;
-
-          case Op.LOOKAHEAD:
-            if (0 > this. matchString (con, op.getChild(), offset, 1, opts))  return -1;
-            op = op.next;
-            break;
-          case Op.NEGATIVELOOKAHEAD:
-            if (0 <= this. matchString (con, op.getChild(), offset, 1, opts))  return -1;
-            op = op.next;
-            break;
-          case Op.LOOKBEHIND:
-            if (0 > this. matchString (con, op.getChild(), offset, -1, opts))  return -1;
-            op = op.next;
-            break;
-          case Op.NEGATIVELOOKBEHIND:
-            if (0 <= this. matchString (con, op.getChild(), offset, -1, opts))  return -1;
-            op = op.next;
-            break;
-
-          case Op.INDEPENDENT:
-            {
-                int ret = this. matchString (con, op.getChild(), offset, dx, opts);
-                if (ret < 0)  return ret;
-                offset = ret;
+                break;
+            case Op.NEGATIVELOOKAHEAD:
+                if (0 <= this. matchString (con, op.getChild(), offset, 1, opts))  return -1;
                 op = op.next;
-            }
-            break;
-
-          case Op.MODIFIER:
-            {
-                int localopts = opts;
-                localopts |= op.getData();
-                localopts &= ~op.getData2();
-                //System.err.println("MODIFIER: "+Integer.toString(opts, 16)+" -> "+Integer.toString(localopts, 16));
-                int ret = this. matchString (con, op.getChild(), offset, dx, localopts);
-                if (ret < 0)  return ret;
-                offset = ret;
+                break;
+            case Op.LOOKBEHIND:
+                if (0 > this. matchString (con, op.getChild(), offset, -1, opts))  return -1;
                 op = op.next;
-            }
-            break;
+                break;
+            case Op.NEGATIVELOOKBEHIND:
+                if (0 <= this. matchString (con, op.getChild(), offset, -1, opts))  return -1;
+                op = op.next;
+                break;
 
-          case Op.CONDITION:
-            {
-                Op.ConditionOp cop = (Op.ConditionOp)op;
-                boolean matchp = false;
-                if (cop.refNumber > 0) {
-                    if (cop.refNumber >= this.nofparen)
-                        throw new RuntimeException("Internal Error: Reference number must be more than zero: "+cop.refNumber);
-                    matchp = con.match.getBeginning(cop.refNumber) >= 0
-                        && con.match.getEnd(cop.refNumber) >= 0;
-                } else {
-                    matchp = 0 <= this. matchString (con, cop.condition, offset, dx, opts);
+            case Op.INDEPENDENT:
+                {
+                    int ret = this. matchString (con, op.getChild(), offset, dx, opts);
+                    if (ret < 0)  return ret;
+                    offset = ret;
+                    op = op.next;
                 }
+                break;
 
-                if (matchp) {
-                    op = cop.yes;
-                } else if (cop.no != null) {
-                    op = cop.no;
-                } else {
-                    op = cop.next;
+            case Op.MODIFIER:
+                {
+                    int localopts = opts;
+                    localopts |= op.getData();
+                    localopts &= ~op.getData2();
+                    //System.err.println("MODIFIER: "+Integer.toString(opts, 16)+" -> "+Integer.toString(localopts, 16));
+                    int ret = this. matchString (con, op.getChild(), offset, dx, localopts);
+                    if (ret < 0)  return ret;
+                    offset = ret;
+                    op = op.next;
                 }
-            }
-            break;
+                break;
 
-          default:
-            throw new RuntimeException("Unknown operation type: "+op.type);
-        } // switch (op.type)
-    } // while
-}
-    
-private static final int getPreviousWordType(String  target, int begin, int end,
-                                             int offset, int opts) {
-    int ret = getWordType(target, begin, end, --offset, opts);
-    while (ret == WT_IGNORE)
-        ret = getWordType(target, begin, end, --offset, opts);
-    return ret;
-}
+            case Op.CONDITION:
+                {
+                    Op.ConditionOp cop = (Op.ConditionOp)op;
+                    boolean matchp = false;
+                    if (cop.refNumber > 0) {
+                        if (cop.refNumber >= this.nofparen)
+                            throw new RuntimeException("Internal Error: Reference number must be more than zero: "+cop.refNumber);
+                        matchp = con.match.getBeginning(cop.refNumber) >= 0
+                                 && con.match.getEnd(cop.refNumber) >= 0;
+                    } else {
+                        matchp = 0 <= this. matchString (con, cop.condition, offset, dx, opts);
+                    }
 
-private static final int getWordType(String  target, int begin, int end,
-                                     int offset, int opts) {
-    if (offset < begin || offset >= end)  return WT_OTHER;
-    return getWordType0( target .charAt(  offset ) , opts);
-}
+                    if (matchp) {
+                        op = cop.yes;
+                    } else if (cop.no != null) {
+                        op = cop.no;
+                    } else {
+                        op = cop.next;
+                    }
+                }
+                break;
 
+            default:
+                throw new RuntimeException("Unknown operation type: "+op.type);
+            } // switch (op.type)
+        } // while
+    }
 
-private static final boolean regionMatches(String text, int offset, int limit,
-                                           String part, int partlen) {
-    if (limit-offset < partlen)  return false;
-    return text.regionMatches(offset, part, 0, partlen);
-}
+    private static final int getPreviousWordType(String  target, int begin, int end,
+                                                 int offset, int opts) {
+        int ret = getWordType(target, begin, end, --offset, opts);
+        while (ret == WT_IGNORE)
+            ret = getWordType(target, begin, end, --offset, opts);
+        return ret;
+    }
 
-private static final boolean regionMatches(String text, int offset, int limit,
-                                           int offset2, int partlen) {
-    if (limit-offset < partlen)  return false;
-    return text.regionMatches(offset, text, offset2, partlen);
-}
-
-private static final boolean regionMatchesIgnoreCase(String text, int offset, int limit,
-                                                     String part, int partlen) {
-    return text.regionMatches(true, offset, part, 0, partlen);
-}
-
-private static final boolean regionMatchesIgnoreCase(String text, int offset, int limit,
-                                                     int offset2, int partlen) {
-    if (limit-offset < partlen)  return false;
-    return text.regionMatches(true, offset, text, offset2, partlen);
-}
+    private static final int getWordType(String  target, int begin, int end,
+                                         int offset, int opts) {
+        if (offset < begin || offset >= end)  return WT_OTHER;
+        return getWordType0( target .charAt(  offset ) , opts);
+    }
 
 
+    private static final boolean regionMatches(String text, int offset, int limit,
+                                               String part, int partlen) {
+        if (limit-offset < partlen)  return false;
+        return text.regionMatches(offset, part, 0, partlen);
+    }
 
+    private static final boolean regionMatches(String text, int offset, int limit,
+                                               int offset2, int partlen) {
+        if (limit-offset < partlen)  return false;
+        return text.regionMatches(offset, text, offset2, partlen);
+    }
 
+    private static final boolean regionMatchesIgnoreCase(String text, int offset, int limit,
+                                                         String part, int partlen) {
+        return text.regionMatches(true, offset, part, 0, partlen);
+    }
 
-/* -*- java -*-
- *
- * (C) Copyright IBM Corp. 1998-2000  All rights reserved.
- *
- * US Government Users Restricted Rights Use, duplication or
- * disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
- *
- * The program is provided "as is" without any warranty express or
- * implied, including the warranty of non-infringement and the implied
- * warranties of merchantibility and fitness for a particular purpose.
- * IBM will not be liable for any damages suffered by you as a result
- * of using the Program. In no event will IBM be liable for any
- * special, indirect or consequential damages or lost profits even if
- * IBM has been advised of the possibility of their occurrence. IBM
- * will not be liable for any third party claims against you.
- */
-
-
-
-
-
-
-
+    private static final boolean regionMatchesIgnoreCase(String text, int offset, int limit,
+                                                         int offset2, int partlen) {
+        if (limit-offset < partlen)  return false;
+        return text.regionMatches(true, offset, text, offset2, partlen);
+    }
 
 
 
@@ -2155,9 +2052,9 @@ private static final boolean regionMatchesIgnoreCase(String text, int offset, in
  *
  * @return true if the target is matched to this regular expression.
  */
-public boolean matches(CharacterIterator target) {
-    return this.matches(target, (Match)null);
-}
+    public boolean matches(CharacterIterator target) {
+        return this.matches(target, (Match)null);
+    }
 
 
 /**
@@ -2166,677 +2063,677 @@ public boolean matches(CharacterIterator target) {
  * @return Offset of the start position in <VAR>target</VAR>; or -1 if not match.
  */
 
-public boolean matches(CharacterIterator  target, Match match) {
-    int start = target.getBeginIndex();
-    int end = target.getEndIndex();
+    public boolean matches(CharacterIterator  target, Match match) {
+        int start = target.getBeginIndex();
+        int end = target.getEndIndex();
 
 
 
-    synchronized (this) {
-        if (this.operations == null)
-            this.prepare();
-        if (this.context == null)
-            this.context = new Context();
-    }
-    Context con = null;
-    synchronized (this.context) {
-        con = this.context.inuse ? new Context() : this.context;
-        con.reset(target, start, end, this.numberOfClosures);
-    }
-    if (match != null) {
-        match.setNumberOfGroups(this.nofparen);
-        match.setSource(target);
-    } else if (this.hasBackReferences) {
-        match = new Match();
-        match.setNumberOfGroups(this.nofparen);
-                                                // Need not to call setSource() because
-                                                // a caller can not access this match instance.
-    }
-    con.match = match;
+        synchronized (this) {
+            if (this.operations == null)
+                this.prepare();
+            if (this.context == null)
+                this.context = new Context();
+        }
+        Context con = null;
+        synchronized (this.context) {
+            con = this.context.inuse ? new Context() : this.context;
+            con.reset(target, start, end, this.numberOfClosures);
+        }
+        if (match != null) {
+            match.setNumberOfGroups(this.nofparen);
+            match.setSource(target);
+        } else if (this.hasBackReferences) {
+            match = new Match();
+            match.setNumberOfGroups(this.nofparen);
+            // Need not to call setSource() because
+            // a caller can not access this match instance.
+        }
+        con.match = match;
 
-    if (this.isSet(this.options, XMLSCHEMA_MODE)) {
-        int matchEnd = this. matchCharacterIterator (con, this.operations, con.start, 1, this.options);
-        //System.err.println("DEBUG: matchEnd="+matchEnd);
-        if (matchEnd == con.limit) {
+        if (this.isSet(this.options, XMLSCHEMA_MODE)) {
+            int matchEnd = this. matchCharacterIterator (con, this.operations, con.start, 1, this.options);
+            //System.err.println("DEBUG: matchEnd="+matchEnd);
+            if (matchEnd == con.limit) {
+                if (con.match != null) {
+                    con.match.setBeginning(0, con.start);
+                    con.match.setEnd(0, matchEnd);
+                }
+                con.inuse = false;
+                return true;
+            }
+            return false;
+        }
+
+        /*
+         * The pattern has only fixed string.
+         * The engine uses Boyer-Moore.
+         */
+        if (this.fixedStringOnly) {
+            //System.err.println("DEBUG: fixed-only: "+this.fixedString);
+            int o = this.fixedStringTable.matches(target, con.start, con.limit);
+            if (o >= 0) {
+                if (con.match != null) {
+                    con.match.setBeginning(0, o);
+                    con.match.setEnd(0, o+this.fixedString.length());
+                }
+                con.inuse = false;
+                return true;
+            }
+            con.inuse = false;
+            return false;
+        }
+
+        /*
+         * The pattern contains a fixed string.
+         * The engine checks with Boyer-Moore whether the text contains the fixed string or not.
+         * If not, it return with false.
+         */
+        if (this.fixedString != null) {
+            int o = this.fixedStringTable.matches(target, con.start, con.limit);
+            if (o < 0) {
+                //System.err.println("Non-match in fixed-string search.");
+                con.inuse = false;
+                return false;
+            }
+        }
+
+        int limit = con.limit-this.minlength;
+        int matchStart;
+        int matchEnd = -1;
+
+        /*
+         * Checks whether the expression starts with ".*".
+         */
+        if (this.operations.type == Op.CLOSURE && this.operations.getChild().type == Op.DOT) {
+            if (isSet(this.options, SINGLE_LINE)) {
+                matchStart = con.start;
+                matchEnd = this. matchCharacterIterator (con, this.operations, con.start, 1, this.options);
+            } else {
+                boolean previousIsEOL = true;
+                for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
+                    int ch =  target .setIndex(  matchStart ) ;
+                    if (isEOLChar(ch)) {
+                        previousIsEOL = true;
+                    } else {
+                        if (previousIsEOL) {
+                            if (0 <= (matchEnd = this. matchCharacterIterator (con, this.operations,
+                                                                               matchStart, 1, this.options)))
+                                break;
+                        }
+                        previousIsEOL = false;
+                    }
+                }
+            }
+        }
+
+        /*
+         * Optimization against the first character.
+         */
+        else if (this.firstChar != null) {
+            //System.err.println("DEBUG: with firstchar-matching: "+this.firstChar);
+            RangeToken range = this.firstChar;
+            if (this.isSet(this.options, IGNORE_CASE)) {
+                range = this.firstChar.getCaseInsensitiveToken();
+                for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
+                    int ch =  target .setIndex(  matchStart ) ;
+                    if (REUtil.isHighSurrogate(ch) && matchStart+1 < con.limit) {
+                        ch = REUtil.composeFromSurrogates(ch,  target .setIndex(  matchStart+1 ) );
+                        if (!range.match(ch))  continue;
+                    } else {
+                        if (!range.match(ch)) {
+                            char ch1 = Character.toUpperCase((char)ch);
+                            if (!range.match(ch1))
+                                if (!range.match(Character.toLowerCase(ch1)))
+                                    continue;
+                        }
+                    }
+                    if (0 <= (matchEnd = this. matchCharacterIterator (con, this.operations,
+                                                                       matchStart, 1, this.options)))
+                        break;
+                }
+            } else {
+                for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
+                    int ch =  target .setIndex(  matchStart ) ;
+                    if (REUtil.isHighSurrogate(ch) && matchStart+1 < con.limit)
+                        ch = REUtil.composeFromSurrogates(ch,  target .setIndex(  matchStart+1 ) );
+                    if (!range.match(ch))  continue;
+                    if (0 <= (matchEnd = this. matchCharacterIterator (con, this.operations,
+                                                                       matchStart, 1, this.options)))
+                        break;
+                }
+            }
+        }
+
+        /*
+         * Straightforward matching.
+         */
+        else {
+            for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
+                if (0 <= (matchEnd = this. matchCharacterIterator (con, this.operations, matchStart, 1, this.options)))
+                    break;
+            }
+        }
+
+        if (matchEnd >= 0) {
             if (con.match != null) {
-                con.match.setBeginning(0, con.start);
+                con.match.setBeginning(0, matchStart);
                 con.match.setEnd(0, matchEnd);
             }
             con.inuse = false;
             return true;
-        }
-        return false;
-    }
-
-    /*
-     * The pattern has only fixed string.
-     * The engine uses Boyer-Moore.
-     */
-    if (this.fixedStringOnly) {
-        //System.err.println("DEBUG: fixed-only: "+this.fixedString);
-        int o = this.fixedStringTable.matches(target, con.start, con.limit);
-        if (o >= 0) {
-            if (con.match != null) {
-                con.match.setBeginning(0, o);
-                con.match.setEnd(0, o+this.fixedString.length());
-            }
-            con.inuse = false;
-            return true;
-        }
-        con.inuse = false;
-        return false;
-    }
-
-    /*
-     * The pattern contains a fixed string.
-     * The engine checks with Boyer-Moore whether the text contains the fixed string or not.
-     * If not, it return with false.
-     */
-    if (this.fixedString != null) {
-        int o = this.fixedStringTable.matches(target, con.start, con.limit);
-        if (o < 0) {
-            //System.err.println("Non-match in fixed-string search.");
+        } else {
             con.inuse = false;
             return false;
         }
     }
-
-    int limit = con.limit-this.minlength;
-    int matchStart;
-    int matchEnd = -1;
-
-    /*
-     * Checks whether the expression starts with ".*".
-     */
-    if (this.operations.type == Op.CLOSURE && this.operations.getChild().type == Op.DOT) {
-        if (isSet(this.options, SINGLE_LINE)) {
-            matchStart = con.start;
-            matchEnd = this. matchCharacterIterator (con, this.operations, con.start, 1, this.options);
-        } else {
-            boolean previousIsEOL = true;
-            for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
-                int ch =  target .setIndex(  matchStart ) ;
-                if (isEOLChar(ch)) {
-                    previousIsEOL = true;
-                } else {
-                    if (previousIsEOL) {
-                        if (0 <= (matchEnd = this. matchCharacterIterator (con, this.operations,
-                                                        matchStart, 1, this.options)))
-                            break;
-                    }
-                    previousIsEOL = false;
-                }
-            }
-        }
-    }
-
-    /*
-     * Optimization against the first character.
-     */
-    else if (this.firstChar != null) {
-        //System.err.println("DEBUG: with firstchar-matching: "+this.firstChar);
-        RangeToken range = this.firstChar;
-        if (this.isSet(this.options, IGNORE_CASE)) {
-            range = this.firstChar.getCaseInsensitiveToken();
-            for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
-                int ch =  target .setIndex(  matchStart ) ;
-                if (REUtil.isHighSurrogate(ch) && matchStart+1 < con.limit) {
-                    ch = REUtil.composeFromSurrogates(ch,  target .setIndex(  matchStart+1 ) );
-                    if (!range.match(ch))  continue;
-                } else {
-                    if (!range.match(ch)) {
-                        char ch1 = Character.toUpperCase((char)ch);
-                        if (!range.match(ch1))
-                            if (!range.match(Character.toLowerCase(ch1)))
-                                continue;
-                    }
-                }
-                if (0 <= (matchEnd = this. matchCharacterIterator (con, this.operations,
-                                                matchStart, 1, this.options)))
-                    break;
-            }
-        } else {
-            for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
-                int ch =  target .setIndex(  matchStart ) ;
-                if (REUtil.isHighSurrogate(ch) && matchStart+1 < con.limit)
-                    ch = REUtil.composeFromSurrogates(ch,  target .setIndex(  matchStart+1 ) );
-                if (!range.match(ch))  continue;
-                if (0 <= (matchEnd = this. matchCharacterIterator (con, this.operations,
-                                                matchStart, 1, this.options)))
-                    break;
-            }
-        }
-    }
-
-    /*
-     * Straightforward matching.
-     */
-    else {
-        for (matchStart = con.start;  matchStart <= limit;  matchStart ++) {
-            if (0 <= (matchEnd = this. matchCharacterIterator (con, this.operations, matchStart, 1, this.options)))
-                break;
-        }
-    }
-
-    if (matchEnd >= 0) {
-        if (con.match != null) {
-            con.match.setBeginning(0, matchStart);
-            con.match.setEnd(0, matchEnd);
-        }
-        con.inuse = false;
-        return true;
-    } else {
-        con.inuse = false;
-        return false;
-    }
-}
 
 /**
  * @return -1 when not match; offset of the end of matched string when match.
  */
-private int matchCharacterIterator (Context con, Op op, int offset, int dx, int opts) {
+    private int matchCharacterIterator (Context con, Op op, int offset, int dx, int opts) {
 
 
-    CharacterIterator target = con.ciTarget;
-
-
-
+        CharacterIterator target = con.ciTarget;
 
 
 
-    while (true) {
-        if (op == null)
-            return offset;
-        if (offset > con.limit || offset < con.start)
-            return -1;
-        switch (op.type) {
-          case Op.CHAR:
-            if (isSet(opts, IGNORE_CASE)) {
-                int ch = op.getData();
-                if (dx > 0) {
-                    if (offset >= con.limit || !matchIgnoreCase(ch,  target .setIndex(  offset ) ))
-                        return -1;
-                    offset ++;
-                } else {
-                    int o1 = offset-1;
-                    if (o1 >= con.limit || o1 < 0 || !matchIgnoreCase(ch,  target .setIndex(  o1 ) ))
-                        return -1;
-                    offset = o1;
-                }
-            } else {
-                int ch = op.getData();
-                if (dx > 0) {
-                    if (offset >= con.limit || ch !=  target .setIndex(  offset ) )
+
+
+
+        while (true) {
+            if (op == null)
+                return offset;
+            if (offset > con.limit || offset < con.start)
+                return -1;
+            switch (op.type) {
+            case Op.CHAR:
+                if (isSet(opts, IGNORE_CASE)) {
+                    int ch = op.getData();
+                    if (dx > 0) {
+                        if (offset >= con.limit || !matchIgnoreCase(ch,  target .setIndex(  offset ) ))
                             return -1;
+                        offset ++;
+                    } else {
+                        int o1 = offset-1;
+                        if (o1 >= con.limit || o1 < 0 || !matchIgnoreCase(ch,  target .setIndex(  o1 ) ))
+                            return -1;
+                        offset = o1;
+                    }
+                } else {
+                    int ch = op.getData();
+                    if (dx > 0) {
+                        if (offset >= con.limit || ch !=  target .setIndex(  offset ) )
+                            return -1;
+                        offset ++;
+                    } else {
+                        int o1 = offset-1;
+                        if (o1 >= con.limit || o1 < 0 || ch !=  target .setIndex(  o1 ) )
+                            return -1;
+                        offset = o1;
+                    }
+                }
+                op = op.next;
+                break;
+
+            case Op.DOT:
+                if (dx > 0) {
+                    if (offset >= con.limit)
+                        return -1;
+                    int ch =  target .setIndex(  offset ) ;
+                    if (isSet(opts, SINGLE_LINE)) {
+                        if (REUtil.isHighSurrogate(ch) && offset+1 < con.limit)
+                            offset ++;
+                    } else {
+                        if (REUtil.isHighSurrogate(ch) && offset+1 < con.limit)
+                            ch = REUtil.composeFromSurrogates(ch,  target .setIndex(  ++offset ) );
+                        if (isEOLChar(ch))
+                            return -1;
+                    }
                     offset ++;
                 } else {
                     int o1 = offset-1;
-                    if (o1 >= con.limit || o1 < 0 || ch !=  target .setIndex(  o1 ) )
+                    if (o1 >= con.limit || o1 < 0)
                         return -1;
+                    int ch =  target .setIndex(  o1 ) ;
+                    if (isSet(opts, SINGLE_LINE)) {
+                        if (REUtil.isLowSurrogate(ch) && o1-1 >= 0)
+                            o1 --;
+                    } else {
+                        if (REUtil.isLowSurrogate(ch) && o1-1 >= 0)
+                            ch = REUtil.composeFromSurrogates( target .setIndex(  --o1 ) , ch);
+                        if (!isEOLChar(ch))
+                            return -1;
+                    }
                     offset = o1;
                 }
-            }
-            op = op.next;
-            break;
+                op = op.next;
+                break;
 
-          case Op.DOT:
-            if (dx > 0) {
-                if (offset >= con.limit)
-                    return -1;
-                int ch =  target .setIndex(  offset ) ;
-                if (isSet(opts, SINGLE_LINE)) {
-                    if (REUtil.isHighSurrogate(ch) && offset+1 < con.limit)
-                        offset ++;
-                } else {
+            case Op.RANGE:
+            case Op.NRANGE:
+                if (dx > 0) {
+                    if (offset >= con.limit)
+                        return -1;
+                    int ch =  target .setIndex(  offset ) ;
                     if (REUtil.isHighSurrogate(ch) && offset+1 < con.limit)
                         ch = REUtil.composeFromSurrogates(ch,  target .setIndex(  ++offset ) );
-                    if (isEOLChar(ch))
-                        return -1;
-                }
-                offset ++;
-            } else {
-                int o1 = offset-1;
-                if (o1 >= con.limit || o1 < 0)
-                    return -1;
-                int ch =  target .setIndex(  o1 ) ;
-                if (isSet(opts, SINGLE_LINE)) {
-                    if (REUtil.isLowSurrogate(ch) && o1-1 >= 0)
-                        o1 --;
+                    RangeToken tok = op.getToken();
+                    if (isSet(opts, IGNORE_CASE)) {
+                        tok = tok.getCaseInsensitiveToken();
+                        if (!tok.match(ch)) {
+                            if (ch >= 0x10000)  return -1;
+                            char uch;
+                            if (!tok.match(uch = Character.toUpperCase((char)ch))
+                                && !tok.match(Character.toLowerCase(uch)))
+                                return -1;
+                        }
+                    } else {
+                        if (!tok.match(ch))  return -1;
+                    }
+                    offset ++;
                 } else {
+                    int o1 = offset-1;
+                    if (o1 >= con.limit || o1 < 0)
+                        return -1;
+                    int ch =  target .setIndex(  o1 ) ;
                     if (REUtil.isLowSurrogate(ch) && o1-1 >= 0)
                         ch = REUtil.composeFromSurrogates( target .setIndex(  --o1 ) , ch);
-                    if (!isEOLChar(ch))
-                        return -1;
-                }
-                offset = o1;
-            }
-            op = op.next;
-            break;
-            
-          case Op.RANGE:
-          case Op.NRANGE:
-            if (dx > 0) {
-                if (offset >= con.limit)
-                    return -1;
-                int ch =  target .setIndex(  offset ) ;
-                if (REUtil.isHighSurrogate(ch) && offset+1 < con.limit)
-                    ch = REUtil.composeFromSurrogates(ch,  target .setIndex(  ++offset ) );
-                RangeToken tok = op.getToken();
-                if (isSet(opts, IGNORE_CASE)) {
-                    tok = tok.getCaseInsensitiveToken();
-                    if (!tok.match(ch)) {
-                        if (ch >= 0x10000)  return -1;
-                        char uch;
-                        if (!tok.match(uch = Character.toUpperCase((char)ch))
-                            && !tok.match(Character.toLowerCase(uch)))
-                            return -1;
+                    RangeToken tok = op.getToken();
+                    if (isSet(opts, IGNORE_CASE)) {
+                        tok = tok.getCaseInsensitiveToken();
+                        if (!tok.match(ch)) {
+                            if (ch >= 0x10000)  return -1;
+                            char uch;
+                            if (!tok.match(uch = Character.toUpperCase((char)ch))
+                                && !tok.match(Character.toLowerCase(uch)))
+                                return -1;
+                        }
+                    } else {
+                        if (!tok.match(ch))  return -1;
                     }
-                } else {
-                    if (!tok.match(ch))  return -1;
+                    offset = o1;
                 }
-                offset ++;
-            } else {
-                int o1 = offset-1;
-                if (o1 >= con.limit || o1 < 0)
-                    return -1;
-                int ch =  target .setIndex(  o1 ) ;
-                if (REUtil.isLowSurrogate(ch) && o1-1 >= 0)
-                    ch = REUtil.composeFromSurrogates( target .setIndex(  --o1 ) , ch);
-                RangeToken tok = op.getToken();
-                if (isSet(opts, IGNORE_CASE)) {
-                    tok = tok.getCaseInsensitiveToken();
-                    if (!tok.match(ch)) {
-                        if (ch >= 0x10000)  return -1;
-                        char uch;
-                        if (!tok.match(uch = Character.toUpperCase((char)ch))
-                            && !tok.match(Character.toLowerCase(uch)))
-                            return -1;
-                    }
-                } else {
-                    if (!tok.match(ch))  return -1;
-                }
-                offset = o1;
-            }
-            op = op.next;
-            break;
+                op = op.next;
+                break;
 
-          case Op.ANCHOR:
-            boolean go = false;
-            switch (op.getData()) {
-              case '^':
-                if (isSet(opts, MULTIPLE_LINES)) {
+            case Op.ANCHOR:
+                boolean go = false;
+                switch (op.getData()) {
+                case '^':
+                    if (isSet(opts, MULTIPLE_LINES)) {
+                        if (!(offset == con.start
+                              || offset > con.start && isEOLChar( target .setIndex(  offset-1 ) )))
+                            return -1;
+                    } else {
+                        if (offset != con.start)
+                            return -1;
+                    }
+                    break;
+
+                case '@':                         // Internal use only.
+                    // The @ always matches line beginnings.
                     if (!(offset == con.start
                           || offset > con.start && isEOLChar( target .setIndex(  offset-1 ) )))
                         return -1;
-                } else {
-                    if (offset != con.start)
-                        return -1;
-                }
-                break;
+                    break;
 
-              case '@':                         // Internal use only.
-                                                // The @ always matches line beginnings.
-                if (!(offset == con.start
-                      || offset > con.start && isEOLChar( target .setIndex(  offset-1 ) )))
-                    return -1;
-                break;
+                case '$':
+                    if (isSet(opts, MULTIPLE_LINES)) {
+                        if (!(offset == con.limit
+                              || offset < con.limit && isEOLChar( target .setIndex(  offset ) )))
+                            return -1;
+                    } else {
+                        if (!(offset == con.limit
+                              || offset+1 == con.limit && isEOLChar( target .setIndex(  offset ) )
+                              || offset+2 == con.limit &&  target .setIndex(  offset )  == CARRIAGE_RETURN
+                              &&  target .setIndex(  offset+1 )  == LINE_FEED))
+                            return -1;
+                    }
+                    break;
 
-              case '$':
-                if (isSet(opts, MULTIPLE_LINES)) {
-                    if (!(offset == con.limit
-                          || offset < con.limit && isEOLChar( target .setIndex(  offset ) )))
-                        return -1;
-                } else {
+                case 'A':
+                    if (offset != con.start)  return -1;
+                    break;
+
+                case 'Z':
                     if (!(offset == con.limit
                           || offset+1 == con.limit && isEOLChar( target .setIndex(  offset ) )
                           || offset+2 == con.limit &&  target .setIndex(  offset )  == CARRIAGE_RETURN
-                                                   &&  target .setIndex(  offset+1 )  == LINE_FEED))
+                          &&  target .setIndex(  offset+1 )  == LINE_FEED))
                         return -1;
-                }
-                break;
-                
-              case 'A':
-                if (offset != con.start)  return -1;
+                    break;
+
+                case 'z':
+                    if (offset != con.limit)  return -1;
+                    break;
+
+                case 'b':
+                    if (con.length == 0)  return -1;
+                    {
+                        int after = getWordType(target, con.start, con.limit, offset, opts);
+                        if (after == WT_IGNORE)  return -1;
+                        int before = getPreviousWordType(target, con.start, con.limit, offset, opts);
+                        if (after == before)  return -1;
+                    }
+                    break;
+
+                case 'B':
+                    if (con.length == 0)
+                        go = true;
+                    else {
+                        int after = getWordType(target, con.start, con.limit, offset, opts);
+                        go = after == WT_IGNORE
+                             || after == getPreviousWordType(target, con.start, con.limit, offset, opts);
+                    }
+                    if (!go)  return -1;
+                    break;
+
+                case '<':
+                    if (con.length == 0 || offset == con.limit)  return -1;
+                    if (getWordType(target, con.start, con.limit, offset, opts) != WT_LETTER
+                        || getPreviousWordType(target, con.start, con.limit, offset, opts) != WT_OTHER)
+                        return -1;
+                    break;
+
+                case '>':
+                    if (con.length == 0 || offset == con.start)  return -1;
+                    if (getWordType(target, con.start, con.limit, offset, opts) != WT_OTHER
+                        || getPreviousWordType(target, con.start, con.limit, offset, opts) != WT_LETTER)
+                        return -1;
+                    break;
+                } // switch anchor type
+                op = op.next;
                 break;
 
-              case 'Z':
-                if (!(offset == con.limit
-                      || offset+1 == con.limit && isEOLChar( target .setIndex(  offset ) )
-                      || offset+2 == con.limit &&  target .setIndex(  offset )  == CARRIAGE_RETURN
-                                               &&  target .setIndex(  offset+1 )  == LINE_FEED))
-                    return -1;
-                break;
-
-              case 'z':
-                if (offset != con.limit)  return -1;
-                break;
-
-              case 'b':
-                if (con.length == 0)  return -1;
+            case Op.BACKREFERENCE:
                 {
-                    int after = getWordType(target, con.start, con.limit, offset, opts);
-                    if (after == WT_IGNORE)  return -1;
-                    int before = getPreviousWordType(target, con.start, con.limit, offset, opts);
-                    if (after == before)  return -1;
+                    int refno = op.getData();
+                    if (refno <= 0 || refno >= this.nofparen)
+                        throw new RuntimeException("Internal Error: Reference number must be more than zero: "+refno);
+                    if (con.match.getBeginning(refno) < 0
+                        || con.match.getEnd(refno) < 0)
+                        return -1;                // ********
+                    int o2 = con.match.getBeginning(refno);
+                    int literallen = con.match.getEnd(refno)-o2;
+                    if (!isSet(opts, IGNORE_CASE)) {
+                        if (dx > 0) {
+                            if (!regionMatches(target, offset, con.limit, o2, literallen))
+                                return -1;
+                            offset += literallen;
+                        } else {
+                            if (!regionMatches(target, offset-literallen, con.limit, o2, literallen))
+                                return -1;
+                            offset -= literallen;
+                        }
+                    } else {
+                        if (dx > 0) {
+                            if (!regionMatchesIgnoreCase(target, offset, con.limit, o2, literallen))
+                                return -1;
+                            offset += literallen;
+                        } else {
+                            if (!regionMatchesIgnoreCase(target, offset-literallen, con.limit,
+                                                         o2, literallen))
+                                return -1;
+                            offset -= literallen;
+                        }
+                    }
+                }
+                op = op.next;
+                break;
+            case Op.STRING:
+                {
+                    String literal = op.getString();
+                    int literallen = literal.length();
+                    if (!isSet(opts, IGNORE_CASE)) {
+                        if (dx > 0) {
+                            if (!regionMatches(target, offset, con.limit, literal, literallen))
+                                return -1;
+                            offset += literallen;
+                        } else {
+                            if (!regionMatches(target, offset-literallen, con.limit, literal, literallen))
+                                return -1;
+                            offset -= literallen;
+                        }
+                    } else {
+                        if (dx > 0) {
+                            if (!regionMatchesIgnoreCase(target, offset, con.limit, literal, literallen))
+                                return -1;
+                            offset += literallen;
+                        } else {
+                            if (!regionMatchesIgnoreCase(target, offset-literallen, con.limit,
+                                                         literal, literallen))
+                                return -1;
+                            offset -= literallen;
+                        }
+                    }
+                }
+                op = op.next;
+                break;
+
+            case Op.CLOSURE:
+                {
+                    /*
+                     * Saves current position to avoid
+                     * zero-width repeats.
+                     */
+                    int id = op.getData();
+                    if (id >= 0) {
+                        int previousOffset = con.offsets[id];
+                        if (previousOffset < 0 || previousOffset != offset) {
+                            con.offsets[id] = offset;
+                        } else {
+                            con.offsets[id] = -1;
+                            op = op.next;
+                            break;
+                        }
+                    }
+
+                    int ret = this. matchCharacterIterator (con, op.getChild(), offset, dx, opts);
+                    if (id >= 0)  con.offsets[id] = -1;
+                    if (ret >= 0)  return ret;
+                    op = op.next;
                 }
                 break;
 
-              case 'B':
-                if (con.length == 0)
-                    go = true;
-                else {
-                    int after = getWordType(target, con.start, con.limit, offset, opts);
-                    go = after == WT_IGNORE
-                        || after == getPreviousWordType(target, con.start, con.limit, offset, opts);
+            case Op.QUESTION:
+                {
+                    int ret = this. matchCharacterIterator (con, op.getChild(), offset, dx, opts);
+                    if (ret >= 0)  return ret;
+                    op = op.next;
                 }
-                if (!go)  return -1;
                 break;
 
-              case '<':
-                if (con.length == 0 || offset == con.limit)  return -1;
-                if (getWordType(target, con.start, con.limit, offset, opts) != WT_LETTER
-                    || getPreviousWordType(target, con.start, con.limit, offset, opts) != WT_OTHER)
-                    return -1;
+            case Op.NONGREEDYCLOSURE:
+            case Op.NONGREEDYQUESTION:
+                {
+                    int ret = this. matchCharacterIterator (con, op.next, offset, dx, opts);
+                    if (ret >= 0)  return ret;
+                    op = op.getChild();
+                }
                 break;
 
-              case '>':
-                if (con.length == 0 || offset == con.start)  return -1;
-                if (getWordType(target, con.start, con.limit, offset, opts) != WT_OTHER
-                    || getPreviousWordType(target, con.start, con.limit, offset, opts) != WT_LETTER)
-                    return -1;
-                break;
-            } // switch anchor type
-            op = op.next;
-            break;
+            case Op.UNION:
+                for (int i = 0;  i < op.size();  i ++) {
+                    int ret = this. matchCharacterIterator (con, op.elementAt(i), offset, dx, opts);
+                    //System.err.println("UNION: "+i+", ret="+ret);
+                    if (ret >= 0)  return ret;
+                }
+                return -1;
 
-          case Op.BACKREFERENCE:
-            {
+            case Op.CAPTURE:
                 int refno = op.getData();
-                if (refno <= 0 || refno >= this.nofparen)
-                    throw new RuntimeException("Internal Error: Reference number must be more than zero: "+refno);
-                if (con.match.getBeginning(refno) < 0
-                    || con.match.getEnd(refno) < 0)
-                    return -1;                // ********
-                int o2 = con.match.getBeginning(refno);
-                int literallen = con.match.getEnd(refno)-o2;
-                if (!isSet(opts, IGNORE_CASE)) {
-                    if (dx > 0) {
-                        if (!regionMatches(target, offset, con.limit, o2, literallen))
-                            return -1;
-                        offset += literallen;
-                    } else {
-                        if (!regionMatches(target, offset-literallen, con.limit, o2, literallen))
-                            return -1;
-                        offset -= literallen;
-                    }
-                } else {
-                    if (dx > 0) {
-                        if (!regionMatchesIgnoreCase(target, offset, con.limit, o2, literallen))
-                            return -1;
-                        offset += literallen;
-                    } else {
-                        if (!regionMatchesIgnoreCase(target, offset-literallen, con.limit,
-                                                     o2, literallen))
-                            return -1;
-                        offset -= literallen;
-                    }
+                if (con.match != null && refno > 0) {
+                    int save = con.match.getBeginning(refno);
+                    con.match.setBeginning(refno, offset);
+                    int ret = this. matchCharacterIterator (con, op.next, offset, dx, opts);
+                    if (ret < 0)  con.match.setBeginning(refno, save);
+                    return ret;
+                } else if (con.match != null && refno < 0) {
+                    int index = -refno;
+                    int save = con.match.getEnd(index);
+                    con.match.setEnd(index, offset);
+                    int ret = this. matchCharacterIterator (con, op.next, offset, dx, opts);
+                    if (ret < 0)  con.match.setEnd(index, save);
+                    return ret;
                 }
-            }
-            op = op.next;
-            break;
-          case Op.STRING:
-            {
-                String literal = op.getString();
-                int literallen = literal.length();
-                if (!isSet(opts, IGNORE_CASE)) {
-                    if (dx > 0) {
-                        if (!regionMatches(target, offset, con.limit, literal, literallen))
-                            return -1;
-                        offset += literallen;
-                    } else {
-                        if (!regionMatches(target, offset-literallen, con.limit, literal, literallen))
-                            return -1;
-                        offset -= literallen;
-                    }
-                } else {
-                    if (dx > 0) {
-                        if (!regionMatchesIgnoreCase(target, offset, con.limit, literal, literallen))
-                            return -1;
-                        offset += literallen;
-                    } else {
-                        if (!regionMatchesIgnoreCase(target, offset-literallen, con.limit,
-                                                     literal, literallen))
-                            return -1;
-                        offset -= literallen;
-                    }
-                }
-            }
-            op = op.next;
-            break;
-
-          case Op.CLOSURE:
-            {
-                /*
-                 * Saves current position to avoid
-                 * zero-width repeats.
-                 */
-                int id = op.getData();
-                if (id >= 0) {
-                    int previousOffset = con.offsets[id];
-                    if (previousOffset < 0 || previousOffset != offset) {
-                        con.offsets[id] = offset;
-                    } else {
-                        con.offsets[id] = -1;
-                        op = op.next;
-                        break;
-                    }
-                }
-
-                int ret = this. matchCharacterIterator (con, op.getChild(), offset, dx, opts);
-                if (id >= 0)  con.offsets[id] = -1;
-                if (ret >= 0)  return ret;
                 op = op.next;
-            }
-            break;
+                break;
 
-          case Op.QUESTION:
-            {
-                int ret = this. matchCharacterIterator (con, op.getChild(), offset, dx, opts);
-                if (ret >= 0)  return ret;
+            case Op.LOOKAHEAD:
+                if (0 > this. matchCharacterIterator (con, op.getChild(), offset, 1, opts))  return -1;
                 op = op.next;
-            }
-            break;
-
-          case Op.NONGREEDYCLOSURE:
-          case Op.NONGREEDYQUESTION:
-            {
-                int ret = this. matchCharacterIterator (con, op.next, offset, dx, opts);
-                if (ret >= 0)  return ret;
-                op = op.getChild();
-            }
-            break;
-
-          case Op.UNION:
-            for (int i = 0;  i < op.size();  i ++) {
-                int ret = this. matchCharacterIterator (con, op.elementAt(i), offset, dx, opts);
-                //System.err.println("UNION: "+i+", ret="+ret);
-                if (ret >= 0)  return ret;
-            }
-            return -1;
-
-          case Op.CAPTURE:
-            int refno = op.getData();
-            if (con.match != null && refno > 0) {
-                int save = con.match.getBeginning(refno);
-                con.match.setBeginning(refno, offset);
-                int ret = this. matchCharacterIterator (con, op.next, offset, dx, opts);
-                if (ret < 0)  con.match.setBeginning(refno, save);
-                return ret;
-            } else if (con.match != null && refno < 0) {
-                int index = -refno;
-                int save = con.match.getEnd(index);
-                con.match.setEnd(index, offset);
-                int ret = this. matchCharacterIterator (con, op.next, offset, dx, opts);
-                if (ret < 0)  con.match.setEnd(index, save);
-                return ret;
-            }
-            op = op.next;
-            break;
-
-          case Op.LOOKAHEAD:
-            if (0 > this. matchCharacterIterator (con, op.getChild(), offset, 1, opts))  return -1;
-            op = op.next;
-            break;
-          case Op.NEGATIVELOOKAHEAD:
-            if (0 <= this. matchCharacterIterator (con, op.getChild(), offset, 1, opts))  return -1;
-            op = op.next;
-            break;
-          case Op.LOOKBEHIND:
-            if (0 > this. matchCharacterIterator (con, op.getChild(), offset, -1, opts))  return -1;
-            op = op.next;
-            break;
-          case Op.NEGATIVELOOKBEHIND:
-            if (0 <= this. matchCharacterIterator (con, op.getChild(), offset, -1, opts))  return -1;
-            op = op.next;
-            break;
-
-          case Op.INDEPENDENT:
-            {
-                int ret = this. matchCharacterIterator (con, op.getChild(), offset, dx, opts);
-                if (ret < 0)  return ret;
-                offset = ret;
+                break;
+            case Op.NEGATIVELOOKAHEAD:
+                if (0 <= this. matchCharacterIterator (con, op.getChild(), offset, 1, opts))  return -1;
                 op = op.next;
-            }
-            break;
-
-          case Op.MODIFIER:
-            {
-                int localopts = opts;
-                localopts |= op.getData();
-                localopts &= ~op.getData2();
-                //System.err.println("MODIFIER: "+Integer.toString(opts, 16)+" -> "+Integer.toString(localopts, 16));
-                int ret = this. matchCharacterIterator (con, op.getChild(), offset, dx, localopts);
-                if (ret < 0)  return ret;
-                offset = ret;
+                break;
+            case Op.LOOKBEHIND:
+                if (0 > this. matchCharacterIterator (con, op.getChild(), offset, -1, opts))  return -1;
                 op = op.next;
-            }
-            break;
+                break;
+            case Op.NEGATIVELOOKBEHIND:
+                if (0 <= this. matchCharacterIterator (con, op.getChild(), offset, -1, opts))  return -1;
+                op = op.next;
+                break;
 
-          case Op.CONDITION:
-            {
-                Op.ConditionOp cop = (Op.ConditionOp)op;
-                boolean matchp = false;
-                if (cop.refNumber > 0) {
-                    if (cop.refNumber >= this.nofparen)
-                        throw new RuntimeException("Internal Error: Reference number must be more than zero: "+cop.refNumber);
-                    matchp = con.match.getBeginning(cop.refNumber) >= 0
-                        && con.match.getEnd(cop.refNumber) >= 0;
-                } else {
-                    matchp = 0 <= this. matchCharacterIterator (con, cop.condition, offset, dx, opts);
+            case Op.INDEPENDENT:
+                {
+                    int ret = this. matchCharacterIterator (con, op.getChild(), offset, dx, opts);
+                    if (ret < 0)  return ret;
+                    offset = ret;
+                    op = op.next;
                 }
+                break;
 
-                if (matchp) {
-                    op = cop.yes;
-                } else if (cop.no != null) {
-                    op = cop.no;
-                } else {
-                    op = cop.next;
+            case Op.MODIFIER:
+                {
+                    int localopts = opts;
+                    localopts |= op.getData();
+                    localopts &= ~op.getData2();
+                    //System.err.println("MODIFIER: "+Integer.toString(opts, 16)+" -> "+Integer.toString(localopts, 16));
+                    int ret = this. matchCharacterIterator (con, op.getChild(), offset, dx, localopts);
+                    if (ret < 0)  return ret;
+                    offset = ret;
+                    op = op.next;
                 }
-            }
-            break;
+                break;
 
-          default:
-            throw new RuntimeException("Unknown operation type: "+op.type);
-        } // switch (op.type)
-    } // while
-}
-    
-private static final int getPreviousWordType(CharacterIterator  target, int begin, int end,
-                                             int offset, int opts) {
-    int ret = getWordType(target, begin, end, --offset, opts);
-    while (ret == WT_IGNORE)
-        ret = getWordType(target, begin, end, --offset, opts);
-    return ret;
-}
+            case Op.CONDITION:
+                {
+                    Op.ConditionOp cop = (Op.ConditionOp)op;
+                    boolean matchp = false;
+                    if (cop.refNumber > 0) {
+                        if (cop.refNumber >= this.nofparen)
+                            throw new RuntimeException("Internal Error: Reference number must be more than zero: "+cop.refNumber);
+                        matchp = con.match.getBeginning(cop.refNumber) >= 0
+                                 && con.match.getEnd(cop.refNumber) >= 0;
+                    } else {
+                        matchp = 0 <= this. matchCharacterIterator (con, cop.condition, offset, dx, opts);
+                    }
 
-private static final int getWordType(CharacterIterator  target, int begin, int end,
-                                     int offset, int opts) {
-    if (offset < begin || offset >= end)  return WT_OTHER;
-    return getWordType0( target .setIndex(  offset ) , opts);
-}
+                    if (matchp) {
+                        op = cop.yes;
+                    } else if (cop.no != null) {
+                        op = cop.no;
+                    } else {
+                        op = cop.next;
+                    }
+                }
+                break;
 
-
-
-private static final boolean regionMatches(CharacterIterator  target, int offset, int limit,
-                                           String part, int partlen) {
-    if (offset < 0)  return false;
-    if (limit-offset < partlen)
-        return false;
-    int i = 0;
-    while (partlen-- > 0) {
-        if ( target .setIndex(  offset++ )  != part.charAt(i++))
-            return false;
+            default:
+                throw new RuntimeException("Unknown operation type: "+op.type);
+            } // switch (op.type)
+        } // while
     }
-    return true;
-}
 
-private static final boolean regionMatches(CharacterIterator  target, int offset, int limit,
-                                           int offset2, int partlen) {
-    if (offset < 0)  return false;
-    if (limit-offset < partlen)
-        return false;
-    int i = offset2;
-    while (partlen-- > 0) {
-        if ( target .setIndex(  offset++ )  !=  target .setIndex(  i++ ) )
-            return false;
+    private static final int getPreviousWordType(CharacterIterator  target, int begin, int end,
+                                                 int offset, int opts) {
+        int ret = getWordType(target, begin, end, --offset, opts);
+        while (ret == WT_IGNORE)
+            ret = getWordType(target, begin, end, --offset, opts);
+        return ret;
     }
-    return true;
-}
+
+    private static final int getWordType(CharacterIterator  target, int begin, int end,
+                                         int offset, int opts) {
+        if (offset < begin || offset >= end)  return WT_OTHER;
+        return getWordType0( target .setIndex(  offset ) , opts);
+    }
+
+
+
+    private static final boolean regionMatches(CharacterIterator  target, int offset, int limit,
+                                               String part, int partlen) {
+        if (offset < 0)  return false;
+        if (limit-offset < partlen)
+            return false;
+        int i = 0;
+        while (partlen-- > 0) {
+            if ( target .setIndex(  offset++ )  != part.charAt(i++))
+                return false;
+        }
+        return true;
+    }
+
+    private static final boolean regionMatches(CharacterIterator  target, int offset, int limit,
+                                               int offset2, int partlen) {
+        if (offset < 0)  return false;
+        if (limit-offset < partlen)
+            return false;
+        int i = offset2;
+        while (partlen-- > 0) {
+            if ( target .setIndex(  offset++ )  !=  target .setIndex(  i++ ) )
+                return false;
+        }
+        return true;
+    }
 
 /**
  * @see java.lang.String#regionMatches
  */
-private static final boolean regionMatchesIgnoreCase(CharacterIterator  target, int offset, int limit,
-                                                     String part, int partlen) {
-    if (offset < 0)  return false;
-    if (limit-offset < partlen)
-        return false;
-    int i = 0;
-    while (partlen-- > 0) {
-        char ch1 =  target .setIndex(  offset++ ) ;
-        char ch2 = part.charAt(i++);
-        if (ch1 == ch2)
-            continue;
-        char uch1 = Character.toUpperCase(ch1);
-        char uch2 = Character.toUpperCase(ch2);
-        if (uch1 == uch2)
-            continue;
-        if (Character.toLowerCase(uch1) != Character.toLowerCase(uch2))
+    private static final boolean regionMatchesIgnoreCase(CharacterIterator  target, int offset, int limit,
+                                                         String part, int partlen) {
+        if (offset < 0)  return false;
+        if (limit-offset < partlen)
             return false;
+        int i = 0;
+        while (partlen-- > 0) {
+            char ch1 =  target .setIndex(  offset++ ) ;
+            char ch2 = part.charAt(i++);
+            if (ch1 == ch2)
+                continue;
+            char uch1 = Character.toUpperCase(ch1);
+            char uch2 = Character.toUpperCase(ch2);
+            if (uch1 == uch2)
+                continue;
+            if (Character.toLowerCase(uch1) != Character.toLowerCase(uch2))
+                return false;
+        }
+        return true;
     }
-    return true;
-}
 
-private static final boolean regionMatchesIgnoreCase(CharacterIterator  target, int offset, int limit,
-                                                     int offset2, int partlen) {
-    if (offset < 0)  return false;
-    if (limit-offset < partlen)
-        return false;
-    int i = offset2;
-    while (partlen-- > 0) {
-        char ch1 =  target .setIndex(  offset++ ) ;
-        char ch2 =  target .setIndex(  i++ ) ;
-        if (ch1 == ch2)
-            continue;
-        char uch1 = Character.toUpperCase(ch1);
-        char uch2 = Character.toUpperCase(ch2);
-        if (uch1 == uch2)
-            continue;
-        if (Character.toLowerCase(uch1) != Character.toLowerCase(uch2))
+    private static final boolean regionMatchesIgnoreCase(CharacterIterator  target, int offset, int limit,
+                                                         int offset2, int partlen) {
+        if (offset < 0)  return false;
+        if (limit-offset < partlen)
             return false;
+        int i = offset2;
+        while (partlen-- > 0) {
+            char ch1 =  target .setIndex(  offset++ ) ;
+            char ch2 =  target .setIndex(  i++ ) ;
+            if (ch1 == ch2)
+                continue;
+            char uch1 = Character.toUpperCase(ch1);
+            char uch2 = Character.toUpperCase(ch2);
+            if (uch1 == uch2)
+                continue;
+            if (Character.toLowerCase(uch1) != Character.toLowerCase(uch2))
+                return false;
+        }
+        return true;
     }
-    return true;
-}
 
 
 
@@ -3054,16 +2951,16 @@ private static final boolean regionMatchesIgnoreCase(CharacterIterator  target, 
      */
     static final int XMLSCHEMA_MODE = 1<<9;
 
-    
+
     private static final boolean isSet(int options, int flag) {
-        return (options & flag) == flag;
+        return(options & flag) == flag;
     }
 
     /**
      * Constructor.
      *
      * @param regex A regular expression
-     * @exception com.ibm.regex.ParseException <VAR>regex</VAR> is not conforming to the syntax.
+     * @exception org.apache.xerces.utils.regex.ParseException <VAR>regex</VAR> is not conforming to the syntax.
      */
     public RegularExpression(String regex) throws ParseException {
         this.setPattern(regex, null);
@@ -3074,7 +2971,7 @@ private static final boolean regionMatchesIgnoreCase(CharacterIterator  target, 
      *
      * @param regex A regular expression
      * @param options A String consisted of "i" "m" "s" "u" "w"
-     * @exception com.ibm.regex.ParseException <VAR>regex</VAR> is not conforming to the syntax.
+     * @exception org.apache.xerces.utils.regex.ParseException <VAR>regex</VAR> is not conforming to the syntax.
      */
     public RegularExpression(String regex, String options) throws ParseException {
         this.setPattern(regex, options);
@@ -3099,7 +2996,7 @@ private static final boolean regionMatchesIgnoreCase(CharacterIterator  target, 
         this.regex = newPattern;
         this.options = options;
         RegexParser rp = this.isSet(this.options, RegularExpression.XMLSCHEMA_MODE)
-            ? new ParserForXMLSchema() : new RegexParser();
+                         ? new ParserForXMLSchema() : new RegexParser();
         this.tokentree = rp.parse(this.regex, this.options);
         this.nofparen = rp.parennumber;
         this.hasBackReferences = rp.hasBackReferences;
@@ -3156,7 +3053,7 @@ private static final boolean regionMatchesIgnoreCase(CharacterIterator  target, 
      *
      */
     public int hashCode() {
-        return (this.regex+"/"+this.getOptions()).hashCode();
+        return(this.regex+"/"+this.getOptions()).hashCode();
     }
 
     /**
@@ -3185,35 +3082,35 @@ private static final boolean regionMatchesIgnoreCase(CharacterIterator  target, 
         }
 
         switch (Character.getType(ch)) {
-          case Character.UPPERCASE_LETTER:      // L
-          case Character.LOWERCASE_LETTER:      // L
-          case Character.TITLECASE_LETTER:      // L
-          case Character.MODIFIER_LETTER:       // L
-          case Character.OTHER_LETTER:          // L
-          case Character.LETTER_NUMBER:         // N
-          case Character.DECIMAL_DIGIT_NUMBER:  // N
-          case Character.OTHER_NUMBER:          // N
-          case Character.COMBINING_SPACING_MARK: // Mc
+        case Character.UPPERCASE_LETTER:      // L
+        case Character.LOWERCASE_LETTER:      // L
+        case Character.TITLECASE_LETTER:      // L
+        case Character.MODIFIER_LETTER:       // L
+        case Character.OTHER_LETTER:          // L
+        case Character.LETTER_NUMBER:         // N
+        case Character.DECIMAL_DIGIT_NUMBER:  // N
+        case Character.OTHER_NUMBER:          // N
+        case Character.COMBINING_SPACING_MARK: // Mc
             return WT_LETTER;
 
-          case Character.FORMAT:                // Cf
-          case Character.NON_SPACING_MARK:      // Mn
-          case Character.ENCLOSING_MARK:        // Mc
+        case Character.FORMAT:                // Cf
+        case Character.NON_SPACING_MARK:      // Mn
+        case Character.ENCLOSING_MARK:        // Mc
             return WT_IGNORE;
 
-          case Character.CONTROL:               // Cc
+        case Character.CONTROL:               // Cc
             switch (ch) {
-              case '\t':
-              case '\n':
-              case '\u000B':
-              case '\f':
-              case '\r':
+            case '\t':
+            case '\n':
+            case '\u000B':
+            case '\f':
+            case '\r':
                 return WT_OTHER;
-              default:
+            default:
                 return WT_IGNORE;
             }
 
-          default:
+        default:
             return WT_OTHER;
         }
     }
@@ -3227,7 +3124,7 @@ private static final boolean regionMatchesIgnoreCase(CharacterIterator  target, 
 
     private static final boolean isEOLChar(int ch) {
         return ch == LINE_FEED || ch == CARRIAGE_RETURN || ch == LINE_SEPARATOR
-            || ch == PARAGRAPH_SEPARATOR;
+        || ch == PARAGRAPH_SEPARATOR;
     }
 
     private static final boolean isWordChar(int ch) { // Legacy word characters

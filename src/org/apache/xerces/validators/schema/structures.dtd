@@ -11,7 +11,7 @@
      are defined in XML Schema: Part 2: Datatypes -->
 <!-- Note %p is defined in datatypes.dtd -->
 <!ENTITY % xs-datatypes PUBLIC 'datatypes'
-                     '../WD-xmlschema-2-20000225/datatypes.dtd' >
+                     "http://www.w3.org/TR/2000/WD-xmlschema-1-20000407/datatypes.dtd" >
 %xs-datatypes;
 
 <!ENTITY % s ''> <!-- if %p is defined (e.g. as foo:) then you must
@@ -34,7 +34,6 @@
 <!ENTITY % sequence "%p;sequence">
 <!ENTITY % any "%p;any">
 <!ENTITY % anyAttribute "%p;anyAttribute">
-<!ENTITY % sic "%p;sic">
 <!ENTITY % attribute "%p;attribute">
 <!ENTITY % attributeGroup "%p;attributeGroup">
 <!ENTITY % include "%p;include">
@@ -63,37 +62,39 @@
 <!ENTITY % importAttrs ''>
 <!ENTITY % notationAttrs ''>
 
-<!ENTITY % complexDerivationChoice "(extension|restriction|reproduction)">
+<!ENTITY % complexDerivationChoice "(extension|restriction)">
 <!ENTITY % complexDerivationSet "CDATA">
       <!-- #all or space-separated list drawn from derivationChoice -->
 <!ENTITY % blockSet "CDATA">
       <!-- #all or space-separated list drawn from
-                      derivationChoice + 'equivClass' and 'list' -->
+                      derivationChoice + 'equivClass' -->
 
 <!ENTITY % mgs '%all; | %choice; | %sequence;'>
 <!ENTITY % cs '%choice; | %sequence;'>
+<!ENTITY % formValues '(qualified|unqualified)'>
 
 <!-- the duplication below is to produce an unambiguous content model
      which allows annotation everywhere -->
 <!ELEMENT %schema; ((%include; | %import; | %annotation;)*,
                     (%simpleType; | %complexType;
-                     | %element;
+                     | %element; | %attribute;
                      | %attributeGroup; | %group;
                      | %notation; ),
                     (%annotation;
                      | %simpleType; | %complexType;
-                     | %element;
+                     | %element; | %attribute;
                      | %attributeGroup; | %group;
                      | %notation; )* )>
 <!ATTLIST %schema;
-     targetNamespace    %URIref;               #IMPLIED
-     version            CDATA                  #IMPLIED
-     %nds;              %URIref;               #FIXED '&XMLSchemaNS;'
-     %dtnds;            %URIref;               #FIXED '&XMLSchemaNS;/datatypes'
-     finalDefault       %complexDerivationSet; ''
-     blockDefault       %blockSet;             ''
-     id                 ID                     #IMPLIED
-     %schemaAttrs;>
+   targetNamespace      %URIref;               #IMPLIED
+   version              CDATA                  #IMPLIED
+   %nds;                %URIref;               #FIXED '&XMLSchemaNS;'
+   finalDefault         %complexDerivationSet; ''
+   blockDefault         %blockSet;             ''
+   id                   ID                     #IMPLIED
+   elementFormDefault   %formValues;           'unqualified'
+   attributeFormDefault %formValues;           'unqualified'
+   %schemaAttrs;>
 <!-- Note the xmlns declaration is NOT in the Schema for Schemas,
      because at the Infoset level where schemas operate,
      xmlns(:prefix) is NOT an attribute! -->
@@ -126,7 +127,7 @@
 
 <!-- facets only if derivedBy='restriction' -->
 <!-- (element|group|any) only if content=mixed or =elementOnly
-     and NO derivedBy at all, i.e. a root type -->
+     and no base at all, i.e. a root type, or base is a complex type -->
 <!-- content defaults to base's if there is a complex base,
      textonly if there's a simple base,
      'mixed' if no base (because that's the urType's content)
@@ -140,7 +141,7 @@
      This is
        <sequence minOccurs='1' maxOccurs='1'>
      unless content='mixed', in which case it's
-       <choice minOccurs='0' maxOccurs='*'> -->
+       <choice minOccurs='0' maxOccurs='unbounded'> -->
 
 <!-- If anyAttribute appears in one or more referenced attributeGroups
      and/or explicitly, the intersection of the permissions is used -->
@@ -156,14 +157,14 @@ or:
 
 <!ELEMENT %element; ((%annotation;)?, (%complexType;| %simpleType;)?,
                      (%unique; | %key; | %keyref;)*)>
-<!-- type or datatype only if no type|ref attribute -->
+<!-- simpleType or complexType only if no type|ref attribute -->
 <!-- ref not allowed at top level -->
 <!ATTLIST %element;
             name        %NCName;               #IMPLIED
             id          ID                     #IMPLIED
             ref         %QName;                #IMPLIED
             type        %QName;                #IMPLIED
-            minOccurs   %non-negative-integer; '1'
+            minOccurs   %nonNegativeInteger;   '1'
             maxOccurs   CDATA                  #IMPLIED
             nullable    %boolean;              'false'
             equivClass  %QName;                #IMPLIED
@@ -172,6 +173,7 @@ or:
             block       %blockSet;             ''
             default     CDATA                  #IMPLIED
             fixed       CDATA                  #IMPLIED
+            form        %formValues;           #IMPLIED
             %elementAttrs;>
 <!-- type and ref are mutually exclusive.
      name and ref are mutually exculsive, one is required -->
@@ -184,28 +186,28 @@ or:
 <!ATTLIST %group; 
           name        %NCName;               #IMPLIED
           ref         %QName;                #IMPLIED
-          minOccurs   %non-negative-integer; '1'
+          minOccurs   %nonNegativeInteger;   '1'
           maxOccurs   CDATA                  #IMPLIED
           id          ID                     #IMPLIED
           %groupAttrs;>
 
 <!ELEMENT %all; ((%annotation;)?, (%element;| %group;| %cs; | %any;)*)>
 <!ATTLIST %all;
-          minOccurs   %non-negative-integer; '1'
+          minOccurs   %nonNegativeInteger;   '1'
           maxOccurs   CDATA                  #IMPLIED
           id          ID                     #IMPLIED
           %allAttrs;>
 
 <!ELEMENT %choice; ((%annotation;)?, (%element;| %group;| %cs; | %any;)*)>
 <!ATTLIST %choice;
-          minOccurs   %non-negative-integer; '1'
+          minOccurs   %nonNegativeInteger;   '1'
           maxOccurs   CDATA                  #IMPLIED
           id          ID                     #IMPLIED
           %choiceAttrs;>
 
 <!ELEMENT %sequence; ((%annotation;)?, (%element;| %group;| %cs; | %any;)*)>
 <!ATTLIST %sequence;
-          minOccurs   %non-negative-integer; '1'
+          minOccurs   %nonNegativeInteger;   '1'
           maxOccurs   CDATA                  #IMPLIED
           id          ID                     #IMPLIED
           %sequenceAttrs;>
@@ -219,11 +221,11 @@ or:
 <!-- If order is 'all', minOccurs==maxOccurs==1 on element/any inside -->
 <!-- Should allow minOccurs=0 inside order='all' . . . -->
 
-<!ELEMENT %any; EMPTY>
+<!ELEMENT %any; (%annotation;)?>
 <!ATTLIST %any;
             namespace       CDATA                  '##any'
             processContents (skip|lax|strict)      'strict'
-            minOccurs       %non-negative-integer; '1'
+            minOccurs       %nonNegativeInteger;   '1'
             maxOccurs       CDATA                  #IMPLIED
             %anyAttrs;>
 
@@ -241,26 +243,30 @@ or:
                   ##targetNamespace may appear in the above list, with the
                    obvious meaning -->
 
-<!ELEMENT %anyAttribute; EMPTY>
+<!ELEMENT %anyAttribute; (%annotation;)?>
 <!ATTLIST %anyAttribute;
             namespace    CDATA   '##any'
             %anyAttributeAttrs;>
 <!-- namespace is interpreted as for 'any' above -->
 
-
-<!-- for use inside basetype to copy down corresponding content
-     model particle from the basetype's content model -->
-<!ELEMENT %sic; EMPTY>
-
+<!-- simpleType only if no type|ref attribute -->
+<!-- ref not allowed at top level, name iff at top level -->
 <!ELEMENT %attribute; ((%annotation;)?, (%simpleType;)?)>
 <!ATTLIST %attribute;
-          name      %NCName;      #REQUIRED
+          name      %NCName;      #IMPLIED
+          id        ID            #IMPLIED
+          ref       %QName;       #IMPLIED
           type      %QName;       #IMPLIED
-          use	    CDATA         #IMPLIED
-          value		CDATA         #IMPLIED
+          use       (prohibited|optional|required|fixed|default) #IMPLIED
+          value     CDATA         #IMPLIED
+          form      %formValues;  #IMPLIED
           %attributeAttrs;>
-<!-- default and fixed are mutually exclusive -->
-<!-- type attr and datatype content are mutually exclusive -->
+<!-- type and ref are mutually exclusive.
+     name and ref are mutually exculsive, one is required -->
+<!-- value only if use is fixed, required or default, or name -->
+<!-- name and use are mutually exclusive -->
+<!-- default for use is optional when nested, none otherwise -->
+<!-- type attr and simpleType content are mutually exclusive -->
 
 <!-- an attributeGroup is a named collection of attribute decls, or a
      reference thereto -->
@@ -297,16 +303,16 @@ or:
 <!ELEMENT %field; (#PCDATA)>
 
 <!-- Schema combination mechanisms -->
-<!ELEMENT %include; EMPTY>
+<!ELEMENT %include; (%annotation;)?>
 <!ATTLIST %include; schemaLocation %URIref; #REQUIRED
                     %includeAttrs;>
 
-<!ELEMENT %import; EMPTY>
-<!ATTLIST %import; namespace      %URIref; #REQUIRED
+<!ELEMENT %import; (%annotation;)?>
+<!ATTLIST %import; namespace      %URIref; #IMPLIED
                    schemaLocation %URIref; #IMPLIED
                    %importAttrs;>
 
-<!ELEMENT %notation; EMPTY>
+<!ELEMENT %notation; (%annotation;)?>
 <!ATTLIST %notation;
                  name        %NCName;    #REQUIRED
                  id          ID          #IMPLIED
@@ -318,3 +324,5 @@ or:
            '&XSP1.URI;.xsd' >
 <!NOTATION XML PUBLIC 'REC-xml-1998-0210'
                'http://www.w3.org/TR/1998/REC-xml-19980210' >
+
+

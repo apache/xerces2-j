@@ -62,6 +62,7 @@ import org.apache.xerces.framework.XMLContentSpec;
 import org.apache.xerces.framework.XMLDocumentHandler;
 import org.apache.xerces.framework.XMLParser;
 import org.apache.xerces.readers.XMLEntityHandler;
+import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.StringPool;
 
 import org.xml.sax.Attributes;
@@ -893,11 +894,11 @@ public class SAXParser
      * This function will be called when a &lt;!DOCTYPE...&gt; declaration is
      * encountered.
      */
-    public void startDTD(int rootElementType, int publicId, int systemId) throws Exception {
+    public void startDTD(QName rootElement, int publicId, int systemId) throws Exception {
         if (fLexicalHandler != null || DEBUG_CALLBACKS) {
 
             // strings
-            String name = fStringPool.toString(rootElementType);
+            String name = fStringPool.toString(rootElement.rawname);
             String pubid = fStringPool.toString(publicId);
             String sysid = fStringPool.toString(systemId);
 
@@ -935,12 +936,12 @@ public class SAXParser
      * @param model The content model as a normalized string.
      * @exception SAXException The application may raise an exception.
      */
-    public void elementDecl(int elementType, XMLContentSpec contentSpec) throws Exception {
+    public void elementDecl(QName elementDecl, XMLContentSpec contentSpec) throws Exception {
 
         if (fDeclHandler != null || DEBUG_CALLBACKS) {
 
             // strings
-            String name = fStringPool.toString(elementType);
+            String name = fStringPool.toString(elementDecl.rawname);
             String contentModel = contentSpec.toString();
 
             // perform callback
@@ -973,18 +974,16 @@ public class SAXParser
      *        or null if there is none.
      * @exception SAXException The application may raise an exception.
      */
-    public void attlistDecl(int elementTypeIndex,
-                            int attrNameIndex,
-                            int attType,
-                            String enumString,
+    public void attlistDecl(QName elementDecl, QName attributeDecl,
+                            int attType, String enumString,
                             int attDefaultType,
                             int attDefaultValue) throws Exception
     {
         if (fDeclHandler != null || DEBUG_CALLBACKS) {
 
             // strings
-            String eName = fStringPool.toString(elementTypeIndex);
-            String aName = fStringPool.toString(attrNameIndex);
+            String eName = fStringPool.toString(elementDecl.rawname);
+            String aName = fStringPool.toString(attributeDecl.rawname);
             String aType;
             if (attType == fStringPool.addSymbol("ENUMERATION"))
                 aType = enumString;
@@ -1272,11 +1271,12 @@ public class SAXParser
     }
 
     /** Start element */
-    public void startElement(int elementType, XMLAttrList attrList, int attrListIndex)
+    public void startElement(QName element, 
+                             XMLAttrList attrList, int attrListIndex)
         throws Exception {
 
         // parameters
-        String name = fStringPool.toString(elementType);
+        String name = fStringPool.toString(element.rawname);
         AttributeList attrs = attrList.getAttributeList(attrListIndex);
 
         // perform callback
@@ -1292,10 +1292,10 @@ public class SAXParser
         }
         if (fContentHandler != null) {
             boolean namespaces = getNamespaces();
-            int uriIndex = fStringPool.getURIForQName(elementType);
+            int uriIndex = element.uri;
             String uri = uriIndex != -1 && namespaces
                        ? fStringPool.toString(uriIndex) : "";
-            int localIndex = fStringPool.getLocalPartForQName(elementType);
+            int localIndex = element.localpart;
             String local = localIndex != -1 && namespaces
                          ? fStringPool.toString(localIndex) : "";
             String raw = name;
@@ -1304,16 +1304,17 @@ public class SAXParser
                  attrIndex != -1; 
                  attrIndex = attrList.getNextAttr(attrIndex)) {
                 int attrNameIndex = attrList.getAttrName(attrIndex);
-                int attrUriIndex = fStringPool.getURIForQName(attrNameIndex);
+                int attrUriIndex = attrList.getAttrURI(attrIndex);
                 String attrUri = attrUriIndex != -1 && namespaces
                                ? fStringPool.toString(attrUriIndex) : "";
-                int attrLocalIndex = fStringPool.getLocalPartForQName(attrNameIndex);
+                int attrLocalIndex = attrList.getAttrLocalpart(attrIndex);
                 String attrLocal = attrLocalIndex != -1 && namespaces
                                  ? fStringPool.toString(attrLocalIndex) : "";
                 String attrRaw = fStringPool.toString(attrNameIndex);
                 String attrType = fStringPool.toString(attrList.getAttType(attrIndex));
                 String attrValue = fStringPool.toString(attrList.getAttValue(attrIndex));
-                int attrPrefix = fStringPool.getPrefixForQName(attrNameIndex);
+                //int attrPrefix = fStringPool.getPrefixForQName(attrNameIndex);
+                int attrPrefix = attrList.getAttrPrefix(attrIndex);
                 boolean namespacePrefixes = getNamespacePrefixes();
                 if (!namespaces || namespacePrefixes || 
                     (attrPrefix != fStringPool.addSymbol("xmlns")
@@ -1329,31 +1330,31 @@ public class SAXParser
         // free attribute list
         attrList.releaseAttrList(attrListIndex);
 
-    } // startElement(int,int)
+    } // startElement(QName,XMLAttrList,int)
 
     /** End element. */
-    public void endElement(int elementType) throws Exception {
+    public void endElement(QName element) throws Exception {
 
         // perform callback
         if (DEBUG_CALLBACKS) {
-            System.err.println("endElement(" + fStringPool.toString(elementType) + ")");
+            System.err.println("endElement(" + fStringPool.toString(element.rawname) + ")");
         }
         if (fDocumentHandler != null) {
-            fDocumentHandler.endElement(fStringPool.toString(elementType));
+            fDocumentHandler.endElement(fStringPool.toString(element.rawname));
         }
         if (fContentHandler != null) {
             boolean namespaces = getNamespaces();
-            int uriIndex = fStringPool.getURIForQName(elementType);
+            int uriIndex = element.uri;
             String uri = uriIndex != -1 && namespaces
                        ? fStringPool.toString(uriIndex) : "";
-            int localIndex = fStringPool.getLocalPartForQName(elementType);
+            int localIndex = element.localpart;
             String local = localIndex != -1 && namespaces
                          ? fStringPool.toString(localIndex) : "";
-            String raw = fStringPool.toString(elementType);
+            String raw = fStringPool.toString(element.rawname);
             fContentHandler.endElement(uri, local, raw);
         }
 
-    } // endElement(int)
+    } // endElement(QName)
 
     /** Start entity reference. */
     public void startEntityReference(int entityName, int entityType, int entityContext) throws Exception {

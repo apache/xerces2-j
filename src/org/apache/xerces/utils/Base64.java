@@ -116,14 +116,18 @@ public final class  Base64 {
 
     }
 
+    public static boolean isBase64( String isValidString ){
+        return( isArrayByteBase64( isValidString.getBytes()));
+    }
 
-    static boolean isBase64( byte octect ) {
+
+    public static boolean isBase64( byte octect ) {
         //shall we ignore white space? JEFF??
         return(octect == PAD || base64Alphabet[octect] != -1 ); 
     }
 
 
-    static boolean isArrayByteBase64( byte[] arrayOctect ) {
+    public static boolean isArrayByteBase64( byte[] arrayOctect ) {
         int length = arrayOctect.length;
         if ( length == 0 )
             return false;

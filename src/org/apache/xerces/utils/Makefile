@@ -5,10 +5,12 @@ TARGETS=\
 	CharDataChunk.class\
 	ChunkyByteArray.class\
 	ChunkyCharArray.class\
+	Hash2intTable.class\
 	HexBin.class\
 	ImplementationMessages.class\
 	ISO8601Format.class\
 	NamespacesScope.class\
+	QName.class\
 	StringHasher.class\
 	StringPool.class\
 	SymbolCache.class\
