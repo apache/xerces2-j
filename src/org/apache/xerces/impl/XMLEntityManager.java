@@ -1078,9 +1078,9 @@ public class XMLEntityManager
             //reader = new OneCharReader(reader);
         }
 
-        // we've seen a new Reader. put it in a list, so that
-        // we can close it later.
-        fOwnReaders.addElement(reader);
+        // We've seen a new Reader.
+        // Push it on the stack so we can close it later.
+        fReaderStack.push(reader);
 
         // push entity on stack
         if (fCurrentEntity != null) {
@@ -1129,23 +1129,21 @@ public class XMLEntityManager
         return fEntityScanner;
     } // getEntityScanner():XMLEntityScanner
 
-    // a list of Readers ever seen
-    protected Vector fOwnReaders = new Vector();
+    // A stack containing all the open readers
+    protected Stack fReaderStack = new Stack();
 
     /**
      * Close all opened InputStreams and Readers opened by this parser.
      */
     public void closeReaders() {
         // close all readers
-        for (int i = fOwnReaders.size()-1; i >= 0; i--) {
+        for (int i = fReaderStack.size()-1; i >= 0; i--) {
             try {
-                ((Reader)fOwnReaders.elementAt(i)).close();
+                ((Reader)fReaderStack.pop()).close();
             } catch (IOException e) {
                 // ignore
             }
         }
-        // and clear the list
-        fOwnReaders.removeAllElements();
     }
 
     //
@@ -1710,12 +1708,25 @@ public class XMLEntityManager
         if (fEntityHandler != null) {
             fEntityHandler.endEntity(fCurrentEntity.name);
         }
+        
+        // Close the reader for the current entity once we're 
+        // done with it, and remove it from our stack. If parsing
+        // is halted at some point, the rest of the readers on
+        // the stack will be closed during cleanup.
+        try {
+            fCurrentEntity.reader.close();
+        }
+        catch (IOException e) {
+            // ignore
+        }
+        // REVISIT: We should never encounter underflow if the calls
+        // to startEntity and endEntity are balanced, but guard
+        // against the EmptyStackException for now. -- mrglavas
+        if(!fReaderStack.isEmpty()) {
+            fReaderStack.pop();
+        } 
 
-        // pop stack
-        // REVISIT: we are done with the current entity, should close
-        //          the associated reader
-        //fCurrentEntity.reader.close();
-        // Now we close all readers after we finish parsing
+        // Pop entity stack.
         fCurrentEntity = fEntityStack.size() > 0
                        ? (ScannedEntity)fEntityStack.pop() : null;
         fEntityScanner.setCurrentEntity(fCurrentEntity);
