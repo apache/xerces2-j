@@ -1189,7 +1189,9 @@ public final class XMLValidator
 	int elementIndex = 
 	    addElementDecl(elementDecl,contentSpecType,contentSpec,isExternal);
 
-	fScope[elementIndex] = scopeDefined;
+	int chunk = elementIndex >> CHUNK_SHIFT;
+	int index = elementIndex & CHUNK_MASK;
+	fScope[chunk][index] = scopeDefined;
 	
 	return elementIndex;
 
@@ -1532,12 +1534,12 @@ public final class XMLValidator
     } // addAttDef(QName,QName,int,int,int,int,boolean):int
 
     // REVISIT addAttDef a hack for TraverseSchema 
-    public int addAttDef(int attlistIndex, QName attributeDecl, 
+    public int addAttDef(int attlistHeadIndex, QName attributeDecl, 
                          int attType, int enumeration, 
                          int attDefaultType, int attDefaultValue, 
                          boolean isExternal) throws Exception {
 
-        int attlistIndex = attlistIndex;
+        int attlistIndex = attlistHeadIndex;
 
         int dupID = -1;
         int dupNotation = -1;
@@ -1546,7 +1548,8 @@ public final class XMLValidator
             int attrIndex = attlistIndex & CHUNK_MASK;
             // REVISIT: Validation. Attributes are also tuples.
             if (fStringPool.equalNames(fAttName[attrChunk][attrIndex], attributeDecl.rawname)) {
-                if (fWarningOnDuplicateAttDef) {
+                // REVISIT
+                /*if (fWarningOnDuplicateAttDef) {
                     Object[] args = { fStringPool.toString(fElementType[elemChunk][elemIndex]),
                                       fStringPool.toString(attributeDecl.rawname) };
                     fErrorReporter.reportError(fErrorReporter.getLocator(),
@@ -1555,7 +1558,7 @@ public final class XMLValidator
                                                XMLMessages.P53_DUPLICATE,
                                                args,
                                                XMLErrorReporter.ERRORTYPE_WARNING);
-                }
+                }*/
                 return -1;
             }
             if (fValidating) {
@@ -1569,7 +1572,8 @@ public final class XMLValidator
             attlistIndex = fNextAttDef[attrChunk][attrIndex];
         }
         if (fValidating) {
-            if (dupID != -1) {
+            //REVISIT
+            /*if (dupID != -1) {
                 Object[] args = { fStringPool.toString(fElementType[elemChunk][elemIndex]),
                                   fStringPool.toString(dupID),
                                   fStringPool.toString(attributeDecl.rawname) };
@@ -1580,8 +1584,8 @@ public final class XMLValidator
                                            args,
                                            XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
                 return -1;
-            }
-            if (dupNotation != -1) {
+            }*/
+            /*if (dupNotation != -1) {
                 Object[] args = { fStringPool.toString(fElementType[elemChunk][elemIndex]),
                                   fStringPool.toString(dupNotation),
                                   fStringPool.toString(attributeDecl.rawname) };
@@ -1592,7 +1596,7 @@ public final class XMLValidator
                                            args,
                                            XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
                 return -1;
-            }
+            }*/
         }
         //
         // save the fields
@@ -1611,7 +1615,7 @@ public final class XMLValidator
         // add to the attr list for this element
         //
         int nextIndex = -1;
-        if (attDefaultValue != -1) {
+	/*        if (attDefaultValue != -1) {
             nextIndex = fAttlistHead[elemChunk][elemIndex];
             fAttlistHead[elemChunk][elemIndex] = fAttDefCount;
             if (nextIndex == -1) {
@@ -1627,11 +1631,12 @@ public final class XMLValidator
                 fNextAttDef[nextIndex >> CHUNK_SHIFT][nextIndex & CHUNK_MASK] = fAttDefCount;
                 nextIndex = -1;
             }
-        }
+        }*/
+	nextIndex = attlistHeadIndex;
         fNextAttDef[chunk][index] = nextIndex;
         
 	//return fAttDefCount++;
-	return attlistIndex;
+	return fAttDefCount++;
 
     } // addAttDef(QName,QName,int,int,int,int,boolean):int
 
@@ -1676,7 +1681,7 @@ public final class XMLValidator
     public void copyAttsForSchema(int fromAttDefIndex, QName toElement) {
 
 		//****DEBUG****
-		if (DEBUG) print("(POP) XMLValidator.copyAtts: " + param("fromElementType",fromElement.rawname) + param("toElementType",toElement.rawname) + "\n");
+		//if (DEBUG) print("(POP) XMLValidator.copyAtts: " + param("fromElementType",fromElement.rawname) + param("toElementType",toElement.rawname) + "\n");
 		//****DEBUG****
 
         // REVISIT: Validation.
@@ -1684,7 +1689,10 @@ public final class XMLValidator
         if (fromAttDefIndex == -1) {
             return;
         }
-        
+
+        int chunk;
+	int index;
+
 	int attDefIndex = fromAttDefIndex;
         while (attDefIndex != -1) {
             chunk = attDefIndex >> CHUNK_SHIFT;
@@ -2666,7 +2674,7 @@ public final class XMLValidator
    }
 
    public int getDeclaration(int localpart, int scope) {
-	    return fNameScopeToIndex.get(qname.localpart, scope);
+	    return fNameScopeToIndex.get(localpart, scope);
    }
 
 
