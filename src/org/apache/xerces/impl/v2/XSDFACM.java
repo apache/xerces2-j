@@ -94,16 +94,12 @@ public class XSDFACM
     // Data
     //
 
-    /* this is the SubstitutionGroupComparator object */
-    // REVISIT:  incorporate substitutionGroup handlling
-
     /**
      * This is the map of unique input symbol elements to indices into
      * each state's per-input symbol transition table entry. This is part
      * of the built DFA information that must be kept around to do the
      * actual validation.  Note tat since either XSElementDecl or XSParticleDecl object
      * can live here, we've got to use an Object.
-     * REVISIT:  change XSElementDecl/XSParticleDecl so one inherits from the other.
      */
     private Object fElemMap[] = null;
 
@@ -561,32 +557,31 @@ public class XSDFACM
             //fElemMap[outIndex] = new Object ();
             fElemMap[outIndex] = null;
 
-            /****
-            This code commented out in the DTD version...
-            if ( (fLeafListType[outIndex] & 0x0f) != 0 ) {
-                if (fLeafNameTypeVector == null) {
-                    fLeafNameTypeVector = new ContentLeafNameTypeVector();
-                }
-            }
-            ***/
-
-            // Get the current leaf's element
-            final XSElementDecl element = fLeafList[outIndex].getElement();
-            if (element.fName == fEOCString)
-                continue;
-
-            // See if the current leaf node's element index is in the list
             int inIndex = 0;
-            for (; inIndex < fElemMapSize; inIndex++) {
-                if (fElemMapType[inIndex] == fLeafListType[outIndex] &&
-                    ((XSElementDecl)fElemMap[inIndex]).fTargetNamespace == element.fTargetNamespace &&
+            final Object decl = fLeafList[outIndex].getDecl();
+            if (fLeafListType[outIndex] == XSParticleDecl.PARTICLE_WILDCARD) {
+                for (; inIndex < fElemMapSize; inIndex++) {
+                    if (decl == fLeafList[inIndex])
+                        break;
+                }
+            } else {
+                // Get the current leaf's element
+                final XSElementDecl element = (XSElementDecl)decl;
+                if (element.fName == fEOCString)
+                    continue;
+
+                // See if the current leaf node's element index is in the list
+                for (; inIndex < fElemMapSize; inIndex++) {
+                    if (fElemMapType[inIndex] == fLeafListType[outIndex] &&
+                        ((XSElementDecl)fElemMap[inIndex]).fTargetNamespace == element.fTargetNamespace &&
                         ((XSElementDecl)fElemMap[inIndex]).fName == element.fName)
-                    break;
+                        break;
+                }
             }
 
             // If it was not in the list, then add it, if not the EOC node
             if (inIndex == fElemMapSize) {
-                fElemMap[fElemMapSize] = element;
+                fElemMap[fElemMapSize] = decl;
                 fElemMapType[fElemMapSize] = fLeafListType[outIndex];
                 fElemMapSize++;
             }
@@ -608,14 +603,21 @@ public class XSDFACM
         int fSortCount = 0;
 
         for (int elemIndex = 0; elemIndex < fElemMapSize; elemIndex++) {
+            final Object decl = fElemMap[elemIndex];
             for (int leafIndex = 0; leafIndex < fLeafCount; leafIndex++) {
-                final XSElementDecl leaf = fLeafList[leafIndex].getElement();
-                final int leafType = fLeafListType[leafIndex];
-                final XSElementDecl element = (XSElementDecl)fElemMap[elemIndex];
-                if (fElemMapType[elemIndex] == fLeafListType[leafIndex] &&
-                        leaf.fTargetNamespace == element.fTargetNamespace &&
+                if (fElemMapType[elemIndex] != fLeafListType[leafIndex])
+                    continue;
+
+                if (fLeafListType[leafIndex] == XSParticleDecl.PARTICLE_WILDCARD) {
+                    if (decl == fLeafList[leafIndex].getDecl())
+                        fLeafSorter[fSortCount++] = leafIndex;
+                } else {
+                    final XSElementDecl leaf = (XSElementDecl)fLeafList[leafIndex].getDecl();
+                    final XSElementDecl element = (XSElementDecl)decl;
+                    if (leaf.fTargetNamespace == element.fTargetNamespace &&
                         leaf.fName == element.fName ) {
-                    fLeafSorter[fSortCount++] = leafIndex;
+                        fLeafSorter[fSortCount++] = leafIndex;
+                    }
                 }
             }
             fLeafSorter[fSortCount++] = -1;
@@ -945,9 +947,9 @@ public class XSDFACM
                 "Leaf: (pos="
                 + ((XSCMLeaf)nodeCur).getPosition()
                 + "), "
-                + ((XSCMLeaf)nodeCur).getElement()
+                + ((XSCMLeaf)nodeCur).getDecl()
                 + "(elemIndex="
-                + ((XSCMLeaf)nodeCur).getElement()
+                + ((XSCMLeaf)nodeCur).getDecl()
                 + ") "
             );
 
@@ -996,11 +998,9 @@ public class XSDFACM
 
         // Recurse as required
         if (nodeCur.type() == XSParticleDecl.PARTICLE_WILDCARD) {
-            // REVISIT: Don't waste these structures.
-            fElementDecl = (XSWildcardDecl)((XSCMLeaf)nodeCur).getURI();
-            // REVISIT:  depends on result of XSDElement->XSDWildcard discussions...
-            fLeafList[curIndex] = new XSCMLeaf(XSParticleDecl.PARTICLE_WILDCARD, fElementDecl, ((XSCMLeaf)nodeCur).getPosition());
-            fLeafListType[curIndex] = nodeCur.type();
+            fElementDecl = ((XSCMLeaf)nodeCur).getDecl();
+            fLeafList[curIndex] = (XSCMLeaf)nodeCur;
+            fLeafListType[curIndex] = XSParticleDecl.PARTICLE_WILDCARD;
             curIndex++;
         }
         else if ((nodeCur.type() == XSParticleDecl.PARTICLE_CHOICE)
@@ -1020,7 +1020,7 @@ public class XSDFACM
             //  Put this node in the leaf list at the current index if its
             //  a non-epsilon leaf.
             //
-             final XSElementDecl elementDecl = ((XSCMLeaf)nodeCur).getElement();
+            final XSElementDecl elementDecl = (XSElementDecl)((XSCMLeaf)nodeCur).getDecl();
             if (elementDecl.fName != fEpsilonString) {
                 fLeafList[curIndex] = (XSCMLeaf)nodeCur;
                 fLeafListType[curIndex] = XSParticleDecl.PARTICLE_ELEMENT;

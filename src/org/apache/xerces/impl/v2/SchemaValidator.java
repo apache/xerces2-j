@@ -1086,7 +1086,6 @@ public class SchemaValidator
         if (fCurrentCM != null) {
             Object decl = fCurrentCM.oneTransition(element, fCurrCMState, fSubGroupHandler);
             // it could be an element decl or a wildcard decl
-            // REVISIT: is there a more efficient way than 'instanceof'
             if (decl == null) {
                 if (fCurrCMState[0] == XSCMValidator.FIRST_ERROR && fDoValidation) {
                     XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
@@ -1329,7 +1328,6 @@ public class SchemaValidator
         }
 
         // add prefix declaration to the namespace support
-        // REVISIT: should it be null or ""
         fNamespaceSupport.declarePrefix(prefix, uri.length() != 0 ? uri : null);
     }
 
@@ -1500,7 +1498,7 @@ public class SchemaValidator
                 // if can't find
                 if (currDecl == null) {
                     // if strict, report error
-                    if (attrWildcard.fType == XSWildcardDecl.WILDCARD_STRICT)
+                    if (attrWildcard.fProcessContents == XSWildcardDecl.WILDCARD_STRICT)
                         reportSchemaError("cvc-complex-type.3.2.2", new Object[]{element.rawname, fTempQName.rawname});
                     // then continue to the next attribute
                     continue;

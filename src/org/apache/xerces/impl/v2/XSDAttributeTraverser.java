@@ -148,7 +148,6 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
 
         // 1 default and fixed must not both be present.
         if (defaultAtt != null && fixedAtt != null) {
-            // REVISIT:  localize
             reportSchemaError("src-attribute.1", new Object[]{nameAtt});
         }
 

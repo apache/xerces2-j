@@ -1012,6 +1012,7 @@ class XSDHandler {
             fLocalElementDecl = newStackE;
             int[] newStackI = new int[fLocalElemStackPos+INC_STACK_SIZE];
             System.arraycopy(fAllContext, 0, newStackI, 0, fLocalElemStackPos);
+            fAllContext = newStackI;
             String [][] newStackN = new String [fLocalElemStackPos+INC_STACK_SIZE][];
             System.arraycopy(fLocalElemNamespaceContext, 0, newStackN, 0, fLocalElemStackPos);
             fLocalElemNamespaceContext = newStackN;

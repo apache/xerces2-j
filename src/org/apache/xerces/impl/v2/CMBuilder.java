@@ -76,8 +76,6 @@ public class CMBuilder {
     // needed for DFA construction
     private int fLeafCount;
 
-    //REVISIT: add substitution comparator!!
-
     public CMBuilder (XSDeclarationPool pool){
         fDeclPool = pool;
     }
@@ -103,12 +101,12 @@ public class CMBuilder {
         XSCMValidator cmValidator = null;
 
         XSParticleDecl particle = typeDecl.fParticle;
-        
+
         // This check is performed in XSComplexTypeDecl.
         //if (cmValidator != null)
         //    return cmValidator;
-        
-        
+
+
         if (particle != null)
             particle = expandParticleTree( (XSParticleDecl)particle);
 
@@ -124,8 +122,8 @@ public class CMBuilder {
         else if (contentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
                //
               // Create a child model as
-              // per the element-only case              
-            cmValidator = createChildModel(particle, true);        
+              // per the element-only case
+            cmValidator = createChildModel(particle, true);
         }
         else if (contentType == XSComplexTypeDecl.CONTENTTYPE_ELEMENT) {
             //  This method will create an optimal model for the complexity
@@ -166,7 +164,7 @@ public class CMBuilder {
             //if (grammar.fUPAChecking) {
             // REVISIT: implement
             //}
-            
+
             return expandContentModel(particle, minOccurs, maxOccurs);
         }
         else if (type == XSParticleDecl.PARTICLE_CHOICE ||
@@ -176,15 +174,14 @@ public class CMBuilder {
             Object left = particle.fValue;
             Object right = particle.fOtherValue;
 
-            //REVISIT: look at uri and switch grammar if necessary
             left =  expandParticleTree( (XSParticleDecl)left);
-            if (right != null) 
+            if (right != null)
                 right =  expandParticleTree( (XSParticleDecl)right);
-            
+
             // At this point, by expanding the particle tree, we may have a null left or right
-            if (left==null && right==null) 
+            if (left==null && right==null)
                 return null;
-          
+
             if (left == null)
                 return expandContentModel((XSParticleDecl)right, minOccurs, maxOccurs);
 
@@ -250,8 +247,8 @@ public class CMBuilder {
                 XSAllCM allContent = new XSAllCM(false);
                 gatherAllLeaves ((XSParticleDecl)(particle.fValue), allContent);
                 gatherAllLeaves ((XSParticleDecl)(particle.fOtherValue), allContent);
-                return allContent; 
-                
+                return allContent;
+
             }
             else if (type == XSParticleDecl.PARTICLE_ZERO_OR_ONE) {
                  XSParticleDecl left = (XSParticleDecl)particle.fValue;
@@ -282,7 +279,7 @@ public class CMBuilder {
             //  simple content model.
             //
             // pass element declaration
-            
+
             return new XSSimpleCM(type, (XSElementDecl)particle.fValue);
         }
         else if ((type == XSParticleDecl.PARTICLE_CHOICE)
@@ -305,11 +302,11 @@ public class CMBuilder {
             }
 
         }
-	else if (type == XSParticleDecl.PARTICLE_ALL) {
-        
+    else if (type == XSParticleDecl.PARTICLE_ALL) {
+
             XSParticleDecl left = (XSParticleDecl)particle.fValue;
             XSParticleDecl right = (XSParticleDecl)particle.fOtherValue;
-            
+
             XSAllCM allContent = new XSAllCM(false);
 
             gatherAllLeaves (left, allContent);
@@ -334,7 +331,7 @@ public class CMBuilder {
                 return new XSSimpleCM(type, (XSElementDecl)left.fValue);
             }
             else if (left.fType==XSParticleDecl.PARTICLE_ALL) {
-		 		 XSAllCM allContent = new XSAllCM(true);
+                 XSAllCM allContent = new XSAllCM(true);
                 gatherAllLeaves (left, allContent);
                 return allContent;
             }
@@ -351,7 +348,6 @@ public class CMBuilder {
         //  encapsulates all of the work to create the DFA.
         //
 
-        //REVISIT: add DFA Content Model
         fLeafCount = 0;
         CMNode node = buildSyntaxTree(particle);
         return new XSDFACM(node, fLeafCount, isMixed);
@@ -361,10 +357,6 @@ public class CMBuilder {
 
     private XSParticleDecl expandContentModel(XSParticleDecl particle,
                                               int minOccurs, int maxOccurs) {
-
-
-        // REVISIT: should we handle (maxOccurs - minOccurs) = {1,2} as
-        //          separate case?
 
         XSParticleDecl leafParticle = particle;
         XSParticleDecl optional = null;
@@ -384,8 +376,9 @@ public class CMBuilder {
             return createParticle (XSParticleDecl.PARTICLE_ONE_OR_MORE, particle, null);
         }
         else if (maxOccurs == SchemaSymbols.OCCURRENCE_UNBOUNDED) {
+            // REVISIT: should we handle (maxOccurs - minOccurs) = {1,2} as
+            //          separate case?
             if (minOccurs<2) {
-                //REVISIT
             }
 
             // => a,a,..,a+
@@ -442,35 +435,35 @@ public class CMBuilder {
      private void gatherAllLeaves(XSParticleDecl particle,
                                         XSAllCM allContent) {
         Object left = particle.fValue;
-        Object right = particle.fOtherValue;        
+        Object right = particle.fOtherValue;
         int type = particle.fType;
 
         if (type == XSParticleDecl.PARTICLE_ALL) {
-          
+
             // At an all node, visit left and right subtrees
             gatherAllLeaves ((XSParticleDecl)left, allContent);
             gatherAllLeaves ((XSParticleDecl) particle.fOtherValue, allContent);
         }
         else if (type == XSParticleDecl.PARTICLE_ELEMENT) {
-          
+
             // At leaf, add the element to list of elements permitted in the all
             allContent.addElement ((XSElementDecl)left, false);
         }
         else if (type == XSParticleDecl.PARTICLE_ZERO_OR_ONE) {
-          
+
             // At ZERO_OR_ONE node, subtree must be an element
             // that was specified with minOccurs=0, maxOccurs=1
             // Add the optional element to list of elements permitted in the all
-          
+
             if (((XSParticleDecl)left).fType == XSParticleDecl.PARTICLE_ELEMENT) {
                 allContent.addElement ((XSElementDecl)(((XSParticleDecl)left).fValue), true);
             }
             else {
             // report error
-		throw new RuntimeException("ImplementationMessages.VAL_CST");
-            }		  		 
+        throw new RuntimeException("ImplementationMessages.VAL_CST");
+            }
         }
-        else { 
+        else {
             // report error
             throw new RuntimeException("ImplementationMessages.VAL_CSTA");
         }
@@ -494,7 +487,7 @@ public class CMBuilder {
         // We will build a node at this level for the new tree
         CMNode nodeRet = null;
         if (startNode.fType == XSParticleDecl.PARTICLE_WILDCARD) {
-            nodeRet = new XSCMAny(startNode.fType, ((XSWildcardDecl)startNode.fValue), fLeafCount++);
+            nodeRet = new XSCMLeaf(XSParticleDecl.PARTICLE_WILDCARD, startNode.fValue, fLeafCount++);
         }
         //
         //  If this node is a leaf, then its an easy one. We just add it
@@ -507,8 +500,8 @@ public class CMBuilder {
             //  storing it. This makes the positions zero based since we
             //  store first and then increment.
             //
-            nodeRet = new XSCMLeaf(XSParticleDecl.PARTICLE_ELEMENT, (XSElementDecl)(startNode.fValue), fLeafCount++);
-        } 
+            nodeRet = new XSCMLeaf(XSParticleDecl.PARTICLE_ELEMENT, startNode.fValue, fLeafCount++);
+        }
         else {
             //
             //  Its not a leaf, so we have to recurse its left and maybe right
@@ -526,18 +519,18 @@ public class CMBuilder {
 
                 nodeRet = new XSCMBinOp( startNode.fType, buildSyntaxTree(leftNode)
                                        , buildSyntaxTree(rightNode));
-            } 
+            }
             else if (startNode.fType == XSParticleDecl.PARTICLE_ZERO_OR_MORE
-		       || startNode.fType == XSParticleDecl.PARTICLE_ZERO_OR_ONE
-		       || startNode.fType == XSParticleDecl.PARTICLE_ONE_OR_MORE) {
+               || startNode.fType == XSParticleDecl.PARTICLE_ZERO_OR_ONE
+               || startNode.fType == XSParticleDecl.PARTICLE_ONE_OR_MORE) {
                 nodeRet = new XSCMUniOp(startNode.fType, buildSyntaxTree(leftNode));
-            } 
+            }
             else {
-		        throw new RuntimeException("ImplementationMessages.VAL_CST");
+                throw new RuntimeException("ImplementationMessages.VAL_CST");
             }
         }
         // And return our new node for this level
         return nodeRet;
     }
-   
+
 }

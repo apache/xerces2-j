@@ -664,8 +664,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
          if (toAttrGrp.fAttributeWC==null) {
            toAttrGrp.fAttributeWC = fromAttrGrp.fAttributeWC;
          }
-         else {
-           toAttrGrp.fAttributeWC.performUnionWith(fromAttrGrp.fAttributeWC);
+         else if (fromAttrGrp.fAttributeWC != null) {
+           toAttrGrp.fAttributeWC = toAttrGrp.fAttributeWC.performUnionWith(fromAttrGrp.fAttributeWC);
          }
 
        }

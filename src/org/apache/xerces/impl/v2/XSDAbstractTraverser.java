@@ -231,11 +231,11 @@ abstract class XSDAbstractTraverser {
                     String localpart = enumVal;
                     int colonptr = enumVal.indexOf(":");
                     if (colonptr > 0) {
-                        prefix = enumVal.substring(0,colonptr);
+                        prefix = fSymbolTable.addSymbol(enumVal.substring(0,colonptr));
                         localpart = enumVal.substring(colonptr+1);
 
                     }
-                    String uriStr = schemaDoc.fNamespaceSupport.getURI(fSymbolTable.addSymbol(prefix));
+                    String uriStr = schemaDoc.fNamespaceSupport.getURI(prefix);
                     fQName.setValues(prefix, localpart, null, uriStr );
                     XSNotationDecl notation = (XSNotationDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.NOTATION_TYPE , fQName);
                     if (notation == null) {
@@ -245,7 +245,7 @@ abstract class XSDAbstractTraverser {
                     }
                     // REVISIT: we need to store QNames in Notation validator to be able
                     //          to validation notations. This is just a temp. fix.
-                    //String fullName = (uriStr!=null)?(uriStr+":"+localpart):localpart; 
+                    //String fullName = (uriStr!=null)?(uriStr+":"+localpart):localpart;
                     enumVal = localpart;
                 }
                 enumData.addElement(enumVal);
@@ -358,7 +358,7 @@ abstract class XSDAbstractTraverser {
         String childName;
 
         for (child=firstAttr; child!=null; child=DOMUtil.getNextSiblingElement(child)) {
-            childName = DOMUtil.getLocalName(child); 
+            childName = DOMUtil.getLocalName(child);
             if (childName.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
                 tempAttrUse = fSchemaHandler.fAttributeTraverser.traverseLocal(child,
                                                                                schemaDoc, grammar);
@@ -406,7 +406,7 @@ abstract class XSDAbstractTraverser {
         } // for
 
         if (child != null) {
-            childName = DOMUtil.getLocalName(child); 
+            childName = DOMUtil.getLocalName(child);
             if (childName.equals(SchemaSymbols.ELT_ANYATTRIBUTE)) {
                 XSWildcardDecl tempAttrWC = fSchemaHandler.fWildCardTraverser.
                                             traverseAnyAttribute(child, schemaDoc, grammar);
@@ -415,8 +415,8 @@ abstract class XSDAbstractTraverser {
                 }
                 // perform intersection of attribute wildcard
                 else {
-                    attrGrp.fAttributeWC = attrGrp.fAttributeWC.
-                                           performIntersectionWith(tempAttrWC);
+                    attrGrp.fAttributeWC = tempAttrWC.
+                                           performIntersectionWith(attrGrp.fAttributeWC);
                 }
                 child = DOMUtil.getNextSiblingElement(child);
             }

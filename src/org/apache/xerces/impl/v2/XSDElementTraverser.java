@@ -337,7 +337,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
 
         // see if there's something here; it had better be key, keyref or unique.
         if (child != null) {
-            String childName = fSymbolTable.addSymbol(DOMUtil.getLocalName(child));
+            String childName = DOMUtil.getLocalName(child);
             while (child != null &&
                    (childName.equals(SchemaSymbols.ELT_KEY) ||
                     childName.equals(SchemaSymbols.ELT_KEYREF) ||
@@ -357,7 +357,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                 }
                 child = DOMUtil.getNextSiblingElement(child);
                 if (child != null) {
-                    childName = fSymbolTable.addSymbol(DOMUtil.getLocalName(child));
+                    childName = DOMUtil.getLocalName(child);
                 }
             }
         }
@@ -466,9 +466,8 @@ class XSDElementTraverser extends XSDAbstractTraverser {
             }
             // 2.2.2 If the {content type} is mixed, then the {content type}'s particle must be ·emptiable· as defined by Particle Emptiable (§3.9.6).
             else if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
-                //REVISIT: to implement
-                //if (!particleEmptiable(typeInfo.contentSpecHandle))
-                //    reportSchemaError ("cos-valid-default.2.2.2", new Object[]{element.fName});
+                if (!ctype.fParticle.emptiable())
+                    reportSchemaError ("cos-valid-default.2.2.2", new Object[]{element.fName});
             }
             else {
                 reportSchemaError ("cos-valid-default.2.1", new Object[]{element.fName});
@@ -478,14 +477,13 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         // get the simple type declaration, and validate
         boolean ret = true;
         if (dv != null) {
-            // REVISIT:  we'll be able to do this once he datatype redesign is implemented
-            /******
             try {
-                element.fDefault = dv.validate((String)element.fDefault, null);
+                // REVISIT:  we'll be able to do this once he datatype redesign is implemented
+                //element.fDefault = dv.validate((String)element.fDefault, null);
+                dv.validate((String)element.fDefault, null);
             } catch (InvalidDatatypeValueException ide) {
                 ret = false;
             }
-            ***/
         }
 
         return ret;
