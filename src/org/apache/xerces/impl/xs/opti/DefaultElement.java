@@ -167,7 +167,7 @@ public class DefaultElement extends NodeImpl
     	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
     }
     
-    public void setIdAttributeNode(Attr at) throws DOMException{
+    public void setIdAttributeNode(Attr at, boolean makeId) throws DOMException{
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
     }
     public void setIdAttribute(String name, boolean makeId) throws DOMException{

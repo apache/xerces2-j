@@ -1321,7 +1321,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
                     }
                 }
                 if (id){
-                    ((ElementImpl)currentElement).setIdAttributeNode(attr);
+                    ((ElementImpl)currentElement).setIdAttributeNode(attr, true);
                 }
                 
 				if (fPSVI) {

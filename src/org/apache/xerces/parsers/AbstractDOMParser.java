@@ -942,14 +942,16 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                     AttrImpl attrImpl = (AttrImpl)attr;
                     boolean specified = attributes.isSpecified(i);
                     attrImpl.setSpecified(specified);
+                    // REVISIT: when DOM Level 3 becomes Rec this code
+                    // should not depend odn fDocumentImpl
                     // Identifier registration
                     if (attributes.getType(i).equals("ID")) {
-                        ((ElementImpl) el).setIdAttributeNode(attr);
+                        ((ElementImpl) el).setIdAttributeNode(attr, true);
                     }
                     else if (attributes instanceof XMLAttributesImpl) {
                         XMLAttributesImpl attrs = (XMLAttributesImpl)attributes;
                         if (attrs.getSchemaId(i))
-                            ((ElementImpl) el).setIdAttributeNode(attr);
+                            ((ElementImpl) el).setIdAttributeNode(attr, true);
                     }
                 }
                 // REVISIT: Handle entities in attribute value.

@@ -349,9 +349,10 @@ public interface Element extends Node {
      * any grammar that may be in use. 
      * 
      * @param at
+     * @param makeId
      * @since DOM Level 3
      */
-    public void setIdAttributeNode(Attr at) throws DOMException;
+    public void setIdAttributeNode(Attr at, boolean makeId) throws DOMException;
 
     /**
      * Declares the attribute specified by name to be of type ID.

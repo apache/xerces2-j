@@ -907,7 +907,7 @@ public class ElementImpl
     /**
      * DOM Level 3: register the given attribute node as an ID attribute
      */
-    public void setIdAttributeNode(Attr at) {
+    public void setIdAttributeNode(Attr at, boolean makeId) {
         if (needsSyncData()) {
             synchronizeData();
         }
@@ -924,8 +924,13 @@ public class ElementImpl
                 throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
             }
         }
-        ((AttrImpl) at).isIdAttribute(true);
-        ownerDocument.putIdentifier(at.getValue(), this);
+        ((AttrImpl) at).isIdAttribute(makeId);
+        if (!makeId) {
+            ownerDocument.removeIdentifier(at.getValue());
+        }
+        else {
+            ownerDocument.putIdentifier(at.getValue(), this);
+        }
     }
     
     /**
