@@ -153,6 +153,37 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         "preserve", "collapse", "replace",
     };
 
+    static final ValidationContext fEmptyContext = new ValidationContext() {
+        public boolean needFacetChecking() {
+            return true;
+        }
+        public boolean needExtraChecking() {
+            return false;
+        }
+        public boolean needToNormalize() {
+            return true;
+        }
+        public boolean isEntityDeclared (String name) {
+            return false;
+        }
+        public boolean isEntityUnparsed (String name) {
+            return false;
+        }
+        public boolean isIdDeclared (String name) {
+            return false;
+        }
+        public void addId(String name) {
+        }
+        public void addIdRef(String name) {
+        }
+        public String getSymbol (String symbol) {
+            return null;
+        }
+        public String getURI(String prefix) {
+            return null;
+        }
+    };
+
     // this will be true if this is a static XSSimpleTypeDecl
     // and hence must remain immutable (i.e., applyFacets
     // may not be permitted to have any effect).
@@ -1201,6 +1232,9 @@ public class XSSimpleTypeDecl implements XSSimpleType {
      */
     public Object validate(String content, ValidationContext context, ValidatedInfo validatedInfo) throws InvalidDatatypeValueException {
 
+        if (context == null)
+            context = fEmptyContext;
+            
         if (validatedInfo == null)
             validatedInfo = new ValidatedInfo();
 
@@ -1223,6 +1257,9 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     public void validate(ValidationContext context, ValidatedInfo validatedInfo)
         throws InvalidDatatypeValueException {
 
+        if (context == null)
+            context = fEmptyContext;
+            
         // then validate the actual value against the facets
         if (context.needFacetChecking() &&
             (fFacetsDefined != 0 && fFacetsDefined != FACET_WHITESPACE)) {
