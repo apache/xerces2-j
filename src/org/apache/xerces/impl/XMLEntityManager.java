@@ -757,7 +757,6 @@ public class XMLEntityManager
         if (systemId == null || systemId.length() == 0) {
             return systemId;
         }
-
         // if id already expanded, return
         try {
             URI uri = new URI(systemId);
@@ -791,7 +790,7 @@ public class XMLEntityManager
             }
             else {
                 try {
-                    base = new URI(baseSystemId);
+                    base = new URI(fixURI(baseSystemId));
                 }
                 catch (URI.MalformedURIException e) {
                     String dir;
@@ -804,13 +803,13 @@ public class XMLEntityManager
                     if (!dir.endsWith("/")) {
                         dir = dir + "/";
                     }
-                    dir = dir + baseSystemId;
+                    dir = dir + fixURI(baseSystemId);
                     base = new URI("file", "", dir, null, null);
                 }
-            }
+             }
 
-            // expand id
-            uri = new URI(base, id);
+             // expand id
+             uri = new URI(base, id);
         }
         catch (Exception e) {
             // let it go through
