@@ -381,11 +381,14 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
         // end the current context, and return an array of particles
         XSParticleDecl[] popContext() {
             int count = fPos[fContextCount] - fPos[fContextCount-1];
-            XSParticleDecl[] array = new XSParticleDecl[count];
-            System.arraycopy(fParticles, fPos[fContextCount-1], array, 0, count);
-            // clear the particle array, to release memory
-            for (int i = fPos[fContextCount-1]; i < fPos[fContextCount]; i++)
-                fParticles[i] = null;
+            XSParticleDecl[] array = null;
+            if (count != 0) {
+                array = new XSParticleDecl[count];
+                System.arraycopy(fParticles, fPos[fContextCount-1], array, 0, count);
+                // clear the particle array, to release memory
+                for (int i = fPos[fContextCount-1]; i < fPos[fContextCount]; i++)
+                    fParticles[i] = null;
+            }
             fContextCount--;
             return array;
         }
