@@ -38,6 +38,62 @@
         </p>
     </a>
  </faq>
+ <faq title="ClassCastException using Xerces">
+   <q>Why do I get ClassCastException when I use Xerces and WebSphere Application Server (WAS)?
+ </q>
+ <a>
+    <p>
+Xerces uses the <code>ObjectFactory</code> class to load some classes dynamically, e.g. the parser configuration. The <code>ObjectFactory</code> finds the specified implementation class by querying the system property, reading <code>META-INF/services/factoryId</code> file or using a fallback classname. After the implementation is found, the <code>ObjectFactory</code> tries to load the file using the context classloader and if it is null, the <code>ObjectFactory</code> uses system classloader. 
+</p>
+<p>
+If you run Xerces in the environment, such as WAS, that has multiple classloaders you might get ClassCastExceptions thrown from Xerces because different classloaders might get involved in loading Xerces classes. For example, ClassCastExceptions may occur when utility EAR classes that use Xerces load Xerces classes from WAR modules. 
+</p>
+<p>
+We suggest you read <jump href="http://www-106.ibm.com/developerworks/websphere/library/techarticles/0310_searle/searle.html">"Avoiding ClassCastExceptions..."</jump> article which explains a workaround for this problem. 
+Also you might want to read <jump href="http://www-106.ibm.com/developerworks/websphere/library/techarticles/0112_deboer/deboer.html">"J2EE Class Loading Demystified"</jump> article that explains how multiple classloaders work in WAS.
+    
+    </p>
+  </a>
+ </faq>
+ <faq title="Xerces HTML, XHTML, and XML Serializers">
+   <q>What can I use instead of Xerces HTML, XHTML, or XML serializers?
+ </q>
+ <a>
+<p>
+If you want to achieve interoperability, you should not be using Xerces serialization code directly. 
+Instead, the <jump href="http://java.sun.com/xml/jaxp/index.jsp">JAXP</jump> Transformer API should be used to serialize HTML, XHTML, and SAX. The <jump href="http://www.w3.org/DOM/DOMTR">DOM</jump> Level 3 Load and Save API (or JAXP Transformer API) should be used to serialize DOM.
+</p>
+
+    <p>Using <jump href="http://java.sun.com/xml/jaxp/index.jsp">JAXP</jump> you can serialize HTML and XHTML as follows:</p>
+
+<source>
+// Create an "identity" transformer - copies input to output
+Transformer t = TransformerFactory.newInstance().newTransformer();
+
+// for "XHTML" serialization, use the output method "xml"
+// and set publicId as shown
+t.setOutputProperty(OutputKeys.METHOD, "xml");
+
+t.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC,
+                    "-//W3C//DTD XHTML 1.0 Transitional//EN");
+
+t.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM,
+               "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd");
+
+// For "HTML" serialization, use
+t.setOutputProperty(OutputKeys.METHOD, "html");
+
+// Serialize DOM tree
+t.transform(new DOMSource(doc), new StreamResult(System.out));
+</source>
+
+<p>
+
+You can find more details about the future of Xerces serializers in the <jump href="http://marc.theaimsgroup.com/?l=xalan-dev&amp;m=107593381313807&amp;w=2">archives</jump>.
+</p>
+<note>The HTML and XHTML serializers (<code>org.apache.xml.serialize</code>) have been <code>deprecated</code> in Xerces 2.6.2 release. We might deprecate <code>XMLSerializer</code> in the future release.</note>
+  </a>
+ </faq>
  <faq title="Obtaining smaller jars">
    <q>I don&apos;t need all the features Xerces provides, but I&apos;m
    running in an environment where space is at a premium.  Is there
