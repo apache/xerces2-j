@@ -62,7 +62,6 @@ import org.apache.xerces.validators.datatype.*;
 import org.apache.xerces.validators.schema.SchemaSymbols;
 import org.apache.xerces.validators.datatype.DatatypeValidatorFactory;
 import org.apache.xerces.validators.datatype.InvalidDatatypeFacetException;
-import java.util.Vector;
 
 
 /**
@@ -173,14 +172,14 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 fRegistry.put("recurringDuration", new RecurringDurationDatatypeValidator());
                 fRegistry.put("binary",            new BinaryDatatypeValidator());
                 fRegistry.put("uriReference",      new URIReferenceDatatypeValidator());
-                //fRegistry.put("ID",                new IDDatatypeValidator());
-                //fRegistry.put("IDREF",             new IDREFDatatypeValidator());
-                //fRegistry.put("ENTITY",            new ENTITYDatatypeValidator());
-                //fRegistry.put("NOTATION",          new NOTATIONDatatypeValidator());
                 fRegistry.put("QName",             new QNameDatatypeValidator()); 
 
-
-                initializeDTDRegistry(); //Initialize common Schema/DTD Datatype validator set if not already initialized
+                // need to check if the registry has been "DTD" initilized --ericye
+                // since we share the same instance of DTD attribute validators across the board,
+                // we couldn't afford call the initializeDTDRegistry more than one time.
+                if (fRegistry.get("IDREF") == null) {
+                    initializeDTDRegistry(); //Initialize common Schema/DTD Datatype validator set if not already initialized
+                }
 
                 Hashtable facets = new Hashtable();
                 facets.put(SchemaSymbols.ELT_PATTERN , "([a-zA-Z]{2}|[iI]-[a-zA-Z]+|[xX]-[a-zA-Z]+)(-[a-zA-Z]+)*" );
@@ -344,20 +343,6 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
             //initializeDTDRegistry();
         }
     }
-
-    public DatatypeValidator createDatatypeValidator(String typeName, Vector validators) {
-        DatatypeValidator simpleType = null;
-        if (validators!=null) {
-            simpleType = new UnionDatatypeValidator(validators);
-        }
-        if (simpleType !=null) {
-            addValidator(typeName, simpleType);
-        }
-        return simpleType;
-    }
-
-
- 
 
     public DatatypeValidator createDatatypeValidator(String typeName, 
                                                      DatatypeValidator base, Hashtable facets, boolean list ) throws InvalidDatatypeFacetException {
