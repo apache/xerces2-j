@@ -354,9 +354,16 @@ implements XMLContentSpec.Provider {
         fElementDeclContentSpecIndex[chunk][index]        = elementDecl.contentSpecIndex;
 
         // add the mapping information to the 
-        fElementNameAndScopeToElementDeclIndexMapping.put(elementDecl.name.uri, 
-                                                          elementDecl.name.localpart, 
-                                                          elementDecl.enclosingScope, 
+        putElementNameMapping(elementDecl.name,
+                              elementDecl.enclosingScope, 
+                              elementDeclIndex);
+    }
+
+    protected void putElementNameMapping(QName name, int scope,
+                                         int elementDeclIndex) {
+        fElementNameAndScopeToElementDeclIndexMapping.put(name.uri, 
+                                                          name.localpart, 
+                                                          scope,
                                                           elementDeclIndex);
     }
 

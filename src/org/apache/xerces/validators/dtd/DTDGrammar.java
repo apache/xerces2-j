@@ -160,6 +160,10 @@ public class DTDGrammar
     /** Mapping for content spec nodes. */
     private int fContentSpecMap[][] = new int[INITIAL_CHUNK_COUNT][];
 
+    // temp vars
+
+    private QName fQName = new QName();
+
     //
     // Constructors
     //
@@ -353,6 +357,13 @@ public class DTDGrammar
 
     } // addElementDecl(QName,int,int):int
 
+    protected void putElementNameMapping(QName name, int scope,
+                                         int elementDeclIndex) {
+        fQName.uri = -1;
+        fQName.localpart = name.rawname;
+        super.putElementNameMapping(fQName, scope, elementDeclIndex);
+    }
+
     /***
     public int getElementDeclIndex(int localpartIndex, int scopeIndex) {
         //System.out.println("getElementDeclIndex: "+localpartIndex+", "+scopeIndex);
@@ -363,13 +374,13 @@ public class DTDGrammar
         //System.out.println("!!! getElementDeclIndex: "+uriIndex+", "+localpartIndex+", "+scopeIndex);
         return super.getElementDeclIndex(localpartIndex, -1);
     }
+    /***/
     
     public int getElementDeclIndex(QName element, int scopeIndex) {
         //System.out.println("getElementDeclIndex: "+element+", "+scopeIndex);
         return super.getElementDeclIndex(element.rawname, -1);
     }
 
-    /***/
     public void setElementDeclDTD(int elementDeclIndex, XMLElementDecl elementDecl) {
         super.setElementDecl(elementDeclIndex, elementDecl);
     }
