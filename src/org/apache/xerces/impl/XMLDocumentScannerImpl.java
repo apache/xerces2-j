@@ -637,6 +637,8 @@ public class XMLDocumentScannerImpl
                     again = false;
                     switch (fScannerState) {
                         case SCANNER_STATE_PROLOG: {
+                            // if we're here then we're past the prolog decl!
+                            fEntityManager.fCurrentEntity.mayReadChunks = true;
                             fEntityScanner.skipSpaces();
                             if (fEntityScanner.skipChar('<')) {
                                 setScannerState(SCANNER_STATE_START_OF_MARKUP);

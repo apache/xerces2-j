@@ -1770,7 +1770,6 @@ public class XMLEntityManager
                 //       distribution (up to and including 1.3). The UTF-16
                 //       decoder buffers 8K blocks even when only asked to read
                 //       a single char! -Ac
-                fCurrentEntity.mayReadChunks = true;
                 if (fCurrentEntity.encoding == null ||
                     !fCurrentEntity.encoding.equals(encoding)) {
                     // wrap a new reader around the input stream, changing
@@ -3149,6 +3148,7 @@ public class XMLEntityManager
         public int read() throws IOException {
             int b;
             if (fOffset < fLength) {
+                System.err.println("REturned buffered:  " + (char)(fData[fOffset++] & 0xFF));
                 return fData[fOffset++] & 0xFF;
             }
             if (fOffset == fEndOffset) {
@@ -3172,14 +3172,18 @@ public class XMLEntityManager
         public int read(byte[] b, int off, int len) throws IOException {
             int bytesLeft = fLength - fOffset;
             if (bytesLeft == 0) {
+                if (fOffset == fEndOffset) {
+                    return -1;
+                }
                 // better get some more for the voracious reader...
                 if(fCurrentEntity.mayReadChunks) {
                     return fInputStream.read(b, off, len);
                 }
-                if (fOffset == fEndOffset) {
+                b[off] = (byte)read();
+                if(b[off] == -1) {
+                    fEndOffset = fOffset;
                     return -1;
                 }
-                b[off] = (byte)read();
                 byte [] c = new byte[off];
                 System.arraycopy(b,0,c,0,off);
                 return 1;
