@@ -81,7 +81,7 @@ DOMImplementationRegistry registry =
     DOMImplementationRegistry.newInstance();
 
 DOMImplementationLS impl = 
-    (DOMImplementationLS)registry.getDOMImplementation("LS-Load");
+    (DOMImplementationLS)registry.getDOMImplementation("LS");
 
 LSParser builder = impl.createLSParser(
     DOMImplementationLS.MODE_SYNCHRONOUS, null);
@@ -131,7 +131,7 @@ System.setProperty(DOMImplementationRegistry.PROPERTY,
 DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
 
 DOMImplementationLS impl = 
-    (DOMImplementationLS)registry.getDOMImplementation("LS-Load");
+    (DOMImplementationLS)registry.getDOMImplementation("LS");
 
 ...     
 
