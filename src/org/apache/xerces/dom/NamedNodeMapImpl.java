@@ -263,10 +263,12 @@ public class NamedNodeMapImpl
         argn.ownerNode = ownerNode;
         argn.owned(true);
    	int i = findNamePoint(arg.getNodeName(),0);
-    	Node previous = null;
+    	NodeImpl previous = null;
     	if (i >= 0) {
-            previous = (Node)nodes.elementAt(i);
+            previous = (NodeImpl) nodes.elementAt(i);
             nodes.setElementAt(arg,i);
+            previous.ownerNode = ownerNode.ownerDocument();
+            previous.owned(false);
     	} else {
             i = -1 - i; // Insert point (may be end of list)
             if (null == nodes) {
@@ -322,16 +324,18 @@ public class NamedNodeMapImpl
         }
 
     	int i = findNamePoint(argn.getNamespaceURI(), argn.getLocalName());
-    	Node previous = null;
+    	NodeImpl previous = null;
     	if (i >= 0) {
-            previous = (Node)nodes.elementAt(i);
+            previous = (NodeImpl) nodes.elementAt(i);
             nodes.setElementAt(arg,i);
+            previous.ownerNode = ownerNode.ownerDocument();
+            previous.owned(false);
     	} else {
     	    // If we can't find by namespaceURI, localName, then we find by
     	    // nodeName so we know where to insert.
     	    i = findNamePoint(argn.getNodeName(),0);
             if (i >=0) {
-                previous = (Node)nodes.elementAt(i);
+                previous = (NodeImpl) nodes.elementAt(i);
                 nodes.insertElementAt(arg,i);
             } else {
                 i = -1 - i; // Insert point (may be end of list)
