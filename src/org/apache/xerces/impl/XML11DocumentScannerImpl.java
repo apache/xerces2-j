@@ -72,6 +72,7 @@ import org.apache.xerces.util.XMLStringBuffer;
 import org.apache.xerces.util.XMLResourceIdentifierImpl;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLChar;
+import org.apache.xerces.util.XML11Char;
 
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
@@ -561,7 +562,7 @@ public class XML11DocumentScannerImpl
                         }
                     }
                 }
-                else if (c != -1 && XMLChar.isInvalid(c)) {
+                else if (c != -1 && XML11Char.isXML11Invalid(c)) {
                     reportFatalError("InvalidCharInAttValue",
                                      new Object[] {Integer.toString(c, 16)});
                     fEntityScanner.scanChar();
@@ -672,10 +673,38 @@ public class XML11DocumentScannerImpl
         int end = value.offset + value.length;
         for (int i = value.offset; i < end; i++) {
             int c = value.ch[i];
-            if (XMLChar.isXML11Space(c)) {
+            if (XML11Char.isXML11Space(c)) {
                 value.ch[i] = ' ';
             }
         }
     }
+
+    // returns true if the given character is not
+    // valid with respect to the version of
+    // XML understood by this scanner.
+    protected boolean isInvalid(int value) {
+        return (XML11Char.isXML11Invalid(value)); 
+    } // isInvalid(int):  boolean 
+
+    // returns true if the given character is not
+    // valid or may not be used outside a character reference 
+    // with respect to the version of XML understood by this scanner.
+    protected boolean isInvalidLiteral(int value) {
+        return (!XML11Char.isXML11ValidLiteral(value)); 
+    } // isInvalidLiteral(int):  boolean
+
+    // returns true if the given character is 
+    // a valid nameChar with respect to the version of
+    // XML understood by this scanner.
+    protected boolean isValidNameChar(int value) {
+        return (XML11Char.isXML11Name(value)); 
+    } // isValidNameChar(int):  boolean
+
+    // returns true if the given character is 
+    // a valid nameStartChar with respect to the version of
+    // XML understood by this scanner.
+    protected boolean isValidNameStartChar(int value) {
+        return (XML11Char.isXML11NameStart(value)); 
+    } // isValidNameStartChar(int):  boolean
 
 } // class XML11DocumentScannerImpl

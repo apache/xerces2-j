@@ -66,7 +66,6 @@ import org.apache.xerces.util.XMLSymbols;
 
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLAttributesImpl;
-import org.apache.xerces.util.XMLChar;
 
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.NamespaceContext;
@@ -217,7 +216,7 @@ extends XMLDocumentScannerImpl {
                 empty = true;
                 break;
             }
-            else if (!XMLChar.isNameStart(c) || !sawSpace) {
+            else if (!isValidNameStartChar(c) || !sawSpace) {
                 reportFatalError("ElementUnterminated", new Object[]{rawname});
             }
 
@@ -617,4 +616,4 @@ extends XMLDocumentScannerImpl {
         } // scanRootElementHook():boolean
     }
 
-} // class XMLDocumentScannerImpl
+} // class XMLNSDocumentScannerImpl

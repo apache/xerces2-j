@@ -388,9 +388,8 @@ public abstract class XMLScanner
                         }
                         version = fString.toString();
                         state = STATE_ENCODING;
-                        if (!version.equals("1.0")) {
-                            // REVISIT: XML REC says we should throw an error in such cases.
-                            // some may object the throwing of fatalError.
+                        if (!(version.equals("1.0") || 
+                            version.equals("1.1" ))) { 
                             reportFatalError("VersionNotSupported", 
                                              new Object[]{version});
                         }
@@ -524,6 +523,7 @@ public abstract class XMLScanner
         throws IOException, XNIException {
 
         String name = fEntityScanner.scanName();
+        XMLEntityManager.print(fEntityManager.getCurrentEntity());
         if (name == null) {
             reportFatalError("PseudoAttrNameExpected", null);
         }
@@ -551,7 +551,7 @@ public abstract class XMLScanner
                     else if (XMLChar.isHighSurrogate(c)) {
                         scanSurrogates(fStringBuffer2);
                     }
-                    else if (XMLChar.isInvalid(c)) {
+                    else if (isInvalidLiteral(c)) {
                         String key = scanningTextDecl
                             ? "InvalidCharInTextDecl" : "InvalidCharInXMLDecl";
                         reportFatalError(key,
@@ -646,7 +646,7 @@ public abstract class XMLScanner
                     if (XMLChar.isHighSurrogate(c)) {
                         scanSurrogates(fStringBuffer);
                     }
-                    else if (XMLChar.isInvalid(c)) {
+                    else if (isInvalidLiteral(c)) {
                         reportFatalError("InvalidCharInPI",
                                          new Object[]{Integer.toHexString(c)});
                         fEntityScanner.scanChar();
@@ -683,7 +683,7 @@ public abstract class XMLScanner
                 if (XMLChar.isHighSurrogate(c)) {
                     scanSurrogates(text);
                 }
-                if (XMLChar.isInvalid(c)) {
+                if (isInvalidLiteral(c)) {
                     reportFatalError("InvalidCharInComment",
                                      new Object[] { Integer.toHexString(c) }); 
                     fEntityScanner.scanChar();
@@ -889,7 +889,7 @@ public abstract class XMLScanner
                         }
                     }
                 }
-                else if (c != -1 && XMLChar.isInvalid(c)) {
+                else if (c != -1 && isInvalidLiteral(c)) {
                     reportFatalError("InvalidCharInAttValue",
                                      new Object[] {Integer.toString(c, 16)});
                     fEntityScanner.scanChar();
@@ -1189,7 +1189,7 @@ public abstract class XMLScanner
         }
 
         // character reference must be a valid XML character
-        if (!XMLChar.isValid(value)) {
+        if (isInvalid(value)) {
             reportFatalError("InvalidCharRef",
                              new Object[]{Integer.toString(value, 16)}); 
         }
@@ -1215,6 +1215,33 @@ public abstract class XMLScanner
         return value;
     }
 
+    // returns true if the given character is not
+    // valid with respect to the version of
+    // XML understood by this scanner.
+    protected boolean isInvalid(int value) {
+        return (XMLChar.isInvalid(value)); 
+    } // isInvalid(int):  boolean
+
+    // returns true if the given character is not
+    // valid or may not be used outside a character reference 
+    // with respect to the version of XML understood by this scanner.
+    protected boolean isInvalidLiteral(int value) {
+        return (XMLChar.isInvalid(value)); 
+    } // isInvalidLiteral(int):  boolean
+
+    // returns true if the given character is 
+    // a valid nameChar with respect to the version of
+    // XML understood by this scanner.
+    protected boolean isValidNameChar(int value) {
+        return (XMLChar.isName(value)); 
+    } // isValidNameChar(int):  boolean
+
+    // returns true if the given character is 
+    // a valid nameStartChar with respect to the version of
+    // XML understood by this scanner.
+    protected boolean isValidNameStartChar(int value) {
+        return (XMLChar.isNameStart(value)); 
+    } // isValidNameStartChar(int):  boolean
 
     /**
      * Scans surrogates and append them to the specified buffer.
@@ -1241,7 +1268,7 @@ public abstract class XMLScanner
         int c = XMLChar.supplemental((char)high, (char)low);
 
         // supplemental character must be a valid XML character
-        if (!XMLChar.isValid(c)) {
+        if (isInvalid(c)) {
             reportFatalError("InvalidCharInContent",
                              new Object[]{Integer.toString(c, 16)}); 
             return false;

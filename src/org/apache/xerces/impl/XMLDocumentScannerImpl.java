@@ -275,7 +275,7 @@ public class XMLDocumentScannerImpl
     public void setInputSource(XMLInputSource inputSource) throws IOException {
         fEntityManager.setEntityHandler(this);
         fEntityManager.startDocumentEntity(inputSource);
-        fDocumentSystemId = fEntityManager.expandSystemId(inputSource.getSystemId());
+        //fDocumentSystemId = fEntityManager.expandSystemId(inputSource.getSystemId());
     } // setInputSource(XMLInputSource)
 
     //

@@ -244,8 +244,10 @@ public class XMLDocumentFragmentScannerImpl
 
     // other info
 
-    /** Document system identifier. */
-    protected String fDocumentSystemId;
+    /** Document system identifier. 
+     * REVISIT:  So what's this used for?  - NG
+    * protected String fDocumentSystemId;
+     ******/
 
     // features
 
@@ -321,7 +323,7 @@ public class XMLDocumentFragmentScannerImpl
     public void setInputSource(XMLInputSource inputSource) throws IOException {
         fEntityManager.setEntityHandler(this);
         fEntityManager.startEntity("$fragment$", inputSource, false, true);
-        fDocumentSystemId = fEntityManager.expandSystemId(inputSource.getSystemId());
+        //fDocumentSystemId = fEntityManager.expandSystemId(inputSource.getSystemId());
     } // setInputSource(XMLInputSource)
 
     /** 
@@ -377,7 +379,7 @@ public class XMLDocumentFragmentScannerImpl
         super.reset(componentManager);
 
         // other settings
-        fDocumentSystemId = null;
+        //fDocumentSystemId = null;
 
         // sax features
         try {
@@ -393,7 +395,7 @@ public class XMLDocumentFragmentScannerImpl
             fNotifyBuiltInRefs = componentManager.getFeature(NOTIFY_BUILTIN_REFS);
         }
         catch (XMLConfigurationException e) {
-            fNotifyBuiltInRefs = true;
+            fNotifyBuiltInRefs = false;
         }
 
         // initialize vars
@@ -791,7 +793,7 @@ public class XMLDocumentFragmentScannerImpl
                 empty = true;
                 break;
             }
-            else if (!XMLChar.isNameStart(c) || !sawSpace) {
+            else if (!isValidNameStartChar(c) || !sawSpace) {
                 reportFatalError("ElementUnterminated", new Object[]{rawname});
             }
 
@@ -990,7 +992,7 @@ public class XMLDocumentFragmentScannerImpl
                     fDocumentHandler.characters(fStringBuffer, null);
                 }
                 int c = fEntityScanner.peekChar();
-                if (c != -1 && XMLChar.isInvalid(c)) {
+                if (c != -1 && isInvalidLiteral(c)) {
                     if (XMLChar.isHighSurrogate(c)) {
                         fStringBuffer.clear();
                         scanSurrogates(fStringBuffer);
@@ -1483,7 +1485,7 @@ public class XMLDocumentFragmentScannerImpl
                                         setScannerState(SCANNER_STATE_REFERENCE);
                                         break;
                                     }
-                                    else if (c != -1 && XMLChar.isInvalid(c)) {
+                                    else if (c != -1 && isInvalidLiteral(c)) {
                                         if (XMLChar.isHighSurrogate(c)) {
                                             // special case: surrogates
                                             fStringBuffer.clear();
@@ -1537,7 +1539,7 @@ public class XMLDocumentFragmentScannerImpl
                                 }
                                 setScannerState(SCANNER_STATE_CONTENT);
                             }
-                            else if (XMLChar.isNameStart(fEntityScanner.peekChar())) {
+                            else if (isValidNameStartChar(fEntityScanner.peekChar())) {
                                 scanStartElement();
                                 setScannerState(SCANNER_STATE_CONTENT);
                             }
@@ -1584,10 +1586,10 @@ public class XMLDocumentFragmentScannerImpl
                                 fMarkupDepth++;
                                 // NOTE: special case where entity starts with a PI
                                 //       whose name starts with "xml" (e.g. "xmlfoo")
-                                if (XMLChar.isName(fEntityScanner.peekChar())) {
+                                if (isValidNameChar(fEntityScanner.peekChar())) {
                                     fStringBuffer.clear();
                                     fStringBuffer.append("xml");
-                                    while (XMLChar.isName(fEntityScanner.peekChar())) {
+                                    while (isValidNameChar(fEntityScanner.peekChar())) {
                                         fStringBuffer.append((char)fEntityScanner.scanChar());
                                     }
                                     String target = fSymbolTable.addSymbol(fStringBuffer.ch, fStringBuffer.offset, fStringBuffer.length);
