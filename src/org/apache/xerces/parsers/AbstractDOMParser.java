@@ -116,13 +116,13 @@ public abstract class AbstractDOMParser
 
     // feature ids
 
-    /** Feature id: create entity ref nodes. */
-    protected static final String CREATE_ENTITY_REF_NODES =
-        "http://apache.org/xml/features/dom/create-entity-ref-nodes";
-
     /** Feature id: namespace. */
     protected static final String NAMESPACES =
         Constants.SAX_FEATURE_PREFIX+Constants.NAMESPACES_FEATURE;
+
+    /** Feature id: create entity ref nodes. */
+    protected static final String CREATE_ENTITY_REF_NODES =
+        Constants.XERCES_FEATURE_PREFIX + Constants.CREATE_ENTITY_REF_NODES_FEATURE;
 
     /** Feature id: include comments. */
     protected static final String INCLUDE_COMMENTS_FEATURE =
@@ -134,11 +134,11 @@ public abstract class AbstractDOMParser
 
     /** Feature id: include ignorable whitespace. */
     protected static final String INCLUDE_IGNORABLE_WHITESPACE =
-        "http://apache.org/xml/features/dom/include-ignorable-whitespace";
+        Constants.XERCES_FEATURE_PREFIX + Constants.INCLUDE_IGNORABLE_WHITESPACE;
 
     /** Feature id: defer node expansion. */
     protected static final String DEFER_NODE_EXPANSION =
-        "http://apache.org/xml/features/dom/defer-node-expansion";
+        Constants.XERCES_FEATURE_PREFIX + Constants.DEFER_NODE_EXPANSION_FEATURE;
     
     /** Expose XML Schema normalize value */
     protected static final String NORMALIZE_DATA = 
@@ -148,16 +148,16 @@ public abstract class AbstractDOMParser
 
     /** Property id: document class name. */
     protected static final String DOCUMENT_CLASS_NAME =
-        "http://apache.org/xml/properties/dom/document-class-name";
+        Constants.XERCES_PROPERTY_PREFIX + Constants.DOCUMENT_CLASS_NAME_PROPERTY;
+
+    protected static final String  CURRENT_ELEMENT_NODE=  
+        Constants.XERCES_PROPERTY_PREFIX + Constants.CURRENT_ELEMENT_NODE_PROPERTY;
 
     // other
 
     /** Default document class name. */
     protected static final String DEFAULT_DOCUMENT_CLASS_NAME =
         "org.apache.xerces.dom.DocumentImpl";
-
-    protected static final String  CURRENT_ELEMENT_NODE=  
-        Constants.XERCES_FEATURE_PREFIX + Constants.CURRENT_ELEMENT_NODE_PROPERTY;
 
 
     // debugging
