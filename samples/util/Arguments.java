@@ -243,9 +243,11 @@ public class Arguments {
 
     // Private inner classes
 
+
+    private static final int  maxIncrement = 10;
+
     private  class Queue   {
         //private LinkedList queue;
-        private static final int  maxIncrement = 10;
         private Object[]          queue;
         private int               max;
         private int               front; 
