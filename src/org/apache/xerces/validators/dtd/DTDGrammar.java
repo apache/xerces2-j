@@ -464,7 +464,7 @@ public class DTDGrammar
         fAttributeDecl.defaultType = attDefaultType;
         fAttributeDecl.defaultValue = fStringPool.toString(attDefaultValue);
 
-        int elementDeclIndex = getElementDeclIndex(elementDecl.localpart, -1);
+        int elementDeclIndex = getElementDeclIndex(elementDecl, -1);
         setAttributeDecl(elementDeclIndex, attributeDeclIndex, fAttributeDecl);
 
         int chunk = attributeDeclIndex >> CHUNK_SHIFT;

@@ -2420,7 +2420,7 @@ public class TraverseSchema implements
         if (isTopLevel(elementDecl)) {
         
             int nameIndex = fStringPool.addSymbol(name);
-            int eltKey = fSchemaGrammar.getElementDeclIndex(nameIndex,TOP_LEVEL_SCOPE);
+            int eltKey = fSchemaGrammar.getElementDeclIndex(fTargetNSURI, nameIndex,TOP_LEVEL_SCOPE);
             if (eltKey > -1 ) {
                 return new QName(-1,nameIndex,nameIndex,fTargetNSURI);
             }
@@ -2471,7 +2471,7 @@ public class TraverseSchema implements
                 return eltName;
             }
 
-            int elementIndex = fSchemaGrammar.getElementDeclIndex(localpartIndex, TOP_LEVEL_SCOPE);
+            int elementIndex = fSchemaGrammar.getElementDeclIndex(eltName, TOP_LEVEL_SCOPE);
             //if not found, traverse the top level element that if referenced
 
             if (elementIndex == -1 ) {
@@ -2508,12 +2508,12 @@ public class TraverseSchema implements
             }
             else {
                 equivClassElementDeclIndex = 
-                    fSchemaGrammar.getElementDeclIndex(getLocalPartIndex(equivClass),TOP_LEVEL_SCOPE);
+                    fSchemaGrammar.getElementDeclIndex(fTargetNSURI, getLocalPartIndex(equivClass),TOP_LEVEL_SCOPE);
 
                 if ( equivClassElementDeclIndex == -1) {
                     traverseElementDecl(equivClassElementDecl);
                     equivClassElementDeclIndex = 
-                        fSchemaGrammar.getElementDeclIndex(getLocalPartIndex(equivClass),TOP_LEVEL_SCOPE);
+                        fSchemaGrammar.getElementDeclIndex(fTargetNSURI, getLocalPartIndex(equivClass),TOP_LEVEL_SCOPE);
                 }
             }
         }
@@ -2550,8 +2550,6 @@ public class TraverseSchema implements
                     // REVISIT: Localize
                     reportGenericSchemaError("traverse complexType error in element '" + name +"'"); 
                 }
-                //System.out.println("typeInfo.scopeDefined : " + typeInfo.typeName+","+"["+typeInfo.scopeDefined+"]"
-                  //                 +", base is " + fSchemaGrammar.getElementDeclIndex(fStringPool.addSymbol("heater"), typeInfo.baseComplexTypeInfo.scopeDefined));
                 haveAnonType = true;
             } 
             else if (childName.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
@@ -2710,14 +2708,18 @@ public class TraverseSchema implements
         int enclosingScope = fCurrentScope;
 
         if ( isQName.equals(SchemaSymbols.ATTVAL_QUALIFIED)||
-             fElementDefaultQualified || isTopLevel(elementDecl) ) {
+             fElementDefaultQualified ) {
+            uriIndex = fTargetNSURI;
+        }
+
+        if ( isTopLevel(elementDecl)) {
             uriIndex = fTargetNSURI;
             enclosingScope = TOP_LEVEL_SCOPE;
         }
 
 
         //There can never be two elements with the same name and different type in the same scope.
-        int existSuchElementIndex = fSchemaGrammar.getElementDeclIndex(localpartIndex, enclosingScope);
+        int existSuchElementIndex = fSchemaGrammar.getElementDeclIndex(uriIndex, localpartIndex, enclosingScope);
         if ( existSuchElementIndex > -1) {
             fSchemaGrammar.getElementDecl(existSuchElementIndex, fTempElementDecl);
             DatatypeValidator edv = fTempElementDecl.datatypeValidator;

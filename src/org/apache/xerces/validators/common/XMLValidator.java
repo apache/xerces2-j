@@ -1698,13 +1698,14 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     }
 
     /** Returns an attribute definition for an element type. */
+    // this is only used by DTD validation.
     private int getAttDef(QName element, QName attribute) {
         if (fGrammar != null) {
             int scope = fCurrentScope;
             if (element.uri > -1) {
                 scope = TOP_LEVEL_SCOPE;
             }
-            int elementIndex = fGrammar.getElementDeclIndex(element.localpart,scope);
+            int elementIndex = fGrammar.getElementDeclIndex(element,scope);
             if (elementIndex == -1) {
                 return -1;
             }
@@ -2273,20 +2274,21 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                    +"' and scope : " + fCurrentScope);
             }
 
-            if (element.uri == -1) {
-                elementIndex = fGrammar.getElementDeclIndex(element.localpart,fCurrentScope);
-            }
-            else {
-                elementIndex = fGrammar.getElementDeclIndex(element.localpart, TOP_LEVEL_SCOPE);
+            elementIndex = fGrammar.getElementDeclIndex(element,fCurrentScope);
+
+            if (elementIndex == -1 ) {
+                elementIndex = fGrammar.getElementDeclIndex(element, TOP_LEVEL_SCOPE);
             }
 
             if (elementIndex == -1) {
                 // if validating based on a Schema, try to resolve the element again by look it up in its ancestor types
-                if (element.uri == -1 && fGrammarIsSchemaGrammar && fCurrentElementIndex != -1) {
+                if (fGrammarIsSchemaGrammar && fCurrentElementIndex != -1) {
                     TraverseSchema.ComplexTypeInfo baseTypeInfo = null;
                     baseTypeInfo = ((SchemaGrammar)fGrammar).getElementComplexTypeInfo(fCurrentElementIndex);
+                    //TO DO: 
+                    //      should check if baseTypeInfo is from the same Schema.
                     while (baseTypeInfo != null) {
-                        elementIndex = fGrammar.getElementDeclIndex(element.localpart, baseTypeInfo.scopeDefined);
+                        elementIndex = fGrammar.getElementDeclIndex(element, baseTypeInfo.scopeDefined);
                         if (elementIndex > -1 ) {
                             break;
                         }

@@ -142,9 +142,16 @@ implements XMLContentSpec.Provider {
         return fGrammarDocument;
     }
 
-    public int getElementDeclIndex(int nameIndex, int scopeIndex) {//TODO
-        if (nameIndex > -1 && scopeIndex >-2 ) {
-            return fElementNameAndScopeToElementDeclIndexMapping.get(nameIndex, scopeIndex);
+    public int getElementDeclIndex(int uriIndex, int localpartIndex, int scopeIndex) {
+        if ( localpartIndex > -1 && scopeIndex >-2 ) {
+            return fElementNameAndScopeToElementDeclIndexMapping.get(uriIndex, localpartIndex, scopeIndex);
+        }
+        return -1;
+    }
+    
+    public int getElementDeclIndex(QName element, int scopeIndex) {
+        if ( element.localpart > -1 && scopeIndex >-2 ) {
+            return fElementNameAndScopeToElementDeclIndexMapping.get(element.uri, element.localpart, scopeIndex);
         }
         return -1;
     }
@@ -349,7 +356,9 @@ implements XMLContentSpec.Provider {
         fElementDeclContentSpecIndex[chunk][index]        = elementDecl.contentSpecIndex;
 
         // add the mapping information to the 
-        fElementNameAndScopeToElementDeclIndexMapping.put(elementDecl.name.localpart, elementDecl.enclosingScope, 
+        fElementNameAndScopeToElementDeclIndexMapping.put(elementDecl.name.uri, 
+                                                          elementDecl.name.localpart, 
+                                                          elementDecl.enclosingScope, 
                                                           elementDeclIndex);
     }
 

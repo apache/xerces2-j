@@ -359,7 +359,7 @@ public class SchemaGrammar extends Grammar{
     protected int addElementDecl(QName eltQName, int enclosingScope, int scopeDefined, 
                                  int contentSpecType, int contentSpecIndex, 
                                  int attrListHead, DatatypeValidator dv){
-        int elementDeclIndex = getElementDeclIndex(eltQName.localpart, enclosingScope);
+        int elementDeclIndex = getElementDeclIndex(eltQName, enclosingScope);
         if (elementDeclIndex == -1) {
             if (enclosingScope<-1 || scopeDefined < -1 ) {
                 //TO DO: report error here;

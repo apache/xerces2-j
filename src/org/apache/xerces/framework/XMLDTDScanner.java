@@ -1785,7 +1785,7 @@ public final class XMLDTDScanner {
             return;
         }
         decreaseMarkupDepth();
-        int elementIndex = fDTDGrammar.getElementDeclIndex(fElementQName.localpart, -1);
+        int elementIndex = fDTDGrammar.getElementDeclIndex(fElementQName, -1);
         boolean elementDeclIsExternal = getReadingExternalEntity();
         if (elementIndex == -1) {
             elementIndex = fDTDGrammar.addElementDecl(fElementQName, contentSpecType, contentSpec, elementDeclIsExternal);
@@ -2016,7 +2016,7 @@ public final class XMLDTDScanner {
                         XMLMessages.P52_ELEMENT_TYPE_REQUIRED);
             return;
         }
-        int elementIndex = fDTDGrammar.getElementDeclIndex(fElementQName.localpart, -1);
+        int elementIndex = fDTDGrammar.getElementDeclIndex(fElementQName, -1);
         if (elementIndex == -1) {
             elementIndex = fDTDGrammar.addElementDecl(fElementQName);
             //System.out.println("XMLDTDScanner#scanAttListDecl->DTDGrammar#addElementDecl: "+elementIndex+" ("+fElementQName.localpart+","+fStringPool.toString(fElementQName.localpart)+')');
@@ -2256,7 +2256,7 @@ public final class XMLDTDScanner {
                                     enumString, 
                                     attDefDefaultType, attDefDefaultValue);
         }
-        int elementIndex = fDTDGrammar.getElementDeclIndex(element.localpart, -1);
+        int elementIndex = fDTDGrammar.getElementDeclIndex(element, -1);
         if (elementIndex == -1) {
             // REPORT Internal error here
         }
