@@ -1238,6 +1238,27 @@ public class DTDGrammar
         return getElementDeclIndex(elementDeclQName.rawname);
     } // getElementDeclIndex(QName):int
    
+		/** make separate function for getting contentSpecType of element.
+      * we can avoid setting of the element values.
+		*/
+
+		public short getContentSpecType(int elementIndex){
+        if (elementIndex < 0 || elementIndex >= fElementDeclCount) {
+            return -1 ;
+        }
+
+        int chunk = elementIndex >> CHUNK_SHIFT;
+        int index = elementIndex &  CHUNK_MASK;
+			
+        if(fElementDeclType[chunk][index] == -1){
+            return -1 ;
+			    }
+        else{
+				       return (short) (fElementDeclType[chunk][index] & LIST_MASK);
+			    }
+
+		}//getContentSpecType
+
     /**
      * getElementDecl
      * 

@@ -1124,8 +1124,10 @@ public class XMLDTDValidator
                              && (fDTDValidation || fSeenDoctypeDecl);
     }
     
+			//REVISIT:we can convert into functions.. adding default attribute values.. and one validating.
+
     /** Add default attributes and validate. */
-    protected void addDTDDefaultAttrsAndValidate(int elementIndex, 
+    protected void addDTDDefaultAttrsAndValidate(QName elementName, int elementIndex, 
                                                XMLAttributes attributes) 
     throws XNIException {
 
@@ -1133,10 +1135,6 @@ public class XMLDTDValidator
         if (elementIndex == -1 || fDTDGrammar == null) {
             return;
         }
-
-        // get element info
-        fDTDGrammar.getElementDecl(elementIndex,fTempElementDecl);
-        QName element = fTempElementDecl.name;
 
         //
         // Check after all specified attrs are scanned
@@ -1190,7 +1188,7 @@ public class XMLDTDValidator
             if (!specified) {
                 if (required) {
                     if (fValidation) {
-                        Object[] args = {element.localpart, attRawName};
+                        Object[] args = {elementName.localpart, attRawName};
                         fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                    "MSG_REQUIRED_ATTRIBUTE_NOT_SPECIFIED", args,
                                                    XMLErrorReporter.SEVERITY_ERROR);
@@ -1200,7 +1198,7 @@ public class XMLDTDValidator
                     if (fPerformValidation && fGrammarBucket.getStandalone()) {
                         if (fDTDGrammar.getAttributeDeclIsExternal(attlistIndex)) {
 
-                            Object[] args = { element.localpart, attRawName};
+                            Object[] args = { elementName.localpart, attRawName};
                             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                        "MSG_DEFAULTED_ATTRIBUTE_NOT_SPECIFIED", args,
                                                        XMLErrorReporter.SEVERITY_ERROR);
@@ -1271,7 +1269,7 @@ public class XMLDTDValidator
                 if (fPerformValidation) {
                     // REVISIT - cache the elem/attr tuple so that we only
                     // give this error once for each unique occurrence
-                    Object[] args = { element.rawname, attrRawName};
+                    Object[] args = { elementName.rawname, attrRawName};
 
                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                "MSG_ATTRIBUTE_NOT_DECLARED",
@@ -1313,7 +1311,7 @@ public class XMLDTDValidator
                 String defaultValue = fTempAttDecl.simpleType.defaultValue;
 
                 if (!attrValue.equals(defaultValue)) {
-                    Object[] args = {element.localpart,
+                    Object[] args = {elementName.localpart,
                         attrRawName,
                         attrValue,
                         defaultValue};
@@ -1330,7 +1328,7 @@ public class XMLDTDValidator
                 fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_NMTOKEN ||
                 fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_NOTATION
                ) {
-                validateDTDattribute(element, attrValue, fTempAttDecl);
+                validateDTDattribute(elementName, attrValue, fTempAttDecl);
             }
         } // for all attributes
 
@@ -1922,8 +1920,8 @@ public class XMLDTDValidator
         else {
             //  resolve the element
             fCurrentElementIndex = fDTDGrammar.getElementDeclIndex(element);
-
-            fCurrentContentSpecType = getContentSpecType(fCurrentElementIndex);
+									//changed here.. new function for getContentSpecType
+            fCurrentContentSpecType = fDTDGrammar.getContentSpecType(fCurrentElementIndex);
             if (fCurrentContentSpecType == -1 && fPerformValidation) {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
                                            "MSG_ELEMENT_NOT_DECLARED",
@@ -1935,8 +1933,8 @@ public class XMLDTDValidator
                 //  1. normalize the attributes
                 //  2. validate the attrivute list.
                 // TO DO: 
-                // 
-                addDTDDefaultAttrsAndValidate(fCurrentElementIndex, attributes);
+												//changed here.. also pass element name,
+                addDTDDefaultAttrsAndValidate(element, fCurrentElementIndex, attributes);
             }
         }
 
