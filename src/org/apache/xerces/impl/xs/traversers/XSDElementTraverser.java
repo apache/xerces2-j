@@ -296,9 +296,6 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         }
 
         // get 'substitutionGroup affiliation'
-        // REVISIT: allow mutual-substitution
-        //          we need to back-patch both fSubGroup and fType
-        //          if there is no type attribute and no anonymous type
         if (subGroupAtt != null) {
             element.fSubGroup = (XSElementDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.ELEMENT_TYPE, subGroupAtt, elmDecl);
         }

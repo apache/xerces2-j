@@ -316,22 +316,20 @@ public class XSDFACM
         Object matchingDecl = null;
 
         for (; elemIndex < fElemMapSize; elemIndex++) {
+            nextState = fTransTable[curState][elemIndex];
+            if (nextState == -1)
+                continue;
             int type = fElemMapType[elemIndex] ;
             if (type == XSParticleDecl.PARTICLE_ELEMENT) {
                 matchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex].fValue);
-
                 if (matchingDecl != null) {
-                    nextState = fTransTable[curState][elemIndex];
-                    if (nextState != -1)
-                        break;
+                    break;
                 }
             }
             else if (type == XSParticleDecl.PARTICLE_WILDCARD) {
                 if(((XSWildcardDecl)fElemMap[elemIndex].fValue).allowNamespace(curElem.uri)) {
                     matchingDecl = fElemMap[elemIndex].fValue;
-                    nextState = fTransTable[curState][elemIndex];
-                    if (nextState != -1)
-                      break;
+                    break;
                 }
             }
         }

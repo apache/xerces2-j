@@ -2,22 +2,22 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
  * reserved.
  *
- * RedifBufferibution and use in source and binary forms, with or without
+ * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  *
- * 1. RedifBuffeributions of source code must retain the above copyright
+ * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  *
- * 2. RedifBuffeributions in binary form must reproduce the above copyright
+ * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
  *    the documentation and/or other materials provided with the
- *    difBufferibution.
+ *    distribution.
  *
- * 3. The end-user documentation included with the redifBufferibution,
+ * 3. The end-user documentation included with the redistribution,
  *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
@@ -49,7 +49,7 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 1999, International
+ * originally based on software copyright (c) 2001, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
@@ -92,6 +92,40 @@ public class XSParticleDecl {
     // maximum occurrence of this particle
     public int fMaxOccurs = 1;
 
+    // clone this decl
+    public XSParticleDecl clone(boolean deep) {
+        XSParticleDecl particle = new XSParticleDecl();
+        particle.fType = fType;
+        particle.fMinOccurs = fMinOccurs;
+        particle.fMaxOccurs = fMaxOccurs;
+        particle.fDescription = fDescription;
+        // if it's not a deep clone, or it's a leaf particle
+        // just copy value and other value
+        if (!deep ||
+            fType == PARTICLE_EMPTY ||
+            fType == PARTICLE_ELEMENT ||
+            fType == PARTICLE_WILDCARD) {
+            particle.fValue = fValue;
+            particle.fOtherValue = fOtherValue;
+        }
+        // otherwise, we have to make clones of value and other value
+        else {
+            if (fValue != null) {
+                particle.fValue = ((XSParticleDecl)fValue).clone(deep);
+            }
+            else {
+                particle.fValue = null;
+            }
+            if (fOtherValue != null) {
+                particle.fOtherValue = ((XSParticleDecl)fOtherValue).clone(deep);
+            }
+            else {
+                particle.fOtherValue = null;
+            }
+        }
+        return particle;
+    }
+    
     /**
      * 3.9.6 Schema Component Constraint: Particle Emptiable
      * whether this particle is emptible
@@ -203,8 +237,6 @@ public class XSParticleDecl {
         if (fDescription == null) {
             StringBuffer buffer = new StringBuffer();
             appendParticle(buffer);
-            // REVISIT: what would be the best form?
-            // how to output "unbounded"?
             if (!(fMinOccurs == 0 && fMaxOccurs == 0 ||
                   fMinOccurs == 1 && fMaxOccurs == 1)) {
                 buffer.append("{" + fMinOccurs);

@@ -86,9 +86,6 @@ import java.util.Hashtable;
 
 public class SchemaGrammar implements Grammar {
 
-    /** Symbol table. */
-    private SymbolTable fSymbolTable;
-
     // the target namespace of grammar
     public String fTargetNamespace;
 
@@ -99,7 +96,6 @@ public class SchemaGrammar implements Grammar {
     SymbolHash fGlobalGroupDecls;
     SymbolHash fGlobalNotationDecls;
     SymbolHash fGlobalIDConstraintDecls;
-    //REVISIT: still need to decide on it.
     Hashtable fGlobalTypeDecls;
 
     // the XMLGrammarDescription member
@@ -119,7 +115,6 @@ public class SchemaGrammar implements Grammar {
      */
     public SchemaGrammar(SymbolTable symbolTable, String targetNamespace,
                 XSDDescription grammarDesc) {
-        fSymbolTable = symbolTable;
         fTargetNamespace = targetNamespace;
         fGrammarDescription = grammarDesc;
 
@@ -147,10 +142,11 @@ public class SchemaGrammar implements Grammar {
      * @param fullSet
      */
     protected SchemaGrammar(SymbolTable symbolTable) {
-        fSymbolTable = symbolTable;
         fTargetNamespace = SchemaSymbols.URI_SCHEMAFORSCHEMA;
-        //REVISIT:  will we ever need non-null values in this XSDDescription object?
+
         fGrammarDescription = new XSDDescription();
+        fGrammarDescription.fContextType = XSDDescription.CONTEXT_PREPARSE;
+        fGrammarDescription.fTargetNamespace = SchemaSymbols.URI_SCHEMAFORSCHEMA;
 
         fGlobalAttrDecls  = new SymbolHash(1);
         fGlobalAttrGrpDecls = new SymbolHash(1);

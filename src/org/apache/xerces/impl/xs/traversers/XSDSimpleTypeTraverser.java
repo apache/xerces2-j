@@ -172,22 +172,13 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             qualifiedName = schemaDoc.fTargetNamespace == null?
                 ",#s#"+(fSimpleTypeAnonCount++):
                 schemaDoc.fTargetNamespace+",#S#"+(fSimpleTypeAnonCount++);
-            //REVISIT:
-            // add to symbol table?
         }
         else {
             qualifiedName = schemaDoc.fTargetNamespace == null?
                 ","+nameProperty:
                 schemaDoc.fTargetNamespace+","+nameProperty;
-            //REVISIT:
-            // add to symbol table?
-
         }
 
-        //----------------------------------------------------------
-        // REVISIT!
-        // update _final_ registry
-        //----------------------------------------------------------
         XInt finalAttr = (XInt)attrValues[XSAttributeChecker.ATTIDX_FINAL];
         int finalProperty = finalAttr == null ? schemaDoc.fFinalDefault : finalAttr.intValue();
 
@@ -210,8 +201,6 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
 
         // General Attribute Checking
         Object[] contentAttrs = fAttrChecker.checkAttributes(content, false, schemaDoc);
-        // REVISIT: when to return the array
-        fAttrChecker.returnAttrArray(contentAttrs, schemaDoc);
 
         //----------------------------------------------------------------------
         //use content.getLocalName for the cases there "xsd:" is a prefix, ei. "xsd:list"
@@ -258,6 +247,8 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             Object[] args = { varietyProperty};
             reportSchemaError("dt-unsupported-derivation", args, content);
         }
+        fAttrChecker.returnAttrArray(contentAttrs, schemaDoc);
+
         if (DOMUtil.getNextSiblingElement(content) != null) {
             reportSchemaError("dt-simpleType", new Object[]{SchemaSymbols.ELT_SIMPLETYPE, nameProperty, "(annotation?, (restriction | list | union))"}, content);
         }

@@ -72,7 +72,6 @@ import java.util.Vector;
  */
 public class XSWildcardDecl  {
 
-    //REVISIT: Should this be here. Is this required at all.
     public static final String ABSENT = null;
 
     // types of wildcard

@@ -215,20 +215,19 @@ public class XSAttributeGroupDecl {
 
              if (baseConsType == XSAttributeDecl.FIXED_VALUE) {
 
-                 if (thisConstType != XSAttributeDecl.FIXED_VALUE) {
-                   errorCode="derivation-ok-restriction.2.1.3";
-                   return errorCode;
-                 }
-                 else {
-                   // check the values are the same.  NB - this should not be a string
-                   // comparison REVISIT when we have new datatype design!
-                   ValidatedInfo baseFixedValue=(baseAttrUse.fDefault!=null ?
-                                                baseAttrUse.fDefault: baseAttrDecl.fDefault);
-                   ValidatedInfo thisFixedValue=(attrUse.fDefault!=null ?
-                                                attrUse.fDefault: attrDecl.fDefault);
-                   if (!baseFixedValue.normalizedValue.equals(thisFixedValue.normalizedValue)) {
-                     errorCode="derivation-ok-restriction.2.1.3";
-                     return errorCode;
+                if (thisConstType != XSAttributeDecl.FIXED_VALUE) {
+                    errorCode="derivation-ok-restriction.2.1.3";
+                    return errorCode;
+                }
+                else {
+                    // check the values are the same.
+                    ValidatedInfo baseFixedValue=(baseAttrUse.fDefault!=null ?
+                                                 baseAttrUse.fDefault: baseAttrDecl.fDefault);
+                    ValidatedInfo thisFixedValue=(attrUse.fDefault!=null ?
+                                                 attrUse.fDefault: attrDecl.fDefault);
+                    if (!baseAttrDecl.fType.isEqual(baseFixedValue.actualValue,thisFixedValue.actualValue)) {
+                        errorCode="derivation-ok-restriction.2.1.3";
+                        return errorCode;
                    }
 
                  }

@@ -71,7 +71,7 @@ import org.apache.xerces.xni.XMLAttributes;
  * @version $Id$
  */
 public class XSDDescription extends XMLResourceIdentifierImpl 
-		implements XMLGrammarDescription {
+                implements XMLGrammarDescription {
     // used to indicate what triggered the call
     /**
      * Indicate that the current schema document is <include>d by another
@@ -131,7 +131,6 @@ public class XSDDescription extends XMLResourceIdentifierImpl
     protected QName fTriggeringComponent;
     protected QName fEnclosedElementName;
     protected XMLAttributes  fAttributes;
-
         
     /**
      * the type of the grammar (e.g., DTD or XSD);
@@ -206,6 +205,13 @@ public class XSDDescription extends XMLResourceIdentifierImpl
         return fAttributes;
     }
     
+    public boolean fromInstance() {
+        return fContextType == CONTEXT_ATTRIBUTE ||
+               fContextType == CONTEXT_ELEMENT ||
+               fContextType == CONTEXT_INSTANCE ||
+               fContextType == CONTEXT_XSITYPE;
+    }
+    
     /**
      * Compares this grammar with the given grammar. Currently, we compare 
      * the target namespaces.
@@ -215,15 +221,15 @@ public class XSDDescription extends XMLResourceIdentifierImpl
      */
     public boolean equals(XMLGrammarDescription desc) {
         if (!getGrammarType().equals(desc.getGrammarType())) {
-    	    return false;
-    	}
-    	if (fTargetNamespace != null && fTargetNamespace.equals(((XSDDescription)desc).getTargetNamespace())) {
-    	    return true;
-    	}
-    	else if (fTargetNamespace == null && ((XSDDescription)desc).getTargetNamespace() == null) {
-    	    return true;
-    	}
-    	return false;
+            return false;
+        }
+        if (fTargetNamespace != null && fTargetNamespace.equals(((XSDDescription)desc).getTargetNamespace())) {
+            return true;
+        }
+        else if (fTargetNamespace == null && ((XSDDescription)desc).getTargetNamespace() == null) {
+            return true;
+        }
+        return false;
     }
     
     /**
@@ -235,16 +241,58 @@ public class XSDDescription extends XMLResourceIdentifierImpl
          return (fTargetNamespace == null) ? 0 : fTargetNamespace.hashCode();
     }
     
+    public void setContextType(short contextType){
+        fContextType = contextType ;
+    }
+
+    public void setTargetNamespace(String targetNamespace){
+        fTargetNamespace = targetNamespace ;
+    }
+
+    public void setLocationHints(String [] locationHints){
+        int length = locationHints.length ;
+        fLocationHints  = new String[length];
+        System.arraycopy(locationHints, 0, fLocationHints, 0, length);
+        //fLocationHints = locationHints ;
+    }
+
+    public void setTriggeringComponent(QName triggeringComponent){
+        fTriggeringComponent = triggeringComponent ;
+    }
+
+    public void setEnclosingElementName(QName enclosedElementName){
+        fEnclosedElementName = enclosedElementName ;
+    }
+
+    public void setAttributes(XMLAttributes attributes){
+        fAttributes = attributes ;    
+    }
+    
     /**
      *  resets all the fields
      */
-    protected void reset(){
+    public void reset(){
         fContextType = 0 ;
         fTargetNamespace = null ;
         fLocationHints  = null ;
         fTriggeringComponent = null ;
         fEnclosedElementName = null ;
         fAttributes = null ;    
+    }
+    
+    public XSDDescription makeClone() {
+        XSDDescription desc = new XSDDescription();
+        desc.fAttributes = this.fAttributes;
+        desc.fBaseSystemId = this.fBaseSystemId;
+        desc.fContextType = this.fContextType;
+        desc.fEnclosedElementName = this.fEnclosedElementName;
+        desc.fExpandedSystemId = this.fExpandedSystemId;
+        desc.fLiteralSystemId = this.fLiteralSystemId;
+        desc.fLocationHints = this.fLocationHints;
+        desc.fPublicId = this.fPublicId;
+        desc.fTargetNamespace = this.fTargetNamespace;
+        desc.fTriggeringComponent = this.fTriggeringComponent;
+        return desc;
     }
     
 } // XSDDescription

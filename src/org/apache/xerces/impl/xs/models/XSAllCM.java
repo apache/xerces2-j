@@ -100,12 +100,6 @@ public class XSAllCM implements XSCMValidator {
         fHasOptionalContent = hasOptionalContent;
     }
 
-    // REVISIT : do we need this ?
-    // public XSAllCM (boolean hasOptionalContent, boolean isMixed) {
-    //     this(hasOptionalContent);
-    //     fIsMixed = isMixed;
-    // }
-
     public void addElement (XSElementDecl element, boolean isOptional) {
 
         // resize arrays if necessary
@@ -133,10 +127,6 @@ public class XSAllCM implements XSCMValidator {
         }
 
     }
-
-
-    // REVISIT : to implement Unique Particle Attribution
-    // public void checkUniqueParticleAttribution()
 
 
     //

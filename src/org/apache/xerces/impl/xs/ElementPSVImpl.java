@@ -296,6 +296,11 @@ public class ElementPSVImpl implements ElementPSVI {
      * @see <a href="http://www.w3.org/TR/xmlschema-1/#nsi-schema_namespace>XML Schema Part 1: Structures [schema namespace]</a>
      * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-schema_information>XML Schema Part 1: Structures [schema information]</a>
      * @return A namespace name or absent.
+     * 
+     * REVISIT: this mehtod is wrongfully designed.
+     * The PSVI item for the validation root has a [schema information] property,
+     * which has a list of [namespace schema information], which in turn has
+     * properties [schema namespace/components/documents].
      */
     public String getSchemaNamespace() {
         // REVISIT: should we create component for schema-information item?

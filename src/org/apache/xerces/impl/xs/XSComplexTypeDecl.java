@@ -114,12 +114,10 @@ public class XSComplexTypeDecl implements XSTypeDecl {
     // if there is a particle, the content model corresponding to that particle
     public XSCMValidator fCMValidator = null;
 
-    // REVISIT: when XSTypeDecl becomes a class, remove this method
     public short getXSType () {
         return COMPLEX_TYPE;
     }
 
-    // REVISIT: when XSTypeDecl becomes a class, remove this method
     public String getTypeName() {
         return fName;
     }

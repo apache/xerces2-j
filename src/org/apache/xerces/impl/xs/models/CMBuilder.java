@@ -96,8 +96,6 @@ public class CMBuilder {
      */
     public XSCMValidator getContentModel(XSComplexTypeDecl typeDecl) {
 
-        // REVISIT: can we assume that this method never called for elements of simpleType
-        // content?
         short contentType = typeDecl.fContentType;
         if (contentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE ||
             contentType == XSComplexTypeDecl.CONTENTTYPE_EMPTY) {
@@ -115,9 +113,6 @@ public class CMBuilder {
 
         if (particle != null)
             particle = expandParticleTree( (XSParticleDecl)particle);
-
-        // REVISIT: should we expand?? or throw away the expanded tree??
-        //typeDecl.fParticle
 
         // And create the content model according to the spec type
 
@@ -154,15 +149,16 @@ public class CMBuilder {
         // We may want to consider trying to combine this with buildSyntaxTree at some
         // point (if possible)
 
-        //REVISIT: need access to grammar object
-        //if (!grammar.fDeferParticleExpantion) {
-        //    return particle;
-        //}
         int maxOccurs = particle.fMaxOccurs;
         int minOccurs = particle.fMinOccurs;
         short type = particle.fType;
         if ((type == XSParticleDecl.PARTICLE_WILDCARD) ||
             (type == XSParticleDecl.PARTICLE_ELEMENT)) {
+            // Make a clone of the leaf particle, so that if there are two
+            // references to the same group, we have two different leaf
+            // particles for the same element or wildcard decl.
+            // This is useful for checking UPA.
+            //return expandContentModel(particle.clone(false), minOccurs, maxOccurs);
             return expandContentModel(particle, minOccurs, maxOccurs);
         }
         else if (type == XSParticleDecl.PARTICLE_CHOICE ||
@@ -360,11 +356,6 @@ public class CMBuilder {
             return createParticle (XSParticleDecl.PARTICLE_ONE_OR_MORE, particle, null);
         }
         else if (maxOccurs == SchemaSymbols.OCCURRENCE_UNBOUNDED) {
-            // REVISIT: should we handle (maxOccurs - minOccurs) = {1,2} as
-            //          separate case?
-            if (minOccurs<2) {
-            }
-
             // => a,a,..,a+
             particle = createParticle (XSParticleDecl.PARTICLE_ONE_OR_MORE,
                                        particle, null);

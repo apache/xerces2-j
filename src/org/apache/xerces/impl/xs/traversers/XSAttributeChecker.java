@@ -93,10 +93,8 @@ import org.apache.xerces.xni.QName;
  *
  * Things need revisiting:
  * - Whether to return non-schema attributes/values
- * - We need NamespaceScope to generate QName
  * - Do we need to update NamespaceScope and ErrorReporter when reset()?
  * - Should have the datatype validators return compiled value
- * - Should return compiled form for wildcard namespace
  * - use symbol table instead of many hashtables
  *
  * @author Sandy Gao, IBM
@@ -108,7 +106,7 @@ public class XSAttributeChecker {
     // REVISIT: only local element and attribute are different from others.
     //          it's possible to have either name or ref. all the others
     //          are only allowed to have one of name or ref, or neither of them.
-    //          we'd better remove such checking to the traverser.
+    //          we'd better move such checking to the traverser.
     private static final String ELEMENT_N = "element_n";
     private static final String ELEMENT_R = "element_r";
     private static final String ATTRIBUTE_N = "attribute_n";
@@ -1033,7 +1031,7 @@ public class XSAttributeChecker {
         // REVISIT: only local element and attribute are different from others.
         //          it's possible to have either name or ref. all the others
         //          are only allowed to have one of name or ref, or neither of them.
-        //          we'd better remove such checking to the traverser.
+        //          we'd better move such checking to the traverser.
         if (!isGlobal) {
             eleAttrsMap = fEleAttrsMapL;
             if (elName.equals(SchemaSymbols.ELT_ELEMENT)) {
@@ -1168,9 +1166,6 @@ public class XSAttributeChecker {
         OneAttr[] reqAttrs = oneEle.attrArray;
         for (int i = 0; i < reqAttrs.length; i++) {
             OneAttr oneAttr = reqAttrs[i];
-
-            // REVISIT: throw an error on required attribute that does not
-            // appear test case schema_invalid/S3_14/ibm3_14si12.xml
 
             // if the attribute didn't apprear, and
             // if the attribute is optional with default value, apply it
@@ -1648,7 +1643,8 @@ public class XSAttributeChecker {
     // return an array back to the pool
     public void returnAttrArray(Object[] attrArray, XSDocumentInfo schemaDoc) {
         // pop the namespace context
-        schemaDoc.fNamespaceSupport.popContext();
+        if (schemaDoc != null)
+            schemaDoc.fNamespaceSupport.popContext();
 
         // if 1. the pool is full; 2. the array is null;
         // 3. the array is of wrong size; 4. the array is already returned
@@ -1685,7 +1681,6 @@ public class XSAttributeChecker {
                     prefix = fSymbolTable.addSymbol(DOMUtil.getLocalName(sattr));
                 if (prefix != null) {
                     uri = fSymbolTable.addSymbol(DOMUtil.getValue(sattr));
-                    // REVISIT: copied from namespce binder
                     nsSupport.declarePrefix(prefix, uri.length()!=0 ? uri : null);
                 }
             }

@@ -151,8 +151,9 @@ class XSDocumentInfo {
             //set namespace support
             fValidationContext.setNamespaceSupport(fNamespaceSupport);
             fValidationContext.setSymbolTable(symbolTable);
-            // REVISIT: we can't return, becaues we can't pop fNamespaceSupport
-            //attrChecker.returnAttrArray(schemaAttrs, this);
+            // pass null as the schema document, so that the namespace
+            // context is not popped.
+            attrChecker.returnAttrArray(schemaAttrs, null);
         }
     }
 

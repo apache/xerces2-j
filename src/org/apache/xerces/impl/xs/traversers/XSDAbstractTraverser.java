@@ -350,7 +350,6 @@ abstract class XSDAbstractTraverser {
                     }
                 }
             }
-            // REVISIT: when to return the array
             fAttrChecker.returnAttrArray (attrs, schemaDoc);
             content = DOMUtil.getNextSiblingElement(content);
         }
