@@ -337,7 +337,10 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
      *                   Thrown by handler to signal an error.
      */
     public void startCDATA(Augmentations augs) throws XNIException {
-        schemaDOM.startAnnotationCDATA();
+        // only deal with CDATA boundaries within an annotation.
+        if (fAnnotationDepth != -1) {
+            schemaDOM.startAnnotationCDATA();
+        }
     }
 
     /**
@@ -349,7 +352,10 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
      *                   Thrown by handler to signal an error.
      */
     public void endCDATA(Augmentations augs) throws XNIException {
-        schemaDOM.endAnnotationCDATA();
+        // only deal with CDATA boundaries within an annotation.
+        if (fAnnotationDepth != -1) {
+            schemaDOM.endAnnotationCDATA();
+        }
     }
 
     
