@@ -102,7 +102,7 @@ Document doc = parser.getDocument();
 		<link idref="properties">properties</link>.</p>
 		</a>
 	</faq>
-	<faq title="Using lazy dom">
+	<faq title="Using lazy DOM">
 		<q>How do I use the lazy evaluating DOM implementation?</q>
 		<a><p>The DOM parser class
 		<code>org.apache.xerces.parsers.DOMParser</code> now uses a DOM

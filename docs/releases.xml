@@ -2,6 +2,16 @@
 <!DOCTYPE s1 SYSTEM "sbk:/style/dtd/document.dtd">
 
 <s1 title="Releases">
+    <s2 title="December 31, 1999">
+        <ul>
+            <li>Include documentation in the repository.</li>
+            <li>Switch packaging to jar files from .zip and .tar.gz files.</li>
+            <li>Assaf Arkin's serialization package.</li>
+            <li>Assaf Arkin's HTML DOM Level 1 classes.</li>
+            <li>Performance improvements.</li>
+            <li>Bug fixes.</li>
+        </ul>
+    </s2>
 	<s2 title="November 5, 1999">
 		<ul>
 			<li>Created initial code base from IBM's XML4J.</li>

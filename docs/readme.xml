@@ -18,6 +18,11 @@
 		feedback on the features that are important to you, and let us know
 		whether the APIs that we are providing are the right ones. Please 
 		direct your feedback to the &javaparsername; mailing list.</p>
+
+        <p>The 1.0.1 release is the first release to benefit from the
+        xml.apache.org collaboration.  This release includes Assaf Arkin's
+        serialization and HTML DOM contributions.
+        </p>
 	</s2>
 	<s2 title="License Information">
 		<p>The &javaparsername; &javaparserversion; release is available in both source code

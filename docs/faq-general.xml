@@ -16,6 +16,7 @@
      <li>Improved Performance</li>
      <li>Parser option control based on SAX2</li>
      <li>New "serialization" classes allow you output XML, HTML, and XHTML.</li>
+     <li>New classes implement the HTML portion of the DOM Level 1 specification.</li>
      </ul>
 		</a>
 	</faq>

@@ -13,8 +13,8 @@
     </s2>
     <s2 title="&javaparsername; API Documentation">
         <ul>
-            <li><jump href="./apiDocs/index.html">Full API documentation</jump></li>
-            <li><jump href="./apiDocs/overview-tree.html">Hierarchy for all the packages</jump></li>
+            <li><jump href="../apiDocs/index.html">Full API documentation</jump></li>
+            <li><jump href="../apiDocs/overview-tree.html">Hierarchy for all the packages</jump></li>
         </ul>
     <s3 title="Package org.apache.xerces.parsers">
       <s4 title="Classes">
