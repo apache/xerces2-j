@@ -4,6 +4,7 @@
 <s1 title="Releases">
   <s2 title='TBD'>
         <ul>
+           <li>Implemented basic support for XML Schema identity constraints [andyc]</li>
            <li>Fixed bug in Deferred DOM with multiple IDs on same element [andyc]</li>
            <li>Updates to improve DFA build-time performance. [ATOZAWA@jp.ibm.com]</li>
            <li>Optimization of memory used by attribute nodes in the DOM. [Arnaud  Le Hors]</li>
