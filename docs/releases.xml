@@ -4,34 +4,70 @@
 <releases>
  <release version='Xerces 2.0.0 (NOT YET RELEASED)'>
   <desc>
-   This is primarily a bug fix release.
+   This release fixes a number of bugs, introduces more changes to
+   the Xerces Native Interface, provides partial experimental DOM Level 3 implementation, 
+   and includes full XML Schema support.
   </desc>
   <changes>
+
+    <add>
+    <note>
+     Added implementation of DOMInputSource, DOMError, DOMLocator and wrappers for entity resolver and error handler (DOM Level 3).
+    </note>
+    <submitter name='Gopal Sharma, Elena Litani'/>
+   </add>
+
+   <add>
+    <note>
+     Added implementation of DOMWriter, DocumentLS, DOMImplementationLS and new features     support for save and load: create-cdata-nodes, split-cdata-sections (DOM Level 3).
+    </note>
+    <submitter name='Rahul Srivastava, Elena Litani'/>
+   </add>
+
+   <add>
+    <note>
+     Added implementation of DOMBuilder, DOMASBuilder and partial implementation of ASModel.      Add support for a new feature "include-comments" (DOM Level 3).
+    </note>
+    <submitter name='Pavani Mukthipudi, Neil Graham, Elena Litani'/>
+   </add>
+
+   <add>
+    <note>
+     Added Augmentations interface to core XNI interfaces and PSVI interfaces as an extension to XNI (unstable). Added DOM Level 3 interfaces to xerces.dom3 package. Modified samples accordingly.
+    </note>
+    <submitter name='Elena Litani'/>
+   </add>
+
+   <update>
+    <note>
+     Modified XNI document handler interface to include Augmentations as an extra parameter on each parser event. Modified XMLAttributes interface to include getter methods for augmentations. 
+    </note>
+    <submitter name='Elena Litani'/>
+   </update>
+
+   <add>
+    <note>
+     Implemented PSVI support in Xerces and added PSVIWriter, PSVIParser and PSVIConfiguration sample files. 
+    </note>
+    <submitter name='Arun Yadav, Elena Litani, Sandy Gao'/>
+   </add>
+   
    <fix>
     <note>
-     The parser no longer wraps RuntimeException with XNIException
-     in the parse method.
+     Changed the default configuration to standard parser configuration (that does not include XML Schema validator), modified how and when the pipeline is constructed.
     </note>
-    <submitter name='Andy Clark'/>
+    <submitter name='Elena Litani'/>
    </fix>
-   <fix>
-    <note>
-     Added missing default attribute values in the DOM and fixed 
-     double entity value bug in deferred DOM.
-    </note>
-    <submitter name='Andy Clark'/>
-   </fix>
+
    <fix>
     <note>
      Changed XML Schema validation behavior back to validate only if
-     the http://xml.org/sax/features/validation feature is true.
+     the http://xml.org/sax/features/validation feature is true. Note: XML Schema validation
+     is off by default.
     </note>
     <submitter name='Andy Clark'/>
    </fix>
-   <fix>
-    <note>Various documentation fixes.</note>
-    <submitter name='Andy Clark'/>
-   </fix>
+
    <fix>
     <note>
      Added constructor to new DTDXSParserConfiguration so it can
@@ -39,8 +75,45 @@
     </note>
     <submitter name='Andy Clark'/>
    </fix>
+ 
+   <fix>
+    <note>
+     The parser no longer wraps RuntimeException with XNIException
+     in the parse method.
+    </note>
+    <submitter name='Andy Clark'/>
+   </fix>
+
+   <fix>
+    <note>
+      Fixed cloneNode() for Entity, EntityReference and DocumentType. Fixed importNode() of EntityReference nodes which mistakenly carried the old value. Fixed handling EntityReference node subtrees that left the node empty in non deferred DOM. 
+    </note>
+    <submitter name='Arnaud Le Hors'/>
+   </fix>
+
+   <fix>
+    <note>
+     Added missing default attribute values in the DOM and fixed 
+     double entity value bug in deferred DOM.
+    </note>
+    <submitter name='Andy Clark'/>
+   </fix>
+
+   <fix>
+    <note>
+     Fixed getElementById() in the DOMParser. Binded namespace attributes to  http://www.w3.org/2000/xmlns/ (DOM only).
+    </note>
+    <submitter name='Elena Litani'/>
+   </fix>
+
+    <fix>
+    <note>Various documentation fixes.</note>
+    <submitter name='Andy Clark, Elena Litani'/>
+   </fix>
+  
   </changes>
  </release>
+
  <release version='Xerces 2.0.0 (beta3)'>
   <desc>
    This release fixes a number of bugs, introduces some changes to
