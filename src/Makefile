@@ -84,7 +84,6 @@ source: ../bin/${JARFILE}
 	${MKDIR} ../class/org/apache/xerces/xni
 	${CP}  ../src/org/apache/xerces/xni/*.class		../class/org/apache/xerces/xni
 
-
 #-src/org/apache/xml/serialize
 #	${MKDIR} ../class/org/apache/xml/serialize
 #	${CP}  ../src/org/apache/xml/serialize/*.class                  ../class/org/apache/xml/serialize

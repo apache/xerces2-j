@@ -107,11 +107,15 @@ import org.w3c.dom.*;
  * structure-change-monitoring code I implemented to support
  * DeepNodeList.
  * 
+ * @author Arnaud  Le Hors, IBM
+ * @author Joe Kesselman, IBM
+ * @author Andy Clark, IBM
+ * @author Ralf Pfeiffer, IBM
  * @version
  * @since  PR-DOM-Level-1-19980818.
  */
 public class EntityReferenceImpl 
-    extends ChildAndParentNode
+    extends ParentNode
     implements EntityReference {
 
     //

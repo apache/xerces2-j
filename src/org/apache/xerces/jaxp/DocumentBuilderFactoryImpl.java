@@ -65,7 +65,6 @@ import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * @author Rajiv Mordani
- * @version $Revision$
  */
 public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
 

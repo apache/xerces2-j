@@ -737,7 +737,7 @@ public class Test {
 	Assertion.assert(DOMExceptionsTest(doc, "createElementNS",
 				      new Class[]{String.class, String.class},
 				      new Object[]{"http://nsa", "<a"},
-				      DOMException.NAMESPACE_ERR));
+				      DOMException.INVALID_CHARACTER_ERR));
 	Assertion.assert(DOMExceptionsTest(doc, "createElementNS",
 				      new Class[]{String.class, String.class},
 				      new Object[]{"http://nsa", ":a"},
@@ -969,10 +969,6 @@ public class Test {
         Assertion.equals(doc.createAttributeNS("http://nsa", "foo:a").getNamespaceURI(), "http://nsa");
         Assertion.assert(DOMExceptionsTest(doc, "createAttributeNS",
 				      new Class[]{String.class, String.class},
-				      new Object[]{"", "foo:a"},
-				      DOMException.NAMESPACE_ERR));
-        Assertion.assert(DOMExceptionsTest(doc, "createAttributeNS",
-				      new Class[]{String.class, String.class},
 				      new Object[]{null,  "foo:a"},
 				      DOMException.NAMESPACE_ERR));
 
@@ -1014,14 +1010,6 @@ public class Test {
         Assertion.assert(DOMExceptionsTest(attr, "setPrefix",
 					   new Class[]{String.class},
 					   new Object[]{"xml"},
-					   DOMException.NAMESPACE_ERR));
-        Assertion.assert(DOMExceptionsTest(attr, "setPrefix",
-					   new Class[]{String.class},
-					   new Object[]{"foo"},
-					   DOMException.NAMESPACE_ERR));
-        Assertion.assert(DOMExceptionsTest(attr, "setPrefix",
-					   new Class[]{String.class},
-					   new Object[]{"xmlns"},
 					   DOMException.NAMESPACE_ERR));
         //Also an attribute can not have a prefix with namespaceURI == null
         attr = doc.createAttributeNS(null, "a");

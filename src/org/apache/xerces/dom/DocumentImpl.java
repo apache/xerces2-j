@@ -67,6 +67,8 @@ import org.w3c.dom.traversal.*;
 import org.w3c.dom.ranges.*;
 import org.w3c.dom.events.*;
 import org.apache.xerces.dom.events.*;
+import org.apache.xerces.util.XMLChar;
+
 
 /**
  * The Document interface represents the entire HTML or XML document.
@@ -91,6 +93,10 @@ import org.apache.xerces.dom.events.*;
  * <b>Note:</b> When any node in the document is serialized, the
  * entire document is serialized along with it.
  *
+ * @author Arnaud  Le Hors, IBM
+ * @author Joe Kesselman, IBM
+ * @author Andy Clark, IBM
+ * @author Ralf Pfeiffer, IBM
  * @version
  * @since  PR-DOM-Level-1-19980818.
  */
@@ -116,6 +122,17 @@ public class DocumentImpl
 
     /** Document element. */
     protected ElementImpl docElement;
+
+    
+    /**Experimental DOM Level 3 feature: Document encoding */
+    protected String encoding;
+
+    /**Experimental DOM Level 3 feature: Document version */
+    protected String version;
+
+    /**Experimental DOM Level 3 feature: Document standalone */
+    protected boolean standalone;
+
 
     /** Identifiers. */
     protected Hashtable identifiers;
@@ -290,22 +307,27 @@ public class DocumentImpl
         // then the children by importing them
 
         if (needsSyncChildren()) {
-                synchronizeChildren();
-             }
-
-        if (deep) {
-            for (ChildNode n = firstChild; n != null; n = n.nextSibling) {
-                newdoc.appendChild(newdoc.importNode(n, true));
-            }
+            synchronizeChildren();
         }
 
-        // REVISIT: What to do about identifiers that are cloned? -Ac
-        //newdoc.identifiers = (Hashtable)identifiers.clone(); // WRONG!
-        newdoc.identifiers = null;
-        newdoc.iterators = null;
-        newdoc.ranges = null;
-        newdoc.userData = null;
-        newdoc.eventListeners = null;
+        if (deep) {
+            Hashtable reversedIdentifiers = null;
+
+            if (identifiers != null) {
+                // Build a reverse mapping from element to identifier.
+                reversedIdentifiers = new Hashtable();
+                Enumeration elementIds = identifiers.keys();
+                while (elementIds.hasMoreElements()) {
+                    Object elementId = elementIds.nextElement();
+                    reversedIdentifiers.put(identifiers.get(elementId), elementId);
+                }
+            }
+
+            // Copy children into new document.
+            for (ChildNode kid = firstChild; kid != null; kid = kid.nextSibling) {
+                newdoc.appendChild(newdoc.importNode(kid, true, reversedIdentifiers));
+            }
+        }
 
         // experimental
         newdoc.allowGrammarAccess = allowGrammarAccess;
@@ -479,10 +501,9 @@ public class DocumentImpl
         throws DOMException {
 
     	if (errorChecking && !isXMLName(tagName)) {
-    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
-    		                           "DOM002 Illegal character");
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
+                                   "DOM002 Illegal character");
         }
-
     	return new ElementImpl(this, tagName);
 
     } // createElement(String):Element
@@ -501,10 +522,9 @@ public class DocumentImpl
         throws DOMException {
 
     	if (errorChecking && !isXMLName(name)) {
-    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
-    		                           "DOM002 Illegal character");
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
+                                   "DOM002 Illegal character");
         }
-
     	return new EntityReferenceImpl(this, name);
 
     } // createEntityReference(String):EntityReference
@@ -529,7 +549,6 @@ public class DocumentImpl
     		throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
     		                           "DOM002 Illegal character");
         }
-
     	return new ProcessingInstructionImpl(this, target, data);
 
     } // createProcessingInstruction(String,String):ProcessingInstruction
@@ -555,8 +574,34 @@ public class DocumentImpl
         if (needsSyncChildren()) {
             synchronizeChildren();
         }
-	    return docType;
+        return docType;
     }
+
+
+   /**
+    * DOM Level 3 WD - Experimental.      
+    * The encoding of this document (part of XML Declaration)     
+    */
+    public String getEncoding() {
+	return encoding;
+    }
+
+    /**
+      * DOM Level 3 WD - Experimental.
+      * The version of this document (part of XML Declaration)     
+      */
+    public String getVersion() {
+	return version;
+    }
+
+     /**
+      * DOM Level 3 WD - Experimental.    
+      * standalone that specifies whether this document is standalone (part of XML Declaration)     
+      */
+    public boolean getStandalone() {
+        return standalone;
+    }
+
 
     /**
      * Convenience method, allowing direct access to the child node
@@ -571,7 +616,7 @@ public class DocumentImpl
         if (needsSyncChildren()) {
             synchronizeChildren();
         }
-	    return docElement;
+        return docElement;
     }
 
     /**
@@ -584,7 +629,7 @@ public class DocumentImpl
 	 * @see DeepNodeListImpl
 	 */
     public NodeList getElementsByTagName(String tagname) {
-	    return new DeepNodeListImpl(this,tagname);
+        return new DeepNodeListImpl(this,tagname);
     }
 
     /**
@@ -623,9 +668,39 @@ public class DocumentImpl
      * <li>Checks related to DOM events
      * </ul>
      */
+    
     public void setErrorChecking(boolean check) {
         errorChecking = check;
     }
+
+    
+    /**
+      * DOM Level 3 WD - Experimental.
+      * An attribute specifying, as part of the XML declaration, 
+      * the encoding of this document. This is null when unspecified.
+      */
+    public void setEncoding(String value) {
+        encoding = value;
+    }
+
+    /**
+      * DOM Level 3 WD - Experimental.
+      * version - An attribute specifying, as part of the XML declaration, 
+      * the version number of this document. This is null when unspecified
+      */
+    public void setVersion(String value) {
+       version = value;    
+    }
+
+    /**
+      * DOM Level 3 WD - Experimental.
+      * standalone - An attribute specifying, as part of the XML declaration, 
+      * whether this document is standalone
+      */
+    public void setStandalone(boolean value) {
+        standalone = value;
+    } 
+    
 
     /**
      * Returns true if the DOM implementation performs error checking.
@@ -668,8 +743,8 @@ public class DocumentImpl
         throws DOMException {
 
     	if (errorChecking && !isXMLName(qualifiedName)) {
-    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
-    		                           "DOM002 Illegal character");
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
+                                   "DOM002 Illegal character");
         }
     	return new DocumentTypeImpl(this, qualifiedName, publicID, systemID);
 
@@ -690,14 +765,10 @@ public class DocumentImpl
     public Entity createEntity(String name)
         throws DOMException {
 
-        // REVISIT: Should we be checking XML name chars?
-        /***
     	if (errorChecking && !isXMLName(name)) {
     		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
     		                           "DOM002 Illegal character");
         }
-        /***/
-
     	return new EntityImpl(this, name);
 
     } // createEntity(String):Entity
@@ -717,14 +788,10 @@ public class DocumentImpl
     public Notation createNotation(String name)
         throws DOMException {
 
-        // REVISIT: Should we be checking XML name chars?
-        /***
     	if (errorChecking && !isXMLName(name)) {
     		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
     		                           "DOM002 Illegal character");
         }
-        /***/
-
     	return new NotationImpl(this, name);
 
     } // createNotation(String):Notation
@@ -736,14 +803,10 @@ public class DocumentImpl
     public ElementDefinitionImpl createElementDefinition(String name)
         throws DOMException {
 
-        // REVISIT: Should we be checking XML name chars?
-        /***
     	if (errorChecking && !isXMLName(name)) {
     		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
     		                           "DOM002 Illegal character");
         }
-        /***/
-
         return new ElementDefinitionImpl(this, name);
 
     } // createElementDefinition(String):ElementDefinitionImpl
@@ -751,40 +814,46 @@ public class DocumentImpl
     // other non-DOM methods
 
     /**
-     * Copies data from the source node. Unlike cloneNode, this
-     * _can_ copy data from another document. If the source document is also
-     * based on org.apache.xerces.dom, we will attempt to preserve the domimpl-
-     * internal data by doing a clone-and-reparent. If not, we will use
-     * the source's public methods, and this document's Factory methods,
-     * to copy data defined by the DOM interfaces.
-     *
+     * Copies a node from another document to this document. The new nodes are
+     * created using this document's factory methods and are populated with the
+     * data from the source's accessor methods defined by the DOM interfaces.
      * Its behavior is otherwise similar to that of cloneNode.
-     *
-     * Attempting to import a Document into another Document is meaningless --
-     * a new Document would not improve matters much, and a DocumentFragment
-     * couldn't carry the DocumentType child (if any). Best thing we can do
-     * is throw a HIERARCHY_REQUEST_ERR.
-     *
-     * ????? Should we push some of this down to copy-ctors, so
-     * subclassed DOMs have the option of special-casing each other
-     * (as we do for ourself)?
+     * <p>
+     * According to the DOM specifications, document nodes cannot be imported
+     * and a NOT_SUPPORTED_ERR exception is thrown if attempted.
      */
     public Node importNode(Node source, boolean deep)
-        throws DOMException {
+	throws DOMException {
+        return importNode(source, deep, null);
+    } // importNode(Node,boolean):Node
 
-    	Node newnode=null;
+    /**
+     * Overloaded implementation of DOM's importNode method. This method
+     * provides the core functionality for the public importNode and cloneNode
+     * methods.
+     *
+     * The reversedIdentifiers parameter is provided for cloneNode to
+     * preserve the document's identifiers. The Hashtable has Elements as the
+     * keys and their identifiers as the values. When an element is being
+     * imported, a check is done for an associated identifier. If one exists,
+     * the identifier is registered with the new, imported element. If
+     * reversedIdentifiers is null, the parameter is not applied.
+     */
+    private Node importNode(Node source, boolean deep, Hashtable reversedIdentifiers)
+	throws DOMException {
+        Node newnode=null;
 
-    	// Sigh. This doesn't work; too many nodes have private data that
-    	// would have to be manually tweaked. May be able to add local
-    	// shortcuts to each nodetype. Consider ?????
-    	// if(source instanceof NodeImpl &&
-    	//	!(source instanceof DocumentImpl))
-    	// {
-    	//  // Can't clone DocumentImpl since it invokes us...
-    	//	newnode=(NodeImpl)source.cloneNode(false);
-    	//	newnode.ownerDocument=this;
-    	//}
-    	//else
+        // Sigh. This doesn't work; too many nodes have private data that
+        // would have to be manually tweaked. May be able to add local
+        // shortcuts to each nodetype. Consider ?????
+        // if(source instanceof NodeImpl &&
+        //  !(source instanceof DocumentImpl))
+        // {
+        //  // Can't clone DocumentImpl since it invokes us...
+        //  newnode=(NodeImpl)source.cloneNode(false);
+        //  newnode.ownerDocument=this;
+        // }
+        // else
 
         DOMImplementation  domImplementation     = 
                   source.getOwnerDocument().getImplementation(); // get source implementation
@@ -794,42 +863,50 @@ public class DocumentImpl
 
         int type                                 = source.getNodeType();
 
-    	switch (type) {
-    		
+        switch (type) {
             case ELEMENT_NODE: {
-		Element newelement;
-               
-                if( domLevel20 == true ){
-                    if( source.getLocalName() == null ){
-                         newelement = createElement(source.getNodeName());
-                    } else {
-                         newelement = createElementNS(source.getNamespaceURI(),
-						 source.getNodeName());
-                    }
-                } else {
-                    newelement = createElement( source.getNodeName() );
+                Element newElement;
 
-                }
+                // Create element according to namespace support/qualification.
+                if(domLevel20 == false || source.getLocalName() == null)
+                    newElement = createElement(source.getNodeName());
+                else
+                    newElement = createElementNS(source.getNamespaceURI(), source.getNodeName());
 
-		NamedNodeMap srcattr = source.getAttributes();
-		if (srcattr != null) {
-                    for(int i = 0; i < srcattr.getLength(); i++) {
-                        Attr attr = (Attr) srcattr.item(i);
-                        if (attr.getSpecified()) { // not a default attribute
-                            Attr nattr = (Attr) importNode(attr, true);
-                            if( domLevel20 == true ) {
-                                 if (attr.getLocalName() == null)
-                                     newelement.setAttributeNode(nattr);
-                                 else
-                                     newelement.setAttributeNodeNS(nattr);
-                            } else {
-                            newelement.setAttributeNode(nattr);
-                            }
+                // Copy element's attributes, if any.
+                NamedNodeMap sourceAttrs = source.getAttributes();
+                if (sourceAttrs != null) {
+                    int length = sourceAttrs.getLength();
+                    for (int index = 0; index < length; index++) {
+                        Attr attr = (Attr)sourceAttrs.item(index);
+
+                        // Copy the attribute only if it is not a default.
+                        if (attr.getSpecified()) {
+                            Attr newAttr = (Attr)importNode(attr, true, reversedIdentifiers);
+
+                            // Attach attribute according to namespace support/qualification.
+                            if(domLevel20 == false || attr.getLocalName() == null)
+                                newElement.setAttributeNode(newAttr);
+                            else
+                                newElement.setAttributeNodeNS(newAttr);
                         }
                     }
                 }
-		newnode = newelement;
-		break;
+
+                // Register element identifier.
+                if (reversedIdentifiers != null) {
+                    // Does element have an associated identifier?
+                    Object elementId = reversedIdentifiers.get(source);
+                    if (elementId != null) {
+                        if (identifiers == null)
+                            identifiers = new Hashtable();
+
+                        identifiers.put(elementId, newElement);
+                    }
+                }
+
+                newnode = newElement;
+                break;
             }
 
             case ATTRIBUTE_NODE: {
@@ -839,13 +916,29 @@ public class DocumentImpl
          	        newnode = createAttribute(source.getNodeName());
          	    } else {
           	        newnode = createAttributeNS(source.getNamespaceURI(),
-          					source.getNodeName());
+                                                    source.getNodeName());
          	    }
-               } else {
-                   newnode = createAttribute(source.getNodeName());
-               }
-                deep = true;
-		// Kids carry value
+                }
+                else {
+                    newnode = createAttribute(source.getNodeName());
+                }
+                // if source is an AttrImpl from this very same implementation
+                // avoid creating the child nodes if possible
+                if (source instanceof AttrImpl) {
+                    AttrImpl attr = (AttrImpl) source;
+                    if (attr.hasStringValue()) {
+                        AttrImpl newattr = (AttrImpl) newnode;
+                        newattr.setValue(attr.getValue());
+                        deep = false;
+                    }
+                    else {
+                        deep = true;
+                    }
+                }
+                else {
+                    // Kids carry value
+                    deep = true;
+                }
 		break;
             }
 
@@ -890,6 +983,8 @@ public class DocumentImpl
 		break;
             }
 
+            // REVISIT: The DOM specifications say that DocumentType nodes cannot be
+            // imported. Is this OK?
     	    case DOCUMENT_TYPE_NODE: {
 		DocumentType srcdoctype = (DocumentType)source;
 		DocumentTypeImpl newdoctype = (DocumentTypeImpl)
@@ -901,14 +996,14 @@ public class DocumentImpl
 		NamedNodeMap tmap = newdoctype.getEntities();
 		if(smap != null) {
 		    for(int i = 0; i < smap.getLength(); i++) {
-			tmap.setNamedItem(importNode(smap.item(i), true));
+			tmap.setNamedItem(importNode(smap.item(i), true, reversedIdentifiers));
                     }
                 }
 		smap = srcdoctype.getNotations();
 		tmap = newdoctype.getNotations();
 		if (smap != null) {
 		    for(int i = 0; i < smap.getLength(); i++) {
-			tmap.setNamedItem(importNode(smap.item(i), true));
+			tmap.setNamedItem(importNode(smap.item(i), true, reversedIdentifiers));
                     }
                 }
 		// NOTE: At this time, the DOM definition of DocumentType
@@ -938,10 +1033,11 @@ public class DocumentImpl
 		break;
             }
 
-    	    case DOCUMENT_NODE : // Document can't be child of Document
-    	    default: {		// Unknown node type
-		throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
-					   "DOM006 Hierarchy request error");
+            case DOCUMENT_NODE : // Can't import document nodes
+            default: {           // Unknown node type
+                throw new DOMException(
+                                       DOMException.NOT_SUPPORTED_ERR,
+                                       "Node type being imported is not supported");
             }
         }
 
@@ -950,7 +1046,7 @@ public class DocumentImpl
 	    for (Node srckid = source.getFirstChild();
                  srckid != null;
                  srckid = srckid.getNextSibling()) {
-		newnode.appendChild(importNode(srckid, true));
+		newnode.appendChild(importNode(srckid, true, reversedIdentifiers));
 	    }
         }
         if (newnode.getNodeType() == Node.ENTITY_REFERENCE_NODE
@@ -959,28 +1055,92 @@ public class DocumentImpl
         }
     	return newnode;
 
-    } // importNode(Node,boolean):Node
+    } // importNode(Node,boolean,Hashtable):Node
 
     /**
-     * NON-DOM:
+     * DOM Level 3 Prototype:
      * Change the node's ownerDocument, and its subtree, to this Document
      *
-     * @param source The node to move in to this document.
-     * @exception NOT_SUPPORTED_ERR DOMException, raised if the implementation
-     * cannot handle the request, such as when the source node comes from a
-     * different DOMImplementation
+     * @param source The node to adopt.
      * @see DocumentImpl.importNode
      **/
-    public void adoptNode(Node source) {
-	if (!(source instanceof NodeImpl)) {
-	    throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-		      "cannot move a node in from another DOM implementation");
-	}
-	Node parent = source.getParentNode();
-	if (parent != null) {
-	    parent.removeChild(source);
-	}
-	((NodeImpl)source).setOwnerDocument(this);
+    public Node adoptNode(Node source) {
+        NodeImpl node;
+        try {
+            node = (NodeImpl) source;
+        } catch (ClassCastException e) {
+            // source node comes from a different DOMImplementation
+            return null;
+        }
+        switch (node.getNodeType()) {
+            case ATTRIBUTE_NODE: {
+                AttrImpl attr = (AttrImpl) node;
+                // remove node from wherever it is
+                attr.getOwnerElement().removeAttributeNode(attr);
+                // mark it as specified
+                attr.isSpecified(true);
+                // change ownership
+                attr.setOwnerDocument(this);
+                break;
+            }
+            case DOCUMENT_NODE:
+            case DOCUMENT_TYPE_NODE: {
+                throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
+                                       "cannot adopt this type of node.");
+            }
+            case ENTITY_REFERENCE_NODE: {
+                // remove node from wherever it is
+                Node parent = node.getParentNode();
+                if (parent != null) {
+                    parent.removeChild(source);
+                }
+                // discard its replacement value
+                Node child;
+                while ((child = node.getFirstChild()) != null) {
+                    node.removeChild(child);
+                }
+                // change ownership
+                node.setOwnerDocument(this);
+                // set its new replacement value if any
+                if (docType == null) {
+                    break;
+                }
+                NamedNodeMap entities = docType.getEntities();
+                Node entityNode = entities.getNamedItem(node.getNodeName());
+                if (entityNode == null) {
+                    break;
+                }
+                EntityImpl entity = (EntityImpl) entityNode;
+                for (child = entityNode.getFirstChild();
+                     child != null; child = child.getNextSibling()) {
+                    Node childClone = child.cloneNode(true);
+                    node.appendChild(childClone);
+                }
+                break;
+            }
+            case ELEMENT_NODE: {
+                // remove node from wherever it is
+                Node parent = node.getParentNode();
+                if (parent != null) {
+                    parent.removeChild(source);
+                }
+                // change ownership
+                node.setOwnerDocument(this);
+                // reconcile default attributes
+                ((ElementImpl)node).reconcileDefaultAttributes();
+                break;
+            }
+            default: {
+                // remove node from wherever it is
+                Node parent = node.getParentNode();
+                if (parent != null) {
+                    parent.removeChild(source);
+                }
+                // change ownership
+                node.setOwnerDocument(this);
+            }
+        }
+        return node;
     }
 
     // identifier maintenence
@@ -1113,6 +1273,10 @@ public class DocumentImpl
     public Element createElementNS(String namespaceURI, String qualifiedName)
         throws DOMException
     {
+    	if (errorChecking && !isXMLName(qualifiedName)) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
+                                   "DOM002 Illegal character");
+        }
         return new ElementNSImpl( this, namespaceURI, qualifiedName);
     }
 
@@ -1137,6 +1301,10 @@ public class DocumentImpl
     public Attr createAttributeNS(String namespaceURI, String qualifiedName)
         throws DOMException
     {
+    	if (errorChecking && !isXMLName(qualifiedName)) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
+                                   "DOM002 Illegal character");
+        }
         return new AttrNSImpl( this, namespaceURI, qualifiedName);
     }
 
@@ -1157,7 +1325,7 @@ public class DocumentImpl
      */
     public NodeList getElementsByTagNameNS(String namespaceURI, String localName)
     {
-	    return new DeepNodeListImpl(this, namespaceURI, localName);
+        return new DeepNodeListImpl(this, namespaceURI, localName);
     }
 
     //
@@ -1244,17 +1412,13 @@ public class DocumentImpl
                                        NodeFilter filter,
                                        boolean entityReferenceExpansion)
     {
-    	if( root==null) {
-    		throw new DOMException(
+    	if (root==null) {
+            throw new DOMException(
     			DOMException.NOT_SUPPORTED_ERR, 
 			"DOM007 Not supported");
         }
-        
-        TreeWalker treeWalker = new TreeWalkerImpl(root,
-                                                   whatToShow,
-                                                   filter,
-                                                   entityReferenceExpansion);
-        return treeWalker;
+        return new TreeWalkerImpl(root, whatToShow, filter,
+                                  entityReferenceExpansion);
     }
 
     //
@@ -1440,86 +1604,15 @@ public class DocumentImpl
 
     /**
      * Check the string against XML's definition of acceptable names for
-     * elements and attributes and so on. From the XML spec:
-     * <p>
-     * [Definition:] A Name is a token beginning with a letter or one of a
-     * few punctuation characters, and continuing with letters, digits,
-     * hyphens,underscores, colons, or full stops, together known as name
-     * characters.
-     * <p>
-     * Unfortunately, that spec goes on to say that after the first character,
-     * names may use "combining characters" and "extender characters",
-     * which are explicitly listed rather than defined in terms of Java's
-     * Unicode character types... and which in fact can't be expressed solely
-     * in terms of those types.
-     * <p>
-     * I've empirically derived some tests which are partly based on the
-     * Java Unicode space (which simplifies them considerably), but they
-     * still wind up having to be further qualified. This may not remain
-     * valid if future extensions of Java and/or Unicode introduce other
-     * characters having these type numbers.
-     * <p>
-     * Suggestions for alternative implementations would be welcome.
+     * elements and attributes and so on using the XMLCharacterProperties
+     * utility class
      */
     public static boolean isXMLName(String s) {
-
-        // REVISIT: Use the parser's character checking code. -Ac
 
         if (s == null) {
             return false;
         }
-
-    	char [] ca=new char[s.length()];
-    	s.getChars(0,s.length(),ca,0);
-
-    	// First character must be letter, underscore, or colon.
-    	if (!Character.isLetter(ca[0]) && "_:".indexOf((int)ca[0]) == -1) {
-    		return false;
-            }
-
-    	// Remaining characters must be letter, digit, underscore,
-    	// colon, period, dash, an XML "Combining Character", or an
-    	// XML "Extender Character".
-    	for (int i = 1; i < s.length(); ++i) {
-
-    		char c = ca[i];
-    		int ctype = Character.getType(c);
-
-    		if (!Character.isLetterOrDigit(c) &&
-                (".-_:".indexOf(c) == -1) &&
-    		
-                // Right type
-    		    (!(ctype >= 6 && ctype <= 8 &&	
-                      // Bad ranges, combined from the three types:
-    				  !((c >= 0x06dd && c <= 0x06de) ||
-      				  	(c >= 0x20dd && c <= 0x20e0) ||
-      				   	 c >= 0x309b
-    				   	)
-    				  )
-    			    ) &&
-    		
-    			  // XML Extender chars are all type 4 (uppercase) except
-    			  // for two which are type 24. (titlecase modifier)
-
-                  // Right type
-    		      (!(ctype == 4 &&
-                        // Bad ranges
-    					!((c >= 0x02d0 && c <= 0x0559) ||
-    				      (c >= 0x06e5 && c <= 0x06e6) ||
-    					  (c >= 0x309b && c <= 0x309c)
-    					 )
-    				|| c == 0x00b7 // Type 24
-    				|| c == 0x0387 // Type 24
-    				))
-                  ) {
-    		
-    		    return false;
-            }
-    		
-    	}
-
-    	// All characters passed the tests.
-    	return true;
+        return XMLChar.isValidName(s);
     	
     } // isXMLName(String):boolean
 

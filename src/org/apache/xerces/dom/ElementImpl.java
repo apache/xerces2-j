@@ -80,11 +80,15 @@ import org.w3c.dom.*;
  * it, does.
  * @see ElementNSImpl
  *
+ * @author Arnaud  Le Hors, IBM
+ * @author Joe Kesselman, IBM
+ * @author Andy Clark, IBM
+ * @author Ralf Pfeiffer, IBM
  * @version
  * @since  PR-DOM-Level-1-19980818.
  */
 public class ElementImpl
-    extends ChildAndParentNode
+    extends ParentNode
     implements Element {
 
     //
@@ -166,10 +170,6 @@ public class ElementImpl
      * @see org.w3c.dom.Node#cloneNode(boolean)
      */
     public Node cloneNode(boolean deep) {
-
-        if (needsSyncData()) {
-            synchronizeData();
-        }
 
     	ElementImpl newnode = (ElementImpl) super.cloneNode(deep);
     	// Replicate NamedNodeMap rather than sharing it.
@@ -287,9 +287,16 @@ public class ElementImpl
      * normal Text or with other CDATASections.
      */
     public void normalize() {
-    	Node kid, next;
-    	for (kid = getFirstChild(); kid != null; kid = next) {
-    		next = kid.getNextSibling();
+        // No need to normalize if already normalized.
+        if (isNormalized()) {
+            return;
+        }
+        if (needsSyncChildren()) {
+            synchronizeChildren();
+        }
+        ChildNode kid, next;
+        for (kid = firstChild; kid != null; kid = next) {
+            next = kid.nextSibling;
 
             // If kid is a text node, we need to check for one of two
             // conditions:
@@ -313,9 +320,9 @@ public class ElementImpl
                 }
             }
 
-    		// Otherwise it might be an Element, which is handled recursively
-    		else if (kid.getNodeType() ==  Node.ELEMENT_NODE) {
-                ((Element)kid).normalize();
+            // Otherwise it might be an Element, which is handled recursively
+            else if (kid.getNodeType() == Node.ELEMENT_NODE) {
+                kid.normalize();
             }
         }
 
@@ -332,6 +339,7 @@ public class ElementImpl
     	// changed() will have occurred when the removeChild() was done,
     	// so does not have to be reissued.
 
+        isNormalized(true);
     } // normalize()
 
     /**
@@ -351,10 +359,9 @@ public class ElementImpl
      */
     public void removeAttribute(String name) {
 
-    	if (isReadOnly()) {
-    		throw new DOMException(
-    			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    			"DOM001 Modification not allowed");
+    	if (ownerDocument.errorChecking && isReadOnly()) {
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                   "DOM001 Modification not allowed");
         }
     		
         if (needsSyncData()) {
@@ -387,13 +394,11 @@ public class ElementImpl
      * readonly.
      */
     public Attr removeAttributeNode(Attr oldAttr)
-        throws DOMException
-        {
+        throws DOMException {
 
-    	if (isReadOnly()) {
-    		throw new DOMException(
-    			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    			"DOM001 Modification not allowed");
+    	if (ownerDocument.errorChecking && isReadOnly()) {
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                   "DOM001 Modification not allowed");
         }
     		
         if (needsSyncData()) {
@@ -430,10 +435,9 @@ public class ElementImpl
      */
     public void setAttribute(String name, String value) {
 
-    	if (isReadOnly()) {
-    		throw new DOMException(
-    			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    			"DOM001 Modification not allowed");
+    	if (ownerDocument.errorChecking && isReadOnly()) {
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                   "DOM001 Modification not allowed");
         }
 
         if (needsSyncData()) {
@@ -474,20 +478,21 @@ public class ElementImpl
         throws DOMException
         {
 
-    	if (isReadOnly()) {
-    		throw new DOMException(
-    			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    			"DOM001 Modification not allowed");
-        }
-    	
         if (needsSyncData()) {
             synchronizeData();
         }
 
-    	if (ownerDocument.errorChecking
-            && newAttr.getOwnerDocument() != ownerDocument) {
+    	if (ownerDocument.errorChecking) {
+            if (isReadOnly()) {
+                throw new DOMException(
+                                     DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                     "DOM001 Modification not allowed");
+            }
+    	
+            if (newAttr.getOwnerDocument() != ownerDocument) {
     		throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
-    		                           "DOM005 Wrong document");
+                                       "DOM005 Wrong document");
+            }
         }
 
         if (attributes == null) {
@@ -573,10 +578,9 @@ public class ElementImpl
      */
     public void setAttributeNS(String namespaceURI, String localName, String value) {
 
-    	if (isReadOnly()) {
-    		throw new DOMException(
-    			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    			"DOM001 Modification not allowed");
+    	if (ownerDocument.errorChecking && isReadOnly()) {
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                   "DOM001 Modification not allowed");
         }
 
         if (needsSyncData()) {
@@ -617,10 +621,9 @@ public class ElementImpl
      */
     public void removeAttributeNS(String namespaceURI, String localName) {
 
-    	if (isReadOnly()) {
-    		throw new DOMException(
-    			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    			"DOM001 Modification not allowed");
+    	if (ownerDocument.errorChecking && isReadOnly()) {
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                   "DOM001 Modification not allowed");
         }
     		
         if (needsSyncData()) {
@@ -688,20 +691,19 @@ public class ElementImpl
         throws DOMException
         {
 
-    	if (isReadOnly()) {
-    		throw new DOMException(
-    			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    			"DOM001 Modification not allowed");
-        }
-    	
         if (needsSyncData()) {
             synchronizeData();
         }
-
-    	if (ownerDocument.errorChecking
-            && newAttr.getOwnerDocument() != ownerDocument) {
-    		throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
-    		"DOM005 Wrong document");
+        if (ownerDocument.errorChecking) {
+            if (isReadOnly()) {
+    		throw new DOMException(
+                                     DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                     "DOM001 Modification not allowed");
+            }
+            if (newAttr.getOwnerDocument() != ownerDocument) {
+                throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
+                                       "DOM005 Wrong document");
+            }
         }
 
         if (attributes == null) {
@@ -782,8 +784,15 @@ public class ElementImpl
         // no need to sync in the future
         needsSyncData(false);
 
+        // we don't want to generate any event for this so turn them off
+        boolean orig = ownerDocument.mutationEvents;
+        ownerDocument.mutationEvents = false;
+
         // attributes
         setupDefaultAttributes();
+
+        // set mutation events flag back to its original value
+        ownerDocument.mutationEvents = orig;
 
     } // synchronizeData()
 
@@ -792,6 +801,14 @@ public class ElementImpl
         NamedNodeMapImpl defaults = getDefaultAttributes();
         if (defaults != null) {
             attributes = new AttributeMap(this, defaults);
+        }
+    }
+
+    /** Reconcile default attributes. */
+    protected void reconcileDefaultAttributes() {
+        NamedNodeMapImpl defaults = getDefaultAttributes();
+        if (defaults != null) {
+            attributes.reconcileDefaults(defaults);
         }
     }
 

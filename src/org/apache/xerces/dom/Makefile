@@ -7,7 +7,6 @@ TARGETS=\
 	CDATASectionImpl.class\
 	CharacterDataImpl.class\
 	ChildNode.class\
-	ChildAndParentNode.class\
 	CommentImpl.class\
 	DeepNodeListImpl.class\
 	DocumentFragmentImpl.class\

@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLHRElement
  * @see ElementImpl
  */
-public final class HTMLHRElementImpl
+public class HTMLHRElementImpl
     extends HTMLElementImpl
     implements HTMLHRElement
 {

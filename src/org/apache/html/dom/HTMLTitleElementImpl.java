@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLTitleElement
  * @see ElementImpl
  */
-public final class HTMLTitleElementImpl
+public class HTMLTitleElementImpl
     extends HTMLElementImpl
     implements HTMLTitleElement
 {

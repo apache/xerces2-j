@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLBRElement
  * @see ElementImpl
  */
-public final class HTMLBRElementImpl
+public class HTMLBRElementImpl
     extends HTMLElementImpl
     implements HTMLBRElement
 {

@@ -1,25 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schema>
+<schema xmlns='http://www.w3.org/2000/10/XMLSchema'>
 
  <element name="personnel">
   <complexType>
-   <element ref="person" minOccurs='1' maxOccurs='unbounded'/>
+   <sequence>
+     <element ref="person" minOccurs='1' maxOccurs='unbounded'/>
+   </sequence>
   </complexType>
+
+<!--  Identity constraints commented out for now...
+  <unique>
+   <selector xpath="person"/>
+   <field xpath="@name"/>
+  </unique>
+  <key name='empid'>
+   <selector xpath="person"/>
+   <field xpath="@id"/>
+  </key>
+  <keyref name='empid'>
+   <selector xpath="person"/> 
+   <field xpath="link/@manager"/>  
+  </keyref>
+-->
+
  </element>
 
  <element name="person">
   <complexType>
-   <element ref="name"/>
-   <element ref="email" minOccurs='0' maxOccurs='unbounded'/>
-   <element ref="url"   minOccurs='0' maxOccurs='unbounded'/>
-   <element ref="link"  minOccurs='0' maxOccurs='1'/>
-
+   <sequence>
+     <element ref="name"/>
+     <element ref="email" minOccurs='0' maxOccurs='unbounded'/>
+     <element ref="url"   minOccurs='0' maxOccurs='unbounded'/>
+     <element ref="link"  minOccurs='0' maxOccurs='1'/>
+   </sequence>
    <attribute name="id"  type="ID" use='required'/>
    <attribute name="note" type="string"/>
-   <attribute name="contr" type="NMTOKEN" use='default' value="false">
-    <simpleType base="string">
-     <enumeration value="true"/>
-     <enumeration value="false"/>
+   <attribute name="contr" use='default' value="false">
+    <simpleType>
+     <restriction base = "string">
+       <enumeration value="true"/>
+       <enumeration value="false"/>
+     </restriction>
     </simpleType>
    </attribute>
    <attribute name="salary" type="integer"/>
@@ -27,7 +48,7 @@
  </element>
 
  <element name="name">
-  <complexType content='elementOnly'>
+  <complexType>
    <all>
     <element ref="family"/>
     <element ref="given"/>
@@ -42,13 +63,13 @@
  <element name="email" type='string'/>
 
  <element name="url">
-  <complexType content="empty">
+  <complexType>
    <attribute name="href" type="string" default="http://"/>
   </complexType>
  </element>
 
  <element name="link">
-  <complexType content="empty">
+  <complexType>
    <attribute name="manager" type="IDREF"/>
    <attribute name="subordinates" type="IDREFS"/>
   </complexType>

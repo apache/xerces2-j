@@ -6,16 +6,7 @@
         <ul>
            <li>Implemented basic support for XML Schema identity constraints [andyc]</li>
            <li>Updates to improve DFA build-time performance. [ATOZAWA@jp.ibm.com]</li>
+           <li>Sync'ed with Xerces 1.3.0 [Arnaud  Le Hors]</li>
+
         </ul>
-    </s2>
-    <s2 title='December 7, 2000'>
-        <ul>
-           <li>The all mighty Xerces 2.0.0 first alpha version</li>
-           <li>Support all scanning and parsing functionalities available form Xerces 1</li>
-           <li>Support SAX, SAX2, DOM L1 and DOM L2 apis</li>
-           <li>Support full DTD Validation</li>
-           <li>No support for Schema Validation yet</li>
-           <li>Some documentation are not updated or verified</li>
-        </ul>
-    </s2>
 </s1>

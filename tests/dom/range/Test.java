@@ -65,7 +65,7 @@ import org.w3c.dom.ranges.*;
 import org.w3c.dom.ranges.RangeException;
 
 import java.io.*;
-import dom.DOMWriter;
+import dom.Writer;
 import org.xml.sax.InputSource;
 
 /** This RangeTest tests all of the cases delineated as examples
@@ -202,7 +202,7 @@ public class Test {
     public boolean performTest(String arg) {
         boolean passed = true;
         try {
-            DOMWriter writer = new DOMWriter(false);
+            Writer writer = new Writer(false);
             DOMParser parser = new DOMParser();
             if (!arg.equals("delete2") && !arg.equals("insert2")) {
             System.out.println("\n*************** Test == "+arg+" ***************");

@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLIsIndexElement
  * @see ElementImpl
  */
-public final class HTMLIsIndexElementImpl
+public class HTMLIsIndexElementImpl
     extends HTMLElementImpl
     implements HTMLIsIndexElement
 {

@@ -83,104 +83,55 @@ class Encodings
      */
     static final int DefaultLastPrintable = 0x7F;
 
-
     /**
-     * Returns a writer for the specified encoding based on
-     * an output stream.
-     *
-     * @param output The output stream
-     * @param encoding The encoding
-     * @return A suitable writer
-     * @throws UnsupportedEncodingException There is no convertor
-     *  to support this encoding
+     * @param encoding a MIME charset name, or null.
      */
-    static Writer getWriter( OutputStream output, String encoding )
-        throws UnsupportedEncodingException
-    {
-        for ( int i = 0 ; i < _encodings.length ; ++i ) {
-            if ( _encodings[ i ].name.equals( encoding ) )
-                return new OutputStreamWriter( output, _encodings[ i ].javaName );
+    static EncodingInfo getEncodingInfo(String encoding) {
+        if (encoding == null)
+            return new EncodingInfo(null, DefaultLastPrintable);
+        for (int i = 0;  i < _encodings.length;  i++) {
+            if (_encodings[i].name.equalsIgnoreCase(encoding))
+                return _encodings[i];
         }
-        return new OutputStreamWriter( output, encoding );
+        return new SieveEncodingInfo(encoding, DefaultLastPrintable);
     }
 
-
-    /**
-     * Returns the last printable character for the specified
-     * encoding.
-     *
-     * @param encoding The encoding
-     * @return The last printable character
-     */
-    static int getLastPrintable( String encoding )
-    {
-        for ( int i = 0 ; i < _encodings.length ; ++i ) {
-            if ( _encodings[ i ].name.equalsIgnoreCase( encoding ) )
-                return _encodings[ i ].lastPrintable;
-        }
-        return DefaultLastPrintable;
-    }
-
-
-    /**
-     * Returns the last printable character for an unspecified
-     * encoding.
-     */
-    static int getLastPrintable()
-    {
-        return DefaultLastPrintable;
-    }
-
-
-    /**
-     * Holds information about a given encoding.
-     */
-    static final class EncodingInfo
-    {
-       
-        /**
-         * The encoding name.
-         */ 
-        final String name;
-
-        /**
-         * The name used by the Java convertor.
-         */
-        final String javaName;
-
-        /**
-         * The last printable character.
-         */
-        final int    lastPrintable;
-
-        EncodingInfo( String name, String javaName, int lastPrintable )
-        {
-            this.name = name;
-            this.javaName = javaName;
-            this.lastPrintable = lastPrintable;
-        }
-
-    }
-
+    static final String JIS_DANGER_CHARS
+    = "\\\u007e\u007f\u00a2\u00a3\u00a5\u00ac"
+    +"\u2014\u2015\u2016\u2026\u203e\u203e\u2225\u222f\u301c"
+    +"\uff3c\uff5e\uffe0\uffe1\uffe2\uffe3";
 
     /**
      * Constructs a list of all the supported encodings.
      */
     private static final EncodingInfo[] _encodings = new EncodingInfo[] {
-        new EncodingInfo( "ASCII", "ASCII", 0x7F ),
-        new EncodingInfo( "ISO-Latin-1", "ASCII", 0xFF ),
-        new EncodingInfo( "ISO-8859-1", "ISO8859_1", 0xFF ),
-        new EncodingInfo( "ISO-8859-2", "ISO8859_2", 0xFF ),
-        new EncodingInfo( "ISO-8859-3", "ISO8859_3", 0xFF ),
-        new EncodingInfo( "ISO-8859-4", "ISO8859_4", 0xFF ),
-        new EncodingInfo( "ISO-8859-5", "ISO8859_5", 0xFF ),
-        new EncodingInfo( "ISO-8859-6", "ISO8859_6", 0xFF ),
-        new EncodingInfo( "ISO-8859-7", "ISO8859_7", 0xFF ),
-        new EncodingInfo( "ISO-8859-8", "ISO8859_8", 0xFF ),
-        new EncodingInfo( "ISO-8859-9", "ISO8859_9", 0xFF ),
-        new EncodingInfo( "UTF-8", "UTF8", 0xFFFF ),
-        new EncodingInfo( "UNICODE", "Unicode", 0xFFFF )
+        new EncodingInfo("ASCII", 0x7F),
+        new EncodingInfo("US-ASCII", 0x7F),
+        new EncodingInfo("ISO-8859-1", 0xFF),
+        new EncodingInfo("ISO-8859-2", 0xFF),
+        new EncodingInfo("ISO-8859-3", 0xFF),
+        new EncodingInfo("ISO-8859-4", 0xFF),
+        new EncodingInfo("ISO-8859-5", 0xFF),
+        new EncodingInfo("ISO-8859-6", 0xFF),
+        new EncodingInfo("ISO-8859-7", 0xFF),
+        new EncodingInfo("ISO-8859-8", 0xFF),
+        new EncodingInfo("ISO-8859-9", 0xFF),
+        /**
+         * Does JDK's converter supprt surrogates?
+         * A Java encoding name "UTF-8" is suppoted by JDK 1.2 or later.
+         */
+        new EncodingInfo("UTF-8", "UTF8", 0x10FFFF),
+        /**
+         * JDK 1.1 supports "Shift_JIS" as an alias of "SJIS".
+         * But JDK 1.2 treats "Shift_JIS" as an alias of "MS932".
+         * The JDK 1.2's behavior is invalid against IANA registrations.
+         */
+        new SieveEncodingInfo("Shift_JIS", "SJIS", 0x7F, JIS_DANGER_CHARS),
+        /**
+         * "MS932" is supported by JDK 1.2 or later.
+         */
+        new SieveEncodingInfo("Windows-31J", "MS932", 0x7F, JIS_DANGER_CHARS),
+        new SieveEncodingInfo("EUC-JP", null, 0x7F, JIS_DANGER_CHARS),
+        new SieveEncodingInfo("ISO-2022-JP", null, 0x7F, JIS_DANGER_CHARS),
     };
-
-
 }

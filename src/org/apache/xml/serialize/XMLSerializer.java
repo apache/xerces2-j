@@ -652,7 +652,7 @@ public final class XMLSerializer
     }
 
 
-    protected String getEntityRef( char ch )
+    protected String getEntityRef(int ch)
     {
         // Encode special XML characters into the equivalent character references.
         // These five are defined by default for all XML documents.

@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLTableCaptionElement
  * @see ElementImpl
  */
-public final class HTMLTableCaptionElementImpl
+public class HTMLTableCaptionElementImpl
     extends HTMLElementImpl
     implements HTMLTableCaptionElement
 {

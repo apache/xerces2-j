@@ -811,7 +811,7 @@ public class HTMLSerializer
     }
     
     
-    protected String getEntityRef( char ch )
+    protected String getEntityRef(int ch)
     {
         return HTMLdtd.fromChar( ch );
     }

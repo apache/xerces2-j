@@ -72,7 +72,6 @@ import java.util.Hashtable;
 /**
  * @author Rajiv Mordani
  * @author Edwin Goei
- * @version $Revision$
  */
 
 /**

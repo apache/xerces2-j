@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLModElement
  * @see ElementImpl
  */
-public final class HTMLModElementImpl
+public class HTMLModElementImpl
     extends HTMLElementImpl
     implements HTMLModElement
 {

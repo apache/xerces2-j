@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLAreaElement
  * @see ElementImpl
  */
-public final class HTMLAreaElementImpl
+public class HTMLAreaElementImpl
     extends HTMLElementImpl
     implements HTMLAreaElement
 {

@@ -86,7 +86,7 @@ import org.w3c.dom.html.*;
  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
  * @see org.w3c.dom.html.HTMLCollection
  */
-final class HTMLCollectionImpl
+class HTMLCollectionImpl
     implements HTMLCollection
 {
     

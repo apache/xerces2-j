@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLLIElement
  * @see ElementImpl
  */
-public final class HTMLLIElementImpl
+public class HTMLLIElementImpl
     extends HTMLElementImpl
 	    implements HTMLLIElement
 {

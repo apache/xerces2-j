@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLBaseElement
  * @see ElementImpl
  */
-public final class HTMLBaseElementImpl
+public class HTMLBaseElementImpl
     extends HTMLElementImpl
     implements HTMLBaseElement
 {

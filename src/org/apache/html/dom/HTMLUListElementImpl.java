@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLUListElement
  * @see ElementImpl
  */
-public final class HTMLUListElementImpl
+public class HTMLUListElementImpl
     extends HTMLElementImpl
     implements HTMLUListElement
 {

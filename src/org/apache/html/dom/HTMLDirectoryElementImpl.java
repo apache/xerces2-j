@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLDirectoryElement
  * @see ElementImpl
  */
-public final class HTMLDirectoryElementImpl
+public class HTMLDirectoryElementImpl
     extends HTMLElementImpl
     implements HTMLDirectoryElement
 {

@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLMetaElement
  * @see ElementImpl
  */
-public final class HTMLMetaElementImpl
+public class HTMLMetaElementImpl
     extends HTMLElementImpl
     implements HTMLMetaElement
 {

@@ -136,6 +136,10 @@ public class Writer {
     public Writer() {
     } // <init>()
 
+    public Writer(boolean canonical) {
+        fCanonical = canonical;
+    } // <init>(boolean)
+
     //
     // Public methods
     //

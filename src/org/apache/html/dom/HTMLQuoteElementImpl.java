@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLQuoteElement
  * @see ElementImpl
  */
-public final class HTMLQuoteElementImpl
+public class HTMLQuoteElementImpl
     extends HTMLElementImpl
     implements HTMLQuoteElement
 {

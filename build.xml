@@ -63,10 +63,10 @@ Copyright:
     <property name="version" value="2.0.0 (alpha)"/>
     <property name="version_postfix" value=".2.0.0.alpha"/>
     <property name="appendit" value="2_0_0_alpha"/>
-    <property name="year" value="1999-2000"/>
-	<property name="copyright" value="Copyright &#169; ${year} Apache XML Project. All Rights Reserved."/>
+    <property name="year" value="1999-2001"/>
+    <property name="copyright" value="Copyright &#169; ${year} Apache XML Project. All Rights Reserved."/>
 
-	<echo message= "---------------- ${Name} ${version} [${year}] ---------------"/>
+    <echo message= "---------------- ${Name} ${version} [${year}] ---------------"/>
     <property name="build.compiler" value="classic"/>
     <property name="debug" value="off"/>
     <property name="optimize" value="on"/>
@@ -156,19 +156,26 @@ Copyright:
     <mkdir dir="${build.dest}/META-INF"/>
     <mkdir dir="${build.dest}/META-INF/services"/>
 
-    <copyfile src="src/org/apache/xerces/jaxp/javax.xml.parsers.DocumentBuilderFactory"
-      dest="${build.dest}/META-INF/services/javax.xml.parsers.DocumentBuilderFactory"/>
+    <copy file="${src.dir}/org/apache/xerces/jaxp/javax.xml.parsers.DocumentBuilderFactory"
+      tofile="${build.dest}/META-INF/services/javax.xml.parsers.DocumentBuilderFactory"/>
 
-    <copyfile src="src/org/apache/xerces/jaxp/javax.xml.parsers.SAXParserFactory"
-      dest="${build.dest}/META-INF/services/javax.xml.parsers.SAXParserFactory"/>
+    <copy file="${src.dir}/org/apache/xerces/jaxp/javax.xml.parsers.SAXParserFactory"
+      tofile="${build.dest}/META-INF/services/javax.xml.parsers.SAXParserFactory"/>
 
     <!-- copy src files -->
-    <copydir src="${src.dir}" dest="${build.src}" includes="**/Makefile, **/Makefile.incl, javax/**, org/**"
-             excludes="**/classfiles_updated **/CVS* **/.#* **/XMLMessages.java
+    <copy todir="${build.src}">
+        <fileset 
+            dir="${src.dir}"
+            includes="**/Makefile, **/Makefile.incl, javax/**, org/**" 
+            excludes="**/classfiles_updated **/CVS* **/.#* **/XMLMessages.java
                        **/SchemaImporter.java **/RevalidatingDOMParser.java
                        **/DatatypeContentModel.java **/ComplexTypeInfo.java
-                       **/DTDImporter.java "/>
-	<deltree dir="${build.src}/whiteboard"/>
+                       **/DTDImporter.java ">
+        </fileset>
+    </copy>
+    
+    
+    <delete dir="${build.src}/whiteboard"/>
 
     <!-- substitute tokens as needed -->
     <replace file="${build.src}/${version.file}" token="@@version@@" value="${version}"/>
@@ -181,10 +188,10 @@ Copyright:
   <target name="compile" depends="prepare-src">
     <javac srcdir="${build.src}"
            excludes="**/RevalidatingDOMParser.java "
-    	   destdir="${build.dest}"
-    	   debug="${debug}"
-	       deprecation="${deprecation}"
-	       optimize="${optimize}" />
+           destdir="${build.dest}"
+           debug="${debug}"
+           deprecation="${deprecation}"
+           optimize="${optimize}" />
   </target>
 
   <!-- =================================================================== -->
@@ -199,9 +206,11 @@ Copyright:
   <!-- =================================================================== -->
   <!-- Compiles the samples                                                -->
   <!-- =================================================================== -->
-  <target name="samples" depends="jar">
+  <target name="samples" depends="compile">
     <mkdir dir="${build.samples}"/>
-    <copydir src="${samples.dir}" dest="${build.samples}" />
+    <copy todir="${build.samples}" >
+        <fileset dir="${samples.dir}" />
+    </copy>
     <javac srcdir="${build.samples}"
            destdir="${build.dest}"
            classpath="${build.dir}/${name}.jar"
@@ -213,7 +222,9 @@ Copyright:
   <!-- =================================================================== -->
   <target name="tests" depends="samples">
     <mkdir dir="${build.tests}"/>
-    <copydir src="${tests.dir}" dest="${build.tests}" />
+    <copy todir="${build.tests}">
+        <fileset dir="${tests.dir}" />
+    </copy>
     <javac srcdir="${build.tests}"
            destdir="${build.dest}"
            classpath="${build.dir}/${name}.jar"
@@ -240,7 +251,7 @@ Copyright:
   <!-- Generate HTML docs                                                  -->
   <!-- =================================================================== -->
   <target name="docs" depends="prepare, prepare-docs">
-	<echo message="Building docs for ${Name} ${version} ..." />
+    <echo message="Building docs for ${Name} ${version} ..." />
     <java fork="yes"
           classpath="${java.class.path}:${doc.generator.package}"
           classname="${doc.generator}"
@@ -268,7 +279,7 @@ Copyright:
   <!-- =================================================================== -->
   <target name="pack-src" depends="init">
     <echo message="Building the source distribution files (zip,tar)"/>
-    <deltree dir="${distbin.dir}"/>
+    <delete dir="${distbin.dir}"/>
 
     <mkdir dir="${distsrc.dir}"/>
     <mkdir dir="${distsrc.dir}/src"/>
@@ -276,22 +287,45 @@ Copyright:
     <mkdir dir="${distsrc.dir}/docs"/>
     <mkdir dir="${distsrc.dir}/samples"/>
 
-    <copydir src="${src.dir}" dest="${distsrc.dir}/src" excludes="**/CVS*, **/.#*, **/*.class"
-             includes="**/Makefile, **/Makefile.incl, org/**, javax/**"/>
-    <copydir src="${data.dir}" dest="${distsrc.dir}/data" excludes="**/CVS*, **/.#*"/>
-    <copydir src="${docs.dir}" dest="${distsrc.dir}/docs"
-             excludes="**/CVS*, **/*.#*, pdf/**, html/**, **/apiDocs*"/>
-    <copydir src="${samples.dir}" dest="${distsrc.dir}/samples" excludes="**/CVS*, **/*.#*"/>
+    <copy todir="${distsrc.dir}/src" >
+        <fileset
+            dir="${src.dir}"  
+            includes="**/Makefile, **/Makefile.incl, org/**, javax/**"
+            excludes="**/CVS*, **/.#*, **/*.class"
+        />
+    </copy>
 
-    <copyfile src="Makefile" dest="${distsrc.dir}/Makefile"/>
-    <copyfile src="LICENSE" dest="${distsrc.dir}/LICENSE"/>
-    <copyfile src="README" dest="${distsrc.dir}/README"/>
-    <copyfile src="Readme.html" dest="${distsrc.dir}/Readme.html"/>
-    <copyfile src="STATUS" dest="${distsrc.dir}/STATUS"/>
-    <copyfile src="build.xml" dest="${distsrc.dir}/build.xml"/>
-    <copyfile src="${basedir}/build.sh" dest="${distsrc.dir}/build.sh" />
-    <chmod src="${distsrc.dir}/build.sh" perm="ugo+rx" />
-    <copyfile src="${basedir}/build.bat" dest="${distsrc.dir}/build.bat" />
+
+    <copy todir="${distsrc.dir}/data" >
+        <fileset
+            dir="${data.dir}"  
+            excludes="**/CVS*, **/.#*"
+        />
+    </copy>
+
+    <copy todir="${distsrc.dir}/docs" >
+        <fileset
+            dir="${docs.dir}" 
+            excludes="**/CVS*, **/*.#*, pdf/**, html/**, **/apiDocs*"
+        />
+    </copy>
+
+    <copy todir="${distsrc.dir}/samples" >
+        <fileset
+            dir="${samples.dir}"  
+            excludes="**/CVS*, **/*.#*"
+        />
+    </copy>
+
+    <copy file="Makefile" tofile="${distsrc.dir}/Makefile"/>
+    <copy file="LICENSE" tofile="${distsrc.dir}/LICENSE"/>
+    <copy file="README" tofile="${distsrc.dir}/README"/>
+    <copy file="Readme.html" tofile="${distsrc.dir}/Readme.html"/>
+    <copy file="STATUS" tofile="${distsrc.dir}/STATUS"/>
+    <copy file="build.xml" tofile="${distsrc.dir}/build.xml"/>
+    <copy file="${basedir}/build.sh" tofile="${distsrc.dir}/build.sh" />
+    <chmod file="${distsrc.dir}/build.sh" perm="ugo+rx" />
+    <copy file="${basedir}/build.bat" tofile="${distsrc.dir}/build.bat" />
 
     <zip zipfile="${build.dir}/${Name}-src${version_postfix}.zip" basedir="${build.dir}"
          includes="${name}-${appendit}/**" excludes="*.class"/>
@@ -308,7 +342,7 @@ Copyright:
   <target name="pack-bin" depends="jar, sampjar, javadocs, docs">
 
     <echo message="Building the binary distribution files (zip,tar)"/>
-    <deltree dir="${distbin.dir}"/>
+    <delete dir="${distbin.dir}"/>
     <mkdir dir="${distbin.dir}"/>
     <mkdir dir="${distbin.dir}/data"/>
     <mkdir dir="${distbin.dir}/docs"/>
@@ -316,16 +350,33 @@ Copyright:
     <mkdir dir="${distbin.dir}/docs/apiDocs"/>
     <mkdir dir="${distsrc.dir}/samples"/>
 
+    <copy todir="${distbin.dir}/data" >
+        <fileset
+            dir="${data.dir}"
+            excludes="**/CVS*, **/*.#*"
+        />
+    </copy>
 
-    <copydir src="${data.dir}" dest="${distbin.dir}/data" excludes="**/CVS*, **/*.#*"/>
-    <copydir src="${build.docs}" dest="${distbin.dir}/docs/html"/>
-    <copydir src="${build.javadocs}" dest="${distbin.dir}/docs/apiDocs"/>
+    <copy todir="${distbin.dir}/docs/html" >
+        <fileset dir="${build.docs}" />
+    </copy>
 
-    <copyfile src="${build.dir}/${name}.jar" dest="${distbin.dir}/${name}.jar"/>
-    <copyfile src="${build.dir}/${name}Samples.jar" dest="${distbin.dir}/${name}Samples.jar"/>
+    <copy todir="${distbin.dir}/docs/apiDocs" >
+        <fileset dir="${build.javadocs}" />
+    </copy>
 
-    <copyfile src="LICENSE" dest="${distbin.dir}/LICENSE"/>
-    <copyfile src="Readme.html" dest="${distbin.dir}/Readme.html"/>
+    <copy file="${build.dir}/${name}.jar" tofile="${distbin.dir}/${name}.jar"/>
+    <copy file="${build.dir}/${name}Samples.jar" tofile="${distbin.dir}/${name}Samples.jar"/>
+
+    <copy file="LICENSE" tofile="${distbin.dir}/LICENSE"/>
+    <copy file="Readme.html" tofile="${distbin.dir}/Readme.html"/>
+
+    <copy todir="${distsrc.dir}/samples" >
+        <fileset
+            dir="${samples.dir}"
+            excludes="**/CVS*, **/*.#*"
+        />
+    </copy>
 
     <copydir src="${samples.dir}" dest="${distsrc.dir}/samples" excludes="**/CVS*, **/*.#*"/>
 
@@ -343,40 +394,45 @@ Copyright:
   <!-- Do a sanity test using xercesSamples.jar                            -->
   <!-- =================================================================== -->
   <target name="test" depends="sampjar">
-	<echo message="Performing sanity test for ${Name} ${version} ..." />
-	<echo message="Using classpath=&apos;${build.dir}/${name}Samples.jar;${build.dir}/${name}.jar&apos;" />
-	<echo message="Running sax.Counter ..." />
+    <echo message="Performing sanity test for ${Name} ${version} ..." />
+    <echo message="Using classpath=&apos;${build.dir}/${name}Samples.jar;${build.dir}/${name}.jar&apos;" />
+    <echo message="Running SAXCount ..." />
     <java fork="yes"
           classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar;"
           classname="sax.Counter"
           args="${data.dir}/personal.xml"/>
-	<echo message="Running sax.Writer ..." />
+    <echo message="Running sax.Writer ..." />
     <java fork="yes"
           classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
           classname="sax.Writer"
           args="${data.dir}/personal.xml"/>
-	<echo message="Running dom.Counter ..." />
+    <echo message="Running dom.Counter ..." />
     <java fork="yes"
           classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
           classname="dom.Counter"
           args="${data.dir}/personal.xml"/>
-	<echo message="Running dom.Writer ..." />
+    <echo message="Running dom.Writer ..." />
     <java fork="yes"
           classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
           classname="dom.Writer"
           args="${data.dir}/personal.xml"/>
+    <echo message="Running DOMFilter ..." />
+    <java fork="yes"
+          classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
+          classname="dom.DOMFilter"
+          args="-p dom.wrappers.DOMParser ${data.dir}/personal.xml"/>
     <!-- The following are samples but not command-line applications.
-	<echo message="Running IteratorView ..." />
+    <echo message="Running IteratorView ..." />
     <java fork="yes"
           classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
           classname="dom.traversal.IteratorView"
           args="${data.dir}/personal.xml"/>
-	<echo message="Running TreeWalkerView ..." />
+    <echo message="Running TreeWalkerView ..." />
     <java fork="yes"
           classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
           classname="dom.traversal.TreeWalkerView"
           args="${data.dir}/personal.xml"/>
-	<echo message="Running TreeViewer ..." />
+    <echo message="Running TreeViewer ..." />
     <java fork="yes"
           classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
           classname="dom.TreeViewer"
@@ -402,7 +458,7 @@ Copyright:
   <target name="clean" depends="init">
     <delete file="${name}.jar"/>
     <delete file="${name}Samples.jar"/>
-    <deltree dir="${build.dir}"/>
+    <delete dir="${build.dir}"/>
   </target>
 
 </project>

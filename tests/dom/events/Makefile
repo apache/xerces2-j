@@ -1,5 +1,5 @@
 
-TARGETS= Test.class
+TARGETS= Test.class EventReporter.class
 
 DIRS =
 

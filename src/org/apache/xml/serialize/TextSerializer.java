@@ -388,7 +388,7 @@ public final class TextSerializer
     }
     
     
-    protected String getEntityRef( char ch )
+    protected String getEntityRef( int ch )
     {
         return null;
     }
