@@ -63,6 +63,11 @@ import org.apache.xerces.util.XInt;
 import org.apache.xerces.util.XInt;
 import org.w3c.dom.Element;
 
+/**
+ * @author Elena Litani, IBM
+ * @author Sandy Gao, IBM
+ * @version $Id$
+ */
 abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
 
 
@@ -111,13 +116,13 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
         Element content = DOMUtil.getFirstChildElement(allDecl);
         Element child = checkContent(allDecl, content, true);
 
-        int left = XSDHandler.I_EMPTY_DECL;
-        int right = XSDHandler.I_EMPTY_DECL;
+        int left = SchemaGrammar.I_EMPTY_DECL;
+        int right = SchemaGrammar.I_EMPTY_DECL;
         String childName = null;
         int particleIndex;
         for (; child != null; child = DOMUtil.getNextSiblingElement(child)) {
 
-            particleIndex = XSDHandler.I_EMPTY_DECL;
+            particleIndex = SchemaGrammar.I_EMPTY_DECL;
             childName = child.getLocalName();
 
             // Only elements are allowed in <all>
@@ -133,10 +138,10 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
                                            XMLErrorReporter.SEVERITY_ERROR);
             }
 
-            if (left == XSDHandler.I_EMPTY_DECL) {
+            if (left == SchemaGrammar.I_EMPTY_DECL) {
                 left = particleIndex;
             }
-            else if (right == XSDHandler.I_EMPTY_DECL) {
+            else if (right == SchemaGrammar.I_EMPTY_DECL) {
                 right = particleIndex;
             }
             else {
@@ -145,7 +150,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
             }
         }
 
-        if (right != XSDHandler.I_EMPTY_DECL) //|| fSchemaGrammar.getDeferContentSpecExpansion())
+        if (right != SchemaGrammar.I_EMPTY_DECL) //|| fSchemaGrammar.getDeferContentSpecExpansion())
             left = grammar.addParticleDecl(XSParticleDecl.PARTICLE_ALL, left, right);
 
         XInt minAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MINOCCURS];
@@ -224,15 +229,15 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
         Element child = checkContent(decl,content, true);
 
 
-        int left = XSDHandler.I_EMPTY_DECL;
-        int right = XSDHandler.I_EMPTY_DECL;
+        int left = SchemaGrammar.I_EMPTY_DECL;
+        int right = SchemaGrammar.I_EMPTY_DECL;
         boolean hadContent = false;
         String childName = null;
         int particleIndex;
         boolean seeParticle;
         for (;child != null;child = DOMUtil.getNextSiblingElement(child)) {
 
-            particleIndex = XSDHandler.I_EMPTY_DECL;
+            particleIndex = SchemaGrammar.I_EMPTY_DECL;
             seeParticle = false;
 
             childName = child.getLocalName();
@@ -296,10 +301,10 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
             if (seeParticle) {
                 particleIndex = checkOccurrences( particleIndex, child,  NOT_ALL_CONTEXT, grammar);
             }
-            if (left == XSDHandler.I_EMPTY_DECL) {
+            if (left == SchemaGrammar.I_EMPTY_DECL) {
                 left = particleIndex;
             }
-            else if (right == XSDHandler.I_EMPTY_DECL) {
+            else if (right == SchemaGrammar.I_EMPTY_DECL) {
                 right = particleIndex;
             }
             else {
@@ -313,7 +318,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
             }
         }
 
-        if (right != XSDHandler.I_EMPTY_DECL) //|| fSchemaGrammar.getDeferContentSpecExpansion())
+        if (right != SchemaGrammar.I_EMPTY_DECL) //|| fSchemaGrammar.getDeferContentSpecExpansion())
             if (choice) {
                 left = grammar.addParticleDecl(XSParticleDecl.PARTICLE_CHOICE, left, right);
             }
@@ -398,7 +403,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
 
         // If minOccurs=maxOccurs=0, no component is specified
         if (min == 0 && max== 0) {
-            return XSDHandler.I_EMPTY_DECL;
+            return SchemaGrammar.I_EMPTY_DECL;
         }
 
         // For the elements referenced in an <all>, minOccurs attribute
@@ -456,7 +461,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
     // Determines whether a content spec tree represents an "all" content model
     protected boolean hasAllContent(int particleIndex, SchemaGrammar grammar) {
         // If the content is not empty, is the top node ALL?
-        if (particleIndex != XSDHandler.I_EMPTY_DECL) {
+        if (particleIndex != SchemaGrammar.I_EMPTY_DECL) {
 
             fParticle = grammar.getParticleDecl(particleIndex, fParticle);
 

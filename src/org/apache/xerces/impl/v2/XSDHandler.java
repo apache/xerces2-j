@@ -113,19 +113,6 @@ class XSDHandler {
     public final static int NOTATION_TYPE = 32;
     public final static int TYPEDECL_TYPE = 64;
 
-    // empty declaration. cases to return this value:
-    // - from a traverse method, when an declaration can't be created
-    //   (but the reason/error has already be reported)
-    // - from XSDHandler.getGlobalDecl(), when the traverse method it calls
-    //   returns I_EMPTY_DECL
-    // - from XSDHandler.getGlobalDecl(), when it sees a circular reference,
-    //   and reported an error for that
-    public final static short I_EMPTY_DECL = -1;
-    // component not found. cases to return this value
-    // - from XSDHandler.getGlobalDecl(), when it can't find a declaration
-    //   for the required type and name
-    public final static short I_NOT_FOUND = -2;
-
     // this string gets appended to redefined names; it's purpose is to be
     // as unlikely as possible to cause collisions.
     public final static String REDEF_IDENTIFIER = "_fn3dktizrknc9pi";
@@ -621,19 +608,19 @@ class XSDHandler {
                 break;
             default:
                 // this would indicate some sort of internal error...
-                return I_NOT_FOUND;
+                return SchemaGrammar.I_NOT_FOUND;
             }
             if (decl == null)
-                return I_NOT_FOUND;
+                return SchemaGrammar.I_NOT_FOUND;
             schemaWithDecl = findXSDocumentForDecl(currSchema, decl);
             if(schemaWithDecl == null) {
                 // cannot get to this schema from the one containing the requesting decl
-                return I_NOT_FOUND;
+                return SchemaGrammar.I_NOT_FOUND;
             }
             sGrammar = fGrammarResolver.getGrammar(schemaWithDecl.fTargetNamespace);
         }
 
-        int retIndex = I_EMPTY_DECL;
+        int retIndex = SchemaGrammar.I_EMPTY_DECL;
                 
         switch (declType) {
         case ATTRIBUTE_TYPE :
@@ -649,7 +636,7 @@ class XSDHandler {
             retIndex = sGrammar.getGroupIndex(declToTraverse.localpart);
             break;
         case IDENTITYCONSTRAINT_TYPE :
-            retIndex = I_EMPTY_DECL;
+            retIndex = SchemaGrammar.I_EMPTY_DECL;
             break;
         case NOTATION_TYPE :
             retIndex = sGrammar.getNotationIndex(declToTraverse.localpart);
@@ -659,13 +646,13 @@ class XSDHandler {
             break;
         }
 
-        if (retIndex != I_EMPTY_DECL)
+        if (retIndex != SchemaGrammar.I_EMPTY_DECL)
             return retIndex;
         
         if (decl != null) {
             if (DOMUtil.isHidden(decl)) {
                 //REVISIT: report an error: circular reference
-                return I_EMPTY_DECL;
+                return SchemaGrammar.I_EMPTY_DECL;
             }
             
             DOMUtil.setHidden(decl);
@@ -684,7 +671,7 @@ class XSDHandler {
             case GROUP_TYPE :
                 retIndex = fGroupTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
             case IDENTITYCONSTRAINT_TYPE :
-                retIndex = I_EMPTY_DECL;
+                retIndex = SchemaGrammar.I_EMPTY_DECL;
             case NOTATION_TYPE :
                 retIndex = fNotationTraverser.traverse(decl, schemaWithDecl, sGrammar);
             case TYPEDECL_TYPE :

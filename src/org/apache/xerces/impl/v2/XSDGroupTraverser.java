@@ -99,7 +99,7 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
         XInt  l_nMinAttr = (XInt)  attrValues[XSAttributeChecker.ATTIDX_MINOCCURS];
         XInt  l_nMaxAttr = (XInt)  attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];
 
-        int index = XSDHandler.I_EMPTY_DECL;
+        int index = SchemaGrammar.I_EMPTY_DECL;
         
         // ref should be here.
         if (refAttr == null) {
@@ -121,14 +121,14 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
         // either circular definition (detected by schema handler) or non existing 
         // group decl
         //
-        if (index == XSDHandler.I_NOT_FOUND) {
+        if (index == SchemaGrammar.I_NOT_FOUND) {
             reportGenericSchemaError("Reference made to non-existent group element");
-            index = XSDHandler.I_EMPTY_DECL;
-        } else if (index == XSDHandler.I_EMPTY_DECL) {
+            index = SchemaGrammar.I_EMPTY_DECL;
+        } else if (index == SchemaGrammar.I_EMPTY_DECL) {
         }
         // empty particle
         else if (minOccurs == 0 && maxOccurs == 0) {
-            index = XSDHandler.I_EMPTY_DECL;
+            index = SchemaGrammar.I_EMPTY_DECL;
         }
         else if (!( minOccurs == 1 && maxOccurs == 1)) {
             // if minOccurs==maxOccurs==1 we don't need to create new particle
@@ -161,13 +161,13 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
             reportGenericSchemaError("Global group declaration must have a name.");
         }
 
-        int index = XSDHandler.I_EMPTY_DECL;
+        int index = SchemaGrammar.I_EMPTY_DECL;
 
         // must have at least one child
         Element l_elmChild = DOMUtil.getFirstChildElement(elmNode);
         if (l_elmChild == null) {
             reportGenericSchemaError("Global group declaration must have a child.");
-            index = XSDHandler.I_EMPTY_DECL;
+            index = SchemaGrammar.I_EMPTY_DECL;
         }
         else {
 
@@ -179,7 +179,7 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
 
             if (l_elmChild == null) {
                 reportGenericSchemaError("Global group element must have a child <all>, <choice> or <sequence>.");
-                index = XSDHandler.I_EMPTY_DECL;
+                index = SchemaGrammar.I_EMPTY_DECL;
             }
             else if (childName.equals(SchemaSymbols.ELT_ALL)) {
                 index = traverseAll(l_elmChild, schemaDoc, grammar);

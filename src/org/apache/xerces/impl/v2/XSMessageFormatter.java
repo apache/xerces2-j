@@ -69,6 +69,7 @@ import org.apache.xerces.util.MessageFormatter;
  * provides localizable error messages for the W3C XML Schema Language
  * 
  * @author Elena Litani, IBM
+ * @version $Id$
  */
 public class XSMessageFormatter implements MessageFormatter {
     /**

@@ -75,7 +75,24 @@ import java.util.Hashtable;
  */
 
 public class SchemaGrammar {
-    
+
+    //
+    // contants
+    //
+
+    // empty declaration. cases to return this value:
+    // - from a traverse method, when an declaration can't be created
+    //   (but the reason/error has already be reported)
+    // - from XSDHandler.getGlobalDecl(), when the traverse method it calls
+    //   returns I_EMPTY_DECL
+    // - from XSDHandler.getGlobalDecl(), when it sees a circular reference,
+    //   and reported an error for that
+    public final static short I_EMPTY_DECL = -1;
+    // component not found. cases to return this value
+    // - from XSDHandler.getGlobalDecl(), when it can't find a declaration
+    //   for the required type and name
+    public final static short I_NOT_FOUND = -2;
+
     //
     // public fields
     //

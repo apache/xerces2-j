@@ -86,6 +86,8 @@ import java.util.Hashtable;
  *   {any attributes with non-schema namespace . . .}>
  *   Content: (annotation?, ((simpleType | complexType)?, (unique | key | keyref)*))
  * </element>
+ * 
+ * @author Sandy Gao, IBM
  *
  * @version $Id$
  */
@@ -194,12 +196,12 @@ class XSDElementTraverser extends XSDAbstractTraverser{
         XInt minAtt = (XInt) attrValues[XSAttributeChecker.ATTIDX_MINOCCURS];
         XInt maxAtt = (XInt) attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];
 
-        int elemIdx = XSDHandler.I_EMPTY_DECL;
+        int elemIdx = SchemaGrammar.I_EMPTY_DECL;
         if (refAtt != null) {
             elemIdx = fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.ELEMENT_TYPE, refAtt);
-            if (elemIdx == XSDHandler.I_NOT_FOUND) {
+            if (elemIdx == SchemaGrammar.I_NOT_FOUND) {
                 reportGenericSchemaError("element not found: "+refAtt.uri+","+refAtt.localpart);
-                elemIdx = XSDHandler.I_EMPTY_DECL;
+                elemIdx = SchemaGrammar.I_EMPTY_DECL;
             }
 
             Element child = DOMUtil.getFirstChildElement(elmDecl);
@@ -214,14 +216,18 @@ class XSDElementTraverser extends XSDAbstractTraverser{
             
         } else {
             elemIdx = traverseNamedElement(elmDecl, attrValues, schemaDoc, grammar, false);
+            fTempElementDecl = fSchemaHandler.getElementDecl(schemaDoc.fTargetNamespace, elemIdx, fTempElementDecl);
         }
 
-        fTempParticleDecl.clear();
-        fTempParticleDecl.type = XSParticleDecl.PARTICLE_ELEMENT;
-        fTempParticleDecl.uri = refAtt == null ? schemaDoc.fTargetNamespace : refAtt.uri;
-        fTempParticleDecl.value = elemIdx;
-        fTempParticleDecl.minOccurs = minAtt.intValue();
-        fTempParticleDecl.maxOccurs = maxAtt.intValue();
+        if (elemIdx != SchemaGrammar.I_EMPTY_DECL) {
+            fTempParticleDecl.clear();
+            fTempParticleDecl.type = XSParticleDecl.PARTICLE_ELEMENT;
+            fTempParticleDecl.uri = refAtt == null ? schemaDoc.fTargetNamespace : refAtt.uri;
+            fTempParticleDecl.value = elemIdx;
+            fTempParticleDecl.otherUri = refAtt == null ? fTempElementDecl.fName : refAtt.localpart;
+            fTempParticleDecl.minOccurs = minAtt.intValue();
+            fTempParticleDecl.maxOccurs = maxAtt.intValue();
+        }
         
         fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
     }
@@ -307,12 +313,12 @@ class XSDElementTraverser extends XSDAbstractTraverser{
 
         // get 'substitutionGroup affiliation'
         String subGroupNS = null;
-        int subGroupIndex = XSDHandler.I_EMPTY_DECL;
+        int subGroupIndex = SchemaGrammar.I_EMPTY_DECL;
         if (subGroupAtt != null) {
             subGroupIndex = fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.ELEMENT_TYPE, subGroupAtt);
-            if (subGroupIndex == XSDHandler.I_NOT_FOUND) {
+            if (subGroupIndex == SchemaGrammar.I_NOT_FOUND) {
                 reportGenericSchemaError("substitutionGroup element not found: "+subGroupAtt.uri+","+subGroupAtt.localpart+" for element '"+nameAtt+"'");
-                subGroupIndex = XSDHandler.I_EMPTY_DECL;
+                subGroupIndex = SchemaGrammar.I_EMPTY_DECL;
             } else {
                 subGroupNS = subGroupAtt.uri;
             }
@@ -327,7 +333,7 @@ class XSDElementTraverser extends XSDAbstractTraverser{
 
         // get 'type definition'
         String typeNS = null;
-        int elementType = XSDHandler.I_EMPTY_DECL;
+        int elementType = SchemaGrammar.I_EMPTY_DECL;
         boolean haveAnonType = false;
 
         // Handle Anonymous type if there is one
@@ -336,14 +342,14 @@ class XSDElementTraverser extends XSDAbstractTraverser{
 
             if (childName.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
                 elementType = fSchemaHandler.fComplexTypeTraverser.traverseLocal(child, schemaDoc, grammar);
-                if (elementType != XSDHandler.I_EMPTY_DECL)
+                if (elementType != SchemaGrammar.I_EMPTY_DECL)
                     typeNS = schemaDoc.fTargetNamespace;
                 haveAnonType = true;
             	child = DOMUtil.getNextSiblingElement(child);
             }
             else if (childName.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
                 elementType = fSchemaHandler.fSimpleTypeTraverser.traverseLocal(child, schemaDoc, grammar);
-                if (elementType != XSDHandler.I_EMPTY_DECL)
+                if (elementType != SchemaGrammar.I_EMPTY_DECL)
                     typeNS = schemaDoc.fTargetNamespace;
                 haveAnonType = true;
             	child = DOMUtil.getNextSiblingElement(child);
@@ -351,25 +357,25 @@ class XSDElementTraverser extends XSDAbstractTraverser{
         }
 
         // Handler type attribute
-        if (elementType == XSDHandler.I_EMPTY_DECL && typeAtt != null) {
+        if (elementType == SchemaGrammar.I_EMPTY_DECL && typeAtt != null) {
             elementType = fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.TYPEDECL_TYPE, typeAtt);
-            if (elementType == XSDHandler.I_NOT_FOUND) {
+            if (elementType == SchemaGrammar.I_NOT_FOUND) {
                 reportGenericSchemaError("type not found: '"+typeAtt.uri+","+typeAtt.localpart+"' for element '"+nameAtt+"'");
-                elementType = XSDHandler.I_EMPTY_DECL;
+                elementType = SchemaGrammar.I_EMPTY_DECL;
             } else {
                 typeNS = typeAtt.uri;
             }
         }
         
         // Get it from the substitutionGroup declaration
-        if (elementType == XSDHandler.I_EMPTY_DECL && subGroupIndex != XSDHandler.I_EMPTY_DECL) {
+        if (elementType == SchemaGrammar.I_EMPTY_DECL && subGroupIndex != SchemaGrammar.I_EMPTY_DECL) {
             fTempElementDecl = fSchemaHandler.getElementDecl(subGroupNS, subGroupIndex, fTempElementDecl);
             elementType = fTempElementDecl.fTypeIdx;
-            if (elementType != XSDHandler.I_EMPTY_DECL)
+            if (elementType != SchemaGrammar.I_EMPTY_DECL)
                 typeNS = fTempElementDecl.fTypeNS;
         }
 
-        if (elementType == XSDHandler.I_EMPTY_DECL) {
+        if (elementType == SchemaGrammar.I_EMPTY_DECL) {
             elementType = fSchemaHandler.getGlobalDecl(schemaDoc, fSchemaHandler.TYPEDECL_TYPE, ANY_TYPE);
             typeNS = SchemaSymbols.URI_SCHEMAFORSCHEMA;
         }
@@ -477,7 +483,7 @@ class XSDElementTraverser extends XSDAbstractTraverser{
         }
 
         // 3 If there is an {substitution group affiliation}, the {type definition} of the element declaration must be validly derived from the {type definition} of the {substitution group affiliation}, given the value of the {substitution group exclusions} of the {substitution group affiliation}, as defined in Type Derivation OK (Complex) (§3.4.6) (if the {type definition} is complex) or as defined in Type Derivation OK (Simple) (§3.14.6) (if the {type definition} is simple). 
-        if (subGroupIndex != XSDHandler.I_EMPTY_DECL) {
+        if (subGroupIndex != SchemaGrammar.I_EMPTY_DECL) {
            if (!fSubGroupHandler.checkSubstitutionGroupOK(typeInfo, subGroupNS, subGroupIndex)) {
                 reportGenericSchemaError ("e-props-correct.3: the {type definition} of element '"+nameAtt+"' must be validly derived from the {type definition} of the element '"+subGroupAtt.uri+","+subGroupAtt.localpart+"'");
            }
@@ -494,7 +500,7 @@ class XSDElementTraverser extends XSDAbstractTraverser{
 
         // Step 6: add substitutionGroup information to the handler
 
-        if (subGroupIndex != XSDHandler.I_EMPTY_DECL) {
+        if (subGroupIndex != SchemaGrammar.I_EMPTY_DECL) {
             fSubGroupHandler.addSubstitutionGroup(schemaDoc.fTargetNamespace, elementIndex,
                                                   subGroupNS, subGroupIndex);
         }

@@ -64,6 +64,8 @@ package org.apache.xerces.impl.v2;
  * not required to catch XMLSchema exceptions but may explicitly catch
  * them, if so desired.
  * XMLSchema exceptions should be caught by XSDHandler.
+ * 
+ * @author Elena Litani, IBM
  * @version $Id$
  */
 public class XMLSchemaException extends RuntimeException {

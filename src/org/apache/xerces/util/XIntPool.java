@@ -58,9 +58,9 @@
 package org.apache.xerces.util;
 
 /**
+ * @author Henry Zongaro, IBM
  * @version $Id$
  */
-
 public final class XIntPool {
     private static final short POOL_SIZE = 10;
     private static final XInt[] fXIntPool = new XInt[POOL_SIZE];

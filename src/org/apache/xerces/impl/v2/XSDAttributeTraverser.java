@@ -82,7 +82,9 @@ import java.util.Hashtable;
  *   {any attributes with non-schema namespace . . .}>
  *   Content: (annotation?, (simpleType?))
  * </attribute>
- *
+ * 
+ * @author Sandy Gao, IBM
+ * 
  * @version $Id$
  */
 class  XSDAttributeTraverser extends XSDAbstractTraverser {
@@ -114,12 +116,12 @@ class  XSDAttributeTraverser extends XSDAbstractTraverser {
         XInt   useAtt     = (XInt)   attrValues[XSAttributeChecker.ATTIDX_USE];
 
         // get 'attribute declaration'
-        int attrIdx = XSDHandler.I_EMPTY_DECL;
+        int attrIdx = SchemaGrammar.I_EMPTY_DECL;
         if (refAtt != null) {
             attrIdx = fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.ATTRIBUTE_TYPE, refAtt);
-            if (attrIdx == XSDHandler.I_NOT_FOUND) {
+            if (attrIdx == SchemaGrammar.I_NOT_FOUND) {
                 reportGenericSchemaError("attribute not found: "+refAtt.uri+","+refAtt.localpart);
-                attrIdx = XSDHandler.I_EMPTY_DECL;
+                attrIdx = SchemaGrammar.I_EMPTY_DECL;
             }
 
             Element child = DOMUtil.getFirstChildElement(attrDecl);
@@ -185,7 +187,7 @@ class  XSDAttributeTraverser extends XSDAbstractTraverser {
         // register
         // return
         
-        return XSDHandler.I_EMPTY_DECL;
+        return SchemaGrammar.I_EMPTY_DECL;
     }
 
     protected int traverseGlobal(Element attrDecl,
@@ -258,7 +260,7 @@ class  XSDAttributeTraverser extends XSDAbstractTraverser {
 
         // get 'type definition'
         String typeNS = null;
-        int attrType = XSDHandler.I_EMPTY_DECL;
+        int attrType = SchemaGrammar.I_EMPTY_DECL;
         boolean haveAnonType = false;
 
         // Handle Anonymous type if there is one
@@ -267,7 +269,7 @@ class  XSDAttributeTraverser extends XSDAbstractTraverser {
 
             if (childName.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
                 attrType = fSchemaHandler.fSimpleTypeTraverser.traverseLocal(child, schemaDoc, grammar);
-                if (attrType != XSDHandler.I_EMPTY_DECL)
+                if (attrType != SchemaGrammar.I_EMPTY_DECL)
                     typeNS = schemaDoc.fTargetNamespace;
                 haveAnonType = true;
             	child = DOMUtil.getNextSiblingElement(child);
@@ -275,17 +277,17 @@ class  XSDAttributeTraverser extends XSDAbstractTraverser {
         }
 
         // Handler type attribute
-        if (attrType == XSDHandler.I_EMPTY_DECL && typeAtt != null) {
+        if (attrType == SchemaGrammar.I_EMPTY_DECL && typeAtt != null) {
             attrType = fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.TYPEDECL_TYPE, typeAtt);
-            if (attrType != XSDHandler.I_NOT_FOUND) {
+            if (attrType != SchemaGrammar.I_NOT_FOUND) {
                 reportGenericSchemaError("type not found: "+typeAtt.uri+","+typeAtt.localpart+" for element '"+nameAtt+"'");
-                attrType = XSDHandler.I_EMPTY_DECL;
+                attrType = SchemaGrammar.I_EMPTY_DECL;
             } else {
                 typeNS = typeAtt.uri;
             }
         }
         
-        if (attrType == XSDHandler.I_EMPTY_DECL) {
+        if (attrType == SchemaGrammar.I_EMPTY_DECL) {
             attrType = fSchemaHandler.getGlobalDecl(schemaDoc, fSchemaHandler.TYPEDECL_TYPE, ANY_SIMPLE_TYPE);
             typeNS = SchemaSymbols.URI_SCHEMAFORSCHEMA;
         }

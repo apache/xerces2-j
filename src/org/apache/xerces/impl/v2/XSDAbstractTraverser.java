@@ -69,6 +69,8 @@ import org.apache.xerces.util.DOMUtil;
  * Class <code>XSDAbstractTraverser</code> serves as the base class for all
  * other <code>XSD???Traverser</code>s. It holds the common data and provide
  * a unified way to initialize these data.
+ * 
+ * @author Elena Litani, IBM
  *
  * @version $Id$
  */
@@ -128,7 +130,7 @@ abstract class XSDAbstractTraverser {
         }
 
         // REVISIT: an annotation index should be returned when we support PSVI
-        return XSDHandler.I_EMPTY_DECL;
+        return SchemaGrammar.I_EMPTY_DECL;
     }
 
     // REVISIT: is it how we want to handle error reporting?

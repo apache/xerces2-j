@@ -58,6 +58,7 @@
 package org.apache.xerces.util;
 
 /**
+ * @author Henry Zongaro, IBM
  * @version $Id$
  */
 

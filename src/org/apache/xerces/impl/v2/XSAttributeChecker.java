@@ -88,6 +88,8 @@ import org.apache.xerces.util.NamespaceSupport;
  * - Should have the datatype validators return compiled value
  * - Should return compiled form for wildcard namespace
  *
+ * @author Sandy Gao, IBM
+ * 
  * @version $Id$
  */
 

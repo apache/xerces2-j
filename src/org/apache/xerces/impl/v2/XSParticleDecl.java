@@ -60,6 +60,7 @@ package org.apache.xerces.impl.v2;
 /**
  * Store schema particle declaration.
  * 
+ * @author Sandy Gao, IBM
  * @version $Id$
  */
 public class XSParticleDecl {
@@ -134,6 +135,7 @@ public class XSParticleDecl {
 
     /**
      * The namespace of the "right hand" value object.
+     * When the type is element, then the local name of the element
      */
     public String otherUri;
 

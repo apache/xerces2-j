@@ -61,7 +61,8 @@ import org.apache.xerces.impl.v2.datatypes.DatatypeValidator;
 import org.apache.xerces.xni.QName;
 
 /**
- * 
+ * @author Elena Litani, IBM
+ * @author Sandy Gao, IBM
  * @version $Id$
  */
 public class XSComplexTypeDecl implements XSType {
@@ -73,19 +74,19 @@ public class XSComplexTypeDecl implements XSType {
 
     public String fName;
     public String fTargetNamespace;
-    public int fBaseIdx = XSDHandler.I_EMPTY_DECL;
+    public int fBaseIdx = SchemaGrammar.I_EMPTY_DECL;
     public String fBaseUri;
     public short fDerivedBy = 0;
     public short fFinalSet = 0;
     public short fMiscFlags = 0;
-    public int fAttUseIndex = XSDHandler.I_EMPTY_DECL;
-    public int fAttWildcardIndex = XSDHandler.I_EMPTY_DECL;
+    public int fAttUseIndex = SchemaGrammar.I_EMPTY_DECL;
+    public int fAttWildcardIndex = SchemaGrammar.I_EMPTY_DECL;
     public short fContentType = 0;
     public DatatypeValidator fDatatypeValidator = null;
-    public int fParticleIndex = XSDHandler.I_EMPTY_DECL;
+    public int fParticleIndex = SchemaGrammar.I_EMPTY_DECL;
     public short fBlockSet = 0;
 
-    public int fTemplateElmIndex = XSDHandler.I_EMPTY_DECL;
+    public int fTemplateElmIndex = SchemaGrammar.I_EMPTY_DECL;
 
     public short getXSType () {
         return COMPLEX_TYPE;

@@ -59,6 +59,8 @@ package org.apache.xerces.impl.v2;
 
 /**
  * The base type interface for XML Schema types.
+ * 
+ * @author Elena Litani, IBM
  * @version $Id$
  */
 public interface XSType {

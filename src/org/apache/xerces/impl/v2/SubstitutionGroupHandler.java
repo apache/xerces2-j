@@ -60,6 +60,8 @@ package org.apache.xerces.impl.v2;
 /**
  * To store and validate information about substitutionGroup
  * 
+ * @author Sandy Gao, IBM
+ * 
  * @version $Id$
  */
 class SubstitutionGroupHandler {

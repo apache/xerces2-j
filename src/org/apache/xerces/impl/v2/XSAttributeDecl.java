@@ -64,6 +64,10 @@ import org.apache.xerces.xni.QName;
 /**
  * The XML representation for an attribute declaration schema component 
  * is an <attribute> attribute information item
+ * 
+ * @author Elena Litani, IBM
+ * @author Sandy Gao, IBM
+ * 
  * @version $Id$
  */
 public class XSAttributeDecl {

@@ -64,6 +64,8 @@ import org.apache.xerces.xni.QName;
  * The XML representation for an element declaration schema component is
  * an <element> element information item.
  * 
+ * @author Elena Litani, IBM
+ * @author Sandy Gao, IBM
  * @version $Id$
  */
 public class XSElementDecl {
@@ -120,7 +122,7 @@ public class XSElementDecl {
 
     public void clear() {
         fName = null;
-        fTypeIdx = XSDHandler.I_EMPTY_DECL;
+        fTypeIdx = SchemaGrammar.I_EMPTY_DECL;
         fUnique.removeAllElements();
         fKey.removeAllElements();
         fKeyRef.removeAllElements();

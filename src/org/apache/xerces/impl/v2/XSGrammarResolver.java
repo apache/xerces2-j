@@ -60,6 +60,8 @@ package org.apache.xerces.impl.v2;
 import java.util.Hashtable;
 
 /**
+ * A class used to hold the internal schema grammar set for the current instance
+ * @author Sandy Gao, IBM
  * @version $Id$
  */
 class XSGrammarResolver {
