@@ -58,6 +58,7 @@
 package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.dv.XSAtomicSimpleType;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.xs.identity.*;
@@ -1983,7 +1984,8 @@ public class XMLSchemaValidator
                 // PSVI: attribute memberType
                 attrPSVI.fMemberType = fValidatedInfo.memberType;
                 // PSVI: element notation
-                if (attDV.isNOTATIONType()){
+                if (attDV.getVariety() == XSSimpleType.VARIETY_ATOMIC &&
+                    ((XSAtomicSimpleType)attDV).getPrimitiveKind() == XSAtomicSimpleType.PRIMITIVE_NOTATION){
                    QName qName = (QName)actualValue;
                    SchemaGrammar grammar = fGrammarResolver.getGrammar(qName.uri);
                    if (grammar != null)
