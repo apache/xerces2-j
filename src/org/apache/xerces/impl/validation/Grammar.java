@@ -756,7 +756,6 @@ public class Grammar {
     public void printElements(  ) {
         int elementDeclIndex = 0;
         XMLElementDecl elementDecl = new XMLElementDecl();
-        elementDecl.simpleType     = new XMLSimpleType();
         while (getElementDecl(elementDeclIndex++, elementDecl)) {
 
             System.out.println("element decl: "+elementDecl.name+
