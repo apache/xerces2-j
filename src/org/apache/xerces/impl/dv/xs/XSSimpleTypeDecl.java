@@ -66,8 +66,6 @@ import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.dv.ValidationContext;
 import org.apache.xerces.impl.xs.XSTypeDecl;
 import org.apache.xerces.impl.xs.psvi.*;
-import org.apache.xerces.impl.xs.SchemaGrammar;
-import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.XMLChar;
@@ -153,6 +151,9 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         "preserve", "collapse", "replace",
     };
 
+    static final String URI_SCHEMAFORSCHEMA = "http://www.w3.org/2001/XMLSchema";
+    static final String ANY_TYPE = "anyType";
+
     static final ValidationContext fEmptyContext = new ValidationContext() {
         public boolean needFacetChecking() {
             return true;
@@ -234,7 +235,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         fIsImmutable = isImmutable;
         fBase = base;
         fTypeName = name;
-        fTargetNamespace = SchemaDVFactoryImpl.URI_SCHEMAFORSCHEMA;
+        fTargetNamespace = URI_SCHEMAFORSCHEMA;
         // To simplify the code for anySimpleType, we treat it as an atomic type
         fVariety = VARIETY_ATOMIC;
         fValidationDV = validateDV;
@@ -1907,12 +1908,13 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         if (ancestor == null)
             return false;
         // ancestor is anyType, return true
-        if (ancestor == SchemaGrammar.fAnyType)
+        // anyType is the only type whose base type is itself
+        if (ancestor.getBaseType() == ancestor)
             return true;
         // recursively get base, and compare it with ancestor
         XSTypeDefinition type = this;
         while (type != ancestor &&                      // compare with ancestor
-               type != SchemaGrammar.fAnySimpleType) {  // reached anySimpleType
+               type != fAnySimpleType) {  // reached anySimpleType
             type = type.getBaseType();
         }
 
@@ -1924,9 +1926,8 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         if (ancestorName == null)
             return false;
         // ancestor is anyType, return true
-        if (ancestorNS != null &&
-            ancestorNS.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) &&
-            ancestorName.equals(SchemaSymbols.ATTVAL_ANYTYPE)) {
+        if (URI_SCHEMAFORSCHEMA.equals(ancestorNS) &&
+            ANY_TYPE.equals(ancestorName)) {
             return true;
         }
 
@@ -1935,11 +1936,11 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         while (!(ancestorName.equals(type.getName()) &&
                  ((ancestorNS == null && type.getNamespace() == null) ||
                   (ancestorNS != null && ancestorNS.equals(type.getNamespace())))) &&   // compare with ancestor
-               type != SchemaGrammar.fAnySimpleType) {  // reached anySimpleType
+               type != fAnySimpleType) {  // reached anySimpleType
             type = (XSTypeDecl)type.getBaseType();
         }
 
-        return type != SchemaGrammar.fAnySimpleType;
+        return type != fAnySimpleType;
     }
 
     static final XSSimpleTypeDecl fAnySimpleType = new XSSimpleTypeDecl(null, "anySimpleType", DV_ANYSIMPLETYPE, ORDERED_FALSE, false, true, false, true);
