@@ -55,13 +55,13 @@
  * <http://www.apache.org/>.
  */
 
-package dom.DOMTest;
+package dom;
 
 import org.w3c.dom.*;
 import java.lang.reflect.*;
 import java.io.StringWriter;
 import java.io.PrintWriter;
-import dom.DOMMemTest.Assertion;
+import dom.util.Assertion;
 
 /**
  * This class tests methods for XML DOM implementation
@@ -116,7 +116,7 @@ public Document createDocument() {
  * @author Philip W. Davis
  */
 public DocumentType createDocumentType(Document doc, String name) {
-	return ((org.apache.xerces.dom.DocumentImpl) doc).createDocumentType(name, null, null, null);	//Replace with a DocumentType creator
+	return ((org.apache.xerces.dom.DocumentImpl) doc).createDocumentType(name, null, null);	//Replace with a DocumentType creator
 }
 /**
  * version 3.0 01/25/99

@@ -54,7 +54,7 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
-package dom.DOMRangeTest;
+package dom.range;
 import org.apache.xerces.parsers.*;
 import org.apache.xerces.dom.*;
 import org.apache.xerces.dom.DocumentImpl;
@@ -73,7 +73,7 @@ import org.xml.sax.InputSource;
  *  <p>These do not by any means completely test the API and 
  *  corner cases. 
  */
-public class RangeTest {
+public class Test {
     
     static final boolean DEBUG = false;
     
@@ -158,13 +158,13 @@ public class RangeTest {
             printUsage();
             System.exit(1);
         }
-        new RangeTest(args[0]);
+        new Test(args[0]);
     }
     
    /** Prints the usage. */
    private static void printUsage() {
 
-      System.err.println("usage: java dom.DOMRangeTest.RangeTest (options) ...");
+      System.err.println("usage: java dom.range.Test (options) ...");
       System.err.println();
       System.err.println("options:");
       System.err.println("  all             all tests");
@@ -179,7 +179,7 @@ public class RangeTest {
    } // printUsage()
     
     
-    public RangeTest(String arg) {
+    public Test(String arg) {
         if (arg.equals("all")) {
             boolean all = false;
             all = performTest("delete");

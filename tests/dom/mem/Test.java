@@ -65,15 +65,15 @@
 //     This is NOT a complete test of DOM functionality.
 //
 
-package dom.DOMMemTest;
+package dom.mem;
 import org.w3c.dom.*;
 import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.dom.DOMImplementationImpl;
 import org.apache.xerces.dom.NotationImpl;
 import java.lang.reflect.*;
+import dom.util.Assertion;
 
-
-public class DOMMemTest {
+public class Test {
 
     /**
      * version 3.0 01/25/99

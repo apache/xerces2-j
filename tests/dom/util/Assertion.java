@@ -61,7 +61,7 @@
  */
 
 
-package dom.DOMMemTest;
+package dom.util;
 
 import java.io.StringWriter;
 import java.io.PrintWriter;
