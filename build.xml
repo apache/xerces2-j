@@ -994,8 +994,11 @@ Copyright:
             includes="org/apache/xerces/impl/dv/**,
                       org/apache/xerces/impl/msg/XMLSchema**,
                       org/apache/xerces/impl/xpath/regex/**,
+		      org/apache/xerces/impl/xs/util/ShortListImpl.java,
                       org/apache/xerces/impl/xs/XSTypeDecl.java,
+			org/apache/xerces/xs/XSException.java
 			org/apache/xerces/xs/StringList.java
+			org/apache/xerces/xs/ShortList.java
 			org/apache/xerces/xs/XSAnnotation.java
 			org/apache/xerces/xs/XSAttributeDeclaration.java
 			org/apache/xerces/xs/XSAttributeGroupDefinition.java
