@@ -420,10 +420,11 @@ public abstract class AbstractDOMParser
      * 
      * @param version  The XML version, or null if not specified.
      * @param encoding The IANA encoding name of the entity.
+     * @param augs       Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void textDecl(String version, String encoding) throws XNIException {
+    public void textDecl(String version, String encoding, Augmentations augs) throws XNIException {
         if (!fDeferNodeExpansion) {
             // REVISIT: when DOM Level 3 is REC rely on Document.support
             //          instead of specific class
@@ -593,10 +594,12 @@ public abstract class AbstractDOMParser
      * @param encoding   The IANA encoding name of the document, or null if
      *                   not specified.
      * @param standalone The standalone value, or null if not specified.
+     * @param augs       Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void xmlDecl(String version, String encoding, String standalone)
+    public void xmlDecl(String version, String encoding, String standalone, 
+                        Augmentations augs)
         throws XNIException {
         if (!fDeferNodeExpansion) {
             // REVISIT: when DOM Level 3 is REC rely on Document.support
