@@ -1397,7 +1397,8 @@ public final class XMLDTDScanner {
         while (fScannerState == SCANNER_STATE_MARKUP_DECL) {
 
             boolean newParseTextDecl = false;
-            if (!extSubset && fEntityReader.lookingAtChar(']', false)) {
+            if (fEntityReader.lookingAtChar(']', false) &&
+                !getReadingExternalEntity()) {
                 int subsetLength = fEntityReader.currentOffset() - subsetOffset;
                 int internalSubset = fEntityReader.addString(subsetOffset, subsetLength);
                 fDTDGrammar.internalSubset(internalSubset);
