@@ -57,10 +57,11 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.DOMException;
 import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
-import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.util.XMLSymbols;
+import org.apache.xerces.xni.NamespaceContext;
+import org.apache.xerces.xs.XSSimpleTypeDefinition;
+import org.w3c.dom.DOMException;
 
 /**
  * AttrNSImpl inherits from AttrImpl and adds namespace support. 
@@ -350,12 +351,9 @@ public class AttrNSImpl
     public boolean isDerivedFrom(String typeNamespaceArg, 
                                  String typeNameArg, 
                                  int derivationMethod) {
-        
-        //REVISIT: XSSimpleTypeDecl.derivedFrom and 
-        //derivationMethod constants in DOM vs Xerces
         if (type !=null){
-            if (type instanceof XSSimpleTypeDecl){
-                return ((XSSimpleTypeDecl)type).derivedFrom(typeNamespaceArg,typeNameArg,(short)derivationMethod);
+            if (type instanceof XSSimpleTypeDefinition){
+                return ((XSSimpleTypeDefinition)type).derivedFrom(typeNamespaceArg,typeNameArg,(short)derivationMethod);
             }
         }                                	
         return false;
