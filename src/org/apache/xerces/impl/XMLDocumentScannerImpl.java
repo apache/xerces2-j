@@ -146,6 +146,10 @@ public class XMLDocumentScannerImpl
     protected static final String LOAD_EXTERNAL_DTD =
         Constants.XERCES_FEATURE_PREFIX + Constants.LOAD_EXTERNAL_DTD_FEATURE;
 
+    /** Feature identifier: load external DTD. */
+    protected static final String DISALLOW_DOCTYPE_DECL_FEATURE =
+        Constants.XERCES_FEATURE_PREFIX + Constants.DISALLOW_DOCTYPE_DECL_FEATURE;
+
     // property identifiers
 
     /** Property identifier: DTD scanner. */
@@ -161,11 +165,13 @@ public class XMLDocumentScannerImpl
     /** Recognized features. */
     private static final String[] RECOGNIZED_FEATURES = {
         LOAD_EXTERNAL_DTD,
+        DISALLOW_DOCTYPE_DECL_FEATURE,
     };
 
     /** Feature defaults. */
     private static final Boolean[] FEATURE_DEFAULTS = {
         Boolean.TRUE,
+        Boolean.FALSE,
     };
 
     /** Recognized properties. */
@@ -214,6 +220,9 @@ public class XMLDocumentScannerImpl
 
     /** Load external DTD. */
     protected boolean fLoadExternalDTD = true;
+
+    /** Disallow doctype declaration. */
+    protected boolean fDisallowDoctype = false;
 
     // state
 
@@ -306,7 +315,13 @@ public class XMLDocumentScannerImpl
         catch (XMLConfigurationException e) {
             fLoadExternalDTD = true;
         }
-        
+        try {
+            fDisallowDoctype = componentManager.getFeature(DISALLOW_DOCTYPE_DECL_FEATURE);
+        }
+        catch (XMLConfigurationException e) {
+            fDisallowDoctype = false;
+        }
+
         // xerces properties
         fDTDScanner = (XMLDTDScanner)componentManager.getProperty(DTD_SCANNER);
         try {
@@ -366,6 +381,10 @@ public class XMLDocumentScannerImpl
             String feature = featureId.substring(Constants.XERCES_FEATURE_PREFIX.length());
             if (feature.equals(Constants.LOAD_EXTERNAL_DTD_FEATURE)) {
                 fLoadExternalDTD = state;
+                return;
+            }
+            else if (feature.equals(Constants.DISALLOW_DOCTYPE_DECL_FEATURE)) {
+                fDisallowDoctype = state;
                 return;
             }
         }
@@ -765,6 +784,9 @@ public class XMLDocumentScannerImpl
                             break;
                         }
                         case SCANNER_STATE_DOCTYPE: {
+                            if (fDisallowDoctype) {
+                                reportFatalError("DoctypeNotAllowed", null);
+                            }
                             if (fSeenDoctypeDecl) {
                                 reportFatalError("AlreadySeenDoctype", null);
                             }

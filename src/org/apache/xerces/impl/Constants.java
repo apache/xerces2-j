@@ -211,6 +211,9 @@ public final class Constants {
     /** Allow Java encoding names feature ("allow-java-encodings"). */
     public static final String ALLOW_JAVA_ENCODINGS_FEATURE = "allow-java-encodings";
 
+    /** Disallow DOCTYPE declaration feature ("disallow-doctype-decl"). */
+    public static final String DISALLOW_DOCTYPE_DECL_FEATURE = "disallow-doctype-decl";
+
     /** Continue after fatal error feature ("continue-after-fatal-error"). */
     public static final String CONTINUE_AFTER_FATAL_ERROR_FEATURE = "continue-after-fatal-error";
 
