@@ -313,7 +313,7 @@ public final class XMLValidator
    private DatatypeValidator fXsiTypeValidator = null;
 
    private Grammar fGrammar = null;
-   private int fGrammarNameSpaceIndex = -1;
+   private int fGrammarNameSpaceIndex = StringPool.EMPTY_STRING;
    private GrammarResolver fGrammarResolver = null;
 
    // state and stuff
@@ -1458,7 +1458,7 @@ public final class XMLValidator
 
          fGrammarNameSpaceIndex = fGrammarNameSpaceIndexStack[fElementDepth];
          if ( fValidating && fGrammarIsSchemaGrammar )
-             if (fGrammarNameSpaceIndex == -1) {
+             if (fGrammarNameSpaceIndex == StringPool.EMPTY_STRING) {
                  fGrammar = null;
                  fGrammarIsSchemaGrammar = false;
                  fGrammarIsDTDGrammar = false;
@@ -1871,12 +1871,12 @@ public final class XMLValidator
 
       fCurrentScope = TOP_LEVEL_SCOPE;
       fCurrentSchemaURI = -1;
-      fEmptyURI = - 1; 
+      fEmptyURI = StringPool.EMPTY_STRING; 
       fXsiPrefix = - 1;
       fXsiTypeValidator = null;
 
       fGrammar = null;
-      fGrammarNameSpaceIndex = -1;
+      fGrammarNameSpaceIndex = StringPool.EMPTY_STRING;
       //fGrammarResolver = null;
       if (fGrammarResolver != null) {
          fGrammarResolver.clearGrammarResolver(); //This also clears the Datatype registry
