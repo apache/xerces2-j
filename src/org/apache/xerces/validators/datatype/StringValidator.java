@@ -63,6 +63,7 @@ import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Enumeration;
 import org.apache.xerces.validators.schema.SchemaSymbols;
+import org.apache.xerces.utils.regex.RegularExpression;
 
 /**
  *
