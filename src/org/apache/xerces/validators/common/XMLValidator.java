@@ -291,6 +291,7 @@ public final class XMLValidator
 
     private QName fTempQName = new QName();
     private XMLAttributeDecl fTempAttDecl = new XMLAttributeDecl();
+    private XMLAttributeDecl fTempAttributeDecl = new XMLAttributeDecl();
     private XMLElementDecl fTempElementDecl = new XMLElementDecl();
     
     private boolean fGrammarIsDTDGrammar = false;
@@ -1785,9 +1786,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             }
             int attDefIndex = fGrammar.getFirstAttributeDeclIndex(elementIndex);
             while (attDefIndex != -1) {
-                fGrammar.getAttributeDecl(attDefIndex, fTempAttDecl);
-                if (fTempAttDecl.name.localpart == attribute.localpart &&
-                    fTempAttDecl.name.uri == attribute.uri ) {
+                fGrammar.getAttributeDecl(attDefIndex, fTempAttributeDecl);
+                if (fTempAttributeDecl.name.localpart == attribute.localpart &&
+                    fTempAttributeDecl.name.uri == attribute.uri ) {
                     return attDefIndex;
                 }
                 attDefIndex = fGrammar.getNextAttributeDeclIndex(attDefIndex);
@@ -2935,7 +2936,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                         }
                     }
                 }
-
                 try{
                     if ( isAlistAttribute ){
                         fValIDRefs.validate( value, this.fStoreIDRef );
