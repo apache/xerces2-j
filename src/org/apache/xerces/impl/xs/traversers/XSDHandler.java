@@ -77,6 +77,7 @@ import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
+import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLInputSource;
@@ -317,10 +318,7 @@ public class XSDHandler {
         // Note: don't use SchemaConfiguration internally
         //       we will get stack overflaw because
         //       XMLSchemaValidator will be instantiating XSDHandler...
-        fSchemaParser = new DOMParser();
         fSchemaGrammarDescription = new XSDDescription();
-
-        createTraversers();
     } // end constructor
 
     // This method initiates the parse of a schema.  It will likely be
@@ -335,18 +333,16 @@ public class XSDHandler {
 
         fLocationPairs = locationPairs;
 
-        // reset pools
-        fDOMPool.reset();
-        fSchemaParser.setPool(fDOMPool);
-
         // first try to find it in the bucket/pool, return if one is found
         SchemaGrammar grammar = findGrammar(desc);
         if (grammar != null)
             return grammar;
         
-        // before parsing a schema, need to reset all traversers and
-        // clear all registries
-        prepare();
+        // reset pools
+        fDOMPool.reset();
+        if (fSchemaParser != null) {
+            fSchemaParser.setPool(fDOMPool);
+        }
 
         String schemaNamespace = desc.getTargetNamespace();
         // handle empty string URI as null
@@ -354,7 +350,11 @@ public class XSDHandler {
             schemaNamespace = fSymbolTable.addSymbol(schemaNamespace);
         }
         short referType = desc.getContextType();
-        
+
+        // before parsing a schema, need to clear registries associated with
+        // parsing schemas
+        prepareForParse();
+
         // first phase:  construct trees.
         Document schemaRoot = getSchema(schemaNamespace, is,
                                         referType == XSDDescription.CONTEXT_PREPARSE,
@@ -363,6 +363,11 @@ public class XSDHandler {
             // something went wrong right off the hop
             return null;
         }
+
+        // before constructing tress and traversing a schema, need to reset
+        // all traversers and clear all registries
+        prepareForTraverse();
+
         fRoot = constructTrees(schemaRoot, is.getSystemId(), desc);
         if (fRoot == null) {
             return null;
@@ -1322,7 +1327,14 @@ public class XSDHandler {
                     fLastSchemaWasDuplicate = true;
                     return schemaDoc;
                 }
-                
+
+                // If this is the first schema this Handler has
+                // parsed, it has to construct a DOMParser
+                if (fSchemaParser == null) {
+                    fSchemaParser = new DOMParser();
+                    resetSchemaParserErrorHandler();
+                    fSchemaParser.setPool(fDOMPool);
+                }
                 fSchemaParser.reset();
                 fSchemaParser.parse(schemaSource);
                 schemaDoc = fSchemaParser.getDocument();
@@ -1377,9 +1389,17 @@ public class XSDHandler {
         fWildCardTraverser = new XSDWildcardTraverser(this, fAttributeChecker);
     } // createTraversers()
 
-    // before parsing a schema, need to reset all traversers and
+    // before parsing a schema, need to clear registries associated with
+    // parsing schemas
+    void prepareForParse() {
+        fTraversed.clear();
+        fDoc2SystemId.clear();
+        fLastSchemaWasDuplicate = false;
+    }
+
+    // before traversing a schema's parse tree, need to reset all traversers and
     // clear all registries
-    void prepare() {
+    void prepareForTraverse() {
         fUnparsedAttributeRegistry.clear();
         fUnparsedAttributeGroupRegistry.clear();
         fUnparsedElementRegistry.clear();
@@ -1390,15 +1410,12 @@ public class XSDHandler {
 
         fXSDocumentInfoRegistry.clear();
         fDependencyMap.clear();
-        fTraversed.clear();
-        fDoc2SystemId.clear();
         fDoc2XSDocumentMap.clear();
         fRedefine2XSDMap.clear();
         fRedefine2NSSupport.clear();
         fAllTNSs.removeAllElements();
         fImportMap.clear();
         fRoot = null;
-        fLastSchemaWasDuplicate = false;
 
         // clear local element stack
         for (int i = 0; i < fLocalElemStackPos; i++) {
@@ -1415,6 +1432,11 @@ public class XSDHandler {
             fKeyrefNamespaceContext[i] = null;
         }
         fKeyrefStackPos = 0;
+
+        // create traversers if necessary
+        if (fAttributeChecker == null) {
+            createTraversers();
+        }
 
         // reset traversers
         fAttributeChecker.reset(fSymbolTable);
@@ -1449,13 +1471,27 @@ public class XSDHandler {
 
         EMPTY_STRING = fSymbolTable.addSymbol(SchemaSymbols.EMPTY_STRING);
 
+        resetSchemaParserErrorHandler();
+        
+    } // reset(ErrorReporter, EntityResolver, SymbolTable, XMLGrammarPool)
+
+    void resetSchemaParserErrorHandler() {
         try {
-            fSchemaParser.setProperty(ERROR_HANDLER, fErrorReporter.getErrorHandler());
+            if (fSchemaParser != null) {
+                XMLErrorHandler currErrorHandler =
+                                     fErrorReporter.getErrorHandler();
+                // Setting a parser property can be much more expensive
+                // than checking its value.  Don't set the ERROR_HANDLER
+                // property unless it's actually changed.
+                if (currErrorHandler
+                    == fSchemaParser.getProperty(ERROR_HANDLER)) {
+                    fSchemaParser.setProperty(ERROR_HANDLER, currErrorHandler);
+                }
+            }
         }
         catch (Exception e) {
         }
-        
-    } // reset(ErrorReporter, EntityResolver, SymbolTable, XMLGrammarPool)
+    } // resetSchemaParserErrorHandler()
 
     /**
      * Traverse all the deferred local elements. This method should be called
