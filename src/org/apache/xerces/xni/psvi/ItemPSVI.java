@@ -57,12 +57,14 @@
 
 package org.apache.xerces.xni.psvi;
 
-import org.apache.xerces.xni.QName;
+import org.apache.xerces.impl.xs.psvi.*;
+import java.util.Enumeration;
+
 /**
- *
+ * Represent a PSVI item for one element or one attribute information item.
  *
  * @author Elena Litani, IBM
- *
+ * @version $Id$
  */
 
 public interface ItemPSVI {
@@ -71,140 +73,33 @@ public interface ItemPSVI {
     been performed or that a strict assessment of validity could 
     not be performed  
     */
-    public static final short UNKNOWN_VALIDITY               = 0;
+    public static final short VALIDITY_UNKNOWN               = 0;
 
     /** Validity value indicating that validation has been strictly
      assessed and the element in question is invalid according to the 
      rules of schema validation.
     */
-    public static final short INVALID_VALIDITY               = 1;
+    public static final short VALIDITY_INVALID               = 1;
 
     /** Validity value indicating that validation has been strictly 
      assessed and the element in question is valid according to the rules 
      of schema validation.
      */
-    public static final short VALID_VALIDITY                 = 2;
+    public static final short VALIDITY_VALID                 = 2;
 
     /** Validation status indicating that schema validation has been 
      performed and the element in question has specifically been skipped.   
      */
-    public static final short NO_VALIDATION                  = 1;
+    public static final short VALIDATION_NONE                = 0;
 
     /** Validation status indicating that schema validation has been 
     performed on the element in question under the rules of lax validation.
     */
-    public static final short PARTIAL_VALIDATION             = 2;
+    public static final short VALIDATION_PARTIAL             = 1;
 
     /**  Validation status indicating that full schema validation has been 
     performed on the element.  */
-    public static final short FULL_VALIDATION                = 3;
-
-    /**
-     * [member type definition anonymous]
-     * @ see <a href="http://www.w3.org/TR/xmlschema-1/#e-member_type_definition_anonymous">XML Schema Part 1: Structures [member type definition anonymous]</a>
-     * @return true if the {name} of the actual member type definition is absent, 
-     *         otherwise false.
-     */
-    public boolean isMemberTypeAnonymous();
-
-    /**
-     * [member type definition name]
-     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-member_type_definition_name">XML Schema Part 1: Structures [member type definition name]</a>
-     * @return The {name} of the actual member type definition, if it is not absent.
-     *         If it is absent, schema processors may, but need not, provide a
-     *         value unique to the definition.
-     */
-    public String getMemberTypeName();
-
-    /**
-     * [member type definition namespace]
-     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-member_type_definition_namespace">XML Schema Part 1: Structures [member type definition namespace]</a>
-     * @return The {target namespace} of the actual member type definition.
-     */
-    public String getMemberTypeNamespace();
-
-    /**
-     * [schema default]
-     * 
-     * @return The canonical lexical representation of the declaration's {value constraint} value.
-     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-schema_default">XML Schema Part 1: Structures [schema default]</a>
-     */
-    public String getSchemaDefault();
-
-    /**
-     * [schema normalized value] 
-     * 
-     * 
-     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-schema_normalized_value">XML Schema Part 1: Structures [schema normalized value]</a>
-     * @return the normalized value of this item after validation
-     */
-    public String getSchemaNormalizedValue();
-
-    /**
-     * [schema specified] 
-     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-schema_specified">XML Schema Part 1: Structures [schema specified]</a>
-     * @return false - value was specified in schema, true - value comes from the infoset
-     */
-    public boolean isSpecified();
-
-
-    /**
-     * [type definition anonymous]
-     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-type_definition_anonymous">XML Schema Part 1: Structures [type definition anonymous]</a>
-     * @return true if the {name} of the type definition is absent, otherwise false.
-     */
-    public boolean isTypeAnonymous();
-
-    /**
-     * [type definition name]
-     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-type_definition_name">XML Schema Part 1: Structures [type definition name]</a>
-     * @return The {name} of the type definition, if it is not absent.
-     *         If it is absent, schema processors may, but need not,
-     *         provide a value unique to the definition.
-     */
-    public String getTypeName();
-
-    /**
-     * [type definition namespace]
-     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-member_type_definition_namespace">XML Schema Part 1: Structures [type definition namespace]</a>
-     * @return The {target namespace} of the type definition.
-     */
-    public String getTypeNamespace();
-
-    /**
-     * [type definition type] 
-     * 
-     *  @see <a href="http://www.w3.org/TR/xmlschema-1/#a-type_definition_type">XML Schema Part 1: Structures [type definition type]</a>
-     *  @see <a href="http://www.w3.org/TR/xmlschema-1/#e-type_definition_type">XML Schema Part 1: Structures [type definition type]</a>
-     * @return simple or complex, depending on the type definition. 
-     */
-    public short getTypeDefinitionType();
-
-    /**
-     * Determines the extent to which the document has been validated
-     * 
-     * @return return the [validation attempted] property. The possible values are 
-     *         NO_VALIDATION, PARTIAL_VALIDATION and FULL_VALIDATION
-     */
-    public short getValidationAttempted();
-
-    /**
-     * Determine the validity of the node with respect 
-     * to the validation being attempted
-     * 
-     * @return return the [validity] property. Possible values are: 
-     *         UNKNOWN_VALIDITY, INVALID_VALIDITY, VALID_VALIDITY
-     */
-    public short getValidity();
-
-    /**
-     * A list of error codes generated from validation attempts. 
-     * Need to find all the possible subclause reports that need reporting
-     * 
-     * @return Array of error codes
-     */
-    public String[] getErrorCodes();
-
+    public static final short VALIDATION_FULL                = 2;
 
     /**
      * [validation context]
@@ -216,5 +111,71 @@ public interface ItemPSVI {
      * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-validation_context">XML Schema Part 1: Structures [validation context]</a>
      */
     public String getValidationContext();
+
+    /**
+     * Determine the validity of the node with respect 
+     * to the validation being attempted
+     * 
+     * @return return the [validity] property. Possible values are: 
+     *         VALIDITY_UNKNOWN, VALIDITY_INVALID, VALIDITY_VALID
+     */
+    public short getValidity();
+
+    /**
+     * Determines the extent to which the document has been validated
+     * 
+     * @return return the [validation attempted] property. The possible values are 
+     *         VALIDATION_NONE, VALIDATION_PARTIAL and VALIDATION_FULL
+     */
+    public short getValidationAttempted();
+
+    /**
+     * A list of error codes generated from validation attempts. 
+     * Need to find all the possible subclause reports that need reporting
+     * 
+     * @return list of error codes
+     */
+    public Enumeration getErrorCodes();
+    
+    /**
+     * [schema normalized value] 
+     * 
+     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-schema_normalized_value">XML Schema Part 1: Structures [schema normalized value]</a>
+     * @return the normalized value of this item after validation
+     */
+    public String getSchemaNormalizedValue();
+
+    /**
+     * An item isomorphic to the type definition used to validate this element.
+     * 
+     * @return  a type declaration
+     */
+    public XSTypeDefinition getTypeDefinition();
+    
+    /**
+     * If and only if that type definition is a simple type definition
+     * with {variety} union, or a complex type definition whose {content type}
+     * is a simple thype definition with {variety} union, then an item isomorphic
+     * to that member of the union's {member type definitions} which actually
+     * validated the element item's normalized value.
+     * 
+     * @return  a simple type declaration
+     */
+    public XSSimpleTypeDefinition getMemberTypeDefinition();
+    
+    /**
+     * [schema default]
+     * 
+     * @return The canonical lexical representation of the declaration's {value constraint} value.
+     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-schema_default">XML Schema Part 1: Structures [schema default]</a>
+     */
+    public String getSchemaDefault();
+
+    /**
+     * [schema specified] 
+     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-schema_specified">XML Schema Part 1: Structures [schema specified]</a>
+     * @return true - value was specified in schema, false - value comes from the infoset
+     */
+    public boolean getIsSchemaSpecified();
 
 }

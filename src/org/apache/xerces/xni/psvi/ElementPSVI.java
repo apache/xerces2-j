@@ -57,41 +57,29 @@
 
 package org.apache.xerces.xni.psvi;
 
+import org.apache.xerces.impl.xs.psvi.*;
+
+/**
+ * Represent a PSVI item for one element information item.
+ *
+ * @author Elena Litani, IBM
+ * @version $Id$
+ */
 public interface ElementPSVI extends ItemPSVI {
 
     /**
-     * [nil] 
-     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-nil>XML Schema Part 1: Structures [nil]</a>
-     * @return true if clause 3.2 of Element Locally Valid (Element) (3.3.4) above is satisfied, otherwise false 
-     */
-    public boolean isNil();
-
-
-    /**
-     * [notation public] 
-     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-notation_public>XML Schema Part 1: Structures [notation public]</a>
-     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-notation>XML Schema Part 1: Structures [notation]</a>
-     * @return The value of the {public identifier} of that notation declaration. 
-     */
-    public String getNotationPublicId();
-
-
-    /**
-     * [notation system] 
+     * An item isomorphic to the element declaration used to validate
+     * this element.
      * 
-     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-notation_system>XML Schema Part 1: Structures [notation system]</a>
-     * @return The value of the {system identifier} of that notation declaration. 
+     * @return  an element declaration
      */
-    public String getNotationSystemId();
-
+    public XSElementDeclaration getElementDeclaration();
+    
     /**
-     *  
-     * [schema namespace]
-     * 
-     * @return A namespace name or absent.
-     * @see <a href="http://www.w3.org/TR/xmlschema-1/#nsi-schema_namespace>XML Schema Part 1: Structures [schema namespace]</a>
-     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-schema_information>XML Schema Part 1: Structures [schema information]</a>
+     * [notation] 
+     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-notation">XML Schema Part 1: Structures [notation]</a>
+     * @return The notation declaration. 
      */
-    public String getSchemaNamespace();
+    public XSNotationDeclaration getNotation();
 
 }

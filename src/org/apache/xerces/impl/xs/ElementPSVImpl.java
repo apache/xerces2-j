@@ -59,10 +59,12 @@ package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.XSElementDecl;
+import org.apache.xerces.impl.xs.util.EnumerationImpl;
 import org.apache.xerces.impl.xs.XSNotationDecl;
 import org.apache.xerces.xni.psvi.ElementPSVI;
+import org.apache.xerces.impl.xs.psvi.*;
 
-
+import java.util.Enumeration;
 
 /**
  * Element PSV infoset augmentations implementation.
@@ -102,10 +104,10 @@ public class ElementPSVImpl implements ElementPSVI {
     protected XSSimpleType fMemberType = null;
 
     /** validation attempted: none, partial, full */
-    protected short fValidationAttempted = ElementPSVI.NO_VALIDATION;
+    protected short fValidationAttempted = ElementPSVI.VALIDATION_NONE;
 
     /** validity: valid, invalid, unknown */
-    protected short fValidity = ElementPSVI.UNKNOWN_VALIDITY;
+    protected short fValidity = ElementPSVI.VALIDITY_UNKNOWN;
 
     /** error codes */
     protected String[] fErrorCodes = null;
@@ -113,41 +115,9 @@ public class ElementPSVImpl implements ElementPSVI {
     /** validation context: could be QName or XPath expression*/
     protected String fValidationContext = null;
 
-
     //
     // ElementPSVI methods
     //
-
-    /**
-     * [member type definition anonymous]
-     * @ see <a href="http://www.w3.org/TR/xmlschema-1/#e-member_type_definition_anonymous>XML Schema Part 1: Structures [member type definition anonymous]</a>
-     * @return true if the {name} of the actual member type definition is absent,
-     *         otherwise false.
-     */
-    public boolean  isMemberTypeAnonymous() {
-        return (fMemberType !=null)? fMemberType.getIsAnonymous():false;
-    }
-
-
-    /**
-     * [member type definition name]
-     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-member_type_definition_name>XML Schema Part 1: Structures [member type definition name]</a>
-     * @return The {name} of the actual member type definition, if it is not absent.
-     *         If it is absent, schema processors may, but need not, provide a
-     *         value unique to the definition.
-     */
-    public String   getMemberTypeName() {
-        return (fMemberType !=null)? fMemberType.getName():null;
-    }
-
-    /**
-     * [member type definition namespace]
-     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-member_type_definition_namespace>XML Schema Part 1: Structures [member type definition namespace]</a>
-     * @return The {target namespace} of the actual member type definition.
-     */
-    public String   getMemberTypeNamespace() {
-        return (fMemberType !=null)? fMemberType.getNamespace():null;
-    }
 
     /**
      * [schema default]
@@ -155,7 +125,7 @@ public class ElementPSVImpl implements ElementPSVI {
      * @return The canonical lexical representation of the declaration's {value constraint} value.
      * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-schema_default>XML Schema Part 1: Structures [schema default]</a>
      */
-    public String   getSchemaDefault() {
+    public String getSchemaDefault() {
         Object dValue = null;
         if( fDeclaration !=null ) {
             dValue = fDeclaration.fDefault;
@@ -179,49 +149,8 @@ public class ElementPSVImpl implements ElementPSVI {
      * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-schema_specified">XML Schema Part 1: Structures [schema specified]</a>
      * @return false value was specified in schema, true value comes from the infoset
      */
-    public boolean isSpecified() {
+    public boolean getIsSchemaSpecified() {
         return fSpecified;
-    }
-
-
-    /**
-     * [type definition anonymous]
-     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-type_definition_anonymous>XML Schema Part 1: Structures [type definition anonymous]</a>
-     * @return true if the {name} of the type definition is absent, otherwise false.
-     */
-    public boolean isTypeAnonymous() {
-        return (fTypeDecl !=null)? fTypeDecl.getIsAnonymous():false;
-    }
-
-    /**
-     * [type definition name]
-     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-type_definition_name>XML Schema Part 1: Structures [type definition name]</a>
-     * @return The {name} of the type definition, if it is not absent.
-     *         If it is absent, schema processors may, but need not,
-     *         provide a value unique to the definition.
-     */
-    public String getTypeName() {
-        return (fTypeDecl !=null)? fTypeDecl.getName():null;
-    }
-
-    /**
-     * [type definition namespace]
-     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-member_type_definition_namespace>XML Schema Part 1: Structures [type definition namespace]</a>
-     * @return The {target namespace} of the type definition.
-     */
-    public String getTypeNamespace() {
-        return (fTypeDecl !=null)? fTypeDecl.getNamespace():null;
-    }
-
-    /**
-     * [type definition type]
-     *
-     *  @see <a href="http://www.w3.org/TR/xmlschema-1/#a-type_definition_type>XML Schema Part 1: Structures [type definition type]</a>
-     *  @see <a href="http://www.w3.org/TR/xmlschema-1/#e-type_definition_type>XML Schema Part 1: Structures [type definition type]</a>
-     *  @return simple or complex, depending on the type definition.
-     */
-    public short getTypeDefinitionType() {
-        return (fTypeDecl !=null)? fTypeDecl.getTypeCategory():XSTypeDecl.COMPLEX_TYPE;
     }
 
     /**
@@ -251,9 +180,10 @@ public class ElementPSVImpl implements ElementPSVI {
      *
      * @return Array of error codes
      */
-    public String[] getErrorCodes() {
-        return fErrorCodes;
-
+    public Enumeration getErrorCodes() {
+        if (fErrorCodes == null)
+            return null;
+        return new EnumerationImpl(fErrorCodes, fErrorCodes.length);
     }
 
 
@@ -267,61 +197,48 @@ public class ElementPSVImpl implements ElementPSVI {
      * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-nil>XML Schema Part 1: Structures [nil]</a>
      * @return true if clause 3.2 of Element Locally Valid (Element) (3.3.4) above is satisfied, otherwise false
      */
-    public boolean isNil() {
+    public boolean getIsNil() {
         return fNil;
     }
 
     /**
-     * [notation public]
-     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-notation_public>XML Schema Part 1: Structures [notation public]</a>
+     * [notation] 
      * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-notation>XML Schema Part 1: Structures [notation]</a>
-     * @return The value of the {public identifier} of that notation declaration.
+     * @return The notation declaration. 
      */
-    public String getNotationPublicId() {
-        return (fNotation!=null)?fNotation.fPublicId:null;
+    public XSNotationDeclaration getNotation() {
+        return fNotation;
     }
 
     /**
-     * [notation system]
-     *
-     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-notation_system>XML Schema Part 1: Structures [notation system]</a>
-     * @return The value of the {system identifier} of that notation declaration.
-     */
-    public String getNotationSystemId() {
-        return (fNotation!=null)?fNotation.fSystemId:null;
-    }
-
-    /**
-     * [schema namespace]
-     * @see <a href="http://www.w3.org/TR/xmlschema-1/#nsi-schema_namespace>XML Schema Part 1: Structures [schema namespace]</a>
-     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-schema_information>XML Schema Part 1: Structures [schema information]</a>
-     * @return A namespace name or absent.
+     * An item isomorphic to the type definition used to validate this element.
      * 
-     * REVISIT: this mehtod is wrongfully designed.
-     * The PSVI item for the validation root has a [schema information] property,
-     * which has a list of [namespace schema information], which in turn has
-     * properties [schema namespace/components/documents].
+     * @return  a type declaration
      */
-    public String getSchemaNamespace() {
-        // REVISIT: should we create component for schema-information item?
-        return (fDeclaration !=null)? fDeclaration.fTargetNamespace:null;
-    }
-
-    /**
-     * REVISIT: temprory method to return the internal representation of
-     * the type definition used to validate this element. This method
-     * will be removed when we have full PSVI support.
-     */
-    public XSTypeDecl getTypeDefinition() {
+    public XSTypeDefinition getTypeDefinition() {
         return fTypeDecl;
     }
+    
+    /**
+     * If and only if that type definition is a simple type definition
+     * with {variety} union, or a complex type definition whose {content type}
+     * is a simple thype definition with {variety} union, then an item isomorphic
+     * to that member of the union's {member type definitions} which actually
+     * validated the element item's normalized value.
+     * 
+     * @return  a simple type declaration
+     */
+    public XSSimpleTypeDefinition getMemberTypeDefinition() {
+        return fMemberType;
+    }
 
     /**
-     * REVISIT: temprory method to return the internal representation of
-     * the element declaration used to validate this element. This method
-     * will be removed when we have full PSVI support.
+     * An item isomorphic to the element declaration used to validate
+     * this element.
+     * 
+     * @return  an element declaration
      */
-    public XSElementDecl getElementDecl() {
+    public XSElementDeclaration getElementDeclaration() {
         return fDeclaration;
     }
 
@@ -335,8 +252,8 @@ public class ElementPSVImpl implements ElementPSVI {
         fSpecified = true;
         fNotation = null;
         fMemberType = null;
-        fValidationAttempted = ElementPSVI.NO_VALIDATION;
-        fValidity = ElementPSVI.UNKNOWN_VALIDITY;
+        fValidationAttempted = ElementPSVI.VALIDATION_NONE;
+        fValidity = ElementPSVI.VALIDITY_UNKNOWN;
         fErrorCodes = null;
         fValidationContext = null;
         fNormalizedValue = null;

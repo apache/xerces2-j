@@ -845,7 +845,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
                 if (fNormalizeData) {
                     // If validation is not attempted, the SchemaNormalizedValue will be null. 
                     // We shouldn't take the normalized value in this case.
-                    if (attrPSVI != null && attrPSVI.getValidationAttempted() == AttributePSVI.FULL_VALIDATION) {
+                    if (attrPSVI != null && attrPSVI.getValidationAttempted() == AttributePSVI.VALIDATION_FULL) {
                         attrValue = attrPSVI.getSchemaNormalizedValue();
                     }
 
@@ -862,8 +862,8 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
                     boolean specified = attributes.isSpecified(i);
                     attrImpl.setSpecified(specified);
                     // Identifier registration
-                    // try to retrieve XML Schema attribute declaration 
-                    XSAttributeDecl xsDecl = (attrPSVI !=null)? attrPSVI.getAttributeDecl():null;
+                    // try to retrieve XML Schema attribute declaration
+                    XSAttributeDecl xsDecl = (XSAttributeDecl)((attrPSVI!=null)?attrPSVI.getAttributeDeclaration():null);
                     if (attributes.getType(i).equals("ID") || 
                         (xsDecl !=null && xsDecl.fType.isIDType())) {
                         ((ElementImpl) el).setIdAttributeNode(attr);
@@ -892,7 +892,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
                 if (fNormalizeData) {
                     // If validation is not attempted, the SchemaNormalizedValue will be null. 
                     // We shouldn't take the normalized value in this case.
-                    if (attrPSVI != null && attrPSVI.getValidationAttempted() == AttributePSVI.FULL_VALIDATION) {
+                    if (attrPSVI != null && attrPSVI.getValidationAttempted() == AttributePSVI.VALIDATION_FULL) {
                         attrValue = attrPSVI.getSchemaNormalizedValue();
                     }
 
@@ -904,7 +904,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
                                                     attributes.isSpecified(i));
                 // identifier registration
                 // try to retrieve XML Schema attribute declaration 
-                XSAttributeDecl xsDecl = (attrPSVI !=null)? attrPSVI.getAttributeDecl():null;
+                XSAttributeDecl xsDecl = (XSAttributeDecl)((attrPSVI!=null)?attrPSVI.getAttributeDeclaration():null);
 
                 if (attributes.getType(i).equals("ID") || 
                     (xsDecl !=null && xsDecl.fType.isIDType())) {

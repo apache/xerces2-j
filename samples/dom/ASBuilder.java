@@ -71,6 +71,12 @@ import org.apache.xerces.dom3.as.DOMASBuilder;
 import org.w3c.dom.DOMImplementation;
 import java.util.Vector;
 
+import org.apache.xerces.dom.ASModelImpl;
+import org.apache.xerces.impl.xs.XSModelImpl;
+import org.apache.xerces.impl.xs.psvi.*;
+import org.apache.xerces.impl.xs.SchemaGrammar;
+import java.util.Enumeration;
+
 /**
  * This sample program illustrates how to use DOM3 DOMASBuilder interface to
  * preparse ASModels and associate ASModels with an instance document to be
@@ -205,8 +211,8 @@ public class ASBuilder implements DOMErrorHandler {
         // PARSING XML SCHEMAS
         //
 
+        ASModel asmodel = null;
         try {
-            ASModel asmodel = null;
             for (i = 0; i < asfiles.size(); i++) {
                 asmodel = parser.parseASURI((String)asfiles.elementAt(i));
                 parser.setAbstractSchema(asmodel);
@@ -228,6 +234,8 @@ public class ASBuilder implements DOMErrorHandler {
             }
         }
 
+        testXSModel(asmodel);
+        
     } // main(String[])
 
     //
@@ -291,4 +299,154 @@ public class ASBuilder implements DOMErrorHandler {
         return error.getSeverity() != DOMError.SEVERITY_FATAL_ERROR;
     }
 
+    static private XSModel as2xsModel(ASModel asmodel) {
+        ASModelImpl model = (ASModelImpl)asmodel;
+        Vector models = model.getInternalASModels();
+        SchemaGrammar[] grammars = new SchemaGrammar[models.size()];
+        for (int i = 0; i < models.size(); i++)
+            grammars[i] = ((ASModelImpl)models.elementAt(i)).getGrammar();
+        return new XSModelImpl(grammars);
+    }
+
+    static void testXSModel(ASModel asmodel) {
+
+        XSModel model = as2xsModel(asmodel);
+        
+        System.out.println("Namespaces:");
+        Enumeration namespaces = model.getNamespaces();
+        while (namespaces.hasMoreElements())
+            System.out.println(namespaces.nextElement());
+            
+        XSNamedMap components;
+
+        System.out.println();
+        System.out.println("Type Definitions:");
+        components = model.getComponents(XSConstants.TYPE_DEFINITION);
+        int typecount = components.getMapLength();
+        XSNamedMap ccomponents = model.getComponents(XSTypeDefinition.COMPLEX_TYPE);
+        int complexcount = ccomponents.getMapLength();
+        XSNamedMap scomponents = model.getComponents(XSTypeDefinition.SIMPLE_TYPE);
+        int simplecount = scomponents.getMapLength();
+        System.out.println("total = " + typecount + "; complex = " + complexcount + "; simple = " + simplecount);
+        
+        System.out.println();
+        System.out.println("Complex Type Definitions:");
+        XSComplexTypeDefinition complexType = (XSComplexTypeDefinition)ccomponents.getItem(0);
+        System.out.println("namespace: " + complexType.getNamespace());
+        System.out.println("name: " + complexType.getName());
+        System.out.println("base: " + complexType.getBaseType().getName());
+        System.out.println("final: " + complexType.getFinal());
+        System.out.println("anonymous: " + complexType.getIsAnonymous());
+        System.out.println("derivation: " + complexType.getDerivationMethod());
+        System.out.println("abstract: " + complexType.getIsAbstract());
+        System.out.println("content: " + complexType.getContentType());
+        XSParticle particle = complexType.getParticle();
+        if (particle != null)
+            System.out.println("particle: " + particle.getType());
+
+        System.out.println();
+        System.out.println("Simple Type Definitions:");
+        XSSimpleTypeDefinition simpleType = (XSSimpleTypeDefinition)scomponents.getItem(0);
+        System.out.println("namespace: " + simpleType.getNamespace());
+        System.out.println("name: " + simpleType.getName());
+        System.out.println("base: " + simpleType.getBaseType().getName());
+        System.out.println("final: " + simpleType.getFinal());
+        System.out.println("anonymous: " + simpleType.getIsAnonymous());
+        System.out.println("defined facets: " + simpleType.getDefinedFacets());
+        System.out.println("fixed facets: " + simpleType.getFixedFacets());
+        System.out.println("variety: " + simpleType.getVariety());
+        
+        components = model.getComponentsByNamespace(XSTypeDefinition.SIMPLE_TYPE, simpleType.getNamespace());
+        simpleType = (XSSimpleTypeDefinition)components.getItem(0);
+        System.out.println("namespace: " + simpleType.getNamespace());
+        System.out.println("name: " + simpleType.getName());
+
+        simpleType = (XSSimpleTypeDefinition)model.getTypeDefinition(simpleType.getName(), simpleType.getNamespace());
+        System.out.println("namespace: " + simpleType.getNamespace());
+        System.out.println("name: " + simpleType.getName());
+        
+        System.out.println();
+        System.out.println("Elements:");
+        components = model.getComponents(XSConstants.ELEMENT_DECLARATION);
+        XSElementDeclaration element = (XSElementDeclaration)components.getItem(0);
+        System.out.println("namespace: " + element.getNamespace());
+        System.out.println("name: " + element.getName());
+        System.out.println("type: " + element.getTypeDefinition().getName());
+        System.out.println("scope: " + element.getScope());
+        System.out.println("constraint: " + element.getConstraintType() + ", " + element.getConstraintValue());
+        System.out.println("nillable: " + element.getIsNillable());
+        System.out.println("abstract: " + element.getIsAbstract());
+        
+        components = model.getComponentsByNamespace(XSConstants.ELEMENT_DECLARATION, element.getNamespace());
+        element = (XSElementDeclaration)components.getItem(0);
+        System.out.println("namespace: " + element.getNamespace());
+        System.out.println("name: " + element.getName());
+
+        element = model.getElementDecl(element.getName(), element.getNamespace());
+        System.out.println("namespace: " + element.getNamespace());
+        System.out.println("name: " + element.getName());
+        
+        System.out.println();
+        System.out.println("Attribute Group:");
+        components = model.getComponents(XSConstants.ATTRIBUTE_GROUP);
+        XSAttributeGroupDefinition attrgrp = (XSAttributeGroupDefinition)components.getItem(0);
+        System.out.println("namespace: " + attrgrp.getNamespace());
+        System.out.println("name: " + attrgrp.getName());
+        if (attrgrp.getAttributeWildcard() != null)
+        System.out.println("wildcard: " + attrgrp.getAttributeWildcard().getConstraintType() + ", " + attrgrp.getAttributeWildcard().getProcessContents());
+        System.out.println("uses: " + attrgrp.getAttributeUses().getListLength());
+        System.out.println("uses: " + ((XSAttributeUse)attrgrp.getAttributeUses().getItem(0)).getAttrDeclaration().getName());
+        
+        components = model.getComponentsByNamespace(XSConstants.ATTRIBUTE_GROUP, attrgrp.getNamespace());
+        attrgrp = (XSAttributeGroupDefinition)components.getItem(0);
+        System.out.println("namespace: " + attrgrp.getNamespace());
+        System.out.println("name: " + attrgrp.getName());
+
+        attrgrp = model.getAttributeGroup(attrgrp.getName(), attrgrp.getNamespace());
+        System.out.println("namespace: " + attrgrp.getNamespace());
+        System.out.println("name: " + attrgrp.getName());
+        
+        System.out.println();
+        System.out.println("Group:");
+        components = model.getComponents(XSConstants.MODEL_GROUP_DEFINITION);
+        XSModelGroupDefinition group = (XSModelGroupDefinition)components.getItem(0);
+        System.out.println("namespace: " + group.getNamespace());
+        System.out.println("name: " + group.getName());
+        XSModelGroup modelgroup = group.getModelGroup();
+        System.out.println("model group: " + modelgroup.getCompositor());
+        System.out.println("model group: " + modelgroup.getParticles().getListLength());
+        particle = (XSParticle)modelgroup.getParticles().getItem(0);
+        System.out.println("particle: " + particle.getTerm().getType());
+        System.out.println("particle: " + particle.getMinOccurs());
+        System.out.println("particle: " + particle.getMaxOccurs());
+        
+        components = model.getComponentsByNamespace(XSConstants.MODEL_GROUP_DEFINITION, group.getNamespace());
+        group = (XSModelGroupDefinition)components.getItem(0);
+        System.out.println("namespace: " + group.getNamespace());
+        System.out.println("name: " + group.getName());
+
+        group = model.getModelGroupDefinition(group.getName(), group.getNamespace());
+        System.out.println("namespace: " + group.getNamespace());
+        System.out.println("name: " + group.getName());
+        
+        System.out.println();
+        System.out.println("notation:");
+        components = model.getComponents(XSConstants.NOTATION_DECLARATION);
+        XSNotationDeclaration notation = (XSNotationDeclaration)components.getItem(0);
+        if (notation == null) return;
+        System.out.println("namespace: " + notation.getNamespace());
+        System.out.println("name: " + notation.getName());
+        System.out.println("system id: " + notation.getSystemId());
+        System.out.println("public id: " + notation.getPublicId());
+        
+        components = model.getComponentsByNamespace(XSConstants.NOTATION_DECLARATION, notation.getNamespace());
+        notation = (XSNotationDeclaration)components.getItem(0);
+        System.out.println("namespace: " + notation.getNamespace());
+        System.out.println("name: " + notation.getName());
+
+        notation = model.getNotationDecl(notation.getName(), notation.getNamespace());
+        System.out.println("namespace: " + notation.getNamespace());
+        System.out.println("name: " + notation.getName());
+        
+    }
 } // class DOMCount

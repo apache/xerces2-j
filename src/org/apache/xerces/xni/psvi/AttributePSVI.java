@@ -57,5 +57,22 @@
 
 package org.apache.xerces.xni.psvi;
 
+import org.apache.xerces.impl.xs.psvi.*;
+
+/**
+ * Represent a PSVI item for one attribute information item.
+ *
+ * @author Elena Litani, IBM
+ * @version $Id$
+ */
 public interface AttributePSVI extends ItemPSVI{
+
+    /**
+     * An item isomorphic to the attribute declaration used to validate
+     * this attribute.
+     * 
+     * @return  an attribute declaration
+     */
+    public XSAttributeDeclaration getAttributeDeclaration();
+    
 }

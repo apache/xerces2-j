@@ -603,6 +603,7 @@ public class XMLSchemaValidator
             fCurrentPSVI.fTypeDecl = type;
             fCurrentPSVI.fNotation = notation;
             fCurrentPSVI.fValidationContext = vContext;
+
             if (!fSchemaElementDefault || fDefaultValue == null) {
                 fDocumentHandler.emptyElement(element, attributes, modifiedAugs);
             } else {
@@ -2148,14 +2149,14 @@ public class XMLSchemaValidator
         // PSVI: validation attempted
         if (fElementDepth <= fPartialValidationDepth) {
             // the element had child with a content skip.
-            fCurrentPSVI.fValidationAttempted = ElementPSVI.PARTIAL_VALIDATION;
+            fCurrentPSVI.fValidationAttempted = ElementPSVI.VALIDATION_PARTIAL;
             if (fElementDepth == fPartialValidationDepth) {
                 // set depth to the depth of the parent
                 fPartialValidationDepth--;
             }
         }
         else {
-            fCurrentPSVI.fValidationAttempted = ElementPSVI.FULL_VALIDATION;
+            fCurrentPSVI.fValidationAttempted = ElementPSVI.VALIDATION_FULL;
         }
 
 
@@ -2192,8 +2193,8 @@ public class XMLSchemaValidator
         // PSVI: error codes
         fCurrentPSVI.fErrorCodes = errors;
         // PSVI: validity
-        fCurrentPSVI.fValidity = (errors == null) ? ElementPSVI.VALID_VALIDITY
-                                                  : ElementPSVI.INVALID_VALIDITY;
+        fCurrentPSVI.fValidity = (errors == null) ? ElementPSVI.VALIDITY_VALID
+                                                  : ElementPSVI.VALIDITY_INVALID;
 
         fDefaultValue = defaultValue;
 
@@ -2565,7 +2566,7 @@ public class XMLSchemaValidator
                             reportSchemaError("cvc-complex-type.5.1", new Object[]{element.rawname, currDecl.fName, wildcardIDName});
 
                             // PSVI: attribute is invalid, record errors
-                            attrPSVI.fValidity = AttributePSVI.INVALID_VALIDITY;
+                            attrPSVI.fValidity = AttributePSVI.VALIDITY_INVALID;
                             attrPSVI.addErrorCode("cvc-complex-type.5.1");
                         }
                         else
@@ -2603,8 +2604,8 @@ public class XMLSchemaValidator
         attrPSVI.fTypeDecl = attDV;
     
         // PSVI: validation attempted:
-        attrPSVI.fValidationAttempted = AttributePSVI.FULL_VALIDATION;
-        attrPSVI.fValidity = AttributePSVI.VALID_VALIDITY;
+        attrPSVI.fValidationAttempted = AttributePSVI.VALIDATION_FULL;
+        attrPSVI.fValidity = AttributePSVI.VALIDITY_VALID;
     
         Object actualValue = null;
         try {
@@ -2630,7 +2631,7 @@ public class XMLSchemaValidator
         catch (InvalidDatatypeValueException idve) {
     
             // PSVI: attribute is invalid, record errors
-            attrPSVI.fValidity = AttributePSVI.INVALID_VALIDITY;
+            attrPSVI.fValidity = AttributePSVI.VALIDITY_INVALID;
             attrPSVI.addErrorCode("cvc-attribute.3");
             reportSchemaError(idve.getKey(), idve.getArgs());
             reportSchemaError("cvc-attribute.3", new Object[]{element.rawname, fTempQName.rawname, attrValue});
@@ -2648,7 +2649,7 @@ public class XMLSchemaValidator
             if (!attDV.isEqual(actualValue, currDecl.fDefault.actualValue)){
     
                 // PSVI: attribute is invalid, record errors
-                attrPSVI.fValidity = AttributePSVI.INVALID_VALIDITY;
+                attrPSVI.fValidity = AttributePSVI.VALIDITY_INVALID;
                 attrPSVI.addErrorCode("cvc-attribute.4");
                 reportSchemaError("cvc-attribute.4", new Object[]{element.rawname, fTempQName.rawname, attrValue});
             }
@@ -2659,7 +2660,7 @@ public class XMLSchemaValidator
             currUse != null && currUse.fConstraintType == XSConstants.VC_FIXED) {
             if (!attDV.isEqual(actualValue, currUse.fDefault.actualValue)){
                 // PSVI: attribute is invalid, record errors
-                attrPSVI.fValidity = AttributePSVI.INVALID_VALIDITY;
+                attrPSVI.fValidity = AttributePSVI.VALIDITY_INVALID;
                 attrPSVI.addErrorCode("cvc-complex-type.3.1");
                 reportSchemaError("cvc-complex-type.3.1", new Object[]{element.rawname, fTempQName.rawname, attrValue});
             }

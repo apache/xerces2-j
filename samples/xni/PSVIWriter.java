@@ -66,6 +66,7 @@ import org.apache.xerces.util.MessageFormatter;
 import org.apache.xerces.util.XMLAttributesImpl;
 
 //for testing
+import org.apache.xerces.impl.xs.psvi.*;
 import org.apache.xerces.impl.xs.XSTypeDecl;
 import org.apache.xerces.impl.xs.ElementPSVImpl;
 import org.apache.xerces.impl.xs.AttributePSVImpl;
@@ -127,7 +128,7 @@ implements XMLComponent, XMLDocumentFilter {
     protected static final String INCLUDE_IGNORABLE_WHITESPACE =
     "http://apache.org/xml/features/dom/include-ignorable-whitespace";
 
-    protected static final String PSVI_OUTPUT ="psvi_output.xml";
+    protected static final String PSVI_OUTPUT ="e:\\psvi_output.xml";
 
     /** Include ignorable whitespace. */
     protected boolean fIncludeIgnorableWhitespace;
@@ -601,7 +602,7 @@ implements XMLComponent, XMLDocumentFilter {
         
         checkForChildren();
         if (elemPSVI != null) {
-            if (elemPSVI.isSpecified()){  // value was specified in the instance!
+            if (!elemPSVI.getIsSchemaSpecified()){  // value was specified in the instance!
                 printIndentTag("<character>");
                 printElement("characterCode", text.toString());
                 printElement("elementContentWhitespace", "false");
@@ -781,23 +782,30 @@ implements XMLComponent, XMLDocumentFilter {
             // REVISIT: Should we store the values till end element call?
             printElement("psv:validationContext",elemPSVI.getValidationContext());
 
-
-            short definationType = elemPSVI.getTypeDefinitionType();
+            XSTypeDefinition type = elemPSVI.getTypeDefinition();
+            short definationType = type.getTypeCategory();
             if (definationType == XSTypeDecl.SIMPLE_TYPE) {
                 printElement("psv:typeDefinitionType","simple");
             }
             else if (definationType == XSTypeDecl.COMPLEX_TYPE) {
                 printElement("psv:typeDefinitionType","complex");
             }
-            printElement("psv:typeDefinitionNamespace ",elemPSVI.getTypeNamespace());
-            printElement("psv:typeDefinitionAnonymous",String.valueOf(elemPSVI.isTypeAnonymous()));
+            printElement("psv:typeDefinitionNamespace ",type.getNamespace());
+            printElement("psv:typeDefinitionAnonymous",String.valueOf(type.getIsAnonymous()));
+            printElement("psv:typeDefinitionName",type.getName());
 
-            printElement("psv:typeDefinitionName",(elemPSVI.isTypeAnonymous())?null:elemPSVI.getTypeName());
-            printElement("psv:memberTypeDefinitionAnonymous",String.valueOf(elemPSVI.isMemberTypeAnonymous()));
-            printElement("psv:memberTypeDefinitionName",(elemPSVI.isMemberTypeAnonymous())?null:elemPSVI.getMemberTypeName());
-            printElement("psv:memberTypeDefinitionNamespace",elemPSVI.getMemberTypeNamespace());
-            printElement("psv:notationSystem",elemPSVI.getNotationSystemId());
-            printElement("psv:notationPublic",elemPSVI.getNotationPublicId());
+            XSSimpleTypeDefinition memtype = elemPSVI.getMemberTypeDefinition();
+            if (memtype != null) {
+                printElement("psv:memberTypeDefinitionAnonymous",String.valueOf(memtype.getIsAnonymous()));
+                printElement("psv:memberTypeDefinitionName",memtype.getName());
+                printElement("psv:memberTypeDefinitionNamespace",memtype.getNamespace());
+            }
+            
+            XSNotationDeclaration notation = elemPSVI.getNotation();
+            if (notation != null) {
+                printElement("psv:notationSystem",notation.getSystemId());
+                printElement("psv:notationPublic",notation.getPublicId());
+            }
         }
     }
 
@@ -814,35 +822,35 @@ implements XMLComponent, XMLDocumentFilter {
 
 
             short validation = elemPSVI.getValidationAttempted();
-            if (validation == ItemPSVI.NO_VALIDATION) {
+            if (validation == ItemPSVI.VALIDATION_NONE) {
                 printElement("psv:validationAttempted","none");
             }
-            else if (validation == ItemPSVI.PARTIAL_VALIDATION) {
+            else if (validation == ItemPSVI.VALIDATION_PARTIAL) {
                 printElement("psv:validationAttempted","partial");
             }
-            else if (validation == ItemPSVI.FULL_VALIDATION) {
+            else if (validation == ItemPSVI.VALIDATION_FULL) {
                 printElement("psv:validationAttempted","full");
             }
 
 
             short validity = elemPSVI.getValidity();
-            if (validity == ItemPSVI.UNKNOWN_VALIDITY) {
+            if (validity == ItemPSVI.VALIDITY_UNKNOWN) {
                 printElement("psv:validity","unknown");
             }
-            else if (validity == ItemPSVI.VALID_VALIDITY) {
+            else if (validity == ItemPSVI.VALIDITY_VALID) {
                 printElement("psv:validity","valid");
             }
-            else if (validity == ItemPSVI.INVALID_VALIDITY) {
+            else if (validity == ItemPSVI.VALIDITY_INVALID) {
                 printElement("psv:validity","invalid");
             }
             //revisit
-            String [] errorCode = elemPSVI.getErrorCodes();
+            Enumeration errorCode = elemPSVI.getErrorCodes();
             if (errorCode != null) {
-                int  errorCount = errorCode.length;
+                fErrorBuffer.append(errorCode.nextElement());
                 
-                for (int i=0;i< errorCount; i++) {
-                    fErrorBuffer.append(errorCode[i]);
+                while (errorCode.hasMoreElements()) {
                     fErrorBuffer.append(" ");
+                    fErrorBuffer.append(errorCode.nextElement());
                 }
                 printElement("psv:schemaErrorCode",fErrorBuffer.toString());
                 fErrorBuffer.setLength(0);
@@ -850,9 +858,9 @@ implements XMLComponent, XMLDocumentFilter {
             else {
                 printElement("psv:schemaErrorCode","");
             }
-            printElement("psv:nil", String.valueOf(elemPSVI.isNil()));
+            //printElement("psv:nil", String.valueOf(elemPSVI.getIsNil()));
             printElement("psv:schemaNormalizedValue",elemPSVI.getSchemaNormalizedValue());
-            String specified = elemPSVI.isSpecified()?"infoset":"schema";
+            String specified = elemPSVI.getIsSchemaSpecified()?"schema":"infoset";
             printElement("psv:schemaSpecified",specified);
 
         }
@@ -863,36 +871,36 @@ implements XMLComponent, XMLDocumentFilter {
         if (attrPSVI !=null) {
 
             short validation = attrPSVI.getValidationAttempted();
-            if (validation == ItemPSVI.NO_VALIDATION) {
+            if (validation == ItemPSVI.VALIDATION_NONE) {
                 printElement("psv:validationAttempted","none");
             }
-            else if (validation == ItemPSVI.FULL_VALIDATION) {
+            else if (validation == ItemPSVI.VALIDATION_FULL) {
                 printElement("psv:validationAttempted","full");
             }
 
             printElement("psv:validationContext",attrPSVI.getValidationContext());
 
             short validity = attrPSVI.getValidity();
-            if (validity == ItemPSVI.UNKNOWN_VALIDITY) {
+            if (validity == ItemPSVI.VALIDITY_UNKNOWN) {
                 printElement("psv:validity","unknown");
             }
-            else if (validity == ItemPSVI.VALID_VALIDITY) {
+            else if (validity == ItemPSVI.VALIDITY_VALID) {
                 printElement("psv:validity","valid");
             }
-            else if (validity == ItemPSVI.INVALID_VALIDITY) {
+            else if (validity == ItemPSVI.VALIDITY_INVALID) {
                 printElement("psv:validity","invalid");
             }
 
             //REVISIT
-            String [] errorCode = attrPSVI.getErrorCodes();
-            int  errorCount = errorCode.length;
-            if (errorCount == 0) {
+            Enumeration errorCode = attrPSVI.getErrorCodes();
+            if (errorCode == null) {
                 printElement("psv:schemaErrorCode","");
             }
             else {
-                for (int i=errorCount-1;i< errorCount; ++i) {
-                    fErrorBuffer.append(errorCode[i]);
+                fErrorBuffer.append(errorCode.nextElement());
+                while(errorCode.hasMoreElements()) {
                     fErrorBuffer.append(" ");
+                    fErrorBuffer.append(errorCode.nextElement());
                 }
                 printElement("psv:schemaErrorCode",fErrorBuffer.toString());
                 fErrorBuffer.setLength(0);
@@ -900,20 +908,24 @@ implements XMLComponent, XMLDocumentFilter {
             }
 
             printElement("psv:schemaNormalizedValue",attrPSVI.getSchemaNormalizedValue());
-            printElement("psv:schemaSpecified", (attrPSVI.isSpecified())?"infoset":"schema");
+            printElement("psv:schemaSpecified", (attrPSVI.getIsSchemaSpecified())?"schema":"infoset");
 
-            short definationType = attrPSVI.getTypeDefinitionType();
+            XSTypeDefinition type = attrPSVI.getTypeDefinition();
+            XSSimpleTypeDefinition memtype = attrPSVI.getMemberTypeDefinition();
+            short definationType = type.getTypeCategory();
             if (definationType == XSTypeDecl.SIMPLE_TYPE) {
                 printElement("psv:typeDefinitionType","simple");
             }
 
-            printElement("psv:typeDefinitionNamespace",attrPSVI.getTypeNamespace());
-            printElement("psv:typeDefinitionAnonymous",String.valueOf(attrPSVI.isTypeAnonymous()));
-            printElement("psv:typeDefinitionName",(attrPSVI.isTypeAnonymous())?null:attrPSVI.getTypeName());
-            printElement("psv:memberTypeDefinitionAnonymous",String.valueOf(attrPSVI.isMemberTypeAnonymous()));
-            printElement("psv:memberTypeDefinitionName",(attrPSVI.isMemberTypeAnonymous())?null:attrPSVI.getMemberTypeName());
-            printElement("psv:memberTypeDefinitionNamespace",attrPSVI.getMemberTypeNamespace());
-
+            printElement("psv:typeDefinitionNamespace",type.getNamespace());
+            printElement("psv:typeDefinitionAnonymous",String.valueOf(type.getIsAnonymous()));
+            printElement("psv:typeDefinitionName",type.getName());
+            
+            if (memtype != null) {
+                printElement("psv:memberTypeDefinitionAnonymous",String.valueOf(memtype.getIsAnonymous()));
+                printElement("psv:memberTypeDefinitionName",memtype.getName());
+                printElement("psv:memberTypeDefinitionNamespace",memtype.getNamespace());
+            }
         }
     }
     /**

@@ -95,6 +95,19 @@ import org.xml.sax.helpers.ParserFactory;
 public class Counter
     extends DefaultHandler {
 
+    static {
+        try {
+            //String encoding = System.getProperty("file.encoding");
+            //String userdir = org.apache.xerces.impl.XMLEntityManager.getUserDir();
+            //int i = 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        finally {
+            //System.exit(1);
+        }
+    }
+
     //
     // Constants
     //
@@ -354,6 +367,8 @@ public class Counter
 
     /** Main program entry point. */
     public static void main(String argv[]) {
+
+        //testSymbolTable();
 
         // is there anything to do?
         if (argv.length == 0) {
@@ -637,4 +652,590 @@ public class Counter
 
     } // printUsage()
 
+    static void testSymbolTable() {
+        SymbolTable st = new SymbolTable();
+        SymbolTable1 st1 = new SymbolTable1();
+        SymbolTable2 st2 = new SymbolTable2();
+
+        int[] strNum = {10, 50, 100, 200, 500, 1000};
+        int[] ratio = {0, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000};
+        long[][] time = new long[strNum.length][ratio.length];
+        long[][] time1 = new long[strNum.length][ratio.length];
+        long[][] time2 = new long[strNum.length][ratio.length];
+
+        String temp;
+
+        for (int i = 0; i < strNum.length; i++) {
+            for (int j = 0; j < ratio.length; j++) {
+                long start = System.currentTimeMillis();
+                for (int str = 0; str < strNum[i]; str++) {
+                    temp = "str"+i+" "+j+" "+str;
+                    for (int ra = -1; ra < ratio[j]; ra++) {
+                        temp = st.addSymbol(temp);
+                    }
+                }
+                long end = System.currentTimeMillis();
+                time[i][j] = end-start;
+            }
+        }
+
+        for (int i = 0; i < strNum.length; i++) {
+            for (int j = 0; j < ratio.length; j++) {
+                long start = System.currentTimeMillis();
+                for (int str = 0; str < strNum[i]; str++) {
+                    temp = "str"+i+" "+j+" "+str;
+                    for (int ra = -1; ra < ratio[j]; ra++) {
+                        temp = st1.addSymbol(temp);
+                    }
+                }
+                long end = System.currentTimeMillis();
+                time1[i][j] = end-start;
+            }
+        }
+
+        for (int i = 0; i < strNum.length; i++) {
+            for (int j = 0; j < ratio.length; j++) {
+                long start = System.currentTimeMillis();
+                for (int str = 0; str < strNum[i]; str++) {
+                    temp = "str"+i+" "+j+" "+str;
+                    for (int ra = -1; ra < ratio[j]; ra++) {
+                        temp = st2.addSymbol(temp);
+                    }
+                }
+                long end = System.currentTimeMillis();
+                time2[i][j] = end-start;
+            }
+        }
+
+        System.out.println("\nSymbolTable without string interning");
+        for (int j = 0; j < ratio.length; j++) {
+            System.out.print("\t"+ratio[j]);
+        }
+        System.out.println();
+        for (int i = 0; i < strNum.length; i++) {
+            System.out.print(strNum[i]);
+            for (int j = 0; j < ratio.length; j++) {
+                System.out.print("\t"+time[i][j]);
+            }
+            System.out.println();
+        }
+
+        System.out.println("\nSymbolTable with string interning");
+        for (int j = 0; j < ratio.length; j++) {
+            System.out.print("\t"+ratio[j]);
+        }
+        System.out.println();
+        for (int i = 0; i < strNum.length; i++) {
+            System.out.print(strNum[i]);
+            for (int j = 0; j < ratio.length; j++) {
+                System.out.print("\t"+time1[i][j]);
+            }
+            System.out.println();
+        }
+
+        System.out.println("\nString interning only");
+        for (int j = 0; j < ratio.length; j++) {
+            System.out.print("\t"+ratio[j]);
+        }
+        System.out.println();
+        for (int i = 0; i < strNum.length; i++) {
+            System.out.print(strNum[i]);
+            for (int j = 0; j < ratio.length; j++) {
+                System.out.print("\t"+time2[i][j]);
+            }
+            System.out.println();
+        }
+
+        System.exit(0);
+    }
+
+    static class SymbolTable {
+
+        //
+        // Constants
+        //
+
+        /** Default table size. */
+        protected static final int TABLE_SIZE = 101;
+
+        //
+        // Data
+        //
+
+        /** Buckets. */
+        protected Entry[] fBuckets = new Entry[TABLE_SIZE];
+
+        //
+        // Constructors
+        //
+
+        /** Constructs a symbol table. */
+        public SymbolTable() {
+        }
+
+        //
+        // Public methods
+        //
+
+        /**
+         * Adds the specified symbol to the symbol table and returns a
+         * reference to the unique symbol. If the symbol already exists,
+         * the previous symbol reference is returned instead, in order
+         * guarantee that symbol references remain unique.
+         *
+         * @param symbol The new symbol.
+         */
+        public String addSymbol(String symbol) {
+
+            // search for identical symbol
+            int bucket = hash(symbol) % TABLE_SIZE;
+            int length = symbol.length();
+            OUTER: for (Entry entry = fBuckets[bucket]; entry != null; entry = entry.next) {
+                if (length == entry.characters.length) {
+                    for (int i = 0; i < length; i++) {
+                        if (symbol.charAt(i) != entry.characters[i]) {
+                            continue OUTER;
+                        }
+                    }
+                    return entry.symbol;
+                }
+            }
+
+            // create new entry
+            Entry entry = new Entry(symbol, fBuckets[bucket]);
+            fBuckets[bucket] = entry;
+            return entry.symbol;
+
+        } // addSymbol(String):String
+
+        /**
+         * Adds the specified symbol to the symbol table and returns a
+         * reference to the unique symbol. If the symbol already exists,
+         * the previous symbol reference is returned instead, in order
+         * guarantee that symbol references remain unique.
+         *
+         * @param buffer The buffer containing the new symbol.
+         * @param offset The offset into the buffer of the new symbol.
+         * @param length The length of the new symbol in the buffer.
+         */
+        public String addSymbol(char[] buffer, int offset, int length) {
+
+            // search for identical symbol
+            int bucket = hash(buffer, offset, length) % TABLE_SIZE;
+            OUTER: for (Entry entry = fBuckets[bucket]; entry != null; entry = entry.next) {
+                if (length == entry.characters.length) {
+                    for (int i = 0; i < length; i++) {
+                        if (buffer[offset + i] != entry.characters[i]) {
+                            continue OUTER;
+                        }
+                    }
+                    return entry.symbol;
+                }
+            }
+
+            // add new entry
+            Entry entry = new Entry(buffer, offset, length, fBuckets[bucket]);
+            fBuckets[bucket] = entry;
+            return entry.symbol;
+
+        } // addSymbol(char[],int,int):String
+
+        /**
+         * Returns a hashcode value for the specified symbol. The value
+         * returned by this method must be identical to the value returned
+         * by the <code>hash(char[],int,int)</code> method when called
+         * with the character array that comprises the symbol string.
+         *
+         * @param symbol The symbol to hash.
+         */
+        public int hash(String symbol) {
+
+            int code = 0;
+            int length = symbol.length();
+            for (int i = 0; i < length; i++) {
+                code = code * 37 + symbol.charAt(i);
+            }
+            return code & 0x7FFFFFF;
+
+        } // hash(String):int
+
+        /**
+         * Returns a hashcode value for the specified symbol information.
+         * The value returned by this method must be identical to the value
+         * returned by the <code>hash(String)</code> method when called
+         * with the string object created from the symbol information.
+         *
+         * @param buffer The character buffer containing the symbol.
+         * @param offset The offset into the character buffer of the start
+         *               of the symbol.
+         * @param length The length of the symbol.
+         */
+        public int hash(char[] buffer, int offset, int length) {
+
+            int code = 0;
+            for (int i = 0; i < length; i++) {
+                code = code * 37 + buffer[offset + i];
+            }
+            return code & 0x7FFFFFF;
+
+        } // hash(char[],int,int):int
+
+        /**
+         * Returns true if the symbol table already contains the specified
+         * symbol.
+         *
+         * @param symbol The symbol to look for.
+         */
+        public boolean containsSymbol(String symbol) {
+
+            // search for identical symbol
+            int bucket = hash(symbol) % TABLE_SIZE;
+            int length = symbol.length();
+            OUTER: for (Entry entry = fBuckets[bucket]; entry != null; entry = entry.next) {
+                if (length == entry.characters.length) {
+                    for (int i = 0; i < length; i++) {
+                        if (symbol.charAt(i) != entry.characters[i]) {
+                            continue OUTER;
+                        }
+                    }
+                    return true;
+                }
+            }
+
+            return false;
+
+        } // containsSymbol(String):boolean
+
+        /**
+         * Returns true if the symbol table already contains the specified
+         * symbol.
+         *
+         * @param buffer The buffer containing the symbol to look for.
+         * @param offset The offset into the buffer.
+         * @param length The length of the symbol in the buffer.
+         */
+        public boolean containsSymbol(char[] buffer, int offset, int length) {
+
+            // search for identical symbol
+            int bucket = hash(buffer, offset, length) % TABLE_SIZE;
+            OUTER: for (Entry entry = fBuckets[bucket]; entry != null; entry = entry.next) {
+                if (length == entry.characters.length) {
+                    for (int i = 0; i < length; i++) {
+                        if (buffer[offset + i] != entry.characters[i]) {
+                            continue OUTER;
+                        }
+                    }
+                    return true;
+                }
+            }
+
+            return false;
+
+        } // containsSymbol(char[],int,int):boolean
+
+        //
+        // Classes
+        //
+
+        /**
+         * This class is a symbol table entry. Each entry acts as a node
+         * in a linked list.
+         */
+        protected static final class Entry {
+
+            //
+            // Data
+            //
+
+            /** Symbol. */
+            public String symbol;
+
+            /**
+             * Symbol characters. This information is duplicated here for
+             * comparison performance.
+             */
+            public char[] characters;
+
+            /** The next entry. */
+            public Entry next;
+
+            //
+            // Constructors
+            //
+
+            /**
+             * Constructs a new entry from the specified symbol and next entry
+             * reference.
+             */
+            public Entry(String symbol, Entry next) {
+                this.symbol = symbol;
+                characters = new char[symbol.length()];
+                symbol.getChars(0, characters.length, characters, 0);
+                this.next = next;
+            }
+
+            /**
+             * Constructs a new entry from the specified symbol information and
+             * next entry reference.
+             */
+            public Entry(char[] ch, int offset, int length, Entry next) {
+                characters = new char[length];
+                System.arraycopy(ch, offset, characters, 0, length);
+                symbol = new String(characters);
+                this.next = next;
+            }
+
+        } // class Entry
+
+    } // class SymbolTable
+
+    static class SymbolTable1 {
+
+        //
+        // Constants
+        //
+
+        /** Default table size. */
+        protected static final int TABLE_SIZE = 101;
+
+        //
+        // Data
+        //
+
+        /** Buckets. */
+        protected Entry[] fBuckets = new Entry[TABLE_SIZE];
+
+        //
+        // Constructors
+        //
+
+        /** Constructs a symbol table. */
+        public SymbolTable1() {
+        }
+
+        //
+        // Public methods
+        //
+
+        /**
+         * Adds the specified symbol to the symbol table and returns a
+         * reference to the unique symbol. If the symbol already exists,
+         * the previous symbol reference is returned instead, in order
+         * guarantee that symbol references remain unique.
+         *
+         * @param symbol The new symbol.
+         */
+        public String addSymbol(String symbol) {
+
+            // search for identical symbol
+            int bucket = hash(symbol) % TABLE_SIZE;
+            int length = symbol.length();
+            OUTER: for (Entry entry = fBuckets[bucket]; entry != null; entry = entry.next) {
+                if (length == entry.characters.length) {
+                    for (int i = 0; i < length; i++) {
+                        if (symbol.charAt(i) != entry.characters[i]) {
+                            continue OUTER;
+                        }
+                    }
+                    return entry.symbol;
+                }
+            }
+
+            // create new entry
+            Entry entry = new Entry(symbol, fBuckets[bucket]);
+            fBuckets[bucket] = entry;
+            return entry.symbol;
+
+        } // addSymbol(String):String
+
+        /**
+         * Adds the specified symbol to the symbol table and returns a
+         * reference to the unique symbol. If the symbol already exists,
+         * the previous symbol reference is returned instead, in order
+         * guarantee that symbol references remain unique.
+         *
+         * @param buffer The buffer containing the new symbol.
+         * @param offset The offset into the buffer of the new symbol.
+         * @param length The length of the new symbol in the buffer.
+         */
+        public String addSymbol(char[] buffer, int offset, int length) {
+
+            // search for identical symbol
+            int bucket = hash(buffer, offset, length) % TABLE_SIZE;
+            OUTER: for (Entry entry = fBuckets[bucket]; entry != null; entry = entry.next) {
+                if (length == entry.characters.length) {
+                    for (int i = 0; i < length; i++) {
+                        if (buffer[offset + i] != entry.characters[i]) {
+                            continue OUTER;
+                        }
+                    }
+                    return entry.symbol;
+                }
+            }
+
+            // add new entry
+            Entry entry = new Entry(buffer, offset, length, fBuckets[bucket]);
+            fBuckets[bucket] = entry;
+            return entry.symbol;
+
+        } // addSymbol(char[],int,int):String
+
+        /**
+         * Returns a hashcode value for the specified symbol. The value
+         * returned by this method must be identical to the value returned
+         * by the <code>hash(char[],int,int)</code> method when called
+         * with the character array that comprises the symbol string.
+         *
+         * @param symbol The symbol to hash.
+         */
+        public int hash(String symbol) {
+
+            int code = 0;
+            int length = symbol.length();
+            for (int i = 0; i < length; i++) {
+                code = code * 37 + symbol.charAt(i);
+            }
+            return code & 0x7FFFFFF;
+
+        } // hash(String):int
+
+        /**
+         * Returns a hashcode value for the specified symbol information.
+         * The value returned by this method must be identical to the value
+         * returned by the <code>hash(String)</code> method when called
+         * with the string object created from the symbol information.
+         *
+         * @param buffer The character buffer containing the symbol.
+         * @param offset The offset into the character buffer of the start
+         *               of the symbol.
+         * @param length The length of the symbol.
+         */
+        public int hash(char[] buffer, int offset, int length) {
+
+            int code = 0;
+            for (int i = 0; i < length; i++) {
+                code = code * 37 + buffer[offset + i];
+            }
+            return code & 0x7FFFFFF;
+
+        } // hash(char[],int,int):int
+
+        /**
+         * Returns true if the symbol table already contains the specified
+         * symbol.
+         *
+         * @param symbol The symbol to look for.
+         */
+        public boolean containsSymbol(String symbol) {
+
+            // search for identical symbol
+            int bucket = hash(symbol) % TABLE_SIZE;
+            int length = symbol.length();
+            OUTER: for (Entry entry = fBuckets[bucket]; entry != null; entry = entry.next) {
+                if (length == entry.characters.length) {
+                    for (int i = 0; i < length; i++) {
+                        if (symbol.charAt(i) != entry.characters[i]) {
+                            continue OUTER;
+                        }
+                    }
+                    return true;
+                }
+            }
+
+            return false;
+
+        } // containsSymbol(String):boolean
+
+        /**
+         * Returns true if the symbol table already contains the specified
+         * symbol.
+         *
+         * @param buffer The buffer containing the symbol to look for.
+         * @param offset The offset into the buffer.
+         * @param length The length of the symbol in the buffer.
+         */
+        public boolean containsSymbol(char[] buffer, int offset, int length) {
+
+            // search for identical symbol
+            int bucket = hash(buffer, offset, length) % TABLE_SIZE;
+            OUTER: for (Entry entry = fBuckets[bucket]; entry != null; entry = entry.next) {
+                if (length == entry.characters.length) {
+                    for (int i = 0; i < length; i++) {
+                        if (buffer[offset + i] != entry.characters[i]) {
+                            continue OUTER;
+                        }
+                    }
+                    return true;
+                }
+            }
+
+            return false;
+
+        } // containsSymbol(char[],int,int):boolean
+
+        //
+        // Classes
+        //
+
+        /**
+         * This class is a symbol table entry. Each entry acts as a node
+         * in a linked list.
+         */
+        protected static final class Entry {
+
+            //
+            // Data
+            //
+
+            /** Symbol. */
+            public String symbol;
+
+            /**
+             * Symbol characters. This information is duplicated here for
+             * comparison performance.
+             */
+            public char[] characters;
+
+            /** The next entry. */
+            public Entry next;
+
+            //
+            // Constructors
+            //
+
+            /**
+             * Constructs a new entry from the specified symbol and next entry
+             * reference.
+             */
+            public Entry(String symbol, Entry next) {
+                this.symbol = symbol.intern();
+                characters = new char[symbol.length()];
+                symbol.getChars(0, characters.length, characters, 0);
+                this.next = next;
+            }
+
+            /**
+             * Constructs a new entry from the specified symbol information and
+             * next entry reference.
+             */
+            public Entry(char[] ch, int offset, int length, Entry next) {
+                characters = new char[length];
+                System.arraycopy(ch, offset, characters, 0, length);
+                symbol = new String(characters).intern();
+                this.next = next;
+            }
+
+        } // class Entry
+
+    } // class SymbolTable1
+
+    static class SymbolTable2 {
+        public String addSymbol(String symbol) {
+            return symbol.intern();
+        } // addSymbol(String):String
+
+        public String addSymbol(char[] buffer, int offset, int length) {
+            return new String(buffer, offset, length).intern();;
+        } // addSymbol(char[],int,int):String
+    } // class SymbolTable2
 } // class Counter

@@ -426,7 +426,7 @@ public abstract class AbstractSAXParser
                     if (fNormalizeData) {
                         AttributePSVI attrPSVI = (AttributePSVI)attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI);
                         if (attrPSVI != null &&
-                            attrPSVI.getValidationAttempted() == AttributePSVI.FULL_VALIDATION) {
+                            attrPSVI.getValidationAttempted() == AttributePSVI.VALIDATION_FULL) {
                             attributes.setValue(i, attrPSVI.getSchemaNormalizedValue());
                         }
                     }
