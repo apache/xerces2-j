@@ -63,6 +63,7 @@ import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.impl.validation.GrammarPool;
 import org.apache.xerces.parsers.StandardParserConfiguration;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.xni.parser.XMLComponentManager;
 
 /**
  * This is the DTD/ XML Schema parser configuration. It extends the standard
@@ -96,6 +97,8 @@ public class DTDXSParserConfiguration extends StandardParserConfiguration {
 
     /**
      * Constructs a document parser using the specified symbol table.
+     *
+     * @param symbolTable    The symbol table to use.
      */
     public DTDXSParserConfiguration(SymbolTable symbolTable) {
         this(symbolTable, null);
@@ -104,10 +107,35 @@ public class DTDXSParserConfiguration extends StandardParserConfiguration {
     /**
      * Constructs a document parser using the specified symbol table and
      * grammar pool.
+     * <p>
+     * <strong>REVISIT:</strong> 
+     * Grammar pool will be updated when the new validation engine is
+     * implemented.
+     *
+     * @param symbolTable    The symbol table to use.
+     * @param grammarPool    The grammar pool to use.
      */
     public DTDXSParserConfiguration(SymbolTable symbolTable,
                                      GrammarPool grammarPool) {
-        super(symbolTable, grammarPool);
+        this(symbolTable, grammarPool, null);
+    } // <init>(SymbolTable,GrammarPool)
+
+    /**
+     * Constructs a parser configuration using the specified symbol table,
+     * grammar pool, and parent settings.
+     * <p>
+     * <strong>REVISIT:</strong> 
+     * Grammar pool will be updated when the new validation engine is
+     * implemented.
+     *
+     * @param symbolTable    The symbol table to use.
+     * @param grammarPool    The grammar pool to use.
+     * @param parentSettings The parent settings.
+     */
+    public DTDXSParserConfiguration(SymbolTable symbolTable,
+                                    GrammarPool grammarPool,
+                                    XMLComponentManager parentSettings) {
+        super(symbolTable, grammarPool, parentSettings);
 
         fSchemaValidator = createSchemaValidator();
         if (fSchemaValidator != null) {

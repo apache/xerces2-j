@@ -1,6 +1,20 @@
 <?xml version='1.0' encoding='UTF-8'?>
+<!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
+ <release version='Xerces 2.0.0 (NOT YET RELEASED)'>
+  <desc>
+  </desc>
+  <changes>
+   <fix>
+    <note>
+     Added constructor to new DTDXSParserConfiguration so it can
+     share settings from a parent configuration.
+    </note>
+    <submitter name='Andy Clark'/>
+   </fix>
+  </changes>
+ </release>
  <release version='Xerces 2.0.0 (beta3)'>
   <desc>
    This release fixes a number of bugs, introduces some changes to
