@@ -182,21 +182,7 @@ public class XPath {
                     super.addToken(tokens, token);
                     return;
                 }
-                StringBuffer str = new StringBuffer();
-                str.append("token not supported: ");
-                String tokenName = tokens.getTokenName(token);
-                if (tokenName != null) {
-                    str.append('"');
-                    str.append(tokenName);
-                    str.append('"');
-                }
-                else {
-                    str.append('(');
-                    str.append(token);
-                    str.append(')');
-                }
-                String message = str.toString();
-                throw new XPathException(message);
+                throw new XPathException("c-general-xpath");
             }
         };
 
@@ -218,12 +204,12 @@ public class XPath {
             switch (token) {
                 case  XPath.Tokens.EXPRTOKEN_OPERATOR_UNION :{
                     if (i == 0) {
-                        throw new XPathException("not allowed to have '|' at the beginning of an xpath value");
+                        throw new XPathException("c-general-xpath");
                     }
 
                     int size = stepsVector.size();
                     if (size == 0) {
-                        throw new XPathException("not allowed to have '||'");
+                        throw new XPathException("c-general-xpath");
                     }
                     Step[] steps = new Step[size];
                     stepsVector.copyInto(steps);
@@ -242,17 +228,14 @@ public class XPath {
                 case XPath.Tokens.EXPRTOKEN_ATSIGN: {
                     // consume QName token
                     if (i == tokenCount - 1) {
-                        throw new XPathException("missing attribute name");
+                        throw new XPathException("c-general-xpath");
                     }
                     token = xtokens.getToken(++i);
 
                     if (token != XPath.Tokens.EXPRTOKEN_NAMETEST_QNAME
                         && token!= XPath.Tokens.EXPRTOKEN_NAMETEST_ANY
                         && token!=  XPath.Tokens.EXPRTOKEN_NAMETEST_NAMESPACE) {
-                        throw new XPathException("expected \""+xtokens.getTokenName(XPath.Tokens.EXPRTOKEN_NAMETEST_QNAME)+
-                                                 "\" or \""+xtokens.getTokenName( XPath.Tokens.EXPRTOKEN_NAMETEST_ANY)+
-                                                 "\" or \""+xtokens.getTokenName( XPath.Tokens.EXPRTOKEN_NAMETEST_NAMESPACE)+
-                                                 "\", found "+xtokens.getTokenName(token));
+                        throw new XPathException("c-general-xpath");
                     }
                     boolean isNamespaceAtt=false;
                     switch (token)
@@ -276,7 +259,7 @@ public class XPath {
                         uri = context.getURI(prefix);
                     }
                     if (prefix != emptySymbol && context != null && uri == null) {
-                        throw new XPathException("prefix "+prefix+" not bound to namespace URI");
+                        throw new XPathException("c-general-xpath-ns");
                     }
 
                             if (isNamespaceAtt)
@@ -313,7 +296,7 @@ public class XPath {
                 /***/
                 case XPath.Tokens.EXPRTOKEN_DOUBLE_COLON: {
                     // should never have a bare double colon
-                    throw new XPathException("Not allowed to have double colon here");
+                    throw new XPathException("c-general-xpath");
                 }
                 /***
                 case XPath.Tokens.EXPRTOKEN_NAMETEST_ANY: {
@@ -325,8 +308,7 @@ public class XPath {
                     // consume "::" token and drop through
                     i++;
                     if (i == tokenCount - 1) {
-                        throw new XPathException("expected step following '"
-                            +xtokens.getTokenName(XPath.Tokens.EXPRTOKEN_AXISNAME_CHILD)+"::'");
+                        throw new XPathException("c-general-xpath");
                     }
                     firstTokenOfLocationPath=false;
                     break;
@@ -352,7 +334,7 @@ public class XPath {
                         uri = context.getURI(prefix);
                     }
                     if (prefix != emptySymbol && context != null && uri == null) {
-                        throw new XPathException("prefix "+prefix+" not bound to namespace URI");
+                        throw new XPathException("c-general-xpath-ns");
                     }
 
                     if (isNamespace)
@@ -398,12 +380,12 @@ public class XPath {
                         if (token == XPath.Tokens.EXPRTOKEN_OPERATOR_DOUBLE_SLASH){
                             i++;
                             if (i == tokenCount - 1) {
-                                throw new XPathException("expected step following '//'");
+                                throw new XPathException("c-general-xpath");
                             }
                             if (i+1<tokenCount)	{
                                 token=xtokens.getToken(i+1);
                                 if (token==XPath.Tokens.EXPRTOKEN_OPERATOR_SLASH)
-                                    throw new XPathException("'/' not allowed after '//'");
+                                    throw new XPathException("c-general-xpath");
                             }
                             // build step
                             axis = new Axis(Axis.DESCENDANT);
@@ -417,18 +399,18 @@ public class XPath {
                 }
 
                 case XPath.Tokens.EXPRTOKEN_OPERATOR_DOUBLE_SLASH:{
-                    throw new XPathException("'//' only allowed after '.' at the beginning of an xpath");
+                    throw new XPathException("c-general-xpath");
                 }
                 case XPath.Tokens.EXPRTOKEN_OPERATOR_SLASH: {
                     if (i == 0) {
-                        throw new XPathException("not allowed to have '/' at the beginning of an xpath value");
+                        throw new XPathException("c-general-xpath");
                     }
                     // keep on truckin'
                     if (firstTokenOfLocationPath) {
-                        throw new XPathException("not allowed to select the root");
+                        throw new XPathException("c-general-xpath");
                     }
                     if (i == tokenCount - 1) {
-                        throw new XPathException("expected step following '/'");
+                        throw new XPathException("c-general-xpath");
                     }
                     firstTokenOfLocationPath=false;
                     break;
@@ -441,9 +423,9 @@ public class XPath {
         int size = stepsVector.size();
         if (size == 0) {
             if (locationPathsVector.size()==0)
-            throw new XPathException("empty xpath expression");
+            throw new XPathException("c-general-xpath");
             else
-                throw new XPathException("xpath cannot end with '|'");
+                throw new XPathException("c-general-xpath");
         }
         Step[] steps = new Step[size];
         stepsVector.copyInto(steps);
@@ -1470,7 +1452,7 @@ public class XPath {
                         starIsMultiplyOperator = true;
                         currentOffset++;
                     } else {                    // '.'
-                        throw new XPathException ("Invalid character following '.'");
+                        throw new XPathException ("c-general-xpath");
                     }
                     if (currentOffset == endOffset) {
                         break;

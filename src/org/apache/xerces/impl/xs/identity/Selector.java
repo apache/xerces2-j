@@ -162,7 +162,7 @@ public class Selector {
                 org.apache.xerces.impl.xpath.XPath.Axis axis =
                 fLocationPaths[i].steps[fLocationPaths[i].steps.length-1].axis;
                 if (axis.type == axis.ATTRIBUTE) {
-                    throw new XPathException("selectors cannot select attributes");
+                    throw new XPathException("c-selector-xpath");
                 }
             }
 

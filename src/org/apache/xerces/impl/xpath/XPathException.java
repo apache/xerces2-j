@@ -67,6 +67,10 @@ package org.apache.xerces.impl.xpath;
 public class XPathException 
     extends Exception {
 
+    // Data
+
+    // hold the value of the key this Exception refers to.
+    private String fKey;
     //
     // Constructors
     //
@@ -74,11 +78,17 @@ public class XPathException
     /** Constructs an exception. */
     public XPathException() {
         super();
+        fKey = "c-general-xpath";
     } // <init>()
 
-    /** Constructs an exception with the specified message. */
-    public XPathException(String message) {
-        super(message);
+    /** Constructs an exception with the specified key. */
+    public XPathException(String key) {
+        super();
+        fKey = key;
     } // <init>(String)
+
+    public String getKey() {
+        return fKey;
+    } // getKey():  String
 
 } // class XPathException

@@ -141,7 +141,7 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
             ic.setSelector(selector);
         }
         catch (XPathException e) {
-            reportSchemaError("c-selector-xpath", new Object[]{sText, e.getLocalizedMessage()}, sElem);
+            reportSchemaError(e.getKey(), new Object[]{sText}, sElem);
             // put back attr values...
             fAttrChecker.returnAttrArray(attrValues, schemaDoc);
             return;
@@ -187,7 +187,7 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
                 ic.addField(field);
             }
             catch (XPathException e) {
-                reportSchemaError("c-fields-xpaths", new Object[]{fText, e.getLocalizedMessage()}, fElem);
+                reportSchemaError(e.getKey(), new Object[]{fText}, fElem);
                 // put back attr values...
                 fAttrChecker.returnAttrArray(attrValues, schemaDoc);
                 return;
