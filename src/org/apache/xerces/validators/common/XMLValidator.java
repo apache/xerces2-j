@@ -4513,7 +4513,7 @@ public final class XMLValidator
         public void destroy() {
             fValuesCount = 0;
             fValues.clear();
-            fValueTuples.clear();
+            fValueTuples.removeAllElements();
         } // end destroy():void
 
         // appends the contents of one ValueStore to those of us.
@@ -4961,7 +4961,7 @@ public final class XMLValidator
             fValueStores.removeAllElements();
             fIdentityConstraint2ValueStoreMap.clear();
             fGlobalIDConstraintMap.clear();
-            fGlobalMapStack.clear();
+            fGlobalMapStack.removeAllElements();
         } // startDocument()
 
         // startElement:  pushes the current fGlobalIDConstraintMap
