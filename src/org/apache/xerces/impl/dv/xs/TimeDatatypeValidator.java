@@ -3,7 +3,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2001 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -113,10 +113,10 @@ public class TimeDatatypeValidator extends DateTimeValidator {
         //REVISIT: do we need SchemaDateTimeException?
         validateDateTime(date);
         
-        if ( date[utc]!=0 ) {
+        if ( date[utc]!=0 || date[h] == 24 ) {
             normalize(date);
         }
-                return date;
+        return date;
     }
 
 
