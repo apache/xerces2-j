@@ -65,9 +65,11 @@ import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.SymbolHash;
 import org.apache.xerces.util.DOMUtil;
 
 import org.w3c.dom.Document;
+import org.apache.xerces.dom.DocumentImpl;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 
@@ -150,10 +152,12 @@ class XSDHandler {
     // <import>ed or <redefine>d by the key XSDocumentInfo.
     private Hashtable fDependencyMap = new Hashtable();
 
-    // the presence of an XSDocumentInfo object in this vector means it has
-    // been completely traversed; needed to handle mutual <include>s
-    // etc.
-    private Vector fTraversed = new Vector();
+    // This vector stores strings which are combinations of the
+    // publicId and systemId of the inputSource corresponding to a
+    // schema document.  This combination is used so that the user's
+    // EntityResolver can provide a consistent way of identifying a
+    // schema document that is included in multiple other schemas.  
+    private SymbolHash fTraversed = new SymbolHash();
 
     // the primary XSDocumentInfo we were called to parse
     private XSDocumentInfo fRoot = null;
@@ -174,6 +178,10 @@ class XSDHandler {
     // validity.
     private Hashtable fRedefinedRestrictedAttributeGroupRegistry = new Hashtable();
     private Hashtable fRedefinedRestrictedGroupRegistry = new Hashtable();
+
+    // a variable storing whether the last schema document 
+    // processed (by getSchema) was a duplicate.
+    private boolean fLastSchemaWasDuplicate;
 
     // the XMLErrorReporter
     private XMLErrorReporter fErrorReporter;
@@ -254,11 +262,16 @@ class XSDHandler {
                               String schemaHint) {
 
         // first phase:  construct trees.
-        Document schemaRoot = getSchema(schemaNamespace, schemaHint);
+        Document schemaRoot = getSchema(schemaNamespace, schemaHint); 
+        if(schemaRoot == null) {
+            // something went wrong right off the hop
+            fElementTraverser.reportGenericSchemaError("Could not locate a schema document corresponding to grammar " + schemaNamespace);
+            return null;
+        }
         fRoot = constructTrees(schemaRoot);
         if(fRoot == null) {
             // REVISIT:  something went wrong; print error about no schema found
-            fElementTraverser.reportGenericSchemaError("Could not locate a schema document!");
+            fElementTraverser.reportGenericSchemaError("Could not locate a schema document");
             return null;
         }
         fDoc2XSDocumentMap.put(schemaRoot, fRoot);
@@ -324,6 +337,7 @@ class XSDHandler {
                 schemaHint = (String)includeAttrs[XSAttributeChecker.ATTIDX_SCHEMALOCATION];
                 schemaNamespace = (String)includeAttrs[XSAttributeChecker.ATTIDX_NAMESPACE];
                 fAttributeChecker.returnAttrArray(includeAttrs, currSchemaInfo);
+                // consciously throw away whether was a duplicate; don't care.
                 newSchemaRoot = getSchema(schemaNamespace, schemaHint);
             }
             else if ((localName.equals(SchemaSymbols.ELT_INCLUDE)) ||
@@ -733,16 +747,39 @@ class XSDHandler {
     protected void resolveKeyRefs() {
     } // end resolveKeyRefs
 
+    // This method is responsible for schema resolution.  If it finds
+    // a schema document that the XMLEntityResolver resolves to with
+    // the given namespace and hint, it returns it.  It returns true
+    // if this is the first time it's seen this document, false
+    // otherwise.  schemaDoc is null if and only if no schema document
+    // was resolved to.  
     private Document getSchema(String schemaNamespace,
                                String schemaHint) {
         // contents of this method will depend on the system we adopt for entity resolution--i.e., XMLEntityHandler, EntityHandler, etc.
         XMLInputSource schemaSource=null;
+        Document schemaDoc = null;
         try {
             schemaSource = fEntityResolver.resolveEntity(schemaNamespace, schemaHint, null);
             if (schemaSource != null) {
+                StringBuffer schemaIdBuf = new StringBuffer();;
+                if(schemaSource.getPublicId() != null)
+                    schemaIdBuf.append(schemaSource.getPublicId());
+                if(schemaSource.getSystemId() != null)
+                    schemaIdBuf.append(schemaSource.getSystemId());
+                if(schemaIdBuf.equals(EMPTY_STRING)) 
+                    schemaIdBuf.append(schemaSource.getBaseSystemId());
+                String schemaId =
+                    fSymbolTable.addSymbol(schemaIdBuf.toString());
+                if (fTraversed.get(schemaId) != null) {
+                    fLastSchemaWasDuplicate = true;
+                    return (Document)(fTraversed.get(schemaId));
+                }
                 fSchemaParser.reset();
                 fSchemaParser.parse(schemaSource);
-                return fSchemaParser.getDocument();
+                schemaDoc = fSchemaParser.getDocument();
+                fTraversed.put(schemaId, schemaDoc );
+                fLastSchemaWasDuplicate = false;
+                return schemaDoc;
             }
 
         }
@@ -751,6 +788,8 @@ class XSDHandler {
             ex.printStackTrace();
         }
 
+        schemaDoc = null;
+        fLastSchemaWasDuplicate = false;
         return null;
     } // getSchema(String, String):  Document
 
@@ -799,10 +838,11 @@ class XSDHandler {
 
         fXSDocumentInfoRegistry.clear();
         fDependencyMap.clear();
-        fTraversed.removeAllElements();
+        fTraversed.clear();
         fDoc2XSDocumentMap.clear();
         fRedefine2XSDMap.clear();
         fRoot = null;
+        fLastSchemaWasDuplicate = false;
 
         fLocalElemStackPos = 0;
         fParticle = new XSParticleDecl[INIT_STACK_SIZE];
@@ -823,6 +863,9 @@ class XSDHandler {
         fSimpleTypeTraverser.reset(errorReporter, symbolTable);
         fUniqueOrKeyTraverser.reset(errorReporter, symbolTable);
         fWildCardTraverser.reset(errorReporter, symbolTable);
+
+        fRedefinedRestrictedAttributeGroupRegistry.clear();
+        fRedefinedRestrictedGroupRegistry.clear();
 
     } // reset
 
