@@ -17,7 +17,6 @@ TARGETS=\
 	RecurringDurationValidator.class\
 	StringValidator.class\
 	TimeDurationValidator.class\
-	TimeInstantValidator.class\
 	UnknownFacetException.class\
 	URIReferenceValidator.class \
 	DatatypeValidatorRegistry.class 

@@ -83,7 +83,7 @@ public class FloatValidator implements DatatypeValidator {
 	boolean fIsMinExclusive = false;
 	float fEnumValues[] = null;
 	boolean fHasEnums = false;
-	RealValidator fBaseValidator = null;
+	//RealValidator fBaseValidator = null;
 	private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
 	private Locale fLocale = null;
 	
@@ -146,12 +146,12 @@ public class FloatValidator implements DatatypeValidator {
 	}
 	
 	public void setFacets(Hashtable facets) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
-        if (fBaseValidator != null)
-            if (!fBaseValidator.ensureFacetsAreConsistent(facets))
-                throw new IllegalFacetValueException(
-					getErrorString(DatatypeMessageProvider.FacetsInconsistent,
-								   DatatypeMessageProvider.MSG_NONE,
-								   null));
+        //if (fBaseValidator != null)
+          //  if (!fBaseValidator.ensureFacetsAreConsistent(facets))
+            //    throw new IllegalFacetValueException(
+	      //  			getErrorString(DatatypeMessageProvider.FacetsInconsistent,
+		//						   DatatypeMessageProvider.MSG_NONE,
+		  //      					   null));
 
 	    fIsMinInclusive = fIsMinExclusive = fIsMaxInclusive = fIsMaxExclusive = fHasEnums = false;
 	    for (Enumeration e = facets.keys(); e.hasMoreElements();) {
