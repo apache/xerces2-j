@@ -818,7 +818,7 @@ public class XMLSchemaValidator
             fCurrentPSVI.reset();
         }
 
-        if (fNormalizeData && !fEntityRef && !fInCDATA) {
+        if (fNormalizeData) {
             // if whitespace == -1 skip normalization, because it is a complexType
             if (fWhiteSpace != -1 && fWhiteSpace != XSSimpleType.WS_PRESERVE) {
                 // normalize data
@@ -1507,7 +1507,8 @@ public class XMLSchemaValidator
 
         // find out if type is union, what is whitespace,
         // determine if there is a need to do normalization
-        if (fNormalizeData && !fEntityRef && !fInCDATA) {
+        // Note: data in EntityRef and CDATA is normalized as well
+        if (fNormalizeData) {
             // if whitespace == -1 skip normalization, because it is a complexType
             if (fWhiteSpace != -1 && !fUnionType && fWhiteSpace != XSSimpleType.WS_PRESERVE) {
                 // normalize data
