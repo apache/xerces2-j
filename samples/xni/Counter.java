@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2001 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,32 +55,33 @@
  * <http://www.apache.org/>.
  */
 
-package dom;
+package xni;                    
 
 import java.io.PrintWriter;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.Text;
+import org.apache.xerces.parsers.XMLDocumentParser;
+import org.apache.xerces.xni.QName;
+import org.apache.xerces.xni.XMLAttributes;
+import org.apache.xerces.xni.XMLString;
+import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
 
 /**
- * A sample DOM counter. This sample program illustrates how to
- * traverse a DOM tree in order to information about the document.
- * The output of this program shows the time and count of elements,
- * attributes, ignorable whitespaces, and characters appearing in
- * the document. Three times are shown: the parse time, the first
- * traversal of the document, and the second traversal of the tree.
+ * A sample XNI counter. The output of this program shows the time
+ * and count of elements, attributes, ignorable whitespaces, and 
+ * characters appearing in the document. 
  * <p>
  * This class is useful as a "poor-man's" performance tester to
- * compare the speed and accuracy of various DOM parsers. However,
- * it is important to note that the first parse time of a parser
- * will include both VM class load time and parser initialization
- * that would not be present in subsequent parses with the same
- * file. 
+ * compare the speed and accuracy of various parser configurations. 
+ * However, it is important to note that the first parse time of a
+ * parser will include both VM class load time and parser 
+ * initialization that would not be present in subsequent parses 
+ * with the same file. 
  * <p>
  * <strong>Note:</strong> The results produced by this program
  * should never be accepted as true performance measurements.
@@ -89,7 +90,9 @@ import org.xml.sax.SAXParseException;
  *
  * @version $Id$
  */
-public class Counter {
+public class Counter
+    extends XMLDocumentParser 
+    implements ErrorHandler {
 
     //
     // Constants
@@ -108,8 +111,8 @@ public class Counter {
 
     // default settings
 
-    /** Default parser name (dom.wrappers.Xerces). */
-    protected static final String DEFAULT_PARSER_NAME = "dom.wrappers.Xerces";
+    /** Default parser configuration (org.apache.xerces.parsers.StandardParserConfiguration). */
+    protected static final String DEFAULT_PARSER_CONFIG = "org.apache.xerces.parsers.StandardParserConfiguration";
 
     /** Default namespaces support (true). */
     protected static final boolean DEFAULT_NAMESPACES = true;
@@ -119,6 +122,9 @@ public class Counter {
     
     /** Default Schema validation support (true). */
     protected static final boolean DEFAULT_SCHEMA_VALIDATION = true;
+
+    /** Default memory usage report (false). */
+    protected static final boolean DEFAULT_MEMORY_USAGE = false;
 
     //
     // Data
@@ -136,91 +142,34 @@ public class Counter {
     /** Number of ignorable whitespace characters. */
     protected long fIgnorableWhitespace;
 
-    /** Document information. */
-    protected ParserWrapper.DocumentInfo fDocumentInfo;
+    //
+    // Constructors
+    //
+
+    /** Default constructor. */
+    public Counter(XMLParserConfiguration configuration) {
+        super(configuration);
+        setErrorHandler(this);
+    } // <init>()
 
     //
     // Public methods
     //
 
-    /** Sets the parser wrapper. */
-    public void setDocumentInfo(ParserWrapper.DocumentInfo documentInfo) {
-        fDocumentInfo = documentInfo;
-    } // setDocumentInfo(ParserWrapper.DocumentInfo)
-
-    /** Traverses the specified node, recursively. */
-    public void count(Node node) {
-
-        // is there anything to do?
-        if (node == null) {
-            return;
-        }
-
-        int type = node.getNodeType();
-        switch (type) {
-            case Node.DOCUMENT_NODE: {
-                fElements = 0;
-                fAttributes = 0;
-                fCharacters = 0;
-                fIgnorableWhitespace = 0;
-                Document document = (Document)node;
-                count(document.getDocumentElement());
-                break;
-            }
-
-            case Node.ELEMENT_NODE: {
-                fElements++;
-                NamedNodeMap attrs = node.getAttributes();
-                if (attrs != null) {
-                    fAttributes += attrs.getLength();
-                }
-                // drop through to entity reference
-            }
-
-            case Node.ENTITY_REFERENCE_NODE: {
-                Node child = node.getFirstChild();
-                while (child != null) {
-                    count(child);
-                    child = child.getNextSibling();
-                }
-                break;
-            }
-
-            case Node.CDATA_SECTION_NODE: {
-                fCharacters += ((Text)node).getLength();
-                break;
-            }
-
-            case Node.TEXT_NODE: {
-                if (fDocumentInfo != null) {
-                    Text text = (Text)node;
-                    int length = text.getLength();
-                    if (fDocumentInfo.isIgnorableWhitespace(text)) {
-                        fIgnorableWhitespace += length;
-                    }
-                    else {
-                        fCharacters += length;
-                    }
-                }
-                break;
-            }
-        }
-
-    } // count(Node)
-
     /** Prints the results. */
-    public void printResults(PrintWriter out, String uri, 
-                             long parse, long traverse1, long traverse2) {
+    public void printResults(PrintWriter out, String uri, long time, long memory) {
 
-        // filename.xml: 631/200/100 ms (4 elems, 0 attrs, 78 spaces, 0 chars)
+        // filename.xml: 631 ms (4 elems, 0 attrs, 78 spaces, 0 chars)
         out.print(uri);
         out.print(": ");
-        out.print(parse);
-        out.print('/');
-        out.print(traverse1);
-        out.print('/');
-        out.print(traverse2);
-        out.print(" ms (");
+        out.print(time);
+        out.print(" ms");
+        if (memory != Long.MIN_VALUE) {
+            out.print(", ");
+            out.print(memory);
+            out.print(" bytes");
+        }
+        out.print(" (");
         out.print(fElements);
         out.print(" elems, ");
         out.print(fAttributes);
@@ -232,7 +181,95 @@ public class Counter {
         out.println();
         out.flush();
 
-    } // printResults(PrintWriter,String,long,long,long)
+    } // printResults(PrintWriter,String,long)
+
+    //
+    // ContentHandler methods
+    //
+
+    /** Start document. */
+    public void startDocument(String systemId, String encoding) 
+        throws SAXException {
+
+        fElements            = 0;
+        fAttributes          = 0;
+        fCharacters          = 0;
+        fIgnorableWhitespace = 0;
+
+    } // startDocument(String,String)
+
+    /** Start element. */
+    public void startElement(QName element, XMLAttributes attrs) 
+        throws SAXException {
+
+        fElements++;
+        if (attrs != null) {
+            fAttributes += attrs.getLength();
+        }
+
+    } // startElement(QName,XMLAttributes)
+
+    /** Characters. */
+    public void characters(XMLString text) throws SAXException {
+
+        fCharacters += text.length;
+
+    } // characters(XMLString);
+
+    /** Ignorable whitespace. */
+    public void ignorableWhitespace(XMLString text) throws SAXException {
+
+        fIgnorableWhitespace += text.length;
+
+    } // ignorableWhitespace(XMLString);
+
+    //
+    // ErrorHandler methods
+    //
+
+    /** Warning. */
+    public void warning(SAXParseException ex) throws SAXException {
+        printError("Warning", ex);
+    } // warning(SAXParseException)
+
+    /** Error. */
+    public void error(SAXParseException ex) throws SAXException {
+        printError("Error", ex);
+    } // error(SAXParseException)
+
+    /** Fatal error. */
+    public void fatalError(SAXParseException ex) throws SAXException {
+        printError("Fatal Error", ex);
+        throw ex;
+    } // fatalError(SAXParseException)
+
+    //
+    // Protected methods
+    //
+
+    /** Prints the error message. */
+    protected void printError(String type, SAXParseException ex) {
+
+        System.err.print("[");
+        System.err.print(type);
+        System.err.print("] ");
+        String systemId = ex.getSystemId();
+        if (systemId != null) {
+            int index = systemId.lastIndexOf('/');
+            if (index != -1)
+                systemId = systemId.substring(index + 1);
+            System.err.print(systemId);
+        }
+        System.err.print(':');
+        System.err.print(ex.getLineNumber());
+        System.err.print(':');
+        System.err.print(ex.getColumnNumber());
+        System.err.print(": ");
+        System.err.print(ex.getMessage());
+        System.err.println();
+        System.err.flush();
+
+    } // printError(String,SAXParseException)
 
     //
     // MAIN
@@ -248,12 +285,13 @@ public class Counter {
         }
 
         // variables
-        Counter counter = new Counter();
         PrintWriter out = new PrintWriter(System.out);
-        ParserWrapper parser = null;
+        XMLDocumentParser parser = null;
+        XMLParserConfiguration parserConfig = null;
         boolean namespaces = DEFAULT_NAMESPACES;
         boolean validation = DEFAULT_VALIDATION;
         boolean schemaValidation = DEFAULT_SCHEMA_VALIDATION;
+        boolean memoryUsage = DEFAULT_MEMORY_USAGE;
         
         // process arguments
         for (int i = 0; i < argv.length; i++) {
@@ -264,16 +302,18 @@ public class Counter {
                     // get parser name
                     if (++i == argv.length) {
                         System.err.println("error: Missing argument to -p option.");
+                        continue;
                     }
                     String parserName = argv[i];
 
                     // create parser
                     try {
-                        parser = (ParserWrapper)Class.forName(parserName).newInstance();
+                        parserConfig = (XMLParserConfiguration)Class.forName(parserName).newInstance();
+                        parser = null;
                     }
                     catch (Exception e) {
-                        parser = null;
-                        System.err.println("error: Unable to instantiate parser ("+parserName+")");
+                        parserConfig = null;
+                        System.err.println("error: Unable to instantiate parser configuration ("+parserName+")");
                     }
                     continue;
                 }
@@ -289,6 +329,19 @@ public class Counter {
                     schemaValidation = option.equals("s");
                     continue;
                 }
+                if (option.equalsIgnoreCase("m")) {
+                    memoryUsage = option.equals("m");
+                    continue;
+                }
+                if (option.equals("-rem")) {
+                    if (++i == argv.length) {
+                        System.err.println("error: Missing argument to -# option.");
+                        continue;
+                    }
+                    System.out.print("# ");
+                    System.out.println(argv[i]);
+                    continue;
+                }
                 if (option.equals("h")) {
                     printUsage();
                     continue;
@@ -296,19 +349,22 @@ public class Counter {
             }
 
             // use default parser?
-            if (parser == null) {
+            if (parserConfig == null) {
 
                 // create parser
                 try {
-                    parser = (ParserWrapper)Class.forName(DEFAULT_PARSER_NAME).newInstance();
+                    parserConfig = (XMLParserConfiguration)Class.forName(DEFAULT_PARSER_CONFIG).newInstance();
                 }
                 catch (Exception e) {
-                    System.err.println("error: Unable to instantiate parser ("+DEFAULT_PARSER_NAME+")");
+                    System.err.println("error: Unable to instantiate parser configuration ("+DEFAULT_PARSER_CONFIG+")");
                     continue;
                 }
             }
         
             // set parser features
+            if (parser == null) {
+                parser = new Counter(parserConfig);
+            }
             try {
                 parser.setFeature(NAMESPACES_FEATURE_ID, namespaces);
             }
@@ -324,30 +380,25 @@ public class Counter {
             try {
                 parser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, schemaValidation);
             }
-            catch (SAXException e) {
+            catch (SAXNotRecognizedException e) {
+                // ignore
+            }
+            catch (SAXNotSupportedException e) {
                 System.err.println("warning: Parser does not support feature ("+SCHEMA_VALIDATION_FEATURE_ID+")");
             }
 
             // parse file
             try {
-                long beforeParse = System.currentTimeMillis();
-                Document document = parser.parse(arg);
-                long afterParse = System.currentTimeMillis();
-                long parse = afterParse - beforeParse;
-
-                ParserWrapper.DocumentInfo documentInfo = parser.getDocumentInfo();
-                counter.setDocumentInfo(documentInfo);
-
-                long beforeTraverse1 = System.currentTimeMillis();
-                counter.count(document);
-                long afterTraverse1 = System.currentTimeMillis();
-                long traverse1 = afterTraverse1 - beforeTraverse1;
-
-                long beforeTraverse2 = System.currentTimeMillis();
-                counter.count(document);
-                long afterTraverse2 = System.currentTimeMillis();
-                long traverse2 = afterTraverse2 - beforeTraverse2;
-                counter.printResults(out, arg, parse, traverse1, traverse2);
+                long timeBefore = System.currentTimeMillis();
+                long memoryBefore = Runtime.getRuntime().freeMemory();
+                parser.parse(arg);
+                long memoryAfter = Runtime.getRuntime().freeMemory();
+                long timeAfter = System.currentTimeMillis();
+                
+                long time = timeAfter - timeBefore;
+                long memory = memoryUsage 
+                            ? memoryBefore - memoryAfter : Long.MIN_VALUE;
+                ((Counter)parser).printResults(out, arg, time, memory);
             }
             catch (SAXParseException e) {
                 // ignore
@@ -370,27 +421,39 @@ public class Counter {
     /** Prints the usage. */
     private static void printUsage() {
 
-        System.err.println("usage: java dom.Counter (options) uri ...");
+        System.err.println("usage: java xni.Counter (options) uri ...");
         System.err.println();
         
         System.err.println("options:");
-        System.err.println("  -p name  Select parser by name.");
-        System.err.println("  -n | -N  Turn on/off namespace processing.");
-        System.err.println("  -v | -V  Turn on/off validation.");
-        System.err.println("  -s | -S  Turn on/off Schema validation support.");
-        System.err.println("           NOTE: Not supported by all parsers.");
-        System.err.println("  -h       This help screen.");
-        System.err.println();
+        System.err.println("  -p name     Select parser configuration by name.");
+        System.err.println("  -n | -N     Turn on/off namespace processing.");
+        System.err.println("  -v | -V     Turn on/off validation.");
+        System.err.println("  -s | -S     Turn on/off Schema validation support.");
+        System.err.println("  -m | -M     Turn on/off memory usage report.");
+        System.err.println("  --rem text  Output user defined comment before next parse.");
+        System.err.println("  -h          This help screen.");
 
+        System.err.println();
         System.err.println("defaults:");
-        System.err.println("  Parser:     "+DEFAULT_PARSER_NAME);
+        System.err.println("  Config:      "+DEFAULT_PARSER_CONFIG);
         System.err.print("  Namespaces: ");
         System.err.println(DEFAULT_NAMESPACES ? "on" : "off");
         System.err.print("  Validation: ");
         System.err.println(DEFAULT_VALIDATION ? "on" : "off");
         System.err.print("  Schema:     ");
         System.err.println(DEFAULT_SCHEMA_VALIDATION ? "on" : "off");
+        System.err.print("  Memory:     ");
+        System.err.println(DEFAULT_MEMORY_USAGE ? "on" : "off");
+
+        System.err.println();
+        System.err.println("notes:");
+        System.err.println("  The speed and memory results from this program should NOT be used as the");
+        System.err.println("  basis of parser performance comparison! Real analytical methods should be");
+        System.err.println("  used. For better results, perform multiple document parses within the same");
+        System.err.println("  virtual machine to remove class loading from parse time and memory usage.");
+        System.err.println();
+        System.err.println("  Not all features are supported by different parser configurations.");
 
     } // printUsage()
 
-} // class DOMCount
+} // class Counter

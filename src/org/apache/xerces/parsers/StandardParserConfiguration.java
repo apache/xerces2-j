@@ -284,41 +284,34 @@ public class StandardParserConfiguration
             fProperties.put(GRAMMAR_POOL, fGrammarPool);
         }
 
-        if (fEntityManager == null) {
-            fEntityManager = createEntityManager();
-            fProperties.put(ENTITY_MANAGER, fEntityManager);
-            addComponent(fEntityManager);
-            fLocator = (Locator)fEntityManager.getEntityScanner();
-            fProperties.put(LOCATOR, fLocator);
-        }
+        fEntityManager = createEntityManager();
+        fProperties.put(ENTITY_MANAGER, fEntityManager);
+        addComponent(fEntityManager);
+        fLocator = (Locator)fEntityManager.getEntityScanner();
+        fProperties.put(LOCATOR, fLocator);
 
-        if (fErrorReporter == null) {
-            fErrorReporter =
-                createErrorReporter(fEntityManager.getEntityScanner());
-            fProperties.put(ERROR_REPORTER, fErrorReporter);
-            addComponent(fErrorReporter);
-        }
+        fErrorReporter = createErrorReporter(fEntityManager.getEntityScanner());
+        fProperties.put(ERROR_REPORTER, fErrorReporter);
+        addComponent(fErrorReporter);
 
-        if (fScanner == null) {
-            fScanner = createDocumentScanner();
-            fProperties.put(DOCUMENT_SCANNER, fScanner);
-            addComponent(fScanner);
-        }
+        fScanner = createDocumentScanner();
+        fProperties.put(DOCUMENT_SCANNER, fScanner);
+        addComponent(fScanner);
 
-        if (fDTDScanner == null) {
-            fDTDScanner = createDTDScanner();
+        fDTDScanner = createDTDScanner();
+        if (fDTDScanner != null) {
             fProperties.put(DTD_SCANNER, fDTDScanner);
             addComponent(fDTDScanner);
         }
 
-        if (fValidator == null) {
-            fValidator = createValidator();
+        fValidator = createValidator();
+        if (fValidator != null) {
             fProperties.put(VALIDATOR, fValidator);
             addComponent(fValidator);
         }
         
-        if (fDatatypeValidatorFactory == null) {
-            fDatatypeValidatorFactory = createDatatypeValidatorFactory();
+        fDatatypeValidatorFactory = createDatatypeValidatorFactory();
+        if (fDatatypeValidatorFactory != null) {
             fProperties.put(DATATYPE_VALIDATOR_FACTORY,
                             fDatatypeValidatorFactory);
         }
@@ -429,22 +422,41 @@ public class StandardParserConfiguration
      */
     protected void reset() throws SAXException {
 
-        // setup document pipeline
-        fScanner.setDocumentHandler(fValidator);
-        fValidator.setDocumentHandler(fDocumentHandler);
-
-        // setup dtd pipeline
-        fDTDScanner.setDTDHandler(fValidator);
-        fValidator.setDTDHandler(fDTDHandler);
-
-        // setup dtd content model pipeline
-        fDTDScanner.setDTDContentModelHandler(fValidator);
-        fValidator.setDTDContentModelHandler(fDTDContentModelHandler);
-
-        // the following will reset every component
+        // configure the pipeline and initialize the components
+        configurePipeline();
         super.reset();
 
     } // reset()
+
+    /** Configures the pipeline. */
+    protected void configurePipeline() {
+
+        // REVISIT: This should be better designed. In other words, we
+        //          need to figure out what is the best way for people to
+        //          re-use *most* of the standard configuration but do 
+        //          things common things such as remove a component (e.g.
+        //          the validator), insert a new component (e.g. XInclude), 
+        //          etc... -Ac
+
+        // setup document pipeline
+        if (fValidator != null) {
+            fScanner.setDocumentHandler(fValidator);
+            fValidator.setDocumentHandler(fDocumentHandler);
+        }
+        else {
+            fScanner.setDocumentHandler(fDocumentHandler);
+        }
+
+        // setup dtd pipeline
+        if (fDTDScanner != null) {
+            fDTDScanner.setDTDHandler(fValidator);
+            fValidator.setDTDHandler(fDTDHandler);
+            
+            fDTDScanner.setDTDContentModelHandler(fValidator);
+            fValidator.setDTDContentModelHandler(fDTDContentModelHandler);
+        }
+
+    } // configurePipeline()
 
     // features and properties
 

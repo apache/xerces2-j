@@ -177,14 +177,23 @@ public class QName
 
     /** Returns the hashcode for this object. */
     public int hashCode() {
-        return toString().hashCode();
+        if (uri != null) {
+            return uri.hashCode() + localpart.hashCode();
+        }
+        return rawname.hashCode();
     } // hashCode():int
 
     /** Returns true if the two objects are equal. */
     public boolean equals(Object object) {
         if (object instanceof QName) {
             QName qname = (QName)object;
-            return qname.toString().equals(toString());
+            if (qname.uri != null) {
+                return uri == qname.uri && localpart == qname.localpart;
+            }
+            else if (uri == null) {
+                return rawname == qname.rawname;
+            }
+            // fall through and return not equal
         }
         return false;
     } // equals(Object):boolean

@@ -456,11 +456,11 @@ public class DelayedInput
 
         System.err.println("defaults:");
         System.err.println("  Parser:     "+DEFAULT_PARSER_NAME);
-        System.out.print("  Namespaces: ");
+        System.err.print("  Namespaces: ");
         System.err.println(DEFAULT_NAMESPACES ? "on" : "off");
-        System.out.print("  Validation: ");
+        System.err.print("  Validation: ");
         System.err.println(DEFAULT_VALIDATION ? "on" : "off");
-        System.out.print("  Schema:     ");
+        System.err.print("  Schema:     ");
         System.err.println(DEFAULT_SCHEMA_VALIDATION ? "on" : "off");
 
     } // printUsage()

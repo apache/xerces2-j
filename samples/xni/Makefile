@@ -1,9 +1,10 @@
 # Makefile for directory ./xni
 
 TARGETS=\
+	Counter.class\
 	DocumentTracer.class
 
-DIRS = 
+DIRS = parser
 
 TOP = ../..
 include $(TOP)/src/Makefile.incl

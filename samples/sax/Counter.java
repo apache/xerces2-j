@@ -124,6 +124,9 @@ public class Counter
     /** Default Schema validation support (true). */
     protected static final boolean DEFAULT_SCHEMA_VALIDATION = true;
 
+    /** Default memory usage report (false). */
+    protected static final boolean DEFAULT_MEMORY_USAGE = false;
+
     //
     // Data
     //
@@ -153,13 +156,19 @@ public class Counter
     //
 
     /** Prints the results. */
-    public void printResults(PrintWriter out, String uri, long time) {
+    public void printResults(PrintWriter out, String uri, long time, long memory) {
 
         // filename.xml: 631 ms (4 elems, 0 attrs, 78 spaces, 0 chars)
         out.print(uri);
         out.print(": ");
         out.print(time);
-        out.print(" ms (");
+        out.print(" ms");
+        if (memory != Long.MIN_VALUE) {
+            out.print(", ");
+            out.print(memory);
+            out.print(" bytes");
+        }
+        out.print(" (");
         out.print(fElements);
         out.print(" elems, ");
         out.print(fAttributes);
@@ -282,6 +291,7 @@ public class Counter
         boolean namespaces = DEFAULT_NAMESPACES;
         boolean validation = DEFAULT_VALIDATION;
         boolean schemaValidation = DEFAULT_SCHEMA_VALIDATION;
+        boolean memoryUsage = DEFAULT_MEMORY_USAGE;
         
         // process arguments
         for (int i = 0; i < argv.length; i++) {
@@ -292,6 +302,7 @@ public class Counter
                     // get parser name
                     if (++i == argv.length) {
                         System.err.println("error: Missing argument to -p option.");
+                        continue;
                     }
                     String parserName = argv[i];
 
@@ -322,6 +333,19 @@ public class Counter
                 }
                 if (option.equalsIgnoreCase("s")) {
                     schemaValidation = option.equals("s");
+                    continue;
+                }
+                if (option.equalsIgnoreCase("m")) {
+                    memoryUsage = option.equals("m");
+                    continue;
+                }
+                if (option.equals("-rem")) {
+                    if (++i == argv.length) {
+                        System.err.println("error: Missing argument to -# option.");
+                        continue;
+                    }
+                    System.out.print("# ");
+                    System.out.println(argv[i]);
                     continue;
                 }
                 if (option.equals("h")) {
@@ -370,10 +394,16 @@ public class Counter
             parser.setContentHandler(counter);
             parser.setErrorHandler(counter);
             try {
-                long before = System.currentTimeMillis();
+                long timeBefore = System.currentTimeMillis();
+                long memoryBefore = Runtime.getRuntime().freeMemory();
                 parser.parse(arg);
-                long after = System.currentTimeMillis();
-                counter.printResults(out, arg, after - before);
+                long memoryAfter = Runtime.getRuntime().freeMemory();
+                long timeAfter = System.currentTimeMillis();
+                
+                long time = timeAfter - timeBefore;
+                long memory = memoryUsage 
+                            ? memoryBefore - memoryAfter : Long.MIN_VALUE;
+                counter.printResults(out, arg, time, memory);
             }
             catch (SAXParseException e) {
                 // ignore
@@ -400,22 +430,33 @@ public class Counter
         System.err.println();
         
         System.err.println("options:");
-        System.err.println("  -p name  Select parser by name.");
-        System.err.println("  -n | -N  Turn on/off namespace processing.");
-        System.err.println("  -v | -V  Turn on/off validation.");
-        System.err.println("  -s | -S  Turn on/off Schema validation support.");
-        System.err.println("           NOTE: Not supported by all parsers.");
-        System.err.println("  -h       This help screen.");
-        System.err.println();
+        System.err.println("  -p name     Select parser by name.");
+        System.err.println("  -n | -N     Turn on/off namespace processing.");
+        System.err.println("  -v | -V     Turn on/off validation.");
+        System.err.println("  -s | -S     Turn on/off Schema validation support.");
+        System.err.println("              NOTE: Not supported by all parsers.");
+        System.err.println("  -m | -M     Turn on/off memory usage report");
+        System.err.println("  --rem text  Output user defined comment before next parse.");
+        System.err.println("  -h          This help screen.");
 
+        System.err.println();
         System.err.println("defaults:");
         System.err.println("  Parser:     "+DEFAULT_PARSER_NAME);
-        System.out.print("  Namespaces: ");
+        System.err.print("  Namespaces: ");
         System.err.println(DEFAULT_NAMESPACES ? "on" : "off");
-        System.out.print("  Validation: ");
+        System.err.print("  Validation: ");
         System.err.println(DEFAULT_VALIDATION ? "on" : "off");
-        System.out.print("  Schema:     ");
+        System.err.print("  Schema:     ");
         System.err.println(DEFAULT_SCHEMA_VALIDATION ? "on" : "off");
+        System.err.print("  Memory:     ");
+        System.err.println(DEFAULT_MEMORY_USAGE ? "on" : "off");
+
+        System.err.println();
+        System.err.println("notes:");
+        System.err.println("  The speed and memory results from this program should NOT be used as the");
+        System.err.println("  basis of parser performance comparison! Real analytical methods should be");
+        System.err.println("  used. For better results, perform multiple document parses within the same");
+        System.err.println("  virtual machine to remove class loading from parse time and memory usage.");
 
     } // printUsage()
 

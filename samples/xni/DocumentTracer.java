@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000,2001 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -69,6 +69,7 @@ import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XMLAttributes;
+import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
@@ -109,6 +110,9 @@ public class DocumentTracer
 
     // default settings
 
+    /** Default parser configuration (org.apache.xerces.parsers.StandardParserConfiguration). */
+    protected static final String DEFAULT_PARSER_CONFIG = "org.apache.xerces.parsers.StandardParserConfiguration";
+
     /** Default namespaces support (true). */
     protected static final boolean DEFAULT_NAMESPACES = true;
 
@@ -140,9 +144,15 @@ public class DocumentTracer
 
     /** Default constructor. */
     public DocumentTracer() {
+        this(null);
+    } // <init>()
+
+    /** Default constructor. */
+    public DocumentTracer(XMLParserConfiguration config) {
+        super(config);
         setOutput(new PrintWriter(System.out));
         setErrorHandler(this);
-    } // <init>()
+    } // <init>(XMLParserConfiguration)
 
     //
     // Public methods
@@ -1038,16 +1048,37 @@ public class DocumentTracer
         }
 
         // variables
-        XMLDocumentParser parser = new DocumentTracer();
+        XMLDocumentParser parser = null;
+        XMLParserConfiguration parserConfig = null;
         boolean namespaces = DEFAULT_NAMESPACES;
         boolean validation = DEFAULT_VALIDATION;
         boolean schemaValidation = DEFAULT_SCHEMA_VALIDATION;
         boolean notifyCharRefs = DEFAULT_NOTIFY_CHAR_REFS;
+
         // process arguments
         for (int i = 0; i < argv.length; i++) {
             String arg = argv[i];
             if (arg.startsWith("-")) {
                 String option = arg.substring(1);
+                if (option.equals("p")) {
+                    // get parser name
+                    if (++i == argv.length) {
+                        System.err.println("error: Missing argument to -p option.");
+                        continue;
+                    }
+                    String parserName = argv[i];
+
+                    // create parser
+                    try {
+                        parserConfig = (XMLParserConfiguration)Class.forName(parserName).newInstance();
+                        parser = null;
+                    }
+                    catch (Exception e) {
+                        parserConfig = null;
+                        System.err.println("error: Unable to instantiate parser configuration ("+parserName+")");
+                    }
+                    continue;
+                }
                 if (option.equalsIgnoreCase("n")) {
                     namespaces = option.equals("n");
                     continue;
@@ -1070,7 +1101,23 @@ public class DocumentTracer
                 }
             }
 
+            // use default parser?
+            if (parserConfig == null) {
+
+                // create parser
+                try {
+                    parserConfig = (XMLParserConfiguration)Class.forName(DEFAULT_PARSER_CONFIG).newInstance();
+                }
+                catch (Exception e) {
+                    System.err.println("error: Unable to instantiate parser configuration ("+DEFAULT_PARSER_CONFIG+")");
+                    continue;
+                }
+            }
+        
             // set parser features
+            if (parser == null) {
+                parser = new DocumentTracer(parserConfig);
+            }
             try {
                 parser.setFeature(NAMESPACES_FEATURE_ID, namespaces);
             }
@@ -1131,6 +1178,7 @@ public class DocumentTracer
         System.err.println();
         
         System.err.println("options:");
+        System.out.println("  -p name  Specify parser configuration by name.");
         System.err.println("  -n | -N  Turn on/off namespace processing.");
         System.err.println("  -v | -V  Turn on/off validation.");
         System.err.println("  -s | -S  Turn on/off Schema validation support.");
@@ -1139,13 +1187,14 @@ public class DocumentTracer
         System.err.println();
 
         System.err.println("defaults:");
+        System.out.print("  Config:     "+DEFAULT_PARSER_CONFIG);
         System.out.print("  Namespaces: ");
         System.err.println(DEFAULT_NAMESPACES ? "on" : "off");
         System.out.print("  Validation: ");
         System.err.println(DEFAULT_VALIDATION ? "on" : "off");
         System.out.print("  Schema:     ");
         System.err.println(DEFAULT_SCHEMA_VALIDATION ? "on" : "off");
-        System.out.print("  Character refs:");
+        System.out.print("  Char refs:  ");
         System.err.println(DEFAULT_NOTIFY_CHAR_REFS ? "on" : "off" );
 
     } // printUsage()

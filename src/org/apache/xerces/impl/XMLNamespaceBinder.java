@@ -95,7 +95,7 @@ import org.xml.sax.SAXNotSupportedException;
  * @version $Id$
  */
 public class XMLNamespaceBinder 
-    implements XMLComponent {
+    implements XMLComponent, XMLDocumentHandler {
 
     //
     // Constants
