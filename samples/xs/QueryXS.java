@@ -72,7 +72,9 @@ import org.w3c.dom.ls.LSParser;
 /**
  * This sample program illustrates how to use load XML Schemas and 
  * use XML Schema API (org.apache.xerces.xs) to navigate XML Schema components.
- * 
+ *
+ * @author Elena Litani, IBM
+ * @version $Id$
  */
 public class QueryXS implements DOMErrorHandler {
 

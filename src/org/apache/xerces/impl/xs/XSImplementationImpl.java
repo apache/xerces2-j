@@ -71,6 +71,9 @@ import org.w3c.dom.DOMImplementation;
  * Implements XSImplementation interface that allows one to retrieve an instance of <code>XSLoader</code>. 
  * This interface should be implemented on the same object that implements 
  * DOMImplementation.
+ *
+ * @author Elena Litani, IBM
+ * @version $Id$
  */
 public class XSImplementationImpl extends CoreDOMImplementationImpl 
  								  implements XSImplementation {
