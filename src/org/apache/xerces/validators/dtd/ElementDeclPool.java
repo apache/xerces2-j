@@ -65,7 +65,7 @@ import org.apache.xerces.utils.XMLMessages;
 
 import org.xml.sax.Locator;
 import org.xml.sax.SAXParseException;
-
+import org.xml.sax.helpers.LocatorImpl;
 import java.util.StringTokenizer;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -931,9 +931,7 @@ public final class ElementDeclPool {
             fIdRefs = new Hashtable();
         else if (fIdRefs.containsKey(key))
             return;
-        if (fNullValue == null)
-            fNullValue = new Object();
-        fIdRefs.put(key, fNullValue/*new Integer(elementType)*/);
+        fIdRefs.put(key, new LocatorImpl(fErrorReporter.getLocator()));
     }
     public void checkIdRefs() throws Exception {
         if (fIdRefs == null)
@@ -943,7 +941,9 @@ public final class ElementDeclPool {
             Integer key = (Integer)en.nextElement();
             if (fIdDefs == null || !fIdDefs.containsKey(key)) {
                 Object[] args = { fStringPool.toString(key.intValue()) };
-                fErrorReporter.reportError(fErrorReporter.getLocator(),
+Locator loc = (Locator)fIdRefs.get(key);
+if (loc == null) loc = fErrorReporter.getLocator();
+                fErrorReporter.reportError(loc,
                                            XMLMessages.XML_DOMAIN,
                                            XMLMessages.MSG_ELEMENT_WITH_ID_REQUIRED,
                                            XMLMessages.VC_IDREF,
