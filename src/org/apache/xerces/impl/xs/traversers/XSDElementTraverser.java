@@ -72,6 +72,7 @@ import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.QName;
 import org.w3c.dom.Element;
+import org.w3c.dom.Attr;
 
 /**
  * The element declaration schema component traverser.
@@ -138,6 +139,21 @@ class XSDElementTraverser extends XSDAbstractTraverser {
             particle = new XSParticleDecl();
         }
         if(fDeferTraversingLocalElements) {
+            // The only thing we care about now is whether this element has
+            // minOccurs=0. This affects (if the element appears in a complex
+            // type) whether a type has emptiable content.
+            particle.fType = XSParticleDecl.PARTICLE_ELEMENT;
+            Attr attr = elmDecl.getAttributeNode(SchemaSymbols.ATT_MINOCCURS);
+            if (attr != null) {
+                String min = attr.getValue();
+                try {
+                    int m = Integer.parseInt(min.trim());
+                    if (m >= 0)
+                        particle.fMinOccurs = m;
+                }
+                catch (NumberFormatException ex) {
+                }
+            }
             fSchemaHandler.fillInLocalElemInfo(elmDecl, schemaDoc, allContextFlags, enclosingCT, particle);
         } else {
             traverseLocal(particle, elmDecl, schemaDoc, grammar, allContextFlags, enclosingCT);
@@ -198,6 +214,9 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         if (element != null) {
             particle.fType = XSParticleDecl.PARTICLE_ELEMENT;
             particle.fValue = element;
+        }
+        else {
+            particle.fType = XSParticleDecl.PARTICLE_EMPTY;
         }
         Long defaultVals = (Long)attrValues[XSAttributeChecker.ATTIDX_FROMDEFAULT];
         checkOccurrences(particle, SchemaSymbols.ELT_ELEMENT,
