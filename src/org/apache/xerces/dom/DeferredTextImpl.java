@@ -133,24 +133,9 @@ public class DeferredTextImpl
             (DeferredDocumentImpl) this.ownerDocument();
         data = ownerDocument.getNodeValueString(fNodeIndex);
 
-        // revisit: we only normalize text nodes with Elements as parents.
-        int parent = -1;
-        if (getNodeType() == Node.TEXT_NODE &&
-            (parent = ownerDocument.getParentNode(fNodeIndex)) != -1 &&
-            ownerDocument.getNodeType(parent) == Node.ELEMENT_NODE) {
-
-            int realPrev = ownerDocument.getRealPrevSibling(fNodeIndex);
-            int type     = ownerDocument.getNodeType(realPrev);
-            if (realPrev != -1 && type == Node.TEXT_NODE) {
-                StringBuffer sb = new StringBuffer(data);
-                while (realPrev != -1 && type == Node.TEXT_NODE) {
-                    sb.insert(0, ownerDocument.getNodeValueString(realPrev));
-                    realPrev = ownerDocument.getRealPrevSibling(realPrev);
-                    type = ownerDocument.getNodeType(realPrev);
-                }
-                data = sb.toString();
-            }
-        }
+        // NOTE: We used to normalize adjacent text node values here.
+        //       This code has moved to the DeferredDocumentImpl
+        //       getNodeValueString() method. -Ac
 
         // ignorable whitespace
         ignorableWhitespace(ownerDocument.getLastChild(fNodeIndex) == 1);

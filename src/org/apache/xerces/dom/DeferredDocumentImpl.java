@@ -658,13 +658,20 @@ public class DeferredDocumentImpl
 
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
-        nodeIndex = free ? clearChunkIndex(fNodePrevSib, chunk, index)
-                         : getChunkIndex(fNodePrevSib, chunk, index);
-
-        while (nodeIndex != -1 && getChunkIndex(fNodeType, chunk, index) == Node.TEXT_NODE) {
+        int type = getChunkIndex(fNodeType, chunk, index);
+        if (type == Node.TEXT_NODE) {
+            do {
+                nodeIndex = getChunkIndex(fNodePrevSib, chunk, index);
+                if (nodeIndex == -1) {
+                    break;
+                }
+                chunk = nodeIndex >> CHUNK_SHIFT;
+                index = nodeIndex & CHUNK_MASK;
+                type = getChunkIndex(fNodeType, chunk, index);
+            } while (type == Node.TEXT_NODE);
+        }
+        else {
             nodeIndex = getChunkIndex(fNodePrevSib, chunk, index);
-            chunk = nodeIndex >> CHUNK_SHIFT;
-            index = nodeIndex & CHUNK_MASK;
         }
 
         return nodeIndex;
@@ -755,7 +762,10 @@ public class DeferredDocumentImpl
         // get node type
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
-        int type = clearChunkIndex(fNodeType, chunk, index);
+        int type = getChunkIndex(fNodeType, chunk, index);
+        if (type != Node.TEXT_NODE) {
+            clearChunkIndex(fNodeType, chunk, index);
+        }
 
         // create new node
         DeferredNode node = null;
@@ -960,6 +970,28 @@ public class DeferredDocumentImpl
                        : getChunkIndex(fNodeValue, chunk, index);
         if (valueIndex == -1) {
             return null;
+        }
+
+        int type  = getChunkIndex(fNodeType, chunk, index);
+        if (type == Node.TEXT_NODE) {
+            int prevSib = getRealPrevSibling(nodeIndex);
+            if (prevSib != -1 && getNodeType(prevSib, false) == Node.TEXT_NODE) {
+                StringBuffer str = new StringBuffer();
+                str.append(fStringPool.toString(valueIndex));
+                do {
+                    chunk = prevSib >> CHUNK_SHIFT;
+                    index = prevSib & CHUNK_MASK;
+                    valueIndex = getChunkIndex(fNodeValue, chunk, index);
+                    // NOTE: This has to be done backwards because the
+                    //       children are placed backwards.
+                    str.insert(0, fStringPool.toString(valueIndex));
+                    prevSib = getChunkIndex(fNodePrevSib, chunk, index);
+                    if (prevSib == -1) {
+                        break;
+                    }
+                } while (getNodeType(prevSib, false) == Node.TEXT_NODE);
+                return str.toString();
+            }
         }
 
         return fStringPool.toString(valueIndex);
