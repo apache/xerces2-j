@@ -1025,7 +1025,9 @@ public class DeferredDocumentImpl
             if (prevSib != -1 &&
                 getNodeType(prevSib, false) == Node.TEXT_NODE) {
                 // append data that is stored in fNodeValue
-                fBufferStr.append(value);                
+                // REVISIT: for text nodes it works differently than for CDATA
+                //          nodes.
+                fStrChunks.addElement(value);
                 do {
                     // go in reverse order: find last child, then
                     // its previous sibling, etc
