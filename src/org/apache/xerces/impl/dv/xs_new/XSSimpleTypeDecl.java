@@ -70,6 +70,7 @@ import org.apache.xerces.impl.validation.ValidationContext;
 import org.apache.xerces.impl.xs.XSTypeDecl;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.impl.xpath.regex.RegularExpression;
+import org.apache.xerces.xni.NamespaceContext;
 import java.util.Vector;
 import java.util.StringTokenizer;
 
@@ -81,31 +82,32 @@ import java.util.StringTokenizer;
  */
 class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionSimpleType {
 
+    static final short DV_STRING        = PRIMITIVE_STRING;
+    static final short DV_BOOLEAN       = PRIMITIVE_BOOLEAN;
+    static final short DV_DECIMAL       = PRIMITIVE_DECIMAL;
+    static final short DV_FLOAT         = PRIMITIVE_FLOAT;
+    static final short DV_DOUBLE        = PRIMITIVE_DOUBLE;
+    static final short DV_DURATION      = PRIMITIVE_DURATION;
+    static final short DV_DATETIME      = PRIMITIVE_DATETIME;
+    static final short DV_TIME          = PRIMITIVE_TIME;
+    static final short DV_DATE          = PRIMITIVE_DATE;
+    static final short DV_GYEARMONTH    = PRIMITIVE_GYEARMONTH;
+    static final short DV_GYEAR         = PRIMITIVE_GYEAR;
+    static final short DV_GMONTHDAY     = PRIMITIVE_GMONTHDAY;
+    static final short DV_GDAY          = PRIMITIVE_GDAY;
+    static final short DV_GMONTH        = PRIMITIVE_GMONTH;
+    static final short DV_HEXBINARY     = PRIMITIVE_HEXBINARY;
+    static final short DV_BASE64BINARY  = PRIMITIVE_BASE64BINARY;
+    static final short DV_ANYURI        = PRIMITIVE_ANYURI;
+    static final short DV_QNAME         = PRIMITIVE_QNAME;
+    static final short DV_NOTATION      = PRIMITIVE_NOTATION;
+
     static final short DV_ANYSIMPLETYPE = 0;
-    static final short DV_STRING        = 1;
-    static final short DV_BOOLEAN       = 2;
-    static final short DV_DECIMAL       = 3;
-    static final short DV_FLOAT         = 4;
-    static final short DV_DOUBLE        = 5;
-    static final short DV_DURATION      = 6;
-    static final short DV_DATETIME      = 7;
-    static final short DV_TIME          = 8;
-    static final short DV_DATE          = 9;
-    static final short DV_GYEARMONTH    = 10;
-    static final short DV_GYEAR         = 11;
-    static final short DV_GMONTHDAY     = 12;
-    static final short DV_GDAY          = 13;
-    static final short DV_GMONTH        = 14;
-    static final short DV_HEXBINARY     = 15;
-    static final short DV_BASE64BINARY  = 16;
-    static final short DV_ANYURI        = 17;
-    static final short DV_QNAME         = 18;
-    static final short DV_NOTATION      = 19;
-    static final short DV_ID            = 20;
-    static final short DV_IDREF         = 21;
-    static final short DV_ENTITY        = 22;
-    static final short DV_LIST          = 23;
-    static final short DV_UNION         = 24;
+    static final short DV_ID            = DV_NOTATION + 1;
+    static final short DV_IDREF         = DV_NOTATION + 2;
+    static final short DV_ENTITY        = DV_NOTATION + 3;
+    static final short DV_LIST          = DV_NOTATION + 4;
+    static final short DV_UNION         = DV_NOTATION + 5;
 
     static final TypeValidator[] fDVs = {
         new AnySimpleDV(),
@@ -192,6 +194,7 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
         fBase = base;
         fTypeName = name;
         fTargetNamespace = SchemaDVFactoryImpl.URI_SCHEMAFORSCHEMA;
+        // To simplify the code for anySimpleType, we treat it as an atomic type
         fVariety = VARIETY_ATOMIC;
         fValidationDV = validateDV;
         fFacetsDefined = FACET_WHITESPACE;
@@ -309,7 +312,8 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
     }
 
     public short getVariety(){
-        return fVariety;
+        // for anySimpleType, return absent variaty
+        return fValidationDV == DV_ANYSIMPLETYPE ? VARIETY_ABSENT : fVariety;
     }
 
     public short getDefinedFacets() {
@@ -320,30 +324,51 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
         return (fValidationDV == DV_ID);
     }
 
-    public boolean isNOTATIONType(){
-        return (fValidationDV == DV_NOTATION);
+    public short getPrimitiveKind() {
+        if (fVariety == VARIETY_ATOMIC && fValidationDV != DV_ANYSIMPLETYPE) {
+            if (fVariety == DV_ID || fVariety == DV_IDREF || fVariety == DV_ENTITY)
+                return DV_STRING;
+            else
+                return fValidationDV;
+        }
+        else {
+            // REVISIT: error situation. runtime exception?
+            return (short)0;
+        }
     }
 
-    // REVISIT
     public XSSimpleType getPrimitiveType() {
-        if (fVariety == VARIETY_ATOMIC)
+        if (fVariety == VARIETY_ATOMIC && fValidationDV != DV_ANYSIMPLETYPE) {
+            XSSimpleTypeDecl pri = this;
+            // recursively get base, until we reach anySimpleType
+            while (pri.fBase != fAnySimpleType)
+                pri = pri.fBase;
+            return pri;
+        }
+        else {
+            // REVISIT: error situation. runtime exception?
             return null;
-        else
-            return null;
+        }
     }
 
     public XSSimpleType getItemType() {
-        if (fVariety == VARIETY_LIST)
+        if (fVariety == VARIETY_LIST) {
             return fItemType;
-        else
+        }
+        else {
+            // REVISIT: error situation. runtime exception?
             return null;
+        }
     }
 
     public XSSimpleType[] getMemberTypes() {
-        if (fVariety == VARIETY_UNION)
+        if (fVariety == VARIETY_UNION) {
             return fMemberTypes;
-        else
+        }
+        else {
+            // REVISIT: error situation. runtime exception?
             return null;
+        }
     }
 
     /**
@@ -471,10 +496,14 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
             } else {
                 fEnumeration = new Vector();
                 Vector enumVals = facets.enumeration;
+                Vector enumNSDecls = facets.enumNSDecls;
+                ValidationContextImpl ctx = new ValidationContextImpl(context);
                 for (int i = 0; i < enumVals.size(); i++) {
+                    if (enumNSDecls != null)
+                        ctx.setNSContext((NamespaceContext)enumNSDecls.elementAt(i));
                     try {
                         // check 4.3.5.c0 must: enumeration values from the value space of base
-                        fEnumeration.addElement(this.fBase.validate((String)enumVals.elementAt(i), context, fTempInfo));
+                        fEnumeration.addElement(this.fBase.validate((String)enumVals.elementAt(i), ctx, fTempInfo));
                     } catch (InvalidDatatypeValueException ide) {
                         reportError("Value of enumeration '" + enumVals.elementAt(i) + "' must be from the value space of base");
                     }
@@ -1657,4 +1686,58 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
 
     static final XSSimpleTypeDecl fAnySimpleType = new XSSimpleTypeDecl(null, "anySimpleType", DV_ANYSIMPLETYPE, ORDERED_FALSE, false, CARDINALITY_FINITE, false);
 
+    /**
+     * A wrapper of ValidationContext, to provide a way of switching to a
+     * different Namespace declaration context.
+     */
+    class ValidationContextImpl implements ValidationContext {
+        ValidationContext fExternal;
+        ValidationContextImpl(ValidationContext external) {
+            fExternal = external;
+        }
+
+        NamespaceContext fNSContext;
+        void setNSContext(NamespaceContext nsContext) {
+            fNSContext = nsContext;
+        }
+
+        public boolean needFacetChecking() {
+            return fExternal.needFacetChecking();
+        }
+
+        public boolean needExtraChecking() {
+            return fExternal.needExtraChecking();
+        }
+
+        public boolean isEntityDeclared (String name) {
+            return fExternal.isEntityDeclared(name);
+        }
+
+        public boolean isEntityUnparsed (String name) {
+            return fExternal.isEntityUnparsed(name);
+        }
+
+        public boolean isIdDeclared (String name) {
+            return fExternal.isIdDeclared(name);
+        }
+
+        public void    addId(String name) {
+            fExternal.addId(name);
+        }
+
+        public void addIdRef(String name) {
+            fExternal.addIdRef(name);
+        }
+
+        public String getSymbol (String symbol) {
+            return fExternal.getSymbol(symbol);
+        }
+
+        public String getURI(String prefix) {
+            if (fNSContext == null)
+                return fExternal.getURI(prefix);
+            else
+                return fNSContext.getURI(prefix);
+        }
+    }
 } // class XSComplexTypeDecl

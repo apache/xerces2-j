@@ -68,16 +68,63 @@ package org.apache.xerces.impl.dv;
 public interface XSAtomicSimpleType extends XSSimpleType {
 
     /**
-     * return the built-in primitive type
-     *
-     * @return   the built-in primitive type
+     * Constant defined for the primitive built-in simple tpyes.
+     * see <a href='http://www.w3.org/TR/xmlschema-2/#built-in-primitive-datatypes'>
+     * XML Schema Part 2: Datatypes </a>
      */
-    //public XSSimpleType getPrimitiveType();
+    /** "string" type */
+    public static final short PRIMITIVE_STRING        = 1;
+    /** "boolean" type */
+    public static final short PRIMITIVE_BOOLEAN       = 2;
+    /** "decimal" type */
+    public static final short PRIMITIVE_DECIMAL       = 3;
+    /** "float" type */
+    public static final short PRIMITIVE_FLOAT         = 4;
+    /** "double" type */
+    public static final short PRIMITIVE_DOUBLE        = 5;
+    /** "duration" type */
+    public static final short PRIMITIVE_DURATION      = 6;
+    /** "dataTime" type */
+    public static final short PRIMITIVE_DATETIME      = 7;
+    /** "time" type */
+    public static final short PRIMITIVE_TIME          = 8;
+    /** "date" type */
+    public static final short PRIMITIVE_DATE          = 9;
+    /** "gYearMonth" type */
+    public static final short PRIMITIVE_GYEARMONTH    = 10;
+    /** "gYear" type */
+    public static final short PRIMITIVE_GYEAR         = 11;
+    /** "gMonthDay" type */
+    public static final short PRIMITIVE_GMONTHDAY     = 12;
+    /** "gDay" type */
+    public static final short PRIMITIVE_GDAY          = 13;
+    /** "gMonth" type */
+    public static final short PRIMITIVE_GMONTH        = 14;
+    /** "hexBinary" type */
+    public static final short PRIMITIVE_HEXBINARY     = 15;
+    /** "base64Binary" type */
+    public static final short PRIMITIVE_BASE64BINARY  = 16;
+    /** "anyURI" type */
+    public static final short PRIMITIVE_ANYURI        = 17;
+    /** "QName" type */
+    public static final short PRIMITIVE_QNAME         = 18;
+    /** "NOTATION" type */
+    public static final short PRIMITIVE_NOTATION      = 19;
 
     /**
-     * return an ID representing the built-in primitive type
+     * return an ID representing the built-in primitive base type.
+     * REVISIT: This method is (currently) for internal use only.
+     *          the constants returned from this method are not finalized yet.
+     *          the names and values might change in the further.
      *
-     * @return   an ID representing the built-in primitive type
+     * @return   an ID representing the built-in primitive base type
      */
-    //public int getPrimitiveKind();
+    public short getPrimitiveKind();
+
+    /**
+     * return the built-in primitive base type
+     *
+     * @return   the built-in primitive base type
+     */
+    public XSSimpleType getPrimitiveType();
 }
