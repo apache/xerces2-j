@@ -1,5 +1,6 @@
 
-TARGETS= Test.class
+TARGETS= TestSerializeDOMIn.class \
+	TestSerializeDOMOut.class
 
 DIRS =
 
