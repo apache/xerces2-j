@@ -2007,8 +2007,9 @@ public class XMLEntityManager
             // scan literal value
             while (fCurrentEntity.position < fCurrentEntity.count) {
                 c = fCurrentEntity.ch[fCurrentEntity.position++];
-                if ((c == quote && !fCurrentEntity.literal) || 
-                    c == '%' || !XMLChar.isContent(c)) {
+                if ((c == quote &&
+                     (!fCurrentEntity.literal || fCurrentEntity.isExternal()))
+                    || c == '%' || !XMLChar.isContent(c)) {
                     fCurrentEntity.position--;
                     break;
                 }
