@@ -62,7 +62,9 @@ import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.ContentModelValidator;
 import org.apache.xerces.impl.validation.Grammar;
 import org.apache.xerces.impl.validation.GrammarPool;
+import org.apache.xerces.impl.validation.XMLAttributeDecl;
 import org.apache.xerces.impl.validation.XMLElementDecl;
+import org.apache.xerces.impl.validation.XMLSimpleType ;
 import org.apache.xerces.impl.validation.grammars.DTDGrammar;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.QName;
@@ -179,6 +181,11 @@ public class XMLValidator
 
     /** temporary variables so that we create less objects */
     private XMLElementDecl fTempElementDecl = new XMLElementDecl();
+    private XMLAttributeDecl fTempAttDecl = new XMLAttributeDecl();
+
+    /** DEBUG flags */
+    private boolean DEBUG_ATTRIBUTES;
+
     //
     // Constructors
     //
@@ -1350,9 +1357,143 @@ public class XMLValidator
     } // endContentModel()
 
 
+
+    //
+    //
     //private methods
+    //
+    //
 
 
+   /** addDTDDefaultAttributes. */
+   /****
+   private void addDTDDefaultAttributes( int elementIndex, XMLAttributes attributes) throws Exception {
+
+      if (elementIndex == -1) {
+         return ;
+      }
+
+      fCurrentGrammar.getElementDecl(elementIndex,fTempElementDecl);
+
+      QName element = fTempElementDecl.name;
+
+      //
+      // Check after all specified attrs are scanned
+      // (1) report error for REQUIRED attrs that are missing (V_TAGc)
+      // (2) add default attrs (FIXED and NOT_FIXED)
+      //
+      int attlistIndex = fCurrentGrammar.getFirstAttributeDeclIndex(elementIndex);
+
+      while (attlistIndex != -1) {
+
+         fCurrentGrammar.getAttributeDecl(attlistIndex, fTempAttDecl);
+
+         if (DEBUG_ATTRIBUTES) 
+             if (fTempAttDecl != null) {
+                 XMLElementDecl elementDecl = new XMLElementDecl();
+                 fCurrentGrammar.getElementDecl(elementIndex, elementDecl);
+                 System.out.println("element: "+(elementDecl.name.localpart));
+                 System.out.println("attlistIndex " + attlistIndex + "\n"+
+                                    "attName : '"+(fTempAttDecl.name.localpart) + "'\n"
+                                    + "attType : "+fTempAttDecl.simpleType.type + "\n"
+                                    + "attDefaultType : "+fTempAttDecl.simpleType.defaultType + "\n"
+                                    + "attDefaultValue : '"+fTempAttDecl.simpleType.defaultValue + "'\n"
+                                    + attributes.getLength() +"\n"
+                                    );
+             }
+
+         String attPrefix = fTempAttDecl.name.prefix;
+         String attRawName = fTempAttDecl.name.rawname;
+         String attLocalpart = fTempAttDecl.name.localpart;
+         String attType = attributeTypeName(fTempAttDecl);
+         int attDefaultType =fTempAttDecl.simpleType.defaultType;
+         String attValue = null;
+
+         if (fTempAttDecl.simpleType.defaultValue != null ) {
+            attValue = fTempAttDecl.simpleType.defaultValue;
+         }
+         boolean specified = false;
+         boolean required = attDefaultType == XMLSimpleType.DEFAULT_TYPE_REQUIRED;
+         boolean cdata = attType == fCDATASymbol;
+
+         if (!cdata || required || attValue != null) {
+             for ( int i = 0; i< attributes.getLength(); i++ ) {
+
+                 if ( attributes.getName(i) == attRawName ) {
+
+                     // REVISIT, this should be moved down
+                     if (fValidation && attDefaultType == XMLSimpleType.DEFAULT_TYPE_FIXED) {
+                         String alistValue = attributes.getValue(i);
+                         if (alistValue != attValue && !alistValue.equals(attValue) ) {
+                             Object[] args = { (element.rawname),
+                                 (attRawName),
+                                 (alistValue),
+                                 (attValue) };
+                                 fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                                            XMLMessages.XML_DOMAIN,
+                                                            XMLMessages.MSG_FIXED_ATTVALUE_INVALID,
+                                                            XMLMessages.VC_FIXED_ATTRIBUTE_DEFAULT,
+                                                            args,
+                                                            XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+                         }
+                     }
+                     specified = true;
+                     break;
+                 }
+             }
+         }
+
+         if (!specified) {
+            if (required) {
+               if (fValidation) {
+                  Object[] args = { element.rawname,
+                                    attRawName};
+                  fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                             "MSG_REQUIRED_ATTRIBUTE_NOT_SPECIFIED", args,
+                                             XMLErrorReporter.SEVERITY_ERROR);
+               }
+            }
+            else if (attValue != null) {
+               if (fValidation && fStandaloneIsYes )
+                  if ( fCurrentGrammarIsDTD 
+                       && ((DTDGrammar) fCurrentGrammar).getAttributeDeclIsExternal(attlistIndex) ) {
+
+                     Object[] args = { element.rawname,
+                                       attName};
+                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                "MSG_DEFAULTED_ATTRIBUTE_NOT_SPECIFIED", args,
+                                                XMLErrorReporter.SEVERITY_ERROR);
+                  }
+
+                  // if these attribute is of type ID or IDREF, add them to the ID or IDREF pool
+                  // REVISIT
+                  /***
+                  if (attType == fIDREFSymbol) {
+                  this.fValIDRef.validate( (attValue), this.fStoreIDRef );
+                  } else if (attType == fIDREFSSymbol) {
+                  this.fValIDRefs.validate( (attValue), this.fStoreIDRef );
+                  }
+                  /****
+
+               fTempQName.setValues(attPrefix, attLocalpart, attRawName, fTempAttDecl.name.uri);
+               int newAttr = attributes.addAttribute(fTempQName, attType, attValue);
+            }
+         }
+         // get next att decl in the Grammar for this element
+         attlistIndex = fCurrentGrammar.getNextAttributeDeclIndex(attlistIndex);
+      }
+
+      // now iterate through the expanded attributes again for 
+      // 1. normalize the attributeValue;
+      // 2. check if the VC: default_fixed holds
+      // 3. validate every attribute.
+
+
+      return;
+
+   } // addDTDDefaultAttributes(int,XMLAttrList,int,boolean,boolean):int
+
+****/
     
     /** Root element specified. */
     private void rootElementSpecified(QName rootElement) throws SAXException {
