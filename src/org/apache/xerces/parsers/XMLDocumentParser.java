@@ -87,7 +87,7 @@ import org.xml.sax.SAXNotSupportedException;
  *
  * @version $Id$ */
 public class XMLDocumentParser
-    extends AbstractDOMParser {
+    extends AbstractXMLDocumentParser {
 
     //
     // Constants
