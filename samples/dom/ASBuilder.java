@@ -247,7 +247,7 @@ public class ASBuilder implements DOMErrorHandler {
         System.err.println("options:");
         System.err.println("  -f  | -F    Turn on/off Schema full checking.");
         System.err.println("  -a uri ...  Provide a list of schema documents.");
-        System.err.println("  -i uri ...  Provide a list of instalce documents to validate.");
+        System.err.println("  -i uri ...  Provide a list of instance documents to validate.");
         System.err.println();
 
         System.err.println("default:");

@@ -328,13 +328,13 @@ public class XMLGrammarBuilder {
 
         System.err.println("options:");
         System.err.println("  -p config_file:   configuration to use for instance validation");
-        System.err.println("  -d    grammars to preparse are DTD esxternal subsets");
+        System.err.println("  -d    grammars to preparse are DTD external subsets");
         System.err.println("  -f  | -F    Turn on/off Schema full checking (default "+ 
-                (DEFAULT_SCHEMA_FULL_CHECKING ? "on" : "off"));
-        System.err.println("  -a uri ...  Provide a list of schema documents.");
-        System.err.println("  -i uri ...  Provide a list of instalce documents to validate.");
+                (DEFAULT_SCHEMA_FULL_CHECKING ? "on" : "off)"));
+        System.err.println("  -a uri ...  Provide a list of schema documents");
+        System.err.println("  -i uri ...  Provide a list of instance documents to validate");
         System.err.println();
-        System.err.println("Both -d and -a cannot be specified!");
+        System.err.println("NOTE:  both -d and -a cannot be specified!");
 
     } // printUsage()
 
