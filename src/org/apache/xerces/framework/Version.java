@@ -69,7 +69,7 @@ public class Version {
     //
 
     /** Version string. */
-    public static String  fVersion = "Xerces 1.3.1";
+    public static String  fVersion = "Xerces 1.4.0";
 
     //
     // MAIN
