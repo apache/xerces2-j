@@ -1315,6 +1315,7 @@ public class XMLEntityManager
             throws IOException, SAXException {
 
             int delimLen = delimiter.length();
+            char charAt0 = delimiter.charAt(0); 
             int limit = fCurrentEntity.count - delimLen + 1;
 
             if (fCurrentEntity.position == fCurrentEntity.count) {
@@ -1338,7 +1339,7 @@ public class XMLEntityManager
             // for the delimiter to be there
             while (fCurrentEntity.position < limit) {
                 char c = fCurrentEntity.ch[fCurrentEntity.position++];
-                if (c == delimiter.charAt(0)) {
+                if (c == charAt0) {
                     // looks like we just hit the delimiter
                     int i;
                     for (i = 1; i < delimLen; i++) {
