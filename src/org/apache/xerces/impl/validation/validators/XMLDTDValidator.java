@@ -59,8 +59,13 @@ package org.apache.xerces.impl.validation.validators;
 
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.XMLValidator;
+import org.apache.xerces.impl.msg.XMLMessageFormatter;
+import org.apache.xerces.impl.validation.ContentModelValidator;
+import org.apache.xerces.impl.validation.DatatypeValidator;
+import org.apache.xerces.impl.validation.InvalidDatatypeValueException;
 import org.apache.xerces.impl.validation.Grammar;
 import org.apache.xerces.impl.validation.GrammarPool;
+import org.apache.xerces.impl.validation.XMLElementDecl;
 import org.apache.xerces.impl.validation.grammars.DTDGrammar;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.QName;
@@ -91,6 +96,37 @@ public class XMLDTDValidator
     // Data
     //
 
+    /** Cache all infor regarding the current element */
+    private QName fCurrentElement = new QName();
+    private int fCurrentElementIndex = -1;
+    private int fCurrentContentSpecType = -1;
+    private boolean fNamespacesEnabled = false;
+    private int fNamespacesPrefix = -1;
+    private QName fRootElement = new QName();
+    private boolean fSeenDoctypeDecl = false;
+
+    private final int TOP_LEVEL_SCOPE = -1;
+    private int fEmptyURI = - 1; 
+
+    /** element stack */
+    private int[] fElementIndexStack = new int[8];
+    private int[] fContentSpecTypeStack = new int[8];
+    private QName[] fElementQNamePartsStack      = new QName[8];
+
+    /** childrent list and offset stack */
+    private QName[] fElementChildren = new QName[32];
+    private int fElementChildrenLength = 0;
+    private int[] fElementChildrenOffsetStack = new int[32];
+    private int fElementDepth = -1;
+
+    /** validation states */
+    private boolean fStandaloneIsNo = false;
+    private boolean fSeenRootElement = false;
+
+    /** temporary variables so that we create less objects */
+    private XMLElementDecl fTempElementDecl = new XMLElementDecl();
+
+
     //
     // Constructors
     //
@@ -99,6 +135,29 @@ public class XMLDTDValidator
     //
     // XMLComponent methods
     //
+    
+    /*
+     * Resets the component. The component can query the component manager
+     * about any features and properties that affect the operation of the
+     * component.
+     * 
+     * @param componentManager The component manager.
+     *
+     * @throws SAXException Thrown by component on initialization error.
+     *                      For example, if a feature or property is
+     *                      required for the operation of the component, the
+     *                      component manager may throw a 
+     *                      SAXNotRecognizedException or a
+     *                      SAXNotSupportedException.
+     */
+    public void reset(XMLComponentManager configurationManager)
+        throws SAXException {
+        
+        super.reset(configurationManager);
+
+        fElementDepth = -1;
+
+    } // reset(XMLComponentManager)
 
 
     //
@@ -116,6 +175,7 @@ public class XMLDTDValidator
         if (fDocumentHandler != null) {
             fDocumentHandler.startDocument();
         }
+
     
     } // startDocument()
 
@@ -133,6 +193,11 @@ public class XMLDTDValidator
      */
     public void xmlDecl(String version, String encoding, String standalone)
         throws SAXException {
+
+        if (standalone != null ) 
+            if ( standalone.equals("no") ) {
+                fStandaloneIsNo = true;
+            }
 
         // call handlers
         if (fDocumentHandler != null) {
@@ -154,6 +219,8 @@ public class XMLDTDValidator
      */
     public void doctypeDecl(String rootElement, String publicId, String systemId)
         throws SAXException {
+
+        fRootElement.setValues(null, rootElement, rootElement, null);
 
         // call handlers
         if (fDocumentHandler != null) {
@@ -193,12 +260,68 @@ public class XMLDTDValidator
      */
     public void startElement(QName element, XMLAttributes attributes)
         throws SAXException {
-
-        // call handlers
-        if (fDocumentHandler != null) {
-            fDocumentHandler.startElement(element, attributes);
+        
+        // VC: Root Element Type
+        // see if the root element's name matches the one in DoctypeDecl 
+        if (!fSeenRootElement) {
+            fSeenRootElement = true;
+            rootElementSpecified(element);
         }
-    
+
+        // TO DO
+        //  0. resolve the element
+        //  1. insert default attributes
+        //  2. validate the attrivute list.
+
+        // increment the element depth, add this element's 
+        // QName to its enclosing element 's children list
+        fElementDepth++;
+        //if (fElementDepth >= 0) {
+        if (fValidation) {
+            // push current length onto stack
+            if (fElementChildrenOffsetStack.length < fElementDepth) {
+                int newarray[] = new int[fElementChildrenOffsetStack.length * 2];
+                System.arraycopy(fElementChildrenOffsetStack, 0, newarray, 0, fElementChildrenOffsetStack.length);
+                fElementChildrenOffsetStack = newarray;
+            }
+            fElementChildrenOffsetStack[fElementDepth] = fElementChildrenLength;
+
+            // add this element to children
+            if (fElementChildren.length <= fElementChildrenLength) {
+                QName[] newarray = new QName[fElementChildrenLength * 2];
+                System.arraycopy(fElementChildren, 0, newarray, 0, fElementChildren.length);
+                fElementChildren = newarray;
+            }
+            QName qname = fElementChildren[fElementChildrenLength];
+            if (qname == null) {
+                for (int i = fElementChildrenLength; i < fElementChildren.length; i++) {
+                    fElementChildren[i] = new QName();
+                }
+                qname = fElementChildren[fElementChildrenLength];
+            }
+            qname.setValues(element);
+            fElementChildrenLength++;
+
+            /***
+            if (DEBUG_ELEMENT_CHILDREN) {
+                printChildren();
+                printStack();
+            }
+            /***/
+        }
+
+
+        ensureStackCapacity(fElementDepth);
+
+        fCurrentElement.setValues(element);
+
+        fElementQNamePartsStack[fElementDepth].setValues(fCurrentElement); 
+
+        fElementIndexStack[fElementDepth] = fCurrentElementIndex;
+        fContentSpecTypeStack[fElementDepth] = fCurrentContentSpecType;
+
+        super.startElement(element, attributes);
+
     } // startElement(QName,XMLAttributes)
 
     /**
@@ -247,10 +370,101 @@ public class XMLDTDValidator
      */
     public void endElement(QName element) throws SAXException {
 
+        String prefixIndex = fCurrentElement.prefix;
+        String elementType = fCurrentElement.rawname;
+
+        fElementDepth--;
+        if (fValidation) {
+            int elementIndex = fCurrentElementIndex;
+            if (elementIndex != -1 && fCurrentContentSpecType != -1) {
+                QName children[] = fElementChildren;
+                int childrenOffset = fElementChildrenOffsetStack[fElementDepth + 1] + 1;
+                int childrenLength = fElementChildrenLength - childrenOffset;
+                int result = checkContent(elementIndex, 
+                                          children, childrenOffset, childrenLength);
+
+
+                if (result != -1) {
+                    // TO DO : fix this
+                    /****
+                    int majorCode = result != childrenLength ? XMLMessages.MSG_CONTENT_INVALID : XMLMessages.MSG_CONTENT_INCOMPLETE;
+                    fGrammar.getElementDecl(elementIndex, fTempElementDecl);
+                    if (fTempElementDecl.type == XMLElementDecl.TYPE_EMPTY) {
+                        reportRecoverableXMLError(majorCode,
+                                                  0,
+                                                  fStringPool.toString(elementType),
+                                                  "EMPTY");
+                    } else
+                        reportRecoverableXMLError(majorCode,
+                                                  0,
+                                                  fStringPool.toString(elementType),
+                                                  XMLContentSpec.toString(fGrammar, fStringPool, fTempElementDecl.contentSpecIndex));
+                                                  
+                    /****/
+                }
+            }
+            fElementChildrenLength = fElementChildrenOffsetStack[fElementDepth + 1] + 1;
+        }
         // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.endElement(element);
         }
+    
+        
+        // now pop this element off the top of the element stack
+        if (fElementDepth < -1) {
+            throw new RuntimeException("FWK008 Element stack underflow");
+        }
+        if (fElementDepth < 0) {
+            fCurrentElement.clear();
+            fCurrentElementIndex = -1;
+            fCurrentContentSpecType = -1;
+
+            // TO DO : fix this
+            //
+            // Check after document is fully parsed
+            // (1) check that there was an element with a matching id for every
+            //   IDREF and IDREFS attr (V_IDREF0)
+            //
+            /**
+            if (fValidating ) {
+                try {
+                    this.fValIDRef.validate( null, this.fValidateIDRef );   
+                    this.fValIDRefs.validate( null, this.fValidateIDRef );
+                } catch ( InvalidDatatypeValueException ex ) {
+                    reportRecoverableXMLError( ex.getMajorCode(), ex.getMinorCode(), 
+                                               ex.getMessage() ); 
+
+
+                }
+            }
+            
+            try {//Reset datatypes state
+               this.fValID.validate( null, this.fResetID );
+               this.fValIDRef.validate(null, this.fResetIDRef );
+               this.fValIDRefs.validate(null, this.fResetIDRef );
+            } catch ( InvalidDatatypeValueException ex ) {
+                System.err.println("Error re-Initializing: ID,IDRef,IDRefs pools" );
+            }
+            ***/
+            return;
+        }
+
+
+
+
+        if (fNamespaces) { //If Namespace enable then localName != rawName
+            fCurrentElement.localpart = fElementQNamePartsStack[fElementDepth].localpart;
+        } else {//REVISIT - jeffreyr - This is so we still do old behavior when namespace is off 
+            fCurrentElement.localpart = fElementQNamePartsStack[fElementDepth].rawname;
+        }
+        fCurrentElement.rawname      = fElementQNamePartsStack[fElementDepth].rawname;
+        fCurrentElement.uri          = fElementQNamePartsStack[fElementDepth].uri;
+        fCurrentElement.prefix       = fElementQNamePartsStack[fElementDepth].prefix;
+
+
+        fCurrentElementIndex = fElementIndexStack[fElementDepth];
+        fCurrentContentSpecType = fContentSpecTypeStack[fElementDepth];
     
     } // endElement(QName)
 
@@ -949,5 +1163,152 @@ public class XMLDTDValidator
         }
 
     } // endContentModel()
+
+
+    //private methods
+    
+    /** Root element specified. */
+    private void rootElementSpecified(QName rootElement) throws SAXException {
+        if (fValidation) {
+            String root1 = fRootElement.rawname;
+            String root2 = rootElement.rawname;
+            if ( root1 == null || !root1.equals(root2)) {
+                fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, 
+                                            "RootElementTypeMustMatchDoctypedecl", 
+                                            new Object[]{root1, root2}, 
+                                            XMLErrorReporter.SEVERITY_ERROR);
+            }
+        }
+    } // rootElementSpecified(QName)
+
+
+    /**
+     * Check that the content of an element is valid.
+     * <p>
+     * This is the method of primary concern to the validator. This method is called
+     * upon the scanner reaching the end tag of an element. At that time, the
+     * element's children must be structurally validated, so it calls this method.
+     * The index of the element being checked (in the decl pool), is provided as
+     * well as an array of element name indexes of the children. The validator must
+     * confirm that this element can have these children in this order.
+     * <p>
+     * This can also be called to do 'what if' testing of content models just to see
+     * if they would be valid.
+     * <p>
+     * Note that the element index is an index into the element decl pool, whereas
+     * the children indexes are name indexes, i.e. into the string pool.
+     * <p>
+     * A value of -1 in the children array indicates a PCDATA node. All other
+     * indexes will be positive and represent child elements. The count can be
+     * zero, since some elements have the EMPTY content model and that must be
+     * confirmed.
+     *
+     * @param elementIndex The index within the <code>ElementDeclPool</code> of this
+     *                     element.
+     * @param childCount The number of entries in the <code>children</code> array.
+     * @param children The children of this element.  
+     *
+     * @return The value -1 if fully valid, else the 0 based index of the child
+     *         that first failed. If the value returned is equal to the number
+     *         of children, then additional content is required to reach a valid
+     *         ending state.
+     *
+     * @exception Exception Thrown on error.
+     */
+    private int checkContent(int elementIndex, 
+                             QName[] children,
+                             int childOffset, 
+                             int childCount) throws SAXException {
+
+        fCurrentGrammar.getElementDecl(elementIndex, fTempElementDecl);
+
+        // Get the element name index from the element
+        final String elementType = fCurrentElement.rawname;
+
+        // Get out the content spec for this element
+        final int contentType = fCurrentContentSpecType;
+
+
+        //
+        //  Deal with the possible types of content. We try to optimized here
+        //  by dealing specially with content models that don't require the
+        //  full DFA treatment.
+        //
+        if (contentType == XMLElementDecl.TYPE_EMPTY) {
+            //
+            //  If the child count is greater than zero, then this is
+            //  an error right off the bat at index 0.
+            //
+            if (childCount != 0) {
+                return 0;
+            }
+        } else if (contentType == XMLElementDecl.TYPE_ANY) {
+            //
+            //  This one is open game so we don't pass any judgement on it
+            //  at all. Its assumed to fine since it can hold anything.
+            //
+        } else if (contentType == XMLElementDecl.TYPE_MIXED ||  
+                   contentType == XMLElementDecl.TYPE_CHILDREN) {
+            // Get the content model for this element, faulting it in if needed
+            ContentModelValidator cmElem = null;
+            cmElem = fTempElementDecl.contentModelValidator;
+            int result = cmElem.validate(children, childOffset, childCount);
+            return result;
+        } else if (contentType == -1) {
+            /****
+            reportRecoverableXMLError(XMLMessages.MSG_ELEMENT_NOT_DECLARED,
+                                      XMLMessages.VC_ELEMENT_VALID,
+                                      elementType);
+            /****/
+        } else if (contentType == XMLElementDecl.TYPE_SIMPLE ) {
+
+            //REVISIT
+            // this should never be reached in the case of DTD validation.
+
+        } else {
+            /****
+            fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                       ImplementationMessages.XERCES_IMPLEMENTATION_DOMAIN,
+                                       ImplementationMessages.VAL_CST,
+                                       0,
+                                       null,
+                                       XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
+            /****/                           
+        }
+
+        // We succeeded
+        return -1;
+
+    } // checkContent(int,int,QName[]):int
+
+
+    /** ensure element stack capacity */
+    private void ensureStackCapacity ( int newElementDepth) {
+
+        if (newElementDepth == fElementQNamePartsStack.length ) {
+            int[] newStack = new int[newElementDepth * 2];
+
+            QName[] newStackOfQueue = new QName[newElementDepth * 2];
+            System.arraycopy(this.fElementQNamePartsStack, 0, newStackOfQueue, 0, newElementDepth );
+            fElementQNamePartsStack      = newStackOfQueue;
+
+            QName qname = fElementQNamePartsStack[newElementDepth];
+            if (qname == null) {
+                for (int i = newElementDepth; i < fElementQNamePartsStack.length; i++) {
+                    fElementQNamePartsStack[i] = new QName();
+                }
+            }
+
+            newStack = new int[newElementDepth * 2];
+            System.arraycopy(fElementIndexStack, 0, newStack, 0, newElementDepth);
+            fElementIndexStack = newStack;
+
+            newStack = new int[newElementDepth * 2];
+            System.arraycopy(fContentSpecTypeStack, 0, newStack, 0, newElementDepth);
+            fContentSpecTypeStack = newStack;
+
+        }
+    } // ensureStackCapacity
+
 
 } // class XMLDTDValidator
