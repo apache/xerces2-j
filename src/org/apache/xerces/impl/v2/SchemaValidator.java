@@ -1227,7 +1227,7 @@ public class SchemaValidator
             int count = fMatcherStack.getMatcherCount();
             for (int i = 0; i < count; i++) {
                 XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
-            matcher.startElement(element, attributes, fGrammarResolver.getGrammar(element.uri));
+                matcher.startElement(element, attributes, fCurrentElemDecl);
             }
         }
 
@@ -1271,7 +1271,7 @@ public class SchemaValidator
         int oldCount = fMatcherStack.getMatcherCount();
         for (int i = oldCount - 1; i >= 0; i--) {
             XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
-            matcher.endElement(element, fCurrentElemDecl, fGrammarResolver.getGrammar(element.uri));
+            matcher.endElement(element, fCurrentElemDecl); 
         }
         if (fMatcherStack.size() > 0) {
             fMatcherStack.popContext();
