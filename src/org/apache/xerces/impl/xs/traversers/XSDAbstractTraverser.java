@@ -566,9 +566,11 @@ abstract class XSDAbstractTraverser {
             }
         }
         else if (processingAllGP || groupRefWithAll) {
-            if (min != 1 || max != 1) {
+            if (max != 1) {
                 reportSchemaError("cos-all-limited.1.2", null, parent);
-                min = max = 1;
+                if (min > 1)
+                    min = 1;
+                max = 1;
             }
         }
 
