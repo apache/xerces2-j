@@ -495,4 +495,9 @@ public abstract class AbstractStringValidator extends AbstractDatatypeValidator 
                                                    "Value '"+content+"' is not a valid " + tokenType);
         }
     }
+
+
+    public boolean hasEnumeration(){
+        return (fEnumeration !=null)?true:false;
+    }
 }

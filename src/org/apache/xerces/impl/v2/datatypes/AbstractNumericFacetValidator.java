@@ -448,6 +448,10 @@ public abstract class AbstractNumericFacetValidator extends AbstractDatatypeVali
     protected void initializeValues() {
     }
 
+
+    public boolean hasEnumeration(){
+        return (fEnumeration !=null)?true:false;
+    }
     //
     // decimal has fractionDigits and totalDigits facets
     // all other datatypes will throw InvalidDatatypeFacetException

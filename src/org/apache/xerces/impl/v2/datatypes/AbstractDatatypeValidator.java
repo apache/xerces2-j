@@ -113,6 +113,10 @@ public abstract class AbstractDatatypeValidator implements DatatypeValidator, Cl
         return DatatypeValidator.COLLAPSE;
     }
 
+    public boolean hasEnumeration(){
+        return false;
+    }
+
     // returns the base datatypeValidator of the current validator.
     public DatatypeValidator getBaseValidator() {
         return fBaseValidator;

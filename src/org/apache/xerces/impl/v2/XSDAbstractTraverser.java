@@ -506,12 +506,8 @@ abstract class XSDAbstractTraverser {
      */
     void checkNotationType(String refName, XSTypeDecl typeDecl) {
         if (typeDecl instanceof NOTATIONDatatypeValidator) {
-            //REVISIT: to check whether there is an enumeration facet
-            //if (((DatatypeValidator)typeDecl).hasEnumFacet) {
-            if (false) {
-                reportGenericSchemaError("[enumeration-required-notation] It is an error for NOTATION to be used "+
-                                         "directly in a schema in element/attribute '"+refName+"'. " +
-                                         "Only datatypes that are derived from NOTATION by specifying a value for enumeration can be used in a schema.");
+            if (!((DatatypeValidator)typeDecl).hasEnumeration()) {
+                reportSchemaError("dt-enumeration-notation", new Object[]{refName});
             }
         }
     }

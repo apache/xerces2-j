@@ -116,6 +116,8 @@ public interface DatatypeValidator extends XSTypeDecl {
 
     public short getWSFacet ();
 
+    public boolean hasEnumeration();
+
     // returns the base datatypeValidator of the current validator.
     public DatatypeValidator getBaseValidator();
 
