@@ -444,6 +444,7 @@ catch (SAXException e) {
     Do not report the beginning and end of parameter entities to a registered LexicalHandler.
    </false>
    <default value='true'/>
+   <since value='Xerces-J 2.7.0'/>
   </feature>
  </fcategory>
  <fcategory name='XInclude Features (Experimental)'>

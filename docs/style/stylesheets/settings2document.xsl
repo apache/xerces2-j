@@ -39,6 +39,7 @@
     </tr>
     <xsl:apply-templates select='default' mode='table'/>
     <xsl:apply-templates select='access' mode='table'/>
+    <xsl:apply-templates select='since' mode='table'/>
     <xsl:apply-templates select='note' mode='table'/>
     <xsl:apply-templates select='see' mode='table'/>
    </table>
@@ -56,6 +57,7 @@
     </tr>
     <xsl:apply-templates select='default' mode='table'/>
     <xsl:apply-templates select='access' mode='table'/>
+    <xsl:apply-templates select='since' mode='table'/>
     <xsl:apply-templates select='note' mode='table'/>
     <xsl:apply-templates select='see' mode='table'/>
    </table>
@@ -95,6 +97,13 @@
  <xsl:template match='default' mode='table'>
   <tr>
    <th>Default:</th>
+   <td><xsl:value-of select='@value'/></td>
+  </tr>
+ </xsl:template>
+ 
+ <xsl:template match='since' mode='table'>
+  <tr>
+   <th>Since:</th>
    <td><xsl:value-of select='@value'/></td>
   </tr>
  </xsl:template>

@@ -19,10 +19,14 @@
 <!ATTLIST access general     %access-options; #IMPLIED
                  parsing     %access-options; #IMPLIED
 		 not-parsing %access-options; #IMPLIED>
+
+<!ELEMENT since EMPTY>
+<!ATTLIST since value CDATA #REQUIRED>
+
 <!ELEMENT see EMPTY>
 <!ATTLIST see idref IDREF #REQUIRED>
 
-<!ELEMENT feature (desc?,true,false,default?,access?,note*,see*)>
+<!ELEMENT feature (desc?,true,false,default?,access?,since?,note*,see*)>
 <!ATTLIST feature name CDATA #REQUIRED 
                   id   ID    #IMPLIED>
 <!ELEMENT true (#PCDATA|%markup;)*>
@@ -30,7 +34,7 @@
 <!ELEMENT default EMPTY>
 <!ATTLIST default value CDATA #REQUIRED>
 		 
-<!ELEMENT property (desc?,type,default?,access?,note*,see*)>
+<!ELEMENT property (desc?,type,default?,access?,since?,note*,see*)>
 <!ATTLIST property name CDATA #REQUIRED
                    id   ID    #IMPLIED>
 <!ELEMENT type (#PCDATA)>
