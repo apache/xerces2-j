@@ -488,7 +488,7 @@ public class HTMLSerializer
 
         try {
             // HTML: no CDATA section
-            state = content();
+            state = content(isIgnorable(chars,start,length));
             state.doCData = false;
             super.characters( chars, start, length );
         } catch ( IOException except ) {
@@ -672,7 +672,11 @@ public class HTMLSerializer
                 // HTML: If public identifier specified, print it with
                 //  system identifier, if specified.
                 if ( _docTypePublicId != null && ( ! _xhtml || _docTypeSystemId != null )  ) {
-                    _printer.printText( "<!DOCTYPE HTML PUBLIC " );
+					if (_xhtml) {
+						_printer.printText( "<!DOCTYPE html PUBLIC " );
+					}else{
+						_printer.printText( "<!DOCTYPE HTML PUBLIC " ); 
+					}
                     printDoctypeURL( _docTypePublicId );
                     if ( _docTypeSystemId != null ) {
                         if ( _indenting ) {
@@ -685,7 +689,11 @@ public class HTMLSerializer
                     _printer.printText( '>' );
                     _printer.breakLine();
                 } else if ( _docTypeSystemId != null ) {
-                    _printer.printText( "<!DOCTYPE HTML SYSTEM " );
+					if (_xhtml) {
+                    	_printer.printText( "<!DOCTYPE html SYSTEM " );
+					}else{
+                    	_printer.printText( "<!DOCTYPE HTML SYSTEM " );
+					}
                     printDoctypeURL( _docTypeSystemId );
                     _printer.printText( '>' );
                     _printer.breakLine();
@@ -860,7 +868,7 @@ public class HTMLSerializer
         ElementState state;
 
         // HTML: no CDATA section
-        state = content();
+        state = content(text.trim().length()==0);
         super.characters( text );
     }
 

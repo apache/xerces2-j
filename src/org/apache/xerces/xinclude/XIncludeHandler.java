@@ -57,11 +57,16 @@
 package org.apache.xerces.xinclude;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.Vector;
-
+import java.io.Reader;
+import java.net.URL;
+import java.net.HttpURLConnection;
+import java.net.URLConnection;
+import java.util.Hashtable;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
@@ -103,7 +108,7 @@ import org.apache.xerces.xni.parser.XMLParserConfiguration;
  * <p>
  * This component analyzes each event in the pipeline, looking for &lt;include&gt;
  * elements. An &lt;include&gt; element is one which has a namespace of
- * <code>http://www.w3.org/2001/XInclude</code> and a localname of <code>include</code>.
+ * <code>http://www.w3.org/2003/XInclude</code> and a localname of <code>include</code>.
  * When it finds an &lt;include&gt; element, it attempts to include the file specified
  * in the <code>href</code> attribute of the element.  If inclusion succeeds, all
  * children of the &lt;include&gt; element are ignored (with the exception of
@@ -138,8 +143,14 @@ public class XIncludeHandler
 
     public final static String XINCLUDE_DEFAULT_CONFIGURATION =
         "org.apache.xerces.parsers.XIncludeParserConfiguration";
+    public final static String HTTP_ACCEPT = "Accept";
+    public final static String HTTP_ACCEPT_LANGUAGE = "Accept-Language";
+    public final static String HTTP_ACCEPT_CHARSET = "Accept-Charset";
+    public final static String XPOINTER = "xpointer";
 
     public final static String XINCLUDE_NS_URI =
+        "http://www.w3.org/2003/XInclude".intern();
+    public final static String XINCLUDE_NS_URI_OLD =
         "http://www.w3.org/2001/XInclude".intern();
     public final static String XINCLUDE_INCLUDE = "include".intern();
     public final static String XINCLUDE_FALLBACK = "fallback".intern();
@@ -280,6 +291,13 @@ public class XIncludeHandler
     
     // track the version of the document being parsed
     private boolean fIsXML11;
+    
+    // track whether a DTD is being parsed
+    private boolean fInDTD;
+    
+    // track whether a warning has already been reported for
+    // use of the old http://www.w3.org/2001/XInclude namespace.
+    private boolean fOldNamespaceWarningIssued;
 
     // Constructors
 
@@ -309,6 +327,8 @@ public class XIncludeHandler
         fUnparsedEntities = new Vector();
         fParentRelativeURI = null;
         fIsXML11 = false;
+        fInDTD = false;
+        fOldNamespaceWarningIssued = false;
 
         baseURIScope.clear();
         baseURI.clear();
@@ -567,12 +587,17 @@ public class XIncludeHandler
 
     public void comment(XMLString text, Augmentations augs)
         throws XNIException {
-        if (fDocumentHandler != null
-            && getState() == STATE_NORMAL_PROCESSING) {
-            fDepth++;
-            augs = modifyAugmentations(augs);
-            fDocumentHandler.comment(text, augs);
-            fDepth--;
+        if (!fInDTD) {
+            if (fDocumentHandler != null
+                && getState() == STATE_NORMAL_PROCESSING) {
+                fDepth++;
+                augs = modifyAugmentations(augs);
+                fDocumentHandler.comment(text, augs);
+                fDepth--;
+            }
+        }
+        else if (fDTDHandler != null) {
+            fDTDHandler.comment(text, augs);
         }
     }
 
@@ -581,13 +606,18 @@ public class XIncludeHandler
         XMLString data,
         Augmentations augs)
         throws XNIException {
-        if (fDocumentHandler != null
-            && getState() == STATE_NORMAL_PROCESSING) {
-            // we need to change the depth like this so that modifyAugmentations() works
-            fDepth++;
-            augs = modifyAugmentations(augs);
-            fDocumentHandler.processingInstruction(target, data, augs);
-            fDepth--;
+        if (!fInDTD) {
+            if (fDocumentHandler != null
+                && getState() == STATE_NORMAL_PROCESSING) {
+                // we need to change the depth like this so that modifyAugmentations() works
+                fDepth++;
+                augs = modifyAugmentations(augs);
+                fDocumentHandler.processingInstruction(target, data, augs);
+                fDepth--;
+            }
+        }
+        else if (fDTDHandler != null) {
+            fDTDHandler.processingInstruction(target, data, augs);
         }
     }
 
@@ -853,6 +883,7 @@ public class XIncludeHandler
         if (fDTDHandler != null) {
             fDTDHandler.endDTD(augmentations);
         }
+        fInDTD = false;
     }
 
     /* (non-Javadoc)
@@ -969,6 +1000,7 @@ public class XIncludeHandler
      */
     public void startDTD(XMLLocator locator, Augmentations augmentations)
         throws XNIException {
+        fInDTD = true;
         if (fDTDHandler != null) {
             fDTDHandler.startDTD(locator, augmentations);
         }
@@ -1091,9 +1123,9 @@ public class XIncludeHandler
         //       this ties in with the above IURI section, but I suspect Java already does it
         String href = attributes.getValue(XINCLUDE_ATTR_HREF);
         String parse = attributes.getValue(XINCLUDE_ATTR_PARSE);
-
-        if (href == null) {
-            reportFatalError("HrefMissing");
+        String xpointer =  attributes.getValue(XPOINTER);
+        if (href == null && xpointer == null) {
+            reportFatalError("XpointerMissing");
         }
         if (parse == null) {
             parse = XINCLUDE_PARSE_XML;
@@ -1130,7 +1162,6 @@ public class XIncludeHandler
                     href,
                     fCurrentBaseURI.getExpandedSystemId());
         }
-
         if (parse.equals(XINCLUDE_PARSE_XML)) {
             // Instead of always creating a new configuration, the first one can be reused
             if (fChildConfig == null) {
@@ -1170,6 +1201,7 @@ public class XIncludeHandler
 
             try {
                 fNamespaceContext.pushScope();
+				setHttpProperties(includedSource,attributes);
                 fChildConfig.parse(includedSource);
                 // necessary to make sure proper location is reported in errors
                 if (fErrorReporter != null) {
@@ -1207,6 +1239,7 @@ public class XIncludeHandler
 
             XIncludeTextReader reader = null;
             try {
+				setHttpProperties(includedSource,attributes);
                 if (fIsXML11) {
                     reader = new XInclude11TextReader(includedSource, this);
                 }
@@ -1243,37 +1276,77 @@ public class XIncludeHandler
     }
 
     /**
+     * Returns true if the element has the namespace "http://www.w3.org/2003/XInclude"
+     * @param element the element to check
+     * @return true if the element has the namespace "http://www.w3.org/2003/XInclude"
+     */
+    protected boolean hasXIncludeNamespace(QName element) {
+        // REVISIT: The namespace of this element should be bound
+        // already. Why are we looking it up from the namespace
+        // context? -- mrglavas
+        return element.uri == XINCLUDE_NS_URI
+            || fNamespaceContext.getURI(element.prefix) == XINCLUDE_NS_URI;
+    }
+    
+    /**
      * Returns true if the element has the namespace "http://www.w3.org/2001/XInclude"
      * @param element the element to check
      * @return true if the element has the namespace "http://www.w3.org/2001/XInclude"
      */
-    protected boolean hasXIncludeNamespace(QName element) {
-        return element.uri == XINCLUDE_NS_URI
-            || fNamespaceContext.getURI(element.prefix) == XINCLUDE_NS_URI;
+    protected boolean hasXInclude2001Namespace(QName element) {
+        // REVISIT: The namespace of this element should be bound
+        // already. Why are we looking it up from the namespace
+        // context? -- mrglavas
+        return element.uri == XINCLUDE_NS_URI_OLD
+            || fNamespaceContext.getURI(element.prefix) == XINCLUDE_NS_URI_OLD;
     }
 
     /**
      * Checks if the element is an &lt;include&gt; element.  The element must have
-     * the XInclude namespace, and a local name of "include"
+     * the XInclude namespace, and a local name of "include". If the local name
+     * is "include" and the namespace name is the old XInclude namespace
+     * "http://www.w3.org/2001/XInclude" a warning is issued the first time
+     * an element from the old namespace is encountered.
+     * 
      * @param element the element to check
      * @return true if the element is an &lt;include&gt; element
      * @see #hasXIncludeNamespace(QName)
      */
     protected boolean isIncludeElement(QName element) {
-        return element.localpart.equals(XINCLUDE_INCLUDE)
-            && hasXIncludeNamespace(element);
+        if (element.localpart.equals(XINCLUDE_INCLUDE)) {
+            if (hasXIncludeNamespace(element)) {
+                return true;
+            }
+            else if (!fOldNamespaceWarningIssued && hasXInclude2001Namespace(element)) {
+                reportError("OldXIncludeNamespace", null, XMLErrorReporter.SEVERITY_WARNING);
+                fOldNamespaceWarningIssued = true;
+            }
+        }
+        return false;
     }
 
     /**
      * Checks if the element is an &lt;fallback&gt; element.  The element must have
-     * the XInclude namespace, and a local name of "fallback"
+     * the XInclude namespace, and a local name of "fallback". If the local name
+     * is "fallback" and the namespace name is the old XInclude namespace
+     * "http://www.w3.org/2001/XInclude" a warning is issued the first time
+     * an element from the old namespace is encountered.
+     * 
      * @param element the element to check
      * @return true if the element is an &lt;fallback; element
      * @see #hasXIncludeNamespace(QName)
      */
     protected boolean isFallbackElement(QName element) {
-        return element.localpart.equals(XINCLUDE_FALLBACK)
-            && hasXIncludeNamespace(element);
+        if (element.localpart.equals(XINCLUDE_FALLBACK)) {
+            if (hasXIncludeNamespace(element)) {
+                return true;
+            }
+            else if (!fOldNamespaceWarningIssued && hasXInclude2001Namespace(element)) {
+                reportError("OldXIncludeNamespace", null, XMLErrorReporter.SEVERITY_WARNING);
+                fOldNamespaceWarningIssued = true;
+            }
+        }
+        return false; 
     }
 
     /**
@@ -1296,7 +1369,7 @@ public class XIncludeHandler
         //       of resolving relative references, or if it should be added if they are different at all.
         //       Revisit this after a final decision has been made.
         //       The decision also affects whether we output the file name of the URI, or just the path.
-        return parentBaseURI.equals(baseURI);
+        return parentBaseURI != null && parentBaseURI.equals(baseURI);
     }
 
     /**
@@ -2106,4 +2179,35 @@ public class XIncludeHandler
             }
         }
     }
+
+	/**
+		Set the Accept,Accept-Language,Accept-CharSet 
+	*/
+	protected void setHttpProperties(XMLInputSource source,XMLAttributes attributes) throws IOException{
+        Reader reader = source.getCharacterStream();
+        if (reader != null) 
+			return; 
+		String httpAcceptLang = attributes.getValue(HTTP_ACCEPT_LANGUAGE);
+		String httpAccept = attributes.getValue(HTTP_ACCEPT);
+		String httpAcceptchar = attributes.getValue(HTTP_ACCEPT_CHARSET);
+		InputStream stream = source.getByteStream();
+		if (stream == null) {
+			String literalSystemId = source.getSystemId();
+			String baseSystemId = source.getBaseSystemId();
+        	String expandedSystemId = XMLEntityManager.expandSystemId(literalSystemId, 
+													baseSystemId, false);
+   	        URL location = new URL(expandedSystemId);
+   	        URLConnection connect = location.openConnection();
+			if (connect instanceof HttpURLConnection) {
+				if( httpAcceptLang !=null && !httpAcceptLang.equals(""))
+					connect.setRequestProperty(HTTP_ACCEPT_LANGUAGE,httpAcceptLang);
+					if( httpAccept !=null && !httpAccept.equals(""))
+						connect.setRequestProperty(HTTP_ACCEPT,httpAccept);
+					if( httpAcceptchar !=null && !httpAcceptchar.equals(""))
+						connect.setRequestProperty(HTTP_ACCEPT_CHARSET,httpAcceptchar);
+   	         }
+			stream = connect.getInputStream(); 
+			source.setByteStream(stream);
+		}
+	}
 }

@@ -262,15 +262,13 @@ public class ErrorHandlerWrapper
             public void setLineNumber(int line) {}
             public String getEncoding() { return null; }
         };
-        return new XMLParseException(location, exception.getMessage(),
-                                     exception.getException());
+        return new XMLParseException(location, exception.getMessage(),exception);
     } // createXMLParseException(SAXParseException):XMLParseException
 
     /** Creates an XNIException from a SAXException. 
         NOTE:  care should be taken *not* to call this with a SAXParseException; this will
         lose information!!! */
     protected static XNIException createXNIException(SAXException exception) {
-        return new XNIException(exception.getMessage(),
-                                     exception.getException());
+        return new XNIException(exception.getMessage(),exception);
     } // createXNIException(SAXException):XMLParseException
 } // class ErrorHandlerWrapper

@@ -224,7 +224,7 @@ extends XMLSerializer {
         ElementState state;
 
         try {
-            state = content();
+            state = content(isIgnorable(chars,start,length));
 
             // Check if text should be print as CDATA section or unescaped
             // based on elements listed in the output format (the element
@@ -422,7 +422,7 @@ extends XMLSerializer {
                     fatalError("The character '"+(char)supplemental+"' is an invalid XML character"); 
                 }
                 else {
-                    if (content().inCData ) {
+                    if (content(false).inCData ) {
                         _printer.printText("]]>&#x");                        
                         _printer.printText(Integer.toHexString(supplemental));                        
                         _printer.printText(";<![CDATA[");
