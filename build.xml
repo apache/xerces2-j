@@ -192,10 +192,11 @@ Copyright:
   <!-- =================================================================== -->
   <target name="samples" depends="jar">
     <mkdir dir="${build.samples}"/>
-    <copydir src="${samples.dir}" dest="${build.samples}" excludes="ui/**"/>
+    <!-- <copydir src="${samples.dir}" dest="${build.samples}" excludes="ui/**"/> -->
+    <copydir src="${samples.dir}" dest="${build.samples}" excludes="**/DOMParserSaveEncoding.java **/TreeView.java **/TreeViewer.java"/>
     <javac srcdir="${build.samples}"
            destdir="${build.dest}"
-           classpath="${build.dir}/${name}.jar"
+           classpath="${build.dir}/${name}.jar:${build.samples}"
            debug="${debug}"/>
   </target>
 
