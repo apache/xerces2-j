@@ -236,6 +236,7 @@ public class XMLDTDScannerImpl
             if (fScannerState == SCANNER_STATE_END_OF_INPUT) {
                 return false;
             }
+            /***
             else if (!more || !complete) {
                 return more;
             }
@@ -244,6 +245,16 @@ public class XMLDTDScannerImpl
                 // is a TextDecl or not
                 setScannerState(SCANNER_STATE_MARKUP_DECL);
             }
+            /***/
+            else {
+                // next state is markup decls regardless of whether there
+                // is a TextDecl or not
+                setScannerState(SCANNER_STATE_MARKUP_DECL);
+                if (!more || !complete) {
+                    return more;
+                }
+            }
+            /***/
         }
         // keep dispatching "events"
         do {
