@@ -103,6 +103,11 @@ public interface XSComplexTypeDefinition extends XSTypeDefinition {
      *  A set of attribute uses. 
      */
     public XSObjectList getAttributeUses();
+    
+    /*
+     * Attribute Use
+     */
+     public XSAttributeUse getAttributeUse(String namespace, String name);
 
     /**
      * Optional.An attribute wildcard. 

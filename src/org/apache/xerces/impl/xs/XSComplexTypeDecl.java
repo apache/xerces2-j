@@ -61,7 +61,8 @@ import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.psvi.*;
 import org.apache.xerces.impl.xs.models.XSCMValidator;
 import org.apache.xerces.impl.xs.models.CMBuilder;
-import org.apache.xerces.impl.xs.util.XSObjectListImpl;;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
+;
 
 /**
  * The XML representation for a complexType
@@ -437,5 +438,12 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition {
         // REVISIT: implement
 		return null;
 	}
+
+    /* (non-Javadoc)
+     * @see org.apache.xerces.impl.xs.psvi.XSComplexTypeDefinition#getAttributeUse(java.lang.String, java.lang.String)
+     */
+    public XSAttributeUse getAttributeUse(String namespace, String name) {
+         return fAttrGrp.getAttributeUse(namespace, name);
+    }
 
 } // class XSComplexTypeDecl

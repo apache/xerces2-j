@@ -544,9 +544,8 @@ abstract class XSDAbstractTraverser {
                 int attrCount = attrUseS.getLength();
                 for (int i=0; i<attrCount; i++) {
                     oneAttrUse = (XSAttributeUseImpl)attrUseS.item(i);
-                    existingAttrUse = attrGrp.getAttributeUse(oneAttrUse.fAttrDecl.getNamespace(),
-                                                              oneAttrUse.fAttrDecl.getName());
-                    if (existingAttrUse == null) {
+                    if (existingAttrUse == attrGrp.getAttributeUse(oneAttrUse.fAttrDecl.getNamespace(),
+                    oneAttrUse.fAttrDecl.getName())) {
                         String idName = attrGrp.addAttributeUse(oneAttrUse);
                         if (idName != null) {
                             reportSchemaError("cvc-complex-type.5.3", new Object[]{oneAttrUse.fAttrDecl.getName(), idName}, child);

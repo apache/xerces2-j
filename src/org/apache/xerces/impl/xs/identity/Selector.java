@@ -58,12 +58,11 @@
 package org.apache.xerces.impl.xs.identity;
 
 import org.apache.xerces.impl.xpath.XPathException;
-import org.apache.xerces.impl.xs.XSElementDecl;
+import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
-import org.apache.xerces.xni.XNIException;
 
 /**
  * Schema identity constraint selector.
@@ -231,9 +230,8 @@ public class Selector {
         // XMLDocumentFragmentHandler methods
         //
 
-        public void startDocumentFragment(SymbolTable symbolTable)
-        throws XNIException {
-            super.startDocumentFragment(symbolTable);
+        public void startDocumentFragment(){
+            super.startDocumentFragment();
             fElementDepth = 0;
             fMatchedDepth = -1;
         } // startDocumentFragment()
@@ -247,15 +245,14 @@ public class Selector {
          * @param attributes The element attributes.
          * @param elementDecl:  The element declaration 
          *
-         * @throws XNIException Thrown by handler to signal an error.
          */
         public void startElement(QName element, XMLAttributes attributes, 
-                                 XSElementDecl elementDecl) throws XNIException {
-            super.startElement(element, attributes, elementDecl);
+                                 XSTypeDefinition type) {
+            super.startElement(element, attributes, type);
             fElementDepth++;
-
             // activate the fields, if selector is matched
             int matched = isMatched();
+
             if ((fMatchedDepth == -1 && ((matched & MATCHED) == MATCHED)) ||
                     ((matched & MATCHED_DESCENDANT) == MATCHED_DESCENDANT)) {
                 fMatchedDepth = fElementDepth;
@@ -264,14 +261,14 @@ public class Selector {
                 for (int i = 0; i < count; i++) {
                     Field field = fIdentityConstraint.getFieldAt(i);
                     XPathMatcher matcher = fFieldActivator.activateField(field, fInitialDepth);
-                    matcher.startElement(element, attributes, elementDecl);
+                    matcher.startElement(element, attributes, type);
                 }
             }
 
         } // startElement(QName,XMLAttrList,int)
 
-        public void endElement(QName element, XSElementDecl eDecl, String value) {
-            super.endElement(element, eDecl, value);
+        public void endElement(QName element, XSTypeDefinition type, boolean nillable, Object actualValue) {
+            super.endElement(element, type, nillable, actualValue);
             if (fElementDepth-- == fMatchedDepth) {
                 fMatchedDepth = -1;
                 fFieldActivator.endValueScopeFor(fIdentityConstraint, fInitialDepth);
@@ -288,9 +285,6 @@ public class Selector {
             return fInitialDepth;
         } // getInitialDepth():  int
 
-        //
-        // Protected methods
-        //
 
     } // class Matcher
 

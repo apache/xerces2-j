@@ -57,10 +57,8 @@
 
 package org.apache.xerces.impl.xs.identity;
 
-import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xpath.XPathException;
-import org.apache.xerces.impl.xs.XSComplexTypeDecl;
-import org.apache.xerces.impl.xs.XSElementDecl;
+import org.apache.xerces.impl.xs.psvi.XSComplexTypeDefinition;
 import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.NamespaceContext;
@@ -80,10 +78,6 @@ public class Field {
     /** Field XPath. */
     protected Field.XPath fXPath;
 
-    /** Datatype. */
-    // Unfortunately, a Field may conceivably match values of varying
-    // datatypes.  Hence, this member no longer makes sense; see the IDValue class.
-    // protected XSSimpleType fXSSimpleType;
 
     /** Identity constraint. */
     protected IdentityConstraint fIdentityConstraint;
@@ -221,49 +215,33 @@ public class Field {
          * This method is called when the XPath handler matches the
          * XPath expression.
          */
-        protected void matched(String content, XSSimpleType val, boolean isNil) {
-            super.matched(content, val, isNil);
+        protected void matched(Object actualValue,  boolean isNil) {
+            super.matched(actualValue, isNil);
             if(isNil && (fIdentityConstraint.getCategory() == IdentityConstraint.IC_KEY)) {
                 String code = "KeyMatchesNillable";
                 fStore.reportError(code, new Object[]{fIdentityConstraint.getElementName()});
             }
-            fStore.addValue(Field.this, new IDValue(content, val));
+            fStore.addValue(Field.this, actualValue);
             // once we've stored the value for this field, we set the mayMatch
             // member to false so that, in the same scope, we don't match any more
             // values (and throw an error instead).
             mayMatch = false;
         } // matched(String)
 
-        protected void handleContent(XSElementDecl eDecl, String value) { 
-            // REVISIT:  make sure type is simple!
-            XSSimpleType val=null;
+        protected void handleContent(XSTypeDefinition type, boolean nillable, Object actualValue) {
+            if (type == null || 
+               type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE &&
+               ((XSComplexTypeDefinition) type).getContentType()
+                != XSComplexTypeDefinition.CONTENTTYPE_SIMPLE) {
 
-            if (eDecl!=null) {
-                XSTypeDefinition type = eDecl.fType;
-                if (type != null) {
-                    if (type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
-                        XSComplexTypeDecl ctype = (XSComplexTypeDecl)type;
-                        val = (XSSimpleType)ctype.getSimpleType();
-                    }
-                    else {
-                        val = (XSSimpleType)(type);
-                    }
-                }
+                    // the content must be simpleType content
+                    fStore.reportError( "cvc-id.3", new Object[] {
+                            fIdentityConstraint.getName(),
+                            fIdentityConstraint.getElementName()});
+                
             }
-
-            if(val == null ) {
-                // must be a complexType with no simpleContent!
-                String code = "cvc-id.3";
-                String name = (eDecl == null?"null":eDecl.getName());
-                fStore.reportError(code, new Object[]{fIdentityConstraint.getName(), name});
-                return;
-            }
-            fMatchedString = value;
-            if(eDecl != null) {
-                matched(fMatchedString, val, (eDecl.getNillable()));
-            } else {
-                matched(fMatchedString, val, false); 
-            }
+            fMatchedString = actualValue;
+            matched(fMatchedString, nillable);
         } // handleContent(XSElementDecl, String)
 
     } // class Matcher

@@ -70,6 +70,7 @@ import org.apache.xerces.impl.xs.XSConstraints;
 import org.apache.xerces.impl.xs.XSModelGroupImpl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
+import org.apache.xerces.impl.xs.psvi.XSAttributeUse;
 import org.apache.xerces.impl.xs.psvi.XSConstants;
 import org.apache.xerces.impl.xs.psvi.XSObjectList;
 import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
@@ -900,11 +901,11 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     throws ComplexTypeRecoverableError {
 
         XSObjectList attrUseS = fromAttrGrp.getAttributeUses();
-        XSAttributeUseImpl existingAttrUse, duplicateAttrUse =  null, oneAttrUse;
+        XSAttributeUseImpl  duplicateAttrUse =  null, oneAttrUse = null;
         int attrCount = attrUseS.getLength();
         for (int i=0; i<attrCount; i++) {
             oneAttrUse = (XSAttributeUseImpl)attrUseS.item(i);
-            existingAttrUse = toAttrGrp.getAttributeUse(oneAttrUse.fAttrDecl.getNamespace(),
+            XSAttributeUse existingAttrUse = toAttrGrp.getAttributeUse(oneAttrUse.fAttrDecl.getNamespace(),
                                                         oneAttrUse.fAttrDecl.getName());
             if (existingAttrUse == null) {
 
@@ -918,7 +919,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             else {
                 if (extension) {
                     throw new ComplexTypeRecoverableError("ct-props-correct.4",
-                          new Object[]{typeName, existingAttrUse.fAttrDecl.getName()},
+                          new Object[]{typeName, oneAttrUse.fAttrDecl.getName()},
                           elem);
                 }
             }

@@ -85,6 +85,9 @@ public class AttributePSVImpl implements AttributePSVI {
 
     /** schema normalized value property */
     protected String fNormalizedValue = null;
+    
+    /** schema actual value property */
+    protected Object fActualValue = null;
 
     /** member type definition against which attribute was validated */
     protected XSSimpleTypeDefinition fMemberType = null;
@@ -204,6 +207,10 @@ public class AttributePSVImpl implements AttributePSVI {
      */
     public XSAttributeDeclaration getAttributeDeclaration() {
         return fDeclaration;
+    }
+    
+    public Object getActualValue(){
+        return fActualValue;
     }
 
     /**

@@ -274,4 +274,12 @@ public class PSVIElementNSImpl extends ElementNSImpl implements ElementPSVI {
         this.fSpecified = elem.getIsSchemaSpecified();
     }
 
+	/* (non-Javadoc)
+	 * @see org.apache.xerces.xni.psvi.ItemPSVI#getActualValue()
+	 */
+	public Object getActualValue() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

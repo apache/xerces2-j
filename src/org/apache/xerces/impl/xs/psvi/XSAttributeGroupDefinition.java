@@ -65,6 +65,15 @@ public interface XSAttributeGroupDefinition extends XSObject {
      * A set of [attribute uses]. 
      */
     public XSObjectList getAttributeUses();
+    
+    /**
+     * @param namespace The [target namespace] of this object, or <code>null</code> if it is 
+     * unspecified. 
+     * @param name  The name of type <code>NCName</code> of this declaration as defined in 
+     * XML Namespaces.
+     * @return XSAttributeUse declaration for the given {namespace, name} or null.
+     */
+    public XSAttributeUse getAttributeUse(String namespace, String name);
 
     /**
      * Optional. A [wildcard]. 

@@ -60,6 +60,7 @@ package org.apache.xerces.impl.xs;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.xs.psvi.XSAnnotation;
 import org.apache.xerces.impl.xs.psvi.XSAttributeGroupDefinition;
+import org.apache.xerces.impl.xs.psvi.XSAttributeUse;
 import org.apache.xerces.impl.xs.psvi.XSConstants;
 import org.apache.xerces.impl.xs.psvi.XSNamespaceItem;
 import org.apache.xerces.impl.xs.psvi.XSObjectList;
@@ -93,6 +94,8 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
 
     // optional annotation
     public XSAnnotationImpl fAnnotation;
+    
+    protected XSObjectListImpl fAttrUses = null;
 
     // add an attribute use
     // if the type is derived from ID, but there is already another attribute
@@ -120,10 +123,10 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
         return null;
     }
 
-    public XSAttributeUseImpl getAttributeUse(String uri, String localpart) {
+    public XSAttributeUse getAttributeUse(String namespace, String name) {
         for (int i=0; i<fAttrUseNum; i++) {
-            if ( (fAttributeUses[i].fAttrDecl.fTargetNamespace == uri) &&
-                 (fAttributeUses[i].fAttrDecl.fName == localpart) )
+            if ( (fAttributeUses[i].fAttrDecl.fTargetNamespace == namespace) &&
+                 (fAttributeUses[i].fAttrDecl.fName == name) )
                 return fAttributeUses[i];
         }
 
@@ -187,15 +190,13 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
             attrDecl = attrUse.fAttrDecl;
 
             // Look for a match in the base
-            baseAttrUse = baseGroup.getAttributeUse(
-                                                   attrDecl.fTargetNamespace,attrDecl.fName);
+            baseAttrUse = (XSAttributeUseImpl)baseGroup.getAttributeUse(attrDecl.fTargetNamespace,attrDecl.fName);
             if (baseAttrUse != null) {
                 //
                 // derivation-ok-restriction.  Constraint 2.1.1
                 //
 
-                if (baseAttrUse.fUse == SchemaSymbols.USE_REQUIRED &&
-                    attrUse.fUse != SchemaSymbols.USE_REQUIRED) {
+                if (baseAttrUse.getRequired() && !attrUse.getRequired()) {
                     errorArgs = new Object[]{typeName, attrDecl.fName,
                     	                     attrUse.fUse == SchemaSymbols.USE_OPTIONAL ? SchemaSymbols.ATTVAL_OPTIONAL : SchemaSymbols.ATTVAL_PROHIBITED,
                                              "derivation-ok-restriction.2.1.1"};
@@ -283,9 +284,7 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
 
                 baseAttrDecl = baseAttrUse.fAttrDecl;
                 // Look for a match in this group
-                XSAttributeUseImpl thisAttrUse = getAttributeUse(
-                                                            baseAttrDecl.fTargetNamespace,baseAttrDecl.fName);
-                if (thisAttrUse == null) {
+                if (getAttributeUse(baseAttrDecl.fTargetNamespace,baseAttrDecl.fName) == null) {
 					errorArgs = new Object[]{typeName, baseAttrUse.fAttrDecl.fName,
 											 "derivation-ok-restriction.3"};
 					return errorArgs;
@@ -369,7 +368,10 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
      * {attribute uses} A set of attribute uses.
      */
     public XSObjectList getAttributeUses() {
-        return new XSObjectListImpl(fAttributeUses, fAttrUseNum);
+        if (fAttrUses == null){
+            fAttrUses = new XSObjectListImpl(fAttributeUses, fAttrUseNum);
+        }
+        return fAttrUses;
     }
 
     /**

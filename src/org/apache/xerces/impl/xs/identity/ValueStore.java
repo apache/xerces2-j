@@ -85,12 +85,12 @@ public interface ValueStore {
     /** 
      * Adds the specified value to the value store.
      *
-     * @param value The value to add.
      * @param field The field associated to the value. This reference
      *              is used to ensure that each field only adds a value
      *              once within a selection scope.
+     * @param value The value to add.
      */
-    public void addValue(Field field, IDValue value);
+    public void addValue(Field field, Object actualValue);
 
     /**
      * Since the valueStore will have access to an error reporter, this
@@ -99,5 +99,6 @@ public interface ValueStore {
      * @param args  the list of arguments for substitution.
      */
     public void reportError(String key, Object[] args);
+    
 
 } // interface ValueStore

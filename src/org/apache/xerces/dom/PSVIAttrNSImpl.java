@@ -233,4 +233,12 @@ public class PSVIAttrNSImpl extends AttrNSImpl implements AttributePSVI {
         this.fSpecified = attr.getIsSchemaSpecified();
     }
     
+	/* (non-Javadoc)
+	 * @see org.apache.xerces.xni.psvi.ItemPSVI#getActualValue()
+	 */
+	public Object getActualValue() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

@@ -176,5 +176,11 @@ public interface ItemPSVI {
      * @return true - value was specified in schema, false - value comes from the infoset
      */
     public boolean getIsSchemaSpecified();
+    
+    /**
+     * EXPERIMENTAL: this method may be removed/modified
+	 * @return actual value
+	 */
+	public Object getActualValue();
 
 }

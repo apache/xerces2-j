@@ -269,4 +269,12 @@ public class ElementPSVImpl implements ElementPSVI {
         fNormalizedValue = null;
     }
 
+	/* (non-Javadoc)
+	 * @see org.apache.xerces.xni.psvi.ItemPSVI#getActualValue()
+	 */
+	public Object getActualValue() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

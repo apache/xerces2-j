@@ -57,19 +57,14 @@
 
 package org.apache.xerces.impl.xs.identity;
 
-import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xpath.XPath;
-import org.apache.xerces.impl.xs.XSAttributeDecl;
-import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
-import org.apache.xerces.impl.xs.XSAttributeUseImpl;
-import org.apache.xerces.impl.xs.XSComplexTypeDecl;
-import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
 import org.apache.xerces.util.IntStack;
-import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
-import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.psvi.AttributePSVI;
+
 
 /**
  * XPath matcher.
@@ -133,7 +128,7 @@ public class XPathMatcher {
     private int[] fMatched;
 
     /** The matching string. */
-    protected String fMatchedString;
+    protected Object fMatchedString;
 
     /** Integer stack of step indexes. */
     private IntStack[] fStepIndexes;
@@ -146,9 +141,9 @@ public class XPathMatcher {
      * matching is successful for the given xpath expression.
      */
     private int [] fNoMatchDepth;
+    
+    final QName fQName = new QName();
 
-    // the symbolTable for the XPath parser
-    protected SymbolTable fSymbolTable;
 
     //
     // Constructors
@@ -166,10 +161,7 @@ public class XPathMatcher {
         for(int i=0; i<fStepIndexes.length; i++) fStepIndexes[i] = new IntStack();
         fCurrentStep = new int[fLocationPaths.length];
         fNoMatchDepth = new int[fLocationPaths.length];
-        fMatched = new int[fLocationPaths.length];
-        if (DEBUG_METHODS) {
-            System.out.println(toString()+"#<init>()");
-        }
+        fMatched = new int[fLocationPaths.length];        
     } // <init>(XPath)
 
     //
@@ -189,28 +181,23 @@ public class XPathMatcher {
         return 0;
     } // isMatched():int
 
-    /** Returns the matched string. */
-    public String getMatchedString() {
-        return fMatchedString;
-    } // getMatchedString():String
-
     //
     // Protected methods
     //
 
     // a place-holder method; to be overridden by subclasses
     // that care about matching element content.
-    protected void handleContent(XSElementDecl eDecl, String value) { 
-    } // handleContent(XSElementDecl, String)
+    protected void handleContent(XSTypeDefinition type, boolean nillable, Object value) { 
+    } 
 
     /**
      * This method is called when the XPath handler matches the
      * XPath expression. Subclasses can override this method to
      * provide default handling upon a match.
      */
-    protected void matched(String content, XSSimpleType val, boolean isNil) throws XNIException {
+    protected void matched(Object actualValue, boolean isNil) {
         if (DEBUG_METHODS3) {
-            System.out.println(toString()+"#matched(\""+normalize(content)+"\")");
+            System.out.println(toString()+"#matched(\""+actualValue+"\")");
         }
     } // matched(String content, XSSimpleType val)
 
@@ -223,19 +210,14 @@ public class XPathMatcher {
      *
      * @param context The namespace scope in effect at the
      *                start of this document fragment.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocumentFragment(SymbolTable symbolTable)
-        throws XNIException {
+    public void startDocumentFragment(){
         if (DEBUG_METHODS) {
             System.out.println(toString()+"#startDocumentFragment("+
-                               //"stringPool="+stringPool+','+
                                ")");
         }
 
         // reset state
-        fSymbolTable = symbolTable;
         fMatchedString = null;
         for(int i = 0; i < fLocationPaths.length; i++) {
             fStepIndexes[i].clear();
@@ -254,18 +236,17 @@ public class XPathMatcher {
      *
      * @param element    The name of the element.
      * @param attributes The element attributes.
-     * @param elementDecl: The element declaration for the element
+     * @param type: The element's type
      *
      * @throws SAXException Thrown by handler to signal an error.
      */
     public void startElement(QName element, XMLAttributes attributes,
-                             XSElementDecl elementDecl)
-        throws XNIException {
+                             XSTypeDefinition type){
         if (DEBUG_METHODS2) {
             System.out.println(toString()+"#startElement("+
                                "element={"+element+"},"+
                                "attributes=..."+attributes+
-                               ")");
+                               ")");                     
         }
 
         for(int i = 0; i < fLocationPaths.length; i++) {
@@ -373,45 +354,20 @@ public class XPathMatcher {
                 int attrCount = attributes.getLength();
                 if (attrCount > 0) {
                     XPath.NodeTest nodeTest = steps[fCurrentStep[i]].nodeTest;
-                    QName aname = new QName(); // REVISIT: cache this
-
-                    // Get the list of attributes from the element decl.
-                    // REVISIT - is this correct?   This is what was done in xerces-1,
-                    // but is it right?
-                    XSAttributeGroupDecl attrGrp = null;
-                    if (elementDecl != null) {
-                        XSTypeDefinition type = elementDecl.fType;
-                        if (type != null) {
-                          if (type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
-                            XSComplexTypeDecl ctype = (XSComplexTypeDecl)type;
-                            attrGrp = ctype.getAttrGrp();
-                          }
-                        }
-                    }
 
                     for (int aIndex = 0; aIndex < attrCount; aIndex++) {
-                        attributes.getName(aIndex, aname);
+                        attributes.getName(aIndex, fQName);
                         if (nodeTest.type != XPath.NodeTest.QNAME ||
-                            nodeTest.name.equals(aname)) {
+                            nodeTest.name.equals(fQName)) {
                             fCurrentStep[i]++;
                             if (fCurrentStep[i] == steps.length) {
                                 fMatched[i] = MATCHED_ATTRIBUTE;
                                 int j=0;
                                 for(; j<i && ((fMatched[j] & MATCHED) != MATCHED); j++);
                                 if(j==i) {
-                                    String avalue = attributes.getValue(aIndex);
-                                    fMatchedString = avalue;
-
-                                    // find Datatype validator...
-                                    XSSimpleType aValidator = null;
-                                    if (attrGrp != null) {
-                                      XSAttributeUseImpl tempAttUse = attrGrp.getAttributeUse(aname.uri, aname.localpart);
-                                      if (tempAttUse != null) {
-                                        XSAttributeDecl tempAttDecl = tempAttUse.fAttrDecl;
-                                        aValidator = (XSSimpleType)tempAttDecl.getTypeDefinition();
-                                      }
-                                    }
-                                    matched(fMatchedString, aValidator, false);
+                                    AttributePSVI attrPSVI = (AttributePSVI)attributes.getAugmentations(aIndex).getItem(Constants.ATTRIBUTE_PSVI);
+                                    fMatchedString = attrPSVI.getActualValue();
+                                    matched(fMatchedString, false);
                                 }
                             }
                             break;
@@ -435,18 +391,16 @@ public class XPathMatcher {
             }
         }
 
-    } // startElement(QName,XMLAttrList,int)
+    } 
+    // startElement(QName,XMLAttrList,int)
 
     /**
-     * The end of an element.
-     *
-     * @param element The name of the element.
-     * @param eDecl:  the element declaration
-     * @param ePSVI contains validation info for this element
-     *
-     * @throws SAXException Thrown by handler to signal an error.
-     */
-    public void endElement(QName element, XSElementDecl eDecl, String value) {
+       * @param element  - name
+       * @param type - type
+       * @param type - nillable
+       * @param value - actual value
+       */
+    public void endElement(QName element, XSTypeDefinition type, boolean nillable, Object value ) {
         if (DEBUG_METHODS2) {
             System.out.println(toString()+"#endElement("+
                                "element={"+element+"},"+
@@ -473,7 +427,7 @@ public class XPathMatcher {
                 // match element content.  This permits
                 // them a way to override this to do nothing
                 // and hopefully save a few operations.
-                handleContent(eDecl, value);
+                handleContent(type, nillable, value);
                 fMatched[i] = 0;
             }
 
