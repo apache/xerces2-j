@@ -488,7 +488,7 @@ public class HTMLSerializer
 
         try {
             // HTML: no CDATA section
-            state = content();
+            state = content(isIgnorable(chars,start,length));
             state.doCData = false;
             super.characters( chars, start, length );
         } catch ( IOException except ) {
@@ -860,7 +860,7 @@ public class HTMLSerializer
         ElementState state;
 
         // HTML: no CDATA section
-        state = content();
+        state = content(text.trim().length()==0);
         super.characters( text );
     }
 

@@ -511,14 +511,27 @@ public abstract class BaseMarkupSerializer
         // Nothing to do here. All the magic happens in startDocument(String)
     }
     
+    /**
+     * Checks if the specified string entirely consists of whitespace.
+     */
+    protected final boolean isIgnorable( char[] chars, int start, int length ) {
+        for( int i=start; i<start+length; i++ ) {
+            char ch = chars[i];
+            if(ch==' ' || ch=='\t' || ch=='\r' || ch=='\n')
+                return false;
+        }
+        return true;
+    }
     
     public void characters( char[] chars, int start, int length )
         throws SAXException
     {
         ElementState state;
+        
+        boolean ignorable = isIgnorable(chars,start,length);
 
         try {
-        state = content();
+        state = content(ignorable);
 
         // Check if text should be print as CDATA section or unescaped
         // based on elements listed in the output format (the element
@@ -582,7 +595,11 @@ public abstract class BaseMarkupSerializer
                 printText( chars, start, length, true, state.unescaped );
                 _printer.setNextIndent( saveIndent );
             } else {
-                printText( chars, start, length, false, state.unescaped );
+                // if the string is whitespace only and we are indenting
+                // this characters are probably just for indentation.
+                // we will handle indentation by ourselves, so don't print it.
+                if(!ignorable || !_indenting)
+                    printText( chars, start, length, false, state.unescaped );
             }
         }
         } catch ( IOException except ) {
@@ -597,7 +614,7 @@ public abstract class BaseMarkupSerializer
         int i;
 
         try {
-        content();
+        content(true);
 
         // Print ignorable whitespaces only when indenting, after
         // all they are indentation. Cancel the indentation to
@@ -629,7 +646,7 @@ public abstract class BaseMarkupSerializer
         int          index;
         ElementState state;
 
-        state = content();
+        state = content(false);
 
         // Create the processing instruction textual representation.
         // Make sure we don't have '?>' inside either target or code.
@@ -686,7 +703,7 @@ public abstract class BaseMarkupSerializer
         if ( _format.getOmitComments() )
             return;
 
-        state  = content();
+        state  = content(false);
         // Create the processing comment textual representation.
         // Make sure we don't have '-->' inside the comment.
         index = text.indexOf( "-->" );
@@ -825,7 +842,7 @@ public abstract class BaseMarkupSerializer
     {
         try {
         endCDATA();
-        content();
+        content(false);
         _printer.printText( '&' );
         _printer.printText( name );
         _printer.printText( ';' );
@@ -1121,7 +1138,7 @@ public abstract class BaseMarkupSerializer
             Node         child;
 
             endCDATA();
-            content();
+            content(false);
 
             if (fDOMFilter !=null && 
                   (fDOMFilter.getWhatToShow() & NodeFilter.SHOW_ENTITY_REFERENCE)!= 0) {
@@ -1283,25 +1300,27 @@ public abstract class BaseMarkupSerializer
             break;
         }
     }
-
-
+    
     /**
      * Must be called by a method about to print any type of content.
      * If the element was just opened, the opening tag is closed and
      * will be matched to a closing tag. Returns the current element
      * state with <tt>empty</tt> and <tt>afterElement</tt> set to false.
      *
+     * @param ignorable
+     *      If the content entirely consists of ignorable whitespaces.  
+     * 
      * @return The current element state
      * @throws IOException An I/O exception occured while
      *   serializing
      */
-    protected ElementState content()
+    protected ElementState content( boolean ignorable )
         throws IOException
     {
         ElementState state;
 
         state = getElementState();
-        if ( ! isDocumentState() ) {
+        if ( ! isDocumentState() && (!ignorable || state.preserveSpace)) {
             // Need to close CData section first
             if ( state.inCData && ! state.doCData ) {
                 _printer.printText( "]]>" );
@@ -1343,8 +1362,8 @@ public abstract class BaseMarkupSerializer
         throws IOException
     {
         ElementState state;
-
-        state = content();
+        boolean ignorable = text.trim().length()==0;
+        state = content(ignorable);
         // Check if text should be print as CDATA section or unescaped
         // based on elements listed in the output format (the element
         // state) or whether we are inside a CDATA section or entity.
@@ -1379,7 +1398,11 @@ public abstract class BaseMarkupSerializer
                 printText( text, true, state.unescaped );
                 _printer.setNextIndent( saveIndent );
             } else {
-                printText( text, false, state.unescaped );
+                // if the string is whitespace only and we are indenting
+                // this characters are probably just for indentation.
+                // we will handle indentation by ourselves, so don't print it.
+                if( !ignorable || !_indenting )
+                    printText( text, false, state.unescaped );
             }
         }
     }
@@ -1514,7 +1537,7 @@ public abstract class BaseMarkupSerializer
                 else {
                     // REVISIT: For XML 1.1 should we perform extra checks here?
                     //          Should it be serialized as entity reference?
-                    if (content().inCData ) {
+                    if (content(false).inCData ) {
                         _printer.printText("]]>&#x");                        
                         _printer.printText(Integer.toHexString(supplemental));                        
                         _printer.printText(";<![CDATA[");
