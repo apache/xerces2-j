@@ -1185,6 +1185,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                        0,
                                        null,
                                        XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
+            throw excToCatch;
         }
         return retVal;
 
@@ -2511,7 +2512,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             System.out.println("Name: "+strTmp+", "+
                                "Count: "+childCount+", "+
                                "ContentSpecType: " +fCurrentContentSpecType); //+getContentSpecAsString(elementIndex));
-            for (int index = 0; index < childCount && index < 10; index++) {
+            for (int index = childOffset; index < (childOffset+childCount)  && index < 10; index++) {
                 if (index == 0) {
                     System.out.print("  (");
                 }
@@ -2591,7 +2592,8 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 DatatypeValidator dv = fTempElementDecl.datatypeValidator;
                 if (dv == null) {
                     System.out.println("Internal Error: this element have a simpletype "+
-                                       "but no datatypevalidator was found, element "+fTempElementDecl.name);
+                                       "but no datatypevalidator was found, element "+fTempElementDecl.name
+                                       +",locapart: "+fStringPool.toString(fTempElementDecl.name.localpart));
                 }
                 else {
                     dv.validate(fDatatypeBuffer.toString());
