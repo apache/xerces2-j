@@ -1276,8 +1276,12 @@ public class Grammar {
       //  Its not a leaf, so we have to recurse its left and maybe right
       //  nodes. Save both values before we recurse and trash the node.
       //
-      final int leftNode  = ((int[])(contentSpec.value))[0];
-      final int rightNode = ((int[])(contentSpec.otherValue))[0];
+      final int     leftNode = ((int[])(contentSpec.value))[0];
+      int rightNode = -1 ;
+      if (contentSpec.otherValue != null ) 
+           rightNode = ((int[])(contentSpec.otherValue))[0];
+      else 
+          return;
 
       if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_CHOICE ||
           contentSpec.type == XMLContentSpec.CONTENTSPECNODE_SEQ) {
@@ -1294,7 +1298,7 @@ public class Grammar {
       }
 
       // error
-      throw new RuntimeException("Invalid content spec type seen in contentSpecTree() method of Grammar class");
+      throw new RuntimeException("Invalid content spec type seen in contentSpecTree() method of Grammar class : "+contentSpec.type);
    }
 
 

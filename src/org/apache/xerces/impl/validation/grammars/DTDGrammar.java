@@ -347,11 +347,21 @@ implements XMLDTDHandler, XMLDTDContentModelHandler {
 
          fCurrentElementIndex = createElementDecl();//create element decl
 
-         if (fDepth == 0) {
+         if (fDepth == 0 && fNodeIndexStack != null) {
+             if (elementDecl.type == XMLElementDecl.TYPE_MIXED) {
+                 int pcdata = addUniqueLeafNode(null);
+                 if (fNodeIndexStack[0] == -1) {
+                     fNodeIndexStack[0] = pcdata;
+                 }
+                 else {
+                     fNodeIndexStack[0] = addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE, 
+                                                             pcdata, fNodeIndexStack[0]);
+                 }
+             }
               setContentSpecIndex(fCurrentElementIndex, fNodeIndexStack[fDepth]);
          }
 
-         if ( fDebugDTDGrammar == true ) {
+         if ( fDebugDTDGrammar ) {
             System.out.println(  "name = " + fElementDecl.name.localpart );
             System.out.println(  "Type = " + fElementDecl.type );
          }
@@ -604,6 +614,7 @@ implements XMLDTDHandler, XMLDTDContentModelHandler {
          fElementDecl = elementDecl;
       }
       fDepth = 0;
+      initializeContentModelStack();
       //fQName.clear();
       //fQName.localpart = elementName;
       //fElementDecl.clear();
@@ -633,18 +644,11 @@ implements XMLDTDHandler, XMLDTDContentModelHandler {
    int prevNodeIndex         = -1;
    int nodeIndex             = -1;
    public void mixedElement(String elementName) throws SAXException {
-      int valueIndex = -1; // -1 is special value for #PCDATA
-
       try {
          fNodeIndexStack[fDepth] = addUniqueLeafNode(elementName);
-         //nodeIndex = addUniqueLeafNode(elementName);//
-         //System.out.println("nodeIndex = " + nodeIndex );
-         //System.out.println("mixed Elementname " + elementName );
       } catch ( Exception ex ) {
          ex.printStackTrace();
       }
-
-
    } // mixedElement
 
    /**
