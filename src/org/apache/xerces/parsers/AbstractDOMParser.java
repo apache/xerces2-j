@@ -276,7 +276,7 @@ public abstract class AbstractDOMParser
      * This method retreives the name of current document class.
      */
     protected String getDocumentClassName() {
-	return documentClassName;
+       	return fDocumentClassName;
     }
 
     /**
