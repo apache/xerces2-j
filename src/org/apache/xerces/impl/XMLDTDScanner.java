@@ -1488,6 +1488,11 @@ public class XMLDTDScanner
         String systemId = fStrings[0];
         String publicId = fStrings[1];
 
+        if (systemId == null && publicId == null) {
+            reportFatalError("ExternalIDorPublicIDRequired",
+                             new Object[]{name});
+       }
+
         // skip possible trailing space
         skipSeparator(false, !scanningInternalSubset());
 
