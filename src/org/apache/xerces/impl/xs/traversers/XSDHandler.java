@@ -68,6 +68,7 @@ import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.impl.xs.XMLSchemaValidator;
 import org.apache.xerces.parsers.StandardParserConfiguration;
 import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.parsers.DOMParser;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
@@ -163,6 +164,10 @@ public class XSDHandler {
     // schema document that is included in multiple other schemas.
     private SymbolHash fTraversed = new SymbolHash();
 
+    // this hashtable contains a mapping from Document to its systemId
+    // this is useful to resolve a uri relative to the referring document
+    private Hashtable fDoc2SystemId = new Hashtable();
+
     // the primary XSDocumentInfo we were called to parse
     private XSDocumentInfo fRoot = null;
 
@@ -226,7 +231,7 @@ public class XSDHandler {
             }
         }
 
-        public XMLInputSource resolveEntity(String namespace, String location, boolean useProperties) throws IOException {
+        public XMLInputSource resolveEntity(String namespace, String location, String base, boolean useProperties) throws IOException {
             if (fExternalResolver == null)
                 return null;
 
@@ -246,7 +251,7 @@ public class XSDHandler {
 
             // REVISIT: resolve the entity. passing null as public id, instead
             // of passing namespace value. -SG
-            return fExternalResolver.resolveEntity(null, loc, null);
+            return fExternalResolver.resolveEntity(null, loc, base);
         }
     }
 
@@ -339,7 +344,7 @@ public class XSDHandler {
                                      String schemaHint) {
 
         // first phase:  construct trees.
-        Document schemaRoot = getSchema(schemaNamespace, schemaHint, true);
+        Document schemaRoot = getSchema(schemaNamespace, schemaHint, null, true);
         if (schemaRoot == null) {
             // something went wrong right off the hop
             reportGenericSchemaError("Could not locate a schema document corresponding to grammar " + schemaNamespace);
@@ -437,7 +442,8 @@ public class XSDHandler {
                 }
                 fAttributeChecker.returnAttrArray(includeAttrs, currSchemaInfo);
                 // consciously throw away whether was a duplicate; don't care.
-                newSchemaRoot = getSchema(schemaNamespace, schemaHint, true);
+                // pass the systemId of the current document as the base systemId
+                newSchemaRoot = getSchema(schemaNamespace, schemaHint, (String)fDoc2SystemId.get(schemaRoot), true);
             }
             else if ((localName.equals(SchemaSymbols.ELT_INCLUDE)) ||
                      (localName.equals(SchemaSymbols.ELT_REDEFINE))) {
@@ -450,7 +456,8 @@ public class XSDHandler {
                 // schemaLocation is required on <include> and <redefine>
                 if (schemaHint == null)
                     reportGenericSchemaError("schemaLocation attribute must appear in <include> and <redefine>");
-                newSchemaRoot = getSchema(null, schemaHint, false);
+                // pass the systemId of the current document as the base systemId
+                newSchemaRoot = getSchema(null, schemaHint, (String)fDoc2SystemId.get(schemaRoot), false);
                 schemaNamespace = currSchemaInfo.fTargetNamespace;
             }
             else {
@@ -1004,39 +1011,46 @@ public class XSDHandler {
     // if this is the first time it's seen this document, false
     // otherwise.  schemaDoc is null if and only if no schema document
     // was resolved to.
-    private Document getSchema(String schemaNamespace,
-                               String schemaHint, boolean useProperties) {
+    private Document getSchema(String schemaNamespace, String schemaHint,
+                               String baseSystemId, boolean useProperties) {
         // contents of this method will depend on the system we adopt for entity resolution--i.e., XMLEntityHandler, EntityHandler, etc.
         XMLInputSource schemaSource=null;
         Document schemaDoc = null;
         try {
-            schemaSource = fLocationResolver.resolveEntity(schemaNamespace, schemaHint, useProperties);
-            // REVISIT: when the system id of the input source is null, it's
+            schemaSource = fLocationResolver.resolveEntity(schemaNamespace, schemaHint, baseSystemId, useProperties);
+            // REVISIT: when the system id and byte stream and character stream
+            //          of the input source are all null, it's
             //          impossible to find the schema document. so we skip in
             //          this case. otherwise we'll receive some NPE or
             //          file not found errors. but schemaHint=="" is perfectly
             //          legal for import.
-            //          this checking should be done in EntityManager (our
-            //          default entity resolver). but it's not clear to me
-            //          whether the same applies for DTD.
-            if (schemaSource != null && schemaSource.getSystemId() != null) {
-                StringBuffer schemaIdBuf = new StringBuffer();
-                if (schemaSource.getPublicId() != null)
-                    schemaIdBuf.append(schemaSource.getPublicId());
-                if (schemaSource.getSystemId() != null)
-                    schemaIdBuf.append(schemaSource.getSystemId());
-                if (schemaIdBuf.length() == 0)
-                    schemaIdBuf.append(schemaSource.getBaseSystemId());
-                String schemaId =
-                fSymbolTable.addSymbol(schemaIdBuf.toString());
-                if (fTraversed.get(schemaId) != null) {
-                    fLastSchemaWasDuplicate = true;
-                    return(Document)(fTraversed.get(schemaId));
+            if (schemaSource != null &&
+                (schemaSource.getSystemId() != null ||
+                 schemaSource.getByteStream() != null ||
+                 schemaSource.getCharacterStream() != null)) {
+
+                // When the system id of the input source is used, first try to
+                // expand it, and check whether the same document has been
+                // parsed before. If so, return the document corresponding to
+                // that system id.
+                String schemaId = null;
+                if (schemaSource.getByteStream() == null &&
+                    schemaSource.getCharacterStream() == null) {
+                    schemaId = XMLEntityManager.expandSystemId(schemaSource.getSystemId(), schemaSource.getBaseSystemId());
+                    if (fTraversed.get(schemaId) != null) {
+                        fLastSchemaWasDuplicate = true;
+                        return(Document)(fTraversed.get(schemaId));
+                    }
                 }
                 fSchemaParser.reset();
                 fSchemaParser.parse(schemaSource);
                 schemaDoc = fSchemaParser.getDocument();
-                fTraversed.put(schemaId, schemaDoc );
+                // now we need to store the mapping information from system id
+                // to the document. also from the document to the system id.
+                if (schemaId != null) {
+                    fTraversed.put(schemaId, schemaDoc );
+                    fDoc2SystemId.put(schemaDoc, schemaId );
+                }
                 fLastSchemaWasDuplicate = false;
                 return schemaDoc;
             }
@@ -1110,6 +1124,7 @@ public class XSDHandler {
         fXSDocumentInfoRegistry.clear();
         fDependencyMap.clear();
         fTraversed.clear();
+        fDoc2SystemId.clear();
         fDoc2XSDocumentMap.clear();
         fRedefine2XSDMap.clear();
         fRoot = null;
