@@ -479,6 +479,23 @@ public class XMLDTDScanner
         return fExtEntityDepth == 0;
     }
 
+    /**
+     * start a parameter entity dealing with the textdecl if there is any
+     *
+     * @param name The name of the parameter entity to start (without the '%')
+     * @param literal Whether this is happening within a literal
+     */
+    protected void startPE(String name, boolean literal) 
+        throws IOException, SAXException {
+        int depth = fPEDepth;
+        fEntityManager.startEntity(fSymbolTable.addSymbol("%" + name),
+                                   literal);
+        // if we actually got a new entity and it's external
+        // parse text decl if there is any
+        if (depth != fPEDepth && fEntityScanner.isExternal()) {
+            scanTextDecl(true);
+        }
+    }
 
     /** 
      * Dispatch an XML "event".
@@ -518,6 +535,8 @@ public class XMLDTDScanner
             // standard Text declaration
             else {
                 scanXMLDeclOrTextDecl(true, fPseudoAttributeValues);
+                String encoding = fPseudoAttributeValues[1];
+                fEntityScanner.setEncoding(encoding);
             }
             return complete;
         }
@@ -1190,11 +1209,7 @@ public class XMLDTDScanner
                                                null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 }
                 else {
-                    fEntityManager.startEntity(fSymbolTable.addSymbol("%" + peName), false);
-                    // skip text decl if there is any
-                    if (fEntityScanner.isExternal()) {
-                        scanTextDecl(true);
-                    }
+                    startPE(peName, false);
                 }
                 fEntityScanner.skipSpaces();
                 if (!fEntityScanner.skipChar('%'))
@@ -1352,7 +1367,7 @@ public class XMLDTDScanner
                                                            "MSG_PEREFERENCE_WITHIN_MARKUP",
                                                            null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
                             }
-                            fEntityManager.startEntity(fSymbolTable.addSymbol("%" + peName), true);
+                            startPE(peName, true);
                             // skip text decl if there is any
                             if (fEntityScanner.isExternal()) {
                                 scanTextDecl(true);
@@ -1737,7 +1752,8 @@ public class XMLDTDScanner
                 fIncludeSectDepth--;
             }
             else if (scanningInternalSubset() &&
-                     fEntityScanner.skipChar(']')) {
+                     fEntityScanner.peekChar() == ']') {
+                // this is the end of the internal subset, let's stop here
                 return false;
             }
             else if (fEntityScanner.skipSpaces()) {
@@ -1789,11 +1805,7 @@ public class XMLDTDScanner
                                            "MSG_SEMICOLON_REQUIRED_IN_PEREFERENCE",
                                            null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
             }
-            fEntityManager.startEntity(fSymbolTable.addSymbol("%" + name), false);
-            // skip text decl if there is any
-            if (fEntityScanner.isExternal()) {
-                scanTextDecl(true);
-            }
+            startPE(name, false);
             fEntityScanner.skipSpaces();
             if (!fEntityScanner.skipChar('%'))
                 return true;
