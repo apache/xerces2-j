@@ -57,73 +57,38 @@
 
 package org.apache.xerces.impl.v2;
 
-import org.apache.xerces.impl.v2.identity.IdentityConstraint;
+import java.util.Hashtable;
 
 /**
- * The XML representation for an element declaration
- * schema component is an <element> element information item
+ * The XML representation for an attribute group declaration
+ * schema component is a global <attributeGroup> element information item
  *
- * @author Elena Litani, IBM
  * @author Sandy Gao, IBM
  * @version $Id$
  */
-public class XSElementDecl {
+public class XSAttributeGroupDecl {
 
-    // types of value constraint
-    public final static short     NO_CONSTRAINT       = 0;
-    public final static short     DEFAULT_VALUE       = 1;
-    public final static short     FIXED_VALUET        = 2;
+    // when the number of attribute uses is greater than this number,
+    // we use a hashtable to store them
+    // REVISIT: what's the proper value
+    private static final int LARGE_ATTR_USES_NUM = 10;
 
-    // name of the element
+    // name of the attribute group
     public String fName = null;
-    // target namespace of the element
+    // target namespace of the attribute group
     public String fTargetNamespace = null;
-    // type of the element
-    public XSTypeDecl fType = null;
-    // misc flag of the element: nillable/abstract/fixed
-    public short fMiscFlags = 0;
-    // block set (disallowed substitutions) of the element
-    public short fBlock = SchemaSymbols.EMPTY_SET;
-    // final set (substitution group exclusions) of the element
-    public short fFinal = SchemaSymbols.EMPTY_SET;
-    // value constraint value
-    public Object fDefault = null;
-    // the substitution group affiliation of the element
-    public XSElementDecl fSubGroup = null;
-    // identity constraints
-    static final int INITIAL_SIZE = 8;
-    int fIDCPos = 0;
-    public IdentityConstraint[] fIDConstraints = new IdentityConstraint[INITIAL_SIZE];
+    // attribute uses included by this attribute group
+    // form 1: for large number of attribute uses, use a hashtable
+    public Hashtable fAttributeUsesL = null;
+    // form 2: for small number of attribute uses, use an array
+    public XSAttributeUse[] fAttributeUsesS = null;
+    // attribute wildcard included by this attribute group
+    public XSWildcardDecl fAttributeWC = null;
 
-    private static final short CONSTRAINT_MASK = 3;
-    private static final short NILLABLE        = 4;
-    private static final short ABSTRACT        = 8;
-
-    // methods to get/set misc flag
-
-    public short getConstraintType() {
-        return (short)(fMiscFlags & CONSTRAINT_MASK);
-    }
-    public boolean isNillable() {
-        return ((fMiscFlags & NILLABLE) != 0);
-    }
-    public boolean isAbstract() {
-        return ((fMiscFlags & ABSTRACT) != 0);
+    public void addAttributeUse(XSAttributeUse attrUse) {
+        // REVISIT: add one attribute use
+        //          add to one of the two attribute use holders
+        //          according to the number of attribute uses
     }
 
-    public void setConstraintType(short constraintType) {
-        fMiscFlags |= (constraintType & CONSTRAINT_MASK);
-    }
-    public void setIsNillable() {
-        fMiscFlags |= NILLABLE;
-    }
-    public void setIsAbstract() {
-        fMiscFlags |= ABSTRACT;
-    }
-
-    public void addIDConstaint(IdentityConstraint idc) {
-        //REVISIT: resize of necessary
-        if (idc != null)
-            fIDConstraints[fIDCPos++] = idc;
-    }
-} // class XMLElementDecl
+} // class XSAttributeGroupDecl

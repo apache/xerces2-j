@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2001 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -55,57 +55,73 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.impl.v2; 
+package org.apache.xerces.impl.v2;
 
 import org.apache.xerces.impl.v2.datatypes.DatatypeValidator;
-import org.apache.xerces.xni.QName;
 
 /**
+ * The XML representation for a complexType
+ * schema component is a <complexType> element information item
+ *
  * @author Elena Litani, IBM
  * @author Sandy Gao, IBM
  * @version $Id$
  */
-public class XSComplexTypeDecl implements XSType {
+public class XSComplexTypeDecl implements XSTypeDecl {
 
-    static final short CONTENTTYPE_EMPTY   = 1;
-    static final short CONTENTTYPE_SIMPLE  = 2;
-    static final short CONTENTTYPE_MIXED   = 3;
-    static final short CONTENTTYPE_ELEMENT = 4;
+    // content types of complextype
+    static final short CONTENTTYPE_EMPTY   = 0;
+    static final short CONTENTTYPE_SIMPLE  = 1;
+    static final short CONTENTTYPE_MIXED   = 2;
+    static final short CONTENTTYPE_ELEMENT = 3;
 
-    public String fName;
-    public String fTargetNamespace;
-    public int fBaseIdx = SchemaGrammar.I_EMPTY_DECL;
-    public String fBaseUri;
-    public short fDerivedBy = 0;
-    public short fFinalSet = 0;
+    // name of the complexType
+    public String fName = null;
+    // target namespace of the complexType
+    public String fTargetNamespace = null;
+    // base type of the complexType
+    public XSTypeDecl fBaseType = null;
+    // derivation method of the complexType
+    public short fDerivedBy = SchemaSymbols.RESTRICTION;
+    // final set of the complexType
+    public short fFinal = SchemaSymbols.EMPTY_SET;
+    // block set (prohibited substitution) of the complexType
+    public short fBlock = SchemaSymbols.EMPTY_SET;
+    // flags: whether is abstract; whether contains ID type
     public short fMiscFlags = 0;
-    public int fAttUseIndex = SchemaGrammar.I_EMPTY_DECL;
-    public int fAttWildcardIndex = SchemaGrammar.I_EMPTY_DECL;
-    public short fContentType = 0;
+    // the attribute group that holds the attribute uses and attribute wildcard
+    public XSAttributeGroupDecl fAttrGrp = null;
+    // the content type of the complexType
+    public short fContentType = CONTENTTYPE_EMPTY;
+    // if the content type is simple, then the corresponding simpleType
+    // REVISIT: to be changed to XSSimpleTypeDecl
     public DatatypeValidator fDatatypeValidator = null;
-    public int fParticleIndex = SchemaGrammar.I_EMPTY_DECL;
-    public short fBlockSet = 0;
-
-
+    // if the content type is element or mixed, the particle
+    public XSParticleDecl fParticle = null;
+    // if there is a particle, the content model corresponding to that particle
     public XSCMValidator fCMValidator = null;
-    public int fTemplateElmIndex = SchemaGrammar.I_EMPTY_DECL;
 
+    // REVISIT: when XSTypeDecl becomes a class, remove this method
     public short getXSType () {
         return COMPLEX_TYPE;
     }
-    
+
+    // REVISIT: when XSTypeDecl becomes a class, remove this method
     public String getXSTypeName() {
         return fName;
     }
 
+    // flags for the misc flag
     private static final short CT_IS_ABSTRACT = 1;
     private static final short CT_HAS_TYPE_ID = 2;
 
+    // methods to get/set misc flag
+
     public boolean isAbstractType() {
-        return((fMiscFlags & CT_IS_ABSTRACT) != 0);
+        return ((fMiscFlags & CT_IS_ABSTRACT) != 0);
     }
     public boolean containsTypeID () {
-        return((fMiscFlags & CT_HAS_TYPE_ID) != 0);
+        return ((fMiscFlags & CT_HAS_TYPE_ID) != 0);
     }
 
     public void setIsAbstractType() {

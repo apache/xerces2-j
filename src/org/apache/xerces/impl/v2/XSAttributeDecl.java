@@ -57,43 +57,33 @@
 
 package org.apache.xerces.impl.v2;
 
-import java.util.Vector;
-import org.apache.xerces.xni.QName;
-
+import org.apache.xerces.impl.v2.datatypes.DatatypeValidator;
 
 /**
- * The XML representation for an attribute declaration schema component 
- * is an <attribute> attribute information item
- * 
+ * The XML representation for an attribute declaration
+ * schema component is an <attribute> element information item
+ *
  * @author Elena Litani, IBM
  * @author Sandy Gao, IBM
- * 
  * @version $Id$
  */
 public class XSAttributeDecl {
 
-    //REVISIT: this is just a stub for XSAttribute
-    final static short     NO_CONSTRAINT       = 0;
-    final static short     DEFAULT_VALUE       = 1;
-    final static short     FIXED_VALUET        = 2;
-           
+    // types of value constraint
+    public final static short     NO_CONSTRAINT       = 0;
+    public final static short     DEFAULT_VALUE       = 1;
+    public final static short     FIXED_VALUET        = 2;
 
-    public String fName;
-    public String fTargetNamespace;
-    public String fTypeNS;
-    public int fTypeIdx;
-    // value default, fixed or !specified
-    public short fConstraintType = NO_CONSTRAINT; 
-    // REVISIT: should be Object: compiled form
-    public String fDefaultValue = null;
-    
-    //
-    // Public methods
-    //
-
-    public void clear() {
-        fName = null;
-        fConstraintType = NO_CONSTRAINT;
-    }
+    // the name of the attribute
+    public String fName = null;
+    // the target namespace of the attribute
+    public String fTargetNamespace = null;
+    // the simple type of the attribute
+    // REVISIT: to be changed to XSSimpleTypeDecl
+    public DatatypeValidator fType = null;
+    // value constraint type: default, fixed or !specified
+    public short fConstraintType = NO_CONSTRAINT;
+    // value constraint value
+    public Object fDefault = null;
 
 } // class XSAttributeDecl

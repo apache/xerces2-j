@@ -57,73 +57,24 @@
 
 package org.apache.xerces.impl.v2;
 
-import org.apache.xerces.impl.v2.identity.IdentityConstraint;
-
 /**
- * The XML representation for an element declaration
- * schema component is an <element> element information item
+ * The XML representation for a type declaration
+ * schema component is a <simpleType> or <complexType> element information item
  *
  * @author Elena Litani, IBM
- * @author Sandy Gao, IBM
  * @version $Id$
  */
-public class XSElementDecl {
+public interface XSTypeDecl {
 
-    // types of value constraint
-    public final static short     NO_CONSTRAINT       = 0;
-    public final static short     DEFAULT_VALUE       = 1;
-    public final static short     FIXED_VALUET        = 2;
+    public static final short COMPLEX_TYPE   = 1;
+    public static final short SIMPLE_TYPE    = 2;
+    public static final short UR_TYPE        = 4;
+    public static final short ANY_TYPE       = UR_TYPE | COMPLEX_TYPE;
+    public static final short ANYSIMPLE_TYPE = UR_TYPE | SIMPLE_TYPE;
 
-    // name of the element
-    public String fName = null;
-    // target namespace of the element
-    public String fTargetNamespace = null;
-    // type of the element
-    public XSTypeDecl fType = null;
-    // misc flag of the element: nillable/abstract/fixed
-    public short fMiscFlags = 0;
-    // block set (disallowed substitutions) of the element
-    public short fBlock = SchemaSymbols.EMPTY_SET;
-    // final set (substitution group exclusions) of the element
-    public short fFinal = SchemaSymbols.EMPTY_SET;
-    // value constraint value
-    public Object fDefault = null;
-    // the substitution group affiliation of the element
-    public XSElementDecl fSubGroup = null;
-    // identity constraints
-    static final int INITIAL_SIZE = 8;
-    int fIDCPos = 0;
-    public IdentityConstraint[] fIDConstraints = new IdentityConstraint[INITIAL_SIZE];
+    // REVISIT: change XSTypeDecl to an class after the new datatype design
+    // then we'll add common fields here: name, base, ...
+    public short getXSType();
+    public String getXSTypeName();
 
-    private static final short CONSTRAINT_MASK = 3;
-    private static final short NILLABLE        = 4;
-    private static final short ABSTRACT        = 8;
-
-    // methods to get/set misc flag
-
-    public short getConstraintType() {
-        return (short)(fMiscFlags & CONSTRAINT_MASK);
-    }
-    public boolean isNillable() {
-        return ((fMiscFlags & NILLABLE) != 0);
-    }
-    public boolean isAbstract() {
-        return ((fMiscFlags & ABSTRACT) != 0);
-    }
-
-    public void setConstraintType(short constraintType) {
-        fMiscFlags |= (constraintType & CONSTRAINT_MASK);
-    }
-    public void setIsNillable() {
-        fMiscFlags |= NILLABLE;
-    }
-    public void setIsAbstract() {
-        fMiscFlags |= ABSTRACT;
-    }
-
-    public void addIDConstaint(IdentityConstraint idc) {
-        //REVISIT: resize of necessary
-        if (idc != null)
-            fIDConstraints[fIDCPos++] = idc;
-    }
-} // class XMLElementDecl
+} // class XSType

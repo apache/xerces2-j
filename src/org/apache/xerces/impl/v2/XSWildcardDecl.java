@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001 The Apache Software Foundation.  All rights
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,7 +49,7 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2001, International
+ * originally based on software copyright (c) 1999, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
@@ -57,73 +57,38 @@
 
 package org.apache.xerces.impl.v2;
 
-import org.apache.xerces.impl.v2.identity.IdentityConstraint;
-
 /**
- * The XML representation for an element declaration
- * schema component is an <element> element information item
+ * The XML representation for a wildcard declaration
+ * schema component is an <any> or <anyAttribute> element information item
  *
- * @author Elena Litani, IBM
  * @author Sandy Gao, IBM
  * @version $Id$
  */
-public class XSElementDecl {
+public class XSWildcardDecl {
 
-    // types of value constraint
-    public final static short     NO_CONSTRAINT       = 0;
-    public final static short     DEFAULT_VALUE       = 1;
-    public final static short     FIXED_VALUET        = 2;
+    // types of wildcard
+    // namespace="##any"
+    public static final short WILDCARD_ANY   = 0;
+    // namespace="##other"
+    public static final short WILDCARD_OTHER = 1;
+    // namespace= (list of (anyURI | ##targetNamespace | ##local))
+    public static final short WILDCARD_LIST  = 2;
 
-    // name of the element
-    public String fName = null;
-    // target namespace of the element
-    public String fTargetNamespace = null;
-    // type of the element
-    public XSTypeDecl fType = null;
-    // misc flag of the element: nillable/abstract/fixed
-    public short fMiscFlags = 0;
-    // block set (disallowed substitutions) of the element
-    public short fBlock = SchemaSymbols.EMPTY_SET;
-    // final set (substitution group exclusions) of the element
-    public short fFinal = SchemaSymbols.EMPTY_SET;
-    // value constraint value
-    public Object fDefault = null;
-    // the substitution group affiliation of the element
-    public XSElementDecl fSubGroup = null;
-    // identity constraints
-    static final int INITIAL_SIZE = 8;
-    int fIDCPos = 0;
-    public IdentityConstraint[] fIDConstraints = new IdentityConstraint[INITIAL_SIZE];
+    // types of process contents
+    // processContents="strict"
+    public static final short WILDCARD_STRICT = 0;
+    // processContents="lax"
+    public static final short WILDCARD_LAX    = 1;
+    // processContents="skip"
+    public static final short WILDCARD_SKIP   = 2;
 
-    private static final short CONSTRAINT_MASK = 3;
-    private static final short NILLABLE        = 4;
-    private static final short ABSTRACT        = 8;
+    // the type of wildcard: any, other, or list
+    public short fType = WILDCARD_ANY;
+    // the type of process contents: strict, lax, or skip
+    public short fPprocessContents = WILDCARD_STRICT;
+    // the namespace list:
+    // for WILDCARD_LIST, it means one of the namespaces in the list
+    // for WILDCARD_OTHER, it means not any of the namespaces in the list
+    public String[] fNamespaceList;
 
-    // methods to get/set misc flag
-
-    public short getConstraintType() {
-        return (short)(fMiscFlags & CONSTRAINT_MASK);
-    }
-    public boolean isNillable() {
-        return ((fMiscFlags & NILLABLE) != 0);
-    }
-    public boolean isAbstract() {
-        return ((fMiscFlags & ABSTRACT) != 0);
-    }
-
-    public void setConstraintType(short constraintType) {
-        fMiscFlags |= (constraintType & CONSTRAINT_MASK);
-    }
-    public void setIsNillable() {
-        fMiscFlags |= NILLABLE;
-    }
-    public void setIsAbstract() {
-        fMiscFlags |= ABSTRACT;
-    }
-
-    public void addIDConstaint(IdentityConstraint idc) {
-        //REVISIT: resize of necessary
-        if (idc != null)
-            fIDConstraints[fIDCPos++] = idc;
-    }
-} // class XMLElementDecl
+} // class XSWildcardDecl

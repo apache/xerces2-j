@@ -58,34 +58,21 @@
 package org.apache.xerces.impl.v2;
 
 /**
- * Holding information about <notation> element.
- * 
+ * The XML representation for a NOTATION declaration
+ * schema component is a global <notation> element information item
+ *
  * @author Rahul Srivastava, Sun Microsystems Inc.
+ * @version $Id$
  */
 public class XSNotationDecl {
 
-    //member variables
-    public String fName;
-    public String fPublicId;
-    public String fSystemId;
-
-    //constructor
-    public XSNotationDecl() {
-        clear();
-    }
-
-    public void clear() {
-        fName = null;
-        fPublicId = null;
-        fSystemId = null;
-    }
-
-    
-    //populating notation element
-    public void setValues(String name, String publicId, String systemId) {
-        fName = name;
-        fPublicId = publicId;
-        fSystemId = systemId;
-    }
+    // name of the group
+    public String fName = null;
+    // target namespace of the group
+    public String fTargetNamespace = null;
+    // public id of the notation
+    public String fPublicId = null;
+    // system id of the notation
+    public String fSystemId = null;
 
 } // class XSNotationDecl

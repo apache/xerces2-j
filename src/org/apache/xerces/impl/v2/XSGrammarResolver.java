@@ -71,13 +71,9 @@ class XSGrammarResolver {
      */
     private Hashtable fGrammarRegistry = new Hashtable();
 
-    XSGrammarResolver() {
-        putGrammar(SchemaSymbols.URI_SCHEMAFORSCHEMA, SchemaGrammar.SG_SchemaNS);
-    }
-
     /**
      * Get the schema grammar for the specified namespace
-     * 
+     *
      * @param namespace
      * @return SchemaGrammar associated with the namespace
      */
@@ -87,17 +83,16 @@ class XSGrammarResolver {
 
     /**
      * put a schema grammar into the registry
-     * 
-     * @param namespace namespace associated with the grammar
+     *
      * @param grammar   the grammar to put in the registry
      */
-    public void putGrammar(String namespace, SchemaGrammar grammar) {
-        fGrammarRegistry.put(namespace, grammar);
+    public void putGrammar(SchemaGrammar grammar) {
+        fGrammarRegistry.put(grammar.getTargetNamespace(), grammar);
     }
 
     /**
      * Check if a grammar for the specified namespace is in the registry
-     * 
+     *
      * @param namespace
      * @return boolean true if contains
      */
@@ -108,8 +103,8 @@ class XSGrammarResolver {
     /**
      * Clear the registry.
      */
-    public void clearGrammarResolver() { 
+    public void reset() {
         fGrammarRegistry.clear();
     }
-    
+
 } // class XSGrammarResolver
