@@ -3245,9 +3245,14 @@ public final class XMLValidator
          final int oldElementIndex = elementIndex;
 
          contentSpecType =  getContentSpecType(elementIndex);
-         XMLElementDecl tempElementDecl = new XMLElementDecl();
-         if (elementIndex != -1)
-             fGrammar.getElementDecl(elementIndex, tempElementDecl);
+         int elementNameLocalPart = StringPool.NULL_STRING;
+         DatatypeValidator elementDatatypeValidator = null;
+
+         if (elementIndex != -1) {
+             fGrammar.getElementDecl(elementIndex, fTempElementDecl);
+             elementNameLocalPart = fTempElementDecl.name.localpart;
+             elementDatatypeValidator = fTempElementDecl.datatypeValidator;
+         }
 
          if (fGrammarIsSchemaGrammar) {
 
@@ -3308,7 +3313,7 @@ public final class XMLValidator
                      else if (elementIndex != -1) {
                         // make sure the new type is related to the
                         // type of the expected element
-                        DatatypeValidator ancestorValidator = tempElementDecl.datatypeValidator;
+                        DatatypeValidator ancestorValidator = elementDatatypeValidator;
                         DatatypeValidator tempVal = fXsiTypeValidator;
                         for(; tempVal != null; tempVal = tempVal.getBaseValidator())
                             // WARNING!!!  Comparison by reference.
@@ -3343,7 +3348,7 @@ public final class XMLValidator
                                     reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
                                         XMLMessages.SCHEMA_GENERIC_ERROR,
                                         "Type : "+uri+","+localpart
-                                        +" does not derive from the type of element " + fStringPool.toString(tempElementDecl.name.localpart));
+                                        +" does not derive from the type of element " + fStringPool.toString(elementNameLocalPart));
 			                    }
 			                } else
                             if ((ancestorValidator == null &&
@@ -3355,7 +3360,7 @@ public final class XMLValidator
                                 reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
                                     XMLMessages.SCHEMA_GENERIC_ERROR,
                                     "Type : "+uri+","+localpart
-                                    +" does not derive from the type of element " + fStringPool.toString(tempElementDecl.name.localpart));
+                                    +" does not derive from the type of element " + fStringPool.toString(elementNameLocalPart));
                             }
                         } else {
                             // if we have an attribute but xsi:type's type is simple, we have a problem...
@@ -3364,13 +3369,13 @@ public final class XMLValidator
                                 reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
                                     XMLMessages.SCHEMA_GENERIC_ERROR,
                                     "Type : "+uri+","+localpart
-                                    +" does not derive from the type of element " + fStringPool.toString(tempElementDecl.name.localpart));
+                                    +" does not derive from the type of element " + fStringPool.toString(elementNameLocalPart));
                             }
                             // check if element has block set
                             if((((SchemaGrammar)fGrammar).getElementDeclBlockSet(elementIndex) & SchemaSymbols.RESTRICTION) != 0) {
                                 reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
                                     XMLMessages.SCHEMA_GENERIC_ERROR,
-                                    "Element " + fStringPool.toString(tempElementDecl.name.localpart)
+                                    "Element " + fStringPool.toString(elementNameLocalPart)
                                     + "does not permit substitution by a type such as "+uri+","+localpart);
                             }
                         }
@@ -3400,9 +3405,9 @@ public final class XMLValidator
                                    XMLMessages.SCHEMA_GENERIC_ERROR,
                                     "Type : "+uri+","+localpart
                                     +" does not derive from the type " + destType.typeName);
-                         } else if (destType == null && tempElementDecl.datatypeValidator != null) {
+                         } else if (destType == null && elementDatatypeValidator != null) {
                             // if the original type is a simple type, check derivation ok.
-                            DatatypeValidator ancestorValidator = tempElementDecl.datatypeValidator;
+                            DatatypeValidator ancestorValidator = elementDatatypeValidator;
                             DatatypeValidator tempVal = fXsiTypeValidator;
                             for(; tempVal != null; tempVal = tempVal.getBaseValidator())
                                 // WARNING!!!  Comparison by reference.
@@ -3444,13 +3449,13 @@ public final class XMLValidator
                                         reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
                                             XMLMessages.SCHEMA_GENERIC_ERROR,
                                             "Type : "+uri+","+localpart
-                                            +" does not derive from the type of element " + fStringPool.toString(tempElementDecl.name.localpart));
+                                            +" does not derive from the type of element " + fStringPool.toString(elementNameLocalPart));
 			                        }
 			                    } else {
                                     reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
                                         XMLMessages.SCHEMA_GENERIC_ERROR,
                                         "Type : "+uri+","+localpart
-                                        +" does not derive from the type of element " + fStringPool.toString(tempElementDecl.name.localpart));
+                                        +" does not derive from the type of element " + fStringPool.toString(elementNameLocalPart));
                                 }
                             }
                          } else if (typeInfo != destType) { // now check whether the element or typeInfo's baseType blocks us.
@@ -3458,7 +3463,7 @@ public final class XMLValidator
                             if((((SchemaGrammar)fGrammar).getElementDeclBlockSet(elementIndex) & derivationMethod) != 0) {
                                 reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
                                    XMLMessages.SCHEMA_GENERIC_ERROR,
-                                    "Element " + fStringPool.toString(tempElementDecl.name.localpart) +
+                                    "Element " + fStringPool.toString(elementNameLocalPart) +
                                     " does not permit xsi:type substitution in the manner required by type "+uri+","+localpart);
                             } else if (typeInfo.baseComplexTypeInfo != null &&
                                        (typeInfo.baseComplexTypeInfo.blockSet & derivationMethod) != 0) {
