@@ -649,6 +649,118 @@ public class XMLEntityManager
         startEntity(entityName, xmlInputSource, false);
     } // startDTDEntity(XMLInputSource)
 
+    /**
+     * Starts an entity. 
+     * <p>
+     * This method can be used to insert an application defined XML
+     * entity stream into the parsing stream.
+     *
+     * @param name           The name of the entity.
+     * @param xmlInputSource The input source of the entity.
+     * @param literal        True if this entity is started within a 
+     *                       literal value. 
+     *
+     * @throws IOException  Thrown on i/o error.
+     * @throws XNIException Thrown by entity handler to signal an error.
+     */
+    public void startEntity(String name, 
+                            XMLInputSource xmlInputSource, 
+                            boolean literal) 
+        throws IOException, XNIException {
+
+        // get information
+        final String publicId = xmlInputSource.getPublicId();
+        final String systemId = xmlInputSource.getSystemId();
+        String baseSystemId = xmlInputSource.getBaseSystemId();
+        String encoding = xmlInputSource.getEncoding();
+
+        // create reader
+        InputStream stream = null;
+        Reader reader = xmlInputSource.getCharacterStream();
+        if (reader == null) {
+            stream = xmlInputSource.getByteStream();
+            if (stream == null) {
+                String expandedSystemId = expandSystemId(systemId, baseSystemId);
+                if (baseSystemId == null) {
+                    baseSystemId = expandedSystemId;
+                }
+                stream = new URL(expandedSystemId).openStream();
+            }
+                
+            // perform auto-detect of encoding
+            if (encoding == null) {
+                // read first four bytes and determine encoding
+                final byte[] b4 = new byte[4];
+                int count = stream.read(b4, 0, 4);
+                if (count != -1) {
+                    encoding = getEncodingName(b4, count);
+
+                    // push back the characters we read
+                    if (DEBUG_ENCODINGS) {
+                        System.out.println("$$$ wrapping input stream in PushbackInputStream");
+                    }
+                    PushbackInputStream pbstream = new PushbackInputStream(stream, 4);
+                    int offset = 0;
+                    // Special case UTF-8 files with BOM created by Microsoft
+                    // tools. It's more efficient to consume the BOM than make
+                    // the reader perform extra checks. -Ac
+                    if (count > 2 && encoding.equals("UTF-8")) {
+                        int b0 = b4[0] & 0xFF;
+                        int b1 = b4[1] & 0xFF;
+                        int b2 = b4[2] & 0xFF;
+                        if (b0 == 0xEF && b1 == 0xBB && b2 == 0xBF) {
+                            offset = 3;
+                            count -= offset;
+                        }
+                    }
+                    pbstream.unread(b4, offset, count);
+
+                    // REVISIT: Should save the original input stream instead of
+                    //          the pushback input stream so that when we swap out
+                    //          the OneCharReader, we don't still have a method
+                    //          indirection to get at the underlying bytes. -Ac
+
+                    // create reader from input stream
+                    reader = createReader(pbstream, encoding);
+                }
+                else {
+                    reader = createReader(stream, encoding);
+                }
+            }
+
+            // use specified encoding
+            else {
+                reader = createReader(stream, encoding);
+            }
+
+            // read one character at a time so we don't jump too far
+            // ahead, converting characters from the byte stream in
+            // the wrong encoding
+            if (DEBUG_ENCODINGS) {
+                System.out.println("$$$ wrapping reader in OneCharReader");
+            }
+            reader = new OneCharReader(reader);
+        }
+
+        // push entity on stack
+        if (fCurrentEntity != null) {
+            fEntityStack.push(fCurrentEntity);
+        }
+        
+        // create entity
+        String expandedSystemId = expandSystemId(systemId, baseSystemId);
+        fCurrentEntity = new ScannedEntity(name, publicId, systemId, 
+                                           expandedSystemId, stream, reader, 
+                                           encoding, literal);
+
+        // call handler
+        if (fEntityHandler != null) {
+            fEntityHandler.startEntity(name, publicId, systemId, 
+                                       baseSystemId, encoding);
+        }
+
+    } // startEntity(String,XMLInputSource)
+
     /** Returns the entity scanner. */
     public XMLEntityScanner getEntityScanner() {
         return fEntityScanner;
@@ -905,115 +1017,6 @@ public class XMLEntityManager
     //
     // Protected methods
     //
-
-    /**
-     * Starts an entity. 
-     *
-     * @param name           The name of the entity.
-     * @param xmlInputSource The input source of the entity.
-     * @param literal        True if this entity is started within a 
-     *                       literal value. 
-     *
-     * @throws IOException  Thrown on i/o error.
-     * @throws XNIException Thrown by entity handler to signal an error.
-     */
-    protected void startEntity(String name, 
-                               XMLInputSource xmlInputSource, 
-                               boolean literal) 
-        throws IOException, XNIException {
-
-        // get information
-        final String publicId = xmlInputSource.getPublicId();
-        final String systemId = xmlInputSource.getSystemId();
-        String baseSystemId = xmlInputSource.getBaseSystemId();
-        String encoding = xmlInputSource.getEncoding();
-
-        // create reader
-        InputStream stream = null;
-        Reader reader = xmlInputSource.getCharacterStream();
-        if (reader == null) {
-            stream = xmlInputSource.getByteStream();
-            if (stream == null) {
-                String expandedSystemId = expandSystemId(systemId, baseSystemId);
-                if (baseSystemId == null) {
-                    baseSystemId = expandedSystemId;
-                }
-                stream = new URL(expandedSystemId).openStream();
-            }
-                
-            // perform auto-detect of encoding
-            if (encoding == null) {
-                // read first four bytes and determine encoding
-                final byte[] b4 = new byte[4];
-                int count = stream.read(b4, 0, 4);
-                if (count != -1) {
-                    encoding = getEncodingName(b4, count);
-
-                    // push back the characters we read
-                    if (DEBUG_ENCODINGS) {
-                        System.out.println("$$$ wrapping input stream in PushbackInputStream");
-                    }
-                    PushbackInputStream pbstream = new PushbackInputStream(stream, 4);
-                    int offset = 0;
-                    // Special case UTF-8 files with BOM created by Microsoft
-                    // tools. It's more efficient to consume the BOM than make
-                    // the reader perform extra checks. -Ac
-                    if (count > 2 && encoding.equals("UTF-8")) {
-                        int b0 = b4[0] & 0xFF;
-                        int b1 = b4[1] & 0xFF;
-                        int b2 = b4[2] & 0xFF;
-                        if (b0 == 0xEF && b1 == 0xBB && b2 == 0xBF) {
-                            offset = 3;
-                            count -= offset;
-                        }
-                    }
-                    pbstream.unread(b4, offset, count);
-
-                    // REVISIT: Should save the original input stream instead of
-                    //          the pushback input stream so that when we swap out
-                    //          the OneCharReader, we don't still have a method
-                    //          indirection to get at the underlying bytes. -Ac
-
-                    // create reader from input stream
-                    reader = createReader(pbstream, encoding);
-                }
-                else {
-                    reader = createReader(stream, encoding);
-                }
-            }
-
-            // use specified encoding
-            else {
-                reader = createReader(stream, encoding);
-            }
-
-            // read one character at a time so we don't jump too far
-            // ahead, converting characters from the byte stream in
-            // the wrong encoding
-            if (DEBUG_ENCODINGS) {
-                System.out.println("$$$ wrapping reader in OneCharReader");
-            }
-            reader = new OneCharReader(reader);
-        }
-
-        // push entity on stack
-        if (fCurrentEntity != null) {
-            fEntityStack.push(fCurrentEntity);
-        }
-        
-        // create entity
-        String expandedSystemId = expandSystemId(systemId, baseSystemId);
-        fCurrentEntity = new ScannedEntity(name, publicId, systemId, 
-                                           expandedSystemId, stream, reader, 
-                                           encoding, literal);
-
-        // call handler
-        if (fEntityHandler != null) {
-            fEntityHandler.startEntity(name, publicId, systemId, 
-                                       baseSystemId, encoding);
-        }
-
-    } // startEntity(String,XMLInputSource)
 
     /**
      * Ends an entity.
