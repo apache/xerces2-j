@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,313 +57,184 @@
 
 package org.apache.xerces.validators.common;
 
-import  org.w3c.dom.Node;
-import  org.w3c.dom.Document;
-import  org.apache.xerces.validators.common.XMLValidator;
-import  org.apache.xerces.validators.common.XMLContentModel;
-import  org.apache.xerces.validators.schema.SchemaSymbols;
-import  org.apache.xerces.utils.StringPool;
-import  org.apache.xerces.validators.datatype.DatatypeValidator;
-import  org.apache.xerces.utils.QName;
-
+import org.apache.xerces.framework.XMLContentSpec;
+import org.apache.xerces.utils.QName;
+import org.apache.xerces.validators.datatype.DatatypeValidator;
+import org.w3c.dom.Document;
 
 /**
- * Embodies a grammar. Grammars live a GrammaPool table
- * keyed on namespaces.
- * A Grammar is a holder for a Grammar.
- * When a Grammar is needed we populate a
- * DOM representation ofstructure, and then
- * we traverse this structure while building an
- * internal array representation of Grammar.
- * This Grammar are called from the XMLValidator which
- * is the Validator of all kind.
- * 
- * @author Jeffrey Rodriguez
+ * @version $Id$
  */
-public  class Grammar {
-    private  String                fGrammarID       = null;
-    private  Document              fGrammarDocument = null;
-    private StringPool             fStringPool      = null;
-    private  ArrayRepresentation   fGrammarArrayRepresentation = null;
+public class Grammar {
 
-    public Grammar( String grammarID ) {
-        fGrammarID = grammarID;
-    }
-    /**
-     * 
-     * @return                   String with name of grammar.
-     */
-    public String whatGrammarAmI(){
-        return fGrammarID;
-    }
-    /**
-     * getter class to obtain internal grammar representation.
-     * 
-     * @return               Grammar.arrayRepresentation
-     */
-    public ArrayRepresentation getGrammarArrayRepresentation(){
-        return fGrammarArrayRepresentation;
-    }
+    //
+    // Constants
+    //
 
+    private static final int CHUNK_SHIFT = 8; // 2^8 = 256
+    private static final int CHUNK_SIZE = (1 << CHUNK_SHIFT);
+    private static final int CHUNK_MASK = CHUNK_SIZE - 1;
+    private static final int INITIAL_CHUNK_COUNT = (1 << (10 - CHUNK_SHIFT)); // 2^10 = 1k
 
-    /**
-     * This takes a Root Node.
-     * It could also take a Document fragment Node ( feature not
-     * implemented yet).
-     * It then compiles the Grammar into an internal
-     * compiler representation of the Grammar that
-     * validators then can use to validate.
-     * 
-     * @param node
-     */
-    public void                compileGrammar( Node node ) {
+    //
+    // Data
+    //
 
-    }
+    // basic information
 
+    private int fTargetNamespace;
 
-    public Document            getGrammarDocument() {
-        return null;
-    }
+    private Document fGrammarDocument;
 
+    // element decl tables
 
+    private int fElementDeclCount;
+    private int fElementDeclNameIndex[][] = new int[INITIAL_CHUNK_COUNT][];
+    private int fElementDeclType[][] = new int[INITIAL_CHUNK_COUNT][];
+    private DatatypeValidator fElementDeclDatatypeValidator[][] = new DatatypeValidator[INITIAL_CHUNK_COUNT][];
+    private int fElementDeclContentSpecIndex[][] = new int[INITIAL_CHUNK_COUNT][];
+    private XMLContentModel fElementDeclContentModelValidator[][] = new XMLContentModel[INITIAL_CHUNK_COUNT][];
+    private int fElementDeclFirstAttributeDeclIndex[][] = new int[INITIAL_CHUNK_COUNT][];
+    private int fElementDeclLastAttributeDeclIndex[][] = new int[INITIAL_CHUNK_COUNT][];
 
-    /**
-     * Sets compile representation Element type
-     * SimpleType | ComplexType
-     * 
-     * @param elementType
-     * @see org.apache.xerces.validators.schema.SchemaSymbols
-     */
-    protected void  setElementType( String elementType ) {
-    }
+    // content spec tables
 
-    /**
-     * Sets compiled representation elementValidator, a reference
-     * to datatype validator
-     * 
-     * @param elementValidator
-     * @see           org.apache.xerces.validators.datatype.DatatypeValidator
-     */
-    protected void  setElementValidator( DatatypeValidator elementValidator ) {
+    private int fContentSpecCount;
+    private int fContentSpecType[][] = new int[INITIAL_CHUNK_COUNT][];
+    private int fContentSpecValue[][] = new int[INITIAL_CHUNK_COUNT][];
+    private int fContentSpecOtherValue[][] = new int[INITIAL_CHUNK_COUNT][];
+
+    // attribute decl tables
+
+    private int fAttributeDeclCount;
+    private QName fAttributeDeclName[][] = new QName[INITIAL_CHUNK_COUNT][];
+    private DatatypeValidator fAttributeDeclDatatypeValidator[][] = new DatatypeValidator[INITIAL_CHUNK_COUNT][];
+    private String fAttributeDeclDefaultValue[][] = new String[INITIAL_CHUNK_COUNT][];
+    private int fAttributeDeclNextAttributeDeclIndex[][] = new int[INITIAL_CHUNK_COUNT][];
+
+    // scope mapping tables
+
+    // TODO
+
+    //
+    // Public methods
+    //
+
+    public Document getGrammarDocument() {
+        return fGrammarDocument;
     }
 
-    /**
-     * Sets Element Content Model compiled representation
-     * 
-     * @param elementContentModel
-     */
-    protected void  setElementContentModel( XMLContentModel  elementContentModel ) {
+    public int getElementDeclIndex(int nameIndex, int scopeIndex) {
+        return -1;
     }
 
-    /**
-     * Sets internal representation of Element Attribute
-     * 
-     * @param elementAttribute
-     */
-    protected void  setElementAttribute( int elementAttribute ) {
+    public boolean getElementDecl(int elementDeclIndex, XMLElementDecl elementDecl) {
+        elementDecl.name.uri = fTargetNamespace;
+        return false;
     }
 
-    /**
-     * Sets compiled representation Attribute validator, a reference
-     * to datatype validator
-     * 
-     * @param attributeValidator
-     * @see org.apache.xerces.validators.datatype.DatatypeValidator
-     */
-    protected void  setAttributeValidator( DatatypeValidator attributeValidator ){
+    public int getFirstAttributeDeclIndex(int elementDeclIndex) {
+        return -1;
     }
 
-    /**
-     * Validator Interface method
-     * Get Element type
-     * 
-     * @param localPart
-     * @param scope
-     * @return 
-     *         Return type as a String.
-     *         SimpleType | CompleType
-     */
-    public String getElementType( String localPart, int scope ) {
-        return null;
+    public int getNextAttributeDeclIndex(int attributeDeclIndex) {
+        return -1;
     }
 
-    /**
-     * Validator Interface method
-     * Get Element Datatype Validator
-     * 
-     * @param localPart
-     * @param scope
-     * @return 
-     * @see org.apache.xerces.validators.datatype.DatatypeValidator
-     */
-    public DatatypeValidator getElementValidator( String localPart, int scope ){
-        return null;
+    public boolean getContentSpec(int contentSpecIndex, XMLContentSpec contentSpec) {
+        return false;
     }
 
-    /**
-     * Validator Interface method
-     * Get Element ContentModel
-     * 
-     * @param localPart
-     * @param scope
-     * @return 
-     * @see          org.apache.xerces.validators.common.XMLContentModel
-     */
-    public XMLContentModel    getElementContentModel( String localPart, int scope ) {
-        return null;
-    }                         
-
-    /**
-     * Validator Interface method
-     * Get get Element Attribute
-     * 
-     * @param elementIndex
-     * @return 
-     */
-    public  int               getElementAttribute(int elementIndex ) {
-        return 0;
-    }
-    /**
-     * Validator Interface method
-     * Get Attribute Validator
-     * 
-     * @param localPart
-     * @param scope
-     * @return 
-     */
-    public  DatatypeValidator getAttributeValidator( String localPart, int scope ){
-        return null;
+    public boolean getAttributeDecl(int attributeDeclIndex, XMLAttributeDecl attributeDecl) {
+        return false;
     }
 
-    /**
-     * Validator Interface method
-     * Get Element index
-     * 
-     * @param localPart
-     * @param scope
-     * @return 
-     */
-    public int getElementIndex( String localPart, int scope ) {
-        return 0;
+    //
+    // Protected methods
+    //
+
+    protected void setGrammarDocument(Document grammarDocument) {
+        fGrammarDocument = grammarDocument;
     }
 
-
-
-
-    /**
-     * This inner classes embodies the array representation
-     * of the Grammar ( either Schema, DTD, etc) as seen
-     * internally by the parser.
-     * 
-     * @author Jeffrey Rodriguez
-     */
-    public static class ArrayRepresentation {
-
-        private final  int TOP_LEVEL_SCOPE = 0;
-        private final int CHUNK_SHIFT = 8;           // 2^8 = 256
-        private final int CHUNK_SIZE = (1 << CHUNK_SHIFT);
-        private final int CHUNK_MASK = CHUNK_SIZE - 1;
-        private final int INITIAL_CHUNK_COUNT = (1 << (10 - CHUNK_SHIFT));
-
-        public int                    fElementCount          = 0;    // Element list
-        public int[][]                fElementType           = null; 
-
-        private QName[][]             fElementQName          = null;
-        private int[][]               fScope                 = null;
-
-        public byte[][]               fElementDeclIsExternal = null;
-        public DatatypeValidator[][]  fElementValidator      = null;
-
-        public int[][]                fContentSpecType       = null;
-        public int[][]                fContentSpec           = null;
-        public XMLContentModel[][]    fContentModel          = null;
-
-        public int[][]                fAttlistHead           = null;
-        public int[][]                fAttlistTail           = null;
-
-        public int                    fNodeCount             = 0; //ContentSpecNode list                      
-        public byte[][]               fNodeType              = null; 
-        public int[][]                fNodeValue             = null;
-
-        public int                    fAttDefCount           = 0;     //AttDef list
-        public int[][]                fAttPrefix             = null; 
-        public int[][]                fAttName               = null;
-        public int[][]                fAttType               = null; 
-        public DatatypeValidator [][] fAttValidator          = null;
-
-        public int[][]                fEnumeration           = null;
-        public int[][]                fAttDefaultType        = null;
-        public int[][]                fAttValue              = null;
-        public byte[][]               fAttDefIsExternal      = null;
-        public int[][]                fNextAttDef            = null ;
-
-
-        /**
-         * Ensures that there is enough storage for element information.
-         * 
-         * @param chunk
-         * @return         boolean
-         */
-        private boolean ensureElementCapacity(int chunk) {
-            try {
-                return fElementType[chunk][0] == 0;
-            } catch (ArrayIndexOutOfBoundsException ex) {
-                byte[][] newByteArray = new byte[chunk * 2][];
-                System.arraycopy(fElementDeclIsExternal, 0, newByteArray, 0, chunk);
-                fElementDeclIsExternal = newByteArray;
-
-                int[][] newIntArray = new int[chunk * 2][];
-                System.arraycopy(fElementType, 0, newIntArray, 0, chunk);
-                fElementType = newIntArray;
-
-                QName[][] newQNameArray = new QName[chunk * 2][];
-                System.arraycopy(fElementQName, 0, newQNameArray, 0, chunk);
-                fElementQName = newQNameArray;
-
-                //REVISIT: fScope             
-                newIntArray = new int[chunk * 2][];
-                System.arraycopy(fScope, 0, newIntArray, 0, chunk);
-                fScope = newIntArray;
-
-                newIntArray = new int[chunk * 2][];
-                System.arraycopy(fContentSpecType, 0, newIntArray, 0, chunk);
-                fContentSpecType = newIntArray;
-
-                newIntArray = new int[chunk * 2][];
-                System.arraycopy(fContentSpec, 0, newIntArray, 0, chunk);
-                fContentSpec = newIntArray;
-
-                XMLContentModel[][] newContentModel = new XMLContentModel[chunk * 2][];
-                System.arraycopy(fContentModel, 0, newContentModel, 0, chunk);
-                fContentModel = newContentModel;
-
-                newIntArray = new int[chunk * 2][];
-                System.arraycopy(fAttlistHead, 0, newIntArray, 0, chunk);
-                fAttlistHead = newIntArray;
-
-                newIntArray = new int[chunk * 2][];
-                System.arraycopy(fAttlistTail, 0, newIntArray, 0, chunk);
-                fAttlistTail = newIntArray;
-            } catch (NullPointerException ex) {
-                // ignore
-            }
-
-            fElementType[chunk]  = new int[CHUNK_SIZE];
-            fElementQName[chunk] = new QName[CHUNK_SIZE];
-            fScope[chunk]        = new int[CHUNK_SIZE];
-            //by default, all the scope should be top-level
-            for (int i=0; i<CHUNK_SIZE; i++) {
-                fScope[chunk][i] = TOP_LEVEL_SCOPE;
-            }
-
-            fElementDeclIsExternal[chunk] = new byte[CHUNK_SIZE];
-            fContentSpecType[chunk]       = new int[CHUNK_SIZE];
-            fContentSpec[chunk]           = new int[CHUNK_SIZE];
-            fContentModel[chunk]          = new XMLContentModel[CHUNK_SIZE];
-            fAttlistHead[chunk]           = new int[CHUNK_SIZE];
-            fAttlistTail[chunk]           = new int[CHUNK_SIZE];
-            return true;
-
-        } // ensureElementCapacity(int):boolean
+    protected int createElementDecl() {
+        return fElementDeclCount++;
     }
-}
+
+    protected void setElementDecl(int elementDeclIndex, XMLElementDecl elementDecl) {
+    }
+
+    public void addAttributeDecl(int attributeDeclIndex, int elementDeclIndex) {
+    }
+
+    protected int createContentSpec() {
+        return fContentSpecCount++;
+    }
+
+    protected void setContentSpec(int contentSpecIndex, XMLContentSpec contentSpec) {
+    }
+
+    protected int createAttributeDecl() {
+        return fAttributeDeclCount++;
+    }
+
+    protected void setContentSpec(int attributeDeclIndex, XMLAttributeDecl attributeDecl) {
+    }
+
+    //
+    // Private methods
+    //
+
+    // ensure capacity
+
+    private boolean ensureElementDeclCapacity(int chunk) {
+        try {
+            return fElementDeclNameIndex[chunk][0] == 0;
+        } 
+        catch (ArrayIndexOutOfBoundsException ex) {
+            fElementDeclNameIndex = resize(fElementDeclNameIndex, fElementDeclNameIndex.length * 2);
+        }
+        catch (NullPointerException ex) {
+            // ignore
+        }
+        fElementDeclNameIndex[chunk] = new int[CHUNK_SIZE];
+        return true;
+    }
+
+    private boolean ensureContentSpecCapacity(int chunk) {
+        return true;
+    }
+
+    private boolean ensureAttributeDeclCapacity(int chunk) {
+        return true;
+    }
+
+    // resize initial chunk
+
+    private int[][] resize(int array[][], int newsize) {
+        int newarray[][] = new int[newsize][];
+        System.arraycopy(array, 0, newarray, 0, array.length);
+        return newarray;
+    }
+
+    private DatatypeValidator[][] resize(DatatypeValidator array[][], int newsize) {
+        // TODO
+        return array;
+    }
+
+    private XMLContentModel[][] resize(XMLContentModel array[][], int newsize) {
+        // TODO
+        return array;
+    }
+
+    private QName[][] resize(QName array[][], int newsize) {
+        // TODO
+        return array;
+    }
+
+    private String[][] resize(String array[][], int newsize) {
+        // TODO
+        return array;
+    }
+
+} // class Grammar
