@@ -1843,11 +1843,6 @@ public class TraverseSchema implements
                     break;
                 }
 
-                // check the minOccurs and maxOccurs of the particle, and fix the  
-                // contentspec accordingly
-                if (seeParticle) {
-                    index = expandContentModel(index, child);
-                } //end of if (seeParticle)
 
                 if (seeAll && seeOtherParticle) {
                     // REVISIT: Localize
@@ -1858,6 +1853,15 @@ public class TraverseSchema implements
                     //TO DO: REVISIT 
                     //check the minOccurs = 1 and maxOccurs = 1  
                 }
+
+                // check the minOccurs and maxOccurs of the particle, and fix the  
+                // contentspec accordingly
+                if (seeParticle) {
+                    index = expandContentModel(index, child);
+                    if (index == -2 ) {
+                        continue;
+                    }
+                } //end of if (seeParticle)
 
                 if (left == -2) {
                     left = index;
@@ -2126,10 +2130,14 @@ public class TraverseSchema implements
 
     private int expandContentModel ( int index, Element particle) throws Exception {
         
-        String minOccurs = particle.getAttribute(SchemaSymbols.ATT_MINOCCURS);
-        String maxOccurs = particle.getAttribute(SchemaSymbols.ATT_MAXOCCURS);    
+        String minOccurs = particle.getAttribute(SchemaSymbols.ATT_MINOCCURS).trim();
+        String maxOccurs = particle.getAttribute(SchemaSymbols.ATT_MAXOCCURS).trim();    
 
         int min=1, max=1;
+
+        if(minOccurs.equals("0") && maxOccurs.equals("0")){
+            return -2;
+        }
 
         if (minOccurs.equals("")) {
             minOccurs = "1";
