@@ -517,6 +517,7 @@ public class XMLDTDValidator
         fDatatypeValidatorFactory = (DTDDVFactory)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX + Constants.DATATYPE_VALIDATOR_FACTORY_PROPERTY);
 
         fElementDepth = -1;                      
+        fElementChildrenLength = 0;
         init();
 
     } // reset(XMLComponentManager)
