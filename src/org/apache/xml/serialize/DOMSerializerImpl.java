@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-
-
 package org.apache.xml.serialize;
 
 import java.io.File;
@@ -32,8 +30,6 @@ import java.net.URLConnection;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import org.apache.xerces.dom.AttrImpl;
-import org.apache.xerces.dom.AttributeMap;
 import org.apache.xerces.dom.CoreDocumentImpl;
 import org.apache.xerces.dom.DOMErrorImpl;
 import org.apache.xerces.dom.DOMLocatorImpl;
@@ -56,6 +52,7 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.ls.LSException;
@@ -1071,13 +1068,13 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                     }
                 }
                 
-                AttributeMap attributes = (node.hasAttributes()) ? (AttributeMap) node.getAttributes() : null; 
+                NamedNodeMap attributes = (node.hasAttributes()) ? node.getAttributes() : null; 
                 if (attributes != null) {
                     for (int i = 0; i < attributes.getLength(); ++i) {
                         Attr attr = (Attr) attributes.item(i);
                         fLocator.fRelatedNode = attr;
                         DOMNormalizer.isAttrValueWF( fErrorHandler, fError, fLocator, 
-                                      attributes,(AttrImpl) attr, attr.getValue(), xml11Version);
+                                      attributes, attr, attr.getValue(), xml11Version);
                         if (verifyNames) {
                             wellformed = CoreDocumentImpl.isXMLName( attr.getNodeName(), xml11Version);
                             if (!wellformed) {

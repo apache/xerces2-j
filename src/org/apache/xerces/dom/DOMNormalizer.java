@@ -1185,8 +1185,8 @@ public class DOMNormalizer implements XMLDocumentHandler {
      * @param value
      */
     public static final void isAttrValueWF(DOMErrorHandler errorHandler, DOMErrorImpl error, 
-            DOMLocatorImpl locator, AttributeMap attributes, AttrImpl a, String value, boolean xml11Version) {
-        if (a.hasStringValue()) {
+            DOMLocatorImpl locator, NamedNodeMap attributes, Attr a, String value, boolean xml11Version) {
+        if (a instanceof AttrImpl && ((AttrImpl)a).hasStringValue()) {
             isXMLCharWF(errorHandler, error, locator, value, xml11Version);
         } else {
         	NodeList children = a.getChildNodes(); 
