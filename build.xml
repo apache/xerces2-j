@@ -59,9 +59,10 @@ Copyright:
 
   <target name="init">
     <property name="name" value="xerces"/>
-    <property name="Name" value="xerces"/>
+    <property name="Name" value="xerces-J"/>
     <property name="version" value="1.2.2"/>
-    <property name="version_postfix" value="_1_2_2"/>
+    <property name="version_postfix" value=".1.2.2"/>
+    <property name="appendit=-_1_2_2"/>
     <property name="year" value="1999-2000"/>
 	<property name="copyright" value="Copyright &#169; ${year} Apache XML Project. All Rights Reserved."/>
 
@@ -95,8 +96,8 @@ Copyright:
     <property name="build.data" value="${build.dir}/data"/>
     <property name="build.javadocs" value="${build.dir}/docs/apiDocs"/>
 
-    <property name="distsrc.dir" value="${build.dir}/${Name}-src${version_postfix}"/>
-    <property name="distbin.dir" value="${build.dir}/${Name}-bin${version_postfix}"/>
+    <property name="distsrc.dir" value="${build.dir}/${name}-${appendit}"/>
+    <property name="distbin.dir" value="${build.dir}/${name}-${appendit}"/>
 
     <filter token="year" value="${year}"/>
     <filter token="version" value="${version}"/>
