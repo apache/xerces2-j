@@ -1557,10 +1557,14 @@ public final class XMLValidator
             fValidating = false;
         }
         if (fValidating) {
-            if (fRootElementType != -1 && rootElementType != fRootElementType) {
-                reportRecoverableXMLError(XMLMessages.MSG_ROOT_ELEMENT_TYPE,
-                                            XMLMessages.VC_ROOT_ELEMENT_TYPE,
-                                            fRootElementType, rootElementType);
+            if (fRootElementType != -1) {
+                String root1 = fStringPool.toString(fRootElementType);
+                String root2 = fStringPool.toString(rootElementType);
+                if (!root1.equals(root2)) {
+                    reportRecoverableXMLError(XMLMessages.MSG_ROOT_ELEMENT_TYPE,
+                                                XMLMessages.VC_ROOT_ELEMENT_TYPE,
+                                                fRootElementType, rootElementType);
+                }
             }
         }
         if (fNamespacesEnabled) {
