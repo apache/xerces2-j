@@ -147,7 +147,7 @@ public final class DeferredAttrNSImpl
         isSpecified(ownerDocument.getNodeExtra(fNodeIndex) == 1);
         namespaceURI = ownerDocument.getNodeURI(fNodeIndex);
         // hide the fact that our parser uses an empty string for null
-        if (namespaceURI.length() == 0) {
+        if (namespaceURI != null && namespaceURI.length() == 0) {
             namespaceURI = null;
         }
 	// DOM Level 2 wants all namespace declaration attributes

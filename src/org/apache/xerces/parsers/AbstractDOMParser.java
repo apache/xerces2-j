@@ -62,6 +62,7 @@ import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.dom.EntityReferenceImpl;
 import org.apache.xerces.dom.TextImpl;
 
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLLocator;
@@ -104,6 +105,9 @@ public abstract class AbstractDOMParser
     /** Feature id: create entity ref nodes. */
     protected static final String CREATE_ENTITY_REF_NODES =
         "http://apache.org/xml/features/dom/create-entity-ref-nodes";
+
+    protected static final String NAMESPACES =
+        Constants.SAX_FEATURE_PREFIX+Constants.NAMESPACES_FEATURE;
 
     /** Feature id: include ignorable whitespace. */
     protected static final String INCLUDE_IGNORABLE_WHITESPACE =
@@ -156,6 +160,7 @@ public abstract class AbstractDOMParser
     // deferred expansion data
 
     protected boolean              fDeferNodeExpansion;
+    protected boolean              fNamespaceAware;
     protected DeferredDocumentImpl fDeferredDocumentImpl;
     protected int                  fDocumentIndex;
     protected int                  fDocumentTypeIndex;
@@ -288,6 +293,8 @@ public abstract class AbstractDOMParser
 
         fDeferNodeExpansion =
             fConfiguration.getFeature(DEFER_NODE_EXPANSION);
+
+        fNamespaceAware = fConfiguration.getFeature(NAMESPACES);
 
         // get property
         setDocumentClassName((String)
@@ -461,7 +468,7 @@ public abstract class AbstractDOMParser
             fCurrentNode = fDocument;
         }
         else {
-            fDeferredDocumentImpl = new DeferredDocumentImpl();
+            fDeferredDocumentImpl = new DeferredDocumentImpl(fNamespaceAware);
             fDocument = fDeferredDocumentImpl;
             fDocumentIndex = fDeferredDocumentImpl.createDeferredDocument();
             fCurrentNodeIndex = fDocumentIndex;
@@ -514,16 +521,24 @@ public abstract class AbstractDOMParser
         throws XNIException {
 
         if (!fDeferNodeExpansion) {
-            Element el = element.prefix != null
-                ? fDocument.createElementNS(element.uri, element.rawname)
-                : fDocument.createElement(element.rawname);
+            Element el;
+            if (fNamespaceAware) {
+                el = fDocument.createElementNS(element.uri, element.rawname);
+            }
+            else {
+                el = fDocument.createElement(element.rawname);
+            }
             int attrCount = attributes.getLength();
             for (int i = 0; i < attrCount; i++) {
                 attributes.getName(i, fAttrQName);
-                Attr attr = fAttrQName.prefix != null
-                    ? fDocument.createAttributeNS(fAttrQName.uri,
-                                                  fAttrQName.rawname)
-                    : fDocument.createAttribute(fAttrQName.rawname);
+                Attr attr;
+                if (fNamespaceAware) {
+                    attr = fDocument.createAttributeNS(fAttrQName.uri,
+                                                   fAttrQName.rawname);
+                }
+                else {
+                    attr = fDocument.createAttribute(fAttrQName.rawname);
+                }
                 String attrValue = attributes.getValue(i);
                 attr.setNodeValue(attrValue);
                 el.setAttributeNode(attr);
@@ -534,7 +549,7 @@ public abstract class AbstractDOMParser
         }
         else {
             int el = fDeferredDocumentImpl.
-                createDeferredElement(element.prefix != null ?
+                createDeferredElement(fNamespaceAware ?
                                       element.uri : null,
                                       element.rawname, attributes);
 
