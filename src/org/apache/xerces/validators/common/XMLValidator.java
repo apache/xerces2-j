@@ -2715,6 +2715,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                 attrList.setAttType(index, attributeType);
 
                                 if (fValidating) {
+
                                     if (fGrammarIsDTDGrammar && 
                                         (fTempAttDecl.type == XMLAttributeDecl.TYPE_ENTITY ||
                                          fTempAttDecl.type == XMLAttributeDecl.TYPE_ENUMERATION ||
@@ -2725,8 +2726,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                         ) {
                                         validateDTDattribute(element, attrList.getAttValue(index), fTempAttDecl);
                                     }
+                                    
                                     // check to see if this attribute matched an attribute wildcard
-                                    if ( fGrammarIsSchemaGrammar && 
+                                    else if ( fGrammarIsSchemaGrammar && 
                                          (fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_ANY 
                                           ||fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_LIST
                                           ||fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_LOCAL 
@@ -2739,7 +2741,8 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                                   || fTempAttDecl.defaultType == XMLAttributeDecl.PROCESSCONTENTS_LAX)  {
 
                                             boolean reportError = false;
-                                            boolean processContentStrict = fTempAttDecl.defaultType == XMLAttributeDecl.PROCESSCONTENTS_STRICT;
+                                            boolean processContentStrict = 
+                                                fTempAttDecl.defaultType == XMLAttributeDecl.PROCESSCONTENTS_STRICT;
 
                                             if (fTempQName.uri == -1) {
                                                 if (processContentStrict) {
@@ -2747,7 +2750,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                                 }
                                             }
                                             else {
-                                                Grammar aGrammar = fGrammarResolver.getGrammar(fStringPool.toString(fTempQName.uri));
+                                                Grammar aGrammar = 
+                                                    fGrammarResolver.getGrammar(fStringPool.toString(fTempQName.uri));
+
                                                 if (aGrammar == null || !(aGrammar instanceof SchemaGrammar) ) {
                                                     if (processContentStrict) {
                                                         reportError = true;
@@ -2809,6 +2814,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                     else if (fTempAttDecl.datatypeValidator == null) {
                                         Object[] args = { fStringPool.toString(element.rawname),
                                             fStringPool.toString(attrList.getAttrName(index)) };
+
                                             System.out.println("[Error] Datatypevalidator for attribute " + fStringPool.toString(attrList.getAttrName(index))
                                                                + " not found in element type " + fStringPool.toString(element.rawname));
                                             //REVISIT : is this the right message?
