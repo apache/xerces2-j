@@ -707,6 +707,8 @@ public class XMLDTDScanner
     private final void scanMixed(String elName)
         throws IOException, SAXException {
 
+        boolean sawName = false;
+
         fStringBuffer.append("#PCDATA");
         skipSeparator(false, !scanningInternalSubset());
         while (fEntityScanner.skipChar('|')) {
@@ -718,6 +720,7 @@ public class XMLDTDScanner
                 reportFatalError("MSG_ELEMENT_TYPE_REQUIRED_IN_MIXED_CONTENT",
                                  new Object[]{elName});
             }
+            sawName = true;
             fStringBuffer.append(childName);
             // call handler
             if (fDTDContentModelHandler != null) {
@@ -730,8 +733,13 @@ public class XMLDTDScanner
                              new Object[]{elName});
         }
         fStringBuffer.append(')');
-        // occurence operator
-        if (fEntityScanner.skipChar('*')) {
+        // occurrence operator
+        if (sawName && fEntityScanner.skipChar('*')) {
+            // call handler
+            if (fDTDContentModelHandler != null) {
+                short oc = XMLDTDContentModelHandler.OCCURS_ZERO_OR_MORE;
+                fDTDContentModelHandler.childrenOccurrence(oc);
+            }
             fStringBuffer.append('*');
         }
         // we are done
@@ -1641,7 +1649,8 @@ public class XMLDTDScanner
                         if (!fEntityScanner.skipChar('%'))
                             break;
                     }
-                } else {
+                }
+                else {
                     fStringBuffer2.append((char)fEntityScanner.scanChar());
                 }
             } while (fEntityScanner.scanLiteral(quote, fString) != quote);
