@@ -123,15 +123,20 @@ public class XSElementDecl implements XSElementDeclaration {
     private String fDescription = null;
     public String toString() {
         if (fDescription == null) {
-            StringBuffer buffer = new StringBuffer();
             if (fTargetNamespace != null) {
-                buffer.append("\"");
+                StringBuffer buffer = new StringBuffer(
+                    fTargetNamespace.length() + 
+                    ((fName != null) ? fName.length() : 4) + 3);
+                buffer.append('"');
                 buffer.append(fTargetNamespace);
-                buffer.append("\"");
-                buffer.append(":");
+                buffer.append('"');
+                buffer.append(':');
+                buffer.append(fName);
+                fDescription = buffer.toString();
             }
-            buffer.append(fName);
-            fDescription = buffer.toString();
+            else {
+                fDescription = fName;
+            }
         }
         return fDescription;
     }
