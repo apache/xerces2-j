@@ -687,18 +687,26 @@ public class DTDConfiguration
 				fDTDScanner.setDTDHandler(fDTDProcessor);
 				fDTDProcessor.setDTDSource(fDTDScanner);
 				fDTDProcessor.setDTDHandler(fDTDHandler);
-				fDTDHandler.setDTDSource(fDTDProcessor);
+                if (fDTDHandler != null) {
+                    fDTDHandler.setDTDSource(fDTDProcessor);
+                }
 
 				fDTDScanner.setDTDContentModelHandler(fDTDProcessor);
 				fDTDProcessor.setDTDContentModelSource(fDTDScanner);
 				fDTDProcessor.setDTDContentModelHandler(fDTDContentModelHandler);
-				fDTDContentModelHandler.setDTDContentModelSource(fDTDProcessor);
+                if (fDTDContentModelHandler != null) {
+                    fDTDContentModelHandler.setDTDContentModelSource(fDTDProcessor);
+                }
 			}
 			else {
 				fDTDScanner.setDTDHandler(fDTDHandler);
-				fDTDHandler.setDTDSource(fDTDScanner);
+                if (fDTDHandler != null) {
+                    fDTDHandler.setDTDSource(fDTDScanner);
+                }
 				fDTDScanner.setDTDContentModelHandler(fDTDContentModelHandler);
-				fDTDContentModelHandler.setDTDContentModelSource(fDTDScanner);
+                if (fDTDContentModelHandler != null) {
+                    fDTDContentModelHandler.setDTDContentModelSource(fDTDScanner);
+                }
 			}
 		}
 

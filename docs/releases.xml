@@ -27,6 +27,13 @@
     </note>
     <submitter name="J. Pietschmann, Neil Graham"/> 
    </fix>
+   <fix>
+    <note>
+     Fixed null pointer exception in DTDConfiguration caused when
+     no DTD handlers are registered.
+    </note>
+    <submitter name='Andy Clark'/>
+   </fix>
   </changes>
   </release>
   <release version="&ParserName; 2.3.0">
