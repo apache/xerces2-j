@@ -688,7 +688,7 @@ final class StringReader extends XMLEntityReader {
                 qname.localpart  = fStringPool.addSymbol(localPart);
             } else{//then get up to end of String
                 int lenfData     = fData.length();
-                localPart = fData.substring( index + 1, fData.length );
+                localPart = fData.substring( index + 1, lenfData );
                 qname.localpart  = fStringPool.addSymbol(localPart);
             }
             qname.localpart  = fStringPool.addSymbol(localPart);
