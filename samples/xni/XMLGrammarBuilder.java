@@ -59,7 +59,6 @@ package xni;
 
 import org.apache.xerces.parsers.XMLGrammarPreparser;
 import org.apache.xerces.parsers.IntegratedParserConfiguration;
-import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLGrammarPoolImpl;
 import org.apache.xerces.impl.Constants;
@@ -75,13 +74,13 @@ import java.util.Vector;
  * This sample program illustrates how to use Xerces2's grammar
  * preparsing and caching functionality.  It permits either DTD or
  * Schema grammars to be parsed, and then allows instance documents to
- * be validated with them.  
+ * be validated with them.
  * <p> Note that, for access to a grammar's contents (via Xerces's
  * Schema Component model interfaces), slightly different methods need
  * to be used.  Nonetheless, this should go some way to indicating how
- * grammar preparsing and caching can be coupled in Xerces to achieve 
+ * grammar preparsing and caching can be coupled in Xerces to achieve
  * better performance.  It's also hoped this sample shows the way
- * towards combining this functionality in a DOM or SAX context.  
+ * towards combining this functionality in a DOM or SAX context.
  *
  * @author Neil Graham, IBM
  * @version $Id$
@@ -163,7 +162,7 @@ public class XMLGrammarBuilder {
         }
         arg = argv[i];
         // process -d
-        Vector externalDTDs = null; 
+        Vector externalDTDs = null;
         if (arg.equals("-d")) {
             externalDTDs= new Vector();
             i++;
@@ -191,7 +190,7 @@ public class XMLGrammarBuilder {
                 schemaFullChecking = false;
                 i++;
                 arg = argv[i];
-            } 
+            }
             if (arg.equals("-a")) {
                 if(externalDTDs != null) {
                     printUsage();
@@ -240,7 +239,7 @@ public class XMLGrammarBuilder {
 
         // now we have all our arguments.  We only
         // need to parse the DTD's/schemas, put them
-        // in a grammar pool, possibly instantiate an 
+        // in a grammar pool, possibly instantiate an
         // appropriate configuration, and we're on our way.
 
         SymbolTable sym = new SymbolTable(BIG_PRIME);
@@ -294,7 +293,7 @@ public class XMLGrammarBuilder {
         try{
             parserConfiguration.setFeature(NAMESPACES_FEATURE_ID, true);
             parserConfiguration.setFeature(VALIDATION_FEATURE_ID, true);
-            // now we can still do schema features just in case, 
+            // now we can still do schema features just in case,
             // so long as it's our configuraiton......
             parserConfiguration.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
             parserConfiguration.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, schemaFullChecking);
@@ -329,7 +328,7 @@ public class XMLGrammarBuilder {
         System.err.println("options:");
         System.err.println("  -p config_file:   configuration to use for instance validation");
         System.err.println("  -d    grammars to preparse are DTD external subsets");
-        System.err.println("  -f  | -F    Turn on/off Schema full checking (default "+ 
+        System.err.println("  -f  | -F    Turn on/off Schema full checking (default "+
                 (DEFAULT_SCHEMA_FULL_CHECKING ? "on" : "off)"));
         System.err.println("  -a uri ...  Provide a list of schema documents");
         System.err.println("  -i uri ...  Provide a list of instance documents to validate");

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000-2003 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -62,7 +62,6 @@ import java.io.IOException;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.EntityResolverWrapper;
 import org.apache.xerces.util.ErrorHandlerWrapper;
-import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
@@ -84,13 +83,13 @@ import org.xml.sax.helpers.LocatorImpl;
 
 /**
  * This is the main Xerces DOM parser class. It uses the abstract DOM
- * parser with a document scanner, a dtd scanner, and a validator, as 
+ * parser with a document scanner, a dtd scanner, and a validator, as
  * well as a grammar pool.
  *
  * @author Arnaud  Le Hors, IBM
  * @author Andy Clark, IBM
  *
- * @version $Id$ 
+ * @version $Id$
  */
 public class DOMParser
     extends AbstractDOMParser {
@@ -187,7 +186,7 @@ public class DOMParser
             parse(source);
         }
 
-        // wrap XNI exceptions as SAX exceptions 
+        // wrap XNI exceptions as SAX exceptions
         catch (XMLParseException e) {
             Exception ex = e.getException();
             if (ex == null) {
@@ -234,12 +233,12 @@ public class DOMParser
      * @exception org.xml.sax.SAXException
      * @exception java.io.IOException
      */
-    public void parse(InputSource inputSource) 
+    public void parse(InputSource inputSource)
         throws SAXException, IOException {
 
         // parse document
         try {
-            XMLInputSource xmlInputSource = 
+            XMLInputSource xmlInputSource =
                 new XMLInputSource(inputSource.getPublicId(),
                                    inputSource.getSystemId(),
                                    null);
@@ -249,7 +248,7 @@ public class DOMParser
             parse(xmlInputSource);
         }
 
-        // wrap XNI exceptions as SAX exceptions 
+        // wrap XNI exceptions as SAX exceptions
         catch (XMLParseException e) {
             Exception ex = e.getException();
             if (ex == null) {
@@ -284,8 +283,8 @@ public class DOMParser
             }
             throw new SAXException(ex);
         }
-                
-    } // parse(InputSource) 
+
+    } // parse(InputSource)
 
     /**
      * Sets the resolver used to resolve external entities. The EntityResolver
@@ -297,7 +296,7 @@ public class DOMParser
     public void setEntityResolver(EntityResolver resolver) {
 
         try {
-            fConfiguration.setProperty(ENTITY_RESOLVER, 
+            fConfiguration.setProperty(ENTITY_RESOLVER,
                                        new EntityResolverWrapper(resolver));
         }
         catch (XMLConfigurationException e) {
@@ -317,7 +316,7 @@ public class DOMParser
 
         EntityResolver entityResolver = null;
         try {
-            XMLEntityResolver xmlEntityResolver = 
+            XMLEntityResolver xmlEntityResolver =
                 (XMLEntityResolver)fConfiguration.getProperty(ENTITY_RESOLVER);
             if (xmlEntityResolver != null &&
                 xmlEntityResolver instanceof EntityResolverWrapper) {
@@ -345,14 +344,14 @@ public class DOMParser
      * handler immediately.</p>
      *
      * @param errorHandler The error handler.
-     * @exception java.lang.NullPointerException If the handler 
+     * @exception java.lang.NullPointerException If the handler
      *            argument is null.
      * @see #getErrorHandler
      */
     public void setErrorHandler(ErrorHandler errorHandler) {
 
         try {
-            fConfiguration.setProperty(ERROR_HANDLER, 
+            fConfiguration.setProperty(ERROR_HANDLER,
                                        new ErrorHandlerWrapper(errorHandler));
         }
         catch (XMLConfigurationException e) {
@@ -372,9 +371,9 @@ public class DOMParser
 
         ErrorHandler errorHandler = null;
         try {
-            XMLErrorHandler xmlErrorHandler = 
+            XMLErrorHandler xmlErrorHandler =
                 (XMLErrorHandler)fConfiguration.getProperty(ERROR_HANDLER);
-            if (xmlErrorHandler != null && 
+            if (xmlErrorHandler != null &&
                 xmlErrorHandler instanceof ErrorHandlerWrapper) {
                 errorHandler = ((ErrorHandlerWrapper)xmlErrorHandler).getErrorHandler();
             }
@@ -511,7 +510,7 @@ public class DOMParser
            if (deferred) {
                throw new SAXNotSupportedException("Current element node cannot be queried when node expansion is deferred.");
            }
-           return (fCurrentNode!=null && 
+           return (fCurrentNode!=null &&
                    fCurrentNode.getNodeType() == Node.ELEMENT_NODE)? fCurrentNode:null;
        }
 

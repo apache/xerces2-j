@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2003 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -57,7 +57,6 @@
 package org.apache.xerces.dom;
 import org.apache.xerces.impl.RevalidationHandler;
 import org.apache.xerces.parsers.DOMParserImpl;
-import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xml.serialize.DOMSerializerImpl;
 import org.w3c.dom.DOMException;
@@ -80,7 +79,7 @@ import org.w3c.dom.ls.LSSerializer;
  * so that's how I've implemented it.
  * <P>
  * This particular class, along with CoreDocumentImpl, supports the DOM
- * Core and Load/Save (Experimental). Optional modules are supported by 
+ * Core and Load/Save (Experimental). Optional modules are supported by
  * the more complete DOMImplementation class along with DocumentImpl.
  * @version $Id$
  * @since PR-DOM-Level-1-19980818.
@@ -90,15 +89,15 @@ public class CoreDOMImplementationImpl
 	//
 	// Data
 	//
-    
+
     // validators pool
     private static final int SIZE = 2;
     private RevalidationHandler validators[] = new RevalidationHandler[SIZE];
     private int freeValidatorIndex = -1;
     private int currentSize = SIZE;
 
-    // Document and doctype counter.  Used to assign order to documents and 
-    // doctypes without owners, on an demand basis.   Used for  
+    // Document and doctype counter.  Used to assign order to documents and
+    // doctypes without owners, on an demand basis.   Used for
     // compareDocumentPosition
     private int docAndDoctypeCounter = 0;
 
@@ -116,10 +115,10 @@ public class CoreDOMImplementationImpl
 	//
 	// DOMImplementation methods
 	//
-	/** 
+	/**
 	 * Test if the DOM implementation supports a specific "feature" --
 	 * currently meaning language and level thereof.
-	 * 
+	 *
 	 * @param feature      The package name of the feature to test.
 	 * In Level 1, supported values are "HTML" and "XML" (case-insensitive).
 	 * At this writing, org.apache.xerces.dom supports only XML.
@@ -137,7 +136,7 @@ public class CoreDOMImplementationImpl
 		if (feature.startsWith("+")) {
 			feature = feature.substring(1);
 		}
-        // check if Xalan implementation is around and if yes report true for supporting 
+        // check if Xalan implementation is around and if yes report true for supporting
         // XPath API
         if ((feature.equalsIgnoreCase("XPath")
             || feature.equalsIgnoreCase("+XPath"))
@@ -167,19 +166,19 @@ public class CoreDOMImplementationImpl
             || (feature.equalsIgnoreCase("LS")
                 && (anyVersion || version.equals("3.0")));
     } // hasFeature(String,String):boolean
-    
-    
+
+
 	/**
 	 * Introduced in DOM Level 2. <p>
-	 * 
+	 *
 	 * Creates an empty DocumentType node.
 	 *
-	 * @param qualifiedName The qualified name of the document type to be created. 
+	 * @param qualifiedName The qualified name of the document type to be created.
 	 * @param publicID The document type public identifier.
 	 * @param systemID The document type system identifier.
 	 * @since WD-DOM-Level-2-19990923
 	 */
-	public DocumentType createDocumentType( String qualifiedName, 
+	public DocumentType createDocumentType( String qualifiedName,
                                     String publicID, String systemID) {
 		// REVISIT: this might allow creation of invalid name for DOCTYPE
 		//          xmlns prefix.
@@ -187,7 +186,7 @@ public class CoreDOMImplementationImpl
 		checkQName(qualifiedName);
 		return new DocumentTypeImpl(null, qualifiedName, publicID, systemID);
 	}
-    
+
     final void checkQName(String qname){
         int index = qname.indexOf(':');
         int lastIndex = qname.lastIndexOf(':');
@@ -230,7 +229,7 @@ public class CoreDOMImplementationImpl
             start = index + 1;
         }
 
-        // check local part 
+        // check local part
         if (!XMLChar.isNCNameStart(qname.charAt(start))) {
             // REVISIT: add qname parameter to the message
             String msg =
@@ -249,20 +248,20 @@ public class CoreDOMImplementationImpl
                         null);
                 throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
             }
-        }           
+        }
     }
 
 
 	/**
 	 * Introduced in DOM Level 2. <p>
-	 * 
+	 *
 	 * Creates an XML Document object of the specified type with its document
 	 * element.
 	 *
 	 * @param namespaceURI     The namespace URI of the document
-	 *                         element to create, or null. 
+	 *                         element to create, or null.
 	 * @param qualifiedName    The qualified name of the document
-	 *                         element to create. 
+	 *                         element to create.
 	 * @param doctype          The type of document to be created or null.<p>
 	 *
 	 *                         When doctype is not null, its
@@ -291,16 +290,16 @@ public class CoreDOMImplementationImpl
 		doc.appendChild(e);
 		return doc;
 	}
-    
+
 	/**
 	 * DOM Level 3 WD - Experimental.
      */
 	public Object getFeature(String feature, String version) {
 		if (singleton.hasFeature(feature, version)){
-			return singleton;			
+			return singleton;
 		}
 		return null;
-        
+
 	}
 
 	// DOM L3 LS
@@ -372,7 +371,7 @@ public class CoreDOMImplementationImpl
 				schemaType);
 		}
 	}
-	
+
 	/**
 	 * DOM Level 3 LS CR - Experimental.
          * Create a new <code>LSSerializer</code> object.
@@ -397,16 +396,16 @@ public class CoreDOMImplementationImpl
 	public LSInput createLSInput() {
 		return new DOMInputImpl();
 	}
-        
+
 	//
 	// Protected methods
 	//
 	/** NON-DOM: retrieve validator. */
 	synchronized RevalidationHandler getValidator(String schemaType) {
-		// REVISIT: implement retrieving DTD validator 
+		// REVISIT: implement retrieving DTD validator
         if (freeValidatorIndex < 0) {
             // create new validator - we should not attempt
-            // to restrict the number of validation handlers being 
+            // to restrict the number of validation handlers being
             // requested
             return (RevalidationHandler) (ObjectFactory
                         .newInstance(
@@ -415,14 +414,14 @@ public class CoreDOMImplementationImpl
                             true));
 
         }
-        // return first available validator            
+        // return first available validator
         RevalidationHandler val = validators[freeValidatorIndex];
         validators[freeValidatorIndex--] = null;
         return val;
 	}
-    
+
 	/** NON-DOM: release validator */
-	synchronized void releaseValidator(String schemaType, 
+	synchronized void releaseValidator(String schemaType,
                                          RevalidationHandler validator) {
        // REVISIT: implement support for DTD validators as well
        ++freeValidatorIndex;
@@ -446,7 +445,7 @@ public class CoreDOMImplementationImpl
        }
 
     /* DOM Level 3 LS CR - Experimental.
-     * 
+     *
      * Create a new empty output destination object where
      * <code>LSOutput.characterStream</code>,
      * <code>LSOutput.byteStream</code>, <code>LSOutput.systemId</code>,
@@ -456,6 +455,6 @@ public class CoreDOMImplementationImpl
      */
        public LSOutput createLSOutput() {
            return new DOMOutputImpl();
-       }       
-    
+       }
+
 } // class DOMImplementationImpl

@@ -72,7 +72,6 @@ import org.apache.xerces.dom3.DOMStringList;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.DOMEntityResolverWrapper;
 import org.apache.xerces.util.DOMErrorHandlerWrapper;
-import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
@@ -103,27 +102,27 @@ import org.w3c.dom.ls.LSInput;
 
 public class DOMParserImpl
 extends AbstractDOMParser implements LSParser, DOMConfiguration {
-    
-    
-    
+
+
+
     // SAX & Xerces feature ids
-    
+
     /** Feature identifier: namespaces. */
     protected static final String NAMESPACES =
     Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
-    
+
     /** Feature id: validation. */
     protected static final String VALIDATION_FEATURE =
     Constants.SAX_FEATURE_PREFIX+Constants.VALIDATION_FEATURE;
-    
+
     /** XML Schema validation */
     protected static final String XMLSCHEMA =
     Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE;
-    
+
     /** Dynamic validation */
     protected static final String DYNAMIC_VALIDATION =
     Constants.XERCES_FEATURE_PREFIX + Constants.DYNAMIC_VALIDATION_FEATURE;
-    
+
     /** Feature identifier: expose schema normalized value */
     protected static final String NORMALIZE_DATA =
     Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_NORMALIZED_VALUE;
@@ -131,36 +130,36 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
     /** Feature identifier: disallow docType Decls. */
     protected static final String DISALLOW_DOCTYPE_DECL_FEATURE =
         Constants.XERCES_FEATURE_PREFIX + Constants.DISALLOW_DOCTYPE_DECL_FEATURE;
-            
+
     // internal properties
     protected static final String SYMBOL_TABLE =
     Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
-    
+
     protected static final String PSVI_AUGMENT =
     Constants.XERCES_FEATURE_PREFIX +Constants.SCHEMA_AUGMENT_PSVI;
-    
-    
+
+
     //
     // Data
     //
-    
-    
+
+
     // REVISIT: this value should be null by default and should be set during creation of
     //          LSParser
     protected String fSchemaType = null;
-    
+
     protected boolean fBusy = false;
-    
+
     protected final static boolean DEBUG = false;
-    
+
     private Vector fSchemaLocations = new Vector ();
     private String fSchemaLocation = null;
 	private DOMStringList fRecognizedParameters;
-    
+
     //
     // Constructors
     //
-    
+
     /**
      * Constructs a DOM Builder using the standard parser configuration.
      */
@@ -186,15 +185,15 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                 Constants.NS_XMLSCHEMA);
             }
         }
-        
+
     }
-    
+
     /**
      * Constructs a DOM Builder using the specified parser configuration.
      */
     public DOMParserImpl (XMLParserConfiguration config) {
         super (config);
-        
+
         // add recognized features
         final String[] domRecognizedFeatures = {
             Constants.DOM_CANONICAL_FORM,
@@ -207,19 +206,19 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
             Constants.DOM_WELLFORMED,
             Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS,
         };
-        
+
         fConfiguration.addRecognizedFeatures (domRecognizedFeatures);
-        
+
         // turn off deferred DOM
         fConfiguration.setFeature (DEFER_NODE_EXPANSION, false);
-        
-        // Set values so that the value of the 
+
+        // Set values so that the value of the
         // infoset parameter is true (its default value).
         //
-        // true: namespace-declarations, well-formed, 
+        // true: namespace-declarations, well-formed,
         // element-content-whitespace, comments, namespaces
         //
-        // false: validate-if-schema, entities, 
+        // false: validate-if-schema, entities,
         // datatype-normalization, cdata-sections
 
         fConfiguration.setFeature(Constants.DOM_NAMESPACE_DECLARATIONS, true);
@@ -227,26 +226,26 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
         fConfiguration.setFeature(INCLUDE_COMMENTS_FEATURE, true);
         fConfiguration.setFeature(INCLUDE_IGNORABLE_WHITESPACE, true);
         fConfiguration.setFeature(NAMESPACES, true);
-        
+
         fConfiguration.setFeature(DYNAMIC_VALIDATION, false);
         fConfiguration.setFeature(CREATE_ENTITY_REF_NODES, false);
         fConfiguration.setFeature(NORMALIZE_DATA, false);
         fConfiguration.setFeature(CREATE_CDATA_NODES_FEATURE, false);
-		
+
         // set other default values
         fConfiguration.setFeature (Constants.DOM_CANONICAL_FORM, false);
         fConfiguration.setFeature (Constants.DOM_CHARSET_OVERRIDES_XML_ENCODING, true);
         fConfiguration.setFeature (Constants.DOM_SUPPORTED_MEDIATYPES_ONLY, false);
         fConfiguration.setFeature (Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS, true);
-        
+
         // REVISIT: by default Xerces assumes that input is certified.
         //          default is different from the one specified in the DOM spec
         fConfiguration.setFeature (Constants.DOM_CERTIFIED, true);
-        
+
         // Xerces datatype-normalization feature is on by default
         fConfiguration.setFeature ( NORMALIZE_DATA, false );
     } // <init>(XMLParserConfiguration)
-    
+
     /**
      * Constructs a DOM Builder using the specified symbol table.
      */
@@ -259,8 +258,8 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
         Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY,
         symbolTable);
     } // <init>(SymbolTable)
-    
-    
+
+
     /**
      * Constructs a DOM Builder using the specified symbol table and
      * grammar pool.
@@ -278,7 +277,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
         + Constants.XMLGRAMMAR_POOL_PROPERTY,
         grammarPool);
     }
-    
+
     /**
      * Resets the parser state.
      *
@@ -294,18 +293,18 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
         fRejectedElement.clear ();
         fFilterReject = false;
         fSchemaType = null;
-     
+
     } // reset()
-    
+
     //
     // DOMParser methods
     //
-    
+
     public DOMConfiguration getDomConfig (){
         return this;
     }
-    
-    
+
+
     /**
      *  When the application provides a filter, the parser will call out to
      * the filter at the completion of the construction of each
@@ -318,7 +317,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
     public LSParserFilter getFilter () {
         return fDOMFilter;
     }
-    
+
     /**
      *  When the application provides a filter, the parser will call out to
      * the filter at the completion of the construction of each
@@ -334,7 +333,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
             fSkippedElemStack = new Stack ();
         }
     }
-    
+
     /**
      * Set parameters and properties
      */
@@ -435,7 +434,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                     // or any Xerces feature
                     fConfiguration.setFeature (name, state);
                 }
-                
+
             }
             catch (XMLConfigurationException e) {
                 String msg =
@@ -466,7 +465,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                     new Object[] { name });
                     throw new DOMException (DOMException.NOT_SUPPORTED_ERR, msg);
                 }
-                
+
             }
             else if (name.equals (Constants.DOM_RESOURCE_RESOLVER)) {
                 if (value instanceof LSResourceResolver) {
@@ -484,7 +483,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                     new Object[] { name });
                     throw new DOMException (DOMException.NOT_SUPPORTED_ERR, msg);
                 }
-                
+
             }
             else if (name.equals (Constants.DOM_SCHEMA_LOCATION)) {
                 if (value instanceof String) {
@@ -519,7 +518,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                             new Object[] { name });
                             throw new DOMException (DOMException.NOT_SUPPORTED_ERR, msg);
                         }
-                        
+
                     }
                     catch (XMLConfigurationException e) {}
                 }
@@ -532,7 +531,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                     new Object[] { name });
                     throw new DOMException (DOMException.NOT_SUPPORTED_ERR, msg);
                 }
-                
+
             }
             else if (name.equals (Constants.DOM_SCHEMA_TYPE)) {
                 // REVISIT: should null value be supported?
@@ -570,7 +569,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                     new Object[] { name });
                     throw new DOMException (DOMException.NOT_SUPPORTED_ERR, msg);
                 }
-                
+
             }
             else if (name.equals (DOCUMENT_CLASS_NAME)) {
                 fConfiguration.setProperty (DOCUMENT_CLASS_NAME, value);
@@ -587,7 +586,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
             }
         }
     }
-    
+
     /**
      * Look up the value of a feature or a property.
      */
@@ -630,7 +629,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
         else if (name.equals (Constants.DOM_DISALLOW_DOCTYPE)) {
             return (fConfiguration.getFeature (DISALLOW_DOCTYPE_DECL_FEATURE))
             ? Boolean.TRUE
-            : Boolean.FALSE;        	
+            : Boolean.FALSE;
         }
         else if (name.equals (Constants.DOM_INFOSET)) {
             // REVISIT: This is somewhat expensive to compute
@@ -639,12 +638,12 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
             // of these features directly on it.
             boolean infoset = fConfiguration.getFeature(NAMESPACES) &&
                 fConfiguration.getFeature(INCLUDE_COMMENTS_FEATURE) &&
-                fConfiguration.getFeature(INCLUDE_IGNORABLE_WHITESPACE) && 
+                fConfiguration.getFeature(INCLUDE_IGNORABLE_WHITESPACE) &&
                 !fConfiguration.getFeature(DYNAMIC_VALIDATION) &&
                 !fConfiguration.getFeature(CREATE_ENTITY_REF_NODES) &&
                 !fConfiguration.getFeature(NORMALIZE_DATA) &&
                 !fConfiguration.getFeature(CREATE_CDATA_NODES_FEATURE);
-            return (infoset) ? Boolean.TRUE : Boolean.FALSE;	
+            return (infoset) ? Boolean.TRUE : Boolean.FALSE;
         }
         else if (name.equals(Constants.DOM_CDATA_SECTIONS)) {
             return (fConfiguration.getFeature(CREATE_CDATA_NODES_FEATURE))
@@ -705,7 +704,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
         }
         return null;
     }
-    
+
     public boolean canSetParameter (String name, Object value) {
         if(value instanceof Boolean){
             boolean state = ((Boolean)value).booleanValue ();
@@ -736,7 +735,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
             || name.equals (Constants.DOM_XMLDECL)) {
                 return true;
             }
-            
+
             // Recognize Xerces features.
             try {
                 fConfiguration.getFeature (name);
@@ -778,7 +777,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
             return false;
         }
     }
-    
+
     /**
      *  DOM Level 3 CR - Experimental.
      *
@@ -799,14 +798,14 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
 
 			parameters.add(Constants.DOM_ENTITIES);
 			parameters.add(Constants.DOM_VALIDATE_IF_SCHEMA);
-			parameters.add(Constants.DOM_VALIDATE);			
+			parameters.add(Constants.DOM_VALIDATE);
 			parameters.add(Constants.DOM_DATATYPE_NORMALIZATION);
-			
+
 			parameters.add(Constants.DOM_CHARSET_OVERRIDES_XML_ENCODING);
 			parameters.add(Constants.DOM_CHECK_CHAR_NORMALIZATION);
 			parameters.add(Constants.DOM_SUPPORTED_MEDIATYPES_ONLY);
 			parameters.add(Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS);
-			
+
 			parameters.add(Constants.DOM_NORMALIZE_CHARACTERS);
 			parameters.add(Constants.DOM_WELLFORMED);
 			parameters.add(Constants.DOM_INFOSET);
@@ -821,14 +820,14 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
 			parameters.add(Constants.DOM_RESOURCE_RESOLVER);
 			parameters.add(Constants.DOM_SCHEMA_LOCATION);
 			parameters.add(Constants.DOM_SCHEMA_TYPE);
-			
-			fRecognizedParameters = new DOMStringListImpl(parameters);		
-    		
+
+			fRecognizedParameters = new DOMStringListImpl(parameters);
+
 		}
 
-		return fRecognizedParameters; 		
+		return fRecognizedParameters;
     }
-    
+
     /**
      * Parse an XML document from a location identified by an URI reference.
      * If the URI contains a fragment identifier (see section 4.1 in ), the
@@ -836,7 +835,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
      *
      */
     public Document parseURI (String uri) throws LSException {
-        
+
         //If DOMParser insstance is already busy parsing another document when this
         // method is called, then raise INVALID_STATE_ERR according to DOM L3 LS spec
         if ( fBusy ) {
@@ -845,15 +844,15 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
             "INVALID_STATE_ERR",null);
             throw new DOMException ( DOMException.INVALID_STATE_ERR,msg);
         }
-        
-        XMLInputSource source = new XMLInputSource (null, uri, null);        
+
+        XMLInputSource source = new XMLInputSource (null, uri, null);
         try {
 			fBusy = true;
             parse (source);
             fBusy = false;
         } catch (Exception e){
             fBusy = false;
-            // Consume this exception if the user 
+            // Consume this exception if the user
             // issued an interrupt or an abort.
             if (e != abort) {
                 if (fErrorHandler != null) {
@@ -871,30 +870,30 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
         }
         return getDocument ();
     }
-    
+
     /**
      * Parse an XML document from a resource identified by an
      * <code>LSInput</code>.
      *
      */
     public Document parse (LSInput is) throws LSException {
-        
+
         // need to wrap the LSInput with an XMLInputSource
-        XMLInputSource xmlInputSource = dom2xmlInputSource (is);       
+        XMLInputSource xmlInputSource = dom2xmlInputSource (is);
         if ( fBusy ) {
             String msg = DOMMessageFormatter.formatMessage (
             DOMMessageFormatter.DOM_DOMAIN,
             "INVALID_STATE_ERR",null);
             throw new DOMException ( DOMException.INVALID_STATE_ERR,msg);
         }
-        
+
         try {
 			fBusy = true;
             parse (xmlInputSource);
             fBusy = false;
         } catch (Exception e) {
             fBusy = false;
-            // Consume this exception if the user 
+            // Consume this exception if the user
             // issued an interrupt or an abort.
             if (e != abort) {
                 if (fErrorHandler != null) {
@@ -908,11 +907,11 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                    e.printStackTrace ();
                 }
                 throw new LSException(LSException.PARSE_ERR, e.getMessage());
-            }   
+            }
         }
         return getDocument ();
     }
-    
+
     /**
      *  Parse an XML document or fragment from a resource identified by an
      * <code>LSInput</code> and insert the content into an existing
@@ -937,8 +936,8 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
         // REVISIT: need to implement.
         throw new DOMException (DOMException.NOT_SUPPORTED_ERR, "Not supported");
     }
-    
-    
+
+
     /**
      * NON-DOM: convert LSInput to XNIInputSource
      *
@@ -973,24 +972,24 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
             xis = new XMLInputSource (is.getPublicId (), is.getSystemId (),
             is.getBaseURI ());
         }
-        
+
         return xis;
     }
-    
+
     /**
      * @see org.w3c.dom.ls.LSParser#getAsync()
      */
     public boolean getAsync () {
         return false;
     }
-    
+
     /**
      * @see org.w3c.dom.ls.LSParser#getBusy()
      */
     public boolean getBusy () {
         return fBusy;
     }
-    
+
     /**
      * @see org.w3c.dom.ls.DOMParser#abort()
      */
@@ -1002,5 +1001,5 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
         }
         return; // If not busy then this is noop
     }
-    
+
 } // class DOMParserImpl

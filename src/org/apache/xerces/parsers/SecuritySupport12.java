@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2002 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -53,7 +53,7 @@
  * Foundation, please see <http://www.apache.org/>.
  */
 
-package org.apache.xerces.util;
+package org.apache.xerces.parsers;
 
 import java.security.*;
 import java.io.*;
@@ -67,7 +67,7 @@ import java.io.*;
  */
 class SecuritySupport12 extends SecuritySupport {
 
-    public ClassLoader getContextClassLoader() {
+    ClassLoader getContextClassLoader() {
 	return (ClassLoader)
 		AccessController.doPrivileged(new PrivilegedAction() {
 	    public Object run() {
@@ -80,7 +80,7 @@ class SecuritySupport12 extends SecuritySupport {
 	});
     }
 
-    public ClassLoader getSystemClassLoader() {
+    ClassLoader getSystemClassLoader() {
         return (ClassLoader)
             AccessController.doPrivileged(new PrivilegedAction() {
                 public Object run() {
@@ -93,7 +93,7 @@ class SecuritySupport12 extends SecuritySupport {
             });
     }
 
-    public ClassLoader getParentClassLoader(final ClassLoader cl) {
+    ClassLoader getParentClassLoader(final ClassLoader cl) {
         return (ClassLoader)
             AccessController.doPrivileged(new PrivilegedAction() {
                 public Object run() {
@@ -109,7 +109,7 @@ class SecuritySupport12 extends SecuritySupport {
             });
     }
 
-    public String getSystemProperty(final String propName) {
+    String getSystemProperty(final String propName) {
 	return (String)
             AccessController.doPrivileged(new PrivilegedAction() {
                 public Object run() {
@@ -118,7 +118,7 @@ class SecuritySupport12 extends SecuritySupport {
             });
     }
 
-    public FileInputStream getFileInputStream(final File file)
+    FileInputStream getFileInputStream(final File file)
         throws FileNotFoundException
     {
 	try {
@@ -133,7 +133,7 @@ class SecuritySupport12 extends SecuritySupport {
 	}
     }
 
-    public InputStream getResourceAsStream(final ClassLoader cl,
+    InputStream getResourceAsStream(final ClassLoader cl,
                                            final String name)
     {
         return (InputStream)
@@ -149,8 +149,8 @@ class SecuritySupport12 extends SecuritySupport {
                 }
             });
     }
-    
-    public boolean getFileExists(final File f) {
+
+    boolean getFileExists(final File f) {
     return ((Boolean)
             AccessController.doPrivileged(new PrivilegedAction() {
                 public Object run() {
@@ -158,8 +158,8 @@ class SecuritySupport12 extends SecuritySupport {
                 }
             })).booleanValue();
     }
-    
-    public long getLastModified(final File f) {
+
+    long getLastModified(final File f) {
     return ((Long)
             AccessController.doPrivileged(new PrivilegedAction() {
                 public Object run() {
@@ -167,5 +167,5 @@ class SecuritySupport12 extends SecuritySupport {
                 }
             })).longValue();
     }
-        
+
 }

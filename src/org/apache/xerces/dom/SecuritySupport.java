@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2002 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -53,7 +53,7 @@
  * Foundation, please see <http://www.apache.org/>.
  */
 
-package org.apache.xerces.util;
+package org.apache.xerces.dom;
 
 import java.io.*;
 
@@ -108,33 +108,33 @@ class SecuritySupport {
      * Return an appropriate instance of this class, depending on whether
      * we're on a JDK 1.1 or J2SE 1.2 (or later) system.
      */
-    public static SecuritySupport getInstance() {
+    static SecuritySupport getInstance() {
 	return (SecuritySupport)securitySupport;
     }
 
-    public ClassLoader getContextClassLoader() {
+    ClassLoader getContextClassLoader() {
 	return null;
     }
 
-    public ClassLoader getSystemClassLoader() {
+    ClassLoader getSystemClassLoader() {
         return null;
     }
 
-    public ClassLoader getParentClassLoader(ClassLoader cl) {
+    ClassLoader getParentClassLoader(ClassLoader cl) {
         return null;
     }
 
-    public String getSystemProperty(String propName) {
+    String getSystemProperty(String propName) {
         return System.getProperty(propName);
     }
 
-    public FileInputStream getFileInputStream(File file)
+    FileInputStream getFileInputStream(File file)
         throws FileNotFoundException
     {
         return new FileInputStream(file);
     }
 
-    public InputStream getResourceAsStream(ClassLoader cl, String name) {
+    InputStream getResourceAsStream(ClassLoader cl, String name) {
         InputStream ris;
         if (cl == null) {
             ris = ClassLoader.getSystemResourceAsStream(name);
@@ -143,12 +143,12 @@ class SecuritySupport {
         }
         return ris;
     }
-    
-    public boolean getFileExists(File f) {
+
+    boolean getFileExists(File f) {
         return f.exists();
     }
-    
-    public long getLastModified(File f) {
+
+    long getLastModified(File f) {
         return f.lastModified();
-    }    
+    }
 }

@@ -65,7 +65,6 @@ import java.io.Writer;
 import java.util.Enumeration;
 
 import org.apache.xerces.parsers.XMLDocumentParser;
-import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
@@ -154,7 +153,7 @@ public class DocumentTracer
 
     /** Indent level. */
     protected int fIndent;
-    
+
     protected NamespaceContext fNamespaceContext;
 
     //
@@ -215,7 +214,7 @@ public class DocumentTracer
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocument(XMLLocator locator, String encoding, 
+    public void startDocument(XMLLocator locator, String encoding,
                               NamespaceContext namespaceContext, Augmentations augs)
         throws XNIException {
         fNamespaceContext = namespaceContext;
@@ -234,7 +233,7 @@ public class DocumentTracer
             fOut.print("literal systemId=");
             printQuotedString(locator.getLiteralSystemId());
             fOut.print(',');
-            fOut.print("baseSystemId=");                     
+            fOut.print("baseSystemId=");
             printQuotedString(locator.getBaseSystemId());
             fOut.print(',');
             fOut.print("expanded systemId=");
@@ -307,7 +306,7 @@ public class DocumentTracer
 
     /** Start element. */
     public void startElement(QName element, XMLAttributes attributes, Augmentations augs)
-        throws XNIException {           
+        throws XNIException {
 
         printInScopeNamespaces();
 
@@ -412,7 +411,7 @@ public class DocumentTracer
 
     } // endElement(QName)
 
- 
+
     /** Start CDATA section. */
     public void startCDATA(Augmentations augs) throws XNIException {
 
@@ -445,7 +444,7 @@ public class DocumentTracer
     /** Start entity. */
     public void startGeneralEntity(String name,
                                    XMLResourceIdentifier identifier,
-                                   String encoding, Augmentations augs) 
+                                   String encoding, Augmentations augs)
         throws XNIException {
 
         printIndent();
@@ -558,7 +557,7 @@ public class DocumentTracer
     //
     // XMLDTDHandler
     //
-    
+
     /** Start DTD. */
     public void startDTD(XMLLocator locator, Augmentations augs) throws XNIException {
 
@@ -600,7 +599,7 @@ public class DocumentTracer
     } // startDTD(XMLLocator)
 
     /** Start external subset. */
-    public void startExternalSubset(XMLResourceIdentifier identifier, 
+    public void startExternalSubset(XMLResourceIdentifier identifier,
                                     Augmentations augs) throws XNIException {
 
         printIndent();
@@ -645,11 +644,11 @@ public class DocumentTracer
         fOut.flush();
 
     } // characters(XMLString)
-    
+
     /** Start entity. */
     public void startParameterEntity(String name,
                                      XMLResourceIdentifier identifier,
-                                     String encoding, Augmentations augs) 
+                                     String encoding, Augmentations augs)
         throws XNIException {
 
         printIndent();
@@ -729,7 +728,7 @@ public class DocumentTracer
     /** Attribute declaration. */
     public void attributeDecl(String elementName, String attributeName,
                               String type, String[] enumeration,
-                              String defaultType, XMLString defaultValue, 
+                              String defaultType, XMLString defaultValue,
                               XMLString nonNormalizedDefaultValue,
                               Augmentations augs) throws XNIException {
 
@@ -830,7 +829,7 @@ public class DocumentTracer
     } // internalEntityDecl(String,XMLString)
 
     /** External entity declaration. */
-    public void externalEntityDecl(String name,XMLResourceIdentifier identifier, Augmentations augs) 
+    public void externalEntityDecl(String name,XMLResourceIdentifier identifier, Augmentations augs)
         throws XNIException {
 
         printIndent();
@@ -885,7 +884,7 @@ public class DocumentTracer
     } // unparsedEntityDecl(String,String,String,String)
 
     /** Notation declaration. */
-    public void notationDecl(String name, XMLResourceIdentifier identifier, 
+    public void notationDecl(String name, XMLResourceIdentifier identifier,
                              Augmentations augs) throws XNIException {
 
         printIndent();
@@ -911,7 +910,7 @@ public class DocumentTracer
     } // notationDecl(String,String,String)
 
     /** Start conditional section. */
-    public void startConditional(short type, Augmentations augs) 
+    public void startConditional(short type, Augmentations augs)
         throws XNIException {
 
         printIndent();
@@ -975,7 +974,7 @@ public class DocumentTracer
     //
 
     /** Start content model. */
-    public void startContentModel(String elementName, Augmentations augs) 
+    public void startContentModel(String elementName, Augmentations augs)
         throws XNIException {
 
         printIndent();
@@ -1050,7 +1049,7 @@ public class DocumentTracer
     } // pcdata()
 
     /** Element. */
-    public void element(String elementName, Augmentations augs) 
+    public void element(String elementName, Augmentations augs)
         throws XNIException {
 
         printIndent();
@@ -1067,7 +1066,7 @@ public class DocumentTracer
     } // element(String)
 
     /** separator. */
-    public void separator(short separator, Augmentations augs) 
+    public void separator(short separator, Augmentations augs)
         throws XNIException {
 
         printIndent();
@@ -1096,7 +1095,7 @@ public class DocumentTracer
     } // separator(short)
 
     /** Occurrence. */
-    public void occurrence(short occurrence, Augmentations augs) 
+    public void occurrence(short occurrence, Augmentations augs)
         throws XNIException {
 
         printIndent();
@@ -1198,10 +1197,10 @@ public class DocumentTracer
                 printQuotedString(fNamespaceContext.getURI(prefix));
                 fOut.println(')');
                 fOut.flush();
-            }            
+            }
         }
    }
-   
+
    protected void printEndNamespaceMapping(){
         int count = fNamespaceContext.getDeclaredPrefixCount();
         if (count > 0) {
@@ -1432,7 +1431,7 @@ public class DocumentTracer
 
                     // create parser
                     try {
-                        parserConfig = (XMLParserConfiguration)ObjectFactory.newInstance(parserName, 
+                        parserConfig = (XMLParserConfiguration)ObjectFactory.newInstance(parserName,
                             ObjectFactory.findClassLoader(), true);
                         parser = null;
                     }

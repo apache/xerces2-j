@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001-2004 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2001-2004 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -53,7 +53,7 @@
  * Foundation, please see <http://www.apache.org/>.
  */
 
-package org.apache.xerces.util;
+package xni;
 
 import java.io.InputStream;
 import java.io.IOException;
@@ -71,17 +71,17 @@ import java.io.InputStreamReader;
  * <p>
  * This code is designed to implement the JAXP 1.1 spec pluggability
  * feature and is designed to run on JDK version 1.1 and
- * later, and to compile on JDK 1.2 and onward.  
+ * later, and to compile on JDK 1.2 and onward.
  * The code also runs both as part of an unbundled jar file and
  * when bundled as part of the JDK.
  * <p>
  * This class was moved from the <code>javax.xml.parsers.ObjectFactory</code>
- * class and modified to be used as a general utility for creating objects 
+ * class and modified to be used as a general utility for creating objects
  * dynamically.
  *
  * @version $Id$
  */
-public class ObjectFactory {
+class ObjectFactory {
 
     //
     // Constants
@@ -108,7 +108,7 @@ public class ObjectFactory {
     private static long fLastModified = -1;
 
     //
-    // Public static methods
+    // static methods
     //
 
     /**
@@ -129,7 +129,7 @@ public class ObjectFactory {
      *
      * @exception ObjectFactory.ConfigurationError
      */
-    public static Object createObject(String factoryId, String fallbackClassName)
+    static Object createObject(String factoryId, String fallbackClassName)
         throws ConfigurationError {
         return createObject(factoryId, null, fallbackClassName);
     } // createObject(String,String):Object
@@ -156,7 +156,7 @@ public class ObjectFactory {
      *
      * @exception ObjectFactory.ConfigurationError
      */
-    public static Object createObject(String factoryId, 
+    static Object createObject(String factoryId,
                                       String propertiesFilename,
                                       String fallbackClassName)
         throws ConfigurationError
@@ -283,9 +283,9 @@ public class ObjectFactory {
      * Figure out which ClassLoader to use.  For JDK 1.2 and later use
      * the context ClassLoader.
      */
-    public static ClassLoader findClassLoader()
+    static ClassLoader findClassLoader()
         throws ConfigurationError
-    { 
+    {
         SecuritySupport ss = SecuritySupport.getInstance();
 
         // Figure out which ClassLoader to use for loading the provider
@@ -341,8 +341,8 @@ public class ObjectFactory {
 
     /**
      * Create an instance of a class using the specified ClassLoader
-     */ 
-    public static Object newInstance(String className, ClassLoader cl,
+     */
+    static Object newInstance(String className, ClassLoader cl,
                                       boolean doFallback)
         throws ConfigurationError
     {
@@ -365,11 +365,21 @@ public class ObjectFactory {
 
     /**
      * Find a Class using the specified ClassLoader
-     */ 
-    public static Class findProviderClass(String className, ClassLoader cl,
+     */
+    static Class findProviderClass(String className, ClassLoader cl,
                                       boolean doFallback)
         throws ClassNotFoundException, ConfigurationError
     {
+        //throw security exception if the calling thread is not allowed to access the package
+        //restrict the access to package as speicified in java.security policy
+        SecurityManager security = System.getSecurityManager();
+        try{
+            if(security != null){
+                security.checkPackageAccess(className);
+            }
+        }catch(SecurityException e){
+            throw e ;
+        }
         Class providerClass;
         if (cl == null) {
             // XXX Use the bootstrap ClassLoader.  There is no way to
@@ -462,7 +472,7 @@ public class ObjectFactory {
         } catch (java.io.UnsupportedEncodingException e) {
             rd = new BufferedReader(new InputStreamReader(is));
         }
-        
+
         String factoryClassName = null;
         try {
             // XXX Does not handle all possible input as specified by the
@@ -497,7 +507,7 @@ public class ObjectFactory {
     /**
      * A configuration error.
      */
-    public static class ConfigurationError 
+    static class ConfigurationError
         extends Error {
 
         //
@@ -515,17 +525,17 @@ public class ObjectFactory {
          * Construct a new instance with the specified detail string and
          * exception.
          */
-        public ConfigurationError(String msg, Exception x) {
+        ConfigurationError(String msg, Exception x) {
             super(msg);
             this.exception = x;
         } // <init>(String,Exception)
 
         //
-        // Public methods
+        // methods
         //
 
         /** Returns the exception associated to this error. */
-        public Exception getException() {
+        Exception getException() {
             return exception;
         } // getException():Exception
 

@@ -59,7 +59,6 @@ package xni;
 
 import java.io.PrintWriter;
 
-import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.parsers.XMLDocumentParser;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
@@ -547,7 +546,7 @@ public class Counter
             // parse file
             try {
                 long timeBefore = System.currentTimeMillis();
-                long memoryBefore = 0; 
+                long memoryBefore = 0;
                 if(memoryUsage) {
                     System.gc();
                     memoryBefore = Runtime.getRuntime().freeMemory();

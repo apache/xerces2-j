@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -64,7 +64,6 @@ import java.util.Locale;
 
 import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.dom.NodeImpl;
-import org.apache.xerces.util.ObjectFactory;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
@@ -463,13 +462,13 @@ public class HTMLDocumentImpl
             return super.getElementsByTagNameNS( namespaceURI, localName.toUpperCase(Locale.ENGLISH) );
         else
             return super.getElementsByTagName( localName.toUpperCase(Locale.ENGLISH) );
-    } 
+    }
 
 
     /**
      * Xerces-specific constructor. "localName" is passed in, so we don't need
      * to create a new String for it.
-     * 
+     *
      * @param namespaceURI The namespace URI of the element to
      *                     create.
      * @param qualifiedName The qualified name of the element type to
@@ -485,7 +484,7 @@ public class HTMLDocumentImpl
     {
         return createElementNS(namespaceURI, qualifiedName);
     }
-    
+
     public Element createElementNS( String namespaceURI, String qualifiedName )
     {
         if ( namespaceURI == null || namespaceURI.length() == 0 )
@@ -670,7 +669,7 @@ public class HTMLDocumentImpl
     {
         HTMLDocumentImpl    clone;
         NodeImpl            node;
-        
+
         clone = new HTMLDocumentImpl();
         if ( deep ) {
             node = (NodeImpl) getFirstChild();
@@ -728,7 +727,7 @@ public class HTMLDocumentImpl
         // Bertrand Delacretaz <bdelacretaz@worldcom.ch> pointed out
         // several configurations where HTMLAnchorElementImpl.class
         // failed, forcing me to revert back to Class.forName().
-        
+
         if ( _elementTypesHTML != null )
             return;
         _elementTypesHTML = new Hashtable( 63 );
@@ -796,8 +795,8 @@ public class HTMLDocumentImpl
         populateElementType( "TITLE", "HTMLTitleElementImpl" );
         populateElementType( "UL", "HTMLUListElementImpl" );
     }
-    
-    
+
+
     private static void populateElementType( String tagName, String className )
     {
         try {

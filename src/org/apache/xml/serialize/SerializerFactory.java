@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -65,8 +65,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
 
-import org.apache.xerces.util.ObjectFactory;
-
 /**
  *
  *
@@ -90,7 +88,7 @@ public abstract class SerializerFactory
         String            list;
         StringTokenizer   token;
         String            className;
-        
+
         // The default factories are always registered first,
         // any factory specified in the properties file and supporting
         // the same method will override the default factory.
@@ -102,14 +100,14 @@ public abstract class SerializerFactory
         registerSerializerFactory( factory );
         factory =  new SerializerFactoryImpl( Method.TEXT );
         registerSerializerFactory( factory );
-        
+
         list = System.getProperty( FactoriesProperty );
         if ( list != null ) {
             token = new StringTokenizer( list, " ;,:" );
             while ( token.hasMoreTokens() ) {
                 className = token.nextToken();
                 try {
-                    factory = (SerializerFactory) ObjectFactory.newInstance( className, 
+                    factory = (SerializerFactory) ObjectFactory.newInstance( className,
                         SerializerFactory.class.getClassLoader(), true);
                     if ( _factories.containsKey( factory.getSupportedMethod() ) )
                         _factories.put( factory.getSupportedMethod(), factory );
@@ -126,7 +124,7 @@ public abstract class SerializerFactory
     public static void registerSerializerFactory( SerializerFactory factory )
     {
         String method;
-        
+
         synchronized ( _factories ) {
             method = factory.getSupportedMethod();
             _factories.put( method, factory );
@@ -152,7 +150,7 @@ public abstract class SerializerFactory
      * in derived classes.
      */
     protected abstract String getSupportedMethod();
-    
+
 
     /**
      * Create a new serializer based on the {@link OutputFormat}.
@@ -170,8 +168,8 @@ public abstract class SerializerFactory
      */
     public abstract Serializer makeSerializer( Writer writer,
                                                OutputFormat format );
-    
-    
+
+
     /**
      * Create a new serializer, based on the {@link OutputFormat} and
      * using the output byte stream and the encoding specified in the
@@ -183,7 +181,7 @@ public abstract class SerializerFactory
     public abstract Serializer makeSerializer( OutputStream output,
                                                OutputFormat format )
         throws UnsupportedEncodingException;
-    
+
 
 }
 

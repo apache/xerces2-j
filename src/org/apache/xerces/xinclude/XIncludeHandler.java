@@ -67,7 +67,6 @@ import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.IntStack;
-import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.util.ParserConfigurationSettings;
 import org.apache.xerces.util.SecurityManager;
 import org.apache.xerces.util.URI;
@@ -131,11 +130,11 @@ import org.apache.xerces.xni.parser.XMLParserConfiguration;
  * Specifically, it is missing support for XPointer document fragments.  Thus, only whole
  * documents can be included using this component in the pipeline.
  * </p>
- * 
+ *
  * @author Peter McCracken, IBM
- * 
+ *
  * @version $Id$
- * 
+ *
  * @see XIncludeNamespaceSupport
  */
 public class XIncludeHandler
@@ -163,7 +162,7 @@ public class XIncludeHandler
     public final static String XINCLUDE_ATTR_ENCODING = "encoding".intern();
     public final static String XINCLUDE_ATTR_ACCEPT = "accept".intern();
     public final static String XINCLUDE_ATTR_ACCEPT_LANGUAGE = "accept-language".intern();
-    public final static String XINCLUDE_ATTR_ACCEPT_CHARSET = "accept-charset".intern();    
+    public final static String XINCLUDE_ATTR_ACCEPT_CHARSET = "accept-charset".intern();
 
     // Top Level Information Items have [included] property in infoset
     public final static String XINCLUDE_INCLUDED = "[included]".intern();
@@ -295,13 +294,13 @@ public class XIncludeHandler
     // for SAX compatibility.
     // Has the value of the ALLOW_UE_AND_NOTATION_EVENTS feature
     private boolean fSendUEAndNotationEvents;
-    
+
     // track the version of the document being parsed
     private boolean fIsXML11;
-    
+
     // track whether a DTD is being parsed
     private boolean fInDTD;
-    
+
     // track whether a warning has already been reported for
     // use of the old http://www.w3.org/2001/XInclude namespace.
     private boolean fOldNamespaceWarningIssued;
@@ -348,7 +347,7 @@ public class XIncludeHandler
         // out on reset may be very time consuming. -- mrglavas
         //
         // clear the previous settings from the arrays
-        for (int i = 0; i < fState.length; ++i) {          
+        for (int i = 0; i < fState.length; ++i) {
             fState[i] = STATE_NORMAL_PROCESSING;
         }
         for (int i = 0; i < fSawFallback.length; ++i) {
@@ -401,7 +400,7 @@ public class XIncludeHandler
         catch (XMLConfigurationException e) {
             fEntityResolver = null;
         }
-		
+
         // Get security manager.
         try {
             SecurityManager value =
@@ -502,11 +501,11 @@ public class XIncludeHandler
             if (fChildConfig != null) {
                 fChildConfig.setProperty(propertyId, value);
             }
-        }        
-        
+        }
+
     } // setProperty(String,Object)
 
-    /** 
+    /**
      * Returns the default state for a feature, or null if this
      * component does not want to report a default value for this
      * feature.
@@ -524,10 +523,10 @@ public class XIncludeHandler
         return null;
     } // getFeatureDefault(String):Boolean
 
-    /** 
+    /**
      * Returns the default state for a property, or null if this
      * component does not want to report a default value for this
-     * property. 
+     * property.
      *
      * @param propertyId The property identifier.
      *
@@ -554,10 +553,10 @@ public class XIncludeHandler
 
     /**
      * Event sent at the start of the document.
-     * 
+     *
      * A fatal error will occur here, if it is detected that this document has been processed
      * before.
-     * 
+     *
      * This event is only passed on to the document handler if this is the root document.
      */
     public void startDocument(
@@ -1217,8 +1216,8 @@ public class XIncludeHandler
                 // use the same error reporter, entity resolver, and security manager.
                 if (fErrorReporter != null) fChildConfig.setProperty(ERROR_REPORTER, fErrorReporter);
                 if (fEntityResolver != null) fChildConfig.setProperty(ENTITY_RESOLVER, fEntityResolver);
-                if (fSecurityManager != null) fChildConfig.setProperty(SECURITY_MANAGER, fSecurityManager);                
-                
+                if (fSecurityManager != null) fChildConfig.setProperty(SECURITY_MANAGER, fSecurityManager);
+
                 // use the same namespace context
                 fChildConfig.setProperty(
                     Constants.XERCES_PROPERTY_PREFIX
@@ -1236,7 +1235,7 @@ public class XIncludeHandler
             // set all features on parserConfig to match this parser configuration
             copyFeatures(fSettings, fChildConfig);
 
-            // we don't want a schema validator on the new pipeline, 
+            // we don't want a schema validator on the new pipeline,
             // so we set it to false, regardless of what was copied above
             fChildConfig.setFeature(
                 Constants.XERCES_FEATURE_PREFIX
@@ -1297,10 +1296,10 @@ public class XIncludeHandler
                 else {
                     reader = new XIncludeTextReader(includedSource, this);
                 }
-                if (includedSource.getCharacterStream() == null 
+                if (includedSource.getCharacterStream() == null
                     && includedSource.getByteStream() == null) {
-                    reader.setHttpProperties(attributes.getValue(XINCLUDE_ATTR_ACCEPT), 
-                        attributes.getValue(XINCLUDE_ATTR_ACCEPT_CHARSET), 
+                    reader.setHttpProperties(attributes.getValue(XINCLUDE_ATTR_ACCEPT),
+                        attributes.getValue(XINCLUDE_ATTR_ACCEPT_CHARSET),
                         attributes.getValue(XINCLUDE_ATTR_ACCEPT_LANGUAGE));
                 }
                 reader.setErrorReporter(fErrorReporter);
@@ -1344,7 +1343,7 @@ public class XIncludeHandler
         return element.uri == XINCLUDE_NS_URI
             || fNamespaceContext.getURI(element.prefix) == XINCLUDE_NS_URI;
     }
-    
+
     /**
      * Returns true if the element has the namespace "http://www.w3.org/2001/XInclude"
      * @param element the element to check
@@ -1364,7 +1363,7 @@ public class XIncludeHandler
      * is "include" and the namespace name is the old XInclude namespace
      * "http://www.w3.org/2001/XInclude" a warning is issued the first time
      * an element from the old namespace is encountered.
-     * 
+     *
      * @param element the element to check
      * @return true if the element is an &lt;include&gt; element
      * @see #hasXIncludeNamespace(QName)
@@ -1388,7 +1387,7 @@ public class XIncludeHandler
      * is "fallback" and the namespace name is the old XInclude namespace
      * "http://www.w3.org/2001/XInclude" a warning is issued the first time
      * an element from the old namespace is encountered.
-     * 
+     *
      * @param element the element to check
      * @return true if the element is an &lt;fallback; element
      * @see #hasXIncludeNamespace(QName)
@@ -1403,7 +1402,7 @@ public class XIncludeHandler
                 fOldNamespaceWarningIssued = true;
             }
         }
-        return false; 
+        return false;
     }
 
     /**
@@ -1598,7 +1597,7 @@ public class XIncludeHandler
                 /* We actually don't need to do anything for 4.5.3, because at this stage the
                  * value of the attribute is just a string. It will be taken care of later
                  * in the pipeline, when the IDREFs are actually resolved against IDs.
-                 * 
+                 *
                  * if (type == XMLSymbols.fIDREFSymbol || type == XMLSymbols.fIDREFSSymbol) { }
                  */
             }
@@ -1733,7 +1732,7 @@ public class XIncludeHandler
      * Records that an &lt;fallback&gt; was encountered at the specified depth,
      * as an ancestor of the current element, or as a sibling of an ancestor of the
      * current element.
-     * 
+     *
      * @param depth
      * @param val
      */
@@ -1750,7 +1749,7 @@ public class XIncludeHandler
      * Returns whether an &lt;fallback&gt; was encountered at the specified depth,
      * as an ancestor of the current element, or as a sibling of an ancestor of the
      * current element.
-     * 
+     *
      * @param depth
      */
     protected boolean getSawFallback(int depth) {
@@ -1763,7 +1762,7 @@ public class XIncludeHandler
     /**
      * Records that an &lt;include&gt; was encountered at the specified depth,
      * as an ancestor of the current item.
-     * 
+     *
      * @param depth
      * @param val
      */
@@ -1779,7 +1778,7 @@ public class XIncludeHandler
     /**
      * Return whether an &lt;include&gt; was encountered at the specified depth,
      * as an ancestor of the current item.
-     * 
+     *
      * @param depth
      * @return
      */
@@ -1876,7 +1875,7 @@ public class XIncludeHandler
      * for the current pipeline.  If so, then the notation for the UnparsedEntity is checked.
      * If that turns out okay, then the UnparsedEntity is passed to the root pipeline to
      * be checked for conflicts, and sent to the root DTDHandler.
-     * 
+     *
      * @param entName the name of the UnparsedEntity to check
      */
     protected void checkUnparsedEntity(String entName) {
@@ -1895,7 +1894,7 @@ public class XIncludeHandler
      * Checks if a Notation with the given name was declared in the DTD of the document
      * for the current pipeline.  If so, that Notation is passed to the root pipeline to
      * be checked for conflicts, and sent to the root DTDHandler
-     * 
+     *
      * @param notName the name of the Notation to check
      */
     protected void checkNotation(String notName) {
@@ -1912,7 +1911,7 @@ public class XIncludeHandler
      * The purpose of this method is to check if an UnparsedEntity conflicts with a previously
      * declared entity in the current pipeline stack.  If there is no conflict, the
      * UnparsedEntity is sent by the root pipeline.
-     * 
+     *
      * @param ent the UnparsedEntity to check for conflicts
      */
     protected void checkAndSendUnparsedEntity(UnparsedEntity ent) {
@@ -1960,7 +1959,7 @@ public class XIncludeHandler
      * The purpose of this method is to check if a Notation conflicts with a previously
      * declared notation in the current pipeline stack.  If there is no conflict, the
      * Notation is sent by the root pipeline.
-     * 
+     *
      * @param not the Notation to check for conflicts
      */
     protected void checkAndSendNotation(Notation not) {

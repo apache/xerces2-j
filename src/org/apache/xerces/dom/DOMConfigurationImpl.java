@@ -75,7 +75,6 @@ import org.apache.xerces.impl.validation.ValidationManager;
 import org.apache.xerces.util.DOMEntityResolverWrapper;
 import org.apache.xerces.util.DOMErrorHandlerWrapper;
 import org.apache.xerces.util.MessageFormatter;
-import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.util.ParserConfigurationSettings;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
@@ -190,11 +189,11 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
     protected final static short VALIDATE            = 0x1<<6;
     protected final static short PSVI                = 0x1<<7;
     protected final static short WELLFORMED          = 0x1<<8;
-    
+
     protected final static short INFOSET_TRUE_PARAMS = NAMESPACES | COMMENTS | WELLFORMED;
     protected final static short INFOSET_FALSE_PARAMS = ENTITIES | DTNORMALIZATION | CDATA;
     protected final static short INFOSET_MASK = INFOSET_TRUE_PARAMS | INFOSET_FALSE_PARAMS;
-    
+
     // components
 
     /** Symbol table. */
@@ -213,10 +212,10 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 
     protected final DOMErrorHandlerWrapper fErrorHandlerWrapper =
                 new DOMErrorHandlerWrapper();
-                
+
     // private data
-    
-    private DOMStringList fRecognizedParameters;            
+
+    private DOMStringList fRecognizedParameters;
 
 
     //
@@ -592,7 +591,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                     features = (short) (features & ~INFOSET_FALSE_PARAMS);
                     setFeature(NORMALIZE_DATA, false);
                 }
-            }           
+            }
             else if (name.equals(Constants.DOM_NORMALIZE_CHARACTERS)
                     || name.equals(Constants.DOM_CANONICAL_FORM)
                     || name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)
@@ -924,7 +923,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                 name.equals(Constants.DOM_NORMALIZE_CHARACTERS)
                     || name.equals(Constants.DOM_CANONICAL_FORM)
                     || name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)
-                    || name.equals(Constants.DOM_CHECK_CHAR_NORMALIZATION)                                     
+                    || name.equals(Constants.DOM_CHECK_CHAR_NORMALIZATION)
                     ) {
                     return (value.equals(Boolean.TRUE)) ? false : true;
             }//features whose parameter value can not be set to 'false'
@@ -968,36 +967,36 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 
     /**
      *  DOM Level 3 CR - Experimental.
-     * 
-     *  The list of the parameters supported by this 
-     * <code>DOMConfiguration</code> object and for which at least one value 
-     * can be set by the application. Note that this list can also contain 
-     * parameter names defined outside this specification. 
+     *
+     *  The list of the parameters supported by this
+     * <code>DOMConfiguration</code> object and for which at least one value
+     * can be set by the application. Note that this list can also contain
+     * parameter names defined outside this specification.
      */
     public DOMStringList getParameterNames() {
     	if (fRecognizedParameters == null){
 			Vector parameters = new Vector();
-		
+
 			//Add DOM recognized parameters
-			//REVISIT: Would have been nice to have a list of 
+			//REVISIT: Would have been nice to have a list of
 			//recognized paramters.
 			parameters.add(Constants.DOM_COMMENTS);
 			parameters.add(Constants.DOM_DATATYPE_NORMALIZATION);
-			parameters.add(Constants.DOM_CDATA_SECTIONS);    	
-			parameters.add(Constants.DOM_ENTITIES); 
-			parameters.add(Constants.DOM_SPLIT_CDATA); 
-			parameters.add(Constants.DOM_NAMESPACES); 
-			parameters.add(Constants.DOM_VALIDATE); 
-        
-			parameters.add(Constants.DOM_INFOSET); 
-			parameters.add(Constants.DOM_NORMALIZE_CHARACTERS); 
-			parameters.add(Constants.DOM_CANONICAL_FORM); 
-			parameters.add(Constants.DOM_VALIDATE_IF_SCHEMA); 
-			parameters.add(Constants.DOM_CHECK_CHAR_NORMALIZATION);    	
-			parameters.add(Constants.DOM_WELLFORMED); 
-    	
-			parameters.add(Constants.DOM_NAMESPACE_DECLARATIONS); 
-			parameters.add(Constants.DOM_ELEMENT_CONTENT_WHITESPACE); 
+			parameters.add(Constants.DOM_CDATA_SECTIONS);
+			parameters.add(Constants.DOM_ENTITIES);
+			parameters.add(Constants.DOM_SPLIT_CDATA);
+			parameters.add(Constants.DOM_NAMESPACES);
+			parameters.add(Constants.DOM_VALIDATE);
+
+			parameters.add(Constants.DOM_INFOSET);
+			parameters.add(Constants.DOM_NORMALIZE_CHARACTERS);
+			parameters.add(Constants.DOM_CANONICAL_FORM);
+			parameters.add(Constants.DOM_VALIDATE_IF_SCHEMA);
+			parameters.add(Constants.DOM_CHECK_CHAR_NORMALIZATION);
+			parameters.add(Constants.DOM_WELLFORMED);
+
+			parameters.add(Constants.DOM_NAMESPACE_DECLARATIONS);
+			parameters.add(Constants.DOM_ELEMENT_CONTENT_WHITESPACE);
 
 			parameters.add(Constants.DOM_ERROR_HANDLER);
 			parameters.add(Constants.DOM_SCHEMA_TYPE);
@@ -1007,14 +1006,14 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 			//Add recognized xerces features and properties
 			parameters.addAll(fRecognizedFeatures);
 			parameters.addAll(fRecognizedProperties);
-		
-			fRecognizedParameters = new DOMStringListImpl(parameters);		
-    		
+
+			fRecognizedParameters = new DOMStringListImpl(parameters);
+
     	}
 
-    	return fRecognizedParameters; 	
+    	return fRecognizedParameters;
     }//getParameterNames
-    
+
     //
     // Protected methods
     //
@@ -1061,7 +1060,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
             //   null (this is a good way to check for availability before the
             //   parse begins).
             //
-            if (suffixLength == Constants.XML_STRING_PROPERTY.length() && 
+            if (suffixLength == Constants.XML_STRING_PROPERTY.length() &&
                 propertyId.endsWith(Constants.XML_STRING_PROPERTY)) {
                 // REVISIT - we should probably ask xml-dev for a precise
                 // definition of what this is actually supposed to return, and
