@@ -985,7 +985,7 @@ public class XMLDocumentScanner
                     fDocumentHandler.characters(fString);
                 }
                 int c = fEntityScanner.peekChar();
-                if (c != -1) {
+                if (c != -1 && XMLChar.isInvalid(c)) {
                     if (XMLChar.isHighSurrogate(c)) {
                         fStringBuffer.clear();
                         scanSurrogates(fStringBuffer);
@@ -993,9 +993,9 @@ public class XMLDocumentScanner
                             fDocumentHandler.characters(fStringBuffer);
                         }
                     }
-                    else if (XMLChar.isInvalid(c)) {
+                    else {
                         reportFatalError("InvalidCharInCDSect",
-                                         new Object[]{Integer.toString(c,16)});
+                                        new Object[]{Integer.toString(c,16)});
                         fEntityScanner.scanChar();
                     }
                 }
@@ -1669,21 +1669,23 @@ public class XMLDocumentScanner
                                         setScannerState(SCANNER_STATE_REFERENCE);
                                         break;
                                     }
-                                    else if (c != -1 && XMLChar.isHighSurrogate(c)) {
-                                        // special case: we have surrogates
-                                        fStringBuffer.clear();
-                                        if (scanSurrogates(fStringBuffer)) {
-                                            // call handler
-                                            if (fDocumentHandler != null) {
-                                                fDocumentHandler.characters(fStringBuffer);
+                                    else if (c != -1 && XMLChar.isInvalid(c)) {
+                                        if (XMLChar.isHighSurrogate(c)) {
+                                            // special case: surrogates
+                                            fStringBuffer.clear();
+                                            if (scanSurrogates(fStringBuffer)) {
+                                                // call handler
+                                                if (fDocumentHandler != null) {
+                                                    fDocumentHandler.characters(fStringBuffer);
+                                                }
                                             }
                                         }
-                                    }
-                                    else if (c != -1 && XMLChar.isInvalid(c)) {
-                                        reportFatalError("InvalidCharInContent",
-                                                         new Object[] {
-                                                             Integer.toString(c, 16)});
-                                        fEntityScanner.scanChar();
+                                        else {
+                                            reportFatalError("InvalidCharInContent",
+                                                             new Object[] {
+                                                Integer.toString(c, 16)});
+                                            fEntityScanner.scanChar();
+                                        }
                                     }
                                 } while (complete);
                             }
