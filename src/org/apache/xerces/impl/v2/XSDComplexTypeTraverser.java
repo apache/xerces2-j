@@ -286,6 +286,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 
        // If there are no children, return
        if (simpleContent==null) {
+          reportGenericSchemaError("ComplexType " + typeName + ": " +
+           "complexContent must have either restriction or extension as child");
           throw new ComplexTypeRecoverableError();
        }
 
@@ -526,6 +528,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
        fAttrChecker.returnAttrArray(attrValues, schemaDoc);
        // If there are no children, return
        if (complexContent==null) {
+          reportGenericSchemaError("ComplexType " + typeName + ": " +
+           "complexContent must have either restriction or extension as child");
           throw new ComplexTypeRecoverableError();
        }
 
