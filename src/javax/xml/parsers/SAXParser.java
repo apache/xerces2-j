@@ -107,6 +107,7 @@ import org.xml.sax.SAXNotSupportedException;
 
 public abstract class SAXParser {
 
+    private static final boolean DEBUG = false ;
     protected SAXParser () {
     
     }
@@ -293,14 +294,17 @@ public abstract class SAXParser {
             throw new IllegalArgumentException("File cannot be null");
         }
         
-        String uri = "file:" + f.getAbsolutePath();
-        if (File.separatorChar == '\\') {
-            uri = uri.replace('\\', '/');
-        }
-        InputSource input = new InputSource(uri);
+        String escapedURI = ConvertToURI.getEscapedURI(f.getAbsolutePath()) ;
+        escapedURI = "file://" + escapedURI ;
+
+        if(DEBUG)
+        System.out.println("Escaped URI = " + escapedURI) ;
+
+        InputSource input = new InputSource(escapedURI);
         this.parse(input, hb);
     }
     
+
     /**
      * Parse the content of the file specified as XML using the
      * specified {@link org.xml.sax.helpers.DefaultHandler}.
@@ -321,11 +325,13 @@ public abstract class SAXParser {
             throw new IllegalArgumentException("File cannot be null");
         }
         
-        String uri = "file:" + f.getAbsolutePath();
-        if (File.separatorChar == '\\') {
-            uri = uri.replace('\\', '/');
-        }
-        InputSource input = new InputSource(uri);
+        String escapedURI = ConvertToURI.getEscapedURI(f.getAbsolutePath()) ;
+        escapedURI = "file://" + escapedURI ;
+
+        if(DEBUG)
+        System.out.println("Escaped URI = " + escapedURI) ;
+
+        InputSource input = new InputSource(escapedURI);
         this.parse(input, dh);
     }
     

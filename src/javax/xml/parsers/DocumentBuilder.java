@@ -100,6 +100,7 @@ public abstract class DocumentBuilder {
     protected DocumentBuilder () {
     }
 
+    private static final boolean DEBUG = false ;
     /**
      * Parse the content of the given <code>InputStream</code> as an XML 
      * document and return a new DOM {@link org.w3c.dom.Document} object.
@@ -189,11 +190,13 @@ public abstract class DocumentBuilder {
             throw new IllegalArgumentException("File cannot be null");
         }
         
-        String uri = "file:" + f.getAbsolutePath();
-    if (File.separatorChar == '\\') {
-        uri = uri.replace('\\', '/');
-    }
-        InputSource in = new InputSource(uri);
+        String escapedURI = ConvertToURI.getEscapedURI(f.getAbsolutePath()) ;
+        escapedURI = "file://" + escapedURI ;
+
+        if(DEBUG)
+            System.out.println("Escaped URI = " + escapedURI) ;
+
+        InputSource in = new InputSource(escapedURI);
         return parse(in);
     }
 
