@@ -1,41 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE schema PUBLIC "-//W3C//DTD XMLSCHEMA 19991216//EN"
-                        "http://www.w3.org/TR/2000/WD-xmlschema-1-20000407/structures.dtd">
 <schema>
 
  <element name="personnel">
-  <type>
-   <element ref="person" minOccurs='1' maxOccurs='*'/>
-   <attribute name="xmlns"/>
-  </type>
+  <complexType>
+   <element ref="person" minOccurs='1' maxOccurs='unbounded'/>
+  </complexType>
  </element>
 
  <element name="person">
-  <type>
+  <complexType>
    <element ref="name"/>
-   <element ref="email" minOccurs='0' maxOccurs='*'/>
-   <element ref="url"   minOccurs='0' maxOccurs='*'/>
+   <element ref="email" minOccurs='0' maxOccurs='unbounded'/>
+   <element ref="url"   minOccurs='0' maxOccurs='unbounded'/>
    <element ref="link"  minOccurs='0' maxOccurs='1'/>
 
    <attribute name="id"  type="ID" minOccurs='1'/>
    <attribute name="note" type="string"/>
    <attribute name="contr" type="NMTOKEN" default="false">
-    <datatype source="string">
+    <simpleType base="string">
      <enumeration value="true"/>
      <enumeration value="false"/>
-    </datatype>
+    </simpleType>
    </attribute>
    <attribute name="salary" type="integer"/>
-  </type>
+  </complexType>
  </element>
 
  <element name="name">
-  <type content='elementOnly'>
-   <group order='all'>
+  <complexType content='elementOnly'>
+   <group>
+    <all>
     <element ref="family"/>
     <element ref="given"/>
+    </all>
    </group>
-  </type>
+  </complexType>
  </element>
 
  <element name="family" type='string'/>
@@ -45,18 +44,25 @@
  <element name="email" type='string'/>
 
  <element name="url">
-  <type content="empty">
+  <complexType content="empty">
    <attribute name="href" type="string" default="http://"/>
-  </type>
+  </complexType>
  </element>
 
  <element name="link">
-  <type content="empty">
+  <complexType content="empty">
    <attribute name="manager" type="IDREF"/>
    <attribute name="subordinates" type="IDREFS"/>
-  </type>
+  </complexType>
  </element>
 
  <notation name='gif' public='-//APP/Photoshop/4.0' system='photoshop.exe'/>
 
 </schema>
+
+
+
+
+
+
+
