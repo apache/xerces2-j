@@ -44,7 +44,10 @@
         and will correctly serialize XML 1.1 documents if the DOM level
         3 load/save API's are in use.
     </p>
-
+    
+    <note>This release will be the last one that supports JDK 1.1. Future releases
+       of Xerces2 will require at least JDK 1.2.
+    </note>
 
   </s2>
   <s2 title='Features of This Release'>
