@@ -1720,13 +1720,13 @@ public class XMLValidator
               }
           }
 
-          normalizeAttrValue(attributes, i);
+          // REVISIT: this is done in XMLScanner, Just that entity ref positions not being moved accordingly
+          //normalizeAttrValue(attributes, i);
 
           if (declared && fValidation) {
               String attrValue = attributes.getValue(i);
               if ( fTempAttDecl.simpleType.defaultType == XMLSimpleType.DEFAULT_TYPE_FIXED) {
-                  String defaultValue = normalizeDefaultAttrValue(fTempAttDecl.simpleType.defaultValue,
-                                                                   fTempAttDecl.simpleType.type);
+                  String defaultValue = fTempAttDecl.simpleType.defaultValue;
                   
                   if (!attrValue.equals(defaultValue) ) {
                       Object[] args = { 
