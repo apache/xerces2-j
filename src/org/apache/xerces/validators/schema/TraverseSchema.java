@@ -5811,7 +5811,7 @@ throws Exception {
 
                 // this nasty hack needed to ``override'' the
                 // global attribute with "use" and "fixed" on the ref'ing attribute
-                if(!isOptional || fixedStr.length() > 0) {
+                if((typeInfo != null) && (!isOptional || fixedStr.length() > 0)) {
 					int referredAttName = fStringPool.addSymbol(referredAttribute.getAttribute(SchemaSymbols.ATT_NAME));
                     uriIndex = StringPool.EMPTY_STRING;
         			if ( fTargetNSURIString.length() > 0) {
