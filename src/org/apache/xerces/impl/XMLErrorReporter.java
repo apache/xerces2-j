@@ -82,13 +82,13 @@ public class XMLErrorReporter
     //
 
     /** SEVERITY_WARNING */
-    public static final short SEVERITY_WARNING = -1;
+    public static final short SEVERITY_WARNING = 0;
 
     /** SEVERITY_ERROR */
-    public static final short SEVERITY_ERROR = -1;
+    public static final short SEVERITY_ERROR = 1;
 
     /** SEVERITY_FATAL_ERROR */
-    public static final short SEVERITY_FATAL_ERROR = -1;
+    public static final short SEVERITY_FATAL_ERROR = 2;
     
     //
     // Data

@@ -216,10 +216,18 @@ public class XMLDocumentScanner
     /** Element stack. */
     protected Stack fElementStack = new Stack();
 
-    // namespaces
+    // features
+
+    /** Validation. */
+    protected boolean fValidation;
 
     /** Namespaces. */
-    protected boolean fNamespaces = true;
+    protected boolean fNamespaces;
+
+    /** External general entities. */
+    protected boolean fExternalGeneralEntities;
+
+    // namespaces
 
     /** Namespace support. */
     protected NamespaceSupport fNamespaceSupport = new NamespaceSupport();
@@ -256,6 +264,9 @@ public class XMLDocumentScanner
     private final char[] fSingleChar = new char[1];
 
     private String[] fPseudoAttributeValues = new String[3];
+
+    /** External entity. */
+    private XMLEntityManager.ExternalEntity fExternalEntity = new XMLEntityManager.ExternalEntity();
 
     // symbols
 
@@ -341,6 +352,12 @@ public class XMLDocumentScanner
         fNamespaces = componentManager.getFeature(NAMESPACES);
         fAttributes.setNamespaces(fNamespaces);
 
+        final String VALIDATION = Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
+        fValidation = componentManager.getFeature(VALIDATION);
+
+        final String EXTERNAL_GENERAL_ENTITIES = Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_GENERAL_ENTITIES_FEATURE;
+        fExternalGeneralEntities = componentManager.getFeature(EXTERNAL_GENERAL_ENTITIES);
+
         // Xerces properties
         /*** REVISIT: Add DTD support. ***
         final String DTD_SCANNER = Constants.XERCES_PROPERTY_PREFIX + Constants.DTD_SCANNER_PROPERTY;
@@ -384,6 +401,9 @@ public class XMLDocumentScanner
         throws SAXNotRecognizedException, SAXNotSupportedException {
 
         // sax features
+        /***
+        // NOTE: Validation and namespaces features cannot be set during
+        //       a parse. -Ac
         if (featureId.startsWith(Constants.SAX_FEATURE_PREFIX)) {
             String feature = featureId.substring(Constants.SAX_FEATURE_PREFIX.length());
             if (feature.equals(Constants.NAMESPACES_FEATURE)) {
@@ -391,6 +411,7 @@ public class XMLDocumentScanner
                 fAttributes.setNamespaces(fNamespaces);
             }
         }
+        /***/
 
     } // setFeature(String,boolean)
 
@@ -406,18 +427,19 @@ public class XMLDocumentScanner
         super.setProperty(propertyId, value);
 
         // Xerces properties
-        /*** REVISIT: Add DTD support. ***
         if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
             String property = propertyId.substring(Constants.XERCES_PROPERTY_PREFIX.length());
+            /*** REVISIT: Add DTD support. ***
             if (property.equals(Constants.DTD_SCANNER_PROPERTY)) {
                 fDTDScanner = (XMLDTDScanner)value;
             }
-            else if (property.equals(Constants.ENTITY_MANAGER_PROPERTY)) {
+            else 
+            /***/
+            if (property.equals(Constants.ENTITY_MANAGER_PROPERTY)) {
                 fEntityManager = (XMLEntityManager)value;
             }
             return;
         }
-        /***/
 
     } // setProperty(String,Object)
 
@@ -518,7 +540,7 @@ public class XMLDocumentScanner
                 fDocumentHandler.endEntity(name);
             }
         }
-
+        
     } // endEntity(String)
 
     //
@@ -912,7 +934,7 @@ public class XMLDocumentScanner
     protected int scanContent() throws IOException, SAXException {
 
         int c = fEntityScanner.scanContent(fString);
-        if (fDocumentHandler != null) {
+        if (fDocumentHandler != null && fString.length > 0) {
             fDocumentHandler.characters(fString);
         }
         return c;
@@ -1033,9 +1055,69 @@ public class XMLDocumentScanner
             handleCharacter('\'');
         }
         
-        // start entity
+        // start general entity
         else {
-            fEntityManager.startEntity(name);
+            if (!fEntityManager.isEntityDeclared(name)) {
+                if (fValidation) {
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "EntityNotDeclared",
+                                               new Object[] { name },
+                                               XMLErrorReporter.SEVERITY_ERROR);
+                }
+                if (fDocumentHandler != null) {
+                    final String publicId = null;
+                    final String systemId = null;
+                    final String encoding = null;
+                    fDocumentHandler.startEntity(name, publicId, systemId, encoding);
+                    fDocumentHandler.endEntity(name);
+                }
+            }
+            else {
+                int size = fEntityStack.size();
+                for (int i = size - 1; i >= 0; i--) {
+                    Entity entity = (Entity)fEntityStack.elementAt(i);
+                    if (entity.name == name) {
+                        String path = "&" + name;
+                        for (int j = i + 1; j < size; j++) {
+                            entity = (Entity)fEntityStack.elementAt(j);
+                            path = path + " -> &" + entity.name;
+                        }
+                        path = path + " -> &" + name;
+                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                   "RecursiveReference",
+                                                   new Object[] { name, path },
+                                                   XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                        if (fDocumentHandler != null) {
+                            String publicId = null;
+                            String systemId = null;
+                            final String encoding = null;
+                            if (fEntityManager.getExternalEntity(name, fExternalEntity)) {
+                                publicId = fExternalEntity.publicId;
+                                systemId = fExternalEntity.systemId;
+                            }
+                            fDocumentHandler.startEntity(name, publicId, systemId, encoding);
+                            fDocumentHandler.endEntity(name);
+                        }
+                        return;
+                    }
+                }
+                if (fExternalGeneralEntities || !fEntityManager.isEntityExternal(name)) {
+                    fEntityManager.startEntity(name);
+                }
+                else {
+                    if (fDocumentHandler != null) {
+                        String publicId = null;
+                        String systemId = null;
+                        final String encoding = null;
+                        if (fEntityManager.getExternalEntity(name, fExternalEntity)) {
+                            publicId = fExternalEntity.publicId;
+                            systemId = fExternalEntity.systemId;
+                        }
+                        fDocumentHandler.startEntity(name, publicId, systemId, encoding);
+                        fDocumentHandler.endEntity(name);
+                    }
+                }
+            }
         }
 
     } // scanEntityReference()

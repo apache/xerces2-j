@@ -63,6 +63,7 @@ import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLDocumentScanner;
 import org.apache.xerces.impl.XMLDTDScanner;
 import org.apache.xerces.impl.XMLEntityManager;
+import org.apache.xerces.impl.XMLInputSource;
 import org.apache.xerces.impl.XMLValidator;
 import org.apache.xerces.impl.validation.DatatypeValidatorFactory;
 import org.apache.xerces.impl.validation.GrammarPool;
@@ -144,6 +145,10 @@ public abstract class XMLDocumentParser
         fFeatures.put(NAMESPACES, Boolean.TRUE);
         final String VALIDATION = Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
         fFeatures.put(VALIDATION, Boolean.FALSE);
+        final String EXTERNAL_GENERAL_ENTITIES = Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_GENERAL_ENTITIES_FEATURE;
+        fFeatures.put(EXTERNAL_GENERAL_ENTITIES, Boolean.TRUE);
+        final String EXTERNAL_PARAMETER_ENTITIES = Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_PARAMETER_ENTITIES_FEATURE;
+        fFeatures.put(EXTERNAL_PARAMETER_ENTITIES, Boolean.TRUE);
 
         // create and register components
         final String SYMBOL_TABLE = Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
@@ -406,7 +411,7 @@ public abstract class XMLDocumentParser
         try {
             reset();
             fEntityManager.setEntityHandler(fScanner);
-            fEntityManager.startDocumentEntity(source);
+            fEntityManager.startDocumentEntity(new XMLInputSource(source));
             fScanner.scanDocument(true);
             fParseInProgress = false;
         } catch (SAXException ex) {

@@ -67,6 +67,7 @@ import java.io.PushbackInputStream;
 import java.io.PushbackReader;
 import java.io.Reader;
 import java.io.StringReader;
+import java.net.URL;
 import java.util.Hashtable;
 import java.util.Stack;
 
@@ -74,7 +75,6 @@ import org.apache.xerces.util.EncodingMap;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.URI;
 import org.apache.xerces.util.XMLChar;
-
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLComponent;
 import org.apache.xerces.xni.XMLComponentManager;
@@ -128,6 +128,9 @@ public class XMLEntityManager
 
     /** Debugging. */
     private static final boolean DEBUG = false;
+
+    /** Debug some basic entities. */
+    private static final boolean DEBUG_ENTITIES = false;
 
     //
     // Data
@@ -222,10 +225,35 @@ public class XMLEntityManager
         fEntities.put(name, entity);
     } // addInternalEntity(String,String)
 
+    /** Returns the values for an external entity. */
+    public boolean getExternalEntity(String name, ExternalEntity externalEntity) {
+        Entity entity = (Entity)fEntities.get(name);
+        if (entity != null && entity.isExternal()) {
+            externalEntity.setValues((ExternalEntity)entity);
+            return true;
+        }
+        return false;
+    } // getExternalEntity(String,ExternalEntity):boolean
+
+    /** Returns the values for an internal entity. */
+    public boolean getInternalEntity(String name, InternalEntity internalEntity) {
+        Entity entity = (Entity)fEntities.get(name);
+        if (entity != null && !entity.isExternal()) {
+            internalEntity.setValues((InternalEntity)entity);
+            return true;
+        }
+        return false;
+    } // getInternalEntity(String,InternalEntity):boolean
+
     /** Returns true if the specified entity is declared. */
     public boolean isEntityDeclared(String name) {
         return fEntities.get(name) != null;
     } // isEntityDeclared(String):boolean
+
+    /** Returns true if the specified entity is internal. */
+    public boolean isEntityExternal(String name) {
+        return ((Entity)fEntities.get(name)).isExternal();
+    } // isEntityExternal(String):boolean
 
     /**
      * resolveEntity
@@ -236,32 +264,41 @@ public class XMLEntityManager
      * 
      * @return 
      */
-    public InputSource resolveEntity(String publicId, String systemId, String baseSystemId)
+    public XMLInputSource resolveEntity(String publicId, String systemId, 
+                                        String baseSystemId)
         throws IOException, SAXException {
 
         // give the entity resolver a chance
-        InputSource inputSource = null;
+        XMLInputSource xmlInputSource = null;
         if (fEntityResolver != null) {
-            inputSource = fEntityResolver.resolveEntity(publicId, systemId);
+            InputSource inputSource = fEntityResolver.resolveEntity(publicId, systemId);
+            if (inputSource != null) {
+                xmlInputSource = new XMLInputSource(inputSource);
+                xmlInputSource.setBaseSystemId(baseSystemId);
+                String expandedSystemId = expandSystemId(systemId, baseSystemId);
+                xmlInputSource.setExpandedSystemId(expandedSystemId);
+            }
         }
 
         // do default resolution
-        if (inputSource == null) {
+        if (xmlInputSource == null) {
             // if no base systemId given, assume that it's relative
             // to the systemId of the current scanned entity
             if (baseSystemId == null) {
                 baseSystemId = fCurrentEntity.systemId;
             }
 
-            // expand the system id
-            systemId = expandSystemId(systemId, baseSystemId);
-            inputSource = new InputSource(systemId);
-            inputSource.setPublicId(publicId);
+            // create the input source
+            xmlInputSource = new XMLInputSource(systemId);
+            xmlInputSource.setPublicId(publicId);
+            xmlInputSource.setBaseSystemId(baseSystemId);
+            String expandedSystemId = expandSystemId(systemId, baseSystemId);
+            xmlInputSource.setExpandedSystemId(expandedSystemId);
         }
 
-        return inputSource;
+        return xmlInputSource;
 
-    } // resolveEntity
+    } // resolveEntity(String,String,String):XMLInputSource
 
     /**
      * startEntity
@@ -274,24 +311,24 @@ public class XMLEntityManager
 
         // resolve external entity
         Entity entity = (Entity)fEntities.get(entityName);
-        InputSource inputSource = null;
+        XMLInputSource xmlInputSource = null;
         if (entity.isExternal()) {
             ExternalEntity externalEntity = (ExternalEntity)entity;
             String publicId = externalEntity.publicId;
             String systemId = externalEntity.systemId;
             String baseSystemId = externalEntity.baseSystemId;
-            inputSource = resolveEntity(publicId, systemId, baseSystemId);
+            xmlInputSource = resolveEntity(publicId, systemId, baseSystemId);
         }
 
         // wrap internal entity
         else {
             InternalEntity internalEntity = (InternalEntity)entity;
             Reader reader = new StringReader(internalEntity.text);
-            inputSource = new InputSource(reader);
+            xmlInputSource = new XMLInputSource(reader);
         }
 
         // start the entity
-        startEntity(entityName, inputSource);
+        startEntity(entityName, xmlInputSource);
 
     } // startEntity(String)
 
@@ -300,9 +337,9 @@ public class XMLEntityManager
      * 
      * @param inputSource 
      */
-    public void startDocumentEntity(InputSource inputSource) 
+    public void startDocumentEntity(XMLInputSource xmlInputSource) 
         throws IOException, SAXException {
-        startEntity("[xml]", inputSource);
+        startEntity("[xml]", xmlInputSource);
     } // startDocumentEntity(InputSource)
 
     /**
@@ -310,9 +347,9 @@ public class XMLEntityManager
      *
      * @param inputSource
      */
-    public void startDTDEntity(InputSource inputSource)
+    public void startDTDEntity(XMLInputSource xmlInputSource)
         throws IOException, SAXException {
-        startEntity("[dtd]", inputSource);
+        startEntity("[dtd]", xmlInputSource);
     } // startDTDEntity(InputSource)
 
     /**
@@ -345,6 +382,22 @@ public class XMLEntityManager
         // initialize state
         fEntities.clear();
         fEntityStack.removeAllElements();
+
+        // DEBUG
+        if (DEBUG_ENTITIES) {
+            addInternalEntity("text", "Hello, World.");
+            addInternalEntity("empty-element", "<foo/>");
+            addInternalEntity("balanced-element", "<foo></foo>");
+            addInternalEntity("balanced-element-with-text", "<foo>Hello, World</foo>");
+            addInternalEntity("balanced-element-with-entity", "<foo>&text;</foo>");
+            addInternalEntity("unbalanced-entity", "<foo>");
+            addInternalEntity("recursive-entity", "<foo>&recursive-entity2;</foo>");
+            addInternalEntity("recursive-entity2", "<bar>&recursive-entity3;</bar>");
+            addInternalEntity("recursive-entity3", "<baz>&recursive-entity;</baz>");
+
+            addExternalEntity("external-text", null, "external-text.ent", "test/external-text.xml");
+            addExternalEntity("external-balanced-element", null, "external-balanced-element.ent", "test/external-balanced-element.xml");
+        }
 
     } // reset(XMLComponentManager)
 
@@ -389,22 +442,27 @@ public class XMLEntityManager
     /**
      * Starts an entity. 
      */
-    protected void startEntity(String name, InputSource inputSource)
+    protected void startEntity(String name, XMLInputSource xmlInputSource)
         throws IOException, SAXException {
 
         // get information
-        String publicId = inputSource.getPublicId();
-        String systemId = inputSource.getSystemId();
-        String encoding = inputSource.getEncoding();
+        final String publicId = xmlInputSource.getPublicId();
+        final String systemId = xmlInputSource.getSystemId();
+        String encoding = xmlInputSource.getEncoding();
 
         // create reader
         InputStream stream = null;
-        Reader reader = inputSource.getCharacterStream();
+        Reader reader = xmlInputSource.getCharacterStream();
         if (reader == null) {
-            stream = inputSource.getByteStream();
+            stream = xmlInputSource.getByteStream();
             if (stream == null) {
-                // REVISIT: open system identifier
-                stream = new FileInputStream(systemId);
+                String expandedSystemId = xmlInputSource.getExpandedSystemId();
+                if (expandedSystemId == null) {
+                    final String baseSystemId = xmlInputSource.getBaseSystemId();
+                    expandedSystemId = expandSystemId(systemId, baseSystemId);
+                    xmlInputSource.setExpandedSystemId(expandedSystemId);
+                }
+                stream = new URL(expandedSystemId).openStream();
             }
                 
             // perform auto-detect of encoding
@@ -487,7 +545,7 @@ public class XMLEntityManager
      *         system identifier is already expanded.
      *
      */
-    protected String expandSystemId(String systemId) {
+    public static String expandSystemId(String systemId) {
         return expandSystemId(systemId, null);
     } // expandSystemId(String):String
 
@@ -504,8 +562,7 @@ public class XMLEntityManager
      *         system identifier is already expanded.
      *
      */
-    protected String expandSystemId(String systemId, 
-                                    String baseSystemId) {
+    public static String expandSystemId(String systemId, String baseSystemId) {
 
         // check for bad parameters id
         if (systemId == null || systemId.length() == 0) {
@@ -544,7 +601,23 @@ public class XMLEntityManager
                 base = new URI("file", "", dir, null, null);
             }
             else {
-                base = new URI(baseSystemId);
+                try {
+                    base = new URI(baseSystemId);
+                }
+                catch (URI.MalformedURIException e) {
+                    String dir;
+                    try {
+                        dir = fixURI(System.getProperty("user.dir"));
+                    }
+                    catch (SecurityException se) {
+                        dir = "";
+                    }
+                    if (!dir.endsWith("/")) {
+                        dir = dir + "/";
+                    }
+                    dir = dir + baseSystemId;
+                    base = new URI("file", "", dir, null, null);
+                }
             }
 
             // expand id
@@ -674,7 +747,7 @@ public class XMLEntityManager
      *
      * @author Andy Clark, IBM
      */
-    protected static abstract class Entity {
+    public static abstract class Entity {
 
         //
         // Data
@@ -686,6 +759,11 @@ public class XMLEntityManager
         //
         // Constructors
         //
+
+        /** Default constructor. */
+        public Entity() {
+            clear();
+        } // <init>()
 
         /** Constructs an entity. */
         public Entity(String name) {
@@ -699,6 +777,16 @@ public class XMLEntityManager
         /** Returns true if this is an external entity. */
         public abstract boolean isExternal();
 
+        /** Clears the entity. */
+        public void clear() {
+            name = null;
+        } // clear()
+
+        /** Sets the values of the entity. */
+        public void setValues(Entity entity) {
+            name = entity.name;
+        } // setValues(Entity)
+
     } // class Entity
 
     /**
@@ -706,7 +794,7 @@ public class XMLEntityManager
      *
      * @author Andy Clark, IBM
      */
-    protected static class InternalEntity
+    public static class InternalEntity
         extends Entity {
 
         //
@@ -719,6 +807,11 @@ public class XMLEntityManager
         //
         // Constructors
         //
+
+        /** Default constructor. */
+        public InternalEntity() {
+            clear();
+        } // <init>()
 
         /** Constructs an internal entity. */
         public InternalEntity(String name, String text) {
@@ -735,6 +828,24 @@ public class XMLEntityManager
             return false;
         } // isExternal():boolean
 
+        /** Clears the entity. */
+        public void clear() {
+            super.clear();
+            text = null;
+        } // clear()
+
+        /** Sets the values of the entity. */
+        public void setValues(Entity entity) {
+            super.setValues(entity);
+            text = null;
+        } // setValues(Entity)
+
+        /** Sets the values of the entity. */
+        public void setValues(InternalEntity entity) {
+            super.setValues(entity);
+            text = entity.text;
+        } // setValues(InternalEntity)
+
     } // class InternalEntity
 
     /**
@@ -742,7 +853,7 @@ public class XMLEntityManager
      *
      * @author Andy Clark, IBM
      */
-    protected static class ExternalEntity 
+    public static class ExternalEntity 
         extends Entity {
         
         //
@@ -762,6 +873,11 @@ public class XMLEntityManager
         // Constructors
         //
 
+        /** Default constructor. */
+        public ExternalEntity() {
+            clear();
+        } // <init>()
+
         /** Constructs an internal entity. */
         public ExternalEntity(String name, String publicId, String systemId,
                               String baseSystemId) {
@@ -779,6 +895,30 @@ public class XMLEntityManager
         public final boolean isExternal() {
             return true;
         } // isExternal():boolean
+
+        /** Clears the entity. */
+        public void clear() {
+            super.clear();
+            publicId = null;
+            systemId = null;
+            baseSystemId = null;
+        } // clear()
+
+        /** Sets the values of the entity. */
+        public void setValues(Entity entity) {
+            super.setValues(entity);
+            publicId = null;
+            systemId = null;
+            baseSystemId = null;
+        } // setValues(Entity)
+
+        /** Sets the values of the entity. */
+        public void setValues(ExternalEntity entity) {
+            super.setValues(entity);
+            publicId = entity.publicId;;
+            systemId = entity.systemId;
+            baseSystemId = entity.baseSystemId;
+        } // setValues(ExternalEntity)
 
     } // class ExternalEntity
 
@@ -856,6 +996,22 @@ public class XMLEntityManager
         public final boolean isExternal() {
             return systemId != null;
         } // isExternal():boolean
+
+        //
+        // Object methods
+        //
+
+        /** Returns a string representation of this object. */
+        public String toString() {
+
+            StringBuffer str = new StringBuffer();
+            str.append("name=\""+name+'"');
+            str.append(",ch="+ch);
+            str.append(",position="+position);
+            str.append(",count="+count);
+            return str.toString();
+
+        } // toString():String
 
     } // class ScannedEntity
 
@@ -1335,18 +1491,27 @@ public class XMLEntityManager
                 print();
                 System.out.println();
             }
+
+            // read characters
             int length = fCurrentEntity.ch.length - offset;
             if (DEBUG_PRINT) System.out.println("  length to try to read: "+length);
             int count = fCurrentEntity.reader.read(fCurrentEntity.ch, offset, length);
             if (DEBUG_PRINT) System.out.println("  length actually read:  "+count);
-            if (count == -1) {
+
+            // reset count and position
+            if (count != -1) {
+                fCurrentEntity.count = count + offset;
+                fCurrentEntity.position = fCurrentEntity.count > 0 ? offset : -1;
+            }
+
+            // end of this entity
+            else {
                 endEntity();
                 if (fCurrentEntity == null) {
                     throw new EOFException();
                 }
+                // REVISIT: Does anything else have to occur here? -Ac
             }
-            fCurrentEntity.count = count + offset;
-            fCurrentEntity.position = fCurrentEntity.count > 0 ? offset : -1;
             if (DEBUG_PRINT) {
                 System.out.print(")load, "+offset+": ");
                 print();
