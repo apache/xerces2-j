@@ -415,12 +415,18 @@ public class SchemaGrammar implements Grammar {
         fAnyType.fDerivedBy = SchemaSymbols.RESTRICTION;
         fAnyType.fContentType = XSComplexTypeDecl.CONTENTTYPE_MIXED;
         XSWildcardDecl wildcard = new XSWildcardDecl();
-        XSParticleDecl particle = new XSParticleDecl();
-        particle.fMinOccurs = 0;
-        particle.fMaxOccurs = SchemaSymbols.OCCURRENCE_UNBOUNDED;
-        particle.fType = XSParticleDecl.PARTICLE_WILDCARD;
-        particle.fValue = wildcard;
-        fAnyType.fParticle = particle;
+        // the spec will change strict to lax for anyType
+        wildcard.fProcessContents = SchemaSymbols.ANY_LAX;
+        XSParticleDecl particleW = new XSParticleDecl();
+        particleW.fMinOccurs = 0;
+        particleW.fMaxOccurs = SchemaSymbols.OCCURRENCE_UNBOUNDED;
+        particleW.fType = XSParticleDecl.PARTICLE_WILDCARD;
+        particleW.fValue = wildcard;
+        XSParticleDecl particleG = new XSParticleDecl();
+        particleG.fType = XSParticleDecl.PARTICLE_SEQUENCE;
+        particleG.fValue = particleW;
+        particleG.fOtherValue = null;
+        fAnyType.fParticle = particleG;
         fAnyType.fAttrGrp.fAttributeWC = wildcard;
     }
 
