@@ -107,6 +107,23 @@ catch (SAXException e) {
     property.
    </note>
   </property>
+  
+  <property name='http://apache.org/xml/properties/entity-expansion-limit'
+            id='entity-expansion-limit'>
+   <desc>
+      Application can set the limit of number of entities that should be expanded by the parser.      
+      When this property is set by the application, before opening any new entity parser checks for 
+      the entity expansion limit set by the application, if number of entities expanded exceeds the 
+      entity expansion limit, parser throws fatal error.
+   </desc>
+   <type>java.lang.Integer</type>
+   <access general='read-write'/>
+   <note>
+      Default value for this property would be 'null' It means there would not be any limit for number 
+      of entities that can be expanded by the parser.
+   </note>
+  </property>
+  
   <property name='http://apache.org/xml/properties/input-buffer-size'
             id='input-buffer-size'>
    <desc>

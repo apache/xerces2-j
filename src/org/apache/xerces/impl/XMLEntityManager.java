@@ -180,6 +180,13 @@ public class XMLEntityManager
     protected static final String BUFFER_SIZE =
         Constants.XERCES_PROPERTY_PREFIX + Constants.BUFFER_SIZE_PROPERTY;
 
+    /** property identifier: Entity expansion limit */
+    protected static final String ENTITY_EXPANSION_LIMIT  =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_EXPANSION_LIMIT;
+
+    //SYSTEM PROPERTY
+    protected static final String SYSTEM_PROPERTY_ENTITY_EXPANSION_LIMIT = "entityExpansionLimit" ;    
+
     // recognized features and properties
 
     /** Recognized features. */
@@ -206,7 +213,8 @@ public class XMLEntityManager
         ERROR_REPORTER,
         ENTITY_RESOLVER,
         VALIDATION_MANAGER,
-        BUFFER_SIZE
+        BUFFER_SIZE,
+        ENTITY_EXPANSION_LIMIT
     };
 
     /** Property defaults. */
@@ -216,6 +224,7 @@ public class XMLEntityManager
         null,
         null,
         new Integer(DEFAULT_BUFFER_SIZE),
+        null
     };
 
     private static final String XMLEntity = "[xml]".intern();
@@ -242,6 +251,7 @@ public class XMLEntityManager
     //
     // Data
     //
+    private static int entityExpansionLimit = 0 ;
 
     // features
 
@@ -308,6 +318,10 @@ public class XMLEntityManager
      * REVISIT: do we need a property for internal entity buffer size?
      */
     protected int fBufferSize = DEFAULT_BUFFER_SIZE;
+
+    //Application can set the limit of number of entities that can be expanded.
+    protected java.lang.Integer fEntityExpansionLimit = null ;
+    protected  int fEntityExpansionCount ;
 
     /**
      * True if the document entity is standalone. This should really
@@ -837,7 +851,17 @@ public class XMLEntityManager
                             boolean literal, boolean isExternal)
         throws IOException, XNIException {
         // get information
-
+        
+        //when entity expansion limit is set by the Application, before opening any new entity
+        //parser check for the entity expansion limit set by the parser, if number of entity
+        //expansions exceeds the entity expansion limit, parser will throw fatal error.
+        if( fEntityExpansionLimit != null && fEntityExpansionCount++ > fEntityExpansionLimit.intValue() ){
+            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                             "EntityExpansionLimitExceeded",
+                                             new Object[]{fEntityExpansionLimit },
+                                             XMLErrorReporter.SEVERITY_FATAL_ERROR );
+        }
+        
         final String publicId = xmlInputSource.getPublicId();
         final String literalSystemId = xmlInputSource.getSystemId();
         String baseSystemId = xmlInputSource.getBaseSystemId();
@@ -922,7 +946,7 @@ public class XMLEntityManager
         // we've seen a new Reader. put it in a list, so that
         // we can close it later.
         fOwnReaders.addElement(reader);
-
+        
         // push entity on stack
         if (fCurrentEntity != null) {
             fEntityStack.push(fCurrentEntity);
@@ -1036,12 +1060,31 @@ public class XMLEntityManager
         catch (XMLConfigurationException e) {
             fValidationManager = null;
         }
+        // adding new property http://xml.apache.org/properties/entity-expansion-limit
+        // using this property application can set the limit of number of the entities that 
+        // will be expanded.
+        try {
+            fEntityExpansionLimit = (java.lang.Integer)componentManager.getProperty(ENTITY_EXPANSION_LIMIT);
+        }
+        catch (XMLConfigurationException e) {
+            fEntityExpansionLimit = null;
+        }
+                
+        //its good to check for system property value again (though this is little overhead) for every parse, 
+        //an application might set the different limit for another XML document
         
-        // initialize state
+        //determines the integer value of the system property
+        Integer entityExpansionLimit = Integer.getInteger(SYSTEM_PROPERTY_ENTITY_EXPANSION_LIMIT);
+        if(entityExpansionLimit != null){
+            fEntityExpansionLimit = entityExpansionLimit ;
+        }
+
+        // initialize state        
         fStandalone = false;
         fEntities.clear();
         fEntityStack.removeAllElements();
-
+        //reset entity expansion count.
+        fEntityExpansionCount = 0 ;
         fCurrentEntity = null;
 
         // DEBUG
@@ -1159,7 +1202,13 @@ public class XMLEntityManager
                     bufferSize.intValue() > DEFAULT_XMLDECL_BUFFER_SIZE) {
                     fBufferSize = bufferSize.intValue();
                 }
+                return ;
             }
+            if (property.equals(Constants.ENTITY_EXPANSION_LIMIT)) {
+                Integer entityExpansionLimit = (Integer)value;
+                return ;
+            }
+            
         }
 
     } // setProperty(String,Object)
