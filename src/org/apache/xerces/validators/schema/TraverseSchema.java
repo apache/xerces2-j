@@ -224,6 +224,7 @@ public class TraverseSchema implements
     private Stack fCurrentTypeNameStack = new Stack();
     private Stack fCurrentGroupNameStack = new Stack();
     private Vector fElementRecurseComplex = new Vector();
+    private Vector fTopLevelElementsRefdFromGroup = new Vector();
 
     private Vector fSubstitutionGroupRecursionRegistry = new Vector();
     private boolean fElementDefaultQualified = false;
@@ -754,6 +755,23 @@ public class TraverseSchema implements
                 traverseIdentityRefConstraintsFor(elementIndex, identityConstraints);
             }
         }
+
+        // At this point, we can do any remaining checking for cos-element-consistent
+        // that involves substitution group elements
+        
+        if (fFullConstraintChecking) {
+            // Loop thru all of the top-level elements that were ref'd from groups or 
+            // complexTypes, and ensure that any substitutable elements are consistent
+            // with similiarly named elements from the group scope
+            // Note: for a complexType, we don't check against base scope.   Not clear if
+            // we need to. 
+            
+            for (int j = 0; j < fTopLevelElementsRefdFromGroup.size(); j++) {
+               Integer elementNdx = (Integer)fTopLevelElementsRefdFromGroup.elementAt(j);
+               checkConsistentElements(elementNdx.intValue());
+            }
+        }
+
     } // traverseSchema(Element)
 
 
@@ -825,6 +843,46 @@ public class TraverseSchema implements
         } // for each child node
     }
 
+    // Check whether substitutable elements for a top-level element ref'd from a group
+    // is consistent with other elements in the group re:name/type.                  
+    private void checkConsistentElements(int elementNdx) throws Exception {
+
+       fTempElementDecl.clear();
+       fSchemaGrammar.getElementDecl(elementNdx, fTempElementDecl);
+       // Get the group scope and name of the element
+       int groupScope = fSchemaGrammar.getElementDefinedScope(elementNdx); 
+       QName eltName = fTempElementDecl.name;
+
+       if (groupScope == TOP_LEVEL_SCOPE) 
+         return;
+
+
+       // Look up the element at top-level scope, and get subsitutable elements
+       int topLevelElementNdx = fSchemaGrammar.getElementDeclIndex(eltName, TOP_LEVEL_SCOPE); 
+       if (topLevelElementNdx < 0)
+           return;
+
+       Vector substitutableNames = fSchemaGrammar.getElementDeclAllSubstitutionGroupQNames(topLevelElementNdx, fGrammarResolver, fStringPool);
+       
+       for (int i = 0; i < substitutableNames.size(); i++) {
+          SchemaGrammar.OneSubGroup subGroup = (SchemaGrammar.OneSubGroup)substitutableNames.elementAt(i);
+          QName substName = subGroup.name;
+          int substEltNdx = subGroup.eleIndex;
+          
+          int localEltNdx = fSchemaGrammar.getElementDeclIndex(substName, groupScope);
+          if (localEltNdx > -1) {
+             fSchemaGrammar.getElementDecl(localEltNdx, fTempElementDecl);
+             DatatypeValidator edv = fTempElementDecl.datatypeValidator;
+             ComplexTypeInfo eTypeInfo = fSchemaGrammar.getElementComplexTypeInfo(localEltNdx);
+             if (!checkDuplicateElementTypes(substEltNdx,eTypeInfo,edv))
+                 reportGenericSchemaError("duplicate element decl in the same scope with different types : " +
+                  fStringPool.toString(substName.localpart));
+          }
+       }
+
+    }
+
+    
     /**
      * Expands a system id and returns the system id as a URL, if
      * it can be expanded. A return value of null means that the
@@ -6431,8 +6489,14 @@ throws Exception {
                                               fStringPool.toString(eltName.localpart));
                }
                else  {
-                 fSchemaGrammar.cloneElementDecl(elementIndex,fCurrentScope);
+                 existingEltNdx = fSchemaGrammar.cloneElementDecl(elementIndex,fCurrentScope);
                }
+               if (fFullConstraintChecking) {
+                 // Add the element to a list we'll check later for substitution group 
+                 // checking
+                 fTopLevelElementsRefdFromGroup.addElement(new Integer(existingEltNdx));
+               }
+               
             }
 
             return eltName;
