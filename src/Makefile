@@ -372,8 +372,7 @@ package_src:
 	${CP}  ../src/org/w3c/dom/Makefile				../source/src/org/w3c/dom
 
 #-src/org/w3c/dom/events
-	${CP}  ../src/org/w3c/dom/events/Makefile
-			../source/src/org/w3c/dom/events
+	${CP}  ../src/org/w3c/dom/events/Makefile 			../source/src/org/w3c/dom/events
 #-src/org/w3c/dom/range
 	${CP}  ../src/org/w3c/dom/range/Makefile			../source/src/org/w3c/dom/range
 
