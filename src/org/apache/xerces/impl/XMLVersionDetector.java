@@ -145,12 +145,12 @@ public class XMLVersionDetector {
             fExpectedVersionString[i] = ' ';
     } // reset(XMLComponentManager)
 
-	/**
-	 * Reset the reference to the appropriate scanner given the version of the
+    /**
+     * Reset the reference to the appropriate scanner given the version of the
      * document and start document scanning.
-	 * @param scanner - the scanner to use
-	 * @param version - the version of the document (XML 1.1 or XML 1.0).
-	 */
+     * @param scanner - the scanner to use
+     * @param version - the version of the document (XML 1.1 or XML 1.0).
+     */
     public void startDocumentParsing(XMLEntityHandler scanner, short version){
 
         if (version == Constants.XML_VERSION_1_0){
@@ -159,6 +159,9 @@ public class XMLVersionDetector {
         else {
             fEntityManager.setScannerVersion(Constants.XML_VERSION_1_1);
         }
+        // Make sure the locator used by the error reporter is the current entity scanner.
+        fErrorReporter.setDocumentLocator(fEntityManager.getEntityScanner());
+        
         // Note: above we reset fEntityScanner in the entity manager, thus in startEntity
         // in each scanner fEntityScanner field must be reset to reflect the change.
         // 
@@ -168,70 +171,70 @@ public class XMLVersionDetector {
     }
 
 
-	/**
-	 * This methods scans the XML declaration to find out the version 
+    /**
+     * This methods scans the XML declaration to find out the version 
      * (and provisional encoding)  of the document.
      * The scanning is doing using XML 1.1 scanner.
-	 * @param inputSource
-	 * @return short - Constants.XML_VERSION_1_1 if document version 1.1, 
+     * @param inputSource
+     * @return short - Constants.XML_VERSION_1_1 if document version 1.1, 
      *                  otherwise Constants.XML_VERSION_1_0 
-	 * @throws IOException
-	 */
-	public short determineDocVersion(XMLInputSource inputSource) throws IOException {
-		fEncoding = fEntityManager.setupCurrentEntity(fXMLSymbol, inputSource, false, true);
+     * @throws IOException
+     */
+    public short determineDocVersion(XMLInputSource inputSource) throws IOException {
+        fEncoding = fEntityManager.setupCurrentEntity(fXMLSymbol, inputSource, false, true);
 
-		// must assume 1.1 at this stage so that whitespace
-		// handling is correct in the XML decl...
-		fEntityManager.setScannerVersion(Constants.XML_VERSION_1_1);
-		XMLEntityScanner scanner = fEntityManager.getEntityScanner();
-		try {
-			if (!scanner.skipString("<?xml")) {
-				// definitely not a well-formed 1.1 doc!
-				return Constants.XML_VERSION_1_0;
-			}
-			if (!scanner.skipSpaces()) {
-				fixupCurrentEntity(fEntityManager, fExpectedVersionString, 5);
-				return Constants.XML_VERSION_1_0;
-			}
-			if (!scanner.skipString("version")) {
-				fixupCurrentEntity(fEntityManager, fExpectedVersionString, 6);
-				return Constants.XML_VERSION_1_0;
-			}
-			scanner.skipSpaces();
-			if (scanner.scanChar() != '=') {
-				fixupCurrentEntity(fEntityManager, fExpectedVersionString, 13);
-				return Constants.XML_VERSION_1_0;
-			}
-			scanner.skipSpaces();
-			int quoteChar = scanner.scanChar();
-			fExpectedVersionString[14] = (char) quoteChar;
-			for (int versionPos = 0; versionPos < XML11_VERSION.length; versionPos++) {
-				fExpectedVersionString[15 + versionPos] = (char) scanner.scanChar();
-			}
-			// REVISIT:  should we check whether this equals quoteChar? 
-			fExpectedVersionString[18] = (char) scanner.scanChar();
-			fixupCurrentEntity(fEntityManager, fExpectedVersionString, 19);
-			int matched = 0;
-			for (; matched < XML11_VERSION.length; matched++) {
-				if (fExpectedVersionString[15 + matched] != XML11_VERSION[matched])
-					break;
-			}
-			if (matched == XML11_VERSION.length)
-				return Constants.XML_VERSION_1_1;
-			return Constants.XML_VERSION_1_0;
-			// premature end of file
-		}
-		catch (EOFException e) {
-			fErrorReporter.reportError(
-				XMLMessageFormatter.XML_DOMAIN,
-				"PrematureEOF",
-				null,
-				XMLErrorReporter.SEVERITY_FATAL_ERROR);
-			return Constants.XML_VERSION_1_0;
+        // must assume 1.1 at this stage so that whitespace
+        // handling is correct in the XML decl...
+        fEntityManager.setScannerVersion(Constants.XML_VERSION_1_1);
+        XMLEntityScanner scanner = fEntityManager.getEntityScanner();
+        try {
+            if (!scanner.skipString("<?xml")) {
+                // definitely not a well-formed 1.1 doc!
+                return Constants.XML_VERSION_1_0;
+            }
+            if (!scanner.skipSpaces()) {
+                fixupCurrentEntity(fEntityManager, fExpectedVersionString, 5);
+                return Constants.XML_VERSION_1_0;
+            }
+            if (!scanner.skipString("version")) {
+                fixupCurrentEntity(fEntityManager, fExpectedVersionString, 6);
+                return Constants.XML_VERSION_1_0;
+            }
+            scanner.skipSpaces();
+            if (scanner.scanChar() != '=') {
+                fixupCurrentEntity(fEntityManager, fExpectedVersionString, 13);
+                return Constants.XML_VERSION_1_0;
+            }
+            scanner.skipSpaces();
+            int quoteChar = scanner.scanChar();
+            fExpectedVersionString[14] = (char) quoteChar;
+            for (int versionPos = 0; versionPos < XML11_VERSION.length; versionPos++) {
+                fExpectedVersionString[15 + versionPos] = (char) scanner.scanChar();
+            }
+            // REVISIT:  should we check whether this equals quoteChar? 
+            fExpectedVersionString[18] = (char) scanner.scanChar();
+            fixupCurrentEntity(fEntityManager, fExpectedVersionString, 19);
+            int matched = 0;
+            for (; matched < XML11_VERSION.length; matched++) {
+                if (fExpectedVersionString[15 + matched] != XML11_VERSION[matched])
+                    break;
+            }
+            if (matched == XML11_VERSION.length)
+                return Constants.XML_VERSION_1_1;
+            return Constants.XML_VERSION_1_0;
+            // premature end of file
+        }
+        catch (EOFException e) {
+            fErrorReporter.reportError(
+                XMLMessageFormatter.XML_DOMAIN,
+                "PrematureEOF",
+                null,
+                XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            return Constants.XML_VERSION_1_0;
 			
-		}
+        }
 
-	}
+    }
 
     // This method prepends "length" chars from the char array,
     // from offset 0, to the manager's fCurrentEntity.ch.
