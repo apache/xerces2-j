@@ -1434,9 +1434,9 @@ public class TraverseSchema implements
             if (content.getLocalName().equals( SchemaSymbols.ELT_SIMPLETYPE )) {  //Test...
               typeNameIndex = traverseSimpleTypeDecl(content); 
               if (DEBUG_UNION) { 
-				  System.out.println("[After traverseSimpleTypeDecl]: " +fStringPool.toString(typeNameIndex));
-				  System.out.println("[traverseSimpleTypeDecl]: " +  nameProperty);  
-				}
+                System.out.println("[After traverseSimpleTypeDecl]: " +fStringPool.toString(typeNameIndex));
+                System.out.println("[traverseSimpleTypeDecl]: " +  nameProperty);  
+              }
               if (typeNameIndex!=-1) {
                   baseValidator=fDatatypeRegistry.getDatatypeValidator(fStringPool.toString(typeNameIndex));
                   if (baseValidator !=null && union) {  
@@ -1495,7 +1495,10 @@ public class TraverseSchema implements
         
         //get more types for union if any
         if (union) {
-            int index=size; 
+            int index=size;
+            if (!baseTypeQNameProperty.equals ("")) {
+                content = checkContent(simpleTypeDecl, content, true);
+            }
             while (content!=null) {
                 if (DEBUG_UNION) {
                     System.out.println("[start Union types traversal] + " + content.getNodeName());
