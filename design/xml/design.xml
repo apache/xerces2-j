@@ -1081,6 +1081,90 @@
  <!-- Category: XERCES IMPLEMENTATION -->
  <category name='Implementation: Core Components' package='&package;.impl'>
  
+  <class id='error-reporter' name='XMLErrorReporter'>
+   <implements>
+    <reference idref='configurable'/>
+   </implements>
+   <constant name='SEVERITY_WARNING'>
+    <primitive type='short'/>
+   </constant>
+   <constant name='SEVERITY_ERROR'>
+    <primitive type='short'/>
+   </constant>
+   <constant name='SEVERITY_FATAL_ERROR'>
+    <primitive type='short'/>
+   </constant>
+   <field name='fLocale'>
+    <reference idref='java-locale'/>
+   </field>
+   <field name='fMessageFormatters'>
+    <collection>
+     <collector>
+      <reference idref='java-hashtable'/>
+     </collector>
+     <items>
+      <reference idref='message-formatter'/>
+     </items>
+    </collection>
+   </field>
+   <field name='fErrorHandler'>
+    <reference idref='sax-error-handler'/>
+   </field>
+   <field name='fContinueAfterFatalError'>
+    <note>This field is initialized on reset.</note>
+    <primitive type='boolean'/>
+   </field>
+   <constructor/>
+   <method name='setLocale'>
+    <param name='locale'>
+     <reference idref='java-locale'/>
+    </param>
+   </method>
+   <method name='putMessageFormatter'>
+    <param name='domain'>
+     <reference idref='java-string'/>
+    </param>
+    <param name='messageFormatter'>
+     <reference idref='message-formatter'/>
+    </param>
+   </method>
+   <method name='getMessageFormatter'>
+    <param name='domain'>
+     <reference idref='java-string'/>
+    </param>
+    <returns>
+     <reference idref='message-formatter'/>
+    </returns>
+   </method>
+   <method name='removeMessageFormatter'>
+    <param name='domain'>
+     <reference idref='java-string'/>
+    </param>
+    <returns>
+     <reference idref='message-formatter'/>
+    </returns>
+   </method>
+   <method name='reportError'>
+    <param name='domain'>
+     <reference idref='java-string'/>
+    </param>
+    <param name='key'>
+     <reference idref='java-string'/>
+    </param>
+    <param name='arguments'>
+     <array>
+      <reference idref='java-object'/>
+     </array>
+    </param>
+    <param name='severity'>
+     <primitive type='short'/>
+    </param>
+    <throws>
+     <reference idref='sax-exception'/>
+    </throws>
+   </method>
+  </class>
+
   <class id='document-scanner' name='XMLDocumentScanner'>
    <implements>
     <reference idref='configurable'/>
@@ -2961,90 +3045,6 @@
     <returns>
      <primitive type='int'/>
     </returns>
-   </method>
-  </class>
-
-  <class id='error-reporter' name='XMLErrorReporter'>
-   <implements>
-    <reference idref='configurable'/>
-   </implements>
-   <constant name='SEVERITY_WARNING'>
-    <primitive type='short'/>
-   </constant>
-   <constant name='SEVERITY_ERROR'>
-    <primitive type='short'/>
-   </constant>
-   <constant name='SEVERITY_FATAL_ERROR'>
-    <primitive type='short'/>
-   </constant>
-   <field name='fLocale'>
-    <reference idref='java-locale'/>
-   </field>
-   <field name='fMessageFormatters'>
-    <collection>
-     <collector>
-      <reference idref='java-hashtable'/>
-     </collector>
-     <items>
-      <reference idref='message-formatter'/>
-     </items>
-    </collection>
-   </field>
-   <field name='fErrorHandler'>
-    <reference idref='sax-error-handler'/>
-   </field>
-   <field name='fContinueAfterFatalError'>
-    <note>This field is initialized on reset.</note>
-    <primitive type='boolean'/>
-   </field>
-   <constructor/>
-   <method name='setLocale'>
-    <param name='locale'>
-     <reference idref='java-locale'/>
-    </param>
-   </method>
-   <method name='putMessageFormatter'>
-    <param name='domain'>
-     <reference idref='java-string'/>
-    </param>
-    <param name='messageFormatter'>
-     <reference idref='message-formatter'/>
-    </param>
-   </method>
-   <method name='getMessageFormatter'>
-    <param name='domain'>
-     <reference idref='java-string'/>
-    </param>
-    <returns>
-     <reference idref='message-formatter'/>
-    </returns>
-   </method>
-   <method name='removeMessageFormatter'>
-    <param name='domain'>
-     <reference idref='java-string'/>
-    </param>
-    <returns>
-     <reference idref='message-formatter'/>
-    </returns>
-   </method>
-   <method name='reportError'>
-    <param name='domain'>
-     <reference idref='java-string'/>
-    </param>
-    <param name='key'>
-     <reference idref='java-string'/>
-    </param>
-    <param name='arguments'>
-     <array>
-      <reference idref='java-object'/>
-     </array>
-    </param>
-    <param name='severity'>
-     <primitive type='short'/>
-    </param>
-    <throws>
-     <reference idref='sax-exception'/>
-    </throws>
    </method>
   </class>
 

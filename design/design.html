@@ -514,6 +514,62 @@
    </A></BLOCKQUOTE>
   <H3>Implementation: Core Components</H3>
   <BLOCKQUOTE>
+   <A name="XMLErrorReporter"><DL class="class">
+     <DT>class <SPAN class="class-title">XMLErrorReporter</SPAN>
+     <DD class="implements">      implements      <SPAN class="interface-title">XMLComponent</SPAN>
+     <DD class="constants">      constants:      <UL>
+       <LI>short <SPAN class="constant-title">SEVERITY_WARNING</SPAN>
+       <LI>short <SPAN class="constant-title">SEVERITY_ERROR</SPAN>
+       <LI>short <SPAN class="constant-title">SEVERITY_FATAL_ERROR</SPAN>
+      </UL>
+     <DD class="fields">      fields:      <UL>
+       <LI>
+        <SPAN class="class-title">Locale</SPAN> <SPAN class="field-title">fLocale</SPAN>
+       <LI>
+        <SPAN class="class-title">Hashtable</SPAN>      &lt;   <SPAN
+        class="interface-title">MessageFormatter</SPAN>      &gt;
+         <SPAN class="field-title">fMessageFormatters</SPAN>
+       <LI>
+        <SPAN class="interface-title">ErrorHandler</SPAN> <SPAN class="field-title">fErrorHandler</SPAN>
+       <LI>boolean <SPAN class="field-title">fContinueAfterFatalError</SPAN>
+      </UL>
+     <DD class="constructors">      constructors:      <UL>
+       <LI>
+        <SPAN class="constructor-title">XMLErrorReporter</SPAN>      (
+        )
+      </UL>
+     <DD class="methods">      methods:      <UL>
+       <LI>
+        <SPAN class="method-title">setLocale</SPAN>      (   <SPAN
+        class="class-title">Locale</SPAN> <SPAN
+        class="param-title">locale</SPAN>          )
+       <LI>
+        <SPAN class="method-title">putMessageFormatter</SPAN>      (
+         <SPAN class="class-title">String</SPAN> <SPAN
+        class="param-title">domain</SPAN>, <SPAN
+        class="interface-title">MessageFormatter</SPAN> <SPAN
+        class="param-title">messageFormatter</SPAN>          )
+       <LI>
+        <SPAN class="method-title">getMessageFormatter</SPAN>      (
+         <SPAN class="class-title">String</SPAN> <SPAN
+        class="param-title">domain</SPAN>          )       :    <SPAN class="interface-title">MessageFormatter</SPAN>
+       <LI>
+        <SPAN class="method-title">removeMessageFormatter</SPAN>      (
+         <SPAN class="class-title">String</SPAN> <SPAN
+        class="param-title">domain</SPAN>          )       :    <SPAN class="interface-title">MessageFormatter</SPAN>
+       <LI>
+        <SPAN class="method-title">reportError</SPAN>      (   <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">domain</SPAN>, <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">key</SPAN>, <SPAN
+        class="class-title">Object</SPAN>[]   <SPAN
+        class="param-title">arguments</SPAN>, short <SPAN
+        class="param-title">severity</SPAN>          )
+      </UL>
+    </DL>
+   </A></BLOCKQUOTE>
+  <BLOCKQUOTE>
    <A name="XMLDocumentScanner"><DL class="class">
      <DT>class <SPAN class="class-title">XMLDocumentScanner</SPAN>
      <DD class="implements">      implements      <SPAN
@@ -1664,62 +1720,6 @@
         class="param-title">buffer</SPAN>, int <SPAN
         class="param-title">offset</SPAN>, int <SPAN
         class="param-title">length</SPAN>          )       :    int
-      </UL>
-    </DL>
-   </A></BLOCKQUOTE>
-  <BLOCKQUOTE>
-   <A name="XMLErrorReporter"><DL class="class">
-     <DT>class <SPAN class="class-title">XMLErrorReporter</SPAN>
-     <DD class="implements">      implements      <SPAN class="interface-title">XMLComponent</SPAN>
-     <DD class="constants">      constants:      <UL>
-       <LI>short <SPAN class="constant-title">SEVERITY_WARNING</SPAN>
-       <LI>short <SPAN class="constant-title">SEVERITY_ERROR</SPAN>
-       <LI>short <SPAN class="constant-title">SEVERITY_FATAL_ERROR</SPAN>
-      </UL>
-     <DD class="fields">      fields:      <UL>
-       <LI>
-        <SPAN class="class-title">Locale</SPAN> <SPAN class="field-title">fLocale</SPAN>
-       <LI>
-        <SPAN class="class-title">Hashtable</SPAN>      &lt;   <SPAN
-        class="interface-title">MessageFormatter</SPAN>      &gt;
-         <SPAN class="field-title">fMessageFormatters</SPAN>
-       <LI>
-        <SPAN class="interface-title">ErrorHandler</SPAN> <SPAN class="field-title">fErrorHandler</SPAN>
-       <LI>boolean <SPAN class="field-title">fContinueAfterFatalError</SPAN>
-      </UL>
-     <DD class="constructors">      constructors:      <UL>
-       <LI>
-        <SPAN class="constructor-title">XMLErrorReporter</SPAN>      (
-        )
-      </UL>
-     <DD class="methods">      methods:      <UL>
-       <LI>
-        <SPAN class="method-title">setLocale</SPAN>      (   <SPAN
-        class="class-title">Locale</SPAN> <SPAN
-        class="param-title">locale</SPAN>          )
-       <LI>
-        <SPAN class="method-title">putMessageFormatter</SPAN>      (
-         <SPAN class="class-title">String</SPAN> <SPAN
-        class="param-title">domain</SPAN>, <SPAN
-        class="interface-title">MessageFormatter</SPAN> <SPAN
-        class="param-title">messageFormatter</SPAN>          )
-       <LI>
-        <SPAN class="method-title">getMessageFormatter</SPAN>      (
-         <SPAN class="class-title">String</SPAN> <SPAN
-        class="param-title">domain</SPAN>          )       :    <SPAN class="interface-title">MessageFormatter</SPAN>
-       <LI>
-        <SPAN class="method-title">removeMessageFormatter</SPAN>      (
-         <SPAN class="class-title">String</SPAN> <SPAN
-        class="param-title">domain</SPAN>          )       :    <SPAN class="interface-title">MessageFormatter</SPAN>
-       <LI>
-        <SPAN class="method-title">reportError</SPAN>      (   <SPAN
-        class="class-title">String</SPAN> <SPAN
-        class="param-title">domain</SPAN>, <SPAN
-        class="class-title">String</SPAN> <SPAN
-        class="param-title">key</SPAN>, <SPAN
-        class="class-title">Object</SPAN>[]   <SPAN
-        class="param-title">arguments</SPAN>, short <SPAN
-        class="param-title">severity</SPAN>          )
       </UL>
     </DL>
    </A></BLOCKQUOTE>
