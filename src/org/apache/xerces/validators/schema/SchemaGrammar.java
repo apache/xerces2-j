@@ -137,18 +137,25 @@ public class SchemaGrammar extends Grammar{
     // Public methods
     //
     public int getElementDefinedScope(int elementDeclIndex) {
+	//TO DO
 	return -1;
 
     }
 
     public String getElementFromAnotherSchemaURI(int elementDeclIndex) {
+	//TO DO
 	return null;
 
     }
     public TraverseSchema.ComplexTypeInfo getElementComplexTypeInfo(int elementDeclIndex){
+	//TO DO
 	return null;
     }
 
+    public int getFirstAttributeIndex(int elementIndex){
+	//TO DO: 
+	return -1;
+    }
 
 
     //
@@ -168,9 +175,9 @@ public class SchemaGrammar extends Grammar{
 	super.addAttributeDecl(attributeDeclIndex, elementDeclIndex);
     }
 
-    public int addAttributeDeclByHead(int attributeDeclIndex, int attributeListHead) {
-	return super.addAttributeDeclByHead(attributeDeclIndex, attributeListHead);
-    }
+    //public int addAttributeDeclByHead(int attributeDeclIndex, int attributeListHead) {
+    //	return super.addAttributeDeclByHead(attributeDeclIndex, attributeListHead);
+    //}
 
 
     protected int createContentSpec() {
@@ -185,8 +192,8 @@ public class SchemaGrammar extends Grammar{
         return super.createAttributeDecl();
     }
 
-    protected void setAttributeDecl(int attributeDeclIndex, XMLAttributeDecl attributeDecl) {
-	super.setAttributeDecl(attributeDeclIndex, attributeDecl);
+    protected void setAttributeDecl(int elementDeclIndex, int attributeDeclIndex, XMLAttributeDecl attributeDecl) {
+	super.setAttributeDecl(elementDeclIndex, attributeDeclIndex, attributeDecl);
     }
 
     protected void setElementDefinedScope(int elementDeclIndex, int scopeDefined) {
@@ -205,7 +212,7 @@ public class SchemaGrammar extends Grammar{
 
     }
 
-    //convenience method for TraverseSchema
+    //add methods for TraverseSchema
     /**
      *@return elementDecl Index, 
      */
@@ -223,8 +230,7 @@ public class SchemaGrammar extends Grammar{
 	    fTempElementDecl.type = contentSpecType;
 	    fTempElementDecl.contentSpecIndex = contentSpecIndex;
 	    fTempElementDecl.datatypeValidator = dv;
-	    //REVISIT, attlist head is missing int he XMLElementDecl
-	    //fTempElementDecl.attListHead = attrListHead;
+	    fTempElementDecl.firstAttributeDeclIndex = attrListHead;
 	    elementDeclIndex = createElementDecl();
 	    setElementDecl(elementDeclIndex,fTempElementDecl);
 	    //note, this is the scope defined by the element, not its enclosing scope
@@ -237,7 +243,7 @@ public class SchemaGrammar extends Grammar{
     /**
      *@return the new attribute List Head
      */
-    protected int addAttDef(  int attrListHead, 
+    protected void addAttDef(  int templateElementIndex, 
 		      QName attQName, int attType, 
 		      int enumeration, int attDefaultType, 
 		      int attDefaultValue, DatatypeValidator dv){
@@ -246,9 +252,9 @@ public class SchemaGrammar extends Grammar{
         fTempAttributeDecl.datatypeValidator = dv;
         fTempAttributeDecl.defaultType = new String(); //TO DO: fStringPool.toString(attDefaultType);
 	fTempAttributeDecl.defaultValue = new String(); //TO DO: fStringPool.toString(attDefaultValue);
-        setAttributeDecl(attrDeclIndex,fTempAttributeDecl);
+        //setAttributeDecl(attrDeclIndex,fTempAttributeDecl);
 
-	return addAttributeDeclByHead(attrListHead, attrDeclIndex);
+	super.setAttributeDecl(templateElementIndex, attrDeclIndex, fTempAttributeDecl);
     }
     /**
      *@return the new contentSpec Index
@@ -317,8 +323,14 @@ public class SchemaGrammar extends Grammar{
     }
 
     private String[][] resize(String array[][], int newsize) {
-        // TODO
-        return array;
+        String newarray[][] = new String[newsize][];
+        System.arraycopy(array, 0, newarray, 0, array.length);
+        return newarray;
+    }
+    private TraverseSchema.ComplexTypeInfo[][] resize(TraverseSchema.ComplexTypeInfo array[][], int newsize) {
+	TraverseSchema.ComplexTypeInfo newarray[][] = new TraverseSchema.ComplexTypeInfo[newsize][];
+        System.arraycopy(array, 0, newarray, 0, array.length);
+        return newarray;
     }
 
 } // class SchemaGrammar
