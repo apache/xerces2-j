@@ -7,12 +7,35 @@
    <changes>
     <update>
      <note>
+      Reimplemented XML11Configuration (the default configuration), improving
+      performance during reset; accomplished primarily by adding an internal 
+      feature which allows components to query whether or not they need to 
+      read features and properties from the configuration.
+     </note>
+     <submitter name='Elena Litani'/>
+    </update>
+    <update>
+     <note>
+      Improved the performance of XML 1.1 namespace binding by replacing
+      the namespace binder with a specialized document scanner responsible
+      for binding namespaces.
+     </note>
+     <submitter name='Michael Glavassevich, Elena Litani'/>
+    </update>
+    <update>
+     <note>
+      Improved the scanning of attribute lists, both small and large.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </update>
+    <update>
+     <note>
       Modified PSVI interfaces (<code>org.apache.xerces.xs</code>) and
       updated the implementation accordingly. Methods were added to expose 
       actual values and their types and new interfaces were added for 
       loading XSModels. 
      </note>
-     <submitter name='Sandy Gao'/>
+     <submitter name='Sandy Gao, Elena Litani'/>
     </update>
     <fix>
      <note>
