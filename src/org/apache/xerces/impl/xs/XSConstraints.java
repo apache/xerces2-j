@@ -1,12 +1,12 @@
 /*
  * Copyright 1999-2004 The Apache Software Foundation.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -316,7 +316,7 @@ public class XSConstraints {
                         reportSchemaError(errorReporter, rgLocators[i/2-1],
                                           "src-redefine.6.2.2",
                                           new Object[]{derivedGrp.fName, "rcase-Recurse.2"});
-                    } 
+                    }
                 } else {
                     fakeDerived.fValue = derivedMG;
                     fakeBase.fValue = baseMG;
@@ -377,39 +377,43 @@ public class XSConstraints {
                 }
 
                 // 2. Particle Derivation
-                
+
                 if (types[j].fBaseType != null &&
                     types[j].fBaseType != SchemaGrammar.fAnyType &&
                     types[j].fDerivedBy == XSConstants.DERIVATION_RESTRICTION &&
-                    (types[j].fBaseType instanceof XSComplexTypeDecl)) {  
+                    (types[j].fBaseType instanceof XSComplexTypeDecl)) {
 
-                  XSParticleDecl derivedParticle=types[j].fParticle;  
-                  XSParticleDecl baseParticle=  
+                  XSParticleDecl derivedParticle=types[j].fParticle;
+                  XSParticleDecl baseParticle=
                     ((XSComplexTypeDecl)(types[j].fBaseType)).fParticle;
-                  if (derivedParticle==null && (!(baseParticle==null ||
-                                               baseParticle.emptiable()))) {
-                    reportSchemaError(errorReporter,ctLocators[j],
-                                      "derivation-ok-restriction.5.3.2",
-                                      new Object[]{types[j].fName, types[j].fBaseType.getName()});
+                  if (derivedParticle==null) {
+                      if (baseParticle!=null && !baseParticle.emptiable()) {
+                          reportSchemaError(errorReporter,ctLocators[j],
+                                  "derivation-ok-restriction.5.3.2",
+                                  new Object[]{types[j].fName, types[j].fBaseType.getName()});
+                      }
                   }
-                  else if (derivedParticle!=null &&
-                           baseParticle!=null) 
-
-                    try {
-                      particleValidRestriction(types[j].fParticle,
-                                               SGHandler,
-                                               ((XSComplexTypeDecl)(types[j].fBaseType)).fParticle,
-                                               SGHandler);
-                    } catch (XMLSchemaException e) {
+                  else if (baseParticle!=null) {
+                      try {
+                          particleValidRestriction(types[j].fParticle,
+                                  SGHandler,
+                                  ((XSComplexTypeDecl)(types[j].fBaseType)).fParticle,
+                                  SGHandler);
+                      } catch (XMLSchemaException e) {
+                          reportSchemaError(errorReporter, ctLocators[j],
+                                  e.getKey(),
+                                  e.getArgs());
+                          reportSchemaError(errorReporter, ctLocators[j],
+                                  "derivation-ok-restriction.5.4.2",
+                                  new Object[]{types[j].fName});
+                      }
+                  }
+                  else {
                       reportSchemaError(errorReporter, ctLocators[j],
-                                        e.getKey(),
-                                        e.getArgs());
-                      reportSchemaError(errorReporter, ctLocators[j],
-                                        "derivation-ok-restriction.5.4.2",
-                                        new Object[]{types[j].fName});
-                    }
+                              "derivation-ok-restriction.5.4.2",
+                              new Object[]{types[j].fName});
+                  }
                 }
-
                 // 3. UPA
                 // get the content model and check UPA
                 XSCMValidator cm = types[j].getContentModel(cmBuilder);
@@ -458,10 +462,10 @@ public class XSConstraints {
     public static void checkElementDeclsConsistent(XSComplexTypeDecl type,
                                      XSParticleDecl particle,
                                      SymbolHash elemDeclHash,
-                                     SubstitutionGroupHandler sgHandler) 
+                                     SubstitutionGroupHandler sgHandler)
                                      throws XMLSchemaException {
 
-       // check for elements in the tree with the same name and namespace           
+       // check for elements in the tree with the same name and namespace
 
        int pType = particle.fType;
 
@@ -473,10 +477,10 @@ public class XSConstraints {
           findElemInTable(type, elem, elemDeclHash);
 
           if (elem.fScope == XSConstants.SCOPE_GLOBAL) {
-             // Check for subsitution groups.  
+             // Check for subsitution groups.
              XSElementDecl[] subGroup = sgHandler.getSubstitutionGroup(elem);
              for (int i = 0; i < subGroup.length; i++) {
-               findElemInTable(type, subGroup[i], elemDeclHash); 
+               findElemInTable(type, subGroup[i], elemDeclHash);
              }
           }
           return;
@@ -487,11 +491,11 @@ public class XSConstraints {
            checkElementDeclsConsistent(type, group.fParticles[i], elemDeclHash, sgHandler);
     }
 
-    public static void findElemInTable(XSComplexTypeDecl type, XSElementDecl elem, 
-                                       SymbolHash elemDeclHash) 
+    public static void findElemInTable(XSComplexTypeDecl type, XSElementDecl elem,
+                                       SymbolHash elemDeclHash)
                                        throws XMLSchemaException {
 
-        // How can we avoid this concat?  LM. 
+        // How can we avoid this concat?  LM.
         String name = elem.fName + "," + elem.fTargetNamespace;
 
         XSElementDecl existingElem = null;
@@ -500,13 +504,13 @@ public class XSConstraints {
           elemDeclHash.put(name, elem);
         }
         else {
-          // If this is the same check element, we're O.K. 
-          if (elem == existingElem) 
+          // If this is the same check element, we're O.K.
+          if (elem == existingElem)
             return;
 
           if (elem.fType != existingElem.fType) {
-            // Types are not the same 
-            throw new XMLSchemaException("cos-element-consistent", 
+            // Types are not the same
+            throw new XMLSchemaException("cos-element-consistent",
                       new Object[] {type.fName, elem.fName});
 
           }
