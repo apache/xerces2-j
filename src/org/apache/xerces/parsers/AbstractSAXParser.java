@@ -1713,7 +1713,7 @@ public abstract class AbstractSAXParser
                 //
                 if (suffixLength == Constants.XML_11_FEATURE.length() &&
                     featureId.endsWith(Constants.XML_11_FEATURE)) {
-                    return (fConfiguration instanceof XML11Configuration);
+                    return (fConfiguration instanceof XML11Configurable);
                 }
                 
                 // http://xml.org/sax/features/lexical-handler/parameter-entities

@@ -73,7 +73,7 @@ import org.apache.xerces.xni.parser.XMLPullParserConfiguration;
  * @version $Id$
  */
 public class XML11Configuration extends ParserConfigurationSettings
-    implements XMLPullParserConfiguration {
+    implements XMLPullParserConfiguration, XML11Configurable {
 
     //
     // Constants
