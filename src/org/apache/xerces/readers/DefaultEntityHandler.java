@@ -209,25 +209,27 @@ public class DefaultEntityHandler
     public int addInternalPEDecl(int name, int value, boolean isExternal) throws Exception {
         if (fParameterEntityPool == null)
             fParameterEntityPool = new EntityPool(fStringPool, fErrorReporter, false);
-        int entityHandle = fParameterEntityPool.addEntityDecl(name, value, -1, -1, -1, isExternal);
+        int entityHandle = fParameterEntityPool.addEntityDecl(name, value, -1, -1, -1, -1, isExternal);
         return entityHandle;
     }
     public int addExternalPEDecl(int name, int publicId, int systemId, boolean isExternal) throws Exception {
         if (fParameterEntityPool == null)
             fParameterEntityPool = new EntityPool(fStringPool, fErrorReporter, false);
-        int entityHandle = fParameterEntityPool.addEntityDecl(name, -1, publicId, systemId, -1, isExternal);
+System.err.println("adding extPEDecl: " + fStringPool.toString(name) +
+                   " with base: " + fSystemId); 
+        int entityHandle = fParameterEntityPool.addEntityDecl(name, -1, publicId, systemId, fStringPool.addSymbol(fSystemId), -1, isExternal);
         return entityHandle;
     }
     public int addInternalEntityDecl(int name, int value, boolean isExternal) throws Exception {
-        int entityHandle = fEntityPool.addEntityDecl(name, value, -1, -1, -1, isExternal);
+        int entityHandle = fEntityPool.addEntityDecl(name, value, -1, -1, -1, -1, isExternal);
         return entityHandle;
     }
     public int addExternalEntityDecl(int name, int publicId, int systemId, boolean isExternal) throws Exception {
-        int entityHandle = fEntityPool.addEntityDecl(name, -1, publicId, systemId, -1, isExternal);
+        int entityHandle = fEntityPool.addEntityDecl(name, -1, publicId, systemId, fStringPool.addSymbol(fSystemId), -1, isExternal);
         return entityHandle;
     }
     public int addUnparsedEntityDecl(int name, int publicId, int systemId, int notationName, boolean isExternal) throws Exception {
-        int entityHandle = fEntityPool.addEntityDecl(name, -1, publicId, systemId, notationName, isExternal);
+        int entityHandle = fEntityPool.addEntityDecl(name, -1, publicId, systemId, fStringPool.addSymbol(fSystemId), notationName, isExternal);
         if (!fEntityPool.isNotationDeclared(notationName)) {
             Object[] args = { fStringPool.toString(name),
                               fStringPool.toString(notationName) };
@@ -240,7 +242,7 @@ public class DefaultEntityHandler
         return entityHandle;
     }
     public int addNotationDecl(int notationName, int publicId, int systemId, boolean isExternal) throws Exception {
-        int notationHandle = fEntityPool.addNotationDecl(notationName, publicId, systemId, isExternal);
+        int notationHandle = fEntityPool.addNotationDecl(notationName, publicId, systemId, fStringPool.addSymbol(fSystemId), isExternal);
         return notationHandle;
     }
     public boolean isUnparsedEntity(int entityName) {
@@ -563,7 +565,7 @@ public class DefaultEntityHandler
         fReaderId = fNextReaderId++;
         fPublicId = publicId;
         fSystemId = systemId;
-        startReadingFromExternalEntity(false);
+        startReadingFromExternalEntity(false, -1);
     }
     /**
      * stop reading from an external DTD subset
@@ -655,7 +657,7 @@ public class DefaultEntityHandler
         fEntityType = ENTITYTYPE_EXTERNAL;
         fPublicId = getPublicIdOfEntity(entityHandle);
         fSystemId = getSystemIdOfEntity(entityHandle);
-        return startReadingFromExternalEntity(true);
+        return startReadingFromExternalEntity(true, entityHandle);
     }
     private boolean startReadingFromParameterEntity(int peName, int readerDepth, int context) throws Exception {
         int entityHandle = lookupParameterEntity(peName);
@@ -695,7 +697,7 @@ public class DefaultEntityHandler
         fEntityType = ENTITYTYPE_EXTERNAL_PE;
         fPublicId = getPublicIdOfParameterEntity(entityHandle);
         fSystemId = getSystemIdOfParameterEntity(entityHandle);
-        return startReadingFromExternalEntity(true);
+        return startReadingFromExternalEntity(true, entityHandle);
     }
     private void startReadingFromInternalEntity(int value, boolean addSpaces) throws Exception {
         if (fEntityContext == ENTITYREF_IN_ENTITYVALUE) {
@@ -711,7 +713,7 @@ public class DefaultEntityHandler
         fReader = fReaderFactory.createStringReader(this, fErrorReporter, fSendCharDataAsCharArray, getLineNumber(), getColumnNumber(), value, fStringPool, addSpaces); // REVISIT - string reader needs better location support
         fEventHandler.sendReaderChangeNotifications(fReader, fReaderId);
     }
-    private boolean startReadingFromExternalEntity(boolean checkForTextDecl) throws Exception {
+    private boolean startReadingFromExternalEntity(boolean checkForTextDecl, int entityHandle) throws Exception {
         if (fEntityContext == ENTITYREF_IN_ENTITYVALUE) {
             //
             // REVISIT - Can we get the spec changed ?
@@ -734,14 +736,26 @@ public class DefaultEntityHandler
             //
         }
         fEventHandler.startEntityReference(fEntityName, fEntityType, fEntityContext);
-        ReaderState rs = (ReaderState) fReaderStack.peek();
-        fSystemId = expandSystemId(fSystemId, rs.systemId);
+        String baseSystemId = null;
+        if (entityHandle != -1) {
+            if (fEntityType == ENTITYTYPE_EXTERNAL_PE)
+                baseSystemId =
+                    fParameterEntityPool.getBaseSystemId(entityHandle);
+            else
+                baseSystemId = fEntityPool.getBaseSystemId(entityHandle);
+        }
+        if (baseSystemId == null) {
+            ReaderState rs = (ReaderState) fReaderStack.peek();
+            baseSystemId = rs.systemId;
+        }
+        fSystemId = expandSystemId(fSystemId, baseSystemId);
         fSource = fResolver == null ? null : fResolver.resolveEntity(fPublicId, fSystemId);
         if (fSource == null) {
             fSource = new InputSource(fSystemId);
             if (fPublicId != null)
                 fSource.setPublicId(fPublicId);
         }
+
         boolean textDecl = false; // xmlDecl if true, textDecl if false
         try {
             fReader = fReaderFactory.createReader(this, fErrorReporter, fSource, fSystemId, textDecl, fStringPool);
@@ -1127,6 +1141,7 @@ public final class EntityPool {
     private int[][] fValue = new int[INITIAL_CHUNK_COUNT][];
     private int[][] fPublicId = new int[INITIAL_CHUNK_COUNT][];
     private int[][] fSystemId = new int[INITIAL_CHUNK_COUNT][];
+    private int[][] fBaseSystemId = new int[INITIAL_CHUNK_COUNT][];
     private int[][] fNotationName = new int[INITIAL_CHUNK_COUNT][];
     private byte[][] fDeclIsExternal = new byte[INITIAL_CHUNK_COUNT][];
     private int fNotationListHead = -1;
@@ -1175,6 +1190,7 @@ public final class EntityPool {
         fValue[chunk][index] = fStringPool.addString(value);
         fPublicId[chunk][index] = -1;
         fSystemId[chunk][index] = -1;
+        fBaseSystemId[chunk][index] = -1;
         fNotationName[chunk][index] = -1;
         fEntityCount++;
     }
@@ -1196,6 +1212,9 @@ public final class EntityPool {
             fPublicId = newIntArray;
             newIntArray = new int[chunk * 2][];
             System.arraycopy(fSystemId, 0, newIntArray, 0, chunk);
+            newIntArray = new int[chunk * 2][];
+            System.arraycopy(fBaseSystemId, 0, newIntArray, 0, chunk);
+            fBaseSystemId = newIntArray;
             fSystemId = newIntArray;
             newIntArray = new int[chunk * 2][];
             System.arraycopy(fNotationName, 0, newIntArray, 0, chunk);
@@ -1209,11 +1228,12 @@ public final class EntityPool {
         fValue[chunk] = new int[CHUNK_SIZE];
         fPublicId[chunk] = new int[CHUNK_SIZE];
         fSystemId[chunk] = new int[CHUNK_SIZE];
+        fBaseSystemId[chunk] = new int[CHUNK_SIZE];
         fNotationName[chunk] = new int[CHUNK_SIZE];
         fDeclIsExternal[chunk] = new byte[CHUNK_SIZE];
         return true;
     }
-    public int addEntityDecl(int name, int value, int publicId, int systemId, int notationName, boolean isExternal) {
+    public int addEntityDecl(int name, int value, int publicId, int systemId, int baseSystemId, int notationName, boolean isExternal) {
         int chunk = fEntityCount >> CHUNK_SHIFT;
         int index = fEntityCount & CHUNK_MASK;
         ensureCapacity(chunk);
@@ -1221,12 +1241,13 @@ public final class EntityPool {
         fValue[chunk][index] = value;
         fPublicId[chunk][index] = publicId;
         fSystemId[chunk][index] = systemId;
+        fBaseSystemId[chunk][index] = baseSystemId;
         fNotationName[chunk][index] = notationName;
         fDeclIsExternal[chunk][index] = isExternal ? (byte)0x80 : (byte)0;
         int entityIndex = fEntityCount++;
         return entityIndex;
     }
-    public int addNotationDecl(int notationName, int publicId, int systemId, boolean isExternal) {
+    public int addNotationDecl(int notationName, int publicId, int systemId, int baseSystemId, boolean isExternal) {
         int nIndex = fNotationListHead;
         while (nIndex != -1) {
             int chunk = nIndex >> CHUNK_SHIFT;
@@ -1242,6 +1263,7 @@ public final class EntityPool {
         fValue[chunk][index] = fNotationListHead;
         fPublicId[chunk][index] = publicId;
         fSystemId[chunk][index] = systemId;
+        fBaseSystemId[chunk][index] = baseSystemId;
         fNotationName[chunk][index] = notationName;
         fDeclIsExternal[chunk][index] = isExternal ? (byte)0x80 : (byte)0;
         fNotationListHead = fEntityCount++;
@@ -1296,6 +1318,16 @@ public final class EntityPool {
         int chunk = entityIndex >> CHUNK_SHIFT;
         int index = entityIndex & CHUNK_MASK;
         return fSystemId[chunk][index];
+    }
+    public String getBaseSystemId(int entityIndex) {
+        int chunk = entityIndex >> CHUNK_SHIFT;
+        int index = entityIndex & CHUNK_MASK;
+        int baseIndex = fBaseSystemId[chunk][index];
+        if (baseIndex == -1) {
+            return null;
+        } else {
+            return fStringPool.toString(baseIndex);
+        }
     }
     public boolean isNotationDeclared(int nameIndex) {
         int nIndex = fNotationListHead;
