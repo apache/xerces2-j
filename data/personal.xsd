@@ -16,7 +16,7 @@
 
    <attribute name="id"  type="ID" use='required'/>
    <attribute name="note" type="string"/>
-   <attribute name="contr" type="NMTOKEN" use='default' value="false">
+   <attribute name="contr" use='default' value="false">
     <simpleType base="string">
      <enumeration value="true"/>
      <enumeration value="false"/>
