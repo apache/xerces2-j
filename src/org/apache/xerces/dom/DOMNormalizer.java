@@ -109,6 +109,9 @@ import java.util.Vector;
  * The tree might not be validated correctly if entityReferences, CDATA sections are
  * present in the tree. The PSVI information is not exposed, normalized data (including element
  * default content is not available).
+ *
+ * NOTE: the implementation is experimental and methods, functionality
+ *       can be modified or removed in the future.
  * 
  * @author Elena Litani, IBM
  * @version $Id$
@@ -214,7 +217,7 @@ public class DOMNormalizer implements XMLGrammarPool {
         }
     }
 
-    protected final void setValidationHandler (RevalidationHandler validator){
+    protected void setValidationHandler (RevalidationHandler validator){
         this.fValidationHandler = validator;
 
     }
@@ -223,7 +226,7 @@ public class DOMNormalizer implements XMLGrammarPool {
      * Normalizes document.
      * Note: reset() must be called before this method.
      */
-    protected final void normalizeDocument(CoreDocumentImpl document){
+    protected void normalizeDocument(CoreDocumentImpl document){
         if (fSymbolTable == null) {
             // reset was not called
             return;
@@ -269,7 +272,7 @@ public class DOMNormalizer implements XMLGrammarPool {
      *               to normalize again starting on the node returned.
      * @return 
      */
-    protected final Node normalizeNode (Node node){
+    protected Node normalizeNode (Node node){
 
         // REVISIT: should we support other DOM implementations?
         //          if so we should not depend on Xerces specific classes
