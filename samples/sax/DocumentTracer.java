@@ -134,7 +134,7 @@ public class DocumentTracer
     /** Default validation support (false). */
     protected static final boolean DEFAULT_VALIDATION = false;
 
-    /** Default Schema validation support (true). */
+    /** Default Schema validation support (false). */
     protected static final boolean DEFAULT_SCHEMA_VALIDATION = false;
 
     /** Default Schema full checking support (false). */
