@@ -1091,6 +1091,14 @@ public class XSConstraints {
         throw new XMLSchemaException("rcase-RecurseUnordered.2", null); 
       }
 
+      // Now, see if there are some elements in the base we didn't match up
+      for (int j=0; j < count2; j++) {
+        XSParticleDecl particle2 = (XSParticleDecl)bChildren.elementAt(j);
+        if (!foundIt[j] && !particle2.emptiable()) {
+          throw new XMLSchemaException("rcase-RecurseUnordered.2", null); 
+        }
+      }
+
     }
 
     private static void checkRecurseLax(Vector dChildren, int min1, int max1, 
