@@ -1965,6 +1965,11 @@ public class XMLSchemaValidator
         }
         processAttributes(element, attributes, attrGrp);
 
+        // add default attributes
+        if (attrGrp != null) {
+            addDefaultAttributes(element, attributes, attrGrp);
+        }
+
         // activate identity constraints
         if (fDoValidation) {
             fValueStoreCache.startElement();
@@ -2381,11 +2386,6 @@ public class XMLSchemaValidator
             }
             // PSVI attribute: validation context
             attrPSVI.fValidationContext = fValidationRoot;
-        }
-
-        // add default attributes
-        if (attrGrp != null) {
-            addDefaultAttributes(element, attributes, attrGrp);
         }
 
         // if we don't do validation, we don't need to validate the attributes
