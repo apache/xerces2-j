@@ -199,7 +199,7 @@ public class XSParticleDecl {
         if (fromLeft == SchemaSymbols.OCCURRENCE_UNBOUNDED)
             return SchemaSymbols.OCCURRENCE_UNBOUNDED;
         if (fOtherValue != null) {
-            int fromRight = ((XSParticleDecl)fValue).maxEffectiveTotalRange();
+            int fromRight = ((XSParticleDecl)fOtherValue).maxEffectiveTotalRange();
             if (fromRight == SchemaSymbols.OCCURRENCE_UNBOUNDED)
                 return SchemaSymbols.OCCURRENCE_UNBOUNDED;
             fromLeft += fromRight;
@@ -216,7 +216,7 @@ public class XSParticleDecl {
         if (fromLeft == SchemaSymbols.OCCURRENCE_UNBOUNDED)
             return SchemaSymbols.OCCURRENCE_UNBOUNDED;
         if (fOtherValue != null) {
-            int fromRight = ((XSParticleDecl)fValue).maxEffectiveTotalRange();
+            int fromRight = ((XSParticleDecl)fOtherValue).maxEffectiveTotalRange();
             if (fromRight == SchemaSymbols.OCCURRENCE_UNBOUNDED)
                 return SchemaSymbols.OCCURRENCE_UNBOUNDED;
             if (fromRight < fromLeft)
