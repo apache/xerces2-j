@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
-  <release version='&ParserName; TBD'>
+  <release version='&ParserName; 2.4.0'>
    <desc>
         This release incorporates two minor changes to the Xerces Native Interface.  
         In addition to fixing many bugs, this release also brings Xerces 
