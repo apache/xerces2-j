@@ -122,9 +122,6 @@ public final class Constants {
     /** JAXP schemaSource property: when used internally may include DTD sources (DOM) */
     public static final String SCHEMA_SOURCE = "schemaSource";
     
-    /** Honour all schemaLocations (multiple imports etc) feature */
-    public static final String HONOUR_ALL_SCHEMALOCATIONS_FEATURE = "honour-all-schemaLocations";
-    
     /** JAXP schemaSource language: when used internally may include DTD namespace (DOM) */
     public static final String SCHEMA_LANGUAGE = "schemaLanguage";
     
@@ -272,6 +269,18 @@ public final class Constants {
     
     /** Validate annotations feature ("validate-annotations"). */
     public static final String VALIDATE_ANNOTATIONS_FEATURE = "validate-annotations";
+    
+    /** Honour all schemaLocations feature ("honour-all-schemaLocations"). */
+    public static final String HONOUR_ALL_SCHEMALOCATIONS_FEATURE = "honour-all-schemaLocations";
+    
+    /** XInclude processing feature ("xinclude"). */
+    public static final String XINCLUDE_FEATURE = "xinclude";
+    
+    /** XInclude fixup base URIs feature ("xinclude/fixup-base-uris"). */
+    public static final String XINCLUDE_FIXUP_BASE_URIS_FEATURE = "xinclude/fixup-base-uris";
+    
+    /** XInclude fixup language feature ("xinclude/fixup-language"). */
+    public static final String XINCLUDE_FIXUP_LANGUAGE_FEATURE = "xinclude/fixup-language";
     
     /** Internal performance related feature: 
      * false - the parser settings (features/properties) have not changed between 2 parses
