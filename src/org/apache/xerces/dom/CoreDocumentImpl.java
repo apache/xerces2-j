@@ -131,6 +131,9 @@ extends ParentNode implements Document  {
     // DOM Level 3: normalizeDocument
     transient DOMNormalizer domNormalizer = null;
     transient DOMConfigurationImpl fConfiguration = null;
+    
+    // support of XPath API   
+    transient Object fXPathEvaluator = null;
 
     /** Table for quick check of child insertion. */
     private final static int[] kidOK;
@@ -489,6 +492,12 @@ extends ParentNode implements Document  {
         if ((feature.equalsIgnoreCase("+XPath"))
             && (anyVersion || version.equals("3.0"))) {
             
+            // If an XPathEvaluator was created previously 
+            // return it otherwise create a new one.
+            if (fXPathEvaluator != null) {
+                return fXPathEvaluator;
+            }
+            
             try {
                 Class xpathClass = ObjectFactory.findProviderClass(
                     "org.apache.xpath.domapi.XPathEvaluatorImpl",
@@ -502,7 +511,8 @@ extends ParentNode implements Document  {
                 for (int i = 0; i < interfaces.length; i++) {
                     if (interfaces[i].getName().equals(
                     "org.w3c.dom.xpath.XPathEvaluator")) {
-                        return xpathClassConstr.newInstance(new Object[] { this });
+                        fXPathEvaluator = xpathClassConstr.newInstance(new Object[] { this });
+                        return fXPathEvaluator;
                     }
                 }
                 return null;
