@@ -1496,24 +1496,27 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
                 NodeList children = fCurrentNode.getChildNodes();
                 Node parent = fCurrentNode.getParentNode();
                 int length = children.getLength();
-                // get previous sibling of the entity reference
-                Node node = fCurrentNode.getPreviousSibling();
-                // normalize text nodes
-                Node child = children.item(0);
-                if (node != null && node.getNodeType() == Node.TEXT_NODE &&
-                    child.getNodeType() == Node.TEXT_NODE) {
-                    ((Text)node).appendData(child.getNodeValue());
-                    fCurrentNode.removeChild(child);
+                if (length > 0) {
+                
+                    // get previous sibling of the entity reference
+                    Node node = fCurrentNode.getPreviousSibling();
+                    // normalize text nodes
+                    Node child = children.item(0);
+                    if (node != null && node.getNodeType() == Node.TEXT_NODE &&
+                        child.getNodeType() == Node.TEXT_NODE) {
+                        ((Text)node).appendData(child.getNodeValue());
+                        fCurrentNode.removeChild(child);
 
-                } else {
-                    node = parent.insertBefore(child, fCurrentNode);
-                    handleBaseURI(node);
-                }
+                    } else {
+                        node = parent.insertBefore(child, fCurrentNode);
+                        handleBaseURI(node);
+                    }
 
-                for (int i=1;i <length;i++) {
-                    node = parent.insertBefore(children.item(0), fCurrentNode);
-                    handleBaseURI(node);
-                }
+                    for (int i=1;i <length;i++) {
+                        node = parent.insertBefore(children.item(0), fCurrentNode);
+                        handleBaseURI(node);
+                    }
+                } // length > 0
                 parent.removeChild(fCurrentNode);
                 fCurrentNode = parent;
             }
