@@ -98,6 +98,15 @@ public abstract class XMLDocumentParser
     implements XMLDocumentHandler, XMLDTDHandler, XMLDTDContentModelHandler {
 
     //
+    // Constants
+    //
+
+    // debugging
+
+    /** Set to true and recompile to print exception stack trace. */
+    private static final boolean PRINT_EXCEPTION_STACK_TRACE = true;
+
+    //
     // Data
     //
 
@@ -128,11 +137,6 @@ public abstract class XMLDocumentParser
      * validation and namespaces).
      */
     protected boolean fParseInProgress = false;
-
-    // debugging
-
-    /** Set to true and recompile to print exception stack trace. */
-    private static final boolean PRINT_EXCEPTION_STACK_TRACE = false;
 
     //
     // Constructors
@@ -212,26 +216,26 @@ public abstract class XMLDocumentParser
         fValidator.reset(this);
 
         // setup document pipeline
-        /***
+        /***/
         fScanner.setDocumentHandler(fValidator);
         fValidator.setDocumentHandler(this);
-        /***/
+        /***
         fScanner.setDocumentHandler(this);
         /***/
 
         // setup dtd pipeline
-        /***
+        /***/
         fDTDScanner.setDTDHandler(fValidator);
         fValidator.setDTDHandler(this);
-        /***/
+        /***
         fDTDScanner.setDTDHandler(this);
         /***/
 
         // setup dtd content model pipeline
-        /***
+        /***/
         fDTDScanner.setDTDContentModelHandler(fValidator);
         fValidator.setDTDContentModelHandler(this);
-        /***/
+        /***
         fDTDScanner.setDTDContentModelHandler(this);
         /***/
 
