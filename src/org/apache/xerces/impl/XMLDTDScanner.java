@@ -468,7 +468,10 @@ public class XMLDTDScanner
             // Proper nesting of parameter entities is a Validity Constraint
             // and must not be enforced when validation is off
             if (fValidation && startMarkUpDepth != fMarkUpDepth) {
-                reportFatalError("MarkupEntityMismatch", null);
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "ImproperDeclarationNesting",
+                                           new Object[]{ name },
+                                           XMLErrorReporter.SEVERITY_ERROR);
             }
             if (fEntityScanner.isExternal()) {
                 fExtEntityDepth--;
