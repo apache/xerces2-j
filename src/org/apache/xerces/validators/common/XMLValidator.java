@@ -2077,6 +2077,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                     grammar = new SchemaGrammar();
                     grammar.setGrammarDocument(document);
                     tst = new TraverseSchema( root, fStringPool, (SchemaGrammar)grammar, fGrammarResolver, fErrorReporter, loc);
+                    fGrammarResolver.putGrammar(document.getDocumentElement().getAttribute("targetNamespace"), grammar);
                 }
             }
             catch (Exception e) {
