@@ -188,7 +188,7 @@ samples: ../bin/${SAMPLESJARFILE}
 	cd ../class;${JAR} ../bin/${SAMPLESJARFILE} Xerces_Ver_${PRODUCTVERSION}.info dom sax ui;cd ../src
 
 # copy the license, ANT build file, Status file, and READMEs
-	${CP}  ../build.xml ../Readme ../Readme.html ../STATUS ../bin
+	${CP}  ../build.xml ../README ../Readme.html ../STATUS ../bin
 
 
 package_src:
@@ -474,7 +474,7 @@ package_src:
 	${CP}  ../samples/Makefile  ../source/samples
 
 # copy the license, ANT build file, Status file, and READMEs
-	${CP}  ../build.xml ../Readme ../Readme.html ../STATUS ../source
+	${CP}  ../build.xml ../README ../Readme.html ../STATUS ../source
 
 
 
