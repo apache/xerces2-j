@@ -74,9 +74,10 @@ public interface XMLEntityHandler {
      * @param name 
      * @param publicId 
      * @param systemId 
+     * @param encoding
      */
-    public void startEntity(String name, String publicId, String systemId)
-        throws SAXException;
+    public void startEntity(String name, String publicId, String systemId,
+                            String encoding) throws SAXException;
 
     /**
      * endEntity

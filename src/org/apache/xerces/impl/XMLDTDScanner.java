@@ -58,16 +58,21 @@
 package org.apache.xerces.impl;
 
 import java.io.IOException;
+
 import org.apache.xerces.impl.XMLEntityManager;
+import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.validation.GrammarPool;
+
+import org.apache.xerces.util.SymbolTable;
+
 import org.apache.xerces.xni.XMLComponent;
 import org.apache.xerces.xni.XMLComponentManager;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XMLDTDContentModelSource;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDTDSource;
-import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.xni.XMLEntityHandler;
+
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
@@ -77,7 +82,8 @@ import org.xml.sax.SAXNotSupportedException;
  * @version $Id$
  */
 public class XMLDTDScanner
-    implements XMLComponent, XMLDTDSource, XMLDTDContentModelSource {
+    implements XMLComponent, XMLDTDSource, XMLDTDContentModelSource,
+               XMLEntityHandler {
 
     //
     // Data
@@ -207,5 +213,30 @@ public class XMLDTDScanner
      */
     public void setDTDContentModelHandler(XMLDTDContentModelHandler dtdContentModelHandler) {
     } // setDTDContentModelHandler
+
+    //
+    // XMLEntityHandler methods
+    //
+
+    /**
+     * startEntity
+     * 
+     * @param name 
+     * @param publicId 
+     * @param systemId 
+     * @param encoding
+     */
+    public void startEntity(String name, String publicId, String systemId,
+                            String encoding) throws SAXException {
+    } // startEntity(String,String,String,String)
+
+    /**
+     * endEntity
+     * 
+     * @param name 
+     */
+    public void endEntity(String name)
+        throws SAXException {
+    } // endEntity(String)
 
 } // class XMLDTDScanner

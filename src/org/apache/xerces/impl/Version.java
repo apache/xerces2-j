@@ -60,7 +60,7 @@ package org.apache.xerces.impl;
 /**
  * This class defines the version number of the parser.
  *
- * @version
+ * @version $Id$
  */
 public class Version {
 
@@ -69,7 +69,7 @@ public class Version {
     //
 
     /** Version string. */
-    public static String  fVersion = "Xerces 2.0.0 (pre-alpha)";
+    public static String fVersion = "Xerces 2.0.0 (m2)";
 
     //
     // MAIN

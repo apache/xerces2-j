@@ -174,10 +174,11 @@ public abstract class XMLDocumentParser
      * @param name 
      * @param publicId 
      * @param systemId 
+     * @param encoding
      */
-    public void startEntity(String name, String publicId, String systemId)
-        throws SAXException {
-    } // startEntity
+    public void startEntity(String name, String publicId, String systemId,
+                            String encoding) throws SAXException {
+    } // startEntity(String,String,String,String)
 
     /**
      * endEntity
@@ -185,7 +186,7 @@ public abstract class XMLDocumentParser
      * @param name 
      */
     public void endEntity(String name) throws SAXException {
-    } // endEntity
+    } // endEntity(String)
 
     //
     // XMLDocumentHandler methods
@@ -389,7 +390,7 @@ public abstract class XMLDocumentParser
 
         try {
             reset();
-            fEntityManager.startEntity(source);
+            fEntityManager.startDocumentEntity(source);
             fScanner.scanDocument(true);
             fParseInProgress = false;
         } catch (SAXException ex) {

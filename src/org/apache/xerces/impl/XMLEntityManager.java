@@ -57,12 +57,25 @@
 
 package org.apache.xerces.impl;
 
+import java.io.EOFException;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.IOException;
+import java.io.PushbackReader;
+import java.io.Reader;
+import java.io.StringReader;
+import java.util.Hashtable;
+import java.util.Stack;
 
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLChar;
+
+import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLComponent;
 import org.apache.xerces.xni.XMLComponentManager;
 import org.apache.xerces.xni.XMLEntityHandler;
+import org.apache.xerces.xni.XMLString;
 
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
@@ -113,17 +126,55 @@ public class XMLEntityManager
     /** Symbol table property id. */
     protected static final String SYMBOL_TABLE_PROPERTY = "internal/symbol-table";
 
+    // debugging
+
+    /** Debugging. */
+    private static final boolean DEBUG = false;
+
     //
     // Data
     //
-
-    /** Entity scanner. */
-    protected XMLEntityScanner fEntityScanner;
 
     // properties
 
     /** Entity resolver. */
     protected EntityResolver fEntityResolver;
+
+    /** Symbol table. */
+    protected SymbolTable fSymbolTable;
+
+    // handlers
+
+    /** Entity handler. */
+    protected XMLEntityHandler fEntityHandler;
+
+    // scanner
+
+    /** Entity scanner. */
+    protected XMLEntityScanner fEntityScanner;
+
+    /** General entities. */
+    protected Hashtable fGeneralEntities = new Hashtable();
+
+    /** Parameter entities. */
+    protected Hashtable fParameterEntities = new Hashtable();
+
+    /** Entity stack. */
+    protected Stack fEntityStack = new Stack();
+
+    /** Current entity. */
+    protected Entity fEntity;
+
+    // private
+
+    /** Reader. */
+    private PushbackReader fReader;
+
+    /** Character buffer. */
+    private char[] fBuffer = new char[1024];
+
+    /** Buffer length. */
+    private int fLength;
 
     //
     // Constructors
@@ -131,12 +182,21 @@ public class XMLEntityManager
 
     /** Default constructor. */
     public XMLEntityManager() {
-        fEntityScanner = new XMLEntityScanner();
+        fEntityScanner = new EntityScanner();
     }
 
     //
     // Public methods
     //
+
+    /**
+     * setEntityHandler
+     *
+     * @param entityHandler The new entity handler.
+     */
+    public void setEntityHandler(XMLEntityHandler entityHandler) {
+        fEntityHandler = entityHandler;
+    }
 
     /**
      * addGeneralEntity
@@ -147,7 +207,8 @@ public class XMLEntityManager
      * @param baseSystemId 
      */
     public void addGeneralEntity(String name, String publicId, String systemId, String baseSystemId) {
-        throw new RuntimeException("XMLEntityManager#addGeneralEntity(String,String,String,String) not implemented");
+        Entity entity = new ExternalEntity(name, publicId, systemId, baseSystemId);
+        fGeneralEntities.put(name, entity);
     } // addGeneralEntity(String,String,String,String)
 
     /**
@@ -157,7 +218,8 @@ public class XMLEntityManager
      * @param text 
      */
     public void addGeneralEntity(String name, String text) {
-        throw new RuntimeException("XMLEntityManager#addGeneralEntity(String,String) not implemented");
+        Entity entity = new InternalEntity(name, text);
+        fGeneralEntities.put(name, entity);
     } // addGeneralEntity(String,String)
 
     /**
@@ -169,7 +231,8 @@ public class XMLEntityManager
      * @param baseSystemId 
      */
     public void addParameterEntity(String name, String publicId, String systemId, String baseSystemId) {
-        throw new RuntimeException("XMLEntityManager#addParameterEntity(String,String,String,String) not implemented");
+        Entity entity = new ExternalEntity(name, publicId, systemId, baseSystemId);
+        fParameterEntities.put(name, entity);
     } // addParameterEntity(String,String,String,String)
 
     /**
@@ -179,7 +242,8 @@ public class XMLEntityManager
      * @param text 
      */
     public void addParameterEntity(String name, String text) {
-        throw new RuntimeException("XMLEntityManager#addParameterEntity(String,String) not implemented");
+        Entity entity = new InternalEntity(name, text);
+        fParameterEntities.put(name, entity);
     } // addParameterEntity(String,String)
 
     /**
@@ -202,9 +266,31 @@ public class XMLEntityManager
      * @param entityName 
      * @param parameter 
      */
-    public void startGeneralEntity(String entityName) {
-        throw new RuntimeException("XMLEntityManager#startGeneralEntity(String) not implemented");
-    } // startGeneralEntity
+    public void startGeneralEntity(String entityName) 
+        throws IOException, SAXException {
+
+        // resolve external entity
+        Entity entity = (Entity)fGeneralEntities.get(entityName);
+        InputSource inputSource = null;
+        if (entity.isExternal()) {
+            ExternalEntity externalEntity = (ExternalEntity)entity;
+            String publicId = externalEntity.publicId;
+            String systemId = externalEntity.systemId;
+            String baseSystemId = externalEntity.baseSystemId;
+            inputSource = resolveEntity(publicId, systemId, baseSystemId);
+        }
+
+        // wrap internal entity
+        else {
+            InternalEntity internalEntity = (InternalEntity)entity;
+            Reader reader = new StringReader(internalEntity.text);
+            inputSource = new InputSource(reader);
+        }
+
+        // start the entity
+        startEntity(entityName, inputSource);
+
+    } // startGeneralEntity(String)
 
     /**
      * startParameterEntity
@@ -212,19 +298,51 @@ public class XMLEntityManager
      * @param entityName 
      * @param parameter 
      */
-    public void startParameterEntity(String entityName) {
-        throw new RuntimeException("XMLEntityManager#startParameterEntity(String) not implemented");
-    } // startParameterEntity
+    public void startParameterEntity(String entityName) 
+        throws IOException, SAXException {
+
+        // resolve external entity
+        Entity entity = (Entity)fParameterEntities.get(entityName);
+        InputSource inputSource = null;
+        if (entity.isExternal()) {
+            ExternalEntity externalEntity = (ExternalEntity)entity;
+            String publicId = externalEntity.publicId;
+            String systemId = externalEntity.systemId;
+            String baseSystemId = externalEntity.baseSystemId;
+            inputSource = resolveEntity(publicId, systemId, baseSystemId);
+        }
+
+        // wrap internal entity
+        else {
+            InternalEntity internalEntity = (InternalEntity)entity;
+            Reader reader = new StringReader(internalEntity.text);
+            inputSource = new InputSource(reader);
+        }
+
+        // start the entity
+        startEntity("%"+entityName, inputSource);
+
+    } // startParameterEntity(String)
 
     /**
-     * startEntity
+     * startDocumentEntity
      * 
      * @param inputSource 
      */
-    public void startEntity(InputSource inputSource) 
+    public void startDocumentEntity(InputSource inputSource) 
         throws IOException, SAXException {
-        fEntityScanner.startEntity(inputSource);
-    } // startEntity
+        startEntity("[xml]", inputSource);
+    } // startDocumentEntity(InputSource)
+
+    /**
+     * startDTDEntity
+     *
+     * @param inputSource
+     */
+    public void startDTDEntity(InputSource inputSource)
+        throws IOException, SAXException {
+        startEntity("[dtd]", inputSource);
+    } // startDTDEntity(InputSource)
 
     /**
      * getEntityScanner
@@ -247,14 +365,19 @@ public class XMLEntityManager
     public void reset(XMLComponentManager componentManager)
         throws SAXException {
 
-        // save information
+        // Xerces properties
         final String ENTITY_RESOLVER = XERCES_PROPERTY_PREFIX + ENTITY_RESOLVER_PROPERTY;
         fEntityResolver = (EntityResolver)componentManager.getProperty(ENTITY_RESOLVER);
-
-        // set symbol table on scanner
         final String SYMBOL_TABLE = XERCES_PROPERTY_PREFIX + SYMBOL_TABLE_PROPERTY;
-        SymbolTable symboTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
-        fEntityScanner.setSymbolTable(symboTable);
+        fSymbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
+
+        // initialize state
+        fGeneralEntities.clear();
+        fParameterEntities.clear();
+        fEntityStack.removeAllElements();
+
+        // initialize scanner info
+        fReader = null;
 
     } // reset(XMLComponentManager)
 
@@ -285,11 +408,503 @@ public class XMLEntityManager
                 return;
             }
             if (property.equals(SYMBOL_TABLE_PROPERTY)) {
-                fEntityScanner.setSymbolTable((SymbolTable)value);
+                fSymbolTable = (SymbolTable)value;
                 return;
             }
         }
 
     } // setProperty(String,Object)
+
+    //
+    // Protected methods
+    //
+
+    /**
+     * Starts an entity. 
+     */
+    protected void startEntity(String name, InputSource inputSource)
+        throws IOException, SAXException {
+        
+        // get information
+        String publicId = inputSource.getPublicId();
+        String systemId = inputSource.getSystemId();
+        String encoding = inputSource.getEncoding();
+
+        // create reader
+        Reader reader = inputSource.getCharacterStream();
+        if (reader == null) {
+            InputStream stream = inputSource.getByteStream();
+            if (stream == null) {
+                // REVISIT: open system identifier
+                stream = new FileInputStream(systemId);
+            }
+            reader = new InputStreamReader(stream);
+        }
+        fReader = new PushbackReader(reader, 32);
+
+        // push entity on stack
+        Entity entity = new ExternalEntity(name, publicId, systemId, encoding);
+        fEntityStack.push(entity);
+
+        // call handler
+        if (fEntityHandler != null) {
+            fEntityHandler.startEntity(name, publicId, systemId, encoding);
+        }
+
+    } // startEntity(String,InputSource)
+
+    /**
+     * Ends an entity.
+     */
+    protected void endEntity() throws IOException, SAXException {
+
+        // pop stack
+        Entity entity = (Entity)fEntityStack.pop();
+
+        // call handler
+        if (fEntityHandler != null) {
+            fEntityHandler.endEntity(entity.name);
+        }
+
+    } // endEntity(String)
+
+    //
+    // Classes
+    //
+
+    /**
+     * Entity information.
+     *
+     * @author Andy Clark, IBM
+     */
+    protected static abstract class Entity {
+
+        //
+        // Data
+        //
+
+        /** Entity name. */
+        public String name;
+
+        //
+        // Constructors
+        //
+
+        /** Constructs an entity. */
+        public Entity(String name) {
+            this.name = name;
+        } // <init>(String)
+
+        //
+        // Public methods
+        //
+
+        /** Returns true if this is an external entity. */
+        public abstract boolean isExternal();
+
+    } // class Entity
+
+    /**
+     * Internal entity.
+     *
+     * @author Andy Clark, IBM
+     */
+    protected static class InternalEntity
+        extends Entity {
+
+        //
+        // Data
+        //
+
+        /** Text value of entity. */
+        public String text;
+
+        //
+        // Constructors
+        //
+
+        /** Constructs an internal entity. */
+        public InternalEntity(String name, String text) {
+            super(name);
+            this.text = text;
+        } // <init>(String,String)
+
+        //
+        // Entity methods
+        //
+
+        /** Returns true if this is an external entity. */
+        public final boolean isExternal() {
+            return false;
+        } // isExternal():boolean
+
+    } // class InternalEntity
+
+    /**
+     * External entity.
+     *
+     * @author Andy Clark, IBM
+     */
+    protected static class ExternalEntity 
+        extends Entity {
+        
+        //
+        // Data
+        //
+    
+        /** Public identifier. */
+        public String publicId;
+
+        /** System identifier. */
+        public String systemId;
+
+        /** Base system identifier. */
+        public String baseSystemId;
+
+        //
+        // Constructors
+        //
+
+        /** Constructs an internal entity. */
+        public ExternalEntity(String name, String publicId, String systemId,
+                              String baseSystemId) {
+            super(name);
+            this.publicId = publicId;
+            this.systemId = systemId;
+            this.baseSystemId = baseSystemId;
+        } // <init>(String,String,String,String)
+
+        //
+        // Entity methods
+        //
+
+        /** Returns true if this is an external entity. */
+        public final boolean isExternal() {
+            return true;
+        } // isExternal():boolean
+
+    } // class ExternalEntity
+
+    /**
+     * Implements the entity scanner methods.
+     *
+     * @author Andy Clark, IBM
+     */
+    private class EntityScanner
+        extends XMLEntityScanner {
+    
+        //
+        // Constructors
+        //
+    
+        /** Default constructor. */
+        public EntityScanner() {
+        }
+    
+        //
+        // XMLEntityScanner methods
+        //
+    
+        /**
+         * peekChar
+         * 
+         * @return 
+         */
+        public int peekChar() throws IOException {
+            if (DEBUG) System.out.println("#peekChar()");
+            return peek(); 
+        } // peekChar():int
+    
+        /**
+         * scanChar
+         * 
+         * @return 
+         */
+        public int scanChar() throws IOException, SAXException {
+            if (DEBUG) System.out.println("#scanChar()");
+            int c = read();
+            if (c == -1) {
+                endEntity();
+            }
+            return c;
+        } // scanChar():int
+    
+        /**
+         * scanNmtoken
+         * 
+         * @return 
+         */
+        public String scanNmtoken() throws IOException, SAXException {
+            if (DEBUG) System.out.println("#scanNmtoken()");
+    
+            fLength = 0;
+            boolean nmtoken = false;
+            while (XMLChar.isName(peek())) {
+                nmtoken = true;
+                fBuffer[fLength++] = (char)read();
+            }
+    
+            String symbol = null;
+            if (nmtoken) {
+                symbol = fSymbolTable.addSymbol(fBuffer, 0, fLength);
+            }
+            return symbol;
+    
+        } // scanNmtoken
+    
+        /**
+         * scanName
+         * 
+         * @return 
+         */
+        public String scanName() throws IOException, SAXException {
+            if (DEBUG) System.out.println("#scanName()");
+    
+            fLength = 0;
+            boolean name = false;
+            if (XMLChar.isNameStart(peek())) {
+                name = true;
+                fBuffer[fLength++] = (char)read();
+                while (XMLChar.isName(peek())) {
+                    fBuffer[fLength++] = (char)read();
+                }
+            }
+    
+            String symbol = null;
+            if (name) {
+                symbol = fSymbolTable.addSymbol(fBuffer, 0, fLength);
+            }
+            return symbol;
+    
+        } // scanName
+    
+        /**
+         * scanQName
+         * 
+         * @param qname 
+         */
+        public boolean scanQName(QName qname) throws IOException, SAXException {
+            if (DEBUG) System.out.println("#scanQName()");
+    
+            String prefix = null;
+            String localpart = null;
+            String rawname = null;
+    
+            fLength = 0;
+            int colons = -1;
+            int index = 0;
+            if (XMLChar.isNameStart(peek())) {
+                colons = 0;
+                fBuffer[fLength++] = (char)read();
+                int c = -1;
+                while (XMLChar.isName(c = peek())) {
+                    if (c == ':') {
+                        colons++;
+                        if (colons == 1) {
+                            index = fLength + 1;
+                            prefix = fSymbolTable.addSymbol(fBuffer, 0, fLength);
+                        }
+                    }
+                    fBuffer[fLength++] = (char)read();
+                }
+                localpart = fSymbolTable.addSymbol(fBuffer, index, fLength - index);
+                rawname = fSymbolTable.addSymbol(fBuffer, 0, fLength);
+            }
+    
+            if (colons >= 0 && colons < 2) {
+                qname.setValues(prefix, localpart, rawname, null);
+                return true;
+            }
+    
+            return false;
+    
+        } // scanQName
+    
+        /**
+         * scanContent
+         * 
+         * @param content 
+         */
+        public int scanContent(XMLString content) 
+            throws IOException, SAXException {
+    
+            fLength = 0;
+            while (peek() != '<' && peek() != '&') {
+                fBuffer[fLength++] = (char)read();
+                if (fLength == fBuffer.length) {
+                    break;
+                }
+            }
+            content.setValues(fBuffer, 0, fLength);
+    
+            return peek();
+    
+        } // scanContent
+    
+        /**
+         * scanAttContent
+         * 
+         * @param quote
+         * @param content 
+         */
+        public int scanAttContent(int quote, XMLString content)
+            throws IOException, SAXException {
+    
+            fLength = 0;
+            while (peek() != quote) {
+                fBuffer[fLength++] = (char)read();
+                if (fLength == fBuffer.length) {
+                    break;
+                }
+            }
+            content.setValues(fBuffer, 0, fLength);
+    
+            return peek();
+    
+        } // scanAttContent
+    
+        /**
+         * scanData
+         *
+         * @param delimiter
+         * @param data
+         */
+        public boolean scanData(String delimiter, XMLString data)
+            throws IOException, SAXException {
+            // TODO
+            throw new RuntimeException("not implemented");
+        } // scanData(String,XMLString)
+    
+        /**
+         * skipChar
+         *
+         * @param c
+         */
+        public boolean skipChar(int c) throws IOException, SAXException {
+            int pc = read();
+            if (pc != c) {
+                unread(pc);
+            }
+            return pc == c;
+        }
+    
+        /**
+         * skipSpaces
+         */
+        public boolean skipSpaces() throws IOException, SAXException {
+            if (DEBUG) System.out.println("#skipSpaces()");
+    
+            boolean spaces = false;
+            while (XMLChar.isSpace(peek())) {
+                spaces = true;
+                read();
+            }
+    
+            return spaces;
+    
+        } // skipSpaces
+    
+        /**
+         * skipString
+         *
+         * @param s
+         */
+        public boolean skipString(String s) throws IOException, SAXException {
+            if (DEBUG) System.out.println("#skipString(\""+s+"\")");
+    
+            int length = s.length();
+            for (int i = 0; i < length; i++) {
+                int c = read();
+                if (c != s.charAt(i)) {
+                    unread(c);
+                    if (i > 0) {
+                        char[] ch = new char[i];
+                        s.getChars(0, i, ch, 0);
+                        unread(ch, 0, ch.length);
+                    }
+                    return false;
+                }
+            }
+    
+            return true;
+    
+        } // skipString
+    
+        //
+        // Locator methods
+        //
+    
+        /**
+         * getPublicId
+         * 
+         * @return 
+         */
+        public String getPublicId() {
+            throw new RuntimeException("getPublicId not implemented");
+        } // getPublicId():String
+    
+        /**
+         * getSystemId
+         * 
+         * @return 
+         */
+        public String getSystemId() {
+            throw new RuntimeException("getSystemId not implemented");
+        } // getSystemId():String
+    
+        /**
+         * getLineNumber
+         * 
+         * @return 
+         */
+        public int getLineNumber() {
+            throw new RuntimeException("getLineNumber not implemented");
+        } // getLineNumber():int
+    
+        /**
+         * getColumnNumber
+         * 
+         * @return 
+         */
+        public int getColumnNumber() {
+            throw new RuntimeException("getColumnNumber not implemented");
+        } // getColumnNumber():int
+    
+        //
+        // Private methods
+        //
+    
+        /** Peeks the next character. */
+        private final int peek() throws IOException {
+            int c = fReader.read();
+            if (c == -1) {
+                throw new EOFException();
+            }
+            if (DEBUG) System.out.println("?"+(char)c);
+            fReader.unread(c);
+            return c;
+        }
+    
+        /** Reads the next character. */
+        private int read() throws IOException {
+            int c = fReader.read();
+            if (c == -1) {
+                throw new EOFException();
+            }
+            if (DEBUG) System.out.println("+"+(char)c);
+            return c;
+        }
+    
+        private void unread(int c) throws IOException {
+            if (DEBUG) System.out.println("-"+(char)c);
+            fReader.unread(c);
+        }
+    
+        private void unread(char[] ch, int offset, int length) throws IOException {
+            if (DEBUG) System.out.println("-"+new String(ch, offset, length));
+            fReader.unread(ch, offset, length);
+        }
+    
+    } // class EntityScanner
 
 } // class XMLEntityManager

@@ -363,8 +363,8 @@ public class XMLDocumentScanner
         /***/
 
         // initialize scanner
+        fEntityManager.setEntityHandler(this);
         fEntityScanner = fEntityManager.getEntityScanner();
-        fEntityScanner.setEntityHandler(this);
         
         // initialize vars
         fEntityStack.removeAllElements();
@@ -454,8 +454,8 @@ public class XMLDocumentScanner
      * @param publicId 
      * @param systemId 
      */
-    public void startEntity(String name, String publicId, String systemId)
-        throws SAXException {
+    public void startEntity(String name, String publicId, String systemId,
+                            String encoding) throws SAXException {
 
         // keep track of this entity
         Entity entity = new Entity(name, publicId, systemId, fElementDepth);
@@ -463,10 +463,10 @@ public class XMLDocumentScanner
 
         // call handler
         if (!fScanningAttribute && fDocumentHandler != null) {
-            fDocumentHandler.startEntity(name, publicId, systemId);
+            fDocumentHandler.startEntity(name, publicId, systemId, encoding);
         }
 
-    } // startEntity(String,String,String)
+    } // startEntity(String,String,String,String)
 
     /**
      * endEntity

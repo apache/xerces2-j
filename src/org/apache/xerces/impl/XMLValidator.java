@@ -58,15 +58,16 @@
 package org.apache.xerces.impl;
 
 import org.apache.xerces.impl.validation.GrammarPool;
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLComponent;
 import org.apache.xerces.xni.XMLComponentManager;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XMLAttributes;
+import org.apache.xerces.xni.XMLDocumentFilter;
 import org.apache.xerces.xni.XMLDocumentHandler;
-import org.apache.xerces.xni.XMLDocumentSource;
-import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.impl.XMLErrorReporter;
+
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
@@ -76,7 +77,7 @@ import org.xml.sax.SAXNotSupportedException;
  * @version $Id$
  */
 public class XMLValidator
-    implements XMLComponent, XMLDocumentSource, XMLDocumentHandler {
+    implements XMLComponent, XMLDocumentFilter {
 
     //
     // Data
@@ -168,9 +169,10 @@ public class XMLValidator
      * @param name
      * @param publicId
      * @param systemId
+     * @param encoding
      */
-    public void startEntity(String name, String publicId, String systemId) 
-        throws SAXException {
+    public void startEntity(String name, String publicId, String systemId,
+                            String encoding) throws SAXException {
     }
 
     /**
