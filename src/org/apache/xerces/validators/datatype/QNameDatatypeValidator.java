@@ -61,6 +61,7 @@ import java.util.Vector;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.text.ParseException;
+import java.text.Collator;
 import java.util.StringTokenizer;
 import java.util.NoSuchElementException;
 import org.apache.xerces.validators.schema.SchemaSymbols;
@@ -99,13 +100,15 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
     private boolean isMaxInclusiveDefined = false;
     private boolean isMinExclusiveDefined = false;
     private boolean isMinInclusiveDefined = false;
+    private RegularExpression fRegex         = null;
+
 
     public QNameDatatypeValidator () throws InvalidDatatypeFacetException {
         this( null, null, false ); // Native, No Facets defined, Restriction
     }
 
     public QNameDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
-                  boolean derivedByList ) throws InvalidDatatypeFacetException  {
+                                    boolean derivedByList ) throws InvalidDatatypeFacetException  {
 
         setBasetype( base ); // Set base type 
 
@@ -145,6 +148,7 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
                     } else if (key.equals(SchemaSymbols.ELT_PATTERN)) {
                         fFacetsDefined += DatatypeValidator.FACET_PATTERN;
                         fPattern = (String)facets.get(key);
+                        fRegex   = new RegularExpression(fPattern, "X");
                     } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
                         fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
                         fEnumeration = (Vector)facets.get(key);
@@ -158,7 +162,7 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
                         fFacetsDefined += DatatypeValidator.FACET_MININCLUSIVE;
                         fMinInclusive = (String)facets.get(key);
                     } else if (key.equals(SchemaSymbols.ELT_MINEXCLUSIVE)) {
-                        fFacetsDefined += DatatypeValidator.FACET_MININCLUSIVE;
+                        fFacetsDefined += DatatypeValidator.FACET_MINEXCLUSIVE;
                         fMinExclusive = (String)facets.get(key);
                     } else {
                         throw new InvalidDatatypeFacetException();
@@ -168,10 +172,10 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
                 if (((fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
                     if (((fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
                         throw new InvalidDatatypeFacetException(
-                                                    "It is an error for both length and maxLength to be members of facets." );  
+                                                               "It is an error for both length and maxLength to be members of facets." );  
                     } else if (((fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ) {
                         throw new InvalidDatatypeFacetException(
-                                                    "It is an error for both length and minLength to be members of facets." );
+                                                               "It is an error for both length and minLength to be members of facets." );
                     }
                 }
 
@@ -179,7 +183,7 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
                                            DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
                     if ( fMinLength > fMaxLength ) {
                         throw new InvalidDatatypeFacetException( "Value of maxLength = " + fMaxLength +
-                               "must be greater that the value of minLength" + fMinLength );
+                                                                 "must be greater that the value of minLength" + fMinLength );
                     }
                 }
 
@@ -194,11 +198,11 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
 
                 if ( isMaxExclusiveDefined && isMaxInclusiveDefined ) {
                     throw new InvalidDatatypeFacetException(
-                                                "It is an error for both maxInclusive and maxExclusive to be specified for the same datatype." ); 
+                                                           "It is an error for both maxInclusive and maxExclusive to be specified for the same datatype." ); 
                 }
                 if ( isMinExclusiveDefined && isMinInclusiveDefined ) {
                     throw new InvalidDatatypeFacetException(
-                                                "It is an error for both minInclusive and minExclusive to be specified for the same datatype." ); 
+                                                           "It is an error for both minInclusive and minExclusive to be specified for the same datatype." ); 
                 }
             } else { //derived by list
                 fDerivedByList = true;
@@ -241,10 +245,10 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
                 if (((fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
                     if (((fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
                         throw new InvalidDatatypeFacetException(
-                                                    "It is an error for both length and maxLength to be members of facets." );  
+                                                               "It is an error for both length and maxLength to be members of facets." );  
                     } else if (((fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ) {
                         throw new InvalidDatatypeFacetException(
-                                                    "It is an error for both length and minLength to be members of facets." );
+                                                               "It is an error for both length and minLength to be members of facets." );
                     }
                 }
 
@@ -252,7 +256,7 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
                                            DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
                     if ( fMinLength < fMaxLength ) {
                         throw new InvalidDatatypeFacetException( "Value of minLength = " + fMinLength +
-                                                      "must be greater that the value of maxLength" + fMaxLength );
+                                                                 "must be greater that the value of maxLength" + fMaxLength );
                     }
                 }
             }
@@ -317,12 +321,15 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
                 throw new InvalidDatatypeValueException("Value '"+content+"' must be one of "+fEnumeration);
         }
 
+
         if ( isMaxExclusiveDefined == true ) {
             int comparisonResult;
             comparisonResult  = compare( content, fMaxExclusive );
-            if ( comparisonResult > 0 ) {
-                throw new InvalidDatatypeValueException( "Value '"+content+ "'  must be" +
-                                                         "lexicographically less than" + fMaxExclusive );
+            System.out.println( "maxExc = " + comparisonResult );
+
+            if ( comparisonResult >= 0 ) {
+                throw new InvalidDatatypeValueException( "Value '"+content+ "'  must be " +
+                                  "lexicographically less than '" + fMaxExclusive + "'."  );
 
             }
 
@@ -330,31 +337,34 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
         if ( isMaxInclusiveDefined == true ) {
             int comparisonResult;
             comparisonResult  = compare( content, fMaxInclusive );
-            if ( comparisonResult >= 0 )
-                throw new InvalidDatatypeValueException( "Value '"+content+ "' must be" +
-                                                         "lexicographically less or equal than" + fMaxInclusive );
+            if ( comparisonResult > 0 )
+                throw new InvalidDatatypeValueException( "Value '"+content+ "' must be " +
+                                  "lexicographically less or equal than '" + fMaxInclusive +"'." );
         }
 
         if ( isMinExclusiveDefined == true ) {
             int comparisonResult;
             comparisonResult  = compare( content, fMinExclusive );
-            if ( comparisonResult < 0 )
-                throw new InvalidDatatypeValueException( "Value '"+content+ "' must be" +
-                                                         "lexicographically greater than" + fMinExclusive );
+            System.out.println( "minExc = " + comparisonResult );
+
+            if ( comparisonResult <= 0 )
+                throw new InvalidDatatypeValueException( "Value '"+content+ "' must be " +
+                                                         "lexicographically greater than '" + fMinExclusive + "'." );
         }
         if ( isMinInclusiveDefined == true ) {
             int comparisonResult;
             comparisonResult = compare( content, fMinInclusive );
-            if ( comparisonResult <= 0 )
-                throw new InvalidDatatypeValueException( "Value '"+content+ "' must be" +
-                                                         "lexicographically greater or equal than" + fMinInclusive );
+            System.out.println( "minInc = " + comparisonResult );
+            if ( comparisonResult < 0 )
+                throw new InvalidDatatypeValueException( "Value '"+content+ "' must be " +
+                                                         "lexicographically greater or equal than '" + fMinInclusive  + "'." );
         }
 
+
         if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
-            RegularExpression regex = new RegularExpression(fPattern, "X" );
-            if ( regex.matches( content) == false )
-                throw new InvalidDatatypeValueException("Value'"+content+
-                                                        "does not match regular expression facet" + fPattern );
+            if ( fRegex == null || fRegex.matches( content) == false )
+                throw new InvalidDatatypeValueException("Value '"+content+
+                                                        "' does not match regular expression facet '" + fPattern + "'." );
         }
     }
 
@@ -362,14 +372,17 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
         return null;
     }
 
-    public int compare( String content1, String content2 ){
-        return -1;
+    public int compare( String content, String facetValue ){
+        Locale    loc       = Locale.getDefault();
+        Collator  collator  = Collator.getInstance( loc );
+        return collator.compare( content, facetValue );
     }
 
 
-  /**
-     * Returns a copy of this object.
-     */
+
+    /**
+       * Returns a copy of this object.
+       */
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
     }

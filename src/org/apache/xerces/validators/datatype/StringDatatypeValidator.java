@@ -162,7 +162,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
                         fFacetsDefined += DatatypeValidator.FACET_MININCLUSIVE;
                         fMinInclusive = (String)facets.get(key);
                     } else if (key.equals(SchemaSymbols.ELT_MINEXCLUSIVE)) {
-                        fFacetsDefined += DatatypeValidator.FACET_MININCLUSIVE;
+                        fFacetsDefined += DatatypeValidator.FACET_MINEXCLUSIVE;
                         fMinExclusive = (String)facets.get(key);
                     } else {
                         throw new InvalidDatatypeFacetException("invalid facet tag : " + key);
@@ -348,9 +348,9 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
         if ( isMaxExclusiveDefined == true ) {
             int comparisonResult;
             comparisonResult  = compare( content, fMaxExclusive );
-            if ( comparisonResult > 0 ) {
-                throw new InvalidDatatypeValueException( "Value '"+content+ "'  must be" +
-                                                         "lexicographically less than" + fMaxExclusive );
+            if ( comparisonResult >= 0 ) {
+                throw new InvalidDatatypeValueException( "MaxExclusive:Value '"+content+ "'  must be " +
+                        "lexicographically less than" + fMaxExclusive );
 
             }
 
@@ -358,31 +358,35 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
         if ( isMaxInclusiveDefined == true ) {
             int comparisonResult;
             comparisonResult  = compare( content, fMaxInclusive );
-            if ( comparisonResult >= 0 )
-                throw new InvalidDatatypeValueException( "Value '"+content+ "' must be" +
-                                                         "lexicographically less or equal than" + fMaxInclusive );
+            if ( comparisonResult > 0 )
+                throw new InvalidDatatypeValueException( "MaxInclusive:Value '"+content+ "' must be " +
+                        "lexicographically less or equal than" + fMaxInclusive );
         }
 
         if ( isMinExclusiveDefined == true ) {
             int comparisonResult;
             comparisonResult  = compare( content, fMinExclusive );
-            if ( comparisonResult < 0 )
-                throw new InvalidDatatypeValueException( "Value '"+content+ "' must be" +
-                                                         "lexicographically greater than" + fMinExclusive );
+
+            System.out.println( "exclusive = " + comparisonResult );
+
+            if ( comparisonResult <= 0 )
+                throw new InvalidDatatypeValueException( "MinExclusive:Value '"+content+ "' must be " +
+                        "lexicographically greater than" + fMinExclusive );
         }
         if ( isMinInclusiveDefined == true ) {
             int comparisonResult;
             comparisonResult = compare( content, fMinInclusive );
-            if ( comparisonResult <= 0 )
-                throw new InvalidDatatypeValueException( "Value '"+content+ "' must be" +
-                    "lexicographically greater or equal than '" + fMinInclusive  + "'." );
+            System.out.println( "inclusive = " + comparisonResult );
+            if ( comparisonResult < 0 )
+                throw new InvalidDatatypeValueException( "MinInclusive:Value '"+content+ "' must be " +
+                       "lexicographically greater or equal than '" + fMinInclusive  + "'." );
         }
 
 
         if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
             //RegularExpression regex = new RegularExpression(fPattern );
             if ( fRegex == null || fRegex.matches( content) == false )
-                throw new InvalidDatatypeValueException("Value'"+content+
+                throw new InvalidDatatypeValueException("Value '"+content+
                      "' does not match regular expression facet '" + fPattern + "'." );
         }
 
