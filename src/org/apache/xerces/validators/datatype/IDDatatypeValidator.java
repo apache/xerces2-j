@@ -140,6 +140,7 @@ public class IDDatatypeValidator extends AbstractDatatypeValidator {
 
         }
         //System.out.println("IDStorage = " + IDStorage );
+        //System.out.println("Bef return = " + fTableOfId );
         return fTableOfId;//Return the table of Id
     }
 
@@ -181,6 +182,7 @@ public class IDDatatypeValidator extends AbstractDatatypeValidator {
     /** addId. */
     private boolean addId(String content, Object idTable) {
 
+        //System.out.println("Added ID = " + content );
         if ( this.fTableOfId == null ) {
             //System.out.println("Create table");
             this.fTableOfId = new Hashtable();//Gain reference to table
