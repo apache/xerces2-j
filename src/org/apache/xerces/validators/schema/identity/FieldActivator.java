@@ -87,6 +87,8 @@ public interface FieldActivator {
     /** 
      * Request to activate the specified field. This method returns the
      * matcher for the field.
+     * It's also important for the implementor to ensure that the Field realizes that
+     * it is permitted to match a value--that is, to call the field's setMayMatch(boolean) method.
      *
      * @param field The field to activate.
      */
