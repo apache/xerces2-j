@@ -2,6 +2,11 @@
 <!DOCTYPE s1 SYSTEM "sbk:/style/dtd/document.dtd">
 
 <s1 title="Releases">
+    <s2 title="March 1, 2000">
+        <ul>
+            <li>Relaxed restraint of xml:space attribute for XHTML DTDs [david-b@pacbell.net]</li>
+        </ul>
+    </s2>
     <s2 title="February 8, 2000">
         <ul>
             <li>Removed hard-coded strings to enable national language support (NLS) [jeffreyr,lehors,rip]</li>

@@ -2003,9 +2003,12 @@ public final class XMLDTDScanner {
                 if (attDefType == fENUMERATION) {
                     int index = attDefEnumeration;
                     if (index != -1) {
-                        ok = fStringPool.stringListLength(index) == 2 &&
+                        ok = (fStringPool.stringListLength(index) == 1 &&
+                              (fStringPool.stringInList(index, fDefault) ||
+                             fStringPool.stringInList(index, fPreserve))) ||
+                             (fStringPool.stringListLength(index) == 2 &&
                              fStringPool.stringInList(index, fDefault) &&
-                             fStringPool.stringInList(index, fPreserve);
+                             fStringPool.stringInList(index, fPreserve));
                     }
                 }
                 if (!ok) {
