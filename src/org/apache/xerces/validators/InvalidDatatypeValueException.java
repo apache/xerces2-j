@@ -74,6 +74,7 @@ public class InvalidDatatypeValueException
      * 
      */
     public InvalidDatatypeValueException() {
+        super("");
     }
 
     /**
@@ -82,6 +83,7 @@ public class InvalidDatatypeValueException
      * @param message 
      */
     public InvalidDatatypeValueException(String message) {
+        super(message);
     }
 
     /**
@@ -90,6 +92,7 @@ public class InvalidDatatypeValueException
      * @param exception 
      */
     public InvalidDatatypeValueException(Exception exception) {
+        super(exception);
     }
 
     /**
@@ -99,6 +102,7 @@ public class InvalidDatatypeValueException
      * @param exception 
      */
     public InvalidDatatypeValueException(String message, Exception exception) {
+        super(message, exception);
     }
 
 } // class InvalidDatatypeValueException
