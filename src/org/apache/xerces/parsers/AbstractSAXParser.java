@@ -68,6 +68,7 @@ import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.psvi.PSVIProvider;
 import org.apache.xerces.util.EntityResolverWrapper;
 import org.apache.xerces.util.ErrorHandlerWrapper;
+import org.apache.xerces.util.SymbolHash;
 
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.Augmentations;
@@ -220,6 +221,11 @@ public abstract class AbstractSAXParser
     private static final int BUFFER_SIZE = 20;
     private char[] fCharBuffer =  new char[BUFFER_SIZE];
 
+    // allows us to keep track of whether an attribute has
+    // been declared twice, so that we can avoid exposing the
+    // second declaration to any registered DeclHandler
+    protected SymbolHash fDeclaredAttrs = null;
+
     //
     // Constructors
     //
@@ -316,6 +322,11 @@ public abstract class AbstractSAXParser
         }
         catch (SAXException e) {
             throw new XNIException(e);
+        }
+
+        // is there a DeclHandler?
+        if(fDeclHandler != null) {
+            fDeclaredAttrs = new SymbolHash();
         }
 
     } // doctypeDecl(String,String,String)
@@ -804,7 +815,7 @@ public abstract class AbstractSAXParser
             throw new XNIException(e);
         }
 
-    } // elementDecl(String,String)
+    } // elementDecl(String,String, Augmentations)
 
     /**
      * An attribute declaration.
@@ -840,6 +851,13 @@ public abstract class AbstractSAXParser
         try {
             // SAX2 extension
             if (fDeclHandler != null) {
+                // used as a key to detect duplicate attribute definitions.
+                String elemAttr = new StringBuffer(elementName).append("<").append(attributeName).toString();
+                if(fDeclaredAttrs.get(elemAttr) != null) {
+                    // we aren't permitted to return duplicate attribute definitions
+                    return;
+                }
+                fDeclaredAttrs.put(elemAttr, Boolean.TRUE);
                 if (type.equals("NOTATION") || 
                     type.equals("ENUMERATION")) {
 
@@ -1013,6 +1031,10 @@ public abstract class AbstractSAXParser
         }
         catch (SAXException e) {
             throw new XNIException(e);
+        }
+        if(fDeclaredAttrs != null) {
+            // help out the GC
+            fDeclaredAttrs.clear();
         }
 
     } // endDTD()
@@ -1863,6 +1885,7 @@ public abstract class AbstractSAXParser
         fNamespaces = fConfiguration.getFeature(NAMESPACES);           
         fNamespacePrefixes = fConfiguration.getFeature(NAMESPACE_PREFIXES);
         fAugmentations = null;
+        fDeclaredAttrs = null;
         
     } // reset()
 
