@@ -910,7 +910,10 @@ class XSDHandler {
 
         } catch (java.io.FileNotFoundException ex) {
             // REVISIT: how to report an error for missing files
-            reportGenericSchemaError("file not found: " + schemaHint);
+            fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                       "General",
+                                       new Object[]{"file not found: " + schemaHint},
+                                       XMLErrorReporter.SEVERITY_WARNING);
         } catch (IOException ex) {
             // REVISIT: report an error!
             reportGenericSchemaError("error reading schema document: " + schemaHint);
