@@ -98,6 +98,11 @@ public final class IntStack {
         return fData[fDepth - 1];
     }
 
+    /** Returns the element at the specified depth in the stack. */
+    public int elementAt(int depth) {
+        return fData[depth];
+    }
+
     /** Pops a value off of the stack. */
     public int pop() {
         return fData[--fDepth];
