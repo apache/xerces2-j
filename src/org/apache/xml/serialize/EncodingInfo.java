@@ -158,7 +158,7 @@ public class EncodingInfo {
     // is this an encoding name recognized by this JDK?
     // if not, will throw UnsupportedEncodingException
     public static void testJavaEncodingName(String name)  throws UnsupportedEncodingException {
-        final byte [] bTest = {'v', 'a', 'l', 'i', 'd'};
+        final byte [] bTest = {(byte)'v', (byte)'a', (byte)'l', (byte)'i', (byte)'d'};
         String s = new String(bTest, name);
     }
 }
