@@ -67,6 +67,7 @@ import org.apache.xerces.impl.XMLEntityScanner;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 
+import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.util.XMLStringBuffer;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLChar;
@@ -263,7 +264,7 @@ public class XMLDocumentScanner
     private QName fAttributeQName = new QName();
 
     /** Element attributes. */
-    private XMLAttributes fAttributes = new XMLAttributes();
+    private XMLAttributesImpl fAttributes = new XMLAttributesImpl();
 
     /** Single character array. */
     private final char[] fSingleChar = new char[1];
@@ -873,7 +874,7 @@ public class XMLDocumentScanner
 
         // attributes
         boolean empty = false;
-        fAttributes.clear();
+        fAttributes.removeAllAttributes();
         do {
             // spaces
             fEntityScanner.skipSpaces();
@@ -1094,7 +1095,7 @@ public class XMLDocumentScanner
             }
             fScanningAttribute = false;
         }
-        attributes.setValue(attributes.getLength() - 1, value);
+        attributes.setValue(attributes.getLength() - 1, value.toString());
 
         // quote
         int cquote = fEntityScanner.scanChar();
@@ -1586,18 +1587,15 @@ public class XMLDocumentScanner
         protected XMLAttributes fAttributes;
 
         /** The index of the attribute where to add entities. */
-        protected int fIndex;
+        protected int fAttributeIndex;
 
         // stack information
 
         /** The size of the stack. */
         protected int fSize;
 
-        /** The entity names on the stack. */
-        protected String[] fNames = new String[4];
-
-        /** The entity offsets on the stack. */
-        protected int[] fOffsets = new int[fNames.length];
+        /** The entity indexes on the stack. */
+        protected int[] fEntityIndexes = new int[4];
 
         //
         // Public methods
@@ -1609,12 +1607,12 @@ public class XMLDocumentScanner
          *
          * @param attributes The attributes object where new attribute
          *                   entities are added.
-         * @param index      The index of the attribute where to add
+         * @param attrIndex  The index of the attribute where to add
          *                   entities.
          */
-        public void reset(XMLAttributes attributes, int index) {
+        public void reset(XMLAttributes attributes, int attrIndex) {
             fAttributes = attributes;
-            fIndex = index;
+            fAttributeIndex = attrIndex;
             fSize = 0;
         } // reset(XMLAttributes,int)
 
@@ -1626,20 +1624,18 @@ public class XMLDocumentScanner
         /** 
          * Pushes a new entity onto the stack. 
          *
-         * @param name        The entity name.
-         * @param startOffset The entity's starting offset.
+         * @param entityName   The entity name.
+         * @param entityOffset The entity offset.
          */
-        public void pushAttrEntity(String name, int startOffset) {
-            if (fSize == fNames.length) {
-                String[] namearray = new String[fNames.length * 2];
-                System.arraycopy(fNames, 0, namearray, 0, fNames.length);
-                fNames = namearray;
-                int[] offsetarray = new int[fOffsets.length * 2];
-                System.arraycopy(fOffsets, 0, offsetarray, 0, fOffsets.length);
-                fOffsets = offsetarray;
+        public void pushAttrEntity(String entityName, int entityOffset) {
+            if (fSize == fEntityIndexes.length) {
+                int[] indexarray = new int[fEntityIndexes.length * 2];
+                System.arraycopy(fEntityIndexes, 0, indexarray, 0, fEntityIndexes.length);
+                fEntityIndexes = indexarray;
             }
-            fNames[fSize] = name;
-            fOffsets[fSize] = startOffset;
+            fEntityIndexes[fSize] = 
+                fAttributes.addAttributeEntity(fAttributeIndex, entityName, 
+                                               entityOffset, -1);
             fSize++;
         } // pushAttrEntity(String,int)
 
@@ -1651,11 +1647,10 @@ public class XMLDocumentScanner
          */
         public void popAttrEntity(int endOffset) {
             fSize--;
-            String name = fNames[fSize];
-            int offset = fOffsets[fSize];
+            int entityIndex = fEntityIndexes[fSize];
+            int offset = fAttributes.getEntityOffset(fAttributeIndex, entityIndex);
             int length = endOffset - offset;
-            // REVISIT: Should the entity be added if the length is zero?
-            fAttributes.addAttributeEntity(fIndex, name, offset, length);
+            fAttributes.setEntityLength(fAttributeIndex, entityIndex, length);
         } // popAttrEntity(int)
 
     } // class AttrEntityStack
@@ -1703,12 +1698,12 @@ public class XMLDocumentScanner
         //
 
         /** Clears the structure. */
-        public void clear() {
+        public void removeAllEntities() {
             name = null;
             publicId = null;
             systemId = null;
             elementDepth = -1;
-        } // clear()
+        } // removeAllEntities()
 
         /**
          * Sets the values of this structure.
