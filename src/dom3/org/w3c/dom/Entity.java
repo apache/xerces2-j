@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003 World Wide Web Consortium,
+ * Copyright (c) 2004 World Wide Web Consortium,
  *
  * (Massachusetts Institute of Technology, European Research Consortium for
  * Informatics and Mathematics, Keio University). All Rights Reserved. This
@@ -24,11 +24,11 @@ package org.w3c.dom;
  * process entity declarations made in the external subset or declared in 
  * parameter entities. This means that parsed entities declared in the 
  * external subset need not be expanded by some classes of applications, and 
- * that the replacement text of the entity may not be available. When the <a href='http://www.w3.org/TR/2000/REC-xml-20001006#intern-replacement'>
+ * that the replacement text of the entity may not be available. When the <a href='http://www.w3.org/TR/2004/REC-xml-20040204#intern-replacement'>
  * replacement text</a> is available, the corresponding <code>Entity</code> node's child list 
  * represents the structure of that replacement value. Otherwise, the child 
  * list is empty.
- * <p>The DOM Level 2 does not support editing <code>Entity</code> nodes; if a 
+ * <p>DOM Level 3 does not support editing <code>Entity</code> nodes; if a 
  * user wants to make changes to the contents of an <code>Entity</code>, 
  * every related <code>EntityReference</code> node has to be replaced in the 
  * structure model by a clone of the <code>Entity</code>'s contents, and 
@@ -40,9 +40,8 @@ package org.w3c.dom;
  * <code>Entity</code> node subtree is <code>null</code>. The same is true 
  * for <code>EntityReference</code> nodes that refer to this entity, when 
  * they are created using the <code>createEntityReference</code> method of 
- * the <code>Document</code> interface. The DOM Level 2 does not support any 
- * mechanism to resolve namespace prefixes.
- * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * the <code>Document</code> interface.
+ * <p>See also the <a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407'>Document Object Model (DOM) Level 3 Core Specification</a>.
  */
 public interface Entity extends Node {
     /**

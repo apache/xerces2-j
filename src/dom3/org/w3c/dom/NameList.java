@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003 World Wide Web Consortium,
+ * Copyright (c) 2004 World Wide Web Consortium,
  *
  * (Massachusetts Institute of Technology, European Research Consortium for
  * Informatics and Mathematics, Keio University). All Rights Reserved. This
@@ -18,7 +18,7 @@ package org.w3c.dom;
  * null values), without defining or constraining how this collection is 
  * implemented. The items in the <code>NameList</code> are accessible via an 
  * integral index, starting from 0. 
- * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407'>Document Object Model (DOM) Level 3 Core Specification</a>.
  * @since DOM Level 3
  */
 public interface NameList {
@@ -48,11 +48,11 @@ public interface NameList {
 
     /**
      *  Test if a name is part of this <code>NameList</code>. 
-     * @param name  The name to look for. 
+     * @param str  The name to look for. 
      * @return  <code>true</code> if the name has been found, 
      *   <code>false</code> otherwise. 
      */
-    public boolean contains(String name);
+    public boolean contains(String str);
 
     /**
      *  Test if the pair namespaceURI/name is part of this 

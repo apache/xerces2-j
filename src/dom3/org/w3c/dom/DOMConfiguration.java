@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003 World Wide Web Consortium,
+ * Copyright (c) 2004 World Wide Web Consortium,
  *
  * (Massachusetts Institute of Technology, European Research Consortium for
  * Informatics and Mathematics, Keio University). All Rights Reserved. This
@@ -20,11 +20,11 @@ package org.w3c.dom;
  * <code>CDATASection</code> nodes with <code>Text</code> nodes or 
  * specifying the type of the schema that must be used when the validation 
  * of the <code>Document</code> is requested. <code>DOMConfiguration</code> 
- * objects are also used in [<a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-LS-20031107'>DOM Level 3 Load and Save</a>]
+ * objects are also used in [<a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-LS-20040407'>DOM Level 3 Load and Save</a>]
  *  in the <code>DOMParser</code> and <code>DOMSerializer</code> interfaces. 
  * <p> The parameter names used by the <code>DOMConfiguration</code> object 
  * are defined throughout the DOM Level 3 specifications. Names are 
- * case-insensitives. To avoid possible conflicts, as a convention, names 
+ * case-insensitive. To avoid possible conflicts, as a convention, names 
  * referring to parameters defined outside the DOM specification should be 
  * made unique. Because parameters are exposed as properties in the , names 
  * are recommended to follow the section 5.16 Identifiers of [Unicode] with the addition of the character '-' (HYPHEN-MINUS) but it is not 
@@ -42,21 +42,21 @@ package org.w3c.dom;
  * <dd>
  * <dl>
  * <dt><code>true</code></dt>
- * <dd>[<em>optional</em>]Canonicalize the document according to the rules specified in [<a href='http://www.w3.org/TR/2001/REC-xml-c14n-20010315'>Canonical XML</a>]. 
- * Note that this is limited to what can be represented in the DOM. In 
+ * <dd>[<em>optional</em>] Canonicalize the document according to the rules specified in [<a href='http://www.w3.org/TR/2001/REC-xml-c14n-20010315'>Canonical XML</a>], 
+ * such as removing the <code>DocumentType</code> node (if any) from the 
+ * tree, or removing superfluous namespace declarations from each element. 
+ * Note that this is limited to what can be represented in the DOM; in 
  * particular, there is no way to specify the order of the attributes in the 
- * DOM.This forces the following parameters to <code>false</code>: "entities
- * ", "normalize-characters", "cdata-sections".This forces the following 
- * parameters to <code>true</code>: "namespaces", "namespace-declarations", "
- * well-formed", "element-content-whitespace".Other parameters are not 
- * changed unless explicitly specified in the description of the parameters. 
- * In addition, the <code>DocumentType</code> node is removed from the tree 
- * if any and superfluous namespace declarations are removed from each 
- * element. Note that querying this parameter with <code>getParameter</code> 
- * cannot return <code>true</code> unless it has been set to 
- * <code>true</code> and the parameters described above are appropriately 
- * set.</dd>
- * <dt><code>false</code></dt>
+ * DOM. In addition,  Setting this parameter to <code>true</code> will also 
+ * set the state of the parameters listed below. Later changes to the state 
+ * of one of those parameters will revert "canonical-form" back to 
+ * <code>false</code>. Parameters set to <code>false</code>: "entities", "
+ * normalize-characters", "cdata-sections". Parameters set to 
+ * <code>true</code>: "namespaces", "namespace-declarations", "well-formed", 
+ * "element-content-whitespace". Other parameters are not changed unless 
+ * explicitly specified in the description of the parameters.</dd>
+ * <dt>
+ * <code>false</code></dt>
  * <dd>[<em>required</em>] (<em>default</em>)Do not canonicalize the document.</dd>
  * </dl></dd>
  * <dt><code>"cdata-sections"</code></dt>
@@ -75,12 +75,12 @@ package org.w3c.dom;
  * <dd>
  * <dl>
  * <dt><code>true</code></dt>
- * <dd>[<em>optional</em>] Check if the characters in the document are fully normalized according 
- * to the rules defined in [<a href='http://www.w3.org/TR/2003/WD-charmod-20030822/'>CharModel</a>] 
- * supplemented by the definitions of relevant constructs from <a href='http://www.w3.org/TR/2003/PR-xml11-20031105/#sec-normalization-checking'>
- * Section 2.13</a> of [<a href='http://www.w3.org/TR/2003/PR-xml11-20031105/'>XML 1.1</a>]. </dd>
- * <dt>
- * <code>false</code></dt>
+ * <dd>[<em>optional</em>] Check if the characters in the document are <a href='http://www.w3.org/TR/2004/REC-xml11-20040204/#dt-fullnorm'>fully 
+ * normalized</a>, as defined in appendix B of [<a href='http://www.w3.org/TR/2004/REC-xml11-20040204/'>XML 1.1</a>]. When a 
+ * sequence of characters is encountered that fails normalization checking, 
+ * an error with the <code>DOMError.type</code> equals to 
+ * "check-character-normalization-failure" is issued. </dd>
+ * <dt><code>false</code></dt>
  * <dd>[<em>required</em>] (<em>default</em>)Do not check if characters are normalized.</dd>
  * </dl></dd>
  * <dt><code>"comments"</code></dt>
@@ -97,35 +97,48 @@ package org.w3c.dom;
  * <dd>
  * <dl>
  * <dt><code>true</code></dt>
- * <dd>[<em>optional</em>] Exposed schema-normalized values in the tree. Since this parameter 
- * requires to have schema information, the "validate" parameter will also 
- * be set to <code>true</code>. Having this parameter activated when 
- * "validate" is <code>false</code> has no effect and no 
- * schema-normalization will happen. 
+ * <dd>[<em>optional</em>] Expose schema normalized values in the tree, such as <a href='http://www.w3.org/TR/2001/REC-xmlschema-1-20010502/#key-nv'>XML 
+ * Schema normalized values</a> in the case of XML Schema. Since this parameter requires to have schema 
+ * information, the "validate" parameter will also be set to 
+ * <code>true</code>. Having this parameter activated when "validate" is 
+ * <code>false</code> has no effect and no schema-normalization will happen. 
  * <p ><b>Note:</b>  Since the document contains the result of the XML 1.0 
  * processing, this parameter does not apply to attribute value 
- * normalization as defined in section 3.3.3 of [<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>] and is only 
+ * normalization as defined in section 3.3.3 of [<a href='http://www.w3.org/TR/2004/REC-xml-20040204'>XML 1.0</a>] and is only 
  * meant for schema languages other than Document Type Definition (DTD). </dd>
  * <dt>
  * <code>false</code></dt>
  * <dd>[<em>required</em>] (<em>default</em>) Do not perform schema normalization on the tree. </dd>
+ * </dl></dd>
+ * <dt>
+ * <code>"element-content-whitespace"</code></dt>
+ * <dd>
+ * <dl>
+ * <dt><code>true</code></dt>
+ * <dd>[<em>required</em>] (<em>default</em>)Keep all whitespaces in the document.</dd>
+ * <dt><code>false</code></dt>
+ * <dd>[<em>optional</em>] Discard all <code>Text</code> nodes that contain whitespaces in element 
+ * content, as described in <a href='http://www.w3.org/TR/2004/REC-xml-infoset-20040204#infoitem.character'>
+ * [element content whitespace]</a>. The implementation is expected to use the attribute 
+ * <code>Text.isElementContentWhitespace</code> to determine if a 
+ * <code>Text</code> node should be discarded or not.</dd>
  * </dl></dd>
  * <dt><code>"entities"</code></dt>
  * <dd>
  * <dl>
  * <dt>
  * <code>true</code></dt>
- * <dd>[<em>required</em>] (<em>default</em>)Keep <code>EntityReference</code> and <code>Entity</code> nodes in the 
- * document.</dd>
- * <dt><code>false</code></dt>
- * <dd>[<em>required</em>] Remove all <code>EntityReference</code> and <code>Entity</code> nodes 
- * from the document, putting the entity expansions directly in their place. 
- * <code>Text</code> nodes are normalized, as defined in 
- * <code>Node.normalize</code>. Only <code>EntityReference</code> nodes to 
- * non-defined entities are kept in the document, with their associated 
- * <code>Entity</code> nodes if any. </dd>
- * </dl></dd>
- * <dt><code>"error-handler"</code></dt>
+ * <dd>[<em>required</em>] (<em>default</em>)Keep <code>EntityReference</code> nodes in the document.</dd>
+ * <dt>
+ * <code>false</code></dt>
+ * <dd>[<em>required</em>] Remove all <code>EntityReference</code> nodes from the document, 
+ * putting the entity expansions directly in their place. <code>Text</code> 
+ * nodes are normalized, as defined in <code>Node.normalize</code>. Only <a href='http://www.w3.org/TR/2004/REC-xml-infoset-20040204/#infoitem.rse'>
+ * unexpanded entity references</a> are kept in the document. </dd>
+ * </dl>
+ * <p ><b>Note:</b>  This parameter does not affect <code>Entity</code> nodes. </dd>
+ * <dt>
+ * <code>"error-handler"</code></dt>
  * <dd>[<em>required</em>] Contains a <code>DOMErrorHandler</code> object. If an error is 
  * encountered in the document, the implementation will call back the 
  * <code>DOMErrorHandler</code> registered using this parameter. The 
@@ -141,7 +154,7 @@ package org.w3c.dom;
  * <dl>
  * <dt>
  * <code>true</code></dt>
- * <dd>[<em>required</em>]Keep in the document the information defined in the XML Information Set [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information Set</a>]
+ * <dd>[<em>required</em>]Keep in the document the information defined in the XML Information Set [<a href='http://www.w3.org/TR/2004/REC-xml-infoset-20040204/'>XML Information Set</a>]
  * .This forces the following parameters to <code>false</code>: "
  * validate-if-schema", "entities", "datatype-normalization", "cdata-sections
  * ".This forces the following parameters to <code>true</code>: "
@@ -166,13 +179,14 @@ package org.w3c.dom;
  * </dl></dd>
  * <dt>
  * <code>"namespace-declarations"</code></dt>
- * <dd>
+ * <dd> This parameter has no effect if the 
+ * parameter "namespaces" is set to <code>false</code>. 
  * <dl>
  * <dt><code>true</code></dt>
  * <dd>[<em>required</em>] (<em>default</em>) Include namespace declaration attributes, specified or defaulted from 
  * the schema, in the document. See also the sections "Declaring Namespaces" 
  * in [<a href='http://www.w3.org/TR/1999/REC-xml-names-19990114/'>XML Namespaces</a>]
- *  and [<a href='http://www.w3.org/TR/2003/PR-xml-names11-20031105/'>XML Namespaces 1.1</a>]
+ *  and [<a href='http://www.w3.org/TR/2004/REC-xml-names11-20040204/'>XML Namespaces 1.1</a>]
  * .</dd>
  * <dt><code>false</code></dt>
  * <dd>[<em>required</em>]Discard all namespace declaration attributes. The namespace prefixes (
@@ -183,18 +197,16 @@ package org.w3c.dom;
  * <dd>
  * <dl>
  * <dt><code>true</code></dt>
- * <dd>[<em>optional</em>] Fully normalize the characters in the document according to the rules 
- * defined in [<a href='http://www.w3.org/TR/2003/WD-charmod-20030822/'>CharModel</a>] 
- * supplemented by the definitions of relevant constructs from <a href='http://www.w3.org/TR/2003/PR-xml11-20031105/#sec-normalization-checking'>
- * Section 2.13</a> of [<a href='http://www.w3.org/TR/2003/PR-xml11-20031105/'>XML 1.1</a>]. </dd>
+ * <dd>[<em>optional</em>] <a href='http://www.w3.org/TR/2004/REC-xml11-20040204/#dt-fullnorm'>Fully 
+ * normalized</a> the characters in the document as defined in appendix B of [<a href='http://www.w3.org/TR/2004/REC-xml11-20040204/'>XML 1.1</a>]. </dd>
  * <dt>
  * <code>false</code></dt>
  * <dd>[<em>required</em>] (<em>default</em>)Do not perform character normalization.</dd>
  * </dl></dd>
  * <dt><code>"schema-location"</code></dt>
  * <dd>[<em>optional</em>] Represent a <code>DOMString</code> object containing a list of URIs, 
- * separated by whitespaces (characters matching the <a href='http://www.w3.org/TR/2000/REC-xml-20001006#NT-S'>nonterminal 
- * production S</a> defined in section 2.3 [<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>]), that 
+ * separated by whitespaces (characters matching the <a href='http://www.w3.org/TR/2004/REC-xml-20040204#NT-S'>nonterminal 
+ * production S</a> defined in section 2.3 [<a href='http://www.w3.org/TR/2004/REC-xml-20040204'>XML 1.0</a>]), that 
  * represents the schemas against which validation should occur, i.e. the 
  * current schema. The types of schemas referenced in this list must match 
  * the type specified with <code>schema-type</code>, otherwise the behavior 
@@ -224,7 +236,7 @@ package org.w3c.dom;
  * parameter is <code>null</code>. 
  * <p ><b>Note:</b>  For XML Schema [<a href='http://www.w3.org/TR/2001/REC-xmlschema-1-20010502/'>XML Schema Part 1</a>]
  * , applications must use the value 
- * <code>"http://www.w3.org/2001/XMLSchema"</code>. For XML DTD [<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>], 
+ * <code>"http://www.w3.org/2001/XMLSchema"</code>. For XML DTD [<a href='http://www.w3.org/TR/2004/REC-xml-20040204'>XML 1.0</a>], 
  * applications must use the value 
  * <code>"http://www.w3.org/TR/REC-xml"</code>. Other schema languages are 
  * outside the scope of the W3C and therefore should recommend an absolute 
@@ -251,7 +263,7 @@ package org.w3c.dom;
  * <dt><code>true</code></dt>
  * <dd>[<em>optional</em>] Require the validation against a schema (i.e. XML schema, DTD, any 
  * other type or representation of schema) of the document as it is being 
- * normalized as defined by [<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>]. If 
+ * normalized as defined by [<a href='http://www.w3.org/TR/2004/REC-xml-20040204'>XML 1.0</a>]. If 
  * validation errors are found, or no schema was found, the error handler is 
  * notified. Schema-normalized values will not be exposed according to the 
  * schema in used unless the parameter "datatype-normalization" is 
@@ -279,11 +291,11 @@ package org.w3c.dom;
  * that option, when validating the document. </dd>
  * <dt><code>false</code></dt>
  * <dd>[<em>required</em>] (<em>default</em>) Do not accomplish schema processing, including the internal subset 
- * processing. Note that validation might still happen if "
- * "validate-if-schema" is <code>true</code>. </dd>
+ * processing. Default attribute values information are kept. Note that 
+ * validation might still happen if "validate-if-schema" is <code>true</code>
+ * . </dd>
  * </dl></dd>
- * <dt>
- * <code>"validate-if-schema"</code></dt>
+ * <dt><code>"validate-if-schema"</code></dt>
  * <dd>
  * <dl>
  * <dt><code>true</code></dt>
@@ -297,14 +309,14 @@ package org.w3c.dom;
  * one to <code>false</code>. </dd>
  * <dt><code>false</code></dt>
  * <dd>[<em>required</em>] (<em>default</em>) No schema processing should be performed if the document has a schema, 
- * including internal subset processing. Note that validation must still 
- * happen if "validate" is <code>true</code>. </dd>
+ * including internal subset processing. Default attribute values 
+ * information are kept. Note that validation must still happen if "validate
+ * " is <code>true</code>. </dd>
  * </dl></dd>
  * <dt><code>"well-formed"</code></dt>
  * <dd>
  * <dl>
- * <dt>
- * <code>true</code></dt>
+ * <dt><code>true</code></dt>
  * <dd>[<em>required</em>] (<em>default</em>) Check if all nodes are XML well formed according to the XML version in 
  * use in <code>Document.xmlVersion</code>: 
  * <ul>
@@ -332,29 +344,16 @@ package org.w3c.dom;
  * <code>false</code></dt>
  * <dd>[<em>optional</em>] Do not check for XML well-formedness. </dd>
  * </dl></dd>
- * <dt>
- * <code>"element-content-whitespace"</code></dt>
- * <dd>
- * <dl>
- * <dt><code>true</code></dt>
- * <dd>[<em>required</em>] (<em>default</em>)Keep all whitespaces in the document.</dd>
- * <dt><code>false</code></dt>
- * <dd>[<em>optional</em>] Discard all <code>Text</code> nodes that contain whitespaces in element 
- * content, as described in <a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024#infoitem.character'>
- * [element content whitespace]</a>. The implementation is expected to use the attribute 
- * <code>Text.isElementContentWhitespace</code> to determine if a 
- * <code>Text</code> node should be discarded or not.</dd>
- * </dl></dd>
  * </dl>
  * <p> The resolution of the system identifiers associated with entities is 
  * done using <code>Document.documentURI</code>. However, when the feature 
- * "LS" defined in [<a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-LS-20031107'>DOM Level 3 Load and Save</a>]
+ * "LS" defined in [<a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-LS-20040407'>DOM Level 3 Load and Save</a>]
  *  is supported by the DOM implementation, the parameter 
  * "resource-resolver" can also be used on <code>DOMConfiguration</code> 
  * objects attached to <code>Document</code> nodes. If this parameter is 
  * set, <code>Document.normalizeDocument()</code> will invoke the resource 
  * resolver instead of using <code>Document.documentURI</code>. 
- * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407'>Document Object Model (DOM) Level 3 Core Specification</a>.
  * @since DOM Level 3
  */
 public interface DOMConfiguration {

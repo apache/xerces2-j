@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003 World Wide Web Consortium,
+ * Copyright (c) 2004 World Wide Web Consortium,
  *
  * (Massachusetts Institute of Technology, European Research Consortium for
  * Informatics and Mathematics, Keio University). All Rights Reserved. This
@@ -32,7 +32,7 @@ package org.w3c.dom;
  * <p>The values of <code>nodeName</code>, 
  * <code>nodeValue</code>, and <code>attributes</code> vary according to the 
  * node type as follows: 
- * <table border='1'>
+ * <table border='1' cellpadding='3'>
  * <tr>
  * <th>Interface</th>
  * <th>nodeName</th>
@@ -131,7 +131,7 @@ package org.w3c.dom;
  * <td valign='top' rowspan='1' colspan='1'><code>null</code></td>
  * </tr>
  * </table> 
- * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407'>Document Object Model (DOM) Level 3 Core Specification</a>.
  */
 public interface Node {
     // NodeType
@@ -281,6 +281,8 @@ public interface Node {
      * all of its children are inserted, in the same order, before 
      * <code>refChild</code>. If the <code>newChild</code> is already in the 
      * tree, it is first removed.
+     * <p ><b>Note:</b>  Inserting a node before itself is implementation 
+     * dependent. 
      * @param newChild The node to insert.
      * @param refChild The reference node, i.e., the node before which the 
      *   new node must be inserted.
@@ -289,7 +291,7 @@ public interface Node {
      *   HIERARCHY_REQUEST_ERR: Raised if this node is of a type that does not 
      *   allow children of the type of the <code>newChild</code> node, or if 
      *   the node to insert is one of this node's ancestors or this node 
-     *   itself, or if this node if of type <code>Document</code> and the 
+     *   itself, or if this node is of type <code>Document</code> and the 
      *   DOM application attempts to insert a second 
      *   <code>DocumentType</code> or <code>Element</code> node.
      *   <br>WRONG_DOCUMENT_ERR: Raised if <code>newChild</code> was created 
@@ -298,7 +300,7 @@ public interface Node {
      *   if the parent of the node being inserted is readonly.
      *   <br>NOT_FOUND_ERR: Raised if <code>refChild</code> is not a child of 
      *   this node.
-     *   <br>NOT_SUPPORTED_ERR: if this node if of type <code>Document</code>, 
+     *   <br>NOT_SUPPORTED_ERR: if this node is of type <code>Document</code>, 
      *   this exception might be raised if the DOM implementation doesn't 
      *   support the insertion of a <code>DocumentType</code> or 
      *   <code>Element</code> node.
@@ -316,6 +318,8 @@ public interface Node {
      * <code>DocumentFragment</code> children, which are inserted in the 
      * same order. If the <code>newChild</code> is already in the tree, it 
      * is first removed.
+     * <p ><b>Note:</b>  Replacing a node with itself is implementation 
+     * dependent. 
      * @param newChild The new node to put in the child list.
      * @param oldChild The node being replaced in the list.
      * @return The node replaced.
@@ -323,7 +327,10 @@ public interface Node {
      *   HIERARCHY_REQUEST_ERR: Raised if this node is of a type that does not 
      *   allow children of the type of the <code>newChild</code> node, or if 
      *   the node to put in is one of this node's ancestors or this node 
-     *   itself.
+     *   itself, or if this node is of type <code>Document</code> and the 
+     *   result of the replacement operation would add a second 
+     *   <code>DocumentType</code> or <code>Element</code> on the 
+     *   <code>Document</code> node.
      *   <br>WRONG_DOCUMENT_ERR: Raised if <code>newChild</code> was created 
      *   from a different document than the one that created this node.
      *   <br>NO_MODIFICATION_ALLOWED_ERR: Raised if this node or the parent of 
@@ -370,11 +377,18 @@ public interface Node {
      *   HIERARCHY_REQUEST_ERR: Raised if this node is of a type that does not 
      *   allow children of the type of the <code>newChild</code> node, or if 
      *   the node to append is one of this node's ancestors or this node 
-     *   itself.
+     *   itself, or if this node is of type <code>Document</code> and the 
+     *   DOM application attempts to append a second 
+     *   <code>DocumentType</code> or <code>Element</code> node.
      *   <br>WRONG_DOCUMENT_ERR: Raised if <code>newChild</code> was created 
      *   from a different document than the one that created this node.
      *   <br>NO_MODIFICATION_ALLOWED_ERR: Raised if this node is readonly or 
      *   if the previous parent of the node being inserted is readonly.
+     *   <br>NOT_SUPPORTED_ERR: if the <code>newChild</code> node is a child 
+     *   of the <code>Document</code> node, this exception might be raised 
+     *   if the DOM implementation doesn't support the removal of the 
+     *   <code>DocumentType</code> child or <code>Element</code> child.
+     * @version DOM Level 3
      */
     public Node appendChild(Node newChild)
                             throws DOMException;
@@ -388,8 +402,8 @@ public interface Node {
 
     /**
      * Returns a duplicate of this node, i.e., serves as a generic copy 
-     * constructor for nodes. The duplicate node has no parent; (
-     * <code>parentNode</code> is <code>null</code>.) and no user data. User 
+     * constructor for nodes. The duplicate node has no parent (
+     * <code>parentNode</code> is <code>null</code>) and no user data. User 
      * data associated to the imported node is not carried over. However, if 
      * any <code>UserDataHandlers</code> has been specified along with the 
      * associated data these handlers will be called with the appropriate 
@@ -557,8 +571,8 @@ public interface Node {
     /**
      * The absolute base URI of this node or <code>null</code> if the 
      * implementation wasn't able to obtain an absolute URI. This value is 
-     * computed according to [<a href='http://www.w3.org/TR/2001/REC-xmlbase-20010627/'>XML Base</a>]. 
-     * However, when the <code>Document</code> supports the feature "HTML" [<a href='http://www.w3.org/TR/2003/REC-DOM-Level-2-HTML-20030109'>DOM Level 2 HTML</a>]
+     * computed as described in . However, when the <code>Document</code> 
+     * supports the feature "HTML" [<a href='http://www.w3.org/TR/2003/REC-DOM-Level-2-HTML-20030109'>DOM Level 2 HTML</a>]
      * , the base URI is computed using first the value of the href 
      * attribute of the HTML BASE element if any, and the value of the 
      * <code>documentURI</code> attribute from the <code>Document</code> 
@@ -574,7 +588,7 @@ public interface Node {
      */
     public static final short DOCUMENT_POSITION_DISCONNECTED = 0x01;
     /**
-     * The node precedes the reference node.
+     * The second node precedes the reference node.
      */
     public static final short DOCUMENT_POSITION_PRECEDING = 0x02;
     /**
@@ -598,11 +612,13 @@ public interface Node {
     public static final short DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = 0x20;
 
     /**
-     * Compares a node with this node with regard to their position in the 
-     * document and according to the document order.
-     * @param other The node to compare against this node.
-     * @return Returns how the given node is positioned relatively to this 
-     *   node (i.e., "the reference node").
+     * Compares the reference node, i.e. the node on which this method is 
+     * being called, with a node, i.e. the one passed as a parameter, with 
+     * regard to their position in the document and according to the 
+     * document order.
+     * @param other The node to compare against the reference node.
+     * @return Returns how the node is positioned relatively to the reference 
+     *   node.
      * @exception DOMException
      *   NOT_SUPPORTED_ERR: when the compared nodes are from different DOM 
      *   implementations that do not coordinate to return consistent 
@@ -628,7 +644,7 @@ public interface Node {
      * textual content. 
      * <br>The string returned is made of the text content of this node 
      * depending on its type, as defined below: 
-     * <table border='1'>
+     * <table border='1' cellpadding='3'>
      * <tr>
      * <th>Node type</th>
      * <th>Content</th>
@@ -677,7 +693,7 @@ public interface Node {
      * textual content. 
      * <br>The string returned is made of the text content of this node 
      * depending on its type, as defined below: 
-     * <table border='1'>
+     * <table border='1' cellpadding='3'>
      * <tr>
      * <th>Node type</th>
      * <th>Content</th>

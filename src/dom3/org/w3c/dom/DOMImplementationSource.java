@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003 World Wide Web Consortium,
+ * Copyright (c) 2004 World Wide Web Consortium,
  *
  * (Massachusetts Institute of Technology, European Research Consortium for
  * Informatics and Mathematics, Keio University). All Rights Reserved. This
@@ -18,7 +18,7 @@ package org.w3c.dom;
  * in . Each implemented <code>DOMImplementationSource</code> object is 
  * listed in the binding-specific list of available sources so that its 
  * <code>DOMImplementation</code> objects are made available.
- * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407'>Document Object Model (DOM) Level 3 Core Specification</a>.
  * @since DOM Level 3
  */
 public interface DOMImplementationSource {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003 World Wide Web Consortium,
+ * Copyright (c) 2004 World Wide Web Consortium,
  *
  * (Massachusetts Institute of Technology, European Research Consortium for
  * Informatics and Mathematics, Keio University). All Rights Reserved. This
@@ -30,7 +30,7 @@ package org.w3c.dom;
  * of the <code>normalize</code> method of the <code>Node</code> interface.
  * <p> No lexical check is done on the content of a CDATA section and it is 
  * therefore possible to have the character sequence <code>"]]&gt;"</code> 
- * in the content, which is illegal in a CDATA section per section 2.7 of [<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>]. The 
+ * in the content, which is illegal in a CDATA section per section 2.7 of [<a href='http://www.w3.org/TR/2004/REC-xml-20040204'>XML 1.0</a>]. The 
  * presence of this character sequence must generate a fatal error during 
  * serialization or the cdata section must be splitted before the 
  * serialization (see also the parameter <code>"split-cdata-sections"</code> 
@@ -48,7 +48,7 @@ package org.w3c.dom;
  * conversion libraries at the time of writing do not return an error or 
  * exception when a character is missing from the encoding, making the task 
  * of ensuring that data is not corrupted on serialization more difficult.
- * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407'>Document Object Model (DOM) Level 3 Core Specification</a>.
  */
 public interface CDATASection extends Text {
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003 World Wide Web Consortium,
+ * Copyright (c) 2004 World Wide Web Consortium,
  *
  * (Massachusetts Institute of Technology, European Research Consortium for
  * Informatics and Mathematics, Keio University). All Rights Reserved. This
@@ -19,9 +19,9 @@ package org.w3c.dom;
  * to the list of entities that are defined for the document, and little 
  * else because the effect of namespaces and the various XML schema efforts 
  * on DTD representation are not clearly understood as of this writing.
- * <p>The DOM Level 2 doesn't support editing <code>DocumentType</code> nodes. 
+ * <p>DOM Level 3 doesn't support editing <code>DocumentType</code> nodes. 
  * <code>DocumentType</code> nodes are read-only.
- * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407'>Document Object Model (DOM) Level 3 Core Specification</a>.
  */
 public interface DocumentType extends Node {
     /**

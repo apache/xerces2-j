@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003 World Wide Web Consortium,
+ * Copyright (c) 2004 World Wide Web Consortium,
  *
  * (Massachusetts Institute of Technology, European Research Consortium for
  * Informatics and Mathematics, Keio University). All Rights Reserved. This
@@ -28,7 +28,7 @@ package org.w3c.dom;
  * native error reporting mechanisms. For some bindings, for example, 
  * methods may return error codes similar to those listed in the 
  * corresponding method descriptions.
- * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407'>Document Object Model (DOM) Level 3 Core Specification</a>.
  */
 public class DOMException extends RuntimeException {
     public DOMException(short code, String message) {
@@ -56,7 +56,7 @@ public class DOMException extends RuntimeException {
      */
     public static final short WRONG_DOCUMENT_ERR        = 4;
     /**
-     * If an invalid or illegal character is specified, such as in a name.
+     * If an invalid or illegal character is specified, such as in an XML name.
      */
     public static final short INVALID_CHARACTER_ERR     = 5;
     /**
@@ -81,7 +81,7 @@ public class DOMException extends RuntimeException {
     public static final short NOT_SUPPORTED_ERR         = 9;
     /**
      * If an attempt is made to add an attribute that is already in use 
-     * elsewhere/
+     * elsewhere.
      */
     public static final short INUSE_ATTRIBUTE_ERR       = 10;
     /**
@@ -116,7 +116,7 @@ public class DOMException extends RuntimeException {
      * If a call to a method such as <code>insertBefore</code> or 
      * <code>removeChild</code> would make the <code>Node</code> invalid 
      * with respect to "partial validity", this exception would be raised 
-     * and the operation would not be done. This code is used in [<a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Val-20030730'>DOM Level 3 Validation</a>]
+     * and the operation would not be done. This code is used in [<a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-Val-20040127/'>DOM Level 3 Validation</a>]
      * . Refer to this specification for further information.
      * @since DOM Level 3
      */

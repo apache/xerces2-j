@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003 World Wide Web Consortium,
+ * Copyright (c) 2004 World Wide Web Consortium,
  *
  * (Massachusetts Institute of Technology, European Research Consortium for
  * Informatics and Mathematics, Keio University). All Rights Reserved. This
@@ -21,7 +21,7 @@ import org.w3c.dom.Node;
  * cloned, imported, or renamed. This can be used by the application to 
  * implement various behaviors regarding the data it associates to the DOM 
  * nodes. This interface defines that handler. 
- * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407'>Document Object Model (DOM) Level 3 Core Specification</a>.
  * @since DOM Level 3
  */
 public interface UserDataHandler {
@@ -31,7 +31,7 @@ public interface UserDataHandler {
      */
     public static final short NODE_CLONED               = 1;
     /**
-     * The node is imported, using <code>Node.importNode()</code>.
+     * The node is imported, using <code>Document.importNode()</code>.
      */
     public static final short NODE_IMPORTED             = 2;
     /**
@@ -42,19 +42,20 @@ public interface UserDataHandler {
      */
     public static final short NODE_DELETED              = 3;
     /**
-     * The node is renamed, using <code>Node.renameNode()</code>.
+     * The node is renamed, using <code>Document.renameNode()</code>.
      */
     public static final short NODE_RENAMED              = 4;
     /**
-     * The node is adopted, using <code>Node.adoptNode()</code>.
+     * The node is adopted, using <code>Document.adoptNode()</code>.
      */
     public static final short NODE_ADOPTED              = 5;
 
     /**
      * This method is called whenever the node for which this handler is 
      * registered is imported or cloned.
-     * <br> Any exceptions thrown inside a <code>UserDataHandler</code> will 
-     * be ignored. 
+     * <br> DOM applications must not raise exceptions in a 
+     * <code>UserDataHandler</code>. The effect of throwing exceptions from 
+     * the handler is DOM implementation dependent. 
      * @param operation Specifies the type of operation that is being 
      *   performed on the node.
      * @param key Specifies the key for which this handler is being called. 

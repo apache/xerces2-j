@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003 World Wide Web Consortium,
+ * Copyright (c) 2004 World Wide Web Consortium,
  *
  * (Massachusetts Institute of Technology, European Research Consortium for
  * Informatics and Mathematics, Keio University). All Rights Reserved. This
@@ -16,7 +16,7 @@ package org.w3c.dom;
  * The <code>DOMImplementation</code> interface provides a number of methods 
  * for performing operations that are independent of any particular instance 
  * of the document object model.
- * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407'>Document Object Model (DOM) Level 3 Core Specification</a>.
  */
 public interface DOMImplementation {
     /**
@@ -41,8 +41,8 @@ public interface DOMImplementation {
      * @return A new <code>DocumentType</code> node with 
      *   <code>Node.ownerDocument</code> set to <code>null</code>.
      * @exception DOMException
-     *   INVALID_CHARACTER_ERR: Raised if the specified qualified name 
-     *   contains an illegal character according to [<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>].
+     *   INVALID_CHARACTER_ERR: Raised if the specified qualified name is not 
+     *   an XML name according to [<a href='http://www.w3.org/TR/2004/REC-xml-20040204'>XML 1.0</a>].
      *   <br>NAMESPACE_ERR: Raised if the <code>qualifiedName</code> is 
      *   malformed.
      *   <br>NOT_SUPPORTED_ERR: May be raised if the implementation does not 
@@ -81,8 +81,8 @@ public interface DOMImplementation {
      *   <code>doctype</code> are <code>null</code>, the returned 
      *   <code>Document</code> is empty with no document element.
      * @exception DOMException
-     *   INVALID_CHARACTER_ERR: Raised if the specified qualified name 
-     *   contains an illegal character according to [<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>].
+     *   INVALID_CHARACTER_ERR: Raised if the specified qualified name is not 
+     *   an XML name according to [<a href='http://www.w3.org/TR/2004/REC-xml-20040204'>XML 1.0</a>].
      *   <br>NAMESPACE_ERR: Raised if the <code>qualifiedName</code> is 
      *   malformed, if the <code>qualifiedName</code> has a prefix and the 
      *   <code>namespaceURI</code> is <code>null</code>, or if the 

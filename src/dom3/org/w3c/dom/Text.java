@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003 World Wide Web Consortium,
+ * Copyright (c) 2004 World Wide Web Consortium,
  *
  * (Massachusetts Institute of Technology, European Research Consortium for
  * Informatics and Mathematics, Keio University). All Rights Reserved. This
@@ -14,7 +14,7 @@ package org.w3c.dom;
 
 /**
  * The <code>Text</code> interface inherits from <code>CharacterData</code> 
- * and represents the textual content (termed <a href='http://www.w3.org/TR/2000/REC-xml-20001006#syntax'>character data</a> in XML) of an <code>Element</code> or <code>Attr</code>. If there is no 
+ * and represents the textual content (termed <a href='http://www.w3.org/TR/2004/REC-xml-20040204#syntax'>character data</a> in XML) of an <code>Element</code> or <code>Attr</code>. If there is no 
  * markup inside an element's content, the text is contained in a single 
  * object implementing the <code>Text</code> interface that is the only 
  * child of the element. If there is markup, it is parsed into the 
@@ -35,7 +35,7 @@ package org.w3c.dom;
  * an attribute, the character sequence "]]&gt;" when part of an element, 
  * the quotation mark character " or the apostrophe character ' when part of 
  * an attribute. 
- * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407'>Document Object Model (DOM) Level 3 Core Specification</a>.
  */
 public interface Text extends CharacterData {
     /**
@@ -59,7 +59,7 @@ public interface Text extends CharacterData {
                           throws DOMException;
 
     /**
-     * Returns whether this text node contains <a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024#infoitem.character'>
+     * Returns whether this text node contains <a href='http://www.w3.org/TR/2004/REC-xml-infoset-20040204#infoitem.character'>
      * element content whitespace</a>, often abusively called "ignorable whitespace". The text node is 
      * determined to contain whitespace in element content during the load 
      * of the document or if validation occurs while using 

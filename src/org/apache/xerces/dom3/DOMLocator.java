@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003 World Wide Web Consortium,
+ * Copyright (c) 2004 World Wide Web Consortium,
  *
  * (Massachusetts Institute of Technology, European Research Consortium for
  * Informatics and Mathematics, Keio University). All Rights Reserved. This
@@ -17,18 +17,18 @@ import org.w3c.dom.Node;
 /**
  * <code>DOMLocator</code> is an interface that describes a location (e.g. 
  * where an error occurred).
- * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407'>Document Object Model (DOM) Level 3 Core Specification</a>.
  * @since DOM Level 3
  */
 public interface DOMLocator {
     /**
-     * The line number this locator is pointing to, or <code>-1</code> if
+     * The line number this locator is pointing to, or <code>-1</code> if 
      * there is no column number available.
      */
     public int getLineNumber();
 
     /**
-     * The column number this locator is pointing to, or <code>-1</code> if
+     * The column number this locator is pointing to, or <code>-1</code> if 
      * there is no column number available.
      */
     public int getColumnNumber();
@@ -46,13 +46,13 @@ public interface DOMLocator {
     public int getUtf16Offset();
 
     /**
-     * The node this locator is pointing to, or <code>null</code> if no node
+     * The node this locator is pointing to, or <code>null</code> if no node 
      * is available.
      */
     public Node getRelatedNode();
 
     /**
-     * The URI this locator is pointing to, or <code>null</code> if no URI is
+     * The URI this locator is pointing to, or <code>null</code> if no URI is 
      * available.
      */
     public String getUri();

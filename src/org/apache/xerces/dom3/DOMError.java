@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003 World Wide Web Consortium,
+ * Copyright (c) 2004 World Wide Web Consortium,
  *
  * (Massachusetts Institute of Technology, European Research Consortium for
  * Informatics and Mathematics, Keio University). All Rights Reserved. This
@@ -14,7 +14,7 @@ package org.apache.xerces.dom3;
 
 /**
  * <code>DOMError</code> is an interface that describes an error.
- * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407'>Document Object Model (DOM) Level 3 Core Specification</a>.
  * @since DOM Level 3
  */
 public interface DOMError {
@@ -36,9 +36,10 @@ public interface DOMError {
     /**
      * The severity of the error described by the <code>DOMError</code> is 
      * fatal error. A <code>SEVERITY_FATAL_ERROR</code> will cause the 
-     * normal processing to stop and the return value of 
-     * <code>DOMErrorHandler.handleError()</code> is ignored. If the 
-     * implementation chooses to continue, the behavior is undefined.
+     * normal processing to stop. The return value of 
+     * <code>DOMErrorHandler.handleError()</code> is ignored unless the 
+     * implementation chooses to continue, in which case the behavior 
+     * becomes undefined.
      */
     public static final short SEVERITY_FATAL_ERROR      = 3;
 
@@ -62,7 +63,7 @@ public interface DOMError {
      * <code>Document.normalizeDocument()</code> does generate warnings when 
      * the "split-cdata-sections" parameter is in use. Therefore, the method 
      * generates a <code>SEVERITY_WARNING</code> with <code>type</code> 
-     * <code>"cdata-section-splitted"</code> and the first 
+     * <code>"cdata-sections-splitted"</code> and the first 
      * <code>CDATASection</code> node in document order resulting from the 
      * split is returned by the <code>relatedData</code> attribute. 
      */

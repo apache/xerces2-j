@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003 World Wide Web Consortium,
+ * Copyright (c) 2004 World Wide Web Consortium,
  *
  * (Massachusetts Institute of Technology, European Research Consortium for
  * Informatics and Mathematics, Keio University). All Rights Reserved. This
@@ -71,7 +71,7 @@ package org.w3c.dom;
  * right options have been set). But this may not be the case after 
  * mutation, independently of whether the mutation is performed by setting 
  * the string value directly or by changing the <code>Attr</code> child 
- * nodes. In particular, this is true when <a href='http://www.w3.org/TR/2000/REC-xml-20001006#dt-charref'>character 
+ * nodes. In particular, this is true when <a href='http://www.w3.org/TR/2004/REC-xml-20040204#dt-charref'>character 
  * references</a> are involved, given that they are not represented in the DOM and they 
  * impact attribute value normalization. On the other hand, if the 
  * implementation knows about the schema in use when the attribute value is 
@@ -82,7 +82,7 @@ package org.w3c.dom;
  * <p>The following table gives some examples of the relations between the 
  * attribute value in the original document (parsed attribute), the value as 
  * exposed in the DOM, and the serialization of the value: 
- * <table border='1'>
+ * <table border='1' cellpadding='3'>
  * <tr>
  * <th>Examples</th>
  * <th>Parsed 
@@ -152,7 +152,7 @@ package org.w3c.dom;
  * <td valign='top' rowspan='1' colspan='1'><em>Dependent on Implementation and Load/Save Options</em></td>
  * </tr>
  * </table>
- * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407'>Document Object Model (DOM) Level 3 Core Specification</a>.
  */
 public interface Attr extends Node {
     /**
@@ -182,7 +182,7 @@ public interface Attr extends Node {
      * contents of the string, i.e. any characters that an XML processor 
      * would recognize as markup are instead treated as literal text. See 
      * also the method <code>Element.setAttribute()</code>.
-     * <br> Some specialized implementations, such as some [<a href='http://www.w3.org/TR/2001/REC-SVG-20010904'>SVG 1.0</a>] 
+     * <br> Some specialized implementations, such as some [<a href='http://www.w3.org/TR/2003/REC-SVG11-20030114/'>SVG 1.1</a>] 
      * implementations, may do normalization automatically, even after 
      * mutation; in such case, the value on retrieval may differ from the 
      * value on setting. 
@@ -197,7 +197,7 @@ public interface Attr extends Node {
      * contents of the string, i.e. any characters that an XML processor 
      * would recognize as markup are instead treated as literal text. See 
      * also the method <code>Element.setAttribute()</code>.
-     * <br> Some specialized implementations, such as some [<a href='http://www.w3.org/TR/2001/REC-SVG-20010904'>SVG 1.0</a>] 
+     * <br> Some specialized implementations, such as some [<a href='http://www.w3.org/TR/2003/REC-SVG11-20030114/'>SVG 1.1</a>] 
      * implementations, may do normalization automatically, even after 
      * mutation; in such case, the value on retrieval may differ from the 
      * value on setting. 
