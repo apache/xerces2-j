@@ -377,10 +377,13 @@ import java.io.Serializable;
     int uriSpecLen = uriSpec.length();
     int index = 0;
 
-    // check for scheme
-    if (uriSpec.indexOf(':') == -1) {
+    // Check for scheme, which must be before `/'. Also handle names with
+    // DOS drive letters ('D:'), so 1-character schemes are not allowed.
+    int colonIdx = uriSpec.indexOf(':');
+    if ((colonIdx < 2) || (colonIdx > uriSpec.indexOf('/'))) { 
       int fragmentIdx = uriSpec.indexOf('#');
-      if (p_base == null && fragmentIdx != 0 ) {//A standalone base is a valid URI according to spec
+      // A standalone base is a valid URI according to spec
+      if (p_base == null && fragmentIdx != 0 ) {
         throw new MalformedURIException("No scheme found in URI.");
       }
     }
