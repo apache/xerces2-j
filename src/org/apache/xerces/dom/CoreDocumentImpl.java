@@ -808,7 +808,17 @@ public class CoreDocumentImpl
       * the version number of this document. This is null when unspecified
       */
     public void setXmlVersion(String value) {
-       version = value;
+        if(version.equals("1.0") || version.equals("1.1"){
+            version = value;
+        }
+        else{
+            //NOT_SUPPORTED_ERR: Raised if the vesion is set to a value that is not supported by
+            //this document
+            //we dont support any other XML version
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+            throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+
+        }
     }
 
     /**
