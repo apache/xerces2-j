@@ -452,6 +452,29 @@ public class XMLErrorReporter
 
     } // setFeature(String,boolean)
 
+    // return state of given feature or false if unsupported.
+    public boolean getFeature(String featureId)
+        throws XMLConfigurationException {
+
+        //
+        // Xerces features
+        //
+
+        if (featureId.startsWith(Constants.XERCES_FEATURE_PREFIX)) {
+            String feature = featureId.substring(Constants.XERCES_FEATURE_PREFIX.length());
+            //
+            // http://apache.org/xml/features/continue-after-fatal-error
+            //   Allows the parser to continue after a fatal error.
+            //   Normally, a fatal error would stop the parse.
+            //
+            if (feature.equals(Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE)) {
+                return fContinueAfterFatalError ;
+            }
+        }
+        return false;
+
+    } // setFeature(String,boolean)
+
     /**
      * Returns a list of property identifiers that are recognized by
      * this component. This method may return null if no properties
