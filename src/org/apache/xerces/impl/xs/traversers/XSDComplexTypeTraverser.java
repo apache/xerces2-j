@@ -513,13 +513,12 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 }
                 // Remove prohibited uses.   Should be done prior to any merge.
                 typeInfo.fAttrGrp.removeProhibitedAttrs();
+            }
 
-                if (baseComplexType != null) {
-                    mergeAttributes(baseComplexType.fAttrGrp, typeInfo.fAttrGrp, typeName, true);
-                }
+            if (baseComplexType != null) {
+                mergeAttributes(baseComplexType.fAttrGrp, typeInfo.fAttrGrp, typeName, true);
             }
         }
-
     }
 
     private void traverseComplexContent(Element complexContentElement,
