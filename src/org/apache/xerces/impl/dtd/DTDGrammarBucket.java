@@ -112,12 +112,12 @@ public class DTDGrammarBucket {
      */
     public void putGrammar(DTDGrammar grammar) {
         XMLDTDDescription desc = (XMLDTDDescription)grammar.getGrammarDescription();
-        fGrammars.put(desc.getRootName(), grammar);
+        fGrammars.put(desc, grammar);
     } // putGrammar(DTDGrammar)
 
     // retrieve a DTDGrammar given an XMLDTDDescription
     public DTDGrammar getGrammar(XMLGrammarDescription desc) {
-        return (DTDGrammar)fGrammars.get(((XMLDTDDescription)desc).getRootName());
+        return (DTDGrammar)(fGrammars.get((XMLDTDDescription)desc));
     } // putGrammar(DTDGrammar)
 
     public void clear() {

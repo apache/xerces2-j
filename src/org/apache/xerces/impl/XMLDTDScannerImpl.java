@@ -248,6 +248,7 @@ public class XMLDTDScannerImpl
         fSymbolTable = symbolTable;
         fErrorReporter = errorReporter;
         fEntityManager = entityManager;
+        entityManager.setProperty(SYMBOL_TABLE, fSymbolTable);
     }
 
     //

@@ -76,6 +76,7 @@ import org.apache.xerces.xni.parser.XMLInputSource;
 
 import java.util.Locale;
 import java.io.IOException;
+import java.io.EOFException;
 
 /**
  * The DTD loader. The loader knows how to build grammars from XMLInputSources.
@@ -132,6 +133,9 @@ public class XMLDTDLoader
     // the scanner we use to actually read the DTD
     protected XMLDTDScannerImpl fDTDScanner;
 
+    // the entity manager the scanner needs.  
+    protected XMLEntityManager fEntityManager;
+
     // what's our Locale?
     protected Locale fLocale;
 
@@ -140,7 +144,8 @@ public class XMLDTDLoader
     //
 
     /** Deny default construction; we need a SymtolTable! */
-    private XMLDTDLoader() {
+    public XMLDTDLoader() {
+        this(new SymbolTable());
     } // <init>()
 
     public XMLDTDLoader(SymbolTable symbolTable) {
@@ -163,8 +168,12 @@ public class XMLDTDLoader
         }
         fErrorReporter = errorReporter;
         fEntityResolver = entityResolver;
-        fDTDScanner = new XMLDTDScannerImpl(fSymbolTable, fErrorReporter, 
-                fEntityResolver instanceof XMLEntityManager?(XMLEntityManager)fEntityResolver:new XMLEntityManager());
+        if(fEntityResolver instanceof XMLEntityManager) {
+            fEntityManager = (XMLEntityManager)fEntityResolver;
+        } else {
+            fEntityManager = new XMLEntityManager();
+        }
+        fDTDScanner = new XMLDTDScannerImpl(fSymbolTable, fErrorReporter, fEntityManager);
         fDTDScanner.setDTDHandler(this);
         fDTDScanner.setDTDContentModelHandler(this);
         reset();
@@ -254,6 +263,7 @@ public class XMLDTDLoader
         if(propertyId.equals( SYMBOL_TABLE)) {
             fSymbolTable = (SymbolTable)value;
             fDTDScanner.setProperty(propertyId, value);
+            fEntityManager.setProperty(propertyId, value);
         } else if(propertyId.equals( ERROR_REPORTER)) {
             fErrorReporter = (XMLErrorReporter)value;
             fDTDScanner.setProperty(propertyId, value);
@@ -347,14 +357,26 @@ public class XMLDTDLoader
             throws IOException, XNIException {
         reset();
         fDTDScanner.reset();
-        fDTDGrammar = new DTDGrammar(fSymbolTable, new XMLDTDDescription(source));
+        fDTDGrammar = new DTDGrammar(fSymbolTable, new XMLDTDDescription(source.getPublicId(), source.getSystemId(), source.getBaseSystemId(), fEntityManager.expandSystemId(source.getSystemId()), null));
         fGrammarBucket = new DTDGrammarBucket();
         fGrammarBucket.setStandalone(false);
-        fGrammarBucket.putGrammar(fDTDGrammar);
         fGrammarBucket.setActiveGrammar(fDTDGrammar); 
+        // no reason to use grammar bucket's "put" method--we
+        // know which grammar it is, and we don't know the root name anyway...
 
         // actually start the parsing!
         fDTDScanner.setInputSource(source);
+        try {
+            fDTDScanner.scanDTDExternalSubset(true);
+        } catch (EOFException e) {
+            // expected behaviour...
+        }
+        // since we're not really in a DTD, the endDTD call never
+        // gets fired by the scanner...  This fakes it:
+        endDTD(null);
+        if(fDTDGrammar != null && fGrammarPool != null) {
+            fGrammarPool.cacheGrammars(XMLDTDDescription.XML_DTD, new Grammar[] {fDTDGrammar});
+        }
         return fDTDGrammar;
     } // loadGrammar(XMLInputSource):  Grammar
 

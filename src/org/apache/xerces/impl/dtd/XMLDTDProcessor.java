@@ -345,7 +345,6 @@ public class XMLDTDProcessor
     public void reset(XMLComponentManager componentManager)
             throws XMLConfigurationException {
 
-        reset();
         // sax features
         try {
             fValidation = componentManager.getFeature(VALIDATION);
@@ -392,8 +391,7 @@ public class XMLDTDProcessor
         } else {
             fGrammarBucket = null;
         }
-
-        init();
+        reset();
 
     } // reset(XMLComponentManager)
 
@@ -404,6 +402,8 @@ public class XMLDTDProcessor
         fInDTDIgnore = false;
 
         fNDataDeclNotations.clear();
+
+        init();
 
     }
     /**

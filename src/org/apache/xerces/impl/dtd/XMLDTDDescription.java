@@ -92,9 +92,16 @@ public class XMLDTDDescription extends XMLResourceIdentifierImpl
         this.fPossibleRoots = null;
     } // init(XMLResourceIdentifier, String)
 
+    public XMLDTDDescription(String publicId, String literalId,
+                String baseId, String expandedId, String rootName) {
+        this.setValues(publicId, literalId, baseId, expandedId);
+        this.fRootName = rootName;
+        this.fPossibleRoots = null;
+    } // init(String, String, String, String, String)
+
     public XMLDTDDescription(XMLInputSource source) {
-        this.setValues(source.getPublicId(), source.getSystemId(),
-                source.getBaseSystemId(), null);
+        this.setValues(source.getPublicId(), null,
+                source.getBaseSystemId(), source.getSystemId());
         this.fRootName = null;
         this.fPossibleRoots = null;
     } // init(XMLInputSource)
@@ -135,29 +142,35 @@ public class XMLDTDDescription extends XMLResourceIdentifierImpl
      * @param desc The description of the grammar to be compared with
      * @return     True if they are equal, else false
      */
-    public boolean equals(XMLGrammarDescription desc) {
-    	if (!getGrammarType().equals(desc.getGrammarType())) {
+    public boolean equals(Object desc) {
+        if(!(desc instanceof XMLGrammarDescription)) return false;
+    	if (!getGrammarType().equals(((XMLGrammarDescription)desc).getGrammarType())) {
     	    return false;
     	}
         // assume it's a DTDDescription
         XMLDTDDescription dtdDesc = (XMLDTDDescription)desc;
         if(fRootName != null) {
-            if((dtdDesc.fRootName) != null && !dtdDesc.fRootName.equals(fRootName))
+            if((dtdDesc.fRootName) != null && !dtdDesc.fRootName.equals(fRootName)) {
                 return false;
-            else if(dtdDesc.fPossibleRoots != null && !dtdDesc.fPossibleRoots.contains(fRootName)) 
+            } else if(dtdDesc.fPossibleRoots != null && !dtdDesc.fPossibleRoots.contains(fRootName)) {
                 return false;
-        } else if(fPossibleRoots != null) {
-            if(dtdDesc.fRootName != null && !fPossibleRoots.contains(dtdDesc.fRootName))
-                return false;
-            if(dtdDesc.fPossibleRoots == null)
-                return false;
-            boolean found = false;
-            for(int i = 0; i<fPossibleRoots.size(); i++) {
-                String root = (String)fPossibleRoots.elementAt(i);
-                found = dtdDesc.fPossibleRoots.contains(root);
-                if(found) break;
             }
-            if(!found) return false;
+        } else if(fPossibleRoots != null) {
+            if(dtdDesc.fRootName != null) {
+                if(!fPossibleRoots.contains(dtdDesc.fRootName)) { 
+                    return false;
+                }
+            } else if(dtdDesc.fPossibleRoots == null) {
+                return false;
+            } else {
+                boolean found = false;
+                for(int i = 0; i<fPossibleRoots.size(); i++) {
+                    String root = (String)fPossibleRoots.elementAt(i);
+                    found = dtdDesc.fPossibleRoots.contains(root);
+                    if(found) break;
+                }
+                if(!found) return false;
+            }
         }
         // if we got this far we've got a root match... try other two fields,
         // since so many different DTD's have roots in common:

@@ -58,6 +58,7 @@
 package org.apache.xerces.impl.dtd;
 
 import org.apache.xerces.impl.Constants;
+import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.validation.ValidationManager;
 import org.apache.xerces.impl.validation.ValidationState;
@@ -691,7 +692,7 @@ public class XMLDTDValidator
         fSeenDoctypeDecl = true;
         fRootElement.setValues(null, rootElement, rootElement, null);
         // find or create grammar:
-        XMLDTDDescription grammarDesc = new XMLDTDDescription(fDocLocation, rootElement);
+        XMLDTDDescription grammarDesc = new XMLDTDDescription(publicId, systemId, fDocLocation.getExpandedSystemId(), XMLEntityManager.expandSystemId(systemId), rootElement);
         fDTDGrammar = fGrammarBucket.getGrammar(grammarDesc);
         if(fDTDGrammar == null) {
             // give grammar pool a chance...
@@ -705,7 +706,6 @@ public class XMLDTDValidator
         } else {
             // we've found a cached one;so let's make sure not to read
             // any external subset!
-            System.err.println("we're cachin' now!");
             fValidationManager.setCachedDTD(true);
         }
         fGrammarBucket.setActiveGrammar(fDTDGrammar);
