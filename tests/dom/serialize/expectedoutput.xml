@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<s:Envelope xmlns:s="myschema/namespace" xmlns="default namespace" xmlns:xsi="http://www.w3.org/1999/XMLSchema/instance">
+  <s:Body>
+	<length>3</length>
+  </s:Body>
+<!--add element in the same scope-->
+<s:bar xmlns:s="urn:schemas-xmlsoap-org:soap.v1"/>
+
+<!--add element with s bound to different namespace-->
+<s:hello xmlns:s="s_bound_to_this"/>
+
+<!--add element with no prefix bound to different scope than default prefix-->
+<emptyNS xmlns="empty_rebound"/>
+
+<!--add element no prefix no namespace-->
+<defaultNamespace xmlns=""/>
+
+<!--add element with prefix s and empty namespace-->
+<noNamespace xmlns=""/>
+
+<!--create element: _attr_ bound to _hi_, local declaration of xmlns:attr = boo-->
+<attr:foo xmlns:attr="hi"/>
+
+<!--
+1) noBooPrefixAttr had no prefix and bound to _boo_ URI (boo is not declared).
+2) dummy attribute with null namespace
+3) boowithPrefixS with declared s - no change
+-->
+<s:testAttributes xmlns:s="urn:schemas-xmlsoap-org:soap.v1" dummy="" xmlns:NS1="boo" NS1:noBooPrefixAttr="" s:BooWithPrefixS=""/>
+
+<!--xml:space attributes, doml1 namespace declaration (NOT well-formed!!), doml2 ns decls-->
+<spaces xmlns="" xml:space="" s:level1Node="" xmlns:="" xmlns:foo="" xmlns:k="" xmlns:k:d=""/>
+
+<!--
+1) Declare _Table_ attribute with no prefix and bound to default namespace
+2) declare attribute xmlns1000:NS bound to xmlns namespace
+3) Attribute _noFooPrefixAttr_ had no prefix and bound to _foo_ URI. There is local default decl bound to _foo_-->
+<s:testAttributes2 xmlns:s="urn:schemas-xmlsoap-org:soap.v1" xmlns:NS2="hello_world" NS2:Table="" xmlns:NS3="foo" NS3:noFooPrefixAttr="" xmlns:xmlns1000="http://www.w3.org/2000/xmlns/" xmlns1000:namespaceAttr2="">
+<s:testAttributes3 xmlns:s="have_no_correct_namespace" xmlns1000:myAttribute="">Has xmlns2000:myAttribute attribute with xmlns namespace(prefix not defined), element has no defined prefix</s:testAttributes3></s:testAttributes2>
+</s:Envelope>
