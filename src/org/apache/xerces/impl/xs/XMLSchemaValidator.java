@@ -732,23 +732,18 @@ public class XMLSchemaValidator
      */
     public void characters(XMLString text, Augmentations augs) throws XNIException {
 
-        handleCharacters(text);
+        text = handleCharacters(text);
         // call handlers
         if (fDocumentHandler != null) {
-            if (fNormalizeData) {
-               if (fUnionType) {
-                   // for union types we can't normalize data
-                   // thus we only need to send augs information if any;
-                   // the normalized data for union will be send
-                   // after normalization is performed (at the endElement())
-                   if (augs != null)
-                       fDocumentHandler.characters(fEmptyXMLStr, augs);
-                }
-                else {
-                    // otherwise pass the normalized string as the text
-                    fDocumentHandler.characters(fNormalizedStr, augs);
-                }
-            } else {
+            if (fNormalizeData && fUnionType) {
+               // for union types we can't normalize data
+               // thus we only need to send augs information if any;
+               // the normalized data for union will be send
+               // after normalization is performed (at the endElement())
+               if (augs != null)
+                   fDocumentHandler.characters(fEmptyXMLStr, augs);
+            }
+            else {
                 fDocumentHandler.characters(text, augs);
             }
         }
@@ -1511,10 +1506,11 @@ public class XMLSchemaValidator
     } // handleEndDocument()
 
     // handle character contents
-    void handleCharacters(XMLString text) {
+    // returns the normalized string if possible, otherwise the original string
+    XMLString handleCharacters(XMLString text) {
 
         if (fSkipValidationDepth >= 0)
-            return;
+            return text;
 
         // Note: data in EntityRef and CDATA is normalized as well
         // if whitespace == -1 skip normalization, because it is a complexType
@@ -1544,6 +1540,7 @@ public class XMLSchemaValidator
         // we saw first chunk of characters
         fFirstChunk = false;
 
+        return text;
     } // handleCharacters(XMLString)
 
     /**
