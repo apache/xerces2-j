@@ -64,6 +64,8 @@ import org.apache.xerces.impl.v2.datatypes.IDDatatypeValidator;
  * schema component is a global <attributeGroup> element information item
  *
  * @author Sandy Gao, IBM
+ * @author Rahul Srivastava, Sun Microsystems Inc.
+ *
  * @version $Id$
  */
 public class XSAttributeGroupDecl {
@@ -91,8 +93,16 @@ public class XSAttributeGroupDecl {
             attrUse.fAttrDecl.fType instanceof IDDatatypeValidator) {
             fIDAttrName = attrUse.fAttrDecl.fName;
         }
-        //REVISIT: while adding check for duplicate attribute use.
-        //This will take care of union of attributeUse(s).
+    }
+
+    public XSAttributeUse getAttributeUse(String uri, String localpart) {
+    	for (int i=0; i<fAttrUseNum; i++) {
+    		if ( (fAttributeUses[i].fAttrDecl.fTargetNamespace == uri) &&
+    		     (fAttributeUses[i].fAttrDecl.fName == localpart) )
+    			return fAttributeUses[i];
+    	}
+    	
+    	return null;
     }
 
     public XSAttributeUse[] getAttributeUses() {
