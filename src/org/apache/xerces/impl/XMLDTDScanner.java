@@ -448,6 +448,11 @@ public class XMLDTDScanner
 
         super.endEntity(name);
 
+        // call handler
+        if (fDTDHandler != null) {
+            fDTDHandler.endEntity(name);
+        }
+
         if (name.equals("[dtd]")) {
             fScannerState = SCANNER_STATE_END_OF_INPUT;
             // call handler
@@ -467,11 +472,6 @@ public class XMLDTDScanner
             if (fEntityScanner.isExternal()) {
                 fExtEntityDepth--;
             }
-        }
-
-        // call handler
-        if (fDTDHandler != null) {
-            fDTDHandler.endEntity(name);
         }
 
     } // endEntity(String)
