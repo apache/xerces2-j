@@ -1945,15 +1945,13 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                         fValIDRef.validate(value, null );
                     }
                 } catch (InvalidDatatypeValueException ex) {
-                    if (ex.getMajorCode() != 1 && ex.getMinorCode() != -1) {
-                        /*
-                        reportRecoverableXMLError(ex.getMajorCode(),
-                                                  ex.getMinorCode(),
-                                                  fStringPool.toString( attributeDecl.name.rawname), value );
-                                                  */
-                    } else {
-                        System.err.println("Error: " + ex.getLocalizedMessage() );//Should not happen
-                    }
+                    String  key = ex.getKeyIntoReporter();
+
+                    fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
+                                                key,
+                                                new Object[]{ ex.getMessage()},
+                                                XMLErrorReporter.SEVERITY_ERROR );
+
                 }
                 /*
                 if (fNormalizeAttributeValues) {

@@ -150,7 +150,8 @@ implements StatefullDatatypeValidator{
    public void validate(String content, Object state ) throws InvalidDatatypeValueException{
       //Pass content as a String
       if (!XMLChar.isValidName(content)) {//Check if is valid key
-         InvalidDatatypeValueException error = new InvalidDatatypeValueException( "IDREF is not valid" );//Need Message
+         InvalidDatatypeValueException error = new InvalidDatatypeValueException( content );//Need Message
+         error.setKeyIntoReporter( "IDREFInvalid" );
          throw error;//Need Message
       }
       addIdRef( content, state);// We are storing IDs 
