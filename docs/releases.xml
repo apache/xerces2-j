@@ -6,6 +6,7 @@
    <desc>
     To be determined...
    </desc>
+   <changes>
    <fix>
     <note>
      Fixed scanner implementation to be able to handle large CDATA sections
@@ -13,6 +14,20 @@
     </note>
     <submitter name='Andy Clark'/>
    </fix>
+   <fix>
+    <note>
+        Made internal class loading strategy a bit more friendly in environments which 
+        need to provide classloaders to do things like manage multiple
+        versions of Xerces.
+    </note>
+    <submitter name="Igor Malinin, Neil Graham"/>
+   </fix>
+   <fix>
+    <note>Improved robustness of build shell script under the Cygwin environment.
+    </note>
+    <submitter name="J. Pietschmann, Neil Graham"/> 
+   </fix>
+  </changes>
   </release>
   <release version="&ParserName; 2.3.0">
     <desc>
