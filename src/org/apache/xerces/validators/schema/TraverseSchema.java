@@ -1827,16 +1827,16 @@ public class TraverseSchema implements
                     if (!baseIsComplexSimple ) 
                     if (base.equals(""))
                         reportSchemaError(SchemaMessageProvider.GenericError, 
-                                          new Object [] { "unrecogized child '"+childName+"' in compelx type "+typeName });
+                                          new Object [] { "unrecognized child '"+childName+"' in complex type "+typeName });
                     else
                         reportSchemaError(SchemaMessageProvider.GenericError,
-                                          new Object [] { "unrecogized child '"+childName+"' in compelx type '"+typeName+"' with base "+base  });
+                                          new Object [] { "unrecognized child '"+childName+"' in complex type '"+typeName+"' with base "+base  });
                 }
 
                 // if base is complextype with simpleType content, can't have any particle children at all.
                 if (baseIsComplexSimple && seeParticle) {
                     // REVISIT: Localize
-                    reportGenericSchemaError("In complexType "+typeName+", base type is complextype with simpleType content, can't have any particle children at all");
+                    reportGenericSchemaError("In complexType "+typeName+", base type is complexType with simpleType content, can't have any particle children at all");
                     hadContent = false;
                     left = index = -2;
                     contentSpecType = XMLElementDecl.TYPE_SIMPLE;
