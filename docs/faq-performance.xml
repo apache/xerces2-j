@@ -90,6 +90,11 @@
   <faq title='XML Application Performance'>
     <q>XML Application Performance</q>
     <a>
+      <p>
+       When writing an XML application there are a number of choices you can make that effect
+       performance. Some of the things which will affect the performance of your application
+       are described below.
+      </p>
       <ul>
     <li><strong>Grammar Caching</strong> -- if you do need validation, consider
       using grammar caching to reduce the cost of validation by allowing the parser
@@ -127,6 +132,18 @@
 	  application as parts of the document are parsed.
 	</li>
       </ul>
+      <p>
+       For more detailed information on best practices for writing XML applications 
+       you may want to read the following series of articles:
+      </p>
+      <ol>
+        <li><jump href="http://www-106.ibm.com/developerworks/xml/library/x-perfap1.html">Write XML documents and develop applications using the SAX and DOM APIs</jump></li>
+        <li><jump href="http://www-106.ibm.com/developerworks/xml/library/x-perfap2.html">Reuse parser instances with the Xerces2 SAX and DOM implementations</jump></li>
+        <li><jump href="http://www-106.ibm.com/developerworks/xml/library/x-perfap3.html">XNI, Xerces2 features and properties, and caching schemas</jump></li>
+      </ol>
+      <p>
+       These three articles discuss general performance tips in addition to ones specifically pertaining to Xerces2.
+      </p>
     </a>
   </faq>
 </faqs>
