@@ -295,7 +295,6 @@ class XSDHandler {
             fElementTraverser.reportGenericSchemaError("Could not locate a schema document");
             return null;
         }
-        fDoc2XSDocumentMap.put(schemaRoot, fRoot);
 
         // second phase:  fill global registries.
         buildGlobalNameRegistries();
@@ -333,12 +332,15 @@ class XSDHandler {
     protected XSDocumentInfo constructTrees(Document schemaRoot, String callerTNS) {
         if(schemaRoot == null) return null;
         XSDocumentInfo currSchemaInfo = new XSDocumentInfo(schemaRoot, fAttributeChecker, fSymbolTable);
+
+		 // Modified by Pavani Mukthipudi, Sun Microsystems Inc.
+		 fDoc2XSDocumentMap.put(schemaRoot, currSchemaInfo);
+
         if(callerTNS != null) {
             // only set if we were included or redefined in.
             if(currSchemaInfo.fTargetNamespace == null) {
                 currSchemaInfo.fTargetNamespace = callerTNS;
             } else if(callerTNS != currSchemaInfo.fTargetNamespace) {
-                System.err.println(callerTNS + " and " + currSchemaInfo.fTargetNamespace);
                 fElementTraverser.reportSchemaError("src-include.2", new Object [] {callerTNS, currSchemaInfo.fTargetNamespace});
             }
         }
@@ -349,7 +351,6 @@ class XSDHandler {
         }
 
         Vector dependencies = new Vector();
-        dependencies.addElement(currSchemaInfo);
         Element rootNode = DOMUtil.getRoot(schemaRoot);
 
         Document newSchemaRoot = null;
@@ -392,14 +393,22 @@ class XSDHandler {
                 // schema...
                 break;
             }
-            XSDocumentInfo newSchemaInfo = constructTrees(newSchemaRoot, schemaNamespace);
+
+		     // If the schema is duplicate, we needn't call constructTrees() again.
+		     // To handle mutual <include>s
+
+            XSDocumentInfo newSchemaInfo = null;
+		     if (fLastSchemaWasDuplicate) {
+		 		 newSchemaInfo = (XSDocumentInfo)fDoc2XSDocumentMap.get(newSchemaRoot);
+		     } else { 
+                newSchemaInfo = constructTrees(newSchemaRoot, schemaNamespace);
+            }
             if (localName.equals(SchemaSymbols.ELT_REDEFINE)) {
                 // must record which schema we're redefining so that we can
                 // rename the right things later!
                 fRedefine2XSDMap.put(child, newSchemaInfo);
             }
             dependencies.addElement(newSchemaInfo);
-            fDoc2XSDocumentMap.put(newSchemaRoot, newSchemaInfo);
             newSchemaRoot = null;
         }
         fDependencyMap.put(currSchemaInfo, dependencies);
@@ -467,17 +476,17 @@ class XSDHandler {
                             currSchemaDoc.fTargetNamespace +","+lName;
                         String componentType = DOMUtil.getLocalName(redefineComp);
                         if(componentType.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
-                            checkForDuplicateNames(qName, fUnparsedAttributeGroupRegistry, globalComp, currSchemaDoc);
+                            checkForDuplicateNames(qName, fUnparsedAttributeGroupRegistry, redefineComp, currSchemaDoc);
                             // the check will have changed our name;
-                            String targetLName = DOMUtil.getAttrValue(redefineComp, SchemaSymbols.ATT_NAME);
+                            String targetLName = DOMUtil.getAttrValue(redefineComp, SchemaSymbols.ATT_NAME)+REDEF_IDENTIFIER;
                             // and all we need to do is error-check+rename our kkids:
                             renameRedefiningComponents(currSchemaDoc, redefineComp, SchemaSymbols.ELT_ATTRIBUTEGROUP,
                                 lName, targetLName);
                         } else if((componentType.equals(SchemaSymbols.ELT_COMPLEXTYPE)) ||
                                 (componentType.equals(SchemaSymbols.ELT_SIMPLETYPE))) {
-                            checkForDuplicateNames(qName, fUnparsedTypeRegistry, globalComp, currSchemaDoc);
+                            checkForDuplicateNames(qName, fUnparsedTypeRegistry, redefineComp, currSchemaDoc);
                             // the check will have changed our name;
-                            String targetLName = DOMUtil.getAttrValue(redefineComp, SchemaSymbols.ATT_NAME);
+                            String targetLName = DOMUtil.getAttrValue(redefineComp, SchemaSymbols.ATT_NAME) + REDEF_IDENTIFIER;
                             // and all we need to do is error-check+rename our kkids:
                             if(componentType.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
                             renameRedefiningComponents(currSchemaDoc, redefineComp, SchemaSymbols.ELT_COMPLEXTYPE,
@@ -487,9 +496,9 @@ class XSDHandler {
                                 lName, targetLName);
                             }
                         } else if(componentType.equals(SchemaSymbols.ELT_GROUP)) {
-                            checkForDuplicateNames(qName, fUnparsedGroupRegistry, globalComp, currSchemaDoc);
+                            checkForDuplicateNames(qName, fUnparsedGroupRegistry, redefineComp, currSchemaDoc);
                             // the check will have changed our name;
-                            String targetLName = DOMUtil.getAttrValue(redefineComp, SchemaSymbols.ATT_NAME);
+                            String targetLName = DOMUtil.getAttrValue(redefineComp, SchemaSymbols.ATT_NAME)+REDEF_IDENTIFIER;
                             // and all we need to do is error-check+rename our kids:
                             renameRedefiningComponents(currSchemaDoc, redefineComp, SchemaSymbols.ELT_GROUP,
                                 lName, targetLName);
@@ -1008,6 +1017,9 @@ class XSDHandler {
      * if this component is being redefined that it lives in the
      * right schema.  It then renames the component correctly.  If it
      * detects a collision--a duplicate definition--then it complains.
+     * Note that redefines must be handled carefully:  if there
+     * is a collision, it may be because we're redefining something we know about
+     * or because we've found the thing we're redefining.
      */
     void checkForDuplicateNames(String qName,
             Hashtable registry, Element currComp,
@@ -1020,21 +1032,34 @@ class XSDHandler {
             registry.put(qName, currComp);
         } else {
             Element collidingElem = (Element)objElem;
-            XSDocumentInfo redefinedSchema = (XSDocumentInfo)(fRedefine2XSDMap.get(DOMUtil.getParent(collidingElem)));
-            if(redefinedSchema == currSchema) { // object comp. okay here
-                // now have to do some renaming...
-                String newName = qName.substring(qName.lastIndexOf(','));
-                currComp.setAttribute(SchemaSymbols.ATT_NAME, newName);
-                // and take care of nested redefines by calling recursively:
-                if(currSchema.fTargetNamespace == null) 
-                    checkForDuplicateNames(","+newName, registry, currComp, currSchema);
-                else 
-                    checkForDuplicateNames(currSchema.fTargetNamespace+","+newName, registry, currComp, currSchema);
-            } else if (redefinedSchema != null) { // we're apparently redefining the wrong schema
-                // REVISIT:  error that redefined element in wrong schema
-                fElementTraverser.reportSchemaError("src-redefine.1", new Object [] {qName});
+            if(collidingElem == currComp) return;
+            Element elemParent = null;
+            XSDocumentInfo redefinedSchema = null;
+            // case where we've collided with a redefining element
+            // (the parent of the colliding element is a redefine)
+            if((DOMUtil.getLocalName((elemParent = DOMUtil.getParent(collidingElem))).equals(SchemaSymbols.ELT_REDEFINE))) {
+                redefinedSchema = (XSDocumentInfo)(fRedefine2XSDMap.get(elemParent));
+            // case where we're a redefining element.
+            } else if((DOMUtil.getLocalName(DOMUtil.getParent(currComp)).equals(SchemaSymbols.ELT_REDEFINE))){
+                redefinedSchema = (XSDocumentInfo)(fDoc2XSDocumentMap.get(DOMUtil.getDocument(collidingElem)));
+            }
+            if(redefinedSchema != null) { //redefinition involved somehow
+                if(redefinedSchema == currSchema) { // object comp. okay here
+                    // now have to do some renaming...
+                    String newName = qName.substring(qName.lastIndexOf(',')+1)+REDEF_IDENTIFIER;
+                    currComp.setAttribute(SchemaSymbols.ATT_NAME, newName);
+                    registry.put(qName+REDEF_IDENTIFIER, currComp);
+                    // and take care of nested redefines by calling recursively:
+                    if(currSchema.fTargetNamespace == null) 
+                        checkForDuplicateNames(","+newName, registry, currComp, currSchema);
+                    else 
+                        checkForDuplicateNames(currSchema.fTargetNamespace+","+newName, registry, currComp, currSchema);
+                } else { // we're apparently redefining the wrong schema
+                    // REVISIT:  error that redefined element in wrong schema
+                    fElementTraverser.reportSchemaError("src-redefine.1", new Object [] {qName});
+                } 
             } else { // we've just got a flat-out collision
-                fElementTraverser.reportSchemaError("sch-props-correct", new Object []{qName});
+                fElementTraverser.reportSchemaError("sch-props-correct.2", new Object []{qName});
             }
         }
     } // checkForDuplicateNames(String, Hashtable, Element, XSDocumentInfo):void
@@ -1204,8 +1229,8 @@ class XSDHandler {
         String prefix = EMPTY_STRING;
         if (colonPtr > 0)
             prefix = name.substring(0, colonPtr);
-        String uri = currNSMap.getURI(prefix);
-        String localpart = (colonPtr == 0)?name:name.substring(colonPtr);
+        String uri = currNSMap.getURI(fSymbolTable.addSymbol(prefix));
+        String localpart = (colonPtr == 0)?name:name.substring(colonPtr+1);
         if(uri == null)
             return ","+localpart;
         return uri+","+localpart;
@@ -1271,6 +1296,12 @@ class XSDHandler {
             return null;
         }
         XSDocumentInfo declDocInfo = (XSDocumentInfo)temp;
+        return declDocInfo;
+        /*********
+        Logic here is unnecessary after schema WG's recent decision to allow
+        schema components from one document to refer to components of any other,
+        so long as there's some include/import/redefine path amongst them.
+        If they rver reverse this decision the code's right here though...  - neilg
         // now look in fDependencyMap to see if this is reachable
         if(((Vector)fDependencyMap.get(currSchema)).contains(declDocInfo)) {
             return declDocInfo;
@@ -1278,6 +1309,7 @@ class XSDHandler {
         // obviously the requesting doc didn't include, redefine or
         // import the one containing decl...
         return null;
+        **********/
     } // findXSDocumentForDecl(XSDocumentInfo, Element):  XSDocumentInfo
 
     private void setSchemasVisible(XSDocumentInfo startSchema) {

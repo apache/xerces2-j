@@ -139,4 +139,9 @@ class XSDocumentInfo {
         fNamespaceSupport = (SchemaNamespaceSupport)SchemaNamespaceSupportStack.pop();
     }
 
+    // some Object methods
+    public String toString() {
+        return fTargetNamespace == null?"no targetNamspace":"targetNamespace is " + fTargetNamespace;
+    }
+
 } // XSDocumentInfo

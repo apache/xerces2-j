@@ -1533,7 +1533,8 @@ public class SchemaValidator
             if (currDecl.fConstraintType == XSAttributeDecl.FIXED_VALUE) {
                 // REVISIT: compare should be equal, and takes object, instead of string
                 //          do it in the new datatype design
-                if (attDV.compare((String)actualValue, (String)currDecl.fDefault) != 0)
+                //if (attDV.compare((String)actualValue, (String)currDecl.fDefault) != 0)
+                if (attDV.compare(attrValue, (String)currDecl.fDefault) != 0)
                     reportSchemaError("cvc-attribute.4", new Object[]{element.rawname, fTempQName.rawname, attrValue});
             }
 
@@ -1606,11 +1607,18 @@ public class SchemaValidator
         if(fCurrentElemDecl != null) {
             if(fCurrentElemDecl.fDefault != null) {
                 if(fBuffer.toString().trim().length() == 0) {
+                    int bufLen = fCurrentElemDecl.fDefault.toString().length();
+                    char [] chars = new char[bufLen];
+                    fCurrentElemDecl.fDefault.toString().getChars(0, bufLen, chars, 0); 
+                    XMLString text = new XMLString(chars, 0, bufLen);
                     if(fDocumentHandler != null) {
-                        int bufLen = fCurrentElemDecl.fDefault.toString().length();
-                        char [] chars = new char[bufLen];
-                        fCurrentElemDecl.fDefault.toString().getChars(0, bufLen, chars, 0); 
-                        fDocumentHandler.characters(new XMLString(chars, 0, bufLen));
+                        fDocumentHandler.characters(text);
+                    }
+                    // call all active identity constraints
+                    int count = fMatcherStack.getMatcherCount();
+                    for (int i = 0; i < count; i++) {
+                        XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
+                        matcher.characters(text);
                     }
                 }
             }
@@ -1674,6 +1682,12 @@ public class SchemaValidator
                             if (ctype.fDatatypeValidator.compare((String)actualValue, (String)fCurrentElemDecl.fDefault) != 0)
                                 reportSchemaError("cvc-elt.5.2.2.2.2", new Object[]{element.rawname, content, fCurrentElemDecl.fDefault.toString()});
                         }
+                    } else if ((fCurrentType.getXSType() & XSTypeDecl.SIMPLE_TYPE) != 0) {
+                        DatatypeValidator sType = (DatatypeValidator)fCurrentType;
+                        // REVISIT: compare should be equal, and takes object, instead of string
+                        //          do it in the new datatype design
+                        if (sType.compare((String)actualValue, (String)fCurrentElemDecl.fDefault) != 0)
+                            reportSchemaError("cvc-elt.5.2.2.2.2", new Object[]{element.rawname, content, fCurrentElemDecl.fDefault.toString()});
                     }
                 }
             }
@@ -1700,6 +1714,8 @@ public class SchemaValidator
                 try {
                     // REVISIT: use XSSimpleTypeDecl.ValidateContext to replace null
                     // retValue = dv.validate(content, null);
+                    // make sure we return something... - NG
+                    retValue = content;
                     dv.validate(content, null);
                 } catch (InvalidDatatypeValueException e) {
                     reportSchemaError("cvc-type.3.1.3", new Object[]{element.rawname, content});

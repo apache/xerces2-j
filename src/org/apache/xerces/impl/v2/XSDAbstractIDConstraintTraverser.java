@@ -105,8 +105,10 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
         }
 
         String sText = ((String)attrValues[XSAttributeChecker.ATTIDX_XPATH]);
-        if(sText == null) // was an error!
+        if(sText == null) {
+            reportSchemaError("s4s-att-must-appear", new Object [] {SchemaSymbols.ELT_SELECTOR, SchemaSymbols.ATT_XPATH});
             return;
+        }
         sText = sText.trim();
 
         Selector.XPath sXpath = null;
@@ -146,8 +148,10 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
                 reportSchemaError("src-identity-constraint.1", new Object [] {icElemAttrs[XSAttributeChecker.ATTIDX_NAME]});
             }
             String fText = ((String)attrValues[XSAttributeChecker.ATTIDX_XPATH]);
-            if(fText == null) // error!
+            if(fText == null) {
+                reportSchemaError("s4s-att-must-appear", new Object [] {SchemaSymbols.ELT_FIELD, SchemaSymbols.ATT_XPATH});
                 return;
+            }
             fText = fText.trim();
             try {
                 Field.XPath fXpath = new Field.XPath(fText, fSymbolTable,
