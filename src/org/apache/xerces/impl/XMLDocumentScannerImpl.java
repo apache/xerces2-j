@@ -79,6 +79,8 @@ import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLDocumentScanner;
+import org.apache.xerces.xni.parser.XMLDTDScanner;
 import org.apache.xerces.xni.parser.XMLInputSource;
 
 /**
@@ -104,9 +106,9 @@ import org.apache.xerces.xni.parser.XMLInputSource;
  *
  * @version $Id$
  */
-public class XMLDocumentScanner
+public class XMLDocumentScannerImpl
     extends XMLScanner
-    implements XMLComponent, XMLEntityHandler {
+    implements XMLDocumentScanner, XMLComponent, XMLEntityHandler {
 
     //
     // Constants
@@ -140,15 +142,6 @@ public class XMLDocumentScanner
 
     /** Scanner state: reference. */
     protected static final int SCANNER_STATE_REFERENCE = 8;
-
-    /** Scanner state: attribute list. */
-    //protected static final int SCANNER_STATE_ATTRIBUTE_LIST = 9;
-
-    /** Scanner state: attribute name. */
-    //protected static final int SCANNER_STATE_ATTRIBUTE_NAME = 10;
-
-    /** Scanner state: attribute value. */
-    //protected static final int SCANNER_STATE_ATTRIBUTE_VALUE = 11;
 
     /** Scanner state: trailing misc. */
     protected static final int SCANNER_STATE_TRAILING_MISC = 12;
@@ -199,11 +192,6 @@ public class XMLDocumentScanner
     /** Recognized properties. */
     private static final String[] RECOGNIZED_PROPERTIES = {
         DTD_SCANNER,
-        /***
-        Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY,
-        Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY,
-        Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_MANAGER_PROPERTY,
-        /***/
     };
 
     // debugging
@@ -317,29 +305,42 @@ public class XMLDocumentScanner
     //
 
     /** Default constructor. */
-    public XMLDocumentScanner() {
-    } // <init>()
+    public XMLDocumentScannerImpl() {} // <init>()
 
     //
-    // Public methods
+    // XMLDocumentScanner methods
     //
 
     /** 
-     * Scans a document. 
-     * <p>
-     * <strong>Note:</strong> The caller of this method is responsible
-     * for having called <code>reset(XMLComponentManager)</code> before
-     * any scanning and having initialized the entity manager by starting 
-     * the document entity.
+     * Sets the input source. 
      *
-     * @param complete True to completely scan the rest of the document.
+     * @param inputSource The input source.
      *
-     * @returns True if scanning is not finished.
+     * @throws IOException Thrown on i/o error.
+     */
+    public void setInputSource(XMLInputSource inputSource) throws IOException {
+        fEntityManager.setEntityHandler(this);
+        fEntityManager.startDocumentEntity(inputSource);
+    } // setInputSource(XMLInputSource)
+
+    /** 
+     * Scans a document.
+     *
+     * @param complete True if the scanner should scan the document
+     *                 completely, pushing all events to the registered
+     *                 document handler. A value of false indicates that
+     *                 that the scanner should only scan the next portion
+     *                 of the document and return. A scanner instance is
+     *                 permitted to completely scan a document if it does
+     *                 not support this "pull" scanning model.
+     *
+     * @returns True if there is more to scan, false otherwise.
      */
     public boolean scanDocument(boolean complete) 
         throws IOException, XNIException {
 
         // keep dispatching "events"
+        fEntityManager.setEntityHandler(this);
         do {
             if (!fDispatcher.dispatch(complete)) {
                 return false;
@@ -629,7 +630,6 @@ public class XMLDocumentScanner
         // set standalone
         fStandalone = standalone != null && standalone.equals("yes");
         fEntityManager.setStandalone(fStandalone);
-        if (fDTDScanner != null) fDTDScanner.setStandalone(fStandalone);
 
         // call handler
         if (fDocumentHandler != null) {
@@ -729,9 +729,18 @@ public class XMLDocumentScanner
 
         // internal subset
         if (fEntityScanner.skipChar('[')) {
-            fEntityManager.setEntityHandler(fDTDScanner);
+            // clear entity handler
+            fEntityManager.setEntityHandler(null);
+
+            // parser internal subset
             final boolean complete = true;
+            // NOTE: Don't need to set the input source because it's
+            //       the same one as the document entity *and* the
+            //       scanner implementations rely on the entity
+            //       manager for the details. -Ac
             fDTDScanner.scanDTDInternalSubset(complete, fStandalone, fHasExternalDTD);
+
+            // restore entity handler
             fEntityManager.setEntityHandler(this);
             // REVISIT: Do we need to emit an error here? We can usually
             //          assume that it will be consumed by the DTD scanner
@@ -754,12 +763,17 @@ public class XMLDocumentScanner
 
         // external subset
         if (systemId != null && (fValidation || fLoadExternalDTD)) {
+            // clear entity handler
+            fEntityManager.setEntityHandler(null);
+
+            // scan DTD
+            final boolean complete = true;
             XMLInputSource xmlInputSource = 
                 fEntityManager.resolveEntity(publicId, systemId, null);
-            fEntityManager.setEntityHandler(fDTDScanner);
-            fEntityManager.startDTDEntity(xmlInputSource);
-            final boolean complete = true;
-            fDTDScanner.scanDTD(complete);
+            fDTDScanner.setInputSource(xmlInputSource);
+            fDTDScanner.scanDTDExternalSubset(complete);
+
+            // restore entity handler
             fEntityManager.setEntityHandler(this);
         }
 
@@ -1285,9 +1299,6 @@ public class XMLDocumentScanner
                 case SCANNER_STATE_ROOT_ELEMENT: return "SCANNER_STATE_ROOT_ELEMENT";
                 case SCANNER_STATE_CONTENT: return "SCANNER_STATE_CONTENT";
                 case SCANNER_STATE_REFERENCE: return "SCANNER_STATE_REFERENCE";
-                //case SCANNER_STATE_ATTRIBUTE_LIST: return "SCANNER_STATE_ATTRIBUTE_LIST";
-                //case SCANNER_STATE_ATTRIBUTE_NAME: return "SCANNER_STATE_ATTRIBUTE_NAME";
-                //case SCANNER_STATE_ATTRIBUTE_VALUE: return "SCANNER_STATE_ATTRIBUTE_VALUE";
                 case SCANNER_STATE_TRAILING_MISC: return "SCANNER_STATE_TRAILING_MISC";
                 case SCANNER_STATE_END_OF_INPUT: return "SCANNER_STATE_END_OF_INPUT";
                 case SCANNER_STATE_TERMINATED: return "SCANNER_STATE_TERMINATED";
@@ -1961,4 +1972,4 @@ public class XMLDocumentScanner
 
     } // class TrailingMiscDispatcher
 
-} // class XMLDocumentScanner
+} // class XMLDocumentScannerImpl

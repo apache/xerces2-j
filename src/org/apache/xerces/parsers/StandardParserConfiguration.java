@@ -61,9 +61,9 @@ import java.io.IOException;
 import java.util.Locale;
 
 import org.apache.xerces.impl.Constants;
-import org.apache.xerces.impl.XMLDocumentScanner;
+import org.apache.xerces.impl.XMLDocumentScannerImpl;
+import org.apache.xerces.impl.XMLDTDScannerImpl;
 import org.apache.xerces.impl.XMLErrorReporter;
-import org.apache.xerces.impl.XMLDTDScanner;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLValidator;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
@@ -73,7 +73,10 @@ import org.apache.xerces.impl.validation.datatypes.DatatypeValidatorFactoryImpl;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLDocumentScanner;
+import org.apache.xerces.xni.parser.XMLDTDScanner;
 import org.apache.xerces.xni.parser.XMLInputSource;
 
 //import org.xml.sax.Locator;
@@ -295,12 +298,16 @@ public class StandardParserConfiguration
 
         fScanner = createDocumentScanner();
         fProperties.put(DOCUMENT_SCANNER, fScanner);
-        addComponent(fScanner);
+        if (fScanner instanceof XMLComponent) {
+            addComponent((XMLComponent)fScanner);
+        }
 
         fDTDScanner = createDTDScanner();
         if (fDTDScanner != null) {
             fProperties.put(DTD_SCANNER, fDTDScanner);
-            addComponent(fDTDScanner);
+            if (fDTDScanner instanceof XMLComponent) {
+                addComponent((XMLComponent)fDTDScanner);
+            }
         }
 
         fValidator = createValidator();
@@ -385,8 +392,7 @@ public class StandardParserConfiguration
 
         try {
             reset();
-            fEntityManager.setEntityHandler(fScanner);
-            fEntityManager.startDocumentEntity(source);
+            fScanner.setInputSource(source);
             fScanner.scanDocument(true);
         } 
         catch (XNIException ex) {
@@ -594,12 +600,12 @@ public class StandardParserConfiguration
 
     /** Create a document scanner. */
     protected XMLDocumentScanner createDocumentScanner() {
-        return new XMLDocumentScanner();
+        return new XMLDocumentScannerImpl();
     } // createDocumentScanner():XMLDocumentScanner
 
     /** Create a DTD scanner. */
     protected XMLDTDScanner createDTDScanner() {
-        return new XMLDTDScanner();
+        return new XMLDTDScannerImpl();
     } // createDTDScanner():XMLDTDScanner
 
     /** Create a validator. */

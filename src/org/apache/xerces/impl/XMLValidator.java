@@ -520,7 +520,6 @@ public class XMLValidator
     public void reset(XMLComponentManager componentManager)
         throws XMLConfigurationException {
 
-
         // clear grammars
         fCurrentGrammar = null;
         fDTDGrammar = null;
