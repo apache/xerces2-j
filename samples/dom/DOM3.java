@@ -61,18 +61,22 @@ package dom;
 import org.w3c.dom.DOMConfiguration;
 import org.w3c.dom.DOMError;
 import org.w3c.dom.DOMErrorHandler;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.bootstrap.DOMImplementationRegistry;
 import org.w3c.dom.Document;
 import org.w3c.dom.ls.DOMBuilder;
+import org.w3c.dom.ls.DOMBuilderFilter;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.DOMWriter;
+import org.w3c.dom.traversal.NodeFilter;
 
 /**
  * This sample program illustrates how to use DOM L3 
- * DOMBuilder, DOMWriter and other DOM L3 functionality
+ * DOMBuilder, DOMBuilderFilter DOMWriter and other DOM L3 functionality
  * to preparse, revalidate and safe document.
  */
-public class DOM3 implements DOMErrorHandler {
+public class DOM3 implements DOMErrorHandler, DOMBuilderFilter {
 
     /** Default namespaces support (true). */
     protected static final boolean DEFAULT_NAMESPACES = true;
@@ -83,7 +87,7 @@ public class DOM3 implements DOMErrorHandler {
     /** Default Schema validation support (false). */
     protected static final boolean DEFAULT_SCHEMA_VALIDATION = false;
 
-
+    static DOMBuilder builder;
     public static void main( String[] argv) {
 
         if (argv.length == 0) {
@@ -103,12 +107,17 @@ public class DOM3 implements DOMErrorHandler {
                 (DOMImplementationLS)registry.getDOMImplementation("LS-Load");
 
             // create DOMBuilder
-            DOMBuilder builder = impl.createDOMBuilder(DOMImplementationLS.MODE_SYNCHRONOUS, null);
+            builder = impl.createDOMBuilder(DOMImplementationLS.MODE_SYNCHRONOUS, null);
             
             DOMConfiguration config = builder.getConfig();
 
             // create Error Handler
             DOMErrorHandler errorHandler = new DOM3();
+            
+            // create filter
+            DOMBuilderFilter filter = new DOM3();
+            
+            builder.setFilter(filter);
 
             // set error handler
             config.setParameter("error-handler", errorHandler);
@@ -187,6 +196,27 @@ public class DOM3 implements DOMErrorHandler {
         return true;
 
     }
+	/**
+	 * @see org.w3c.dom.ls.DOMBuilderFilter#acceptNode(Node)
+	 */
+	public short acceptNode(Node enode) {
+        return NodeFilter.FILTER_ACCEPT;
+	}
+
+	/**
+	 * @see org.w3c.dom.ls.DOMBuilderFilter#getWhatToShow()
+	 */
+	public int getWhatToShow() {
+		return NodeFilter.SHOW_ELEMENT;
+	}
+
+	/**
+	 * @see org.w3c.dom.ls.DOMBuilderFilter#startElement(Element)
+	 */
+	public short startElement(Element elt) {
+		return DOMBuilderFilter.FILTER_ACCEPT;
+	}
+
 }
 
 
