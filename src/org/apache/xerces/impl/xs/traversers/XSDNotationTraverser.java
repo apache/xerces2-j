@@ -99,13 +99,13 @@ class  XSDNotationTraverser extends XSDAbstractTraverser {
         String  publicAttr = (String) attrValues[XSAttributeChecker.ATTIDX_PUBLIC];
         String  systemAttr = (String) attrValues[XSAttributeChecker.ATTIDX_SYSTEM];
         if (nameAttr == null) {
-            reportSchemaError("src-notation", new Object[]{"<notation> must have a name"}, elmNode);
+            reportSchemaError("s4s-att-must-appear", new Object[]{SchemaSymbols.ELT_NOTATION, SchemaSymbols.ATT_NAME}, elmNode);
             fAttrChecker.returnAttrArray(attrValues, schemaDoc);
             return null;
         }
 
         if (publicAttr == null) {
-            reportSchemaError("src-notation", new Object[]{"<notation> must have 'public' attribute"}, elmNode);
+            reportSchemaError("s4s-att-must-appear", new Object[]{SchemaSymbols.ELT_NOTATION, SchemaSymbols.ATT_PUBLIC}, elmNode);
         }
 
         XSNotationDecl notation = new XSNotationDecl();
@@ -125,8 +125,8 @@ class  XSDNotationTraverser extends XSDAbstractTraverser {
             }
         }
         if (content!=null){
-             Object[] args = new Object [] { DOMUtil.getLocalName(content) };
-             reportSchemaError("src-notation", args, content);
+             Object[] args = new Object [] {SchemaSymbols.ELT_NOTATION, "(annotation?)"};
+             reportSchemaError("s4s-elt-must-match", args, content);
 
         }
         grammar.addGlobalNotationDecl(notation);

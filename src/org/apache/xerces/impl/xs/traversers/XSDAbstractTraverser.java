@@ -248,7 +248,6 @@ abstract class XSDAbstractTraverser {
                              child = DOMUtil.getNextSiblingElement(child);
                          }
                          if (child !=null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                              Object[] args = new Object [] {"Pattern facet has more than one annotation."};
                              reportSchemaError("s4s-elt-must-match", new Object[]{"pattern", "(annotation?)"}, child);
                          }
                    }
@@ -293,7 +292,7 @@ abstract class XSDAbstractTraverser {
 
                 // check for duplicate facets
                 if ((facetsPresent & currentFacet) != 0) {
-                    reportSchemaError("src-single-facet-value", new Object[]{"The facet '" + facet + "' is defined more than once."}, content);
+                    reportSchemaError("src-single-facet-value", new Object[]{facet}, content);
                 } else if (attrs[XSAttributeChecker.ATTIDX_VALUE] != null) {
                     facetsPresent |= currentFacet;
                     // check for fixed facet
@@ -447,7 +446,9 @@ abstract class XSDAbstractTraverser {
                     }
                     else {
                         // REVISIT: what if one of the attribute uses is "prohibited"
-                        reportSchemaError("ct-props-correct.4", new Object[]{"Duplicate attribute " + existingAttrUse.fAttrDecl.getName() + " found "}, child);
+                        String code = (enclosingCT == null) ? "ag-props-correct.2" : "ct-props-correct.4";
+                        String name = (enclosingCT == null) ? attrGrp.fName : enclosingCT.getName();
+                        reportSchemaError(code, new Object[]{name, oneAttrUse.fAttrDecl.getName()}, child);
                     }
                 }
 
@@ -460,7 +461,9 @@ abstract class XSDAbstractTraverser {
                         attrGrp.fAttributeWC = attrGrp.fAttributeWC.
                                                performIntersectionWith(tempAttrGrp.fAttributeWC, attrGrp.fAttributeWC.fProcessContents);
                         if (attrGrp.fAttributeWC == null) {
-                            reportSchemaError("src-wildcard", new Object[]{"intersection of wildcards is not expressible"}, child);
+                            String code = (enclosingCT == null) ? "src-attribute_group.2" : "src-ct.4";
+                            String name = (enclosingCT == null) ? attrGrp.fName : enclosingCT.getName();
+                            reportSchemaError(code, new Object[]{name}, child);
                         }
                     }
                 }
@@ -482,7 +485,9 @@ abstract class XSDAbstractTraverser {
                     attrGrp.fAttributeWC = tempAttrWC.
                                            performIntersectionWith(attrGrp.fAttributeWC, tempAttrWC.fProcessContents);
                     if (attrGrp.fAttributeWC == null) {
-                        reportSchemaError("src-wildcard", new Object[]{"intersection of wildcards is not expressible"}, child);
+                        String code = (enclosingCT == null) ? "src-attribute_group.2" : "src-ct.4";
+                        String name = (enclosingCT == null) ? attrGrp.fName : enclosingCT.getName();
+                        reportSchemaError(code, new Object[]{name}, child);
                     }
                 }
                 child = DOMUtil.getNextSiblingElement(child);

@@ -122,12 +122,6 @@ public class XSDFACM
     private int fElemMapSize = 0;
 
     /**
-     * The NFA position of the special EOC (end of content) node. This
-     * is saved away since it's used during the DFA build.
-     */
-    private int fEOCPos = 0;
-
-    /**
      * This is an array of booleans, one per state (there are
      * fTransTableSize states in the DFA) that indicates whether that
      * state is a final state.
@@ -183,16 +177,6 @@ public class XSDFACM
      * related tables such as fFinalStateFlags.
      */
     private int fTransTableSize = 0;
-
-    /**
-     * Flag that indicates that even though we have a "complicated"
-     * content model, it is valid to have no content. In other words,
-     * all parts of the content model are optional. For example:
-     * <pre>
-     *      &lt;!ELEMENT AllOptional (Optional*,NotRequired?)&gt;
-     * </pre>
-     */
-    private boolean fEmptyContentIsValid = false;
 
     // temp variables
 
@@ -417,7 +401,7 @@ public class XSDFACM
         //  started. We save the EOC position since its used during the DFA
         //  building loop.
         //
-        fEOCPos = fLeafCount;
+        int EOCPos = fLeafCount;
         XSCMLeaf nodeEOC = new XSCMLeaf(XSParticleDecl.PARTICLE_ELEMENT, null, -1, fLeafCount++);
         fHeadNode = new XSCMBinOp(
             XSModelGroupImpl.MODELGROUP_SEQUENCE,
@@ -582,7 +566,7 @@ public class XSDFACM
             int[] transEntry = fTransTable[unmarkedState];
 
             // Mark this one final if it contains the EOC state
-            fFinalStateFlags[unmarkedState] = setT.getBit(fEOCPos);
+            fFinalStateFlags[unmarkedState] = setT.getBit(EOCPos);
 
             // Bump up the unmarked state count, marking this state done
             unmarkedState++;
@@ -698,9 +682,6 @@ public class XSDFACM
                 }
             }
         }
-
-        // Check to see if we can set the fEmptyContentIsValid flag.
-        fEmptyContentIsValid = ((XSCMBinOp)fHeadNode).getLeft().isNullable();
 
         //
         //  And now we can say bye bye to the temp representation since we've

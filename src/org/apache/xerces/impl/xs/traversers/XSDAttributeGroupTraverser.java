@@ -122,7 +122,7 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
             }
 
             if (child != null) {
-                Object[] args = new Object [] {refAttr};
+                Object[] args = new Object [] {refAttr, DOMUtil.getLocalName(child)};
                 reportSchemaError("src-attribute_group", args, child);
             }
          } // if

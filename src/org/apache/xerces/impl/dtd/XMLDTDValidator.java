@@ -1411,14 +1411,18 @@ public class XMLDTDValidator
                     }
                 }
                 catch (InvalidDatatypeValueException ex) {
-                    String key = ex.getKey();
                     if (isAlistAttribute) {
-                        key = "IDREFSInvalid";
+                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                   "IDREFSInvalid",
+                                                   new Object[]{attValue},
+                                                   XMLErrorReporter.SEVERITY_ERROR );
                     }
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               key,
-                                               ex.getArgs(),
-                                               XMLErrorReporter.SEVERITY_ERROR );
+                    else {
+                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                   ex.getKey(),
+                                                   ex.getArgs(),
+                                                   XMLErrorReporter.SEVERITY_ERROR );
+                    }
 
                 }
                 break;
