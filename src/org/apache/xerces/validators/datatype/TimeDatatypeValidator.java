@@ -60,8 +60,12 @@ package org.apache.xerces.validators.datatype;
 
 import java.util.Hashtable;
 
-
-/* $Id$ */
+/**
+ * Validator for <time> datatype (W3C Schema Datatypes)
+ * 
+ * @author Elena Litani
+ * @version $Id$
+ */
 public class TimeDatatypeValidator extends DateTimeValidator {
 
     public  TimeDatatypeValidator() throws InvalidDatatypeFacetException{
@@ -75,12 +79,12 @@ public class TimeDatatypeValidator extends DateTimeValidator {
     }
 
     /**
-     * Parses, validates and computes normalized version of dateTime object
+     * Parses, validates and computes normalized version of time object
      * 
-     * @param str    The lexical representation of dateTime object CCYY-MM-DDThh:mm:ss.sss
+     * @param str    The lexical representation of time object hh:mm:ss.sss
      *               with possible time zone Z or (-),(+)hh:mm
      * @param date   uninitialized date object
-     * @return normalized dateTime representation
+     * @return normalized time representation
      * @exception Exception Invalid lexical representation
      */
     protected int[] parse(String str, int[] date) throws Exception{
@@ -90,21 +94,41 @@ public class TimeDatatypeValidator extends DateTimeValidator {
         if ( date == null ) {
             date = new int[TOTAL_SIZE];
         }
-        date = resetDateObj(date);
+        resetDateObj(date);
 
-        // both time and date
-        date=getTime(fStart, fEnd, date);
+        // time
+        getTime(fStart, fEnd, date);
 
         //validate and normalize
         if ( !validateDateTime(date) ) {
             //REVISIT: should we throw an exeption?
             //         we should not try normalizing in this case ..
-            throw new Exception ("Not valid date");
+            throw new Exception ();
         }
         else if ( date[utc]!=0 ) {
-            date=normalize(date);
+            normalize(date);
         }
         return date;
+    }
+
+
+    /**
+     * Converts time object representation to String
+     * 
+     * @param date   time object
+     * @return lexical representation of time: hh:mm:ss.sss with an optional time zone sign
+     */
+    protected String dateToString(int[] date) {
+        message.setLength(0);
+        message.append(date[h]);
+        message.append(':');
+        message.append(date[m]);
+        message.append(':');
+        message.append(date[s]);
+        message.append('.');
+        message.append(date[ms]);
+        message.append((char)date[utc]);
+        return message.toString();
     }
 
 

@@ -59,13 +59,27 @@ package org.apache.xerces.validators.datatype;
 
 import java.util.Hashtable;
 
-
-/* $Id$ */
+/**
+ * Validator for <duration> datatype (W3C Schema Datatypes)
+ * 
+ * @author Elena Litani
+ * @version $Id$
+ */
 
 public class DurationDatatypeValidator extends DateTimeValidator {
 
-    //1903-03-01T00:00:00Z 
-    private final int[] constTime= {1903, 3, 1, 0, 0, 0, 0, 'Z'};    
+    // order-relation on duration is a partial order. The dates below are used to 
+    // for comparison of 2 durations, based on the fact that
+    // duration x and y is x<=y iff s+x<=s+y
+    // see 3.2.6 duration W3C schema datatype specs
+    //
+    // the dates are in format: {CCYY,MM,DD, H, S, M, MS, timezone}  
+    private final static int[][] DATETIMES= {
+        {1696, 9, 1, 0, 0, 0, 0, 'Z'},     
+        {1697, 2, 1, 0, 0, 0, 0, 'Z'},
+        {1903, 3, 1, 0, 0, 0, 0, 'Z'},
+        {1903, 7, 1, 0, 0, 0, 0, 'Z'}};
+
 
     public  DurationDatatypeValidator() throws InvalidDatatypeFacetException{
         super();
@@ -94,7 +108,7 @@ public class DurationDatatypeValidator extends DateTimeValidator {
         if ( date== null ) {
             date=new int[TOTAL_SIZE];
         }
-        date = resetDateObj(date);
+        resetDateObj(date);
 
 
         char c=fBuffer.charAt(fStart++);
@@ -108,6 +122,12 @@ public class DurationDatatypeValidator extends DateTimeValidator {
             }
         }
 
+        int negate = 1;
+        //negative duration
+        if ( date[utc]=='-' ) {
+            negate = -1;
+
+        }
         //at least one number and designator must be seen after P
         boolean designator = false;
 
@@ -115,7 +135,7 @@ public class DurationDatatypeValidator extends DateTimeValidator {
         int end = indexOf (fStart, fEnd, 'Y');
         if ( end!=-1 ) {
             //scan year
-            date[CY]=parseInt(fStart,end);
+            date[CY]=negate * parseInt(fStart,end);
             fStart = end+1;
             designator = true;
         }
@@ -123,7 +143,7 @@ public class DurationDatatypeValidator extends DateTimeValidator {
         end = indexOf (fStart, fEnd, 'M');
         if ( end!=-1 ) {
             //scan month
-            date[M]=parseInt(fStart,end);
+            date[M]=negate * parseInt(fStart,end);
             fStart = end+1;
             designator = true;
         }
@@ -131,7 +151,7 @@ public class DurationDatatypeValidator extends DateTimeValidator {
         end = indexOf (fStart, fEnd, 'D');
         if ( end!=-1 ) {
             //scan day
-            date[D]=parseInt(fStart,end);
+            date[D]=negate * parseInt(fStart,end);
             designator = true;
         }
 
@@ -140,7 +160,7 @@ public class DurationDatatypeValidator extends DateTimeValidator {
 
             //scan hours, minutes, seconds
             //REVISIT: can any item include a decimal fraction or only seconds?
-            //
+            //         
 
             if ( (end+1) == fEnd ) {
                 //P01Y01M01DT
@@ -153,7 +173,7 @@ public class DurationDatatypeValidator extends DateTimeValidator {
             end = indexOf (fStart, fEnd, 'H');
             if ( end!=-1 ) {
                 //scan hours
-                date[h]=parseInt(fStart,end);
+                date[h]=negate * parseInt(fStart,end);
                 fStart=end+1;
                 designator = true;
             }
@@ -162,7 +182,7 @@ public class DurationDatatypeValidator extends DateTimeValidator {
             end = indexOf (fStart, fEnd, 'M');
             if ( end!=-1 ) {
                 //scan min
-                date[m]=parseInt(fStart,end);
+                date[m]=negate * parseInt(fStart,end);
                 fStart=end+1;
                 designator = true;
             }
@@ -171,7 +191,14 @@ public class DurationDatatypeValidator extends DateTimeValidator {
             end = indexOf (fStart, fEnd, 'S');
             if ( end!=-1 ) {
                 //scan seconds
-                date[s]=parseInt(fStart,end);
+                int mlsec = indexOf (fStart, end, '.');
+                if ( mlsec >0 ) {
+                    date[s]  = negate * parseInt (fStart, mlsec);
+                    date[ms] = negate * parseInt (mlsec+1, end);
+                }
+                else {
+                    date[s]=negate * parseInt(fStart,end);
+                }
                 designator = true;
             }
         }
@@ -185,9 +212,139 @@ public class DurationDatatypeValidator extends DateTimeValidator {
     }
 
 
-    //REVISIT: implement addDuration algorithm
-    private int[] addDuration(int[] duration) {
+    /**
+     * Compares 2 given durations. 
+     * 
+     * @param date1  Unnormalized duration
+     * @param date2  Unnormalized duration
+     * @return 
+     */
+    protected  short compareDates(int[] date1, int[] date2) {
+
+        //REVISIT: this is unoptimazed vs of comparing 2 durations
+        //         Algorithm is described in 3.2.6.2 W3C Schema Datatype specs
+        //
+
+        //add constA to both durations
+        short resultA, resultB, resultC, resultD = INDETERMINATE;
+
+        //try and see if the objects are equal
+        resultA = compareOrder (date1, date2);
+        if ( resultA == EQUAL ) {
+            return EQUAL;
+        }
+
+        //long comparison algorithm is required
+        int[] tempA = addDuration (date1, 0);
+        int[] tempB = addDuration (date2, 0);
+        resultA =  compareOrder(tempA, tempB);
+        if ( resultA == INDETERMINATE ) {
+            return INDETERMINATE;
+        }
+
+        tempA = addDuration(date1, 1);
+        tempB = addDuration(date2, 1);
+        resultB =  compareOrder(tempA, tempB);
+        if ( resultB == INDETERMINATE || resultA!=resultB ) {
+            return INDETERMINATE;
+        }
+
+        tempA = addDuration(date1, 1);
+        tempB = addDuration(date2, 1);
+        resultC =  compareOrder(tempA, tempB);
+        if ( resultC == INDETERMINATE || resultC!=resultB ) {
+            return INDETERMINATE;
+        }
+
+        tempA = addDuration(date1, 1);
+        tempB = addDuration(date2, 1);
+        resultD =  compareOrder(tempA, tempB);
+        if ( resultD == INDETERMINATE || resultD!=resultC ) {
+            return INDETERMINATE;
+        }
+
+
+        return resultD;
+    }
+
+
+    private int[] addDuration(int[] date, int index) {
+
+        //REVISIT: some code could be shared between normalize() and this method,
+        //         however is it worth moving it? The structures are different...
+        //
+
+        //REVISIT: take care about unnecessary obj creation
+        int[] duration=new int[TOTAL_SIZE];
+
+        //add months (may be modified additionaly below)
+        int temp = DATETIMES[index][M] + date[M];
+        duration[M] = modulo (temp, 1, 13);
+        int carry = fQuotient (temp, 1, 13);
+
+        //add years (may be modified additionaly below)
+        duration[CY]=DATETIMES[index][CY] + date[CY] + carry;
+
+        //add seconds
+        temp = DATETIMES[index][s] + date[s];
+        duration[s] =  temp%60;
+        carry = temp/60;
+
+        //add hours
+        temp = DATETIMES[index][h] + date[hh] + carry;
+        duration[h] = temp%24;
+        carry = temp/24;
+
+        duration[D]=DATETIMES[index][D] + date[D] + carry;
+
+        while ( true ) {
+
+            temp=maxDayInMonthFor(duration[CY], duration[M]);
+            if ( duration[D] < 1 ) { //original duration was negative
+                duration[D] = duration[D] + maxDayInMonthFor(duration[CY], duration[M]-1);
+                carry=-1;
+            }
+            else if ( duration[D] > temp ) {
+                duration[D] = duration[D] - temp;
+                carry=1;
+            }
+            else {
+                break;
+            }
+            temp = duration[M]+carry;
+            duration[M] = modulo(temp, 1, 13);
+            duration[CY] = duration[CY]+fQuotient(temp, 1, 13);
+        }
+
+        duration[utc]='Z';
         return duration;
+    }
+
+    protected String dateToString(int[] date) {
+        message.setLength(0);
+        int negate = 1;
+        if ( date[CY]<0 ) {
+            message.append('-');
+            negate=-1;
+        }
+        message.append('P');
+        message.append(negate * date[CY]);
+        message.append('Y');
+        message.append(negate * date[M]);
+        message.append('M');
+        message.append(negate * date[D]);
+        message.append('D');
+        message.append('T');
+        message.append(negate * date[h]);
+        message.append('H');
+        message.append(negate * date[m]);
+        message.append('M');
+        message.append(negate * date[s]);
+        message.append('.');
+        message.append(negate * date[ms]);
+        message.append('S');
+
+        return message.toString();
     }
 }
 

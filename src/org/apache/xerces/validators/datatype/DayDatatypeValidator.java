@@ -60,7 +60,13 @@ package org.apache.xerces.validators.datatype;
 
 import java.util.Hashtable;
 
-/* $Id$ */
+/**
+ * Validator for <gDay> datatype (W3C Schema datatypes)
+ * 
+ * @author Elena Litani
+ * @version $Id$
+ */
+
 public class DayDatatypeValidator extends DateTimeValidator {
 
     //size without time zone: ---09
@@ -92,7 +98,7 @@ public class DayDatatypeValidator extends DateTimeValidator {
         if ( date== null ) {
             date=new int[TOTAL_SIZE];
         }
-        date = resetDateObj(date);
+        resetDateObj(date);
 
         //initialize values 
         date[CY]=YEAR;
@@ -107,7 +113,7 @@ public class DayDatatypeValidator extends DateTimeValidator {
                 throw new Exception ("Error in month parsing");
             }
             else {
-                date = getTimeZone(date, sign);
+                getTimeZone(date, sign);
             }
         }
         //validate and normalize
@@ -116,11 +122,26 @@ public class DayDatatypeValidator extends DateTimeValidator {
             throw new Exception ();
         }
         else if ( date[utc]!=0 && date[utc]!='Z' ) {
-            date=normalize(date);
+            normalize(date);
         }
         return date;
     }
 
+    /**
+     * Converts gDay object representation to String
+     * 
+     * @param date   gDay object
+     * @return lexical representation of gDay: ---DD with an optional time zone sign
+     */
+    protected String dateToString(int[] date) {
+        message.setLength(0);
+        message.append('-');
+        message.append('-');
+        message.append('-');
+        message.append(date[D]);
+        message.append((char)date[utc]);
+        return message.toString();
+    }
 
 }
 

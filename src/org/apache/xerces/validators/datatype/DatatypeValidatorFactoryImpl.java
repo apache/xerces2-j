@@ -276,7 +276,7 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                                         getDatatypeValidator( "nonNegativeInteger"), facets, false );
 
                 facets = new Hashtable();
-                facets.put(SchemaSymbols.ELT_PATTERN,"(\\d*)-(\\d\\d)-(\\d\\d)T(\\d\\d):(\\d\\d):(\\d\\d)(\\.(\\d)*)?(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?");
+                facets.put(SchemaSymbols.ELT_PATTERN,"(-)?(\\d*)-(\\d\\d)-(\\d\\d)T(\\d\\d):(\\d\\d):(\\d\\d)(\\.(\\d)*)?(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?");
                 createDatatypeValidator("dateTime", new DateTimeDatatypeValidator(), facets, false);
 
                 facets = new Hashtable();
@@ -284,7 +284,7 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 createDatatypeValidator("time", new TimeDatatypeValidator(), facets, false);
 
                 facets = new Hashtable();
-                facets.put(SchemaSymbols.ELT_PATTERN,"(\\d*)-(\\d\\d)-(\\d\\d)(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?");
+                facets.put(SchemaSymbols.ELT_PATTERN,"(-)?(\\d*)-(\\d\\d)-(\\d\\d)(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?");
                 createDatatypeValidator("date", new DateDatatypeValidator(), facets, false);
                 
                 facets = new Hashtable();
@@ -292,11 +292,11 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 createDatatypeValidator("gMonthDay", new MonthDayDatatypeValidator(), facets, false);
                 
                 facets = new Hashtable();
-                facets.put(SchemaSymbols.ELT_PATTERN,"(\\d*)-(\\d\\d)(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?");                
+                facets.put(SchemaSymbols.ELT_PATTERN,"(-)?(\\d*)-(\\d\\d)(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?");                
                 createDatatypeValidator("gYearMonth", new YearMonthDatatypeValidator(), facets, false);
                 
                 facets = new Hashtable();
-                facets.put(SchemaSymbols.ELT_PATTERN,"(\\d*)(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?");                
+                facets.put(SchemaSymbols.ELT_PATTERN,"(-)?(\\d*)(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?");                
                 createDatatypeValidator("gYear", new YearDatatypeValidator(), facets, false);
 
 

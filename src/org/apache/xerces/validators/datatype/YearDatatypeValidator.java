@@ -62,8 +62,13 @@ package org.apache.xerces.validators.datatype;
 
 import java.util.Hashtable;
 
+/**
+ * Validator for <gYear> datatype (W3C Schema Datatypes)
+ * 
+ * @author Elena Litani
+ * @version $Id$
+ */
 
-/* $Id$ */
 public class YearDatatypeValidator extends DateTimeValidator {
 
     public  YearDatatypeValidator() throws InvalidDatatypeFacetException{
@@ -92,16 +97,19 @@ public class YearDatatypeValidator extends DateTimeValidator {
         if ( date == null ) {
             date = new int[TOTAL_SIZE];
         }
-        date = resetDateObj(date);
+        resetDateObj(date);
 
-        // get date
+        // check for preceding '-' sign
+        if (fBuffer.charAt(0)=='-') {
+            fStart++;
+        }
         int sign = findUTCSign(fStart, fEnd);
         if (sign == -1) {
             date[CY]=parseInt(fStart, fEnd);
         }
         else {
             date[CY]=parseInt(fStart, sign);
-            date = getTimeZone (date, sign);
+            getTimeZone (date, sign);
         }
 
         //initialize values 
@@ -115,11 +123,24 @@ public class YearDatatypeValidator extends DateTimeValidator {
             throw new Exception ("Not valid date");
         }
         else if ( date[utc]!=0 && date[utc]!='Z' ) {
-            date=normalize(date);
+            normalize(date);
         }
         return date;
     }
 
+    /**
+     * Converts year object representation to String
+     * 
+     * @param date   year object
+     * @return lexical representation of month: CCYY with optional time zone sign
+     */
+    protected String dateToString(int[] date) {
+
+        message.setLength(0);
+        message.append(date[CY]);
+        message.append((char)date[utc]);
+        return message.toString();
+    }
 
 }
 

@@ -60,7 +60,12 @@ package org.apache.xerces.validators.datatype;
 import java.util.Hashtable;
 
 
-/* $Id$ */
+/**
+ * Validator for <dateTime> datatype (W3C Schema Datatypes)
+ * 
+ * @author Elena Litani
+ * @version $Id$
+ */
 public class DateTimeDatatypeValidator extends DateTimeValidator {
 
     public  DateTimeDatatypeValidator() throws InvalidDatatypeFacetException{
@@ -89,13 +94,12 @@ public class DateTimeDatatypeValidator extends DateTimeValidator {
         if ( date == null ) {
             date = new int[TOTAL_SIZE];
         }
-        date = resetDateObj(date);
-
+        resetDateObj(date);
         int end = indexOf (fStart, fEnd, 'T');        
 
         // both time and date
-        date=getDate(fStart, end, date);
-        date=getTime(end+1, fEnd, date);
+        getDate(fStart, end, date);
+        getTime(end+1, fEnd, date);
 
         //validate and normalize
         if ( !validateDateTime(date) ) {
@@ -104,7 +108,7 @@ public class DateTimeDatatypeValidator extends DateTimeValidator {
             throw new Exception ("Not valid date");
         }
         else if ( date[utc]!=0 ) {
-            date=normalize(date);
+            normalize(date);
         }
         return date;
     }

@@ -59,7 +59,13 @@ package org.apache.xerces.validators.datatype;
 
 import java.util.Hashtable;
 
-/* $Id$ */
+/**
+ * Validator for <gMonth> datatype (W3C Schema Datatypes)
+ * 
+ * @author Elena Litani
+ * @version $Id$
+ */
+
 public class MonthDatatypeValidator extends DateTimeValidator {
 
     public  MonthDatatypeValidator() throws InvalidDatatypeFacetException{
@@ -88,9 +94,9 @@ public class MonthDatatypeValidator extends DateTimeValidator {
         if ( date== null ) {
             date=new int[TOTAL_SIZE];
         }
-        date = resetDateObj(date);
+        resetDateObj(date);
 
-        //set constants 
+        //set constants
         date[CY]=YEAR;
         date[D]=DAY;
 
@@ -102,7 +108,7 @@ public class MonthDatatypeValidator extends DateTimeValidator {
                 throw new Exception ("Error in month parsing");
             }
             else {
-                date = getTimeZone(date, sign);
+                getTimeZone(date, sign);
             }
         }
         //validate and normalize
@@ -111,9 +117,64 @@ public class MonthDatatypeValidator extends DateTimeValidator {
             throw new Exception ();
         }
         else if ( date[utc]!=0 && date[utc]!='Z' ) {
-            date=normalize(date);
+            normalize(date);
         }
         return date;
+    }
+
+    /**
+     * Overwrite compare algorithm to optimize month comparison
+     * 
+     * @param date1
+     * @param date2
+     * @return 
+     */
+    protected  short compareDates(int[] date1, int[] date2) {
+
+        if ( date1[utc]==date2[utc] ) {
+            return (date1[M]>=date2[M])?(date1[M]>date2[M])?LESS_THAN:EQUAL:GREATER_THAN;
+        }
+
+        if ( date1[utc]=='Z' || date2[utc]=='Z' ) {
+            
+            if ( date1[M]==date2[M] ) {
+                //--05--Z and --05--
+                return INDETERMINATE;
+            }
+            if ( (date1[M]+1 == date2[M] || date1[M]-1 == date2[M]) ) {
+                //--05--Z and (--04-- or --05--) 
+                //REVISIT: should this case be less than or equal? 
+                //         maxExclusive should fail but what about maxInclusive
+                //         
+                return INDETERMINATE;
+            }
+        }
+
+        if ( date1[M]<date2[M] ) {
+            return LESS_THAN;
+        }
+        else {
+            return GREATER_THAN;
+        }
+
+    }
+
+    /**
+     * Converts month object representation to String
+     * 
+     * @param date   month object
+     * @return lexical representation of month: --MM-- with an optional time zone sign
+     */
+    protected String dateToString(int[] date) {
+
+        message.setLength(0);
+        message.append('-');
+        message.append('-');
+        message.append(date[M]);
+        message.append('-');
+        message.append('-');
+        message.append((char)date[utc]);
+        return message.toString();
     }
 
 }

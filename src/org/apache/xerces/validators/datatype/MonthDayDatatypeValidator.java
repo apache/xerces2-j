@@ -60,7 +60,13 @@ package org.apache.xerces.validators.datatype;
 
 import java.util.Hashtable;
 
-/* $Id$ */
+/**
+ * Validator for <gMonthDay> datatype (W3C Schema Datatypes)
+ * 
+ * @author Elena Litani
+ * @version $Id$
+ */
+
 public class MonthDayDatatypeValidator extends DateTimeValidator {
 
     //size without time zone: --MM-DD    
@@ -92,7 +98,7 @@ public class MonthDayDatatypeValidator extends DateTimeValidator {
         if ( date== null ) {
             date=new int[TOTAL_SIZE];
         }
-        date = resetDateObj(date);
+        resetDateObj(date);
 
         //initialize 
         date[CY]=YEAR;
@@ -108,7 +114,7 @@ public class MonthDayDatatypeValidator extends DateTimeValidator {
                 throw new Exception ("Error in month parsing");
             }
             else {
-                date = getTimeZone(date, sign);
+                getTimeZone(date, sign);
             }
         }
         //validate and normalize
@@ -117,11 +123,28 @@ public class MonthDayDatatypeValidator extends DateTimeValidator {
             throw new Exception ();
         }
         else if ( date[utc]!=0 && date[utc]!='Z' ) {
-            date=normalize(date);
+            normalize(date);
         }
         return date;
     }
 
+
+    /**
+     * Converts gMonthDay object representation to String
+     * 
+     * @param date   gmonthDay object
+     * @return lexical representation of month: --MM-DD with an optional time zone sign
+     */
+    protected String dateToString(int[] date) {
+        message.setLength(0);
+        message.append('-');
+        message.append('-');
+        message.append(date[M]);
+        message.append('-');
+        message.append(date[D]);
+        message.append((char)date[utc]);
+        return message.toString();
+    }
 
 }
 
