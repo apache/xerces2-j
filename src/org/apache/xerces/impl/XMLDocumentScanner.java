@@ -641,6 +641,16 @@ public class XMLDocumentScanner
         
         fHasExternalDTD = systemId != null;
 
+        // call handler
+        if (fDocumentHandler != null) {
+            // NOTE: I don't like calling the doctypeDecl callback until
+            //       end of the *full* doctype line (including internal
+            //       subset) is parsed correctly but SAX2 requires that
+            //       it knows the root element name and public and system
+            //       identifier for the startDTD call. -Ac
+            fDocumentHandler.doctypeDecl(name, publicId, systemId);
+        }
+
         // internal subset
         if (fEntityScanner.skipChar('[')) {
             fEntityManager.setEntityHandler(fDTDScanner);
@@ -665,11 +675,6 @@ public class XMLDocumentScanner
             reportFatalError("DoctypedeclUnterminated", new Object[]{name});
         }
         fMarkupDepth--;
-
-        // call handler
-        if (fDocumentHandler != null) {
-            fDocumentHandler.doctypeDecl(name, publicId, systemId);
-        }
 
         // external subset
         if (systemId != null && (fValidation || fLoadExternalDTD)) {

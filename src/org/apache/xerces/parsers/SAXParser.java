@@ -117,17 +117,6 @@ public class SAXParser
     /** Lexical handler. */
     protected LexicalHandler fLexicalHandler;
 
-    // cached information about the current document
-
-    /** Root element name from doctype declaration. */
-    private String fRootElement;
-
-    /** Public identifier from doctype declaration. */
-    private String fPublicId;
-
-    /** System identifier from doctype declaration. */
-    private String fSystemId;
-
     // symbols
        
     /** Symbol: empty string (""). */
@@ -191,10 +180,10 @@ public class SAXParser
                             String publicId, String systemId)
         throws SAXException {
 
-        // Simply store the parameters which we need later in startDTD()
-        fRootElement = rootElement;
-        fPublicId = publicId;
-        fSystemId = systemId;
+        // SAX2 extension
+        if (fLexicalHandler != null) {
+            fLexicalHandler.startDTD(rootElement, publicId, systemId);
+        }
 
     } // doctypeDecl(String,String,String)
 
@@ -445,20 +434,6 @@ public class SAXParser
     //
     // XMLDTDHandler methods
     //
-
-    /**
-     * The start of the DTD.
-     *
-     * @throws SAXException Thrown by handler to signal an error.
-     */
-    public void startDTD() throws SAXException {
-
-        // SAX2 extension
-        if (fLexicalHandler != null) {
-            fLexicalHandler.startDTD(fRootElement, fPublicId, fSystemId);
-        }
-
-    } // startDTD()
 
     /**
      * An element declaration.
