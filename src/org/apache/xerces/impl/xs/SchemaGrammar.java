@@ -200,13 +200,13 @@ public class SchemaGrammar implements Grammar, XSNamespaceItem {
                 short scope = XSConstants.SCOPE_GLOBAL;
                 
                 // xsi:type
-                name = SchemaSymbols.OXSI_TYPE.intern();
+                name = SchemaSymbols.XSI_TYPE;
                 tns = SchemaSymbols.URI_XSI;
                 type = schemaFactory.getBuiltInType(SchemaSymbols.ATTVAL_QNAME);
                 fGlobalAttrDecls.put(name, new BuiltinAttrDecl(name, tns, type, scope));
                 
                 // xsi:nil
-                name = SchemaSymbols.OXSI_NIL.intern();
+                name = SchemaSymbols.XSI_NIL;
                 tns = SchemaSymbols.URI_XSI;
                 type = schemaFactory.getBuiltInType(SchemaSymbols.ATTVAL_BOOLEAN);
                 fGlobalAttrDecls.put(name, new BuiltinAttrDecl(name, tns, type, scope));
@@ -214,13 +214,13 @@ public class SchemaGrammar implements Grammar, XSNamespaceItem {
                 XSSimpleType anyURI = schemaFactory.getBuiltInType(SchemaSymbols.ATTVAL_ANYURI);
     
                 // xsi:schemaLocation
-                name = SchemaSymbols.OXSI_SCHEMALOCATION.intern();
+                name = SchemaSymbols.XSI_SCHEMALOCATION;
                 tns = SchemaSymbols.URI_XSI;
                 type = schemaFactory.createTypeList(null, SchemaSymbols.URI_XSI, (short)0, anyURI);
                 fGlobalAttrDecls.put(name, new BuiltinAttrDecl(name, tns, type, scope));
                 
                 // xsi:noNamespaceSchemaLocation
-                name = SchemaSymbols.OXSI_NONAMESPACESCHEMALOCATION.intern();
+                name = SchemaSymbols.XSI_NONAMESPACESCHEMALOCATION;
                 tns = SchemaSymbols.URI_XSI;
                 type = anyURI;
                 fGlobalAttrDecls.put(name, new BuiltinAttrDecl(name, tns, type, scope));

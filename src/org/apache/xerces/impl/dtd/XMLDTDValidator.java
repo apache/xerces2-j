@@ -71,6 +71,7 @@ import org.apache.xerces.impl.dv.DTDDVFactory;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.util.XMLChar;
 
 import org.apache.xerces.xni.Augmentations;
@@ -131,49 +132,6 @@ public class XMLDTDValidator
     //
     // Constants
     //
-
-    // REVISIT:  these should not be in Validator!
-
-    // symbols: DTD datatype
-
-    /** Symbol: "CDATA". */
-    private String fCDATASymbol;
-
-    /** Symbol: "ID". */
-    private String fIDSymbol;
-
-    /** Symbol: "IDREF". */
-    private String fIDREFSymbol;
-
-    /** Symbol: "IDREFS". */
-    private String fIDREFSSymbol;
-
-    /** Symbol: "ENTITY". */
-    private String fENTITYSymbol;
-
-    /** Symbol: "ENTITIES". */
-    private String fENTITIESSymbol;
-
-    /** Symbol: "NMTOKEN". */
-    private String fNMTOKENSymbol;
-
-    /** Symbol: "NMTOKENS". */
-    private String fNMTOKENSSymbol;
-
-    /** Symbol: "NOTATION". */
-    private String fNOTATIONSymbol;
-
-    /** Symbol: "ENUMERATION". */
-    private String fENUMERATIONSymbol;
-
-    /** Symbol: "#IMPLIED. */
-    private String fIMPLIEDSymbol;
-
-    /** Symbol: "#REQUIRED". */
-    private String fREQUIREDSymbol;
-
-    /** Symbol: "#FIXED". */
-    private String fFIXEDSymbol;
 
     /** Symbol: "&lt;&lt;datatypes>>". */
 
@@ -1118,7 +1076,7 @@ public class XMLDTDValidator
             }
             boolean specified = false;
             boolean required = attDefaultType == XMLSimpleType.DEFAULT_TYPE_REQUIRED;
-            boolean cdata = attType == fCDATASymbol;
+            boolean cdata = attType == XMLSymbols.fCDATASymbol;
 
             if (!cdata || required || attValue != null) {
                 int attrCount = attributes.getLength();
@@ -1234,7 +1192,7 @@ public class XMLDTDValidator
             boolean changedByNormalization = false;
             String oldValue = attributes.getValue(i);
             String attrValue = oldValue;
-            if (attributes.isSpecified(i) && type != fCDATASymbol) {
+            if (attributes.isSpecified(i) && type != XMLSymbols.fCDATASymbol) {
                 changedByNormalization = normalizeAttrValue(attributes, i);
                 attrValue = attributes.getValue(i);
                 if (fPerformValidation && fGrammarBucket.getStandalone()
@@ -1704,7 +1662,7 @@ public class XMLDTDValidator
 
         switch (attrDecl.simpleType.type) {
         case XMLSimpleType.TYPE_ENTITY: {
-                return attrDecl.simpleType.list ? fENTITIESSymbol : fENTITYSymbol;
+                return attrDecl.simpleType.list ? XMLSymbols.fENTITIESSymbol : XMLSymbols.fENTITYSymbol;
             }
         case XMLSimpleType.TYPE_ENUMERATION: {
                 StringBuffer buffer = new StringBuffer();
@@ -1719,53 +1677,38 @@ public class XMLDTDValidator
                 return fSymbolTable.addSymbol(buffer.toString());
             }
         case XMLSimpleType.TYPE_ID: {
-                return fIDSymbol;
+                return XMLSymbols.fIDSymbol;
             }
         case XMLSimpleType.TYPE_IDREF: {
-                return attrDecl.simpleType.list ? fIDREFSSymbol : fIDREFSymbol;
+                return attrDecl.simpleType.list ? XMLSymbols.fIDREFSSymbol : XMLSymbols.fIDREFSymbol;
             }
         case XMLSimpleType.TYPE_NMTOKEN: {
-                return attrDecl.simpleType.list ? fNMTOKENSSymbol : fNMTOKENSymbol;
+                return attrDecl.simpleType.list ? XMLSymbols.fNMTOKENSSymbol : XMLSymbols.fNMTOKENSymbol;
             }
         case XMLSimpleType.TYPE_NOTATION: {
-                return fNOTATIONSymbol;
+                return XMLSymbols.fNOTATIONSymbol;
             }
         }
-        return fCDATASymbol;
+        return XMLSymbols.fCDATASymbol;
 
     } // getAttributeTypeName(XMLAttributeDecl):String
 
     /** intialization */
     private void init() {
 
-        // symbols
-        fCDATASymbol = fSymbolTable.addSymbol("CDATA");
-        fIDSymbol = fSymbolTable.addSymbol("ID");
-        fIDREFSymbol = fSymbolTable.addSymbol("IDREF");
-        fIDREFSSymbol = fSymbolTable.addSymbol("IDREFS");
-        fENTITYSymbol = fSymbolTable.addSymbol("ENTITY");
-        fENTITIESSymbol = fSymbolTable.addSymbol("ENTITIES");
-        fNMTOKENSymbol = fSymbolTable.addSymbol("NMTOKEN");
-        fNMTOKENSSymbol = fSymbolTable.addSymbol("NMTOKENS");
-        fNOTATIONSymbol = fSymbolTable.addSymbol("NOTATION");
-        fENUMERATIONSymbol = fSymbolTable.addSymbol("ENUMERATION");
-        fIMPLIEDSymbol = fSymbolTable.addSymbol("#IMPLIED");
-        fREQUIREDSymbol = fSymbolTable.addSymbol("#REQUIRED");
-        fFIXEDSymbol = fSymbolTable.addSymbol("#FIXED");
-
         // datatype validators
         if (fValidation) {
             try {
                 //REVISIT: datatypeRegistry + initialization of datatype 
                 //         why do we cast to ListDatatypeValidator?
-                fValID       = fDatatypeValidatorFactory.getBuiltInDV("ID" );
-                fValIDRef    = fDatatypeValidatorFactory.getBuiltInDV("IDREF" );
-                fValIDRefs   = fDatatypeValidatorFactory.getBuiltInDV("IDREFS" );
-                fValENTITY   = fDatatypeValidatorFactory.getBuiltInDV("ENTITY" );
-                fValENTITIES = fDatatypeValidatorFactory.getBuiltInDV("ENTITIES" );
-                fValNMTOKEN  = fDatatypeValidatorFactory.getBuiltInDV("NMTOKEN");
-                fValNMTOKENS = fDatatypeValidatorFactory.getBuiltInDV("NMTOKENS");
-                fValNOTATION = fDatatypeValidatorFactory.getBuiltInDV("NOTATION" );
+                fValID       = fDatatypeValidatorFactory.getBuiltInDV(XMLSymbols.fIDSymbol);
+                fValIDRef    = fDatatypeValidatorFactory.getBuiltInDV(XMLSymbols.fIDREFSymbol);
+                fValIDRefs   = fDatatypeValidatorFactory.getBuiltInDV(XMLSymbols.fIDREFSSymbol);
+                fValENTITY   = fDatatypeValidatorFactory.getBuiltInDV(XMLSymbols.fENTITYSymbol);
+                fValENTITIES = fDatatypeValidatorFactory.getBuiltInDV(XMLSymbols.fENTITIESSymbol);
+                fValNMTOKEN  = fDatatypeValidatorFactory.getBuiltInDV(XMLSymbols.fNMTOKENSymbol);
+                fValNMTOKENS = fDatatypeValidatorFactory.getBuiltInDV(XMLSymbols.fNMTOKENSSymbol);
+                fValNOTATION = fDatatypeValidatorFactory.getBuiltInDV(XMLSymbols.fNOTATIONSymbol);
 
             }
             catch (Exception e) {

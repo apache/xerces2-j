@@ -69,6 +69,7 @@ import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.util.XMLStringBuffer;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.AugmentationsImpl;
 
@@ -282,11 +283,6 @@ public class XMLDocumentFragmentScannerImpl
     /** External entity. */
     private XMLEntityManager.ExternalEntity fExternalEntity = new XMLEntityManager.ExternalEntity();
 
-    // symbols
-
-    /** Symbol: "CDATA". */
-    private String fCDATASymbol;
-
     //
     // Constructors
     //
@@ -389,9 +385,6 @@ public class XMLDocumentFragmentScannerImpl
         fElementStack.clear();
         fHasExternalDTD = false;
         fStandalone = false;
-
-        // create symbols
-        fCDATASymbol = fSymbolTable.addSymbol("CDATA");
 
         // setup dispatcher
         setScannerState(SCANNER_STATE_CONTENT);
@@ -798,7 +791,7 @@ public class XMLDocumentFragmentScannerImpl
 
         // content
         int oldLen = attributes.getLength();
-        attributes.addAttribute(fAttributeQName, fCDATASymbol, null);
+        attributes.addAttribute(fAttributeQName, XMLSymbols.fCDATASymbol, null);
 
         // WFC: Unique Att Spec
         if (oldLen == attributes.getLength()) {

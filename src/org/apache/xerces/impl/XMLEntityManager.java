@@ -191,6 +191,9 @@ public class XMLEntityManager
         VALIDATION_MANAGER,
     };
 
+    private static final String XMLEntity = "[xml]".intern();
+    private static final String DTDEntity = "[dtd]".intern();
+    
     // debugging
 
     /**
@@ -738,8 +741,7 @@ public class XMLEntityManager
      */
     public void startDocumentEntity(XMLInputSource xmlInputSource)
         throws IOException, XNIException {
-        final String entityName = fSymbolTable.addSymbol("[xml]");
-        startEntity(entityName, xmlInputSource, false, true);
+        startEntity(XMLEntity, xmlInputSource, false, true);
     } // startDocumentEntity(XMLInputSource)
 
     /**
@@ -753,8 +755,7 @@ public class XMLEntityManager
      */
     public void startDTDEntity(XMLInputSource xmlInputSource)
         throws IOException, XNIException {
-        final String entityName = fSymbolTable.addSymbol("[dtd]");
-        startEntity(entityName, xmlInputSource, false, true);
+        startEntity(DTDEntity, xmlInputSource, false, true);
     } // startDTDEntity(XMLInputSource)
 
     /**

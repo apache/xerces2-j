@@ -65,6 +65,7 @@ import org.apache.xerces.impl.RevalidationHandler;
 import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.parsers.AbstractXMLDocumentParser;
 
 
@@ -156,10 +157,6 @@ public class DOMNormalizer implements XMLGrammarPool {
     /** error handler */
     protected DOMErrorHandler fErrorHandler;
 
-    protected String fEmptySymbol;
-    protected String fXmlSymbol;
-    protected String fXmlnsSymbol;
-
     // counter for new prefix names
     protected int fNamespaceCounter = 1;
 
@@ -203,12 +200,8 @@ public class DOMNormalizer implements XMLGrammarPool {
 
         fNamespaceValidation = componentManager.getFeature(DOMValidationConfiguration.SCHEMA);
         fNamespaceBinder.reset(fSymbolTable);
-        fNamespaceBinder.declarePrefix(fEmptySymbol, fEmptySymbol);
+        fNamespaceBinder.declarePrefix(XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING);
         fNamespaceCounter = 1;
-        fXmlSymbol = fSymbolTable.addSymbol("xml");
-        fXmlnsSymbol = fSymbolTable.addSymbol("xmlns");
-        fEmptySymbol=fSymbolTable.addSymbol("");
-
 
         if (fValidationHandler != null) {
             ((XMLComponent)fValidationHandler).reset(componentManager);
@@ -564,15 +557,15 @@ public class DOMNormalizer implements XMLGrammarPool {
             for (int k=0; k < attributes.getLength(); k++) {
                 Attr attr = (Attr)attributes.getItem(k);
                 uri = attr.getNamespaceURI();
-                if (uri != null && uri.equals(NamespaceSupport.XMLNS_URI)) {
+                if (uri != null && uri.equals(XMLSymbols.XMLNS_URI)) {
                     // namespace attribute
                     value = attr.getNodeValue();
                     if (value == null) {
-                        value=fEmptySymbol;
+                        value=XMLSymbols.EMPTY_STRING;
                     }
 
                     // Check for invalid namespace declaration:
-                    if (value.equals(NamespaceSupport.XMLNS_URI)) {
+                    if (value.equals(XMLSymbols.XMLNS_URI)) {
                         if (fErrorHandler != null) {
                             modifyDOMError("No prefix other than 'xmlns' can be bound to 'http://www.w3.org/2000/xmlns/' namespace name", 
                                            DOMError.SEVERITY_ERROR, attr);
@@ -585,9 +578,9 @@ public class DOMNormalizer implements XMLGrammarPool {
                     } else {
                         prefix = attr.getPrefix();
                         prefix = (prefix == null || 
-                                  prefix.length() == 0) ? fEmptySymbol :fSymbolTable.addSymbol(prefix);
+                                  prefix.length() == 0) ? XMLSymbols.EMPTY_STRING :fSymbolTable.addSymbol(prefix);
                         String localpart = fSymbolTable.addSymbol( attr.getLocalName());
-                        if (prefix == fXmlnsSymbol) { //xmlns:prefix
+                        if (prefix == XMLSymbols.EMPTY_STRING) { //xmlns:prefix
 
                             value = fSymbolTable.addSymbol(value);
                             if (value.length() != 0) {
@@ -607,11 +600,11 @@ public class DOMNormalizer implements XMLGrammarPool {
                         } else { // (localpart == fXmlnsSymbol && prefix == fEmptySymbol)  -- xmlns
                             // empty prefix is always bound ("" or some string)
                             value = fSymbolTable.addSymbol(value);
-                            fLocalNSBinder.declarePrefix(fEmptySymbol, value);
-                            fNamespaceBinder.declarePrefix(fEmptySymbol, value);
+                            fLocalNSBinder.declarePrefix(XMLSymbols.EMPTY_STRING, value);
+                            fNamespaceBinder.declarePrefix(XMLSymbols.EMPTY_STRING, value);
 
                             if (fValidationHandler != null) {
-                                fValidationHandler.startPrefixMapping(fEmptySymbol, value, null);
+                                fValidationHandler.startPrefixMapping(XMLSymbols.EMPTY_STRING, value, null);
                             }
                             removeDefault (attr, attributes);
                             continue;
@@ -644,7 +637,7 @@ public class DOMNormalizer implements XMLGrammarPool {
         if (uri != null) {  // Element has a namespace
             uri = fSymbolTable.addSymbol(uri);
             prefix = (prefix == null || 
-                      prefix.length() == 0) ? fEmptySymbol :fSymbolTable.addSymbol(prefix);
+                      prefix.length() == 0) ? XMLSymbols.EMPTY_STRING :fSymbolTable.addSymbol(prefix);
             if (fNamespaceBinder.getURI(prefix) == uri) {
                 // The xmlns:prefix=namespace or xmlns="default" was declared at parent.
                 // The binder always stores mapping of empty prefix to "".
@@ -680,15 +673,15 @@ public class DOMNormalizer implements XMLGrammarPool {
                     throw new RuntimeException("DOM Level 1 node: "+tagName);
                 }
             } else { // uri=null and no colon (DOM L2 node)
-                uri = fNamespaceBinder.getURI(fEmptySymbol);
+                uri = fNamespaceBinder.getURI(XMLSymbols.EMPTY_STRING);
                 if (uri !=null && uri.length() > 0) {
                     // undeclare default namespace declaration (before that element
                     // bound to non-zero length uir), but adding xmlns="" decl                    
-                    addNamespaceDecl (fEmptySymbol, fEmptySymbol, element);
-                    fLocalNSBinder.declarePrefix(fEmptySymbol, fEmptySymbol);
-                    fNamespaceBinder.declarePrefix(fEmptySymbol, fEmptySymbol);
+                    addNamespaceDecl (XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING, element);
+                    fLocalNSBinder.declarePrefix(XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING);
+                    fNamespaceBinder.declarePrefix(XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING);
                     if (fValidationHandler != null) {
-                        fValidationHandler.startPrefixMapping(fEmptySymbol, fEmptySymbol, null);
+                        fValidationHandler.startPrefixMapping(XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING, null);
                     }
                 }
             }
@@ -717,19 +710,21 @@ public class DOMNormalizer implements XMLGrammarPool {
 
                 // make sure that value is never null.
                 if (value == null) {
-                    value=fEmptySymbol;
+                    value=XMLSymbols.EMPTY_STRING;
                 }
 
                 if (uri != null) {  // attribute has namespace !=null
                     prefix = attr.getPrefix();
                     prefix = (prefix == null || 
-                              prefix.length() == 0) ? fEmptySymbol :fSymbolTable.addSymbol(prefix);
+                              prefix.length() == 0) ? XMLSymbols.EMPTY_STRING :fSymbolTable.addSymbol(prefix);
                     String localpart = fSymbolTable.addSymbol( attr.getLocalName());
 
                     // ---------------------------------------
                     // skip namespace declarations 
                     // ---------------------------------------
-                    if (uri != null && uri.equals(NamespaceSupport.XMLNS_URI)) {
+                    // REVISIT: can we assume that "uri" is from some symbol
+                    // table, and compare by reference? -SG
+                    if (uri != null && uri.equals(XMLSymbols.XMLNS_URI)) {
                         continue;
                     }
 
@@ -747,7 +742,7 @@ public class DOMNormalizer implements XMLGrammarPool {
                     // find if for this prefix a URI was already declared
                     String declaredURI =  fNamespaceBinder.getURI(prefix);
 
-                    if (prefix == fEmptySymbol || declaredURI != uri) {
+                    if (prefix == XMLSymbols.EMPTY_STRING || declaredURI != uri) {
                         // attribute has no prefix (default namespace decl does not apply to attributes) 
                         // OR
                         // attribute prefix is not declared
@@ -759,12 +754,12 @@ public class DOMNormalizer implements XMLGrammarPool {
                         // Find if any prefix for attributes namespace URI is available
                         // in the scope
                         String declaredPrefix = fNamespaceBinder.getPrefix(uri);
-                        if (declaredPrefix !=null && declaredPrefix !=fEmptySymbol) {
+                        if (declaredPrefix !=null && declaredPrefix !=XMLSymbols.EMPTY_STRING) {
 
                             // use the prefix that was found (declared previously for this URI
                             prefix = declaredPrefix;
                         } else {
-                            if (prefix != fEmptySymbol && fLocalNSBinder.getURI(prefix) == null) {
+                            if (prefix != XMLSymbols.EMPTY_STRING && fLocalNSBinder.getURI(prefix) == null) {
                                 // the current prefix is not null and it has no in scope declaration
 
                                 // use this prefix
@@ -845,16 +840,16 @@ public class DOMNormalizer implements XMLGrammarPool {
         if (DEBUG) {
             System.out.println("[ns-fixup] addNamespaceDecl ["+prefix+"]");
         }
-        if (prefix == fEmptySymbol) {
+        if (prefix == XMLSymbols.EMPTY_STRING) {
             if (DEBUG) {
                 System.out.println("=>add xmlns=\""+uri+"\" declaration");
             }
-            element.setAttributeNS(NamespaceSupport.XMLNS_URI, "xmlns", uri);             
+            element.setAttributeNS(XMLSymbols.XMLNS_URI, XMLSymbols.PREFIX_XMLNS, uri);             
         } else {
             if (DEBUG) {
                 System.out.println("=>add xmlns:"+prefix+"=\""+uri+"\" declaration");
             }
-            element.setAttributeNS(NamespaceSupport.XMLNS_URI, "xmlns"+":"+prefix, uri); 
+            element.setAttributeNS(XMLSymbols.XMLNS_URI, "xmlns:"+prefix, uri); 
         }
     }
 

@@ -58,6 +58,7 @@
 package org.apache.xerces.util;
 
 import org.apache.xerces.xni.NamespaceContext;
+import org.apache.xerces.util.XMLSymbols;
 
 /**
  * Namespace support for XML document handlers. This class doesn't 
@@ -106,14 +107,6 @@ public class NamespaceSupport
     /** The current context. */
     protected int fCurrentContext;
 
-    // symbols
-
-    /** Symbol: "xml". */
-    protected String fXmlSymbol;
-
-    /** Symbol: "xmlns". */
-    protected String fXmlnsSymbol;
-
     //
     // Constructors
     //
@@ -156,21 +149,17 @@ public class NamespaceSupport
      */
     public void reset(SymbolTable symbolTable) {
 
-        // save symbols
-        fXmlSymbol = symbolTable.addSymbol("xml");
-        fXmlnsSymbol = symbolTable.addSymbol("xmlns");
-
         // reset namespace and context info
         fNamespaceSize = 0;
         fCurrentContext = 0;
         fContext[fCurrentContext] = fNamespaceSize;
 
         // bind "xml" prefix to the XML uri
-        fNamespace[fNamespaceSize++] = fXmlSymbol;
-        fNamespace[fNamespaceSize++] = XML_URI;
+        fNamespace[fNamespaceSize++] = XMLSymbols.PREFIX_XML;
+        fNamespace[fNamespaceSize++] = XMLSymbols.XML_URI;
         // bind "xmlns" prefix to the XMLNS uri
-        fNamespace[fNamespaceSize++] = fXmlnsSymbol;
-        fNamespace[fNamespaceSize++] = XMLNS_URI;
+        fNamespace[fNamespaceSize++] = XMLSymbols.PREFIX_XMLNS;
+        fNamespace[fNamespaceSize++] = XMLSymbols.XMLNS_URI;
         ++fCurrentContext;
 
     } // reset(SymbolTable)
@@ -248,7 +237,7 @@ public class NamespaceSupport
     public boolean declarePrefix(String prefix, String uri) {
 
         // ignore "xml" and "xmlns" prefixes
-        if (prefix == fXmlSymbol || prefix == fXmlnsSymbol) {
+        if (prefix == XMLSymbols.PREFIX_XML || prefix == XMLSymbols.PREFIX_XMLNS) {
             return false;
         }
 

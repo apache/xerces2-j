@@ -80,6 +80,7 @@ import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.IntStack;
 import org.apache.xerces.util.XMLResourceIdentifierImpl;
@@ -1000,15 +1001,6 @@ public class XMLSchemaValidator
     static final int INITIAL_STACK_SIZE = 8;
     static final int INC_STACK_SIZE     = 8;
 
-    // some constants that'll be added into the symbol table
-    String XMLNS;
-    String URI_XSI;
-    String XSI_SCHEMALOCATION;
-    String XSI_NONAMESPACESCHEMALOCATION;
-    String XSI_TYPE;
-    String XSI_NIL;
-    String URI_SCHEMAFORSCHEMA;
-
     //
     // Data
     //
@@ -1196,13 +1188,6 @@ public class XMLSchemaValidator
         // get symbol table. if it's a new one, add symbols to it.
         SymbolTable symbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
         if (symbolTable != fSymbolTable) {
-            XMLNS = symbolTable.addSymbol(SchemaSymbols.O_XMLNS);
-            URI_XSI = symbolTable.addSymbol(SchemaSymbols.URI_XSI);
-            XSI_SCHEMALOCATION = symbolTable.addSymbol(SchemaSymbols.OXSI_SCHEMALOCATION);
-            XSI_NONAMESPACESCHEMALOCATION = symbolTable.addSymbol(SchemaSymbols.OXSI_NONAMESPACESCHEMALOCATION);
-            XSI_TYPE = symbolTable.addSymbol(SchemaSymbols.OXSI_TYPE);
-            XSI_NIL = symbolTable.addSymbol(SchemaSymbols.OXSI_NIL);
-            URI_SCHEMAFORSCHEMA = symbolTable.addSymbol(SchemaSymbols.OURI_SCHEMAFORSCHEMA);
             fSchemaLoader.setProperty(SYMBOL_TABLE, symbolTable);
         }
         fSymbolTable = symbolTable;
@@ -1727,8 +1712,8 @@ public class XMLSchemaValidator
         // get xsi:schemaLocation and xsi:noNamespaceSchemaLocation attributes,
         // parse them to get the grammars
 
-        String sLocation = attributes.getValue(URI_XSI, XSI_SCHEMALOCATION);
-        String nsLocation = attributes.getValue(URI_XSI, XSI_NONAMESPACESCHEMALOCATION);
+        String sLocation = attributes.getValue(SchemaSymbols.URI_XSI, SchemaSymbols.XSI_SCHEMALOCATION);
+        String nsLocation = attributes.getValue(SchemaSymbols.URI_XSI, SchemaSymbols.XSI_NONAMESPACESCHEMALOCATION);
         //store the location hints..  we need to do it so that we can defer the loading of grammar until
         //there is a reference to a component from that namespace. To provide location hints to the
         //application for a namespace
@@ -1859,7 +1844,7 @@ public class XMLSchemaValidator
         }
 
         // get type from xsi:type
-        String xsiType = attributes.getValue(URI_XSI, XSI_TYPE);
+        String xsiType = attributes.getValue(SchemaSymbols.URI_XSI, SchemaSymbols.XSI_TYPE);
         if (xsiType != null)
             fCurrentType = getAndCheckXsiType(element, xsiType, attributes);
 
@@ -1951,7 +1936,7 @@ public class XMLSchemaValidator
             fCurrCMState = fCurrentCM.startContentModel();
 
         // get information about xsi:nil
-        String xsiNil = attributes.getValue(URI_XSI, XSI_NIL);
+        String xsiNil = attributes.getValue(SchemaSymbols.URI_XSI, SchemaSymbols.XSI_NIL);
         // only deal with xsi:nil when there is an element declaration
         if (xsiNil != null && fCurrentElemDecl != null)
             fNil = getXsiNil(element, xsiNil);
@@ -2291,14 +2276,14 @@ public class XMLSchemaValidator
         }
         catch (InvalidDatatypeValueException e) {
             reportSchemaError(e.getKey(), e.getArgs());
-            reportSchemaError("cvc-elt.4.1", new Object[]{element.rawname, URI_XSI+","+XSI_TYPE, xsiType});
+            reportSchemaError("cvc-elt.4.1", new Object[]{element.rawname, SchemaSymbols.URI_XSI+","+SchemaSymbols.XSI_TYPE, xsiType});
             return null;
         }
 
         // 4.2 The local name and namespace name (as defined in QName Interpretation (3.15.3)), of the actual value of that attribute information item must resolve to a type definition, as defined in QName resolution (Instance) (3.15.4)
         XSTypeDecl type = null;
         // if the namespace is schema namespace, first try built-in types
-        if (typeName.uri == URI_SCHEMAFORSCHEMA) {
+        if (typeName.uri == SchemaSymbols.URI_SCHEMAFORSCHEMA) {
             type = SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(typeName.localpart);
         }
         // if it's not schema built-in types, then try to get a grammar
@@ -2334,7 +2319,7 @@ public class XMLSchemaValidator
         // 3 The appropriate case among the following must be true:
         // 3.1 If {nillable} is false, then there must be no attribute information item among the element information item's [attributes] whose [namespace name] is identical to http://www.w3.org/2001/XMLSchema-instance and whose [local name] is nil.
         if (fCurrentElemDecl != null && !fCurrentElemDecl.getIsNillable()) {
-            reportSchemaError("cvc-elt.3.1", new Object[]{element.rawname, URI_XSI+","+XSI_NIL});
+            reportSchemaError("cvc-elt.3.1", new Object[]{element.rawname, SchemaSymbols.URI_XSI+","+SchemaSymbols.XSI_NIL});
         }
         // 3.2 If {nillable} is true and there is such an attribute information item and its actual value is true , then all of the following must be true:
         // 3.2.2 There must be no fixed {value constraint}.
@@ -2344,7 +2329,7 @@ public class XMLSchemaValidator
                 value.equals(SchemaSymbols.ATTVAL_TRUE_1)) {
                 if (fCurrentElemDecl != null &&
                     fCurrentElemDecl.getConstraintType() == XSConstants.VC_FIXED) {
-                    reportSchemaError("cvc-elt.3.2.2", new Object[]{element.rawname, URI_XSI+","+XSI_NIL});
+                    reportSchemaError("cvc-elt.3.2.2", new Object[]{element.rawname, SchemaSymbols.URI_XSI+","+SchemaSymbols.XSI_NIL});
                 }
                 return true;
             }
@@ -2405,16 +2390,16 @@ public class XMLSchemaValidator
                 attrPSVI = (AttributePSVImpl)attributes.getAugmentations(index).getItem(Constants.ATTRIBUTE_PSVI);
                 
                 // for the 4 xsi attributes, get appropriate decl, and validate
-                if (fTempQName.uri == URI_XSI) {
+                if (fTempQName.uri == SchemaSymbols.URI_XSI) {
                     XSAttributeDecl attrDecl = null;
-                    if (fTempQName.localpart == XSI_SCHEMALOCATION)
-                        attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(XSI_SCHEMALOCATION);
-                    else if (fTempQName.localpart == XSI_NONAMESPACESCHEMALOCATION)
-                        attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(XSI_NONAMESPACESCHEMALOCATION);
-                    else if (fTempQName.localpart == XSI_NIL)
-                        attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(XSI_NIL);
-                    else if (fTempQName.localpart == XSI_TYPE)
-                        attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(XSI_TYPE);
+                    if (fTempQName.localpart == SchemaSymbols.XSI_SCHEMALOCATION)
+                        attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(SchemaSymbols.XSI_SCHEMALOCATION);
+                    else if (fTempQName.localpart == SchemaSymbols.XSI_NONAMESPACESCHEMALOCATION)
+                        attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(SchemaSymbols.XSI_NONAMESPACESCHEMALOCATION);
+                    else if (fTempQName.localpart == SchemaSymbols.XSI_NIL)
+                        attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(SchemaSymbols.XSI_NIL);
+                    else if (fTempQName.localpart == SchemaSymbols.XSI_TYPE)
+                        attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(SchemaSymbols.XSI_TYPE);
                     if (attrDecl != null) {
                         processOneAttribute(element, attributes.getValue(index),
                                             attrDecl, null, attrPSVI);
@@ -2423,7 +2408,7 @@ public class XMLSchemaValidator
                 }
 
                 // for all other attributes, no_validation/unknow_validity
-                if (fTempQName.rawname != XMLNS && !fTempQName.rawname.startsWith("xmlns:")) {
+                if (fTempQName.rawname != XMLSymbols.PREFIX_XMLNS && !fTempQName.rawname.startsWith("xmlns:")) {
                     reportSchemaError("cvc-type.3.1.1", new Object[]{element.rawname});
                 }
             }
@@ -2452,16 +2437,16 @@ public class XMLSchemaValidator
             attrPSVI = (AttributePSVImpl)attributes.getAugmentations(index).getItem(Constants.ATTRIBUTE_PSVI);
             
             // for the 4 xsi attributes, get appropriate decl, and validate
-            if (fTempQName.uri == URI_XSI) {
+            if (fTempQName.uri == SchemaSymbols.URI_XSI) {
                 XSAttributeDecl attrDecl = null;
-                if (fTempQName.localpart == XSI_SCHEMALOCATION)
-                    attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(XSI_SCHEMALOCATION);
-                else if (fTempQName.localpart == XSI_NONAMESPACESCHEMALOCATION)
-                    attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(XSI_NONAMESPACESCHEMALOCATION);
-                else if (fTempQName.localpart == XSI_NIL)
-                    attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(XSI_NIL);
-                else if (fTempQName.localpart == XSI_TYPE)
-                    attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(XSI_TYPE);
+                if (fTempQName.localpart == SchemaSymbols.XSI_SCHEMALOCATION)
+                    attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(SchemaSymbols.XSI_SCHEMALOCATION);
+                else if (fTempQName.localpart == SchemaSymbols.XSI_NONAMESPACESCHEMALOCATION)
+                    attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(SchemaSymbols.XSI_NONAMESPACESCHEMALOCATION);
+                else if (fTempQName.localpart == SchemaSymbols.XSI_NIL)
+                    attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(SchemaSymbols.XSI_NIL);
+                else if (fTempQName.localpart == SchemaSymbols.XSI_TYPE)
+                    attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(SchemaSymbols.XSI_TYPE);
                 if (attrDecl != null) {
                     processOneAttribute(element, attributes.getValue(index),
                                         attrDecl, null, attrPSVI);
@@ -2470,7 +2455,7 @@ public class XMLSchemaValidator
             }
             
             // for namespace attributes, no_validation/unknow_validity
-            if (fTempQName.rawname == XMLNS || fTempQName.rawname.startsWith("xmlns:")) {
+            if (fTempQName.rawname == XMLSymbols.PREFIX_XMLNS || fTempQName.rawname.startsWith("xmlns:")) {
                 continue;
             }
             
@@ -2744,7 +2729,7 @@ public class XMLSchemaValidator
             // 3.2.1 The element information item must have no character or element information item [children].
             if (fNil) {
                 if (fChildCount != 0 || content.length() != 0){
-                    reportSchemaError("cvc-elt.3.2.1", new Object[]{element.rawname, URI_XSI+","+XSI_NIL});
+                    reportSchemaError("cvc-elt.3.2.1", new Object[]{element.rawname, SchemaSymbols.URI_XSI+","+SchemaSymbols.XSI_NIL});
                     // PSVI: nil
                     fCurrentPSVI.fNil = false;
                 } else {

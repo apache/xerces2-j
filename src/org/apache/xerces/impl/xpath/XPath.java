@@ -58,6 +58,7 @@
 package org.apache.xerces.impl.xpath;
 
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
@@ -196,7 +197,6 @@ public class XPath {
         int tokenCount = xtokens.getTokenCount();
         boolean firstTokenOfLocationPath=true;
 
-        final String emptySymbol = fSymbolTable.addSymbol("");
         for (int i = 0; i < tokenCount; i++) {
             int token = xtokens.getToken(i);
             boolean isNamespace=false;
@@ -255,10 +255,10 @@ public class XPath {
                     token = xtokens.getToken(++i);
                     String prefix = xtokens.getTokenString(token);
                     String uri = null;
-                    if (context != null && prefix != emptySymbol) {
+                    if (context != null && prefix != XMLSymbols.EMPTY_STRING) {
                         uri = context.getURI(prefix);
                     }
-                    if (prefix != emptySymbol && context != null && uri == null) {
+                    if (prefix != XMLSymbols.EMPTY_STRING && context != null && uri == null) {
                         throw new XPathException("c-general-xpath-ns");
                     }
 
@@ -274,7 +274,7 @@ public class XPath {
 
                     token = xtokens.getToken(++i);
                     String localpart = xtokens.getTokenString(token);
-                    String rawname = prefix != emptySymbol
+                    String rawname = prefix != XMLSymbols.EMPTY_STRING
                                    ? fSymbolTable.addSymbol(prefix+':'+localpart)
                                    : localpart;
 
@@ -330,10 +330,10 @@ public class XPath {
                     token = xtokens.getToken(++i);
                     String prefix = xtokens.getTokenString(token);
                     String uri = null;
-                    if (context != null && prefix != emptySymbol) {
+                    if (context != null && prefix != XMLSymbols.EMPTY_STRING) {
                         uri = context.getURI(prefix);
                     }
-                    if (prefix != emptySymbol && context != null && uri == null) {
+                    if (prefix != XMLSymbols.EMPTY_STRING && context != null && uri == null) {
                         throw new XPathException("c-general-xpath-ns");
                     }
 
@@ -349,7 +349,7 @@ public class XPath {
 
                     token = xtokens.getToken(++i);
                     String localpart = xtokens.getTokenString(token);
-                    String rawname = prefix != emptySymbol
+                    String rawname = prefix != XMLSymbols.EMPTY_STRING
                                    ? fSymbolTable.addSymbol(prefix+':'+localpart)
                                    : localpart;
 
@@ -1302,29 +1302,29 @@ public class XPath {
 
         // symbols
 
-        private String fAndSymbol;
-        private String fOrSymbol;
-        private String fModSymbol;
-        private String fDivSymbol;
+        private static final String fAndSymbol = "and".intern();
+        private static final String fOrSymbol = "or".intern();
+        private static final String fModSymbol = "mod".intern();
+        private static final String fDivSymbol = "div".intern();
 
-        private String fCommentSymbol;
-        private String fTextSymbol;
-        private String fPISymbol;
-        private String fNodeSymbol;
+        private static final String fCommentSymbol = "comment".intern();
+        private static final String fTextSymbol = "text".intern();
+        private static final String fPISymbol = "processing-instruction".intern();
+        private static final String fNodeSymbol = "node".intern();
 
-        private String fAncestorSymbol;
-        private String fAncestorOrSelfSymbol;
-        private String fAttributeSymbol;
-        private String fChildSymbol;
-        private String fDescendantSymbol;
-        private String fDescendantOrSelfSymbol;
-        private String fFollowingSymbol;
-        private String fFollowingSiblingSymbol;
-        private String fNamespaceSymbol;
-        private String fParentSymbol;
-        private String fPrecedingSymbol;
-        private String fPrecedingSiblingSymbol;
-        private String fSelfSymbol;
+        private static final String fAncestorSymbol = "ancestor".intern();
+        private static final String fAncestorOrSelfSymbol = "ancestor-or-self".intern();
+        private static final String fAttributeSymbol = "attribute".intern();
+        private static final String fChildSymbol = "child".intern();
+        private static final String fDescendantSymbol = "descendant".intern();
+        private static final String fDescendantOrSelfSymbol = "descendant-or-self".intern();
+        private static final String fFollowingSymbol = "following".intern();
+        private static final String fFollowingSiblingSymbol = "following-sibling".intern();
+        private static final String fNamespaceSymbol = "namespace".intern();
+        private static final String fParentSymbol = "parent".intern();
+        private static final String fPrecedingSymbol = "preceding".intern();
+        private static final String fPrecedingSiblingSymbol = "preceding-sibling".intern();
+        private static final String fSelfSymbol = "self".intern();
 
         //
         // Constructors
@@ -1335,29 +1335,6 @@ public class XPath {
 
             // save pool and tokens
             fSymbolTable = symbolTable;
-
-            // create symbols
-            fAndSymbol = fSymbolTable.addSymbol("and");
-            fOrSymbol = fSymbolTable.addSymbol("or");
-            fModSymbol = fSymbolTable.addSymbol("mod");
-            fDivSymbol = fSymbolTable.addSymbol("div");
-            fCommentSymbol = fSymbolTable.addSymbol("comment");
-            fTextSymbol = fSymbolTable.addSymbol("text");
-            fPISymbol = fSymbolTable.addSymbol("processing-instruction");
-            fNodeSymbol = fSymbolTable.addSymbol("node");
-            fAncestorSymbol = fSymbolTable.addSymbol("ancestor");
-            fAncestorOrSelfSymbol = fSymbolTable.addSymbol("ancestor-or-self");
-            fAttributeSymbol = fSymbolTable.addSymbol("attribute");
-            fChildSymbol = fSymbolTable.addSymbol("child");
-            fDescendantSymbol = fSymbolTable.addSymbol("descendant");
-            fDescendantOrSelfSymbol = fSymbolTable.addSymbol("descendant-or-self");
-            fFollowingSymbol = fSymbolTable.addSymbol("following");
-            fFollowingSiblingSymbol = fSymbolTable.addSymbol("following-sibling");
-            fNamespaceSymbol = fSymbolTable.addSymbol("namespace");
-            fParentSymbol = fSymbolTable.addSymbol("parent");
-            fPrecedingSymbol = fSymbolTable.addSymbol("preceding");
-            fPrecedingSiblingSymbol = fSymbolTable.addSymbol("preceding-sibling");
-            fSelfSymbol = fSymbolTable.addSymbol("self");
 
         } // <init>(SymbolTable)
 
@@ -1373,7 +1350,6 @@ public class XPath {
             String nameHandle, prefixHandle;
             boolean starIsMultiplyOperator = false;
             int ch;
-            final String emptySymbol = fSymbolTable.addSymbol("");
 
             while (true) {
                 if (currentOffset == endOffset) {
@@ -1643,7 +1619,7 @@ public class XPath {
                     }
                     nameHandle = symbolTable.addSymbol(data.substring(nameOffset, currentOffset));
                     if (ch != ':') {
-                        prefixHandle = emptySymbol;
+                        prefixHandle = XMLSymbols.EMPTY_STRING;
                     } else {
                         prefixHandle = nameHandle;
                         if (++currentOffset == endOffset) {
@@ -1741,7 +1717,7 @@ public class XPath {
                     nameHandle = symbolTable.addSymbol(data.substring(nameOffset, currentOffset));
                     boolean isNameTestNCName = false;
                     boolean isAxisName = false;
-                    prefixHandle = emptySymbol;
+                    prefixHandle = XMLSymbols.EMPTY_STRING;
                     if (ch == ':') {
                         if (++currentOffset == endOffset) {
                 // System.out.println("abort 5");

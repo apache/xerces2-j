@@ -62,6 +62,7 @@ import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.util.XMLChar;
 
 import org.apache.xerces.xni.Augmentations;
@@ -251,55 +252,6 @@ public class XMLDTDProcessor
 
     /** Element declarations in DTD. */
     private Vector fDTDElementDecls = new Vector();
-
-    // symbols: general
-
-    /** Symbol: "EMPTY". */
-    private String fEMPTYSymbol;
-
-    /** Symbol: "ANY". */
-    private String fANYSymbol;
-
-    // symbols: DTD datatype
-
-    /** Symbol: "CDATA". */
-    private String fCDATASymbol;
-
-    /** Symbol: "ID". */
-    private String fIDSymbol;
-
-    /** Symbol: "IDREF". */
-    private String fIDREFSymbol;
-
-    /** Symbol: "IDREFS". */
-    private String fIDREFSSymbol;
-
-    /** Symbol: "ENTITY". */
-    private String fENTITYSymbol;
-
-    /** Symbol: "ENTITIES". */
-    private String fENTITIESSymbol;
-
-    /** Symbol: "NMTOKEN". */
-    private String fNMTOKENSymbol;
-
-    /** Symbol: "NMTOKENS". */
-    private String fNMTOKENSSymbol;
-
-    /** Symbol: "NOTATION". */
-    private String fNOTATIONSymbol;
-
-    /** Symbol: "ENUMERATION". */
-    private String fENUMERATIONSymbol;
-
-    /** Symbol: "#IMPLIED. */
-    private String fIMPLIEDSymbol;
-
-    /** Symbol: "#REQUIRED". */
-    private String fREQUIREDSymbol;
-
-    /** Symbol: "#FIXED". */
-    private String fFIXEDSymbol;
 
     // to check for duplicate ID or ANNOTATION attribute declare in
     // ATTLIST, and misc VCs
@@ -822,7 +774,7 @@ public class XMLDTDProcessor
                               String defaultType, XMLString defaultValue,
                               XMLString nonNormalizedDefaultValue, Augmentations augs) throws XNIException {
 
-        if (type != fCDATASymbol && defaultValue != null) {
+        if (type != XMLSymbols.fCDATASymbol && defaultValue != null) {
             normalizeDefaultAttrValue(defaultValue);
         }
 
@@ -851,11 +803,11 @@ public class XMLDTDProcessor
             // a) VC: One ID per Element Type, If duplicate ID attribute
             // b) VC: ID attribute Default. if there is a declareared attribute
             //        default for ID it should be of type #IMPLIED or #REQUIRED
-            if (type == fIDSymbol) {
+            if (type == XMLSymbols.fIDSymbol) {
                 if (defaultValue != null && defaultValue.length != 0) {
                     if (defaultType == null || 
-                        !(defaultType == fIMPLIEDSymbol ||
-                          defaultType == fREQUIREDSymbol)) {
+                        !(defaultType == XMLSymbols.fIMPLIEDSymbol ||
+                          defaultType == XMLSymbols.fREQUIREDSymbol)) {
                         fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                    "IDDefaultTypeInvalid",
                                                    new Object[]{ attributeName},
@@ -893,7 +845,7 @@ public class XMLDTDProcessor
             //  VC: One Notaion Per Element Type, should check if there is a
             //      duplicate NOTATION attribute
 
-            if (type == fNOTATIONSymbol) {
+            if (type == XMLSymbols.fNOTATIONSymbol) {
                 // VC: Notation Attributes: all notation names in the
                 //     (attribute) declaration must be declared.
                 for (int i=0; i<enumeration.length; i++) {
@@ -926,24 +878,25 @@ public class XMLDTDProcessor
             boolean ok = true;
             if (defaultValue != null && 
                 (defaultType == null ||
-                 (defaultType != null && defaultType == fFIXEDSymbol))) {
+                 (defaultType != null && defaultType == XMLSymbols.fFIXEDSymbol))) {
 
                 String value = defaultValue.toString();
-                if (type == fNMTOKENSSymbol ||
-                    type == fENTITIESSymbol || type == fIDREFSSymbol) {
+                if (type == XMLSymbols.fNMTOKENSSymbol ||
+                    type == XMLSymbols.fENTITIESSymbol ||
+                    type == XMLSymbols.fIDREFSSymbol) {
 
                     StringTokenizer tokenizer = new StringTokenizer(value);
                     if (tokenizer.hasMoreTokens()) {
                         while (true) {
                             String nmtoken = tokenizer.nextToken();
-                            if (type == fNMTOKENSSymbol) {
+                            if (type == XMLSymbols.fNMTOKENSSymbol) {
                                 if (!XMLChar.isValidNmtoken(nmtoken)) {
                                     ok = false;
                                     break;
                                 }
                             }
-                            else if (type == fENTITIESSymbol ||
-                                     type == fIDREFSSymbol) {
+                            else if (type == XMLSymbols.fENTITIESSymbol ||
+                                     type == XMLSymbols.fIDREFSSymbol) {
                                 if (!XMLChar.isValidName(nmtoken)) {
                                     ok = false;
                                     break;
@@ -957,26 +910,26 @@ public class XMLDTDProcessor
 
                 }
                 else {
-                    if (type == fENTITYSymbol ||
-                        type == fIDSymbol ||
-                        type == fIDREFSymbol ||
-                        type == fNOTATIONSymbol) {
+                    if (type == XMLSymbols.fENTITYSymbol ||
+                        type == XMLSymbols.fIDSymbol ||
+                        type == XMLSymbols.fIDREFSymbol ||
+                        type == XMLSymbols.fNOTATIONSymbol) {
 
                         if (!XMLChar.isValidName(value)) {
                             ok = false;
                         }
 
                     }
-                    else if (type == fNMTOKENSymbol ||
-                             type == fENUMERATIONSymbol) {
+                    else if (type == XMLSymbols.fNMTOKENSymbol ||
+                             type == XMLSymbols.fENUMERATIONSymbol) {
 
                         if (!XMLChar.isValidNmtoken(value)) {
                             ok = false;
                         }
                     }
 
-                    if (type == fNOTATIONSymbol ||
-                        type == fENUMERATIONSymbol) {
+                    if (type == XMLSymbols.fNOTATIONSymbol ||
+                        type == XMLSymbols.fENUMERATIONSymbol) {
                         ok = false;
                         for (int i=0; i<enumeration.length; i++) {
                             if (defaultValue.equals(enumeration[i])) {
@@ -1563,24 +1516,6 @@ public class XMLDTDProcessor
 
     /** initialization */
     private void init() {
-
-        // symbols
-        fEMPTYSymbol = fSymbolTable.addSymbol("EMPTY");
-        fANYSymbol = fSymbolTable.addSymbol("ANY");
-
-        fCDATASymbol = fSymbolTable.addSymbol("CDATA");
-        fIDSymbol = fSymbolTable.addSymbol("ID");
-        fIDREFSymbol = fSymbolTable.addSymbol("IDREF");
-        fIDREFSSymbol = fSymbolTable.addSymbol("IDREFS");
-        fENTITYSymbol = fSymbolTable.addSymbol("ENTITY");
-        fENTITIESSymbol = fSymbolTable.addSymbol("ENTITIES");
-        fNMTOKENSymbol = fSymbolTable.addSymbol("NMTOKEN");
-        fNMTOKENSSymbol = fSymbolTable.addSymbol("NMTOKENS");
-        fNOTATIONSymbol = fSymbolTable.addSymbol("NOTATION");
-        fENUMERATIONSymbol = fSymbolTable.addSymbol("ENUMERATION");
-        fIMPLIEDSymbol = fSymbolTable.addSymbol("#IMPLIED");
-        fREQUIREDSymbol = fSymbolTable.addSymbol("#REQUIRED");
-        fFIXEDSymbol = fSymbolTable.addSymbol("#FIXED");
 
         // datatype validators
         if (fValidation) {

@@ -65,6 +65,7 @@ import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.impl.xs.util.XIntPool;
+import org.apache.xerces.util.XMLSymbols;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import java.util.Vector;
@@ -122,7 +123,7 @@ class XSDocumentInfo {
         // During XML Schema traversal bind "xml" prefix to
         // "http://www.w3.org/XML/1998/namespace"
         // per Namespace Constraint: Prefix Declared (Namespaces in XML REC)
-        fNamespaceSupport.declarePrefix(symbolTable.addSymbol("xml"), symbolTable.addSymbol("http://www.w3.org/XML/1998/namespace"));
+        fNamespaceSupport.declarePrefix(XMLSymbols.PREFIX_XML, XMLSymbols.XML_URI);
 
         if(schemaDoc != null) {
             Element root = DOMUtil.getRoot(schemaDoc);
@@ -169,7 +170,7 @@ class XSDocumentInfo {
         // per Namespace Constraint: Prefix Declared (Namespaces in XML REC)
         // REVISIT: shouldn't this work be done whenever a namespace support
         // object is constructed?
-        fNamespaceSupport.declarePrefix(fSymbolTable.addSymbol("xml"), fSymbolTable.addSymbol("http://www.w3.org/XML/1998/namespace"));
+        fNamespaceSupport.declarePrefix(XMLSymbols.PREFIX_XML, XMLSymbols.XML_URI);
 
         fValidationContext.setNamespaceSupport(fNamespaceSupport);
     }

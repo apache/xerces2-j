@@ -72,6 +72,7 @@ import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.impl.xs.psvi.XSConstants;
 import org.apache.xerces.impl.validation.ValidationState;
@@ -398,7 +399,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         // no-xmlns
 
         // The {name} of an attribute declaration must not match xmlns.
-        if (nameAtt != null && nameAtt.equals(SchemaSymbols.XMLNS)) {
+        if (nameAtt != null && nameAtt.equals(XMLSymbols.PREFIX_XMLNS)) {
             reportSchemaError("no-xmlns", null, attrDecl);
         }
 

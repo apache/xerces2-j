@@ -130,15 +130,6 @@ public class XMLGrammarCachingConfiguration
 
     // Data
 
-    // some constants that need to be added into the symbol table
-    String XMLNS = null;
-    String URI_XSI = null;
-    String XSI_SCHEMALOCATION = null;
-    String XSI_NONAMESPACESCHEMALOCATION = null;
-    String XSI_TYPE = null;
-    String XSI_NIL = null;
-    String URI_SCHEMAFORSCHEMA = null;
-
     // variables needed for caching schema grammars.  
     protected XMLSchemaLoader fSchemaLoader;
 
@@ -195,15 +186,6 @@ public class XMLGrammarCachingConfiguration
                                        XMLGrammarPool grammarPool,
                                        XMLComponentManager parentSettings) {
         super(symbolTable, grammarPool, parentSettings);
-
-       // symbolTable is assumed to be static here...
-       XMLNS = fSymbolTable.addSymbol(SchemaSymbols.O_XMLNS);
-       URI_XSI = fSymbolTable.addSymbol(SchemaSymbols.URI_XSI);
-       XSI_SCHEMALOCATION = fSymbolTable.addSymbol(SchemaSymbols.OXSI_SCHEMALOCATION);
-       XSI_NONAMESPACESCHEMALOCATION = fSymbolTable.addSymbol(SchemaSymbols.OXSI_NONAMESPACESCHEMALOCATION);
-       XSI_TYPE = fSymbolTable.addSymbol(SchemaSymbols.OXSI_TYPE);
-       XSI_NIL = fSymbolTable.addSymbol(SchemaSymbols.OXSI_NIL);
-       URI_SCHEMAFORSCHEMA = fSymbolTable.addSymbol(SchemaSymbols.OURI_SCHEMAFORSCHEMA);
 
         // REVISIT:  may need to add some features/properties
         // specific to this configuration at some point...

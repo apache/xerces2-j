@@ -64,6 +64,7 @@ import org.apache.xerces.impl.msg.XMLMessageFormatter;
 
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLSymbols;
 
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.NamespaceContext;
@@ -175,17 +176,6 @@ public class XMLNamespaceBinder
     /** Attribute QName. */
     private QName fAttributeQName = new QName();
 
-    // symbols
-
-    /** Symbol: "". */
-    private String fEmptySymbol;
-
-    /** Symbol: "xml". */
-    private String fXmlSymbol;
-
-    /** Symbol: "xmlns". */
-    private String fXmlnsSymbol;
-
     //
     // Constructors
     //
@@ -274,11 +264,6 @@ public class XMLNamespaceBinder
 
         // initialize vars
         fNamespaceSupport.reset(fSymbolTable);
-
-        // save built-in entity names
-        fEmptySymbol = fSymbolTable.addSymbol("");
-        fXmlSymbol = fSymbolTable.addSymbol("xml");
-        fXmlnsSymbol = fSymbolTable.addSymbol("xmlns");
 
         // use shared context
         NamespaceContext context = fNamespaceContext;
@@ -735,7 +720,7 @@ public class XMLNamespaceBinder
         // add new namespace context
         fNamespaceSupport.pushContext();
 
-        if (element.prefix == fXmlnsSymbol) {
+        if (element.prefix == XMLSymbols.PREFIX_XMLNS) {
             fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
                                        "ElementXMLNSPrefix",
                                        new Object[]{element.rawname},
@@ -749,14 +734,14 @@ public class XMLNamespaceBinder
             String prefix = attributes.getPrefix(i);
             // when it's of form xmlns="..." or xmlns:prefix="...",
             // it's a namespace declaration. but prefix:xmlns="..." isn't.
-            if (prefix == fXmlnsSymbol ||
-                prefix == fEmptySymbol && localpart == fXmlnsSymbol) {
+            if (prefix == XMLSymbols.PREFIX_XMLNS ||
+                prefix == XMLSymbols.EMPTY_STRING && localpart == XMLSymbols.PREFIX_XMLNS) {
 
                 // get the internalized value of this attribute
                 String uri = fSymbolTable.addSymbol(attributes.getValue(i));
 
                 // 1. "xmlns" can't be bound to any namespace
-                if (prefix == fXmlnsSymbol && localpart == fXmlnsSymbol) {
+                if (prefix == XMLSymbols.PREFIX_XMLNS && localpart == XMLSymbols.PREFIX_XMLNS) {
                     fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
                                                "CantBindXMLNS",
                                                new Object[]{attributes.getQName(i)},
@@ -764,7 +749,7 @@ public class XMLNamespaceBinder
                 }
                 
                 // 2. the namespace for "xmlns" can't be bound to any prefix
-                if (uri == NamespaceSupport.XMLNS_URI) {
+                if (uri == XMLSymbols.XMLNS_URI) {
                     fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
                                                "CantBindXMLNS",
                                                new Object[]{attributes.getQName(i)},
@@ -772,8 +757,8 @@ public class XMLNamespaceBinder
                 }
                 
                 // 3. "xml" can't be bound to any other namespace than it's own
-                if (localpart == fXmlSymbol) {
-                    if (uri != NamespaceSupport.XML_URI) {
+                if (localpart == XMLSymbols.PREFIX_XML) {
+                    if (uri != XMLSymbols.XML_URI) {
                         fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
                                                    "CantBindXML",
                                                    new Object[]{attributes.getQName(i)},
@@ -782,7 +767,7 @@ public class XMLNamespaceBinder
                 }
                 // 4. the namespace for "xml" can't be bound to any other prefix
                 else {
-                    if (uri ==NamespaceSupport.XML_URI) {
+                    if (uri ==XMLSymbols.XML_URI) {
                         fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
                                                    "CantBindXML",
                                                    new Object[]{attributes.getQName(i)},
@@ -790,12 +775,12 @@ public class XMLNamespaceBinder
                     }
                 }
 
-                prefix = localpart != fXmlnsSymbol ? localpart : fEmptySymbol;
+                prefix = localpart != XMLSymbols.PREFIX_XMLNS ? localpart : XMLSymbols.EMPTY_STRING;
 
                 // http://www.w3.org/TR/1999/REC-xml-names-19990114/#dt-prefix
                 // We should only report an error if there is a prefix,
                 // that is, the local part is not "xmlns". -SG
-                if (uri == fEmptySymbol && localpart != fXmlnsSymbol) {
+                if (uri == XMLSymbols.EMPTY_STRING && localpart != XMLSymbols.PREFIX_XMLNS) {
                     fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
                                                "EmptyPrefixedAttName",
                                                new Object[]{attributes.getQName(i)},
@@ -815,10 +800,10 @@ public class XMLNamespaceBinder
 
         // bind the element
         String prefix = element.prefix != null
-                      ? element.prefix : fEmptySymbol;
+                      ? element.prefix : XMLSymbols.EMPTY_STRING;
         element.uri = fNamespaceSupport.getURI(prefix);
         if (element.prefix == null && element.uri != null) {
-            element.prefix = fEmptySymbol;
+            element.prefix = XMLSymbols.EMPTY_STRING;
         }
         if (element.prefix != null && element.uri == null) {
             fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
@@ -831,13 +816,13 @@ public class XMLNamespaceBinder
         for (int i = 0; i < length; i++) {
             attributes.getName(i, fAttributeQName);
             String aprefix = fAttributeQName.prefix != null
-                           ? fAttributeQName.prefix : fEmptySymbol;
+                           ? fAttributeQName.prefix : XMLSymbols.EMPTY_STRING;
             String arawname = fAttributeQName.rawname;
-            if (arawname == fXmlnsSymbol) {
-                fAttributeQName.uri = fNamespaceSupport.getURI(fXmlnsSymbol);
+            if (arawname == XMLSymbols.PREFIX_XMLNS) {
+                fAttributeQName.uri = fNamespaceSupport.getURI(XMLSymbols.PREFIX_XMLNS);
                 attributes.setName(i, fAttributeQName);
             }
-            else if (aprefix != fEmptySymbol) {
+            else if (aprefix != XMLSymbols.EMPTY_STRING) {
                 fAttributeQName.uri = fNamespaceSupport.getURI(aprefix);
                 if (fAttributeQName.uri == null) {
                     fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
@@ -885,7 +870,7 @@ public class XMLNamespaceBinder
         throws XNIException {
 
         // bind element
-        String eprefix = element.prefix != null ? element.prefix : fEmptySymbol;
+        String eprefix = element.prefix != null ? element.prefix : XMLSymbols.EMPTY_STRING;
         element.uri = fNamespaceSupport.getURI(eprefix);
         if (element.uri != null) {
             element.prefix = eprefix;

@@ -75,6 +75,7 @@ import org.apache.xerces.impl.xs.XSAttributeDecl;
 import org.apache.xerces.impl.xs.XSGrammarBucket;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.impl.xs.util.XIntPool;
 import org.apache.xerces.impl.xs.psvi.XSConstants;
@@ -1668,7 +1669,7 @@ public class XSAttributeChecker {
         for (int i = 0; i < attrs.length; i++) {
             sattr = attrs[i];
             rawname = DOMUtil.getName(sattr);
-            if (rawname == SchemaSymbols.XMLNS || rawname.startsWith("xmlns:")) {
+            if (rawname == XMLSymbols.PREFIX_XMLNS || rawname.startsWith("xmlns:")) {
                 prefix = null;
                 if (rawname.length() == 5)
                     prefix = fSchemaHandler.EMPTY_STRING;

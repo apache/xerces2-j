@@ -85,6 +85,7 @@ import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.util.XMLResourceIdentifierImpl;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.util.SymbolHash;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.xni.XMLLocator;
@@ -1482,7 +1483,7 @@ public class XSDHandler {
         fSymbolTable = symbolTable;
         fGrammarPool = grammarPool;
 
-        EMPTY_STRING = fSymbolTable.addSymbol(SchemaSymbols.EMPTY_STRING);
+        EMPTY_STRING = fSymbolTable.addSymbol(XMLSymbols.EMPTY_STRING);
 
         resetSchemaParserErrorHandler();
         

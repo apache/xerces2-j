@@ -114,7 +114,7 @@ public class DOMParser extends org.apache.xerces.parsers.DOMParser {
      * Constructs a DOM parser using the dtd/xml schema parser configuration.
      */
     public DOMParser() {
-        super(new NonValidatingConfiguration(new SchemaSymbols.SchemaSymbolTable()));
+        super(new NonValidatingConfiguration());
         try {
             // use our own document implementation
             setProperty(DOCUMENT_CLASS, "org.apache.xerces.impl.xs.dom.DocumentImpl");

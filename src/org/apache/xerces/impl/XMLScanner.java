@@ -180,28 +180,28 @@ public abstract class XMLScanner
     // symbols
 
     /** Symbol: "version". */
-    protected String fVersionSymbol;
+    protected final static String fVersionSymbol = "version".intern();
 
     /** Symbol: "encoding". */
-    protected String fEncodingSymbol;
+    protected final static String fEncodingSymbol = "encoding".intern();
 
     /** Symbol: "standalone". */
-    protected String fStandaloneSymbol;
+    protected final static String fStandaloneSymbol = "standalone".intern();
 
     /** Symbol: "amp". */
-    protected String fAmpSymbol;
+    protected final static String fAmpSymbol = "amp".intern();
 
     /** Symbol: "lt". */
-    protected String fLtSymbol;
+    protected final static String fLtSymbol = "lt".intern();
 
     /** Symbol: "gt". */
-    protected String fGtSymbol;
+    protected final static String fGtSymbol = "gt".intern();
 
     /** Symbol: "quot". */
-    protected String fQuotSymbol;
+    protected final static String fQuotSymbol = "quot".intern();
 
     /** Symbol: "apos". */
-    protected String fAposSymbol;
+    protected final static String fAposSymbol = "apos".intern();
 
     // temporary variables
 
@@ -1280,16 +1280,6 @@ public abstract class XMLScanner
         fEntityDepth = 0;
         fReportEntity = true;
         fResourceIdentifier.clear();
-
-        // save built-in entity names
-        fVersionSymbol = fSymbolTable.addSymbol("version");
-        fEncodingSymbol = fSymbolTable.addSymbol("encoding");
-        fStandaloneSymbol = fSymbolTable.addSymbol("standalone");
-        fAmpSymbol = fSymbolTable.addSymbol("amp");
-        fLtSymbol = fSymbolTable.addSymbol("lt");
-        fGtSymbol = fSymbolTable.addSymbol("gt");
-        fQuotSymbol = fSymbolTable.addSymbol("quot");
-        fAposSymbol = fSymbolTable.addSymbol("apos"); 
     } 
 
 } // class XMLScanner
