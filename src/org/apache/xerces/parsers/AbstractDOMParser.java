@@ -190,9 +190,6 @@ public abstract class AbstractDOMParser
     protected CDATASection fCurrentCDATASection;
 
 
-    protected String               fCurrentEntityName;
-    protected String               fCurrentEntityNode;
-
     // deferred expansion data
 
     protected boolean              fDeferNodeExpansion;
@@ -393,6 +390,7 @@ public abstract class AbstractDOMParser
         // REVISIT: investigate fInDTD & fInDocument flags
         // this method now only called by DocumentHandler
         // comment(), endEntity(), processingInstruction(), textDecl()
+        // REVISIT: need to set the Entity.actualEncoding somehow
         if (fInDocument && !fInDTD && fCreateEntityRefNodes ) {
             if (!fDeferNodeExpansion) {
                 EntityReference er = fDocument.createEntityReference(name);
@@ -408,6 +406,61 @@ public abstract class AbstractDOMParser
         }
 
     } // startEntity(String,String,String,String)
+
+    /**
+     * Notifies of the presence of a TextDecl line in an entity. If present,
+     * this method will be called immediately following the startEntity call.
+     * <p>
+     * <strong>Note:</strong> This method will never be called for the
+     * document entity; it is only called for external general entities
+     * referenced in document content.
+     * <p>
+     * <strong>Note:</strong> This method is not called for entity references
+     * appearing as part of attribute values.
+     * 
+     * @param version  The XML version, or null if not specified.
+     * @param encoding The IANA encoding name of the entity.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void textDecl(String version, String encoding) throws XNIException {
+        if (!fDeferNodeExpansion) {
+            // REVISIT: when DOM Level 3 is REC rely on Document.support
+            //          instead of specific class
+            if (fDocumentType != null) {
+                NamedNodeMap entities = fDocumentType.getEntities();
+                String name = fCurrentNode.getNodeName();
+                EntityImpl entity = (EntityImpl) entities.getNamedItem(name);
+                if (entity != null) {
+                    entity.setVersion(version);
+                    entity.setEncoding(encoding);
+                }
+            }
+        }
+        else {
+            String name = fDeferredDocumentImpl.getNodeName(fCurrentNodeIndex, false);
+            if (fDocumentTypeIndex != -1 && name != null) {
+                // find corresponding Entity decl
+                boolean found = false;
+                int node = fDeferredDocumentImpl.getLastChild(fDocumentTypeIndex, false);
+                while (node != -1) {
+                    short nodeType = fDeferredDocumentImpl.getNodeType(node, false);
+                    if (nodeType == Node.ENTITY_NODE) {
+                        String nodeName =
+                            fDeferredDocumentImpl.getNodeName(node, false);
+                        if (nodeName.equals(name)) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    node = fDeferredDocumentImpl.getRealPrevSibling(node, false);
+                }
+                if (found) {
+                    fDeferredDocumentImpl.setEntityInfo(node, version, encoding);
+                }
+            }
+        }
+    } // textDecl(String,String)
 
     /**
      * A comment.
@@ -487,8 +540,12 @@ public abstract class AbstractDOMParser
             if (fDocumentClassName.equals(DEFAULT_DOCUMENT_CLASS_NAME)) {
                 fDocument = new DocumentImpl();
                 fDocumentImpl = (DocumentImpl)fDocument;
+                // REVISIT: when DOM Level 3 is REC rely on Document.support
+                //          instead of specific class
                 // set DOM error checking off
-                fDocumentImpl.setErrorChecking(false);
+                fDocumentImpl.setStrictErrorChecking(false);
+                // set actual encoding
+                fDocumentImpl.setActualEncoding(encoding);
             }
             else {
                 // use specified document class
@@ -500,8 +557,10 @@ public abstract class AbstractDOMParser
                         Class.forName(DEFAULT_DOCUMENT_CLASS_NAME);
                     if (defaultDocClass.isAssignableFrom(documentClass)) {
                         fDocumentImpl = (DocumentImpl)fDocument;
+                        // REVISIT: when DOM Level 3 is REC rely on
+                        //          Document.support instead of specific class
                         // set DOM error checking off
-                        fDocumentImpl.setErrorChecking(false);
+                        fDocumentImpl.setStrictErrorChecking(false);
                     }
                 }
                 catch (ClassNotFoundException e) {
@@ -524,6 +583,36 @@ public abstract class AbstractDOMParser
         }
 
     } // startDocument(String,String)
+
+    /**
+     * Notifies of the presence of an XMLDecl line in the document. If
+     * present, this method will be called immediately following the
+     * startDocument call.
+     * 
+     * @param version    The XML version.
+     * @param encoding   The IANA encoding name of the document, or null if
+     *                   not specified.
+     * @param standalone The standalone value, or null if not specified.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void xmlDecl(String version, String encoding, String standalone)
+        throws XNIException {
+        if (!fDeferNodeExpansion) {
+            // REVISIT: when DOM Level 3 is REC rely on Document.support
+            //          instead of specific class
+            if (fDocumentImpl != null) {
+                fDocumentImpl.setVersion(version);
+                fDocumentImpl.setEncoding(encoding);
+                fDocumentImpl.setStandalone("true".equals(standalone));
+            }
+        }
+        else {
+            fDeferredDocumentImpl.setVersion(version);
+            fDeferredDocumentImpl.setEncoding(encoding);
+            fDeferredDocumentImpl.setStandalone("true".equals(standalone));
+        }
+    } // xmlDecl(String,String,String)
 
     /**
      * Notifies of the presence of the DOCTYPE line in the document.
@@ -823,9 +912,11 @@ public abstract class AbstractDOMParser
 
         fInDocument = false;
         if (!fDeferNodeExpansion) {
+            // REVISIT: when DOM Level 3 is REC rely on Document.support
+            //          instead of specific class
             // set DOM error checking back on
             if (fDocumentImpl != null) {
-                fDocumentImpl.setErrorChecking(true);
+                fDocumentImpl.setStrictErrorChecking(true);
             }
             fCurrentNode = null;
         }
@@ -852,7 +943,7 @@ public abstract class AbstractDOMParser
 
         if (fInDocument && !fInDTD && fCreateEntityRefNodes) {
             if (!fDeferNodeExpansion) {
-                if (fDocumentImpl != null && fDocumentType != null) {
+                if (fDocumentType != null) {
                     NamedNodeMap entities = fDocumentType.getEntities();
                     NodeImpl entity = (NodeImpl)entities.getNamedItem(name);
                     if (entity != null && entity.getFirstChild() == null) {
@@ -945,21 +1036,21 @@ public abstract class AbstractDOMParser
         // create deferred node        
         if (fDocumentTypeIndex != -1) {
             boolean found = false;
-            int nodeIndex = fDeferredDocumentImpl.getLastChild(fDocumentTypeIndex, false);
-            while (nodeIndex != -1) {
-                short nodeType = fDeferredDocumentImpl.getNodeType(nodeIndex, false);
+            int node = fDeferredDocumentImpl.getLastChild(fDocumentTypeIndex, false);
+            while (node != -1) {
+                short nodeType = fDeferredDocumentImpl.getNodeType(node, false);
                 if (nodeType == Node.ENTITY_NODE) {
-                    String nodeName = fDeferredDocumentImpl.getNodeName(nodeIndex, false);
+                    String nodeName = fDeferredDocumentImpl.getNodeName(node, false);
                     if (nodeName.equals(name)) {
                         found = true;
                         break;
                     }
                 }
-                nodeIndex = fDeferredDocumentImpl.getRealPrevSibling(nodeIndex, false);
+                node = fDeferredDocumentImpl.getRealPrevSibling(node, false);
             }
             if (!found) {
-                int entityIndex = fDeferredDocumentImpl.createDeferredEntity(
-                                    name, null, null, null);
+                int entityIndex =
+                    fDeferredDocumentImpl.createDeferredEntity(name, null, null, null);
                 fDeferredDocumentImpl.appendChild(fDocumentTypeIndex, entityIndex);
             }
         }
@@ -1003,7 +1094,7 @@ public abstract class AbstractDOMParser
             }
         }
             
-        // create deferred node        
+        // create deferred node
         if (fDocumentTypeIndex != -1) {
             boolean found = false;
             int nodeIndex = fDeferredDocumentImpl.getLastChild(fDocumentTypeIndex, false);
@@ -1216,7 +1307,7 @@ public abstract class AbstractDOMParser
                         namespaceURI = NamespaceContext.XMLNS_URI;
                     }
                     attr = (AttrImpl)fDocumentImpl.createAttributeNS(namespaceURI,
-                                                                     attributeName);
+                                                                attributeName);
                 }
                 else {
                     attr = (AttrImpl)fDocumentImpl.createAttribute(attributeName);
