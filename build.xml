@@ -83,7 +83,7 @@ Copyright:
     <property name="distsrc.dir" value="${build.dir}/${parser.shortname}-${parser_version}"/>
     <property name="disttools.dir" value="${build.dir}/tools"/>
     <property name="distbin.dir" value="${build.dir}/${parser.shortname}-${parser_version}"/>
-    <property name='src.apis.zip' value="${tools.dir}/xml-apis--src.zip"/>
+    <property name='src.apis.zip' value="${tools.dir}/xml-commons-external-1.2.01-src.zip"/>
 
     <filter token="year" value="${year}"/>
     <filter token="version" value="${parser.Version}"/>
@@ -868,7 +868,7 @@ Copyright:
                         org/apache/xerces/impl/xs/models/**
 			org/apache/xerces/impl/xs/opti/**
                         org/apache/xerces/impl/xs/util/NSItemListImpl.java
-                        org/apache/xerces/impl/xs/util/SimpleLocator.java
+                        
                         org/apache/xerces/impl/xs/util/XInt.java
                         org/apache/xerces/impl/xs/util/XIntPool.java
                         org/apache/xerces/impl/xs/util/XSNamedMap4Types.java
