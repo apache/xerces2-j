@@ -1027,7 +1027,7 @@ public class TraverseSchema implements
                                           +targetNSURI+"' from what is declared '"+namespaceString+"'.");
              }
              else
-                 new TraverseSchema(root, fStringPool, importedGrammar, fGrammarResolver, fErrorReporter, location);
+                 new TraverseSchema(root, fStringPool, importedGrammar, fGrammarResolver, fErrorReporter, location, fEntityResolver);
          }
          else {
              reportGenericSchemaError("Could not get the doc root for imported Schema file: "+location);
