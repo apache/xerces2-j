@@ -693,27 +693,46 @@ public class DocumentImpl
     	//	newnode.ownerDocument=this;
     	//}
     	//else
-        int type = source.getNodeType();
+
+        DOMImplementation  domImplementation     = 
+                  source.getOwnerDocument().getImplementation(); // get source implementation
+        boolean   domLevel20                     = 
+                  domImplementation.hasFeature("XML", "2.0" ); //DOM Level 2.0 implementation
+
+
+        int type                                 = source.getNodeType();
+
     	switch (type) {
     		
             case ELEMENT_NODE: {
 		Element newelement;
-		if (source.getLocalName() == null) {
-		    newelement = createElement(source.getNodeName());
-		} else {
-		    newelement = createElementNS(source.getNamespaceURI(),
+               
+                if( domLevel20 == true ){
+                    if( source.getLocalName() == null ){
+                         newelement = createElement(source.getNodeName());
+                    } else {
+                         newelement = createElementNS(source.getNamespaceURI(),
 						 source.getNodeName());
-		}
+                    }
+                } else {
+                    newelement = createElement( source.getNodeName() );
+
+                }
+
 		NamedNodeMap srcattr = source.getAttributes();
 		if (srcattr != null) {
                     for(int i = 0; i < srcattr.getLength(); i++) {
                         Attr attr = (Attr) srcattr.item(i);
                         if (attr.getSpecified()) { // not a default attribute
                             Attr nattr = (Attr) importNode(attr, true);
-                            if (attr.getLocalName() == null)
-                                newelement.setAttributeNode(nattr);
-                            else
-                                newelement.setAttributeNodeNS(nattr);
+                            if( domLevel20 == true ) {
+                                 if (attr.getLocalName() == null)
+                                     newelement.setAttributeNode(nattr);
+                                 else
+                                     newelement.setAttributeNodeNS(nattr);
+                            } else {
+                            newelement.setAttributeNode(nattr);
+                            }
                         }
                     }
                 }
@@ -722,12 +741,17 @@ public class DocumentImpl
             }
 
             case ATTRIBUTE_NODE: {
-		if (source.getLocalName() == null) {
-		    newnode = createAttribute(source.getNodeName());
-		} else {
-		    newnode = createAttributeNS(source.getNamespaceURI(),
-						source.getNodeName());
-		}
+
+                if( domLevel20 == true ){
+                    if (source.getLocalName() == null) {
+         	        newnode = createAttribute(source.getNodeName());
+         	    } else {
+          	        newnode = createAttributeNS(source.getNamespaceURI(),
+          					source.getNodeName());
+         	    }
+               } else {
+                   newnode = createAttribute(source.getNodeName());
+               }
                 deep = true;
 		// Kids carry value
 		break;
