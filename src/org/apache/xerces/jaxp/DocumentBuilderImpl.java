@@ -163,6 +163,9 @@ public class DocumentBuilderImpl extends DocumentBuilder
                         domParser.setFeature(
                             Constants.XERCES_FEATURE_PREFIX +
                             Constants.SCHEMA_VALIDATION_FEATURE, true);
+                        // this should allow us not to emit DTD errors, as expected by the 
+                        // spec when schema validation is enabled
+                        domParser.setProperty(JAXP_SCHEMA_LANGUAGE, W3C_XML_SCHEMA);
                     }
                 } else {
                     // Let Xerces code handle the property
