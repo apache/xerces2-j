@@ -203,10 +203,12 @@ public class XMLEntityScanner
     /**
      * scanAttContent
      * 
+     * @param quote
      * @param content 
      */
-    public void scanAttContent(XMLString content)
+    public boolean scanAttContent(int quote, XMLString content)
         throws IOException {
+        return false;
     } // scanAttContent
 
     /**

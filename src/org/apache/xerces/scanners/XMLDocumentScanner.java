@@ -59,10 +59,13 @@ package org.apache.xerces.scanners;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.util.Enumeration;
 
 import org.apache.xerces.framework.XMLComponent;
 import org.apache.xerces.framework.XMLComponentManager;
 import org.apache.xerces.framework.XMLErrorReporter;
+import org.apache.xerces.framework.XMLString;
+import org.apache.xerces.framework.XMLStringBuffer;
 import org.apache.xerces.readers.XMLEntityManager;
 import org.apache.xerces.readers.XMLEntityScanner;
 import org.apache.xerces.utils.SymbolTable;
@@ -72,6 +75,7 @@ import org.apache.xerces.utils.XMLChar;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.helpers.NamespaceSupport;
 
 /**
  * This class is responsible for scanning XML document structure
@@ -94,6 +98,26 @@ import org.xml.sax.SAXNotSupportedException;
  */
 public class XMLDocumentScanner
     implements XMLComponent, XMLDocumentSource {
+
+    //
+    // Constants
+    //
+
+    // sax2 features
+
+    /** Namespaces feature id. */
+    protected static final String NAMESPACES = "http://xml.org/sax/features/namespaces";
+
+    // xerces properties
+
+    /** Symbol table property id. */
+    protected static final String SYMBOL_TABLE = "http://apache.org/xml/properties/internal/symbol-table";
+
+    /** Error reporter property id. */
+    protected static final String ERROR_REPORTER = "http://apache.org/xml/properties/internal/error-reporter";
+
+    /** Entity manager property id. */
+    protected static final String ENTITY_MANAGER = "http://apache.org/xml/properties/internal/entity-manager";
 
     //
     // Data
@@ -128,6 +152,9 @@ public class XMLDocumentScanner
     /** Entity scanner. */
     protected XMLEntityScanner fEntityScanner;
 
+    /** Namespace support. */
+    protected NamespaceSupport fNamespaceSupport = new NamespaceSupport();
+
     // private data
 
     /** Element QName. */
@@ -138,6 +165,12 @@ public class XMLDocumentScanner
 
     /** Element attributes. */
     private XMLAttributes fAttributes = new XMLAttributes();
+
+    /** String buffer. */
+    private XMLStringBuffer fStringBuffer = new XMLStringBuffer();
+
+    /** Content buffer. */
+    private XMLString fContent = new XMLString();
 
     //
     // Constructors
@@ -157,10 +190,14 @@ public class XMLDocumentScanner
     public boolean scanDocument(boolean complete) 
         throws IOException, SAXException {
 
-        // scan document
+        // initialize scanner
         fEntityScanner = fEntityManager.getEntityScanner();
+        fNamespaceSupport.reset();
+
+        // scan document
         scanDocument();
 
+        // return success
         return true;
 
     } // scanDocument(boolean):boolean
@@ -315,13 +352,15 @@ public class XMLDocumentScanner
                 fEntityScanner.scanChar();
                 c = fEntityScanner.scanChar();
                 if (c != '>') {
+                    // REVISIT: report error
                     throw new SAXException("expected '>'");
                 }
                 empty = true;
                 break;
             }
             else if (!XMLChar.isNameStartChar(c)) {
-                throw new SAXException("expected attribute name");
+                // REVISIT: report error
+                throw new SAXException("expected attribute name, found '"+(char)c+'\'');
             }
                 
             // attributes
@@ -329,9 +368,13 @@ public class XMLDocumentScanner
 
         } while (true);
 
-        // bind namespaces
+        // handle namespaces
         String uri = null;
         if (fNamespaces) {
+            // push namespace context
+            fNamespaceSupport.pushContext();
+
+            // bind namespaces
             bindNamespaces(fElemQName, fAttributes);
             uri = fElemQName.uri;
         }
@@ -367,15 +410,18 @@ public class XMLDocumentScanner
             fEntityScanner.skipSpaces();
             int c = fEntityScanner.scanChar();
             if (c != '/') {
+                // REVISIT: report error
                 throw new SAXException("expected '/'");
             }
             c = fEntityScanner.scanChar();
             if (c != '>') {
+                // REVISIT: report error
                 throw new SAXException("expected '>'");
             }
 
-            // verify
+            // tags must be balanced
             if (!fElemQName.rawname.equals(rawname)) {
+                // REVISIT: report error
                 throw new SAXException("expected \""+rawname+"\""+
                                        " but found \""+fElemQName.rawname+'"');
             }
@@ -384,6 +430,21 @@ public class XMLDocumentScanner
         // call handler
         if (fDocumentHandler != null) {
             fDocumentHandler.endElement(fElemQName);
+        }
+
+        // handle namespaces
+        if (fNamespaces) {
+            // call handler
+            if (fDocumentHandler != null) {
+                Enumeration prefixes = fNamespaceSupport.getDeclaredPrefixes();
+                while (prefixes.hasMoreElements()) {
+                    String prefix = (String)prefixes.nextElement();
+                    fDocumentHandler.endPrefixMapping(prefix);
+                }
+            }
+
+            // pop context
+            fNamespaceSupport.popContext();
         }
 
     } // scanElement()
@@ -404,6 +465,51 @@ public class XMLDocumentScanner
      */
     protected void scanAttribute(XMLAttributes attributes) 
         throws IOException, SAXException {
+
+        // name
+        if (fNamespaces) {
+            fEntityScanner.scanQName(fAttrQName);
+        }
+        else {
+            String name = fEntityScanner.scanName();
+            fAttrQName.setValues(null, name, name, null);
+        }
+
+        // equals
+        fEntityScanner.skipSpaces();
+        int equals = fEntityScanner.scanChar();
+        if (equals != '=') {
+            // REVISIT: report error
+            throw new SAXException("expected '=', found '"+(char)equals+'\'');
+        }
+        fEntityScanner.skipSpaces();
+
+        // quote
+        int oquote = fEntityScanner.scanChar();
+        if (oquote != '\'' || oquote != '"') {
+            // REVISIT: report error
+            throw new SAXException("expected open quote");
+        }
+
+        // content
+        fStringBuffer.clear();
+        attributes.setAttribute(fAttrQName, "CDATA", fStringBuffer);
+        while (fEntityScanner.scanAttContent(oquote, fContent)) {
+            fStringBuffer.append(fContent);
+            /***
+            if (fEntityScanner.peekChar() == '&') {
+                // TODO: handle entities in value
+            }
+            /***/
+        }
+        attributes.setValue(attributes.getLength() - 1, fStringBuffer);
+
+        // quote
+        int cquote = fEntityScanner.scanChar();
+        if (cquote != cquote) {
+            // REVISIT: report error
+            throw new SAXException("expected close quote");
+        }
 
     } // scanAttribute()
 
@@ -435,16 +541,56 @@ public class XMLDocumentScanner
      * searchs for namespace binding attributes and adds the URI
      * information to the element and attribute qualified names.
      */
-    protected void bindNamespaces(QName element, XMLAttributes attributes) {
+    protected void bindNamespaces(QName element, XMLAttributes attributes) 
+        throws SAXException {
 
         // search for new namespace bindings
-        // TODO
+        int length = attributes.getLength();
+        for (int i = 0; i < length; i++) {
+            String rawname = attributes.getQName(i);
+            if (rawname.startsWith("xmlns")) {
+                // declare prefix in context
+                String prefix = rawname.length() > 5
+                              ? attributes.getLocalName(i) : "";
+                String uri = attributes.getValue(i);
+                fNamespaceSupport.declarePrefix(prefix, uri);
+
+                // call handler
+                if (fDocumentHandler != null) {
+                    fDocumentHandler.startPrefixMapping(prefix, uri);
+                }
+            }
+        }
 
         // bind the element
-        // TODO
+        element.uri = fNamespaceSupport.getURI(element.prefix);
+        if (element.prefix != null && element.uri == null) {
+            // REVISIT: report error
+            throw new SAXException("element prefix \""+element.prefix+"\" not bound");
+        }
 
         // bind the attributes
-        // TODO
+        for (int i = 0; i < length; i++) {
+            attributes.getName(i, fAttrQName);
+            String rawname = attributes.getQName(i);
+            if (rawname.startsWith("xmlns")) {
+                fAttrQName.uri = NamespaceSupport.XMLNS;
+            }
+            else {
+                if (fAttrQName.prefix != null) {
+                    fAttrQName.uri = fNamespaceSupport.getURI(fAttrQName.prefix);
+                    if (fAttrQName.uri == null) {
+                        // REVISIT: report error
+                        throw new SAXException("attribute prefix \""+fAttrQName.prefix+"\" is not bound");
+                    }
+                }
+                else {
+                    // attributes with no prefix get element's uri
+                    fAttrQName.uri = element.uri;
+                }
+            }
+            attributes.setName(i, fAttrQName);
+        }
 
     } // bindNamespaces(QName,XMLAttributes)
 
@@ -464,13 +610,13 @@ public class XMLDocumentScanner
         throws SAXException {
 
         // get features
-        fNamespaces = componentManager.getFeature("http://xml.org/sax/features/namespaces");
+        fNamespaces = componentManager.getFeature(NAMESPACES);
         fAttributes.setNamespaces(fNamespaces);
-        
+
         // get properties
-        fSymbolTable = (SymbolTable)componentManager.getProperty("http://apache.org/xml/properties/internal/symbol-table");
-        fErrorReporter = (XMLErrorReporter)componentManager.getProperty("http://apache.org/xml/properties/internal/error-reporter");
-        fEntityManager = (XMLEntityManager)componentManager.getProperty("http://apache.org/xml/properties/internal/entity-manager");
+        fSymbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
+        fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
+        fEntityManager = (XMLEntityManager)componentManager.getProperty(ENTITY_MANAGER);
         /*** REVISIT: Add DTD support. ***
         fDTDScanner = (XMLDTDScanner)componentManager.getProperty("http://apache.org/xml/properties/internal/dtd-scanner");
         /***/
