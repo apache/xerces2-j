@@ -209,7 +209,7 @@ public class EntityImpl
       * DOM Level 3 WD - experimental
       * the version number of this entity, when it is an external parsed entity. 
       */
-    public String getVersion() {
+    public String getXmlVersion() {
 
        if (needsSyncData()) {
            synchronizeData();
@@ -223,7 +223,7 @@ public class EntityImpl
      * DOM Level 3 WD - experimental 
      * the encoding of this entity, when it is an external parsed entity. 
      */
-    public String getEncoding() {
+    public String getXmlEncoding() {
 
        if (needsSyncData()) {
            synchronizeData();
@@ -273,7 +273,7 @@ public class EntityImpl
      * the encoding of this entity, when it is an external parsed entity. 
      * This is null otherwise
      */
-    public void setEncoding(String value) {
+    public void setXmlEncoding(String value) {
         
         if (needsSyncData()) {
             synchronizeData();
@@ -312,7 +312,7 @@ public class EntityImpl
       * the version number of this entity, when it is an external parsed entity. 
       * This is null otherwise
       */
-    public void setVersion(String value) {       
+    public void setXmlVersion(String value) {       
         if (needsSyncData()) {
             synchronizeData();
         }

@@ -584,8 +584,8 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
         }
         if (!fDeferNodeExpansion) {
             if (fCurrentEntityDecl != null && !fFilterReject) {
-                fCurrentEntityDecl.setEncoding(encoding);
-                fCurrentEntityDecl.setVersion(version);
+                fCurrentEntityDecl.setXmlEncoding(encoding);
+                fCurrentEntityDecl.setXmlVersion(version);
             }
         }
         else {
@@ -854,15 +854,15 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
             // REVISIT: when DOM Level 3 is REC rely on Document.support
             //          instead of specific class
             if (fDocumentImpl != null) {
-                fDocumentImpl.setVersion(version);
-                fDocumentImpl.setEncoding(encoding);
-                fDocumentImpl.setStandalone("yes".equals(standalone));
+                fDocumentImpl.setXmlVersion(version);
+                fDocumentImpl.setXmlEncoding(encoding);
+                fDocumentImpl.setXmlStandalone("yes".equals(standalone));
             }
         }
         else {
-            fDeferredDocumentImpl.setVersion(version);
-            fDeferredDocumentImpl.setEncoding(encoding);
-            fDeferredDocumentImpl.setStandalone("yes".equals(standalone));
+            fDeferredDocumentImpl.setXmlVersion(version);
+            fDeferredDocumentImpl.setXmlEncoding(encoding);
+            fDeferredDocumentImpl.setXmlStandalone("yes".equals(standalone));
         }
     } // xmlDecl(String,String,String)
 

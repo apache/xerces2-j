@@ -63,6 +63,7 @@ import java.util.Hashtable;
 
 import org.apache.xerces.dom3.DOMConfiguration;
 import org.apache.xerces.dom3.UserDataHandler;
+import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.NamespaceContext;
 import org.w3c.dom.Attr;
@@ -161,7 +162,10 @@ public class CoreDocumentImpl
     
     // DOM Level 3: normalizeDocument
     transient DOMNormalizer domNormalizer = null;
-    transient DOMConfigurationImpl fConfiguration= null;    
+    transient DOMConfigurationImpl fConfiguration= null;
+
+    // support of XPath API
+    transient Object fXPathEvaluator = null;   
 
     /** Table for quick check of child insertion. */
     private final static int[] kidOK;
@@ -264,7 +268,7 @@ public class CoreDocumentImpl
      * since it has to operate in terms of a particular implementation.
      */
     public CoreDocumentImpl() {
-        this(false);
+        this(false);		
     }
 
     /** Constructor. */
@@ -489,6 +493,29 @@ public class CoreDocumentImpl
         throws DOMException {
         // no-op
     }
+    
+	/**
+	 * @since DOM Level 3
+	 */
+	public Object getFeature(String feature, String version) {
+        if ((feature.equalsIgnoreCase("XPath") 
+             || feature.equalsIgnoreCase("+XPath"))&& version.equals("3.0")){
+			try{
+				Class xpathClass = ObjectFactory.findProviderClass(
+                    "org.apache.xpath.domapi.XPathEvaluatorImpl",
+					ObjectFactory.findClassLoader(), true);
+				fXPathEvaluator = xpathClass.newInstance();
+				java.lang.reflect.Method setDocument = xpathClass.getMethod("setDoc", new Class[]{Document.class});
+				setDocument.invoke(fXPathEvaluator, new Object[]{this});
+				return fXPathEvaluator;
+			}
+			catch (Exception e){
+				e.printStackTrace();
+				return null;
+			}
+        }
+        return super.getFeature(feature, version);
+	}
 
     //
     // Document methods
@@ -763,7 +790,7 @@ public class CoreDocumentImpl
       * An attribute specifying, as part of the XML declaration,
       * the encoding of this document. This is null when unspecified.
       */
-    public void setEncoding(String value) {
+    public void setXmlEncoding(String value) {
         encoding = value;
     }
 
@@ -771,7 +798,7 @@ public class CoreDocumentImpl
      * DOM Level 3 WD - Experimental.
      * The encoding of this document (part of XML Declaration)
      */
-    public String getEncoding() {
+    public String getXmlEncoding() {
         return encoding;
     }
 
@@ -780,7 +807,7 @@ public class CoreDocumentImpl
       * version - An attribute specifying, as part of the XML declaration,
       * the version number of this document. This is null when unspecified
       */
-    public void setVersion(String value) {
+    public void setXmlVersion(String value) {
        version = value;
     }
 
@@ -788,7 +815,7 @@ public class CoreDocumentImpl
      * DOM Level 3 WD - Experimental.
      * The version of this document (part of XML Declaration)
      */
-    public String getVersion() {
+    public String getXmlVersion() {
         return version;
     }
 
@@ -797,7 +824,7 @@ public class CoreDocumentImpl
      * standalone - An attribute specifying, as part of the XML declaration,
      * whether this document is standalone
      */
-    public void setStandalone(boolean value) {
+    public void setXmlStandalone(boolean value) {
         standalone = value;
     }
 
@@ -806,7 +833,7 @@ public class CoreDocumentImpl
      * standalone that specifies whether this document is standalone
      * (part of XML Declaration)
      */
-    public boolean getStandalone() {
+    public boolean getXmlStandalone() {
         return standalone;
     }
 

@@ -20,10 +20,17 @@
  * Applications may also register DOMImplementationSource
  * implementations by using a method on this class. They may then
  * query instances of the registry for implementations supporting
- * specific features.</p>
+ * specific features.
  *
+ * <p>Example:</p>
+ * <pre class='example'>
+ * // get an instance of the DOMImplementation registry
+ * DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
+ * // get a DOM implementation the Level 3 XML module
+ * DOMImplementation domImpl = registry.getDOMImplementation("XML 3.0");
+ * </pre>
  * <p>This provides an application with an implementation-independent 
- * starting point.
+ * starting point.</p>
  *
  * @see DOMImplementation
  * @see DOMImplementationSource
@@ -32,16 +39,17 @@
 
 package org.apache.xerces.dom3.bootstrap;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.ClassLoader;
+import java.lang.String;
+import java.util.StringTokenizer;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.StringTokenizer;
 
-import org.apache.xerces.dom3.DOMImplementationList;
 import org.apache.xerces.dom3.DOMImplementationSource;
+import org.apache.xerces.dom3.DOMImplementationList;
 import org.w3c.dom.DOMImplementation;
-
 
 public class DOMImplementationRegistry { 
 
@@ -100,7 +108,7 @@ public class DOMImplementationRegistry {
      *                 This is a space separated list in which each feature is
      *                 specified by its name optionally followed by a space
      *                 and a version number.
-     *                 This is something like: "XML 1.0 Traversal Events 2.0"
+     *                 This is something like: "XML 1.0 Traversal +Events 2.0"
      * @return An implementation that has the desired features, or
      *   <code>null</code> if this source has none.
      */
@@ -131,7 +139,7 @@ public class DOMImplementationRegistry {
      *                 This is a space separated list in which each feature is
      *                 specified by its name optionally followed by a space
      *                 and a version number.
-     *                 This is something like: "XML 1.0 Traversal Events 2.0"
+     *                 This is something like: "XML 1.0 Traversal +Events 2.0"
      * @return A list of DOMImplementations that support the desired features.
      */
     public DOMImplementationList getDOMImplementations(String features)

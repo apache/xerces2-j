@@ -55,23 +55,20 @@
  * <http://www.apache.org/>.
  */
 package org.apache.xerces.dom;
+import org.apache.xerces.impl.RevalidationHandler;
+import org.apache.xerces.parsers.DOMBuilderImpl;
+import org.apache.xerces.util.ObjectFactory;
+import org.apache.xerces.util.XMLChar;
+import org.apache.xml.serialize.DOMWriterImpl;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-// DOM L3 LS
-import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.DOMBuilder;
-import org.w3c.dom.ls.DOMWriter;
+import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.DOMInputSource;
-import org.apache.xerces.parsers.DOMBuilderImpl;
-import org.apache.xerces.util.XMLChar;
-import org.apache.xml.serialize.DOMWriterImpl;
-// DOM Revalidation
-import org.apache.xerces.impl.RevalidationHandler;
-import org.apache.xerces.util.ObjectFactory;
+import org.w3c.dom.ls.DOMWriter;
 /**
  * The DOMImplementation class is description of a particular
  * implementation of the Document Object Model. As such its data is
@@ -136,6 +133,19 @@ public class CoreDOMImplementationImpl
 	public boolean hasFeature(String feature, String version) {
 		// Currently, we support only XML Level 1 version 1.0
 		boolean anyVersion = version == null || version.length() == 0;
+		// check if Xalan implementation is around and if yes report true for supporting 
+		// XPath API
+		if ((feature.equalsIgnoreCase("XPath") || feature.equalsIgnoreCase("+XPath"))&& version.equals("3.0")){
+			try{
+				Class xpathClass = ObjectFactory.findProviderClass(
+					"org.apache.xpath.domapi.XPathEvaluatorImpl",
+					ObjectFactory.findClassLoader(), true);
+			}
+			catch (Exception e){
+				return false;
+			}
+			return true;
+		}
 		return (
 			feature.equalsIgnoreCase("Core")
 				&& (anyVersion || version.equals("1.0") || version.equals("2.0")))
@@ -272,13 +282,11 @@ public class CoreDOMImplementationImpl
 	/**
 	 * DOM Level 3 WD - Experimental.
      */
-	public Node getFeature(String feature, String version) {
-		String msg =
-			DOMMessageFormatter.formatMessage(
-				DOMMessageFormatter.DOM_DOMAIN,
-				"NOT_SUPPORTED_ERR",
-				null);
-		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+	public Object getFeature(String feature, String version) {
+		if (singleton.hasFeature(feature, version)){
+			return singleton;			
+		}
+		return null;
         
 	}
 	// DOM L3 LS

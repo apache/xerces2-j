@@ -1793,26 +1793,9 @@ public abstract class NodeImpl
     }
 
     /**
-     *  This method returns a specialized object which implements the 
-     * specialized APIs of the specified feature and version. The 
-     * specialized object may also be obtained by using binding-specific 
-     * casting methods but is not necessarily expected to, as discussed in Mixed DOM implementations. 
-     * @param feature The name of the feature requested (case-insensitive).
-     * @param version  This is the version number of the feature to test. If 
-     *   the version is <code>null</code> or the empty string, supporting 
-     *   any version of the feature will cause the method to return an 
-     *   object that supports at least one version of the feature. 
-     * @return  Returns an object which implements the specialized APIs of 
-     *   the specified feature and version, if any, or <code>null</code> if 
-     *   there is no object which implements interfaces associated with that 
-     *   feature. If the <code>DOMObject</code> returned by this method 
-     *   implements the <code>Node</code> interface, it must delegate to the 
-     *   primary core <code>Node</code> and not return results inconsistent 
-     *   with the primary core <code>Node</code> such as attributes, 
-     *   childNodes, etc. 
      * @since DOM Level 3
      */
-    public Node getFeature(String feature, String version) {
+    public Object getFeature(String feature, String version) {
         // we don't have any alternate node, either this node does the job
         // or we don't have anything that does
         return isSupported(feature, version) ? this : null;

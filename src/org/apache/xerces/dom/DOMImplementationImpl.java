@@ -57,6 +57,7 @@
 
 package org.apache.xerces.dom;
 
+import org.apache.xerces.util.ObjectFactory;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
@@ -122,6 +123,19 @@ public class DOMImplementationImpl extends CoreDOMImplementationImpl
 
         // Currently, we support only XML Level 1 version 1.0
         boolean anyVersion = version == null || version.length() == 0;
+		// check if Xalan implementation is around and if yes report true for supporting 
+		// XPath API
+		if ((feature.equalsIgnoreCase("XPath") || feature.equalsIgnoreCase("+XPath"))&& version.equals("3.0")){
+			try{
+				Class xpathClass = ObjectFactory.findProviderClass(
+					"org.apache.xpath.domapi.XPathEvaluatorImpl",
+					ObjectFactory.findClassLoader(), true);
+			}
+			catch (Exception e){
+				return false;
+			}
+			return true;
+		}
         return 
             (feature.equalsIgnoreCase("Core") 
             && (anyVersion

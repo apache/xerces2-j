@@ -240,7 +240,7 @@ public class DefaultNode implements Node {
 
     }
     
-    public Node getFeature(String feature, String version){
+    public Object getFeature(String feature, String version){
         return null;
     }
     public Object setUserData(String key,  Object data, UserDataHandler handler){

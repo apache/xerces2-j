@@ -24,7 +24,6 @@ import java.util.Vector;
 import org.apache.xerces.dom3.DOMImplementationList;
 import org.w3c.dom.DOMImplementation;
 
-
 public class DOMImplementationListImpl
              implements DOMImplementationList { 
     
@@ -69,7 +68,7 @@ public class DOMImplementationListImpl
     /**
      * Add a <code>DOMImplementation</code> in the list.
      */
-    protected void add(DOMImplementation domImpl) {
+    public void add(DOMImplementation domImpl) {
         sources.add(domImpl);
     }
 }

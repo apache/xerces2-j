@@ -184,7 +184,7 @@ public class DefaultDocument extends NodeImpl
        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
     }
 
-    public String getEncoding(){
+    public String getXmlEncoding(){
         return null;
     }
     
@@ -194,7 +194,7 @@ public class DefaultDocument extends NodeImpl
      * of this document. This is <code>null</code> when unspecified.
      * @since DOM Level 3
      */
-    public void setEncoding(String encoding){
+    public void setXmlEncoding(String encoding){
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
     }
 
@@ -204,7 +204,7 @@ public class DefaultDocument extends NodeImpl
      * <br> This attribute represents the property [standalone] defined in . 
      * @since DOM Level 3
      */
-    public boolean getStandalone(){
+    public boolean getXmlStandalone(){
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
     }
     /**
@@ -213,7 +213,7 @@ public class DefaultDocument extends NodeImpl
      * <br> This attribute represents the property [standalone] defined in . 
      * @since DOM Level 3
      */
-    public void setStandalone(boolean standalone){
+    public void setXmlStandalone(boolean standalone){
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
     }
 
@@ -226,7 +226,7 @@ public class DefaultDocument extends NodeImpl
      *   not supported by this <code>Document</code>.
      * @since DOM Level 3
      */
-    public String getVersion(){
+    public String getXmlVersion(){
         return null;
     }
     /**
@@ -238,7 +238,7 @@ public class DefaultDocument extends NodeImpl
      *   not supported by this <code>Document</code>.
      * @since DOM Level 3
      */
-    public void setVersion(String version) throws DOMException{
+    public void setXmlVersion(String version) throws DOMException{
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
     }
 

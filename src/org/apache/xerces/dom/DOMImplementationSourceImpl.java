@@ -61,6 +61,7 @@ import java.util.StringTokenizer;
 
 import org.apache.xerces.dom3.DOMImplementationList;
 import org.apache.xerces.dom3.DOMImplementationSource;
+import org.apache.xerces.dom3.bootstrap.DOMImplementationListImpl;
 import org.w3c.dom.DOMImplementation;
 
 /**
