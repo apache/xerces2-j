@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLMapElement
  * @see ElementImpl
  */
-public final class HTMLMapElementImpl
+public class HTMLMapElementImpl
     extends HTMLElementImpl
     implements HTMLMapElement
 {

@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLLinkElement
  * @see ElementImpl
  */
-public final class HTMLLinkElementImpl
+public class HTMLLinkElementImpl
     extends HTMLElementImpl
     implements HTMLLinkElement
 {

@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLOptGroupElement
  * @see ElementImpl
  */
-public final class HTMLOptGroupElementImpl
+public class HTMLOptGroupElementImpl
     extends HTMLElementImpl
     implements HTMLOptGroupElement
 {

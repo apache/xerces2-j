@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLSelectElement
  * @see ElementImpl
  */
-public final class HTMLSelectElementImpl
+public class HTMLSelectElementImpl
     extends HTMLElementImpl
     implements HTMLSelectElement, HTMLFormControl
 {

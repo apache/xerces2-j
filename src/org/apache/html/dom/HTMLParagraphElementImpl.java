@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLParagraphElement
  * @see ElementImpl
  */
-public final class HTMLParagraphElementImpl
+public class HTMLParagraphElementImpl
     extends HTMLElementImpl
     implements HTMLParagraphElement
 {

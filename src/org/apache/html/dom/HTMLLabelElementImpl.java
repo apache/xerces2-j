@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLLabelElement
  * @see ElementImpl
  */
-public final class HTMLLabelElementImpl
+public class HTMLLabelElementImpl
     extends HTMLElementImpl
     implements HTMLLabelElement, HTMLFormControl
 {

@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLFontElement
  * @see ElementImpl
  */
-public final class HTMLFontElementImpl
+public class HTMLFontElementImpl
     extends HTMLElementImpl
     implements HTMLFontElement
 {

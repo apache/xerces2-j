@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLFormElement
  * @see ElementImpl
  */
-public final class HTMLFormElementImpl
+public class HTMLFormElementImpl
     extends HTMLElementImpl
     implements HTMLFormElement
 {

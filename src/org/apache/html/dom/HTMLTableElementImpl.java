@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLAnchorElement
  * @see ElementImpl
  */
-public final class HTMLTableElementImpl
+public class HTMLTableElementImpl
     extends HTMLElementImpl
     implements HTMLTableElement
 {

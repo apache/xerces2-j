@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLTextAreaElement
  * @see ElementImpl
  */
-public final class HTMLTextAreaElementImpl
+public class HTMLTextAreaElementImpl
     extends HTMLElementImpl
     implements HTMLTextAreaElement, HTMLFormControl
 {

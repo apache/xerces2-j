@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLLegendElement
  * @see ElementImpl
  */
-public final class HTMLLegendElementImpl
+public class HTMLLegendElementImpl
     extends HTMLElementImpl
     implements HTMLLegendElement
 {

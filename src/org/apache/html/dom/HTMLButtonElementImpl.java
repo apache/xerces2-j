@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLButtonElement
  * @see ElementImpl
  */
-public final class HTMLButtonElementImpl
+public class HTMLButtonElementImpl
     extends HTMLElementImpl
     implements HTMLButtonElement, HTMLFormControl
 {

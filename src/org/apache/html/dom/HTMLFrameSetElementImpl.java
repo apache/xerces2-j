@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLFrameSetElement
  * @see ElementImpl
  */
-public final class HTMLFrameSetElementImpl
+public class HTMLFrameSetElementImpl
     extends HTMLElementImpl
     implements HTMLFrameSetElement
 {

@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLStyleElement
  * @see ElementImpl
  */
-public final class HTMLStyleElementImpl
+public class HTMLStyleElementImpl
     extends HTMLElementImpl
     implements HTMLStyleElement
 {

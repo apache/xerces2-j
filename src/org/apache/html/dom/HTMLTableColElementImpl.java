@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLTableColElement
  * @see ElementImpl
  */
-public final class HTMLTableColElementImpl
+public class HTMLTableColElementImpl
     extends HTMLElementImpl
     implements HTMLTableColElement
 {

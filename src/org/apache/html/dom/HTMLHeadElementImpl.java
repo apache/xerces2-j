@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLHeadElement
  * @see ElementImpl
  */
-public final class HTMLHeadElementImpl
+public class HTMLHeadElementImpl
     extends HTMLElementImpl
     implements HTMLHeadElement
 {

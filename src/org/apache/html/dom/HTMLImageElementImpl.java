@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLImageElement
  * @see ElementImpl
  */
-public final class HTMLImageElementImpl
+public class HTMLImageElementImpl
     extends HTMLElementImpl
     implements HTMLImageElement
 {

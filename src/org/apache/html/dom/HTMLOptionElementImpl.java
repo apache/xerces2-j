@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLOptionElement
  * @see ElementImpl
  */
-public final class HTMLOptionElementImpl
+public class HTMLOptionElementImpl
     extends HTMLElementImpl
     implements HTMLOptionElement
 {

@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLParamElement
  * @see ElementImpl
  */
-public final class HTMLParamElementImpl
+public class HTMLParamElementImpl
     extends HTMLElementImpl
     implements HTMLParamElement
 {

@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLMenuElement
  * @see ElementImpl
  */
-public final class HTMLMenuElementImpl
+public class HTMLMenuElementImpl
     extends HTMLElementImpl
     implements HTMLMenuElement
 {

@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLFieldSetElement
  * @see ElementImpl
  */
-public final class HTMLFieldSetElementImpl
+public class HTMLFieldSetElementImpl
     extends HTMLElementImpl
     implements HTMLFieldSetElement, HTMLFormControl
 {

@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLIFrameElement
  * @see ElementImpl
  */
-public final class HTMLIFrameElementImpl
+public class HTMLIFrameElementImpl
     extends HTMLElementImpl
     implements HTMLIFrameElement
 {

@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLDivElement
  * @see ElementImpl
  */
-public final class HTMLDivElementImpl
+public class HTMLDivElementImpl
     extends HTMLElementImpl
     implements HTMLDivElement
 {

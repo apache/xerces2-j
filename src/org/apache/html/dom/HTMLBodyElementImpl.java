@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLBodyElement
  * @see ElementImpl
  */
-public final class HTMLBodyElementImpl
+public class HTMLBodyElementImpl
     extends HTMLElementImpl
     implements HTMLBodyElement
 {

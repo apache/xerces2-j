@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLScriptElement
  * @see ElementImpl
  */
-public final class HTMLScriptElementImpl
+public class HTMLScriptElementImpl
     extends HTMLElementImpl
     implements HTMLScriptElement
 {

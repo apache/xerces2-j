@@ -67,7 +67,7 @@ import org.w3c.dom.html.*;
  * @see org.w3c.dom.html.HTMLAppletElement
  * @see HTMLElementImpl
  */
-public final class HTMLAppletElementImpl
+public class HTMLAppletElementImpl
     extends HTMLElementImpl
     implements HTMLAppletElement
 {
