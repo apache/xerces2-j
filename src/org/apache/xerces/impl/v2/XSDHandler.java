@@ -261,7 +261,7 @@ class XSDHandler {
         // REVISIT: do we use shadowed or synchronized symbol table of
         //          SchemaSymbols.fSymbolTable?
         // REVISIT: don't use SchemaConfiguration internally
-        //          we will get stack overflaw because 
+        //          we will get stack overflaw because
         //          SchemaValidator will be instantiating XSDHandler...
         fSchemaParser = new DOMParser(new StandardParserConfiguration(new SchemaSymbols.SchemaSymbolTable()));
         // set ErrorHandler and EntityResolver (doesn't seem that
@@ -523,7 +523,7 @@ class XSDHandler {
                         }
                     } // end march through <redefine> children
                     // and now set as traversed
-                    DOMUtil.setHidden(globalComp);
+                    //DOMUtil.setHidden(globalComp);
                 } else {
                     dependenciesCanOccur = false;
                     String lName = DOMUtil.getAttrValue(globalComp, SchemaSymbols.ATT_NAME);
@@ -616,7 +616,7 @@ class XSDHandler {
                         } else if (redefinedComponentType.equals(SchemaSymbols.ELT_ANNOTATION)) {
                             // REVISIT:  according to 3.13.2 the PSVI needs the parent's attributes;
                             // thus this should be done in buildGlobalNameRegistries not here...
-                            fElementTraverser.traverseAnnotationDecl(globalComp, null, true, currSchemaDoc);
+                            fElementTraverser.traverseAnnotationDecl(redefinedComp, null, true, currSchemaDoc);
                         } else {
                             reportSchemaError("src-redefine", new Object [] {componentType});
                         }
