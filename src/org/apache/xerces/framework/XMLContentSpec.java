@@ -482,7 +482,7 @@ public class XMLContentSpec {
                                           boolean parens,
                                           int     parentContentSpecType ) {
 
-        int thisContentSpec = contentSpec.type;
+        int thisContentSpec = contentSpec.type & 0x0f;
         switch (thisContentSpec) {
             case XMLContentSpec.CONTENTSPECNODE_LEAF: {
                 if (contentSpec.value == -1 && contentSpec.otherValue == -1) {
