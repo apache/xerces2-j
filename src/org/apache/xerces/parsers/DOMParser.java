@@ -1703,7 +1703,7 @@ public class DOMParser
 
                 // get type element; create if necessary
                 int typeIndex = getLastChildElement(elementIndex, "complexType");
-                if (typeIndex == -1 && contentSpecType != XMLElementDecl.TYPE_MIXED) {
+                if (typeIndex == -1 && contentSpecType != XMLElementDecl.TYPE_MIXED_SIMPLE) {
                     typeIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("complexType"), null, -1);
                     // REVISIT: Check for type redeclaration? -Ac
                     fDeferredDocumentImpl.insertBefore(elementIndex, typeIndex, getFirstChildElement(elementIndex));
@@ -1721,7 +1721,7 @@ public class DOMParser
                         fDeferredDocumentImpl.insertBefore(typeIndex, anyIndex, getFirstChildElement(typeIndex));
                         break;
                     }
-                    case XMLElementDecl.TYPE_MIXED: {
+                    case XMLElementDecl.TYPE_MIXED_SIMPLE: {
                         XMLContentSpec contentSpec = new XMLContentSpec();
                         contentSpecProvider.getContentSpec(contentSpecIndex, contentSpec);
                         contentSpecIndex = contentSpec.value;
@@ -1831,7 +1831,7 @@ public class DOMParser
 
                 // get type element; create if necessary
                 Element type = XUtil.getLastChildElement(element, "complexType");
-                if (type == null && contentSpecType != XMLElementDecl.TYPE_MIXED) {
+                if (type == null && contentSpecType != XMLElementDecl.TYPE_MIXED_SIMPLE) {
                     type = fDocumentImpl.createElement("complexType");
                     // REVISIT: Check for type redeclaration? -Ac
                     element.insertBefore(type, XUtil.getFirstChildElement(element));
@@ -1848,7 +1848,7 @@ public class DOMParser
                         type.insertBefore(any, XUtil.getFirstChildElement(type));
                         break;
                     }
-                    case XMLElementDecl.TYPE_MIXED: {
+                    case XMLElementDecl.TYPE_MIXED_SIMPLE: {
                         XMLContentSpec contentSpec = new XMLContentSpec();
                         contentSpecProvider.getContentSpec(contentSpecIndex, contentSpec);
                         contentSpecIndex = contentSpec.value;
