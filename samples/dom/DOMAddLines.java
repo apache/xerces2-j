@@ -62,6 +62,7 @@ import java.io.*;
 import org.apache.xerces.parsers.DOMParser;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
+import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLString;
@@ -254,15 +255,13 @@ public class DOMAddLines extends DOMParser  {
 
    /* We override startDocument callback from DocumentHandler */
 
-   public void startDocument(XMLLocator locator, String encoding, Augmentations augs) throws XNIException {
-     //super.startDocument( versionIndex, encodingIndex,
-     //                               standAloneIndex);
-     super.startDocument(locator, encoding, augs);
+   public void startDocument(XMLLocator locator, String encoding, 
+                             NamespaceContext namespaceContext, Augmentations augs) throws XNIException {
+     super.startDocument(locator, encoding, namespaceContext, augs);
      this.locator = locator;
      Node node = null ;
       try {
       node = (Node) this.getProperty( "http://apache.org/xml/properties/dom/current-element-node" );
-      //System.out.println( "The node = " + node );
       }
      catch( org.xml.sax.SAXException ex )
       {
