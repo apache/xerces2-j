@@ -8,8 +8,8 @@
           or a feature, please post a message to the <jump href="http://xml.apache.org/mail.html#xerces-j-user">
           xerces-j-user</jump> list for clarification.
          </li>
-	<li>To help to eliminate duplicate or invalid bug reports, such as 
-	    <jump href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=16528">external-schemaLocation bug</jump>, 
+	<li>To help to eliminate duplicate or invalid bug reports, such as the
+	    <jump href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=16528">external-schemaLocation</jump> bug, 
 	    <em>please take a quick look at bugs in Bugzilla</em> opened against the version you're working 
         with to see whether the bug has been already reported and/or fixed.
 	    You can also download the 
@@ -19,9 +19,11 @@
 	  <li>Read <jump href="http://nagoya.apache.org/bugzilla/">Bugzilla Notes</jump></li>
       </ul>
       <p>We strongly encourage you write patches for problems you find and submit 
-         them to xerces-j-dev@xml.apache.org. 
-         In the interest of fixing bugs, adding enhancements, and addressing outstanding 
-         design issues, we need your active participation in the ongoing development of Xerces2.</p>
+         them to xerces-j-dev@xml.apache.org. Being specific in the description of your bug report, and
+         providing enough information to reproduce the bug will improve the likelihood that the bug 
+         you found will be fixed in the foreseeable future. In the interest of fixing bugs, adding 
+         enhancements, and addressing outstanding design issues, we need your active participation in the 
+         ongoing development of Xerces2.</p>
       <anchor name="bugzilla"/>
 
 </s2>
