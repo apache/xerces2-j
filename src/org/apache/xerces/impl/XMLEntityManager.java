@@ -317,6 +317,9 @@ public class XMLEntityManager
             if (baseSystemId == null) {
                 // search for the first external entity on the stack 
                 int size = fEntityStack.size();
+                if (size == 0 && fCurrentEntity != null) {
+                    baseSystemId = fCurrentEntity.systemId;
+                }
                 for (int i = size - 1; i >= 0 ; i--) {
                     ScannedEntity externalEntity =
                         (ScannedEntity)fEntityStack.elementAt(i);
