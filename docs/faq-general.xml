@@ -3,32 +3,9 @@
 <faqs title='General FAQs'>
   <faq title="Bugzilla">
     <q>How do I use Bugzilla to report bugs?</q>
-    <a>
-      <ul>
-	<li>Please report bugs against the newest release.</li>
-	<li>If doubt exists whether the behaviour in question is a bug 
-          or a feature, 
-	  please post a message to the xerces-j-user list for clarification.
-         </li>
-	<li> To help to eliminate duplicate or invalid bug reports, 
-	  before reporting a bug, you should check if the bug is 
-          reproducable in the latest code in CVS by downloading the latest           
-          <jump href='http://gump.covalent.net/jars/latest/xml-xerces2/'>Xerces jars</jump>.
-          If a bug is reproducable, please, query the Bugzilla database to see whether the bug 
-          has already been reported. </li>
-      </ul>
-      <p>For more information visit the following links:</p>
-      <ul>
-	<li><jump href="http://nagoya.apache.org/bugzilla/">
-	    http://nagoya.apache.org/bugzilla/</jump></li>
-	<li><jump href="http://www.mozilla.org/bugs/">
-	    http://www.mozilla.org/bugs/</jump></li>
-      </ul>
-      <p>We strongly encourage you write patches for problems you find and submit 
-         them to xerces-j-dev@xml.apache.org. 
-         In the interest of fixing bugs, adding enhancements, and addressing outstanding 
-         design issues, we need your active participation in the ongoing development of Xerces2.</p>
-      <anchor name="bugzilla"/>
+    <a> <p>
+    Please refer to the <link idref="bugzilla">Reporting bugs in bugzilla</link>
+    </p>
     </a>
   </faq>
 

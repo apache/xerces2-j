@@ -70,6 +70,6 @@
            id='releases' source='releases.xml'/>
 
 
- <external label='Report a Bug' 
-           href='http://nagoya.apache.org/bugzilla/enter_bug.cgi?product=Xerces2-J'/>
+ <document label='Report a Bug' title='Reporting Bugs'
+           id='bugzilla' source='bugzilla.xml'/> 
 </book>

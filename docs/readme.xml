@@ -41,11 +41,7 @@
         3 load/save API's are in use.
     </p>
 
-    <p>
-      Before reporting a bug in 
-<jump href='http://nagoya.apache.org/bugzilla/enter_bug.cgi?product=Xerces2-J'>BugZilla</jump>, 
-please read the <link idref='faq-general'>Bugzilla</link> FAQ. 
-    </p>
+
 
     <p>You can find the latest Xerces 2 jars
       <jump href='http://gump.covalent.net/jars/latest/xml-xerces2/'>here</jump>.
@@ -106,17 +102,15 @@ please read the <link idref='faq-general'>Bugzilla</link> FAQ.
       Please, let us know if this change affects your application.</p>
   </s2>
   
-<!--  <s2 title='Changes from Previous Release'>
+  <s2 title='Changes from Previous Release'>
     
     <p>
-      The &ParserNameLong; &ParserVersion; fixes bugs and adds new functionality.
+      The &ParserNameLong; &ParserVersion; fixes bugs and changes the XNI as follows:
     </p>
     
     <ul>
-      <li>Added xni.XMLDocumentHandler.setDocumentSource/getDocumentSource and
-          XMLDocumentSource.getDocumentHandler methods. </li>
-      <li>Expose PSVI via DOM and SAX.</li>
-      <li>Added DOM Level 3 DOMBuilderFilter and DOMBuilderWriter implementation.</li>
+      <li>Added set/getNamespace methods to the xni.XMLResourceIdentifier interface.</li>
+      <li>Added getEncoding method to the xni.XMLLocator interface.</li>
     </ul>
     <p>
       
@@ -124,7 +118,7 @@ please read the <link idref='faq-general'>Bugzilla</link> FAQ.
       <link idref='releases'>Release Information</link> page.
     </p>	      
   </s2>
-  -->
+
   <s2 title='Changes from Xerces 1.x'>
     <p>
       Xerces2 is a nearly complete rewrite of the Xerces 1.x codebase

@@ -40,9 +40,10 @@
     <p>
 	The DOM Level 3 functionality is not exposed in the regular 
 	Xerces distribution.
-	To get access to the DOM Level 3, extract source code from CVS and 
+	To get access to the DOM Level 3, you need either to extract source code from CVS or 
+	to download both Xerces source and tools distributions and 
 	build Xerces with the target <strong>jars-dom3</strong>. The build will generate 
-	the <code>dom3-xmlParserAPIs.jar</code> that includes the DOM Level 3 API and 
+	the <code>dom3-xml-apis.jar</code> that includes the DOM Level 3 API and 
 	<code>dom3-xercesImpl.jar</code> that includes partial implementation of the API. 
 	The samples (i.e. <code>samples.dom.DOM3</code>) can be found in 
 	<code>xercesSamples.jar</code>.
@@ -56,6 +57,16 @@
       </note>
     </a>
   </faq>
+  
+   <faq title="Running DOM Level 3 samples with Sun JDK 1.4 and higher">
+    <q>How do I access run under Sun JDK 1.4 and higher?</q>
+    <a>    <anchor name="dom3-run"/>
+    <p>Use the <jump href="http://java.sun.com/j2se/1.4/docs/guide/standards/">
+    Endorsed Standards Override Mechanism</jump> to specify dom3-xml-apis.jar.
+    </p>
+    </a>
+  </faq>
+
 
   <faq title='Creating a DOM Parser'>
     <q>How do I create a DOM parser?</q>

@@ -1,12 +1,24 @@
-﻿<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
   <release version='&ParserName; TBD'>
    <desc>
-    To be determined...
+        This release incorporates two minor changes to the Xerces Native Interface.  
+        In addition to fixing many bugs, this release also brings Xerces 
+        into compliance with the most recent
+        work of the W3C DOM working group on DOM level 3 Core
+        and Load/Save, and includes additional fixes based on the XML Schema errata. 
+        Also in this release, XML 1.1. is supported by default.
    </desc>
    <changes>
+   <update>
+    <note>
+     Modifined XNI XMLResourceIdentifier to include set/getNamespace.
+     Added getEncoding method to the XNI XMLLocator interface.  
+    </note>
+    <submitter name="Sandy Gao, Neil Graham"/>
+   </update>
    <fix>
     <note>
      Fixed scanner implementation to be able to handle large CDATA sections
@@ -40,6 +52,7 @@
     </note>
     <submitter name='Khaled Noaman, Sandy Gao'/>
    </fix>
+
    <fix>
     <note>
      Fixed various bug related to the pattern facet (regular expression)
@@ -47,6 +60,34 @@
     </note>
     <submitter name='Khaled Noaman, Sandy Gao'/>
    </fix>
+    <update>
+    <note>
+     Implemented the latest DOM Level 3 
+     <jump href="http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/">Core</jump> and 
+     <jump href="http://www.w3.org/TR/2003/WD-DOM-Level-3-LS-20030226/">Load and Save</jump> drafts.
+    </note>
+    <submitter name="Elena Litani"/>
+   </update>
+   <update>
+    <note>
+     Improved performance of XML11Configuration and made it the default configuration.
+    </note>
+    <submitter name="Elena Litani"/>
+   </update>
+   <update>
+    <note>
+     Added support for ordering disconnected nodes (DOM Level 3 compareDocumentPosition)
+    </note>
+    <submitter name="Lisa Martin"/>
+   </update>
+      <update>
+    <note>
+     In anticipation of the DOM Level 3 Events specification, fix Xerces Events implementation
+     to call event listeners in the order in which they were registered
+    </note>
+    <submitter name="Arnaud Le Hors"/>
+   </update>
+   
    <update>
     <note>
      Implemented XML Schema errata as they were published.
@@ -58,6 +99,12 @@
      Fixed a bug related the external-schemaLocation property.
     </note>
     <submitter name='Sandy Gao'/>
+   </fix>
+    <fix>
+    <note>
+     Fixed various bugs.
+    </note>
+    <submitter name='Ville Skyttä, Michael Glavassevich, Elena Litani, Sandy Gao, Neil Graham'/>
    </fix>
   </changes>
   </release>

@@ -23,7 +23,8 @@
 	<s2 title="Introduction">
 		<p>
 			The &ParserNameLong; &ParserVersion; contains an implementation of 
-			the Document Object Model Level 3 Core and Document Object Model Level 3 Load and Save Working drafts.
+			the Document Object Model Level 3 <jump href="http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/">Core</jump> 
+			and Document Object Model Level 3 <jump href="http://www.w3.org/TR/2003/WD-DOM-Level-3-LS-20030226/">Load and Save</jump> Working drafts.
 			To learn how to program with the DOM Level 3 see <jump href="samples-dom.html#DOM3">dom.DOM3</jump> sample.
 		</p>
 		<p>
@@ -45,7 +46,7 @@
 		<ul>
 			<li>
 				<strong>DOMImplementationRegistry</strong>
-				<jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20021022/core.html#Bootstrap">Bootstrapping</jump>
+				<jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20030226/core.html#Bootstrap">Bootstrapping</jump>
 				-- lets an application find an implementation, based on the specific features it requires.
 			</li>
 
@@ -62,7 +63,7 @@
 				-- exposes type information in the DOM tree.
 			</li>
 			<li>
-			 	<strong>Node</strong> <jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20021022/core.html#Node3-compareDocumentPosition">compareDocumentPosition</jump>
+			 	<strong>Node</strong> <jump href="http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/core.html#Node3-compareDocumentPosition">compareDocumentPosition</jump>
 			 	-- compares a node with this node with regard to their position in the tree and according to the document order.
 
 			</li>
@@ -207,10 +208,12 @@
 		<ul>
 
     		<li>
-    			<strong>DOMBuilder</strong> <jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-ASLS-20020409/load-save.html#ID-LS-DOMBuilder-parseWithContext">parserWithContext</jump>
+    			<strong>DOMBuilder</strong> <jump href="http://www.w3.org/TR/2003/WD-DOM-Level-3-LS-20030226/load-save.html#LS-DOMBuilder-parseWithContext">
+    			parserWithContext</jump>
     			 -- not supported.
 	    	</li>
-			<li><strong>DOMImplementationLS</strong> <jump href="">MODE_ASYNCHRONOUS</jump> 
+			<li><strong>DOMImplementationLS</strong> <jump href="http://www.w3.org/TR/2003/WD-DOM-Level-3-LS-20030226/load-save.html#LS-DOMIMplementationLS-MODE_SYNC">
+			MODE_ASYNCHRONOUS</jump> 
 				-- not supported.
 			</li>
 		</ul>
