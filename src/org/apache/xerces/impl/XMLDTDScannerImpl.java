@@ -473,7 +473,16 @@ public class XMLDTDScannerImpl
      */
     public void setDTDHandler(XMLDTDHandler dtdHandler) {
         fDTDHandler = dtdHandler;
-    } // setDTDHandler
+    } // setDTDHandler(XMLDTDHandler)
+
+    /**
+     * getDTDHandler
+     * 
+     * @return the XMLDTDHandler
+     */
+    public XMLDTDHandler getDTDHandler() {
+        return fDTDHandler;
+    } // getDTDHandler():  XMLDTDHandler
 
     //
     // XMLDTDContentModelSource methods
@@ -487,6 +496,15 @@ public class XMLDTDScannerImpl
     public void setDTDContentModelHandler(XMLDTDContentModelHandler
                                           dtdContentModelHandler) {
         fDTDContentModelHandler = dtdContentModelHandler;
+    } // setDTDContentModelHandler
+
+    /**
+     * getDTDContentModelHandler
+     * 
+     * @return XMLDTDContentModelHandler 
+     */
+    public XMLDTDContentModelHandler getDTDContentModelHandler() {
+        return fDTDContentModelHandler ;
     } // setDTDContentModelHandler
 
     //
@@ -696,10 +714,10 @@ public class XMLDTDScannerImpl
             fMarkUpDepth++;
             // NOTE: special case where document starts with a PI
             //       whose name starts with "xml" (e.g. "xmlfoo")
-            if (XMLChar.isName(fEntityScanner.peekChar())) {
+            if (isValidNameChar(fEntityScanner.peekChar())) {
                 fStringBuffer.clear();
                 fStringBuffer.append("xml");
-                while (XMLChar.isName(fEntityScanner.peekChar())) {
+                while (isValidNameChar(fEntityScanner.peekChar())) {
                     fStringBuffer.append((char)fEntityScanner.scanChar());
                 }
                 String target =
@@ -1647,7 +1665,7 @@ public class XMLDTDScannerImpl
                     if (XMLChar.isHighSurrogate(c)) {
                         scanSurrogates(fStringBuffer2);
                     }
-                    else if (XMLChar.isInvalid(c)) {
+                    else if (isInvalidLiteral(c)) {
                         reportFatalError("InvalidCharInLiteral",
                                          new Object[]{Integer.toHexString(c)});
                         fEntityScanner.scanChar();

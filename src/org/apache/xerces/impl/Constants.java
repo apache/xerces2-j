@@ -320,6 +320,9 @@ public final class Constants {
     /* Attribute PSVI is stored in augmentations using string "ATTRIBUTE_PSVI" */
     public final static String ATTRIBUTE_PSVI = "ATTRIBUTE_PSVI";
 
+    // XML version constants 
+    public final static short XML_VERSION_1_0 = 1;
+    public final static short XML_VERSION_1_1 = 2;
 
     // private
 
