@@ -122,6 +122,13 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser {
         String namespaces = "http://xml.org/sax/features/namespaces";
         xmlReader.setFeature(namespaces, namespaceAware);
 
+        // SAX "namespaces" and "namespace-prefixes" features must not both
+        // be false as specified by SAX
+        if (namespaceAware == false) {
+            String prefixes = "http://xml.org/sax/features/namespace-prefixes";
+            xmlReader.setFeature(prefixes, true);
+        }
+
         setFeatures(features);
     }
 
