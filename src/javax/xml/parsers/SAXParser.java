@@ -167,7 +167,18 @@ public abstract class SAXParser {
     public void parse(File file, HandlerBase base)
     throws SAXException, IOException, IllegalArgumentException {
         if (file==null) throw new IllegalArgumentException();
-        this.parse(new InputSource(file.toURL().toString()),base);
+        String path = file.getAbsolutePath();
+        if (File.separatorChar != '/') {
+            path = path.replace(File.separatorChar, '/');
+        }
+        if (!path.startsWith("/")) {
+            path = "/" + path;
+        }
+        if (!path.endsWith("/") && file.isDirectory()) {
+            path = path + "/";
+        }
+        java.net.URL url = new java.net.URL("file", "", path);
+        this.parse(new InputSource(url.toString()),base);
     }
 
     /**
