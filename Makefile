@@ -22,7 +22,7 @@ jars: compile
 
 docs: src/classfiles_updated
 	@echo Building Stylebook docs in docs directory
-	$(JAVA12) org.apache.stylebook.StyleBook "targetDirectory=docs/html" docs/docs-book.xml ../../xml-stylebook/styles/apachexml
+	$(JAVA12) org.apache.stylebook.StyleBook "targetDirectory=docs/html" docs/docs-book.xml tools/style-apachexml.jar
 
 apidocs:
 	@echo Building apiDocs in docs directory.
