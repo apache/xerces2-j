@@ -2790,6 +2790,15 @@ public class XMLEntityManager
                                  fCurrentEntity.ch, 0, fCurrentEntity.count - fCurrentEntity.position);
                 load(fCurrentEntity.count - fCurrentEntity.position, false);
                 fCurrentEntity.position = 0;
+            } 
+            if (fCurrentEntity.position >= fCurrentEntity.count - delimLen) {
+                // something must be wrong with the input:  e.g., file ends  an unterminated comment
+                int length = fCurrentEntity.count - fCurrentEntity.position;
+                data.setValues(fCurrentEntity.ch, fCurrentEntity.position, length); 
+                fCurrentEntity.columnNumber += fCurrentEntity.count;
+                fCurrentEntity.position = fCurrentEntity.count;
+                load(0,true);
+                return false;
             }
 
             // normalize newlines
