@@ -449,12 +449,14 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
      * this document, but that should be useful to a human for debugging or
      * diagnostic purposes.
      * @param wnode  The node to be written.
-     * @return  Returns the serialized data, or <code>null</code> in case a
-     *   failure occured and the failure wasn't canceled by the error
-     *   handler.
+     * @return  Returns the serialized data
      * @exception DOMException
      *    DOMSTRING_SIZE_ERR: The resulting string is too long to fit in a
      *   <code>DOMString</code>.
+     * @exception LSException
+     *    SERIALIZE_ERR: Unable to serialize the node.  DOM applications should
+     *    attach a <code>DOMErrorHandler</code> using the parameter 
+     *    &quot;<i>error-handler</i>&quot; to get details on error.
      */
     public String writeToString(Node wnode) throws DOMException, LSException {
         // determine which serializer to use:
@@ -489,16 +491,28 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
             prepareForSerialization(ser, wnode);
             ser._format.setEncoding("UTF-16");
             ser.setOutputCharStream(destination);
-            if (wnode == null)
-                return null;
-            else if (wnode.getNodeType() == Node.DOCUMENT_NODE)
+            if (wnode.getNodeType() == Node.DOCUMENT_NODE) {
                 ser.serialize((Document)wnode);
-            else if (wnode.getNodeType() == Node.DOCUMENT_FRAGMENT_NODE)
+            }
+            else if (wnode.getNodeType() == Node.DOCUMENT_FRAGMENT_NODE) {
                 ser.serialize((DocumentFragment)wnode);
-            else if (wnode.getNodeType() == Node.ELEMENT_NODE)
+            }
+            else if (wnode.getNodeType() == Node.ELEMENT_NODE) {
                 ser.serialize((Element)wnode);
-            else
-                return null;
+            }
+            else {
+                String msg = DOMMessageFormatter.formatMessage(
+                    DOMMessageFormatter.SERIALIZER_DOMAIN, 
+                    "unable-to-serialize-node", null);
+                if (ser.fDOMErrorHandler != null) {
+                    DOMErrorImpl error = new DOMErrorImpl();
+                    error.fType = "unable-to-serialize-node";
+                    error.fMessage = msg;
+                    error.fSeverity = DOMError.SEVERITY_FATAL_ERROR;
+                    ser.fDOMErrorHandler.handleError(error);
+                }
+                throw new LSException(LSException.SERIALIZE_ERR, msg);
+            }
         } catch (LSException lse) {
             // Rethrow LSException.
             throw lse;
@@ -714,17 +728,17 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
             if (writer == null) {
                 if (outputStream == null) {
                     if (uri == null) {
+                        String msg = DOMMessageFormatter.formatMessage(
+                            DOMMessageFormatter.SERIALIZER_DOMAIN, 
+                            "no-output-specified", null);
                         if (ser.fDOMErrorHandler != null) {
                             DOMErrorImpl error = new DOMErrorImpl();
                             error.fType = "no-output-specified";
-                            error.fMessage = "no-output-specified";
+                            error.fMessage = msg;
                             error.fSeverity = DOMError.SEVERITY_FATAL_ERROR;
                             ser.fDOMErrorHandler.handleError(error);
                         }
-                        throw new LSException(LSException.SERIALIZE_ERR, 
-                            DOMMessageFormatter.formatMessage(
-                                DOMMessageFormatter.SERIALIZER_DOMAIN, 
-                                "no-output-specified", null));
+                        throw new LSException(LSException.SERIALIZE_ERR, msg);
                     }
                     else {
                         // URI was specified. Handle relative URIs.
