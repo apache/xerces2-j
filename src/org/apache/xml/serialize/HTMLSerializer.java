@@ -253,9 +253,12 @@ public class HTMLSerializer
 		    else
 			printText( name + "=\"" + escape( value ) + '"' );
 		} else {
-		    // HTML: Non values print as attribute name, no value.
+		    // HTML: Empty values print as attribute name, no value.
+		    // HTML: URI attributes will print unescaped
 		    if ( value == null )
 			printText( name );
+		    else if ( HTMLdtd.isURI( tagName, name ) )
+			printText( name + "=\"" + escapeURI( value ) + '"' );
 		    else
 			printText( name + "=\"" + escape( value ) + '"' );
 		}
@@ -268,6 +271,19 @@ public class HTMLSerializer
 	// with the tag name and space preserving.
 	// We still do not change the curent element state.
 	enterElementState( tagName, preserveSpace );
+
+	// Handle SCRIPT and STYLE specifically by changing the
+	// state of the current element to CDATA (XHTML) or
+	// unescaped (HTML).
+	if ( tagName.equalsIgnoreCase( "SCRIPT" ) ||
+	     tagName.equalsIgnoreCase( "STYLE" ) ) {
+	    if ( _xhtml )
+		// XHTML: Print contents as CDATA section
+		getElementState().cdata = true;
+	    else
+		// HTML: Print contents unescaped
+		getElementState().unescaped = true;
+	}
     }
 
 
@@ -402,7 +418,9 @@ public class HTMLSerializer
 	boolean      preserveSpace;
 	String       name;
 	String       value;
+	String       tagName;
 
+	tagName = elem.getTagName();
 	state = getElementState();
 	if ( state == null ) {
 	    // If this is the root element handle it differently.
@@ -410,7 +428,7 @@ public class HTMLSerializer
 	    // the document's DOCTYPE. Space preserving defaults
 	    // to that of the output format.
 	    if ( ! _started )
-		startDocument( elem.getTagName() );
+		startDocument( tagName );
 	    preserveSpace = _format.getPreserveSpace();
 	} else {
 	    // For any other element, if first in parent, then
@@ -431,9 +449,9 @@ public class HTMLSerializer
 
 	// XHTML: element names are lower case, DOM will be different
 	if ( _xhtml )
-	    printText( '<' + elem.getTagName().toLowerCase() );
+	    printText( '<' + tagName.toLowerCase() );
 	else
-	    printText( '<' + elem.getTagName() );
+	    printText( '<' + tagName );
 	indent();
 
 	// Lookup the element's attribute, but only print specified
@@ -456,30 +474,47 @@ public class HTMLSerializer
 			else
 			    printText( name + "=\"" + escape( value ) + '"' );
 		    } else {
-			// HTML: Non values print as attribute name, no value.
+			// HTML: Empty values print as attribute name, no value.
+			// HTML: URI attributes will print unescaped
 			if ( value == null )
 			    printText( name );
+			else if ( HTMLdtd.isURI( tagName, name ) )
+			    printText( name + "=\"" + escapeURI( value ) + '"' );
 			else
 			    printText( name + "=\"" + escape( value ) + '"' );
 		    }
 		}
 	    }
 	}
-	if ( HTMLdtd.isPreserveSpace( elem.getTagName() ) )
+	if ( HTMLdtd.isPreserveSpace( tagName ) )
 	    preserveSpace = true;
 	
 	// If element has children, or if element is not an empty tag,
 	// serialize an opening tag.
-	if ( elem.hasChildNodes() || ! HTMLdtd.isEmptyTag( elem.getTagName() ) ) {
+	if ( elem.hasChildNodes() || ! HTMLdtd.isEmptyTag( tagName ) ) {
 	    // Enter an element state, and serialize the children
 	    // one by one. Finally, end the element.
-	    enterElementState( elem.getTagName(), preserveSpace );
+	    enterElementState( tagName, preserveSpace );
+
+	    // Handle SCRIPT and STYLE specifically by changing the
+	    // state of the current element to CDATA (XHTML) or
+	    // unescaped (HTML).
+	    if ( tagName.equalsIgnoreCase( "SCRIPT" ) ||
+		 tagName.equalsIgnoreCase( "STYLE" ) ) {
+		if ( _xhtml )
+		    // XHTML: Print contents as CDATA section
+		    getElementState().cdata = true;
+		else
+		    // HTML: Print contents unescaped
+		    getElementState().unescaped = true;
+	    }
+
 	    child = elem.getFirstChild();
 	    while ( child != null ) {
 		serializeNode( child );
 		child = child.getNextSibling();
 	    }
-	    endElement( elem.getTagName() );
+	    endElement( tagName );
 	} else {
 	    unindent();
 	    // XHTML: Close empty tag with ' />' so it's XML and HTML compatible.
@@ -519,6 +554,20 @@ public class HTMLSerializer
     protected String getEntityRef( char ch )
     {
         return HTMLdtd.fromChar( ch );
+    }
+
+
+    protected String escapeURI( String uri )
+    {
+	int index;
+
+	// Apparently Netscape doesn't like if we escape the URI
+	// using %nn, so we leave it as is, just remove any quotes.
+	index = uri.indexOf( "\"" );
+	if ( index >= 0 )
+	    return uri.substring( 0, index );
+	else
+	    return uri;
     }
 
 
