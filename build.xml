@@ -1103,7 +1103,7 @@ Copyright:
     <echo message="Performing sanity test for ${parser.Name} ${parser.Version} ..." />
     <echo message="Using classpath=&apos;${build.dir}/classes&apos;" />
     <echo message="Running sax.Counter ..." />
-<!--    <java fork="yes"
+   <java fork="yes"
           classpath="${build.dir}/classes"
           classname="sax.Counter"
           failOnError="yes">
@@ -1130,7 +1130,6 @@ Copyright:
           failOnError="yes">
        <arg value="${data.dir}/personal.xml"/>
     </java>
--->
     <!--
     <echo message="Running DOMFilter ..." />
     <java fork="yes"
