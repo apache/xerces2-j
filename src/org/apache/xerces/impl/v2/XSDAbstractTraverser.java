@@ -244,7 +244,7 @@ abstract class XSDAbstractTraverser {
 
                     }
 
-                    enumVal = (uriStr!=null)?(uriStr+","+localpart):localpart;                      
+                    enumVal = (uriStr!=null)?(uriStr+","+localpart):localpart;
                     fSymbolTable.addSymbol(enumVal);
                 }
                 enumData.addElement(enumVal);
@@ -362,6 +362,7 @@ abstract class XSDAbstractTraverser {
             if (childName.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
                 tempAttrUse = fSchemaHandler.fAttributeTraverser.traverseLocal(child,
                                                                                schemaDoc, grammar);
+                if (tempAttrUse == null) break;
                 if (attrGrp.getAttributeUse(tempAttrUse.fAttrDecl.fTargetNamespace,
                                             tempAttrUse.fAttrDecl.fName)==null) {
                     attrGrp.addAttributeUse(tempAttrUse);
