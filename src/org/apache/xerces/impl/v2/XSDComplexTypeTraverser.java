@@ -154,8 +154,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         XInt    finalAtt     = (XInt)    attrValues[XSAttributeChecker.ATTIDX_FINAL];
 
         XSComplexTypeDecl complexType = new XSComplexTypeDecl(); 
-        complexType.fName = schemaDoc.fTargetNamespace + "," + 
-                               complexTypeName;
+        complexType.fName = complexTypeName; 
+        complexType.fTargetNamespace = schemaDoc.fTargetNamespace;  
         complexType.fBlock = blockAtt == null ? 
                              SchemaSymbols.EMPTY_SET : blockAtt.shortValue();
         complexType.fFinal = finalAtt == null ?
