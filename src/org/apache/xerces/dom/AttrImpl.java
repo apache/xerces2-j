@@ -1038,10 +1038,13 @@ public class AttrImpl
                 return (Node) value;
             }
         }
+        if (index < 0) {
+            return null;
+        }
         ChildNode node = (ChildNode) value;
         for (int i = 0; i < index && node != null; i++) {
             node = node.nextSibling;
-        }
+        } 
         return node;
 
     } // item(int):Node

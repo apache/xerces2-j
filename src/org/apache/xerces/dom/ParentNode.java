@@ -750,6 +750,9 @@ public abstract class ParentNode
         }
         else {
             // long way
+            if (index < 0) {
+                return null;
+            }
             n = firstChild;
             for (i = 0; i < index && n != null; i++) {
                 n = n.nextSibling;
