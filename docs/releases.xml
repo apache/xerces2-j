@@ -4,6 +4,9 @@
 <s1 title="Releases">
   <s2 title='June 22, 2001 (version 1.4.1)'>
     <ul>
+        <li> Added support for all IANA encoding aliases which have a clear mapping to 
+            encodings recognized by Java [Neil Graham]</li>
+        <li> Performance improvements for DTD validation [Sandy Gao, Neil Graham]</li>
         <li>Bug fixes [Sandy Gao, Neil Graham, Elena Litani, Lisa Martin, Henry Zongaro] </li> 
         <li>Added support for setAttribute/getAttribute in JAXP [Edwin Goei]</li>
     </ul>

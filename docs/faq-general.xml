@@ -125,6 +125,13 @@
 	<faq title="International Encodings">
 		<q>What international encodings are supported by &javaparsername;?</q>
 		<a>
+            <p> In general, the parser supports all IANA encodings and
+            aliases (see
+            <jump href="http://www.iana.org/assignments/character-sets">
+            http://www.iana.org/assignments/character-sets</jump>) that 
+            have clear mappings to Java encodings (see
+            <jump href="http://java.sun.com/j2se/1.3.0/docs/guide/intl/encoding.doc.html">here</jump> 
+            for details).  Some of the more common encodings are:</p>
 			<ul>
           		<li>UTF-8</li>
           		<li>UTF-16 Big Endian, UTF-16 Little Endian</li>
@@ -174,6 +181,10 @@
             		<li>EBCDIC Arabic (ebcdic-cp-ar1)</li>
           		</ul>
         	</ul>
+            <p> Please also look at the documentation for the feature 
+            &quot;http://apache.org/xml/features/allow-java-encodings&quot;
+            which provides a mechanism for using the 
+            encoding names recognized directly by Java.</p>
 		</a>
 	</faq>
 	

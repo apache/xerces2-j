@@ -26,6 +26,19 @@
             <li>No interface is provided for exposing the post-schema
             validation infoset , beyond
             that provided by DOM or SAX;</li>
+            <li> The parser permits situations in which there is
+            circular importing; that is, where there
+            is a series of schemas which contain &lt;import&gt;
+           information items whose effect is
+            recursive.  However, the parser only permits forward
+            references--that is, references directed from the
+            direction of the schema cited in the instance
+            document to other schemas.  For instance, if schema A
+            imports schema B which also imports schema A, and an
+            instance document validates against schema A, then
+            any reference in schema b to an information item from
+            schema A will produce an error. Circular
+            &lt;include&gt;s have similar limitations.</li>
             <li> length, minLength, and maxLength facets are limited to the value 
             2147483647. Items larger than this limit will not be validated 
             correctly.</li>
