@@ -70,7 +70,7 @@ import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.ValidationManager;
-import org.apache.xerces.util.DOMEntityResolverWrapper;
+import org.apache.xerces.util.DOMResourceResolverWrapper;
 import org.apache.xerces.util.DOMErrorHandlerWrapper;
 import org.apache.xerces.util.MessageFormatter;
 import org.apache.xerces.util.ObjectFactory;
@@ -89,7 +89,7 @@ import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 import org.w3c.dom.DOMException;
-import org.w3c.dom.ls.DOMEntityResolver;
+import org.w3c.dom.ls.DOMResourceResolver;
 
 
 
@@ -285,7 +285,6 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
         features |= CDATA;
         features |= SPLITCDATA;
 
-        
         if (symbolTable == null) {
             symbolTable = new SymbolTable();
         }
@@ -643,9 +642,9 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                 }
             }       
             else if (name.equals(Constants.DOM_ENTITY_RESOLVER)) {
-                if (value instanceof DOMEntityResolver) {
+                if (value instanceof DOMResourceResolver) {
                     try {
-                        setEntityResolver(new DOMEntityResolverWrapper((DOMEntityResolver) value));
+                        setEntityResolver(new DOMResourceResolverWrapper((DOMResourceResolver) value));
                     }
                     catch (XMLConfigurationException e) {}
                 }
@@ -829,8 +828,8 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 		}
 		else if (name.equals(Constants.DOM_ENTITY_RESOLVER)) {
 			XMLEntityResolver entityResolver = getEntityResolver();
-			if (entityResolver != null && entityResolver instanceof DOMEntityResolverWrapper) {
-				return ((DOMEntityResolverWrapper) entityResolver).getEntityResolver();
+			if (entityResolver != null && entityResolver instanceof DOMResourceResolverWrapper) {
+				return ((DOMResourceResolverWrapper) entityResolver).getEntityResolver();
 			}
 			return null;
 		}

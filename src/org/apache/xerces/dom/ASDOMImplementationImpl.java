@@ -122,7 +122,7 @@ public class ASDOMImplementationImpl extends DOMImplementationImpl
     /**
      * DOM Level 3 WD - Experimental.
      * Creates an <code>DOMASBuilder</code>.Do we need the method since we 
-     * already have <code>DOMImplementationLS.createDOMBuilder</code>?
+     * already have <code>DOMImplementationLS.createDOMParser</code>?
      * @return  DOMASBuilder
      */
     public DOMASBuilder createDOMASBuilder(){

@@ -12,8 +12,8 @@
 
 package org.apache.xerces.dom3.as;
 
-import org.w3c.dom.ls.DOMInputSource;
-import org.w3c.dom.ls.DOMBuilder;
+import org.w3c.dom.ls.DOMInput;
+import org.w3c.dom.ls.DOMParser;
 
 /**
  * @deprecated
@@ -23,9 +23,9 @@ import org.w3c.dom.ls.DOMBuilder;
  * <p>See also the <a href='http://www.w3.org/TR/2001/WD-DOM-Level-3-ASLS-20011025'>Document Object Model (DOM) Level 3 Abstract Schemas and Load
 and Save Specification</a>.
  */
-public interface DOMASBuilder extends DOMBuilder {
+public interface DOMASBuilder extends DOMParser {
     /**
-     *  Associate an <code>ASModel</code> with a <code>DOMBuilder</code>. This 
+     *  Associate an <code>ASModel</code> with a <code>DOMParser</code>. This
      * <code>ASModel</code> will be used by the "
      * <code>validate-if-schema</code>" and "
      * <code>datatype-normalization</code>" options during the load of a new 
@@ -33,7 +33,7 @@ public interface DOMASBuilder extends DOMBuilder {
      */
     public ASModel getAbstractSchema();
     /**
-     *  Associate an <code>ASModel</code> with a <code>DOMBuilder</code>. This 
+     *  Associate an <code>ASModel</code> with a <code>DOMParser</code>. This
      * <code>ASModel</code> will be used by the "
      * <code>validate-if-schema</code>" and "
      * <code>datatype-normalization</code>" options during the load of a new 
@@ -68,8 +68,8 @@ public interface DOMASBuilder extends DOMBuilder {
 
     /**
      * Parse a Abstract Schema from a location identified by an 
-     * <code>DOMInputSource</code>.
-     * @param is The <code>DOMInputSource</code> from which the source 
+     * <code>DOMInput</code>.
+     * @param is The <code>DOMInput</code> from which the source
      *   Abstract Schema is to be read. 
      * @return The newly created <code>ASModel</code>.
      * @exception DOMASException
@@ -90,7 +90,7 @@ public interface DOMASBuilder extends DOMBuilder {
      *   system error occurs during the parse, but application defined error 
      *   handlers are not required to do so. 
      */
-    public ASModel parseASInputSource(DOMInputSource is)
+    public ASModel parseASInputSource(DOMInput is)
                                       throws DOMASException, Exception;
 
 }

@@ -86,7 +86,7 @@ import org.w3c.dom.Text;
 import org.w3c.dom.events.Event;
 import org.w3c.dom.events.EventListener;
 import org.w3c.dom.ls.DOMImplementationLS;
-import org.w3c.dom.ls.DOMWriter;
+import org.w3c.dom.ls.DOMSerializer;
 import org.w3c.dom.ls.DocumentLS;
 
 /**
@@ -1095,32 +1095,49 @@ public class CoreDocumentImpl
      * immediately aborted. The possibly partial result of parsing the 
      * document is discarded and the document is cleared.
      */
-
     public void abort() {
     }
+
     /**
      * DOM Level 3 WD - Experimental.
+     *
      * Replaces the content of the document with the result of parsing the 
      * given URI. Invoking this method will either block the caller or 
      * return to the caller immediately depending on the value of the async 
-     * attribute. Once the document is fully loaded the document will fire a 
-     * "load" event that the caller can register as a listener for. If an 
-     * error occurs the document will fire an "error" event so that the 
-     * caller knows that the load failed (see <code>ParseErrorEvent</code>).
+     * attribute. Once the document is fully loaded a "load" event (as
+     * defined in [<a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Events-20030331'>DOM Level 3 Events</a>]
+     * , except that the <code>Event.targetNode</code> will be the document,
+     * not an element) will be dispatched on the document. If an error
+     * occurs, an implementation dependent "error" event will be dispatched
+     * on the document. If this method is called on a document that is
+     * currently loading, the current load is interrupted and the new URI
+     * load is initiated.
+     * <br> When invoking this method the parameters used in the
+     * <code>DOMParser</code> interface are assumed to have their default
+     * values with the exception that the parameters <code>"entities"</code>
+     * , <code>"normalize-characters"</code>,
+     * <code>"check-character-normalization"</code> are set to
+     * <code>"false"</code>.
+     * <br> The result of a call to this method is the same the result of a
+     * call to <code>DOMParser.parseWithContext</code> with an input stream
+     * referencing the URI that was passed to this call, the document as the
+     * context node, and the action <code>ACTION_REPLACE_CHILDREN</code>.
      * @param uri The URI reference for the XML file to be loaded. If this is 
-     *   a relative URI...
+     *  a relative URI, the base URI used by the implementation is
+     *  implementation dependent.
      * @return If async is set to <code>true</code> <code>load</code> returns 
      *   <code>true</code> if the document load was successfully initiated. 
-     *   If an error occurred when initiating the document load 
+     *   If an error occurred when initiating the document load,
      *   <code>load</code> returns <code>false</code>.If async is set to 
      *   <code>false</code> <code>load</code> returns <code>true</code> if 
      *   the document was successfully loaded and parsed. If an error 
-     *   occurred when either loading or parsing the URI <code>load</code> 
+     *   occurred when either loading or parsing the URI, <code>load</code>
      *   returns <code>false</code>.
      */
     public boolean load(String uri) {
         return false;
     }
+
     /**
      * DOM Level 3 WD - Experimental.
      * Replace the content of the document with the result of parsing the 
@@ -1135,29 +1152,35 @@ public class CoreDocumentImpl
     
     /**
      * DOM Level 3 WD - Experimental.
-     * Save the document or the given node to a string (i.e. serialize the 
-     * document or node).
-     * @param snode Specifies what to serialize, if this parameter is 
+     * Save the document or the given node and all its descendants to a string
+     * (i.e. serialize the document or node).
+     * <br>The parameters used in the <code>DOMSerializer</code> interface are
+     * assumed to have their default values when invoking this method.
+     * <br> The result of a call to this method is the same the result of a
+     * call to <code>DOMSerializer.writeToString</code> with the document as
+     * the node to write.
+     * @param node Specifies what to serialize, if this parameter is
      *   <code>null</code> the whole document is serialized, if it's 
      *   non-null the given node is serialized.
-     * @return The serialized document or <code>null</code>.
+     * @return The serialized document or <code>null</code> in case an error
+     *   occurred.
      * @exception DOMException
      *   WRONG_DOCUMENT_ERR: Raised if the node passed in as the node 
      *   parameter is from an other document.
      */
-    public String saveXML(Node snode)
+    public String saveXML(Node node)
                           throws DOMException {
-        if ( snode != null &&                                                      
-             getOwnerDocument() != snode.getOwnerDocument() ) {
+        if ( node != null &&
+             getOwnerDocument() != node.getOwnerDocument() ) {
             String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null);
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);
         }
         DOMImplementationLS domImplLS = (DOMImplementationLS)DOMImplementationImpl.getDOMImplementation();
-        DOMWriter xmlWriter = domImplLS.createDOMWriter();
-        if (snode == null) {
-            snode = this;
+        DOMSerializer xmlWriter = domImplLS.createDOMSerializer();
+        if (node == null) {
+            node = this;
         }
-        return xmlWriter.writeToString(snode);
+        return xmlWriter.writeToString(node);
     }
 
 
@@ -2226,7 +2249,6 @@ public class CoreDocumentImpl
 	}
 
     /**
-     * 
      * @param n
      * @param data
      */

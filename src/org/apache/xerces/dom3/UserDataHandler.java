@@ -1,31 +1,28 @@
 /*
- * Copyright (c) 2002 World Wide Web Consortium,
- * (Massachusetts Institute of Technology, Institut National de
- * Recherche en Informatique et en Automatique, Keio University). All
- * Rights Reserved. This program is distributed under the W3C's Software
- * Intellectual Property License. This program is distributed in the
- * hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- * PURPOSE.
- * See W3C License http://www.w3.org/Consortium/Legal/ for more details.
+ * Copyright (c) 2003 World Wide Web Consortium,
+ *
+ * (Massachusetts Institute of Technology, European Research Consortium for
+ * Informatics and Mathematics, Keio University). All Rights Reserved. This
+ * work is distributed under the W3C(r) Software License [1] in the hope that
+ * it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
  */
 
 package org.apache.xerces.dom3;
+
 import org.w3c.dom.Node;
 
 /**
- * DOM Level 3 WD Experimental:
- * The DOM Level 3 specification is at the stage 
- * of Working Draft, which represents work in 
- * progress and thus may be updated, replaced, 
- * or obsoleted by other documents at any time. 
- * <p>
- * When associating an object to a key on a node using <code>setUserData</code>
- *  the application can provide a handler that gets called when the node the 
- * object is associated to is being cloned or imported. This can be used by 
- * the application to implement various behaviors regarding the data it 
- * associates to the DOM nodes. This interface defines that handler. 
- * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020409'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * When associating an object to a key on a node using
+ * <code>Node.setUserData()</code> the application can provide a handler
+ * that gets called when the node the object is associated to is being
+ * cloned, imported, or renamed. This can be used by the application to
+ * implement various behaviors regarding the data it associates to the DOM
+ * nodes. This interface defines that handler.
+ * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * @since DOM Level 3
  */
 public interface UserDataHandler {
     // OperationType
@@ -39,6 +36,9 @@ public interface UserDataHandler {
     public static final short NODE_IMPORTED             = 2;
     /**
      * The node is deleted.
+     * <p ><b>Note:</b> This may not be supported or may not be reliable in
+     * certain environments, such as Java, where the implementation has no
+     * real control over when objects are actually deleted.
      */
     public static final short NODE_DELETED              = 3;
     /**

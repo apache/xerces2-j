@@ -105,7 +105,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
-import org.w3c.dom.ls.DOMBuilderFilter;
+import org.w3c.dom.ls.DOMParserFilter;
 import org.w3c.dom.traversal.NodeFilter;
 
 /**
@@ -279,7 +279,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
     protected boolean fFirstChunk = false;
 
 
-    /** DOMBuilderFilter: specifies that element with given QNAME and all its children
+    /** DOMParserFilter: specifies that element with given QNAME and all its children
         must be rejected */
     protected boolean fFilterReject = false;
 
@@ -289,10 +289,10 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
     protected Stack fBaseURIStack = new Stack();
 
 
-    /** DOMBuilderFilter: the QNAME of rejected element*/    
+    /** DOMParserFilter: the QNAME of rejected element*/
     protected final QName fRejectedElement = new QName();
 
-    /** DOMBuilderFilter: store qnames of skipped elements*/
+    /** DOMParserFilter: store qnames of skipped elements*/
     protected Stack fSkippedElemStack = null;
     
     /** Attribute QName. */
@@ -300,7 +300,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
 
     // handlers
 
-    protected DOMBuilderFilter fDOMFilter = null;
+    protected DOMParserFilter fDOMFilter = null;
 
     //
     // Constructors
@@ -624,16 +624,16 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                 (fDOMFilter.getWhatToShow() & NodeFilter.SHOW_COMMENT)!= 0) {
                 short code = fDOMFilter.acceptNode(comment);
                 switch (code) {
-                    case DOMBuilderFilter.FILTER_INTERRUPT:{ 
+                    case DOMParserFilter.FILTER_INTERRUPT:{
                         throw new RuntimeException("The normal processing of the document was interrupted.");
                     }   
-                    case DOMBuilderFilter.FILTER_REJECT:{
+                    case DOMParserFilter.FILTER_REJECT:{
                         // REVISIT: the constant FILTER_REJECT should be changed when new
                         // DOM LS specs gets published
 
                         // fall through to SKIP since comment has no children.
                     }
-                    case DOMBuilderFilter.FILTER_SKIP: { 
+                    case DOMParserFilter.FILTER_SKIP: {
                         // REVISIT: the constant FILTER_SKIP should be changed when new
                         // DOM LS specs gets published
                         fCurrentNode.removeChild(comment);
@@ -706,13 +706,13 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                 (fDOMFilter.getWhatToShow() & NodeFilter.SHOW_PROCESSING_INSTRUCTION)!= 0) {
                 short code = fDOMFilter.acceptNode(pi);
                 switch (code) {
-                    case DOMBuilderFilter.FILTER_INTERRUPT:{ 
+                    case DOMParserFilter.FILTER_INTERRUPT:{
                         throw new RuntimeException("The normal processing of the document was interrupted.");
                     }   
-                    case DOMBuilderFilter.FILTER_REJECT:{
+                    case DOMParserFilter.FILTER_REJECT:{
                         // fall through to SKIP since PI has no children.
                     }
-                    case DOMBuilderFilter.FILTER_SKIP: {
+                    case DOMParserFilter.FILTER_SKIP: {
                         fCurrentNode.removeChild(pi);
                         // fFirstChunk must be set to true so that data
                         // won't be lost in the case where the child before PI is
@@ -995,15 +995,15 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
             if (fDOMFilter != null) {
                 short code = fDOMFilter.startElement(el);
                 switch (code) {
-                    case DOMBuilderFilter.FILTER_INTERRUPT:{ 
+                    case DOMParserFilter.FILTER_INTERRUPT:{
                         throw new RuntimeException("The normal processing of the document was interrupted.");
                     }   
-                    case DOMBuilderFilter.FILTER_REJECT:{ 
+                    case DOMParserFilter.FILTER_REJECT:{
                         fFilterReject = true;
                         fRejectedElement.setValues(element);
                         return;
                     }
-                    case DOMBuilderFilter.FILTER_SKIP: { 
+                    case DOMParserFilter.FILTER_SKIP: {
                         fSkippedElemStack.push(element);
                         return;
                     }
@@ -1271,16 +1271,16 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                 if ((fDOMFilter.getWhatToShow() & NodeFilter.SHOW_ELEMENT)!=0) {
                     short code = fDOMFilter.acceptNode(fCurrentNode);
                     switch (code) {
-                        case DOMBuilderFilter.FILTER_INTERRUPT:{ 
+                        case DOMParserFilter.FILTER_INTERRUPT:{
                             throw new RuntimeException("The normal processing of the document was interrupted.");
                         }   
-                        case DOMBuilderFilter.FILTER_REJECT:{
+                        case DOMParserFilter.FILTER_REJECT:{
                             Node parent = fCurrentNode.getParentNode();                    
                             parent.removeChild(fCurrentNode);
                             fCurrentNode = parent;
                             return;
                         }
-                        case DOMBuilderFilter.FILTER_SKIP: { 
+                        case DOMParserFilter.FILTER_SKIP: {
                             // make sure that if any char data is available 
                             // the fFirstChunk is true, so that if the next event
                             // is characters(), and the last node is text, we will copy
@@ -1361,13 +1361,13 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                     (fDOMFilter.getWhatToShow() & NodeFilter.SHOW_CDATA_SECTION)!= 0) {
                     short code = fDOMFilter.acceptNode(fCurrentCDATASection);
                     switch (code) {
-                        case DOMBuilderFilter.FILTER_INTERRUPT:{ 
+                        case DOMParserFilter.FILTER_INTERRUPT:{
                             throw new RuntimeException("The normal processing of the document was interrupted.");
                              }   
-                        case DOMBuilderFilter.FILTER_REJECT:{
+                        case DOMParserFilter.FILTER_REJECT:{
                             // fall through to SKIP since CDATA section has no children.
                         }
-                        case DOMBuilderFilter.FILTER_SKIP: { 
+                        case DOMParserFilter.FILTER_SKIP: {
                             Node parent = fCurrentNode.getParentNode();                    
                             parent.removeChild(fCurrentCDATASection);
                             fCurrentNode = parent;
@@ -1474,17 +1474,17 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                     (fDOMFilter.getWhatToShow() & NodeFilter.SHOW_ENTITY_REFERENCE)!= 0) {
                     short code = fDOMFilter.acceptNode(fCurrentNode);
                     switch (code) {
-                        case DOMBuilderFilter.FILTER_INTERRUPT:{ 
+                        case DOMParserFilter.FILTER_INTERRUPT:{
                             throw new RuntimeException("The normal processing of the document was interrupted.");
                         }   
-                        case DOMBuilderFilter.FILTER_REJECT:{ 
+                        case DOMParserFilter.FILTER_REJECT:{
                             Node parent = fCurrentNode.getParentNode();
                             parent.removeChild(fCurrentNode);
                             fCurrentNode = parent;
                             return;
                             
                         }
-                        case DOMBuilderFilter.FILTER_SKIP: {
+                        case DOMParserFilter.FILTER_SKIP: {
                             // make sure we don't loose chars if next event is characters()
                             fFirstChunk = true;
                             removeEntityRef = true;
@@ -2522,13 +2522,13 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                 if ((fDOMFilter.getWhatToShow() & NodeFilter.SHOW_TEXT)!= 0) {
                     short code = fDOMFilter.acceptNode(child);
                     switch (code) {
-                        case DOMBuilderFilter.FILTER_INTERRUPT:{ 
+                        case DOMParserFilter.FILTER_INTERRUPT:{
                             throw new RuntimeException("The normal processing of the document was interrupted.");
                         }   
-                        case DOMBuilderFilter.FILTER_REJECT:{
+                        case DOMParserFilter.FILTER_REJECT:{
                             // fall through to SKIP since Comment has no children.
                         }
-                        case DOMBuilderFilter.FILTER_SKIP: { 
+                        case DOMParserFilter.FILTER_SKIP: {
                             fCurrentNode.removeChild(child);
                             return;
                         }
@@ -2544,7 +2544,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
     
     
     /**
-     * @see org.w3c.dom.ls.DOMBuilder#abort()
+     * @see org.w3c.dom.ls.DOMParser#abort()
      */
     public void abort() {
            throw new RuntimeException();

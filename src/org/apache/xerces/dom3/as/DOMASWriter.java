@@ -12,7 +12,7 @@
 
 package org.apache.xerces.dom3.as;
 
-import org.w3c.dom.ls.DOMWriter;
+import org.w3c.dom.ls.DOMSerializer;
 
 /**
  * @deprecated
@@ -26,11 +26,11 @@ import org.w3c.dom.ls.DOMWriter;
  * Abstract Schema. DOMASWriter is applied to serialize a single Abstract 
  * Schema. Serializing a document with an active Internal Abstract Schema 
  * will serialize this internal Abstract Schema with the document as it is 
- * part of the Document (see <code>DOMWriter</code>). 
+ * part of the Document (see <code>DOMSerializer</code>).
  * <p>See also the <a href='http://www.w3.org/TR/2001/WD-DOM-Level-3-ASLS-20011025'>Document Object Model (DOM) Level 3 Abstract Schemas and Load
 and Save Specification</a>.
  */
-public interface DOMASWriter extends DOMWriter {
+public interface DOMASWriter extends DOMSerializer {
     /**
      *  Write out the specified Abstract Schema to the specified destination. 
      * Does it write a DTD or an XML Schema (or something else)? Is it 
