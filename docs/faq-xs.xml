@@ -176,6 +176,9 @@
       </source>
     </a>
   </faq>
-
-
+  <faq title="Parsing and analyzing an XML schema">
+    <q>How do I parse and analyze an XML schema?</q>
+    <a> <p>Please, refer to the <link idref='faq-grammars'>Examining Grammars</link> FAQ.</p>
+    </a>
+  </faq>
 </faqs>
