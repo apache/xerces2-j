@@ -6126,9 +6126,8 @@ public class TraverseSchema implements
     private int parseFinalSet (String finalString)  throws Exception
     {
             if( finalString == null) {
-            System.err.println("what's the deal?  " + fFinalDefault);
                 return fFinalDefault;
-                }
+            }
             else if ( finalString.equals (SchemaSymbols.ATTVAL_POUNDALL) ) {
                     return SchemaSymbols.EXTENSION+SchemaSymbols.LIST+SchemaSymbols.RESTRICTION+SchemaSymbols.UNION;
             } else {
