@@ -154,10 +154,21 @@ NamespacesScope.NamespacesHandler {
         }
     };
 
+    private StateMessageDatatype fResetID = new StateMessageDatatype() {
+        public Object getDatatypeObject(){
+            return(Object) null;
+        }
+        public int    getDatatypeState(){
+            return IDDatatypeValidator.ID_CLEAR;
+        }
+        public void setDatatypeObject( Object data ){
+        }
+    };
+
+
     private StateMessageDatatype fResetIDRef = new StateMessageDatatype() {
         public Object getDatatypeObject(){
-            Hashtable t = null;
-            return(Object) t;
+            return(Object) null;
         }
         public int    getDatatypeState(){
             return IDREFDatatypeValidator.IDREF_CLEAR;
@@ -168,8 +179,7 @@ NamespacesScope.NamespacesHandler {
 
     private  StateMessageDatatype fValidateIDRef = new StateMessageDatatype() {
         public Object getDatatypeObject(){
-            Hashtable t = null;
-            return(Object) t;
+            return(Object) null;
         }
         public int    getDatatypeState(){
             return IDREFDatatypeValidator.IDREF_VALIDATE;
@@ -1021,8 +1031,17 @@ NamespacesScope.NamespacesHandler {
 
                 }
             }
+            
+            try {//Reset datatypes state
+               this.fValID.validate( null, this.fResetID );
+               this.fValIDRef.validate(null, this.fResetIDRef );
+               this.fValIDRefs.validate(null, this.fResetIDRef );
+            } catch ( InvalidDatatypeValueException ex ) {
+                System.err.println("Error re-Initializing: ID,IDRef,IDRefs pools" );
+            }
             return;
         }
+
 
         //restore enclosing element to all the "current" variables
         // REVISIT: Validation. This information needs to be stored.
@@ -1409,6 +1428,8 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     /** Reset pool. */
     private void poolReset() {
         try {
+            //System.out.println("We reset" );
+            this.fValID.validate( null, this.fResetID );
             this.fValIDRef.validate(null, this.fResetIDRef );
             this.fValIDRefs.validate(null, this.fResetIDRef );
         } catch ( InvalidDatatypeValueException ex ) {
