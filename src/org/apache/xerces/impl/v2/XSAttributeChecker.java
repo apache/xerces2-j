@@ -1387,8 +1387,8 @@ public class XSAttributeChecker {
                     System.arraycopy(namespaceList, 0, wildcard.fNamespaceList, 0, nsNum);
                 }
 
-                retValue = wildcard;
             }
+            retValue = wildcard;
             break;
         case DT_PROCESSCONTENTS:
             // processContents = (lax | skip | strict)
