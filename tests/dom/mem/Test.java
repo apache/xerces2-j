@@ -398,11 +398,13 @@ public class Test {
         Element     el1  = doc1.createElement("abc");
         doc1.appendChild(el1);
         Assertion.assert(el1.getParentNode() != null);
+        el1.setAttribute("foo", "foovalue");
         Node        el2  = doc2.importNode(el1, true);
         Assertion.assert(el2.getParentNode() == null);
         String       tagName = el2.getNodeName();
         Assertion.equals(tagName, "abc");
         Assertion.assert(el2.getOwnerDocument() == doc2);
+        Assertion.equals(((Element) el2).getAttribute("foo"), "foovalue");
         Assertion.assert(doc1 != doc2);
     }
     
