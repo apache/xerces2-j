@@ -1048,7 +1048,7 @@ Copyright:
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
     <replace file="${build.src}/org/apache/xerces/dom/AttrImpl.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-     <replace file="${build.src}/org/apache/xerces/dom/AttrNSImpl.java"  
+    <replace file="${build.src}/org/apache/xerces/dom/AttrNSImpl.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
     <replace file="${build.src}/org/apache/xerces/dom/DocumentImpl.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
@@ -1079,8 +1079,6 @@ Copyright:
     <replace file="${build.src}/org/apache/xml/serialize/XML11Serializer.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>             
     <replace file="${build.src}/org/w3c/dom/ls/DOMWriter.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-    <replace file="${build.src}/org/w3c/dom/ls/ParseErrorEvent.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
     <replace file="${build.src}/org/w3c/dom/ls/DOMBuilder.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
