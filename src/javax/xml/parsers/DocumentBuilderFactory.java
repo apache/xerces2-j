@@ -196,7 +196,7 @@ public abstract class DocumentBuilderFactory {
      * they are parsed.
      */
     
-    public void setIgnoreElementContentWhitespace(boolean whitespace) {
+    public void setIgnoringElementContentWhitespace(boolean whitespace) {
         this.whitespace = whitespace;
     }
 
@@ -252,7 +252,7 @@ public abstract class DocumentBuilderFactory {
      * content during parse.
      */
     
-    public boolean isIgnoreElementContentWhitespace() {
+    public boolean isIgnoringElementContentWhitespace() {
         return whitespace;
     }
 

@@ -1,4 +1,6 @@
 /*
+ * $Id$
+ *
  * The Apache Software License, Version 1.1
  *
  *
@@ -49,44 +51,74 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 1999-2000, Pierpaolo
- * Fumagalli <mailto:pier@betaversion.org>, http://www.apache.org.
- * For more information on the Apache Software Foundation, please see
- * <http://www.apache.org/>.
+ * originally based on software copyright (c) 1999, Sun Microsystems, Inc., 
+ * http://www.sun.com.  For more information on the Apache Software 
+ * Foundation, please see <http://www.apache.org/>.
  */
+
 
 package org.apache.xerces.jaxp;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.XMLReader;
+
+import java.util.Hashtable;
 
 /**
- * The <code>SAXParserFactory</code> implementation for the Apache Xerces
- * XML parser.
- *
- * @author <a href="mailto:fumagalli@exoffice.com">Pierpaolo Fumagalli</a>
- *         (Apache Software Foundation, Exoffice Technologies)
- * @version $Revision$ $Date$
+ * @author Rajiv Mordani
+ * @author Edwin Goei
+ * @version $Revision$
+ */
+
+/**
+ * This is the implementation specific class for the
+ * <code>javax.xml.parsers.SAXParserFactory</code>. This is the platform
+ * default implementation for the platform.
  */
 public class SAXParserFactoryImpl extends SAXParserFactory {
+    private Hashtable features;
 
     /**
-     * Create a new <code>SAXParserFactoryImpl</code> instance.
+     * Creates a new instance of <code>SAXParser</code> using the currently
+     * configured factory parameters.
+     * @return javax.xml.parsers.SAXParser
      */
-    public SAXParserFactoryImpl() {
-        super();
+    public SAXParser newSAXParser()
+        throws ParserConfigurationException
+    {
+        SAXParser saxParserImpl;
+        try {
+            saxParserImpl = new SAXParserImpl(this, features);
+        } catch (SAXException se) {
+            // Translate to ParserConfigurationException
+            throw new ParserConfigurationException(se.getMessage());
+        }
+	return saxParserImpl;
     }
 
     /**
-     * Returns a new configured instance of type <code>SAXParser</code>.
+     * Common code for translating exceptions
      */
-    public SAXParser newSAXParser()
-    throws ParserConfigurationException {
-        return(new SAXParserImpl(this.isNamespaceAware(),this.isValidating()));
+    private SAXParserImpl newSAXParserImpl()
+        throws ParserConfigurationException, SAXNotRecognizedException, 
+        SAXNotSupportedException
+    {
+        SAXParserImpl saxParserImpl;
+        try {
+            saxParserImpl = new SAXParserImpl(this, features);
+        } catch (SAXNotSupportedException e) {
+            throw e;
+        } catch (SAXNotRecognizedException e) {
+            throw e;
+        } catch (SAXException se) {
+            throw new ParserConfigurationException(se.getMessage());
+        }
+        return saxParserImpl;
     }
 
     /**
@@ -97,7 +129,15 @@ public class SAXParserFactoryImpl extends SAXParserFactory {
         throws ParserConfigurationException, SAXNotRecognizedException, 
 		SAXNotSupportedException
     {
-        throw new SAXNotRecognizedException("Feature: " + name);
+        // XXX This is ugly.  We have to collect the features and then
+        // later create an XMLReader to verify the features.
+        if (features == null) {
+            features = new Hashtable();
+        }
+        features.put(name, new Boolean(value));
+
+        // Test the feature by possibly throwing SAX exceptions
+        newSAXParserImpl();
     }
 
     /**
@@ -108,7 +148,8 @@ public class SAXParserFactoryImpl extends SAXParserFactory {
         throws ParserConfigurationException, SAXNotRecognizedException,
 		SAXNotSupportedException
     {
-        throw new SAXNotRecognizedException("Feature: " + name);
+        // Check for valid name by creating a dummy XMLReader to get
+        // feature value
+        return newSAXParserImpl().getXMLReader().getFeature(name);
     }
-
 }

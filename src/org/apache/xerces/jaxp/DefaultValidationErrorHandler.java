@@ -1,6 +1,4 @@
 /*
- * $Id$
- *
  * The Apache Software License, Version 1.1
  *
  *
@@ -56,50 +54,38 @@
  * Foundation, please see <http://www.apache.org/>.
  */
 
-
 package org.apache.xerces.jaxp;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.ParserConfigurationException;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.helpers.DefaultHandler;
 
-/**
- * @author Rajiv Mordani
- * @version $Revision$
- */
-public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
+class DefaultValidationErrorHandler extends DefaultHandler {
+    static private int ERROR_COUNT_LIMIT = 10;
+    private int errorCount = 0;
 
-    public DocumentBuilderFactoryImpl() {
-   	 
-    }
+    // XXX Fix message i18n
+    public void error(SAXParseException e) throws SAXException {
+        if (errorCount >= ERROR_COUNT_LIMIT) {
+            // Ignore all errors after reaching the limit
+            return;
+        } else if (errorCount == 0) {
+            // Print a warning before the first error
+            System.err.println("Warning: validation was turned on but an org.xml.sax.ErrorHandler was not");
+            System.err.println("set, which is probably not what is desired.  Parser will use a default");
+            System.err.println("ErrorHandler to print the first " +
+                               ERROR_COUNT_LIMIT +               " errors.  Please call");
+            System.err.println("the 'setErrorHandler' method to fix this.");
+        }
 
-    /**
-     * 
-     */
-    public DocumentBuilder newDocumentBuilder()
-        throws ParserConfigurationException 
-    {
-	DocumentBuilderImpl db = new DocumentBuilderImpl(this);
-        return db;
-    }
-
-    /**
-     * Allows the user to set specific attributes on the underlying 
-     * implementation.
-     */
-    public void setAttribute(String name, Object value)
-        throws IllegalArgumentException
-    {
-        throw new IllegalArgumentException("No attributes are implemented");
-    }
-
-    /**
-     * Allows the user to retrieve specific attributes on the underlying 
-     * implementation.
-     */
-    public Object getAttribute(String name)
-        throws IllegalArgumentException
-    {
-        throw new IllegalArgumentException("No attributes are implemented");
+        String systemId = e.getSystemId();
+        if (systemId == null) {
+            systemId = "null";
+        }
+        String message = "Error: URI=" + systemId +
+            " Line=" + e.getLineNumber() +
+            ": " + e.getMessage();
+        System.err.println(message);
+        errorCount++;
     }
 }
