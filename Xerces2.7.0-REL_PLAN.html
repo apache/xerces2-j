@@ -1,0 +1,248 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0057)http://www.apache.org/~mrglavas/Xerces2.7.0-REL_PLAN.html -->
+<!-- saved from url=(0056)http://www.apache.org/~mrglavas/Xerces2.7.0-REL_PLAN.htm --><HTML><HEAD><TITLE>Xerces 2.7.0 plan</TITLE>
+<META http-equiv=Content-Type content="text/html; charset=iso-8859-1">
+<STYLE type=text/css>BODY {
+	MARGIN: 2em 1em 2em 70px; COLOR: black; FONT-FAMILY: New Times Roman, serif; BACKGROUND-COLOR: white
+}
+</STYLE>
+
+<META content="MSHTML 6.00.2800.1226" name=GENERATOR></HEAD>
+<BODY>
+<H1>Xerces 2.7.0 Plan</H1>
+<P><B>Features:</B> 
+<UL>
+  <LI>SAX2 Extensions 1.1, SAX 2.0.2 + bug fixes 
+  <LI>DOM Level 3 Core and Load/Save 
+  <LI>JAXP 1.3 support 
+  <LI>XInclude 1.0 
+  <LI>Other misc. features and improvements (time permitting)</LI></UL>
+<P><B>Target DCUT (code complete) date: Monday May 10, 2004. </B>
+<P><B>Target release date: Friday May 14, 2004. </B>
+<H3>Development line items </H3>
+<TABLE border=2>
+  <TBODY>
+  <TR>
+    <TH style="TEXT-ALIGN: left">Line item </TH>
+    <TH style="TEXT-ALIGN: left">Volunteer </TH>
+    <TH style="TEXT-ALIGN: left">Sizing </TH>
+    <TH style="TEXT-ALIGN: left">Timeframe </TH>
+    <TH style="TEXT-ALIGN: left">Status </TH></TR>
+  <TR>
+    <TD><B>SAX 2.0.1</B></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD></TR>
+  <TR>
+    <TD>Report skipped entities</TD>
+    <TD>Michael Glavassevich</TD>
+    <TD>1 pd</TD>
+    <TD>February 27</TD>
+    <TD>Complete</TD></TR>
+  <TR>
+    <TD>Feature: lexical-handler/parameter-entities</TD>
+    <TD>Michael Glavassevich</TD>
+    <TD>0.2 pd</TD>
+    <TD>March 19</TD>
+    <TD>Complete</TD>
+  <TR>
+    <TD><B>SAX2 Extensions 1.1 + SAX 2.0.2</B></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD></TR>
+  <TR>
+    <TD>Attributes2, Locator2</TD>
+    <TD>Michael Glavassevich</TD>
+    <TD>1 pd</TD>
+    <TD>March/April 2004</TD>
+    <TD>Started</TD></TR>
+  <TR>
+    <TD>EntityResolver2</TD>
+    <TD>Michael Glavassevich</TD>
+    <TD>1 pw</TD>
+    <TD>March/April 2004</TD>
+    <TD>Started</TD></TR>
+  <TR>
+    <TD>Feature Support</TD>
+    <TD>Michael Glavassevich</TD>
+    <TD>1 pd</TD>
+    <TD>April 2004</TD>
+    <TD>Open</TD></TR>
+  <TR>
+    <TD><B>DOM Level 3 </B></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD></TR>
+  <TR>
+    <TD>TypeInfo.isDerivedFrom</TD>
+    <TD>Naela Nissar</TD>
+    <TD>3 pd</TD>
+    <TD>March 2004</TD>
+    <TD>Open</TD></TR>
+  <TR>
+    <TD>Reimplement Text.replaceWholeText</TD>
+    <TD>Neil Delima</TD>
+    <TD>2 pd</TD>
+    <TD>March 2004</TD>
+    <TD>Open</TD></TR>
+  <TR>
+    <TD>Core and L/S: namespace-declarations [false]</TD>
+    <TD>Neil Delima</TD>
+    <TD></TD>
+    <TD></TD>
+    <TD>Open</TD></TR>
+  <TR>
+    <TD>Core and L/S REC changes</TD>
+    <TD>Neil Delima, Naela Nissar</TD>
+    <TD>3 pw</TD>
+    <TD>March/April 2004</TD>
+    <TD>Started</TD></TR>
+  <TR>
+    <TD>Replace org.apache.xerces.dom3 with org.w3c.dom</TD>
+    <TD>Neil Delima</TD>
+    <TD>2 pd</TD>
+    <TD>April 2004</TD>
+    <TD>Open</TD></TR>
+  <TR>
+    <TD>General bug fixes</TD>
+    <TD>Neil Delima, Naela Nissar</TD>
+    <TD>3 pw</TD>
+    <TD>March/April 2004</TD>
+    <TD>Started</TD></TR>
+  <TR>
+    <TD><B>JAXP 1.3 </B></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD></TR>
+  <TR>
+    <TD>Validation API </TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD></TR>
+  <TR>
+    <TD>DocumentBuilder, SAXParser changes</TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD></TR>
+  <TR>
+    <TD><B>XInclude 1.0 </B></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD></TR>
+  <TR>
+    <TD>XInclude 1.0 CR changes</TD>
+    <TD>Michael Glavassevich</TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD></TR>
+  <TR>
+    <TD>Content Negotiation (parse=xml) </TD>
+    <TD>K. Venugopal</TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD></TR>
+  <TR>
+    <TD>XPointer Support (Dean Chalker) </TD>
+    <TD>Michael Glavassevich</TD>
+    <TD>2.5 pw</TD>
+    <TD></TD>
+    <TD></TD></TR>
+  <TR>
+    <TD><B>Miscellaneous </B></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD></TR>
+  <TR>
+    <TD>Apache License, Version 2.0</TD>
+    <TD>Michael Glavassevich</TD>
+    <TD>1.5 pd</TD>
+    <TD>February 24-25</TD>
+    <TD>Complete</TD></TR>
+  <TR>
+    <TD>NOTICE file</TD>
+    <TD>All</TD>
+    <TD>N/A</TD>
+    <TD>March 2004</TD>
+    <TD>Started</TD></TR>
+  <TR>
+    <TD>JAXP, SAX and DOM work for xml-commons </TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD></TR>
+  <TR>
+    <TD>Build DOM Level 3 with standard distribution</TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD></TR>
+  <TR>
+    <TD>Update SAX and DOM samples </TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD></TR>
+  <TR>
+    <TD>Documentation: JAXP 1.3 </TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD></TR>
+  <TR>
+    <TD>Documentation: SAX2 Extensions 1.1 + SAX 2.0.2</TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD></TR>
+  <TR>
+    <TD>Documentation: DOM Level 3 REC </TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD></TR>
+  <TR>
+    <TD>Documentation: XInclude 1.0 CR </TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD></TD></TR>
+  <TR>
+    <TD><B>DCUT </B></TD>
+    <TD></TD>
+    <TD></TD>
+    <TD>May 10 </TD>
+    <TD></TD></TR>
+  <TR>
+    <TD><B>Review and fix severe defects reported in Bugzilla/Jira </B></TD>
+    <TD>All</TD>
+    <TD>1 pw</TD>
+    <TD>Week of May 10 </TD>
+    <TD></TD></TR>
+  <TR>
+    <TD><B>Build and publish Xerces 2.7.0</B> </TD>
+    <TD></TD>
+    <TD></TD>
+    <TD>May 14 </TD>
+    <TD></TD></TR></TBODY></TABLE>
+<H3>Candidate features and cleanup items (if time permits) </H3>
+<UL>
+  <LI>XMLCatalogResolver to implement EntityResolver2 and LSResourceResolver 
+  <LI>XML 1.0 Second Edition Errata: E14 
+  <LI>Java Object Serialization of PSVI DOM and XSModel 
+  <LI>JAXP 1.3 Samples 
+  <LI>Parser configurations analogous to DTDCofiguration, 
+  NonValidatingConguration that support XML 1.1 
+  <LI>Support loading of XML 1.1 DTDs with XMLGrammarPreparser 
+  <LI>Performance: using ArrayList and HashMap where synchronization is not 
+  needed 
+  <LI>Performance: reducing cost of handling non-normalized attribute values 
+  <LI>Performance: improve scaling of SymbolTable 
+  <LI>... </LI></UL></BODY></HTML>
