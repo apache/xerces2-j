@@ -310,18 +310,12 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         }
 
         // get 'block', 'final', 'nillable', 'abstract'
-        if (blockAtt == null) {
-            element.fBlock = (short)(schemaDoc.fBlockDefault&(XSConstants.DERIVATION_EXTENSION | XSConstants.DERIVATION_RESTRICTION | XSConstants.DERIVATION_SUBSTITUTION));
-        }
-        else {
-            element.fBlock = blockAtt.shortValue();
-        }
-        if (finalAtt == null) {
-            element.fFinal = (short)(schemaDoc.fFinalDefault&(XSConstants.DERIVATION_EXTENSION | XSConstants.DERIVATION_RESTRICTION));
-        }
-        else {
-            element.fFinal = finalAtt.shortValue();
-        }
+        element.fBlock = blockAtt == null ? schemaDoc.fBlockDefault : blockAtt.shortValue();
+        element.fFinal = finalAtt == null ? schemaDoc.fFinalDefault : finalAtt.shortValue();
+        // discard valid Block/Final 'Default' values that are invalid for Block/Final
+        element.fBlock &= (XSConstants.DERIVATION_EXTENSION | XSConstants.DERIVATION_RESTRICTION | XSConstants.DERIVATION_SUBSTITUTION);
+        element.fFinal &= (XSConstants.DERIVATION_EXTENSION | XSConstants.DERIVATION_RESTRICTION);
+
         if (nillableAtt.booleanValue())
             element.setIsNillable();
         if (abstractAtt != null && abstractAtt.booleanValue())
