@@ -92,10 +92,10 @@ public class XSAttributeDecl {
     // methods to get/set misc flag
 
     public short getConstraintType() {
-        return (short)(fMiscFlags & CONSTRAINT_MASK);
+        return(short)(fMiscFlags & CONSTRAINT_MASK);
     }
     public boolean isGlobal() {
-        return ((fMiscFlags & GLOBAL) != 0);
+        return((fMiscFlags & GLOBAL) != 0);
     }
 
     public void setConstraintType(short constraintType) {
@@ -106,6 +106,14 @@ public class XSAttributeDecl {
     }
     public void setIsGlobal() {
         fMiscFlags |= GLOBAL;
+    }
+
+    public void reset(){
+        fName = null;
+        fTargetNamespace = null;
+        fType = null;
+        fMiscFlags = 0;
+        fDefault = null;
     }
 
 } // class XSAttributeDecl

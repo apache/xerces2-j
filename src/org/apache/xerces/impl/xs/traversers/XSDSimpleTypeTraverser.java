@@ -65,6 +65,7 @@ import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSTypeDecl;
+import org.apache.xerces.impl.dv.xs.SchemaDVFactoryImpl;
 
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.impl.xs.util.XInt;
@@ -127,6 +128,9 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
     XSDSimpleTypeTraverser (XSDHandler handler,
                             XSAttributeChecker gAttrCheck) {
         super(handler, gAttrCheck);
+        if (schemaFactory instanceof SchemaDVFactoryImpl) {
+            ((SchemaDVFactoryImpl)schemaFactory).setDeclPool(handler.fDeclPool);
+        }
     }
 
     //return qualified name of simpleType or empty string if error occured

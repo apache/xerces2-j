@@ -103,6 +103,8 @@ public abstract class CharacterDataImpl
     // Constructors
     //
 
+    public CharacterDataImpl(){}
+
     /** Factory constructor. */
     protected CharacterDataImpl(CoreDocumentImpl ownerDocument, String data) {
         super(ownerDocument);

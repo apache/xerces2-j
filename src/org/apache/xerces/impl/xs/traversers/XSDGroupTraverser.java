@@ -128,7 +128,11 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
             else if (!( minOccurs == 1 && maxOccurs == 1)) {
                 // if minOccurs==maxOccurs==1 we don't need to create new particle
                 // create new particle in the grammar if minOccurs<maxOccurs
-                particle = new XSParticleDecl();
+                if (fSchemaHandler.fDeclPool !=null) {
+                    particle = fSchemaHandler.fDeclPool.getParticleDecl();
+                } else {        
+                    particle = new XSParticleDecl();
+                }
                 particle.fType = group.fParticle.fType;
                 particle.fValue = group.fParticle;
                 particle.fMinOccurs = minOccurs;

@@ -59,6 +59,7 @@ package org.apache.xerces.parsers;
 
 import org.apache.xerces.dom.AttrImpl;
 import org.apache.xerces.dom.DeferredDocumentImpl;
+import org.apache.xerces.dom.CoreDocumentImpl;
 import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.dom.DocumentTypeImpl;
 import org.apache.xerces.dom.ElementDefinitionImpl;
@@ -160,6 +161,8 @@ public abstract class AbstractDOMParser
     protected static final String DEFAULT_DOCUMENT_CLASS_NAME =
         "org.apache.xerces.dom.DocumentImpl";
 
+    protected static final String CORE_DOCUMENT_CLASS_NAME =
+        "org.apache.xerces.dom.CoreDocumentImpl";
 
     // debugging
 
@@ -195,7 +198,7 @@ public abstract class AbstractDOMParser
     protected Document fDocument;
 
     /** The default Xerces document implementation, if used. */
-    protected DocumentImpl fDocumentImpl;
+    protected CoreDocumentImpl fDocumentImpl;
 
     /** The document class name to use. */
     protected String  fDocumentClassName;
@@ -609,7 +612,7 @@ public abstract class AbstractDOMParser
         if (!fDeferNodeExpansion) {
             if (fDocumentClassName.equals(DEFAULT_DOCUMENT_CLASS_NAME)) {
                 fDocument = new DocumentImpl();
-                fDocumentImpl = (DocumentImpl)fDocument;
+                fDocumentImpl = (CoreDocumentImpl)fDocument;
                 // REVISIT: when DOM Level 3 is REC rely on Document.support
                 //          instead of specific class
                 // set DOM error checking off
@@ -622,11 +625,12 @@ public abstract class AbstractDOMParser
                 try {
                     Class documentClass = Class.forName(fDocumentClassName);
                     fDocument = (Document)documentClass.newInstance();
+
                     // if subclass of our own class that's cool too
                     Class defaultDocClass =
-                        Class.forName(DEFAULT_DOCUMENT_CLASS_NAME);
+                        Class.forName(CORE_DOCUMENT_CLASS_NAME);
                     if (defaultDocClass.isAssignableFrom(documentClass)) {
-                        fDocumentImpl = (DocumentImpl)fDocument;
+                        fDocumentImpl = (CoreDocumentImpl)fDocument;
                         // REVISIT: when DOM Level 3 is REC rely on
                         //          Document.support instead of specific class
                         // set DOM error checking off

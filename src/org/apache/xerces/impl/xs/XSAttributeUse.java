@@ -77,4 +77,11 @@ public class XSAttributeUse {
     // value constraint value
     public ValidatedInfo fDefault = null;
 
+    public void reset(){
+        fDefault = null;
+        fAttrDecl = null;
+        fUse =  SchemaSymbols.USE_OPTIONAL;
+        fConstraintType = XSAttributeDecl.NO_CONSTRAINT;
+    }
+
 } // class XSAttributeUse

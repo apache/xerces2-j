@@ -77,6 +77,10 @@ public class ElementNSImpl extends org.apache.xerces.dom.ElementNSImpl {
     
     protected int columnNum;
     
+    public ElementNSImpl(){
+        super();
+    }
+
     /**
      * DOM2: Constructor for line/column information.
      */
@@ -90,6 +94,16 @@ public class ElementNSImpl extends org.apache.xerces.dom.ElementNSImpl {
         this.lineNum = lineNum;
         this.columnNum = columnNum;
     }
+
+    protected void setValues(CoreDocumentImpl ownerDocument, 
+                            String namespaceURI, String qualifiedName,
+                            String localpart, int lineNum, int columnNum){
+        super.setValues(ownerDocument, namespaceURI, qualifiedName, localpart);
+        this.lineNum = lineNum;
+        this.columnNum = columnNum;
+
+    }
+
 
     /** Returns the line number. */
     public int getLineNumber() {

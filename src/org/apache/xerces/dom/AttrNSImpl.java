@@ -91,7 +91,13 @@ public class AttrNSImpl
   
     /** DOM2: localName. */
     protected String localName;
-    /**
+
+    /*
+     * Default constructor
+     */
+    public AttrNSImpl(){}
+        
+   /**
      * DOM2: Constructor for Namespace implementation.
      */
     protected AttrNSImpl(CoreDocumentImpl ownerDocument, 
@@ -144,7 +150,7 @@ public class AttrNSImpl
     } 
 
     // when local name is known
-    protected AttrNSImpl(CoreDocumentImpl ownerDocument, 
+    public AttrNSImpl(CoreDocumentImpl ownerDocument, 
                          String namespaceURI, 
                          String qualifiedName,
                          String localName) {
@@ -158,6 +164,30 @@ public class AttrNSImpl
     protected AttrNSImpl(CoreDocumentImpl ownerDocument, 
                          String value) {
         super(ownerDocument, value);
+    }
+
+    /**
+     * NON-DOM: resets this node and sets specified values for the node
+     * 
+     * @param ownerDocument
+     * @param namespaceURI
+     * @param qualifiedName
+     * @param localName
+     */
+    public void setValues (CoreDocumentImpl ownerDocument, 
+                         String namespaceURI, 
+                         String qualifiedName,
+                         String localName){
+
+        super.textNode = null;
+        super.flags = 0;
+        isSpecified(true);
+        hasStringValue(true);
+        super.setOwnerDocument(ownerDocument);
+        this.localName = localName;
+        this.namespaceURI = namespaceURI;
+        super.name = qualifiedName;
+        super.value = null;
     }
 
     //

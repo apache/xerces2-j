@@ -280,6 +280,7 @@ public class XMLSchemaValidator
 
     /** Symbol table. */
     protected SymbolTable fSymbolTable;
+    protected final XSDeclarationPool fDeclPool = new XSDeclarationPool();
 
     /**
      * A wrapper of the standard error reporter. We'll store all schema errors
@@ -1212,6 +1213,16 @@ public class XMLSchemaValidator
                              fEntityResolver, fSymbolTable,
                              fExternalSchemas, fExternalNoNamespaceSchema,
                              fGrammarPool);
+        
+        // register declaration pool
+        fDeclPool.reset();
+        if (fGrammarPool == null) {
+            fCMBuilder.setDeclPool(fDeclPool);
+            fSchemaHandler.setDeclPool(fDeclPool);
+        } else {
+            fCMBuilder.setDeclPool(null);
+            fSchemaHandler.setDeclPool(null);
+        } 
 
         //reset XSDDescripton
         fXSDDescription.reset() ;
@@ -2446,7 +2457,7 @@ public class XMLSchemaValidator
         }
 
         XSAttributeUse attrUses[] = attrGrp.getAttributeUses();
-        int useCount = attrUses.length;
+        int useCount = (attrUses!=null)? attrUses.length:0;
         XSWildcardDecl attrWildcard = attrGrp.fAttributeWC;
 
         // whether we have seen a Wildcard ID.
@@ -2485,6 +2496,7 @@ public class XMLSchemaValidator
             // it's not xmlns, and not xsi, then we need to find a decl for it
             XSAttributeUse currUse = null;
             for (int i = 0; i < useCount; i++) {
+
                 if (attrUses[i].fAttrDecl.fName == fTempQName.localpart &&
                     attrUses[i].fAttrDecl.fTargetNamespace == fTempQName.uri) {
                     currUse = attrUses[i];
@@ -2664,7 +2676,7 @@ public class XMLSchemaValidator
             System.out.println("addDefaultAttributes: " + element);
         }
         XSAttributeUse attrUses[] = attrGrp.getAttributeUses();
-        int useCount = attrUses.length;
+        int useCount = (attrUses!=null)? attrUses.length:0;
         XSAttributeUse currUse;
         XSAttributeDecl currDecl;
         short constType;

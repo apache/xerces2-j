@@ -60,6 +60,7 @@ package org.apache.xerces.impl.xs.traversers;
 import org.apache.xerces.impl.xs.XSGrammarBucket;
 import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.XSElementDecl;
+import org.apache.xerces.impl.xs.XSDeclarationPool;
 import org.apache.xerces.impl.xs.SchemaNamespaceSupport;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
@@ -87,6 +88,7 @@ import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.xni.XMLLocator;
 
 import org.apache.xerces.impl.xs.dom.DOMParser;
+import org.apache.xerces.impl.xs.dom.DOMNodePool;
 import org.apache.xerces.impl.xs.dom.ElementNSImpl;
 import org.apache.xerces.impl.xs.util.SimpleLocator;
 import org.w3c.dom.Document;
@@ -129,6 +131,8 @@ public class XSDHandler {
     protected static final String JAXP_SCHEMA_SOURCE =
         Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE;
 
+    protected static final boolean DEBUG_NODE_POOL = false;
+                              
     // data
 
     // different sorts of declarations; should make lookup and
@@ -156,6 +160,8 @@ public class XSDHandler {
     //protected data that can be accessable by any traverser
     // stores <notation> decl
     protected Hashtable fNotationRegistry = new Hashtable();
+
+    protected XSDeclarationPool fDeclPool = null;
 
     // These tables correspond to the symbol spaces defined in the
     // spec.
@@ -316,6 +322,7 @@ public class XSDHandler {
     XSDWildcardTraverser fWildCardTraverser;
 
     DOMParser fSchemaParser;
+    final DOMNodePool fDOMPool = new DOMNodePool();
 
     // these data members are needed for the deferred traversal
     // of local elements.
@@ -371,6 +378,8 @@ public class XSDHandler {
     // this object (i.e., clean the registries, etc.).
     public SchemaGrammar parseSchema(XSDDescription desc) {
         XMLInputSource schemaSource=null;
+        fDOMPool.reset();
+        fSchemaParser.setPool(fDOMPool);
         try {
             schemaSource = fLocationResolver.resolveEntity(desc);
         }
@@ -933,6 +942,9 @@ public class XSDHandler {
                                    QName declToTraverse,
                                    Element elmNode) {
 
+        if (DEBUG_NODE_POOL) {
+            System.out.println("TRAVERSE_GL: "+declToTraverse.toString());
+        }
         // from the schema spec, all built-in types are present in all schemas,
         // so if the requested component is a type, and could be found in the
         // default schema grammar, we should return that type.
@@ -1362,7 +1374,9 @@ public class XSDHandler {
         fRedefinedRestrictedAttributeGroupRegistry.clear();
         fRedefinedRestrictedGroupRegistry.clear();
     }
-    
+    public void setDeclPool (XSDeclarationPool declPool){
+        fDeclPool = declPool;
+    }
     // this method reset properties that might change between parses.
     // and process the jaxp schemaSource property
     public void reset(XMLErrorReporter errorReporter,
@@ -1728,6 +1742,10 @@ public class XSDHandler {
     // @param:  decl:  the declaration being ref'd.
     private XSDocumentInfo findXSDocumentForDecl(XSDocumentInfo currSchema,
                                                  Element decl) {
+
+        if (DEBUG_NODE_POOL) {
+            System.out.println("DOCUMENT NS:"+ currSchema.fTargetNamespace+" hashcode:"+ ((Object)currSchema.fSchemaDoc).hashCode());
+        }
         Document declDoc = DOMUtil.getDocument(decl);
         Object temp = fDoc2XSDocumentMap.get(declDoc);
         if (temp == null) {

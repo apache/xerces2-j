@@ -63,6 +63,8 @@ import org.apache.xerces.impl.dv.XSAtomicSimpleType;
 import org.apache.xerces.impl.dv.XSListSimpleType;
 import org.apache.xerces.impl.dv.XSUnionSimpleType;
 import org.apache.xerces.impl.dv.XSFacets;
+
+import org.apache.xerces.impl.xs.XSDeclarationPool;
 import java.util.Hashtable;
 
 /**
@@ -78,6 +80,8 @@ public class SchemaDVFactoryImpl extends SchemaDVFactory {
     static final String URI_SCHEMAFORSCHEMA = "http://www.w3.org/2001/XMLSchema";
 
     static Hashtable fBuiltInTypes = null;
+
+    protected XSDeclarationPool fDeclPool = null;
 
     /**
      * Get a built-in simple type of the given name
@@ -118,6 +122,11 @@ public class SchemaDVFactoryImpl extends SchemaDVFactory {
      */
     public XSSimpleType createTypeRestriction(String name, String targetNamespace,
                                               short finalSet, XSSimpleType base) {
+        
+        if (fDeclPool != null) {
+           XSSimpleTypeDecl st= fDeclPool.getSimpleTypeDecl();
+           return st.setRestrictionValues((XSSimpleTypeDecl)base, name, targetNamespace, finalSet);
+        }
         return new XSSimpleTypeDecl((XSSimpleTypeDecl)base, name, targetNamespace, finalSet);
     }
 
@@ -134,6 +143,11 @@ public class SchemaDVFactoryImpl extends SchemaDVFactory {
     public XSListSimpleType createTypeList(String name, String targetNamespace,
                                            short finalSet, XSSimpleType itemType) {
         prepareBuiltInTypes();
+
+        if (fDeclPool != null) {
+           XSSimpleTypeDecl st= fDeclPool.getSimpleTypeDecl();
+           return st.setListValues(name, targetNamespace, finalSet, (XSSimpleTypeDecl)itemType);
+        }
         return new XSSimpleTypeDecl(name, targetNamespace, finalSet, (XSSimpleTypeDecl)itemType);
     }
 
@@ -153,6 +167,11 @@ public class SchemaDVFactoryImpl extends SchemaDVFactory {
         int typeNum = memberTypes.length;
         XSSimpleTypeDecl[] mtypes = new XSSimpleTypeDecl[typeNum];
         System.arraycopy(memberTypes, 0, mtypes, 0, typeNum);
+
+        if (fDeclPool != null) {
+           XSSimpleTypeDecl st= fDeclPool.getSimpleTypeDecl();
+           return st.setUnionValues(name, targetNamespace, finalSet, mtypes);
+        }
         return new XSSimpleTypeDecl(name, targetNamespace, finalSet, mtypes);
     }
 
@@ -381,5 +400,9 @@ public class SchemaDVFactoryImpl extends SchemaDVFactory {
 
         fBuiltInTypes = types;
     }//createBuiltInTypes()
+
+    public void setDeclPool (XSDeclarationPool declPool){
+        fDeclPool = declPool;
+    }
 
 }//SchemaDVFactory

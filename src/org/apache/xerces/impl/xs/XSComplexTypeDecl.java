@@ -142,13 +142,13 @@ public class XSComplexTypeDecl implements XSTypeDecl {
     // methods to get/set misc flag
 
     public boolean isAbstractType() {
-        return ((fMiscFlags & CT_IS_ABSTRACT) != 0);
+        return((fMiscFlags & CT_IS_ABSTRACT) != 0);
     }
     public boolean containsTypeID () {
-        return ((fMiscFlags & CT_HAS_TYPE_ID) != 0);
+        return((fMiscFlags & CT_HAS_TYPE_ID) != 0);
     }
     public boolean isAnonymous() {
-        return ((fMiscFlags & CT_IS_ANONYMOUS) != 0);
+        return((fMiscFlags & CT_IS_ANONYMOUS) != 0);
     }
 
     public void setIsAbstractType() {
@@ -182,7 +182,7 @@ public class XSComplexTypeDecl implements XSTypeDecl {
 
         str.append("Complex type name='" + fTargetNamespace + "," + getTypeName() + "', ");
         if (fBaseType != null)
-          str.append(" base type name='" + fBaseType.getTypeName() + "', ");
+            str.append(" base type name='" + fBaseType.getTypeName() + "', ");
 
         str.append(" content type='" + contentType[fContentType] + "', ");
         str.append(" isAbstract='" + isAbstractType() + "', ");
@@ -190,7 +190,7 @@ public class XSComplexTypeDecl implements XSTypeDecl {
         str.append(" final='" + fFinal + "', ");
         str.append(" block='" + fBlock + "', ");
         if (fParticle != null)
-          str.append(" particle='" + fParticle.toString() + "', ");
+            str.append(" particle='" + fParticle.toString() + "', ");
         str.append(" derivedBy='" + derivedBy[fDerivedBy] + "'. ");
 
     }
@@ -212,7 +212,7 @@ public class XSComplexTypeDecl implements XSTypeDecl {
 
         return type == ancestor;
     }
-    
+
     public boolean derivedFrom(String ancestorNS, String ancestorName) {
         // ancestor is null, retur false
         if (ancestorName == null)
@@ -235,7 +235,25 @@ public class XSComplexTypeDecl implements XSTypeDecl {
         }
 
         return type != SchemaGrammar.fAnySimpleType &&
-               type != SchemaGrammar.fAnyType;
+        type != SchemaGrammar.fAnyType;
+    }
+
+    public void reset(){
+        fName = null;
+        fTargetNamespace = null;
+        fBaseType = null;
+        fDerivedBy = SchemaSymbols.RESTRICTION;
+        fFinal = SchemaSymbols.EMPTY_SET;
+        fBlock = SchemaSymbols.EMPTY_SET;
+
+        fMiscFlags = 0;
+
+        // reset attribute group
+        fAttrGrp.reset();
+        fContentType = CONTENTTYPE_EMPTY;
+        fXSSimpleType = null;
+        fParticle = null;
+        fCMValidator = null;
     }
 
 } // class XSComplexTypeDecl

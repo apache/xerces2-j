@@ -131,7 +131,11 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
                 right = particle;
             }
             else {
-                temp = new XSParticleDecl();
+                if (fSchemaHandler.fDeclPool !=null) {
+                    temp = fSchemaHandler.fDeclPool.getParticleDecl();
+                } else {        
+                    temp = new XSParticleDecl();
+                }
                 temp.fType = XSParticleDecl.PARTICLE_ALL;
                 temp.fValue = left;
                 temp.fOtherValue = right;
@@ -141,7 +145,11 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
         }
 
         if (left != null) {
-            temp = new XSParticleDecl();
+            if (fSchemaHandler.fDeclPool !=null) {
+                temp = fSchemaHandler.fDeclPool.getParticleDecl();
+            } else {        
+                temp = new XSParticleDecl();
+            }
             temp.fType = XSParticleDecl.PARTICLE_ALL;
             temp.fValue = left;
             temp.fOtherValue = right;
@@ -303,7 +311,11 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
                 right = particle;
             }
             else {
-                temp = new XSParticleDecl();
+                if (fSchemaHandler.fDeclPool !=null) {
+                    temp = fSchemaHandler.fDeclPool.getParticleDecl();
+                } else {        
+                    temp = new XSParticleDecl();
+                }
                 if (choice)
                     temp.fType = XSParticleDecl.PARTICLE_CHOICE;
                 else
@@ -320,7 +332,11 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
         // For now we return null. In the future we might want to return model group decl.
 
         if (left != null) {
-            temp = new XSParticleDecl();
+            if (fSchemaHandler.fDeclPool !=null) {
+                temp = fSchemaHandler.fDeclPool.getParticleDecl();
+            } else {        
+                temp = new XSParticleDecl();
+            }
             if (choice)
                 temp.fType = XSParticleDecl.PARTICLE_CHOICE;
             else

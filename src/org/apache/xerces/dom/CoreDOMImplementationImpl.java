@@ -97,8 +97,17 @@ implements DOMImplementation, DOMImplementationLS {
     // static
 
     /** Dom implementation singleton. */
-    static CoreDOMImplementationImpl singleton =
-    new CoreDOMImplementationImpl();
+    static CoreDOMImplementationImpl singleton = new CoreDOMImplementationImpl();
+
+
+    //
+    // Public methods
+    //
+
+    /** NON-DOM: Obtain and return the single shared object */
+    public static DOMImplementation getDOMImplementation() {
+        return singleton;
+    }  
 
     //
     // DOMImplementation methods
@@ -139,14 +148,6 @@ implements DOMImplementation, DOMImplementationLS {
 
     } // hasFeature(String,String):boolean
 
-    //
-    // Public methods
-    //
-
-    /** NON-DOM: Obtain and return the single shared object */
-    public static DOMImplementation getDOMImplementation() {
-        return singleton;
-    }  
 
     /**
      * Introduced in DOM Level 2. <p>

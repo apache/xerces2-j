@@ -77,7 +77,7 @@ import org.w3c.dom.Element;
  * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */
-public class DOMImplementationImpl  
+public class DOMImplementationImpl extends CoreDOMImplementationImpl 
     implements DOMImplementation {
 
     //
@@ -88,6 +88,16 @@ public class DOMImplementationImpl
 
     /** Dom implementation singleton. */
     static DOMImplementationImpl singleton = new DOMImplementationImpl();
+
+
+    //
+    // Public methods
+    //
+
+    /** NON-DOM: Obtain and return the single shared object */
+    public static DOMImplementation getDOMImplementation() {
+        return singleton;
+    }  
 
     //
     // DOMImplementation methods
@@ -137,14 +147,6 @@ public class DOMImplementationImpl
 
     } // hasFeature(String,String):boolean
 
-    //
-    // Public methods
-    //
-
-    /** NON-DOM: Obtain and return the single shared object */
-    public static DOMImplementation getDOMImplementation() {
-        return singleton;
-    }  
     
     /**
      * Introduced in DOM Level 2. <p>

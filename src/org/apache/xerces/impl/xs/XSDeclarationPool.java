@@ -57,6 +57,8 @@
 
 package org.apache.xerces.impl.xs;
 
+import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
+
 /**
  * This class is pool that enables caching of XML Schema declaration objects.
  * Before a compiled grammar object is garbage collected,
@@ -68,34 +70,254 @@ package org.apache.xerces.impl.xs;
  * @version $Id$
  */
 public final class XSDeclarationPool {
+    /** Chunk shift (8). */
+    private static final int CHUNK_SHIFT = 8; // 2^8 = 256
+
+    /** Chunk size (1 << CHUNK_SHIFT). */
+    private static final int CHUNK_SIZE = 1 << CHUNK_SHIFT;
+
+    /** Chunk mask (CHUNK_SIZE - 1). */
+    private static final int CHUNK_MASK = CHUNK_SIZE - 1;
+
+    /** Initial chunk count (). */
+    private static final int INITIAL_CHUNK_COUNT = (1 << (10 - CHUNK_SHIFT)); // 2^10 = 1k
+
+    /** Element declaration pool*/
+    private XSElementDecl fElementDecl[][] = new XSElementDecl[INITIAL_CHUNK_COUNT][];
+    private int fElementDeclIndex = 0;
+
+    /** Particle declaration pool */
+    private XSParticleDecl fParticleDecl[][] = new XSParticleDecl[INITIAL_CHUNK_COUNT][];
+    private int fParticleDeclIndex = 0;
+
+    /** Attribute declaration pool */
+    private XSAttributeDecl fAttrDecl[][] = new XSAttributeDecl[INITIAL_CHUNK_COUNT][];
+    private int fAttrDeclIndex = 0;
+
+    /** ComplexType declaration pool */
+    private XSComplexTypeDecl fCTDecl[][] = new XSComplexTypeDecl[INITIAL_CHUNK_COUNT][];
+    private int fCTDeclIndex = 0;
+
+    /** SimpleType declaration pool */
+    private XSSimpleTypeDecl fSTDecl[][] = new XSSimpleTypeDecl[INITIAL_CHUNK_COUNT][];
+    private int fSTDeclIndex = 0;
+
+    /** AttributeUse declaration pool */
+    private XSAttributeUse fAttributeUse[][] = new XSAttributeUse[INITIAL_CHUNK_COUNT][];
+    private int fAttributeUseIndex = 0;
 
     public final  XSElementDecl getElementDecl(){
-        return new XSElementDecl();
-
+        int     chunk       = fElementDeclIndex >> CHUNK_SHIFT;
+        int     index       = fElementDeclIndex &  CHUNK_MASK;
+        ensureElementDeclCapacity(chunk);
+        if (fElementDecl[chunk][index] == null) {
+            fElementDecl[chunk][index] = new XSElementDecl();
+        } else {
+            fElementDecl[chunk][index].reset();
+        }
+        fElementDeclIndex++;
+        return fElementDecl[chunk][index];
     }
 
     public final XSAttributeDecl getAttributeDecl(){
-        return new XSAttributeDecl();
+        int     chunk       = fAttrDeclIndex >> CHUNK_SHIFT;
+        int     index       = fAttrDeclIndex &  CHUNK_MASK;
+        ensureAttrDeclCapacity(chunk);
+        if (fAttrDecl[chunk][index] == null) {
+            fAttrDecl[chunk][index] = new XSAttributeDecl();
+        } else {
+            fAttrDecl[chunk][index].reset();
+        }
+        fAttrDeclIndex++;
+        return fAttrDecl[chunk][index];
 
     }
 
     public final XSAttributeUse getAttributeUse(){
-        return new XSAttributeUse();
+        int     chunk       = fAttributeUseIndex >> CHUNK_SHIFT;
+        int     index       = fAttributeUseIndex &  CHUNK_MASK;
+        ensureAttributeUseCapacity(chunk);
+        if (fAttributeUse[chunk][index] == null) {
+            fAttributeUse[chunk][index] = new XSAttributeUse();
+        } else {
+            fAttributeUse[chunk][index].reset();
+        }
+        fAttributeUseIndex++;
+        return fAttributeUse[chunk][index];
 
     }
     
     public final XSComplexTypeDecl getComplexTypeDecl(){
-        return new XSComplexTypeDecl();
+        int     chunk       = fCTDeclIndex >> CHUNK_SHIFT;
+        int     index       = fCTDeclIndex &  CHUNK_MASK;
+        ensureCTDeclCapacity(chunk);
+        if (fCTDecl[chunk][index] == null) {
 
+            fCTDecl[chunk][index] = new XSComplexTypeDecl();
+        } else {
+            fCTDecl[chunk][index].reset();
+        }
+        fCTDeclIndex++;
+        return fCTDecl[chunk][index];
     }
+
+    public final XSSimpleTypeDecl getSimpleTypeDecl(){
+        int     chunk       = fSTDeclIndex >> CHUNK_SHIFT;
+        int     index       = fSTDeclIndex &  CHUNK_MASK;
+        ensureSTDeclCapacity(chunk);
+        if (fSTDecl[chunk][index] == null) {
+            fSTDecl[chunk][index] = new XSSimpleTypeDecl();
+        } else {
+            fSTDecl[chunk][index].reset();
+        }
+        fSTDeclIndex++;
+        return fSTDecl[chunk][index];
+
+    } 
 
     public final XSParticleDecl getParticleDecl(){
-        return new XSParticleDecl();
-
+        int     chunk       = fParticleDeclIndex >> CHUNK_SHIFT;
+        int     index       = fParticleDeclIndex &  CHUNK_MASK;
+        ensureParticleDeclCapacity(chunk);
+        if (fParticleDecl[chunk][index] == null) {
+            fParticleDecl[chunk][index] = new XSParticleDecl();
+        } else {
+            fParticleDecl[chunk][index].reset();
+        }
+        fParticleDeclIndex++;
+        return fParticleDecl[chunk][index];
     }
 
-    // REVISIT: add method getSimpleTypeDecl
+    // REVISIT: do we need decl pool for group declarations, attribute group,
+    //          notations?
+    //          it seems like each schema would use a small number of those
+    //          components, so it probably is not worth keeping those components
+    //          in the pool.
 
-    // REVISIT: add methods for adding decls to the pool.
+    private boolean ensureElementDeclCapacity(int chunk) {
+        try {
+            return fElementDecl[chunk][0] == null;
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            fElementDecl = resize(fElementDecl, fElementDecl.length * 2);
+        } catch (NullPointerException ex) {
+            // ignore
+        }
+
+        fElementDecl[chunk] = new XSElementDecl[CHUNK_SIZE];
+        return true;
+    }
+
+    private static XSElementDecl[][] resize(XSElementDecl array[][], int newsize) {
+        XSElementDecl newarray[][] = new XSElementDecl[newsize][];
+        System.arraycopy(array, 0, newarray, 0, array.length);
+        return newarray;
+    }
+
+    private boolean ensureParticleDeclCapacity(int chunk) {
+        try {
+            return fParticleDecl[chunk][0] == null;
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            fParticleDecl = resize(fParticleDecl, fParticleDecl.length * 2);
+        } catch (NullPointerException ex) {
+            // ignore
+        }
+
+        fParticleDecl[chunk] = new XSParticleDecl[CHUNK_SIZE];
+        return true;
+    }
+
+    private static XSParticleDecl[][] resize(XSParticleDecl array[][], int newsize) {
+        XSParticleDecl newarray[][] = new XSParticleDecl[newsize][];
+        System.arraycopy(array, 0, newarray, 0, array.length);
+        return newarray;
+    }
+
+
+    private boolean ensureAttrDeclCapacity(int chunk) {
+        try {
+            return fAttrDecl[chunk][0] == null;
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            fAttrDecl = resize(fAttrDecl, fAttrDecl.length * 2);
+        } catch (NullPointerException ex) {
+            // ignore
+        }
+
+        fAttrDecl[chunk] = new XSAttributeDecl[CHUNK_SIZE];
+        return true;
+    }
+
+    private static XSAttributeDecl[][] resize(XSAttributeDecl array[][], int newsize) {
+        XSAttributeDecl newarray[][] = new XSAttributeDecl[newsize][];
+        System.arraycopy(array, 0, newarray, 0, array.length);
+        return newarray;
+    }
+
+    private boolean ensureAttributeUseCapacity(int chunk) {
+        try {
+            return fAttributeUse[chunk][0] == null;
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            fAttributeUse = resize(fAttributeUse, fAttributeUse.length * 2);
+        } catch (NullPointerException ex) {
+            // ignore
+        }
+
+        fAttributeUse[chunk] = new XSAttributeUse[CHUNK_SIZE];
+        return true;
+    }
+
+    private static XSAttributeUse[][] resize(XSAttributeUse array[][], int newsize) {
+        XSAttributeUse newarray[][] = new XSAttributeUse[newsize][];
+        System.arraycopy(array, 0, newarray, 0, array.length);
+        return newarray;
+    }
+
+    private boolean ensureSTDeclCapacity(int chunk) {
+        try {
+            return fSTDecl[chunk][0] == null;
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            fSTDecl = resize(fSTDecl, fSTDecl.length * 2);
+        } catch (NullPointerException ex) {
+            // ignore
+        }
+
+        fSTDecl[chunk] = new XSSimpleTypeDecl[CHUNK_SIZE];
+        return true;
+    }
+
+    private static XSSimpleTypeDecl[][] resize(XSSimpleTypeDecl array[][], int newsize) {
+        XSSimpleTypeDecl newarray[][] = new XSSimpleTypeDecl[newsize][];
+        System.arraycopy(array, 0, newarray, 0, array.length);
+        return newarray;
+    }
+
+    private boolean ensureCTDeclCapacity(int chunk) {
+        try {
+            return fCTDecl[chunk][0] == null;
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            fCTDecl = resize(fCTDecl, fCTDecl.length * 2);
+        } catch (NullPointerException ex) {
+            // ignore
+        }
+
+        fCTDecl[chunk] = new XSComplexTypeDecl[CHUNK_SIZE];
+        return true;
+    }
+
+    private static XSComplexTypeDecl[][] resize(XSComplexTypeDecl array[][], int newsize) {
+        XSComplexTypeDecl newarray[][] = new XSComplexTypeDecl[newsize][];
+        System.arraycopy(array, 0, newarray, 0, array.length);
+        return newarray;
+    }
+
+
+
+    public void reset(){
+        fElementDeclIndex = 0;
+        fParticleDeclIndex = 0;
+        fSTDeclIndex = 0;
+        fCTDeclIndex = 0;
+        fAttrDeclIndex = 0;
+    }
+
 
 }

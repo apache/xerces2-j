@@ -101,8 +101,8 @@ import  org.w3c.dom.Element;
  */
 class XSDElementTraverser extends XSDAbstractTraverser {
 
-    protected XSElementDecl  fTempElementDecl  = new XSElementDecl();
-    protected XSParticleDecl fTempParticleDecl = new XSParticleDecl();
+    protected final XSElementDecl  fTempElementDecl  = new XSElementDecl();
+    protected final XSParticleDecl fTempParticleDecl = new XSParticleDecl();
 
     // this controls what happens when a local element is encountered.
     // We may not encounter all local elements when first parsing.
@@ -131,8 +131,12 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                                  SchemaGrammar grammar,
                                  int allContextFlags) {
 
-        XSParticleDecl particle = new XSParticleDecl();
-
+        XSParticleDecl particle = null;
+        if (fSchemaHandler.fDeclPool !=null) {
+            particle = fSchemaHandler.fDeclPool.getParticleDecl();            
+        } else {        
+            particle = new XSParticleDecl();
+        }
         if(fDeferTraversingLocalElements) {
             fSchemaHandler.fillInLocalElemInfo(elmDecl, schemaDoc, allContextFlags, particle);
         } else {
@@ -253,8 +257,13 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         QName   typeAtt      = (QName)   attrValues[XSAttributeChecker.ATTIDX_TYPE];
 
         // Step 1: get declaration information
-        XSElementDecl element = new XSElementDecl();
-
+        
+        XSElementDecl element = null;
+        if (fSchemaHandler.fDeclPool !=null) {
+            element = fSchemaHandler.fDeclPool.getElementDecl();
+        } else {        
+            element = new XSElementDecl();
+        }
         // get 'name'
         if (nameAtt != null)
             element.fName = fSymbolTable.addSymbol(nameAtt);

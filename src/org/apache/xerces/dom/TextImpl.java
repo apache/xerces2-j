@@ -93,11 +93,28 @@ public class TextImpl
     // Constructors
     //
 
+    /** Default constructor */
+    public TextImpl(){}
+
     /** Factory constructor. */
     public TextImpl(CoreDocumentImpl ownerDoc, String data) {
         super(ownerDoc, data);
-    }  
+    }
     
+    /**
+     * NON-DOM: resets node and sets specified values for the current node
+     * 
+     * @param ownerDoc
+     * @param data
+     */
+    public void setValues(CoreDocumentImpl ownerDoc, String data){
+
+        flags=0;
+        nextSibling = null;
+        previousSibling=null;
+        setOwnerDocument(ownerDoc);
+        super.data = data;
+    }
     //
     // Node methods
     //

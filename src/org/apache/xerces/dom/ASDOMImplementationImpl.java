@@ -86,6 +86,20 @@ public class ASDOMImplementationImpl extends DOMImplementationImpl
     implements DOMImplementationAS {
 
 
+    // static
+
+    /** Dom implementation singleton. */
+    static ASDOMImplementationImpl singleton = new ASDOMImplementationImpl();
+
+
+    //
+    // Public methods
+    //
+
+    /** NON-DOM: Obtain and return the single shared object */
+    public static DOMImplementation getDOMImplementation() {
+        return singleton;
+    }  
 
     //
     // DOM L3 Abstract Schemas:

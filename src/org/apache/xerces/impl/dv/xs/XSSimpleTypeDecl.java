@@ -186,6 +186,9 @@ public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, X
     private short fCardinality;
     private boolean fBounded;
     private boolean fNumeric;
+    
+    // default constructor
+    public XSSimpleTypeDecl(){}
 
     //Create a new built-in primitive types (and id/idref/entity)
     protected XSSimpleTypeDecl(XSSimpleTypeDecl base, String name, short validateDV,
@@ -286,6 +289,91 @@ public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, X
         //setting fundamental facets
         caclFundamentalFacets();
     }
+
+    //set values for restriction.
+    protected XSSimpleTypeDecl setRestrictionValues(XSSimpleTypeDecl base, String name, String uri, short finalSet) {
+        fBase = base;
+        fTypeName = name;
+        fTargetNamespace = uri;
+        fFinalSet = finalSet;
+
+        fVariety = fBase.fVariety;
+        fValidationDV = fBase.fValidationDV;
+        switch (fVariety) {
+        case VARIETY_ATOMIC:
+            break;
+        case VARIETY_LIST:
+            fItemType = fBase.fItemType;
+            break;
+        case VARIETY_UNION:
+            fMemberTypes = fBase.fMemberTypes;
+            break;
+        }
+
+        // always inherit facets from the base.
+        // in case a type is created, but applyFacets is not called
+        fLength = fBase.fLength;
+        fMinLength = fBase.fMinLength;
+        fMaxLength = fBase.fMaxLength;
+        fPattern = fBase.fPattern;
+        fEnumeration = fBase.fEnumeration;
+        fWhiteSpace = fBase.fWhiteSpace;
+        fMaxExclusive = fBase.fMaxExclusive;
+        fMaxInclusive = fBase.fMaxInclusive;
+        fMinExclusive = fBase.fMinExclusive;
+        fMinInclusive = fBase.fMinInclusive;
+        fTotalDigits = fBase.fTotalDigits;
+        fFractionDigits = fBase.fFractionDigits;
+        fTokenType = fBase.fTokenType;
+        fFixedFacet = fBase.fFixedFacet;
+        fFacetsDefined = fBase.fFacetsDefined;
+
+        //we also set fundamental facets information in case applyFacets is not called.
+        caclFundamentalFacets();
+        return this;
+    }
+
+    //set values for list.
+    protected XSSimpleTypeDecl setListValues(String name, String uri, short finalSet, XSSimpleTypeDecl itemType) {
+        fBase = fAnySimpleType;
+        fTypeName = name;
+        fTargetNamespace = uri;
+        fFinalSet = finalSet;
+
+        fVariety = VARIETY_LIST;
+        fItemType = (XSSimpleTypeDecl)itemType;
+        fValidationDV = DV_LIST;
+        fFacetsDefined = FACET_WHITESPACE;
+        fFixedFacet = FACET_WHITESPACE;
+        fWhiteSpace = WS_COLLAPSE;
+
+        //setting fundamental facets
+        caclFundamentalFacets();
+        return this;
+    }
+
+    //set values for union.
+    protected XSSimpleTypeDecl setUnionValues(String name, String uri, short finalSet, XSSimpleTypeDecl[] memberTypes) {
+        fBase = fAnySimpleType;
+        fTypeName = name;
+        fTargetNamespace = uri;
+        fFinalSet = finalSet;
+
+        fVariety = VARIETY_UNION;
+        fMemberTypes = memberTypes;
+        fValidationDV = DV_UNION;
+        // even for union, we set whitespace to something
+        // this will never be used, but we can use fFacetsDefined to check
+        // whether applyFacets() is allwwed: it's not allowed
+        // if fFacetsDefined != 0
+        fFacetsDefined = FACET_WHITESPACE;
+        fWhiteSpace = WS_COLLAPSE;
+
+        //setting fundamental facets
+        caclFundamentalFacets();
+        return this;
+    }
+
 
     public short getXSType () {
         return XSTypeDecl.SIMPLE_TYPE;
@@ -1800,5 +1888,39 @@ public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, X
             else
                 return fNSContext.getURI(prefix);
         }
+    }
+
+    public void reset(){
+
+        fItemType = null;
+        fMemberTypes = null;
+
+        fTypeName = null;
+        fTargetNamespace = null;
+        fFinalSet = 0;
+        fBase = null;
+        fVariety = -1;
+        fValidationDV = -1;
+
+        fFacetsDefined = 0;
+        fFixedFacet = 0;
+
+        //for constraining facets
+        fWhiteSpace = 0;
+        fLength = -1;
+        fMinLength = -1;
+        fMaxLength = -1;
+        fTotalDigits = -1;
+        fFractionDigits = -1;
+        fPattern = null;
+        fEnumeration = null;
+        fMaxInclusive = null;
+        fMaxExclusive = null;
+        fMinExclusive = null;
+        fMinInclusive = null;
+
+        fTokenType = SPECIAL_TOKEN_NONE;
+
+        // REVISIT: reset for fundamental facets
     }
 } // class XSComplexTypeDecl

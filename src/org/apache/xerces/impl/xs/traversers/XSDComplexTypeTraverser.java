@@ -762,10 +762,12 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 
         XSAttributeUse[] attrUseS = fromAttrGrp.getAttributeUses();
         XSAttributeUse existingAttrUse, duplicateAttrUse =  null;
-        for (int i=0; i<attrUseS.length; i++) {
+        int attrCount = (attrUseS!=null)?attrUseS.length:0;
+        for (int i=0; i<attrCount; i++) {
             existingAttrUse = toAttrGrp.getAttributeUse(attrUseS[i].fAttrDecl.fTargetNamespace,
                                                         attrUseS[i].fAttrDecl.fName);
             if (existingAttrUse == null) {
+
                 String idName = toAttrGrp.addAttributeUse(attrUseS[i]);
                 if (idName != null) {
                     throw new ComplexTypeRecoverableError("ct-props-correct.5",
@@ -781,7 +783,6 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 }
             }
         }
-
         // For extension, the wildcard must be formed by doing a union of the wildcards
         if (extension) {
             if (toAttrGrp.fAttributeWC==null) {

@@ -140,6 +140,9 @@ public class XSElementDecl {
     }
 
     public IdentityConstraint[] getIDConstraints() {
+        if (fIDCPos == 0) {
+            return null;
+        }
         if (fIDCPos < fIDConstraints.length) {
             fIDConstraints = resize(fIDConstraints, fIDCPos);
         }
@@ -185,5 +188,26 @@ public class XSElementDecl {
      */
     public boolean equals(Object o) {
         return o == this;
+    }
+
+    /**
+      * Reset current element declaration
+      */
+    public void reset(){
+
+        fName = null;
+        fTargetNamespace = null;
+        fType = null;
+        fMiscFlags = 0;
+        fBlock = SchemaSymbols.EMPTY_SET;
+        fFinal = SchemaSymbols.EMPTY_SET;
+        fDefault = null;
+        fSubGroup = null;
+        // reset identity constraints
+        for (int i=0;i<fIDCPos;i++) {
+            fIDConstraints[i] = null;
+        }
+
+        fIDCPos = 0;
     }
 } // class XMLElementDecl

@@ -431,7 +431,8 @@ abstract class XSDAbstractTraverser {
                 if(tempAttrGrp == null ) break;
                 XSAttributeUse[] attrUseS = tempAttrGrp.getAttributeUses();
                 XSAttributeUse existingAttrUse = null;
-                for (int i=0; i<attrUseS.length; i++) {
+                int attrCount = (attrUseS !=null)?attrUseS.length:0;
+                for (int i=0; i<attrCount; i++) {
                     existingAttrUse = attrGrp.getAttributeUse(attrUseS[i].fAttrDecl.fTargetNamespace,
                                                               attrUseS[i].fAttrDecl.fName);
                     if (existingAttrUse == null) {

@@ -130,7 +130,11 @@ class XSDWildcardTraverser extends XSDAbstractTraverser {
             int min = ((XInt)attrValues[XSAttributeChecker.ATTIDX_MINOCCURS]).intValue();
             int max = ((XInt)attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS]).intValue();
             if (max != 0) {
-                particle = new XSParticleDecl();
+                if (fSchemaHandler.fDeclPool !=null) {
+                    particle = fSchemaHandler.fDeclPool.getParticleDecl();
+                } else {        
+                    particle = new XSParticleDecl();
+                }
                 particle.fType = XSParticleDecl.PARTICLE_WILDCARD;
                 particle.fValue = wildcard;
                 particle.fMinOccurs = min;

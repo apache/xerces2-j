@@ -122,7 +122,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
                 attribute = (XSAttributeDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.ATTRIBUTE_TYPE, refAtt, attrDecl);
 
                 Element child = DOMUtil.getFirstChildElement(attrDecl);
-                if(child != null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                if (child != null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
                     traverseAnnotationDecl(child, attrValues, false, schemaDoc);
                     child = DOMUtil.getNextSiblingElement(child);
                 }
@@ -151,7 +151,11 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
 
         XSAttributeUse attrUse = null;
         if (attribute != null) {
-            attrUse = new XSAttributeUse();
+            if (fSchemaHandler.fDeclPool !=null) {
+                attrUse = fSchemaHandler.fDeclPool.getAttributeUse();            
+            } else {
+                attrUse = new XSAttributeUse();
+            }
             attrUse.fAttrDecl = attribute;
             attrUse.fUse = useAtt.shortValue();
             attrUse.fConstraintType = consType;
@@ -244,7 +248,12 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         QName   typeAtt    = (QName)  attrValues[XSAttributeChecker.ATTIDX_TYPE];
 
         // Step 1: get declaration information
-        XSAttributeDecl attribute = new XSAttributeDecl();
+        XSAttributeDecl attribute = null;
+        if (fSchemaHandler.fDeclPool !=null) {
+            attribute = fSchemaHandler.fDeclPool.getAttributeDecl();            
+        } else {
+            attribute = new XSAttributeDecl();
+        }
 
         // get 'name'
         if (nameAtt != null)
@@ -253,8 +262,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         // get 'target namespace'
         if (isGlobal) {
             attribute.fTargetNamespace = schemaDoc.fTargetNamespace;
-        }
-        else if (formAtt != null) {
+        } else if (formAtt != null) {
             if (formAtt.intValue() == SchemaSymbols.FORM_QUALIFIED)
                 attribute.fTargetNamespace = schemaDoc.fTargetNamespace;
             else
@@ -264,7 +272,6 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         } else {
             attribute.fTargetNamespace = null;
         }
-
         // get 'value constraint'
         // for local named attribute, value constraint is absent
         if (isGlobal) {
@@ -283,7 +290,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
 
         // get 'annotation'
         Element child = DOMUtil.getFirstChildElement(attrDecl);
-        if(child != null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
+        if (child != null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
             traverseAnnotationDecl(child, attrValues, false, schemaDoc);
             child = DOMUtil.getNextSiblingElement(child);
         }

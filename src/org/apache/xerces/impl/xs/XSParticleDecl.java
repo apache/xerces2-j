@@ -287,4 +287,14 @@ public class XSParticleDecl {
             break;
         }
     }
+
+
+    public void reset(){
+        fType = PARTICLE_EMPTY;
+        fValue = null;
+        fOtherValue = null;
+        fMinOccurs = 1;
+        fMaxOccurs = 1;
+
+    }
 } // class XSParticle

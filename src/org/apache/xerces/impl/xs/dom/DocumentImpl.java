@@ -57,8 +57,13 @@
 
 package org.apache.xerces.impl.xs.dom;
 
+import org.apache.xerces.dom.TextImpl;
+import org.apache.xerces.dom.AttrNSImpl;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
+import org.w3c.dom.Text;
+import org.w3c.dom.Attr;
+
 
 /**
  * Our own document implementation, which knows how to create an element
@@ -68,18 +73,20 @@ import org.w3c.dom.Element;
  * 
  * @version $Id$
  */
-public class DocumentImpl extends org.apache.xerces.dom.DocumentImpl {
+public class DocumentImpl extends org.apache.xerces.dom.CoreDocumentImpl {
 
+    protected DOMNodePool fNodePool;
     //
     // Constructors
     //
-
+    
     /**
      * Create a document
      */
     public DocumentImpl() {
         super();
     }
+
 
     /**
      * create an element with line/colument information
@@ -89,8 +96,50 @@ public class DocumentImpl extends org.apache.xerces.dom.DocumentImpl {
                                    int lineNum, int columnNum)
         throws DOMException
     {
+        if (fNodePool !=null) {
+            ElementNSImpl element = fNodePool.getElementNode();
+            element.setValues(this, namespaceURI, qualifiedName,
+                                 localpart, lineNum, columnNum);
+            return element;
+        } 
         return new ElementNSImpl(this, namespaceURI, qualifiedName,
                                  localpart, lineNum, columnNum);
     }
+
+    /**
+     * Create a text node. If node pool is available use text node from the pool.
+     * 
+     * @param data
+     * @return 
+     */
+    public Text createTextNode(String data) {
+        if (fNodePool != null) {
+            TextImpl text = fNodePool.getTextNode();
+            text.setValues(this, data);
+            return text;
+        }
+        return new TextImpl(this, data);
+    }  
+      
+
+    /**
+     * Create attribute node. If node pool is available use 
+     * attribute node from the pool.
+     * 
+     * @param namespaceURI
+     * @param qualifiedName
+     * @param localName
+     * @return 
+     * @exception DOMException
+     */
+    public Attr createAttributeNS(String namespaceURI, String qualifiedName,
+                                  String localName)  throws DOMException {
+        if (fNodePool != null) {
+            AttrNSImpl attr = fNodePool.getAttrNode();
+            attr.setValues(this, namespaceURI, qualifiedName, localName);
+            return attr;
+        }
+        return new AttrNSImpl(this, namespaceURI, qualifiedName, localName);
+    } 
     
 } // class DocumentImpl

@@ -81,9 +81,13 @@ public class CMBuilder {
 
     // needed for DFA construction
     private int fLeafCount;
-
+                           
     public CMBuilder (XSDeclarationPool pool){
         fDeclPool = pool;
+    }
+
+    public void setDeclPool (XSDeclarationPool declPool){
+        fDeclPool = declPool;
     }
 
     /**
@@ -182,7 +186,12 @@ public class CMBuilder {
             if (right == null)
                 return expandContentModel((XSParticleDecl)left, minOccurs, maxOccurs);
 
-            XSParticleDecl newParticle = new XSParticleDecl();
+            XSParticleDecl newParticle;
+            if (fDeclPool !=null) {
+                newParticle = fDeclPool.getParticleDecl();
+            } else {            
+                newParticle = new XSParticleDecl();
+            }
             newParticle.fType = particle.fType;
             newParticle.fValue = left;
             newParticle.fOtherValue = right;
@@ -448,7 +457,12 @@ public class CMBuilder {
                                            XSParticleDecl left,
                                            XSParticleDecl right) {
 
-        XSParticleDecl newParticle = new XSParticleDecl();
+        XSParticleDecl newParticle;
+        if (fDeclPool !=null) {
+            newParticle = fDeclPool.getParticleDecl();
+        } else {            
+            newParticle = new XSParticleDecl();
+        }
         newParticle.fType = type;
         newParticle.fValue = (Object) left;
         newParticle.fOtherValue = (Object)right;

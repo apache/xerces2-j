@@ -58,7 +58,7 @@
 package org.apache.xerces.impl.xs.dom;
 
 import org.apache.xerces.impl.Constants;
-import org.apache.xerces.parsers.StandardParserConfiguration;
+import org.apache.xerces.parsers.NonValidatingConfiguration;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.QName;
@@ -93,7 +93,9 @@ public class DOMParser extends org.apache.xerces.parsers.DOMParser {
     
     // our own document implementation, which knows how to create Element
     // with line/column information
-    protected DocumentImpl fDocumentImpl;
+    public DocumentImpl fDocumentImpl;
+
+    private DOMNodePool fNodePool;
     
     //
     // Constructors
@@ -103,16 +105,21 @@ public class DOMParser extends org.apache.xerces.parsers.DOMParser {
      * Constructs a DOM parser using the dtd/xml schema parser configuration.
      */
     public DOMParser() {
-        super(new StandardParserConfiguration(new SchemaSymbols.SchemaSymbolTable()));
+        super(new NonValidatingConfiguration(new SchemaSymbols.SchemaSymbolTable()));
         try {
             // use our own document implementation
             setProperty(DOCUMENT_CLASS, "org.apache.xerces.impl.xs.dom.DocumentImpl");
             // don't defer DOM expansion
             setFeature(DEFER_EXPANSION, false);
+
         }
         catch (Exception e) {
         }
     } // <init>()
+
+    public void setPool(DOMNodePool nodePool){
+        fNodePool = nodePool;
+    }
 
     /**
      * The start of the document.
@@ -134,6 +141,7 @@ public class DOMParser extends org.apache.xerces.parsers.DOMParser {
         super.startDocument(locator, encoding, augs);
         // get a handle to the document created
         fDocumentImpl = (DocumentImpl)super.fDocumentImpl;
+        fDocumentImpl.fNodePool=fNodePool;
         fLocator = locator;
 
     } // startDocument(XMLLocator,String,Augmentations)
