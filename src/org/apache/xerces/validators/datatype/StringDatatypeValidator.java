@@ -252,7 +252,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
 
                 if ( ( (fFacetsDefined & ( DatatypeValidator.FACET_MINLENGTH |
                                            DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
-                    if ( fMinLength < fMaxLength ) {
+                    if ( fMinLength > fMaxLength ) {
                         throw new InvalidDatatypeFacetException( "Value of minLength = " + fMinLength +
                                                                  "must be greater that the value of maxLength" + fMaxLength );
                     }

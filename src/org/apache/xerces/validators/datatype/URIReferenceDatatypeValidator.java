@@ -153,7 +153,7 @@ public class URIReferenceDatatypeValidator extends AbstractDatatypeValidator {
 
                 if ( ( (fFacetsDefined & ( DatatypeValidator.FACET_MINLENGTH |
                                            DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
-                    if ( fMinLength < fMaxLength ) {
+                    if ( fMinLength > fMaxLength ) {
                         throw new InvalidDatatypeFacetException( "Value of maxLength = " + fMaxLength +
                                                       "must be greater that the value of minLength" + fMinLength );
                     }
