@@ -235,10 +235,12 @@ public final class XMLValidator
    private ContentLeafNameTypeVector[] fContentLeafStack = new ContentLeafNameTypeVector[8];
 
    //OTWI: on-the-way-in
-   private static boolean fOTWI = false;
+   // store the content model
    private XMLContentModel[] fContentModelStack = new XMLContentModel[8];
    // >= 0 normal state; -1: error; -2: on-the-way-out
    private int[] fContentModelStateStack = new int[8];
+   // how many child elements have succefully validated
+   private int[] fContentModelEleCount = new int[8];
 
    private int[] fValidationFlagStack = new int[8];
 
@@ -1245,15 +1247,14 @@ public final class XMLValidator
          if (cm != null) {
             fContentLeafStack[fElementDepth] = cv;
             //OTWI: on-the-way-in
-            if (fOTWI) {
-                fContentModelStack[fElementDepth] = cm;
-                // for DFA, we validate on-the-way-in
-                // for other content models, we do it on-the-way-out
-                if (cm instanceof DFAContentModel)
-                    fContentModelStateStack[fElementDepth] = 0;
-                else
-                    fContentModelStateStack[fElementDepth] = -2;
-            }
+            fContentModelStack[fElementDepth] = cm;
+            // for DFA with wildcard, we validate on-the-way-in
+            // for other content models, we do it on-the-way-out
+            if (cm instanceof DFAContentModel && cv != null)
+                fContentModelStateStack[fElementDepth] = 0;
+            else
+                fContentModelStateStack[fElementDepth] = -2;
+            fContentModelEleCount[fElementDepth] = 0;
          }
       }
    }
@@ -1301,14 +1302,15 @@ public final class XMLValidator
          fContentLeafStack = newStackV;
 
          //OTWI: on-the-way-in
-         if (fOTWI) {
-             XMLContentModel[] newStackCM = new XMLContentModel[newElementDepth * 2];
-             System.arraycopy(fContentModelStack, 0, newStackCM, 0, newElementDepth);
-             fContentModelStack = newStackCM;
-             newStack = new int[newElementDepth * 2];
-             System.arraycopy(fContentModelStateStack, 0, newStack, 0, newElementDepth);
-             fContentModelStateStack = newStack;
-         }
+         XMLContentModel[] newStackCM = new XMLContentModel[newElementDepth * 2];
+         System.arraycopy(fContentModelStack, 0, newStackCM, 0, newElementDepth);
+         fContentModelStack = newStackCM;
+         newStack = new int[newElementDepth * 2];
+         System.arraycopy(fContentModelStateStack, 0, newStack, 0, newElementDepth);
+         fContentModelStateStack = newStack;
+         newStack = new int[newElementDepth * 2];
+         System.arraycopy(fContentModelEleCount, 0, newStack, 0, newElementDepth);
+         fContentModelEleCount = newStack;
       }
    }
 
@@ -2978,11 +2980,14 @@ public final class XMLValidator
          ContentLeafNameTypeVector cv = fContentLeafStack[fElementDepth];
 
          //OTWI: on-the-way-in
-         if (fOTWI) {
          if (fContentModelStateStack[fElementDepth] >= 0) {
+            // get the position of the current element in the content model
             int pos = ((DFAContentModel)fContentModelStack[fElementDepth]).
                       oneTransition(element, fContentModelStateStack, fElementDepth);
+            // if it's a valid child, increase succeful count
+            // and check whether we need to lax or skip this one
             if (pos >= 0) {
+                fContentModelEleCount[fElementDepth]++;
                 switch (cv.leafTypes[pos]) {
                 case XMLContentSpec.CONTENTSPECNODE_ANY_SKIP:
                 case XMLContentSpec.CONTENTSPECNODE_ANY_NS_SKIP:
@@ -2997,8 +3002,7 @@ public final class XMLValidator
                 }
             }
          }
-         //OTWI: on-the-way-in
-         } else {
+/*
          QName[] fElemMap = cv.leafNames;
          for (int i=0; i<cv.leafCount; i++) {
             int type = cv.leafTypes[i]  ;
@@ -3047,8 +3051,7 @@ public final class XMLValidator
             }
 
          }
-         //OTWI: on-the-way-in
-         }
+*/
       }
 
       if (skipThisOne) {
@@ -4075,7 +4078,22 @@ public final class XMLValidator
           // Get the content model for this element, faulting it in if needed
          XMLContentModel cmElem = null;
          try {
-            cmElem = getElementContentModel(elementIndex);
+            cmElem = fContentModelStack[fElementDepth+1];
+            int curState = fContentModelStateStack[fElementDepth+1];
+            // if state!=-2, we have validate the children
+            if (curState != -2) {
+                // if state==-1, there is invalid child
+                // if !finalState, then the content is not complete
+                // both indicate an error, we return successful element count
+                if (curState == -1 ||
+                    !((DFAContentModel)cmElem).isFinalState(curState)) {
+                    return fContentModelEleCount[fElementDepth+1];
+                } else {
+                    // otherwise -1: succeeded
+                    return -1;
+                }
+            }
+            //otherwise, we need to validateContent
             int result = cmElem.validateContent(children, childOffset, childCount);
             if (result != -1 && fGrammarIsSchemaGrammar) {
                result = cmElem.validateContentSpecial(children, childOffset, childCount);
