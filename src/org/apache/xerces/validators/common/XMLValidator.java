@@ -4007,9 +4007,36 @@ public final class XMLValidator
                                      +",locapart: "+fStringPool.toString(fTempElementDecl.name.localpart));
                } else {
                    String value =fDatatypeBuffer.toString();
-                   fCurrentDV.validate(value, null);
-               }
-
+                   // check for fixed/default values of elements here.
+                    if( ((SchemaGrammar)fGrammar).getElementDefaultValue(fCurrentElementIndex) != null && 
+                            ((SchemaGrammar)fGrammar).getElementDefaultValue(fCurrentElementIndex).equals("")) {
+                        fCurrentDV.validate(value, null); 
+                    } else {
+                        String currentElementDefault = ((SchemaGrammar)fGrammar).getElementDefaultValue(fCurrentElementIndex);
+                        if((((SchemaGrammar)fGrammar).getElementDeclMiscFlags(fCurrentElementIndex) & SchemaSymbols.FIXED) != 0) {
+                            if(value.equals("")) {   // use fixed as default value
+                                // Note:  this is inefficient where the DOMParser
+                                // is concerned.  However, if we used the characters(int)
+                                // callback instead, this would be just as inefficient for SAX.
+                                fDocumentHandler.characters(currentElementDefault.toCharArray(), 0, currentElementDefault.length());
+                            } else { // must check in valuespace!
+                                if (fCurrentDV.compare(value, currentElementDefault) != 0) {
+               fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                          SchemaMessageProvider.SCHEMA_DOMAIN,
+                                          SchemaMessageProvider.FixedDiffersFromActual,
+                                          0, null,
+                                          XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+                                } 
+                            }
+                        } else {
+                            if(value.equals("")) {   // use default value
+                                fDocumentHandler.characters(currentElementDefault.toCharArray(), 0, currentElementDefault.length());
+                            } else { // must validate value
+                                fCurrentDV.validate(value, null); 
+                            }
+                        }
+                    }
+               } 
             } catch (InvalidDatatypeValueException idve) {
                fErrorReporter.reportError(fErrorReporter.getLocator(),
                                           SchemaMessageProvider.SCHEMA_DOMAIN,

@@ -173,7 +173,8 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         UnknownField = 36,
         KeyRefReferNotFound = 37,
         // ...
-        MSG_MAX_CODE = 38;
+        FixedDiffersFromActual = 38,
+        MSG_MAX_CODE = 39;
     //
     // Minor Codes
     //
@@ -220,6 +221,7 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         "KeyNotFound",
         "UnknownField",
         "KeyRefReferNotFound",
+        "FixedDiffersFromActual",
         // END
     };
 }

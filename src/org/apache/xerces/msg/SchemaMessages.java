@@ -107,6 +107,7 @@ public class SchemaMessages extends ListResourceBundle {
         { "KeyNotFound", "Key with value [{0}] not found for identity constraint of element \"{1}\"." },
         { "UnknownField", "Internal identity constraint error; unknown field \"{0}\"." },
         { "KeyRefReferNotFound", "Key reference declaration \"{0}\" refers to unknown key with name \"{1}\"." },
+        { "FixedDiffersFromActual", "The content of this element is not equivalent to the value of the \"fixed\" attribute in the element's declaration in the schema."}, 
        };
     
     /** Returns the list resource bundle contents. */

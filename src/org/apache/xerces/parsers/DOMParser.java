@@ -1338,8 +1338,13 @@ public class DOMParser
 
     } // comment(int)
 
-    /** Not called. */
-    public void characters(char ch[], int start, int length) throws Exception {}
+    // Callers who know they're interacting with this parser should use
+    // characters(int); callers who don't know which parser they 
+    // are interacting with, or who can't be sure of sharing
+    // the same stringPool, should use this method.
+    public void characters(char ch[], int start, int length) throws Exception { 
+        characters(fStringPool.addSymbol(new String(ch, start, length)));
+    } // characters(char[], int, int)
 
     /** Not called. */
     public void ignorableWhitespace(char ch[], int start, int length) throws Exception {}
