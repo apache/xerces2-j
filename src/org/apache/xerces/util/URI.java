@@ -506,9 +506,7 @@ import java.io.Serializable;
       
       int index = 0;
       
-      // Check for scheme, which must be before '/', '?' or '#'. Also handle
-      // names with DOS drive letters ('D:'), so 1-character schemes are not
-      // allowed.
+      // Check for scheme, which must be before '/', '?' or '#'.
       int colonIdx = uriSpec.indexOf(':');
       if (colonIdx != -1) {
           final int searchFrom = colonIdx - 1;
@@ -517,7 +515,7 @@ import java.io.Serializable;
           int queryIdx = uriSpec.lastIndexOf('?', searchFrom);
           int fragmentIdx = uriSpec.lastIndexOf('#', searchFrom);
           
-          if (colonIdx < 2 || slashIdx != -1 || 
+          if (colonIdx == 0 || slashIdx != -1 || 
               queryIdx != -1 || fragmentIdx != -1) {
               // A standalone base is a valid URI according to spec
               if (colonIdx == 0 || (p_base == null && fragmentIdx != 0 && !allowNonAbsoluteURI)) {
@@ -624,9 +622,7 @@ import java.io.Serializable;
 
     int index = 0;
 
-    // Check for scheme, which must be before '/', '?' or '#'. Also handle
-    // names with DOS drive letters ('D:'), so 1-character schemes are not
-    // allowed.
+    // Check for scheme, which must be before '/', '?' or '#'.
     int colonIdx = uriSpec.indexOf(':');
     if (colonIdx != -1) {
         final int searchFrom = colonIdx - 1;
@@ -635,7 +631,7 @@ import java.io.Serializable;
         int queryIdx = uriSpec.lastIndexOf('?', searchFrom);
         int fragmentIdx = uriSpec.lastIndexOf('#', searchFrom);
        
-        if (colonIdx < 2 || slashIdx != -1 || 
+        if (colonIdx == 0 || slashIdx != -1 || 
             queryIdx != -1 || fragmentIdx != -1) {
             // A standalone base is a valid URI according to spec
             if (colonIdx == 0 || (p_base == null && fragmentIdx != 0)) {
