@@ -100,45 +100,43 @@ public class DocumentBuilderImpl extends DocumentBuilder {
     private ErrorHandler eh = null;
     private DOMParser domParser = null;
 
-    private boolean namespaceAware = false;
-    private boolean validating = false;
-
     DocumentBuilderImpl(DocumentBuilderFactory dbf, Hashtable dbfAttrs)
         throws SAXNotRecognizedException, SAXNotSupportedException
     {
         domParser = new DOMParser();
 
-        // Validation
-        validating = dbf.isValidating();
-
         // If validating, provide a default ErrorHandler that prints
         // validation errors with a warning telling the user to set an
         // ErrorHandler
-        if (validating) {
+        if (dbf.isValidating()) {
             setErrorHandler(new DefaultValidationErrorHandler());
         }
 
+        domParser.setFeature(Constants.SAX_FEATURE_PREFIX +
+                             Constants.VALIDATION_FEATURE, dbf.isValidating());
+
         // "namespaceAware" == SAX Namespaces feature
-        namespaceAware = dbf.isNamespaceAware();
-        domParser.setFeature("http://xml.org/sax/features/namespaces",
-                             namespaceAware);
+        domParser.setFeature(Constants.SAX_FEATURE_PREFIX +
+                             Constants.NAMESPACES_FEATURE,
+                             dbf.isNamespaceAware());
 
         // Set various parameters obtained from DocumentBuilderFactory
-        //
-        // XXX Note: Ignore features that are not yet implemented in
-        // Xerces 2.  This code is different than in Xerces 1!
         try {
-            domParser.setFeature(Constants.XERCES_FEATURE_PREFIX +
-                                 Constants.INCLUDE_IGNORABLE_WHITESPACE,
-                                 !dbf.isIgnoringElementContentWhitespace());
-            domParser.setFeature(Constants.XERCES_FEATURE_PREFIX +
-                                 Constants.CREATE_ENTITY_REF_NODES_FEATURE,
-                                 !dbf.isExpandEntityReferences());
-        } catch (Exception e) {
+        domParser.setFeature(Constants.XERCES_FEATURE_PREFIX +
+                             Constants.INCLUDE_IGNORABLE_WHITESPACE,
+                             !dbf.isIgnoringElementContentWhitespace());
+        domParser.setFeature(Constants.XERCES_FEATURE_PREFIX +
+                             Constants.CREATE_ENTITY_REF_NODES_FEATURE,
+                             !dbf.isExpandEntityReferences());
+        domParser.setFeature(Constants.XERCES_FEATURE_PREFIX +
+                             Constants.INCLUDE_COMMENTS_FEATURE,
+                             !dbf.isIgnoringComments());
+        domParser.setFeature(Constants.XERCES_FEATURE_PREFIX +
+                             Constants.CREATE_CDATA_NODES_FEATURE,
+                             !dbf.isCoalescing());
+        } catch (Exception x) {
+            // XXX ignore Exceptions for now until we figure out bug
         }
-
-        // XXX No way to control dbf.isIgnoringComments() or
-        // dbf.isCoalescing()
 
         setDocumentBuilderFactoryAttributes(dbfAttrs);
     }
@@ -168,24 +166,11 @@ public class DocumentBuilderImpl extends DocumentBuilder {
                 // Assume property
 
                 if (JAXP_SCHEMA_LANGUAGE.equals(name)) {
-                    if ("DTD".equals(val)) {
-                        domParser.setFeature(
-                            Constants.SAX_FEATURE_PREFIX +
-                            Constants.VALIDATION_FEATURE, validating);
+                    // JAXP 1.2 support
+                    if (W3C_XML_SCHEMA.equals(val)) {
                         domParser.setFeature(
                             Constants.XERCES_FEATURE_PREFIX +
-                            Constants.SCHEMA_VALIDATION_FEATURE, false);
-                    } else if (W3C_XML_SCHEMA.equals(val)) {
-                        domParser.setFeature(
-                            Constants.SAX_FEATURE_PREFIX +
-                            Constants.VALIDATION_FEATURE, false);
-                        domParser.setFeature(
-                            Constants.XERCES_FEATURE_PREFIX +
-                            Constants.SCHEMA_VALIDATION_FEATURE,
-                            validating);
-                    } else {
-                        // In case Xerces parser supports other values
-                        domParser.setProperty(name, val);
+                            Constants.SCHEMA_VALIDATION_FEATURE, true);
                     }
                 } else {
                     // Assume Xerces property
@@ -226,11 +211,21 @@ public class DocumentBuilderImpl extends DocumentBuilder {
     }
 
     public boolean isNamespaceAware() {
-        return namespaceAware;
+        try {
+            return domParser.getFeature(Constants.SAX_FEATURE_PREFIX +
+                                        Constants.NAMESPACES_FEATURE);
+        } catch (SAXException x) {
+            throw new IllegalStateException(x.getMessage());
+        }
     }
 
     public boolean isValidating() {
-        return validating;
+        try {
+            return domParser.getFeature(Constants.SAX_FEATURE_PREFIX +
+                                        Constants.VALIDATION_FEATURE);
+        } catch (SAXException x) {
+            throw new IllegalStateException(x.getMessage());
+        }
     }
 
     public void setEntityResolver(org.xml.sax.EntityResolver er) {
