@@ -93,6 +93,7 @@ public final  class SchemaSymbols {
     public static final String ELT_GROUP =  "group";
     public static final String ELT_IMPORT =  "import";
     public static final String ELT_INCLUDE =  "include";
+    public static final String ELT_REDEFINE =  "redefine";
     public static final String ELT_KEY =  "key";
     public static final String ELT_KEYREF =  "keyref";
     public static final String ELT_LENGTH =  "length";
