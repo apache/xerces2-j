@@ -325,7 +325,7 @@ public class XMLChar {
         }
 
         // set Pubid characters
-        for (int i = 0; i < pubidChar.length; i++) {
+        for (int i = 0; i < nameChar.length; i++) {
             CHARS[nameChar[i]] |= MASK_PUBID;
         }
         for (int i = 0; i < pubidRange.length; i += 2) {
@@ -371,6 +371,7 @@ public class XMLChar {
      * @param c The character to check.
      */
     public static boolean isSpace(int c) {
+        
         return c < 0x10000 && (CHARS[c] & MASK_SPACE) != 0;
     }
 
