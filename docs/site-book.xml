@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
 <!DOCTYPE book SYSTEM "sbk:/style/dtd/book.dtd">
 
-<book title="Xerces-J documentation" copyright="1999 The Apache Software Foundation">
+<book title="Xerces-J Documentation" copyright="1999, 2000 The Apache Software Foundation">
   <external href="../index.html"  label="Home"/>
+  
   <separator/>
   <document id="index"       label="Readme"       source="xerces-j/readme.xml"      />
   <document id="install"     label="Installation" source="xerces-j/install.xml"     />
@@ -19,8 +20,10 @@
     <entry  id="faq-general"                      source="xerces-j/faq-general.xml" />
     <entry  id="faq-build"                        source="xerces-j/faq-build.xml"   />
     <entry  id="faq-write"                        source="xerces-j/faq-write.xml"   />
+    <entry  id="faq-migrate"                      source="xerces-j/faq-migrate.xml" />
     <entry  id="faq-common"                       source="xerces-j/faq-common.xml"  />
   </group>
+  
   <separator/>
   <document id="releases"    label="Releases"     source="xerces-j/releases.xml"    />
   <document id="caveats"     label="Caveats"      source="xerces-j/caveats.xml"     />
