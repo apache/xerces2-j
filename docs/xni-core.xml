@@ -898,6 +898,7 @@
    whereas the second handler interface breaks down each element
    declaration content model into separate callbacks.
   </p>
+  <anchor name="dtd-handler"/>
   <s3 title='Interface XMLDTDHandler'>
    <p>
     Communicates basic DTD information such as element and attribute
@@ -1096,6 +1097,7 @@
 -->
 
   </s3>
+  <anchor name="dtd-content-model-handler"/>
   <s3 title='Interface XMLDTDContentModelHandler'>
    <p>
     Breaks down each element declaration's content model into 
@@ -1301,23 +1303,7 @@ public class PassThroughFilter
             fDocumentHandler.processingInstruction(target, data, augs);
         }
     }
-    // deprecated
-    public void startPrefixMapping(String prefix, String uri, <link
-    anchor="augs">Augmentations</link> augs)
-        throws <link anchor='exception'>XNIException</link> {
-        if (fDocumentHandler != null) {
-            fDocumentHandler.startPrefixMapping(prefix, uri, augs);
-        }
-    }
-    // deprecated
-    public void endPrefixMapping(String prefix, <link
-            anchor="augs">Augmentations</link> augs)
-        throws <link anchor='exception'>XNIException</link> {
-        if (fDocumentHandler != null) {
-            fDocumentHandler.endPrefixMapping(prefix, augs);
-        }
-    }
-    
+
     public void startElement(<link anchor='qname'>QName</link>
     element, <link anchor='attributes'>XMLAttributes</link>
         attributes, <link anchor="augs">Augmentations</link> augs)
@@ -1344,7 +1330,7 @@ public class PassThroughFilter
         }
     }
     
-    public void startEntity(String name, 
+    public void startGeneralEntity(String name, 
             <link anchor="resource">XMLResourceIdentifier</link> resId,
             String encoding, <link anchor="augs">Augmentations</link> augs) 
         throws <link anchor='exception'>XNIException</link> {
@@ -1362,7 +1348,7 @@ public class PassThroughFilter
         }
     }
     
-    public void endEntity(String name, <link
+    public void endGeneralEntity(String name, <link
         anchor="augs">Augmentations</link> augs)
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {

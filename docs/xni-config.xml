@@ -839,6 +839,13 @@
       </code>
      </td>
     </tr>
+    <tr>
+     <td>
+      <code>
+       public <link idref='xni-core' anchor='dtd-handler'>XMLDTDHandler</link> getDTDHandler();
+      </code>
+     </td>
+    </tr>
    </table>
   </s3>
   <anchor name='dtd-filter'/>
@@ -870,9 +877,16 @@
       </code>
      </td>
     </tr>
+    <tr>
+     <td>
+      <code>
+       public <link idref='xni-core' anchor='dtd-content-model-handler'>XMLDTDContentModelHandler</link> getDTDContentModelHandler();
+      </code>
+     </td>
+    </tr>
    </table>
   </s3>
-  <anchor name='dtd-filter'/>
+  <anchor name='dtd-content-model-filter'/>
   <s3 title='Interface XMLDTDContentModelFilter'>
    <p>
     Defines a DTD content model filter that acts as both a receiver and 
