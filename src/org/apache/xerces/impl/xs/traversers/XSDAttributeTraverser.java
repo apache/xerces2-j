@@ -203,8 +203,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
             if (attrUse.fAttrDecl.getConstraintType() == XSConstants.VC_FIXED &&
                 attrUse.fConstraintType != XSConstants.VC_NONE) {
                 if (attrUse.fConstraintType != XSConstants.VC_FIXED ||
-                    !((XSSimpleType)attrUse.fAttrDecl.getTypeDefinition()).isEqual(attrUse.fAttrDecl.getValInfo().actualValue,
-                                                     attrUse.fDefault.actualValue)) {
+                    !attrUse.fAttrDecl.getValInfo().actualValue.equals(attrUse.fDefault.actualValue)) {
                     reportSchemaError ("au-props-correct.2", new Object[]{nameAtt}, attrDecl);
                 }
             }

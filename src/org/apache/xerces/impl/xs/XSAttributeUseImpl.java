@@ -141,7 +141,7 @@ public class XSAttributeUseImpl implements XSAttributeUse {
         // REVISIT: SCAPI: what's the proper representation
         return getConstraintType() == XSConstants.VC_NONE ?
                null :
-               fDefault.normalizedValue;
+               fDefault.actualValue.toString();
     }
 
 } // class XSAttributeUseImpl

@@ -1053,15 +1053,15 @@ public class XSConstraints {
          }
 
          // get simple type
-         XSSimpleType dv = null;
-         if (dElement.fType.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE)
-            dv = (XSSimpleType)dElement.fType;
-         else if (((XSComplexTypeDecl)dElement.fType).fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE)
-            dv = ((XSComplexTypeDecl)dElement.fType).fXSSimpleType;
+         boolean isSimple = false;
+         if (dElement.fType.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE ||
+             ((XSComplexTypeDecl)dElement.fType).fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE) {
+             isSimple = true;
+         }
 
          // if there is no simple type, then compare based on string
-         if (dv == null && !bElement.fDefault.normalizedValue.equals(dElement.fDefault.normalizedValue) ||
-             dv != null && !dv.isEqual(bElement.fDefault.actualValue, dElement.fDefault.actualValue)) {
+         if (!isSimple && !bElement.fDefault.normalizedValue.equals(dElement.fDefault.normalizedValue) ||
+             isSimple && !bElement.fDefault.actualValue.equals(dElement.fDefault.actualValue)) {
             throw new XMLSchemaException("rcase-NameAndTypeOK.4",
                                       new Object[]{dElement.fName});
          }

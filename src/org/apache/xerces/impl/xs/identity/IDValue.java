@@ -137,7 +137,7 @@ public class IDValue {
         try {
             Object av1 = dv.validate(v1, VS, null);
             Object av2 = dv.validate(v2, VS, null);
-            return dv.isEqual(av1, av2);
+            return av1.equals(av2);
         } catch (Exception e) {
             return false;
         }

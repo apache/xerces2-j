@@ -220,7 +220,7 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
                                                       baseAttrUse.fDefault: baseAttrDecl.fDefault);
                         ValidatedInfo thisFixedValue=(attrUse.fDefault!=null ?
                                                       attrUse.fDefault: attrDecl.fDefault);
-                        if (!baseAttrDecl.fType.isEqual(baseFixedValue.actualValue,thisFixedValue.actualValue)) {
+                        if (!baseFixedValue.actualValue.equals(thisFixedValue.actualValue)) {
                             errorCode="derivation-ok-restriction.2.1.3";
                             return errorCode;
                         }

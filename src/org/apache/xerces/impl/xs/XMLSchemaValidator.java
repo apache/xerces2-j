@@ -2671,7 +2671,7 @@ public class XMLSchemaValidator
         // 4 The item's actual value must match the value of the {value constraint}, if it is present and fixed.                 // now check the value against the simpleType
         if (actualValue != null &&
             currDecl.getConstraintType() == XSConstants.VC_FIXED) {
-            if (!attDV.isEqual(actualValue, currDecl.fDefault.actualValue)){
+            if (!actualValue.equals(currDecl.fDefault.actualValue)){
                 reportSchemaError("cvc-attribute.4", new Object[]{element.rawname, fTempQName.rawname, attrValue});
             }
         }
@@ -2679,7 +2679,7 @@ public class XMLSchemaValidator
         // 3.1 If there is among the {attribute uses} an attribute use with an {attribute declaration} whose {name} matches the attribute information item's [local name] and whose {target namespace} is identical to the attribute information item's [namespace name] (where an absent {target namespace} is taken to be identical to a [namespace name] with no value), then the attribute information must be valid with respect to that attribute use as per Attribute Locally Valid (Use) (3.5.4). In this case the {attribute declaration} of that attribute use is the context-determined declaration for the attribute information item with respect to Schema-Validity Assessment (Attribute) (3.2.4) and Assessment Outcome (Attribute) (3.2.5).
         if (actualValue != null &&
             currUse != null && currUse.fConstraintType == XSConstants.VC_FIXED) {
-            if (!attDV.isEqual(actualValue, currUse.fDefault.actualValue)){
+            if (!actualValue.equals(currUse.fDefault.actualValue)){
                 reportSchemaError("cvc-complex-type.3.1", new Object[]{element.rawname, fTempQName.rawname, attrValue});
             }
         }
@@ -2688,7 +2688,7 @@ public class XMLSchemaValidator
             // PSVI: attribute declaration
             attrPSVI.fDeclaration = currDecl;
             if (currDecl != null && currDecl.fDefault != null)
-                attrPSVI.fSchemaDefault = currDecl.fDefault.normalizedValue;
+                attrPSVI.fSchemaDefault = currDecl.fDefault.toString();
             // PSVI: attribute type
             attrPSVI.fTypeDecl = attDV;
 
@@ -2757,7 +2757,7 @@ public class XMLSchemaValidator
             // if the attribute is not specified, then apply the value constraint
             if (!isSpecified && constType != XSConstants.VC_NONE) {
                 attName = new QName(null, currDecl.fName, currDecl.fName, currDecl.fTargetNamespace);
-                String normalized = (defaultValue!=null)?defaultValue.normalizedValue:"";
+                String normalized = (defaultValue!=null)?defaultValue.toString():"";
                 int attrIndex = attributes.addAttribute(attName, "CDATA", normalized);
                 if (attributes instanceof XMLAttributesImpl) {
                     XMLAttributesImpl attrs = (XMLAttributesImpl)attributes;
@@ -2800,11 +2800,12 @@ public class XMLSchemaValidator
         if (fCurrentElemDecl != null && fCurrentElemDecl.fDefault != null &&
             !fSawText && !fSubElement && !fNil) {
 
-            int bufLen = fCurrentElemDecl.fDefault.normalizedValue.length();
+            String strv = fCurrentElemDecl.fDefault.stringValue();
+            int bufLen = strv.length();
             if (fNormalizedStr.ch == null || fNormalizedStr.ch.length < bufLen) {
                 fNormalizedStr.ch = new char[bufLen];
             }
-            fCurrentElemDecl.fDefault.normalizedValue.getChars(0, bufLen, fNormalizedStr.ch, 0);
+            strv.getChars(0, bufLen, fNormalizedStr.ch, 0);
             fNormalizedStr.offset = 0;
             fNormalizedStr.length = bufLen;
             fDefaultValue = fNormalizedStr;
@@ -2831,13 +2832,13 @@ public class XMLSchemaValidator
             // 5.1.1 If the actual type definition is a local type definition then the canonical lexical representation of the {value constraint} value must be a valid default for the actual type definition as defined in Element Default Valid (Immediate) (3.3.6).
             if (fCurrentType != fCurrentElemDecl.fType) {
                 //REVISIT:we should pass ValidatedInfo here.
-                if (XSConstraints.ElementDefaultValidImmediate(fCurrentType, fCurrentElemDecl.fDefault.normalizedValue, fState4XsiType, null) == null)
-                    reportSchemaError("cvc-elt.5.1.1", new Object[]{element.rawname, fCurrentType.getName(), fCurrentElemDecl.fDefault.normalizedValue});
+                if (XSConstraints.ElementDefaultValidImmediate(fCurrentType, fCurrentElemDecl.fDefault.stringValue(), fState4XsiType, null) == null)
+                    reportSchemaError("cvc-elt.5.1.1", new Object[]{element.rawname, fCurrentType.getName(), fCurrentElemDecl.fDefault.stringValue()});
             }
             // 5.1.2 The element information item with the canonical lexical representation of the {value constraint} value used as its normalized value must be valid with respect to the actual type definition as defined by Element Locally Valid (Type) (3.3.4).
             // REVISIT: don't use toString, but validateActualValue instead
             //          use the fState4ApplyDefault
-            elementLocallyValidType(element, fCurrentElemDecl.fDefault.normalizedValue);
+            elementLocallyValidType(element, fCurrentElemDecl.fDefault.stringValue());
         }
         else {
             // The following method call also deal with clause 1.2.2 of the constraint
@@ -2866,17 +2867,17 @@ public class XMLSchemaValidator
                     // 5.2.2.2.2 If the {content type} of the actual type definition is a simple type definition, then the actual value of the item must match the canonical lexical representation of the {value constraint} value.
                     else if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE) {
                         if (actualValue != null &&
-                            !ctype.fXSSimpleType.isEqual(actualValue, fCurrentElemDecl.fDefault.actualValue))
-                            reportSchemaError("cvc-elt.5.2.2.2.2", new Object[]{element.rawname, content, fCurrentElemDecl.fDefault.normalizedValue});
+                            !actualValue.equals(fCurrentElemDecl.fDefault.actualValue))
+                            reportSchemaError("cvc-elt.5.2.2.2.2", new Object[]{element.rawname, content, fCurrentElemDecl.fDefault.stringValue()});
                     }
                 }
                 else if (fCurrentType.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE) {
                     XSSimpleType sType = (XSSimpleType)fCurrentType;
                     if (actualValue != null &&
-                        !sType.isEqual(actualValue, fCurrentElemDecl.fDefault.actualValue))
+                        !actualValue.equals(fCurrentElemDecl.fDefault.actualValue))
                         // REVISIT: the spec didn't mention this case: fixed
                         //          value with simple type
-                        reportSchemaError("cvc-elt.5.2.2.2.2", new Object[]{element.rawname, content, fCurrentElemDecl.fDefault.normalizedValue});
+                        reportSchemaError("cvc-elt.5.2.2.2.2", new Object[]{element.rawname, content, fCurrentElemDecl.fDefault.stringValue()});
                 }
             }
         }
