@@ -161,9 +161,10 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
             reportGenericSchemaError("Global group declaration must have a child.");
         } else {
             String childName = l_elmChild.getLocalName();
-            if (l_elmChild.equals(SchemaSymbols.ELT_ANNOTATION)) {
+            if (childName.equals(SchemaSymbols.ELT_ANNOTATION)) {
                 traverseAnnotationDecl(l_elmChild, attrValues, true, schemaDoc);
                 l_elmChild = DOMUtil.getNextSiblingElement(l_elmChild);
+                childName = l_elmChild.getLocalName();
             }
 
             if (l_elmChild == null) {
