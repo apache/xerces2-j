@@ -952,9 +952,22 @@ public class TraverseSchema implements
             } else if (name.equals( SchemaSymbols.ELT_ATTRIBUTE ) ) {
                 traverseAttributeDecl( child, null , false);
             } else if (name.equals(SchemaSymbols.ELT_GROUP)) {
+                String dName = child.getAttribute(SchemaSymbols.ATT_NAME);
+                try {
+                    Integer i = (Integer)fGroupNameRegistry.get(fTargetNSURIString + ","+dName);
+                } catch (ClassCastException c) {
+                    String s = (String)fGroupNameRegistry.get(fTargetNSURIString + ","+dName);
+                    if (s == null) continue; // must have seen this already--somehow...
+                };
+                String bName = (String)fGroupNameRegistry.get(fTargetNSURIString +"," + dName);
+                if(bName != null) {
+                    child.setAttribute(SchemaSymbols.ATT_NAME, bName);
+                    // Now we reuse this location in the array to store info we'll need for validation...  
+                    // note that traverseGroupDecl will happily do that for us!
+                }
                 traverseGroupDecl(child);
             } else if (name.equals(SchemaSymbols.ELT_NOTATION)) {
-                traverseNotationDecl(child); //TO DO
+                traverseNotationDecl(child); 
             } else {
                 // REVISIT: Localize
                 reportGenericSchemaError("error in content of included <schema> element information item");
@@ -1138,6 +1151,31 @@ public class TraverseSchema implements
                	traverseComplexTypeDecl(child);
            	} else if (name.equals(SchemaSymbols.ELT_GROUP)) {
                	traverseGroupDecl(child);
+                String dName = child.getAttribute(SchemaSymbols.ATT_NAME);
+                Integer bCSIndexObj = null;
+                try {
+                    bCSIndexObj = (Integer)fGroupNameRegistry.get(fTargetNSURIString +","+ dName+redefIdentifier);
+                } catch(ClassCastException c) {
+                    // if it's still a String, then we mustn't have found a corresponding attributeGroup in the redefined schema.
+                    // REVISIT:  localize
+                    reportGenericSchemaError("src-redefine.6.2:  a <group> within a <redefine> must either have a ref to a <group> with the same name or must restrict such an <group>");
+                    continue;
+                }
+                if(bCSIndexObj != null) { // we have something!
+                    int bCSIndex = bCSIndexObj.intValue();
+                    Integer dCSIndexObj;
+                    try {
+                        dCSIndexObj = (Integer)fGroupNameRegistry.get(fTargetNSURIString+","+dName);
+                    } catch (ClassCastException c) {
+                        continue;
+                    }
+                    if(dCSIndexObj == null) // something went wrong...
+                        continue;
+                    int dCSIndex = dCSIndexObj.intValue();
+                    checkParticleDerivationOK(dCSIndex, -1, bCSIndex, -1, null);
+                } else
+                    // REVISIT:  localize
+                    reportGenericSchemaError("src-redefine.6.2:  a <group> within a <redefine> must either have a ref to a <group> with the same name or must restrict such an <group>");
            	} else if (name.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
                 if(fRedefineAttributeGroupMap != null) {
                     String dName = child.getAttribute(SchemaSymbols.ATT_NAME);
@@ -1235,9 +1273,7 @@ public class TraverseSchema implements
 					fixRedefinedSchema(SchemaSymbols.ELT_ATTRIBUTEGROUP, 
 						baseName, baseName+redefIdentifier, 
 						schemaToRedefine, currSchemaInfo);
-				} else {
-					// REVISIT (schema PR):  the case where must prove the attributeGroup restricts the redefined one.
-				} 
+                }
             } else if (name.equals(SchemaSymbols.ELT_GROUP)) {
 				String baseName = child.getAttribute( SchemaSymbols.ATT_NAME );
                 if(fTraversedRedefineElements.contains(baseName))
@@ -1246,8 +1282,6 @@ public class TraverseSchema implements
 					fixRedefinedSchema(SchemaSymbols.ELT_GROUP, 
 						baseName, baseName+redefIdentifier, 
 						schemaToRedefine, currSchemaInfo);
-				} else {
-					// REVISIT (schema PR):  the case where must prove the group restricts the redefined one.
 				} 
 			} else {
                 fRedefineSucceeded = false;
@@ -1479,9 +1513,9 @@ public class TraverseSchema implements
 				reportGenericSchemaError("if a group child of a <redefine> element contains a group ref'ing itself, it must have exactly 1; this one has " + groupRefsCount);
 			} else if (groupRefsCount == 1) {
                 return true;
-			}  else
-				// REVISIT:  localize and for PR:
-				reportGenericSchemaError("a group in a <redefine> must have exactly one ref attribute to itself in schema CR");
+			}  else {
+                fGroupNameRegistry.put(fTargetNSURIString + "," + oldName, newName);
+            }
 		} else {
             fRedefineSucceeded = false;
            	// REVISIT: Localize
@@ -6759,8 +6793,18 @@ public class TraverseSchema implements
                 return traverseGroupDeclFromAnotherSchema(localpart, uriStr);
             }
             Object contentSpecHolder = fGroupNameRegistry.get(uriStr + "," + localpart);
-            if(contentSpecHolder != null ) 	// we've already traversed this group
-		return ((Integer)contentSpecHolder).intValue();
+            if(contentSpecHolder != null ) {	// we may have already traversed this group
+                boolean fail = false;
+                int contentSpecHolderIndex = 0;
+                try {
+                    contentSpecHolderIndex = ((Integer)contentSpecHolder).intValue();
+                } catch (ClassCastException c) {
+                    fail = true;
+                }
+                if(!fail) {
+		            return contentSpecHolderIndex;
+                }
+            }
 
             // Check if we are in the middle of traversing this group (i.e. circular references)
             if (fCurrentGroupNameStack.search((Object)localpart) > - 1) {
@@ -6786,8 +6830,18 @@ public class TraverseSchema implements
             reportGenericSchemaError("a <group> must have a name or a ref present");
 		String qualifiedGroupName = fTargetNSURIString + "," + groupName;
 		Object contentSpecHolder = fGroupNameRegistry.get(qualifiedGroupName);
-		if(contentSpecHolder != null ) 	// we've already traversed this group
-			return ((Integer)contentSpecHolder).intValue();
+        if(contentSpecHolder != null ) {	// we may have already traversed this group
+            boolean fail = false;
+            int contentSpecHolderIndex = 0;
+            try {
+                contentSpecHolderIndex = ((Integer)contentSpecHolder).intValue();
+            } catch (ClassCastException c) {
+                fail = true;
+            }
+            if(!fail) {
+		        return contentSpecHolderIndex;
+            }
+        }
 
 	// if we're here then we're traversing a top-level group that we've never seen before.
         // Push the group name onto a stack, so that we can check for circular groups
@@ -6856,8 +6910,18 @@ public class TraverseSchema implements
 
 	String qualifiedGroupName = fTargetNSURIString + "," + groupName;
 	Object contentSpecHolder = fGroupNameRegistry.get(qualifiedGroupName);
-	if(contentSpecHolder != null ) 	// we've already traversed this group
-		return ((Integer)contentSpecHolder).intValue();
+    if(contentSpecHolder != null ) {	// we may have already traversed this group
+        boolean fail = false;
+        int contentSpecHolderIndex  = 0;
+        try {
+            contentSpecHolderIndex = ((Integer)contentSpecHolder).intValue();
+        } catch (ClassCastException c) {
+            fail = true;
+        }
+        if(!fail) {
+            return contentSpecHolderIndex;
+        }
+    }
 
         // ------------------------------------
 	// if we're here then we're traversing a top-level group that we've never seen before.
