@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000,2001 The Apache Software Foundation.  
+ * Copyright (c) 1999,2000,2001 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -129,42 +129,42 @@ public class XMLEntityManager
     // feature identifiers
 
     /** Feature identifier: validation. */
-    protected static final String VALIDATION = 
+    protected static final String VALIDATION =
         Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
 
     /** Feature identifier: external general entities. */
-    protected static final String EXTERNAL_GENERAL_ENTITIES = 
+    protected static final String EXTERNAL_GENERAL_ENTITIES =
         Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_GENERAL_ENTITIES_FEATURE;
 
     /** Feature identifier: external parameter entities. */
-    protected static final String EXTERNAL_PARAMETER_ENTITIES = 
+    protected static final String EXTERNAL_PARAMETER_ENTITIES =
         Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_PARAMETER_ENTITIES_FEATURE;
 
     /** Feature identifier: allow Java encodings. */
-    protected static final String ALLOW_JAVA_ENCODINGS = 
+    protected static final String ALLOW_JAVA_ENCODINGS =
         Constants.XERCES_FEATURE_PREFIX + Constants.ALLOW_JAVA_ENCODINGS_FEATURE;
 
     // property identifiers
 
     /** Property identifier: symbol table. */
-    protected static final String SYMBOL_TABLE = 
+    protected static final String SYMBOL_TABLE =
         Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
 
     /** Property identifier: error reporter. */
-    protected static final String ERROR_REPORTER = 
+    protected static final String ERROR_REPORTER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
 
     /** Property identifier: entity resolver. */
-    protected static final String ENTITY_RESOLVER = 
+    protected static final String ENTITY_RESOLVER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
 
     // recognized features and properties
 
     /** Recognized features. */
     private static final String[] RECOGNIZED_FEATURES = {
-        VALIDATION,                     
+        VALIDATION,
         EXTERNAL_GENERAL_ENTITIES,
-        EXTERNAL_PARAMETER_ENTITIES,    
+        EXTERNAL_PARAMETER_ENTITIES,
         ALLOW_JAVA_ENCODINGS,
     };
 
@@ -172,12 +172,12 @@ public class XMLEntityManager
     private static final String[] RECOGNIZED_PROPERTIES = {
         SYMBOL_TABLE,
         ERROR_REPORTER,
-        ENTITY_RESOLVER,    
+        ENTITY_RESOLVER,
     };
 
     // debugging
 
-    /** 
+    /**
      * Debug printing of buffer. This debugging flag works best when you
      * resize the DEFAULT_BUFFER_SIZE down to something reasonable like
      * 64 characters.
@@ -192,26 +192,26 @@ public class XMLEntityManager
 
     // should be diplayed trace resolving messages
     private static final boolean DEBUG_RESOLVER = false;
-    
+
     //
     // Data
     //
 
     // features
 
-    /** 
+    /**
      * Validation. This feature identifier is:
      * http://xml.org/sax/features/validation
      */
     protected boolean fValidation;
 
-    /** 
+    /**
      * External general entities. This feature identifier is:
      * http://xml.org/sax/features/external-general-entities
      */
     protected boolean fExternalGeneralEntities;
 
-    /** 
+    /**
      * External parameter entities. This feature identifier is:
      * http://xml.org/sax/features/external-parameter-entities
      */
@@ -225,7 +225,7 @@ public class XMLEntityManager
 
     // properties
 
-    /** 
+    /**
      * Symbol table. This property identifier is:
      * http://apache.org/xml/properties/internal/symbol-table
      */
@@ -237,7 +237,7 @@ public class XMLEntityManager
      */
     protected XMLErrorReporter fErrorReporter;
 
-    /** 
+    /**
      * Entity resolver. This property identifier is:
      * http://apache.org/xml/properties/internal/entity-resolver
      */
@@ -245,13 +245,13 @@ public class XMLEntityManager
 
     // settings
 
-    /** 
-     * Buffer size. This feature does not have a feature identifier, yet. 
+    /**
+     * Buffer size. This feature does not have a feature identifier, yet.
      * Should it?
      */
     protected int fBufferSize = DEFAULT_BUFFER_SIZE;
 
-    /** 
+    /**
      * True if the document entity is standalone. This should really
      * only be set by the document source (e.g. XMLDocumentScanner).
      */
@@ -292,8 +292,8 @@ public class XMLEntityManager
         this(null);
     } // <init>()
 
-    /** 
-     * Constructs an entity manager that shares the specified entity 
+    /**
+     * Constructs an entity manager that shares the specified entity
      * declarations during each parse.
      * <p>
      * <strong>REVISIT:</strong> We might want to think about the "right"
@@ -301,12 +301,12 @@ public class XMLEntityManager
      * how to access the entity declarations is implicit.
      */
     public XMLEntityManager(XMLEntityManager entityManager) {
-        
+
         // create scanner
         fEntityScanner = new EntityScanner();
 
         // save shared entity declarations
-        fDeclaredEntities = entityManager != null 
+        fDeclaredEntities = entityManager != null
                           ? entityManager.getDeclaredEntities() : null;
 
     } // <init>(XMLEntityManager)
@@ -340,14 +340,14 @@ public class XMLEntityManager
     } // setEntityHandler(XMLEntityHandler)
 
     /**
-     * Adds an internal entity declaration. 
+     * Adds an internal entity declaration.
      * <p>
      * <strong>Note:</strong> This method ignores subsequent entity
      * declarations.
      * <p>
      * <strong>Note:</strong> The name should be a unique symbol. The
      * SymbolTable can be used for this purpose.
-     * 
+     *
      * @param name The name of the entity.
      * @param text The text of the entity.
      *
@@ -368,7 +368,7 @@ public class XMLEntityManager
      * <p>
      * <strong>Note:</strong> The name should be a unique symbol. The
      * SymbolTable can be used for this purpose.
-     * 
+     *
      * @param name         The name of the entity.
      * @param publicId     The public identifier of the entity.
      * @param systemId     The system identifier of the entity.
@@ -382,12 +382,12 @@ public class XMLEntityManager
      *
      * @see SymbolTable
      */
-    public void addExternalEntity(String name, 
-                                  String publicId, String systemId, 
+    public void addExternalEntity(String name,
+                                  String publicId, String systemId,
                                   String baseSystemId) {
         if (!fEntities.containsKey(name)) {
             if (baseSystemId == null) {
-                // search for the first external entity on the stack 
+                // search for the first external entity on the stack
                 int size = fEntityStack.size();
                 if (size == 0 && fCurrentEntity != null) {
                     baseSystemId = fCurrentEntity.systemId;
@@ -430,7 +430,7 @@ public class XMLEntityManager
      * <p>
      * <strong>Note:</strong> The name should be a unique symbol. The
      * SymbolTable can be used for this purpose.
-     * 
+     *
      * @param name     The name of the entity.
      * @param publicId The public identifier of the entity.
      * @param systemId The system identifier of the entity.
@@ -438,7 +438,7 @@ public class XMLEntityManager
      *
      * @see SymbolTable
      */
-    public void addUnparsedEntity(String name, 
+    public void addUnparsedEntity(String name,
                                   String publicId, String systemId,
                                   String notation) {
         if (!fEntities.containsKey(name)) {
@@ -482,22 +482,22 @@ public class XMLEntityManager
      * resolver is registered or if the registered entity handler
      * is unable to resolve the entity, then default entity
      * resolution will occur.
-     * 
+     *
      * @param publicId     The public identifier of the entity.
      * @param systemId     The system identifier of the entity.
      * @param baseSystemId The base system identifier of the entity.
      *                     This is the system identifier of the current
      *                     entity and is used to expand the system
-     *                     identifier when the system identifier is a 
+     *                     identifier when the system identifier is a
      *                     relative URI.
-     * 
+     *
      * @return Returns an input source that wraps the resolved entity.
      *         This method will never return null.
      *
      * @throws IOException  Thrown on i/o error.
      * @throws XNIException Thrown by entity resolver to signal an error.
      */
-    public XMLInputSource resolveEntity(String publicId, String systemId, 
+    public XMLInputSource resolveEntity(String publicId, String systemId,
                                         String baseSystemId)
         throws IOException, XNIException {
 
@@ -514,7 +514,14 @@ public class XMLEntityManager
         }
 
         // do default resolution
+        // REVISIT: what's the correct behavior if the user provided an entity
+        // resolver (fEntityResolver != null), but resolveEntity doesn't return
+        // an input source (xmlInputSource == null)?
+        // do we do default resolution, or do we just return null? -SG
         if (xmlInputSource == null) {
+            // REVISIT: when systemId is null, I think we should return null.
+            //          is this the right solution? -SG
+            //if (systemId != null)
             xmlInputSource = new XMLInputSource(publicId, systemId, baseSystemId);
         }
 
@@ -522,22 +529,22 @@ public class XMLEntityManager
             System.err.println("XMLEntityManager.resolveEntity(" + publicId + ")");
             System.err.println(" = " + xmlInputSource);
         }
-        
+
         return xmlInputSource;
 
     } // resolveEntity(String,String,String):XMLInputSource
 
     /**
      * Starts a named entity.
-     * 
+     *
      * @param entityName The name of the entity to start.
-     * @param literal    True if this entity is started within a literal 
-     *                   value. 
+     * @param literal    True if this entity is started within a literal
+     *                   value.
      *
      * @throws IOException  Thrown on i/o error.
      * @throws XNIException Thrown by entity handler to signal an error.
      */
-    public void startEntity(String entityName, boolean literal) 
+    public void startEntity(String entityName, boolean literal)
         throws IOException, XNIException {
 
         // was entity declared?
@@ -548,8 +555,8 @@ public class XMLEntityManager
                 final String systemId = null;
                 final String baseSystemId = null;
                 final String encoding = null;
-                fEntityHandler.startEntity(entityName, 
-                                           publicId, systemId, 
+                fEntityHandler.startEntity(entityName,
+                                           publicId, systemId,
                                            baseSystemId, encoding);
                 fEntityHandler.endEntity(entityName);
             }
@@ -575,8 +582,8 @@ public class XMLEntityManager
                         systemId = externalEntity.systemId;
                         baseSystemId = expandSystemId(systemId, externalEntity.baseSystemId);
                     }
-                    fEntityHandler.startEntity(entityName, 
-                                               publicId, systemId, 
+                    fEntityHandler.startEntity(entityName,
+                                               publicId, systemId,
                                                baseSystemId, encoding);
                     fEntityHandler.endEntity(entityName);
                 }
@@ -613,8 +620,8 @@ public class XMLEntityManager
                         systemId = externalEntity.systemId;
                         baseSystemId = expandSystemId(systemId, externalEntity.baseSystemId);
                     }
-                    fEntityHandler.startEntity(entityName, 
-                                               publicId, systemId, 
+                    fEntityHandler.startEntity(entityName,
+                                               publicId, systemId,
                                                baseSystemId, encoding);
                     fEntityHandler.endEntity(entityName);
                 }
@@ -647,13 +654,13 @@ public class XMLEntityManager
     /**
      * Starts the document entity. The document entity has the "[xml]"
      * pseudo-name.
-     * 
+     *
      * @param xmlInputSource The input source of the document entity.
      *
      * @throws IOException  Thrown on i/o error.
      * @throws XNIException Thrown by entity handler to signal an error.
      */
-    public void startDocumentEntity(XMLInputSource xmlInputSource) 
+    public void startDocumentEntity(XMLInputSource xmlInputSource)
         throws IOException, XNIException {
         final String entityName = fSymbolTable.addSymbol("[xml]");
         startEntity(entityName, xmlInputSource, false);
@@ -662,7 +669,7 @@ public class XMLEntityManager
     /**
      * Starts the DTD entity. The DTD entity has the "[dtd]"
      * pseudo-name.
-     * 
+     *
      * @param xmlInputSource The input source of the DTD entity.
      *
      * @throws IOException  Thrown on i/o error.
@@ -675,22 +682,22 @@ public class XMLEntityManager
     } // startDTDEntity(XMLInputSource)
 
     /**
-     * Starts an entity. 
+     * Starts an entity.
      * <p>
      * This method can be used to insert an application defined XML
      * entity stream into the parsing stream.
      *
      * @param name           The name of the entity.
      * @param xmlInputSource The input source of the entity.
-     * @param literal        True if this entity is started within a 
-     *                       literal value. 
+     * @param literal        True if this entity is started within a
+     *                       literal value.
      *
      * @throws IOException  Thrown on i/o error.
      * @throws XNIException Thrown by entity handler to signal an error.
      */
-    public void startEntity(String name, 
-                            XMLInputSource xmlInputSource, 
-                            boolean literal) 
+    public void startEntity(String name,
+                            XMLInputSource xmlInputSource,
+                            boolean literal)
         throws IOException, XNIException {
         // get information
 
@@ -711,7 +718,7 @@ public class XMLEntityManager
                 }
                 stream = new URL(expandedSystemId).openStream();
             }
-                
+
             // perform auto-detect of encoding
             if (encoding == null) {
                 // read first four bytes and determine encoding
@@ -771,16 +778,16 @@ public class XMLEntityManager
         if (fCurrentEntity != null) {
             fEntityStack.push(fCurrentEntity);
         }
-        
+
         // create entity
         String expandedSystemId = expandSystemId(systemId, baseSystemId);
-        fCurrentEntity = new ScannedEntity(name, publicId, systemId, 
-                                           expandedSystemId, stream, reader, 
+        fCurrentEntity = new ScannedEntity(name, publicId, systemId,
+                                           expandedSystemId, stream, reader,
                                            encoding, literal);
 
         // call handler
         if (fEntityHandler != null) {
-            fEntityHandler.startEntity(name, publicId, systemId, 
+            fEntityHandler.startEntity(name, publicId, systemId,
                                        baseSystemId, encoding);
         }
 
@@ -799,13 +806,13 @@ public class XMLEntityManager
      * Resets the component. The component can query the component manager
      * about any features and properties that affect the operation of the
      * component.
-     * 
+     *
      * @param componentManager The component manager.
      *
      * @throws SAXException Thrown by component on initialization error.
      *                      For example, if a feature or property is
      *                      required for the operation of the component, the
-     *                      component manager may throw a 
+     *                      component manager may throw a
      *                      SAXNotRecognizedException or a
      *                      SAXNotSupportedException.
      */
@@ -897,11 +904,11 @@ public class XMLEntityManager
 
     /**
      * Sets the state of a feature. This method is called by the component
-     * manager any time after reset when a feature changes state. 
+     * manager any time after reset when a feature changes state.
      * <p>
      * <strong>Note:</strong> Components should silently ignore features
      * that do not affect the operation of the component.
-     * 
+     *
      * @param featureId The feature identifier.
      * @param state     The state of the feature.
      *
@@ -934,11 +941,11 @@ public class XMLEntityManager
 
     /**
      * Sets the value of a property. This method is called by the component
-     * manager any time after reset when a property changes value. 
+     * manager any time after reset when a property changes value.
      * <p>
      * <strong>Note:</strong> Components should silently ignore properties
      * that do not affect the operation of the component.
-     * 
+     *
      * @param propertyId The property identifier.
      * @param value      The value of the property.
      *
@@ -1057,7 +1064,7 @@ public class XMLEntityManager
                         // a specified drive
                         base = new URI("file", "", fixURI(baseSystemId), null, null);
                     }
-                    else {                    
+                    else {
                         if (!dir.endsWith("/")) {
                             dir = dir + "/";
                         }
@@ -1071,7 +1078,7 @@ public class XMLEntityManager
         }
         catch (Exception e) {
             // let it go through
-            
+
         }
 
         if (uri == null) {
@@ -1247,7 +1254,7 @@ public class XMLEntityManager
             //       the encoding anyway, then we're expecting the content
             //       of the document to be bad. This will just prevent an
             //       invalid UTF-8 sequence to be detected. This is only
-            //       important when continue-after-fatal-error is turned 
+            //       important when continue-after-fatal-error is turned
             //       on. -Ac
             encoding = "ISO-8859-1";
         }
@@ -1304,7 +1311,7 @@ public class XMLEntityManager
     // Package visible methods
     //
 
-    /** 
+    /**
      * Returns the hashtable of declared entities.
      * <p>
      * <strong>REVISIT:</strong>
@@ -1493,13 +1500,13 @@ public class XMLEntityManager
      *
      * @author Andy Clark, IBM
      */
-    protected static class ExternalEntity 
+    protected static class ExternalEntity
         extends Entity {
-        
+
         //
         // Data
         //
-    
+
         /** Public identifier. */
         public String publicId;
 
@@ -1579,7 +1586,7 @@ public class XMLEntityManager
      *
      * @author Andy Clark, IBM
      */
-    protected class ScannedEntity 
+    protected class ScannedEntity
         extends Entity {
 
         //
@@ -1637,10 +1644,10 @@ public class XMLEntityManager
         //
 
         /** Constructs a scanned entity. */
-        public ScannedEntity(String name, 
+        public ScannedEntity(String name,
                              String publicId, String systemId,
                              String baseSystemId,
-                             InputStream stream, Reader reader, 
+                             InputStream stream, Reader reader,
                              String encoding, boolean literal) {
             super(name);
             this.publicId = publicId;
@@ -1691,20 +1698,20 @@ public class XMLEntityManager
      */
     protected class EntityScanner
         extends XMLEntityScanner {
-    
+
         //
         // Constructors
         //
-    
+
         /** Default constructor. */
         public EntityScanner() {
         } // <init>()
-    
+
         //
         // XMLEntityScanner methods
         //
-    
-        /** 
+
+        /**
          * Returns the base system identifier of the currently scanned
          * entity, or null if none is available.
          */
@@ -1715,10 +1722,10 @@ public class XMLEntityManager
         /**
          * Sets the encoding of the scanner. This method is used by the
          * scanners if the XMLDecl or TextDecl line contains an encoding
-         * pseudo-attribute. 
+         * pseudo-attribute.
          * <p>
          * <strong>Note:</strong> The underlying character reader on the
-         * current entity will be changed to accomodate the new encoding. 
+         * current entity will be changed to accomodate the new encoding.
          * However, the new encoding is ignored if the current reader was
          * not constructed from an input stream (e.g. an external entity
          * that is resolved directly to the appropriate java.io.Reader
@@ -1726,7 +1733,7 @@ public class XMLEntityManager
          *
          * @param encoding The IANA encoding name of the new encoding.
          *
-         * @throws IOException Thrown if the new encoding is not supported.                     
+         * @throws IOException Thrown if the new encoding is not supported.
          *
          * @see org.apache.xerces.util.EncodingMap
          */
@@ -1744,14 +1751,14 @@ public class XMLEntityManager
                 //       distribution (up to and including 1.3). The UTF-16
                 //       decoder buffers 8K blocks even when only asked to read
                 //       a single char! -Ac
-                if (fCurrentEntity.encoding != null && 
+                if (fCurrentEntity.encoding != null &&
                     fCurrentEntity.encoding.equals(encoding)) {
                     if (DEBUG_ENCODINGS) {
                         System.out.println("$$$ using original reader");
                     }
                     fCurrentEntity.reader = ((OneCharReader)fCurrentEntity.reader).getReader();
                 }
-    
+
                 // wrap a new reader around the input stream, changing
                 // the encoding
                 else {
@@ -1812,7 +1819,7 @@ public class XMLEntityManager
             }
 
         } // peekChar():int
-    
+
         /**
          * Returns the next character on the input.
          * <p>
@@ -1870,7 +1877,7 @@ public class XMLEntityManager
             return c;
 
         } // scanChar():int
-    
+
         /**
          * Returns a string matching the NMTOKEN production appearing immediately
          * on the input as a symbol, or null if NMTOKEN Name string is present.
@@ -1892,7 +1899,7 @@ public class XMLEntityManager
                 print();
                 System.out.println();
             }
-    
+
             // load more characters, if needed
             if (fCurrentEntity.position == fCurrentEntity.count) {
                 load(0, true);
@@ -1935,9 +1942,9 @@ public class XMLEntityManager
                 System.out.println(" -> "+String.valueOf(symbol));
             }
             return symbol;
-    
+
         } // scanNmtoken():String
-    
+
         /**
          * Returns a string matching the Name production appearing immediately
          * on the input as a symbol, or null if no Name string is present.
@@ -1960,7 +1967,7 @@ public class XMLEntityManager
                 print();
                 System.out.println();
             }
-    
+
             // load more characters, if needed
             if (fCurrentEntity.position == fCurrentEntity.count) {
                 load(0, true);
@@ -2019,9 +2026,9 @@ public class XMLEntityManager
                 System.out.println(" -> "+String.valueOf(symbol));
             }
             return symbol;
-    
+
         } // scanName():String
-    
+
         /**
          * Scans a qualified name from the input, setting the fields of the
          * QName structure appropriately.
@@ -2050,7 +2057,7 @@ public class XMLEntityManager
                 print();
                 System.out.println();
             }
-    
+
             // load more characters, if needed
             if (fCurrentEntity.position == fCurrentEntity.count) {
                 load(0, true);
@@ -2121,7 +2128,7 @@ public class XMLEntityManager
                         int len = length - prefixLength - 1;
                         localpart = fSymbolTable.addSymbol(fCurrentEntity.ch,
                                                            index + 1, len);
-                                                           
+
                     }
                     else {
                         localpart = rawname;
@@ -2143,9 +2150,9 @@ public class XMLEntityManager
                 System.out.println(" -> false");
             }
             return false;
-    
+
         } // scanQName(QName):boolean
-    
+
         /**
          * Scans a range of parsed character data, setting the fields of the
          * XMLString structure, appropriately.
@@ -2178,7 +2185,7 @@ public class XMLEntityManager
                 print();
                 System.out.println();
             }
-    
+
             // load more characters, if needed
             if (fCurrentEntity.position == fCurrentEntity.count) {
                 load(0, true);
@@ -2278,7 +2285,7 @@ public class XMLEntityManager
             int length = fCurrentEntity.position - offset;
             fCurrentEntity.columnNumber += length - newlines;
             content.setValues(fCurrentEntity.ch, offset, length);
-    
+
             // return next character
             if (fCurrentEntity.position != fCurrentEntity.count) {
                 c = fCurrentEntity.ch[fCurrentEntity.position];
@@ -2297,9 +2304,9 @@ public class XMLEntityManager
                 System.out.println(" -> '"+(char)c+"'");
             }
             return c;
-    
+
         } // scanContent(XMLString):int
-    
+
         /**
          * Scans a range of attribute value data, setting the fields of the
          * XMLString structure, appropriately.
@@ -2335,7 +2342,7 @@ public class XMLEntityManager
                 print();
                 System.out.println();
             }
-    
+
             // load more characters, if needed
             if (fCurrentEntity.position == fCurrentEntity.count) {
                 load(0, true);
@@ -2437,7 +2444,7 @@ public class XMLEntityManager
             int length = fCurrentEntity.position - offset;
             fCurrentEntity.columnNumber += length - newlines;
             content.setValues(fCurrentEntity.ch, offset, length);
-    
+
             // return next character
             if (fCurrentEntity.position != fCurrentEntity.count) {
                 c = fCurrentEntity.ch[fCurrentEntity.position];
@@ -2457,11 +2464,11 @@ public class XMLEntityManager
                 System.out.println(" -> '"+(char)c+"'");
             }
             return c;
-    
+
         } // scanLiteral(int,XMLString):int
-    
+
         /**
-         * Scans a range of character data up to the specicied delimiter, 
+         * Scans a range of character data up to the specicied delimiter,
          * setting the fields of the XMLString structure, appropriately.
          * <p>
          * <strong>Note:</strong> The characters are consumed.
@@ -2500,7 +2507,7 @@ public class XMLEntityManager
 
             // load more characters, if needed
             int delimLen = delimiter.length();
-            char charAt0 = delimiter.charAt(0); 
+            char charAt0 = delimiter.charAt(0);
             //int limit = fCurrentEntity.count - delimLen + 1;
 
             if (fCurrentEntity.position == fCurrentEntity.count) {
@@ -2644,7 +2651,7 @@ public class XMLEntityManager
             return !done;
 
         } // scanData(String,XMLString)
-    
+
         /**
          * Skips a character appearing immediately on the input.
          * <p>
@@ -2707,7 +2714,7 @@ public class XMLEntityManager
                 }
                 return true;
             }
-            
+
             // character was not skipped
             if (DEBUG_BUFFER) {
                 System.out.print(")skipChar, '"+(char)c+"': ");
@@ -2717,7 +2724,7 @@ public class XMLEntityManager
             return false;
 
         } // skipChar(int):boolean
-    
+
         /**
          * Skips space characters appearing immediately on the input.
          * <p>
@@ -2737,7 +2744,7 @@ public class XMLEntityManager
                 print();
                 System.out.println();
             }
-    
+
             // load more characters, if needed
             if (fCurrentEntity.position == fCurrentEntity.count) {
                 load(0, true);
@@ -2802,9 +2809,9 @@ public class XMLEntityManager
                 System.out.println(" -> false");
             }
             return false;
-    
+
         } // skipSpaces():boolean
-    
+
         /**
          * Skips the specified string appearing immediately on the input.
          * <p>
@@ -2824,7 +2831,7 @@ public class XMLEntityManager
                 print();
                 System.out.println();
             }
-    
+
             // load more characters, if needed
             if (fCurrentEntity.position == fCurrentEntity.count) {
                 load(0, true);
@@ -2865,13 +2872,13 @@ public class XMLEntityManager
             }
             fCurrentEntity.columnNumber += length;
             return true;
-    
+
         } // skipString(String):boolean
-    
+
         //
         // Locator methods
         //
-    
+
         /**
          * Return the public identifier for the current document event.
          * <p>
@@ -2885,7 +2892,7 @@ public class XMLEntityManager
         public String getPublicId() {
             return fCurrentEntity != null ? fCurrentEntity.publicId : null;
         } // getPublicId():String
-    
+
         /**
          * Return the system identifier for the current document event.
          * <p>
@@ -2905,7 +2912,7 @@ public class XMLEntityManager
                     return fCurrentEntity.systemId;
                 }
                 else {
-                    // search for the first external entity on the stack 
+                    // search for the first external entity on the stack
                     int size = fEntityStack.size();
                     for (int i = size - 1; i >= 0 ; i--) {
                         ScannedEntity externalEntity =
@@ -2919,7 +2926,7 @@ public class XMLEntityManager
             }
             return null;
         } // getSystemId():String
-    
+
         /**
          * Return the line number where the current document event ends.
          * <p>
@@ -2932,8 +2939,8 @@ public class XMLEntityManager
          * in the document entity or external parsed entity where the
          * markup triggering the event appears.
          * <p>
-         * If possible, the SAX driver should provide the line position 
-         * of the first character after the text associated with the document 
+         * If possible, the SAX driver should provide the line position
+         * of the first character after the text associated with the document
          * event.  The first line in the document is line 1.
          *
          * @return The line number, or -1 if none is available.
@@ -2945,7 +2952,7 @@ public class XMLEntityManager
                     return fCurrentEntity.lineNumber;
                 }
                 else {
-                    // search for the first external entity on the stack 
+                    // search for the first external entity on the stack
                     int size = fEntityStack.size();
                     for (int i=size-1; i>0 ; i--) {
                         ScannedEntity firstExternalEntity = (ScannedEntity)fEntityStack.elementAt(i);
@@ -2960,7 +2967,7 @@ public class XMLEntityManager
             return -1;
 
         } // getLineNumber():int
-    
+
         /**
          * Return the column number where the current document event ends.
          * <p>
@@ -2973,12 +2980,12 @@ public class XMLEntityManager
          * in the document entity or external parsed entity where the
          * markup triggering the event appears.
          * <p>
-         * If possible, the SAX driver should provide the line position 
-         * of the first character after the text associated with the document 
+         * If possible, the SAX driver should provide the line position
+         * of the first character after the text associated with the document
          * event.
          * <p>
-         * If possible, the SAX driver should provide the line position 
-         * of the first character after the text associated with the document 
+         * If possible, the SAX driver should provide the line position
+         * of the first character after the text associated with the document
          * event.  The first column in each line is column 1.
          *
          * @return The column number, or -1 if none is available.
@@ -2990,7 +2997,7 @@ public class XMLEntityManager
                     return fCurrentEntity.columnNumber;
                 }
                 else {
-                    // search for the first external entity on the stack 
+                    // search for the first external entity on the stack
                     int size = fEntityStack.size();
                     for (int i=size-1; i>0 ; i--) {
                         ScannedEntity firstExternalEntity = (ScannedEntity)fEntityStack.elementAt(i);
@@ -3004,15 +3011,15 @@ public class XMLEntityManager
 
             return -1;
         } // getColumnNumber():int
-    
+
         //
         // Private methods
         //
-    
-        /** 
-         * Loads a chunk of text. 
+
+        /**
+         * Loads a chunk of text.
          *
-         * @param offset       The offset into the character buffer to 
+         * @param offset       The offset into the character buffer to
          *                     read the next batch of characters.
          * @param changeEntity True if the load should change entities
          *                     at the end of the entity, otherwise leave
@@ -3023,7 +3030,7 @@ public class XMLEntityManager
          * @returns Returns true if the entity changed as a result of this
          *          load operation.
          */
-        private final boolean load(int offset, boolean changeEntity) 
+        private final boolean load(int offset, boolean changeEntity)
             throws IOException {
             if (DEBUG_BUFFER) {
                 System.out.print("(load, "+offset+": ");
@@ -3071,7 +3078,7 @@ public class XMLEntityManager
             return entityChanged;
 
         } // load(int):boolean
-    
+
     } // class EntityScanner
 
     /**
@@ -3155,7 +3162,7 @@ public class XMLEntityManager
 
         } // read():int
 
-        /** 
+        /**
          * Reads as many characters as possible which, in this case,
          * is only a single character.
          */
