@@ -34,6 +34,18 @@
       For more information, refer to the <link idref='dom3'>DOM Level 3 Implementation</link> page. 
     </p>
 
+    <p>Xerces is now able to parse documents written according to the
+        <jump href="http://www.w3.org/TR/xml11/">
+        XML 1.1 Candidate Recommendation</jump>, except that 
+        it does not yet provide an option to enable normalization checking as described
+        in section 2.13 of this specification.
+        It also handles namespaces according to the 
+        <jump href="http://www.w3.org/TR/xml-names11/">
+        XML Namespaces 1.1 Candidate Recommendation</jump>,
+        and will correctly serialize XML 1.1 documents if the DOM level
+        3 load/save API's are in use.
+    </p>
+
     <p>
       Before reporting a bug in 
 <jump href='http://nagoya.apache.org/bugzilla/enter_bug.cgi?product=Xerces2-J'>BugZilla</jump>, 
