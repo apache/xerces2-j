@@ -70,8 +70,6 @@ import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.impl.xs.util.XInt;
-import org.apache.xerces.impl.xs.util.XIntPool;
 import org.w3c.dom.Element;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -111,8 +109,6 @@ abstract class XSDAbstractTraverser {
     protected SymbolTable           fSymbolTable = null;
     protected XSAttributeChecker    fAttrChecker = null;
     protected XMLErrorReporter      fErrorReporter = null;
-
-    static final XIntPool fXIntPool = new XIntPool();
 
     XSDAbstractTraverser (XSDHandler handler,
                           XSAttributeChecker attrChecker) {
@@ -575,7 +571,7 @@ abstract class XSDAbstractTraverser {
                 else {
                     errorMsg = "BadMinMaxForGroupWithAll";
                 }
-                Object[] args = new Object [] {"minOccurs", fXIntPool.getXInt(min)};
+                Object[] args = new Object [] {"minOccurs", Integer.toString(min)};
                 fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                            errorMsg,
                                            args,
@@ -595,7 +591,7 @@ abstract class XSDAbstractTraverser {
                     errorMsg = "BadMinMaxForGroupWithAll";
                 }
 
-                Object[] args = new Object [] {"maxOccurs", fXIntPool.getXInt(max)};
+                Object[] args = new Object [] {"maxOccurs", Integer.toString(max)};
                 fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                            errorMsg,
                                            args,
