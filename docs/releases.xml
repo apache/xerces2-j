@@ -2,6 +2,68 @@
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
+  <release version='&ParserName; 2.6.2'>
+   <desc>
+    This release fixes several bugs which were present in
+    Xerces-J 2.6.1. It also provides a few minor performance
+    improvements.
+   </desc>
+   <changes>
+    <fix>
+     <note>
+      Fixed a bug in the specification of the XML Schema API. Some of the 
+      method signatures did not match the signatures in the implementation.
+     </note>
+     <submitter name='Elena Litani'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed a bug introduced in 2.6.1 which caused the XMLSerializer to 
+      automatically expand entity references and convert CDATA sections to text.
+     </note>
+     <submitter name='Elena Litani'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed a possible security hole regarding class loading.
+     </note>
+     <submitter name='Neeraj Bajaj'/>
+    </fix>
+    <update>
+     <note>
+      Improved class initialization for the XMLChar and  
+      XML11Char classes to reduce the cost of loading Xerces.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </update>
+    <fix>
+     <note>
+      Fixed a SAX conformance bug involving spurious
+      prefix mapping events with namespace support 
+      turned off.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <update>
+     <note>
+      Made message localization changes.
+     </note>
+     <submitter name='Neil Delima, Michael Glavassevich'/>
+    </update>
+    <fix>
+     <note>
+      Fixed schema related bugs.
+     </note>
+     <submitter name='Sandy Gao'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed various bugs.
+     </note>
+     <submitter name='Curt Arnold, Michael Glavassevich, Kohsuke Kawaguchi, Naela Nissar'/>
+    </fix>
+   </changes>
+  </release>
   <release version='&ParserName; 2.6.1'>
    <desc>
     This release provides support for OASIS XML Catalogs
@@ -83,7 +145,7 @@
      <note>
       Fixed various bugs.
      </note>
-     <submitter name='Michael Glavassevich, Kohsuke Kawaguchi, Elena Litani'/>
+     <submitter name='Michael Glavassevich, Lucian Holland, Kohsuke Kawaguchi, Elena Litani'/>
     </fix>
    </changes>
   </release>
