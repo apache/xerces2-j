@@ -223,8 +223,6 @@ public class NonValidatingConfiguration
     /** DTD scanner. */
     protected XMLDTDScanner fDTDScanner;
 
-    /** Namespace binder. */
-    protected XMLNamespaceBinder fNamespaceBinder;
 
     protected ValidationManager fValidationManager;
 
@@ -235,6 +233,12 @@ public class NonValidatingConfiguration
 
     /** Default Xerces implementation of scanner*/
     private XMLDocumentScannerImpl fNonNSScanner;
+    
+    
+	/** fConfigUpdated is set to true if there has been any change to the configuration settings, 
+	 * i.e a feature or a property was changed.
+	 */
+	protected boolean fConfigUpdated = false;
 
 
     // state
@@ -301,7 +305,9 @@ public class NonValidatingConfiguration
         super(symbolTable, parentSettings);
 
         // add default recognized features
-        final String[] recognizedFeatures = {
+        final String[] recognizedFeatures = {        	
+        	PARSER_SETTINGS,
+			NAMESPACES,
             //WARN_ON_DUPLICATE_ATTDEF,     // from XMLDTDScannerImpl
             //WARN_ON_UNDECLARED_ELEMDEF,   // from XMLDTDScannerImpl
             //ALLOW_JAVA_ENCODINGS,         // from XMLEntityManager
@@ -317,7 +323,9 @@ public class NonValidatingConfiguration
         //setFeature(WARN_ON_DUPLICATE_ATTDEF, false);  // from XMLDTDScannerImpl
         //setFeature(WARN_ON_UNDECLARED_ELEMDEF, false);    // from XMLDTDScannerImpl
         //setFeature(ALLOW_JAVA_ENCODINGS, false);      // from XMLEntityManager
-        setFeature(CONTINUE_AFTER_FATAL_ERROR, false);
+        fFeatures.put(CONTINUE_AFTER_FATAL_ERROR, Boolean.FALSE);
+		fFeatures.put(PARSER_SETTINGS, Boolean.TRUE);
+		fFeatures.put(NAMESPACES, Boolean.TRUE);
         //setFeature(LOAD_EXTERNAL_DTD, true);      // from XMLDTDScannerImpl
         //setFeature(NOTIFY_BUILTIN_REFS, false);   // from XMLDocumentFragmentScannerImpl
         //setFeature(NOTIFY_CHAR_REFS, false);      // from XMLDocumentFragmentScannerImpl
@@ -339,16 +347,16 @@ public class NonValidatingConfiguration
 	
         fGrammarPool = grammarPool;
         if(fGrammarPool != null){
-        	setProperty(XMLGRAMMAR_POOL, fGrammarPool);
+			fProperties.put(XMLGRAMMAR_POOL, fGrammarPool);
         }
 
         fEntityManager = createEntityManager();
-        setProperty(ENTITY_MANAGER, fEntityManager);
+		fProperties.put(ENTITY_MANAGER, fEntityManager);
         addComponent(fEntityManager);
 
         fErrorReporter = createErrorReporter();
         fErrorReporter.setDocumentLocator(fEntityManager.getEntityScanner());
-        setProperty(ERROR_REPORTER, fErrorReporter);
+		fProperties.put(ERROR_REPORTER, fErrorReporter);
         addComponent(fErrorReporter);
 
         // this configuration delays creation of the scanner
@@ -356,27 +364,21 @@ public class NonValidatingConfiguration
 
         fDTDScanner = createDTDScanner();
         if (fDTDScanner != null) {
-            setProperty(DTD_SCANNER, fDTDScanner);
+			fProperties.put(DTD_SCANNER, fDTDScanner);
             if (fDTDScanner instanceof XMLComponent) {
                 addComponent((XMLComponent)fDTDScanner);
             }
         }
 
-        fNamespaceBinder = createNamespaceBinder();
-        if (fNamespaceBinder != null) {
-            setProperty(NAMESPACE_BINDER, fNamespaceBinder);
-            addComponent(fNamespaceBinder);
-        }
-        
         fDatatypeValidatorFactory = createDatatypeValidatorFactory();
         if (fDatatypeValidatorFactory != null) {
-            setProperty(DATATYPE_VALIDATOR_FACTORY,
+			fProperties.put(DATATYPE_VALIDATOR_FACTORY,
                         fDatatypeValidatorFactory);
         }
         fValidationManager = createValidationManager();
 
         if (fValidationManager != null) {
-            setProperty (VALIDATION_MANAGER, fValidationManager);
+			fProperties.put(VALIDATION_MANAGER, fValidationManager);
         }
         // add message formatters
         if (fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN) == null) {
@@ -384,6 +386,8 @@ public class NonValidatingConfiguration
             fErrorReporter.putMessageFormatter(XMLMessageFormatter.XML_DOMAIN, xmft);
             fErrorReporter.putMessageFormatter(XMLMessageFormatter.XMLNS_DOMAIN, xmft);
         }
+        
+		fConfigUpdated = false;
 
         // set locale
         try {
@@ -399,7 +403,17 @@ public class NonValidatingConfiguration
     //
     // Public methods
     //
-
+	public void setFeature(String featureId, boolean state)
+		throws XMLConfigurationException {
+		fConfigUpdated = true;
+		super.setFeature(featureId, state);
+	}
+	
+	public void setProperty(String propertyId, Object value)
+		throws XMLConfigurationException {
+		fConfigUpdated = true;
+		super.setProperty(propertyId, value);
+		}
     /**
      * Set the locale to use for messages.
      *
@@ -412,7 +426,16 @@ public class NonValidatingConfiguration
         super.setLocale(locale);
         fErrorReporter.setLocale(locale);
     } // setLocale(Locale)
+    
+	public boolean getFeature(String featureId)
+		throws XMLConfigurationException {
+			// make this feature special
+		if (featureId.equals(PARSER_SETTINGS)){
+			return fConfigUpdated;
+		}
+		return super.getFeature(featureId);
 
+	} // getFeature(String):boolean
     //
     // XMLPullParserConfiguration methods
     //
@@ -772,11 +795,6 @@ public class NonValidatingConfiguration
     protected XMLDTDScanner createDTDScanner() {
         return new XMLDTDScannerImpl();
     } // createDTDScanner():XMLDTDScanner
-
-    /** Create a namespace binder. */
-    protected XMLNamespaceBinder createNamespaceBinder() {
-        return null;
-    } // createNamespaceBinder():XMLNamespaceBinder
 
     /** Create a datatype validator factory. */
     protected DTDDVFactory createDatatypeValidatorFactory() {
