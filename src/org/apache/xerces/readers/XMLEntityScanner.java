@@ -371,7 +371,7 @@ implements Locator {
      * 
      * @param content 
      */
-    public boolean scanContent(XMLString content)
+    public int scanContent(XMLString content)
     throws IOException {
         fLength = 0;
         while (peek() != '<' && peek() != '&') {
@@ -384,7 +384,7 @@ implements Locator {
 
 
         // return true if more to come
-        return fLength == fBuffer.length;
+        return peek();
 
         /*
         Work in Progress
@@ -429,7 +429,7 @@ implements Locator {
      * @param quote
      * @param content 
      */
-    public boolean scanAttContent(int quote, XMLString content)
+    public int scanAttContent(int quote, XMLString content)
     throws IOException {
         fLength = 0;
         while (peek() != quote) {
@@ -441,7 +441,7 @@ implements Locator {
         content.setValues(fBuffer, 0, fLength);
 
         // return true if more to come
-        return fLength == fBuffer.length;
+        return peek();
 
         //throw new RuntimeException("not implemented");
     } // scanAttContent
@@ -487,7 +487,16 @@ implements Locator {
         return foundDelimiter;
     }
 
+    /** Returns true if the specified character is skipped. */
+    public boolean skipChar(int c) throws IOException {
 
+        int pc = peek();
+        if (pc == c) {
+            scanChar();
+        }
+        return pc == c;
+
+    } // skipChar(int)
 
     /**
      * skipSpaces
