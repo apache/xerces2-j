@@ -267,15 +267,8 @@ public class XMLNamespaceBinder
     //
 
     /**
-     * This method notifies the start of an entity. The document entity has
-     * the pseudo-name of "[xml]"; and general entities are just specified
-     * by their name.
-     * <p>
-     * <strong>Note:</strong> Since the document is an entity, the handler
-     * will be notified of the start of the document entity by calling the
-     * startEntity method with the entity name "[xml]" <em>before</em> calling
-     * the startDocument method. When exposing entity boundaries through the
-     * SAX API, the document entity is never reported, however.
+     * This method notifies the start of an entity. General entities are just
+     * specified by their name.
      * <p>
      * <strong>Note:</strong> This method is not called for entity references
      * appearing as part of attribute values.
@@ -328,11 +321,12 @@ public class XMLNamespaceBinder
      *
      * @throws SAXException Thrown by handler to signal an error.
      */
-    public void startDocument() throws SAXException {
+    public void startDocument(String systemId, String encoding) 
+        throws SAXException {
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
-            fDocumentHandler.startDocument();
+            fDocumentHandler.startDocument(systemId, encoding);
         }
-    } // startDocument()
+    } // startDocument(String,String)
 
     /**
      * Notifies of the presence of an XMLDecl line in the document. If
@@ -519,6 +513,22 @@ public class XMLNamespaceBinder
     } // startElement(QName,XMLAttributes)
 
     /**
+     * An empty element.
+     * 
+     * @param element    The name of the element.
+     * @param attributes The element attributes.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
+     */
+    public void emptyElement(QName element, XMLAttributes attributes)
+        throws SAXException {
+
+        startElement(element, attributes);
+        endElement(element);
+
+    } // emptyElement(QName,XMLAttributes)
+
+    /**
      * Character content.
      * 
      * @param text The content.
@@ -634,15 +644,8 @@ public class XMLNamespaceBinder
     } // endDocument()
 
     /**
-     * This method notifies the end of an entity. The document entity has
-     * the pseudo-name of "[xml]"; and general entities are just specified
-     * by their name.
-     * <p>
-     * <strong>Note:</strong> Since the document is an entity, the handler
-     * will be notified of the end of the document entity by calling the
-     * endEntity method with the entity name "[xml]" <em>after</em> calling
-     * the endDocument method. When exposing entity boundaries through the
-     * SAX API, the document entity is never reported, however.
+     * This method notifies the end of an entity. General entities are just
+     * specified by their name.
      * <p>
      * <strong>Note:</strong> This method is not called for entity references
      * appearing as part of attribute values.

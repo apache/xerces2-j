@@ -167,12 +167,31 @@ public class DocumentTracer
     // XMLDocumentHandler methods
     //
 
-    /** Start document. */
-    public void startDocument() throws SAXException {
+    /**
+     * The start of the document.
+     *
+     * @param systemId The system identifier of the entity if the entity
+     *                 is external, null otherwise.
+     * @param encoding The auto-detected IANA encoding name of the entity
+     *                 stream. This value will be null in those situations
+     *                 where the entity encoding is not auto-detected (e.g.
+     *                 internal entities or a document entity that is
+     *                 parsed from a java.io.Reader).
+     *     
+     * @throws SAXException Thrown by handler to signal an error.
+     */
+    public void startDocument(String systemId, String encoding) 
+        throws SAXException {
 
         fIndent = 0;
         printIndent();
-        fOut.println("startDocument()");
+        fOut.print("startDocument(");
+        fOut.print("systemId=");
+        printQuotedString(systemId);
+        fOut.print(',');
+        fOut.print("encoding=");
+        printQuotedString(encoding);
+        fOut.println(')');
         fOut.flush();
         fIndent++;
 
@@ -240,81 +259,24 @@ public class DocumentTracer
 
         printIndent();
         fOut.print("startElement(");
-        fOut.print("element=");
-        fOut.print('{');
-        fOut.print("prefix=");
-        printQuotedString(element.prefix);
-        fOut.print(',');
-        fOut.print("localpart=");
-        printQuotedString(element.localpart);
-        fOut.print(',');
-        fOut.print("rawname=");
-        printQuotedString(element.rawname);
-        fOut.print(',');
-        fOut.print("uri=");
-        printQuotedString(element.uri);
-        fOut.print('}');
-        fOut.print(',');
-        fOut.print("attributes=");
-        if (attributes == null) {
-            fOut.println("null");
-        }
-        else {
-            fOut.print('{');
-            int length = attributes.getLength();
-            for (int i = 0; i < length; i++) {
-                if (i > 0) {
-                    fOut.print(',');
-                }
-                attributes.getName(i, fQName);
-                String attrType = attributes.getType(i);
-                String attrValue = attributes.getValue(i);
-                fOut.print("name=");
-                fOut.print('{');
-                fOut.print("prefix=");
-                printQuotedString(fQName.prefix);
-                fOut.print(',');
-                fOut.print("localpart=");
-                printQuotedString(fQName.localpart);
-                fOut.print(',');
-                fOut.print("rawname=");
-                printQuotedString(fQName.rawname);
-                fOut.print(',');
-                fOut.print("uri=");
-                printQuotedString(fQName.uri);
-                fOut.print('}');
-                fOut.print(',');
-                fOut.print("type=");
-                printQuotedString(attrType);
-                fOut.print(',');
-                fOut.print("value=");
-                printQuotedString(attrValue);
-                int entityCount = attributes.getEntityCount(i);
-                for (int j = 0; j < entityCount; j++) {
-                    String entityName = attributes.getEntityName(i, j);
-                    int entityOffset = attributes.getEntityOffset(i, j);
-                    int entityLength = attributes.getEntityLength(i, j);
-                    fOut.print(',');
-                    fOut.print('[');
-                    fOut.print("name=");
-                    printQuotedString(entityName);
-                    fOut.print(',');
-                    fOut.print("offset=");
-                    fOut.print(entityOffset);
-                    fOut.print(',');
-                    fOut.print("length=");
-                    fOut.print(entityLength);
-                    fOut.print(']');
-                }
-                fOut.print('}');
-            }
-            fOut.print('}');
-        }
+        printElement(element, attributes);
         fOut.println(')');
         fOut.flush();
         fIndent++;
 
     } // startElement(QName,XMLAttributes)
+
+    /** Empty element. */
+    public void emptyElement(QName element, XMLAttributes attributes)
+        throws SAXException {
+
+        printIndent();
+        fOut.print("emptyElement(");
+        printElement(element, attributes);
+        fOut.println(')');
+        fOut.flush();
+
+    } // emptyElement(QName,XMLAttributes)
 
     /** Characters. */
     public void characters(XMLString text) throws SAXException {
@@ -883,6 +845,82 @@ public class DocumentTracer
     //
     // Protected methods
     //
+
+    /** Prints an element. */
+    protected void printElement(QName element, XMLAttributes attributes) {
+
+        fOut.print("element=");
+        fOut.print('{');
+        fOut.print("prefix=");
+        printQuotedString(element.prefix);
+        fOut.print(',');
+        fOut.print("localpart=");
+        printQuotedString(element.localpart);
+        fOut.print(',');
+        fOut.print("rawname=");
+        printQuotedString(element.rawname);
+        fOut.print(',');
+        fOut.print("uri=");
+        printQuotedString(element.uri);
+        fOut.print('}');
+        fOut.print(',');
+        fOut.print("attributes=");
+        if (attributes == null) {
+            fOut.println("null");
+        }
+        else {
+            fOut.print('{');
+            int length = attributes.getLength();
+            for (int i = 0; i < length; i++) {
+                if (i > 0) {
+                    fOut.print(',');
+                }
+                attributes.getName(i, fQName);
+                String attrType = attributes.getType(i);
+                String attrValue = attributes.getValue(i);
+                fOut.print("name=");
+                fOut.print('{');
+                fOut.print("prefix=");
+                printQuotedString(fQName.prefix);
+                fOut.print(',');
+                fOut.print("localpart=");
+                printQuotedString(fQName.localpart);
+                fOut.print(',');
+                fOut.print("rawname=");
+                printQuotedString(fQName.rawname);
+                fOut.print(',');
+                fOut.print("uri=");
+                printQuotedString(fQName.uri);
+                fOut.print('}');
+                fOut.print(',');
+                fOut.print("type=");
+                printQuotedString(attrType);
+                fOut.print(',');
+                fOut.print("value=");
+                printQuotedString(attrValue);
+                int entityCount = attributes.getEntityCount(i);
+                for (int j = 0; j < entityCount; j++) {
+                    String entityName = attributes.getEntityName(i, j);
+                    int entityOffset = attributes.getEntityOffset(i, j);
+                    int entityLength = attributes.getEntityLength(i, j);
+                    fOut.print(',');
+                    fOut.print('[');
+                    fOut.print("name=");
+                    printQuotedString(entityName);
+                    fOut.print(',');
+                    fOut.print("offset=");
+                    fOut.print(entityOffset);
+                    fOut.print(',');
+                    fOut.print("length=");
+                    fOut.print(entityLength);
+                    fOut.print(']');
+                }
+                fOut.print('}');
+            }
+            fOut.print('}');
+        }
+
+    } // printElement(QName,XMLAttributes)
 
     /** Print quoted string. */
     protected void printQuotedString(String s) {

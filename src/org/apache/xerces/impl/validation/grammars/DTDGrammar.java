@@ -685,6 +685,15 @@ public class DTDGrammar
     } // startConditional(short)
 
     /**
+     * Characters within an IGNORE conditional section.
+     *
+     * @param text The ignored text.
+     */
+    public void characters(XMLString text) throws SAXException {
+        // no-op
+    } // characters(XMLString)
+
+    /**
      * The end of a conditional section.
      *
      * @throws SAXException Thrown by handler to signal an error.

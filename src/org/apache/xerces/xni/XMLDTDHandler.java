@@ -295,6 +295,13 @@ public interface XMLDTDHandler {
     public void startConditional(short type) throws SAXException;
 
     /**
+     * Characters within an IGNORE conditional section.
+     *
+     * @param text The ignored text.
+     */
+    public void characters(XMLString text) throws SAXException;
+
+    /**
      * The end of a conditional section.
      *
      * @throws SAXException Thrown by handler to signal an error.

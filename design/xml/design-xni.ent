@@ -92,6 +92,12 @@
  <interface id='document-handler' name='XMLDocumentHandler'>
  
   <method name='startDocument'>
+   <param name='systemId'>
+    <reference idref='java-string'/>
+   </param>
+   <param name='encoding'>
+    <reference idref='java-string'/>
+   </param>
    <throws>
     <reference idref='sax-exception'/>
    </throws>

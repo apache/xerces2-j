@@ -77,10 +77,9 @@ public interface XMLEntityHandler {
     //
 
     /**
-     * This method notifies of the start of an entity. The document entity
-     * has the pseudo-name of "[xml]"; the DTD has the pseudo-name of "[dtd]; 
-     * parameter entity names start with '%'; and general entities are just
-     * specified by their name.
+     * This method notifies of the start of an entity. The DTD has the 
+     * pseudo-name of "[dtd]; parameter entity names start with '%'; and 
+     * general entities are just specified by their name.
      * 
      * @param name     The name of the entity.
      * @param publicId The public identifier of the entity if the entity
@@ -99,10 +98,9 @@ public interface XMLEntityHandler {
                             String encoding) throws SAXException;
 
     /**
-     * This method notifies the end of an entity. The document entity has
-     * the pseudo-name of "[xml]"; the DTD has the pseudo-name of "[dtd]; 
-     * parameter entity names start with '%'; and general entities are just
-     * specified by their name.
+     * This method notifies the end of an entity. The DTD has the pseudo-name
+     * of "[dtd]; parameter entity names start with '%'; and general entities 
+     * are just specified by their name.
      * 
      * @param name The name of the entity.
      *

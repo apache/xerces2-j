@@ -598,16 +598,25 @@ public class XMLValidator
     /**
      * The start of the document.
      *
+     * @param systemId The system identifier of the entity if the entity
+     *                 is external, null otherwise.
+     * @param encoding The auto-detected IANA encoding name of the entity
+     *                 stream. This value will be null in those situations
+     *                 where the entity encoding is not auto-detected (e.g.
+     *                 internal entities or a document entity that is
+     *                 parsed from a java.io.Reader).
+     *     
      * @throws SAXException Thrown by handler to signal an error.
      */
-    public void startDocument() throws SAXException {
+    public void startDocument(String systemId, String encoding) 
+        throws SAXException {
 
         // call handlers
         if (fDocumentHandler != null) {
-            fDocumentHandler.startDocument();
+            fDocumentHandler.startDocument(systemId, encoding);
         }
 
-    } // startDocument()
+    } // startDocument(String,String)
 
     /**
      * Notifies of the presence of an XMLDecl line in the document. If
@@ -678,9 +687,7 @@ public class XMLValidator
     } // startPrefixMapping(String,String)
 
     /**
-     * The start of an element. If the document specifies the start element
-     * by using an empty tag, then the startElement method will immediately
-     * be followed by the endElement method, with no intervening methods.
+     * The start of an element.
      * 
      * @param element    The name of the element.
      * @param attributes The element attributes.
@@ -690,102 +697,24 @@ public class XMLValidator
     public void startElement(QName element, XMLAttributes attributes)
         throws SAXException {
 
-        // VC: Root Element Type
-        // see if the root element's name matches the one in DoctypeDecl 
-        if (!fSeenRootElement) {
-            fSeenRootElement = true;
-            if (fCurrentGrammarIsDTD) {
-                rootElementSpecified(element);
-            }
-        }
-
-        // bind namespaces, if current grammar is Schema
-        if (fNamespaces && fCurrentGrammarIsSchema) {
-            fNamespaceBinder.startElement(element, attributes);
-        }
-
-        if (fCurrentGrammar == null && !fValidation) {
-            fCurrentElementIndex = -1;
-            fCurrentContentSpecType = -1;
-            fInElementContent = false;
-        } 
-        else if (fCurrentGrammarIsDTD) {
-            //  resolve the element
-            fCurrentElementIndex = fCurrentGrammar.getElementDeclIndex(element, -1);
-
-            fCurrentContentSpecType = getContentSpecType(fCurrentElementIndex);
-            if (fCurrentElementIndex == -1 && fValidation) {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                           "MSG_ELEMENT_NOT_DECLARED",
-                                           new Object[]{ element.rawname},
-                                           XMLErrorReporter.SEVERITY_ERROR);
-            } 
-            else {
-                //  0. insert default attributes
-                //  1. normalize the attributes
-                //  2. validate the attrivute list.
-                // TO DO: 
-                // 
-                addDTDDefaultAttrsAndValidate(fCurrentElementIndex, attributes);
-            }
-        }
-        
-        // buffer datatype value for Schema datatype validation
-        if (fValidation && fCurrentContentSpecType == XMLElementDecl.TYPE_SIMPLE) {
-            fBufferDatatype = true;
-            fDatatypeBuffer.setLength(0);
-        }
-
-        // set element content state
-        fInElementContent = fCurrentContentSpecType == XMLElementDecl.TYPE_CHILDREN;
-
-        // increment the element depth, add this element's 
-        // QName to its enclosing element 's children list
-        fElementDepth++;
-        if (fValidation) {
-            // push current length onto stack
-            if (fElementChildrenOffsetStack.length < fElementDepth) {
-                int newarray[] = new int[fElementChildrenOffsetStack.length * 2];
-                System.arraycopy(fElementChildrenOffsetStack, 0, newarray, 0, fElementChildrenOffsetStack.length);
-                fElementChildrenOffsetStack = newarray;
-            }
-            fElementChildrenOffsetStack[fElementDepth] = fElementChildrenLength;
-
-            // add this element to children
-            if (fElementChildren.length <= fElementChildrenLength) {
-                QName[] newarray = new QName[fElementChildrenLength * 2];
-                System.arraycopy(fElementChildren, 0, newarray, 0, fElementChildren.length);
-                fElementChildren = newarray;
-            }
-            QName qname = fElementChildren[fElementChildrenLength];
-            if (qname == null) {
-                for (int i = fElementChildrenLength; i < fElementChildren.length; i++) {
-                    fElementChildren[i] = new QName();
-                }
-                qname = fElementChildren[fElementChildrenLength];
-            }
-            qname.setValues(element);
-            fElementChildrenLength++;
-        }
-
-        // bind namespaces, if current grammar is DTD
-        if (fNamespaces && fCurrentGrammarIsDTD) {
-            fNamespaceBinder.startElement(element, attributes);
-        }
-
-        // save current element information
-        fCurrentElement.setValues(element);
-        ensureStackCapacity(fElementDepth);
-        fElementQNamePartsStack[fElementDepth].setValues(fCurrentElement); 
-        fElementIndexStack[fElementDepth] = fCurrentElementIndex;
-        fContentSpecTypeStack[fElementDepth] = fCurrentContentSpecType;
-
-        // call handlers
-        if (fDocumentHandler != null) {
-            fDocumentHandler.startElement(element, attributes);
-        }
+        handleStartElement(element, attributes, false);
 
     } // startElement(QName,XMLAttributes)
+
+    /**
+     * An empty element.
+     * 
+     * @param element    The name of the element.
+     * @param attributes The element attributes.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
+     */
+    public void emptyElement(QName element, XMLAttributes attributes)
+        throws SAXException {
+
+        handleStartElement(element, attributes, true);
+
+    } // emptyElement(QName,XMLAttributes)
 
     /**
      * Character content.
@@ -795,55 +724,66 @@ public class XMLValidator
      * @throws SAXException Thrown by handler to signal an error.
      */
     public void characters(XMLString text) throws SAXException {
-        boolean callNextCharacters = true;
 
-        // REVISIT: [Q] Is there a more efficient way of doing this?
-        //          Perhaps if the scanner told us so we don't have to
-        //          look at the characters again. -Ac
-        boolean allWhiteSpace = true;
-        for (int i=text.offset; i< text.offset+text.length; i++) {
-            if (!XMLChar.isSpace(text.ch[i])) {
-                allWhiteSpace = false;
-                break;
+        // ignored characters in DTD
+        if (fInDTD) {
+            if (fDTDHandler != null) {
+                fDTDHandler.characters(text);
             }
         }
 
-        // call the ignoreableWhiteSpace callback
-        if (fInElementContent && allWhiteSpace) {
-            if (fDocumentHandler != null) {
-                fDocumentHandler.ignorableWhitespace(text);
-                callNextCharacters = false;
+        // characters in content
+        else {
+            boolean callNextCharacters = true;
+    
+            // REVISIT: [Q] Is there a more efficient way of doing this?
+            //          Perhaps if the scanner told us so we don't have to
+            //          look at the characters again. -Ac
+            boolean allWhiteSpace = true;
+            for (int i=text.offset; i< text.offset+text.length; i++) {
+                if (!XMLChar.isSpace(text.ch[i])) {
+                    allWhiteSpace = false;
+                    break;
+                }
             }
-        }
-
-        // validate
-        if (fValidation) {
-            if (fInElementContent) {
-                if (fCurrentGrammarIsDTD && 
-                    fStandaloneIsYes &&
-                    ((DTDGrammar)fCurrentGrammar).getElementDeclIsExternal(fCurrentElementIndex)) {
-                    if (allWhiteSpace) {
-                        fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
-                                                    "MSG_WHITE_SPACE_IN_ELEMENT_CONTENT_WHEN_STANDALONE",
-                                                    null, XMLErrorReporter.SEVERITY_ERROR);
+    
+            // call the ignoreableWhiteSpace callback
+            if (fInElementContent && allWhiteSpace) {
+                if (fDocumentHandler != null) {
+                    fDocumentHandler.ignorableWhitespace(text);
+                    callNextCharacters = false;
+                }
+            }
+    
+            // validate
+            if (fValidation) {
+                if (fInElementContent) {
+                    if (fCurrentGrammarIsDTD && 
+                        fStandaloneIsYes &&
+                        ((DTDGrammar)fCurrentGrammar).getElementDeclIsExternal(fCurrentElementIndex)) {
+                        if (allWhiteSpace) {
+                            fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
+                                                        "MSG_WHITE_SPACE_IN_ELEMENT_CONTENT_WHEN_STANDALONE",
+                                                        null, XMLErrorReporter.SEVERITY_ERROR);
+                        }
+                    }
+                    if (!allWhiteSpace) {
+                        charDataInContent();
                     }
                 }
-                if (!allWhiteSpace) {
+    
+                if (fCurrentContentSpecType == XMLElementDecl.TYPE_EMPTY) {
                     charDataInContent();
                 }
+                if (fBufferDatatype) {
+                    fDatatypeBuffer.append(text.ch, text.offset, text.length);
+                }
             }
-
-            if (fCurrentContentSpecType == XMLElementDecl.TYPE_EMPTY) {
-                charDataInContent();
+    
+            // call handlers
+            if (callNextCharacters && fDocumentHandler != null) {
+                fDocumentHandler.characters(text);
             }
-            if (fBufferDatatype) {
-                fDatatypeBuffer.append(text.ch, text.offset, text.length);
-            }
-        }
-
-        // call handlers
-        if (callNextCharacters && fDocumentHandler != null) {
-            fDocumentHandler.characters(text);
         }
 
     } // characters(XMLString)
@@ -878,110 +818,8 @@ public class XMLValidator
      */
     public void endElement(QName element) throws SAXException {
 
-        // decrease element depth
-        fElementDepth--;
-
-        // validate
-        if (fValidation) {
-            int elementIndex = fCurrentElementIndex;
-            if (elementIndex != -1 && fCurrentContentSpecType != -1) {
-                QName children[] = fElementChildren;
-                int childrenOffset = fElementChildrenOffsetStack[fElementDepth + 1] + 1;
-                int childrenLength = fElementChildrenLength - childrenOffset;
-                int result = checkContent(elementIndex, 
-                                          children, childrenOffset, childrenLength);
-
-                if (result != -1) {
-                    fCurrentGrammar.getElementDecl(elementIndex, fTempElementDecl);
-                    if (fTempElementDecl.type == XMLElementDecl.TYPE_EMPTY) {
-                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                                   "MSG_CONTENT_INVALID",
-                                                   new Object[]{ element.rawname, "EMPTY"},
-                                                   XMLErrorReporter.SEVERITY_ERROR);
-                    } 
-                    else {
-                        String messageKey = result != childrenLength ? 
-                                            "MSG_CONTENT_INVALID" : "MSG_CONTENT_INCOMPLETE";
-                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                                   messageKey,
-                                                   new Object[]{ element.rawname, 
-                                                       fCurrentGrammar.getContentSpecAsString(elementIndex)},
-                                                   XMLErrorReporter.SEVERITY_ERROR);
-                    }
-                }
-            }
-            fElementChildrenLength = fElementChildrenOffsetStack[fElementDepth + 1] + 1;
-        }
-
-        // call handlers
-        if (fDocumentHandler != null) {
-            // NOTE: The binding of the element doesn't actually happen
-            //       yet because the namespace binder does that. However,
-            //       if it does it before this point, then the endPrefix-
-            //       Mapping calls get made too soon! As long as the
-            //       rawnames match, we know it'll have a good binding,
-            //       so we can just use the current element. -Ac
-            fDocumentHandler.endElement(fCurrentElement);
-        }
-        
-        // unbind prefixes
-        if (fNamespaces) {
-            fNamespaceBinder.endElement(element);
-        }
-
-        // now pop this element off the top of the element stack
-        if (fElementDepth < -1) {
-            throw new RuntimeException("FWK008 Element stack underflow");
-        }
-        if (fElementDepth < 0) {
-            fCurrentElement.clear();
-            fCurrentElementIndex = -1;
-            fCurrentContentSpecType = -1;
-            fInElementContent = false;
-
-            // TO DO : fix this
-            //
-            // Check after document is fully parsed
-            // (1) check that there was an element with a matching id for every
-            //   IDREF and IDREFS attr (V_IDREF0)
-            //
-            if (fValidation) {
-                try {
-                    fValIDRef.validate();//Do final validation of IDREFS against IDs
-                    fValIDRefs.validate();
-                } 
-                catch (InvalidDatatypeValueException ex) {
-                    String  key = ex.getKeyIntoReporter();
-
-                    fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
-                                                key,
-                                                new Object[]{ ex.getMessage()},
-                                                XMLErrorReporter.SEVERITY_ERROR );
-                }
-            fTableOfIDs.clear();//Clear table of IDs
-            }
-            return;
-        }
-
-        // If Namespace enable then localName != rawName
-        fCurrentElement.setValues(fElementQNamePartsStack[fElementDepth]);
-        if (fNamespaces) { 
-            fCurrentElement.localpart = fElementQNamePartsStack[fElementDepth].localpart;
-        } 
-        // REVISIT: jeffreyr - This is so we still do old behavior when 
-        //          namespace is off 
-        else {
-            fCurrentElement.localpart = fElementQNamePartsStack[fElementDepth].rawname;
-        }
-
-        fCurrentElementIndex = fElementIndexStack[fElementDepth];
-        fCurrentContentSpecType = fContentSpecTypeStack[fElementDepth];
-        fInElementContent = (fCurrentContentSpecType == XMLElementDecl.TYPE_CHILDREN);
-
-        if (fValidation) {
-            fBufferDatatype = false;
-        }
-
+        handleEndElement(element, false);
+    
     } // endElement(QName)
 
     /**
@@ -1052,16 +890,9 @@ public class XMLValidator
     //
 
     /**
-     * This method notifies of the start of an entity. The document entity
-     * has the pseudo-name of "[xml]"; The DTD has the pseudo-name of "[dtd]; 
-     * parameter entity names start with '%'; and general entity names are
-     * just the entity name.
-     * <p>
-     * <strong>Note:</strong> Since the document is an entity, the handler
-     * will be notified of the start of the document entity by calling the
-     * startEntity method with the entity name "[xml]" <em>before</em> calling
-     * the startDocument method. When exposing entity boundaries through the
-     * SAX API, the document entity is never reported, however.
+     * This method notifies of the start of an entity. The DTD has the
+     * pseudo-name of "[dtd]; parameter entity names start with '%'; and 
+     * general entity names are just the entity name.
      * <p>
      * <strong>Note:</strong> Since the DTD is an entity, the handler
      * will be notified of the start of the DTD entity by calling the
@@ -1208,16 +1039,9 @@ public class XMLValidator
     } // processingInstruction(String,XMLString)
 
     /**
-     * This method notifies the end of an entity. The document entity has
-     * the pseudo-name of "[xml]"; the DTD has the pseudo-name of "[dtd]; 
-     * parameter entity names start with '%'; and general entity names are
-     * just the entity name.
-     * <p>
-     * <strong>Note:</strong> Since the document is an entity, the handler
-     * will be notified of the end of the document entity by calling the
-     * endEntity method with the entity name "[xml]" <em>after</em> calling
-     * the endDocument method. When exposing entity boundaries through the
-     * SAX API, the document entity is never reported, however.
+     * This method notifies the end of an entity. The DTD has the pseudo-name
+     * of "[dtd]; parameter entity names start with '%'; and general entity 
+     * names are just the entity name.
      * <p>
      * <strong>Note:</strong> Since the DTD is an entity, the handler
      * will be notified of the end of the DTD entity by calling the
@@ -2733,6 +2557,223 @@ public class XMLValidator
     //
     // Protected methods
     //
+
+    /** Handle element. */
+    protected void handleStartElement(QName element, XMLAttributes attributes,
+                                      boolean isEmpty) throws SAXException {
+
+        // VC: Root Element Type
+        // see if the root element's name matches the one in DoctypeDecl 
+        if (!fSeenRootElement) {
+            fSeenRootElement = true;
+            if (fCurrentGrammarIsDTD) {
+                rootElementSpecified(element);
+            }
+        }
+
+        // bind namespaces, if current grammar is Schema
+        if (fNamespaces && fCurrentGrammarIsSchema) {
+            fNamespaceBinder.startElement(element, attributes);
+        }
+
+        if (fCurrentGrammar == null && !fValidation) {
+            fCurrentElementIndex = -1;
+            fCurrentContentSpecType = -1;
+            fInElementContent = false;
+        } 
+        else if (fCurrentGrammarIsDTD) {
+            //  resolve the element
+            fCurrentElementIndex = fCurrentGrammar.getElementDeclIndex(element, -1);
+
+            fCurrentContentSpecType = getContentSpecType(fCurrentElementIndex);
+            if (fCurrentElementIndex == -1 && fValidation) {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
+                                           "MSG_ELEMENT_NOT_DECLARED",
+                                           new Object[]{ element.rawname},
+                                           XMLErrorReporter.SEVERITY_ERROR);
+            } 
+            else {
+                //  0. insert default attributes
+                //  1. normalize the attributes
+                //  2. validate the attrivute list.
+                // TO DO: 
+                // 
+                addDTDDefaultAttrsAndValidate(fCurrentElementIndex, attributes);
+            }
+        }
+        
+        // buffer datatype value for Schema datatype validation
+        if (fValidation && fCurrentContentSpecType == XMLElementDecl.TYPE_SIMPLE) {
+            fBufferDatatype = true;
+            fDatatypeBuffer.setLength(0);
+        }
+
+        // set element content state
+        fInElementContent = fCurrentContentSpecType == XMLElementDecl.TYPE_CHILDREN;
+
+        // increment the element depth, add this element's 
+        // QName to its enclosing element 's children list
+        fElementDepth++;
+        if (fValidation) {
+            // push current length onto stack
+            if (fElementChildrenOffsetStack.length < fElementDepth) {
+                int newarray[] = new int[fElementChildrenOffsetStack.length * 2];
+                System.arraycopy(fElementChildrenOffsetStack, 0, newarray, 0, fElementChildrenOffsetStack.length);
+                fElementChildrenOffsetStack = newarray;
+            }
+            fElementChildrenOffsetStack[fElementDepth] = fElementChildrenLength;
+
+            // add this element to children
+            if (fElementChildren.length <= fElementChildrenLength) {
+                QName[] newarray = new QName[fElementChildrenLength * 2];
+                System.arraycopy(fElementChildren, 0, newarray, 0, fElementChildren.length);
+                fElementChildren = newarray;
+            }
+            QName qname = fElementChildren[fElementChildrenLength];
+            if (qname == null) {
+                for (int i = fElementChildrenLength; i < fElementChildren.length; i++) {
+                    fElementChildren[i] = new QName();
+                }
+                qname = fElementChildren[fElementChildrenLength];
+            }
+            qname.setValues(element);
+            fElementChildrenLength++;
+        }
+
+        // bind namespaces, if current grammar is DTD
+        if (fNamespaces && fCurrentGrammarIsDTD) {
+            fNamespaceBinder.startElement(element, attributes);
+        }
+
+        // save current element information
+        fCurrentElement.setValues(element);
+        ensureStackCapacity(fElementDepth);
+        fElementQNamePartsStack[fElementDepth].setValues(fCurrentElement); 
+        fElementIndexStack[fElementDepth] = fCurrentElementIndex;
+        fContentSpecTypeStack[fElementDepth] = fCurrentContentSpecType;
+
+        // call handlers
+        if (fDocumentHandler != null) {
+            if (isEmpty) {
+                fDocumentHandler.emptyElement(element, attributes);
+                handleEndElement(element, isEmpty);
+            }
+            else {
+                fDocumentHandler.startElement(element, attributes);
+            }
+        }
+
+    } // handleStartElement(QName,XMLAttributes,boolean)
+
+    /** Handle end element. */
+    protected void handleEndElement(QName element, boolean isEmpty)
+        throws SAXException {
+
+        // decrease element depth
+        fElementDepth--;
+
+        // validate
+        if (fValidation) {
+            int elementIndex = fCurrentElementIndex;
+            if (elementIndex != -1 && fCurrentContentSpecType != -1) {
+                QName children[] = fElementChildren;
+                int childrenOffset = fElementChildrenOffsetStack[fElementDepth + 1] + 1;
+                int childrenLength = fElementChildrenLength - childrenOffset;
+                int result = checkContent(elementIndex, 
+                                          children, childrenOffset, childrenLength);
+
+                if (result != -1) {
+                    fCurrentGrammar.getElementDecl(elementIndex, fTempElementDecl);
+                    if (fTempElementDecl.type == XMLElementDecl.TYPE_EMPTY) {
+                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
+                                                   "MSG_CONTENT_INVALID",
+                                                   new Object[]{ element.rawname, "EMPTY"},
+                                                   XMLErrorReporter.SEVERITY_ERROR);
+                    } 
+                    else {
+                        String messageKey = result != childrenLength ? 
+                                            "MSG_CONTENT_INVALID" : "MSG_CONTENT_INCOMPLETE";
+                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
+                                                   messageKey,
+                                                   new Object[]{ element.rawname, 
+                                                       fCurrentGrammar.getContentSpecAsString(elementIndex)},
+                                                   XMLErrorReporter.SEVERITY_ERROR);
+                    }
+                }
+            }
+            fElementChildrenLength = fElementChildrenOffsetStack[fElementDepth + 1] + 1;
+        }
+
+        // call handlers
+        if (fDocumentHandler != null && !isEmpty) {
+            // NOTE: The binding of the element doesn't actually happen
+            //       yet because the namespace binder does that. However,
+            //       if it does it before this point, then the endPrefix-
+            //       Mapping calls get made too soon! As long as the
+            //       rawnames match, we know it'll have a good binding,
+            //       so we can just use the current element. -Ac
+            fDocumentHandler.endElement(fCurrentElement);
+        }
+        
+        // unbind prefixes
+        if (fNamespaces) {
+            fNamespaceBinder.endElement(element);
+        }
+
+        // now pop this element off the top of the element stack
+        if (fElementDepth < -1) {
+            throw new RuntimeException("FWK008 Element stack underflow");
+        }
+        if (fElementDepth < 0) {
+            fCurrentElement.clear();
+            fCurrentElementIndex = -1;
+            fCurrentContentSpecType = -1;
+            fInElementContent = false;
+
+            // TO DO : fix this
+            //
+            // Check after document is fully parsed
+            // (1) check that there was an element with a matching id for every
+            //   IDREF and IDREFS attr (V_IDREF0)
+            //
+            if (fValidation) {
+                try {
+                    fValIDRef.validate();//Do final validation of IDREFS against IDs
+                    fValIDRefs.validate();
+                } 
+                catch (InvalidDatatypeValueException ex) {
+                    String  key = ex.getKeyIntoReporter();
+
+                    fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
+                                                key,
+                                                new Object[]{ ex.getMessage()},
+                                                XMLErrorReporter.SEVERITY_ERROR );
+                }
+            fTableOfIDs.clear();//Clear table of IDs
+            }
+            return;
+        }
+
+        // If Namespace enable then localName != rawName
+        fCurrentElement.setValues(fElementQNamePartsStack[fElementDepth]);
+        if (fNamespaces) { 
+            fCurrentElement.localpart = fElementQNamePartsStack[fElementDepth].localpart;
+        } 
+        // REVISIT: jeffreyr - This is so we still do old behavior when 
+        //          namespace is off 
+        else {
+            fCurrentElement.localpart = fElementQNamePartsStack[fElementDepth].rawname;
+        }
+
+        fCurrentElementIndex = fElementIndexStack[fElementDepth];
+        fCurrentContentSpecType = fContentSpecTypeStack[fElementDepth];
+        fInElementContent = (fCurrentContentSpecType == XMLElementDecl.TYPE_CHILDREN);
+
+        if (fValidation) {
+            fBufferDatatype = false;
+        }
+
+    } // handleEndElement(QName,boolean)
 
     /** Factory method for creating a DTD grammar. */
     protected DTDGrammar createDTDGrammar() {

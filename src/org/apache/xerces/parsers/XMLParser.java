@@ -220,7 +220,7 @@ public abstract class XMLParser
             fEntityManager = createEntityManager();
             fProperties.put(ENTITY_MANAGER, fEntityManager);
         }
-        fComponents.add(fEntityManager);
+        fComponents.addElement(fEntityManager);
 
         final String ERROR_REPORTER = Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
         fErrorReporter = (XMLErrorReporter) fProperties.get(ERROR_REPORTER);
@@ -229,7 +229,7 @@ public abstract class XMLParser
                 createErrorReporter(fEntityManager.getEntityScanner());
             fProperties.put(ERROR_REPORTER, fErrorReporter);
         }
-        fComponents.add(fErrorReporter);
+        fComponents.addElement(fErrorReporter);
 
         fLocator = (Locator) fEntityManager.getEntityScanner();
 

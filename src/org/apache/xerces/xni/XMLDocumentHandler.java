@@ -87,15 +87,7 @@ public interface XMLDocumentHandler {
     //
 
     /**
-     * This method notifies the start of an entity. The document entity has
-     * the pseudo-name of "[xml]"; and general entities are just specified
-     * by their name.
-     * <p>
-     * <strong>Note:</strong> Since the document is an entity, the handler
-     * will be notified of the start of the document entity by calling the
-     * startEntity method with the entity name "[xml]" <em>before</em> calling
-     * the startDocument method. When exposing entity boundaries through the
-     * SAX API, the document entity is never reported, however.
+     * This method notifies the start of an entity.
      * <p>
      * <strong>Note:</strong> This method is not called for entity references
      * appearing as part of attribute values.
@@ -137,9 +129,18 @@ public interface XMLDocumentHandler {
     /**
      * The start of the document.
      *
+     * @param systemId The system identifier of the entity if the entity
+     *                 is external, null otherwise.
+     * @param encoding The auto-detected IANA encoding name of the entity
+     *                 stream. This value will be null in those situations
+     *                 where the entity encoding is not auto-detected (e.g.
+     *                 internal entities or a document entity that is
+     *                 parsed from a java.io.Reader).
+     *     
      * @throws SAXException Thrown by handler to signal an error.
      */
-    public void startDocument() throws SAXException;
+    public void startDocument(String systemId, String encoding) 
+        throws SAXException;
 
     /**
      * Notifies of the presence of an XMLDecl line in the document. If
@@ -211,9 +212,7 @@ public interface XMLDocumentHandler {
         throws SAXException;
 
     /**
-     * The start of an element. If the document specifies the start element
-     * by using an empty tag, then the startElement method will immediately
-     * be followed by the endElement method, with no intervening methods.
+     * The start of an element.
      * 
      * @param element    The name of the element.
      * @param attributes The element attributes.
@@ -221,6 +220,17 @@ public interface XMLDocumentHandler {
      * @throws SAXException Thrown by handler to signal an error.
      */
     public void startElement(QName element, XMLAttributes attributes)
+        throws SAXException;
+
+    /**
+     * An empty element.
+     * 
+     * @param element    The name of the element.
+     * @param attributes The element attributes.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
+     */
+    public void emptyElement(QName element, XMLAttributes attributes)
         throws SAXException;
 
     /**
@@ -287,15 +297,7 @@ public interface XMLDocumentHandler {
     public void endDocument() throws SAXException;
 
     /**
-     * This method notifies the end of an entity. The document entity has
-     * the pseudo-name of "[xml]"; and general entities are just specified
-     * by their name.
-     * <p>
-     * <strong>Note:</strong> Since the document is an entity, the handler
-     * will be notified of the end of the document entity by calling the
-     * endEntity method with the entity name "[xml]" <em>after</em> calling
-     * the endDocument method. When exposing entity boundaries through the
-     * SAX API, the document entity is never reported, however.
+     * This method notifies the end of an entity.
      * <p>
      * <strong>Note:</strong> This method is not called for entity references
      * appearing as part of attribute values.

@@ -142,9 +142,18 @@ public abstract class AbstractSAXParser
     /**
      * The start of the document.
      *
+     * @param systemId The system identifier of the entity if the entity
+     *                 is external, null otherwise.
+     * @param encoding The auto-detected IANA encoding name of the entity
+     *                 stream. This value will be null in those situations
+     *                 where the entity encoding is not auto-detected (e.g.
+     *                 internal entities or a document entity that is
+     *                 parsed from a java.io.Reader).
+     *     
      * @throws SAXException Thrown by handler to signal an error.
      */
-    public void startDocument() throws SAXException {
+    public void startDocument(String systemId, String encoding) 
+        throws SAXException {
 
         // SAX1
         if (fDocumentHandler != null) {
@@ -156,7 +165,7 @@ public abstract class AbstractSAXParser
             fContentHandler.startDocument();
         }
 
-    } // startDocument()
+    } // startDocument(String,String)
 
     /**
      * Notifies of the presence of the DOCTYPE line in the document.
@@ -234,6 +243,10 @@ public abstract class AbstractSAXParser
      * @throws SAXException Thrown by handler to signal an error.
      */
     public void characters(XMLString text) throws SAXException {
+
+        if (fInDTD) {
+            return;
+        }
 
         // SAX1
         if (fDocumentHandler != null) {
@@ -338,16 +351,9 @@ public abstract class AbstractSAXParser
     //
 
     /**
-     * This method notifies of the start of an entity. The document entity
-     * has the pseudo-name of "[xml]"; The DTD has the pseudo-name of "[dtd]; 
-     * parameter entity names start with '%'; and general entity names are
-     * just the entity name.
-     * <p>
-     * <strong>Note:</strong> Since the document is an entity, the handler
-     * will be notified of the start of the document entity by calling the
-     * startEntity method with the entity name "[xml]" <em>before</em> calling
-     * the startDocument method. When exposing entity boundaries through the
-     * SAX API, the document entity is never reported, however.
+     * This method notifies of the start of an entity. The DTD has the
+     * pseudo-name of "[dtd]; parameter entity names start with '%'; and 
+     * general entity names are just the entity name.
      * <p>
      * <strong>Note:</strong> Since the DTD is an entity, the handler
      * will be notified of the start of the DTD entity by calling the
@@ -371,22 +377,15 @@ public abstract class AbstractSAXParser
      */
     public void startEntity(String name, String publicId, String systemId,
                             String encoding) throws SAXException {
-        if (fLexicalHandler != null && !name.equals("[xml]")) {
+        if (fLexicalHandler != null) {
             fLexicalHandler.startEntity(name);
         }
     } // startEntity(String,String,String,String)
 
     /**
-     * This method notifies the end of an entity. The document entity has
-     * the pseudo-name of "[xml]"; the DTD has the pseudo-name of "[dtd]; 
-     * parameter entity names start with '%'; and general entity names are
-     * just the entity name.
-     * <p>
-     * <strong>Note:</strong> Since the document is an entity, the handler
-     * will be notified of the end of the document entity by calling the
-     * endEntity method with the entity name "[xml]" <em>after</em> calling
-     * the endDocument method. When exposing entity boundaries through the
-     * SAX API, the document entity is never reported, however.
+     * This method notifies the end of an entity. The DTD has the pseudo-name 
+     * of "[dtd]; parameter entity names start with '%'; and general entity
+     * names are just the entity name.
      * <p>
      * <strong>Note:</strong> Since the DTD is an entity, the handler
      * will be notified of the end of the DTD entity by calling the
@@ -401,7 +400,7 @@ public abstract class AbstractSAXParser
      * @throws SAXException Thrown by handler to signal an error.
      */
     public void endEntity(String name) throws SAXException {
-        if (fLexicalHandler != null && !name.equals("[xml]")) {
+        if (fLexicalHandler != null) {
             fLexicalHandler.endEntity(name);
         }
     } // endEntity(String)

@@ -173,6 +173,9 @@ public class XMLDTDScanner
     private String[] fEnumeration = new String[5];
     private int fEnumerationCount;
 
+    /** Ignore conditional section buffer. */
+    private XMLStringBuffer fIgnoreConditionalBuffer = new XMLStringBuffer(128);
+
     //
     // Constructors
     //
@@ -1579,30 +1582,51 @@ public class XMLDTDScanner
                 reportFatalError("MSG_MARKUP_NOT_RECOGNIZED_IN_DTD", null);
             }
             int initialDepth = ++fIncludeSectDepth;
+            if (fDTDHandler != null) {
+                fIgnoreConditionalBuffer.clear();
+            }
             while (true) {
                 if (fEntityScanner.skipChar('<')) {
+                    if (fDTDHandler != null) {
+                        fIgnoreConditionalBuffer.append('<');
+                    }
                     //
                     // These tests are split so that we handle cases like
                     // '<<![' and '<!<![' which we might otherwise miss.
                     //
                     if (fEntityScanner.skipChar('!')
                         && fEntityScanner.skipChar('[')) {
+                        if (fDTDHandler != null) {
+                            fIgnoreConditionalBuffer.append("![");
+                        }
                         fIncludeSectDepth++;
                     }
                 }
                 else if (fEntityScanner.skipChar(']')) {
+                    if (fDTDHandler != null) {
+                        fIgnoreConditionalBuffer.append(']');
+                    }
                     //
                     // The same thing goes for ']<![' and '<]]>', etc.
                     //
                     if (fEntityScanner.skipChar(']')) {
+                        if (fDTDHandler != null) {
+                            fIgnoreConditionalBuffer.append(']');
+                        }
                         while (fEntityScanner.skipChar(']')) {
                             /* empty loop body */
+                            if (fDTDHandler != null) {
+                                fIgnoreConditionalBuffer.append(']');
+                            }
                         }
                         if (fEntityScanner.skipChar('>')) {
                             if (fIncludeSectDepth-- == initialDepth) {
                                 fMarkUpDepth--;
                                 // call handler
                                 if (fDTDHandler != null) {
+                                    fLiteral.setValues(fIgnoreConditionalBuffer.ch, 0,
+                                                       fIgnoreConditionalBuffer.length - 2);
+                                    fDTDHandler.characters(fLiteral);
                                     fDTDHandler.endConditional();
                                 }
                                 return;
@@ -1611,10 +1635,13 @@ public class XMLDTDScanner
                     }
                 }
                 else {
-                    fEntityScanner.scanChar();
+                    int c = fEntityScanner.scanChar();
                     if (fScannerState == SCANNER_STATE_END_OF_INPUT) {
                         reportFatalError("IgnoreSectUnterminated", null);
                         return;
+                    }
+                    if (fDTDHandler != null) {
+                        fIgnoreConditionalBuffer.append((char)c);
                     }
                 }
             }

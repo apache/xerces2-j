@@ -110,6 +110,11 @@ public abstract class AbstractXMLDocumentParser
      */
     protected boolean fParseInProgress = false;
 
+    // state
+
+    /** True if inside DTD. */
+    protected boolean fInDTD;
+
     //
     // Constructors
     //
@@ -137,10 +142,19 @@ public abstract class AbstractXMLDocumentParser
     /**
      * The start of the document.
      *
+     * @param systemId The system identifier of the entity if the entity
+     *                 is external, null otherwise.
+     * @param encoding The auto-detected IANA encoding name of the entity
+     *                 stream. This value will be null in those situations
+     *                 where the entity encoding is not auto-detected (e.g.
+     *                 internal entities or a document entity that is
+     *                 parsed from a java.io.Reader).
+     *     
      * @throws SAXException Thrown by handler to signal an error.
      */
-    public void startDocument() throws SAXException {
-    } // startDocument()
+    public void startDocument(String systemId, String encoding) 
+        throws SAXException {
+    } // startDocument(String,String)
 
     /**
      * Notifies of the presence of an XMLDecl line in the document. If
@@ -199,6 +213,22 @@ public abstract class AbstractXMLDocumentParser
     public void startElement(QName element, XMLAttributes attributes)
         throws SAXException {
     } // startElement(QName,XMLAttributes)
+
+    /**
+     * An empty element.
+     * 
+     * @param element    The name of the element.
+     * @param attributes The element attributes.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
+     */
+    public void emptyElement(QName element, XMLAttributes attributes)
+        throws SAXException {
+
+        startElement(element, attributes);
+        endElement(element);
+
+    } // emptyElement(QName,XMLAttributes)
 
     /**
      * Character content.
@@ -396,6 +426,7 @@ public abstract class AbstractXMLDocumentParser
      * @throws SAXException Thrown by handler to signal an error.
      */
     public void startDTD() throws SAXException {
+        fInDTD = true;
     } // startDTD()
 
     /**
@@ -547,6 +578,7 @@ public abstract class AbstractXMLDocumentParser
      * @throws SAXException Thrown by handler to signal an error.
      */
     public void endDTD() throws SAXException {
+        fInDTD = false;
     } // endDTD()
 
     //
@@ -673,5 +705,19 @@ public abstract class AbstractXMLDocumentParser
      */
     public void endContentModel() throws SAXException {
     } // endContentModel()
+
+    //
+    // Protected methods
+    //
+
+    /**
+     * reset all components before parsing
+     */
+    protected void reset() throws SAXException {
+        super.reset();
+
+        fInDTD = false;
+
+    } // reset()
 
 } // class AbstractXMLDocumentParser

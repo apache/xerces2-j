@@ -430,10 +430,9 @@ public class XMLDocumentScanner
     //
 
     /**
-     * This method notifies of the start of an entity. The document entity
-     * has the pseudo-name of "[xml]"; the DTD has the pseudo-name of "[dtd]; 
-     * parameter entity names start with '%'; and general entities are just
-     * specified by their name.
+     * This method notifies of the start of an entity. The DTD has the
+     * pseudo-name of "[dtd]; parameter entity names start with '%'; and
+     * general entities are just specified by their name.
      * 
      * @param name     The name of the entity.
      * @param publicId The public identifier of the entity if the entity
@@ -468,21 +467,20 @@ public class XMLDocumentScanner
 
         // call handler
         if (fDocumentHandler != null) {
-            if (!fScanningAttribute) {
-                fDocumentHandler.startEntity(name, publicId, systemId, encoding);
-            }
             if (name.equals("[xml]")) {
-                fDocumentHandler.startDocument();
+                fDocumentHandler.startDocument(systemId, encoding);
+            }
+            else if (!fScanningAttribute) {
+                fDocumentHandler.startEntity(name, publicId, systemId, encoding);
             }
         }
 
     } // startEntity(String,String,String,String)
 
     /**
-     * This method notifies the end of an entity. The document entity has
-     * the pseudo-name of "[xml]"; the DTD has the pseudo-name of "[dtd]; 
-     * parameter entity names start with '%'; and general entities are just
-     * specified by their name.
+     * This method notifies the end of an entity. The DTD has the pseudo-name
+     * of "[dtd]; parameter entity names start with '%'; and general entities 
+     * are just specified by their name.
      * 
      * @param name The name of the entity.
      *
@@ -502,7 +500,7 @@ public class XMLDocumentScanner
             if (name.equals("[xml]")) {
                 fDocumentHandler.endDocument();
             }
-            if (!fScanningAttribute) {
+            else if (!fScanningAttribute) {
                 fDocumentHandler.endEntity(name);
             }
         }
@@ -758,9 +756,12 @@ public class XMLDocumentScanner
 
         // call handler
         if (fDocumentHandler != null) {
-            fDocumentHandler.startElement(fElementQName, fAttributes);
             if (empty) {
-                handleEndElement(fElementQName);
+                fDocumentHandler.emptyElement(fElementQName, fAttributes);
+                handleEndElement(fElementQName, true);
+            }
+            else {
+                fDocumentHandler.startElement(fElementQName, fAttributes);
             }
         }
 
@@ -999,7 +1000,7 @@ public class XMLDocumentScanner
         fMarkupDepth--;
 
         // handle end element
-        int depth = handleEndElement(fElementQName);
+        int depth = handleEndElement(fElementQName, false);
         if (DEBUG_CONTENT_SCANNING) System.out.println("<<< scanEndElement(): "+depth);
         return depth;
 
@@ -1116,7 +1117,8 @@ public class XMLDocumentScanner
      *                      upon notification.
      *
      */
-    protected int handleEndElement(QName element) throws SAXException {
+    protected int handleEndElement(QName element, boolean isEmpty) 
+        throws SAXException {
 
         fMarkupDepth--;
         // check that this element was opened in the same entity
@@ -1138,13 +1140,13 @@ public class XMLDocumentScanner
         }
         
         // call handler
-        if (fDocumentHandler != null) {
+        if (fDocumentHandler != null && !isEmpty) {
             fDocumentHandler.endElement(element);
         }
 
         return fMarkupDepth;
 
-    } // callEndElement(QName):int
+    } // callEndElement(QName,boolean):int
 
     // helper methods
 

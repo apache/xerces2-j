@@ -184,7 +184,7 @@ public class SAXParser
             fScanner = createDocumentScanner();
             fProperties.put(DOCUMENT_SCANNER, fScanner);
         }
-        fComponents.add(fScanner);
+        fComponents.addElement(fScanner);
 
         final String DTD_SCANNER = Constants.XERCES_PROPERTY_PREFIX + Constants.DTD_SCANNER_PROPERTY;
         fDTDScanner = (XMLDTDScanner) fProperties.get(DTD_SCANNER);
@@ -192,7 +192,7 @@ public class SAXParser
             fDTDScanner = createDTDScanner();
             fProperties.put(DTD_SCANNER, fDTDScanner);
         }
-        fComponents.add(fDTDScanner);
+        fComponents.addElement(fDTDScanner);
 
         final String VALIDATOR = Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATOR_PROPERTY;
         fValidator = (XMLValidator) fProperties.get(VALIDATOR);
@@ -200,7 +200,7 @@ public class SAXParser
             fValidator = createValidator();
             fProperties.put(VALIDATOR, fValidator);
         }
-        fComponents.add(fValidator);
+        fComponents.addElement(fValidator);
         
         final String DATATYPE_VALIDATOR_FACTORY = Constants.XERCES_PROPERTY_PREFIX + Constants.DATATYPE_VALIDATOR_FACTORY_PROPERTY;
         fDatatypeValidatorFactory = (DatatypeValidatorFactory)
