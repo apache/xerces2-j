@@ -75,8 +75,16 @@ public class SchemaNamespaceSupport
         super();
     } // constructor
 
+    // more effecient than NamespaceSupport(NamespaceContext)
     public SchemaNamespaceSupport(SchemaNamespaceSupport nSupport) {
-        super(nSupport);
+        fNamespaceSize = nSupport.fNamespaceSize;
+        if (fNamespace.length < fNamespaceSize)
+            fNamespace = new String[fNamespaceSize];
+        System.arraycopy(nSupport.fNamespace, 0, fNamespace, 0, fNamespaceSize);
+        fCurrentContext = nSupport.fCurrentContext;
+        if (fContext.length <= fCurrentContext)
+            fContext = new int[fCurrentContext+1];
+        System.arraycopy(nSupport.fContext, 0, fContext, 0, fCurrentContext+1);
     } // end constructor
     
     /**
