@@ -1134,6 +1134,94 @@ public class XMLEntityManager
         return expandSystemId(systemId, null);
     } // expandSystemId(String):String
 
+    // current value of the "user.dir" property
+    private static String gUserDir;
+    // escaped value of the current "user.dir" property
+    private static String gEscapedUserDir;
+    // which ASCII characters need to be escaped
+    private static boolean gNeedEscaping[] = new boolean[128];
+    // the first hex character if a character needs to be escaped
+    private static char gAfterEscaping1[] = new char[128];
+    // the second hex character if a character needs to be escaped
+    private static char gAfterEscaping2[] = new char[128];
+    // initialize the above 3 arrays
+    static {
+        char[] hexChs = {'0', '1', '2', '3', '4', '5', '6', '7',
+                         '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+        for (int i = 0; i <= 0x1f; i++) {
+            gNeedEscaping[i] = true;
+            gAfterEscaping1[i] = hexChs[i/16];
+            gAfterEscaping2[i] = hexChs[i%16];
+        }
+        gNeedEscaping[0x7f] = true;
+        gAfterEscaping1[0x7f] = '7';
+        gAfterEscaping2[0x7f] = 'F';
+        gNeedEscaping[' '] = true;
+        gAfterEscaping1[' '] = hexChs[' '/16];
+        gAfterEscaping2[' '] = hexChs[' '%16];
+        gNeedEscaping['<'] = true;
+        gAfterEscaping1['<'] = hexChs['<'/16];
+        gAfterEscaping2['<'] = hexChs['<'%16];
+        gNeedEscaping['>'] = true;
+        gAfterEscaping1['>'] = hexChs['>'/16];
+        gAfterEscaping2['>'] = hexChs['>'%16];
+        gNeedEscaping['#'] = true;
+        gAfterEscaping1['#'] = hexChs['#'/16];
+        gAfterEscaping2['#'] = hexChs['#'%16];
+        gNeedEscaping['%'] = true;
+        gAfterEscaping1['%'] = hexChs['%'/16];
+        gAfterEscaping2['%'] = hexChs['%'%16];
+        gNeedEscaping['"'] = true;
+        gAfterEscaping1['"'] = hexChs['"'/16];
+        gAfterEscaping2['"'] = hexChs['"'%16];
+    }
+    // To escape the "user.dir" system property, by using %HH to represent
+    // special ASCII characters: 0x00~0x1F, 0x7F, ' ', '<', '>', '#', '%'
+    // and '"'. It's a static method, so needs to be synchronized.
+    // this method looks heavy, but since the system property isn't expected
+    // to change often, so in most cases, we only need to return the string
+    // that was escaped before.
+    // According to the URI spec, non-ASCII characters (whose value >= 128)
+    // need to be escaped too.
+    // REVISIT: don't know how to escape non-ASCII characters, especially
+    // which encoding to use. Leave them for now.
+    private static synchronized String getUserDir() {
+        String userDir = System.getProperty("user.dir");
+        // return null if property value is null.
+        if (userDir == null)
+            return null;
+        // compute the new escaped value if the new property value doesn't
+        // match the previous one
+        if (!userDir.equals(gUserDir)) {
+            // record the new value as the global property value
+            gUserDir = userDir;
+            int len = userDir.length();
+            StringBuffer buffer = new StringBuffer(len*3);
+            char ch;
+            boolean escaped = false;
+            // for each character in the property value, check whether it
+            // needs escaping.
+            for (int i = 0; i < len; i++) {
+                ch = userDir.charAt(i);
+                if (ch < 128 && gNeedEscaping[ch]) {
+                    buffer.append('%');
+                    buffer.append(gAfterEscaping1[ch]);
+                    buffer.append(gAfterEscaping2[ch]);
+                    // record the fact that it's escaped
+                    escaped = true;
+                }
+                else {
+                    buffer.append(ch);
+                }
+            }
+            
+            // only create a new string if some characters were escaped,
+            // otherwise use the property value.
+            gEscapedUserDir = escaped ? buffer.toString() : userDir;
+        }
+        return gEscapedUserDir;
+    }
+    
     /**
      * Expands a system id and returns the system id as a URI, if
      * it can be expanded. A return value of null means that the
@@ -1174,7 +1262,7 @@ public class XMLEntityManager
                 baseSystemId.equals(systemId)) {
                 String dir;
                 try {
-                    dir = fixURI(System.getProperty("user.dir"));
+                    dir = fixURI(getUserDir());
                 }
                 catch (SecurityException se) {
                     dir = "";
@@ -1191,7 +1279,7 @@ public class XMLEntityManager
                 catch (URI.MalformedURIException e) {
                     String dir;
                     try {
-                        dir = fixURI(System.getProperty("user.dir"));
+                        dir = fixURI(getUserDir());
                     }
                     catch (SecurityException se) {
                         dir = "";
