@@ -434,7 +434,7 @@ catch (SAXException e) {
    </false>
    <default value='true**'/>
    <note>
-    The default value for this feature is true, <emph>except</emph> when using SAX,
+    The default value for this feature is true, except when using SAX,
     because SAX requires that no DTD events be sent after the <code>endDTD</code>
     event.  Thus, in order to maintain SAX compatibility,
     this feature cannot be true by default for SAX. Setting this feature to false
