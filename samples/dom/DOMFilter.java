@@ -250,7 +250,7 @@ public class DOMFilter {
                              "  -a name  Specify attribute name of specified elements.",
                              "  -p name  Specify DOM parser wrapper by name.",
                              "  -n | -N  Turn on/off namespace [default=on]",
-                             "  -v | -V  Turn on/off validation [default=on]",
+                             "  -v | -V  Turn on/off validation [default=off]",
                              "  -s | -S  Turn on/off Schema support [default=on]",
                              "  -f | -F  Turn on/off Schema full consraint checking  [default=off]",
                              "  -d | -D  Turn on/off deferred DOM [default=on]",
