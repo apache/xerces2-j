@@ -121,6 +121,10 @@ source: ../bin/${JARFILE}
 	${MKDIR} ../class/org/w3c/dom/events	
 	${CP}  ../src/org/w3c/dom/events/*.class			../class/org/w3c/dom/events
 
+#-src/org/w3c/dom/range
+	${MKDIR} ../class/org/w3c/dom/range	
+	${CP}  ../src/org/w3c/dom/range/*.class			../class/org/w3c/dom/range
+
 #-src/org/w3c/dom/html
 	${MKDIR} ../class/org/w3c/dom/html	
 	${CP}  ../src/org/w3c/dom/html/*.class				../class/org/w3c/dom/html
@@ -264,6 +268,10 @@ package_src:
 	${MKDIR} ../source/src/org/w3c/dom/events	
 	${CP}  ../src/org/w3c/dom/events/*.java				../source/src/org/w3c/dom/events
 
+#-src/org/w3c/dom/range
+	${MKDIR} ../source/src/org/w3c/dom/range	
+	${CP}  ../src/org/w3c/dom/range/*.java				../source/src/org/w3c/dom/range
+
 #-src/org/w3c/dom/html
 	${MKDIR} ../source/src/org/w3c/dom/html	
 	${CP}  ../src/org/w3c/dom/html/*.java				../source/src/org/w3c/dom/html
@@ -364,7 +372,10 @@ package_src:
 	${CP}  ../src/org/w3c/dom/Makefile				../source/src/org/w3c/dom
 
 #-src/org/w3c/dom/events
-	${CP}  ../src/org/w3c/dom/events/Makefile			../source/src/org/w3c/dom/events
+	${CP}  ../src/org/w3c/dom/events/Makefile
+			../source/src/org/w3c/dom/events
+#-src/org/w3c/dom/range
+	${CP}  ../src/org/w3c/dom/range/Makefile			../source/src/org/w3c/dom/range
 
 #-src/org/w3c/dom/html
 	${CP}  ../src/org/w3c/dom/html/Makefile				../source/src/org/w3c/dom/html
