@@ -116,7 +116,7 @@ event.
           configure the parser to report a namespace for such attributes, turn on
           the <link idref='features' anchor='xmlns-uris'>xmlns-uris</link> feature.
        </p>
-       <p>When using previous versions of the parser or other parser implementations
+       <p>When using Xerces 2.6.2 (or prior) or other parser implementations
           that do not support this feature, your code must handle this discrepancy
           when interacting with APIs such as DOM and applications which expect a namespace 
           for xmlns attributes.
