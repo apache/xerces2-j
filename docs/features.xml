@@ -85,6 +85,26 @@ catch (SAXException e) {
    <see idref='namespace-prefixes'/>
    <see idref='validation'/>
   </feature>
+  <feature name='http://xml.org/sax/features/use-entity-resolver2'
+           id='use-entity-resolver2'>
+   <true>
+    The methods of the org.xml.sax.ext.EntityResolver2 interface will be used when an object implementing
+    this interface is registered with the parser using setEntityResolver.
+   </true>
+   <false>
+    The methods of the org.xml.sax.ext.EntityResolver2 interface will not be used.
+   </false>
+   <access general='read-write'/>
+   <since value='&ParserName; 2.7.0'/>
+   <note>
+    If the <link anchor="disallow-doctype-decl">disallow DOCTYPE declaration</link> feature is set to true
+    org.xml.sax.ext.EntityResolver2.getExternalSubset() will not be called when the document contains no
+    DOCTYPE declaration.
+   </note>
+   <see idref='disallow-doctype-decl'/>
+   <see idref='validation'/>
+   <see idref='nonvalidating.load-external-dtd'/>
+  </feature>
   <feature name='http://xml.org/sax/features/validation' 
            id='validation'>
    <true>Validate the document and report validity errors.</true>
@@ -492,6 +512,36 @@ catch (SAXException e) {
    <note>
     As there is currently no support for Unicode normalization checking, this 
     feature can only be set to false.
+   </note>
+  </feature>
+  <feature name='http://xml.org/sax/features/use-attributes2'
+           id='use-attributes2'>
+   <true>
+    The Attributes objects passed by the parser in org.xml.sax.ContentHandler.startElement() implement the org.xml.sax.ext.Attributes2 interface.
+   </true>
+   <false>
+    The Attributes objects passed by the parser do not implement the org.xml.sax.ext.Attributes2 interface.
+   </false>
+   <access general='read-only'/>
+   <since value='&ParserName; 2.7.0'/>
+   <note>
+    Xerces-J will always report Attributes objects that also implement org.xml.sax.ext.Attributes2
+    so the value of this feature will always be true.
+   </note>
+  </feature>
+  <feature name='http://xml.org/sax/features/use-locator2'
+           id='use-locator2'>
+   <true>
+    The Locator objects passed by the parser in org.xml.sax.ContentHandler.setDocumentLocator() implement the org.xml.sax.ext.Locator2 interface.
+   </true>
+   <false>
+    The Locator objects passed by the parser do not implement the org.xml.sax.ext.Locator2 interface.
+   </false>
+   <access general='read-only'/>
+   <since value='&ParserName; 2.7.0'/>
+   <note>
+    Xerces-J will always report Locator objects that also implement org.xml.sax.ext.Locator2
+    so the value of this feature will always be true.
    </note>
   </feature>
   <feature name='http://xml.org/sax/features/xmlns-uris'
