@@ -784,6 +784,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
                         // REVISIT: when DOM Level 3 is REC rely on
                         //          Document.support instead of specific class
                         // set DOM error checking off
+                        fDocumentImpl.setStrictErrorChecking(false);
                         // set actual encoding
                         fDocumentImpl.setActualEncoding(encoding);
                         // set documentURI
