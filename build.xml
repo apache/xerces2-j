@@ -1159,7 +1159,8 @@ Copyright:
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
     <replace file="${build.src}/org/apache/xerces/impl/xs/opti/DefaultDocument.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-
+    <replace file="${build.src}/org/apache/xerces/xs/XSLoader.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
   </target>
 
   <!-- =================================================================== -->
