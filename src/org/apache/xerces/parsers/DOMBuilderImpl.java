@@ -313,8 +313,8 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
     */
 	public void setParameter(String name, Object value) throws DOMException {
 		// set features           
-		if (value == Boolean.TRUE || value == Boolean.FALSE) {
-			boolean state = (value == Boolean.TRUE) ? true : false;
+		if(value instanceof Boolean){
+	   		boolean state = ((Boolean)value).booleanValue();
 			try {
 				if (name.equals(Constants.DOM_COMMENTS)) {
 					fConfiguration.setFeature(INCLUDE_COMMENTS_FEATURE, state);
@@ -628,8 +628,8 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
 	}
 
 	public boolean canSetParameter(String name, Object value) {
-		if (value == Boolean.TRUE || value == Boolean.FALSE) {
-			boolean state = (value == Boolean.TRUE) ? true : false;
+		if(value instanceof Boolean){
+			boolean state = ((Boolean)value).booleanValue();
 			if (name.equals(Constants.DOM_INFOSET)
 				|| name.equals(Constants.DOM_SUPPORTED_MEDIATYPES_ONLY)
 				|| name.equals(Constants.DOM_CANONICAL_FORM)) {

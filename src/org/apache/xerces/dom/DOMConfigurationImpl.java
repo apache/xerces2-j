@@ -542,8 +542,8 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 
         // REVISIT: Recognizes DOM L3 default features only.
         //          Does not yet recognize Xerces features.
-        if (value == Boolean.TRUE || value == Boolean.FALSE) {
-            boolean state = (value == Boolean.TRUE) ? true : false;
+		if(value instanceof Boolean){
+	   		boolean state = ((Boolean)value).booleanValue();
 
             if (name.equals(Constants.DOM_COMMENTS)) {
                 features = (short) (state ? features | COMMENTS : features & ~COMMENTS);
@@ -877,14 +877,17 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 				|| name.equals(Constants.DOM_CANONICAL_FORM)
 				|| name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)) {
 			if (state instanceof Boolean) {
-				return (state == Boolean.TRUE) ? false : true;
+				return (state.equals(Boolean.TRUE)) ? false : true;
 			}
 			return false;
 		}
 		else if ( name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
 				|| name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)
                 || name.equals(SEND_PSVI)) {
-			return (state == Boolean.TRUE) ? true : false;
+			if (state instanceof Boolean) {
+				return (state.equals(Boolean.TRUE)) ? true : false;
+			}
+			return false;
 
 		}
 		else {
