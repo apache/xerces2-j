@@ -209,7 +209,13 @@ public class XMLAttributesImpl
      */
     public void removeAttributeAt(int attrIndex) {
         if (attrIndex < fLength - 1) {
-            System.arraycopy(fAttributes, attrIndex + 1, fAttributes, attrIndex, fLength - attrIndex - 1);
+            Attribute removedAttr = fAttributes[attrIndex];
+            System.arraycopy(fAttributes, attrIndex + 1,
+                             fAttributes, attrIndex, fLength - attrIndex - 1);
+
+            // Make the discarded Attribute object available for re-use
+            // by tucking it after the Attributes that are still in use
+            fAttributes[fLength-1] = removedAttr;
         }
         fLength--;
     } // removeAttributeAt(int)
