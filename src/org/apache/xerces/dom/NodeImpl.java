@@ -728,8 +728,9 @@ public abstract class NodeImpl
      */
     public String getBaseURI() {
         // REVISIT: Implementation needed! :)
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-                               "not implemented yet!");
+        //        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
+        //                               "not implemented yet!");
+        return null;            // to allow isEqualNode to work
     }
 
     /**
@@ -945,7 +946,7 @@ public abstract class NodeImpl
      * attribute for <code>Attr</code> nodes, the 
      * <code>isWhitespaceInElementContent</code> attribute for 
      * <code>Text</code> nodes, as well as any user data or event listeners 
-     * registered on the nodes.Should this be optional?No.
+     * registered on the nodes.
      * @param arg The node to compare equality with.
      * @param deep If <code>true</code>, recursively compare the subtrees; if 
      *   <code>false</code>, compare only the nodes themselves (and its 
@@ -955,9 +956,69 @@ public abstract class NodeImpl
      * @since DOM Level 3
      */
     public boolean isEqualNode(Node arg, boolean deep) {
-        // REVISIT: Implementation needed! :)
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-                               "not implemented yet!");
+        if (arg == this) {
+            return true;
+        }
+        if (arg.getNodeType() != getNodeType()) {
+            return false;
+        }
+        // in theory nodeName can't be null but better be careful
+        // who knows what other implementations may be doing?...
+        if (getNodeName() == null) {
+            if (arg.getNodeName() != null) {
+                return false;
+            }
+        }
+        else if (!getNodeName().equals(arg.getNodeName())) {
+            return false;
+        }
+
+        if (getLocalName() == null) {
+            if (arg.getLocalName() != null) {
+                return false;
+            }
+        }
+        else if (!getLocalName().equals(arg.getLocalName())) {
+            return false;
+        }
+
+        if (getNamespaceURI() == null) {
+            if (arg.getNamespaceURI() != null) {
+                return false;
+            }
+        }
+        else if (!getNamespaceURI().equals(arg.getNamespaceURI())) {
+            return false;
+        }
+
+        if (getPrefix() == null) {
+            if (arg.getPrefix() != null) {
+                return false;
+            }
+        }
+        else if (!getPrefix().equals(arg.getPrefix())) {
+            return false;
+        }
+
+        if (getNodeValue() == null) {
+            if (arg.getNodeValue() != null) {
+                return false;
+            }
+        }
+        else if (!getNodeValue().equals(arg.getNodeValue())) {
+            return false;
+        }
+
+        if (getBaseURI() == null) {
+            if (((Node3) arg).getBaseURI() != null) {
+                return false;
+            }
+        }
+        else if (!getBaseURI().equals(((Node3) arg).getBaseURI())) {
+            return false;
+        }
+
+        return true;
     }
 
     /**

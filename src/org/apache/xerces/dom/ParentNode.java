@@ -68,6 +68,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
+import org.apache.xerces.dom3.Node3;
+
 /**
  * ParentNode inherits from ChildNode and adds the capability of having child
  * nodes. Not every node in the DOM can have children, so only nodes that can
@@ -875,6 +877,33 @@ public abstract class ParentNode
             kid.normalize();
         }
         isNormalized(true);
+    }
+
+    /**
+     * Override inherited behavior from NodeImpl to support deep equal.
+     */
+    public boolean isEqualNode(Node arg, boolean deep) {
+        if (!super.isEqualNode(arg, deep)) {
+            return false;
+        }
+        if (deep) {
+            // there are many ways to do this test, and there isn't any way
+            // better than another. Performance may vary greatly depending on
+            // the implementations involved. This one should work fine for us.
+            Node child1 = getFirstChild();
+            Node child2 = arg.getFirstChild();
+            while (child1 != null && child2 != null) {
+                if (!((Node3) child1).isEqualNode(child2, true)) {
+                    return false;
+                }
+                child1 = child1.getNextSibling();
+                child2 = child2.getNextSibling();
+            }
+            if (child1 != child2) {
+                return false;
+            }
+        }
+        return true;
     }
 
     //
