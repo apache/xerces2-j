@@ -88,8 +88,10 @@ clean:: cleandirs
 
 dirs::
 	@if [ -n "$(DIRS)" ]; \
-	then for i in $(DIRS);do \
+	then for i in $(DIRS) __bogus__; do \
+	       if [ $$i != __bogus__ ] ; then \
 		echo "$(MAKE) -C $$i"; $(MAKE) -C $$i; \
+		fi \
 	     done; \
 	fi
 
