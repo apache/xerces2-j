@@ -141,7 +141,7 @@ validation is on.</td></tr>
 		</table>	
 
 		<anchor name="load-external-dtd"/>
-		<p>http://apache.org/xml/features/nonvalidating/load-dtd</p>
+		<p>http://apache.org/xml/features/nonvalidating/load-external-dtd</p>
 		<table>
 			<tr><th>True:</th><td>Load the external DTD.</td></tr>
 			<tr><th>False:</th><td>Ignore the external DTD completely.</td></tr>
