@@ -58,7 +58,7 @@
 package xni;
 
 import org.apache.xerces.parsers.XMLGrammarPreparser;
-import org.apache.xerces.parsers.IntegratedParserConfiguration;
+import org.apache.xerces.parsers.XML11Configuration;
 import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLGrammarPoolImpl;
@@ -284,7 +284,7 @@ public class XMLGrammarBuilder {
         // Now we have a grammar pool and a SymbolTable; just
         // build a configuration and we're on our way!
         if(parserConfiguration == null) {
-            parserConfiguration = new IntegratedParserConfiguration(sym, grammarPool);
+            parserConfiguration = new XML11Configuration(sym, grammarPool);
         } else {
             // set GrammarPool and SymbolTable...
             parserConfiguration.setProperty(SYMBOL_TABLE, sym);
