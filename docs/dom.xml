@@ -10,7 +10,7 @@
 <li><jump href='http://www.w3.org/TR/2000/REC-DOM-Level-2-Events-20001113/'>DOM Level 2 Events: Mutation Events</jump></li>
 </ul>
 <p>
-Xerces2 also provides an <strong>experimental</strong> implementation of <link idref="dom3">DOM Level 3 'Core' and 'Load and Save' Candidate Recommendations.</link>.
+Xerces2 also provides an <strong>experimental</strong> implementation of <link idref="dom3">DOM Level 3 'Core' and 'Load and Save' Proposed Recommendations</link>.
 </p>
 </s2>
 

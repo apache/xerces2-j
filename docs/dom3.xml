@@ -11,7 +11,7 @@
 			The
 			<jump href="http://www.w3.org/DOM/DOMTR#DOML3">DOM Level 3</jump>
 			specification is at the stage of
-			<strong>Candidate Recommendation</strong>, which represents work in progress 
+			<strong>Proposed Recommendation</strong>, which represents work in progress 
 			and has been widely reviewed and satisfies certain technical requirements
 			but may still change based on implementation experience.
 
@@ -22,8 +22,8 @@
 	<s2 title="Introduction">
 		<p>
 			The &ParserNameLong; &ParserVersion; contains an implementation of 
-			the Document Object Model Level 3 <jump href="http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107/">Core</jump> 
-			and Document Object Model Level 3 <jump href="http://www.w3.org/TR/2003/CR-DOM-Level-3-LS-20031107/">Load and Save</jump> Candidate Recommendations.
+			the Document Object Model Level 3 <jump href="http://www.w3.org/TR/2004/PR-DOM-Level-3-Core-20040205/">Core</jump> 
+			and Document Object Model Level 3 <jump href="http://www.w3.org/TR/2004/PR-DOM-Level-3-LS-20040205/">Load and Save</jump> Proposed Recommendations.
 			To learn how to program with the DOM Level 3 see <jump href="samples-dom.html#DOM3">dom.DOM3</jump> sample.
 		</p>
 
