@@ -274,7 +274,7 @@ public final class XMLValidator
     // Constructors
     //
 
-    /** Constructs an XML validator. */
+   /** Constructs an XML validator. */
     public XMLValidator(StringPool stringPool,
                         XMLErrorReporter errorReporter,
                         DefaultEntityHandler entityHandler,
@@ -466,7 +466,7 @@ public final class XMLValidator
     /** Process characters. */
     public void processCharacters(char[] chars, int offset, int length) throws Exception {
         if (fValidating) {
-            if (fInElementContent || fCurrentContentSpecType == fEMPTYSymbol) {
+            if (fInElementContent || fCurrentContentSpecType == XMLElementDecl.TYPE_EMPTY) {
                 charDataInContent();
             }
             if (fBufferDatatype) {
@@ -479,7 +479,7 @@ public final class XMLValidator
     /** Process characters. */
     public void processCharacters(int data) throws Exception {
         if (fValidating) {
-            if (fInElementContent || fCurrentContentSpecType == fEMPTYSymbol) {
+            if (fInElementContent || fCurrentContentSpecType == XMLElementDecl.TYPE_EMPTY) {
                 charDataInContent();
             }
             if (fBufferDatatype) {
@@ -501,7 +501,7 @@ public final class XMLValidator
             fDocumentHandler.ignorableWhitespace(chars, offset, length);
         } 
         else {
-            if (fCurrentContentSpecType == fEMPTYSymbol) {
+            if (fCurrentContentSpecType == XMLElementDecl.TYPE_EMPTY) {
                 charDataInContent();
             }
             fDocumentHandler.characters(chars, offset, length);
@@ -519,7 +519,7 @@ public final class XMLValidator
             }
             fDocumentHandler.ignorableWhitespace(data);
         } else {
-            if (fCurrentContentSpecType == fEMPTYSymbol) {
+            if (fCurrentContentSpecType == XMLElementDecl.TYPE_EMPTY) {
                 charDataInContent();
             }
             fDocumentHandler.characters(data);
@@ -883,7 +883,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         if (fValidating) {
             fBufferDatatype = false;
         }
-        fInElementContent = (fCurrentContentSpecType == fCHILDRENSymbol);
+        fInElementContent = (fCurrentContentSpecType == XMLElementDecl.TYPE_CHILDREN);
 
     } // callEndElement(int)
 
@@ -911,7 +911,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             fCharRefData[0] = (char)(((ch-0x00010000)>>10)+0xd800);
             fCharRefData[1] = (char)(((ch-0x00010000)&0x3ff)+0xdc00);
         }
-        if (fValidating && (fInElementContent || fCurrentContentSpecType == fEMPTYSymbol)) {
+        if (fValidating && (fInElementContent || fCurrentContentSpecType == XMLElementDecl.TYPE_EMPTY)) {
             charDataInContent();
         }
         if (fSendCharDataAsCharArray) {
@@ -1286,7 +1286,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         final int contentSpec = getContentSpecType(elementIndex);
 
         // And create the content model according to the spec type
-        if (contentSpec == fMIXEDSymbol) {
+        if (contentSpec == XMLElementDecl.TYPE_MIXED) {
             //
             //  Just create a mixel content model object. This type of
             //  content model is optimized for mixed content validation.
@@ -1298,7 +1298,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
            // makeContentList(contentSpecIndex, specNode);
            // cmRet = new MixedContentModel(fCount, fContentList);
         }
-        else if (contentSpec == fCHILDRENSymbol) {
+        else if (contentSpec == XMLElementDecl.TYPE_CHILDREN) {
             //
             //  This method will create an optimal model for the complexity
             //  of the element's defined model. If its simple, it will create
@@ -1393,7 +1393,27 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         fDATATYPESymbol = fStringPool.addSymbol("<<datatype>>");
         fEpsilonIndex = fStringPool.addSymbol("<<CMNODE_EPSILON>>");
         fXMLLang = fStringPool.addSymbol("xml:lang");
-
+        
+        /**
+         fEMPTYSymbol = XMLElementDecl.TYPE_EMPTY;
+         fANYSymbol = XMLElementDecl.TYPE_ANY;
+         fMIXEDSymbol = XMLElementDecl.TYPE_MIXED;
+         fCHILDRENSymbol = XMLElementDecl.TYPE_CHILDREN;
+ 
+         fCDATASymbol = XMLAttributeDecl.TYPE_CDATA;
+         fIDSymbol = XMLAttributeDecl.TYPE_ID;
+         fIDREFSymbol = XMLAttributeDecl.TYPE_IDREF;
+         fIDREFSSymbol = XMLAttributeDecl.TYPE_IDREF;
+         fENTITYSymbol = XMLAttributeDecl.TYPE_ENTITY;
+         fENTITIESSymbol = XMLAttributeDecl.TYPE_ENTITY;
+         fNMTOKENSymbol = XMLAttributeDecl.TYPE_NMTOKEN;
+         fNMTOKENSSymbol = XMLAttributeDecl.TYPE_NMTOKEN;
+         fNOTATIONSymbol = XMLAttributeDecl.TYPE_NOTATION;
+         fENUMERATIONSymbol = XMLAttributeDecl.TYPE_ENUMERATION;
+         fREQUIREDSymbol = XMLAttributeDecl.DEFAULT_TYPE_REQUIRED;
+         fFIXEDSymbol = XMLAttributeDecl.DEFAULT_TYPE_FIXED;
+         fDATATYPESymbol = XMLElementDecl.TYPE_SIMPLE;
+         **/
     } // init()
 
     // other
@@ -1452,7 +1472,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 attValue = fStringPool.addSymbol(fTempAttDecl.defaultValue);
             }
             boolean specified = false;
-            boolean required = attDefType == fREQUIREDSymbol;
+            boolean required = attDefType == XMLAttributeDecl.DEFAULT_TYPE_REQUIRED;
             
 
             /****
@@ -1468,8 +1488,10 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 if (!cdata || required || attValue != -1) {
                     int i = attrList.getFirstAttr(firstCheck);
                     while (i != -1 && (lastCheck == -1 || i <= lastCheck)) {
-                        if (fStringPool.equalNames(attrList.getAttrName(i), attName)) {
-                            if (validationEnabled && attDefType == fFIXEDSymbol) {
+                        //if (fStringPool.equalNames(attrList.getAttrName(i), attName)) {
+                        if ( fStringPool.equalNames(attrList.getAttrLocalpart(i), attName)
+                             && fStringPool.equalNames(attrList.getAttrURI(i), fTempAttDecl.name.uri) ) {
+                            if (validationEnabled && attDefType == XMLAttributeDecl.DEFAULT_TYPE_FIXED) {
                                 int alistValue = attrList.getAttValue(i);
                                 if (alistValue != attValue &&
                                     !fStringPool.toString(alistValue).equals(fStringPool.toString(attValue))) {
@@ -1580,19 +1602,19 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
     /** Returns the validatator for an attribute type. */
     private AttributeValidator getValidatorForAttType(int attType, boolean list) {
-        if (attType == fCDATASymbol) {
+        if (attType == XMLAttributeDecl.TYPE_CDATA) {
             if (fAttValidatorCDATA == null) {
                 fAttValidatorCDATA = new AttValidatorCDATA();
             }
             return fAttValidatorCDATA;
         }
-        if (attType == fIDSymbol) {
+        if (attType == XMLAttributeDecl.TYPE_ID) {
             if (fAttValidatorID == null) {
                 fAttValidatorID = new AttValidatorID();
             }
             return fAttValidatorID;
         }
-        if (attType == fIDREFSymbol) {
+        if (attType == XMLAttributeDecl.TYPE_IDREF) {
             if (!list) {
             
                 if (fAttValidatorIDREF == null) {
@@ -1607,7 +1629,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 return fAttValidatorIDREFS;
             }
         }
-        if (attType == fENTITYSymbol) {
+        if (attType == XMLAttributeDecl.TYPE_ENTITY) {
             if (!list) {
                 if (fAttValidatorENTITY == null) {
                     fAttValidatorENTITY = new AttValidatorENTITY();
@@ -1621,7 +1643,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 return fAttValidatorENTITIES;
             }
         }
-        if (attType == fNMTOKENSymbol) {
+        if (attType == XMLAttributeDecl.TYPE_NMTOKEN) {
             if (!list) {
                 if (fAttValidatorNMTOKEN == null) {
                     fAttValidatorNMTOKEN = new AttValidatorNMTOKEN();
@@ -1635,19 +1657,19 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 return fAttValidatorNMTOKENS;
             }
         }
-        if (attType == fNOTATIONSymbol) {
+        if (attType == XMLAttributeDecl.TYPE_NOTATION) {
             if (fAttValidatorNOTATION == null) {
                 fAttValidatorNOTATION = new AttValidatorNOTATION();
             }
             return fAttValidatorNOTATION;
         }
-        if (attType == fENUMERATIONSymbol) {
+        if (attType == XMLAttributeDecl.TYPE_ENUMERATION) {
             if (fAttValidatorENUMERATION == null) {
                 fAttValidatorENUMERATION = new AttValidatorENUMERATION();
             }
             return fAttValidatorENUMERATION;
         }
-        if (attType == fDATATYPESymbol) {
+        if (attType == XMLAttributeDecl.TYPE_SIMPLE) {
             if (fAttValidatorDATATYPE == null) {
                 fAttValidatorDATATYPE = null; //REVISIT : !!! used to be fSchemaImporter.createDatatypeAttributeValidator();
             }
@@ -2279,8 +2301,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
                         fGrammar.getAttributeDecl(attDefIndex, fTempAttDecl); 
 
-                        //TO DO: special handling needed here for IDs IDrefs, ENTITIES, ?NOTations
-
                         int attributeType = attributeTypeName(fTempAttDecl);
                         attrList.setAttType(index, attributeType);
 
@@ -2353,7 +2373,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             fDatatypeBuffer.setLength(0);
         }
         
-        fInElementContent = (contentSpecType == fCHILDRENSymbol);
+        fInElementContent = (contentSpecType == XMLElementDecl.TYPE_CHILDREN);
 
     } // validateElementAndAttributes(QName,XMLAttrList)
 
@@ -2681,7 +2701,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
         for (int i = 0; i < fElementCount; i++) {
             int type = fGrammar.getContentSpecType(i);
-            if (type == fMIXEDSymbol || type == fCHILDRENSymbol) {
+            if (type == XMLElementDecl.TYPE_MIXED || type == XMLElementDecl.TYPE_CHILDREN) {
                 int chunk = i >> CHUNK_SHIFT;
                 int index = i &  CHUNK_MASK;
                 int contentSpecIndex = fContentSpec[chunk][index];
