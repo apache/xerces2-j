@@ -96,7 +96,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
         Object[] attrValues = fAttrChecker.checkAttributes(allDecl, false, schemaDoc);
 
         Element content = DOMUtil.getFirstChildElement(allDecl);
-        Element child = checkContent(allDecl, content, true);
+        Element child = checkContent(content, attrValues, schemaDoc);
 
         XSParticleDecl left = null;
         XSParticleDecl right = null;
@@ -231,7 +231,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
         Object[] attrValues = fAttrChecker.checkAttributes(decl, false, schemaDoc);
 
         Element content = DOMUtil.getFirstChildElement(decl);
-        Element child = checkContent(decl,content, true);
+        Element child = checkContent(content, attrValues, schemaDoc);
 
         XSParticleDecl left = null;
         XSParticleDecl right = null;

@@ -226,18 +226,30 @@ abstract class XSDAbstractTraverser {
     //
     // Evaluates content of Annotation if present.
     //
-    // @param: elm - parent element
     // @param: content - the first child of <code>elm</code> that needs to be checked
-    // @param: isEmpty: -- true if the content allowed is (annotation?) only
-    //                     false if must have some element (with possible preceding <annotation?>)
+    // @param parentAttrs:  attributes of the parent element; needed for PSVI.
+    // @param schemaDoc:  the currently active schema document.
     //
 
-    //REVISIT: Implement
     //REVISIT: if we want to expose annotation information to the application,
-    //         then we should never call this method. different traversers
-    //         should call traverseAnnotationDecl() directly, and store the
-    //         returned value.
-    Element checkContent( Element elm, Element content, boolean isEmpty ) {
+    //         then it may be difficult to use this method because traversers
+    //         will need to store the <annotation> component in the grammar.
+    //          We would then have to provide some means of accessing that component.
+    // Note that it is assumed this method is never invoked in a global context.
+
+    Element checkContent( Element content, Object[] parentAttrs, XSDocumentInfo schemaDoc ) {
+
+        if (content == null) {
+             return content;
+        }
+
+        if (content.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
+
+             traverseAnnotationDecl(content, parentAttrs, false, schemaDoc);
+
+             content = DOMUtil.getNextSiblingElement(content);
+        }
+            
         return content;
     }
 

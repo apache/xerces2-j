@@ -180,8 +180,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             // ---------------------------------------------------------------
             // First, handle any ANNOTATION declaration and get next child
             // ---------------------------------------------------------------
-            child = checkContent(complexTypeDecl,
-                    DOMUtil.getFirstChildElement(complexTypeDecl), true);
+            child = checkContent( DOMUtil.getFirstChildElement(complexTypeDecl), attrValues, schemaDoc);
 
             // ---------------------------------------------------------------
             // Process the content of the complex type definition

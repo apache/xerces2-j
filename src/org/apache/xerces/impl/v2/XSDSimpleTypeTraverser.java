@@ -192,7 +192,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         //annotation?,(list|restriction|union)
         //----------------------------------------------------------------------
         Element content = DOMUtil.getFirstChildElement(simpleTypeDecl);
-        content = checkContent(simpleTypeDecl, content, false);
+        content = checkContent(content, attrValues, schemaDoc);
         if (content == null) {
             reportGenericSchemaError("no child element found for simpleType '"+ nameProperty+"'");
             return null;
@@ -265,7 +265,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             content = DOMUtil.getFirstChildElement(content);
 
             //check content (annotation?, ...)
-            content = checkContent(simpleTypeDecl, content, false);
+            content = checkContent(content, contentAttrs, schemaDoc);
             if (content == null) {
                 reportGenericSchemaError("no child element found for simpleType '"+ nameProperty+"'");
                 return null;
@@ -361,7 +361,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         if (union) {
             int index=size;
             if (memberTypes != null) {
-                content = checkContent(simpleTypeDecl, content, true);
+                content = checkContent(content, contentAttrs, schemaDoc);
             }
             while (content!=null) {
                 baseValidator = traverseLocal(content, fSchemaDoc, fGrammar);
@@ -398,7 +398,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             short flags = 0; // flag facets that have fixed="true"
             int numEnumerationLiterals = 0;
             Vector enumData  = new Vector();
-            content = checkContent(simpleTypeDecl, content , true);
+            content = checkContent(content , contentAttrs, schemaDoc);
             String facet;
             while (content != null) {
                 // General Attribute Checking
@@ -431,7 +431,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                         enumVal=nameProperty;
                     }
                     enumData.addElement(enumVal);
-                    checkContent(simpleTypeDecl, DOMUtil.getFirstChildElement( content ), true);
+                    checkContent(DOMUtil.getFirstChildElement( content ), attrs, schemaDoc);
                 }
                 else if (facet.equals(SchemaSymbols.ELT_ANNOTATION) || facet.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
                     //REVISIT:
@@ -453,7 +453,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                         // ---------------------------------------------
                         fPattern.append("|");
                         fPattern.append(DOMUtil.getAttrValue(content, SchemaSymbols.ATT_VALUE ));
-                        checkContent(simpleTypeDecl, DOMUtil.getFirstChildElement( content ), true);
+                        checkContent(DOMUtil.getFirstChildElement( content ), attrs, schemaDoc);
                     }
                 }
                 else {
@@ -500,7 +500,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                             flags |= DatatypeValidator.FACET_WHITESPACE;
                         }
                     }
-                    checkContent(simpleTypeDecl, DOMUtil.getFirstChildElement( content ), true);
+                    checkContent(DOMUtil.getFirstChildElement( content ), attrs, schemaDoc);
                 }
                 // REVISIT: when to return the array
                 fAttrChecker.returnAttrArray (attrs, schemaDoc);
@@ -520,7 +520,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         else if (list && content!=null) {
             // report error - must not have any children!
             if (baseTypeName != null) {
-                content = checkContent(simpleTypeDecl, content, true);
+                content = checkContent(content, contentAttrs, schemaDoc);
                 if (content!=null) {
                     //REVISIT:
                     Object[] args = { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )};
@@ -542,7 +542,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         else if (union && content!=null) {
             //report error - must not have any children!
             if (memberTypes != null) {
-                content = checkContent(simpleTypeDecl, content, true);
+                content = checkContent(content, contentAttrs, schemaDoc);
                 if (content!=null) {
                     Object[] args = { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )};
                     fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,

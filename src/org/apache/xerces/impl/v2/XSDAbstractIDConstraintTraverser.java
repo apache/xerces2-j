@@ -78,7 +78,7 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
     }
 
     void traverseIdentityConstraint(IdentityConstraint ic,
-            Element icElem, XSDocumentInfo schemaDoc) {
+            Element icElem, XSDocumentInfo schemaDoc, Object [] icElemAttrs) {
 
         // General Attribute Checking will have been done on icElem by caller
 
@@ -89,16 +89,20 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
             reportGenericSchemaError("The content of an identity constraint must match (annotation?, selector, field+)");
             return;
         }
-        sElem = checkContent( icElem, sElem, false);
+
         // General Attribute Checking on sElem
         Object [] attrValues = fAttrChecker.checkAttributes(sElem, false, schemaDoc);
+        sElem = checkContent( sElem, icElemAttrs, schemaDoc);
 
         if(!sElem.getLocalName().equals(SchemaSymbols.ELT_SELECTOR)) {
             // REVISIT: localize
             reportGenericSchemaError("The content of an identity constraint must match (annotation?, selector, field+)");
         }
         // and make sure <selector>'s content is fine:
-        checkContent(sElem, DOMUtil.getFirstChildElement(sElem), true);
+        Element selChild = checkContent(DOMUtil.getFirstChildElement(sElem), attrValues, schemaDoc);
+        if (selChild != null) {
+            reportSchemaError("src-identity-constraint.1", new Object [] {icElemAttrs[XSAttributeChecker.ATTIDX_NAME]});
+        }
 
         String sText = ((String)attrValues[XSAttributeChecker.ATTIDX_XPATH]).trim();
         Selector.XPath sXpath = null;
@@ -133,7 +137,10 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
                 // REVISIT: localize
                 reportGenericSchemaError("The content of an identity constraint must match (annotation?, selector, field+)");
             // and make sure <field>'s content is fine:
-            checkContent(fElem, DOMUtil.getFirstChildElement(fElem), true);
+            Element fieldChild = checkContent(DOMUtil.getFirstChildElement(fElem), attrValues, schemaDoc);
+            if (fieldChild != null) {
+                reportSchemaError("src-identity-constraint.1", new Object [] {icElemAttrs[XSAttributeChecker.ATTIDX_NAME]});
+            }
             String fText = ((String)attrValues[XSAttributeChecker.ATTIDX_XPATH]).trim();
             try {
                 Field.XPath fXpath = new Field.XPath(fText, fSymbolTable,

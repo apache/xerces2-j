@@ -97,7 +97,7 @@ class XSDUniqueOrKeyTraverser extends XSDAbstractIDConstraintTraverser {
         // and there's identity).
 
         // get selector and fields
-        traverseIdentityConstraint(uniqueOrKey, uElem, schemaDoc);
+        traverseIdentityConstraint(uniqueOrKey, uElem, schemaDoc, attrValues);
 
         // and stuff this in the grammar
         grammar.addIDConstraintDecl(element, uniqueOrKey);

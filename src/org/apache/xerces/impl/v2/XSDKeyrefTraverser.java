@@ -99,7 +99,7 @@ class XSDKeyrefTraverser extends XSDAbstractIDConstraintTraverser {
         KeyRef keyRef = new KeyRef(krName.localpart, key);
 
         // add to element decl
-        traverseIdentityConstraint(keyRef, krElem, schemaDoc);
+        traverseIdentityConstraint(keyRef, krElem, schemaDoc, attrValues);
 
         // add key reference to element decl
         // and stuff this in the grammar
