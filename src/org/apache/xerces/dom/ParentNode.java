@@ -350,14 +350,15 @@ public abstract class ParentNode
 
             // No need to check kids for right-document; if they weren't,
             // they wouldn't be kids of that DocFrag.
-            for (Node kid = newChild.getFirstChild(); // Prescan
-                 kid != null;
-                 kid = kid.getNextSibling()) {
+            if (errorChecking) {
+                for (Node kid = newChild.getFirstChild(); // Prescan
+                     kid != null; kid = kid.getNextSibling()) {
 
-                if (errorChecking && !ownerDocument.isKidOK(this, kid)) {
-                    throw new DOMException(
+                    if (!ownerDocument.isKidOK(this, kid)) {
+                        throw new DOMException(
                                            DOMException.HIERARCHY_REQUEST_ERR, 
                                            "DOM006 Hierarchy request error");
+                    }
                 }
             }
 
@@ -413,9 +414,6 @@ public abstract class ParentNode
             }
         }
 
-        // Convert to internal type, to avoid repeated casting
-        ChildNode newInternal = (ChildNode)newChild;
-
         EnclosingAttr enclosingAttr=null;
         if (MUTATIONEVENTS && ownerDocument.mutationEvents
             && (mutationMask&MUTATION_AGGREGATE)!=0) {
@@ -428,6 +426,9 @@ public abstract class ParentNode
                 enclosingAttr=getEnclosingAttr();
             }
         }
+
+        // Convert to internal type, to avoid repeated casting
+        ChildNode newInternal = (ChildNode)newChild;
 
         Node oldparent = newInternal.parentNode();
         if (oldparent != null) {
@@ -448,14 +449,16 @@ public abstract class ParentNode
             firstChild = newInternal;
             newInternal.isFirstChild(true);
             newInternal.previousSibling = newInternal;
-        } else {
+        }
+        else {
             if (refInternal == null) {
                 // this is an append
                 ChildNode lastChild = firstChild.previousSibling;
                 lastChild.nextSibling = newInternal;
                 newInternal.previousSibling = lastChild;
                 firstChild.previousSibling = newInternal;
-            } else {
+            }
+            else {
                 // this is an insert
                 if (refChild == firstChild) {
                     // at the head of the list
@@ -465,7 +468,8 @@ public abstract class ParentNode
                     firstChild.previousSibling = newInternal;
                     firstChild = newInternal;
                     newInternal.isFirstChild(true);
-                } else {
+                }
+                else {
                     // somewhere in the middle
                     ChildNode prev = refInternal.previousSibling;
                     newInternal.nextSibling = refInternal;

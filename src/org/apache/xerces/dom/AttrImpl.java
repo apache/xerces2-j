@@ -635,6 +635,7 @@ public class AttrImpl
 
         DocumentImpl ownerDocument = ownerDocument();
         boolean errorChecking = ownerDocument.errorChecking;
+
         if (newChild.getNodeType() == Node.DOCUMENT_FRAGMENT_NODE) {
             // SLOW BUT SAFE: We could insert the whole subtree without
             // juggling so many next/previous pointers. (Wipe out the
@@ -653,14 +654,15 @@ public class AttrImpl
 
             // No need to check kids for right-document; if they weren't,
             // they wouldn't be kids of that DocFrag.
-            for (Node kid = newChild.getFirstChild(); // Prescan
-                 kid != null;
-                 kid = kid.getNextSibling()) {
+            if (errorChecking) {
+                for (Node kid = newChild.getFirstChild(); // Prescan
+                     kid != null; kid = kid.getNextSibling()) {
 
-                if (errorChecking && !ownerDocument.isKidOK(this, kid)) {
-                    throw new DOMException(
+                    if (!ownerDocument.isKidOK(this, kid)) {
+                        throw new DOMException(
                                            DOMException.HIERARCHY_REQUEST_ERR, 
                                            "DOM006 Hierarchy request error");
+                    }
                 }
             }
 
@@ -710,16 +712,13 @@ public class AttrImpl
             {
                 treeSafe = newChild != a;
             }
-            if(!treeSafe) {
+            if (!treeSafe) {
                 throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, 
                                        "DOM006 Hierarchy request error");
             }
         }
 
         makeChildNode(); // make sure we have a node and not a string
-
-        // Convert to internal type, to avoid repeated casting
-        ChildNode newInternal = (ChildNode)newChild;
 
         EnclosingAttr enclosingAttr=null;
         if (MUTATIONEVENTS && ownerDocument.mutationEvents
@@ -733,6 +732,9 @@ public class AttrImpl
                 enclosingAttr=getEnclosingAttr();
             }
         }
+
+        // Convert to internal type, to avoid repeated casting
+        ChildNode newInternal = (ChildNode)newChild;
 
         Node oldparent = newInternal.parentNode();
         if (oldparent != null) {
@@ -754,14 +756,16 @@ public class AttrImpl
             value = newInternal; // firstchild = newInternal;
             newInternal.isFirstChild(true);
             newInternal.previousSibling = newInternal;
-        } else {
+        }
+        else {
             if (refInternal == null) {
                 // this is an append
                 ChildNode lastChild = firstChild.previousSibling;
                 lastChild.nextSibling = newInternal;
                 newInternal.previousSibling = lastChild;
                 firstChild.previousSibling = newInternal;
-            } else {
+            }
+            else {
                 // this is an insert
                 if (refChild == firstChild) {
                     // at the head of the list
@@ -771,7 +775,8 @@ public class AttrImpl
                     firstChild.previousSibling = newInternal;
                     value = newInternal; // firstChild = newInternal;
                     newInternal.isFirstChild(true);
-                } else {
+                }
+                else {
                     // somewhere in the middle
                     ChildNode prev = refInternal.previousSibling;
                     newInternal.nextSibling = refInternal;
