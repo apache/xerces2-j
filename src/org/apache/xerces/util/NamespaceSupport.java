@@ -147,7 +147,7 @@ public class NamespaceSupport
      * <p>It is necessary to invoke this method before reusing the
      * Namespace support object for a new session.</p>
      */
-    public void reset(SymbolTable symbolTable) {
+    public void reset() {
 
         // reset namespace and context info
         fNamespaceSize = 0;

@@ -117,13 +117,10 @@ class XSDocumentInfo {
                     throws XMLSchemaException {
         fSchemaDoc = schemaDoc;
         fNamespaceSupport = new SchemaNamespaceSupport();
+        fNamespaceSupport.reset();
         fIsChameleonSchema = false;
 
         fSymbolTable = symbolTable;
-        // During XML Schema traversal bind "xml" prefix to
-        // "http://www.w3.org/XML/1998/namespace"
-        // per Namespace Constraint: Prefix Declared (Namespaces in XML REC)
-        fNamespaceSupport.declarePrefix(XMLSymbols.PREFIX_XML, SchemaNamespaceSupport.XML_URI);
 
         if(schemaDoc != null) {
             Element root = DOMUtil.getRoot(schemaDoc);
@@ -165,12 +162,6 @@ class XSDocumentInfo {
         if (nsSupport == null)
             nsSupport = fNamespaceSupportRoot;
         fNamespaceSupport = new SchemaNamespaceSupport(nsSupport);
-
-        // bind "xml" prefix to "http://www.w3.org/XML/1998/namespace"
-        // per Namespace Constraint: Prefix Declared (Namespaces in XML REC)
-        // REVISIT: shouldn't this work be done whenever a namespace support
-        // object is constructed?
-        fNamespaceSupport.declarePrefix(XMLSymbols.PREFIX_XML, SchemaNamespaceSupport.XML_URI);
 
         fValidationContext.setNamespaceSupport(fNamespaceSupport);
     }

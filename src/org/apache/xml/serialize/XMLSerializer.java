@@ -668,7 +668,7 @@ extends BaseMarkupSerializer {
         if (fNamespaces) {
 
             // reset local binder
-            fLocalNSBinder.reset(fSymbolTable);
+            fLocalNSBinder.reset();
             // note: the values that added to namespace binder
             // must be already be added to the symbol table
             fLocalNSBinder.pushContext();

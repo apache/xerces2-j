@@ -199,7 +199,7 @@ public class DOMNormalizer implements XMLGrammarPool {
         }
 
         fNamespaceValidation = componentManager.getFeature(DOMValidationConfiguration.SCHEMA);
-        fNamespaceBinder.reset(fSymbolTable);
+        fNamespaceBinder.reset();
         fNamespaceBinder.declarePrefix(XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING);
         fNamespaceCounter = 1;
 

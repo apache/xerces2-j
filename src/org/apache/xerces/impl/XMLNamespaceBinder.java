@@ -263,7 +263,7 @@ public class XMLNamespaceBinder
         fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
 
         // initialize vars
-        fNamespaceSupport.reset(fSymbolTable);
+        fNamespaceSupport.reset();
 
         // use shared context
         NamespaceContext context = fNamespaceContext;

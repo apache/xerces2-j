@@ -416,7 +416,7 @@ public class DOMWriterImpl implements DOMWriter {
 
     private boolean reset() {
         serializer.reset();
-        serializer.fNSBinder.reset(serializer.fSymbolTable);
+        serializer.fNSBinder.reset();
         // during serialization always have a mapping to empty string
         // so we assume there is a declaration.
         serializer.fNSBinder.declarePrefix(XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING);

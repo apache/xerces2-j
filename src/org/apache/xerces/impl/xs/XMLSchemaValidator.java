@@ -1249,7 +1249,7 @@ public class XMLSchemaValidator
         fSchemaLoader.setEntityResolver(fEntityResolver); 
         
         // initialize namespace support
-        fNamespaceSupport.reset(fSymbolTable);
+        fNamespaceSupport.reset();
         fPushForNextBinding = true;
         fValidationManager = (ValidationManager)componentManager.getProperty(VALIDATION_MANAGER);
         fValidationManager.addValidationState(fValidationState);
