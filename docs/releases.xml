@@ -2,6 +2,20 @@
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
+  <release version="&ParserName; TBD">
+    <desc>
+        TBD
+    </desc>
+    <changes>
+      <fix>
+        <note>
+          Fix comment parsing bug that prevented Tomcat 4.1.12 from making
+          use of Xerces versions later than 2.1.0.
+        </note>
+        <submitter name="Tim Bruce, Neil Graham"/>
+      </fix>
+    </changes>
+  </release>
   <release version="&ParserName; 2.2.1">
     <desc>
         This release fixes four important bugs and several minor problems that
