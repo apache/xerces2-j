@@ -153,7 +153,7 @@ public class XMLValidator
     // XMLComponent methods
     //
 
-    /**
+    /*
      * Resets the component. The component can query the component manager
      * about any features and properties that affect the operation of the
      * component.
@@ -403,6 +403,7 @@ public class XMLValidator
      */
     public void endElement(QName element) throws SAXException {
 
+
         // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.endElement(element);
@@ -644,7 +645,7 @@ public class XMLValidator
         if (fInDTD) {
             fDTDGrammar.endEntity(name);
             if (fDTDHandler != null) {
-                fDocumentHandler.endEntity(name);
+                fDTDHandler.endEntity(name);
             }
         }
         else {
