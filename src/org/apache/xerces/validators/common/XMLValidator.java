@@ -3090,15 +3090,19 @@ public final class XMLValidator
                         }
                      }
                   }
-                  if (elementIndex == -1) {
-                     switchGrammar(fGrammarNameSpaceIndex);
+                  // if *still* can't find it, try a grammar with no targetNamespace
+                  if(elementIndex == -1 && element.uri == StringPool.EMPTY_STRING) {
+                    boolean success = switchGrammar(element.uri);
+                    if(success) {
+                        fGrammarNameSpaceIndex = element.uri;
+                        elementIndex = fGrammar.getElementDeclIndex(element.localpart, TOP_LEVEL_SCOPE);
+                    }
                   }
                }
                //if still can't resolve it, try TOP_LEVEL_SCOPE AGAIN
                /****/
                if ( element.uri == StringPool.EMPTY_STRING && elementIndex == -1 
-               && fNamespacesScope != null 
-               && fNamespacesScope.getNamespaceForPrefix(StringPool.EMPTY_STRING) != StringPool.EMPTY_STRING ) {
+               && fNamespacesScope != null ) {
                elementIndex = fGrammar.getElementDeclIndex(element.localpart, TOP_LEVEL_SCOPE);
                // REVISIT:
                // this is a hack to handle the situation where namespace prefix "" is bound to nothing, and there

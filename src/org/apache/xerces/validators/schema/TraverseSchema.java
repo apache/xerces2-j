@@ -1818,8 +1818,25 @@ public class TraverseSchema implements
              return;
          }
          fImportLocations.addElement((Object)location);
+        // check to make sure we're not importing ourselves...
+        if(source.getSystemId().equals(fCurrentSchemaURL)) {
+            // REVISIT:  localize
+            return;
+        }
 
          String namespaceString = importDecl.getAttribute(SchemaSymbols.ATT_NAMESPACE);
+         if(namespaceString.length() == 0) {
+            if(fTargetNSURI == StringPool.EMPTY_STRING) {
+                // REVISIT:  localize
+                reportGenericSchemaError("src-import.1.2:  if the namespace attribute on an <import> element is not present, the <import>ing schema must have a targetNamespace");
+            }
+        } else {
+            if(fTargetNSURIString.equals(namespaceString.trim())) {
+                // REVISIT:  localize
+                reportGenericSchemaError("src-import.1.1:  the namespace attribute of an <import> element must not be the same as the targetNamespace of the <import>ing schema");
+            }
+        }  
+                
          SchemaGrammar importedGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(namespaceString);
 
          if (importedGrammar == null) {
