@@ -1643,7 +1643,7 @@ public class XMLEntityManager
         }
         // if id already expanded, return
         try {
-            URI uri = new URI(systemId);
+            URI uri = new URI(systemId.trim());
             if (uri != null) {
                 return systemId;
             }
@@ -1665,13 +1665,13 @@ public class XMLEntityManager
             }
             else {
                 try {
-                    base = new URI(fixURI(baseSystemId));
+                    base = new URI(fixURI(baseSystemId).trim());
                 }
                 catch (URI.MalformedURIException e) {
                     if (baseSystemId.indexOf(':') != -1) {
                         // for xml schemas we might have baseURI with
                         // a specified drive
-                        base = new URI("file", "", fixURI(baseSystemId), null, null);
+                        base = new URI("file", "", fixURI(baseSystemId).trim(), null, null);
                     }
                     else {
                         String dir = getUserDir();
@@ -1681,7 +1681,7 @@ public class XMLEntityManager
                 }
              }
              // expand id
-             uri = new URI(base, id);
+             uri = new URI(base, id.trim());
         }
         catch (Exception e) {
             // let it go through
