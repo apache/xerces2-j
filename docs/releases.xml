@@ -33,10 +33,11 @@
           <submitter name='Elena Litani'/>
       </add>      
       <update>
-          <note>Modified several XNI interfaces, i.e. NamespaceContext, XMLResourceIdentifier, and updated implementation
-          accordingly.
-          </note>
-          <submitter name='Elena Litani'/>
+       <note>
+        Modified several XNI interfaces, i.e. NamespaceContext, XMLResourceIdentifier,
+        Augmentation, XMLAttributes, and updated implementation accordingly.
+       </note>
+       <submitter name='Elena Litani, Sandy Gao'/>
       </update>      
       <update>
             <note>
@@ -60,6 +61,40 @@
         </note>
         <submitter name="Neil Graham, Neeraj Bajaj"/>
       </add>
+      <add>
+       <note>
+        Added a feature "disallow-doctype-decl" so that a fatal error is reported
+        if this feature is on and the incoming document has a DOCTYPE.
+       </note>
+       <submitter name="Sandy Gao"/>
+      </add>
+      <add>
+       <note>
+        Added a feature "standard-uri-conformant" so that the parser enforces
+        the URI rules when this feature is on.
+       </note>
+       <submitter name="Sandy Gao"/>
+      </add>
+      <update>
+       <note>
+        Performance update: ported the partial DTM implementation of DOM and
+        use it for parsing Schema documents.
+       </note>
+       <submitter name="Sandy Gao"/>
+      </update>
+      <add>
+       <note>
+        Provided full support for canonical representation of XML Schema
+        datatypes.
+       </note>
+       <submitter name="Sandy Gao"/>
+      </add>
+      <update>
+       <note>
+        Implemented XML Schema errata as they were published.
+       </note>
+       <submitter name="Sandy Gao"/>
+      </update>
       <fix>
         <note>
           Fix comment parsing bug that prevented Tomcat 4.1.12 from making
