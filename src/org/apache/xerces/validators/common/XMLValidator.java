@@ -1122,7 +1122,7 @@ public final class XMLValidator
       }
 
       // activate identity constraints
-      if (fValidating && fGrammar != null) {
+      if (fValidating && fGrammar != null && fGrammarIsSchemaGrammar) {
           if (DEBUG_IDENTITY_CONSTRAINTS) {
               System.out.println("<IC>: pushing context - element: "+fStringPool.toString(element.rawname));
           }
@@ -1377,49 +1377,51 @@ public final class XMLValidator
          fElementChildrenLength = fElementChildrenOffsetStack[fElementDepth + 1] + 1;
 
          // call matchers and de-activate context
-         int oldCount = fMatcherStack.getMatcherCount();
-         for (int i = oldCount - 1; i >= 0; i--) {
-             XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
-             if (DEBUG_IDENTITY_CONSTRAINTS) {
-                 System.out.println("<IC>: "+matcher+"#endElement("+fStringPool.toString(fCurrentElement.rawname)+")");
-             }
-             matcher.endElement(fCurrentElement, fCurrentElementIndex, (SchemaGrammar)fGrammar);
-         }
-         if (DEBUG_IDENTITY_CONSTRAINTS) {
-             System.out.println("<IC>: popping context - element: "+fStringPool.toString(fCurrentElement.rawname));
-         }
-         if (fMatcherStack.size() > 0) {
-             fMatcherStack.popContext();
-         }
-         int newCount = fMatcherStack.getMatcherCount();
-         // handle everything *but* keyref's.
-         for (int i = oldCount - 1; i >= newCount; i--) {
-             XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
-             IdentityConstraint id;
-             if((id = matcher.getIDConstraint()) != null  && id.getType() != IdentityConstraint.KEYREF) {
-                 if (DEBUG_IDENTITY_CONSTRAINTS) {
-                    System.out.println("<IC>: "+matcher+"#endDocumentFragment()");
-                 }
-                 matcher.endDocumentFragment();
-                 fValueStoreCache.transplant(id);
-             } else if (id == null)
-                 matcher.endDocumentFragment();
-         }
-         // now handle keyref's/...
-         for (int i = oldCount - 1; i >= newCount; i--) {
-             XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
-             IdentityConstraint id;
-             if((id = matcher.getIDConstraint()) != null && id.getType() == IdentityConstraint.KEYREF) {
-                 if (DEBUG_IDENTITY_CONSTRAINTS) {
-                    System.out.println("<IC>: "+matcher+"#endDocumentFragment()");
-                 }
-                 ValueStoreBase values = fValueStoreCache.getValueStoreFor(id);
-                 if(values != null) // nothing to do if nothing matched!
-                     values.endDocumentFragment();
-                 matcher.endDocumentFragment();
-             }
-         }
-        fValueStoreCache.endElement();
+         if(fGrammarIsSchemaGrammar) {
+            int oldCount = fMatcherStack.getMatcherCount();
+            for (int i = oldCount - 1; i >= 0; i--) {
+                XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
+                if (DEBUG_IDENTITY_CONSTRAINTS) {
+                    System.out.println("<IC>: "+matcher+"#endElement("+fStringPool.toString(fCurrentElement.rawname)+")");
+                }
+                matcher.endElement(fCurrentElement, fCurrentElementIndex, (SchemaGrammar)fGrammar);
+            }
+            if (DEBUG_IDENTITY_CONSTRAINTS) {
+                System.out.println("<IC>: popping context - element: "+fStringPool.toString(fCurrentElement.rawname));
+            }
+            if (fMatcherStack.size() > 0) {
+                fMatcherStack.popContext();
+            }
+            int newCount = fMatcherStack.getMatcherCount();
+            // handle everything *but* keyref's.
+            for (int i = oldCount - 1; i >= newCount; i--) {
+                XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
+                IdentityConstraint id;
+                if((id = matcher.getIDConstraint()) != null  && id.getType() != IdentityConstraint.KEYREF) {
+                    if (DEBUG_IDENTITY_CONSTRAINTS) {
+                        System.out.println("<IC>: "+matcher+"#endDocumentFragment()");
+                    }
+                    matcher.endDocumentFragment();
+                    fValueStoreCache.transplant(id);
+                } else if (id == null)
+                    matcher.endDocumentFragment();
+            }
+            // now handle keyref's/...
+            for (int i = oldCount - 1; i >= newCount; i--) {
+                XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
+                IdentityConstraint id;
+                if((id = matcher.getIDConstraint()) != null && id.getType() == IdentityConstraint.KEYREF) {
+                    if (DEBUG_IDENTITY_CONSTRAINTS) {
+                        System.out.println("<IC>: "+matcher+"#endDocumentFragment()");
+                    }
+                    ValueStoreBase values = fValueStoreCache.getValueStoreFor(id);
+                    if(values != null) // nothing to do if nothing matched!
+                        values.endDocumentFragment();
+                    matcher.endDocumentFragment();
+                }
+            }
+            fValueStoreCache.endElement();
+        }
       }
       fDocumentHandler.endElement(fCurrentElement);
       if (fNamespacesEnabled) {
@@ -4130,7 +4132,8 @@ public final class XMLValidator
                                        XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
          } else {
             try {
-                if (fCurrentDV == null) { //no character data
+                
+                if (fCurrentDV == null ) { //no character data
                     fGrammar.getElementDecl(elementIndex, fTempElementDecl);
                     fCurrentDV = fTempElementDecl.datatypeValidator;
                 }
