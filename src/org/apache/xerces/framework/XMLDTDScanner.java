@@ -393,6 +393,20 @@ public final class XMLDTDScanner {
          */
         public void doctypeDecl(QName rootElement, int publicId, int systemId) throws Exception;
         /**
+         * Called when the DTDScanner starts reading from the external subset
+         *
+         * @param publicId StringPool handle of the public id
+         * @param systemId StringPool handle of the system id
+         * @exception java.lang.Exception
+         */
+        public void startReadingFromExternalSubset(int publicId, int systemId) throws Exception;
+        /**
+         * Called when the DTDScanner stop reading from the external subset
+         *
+         * @exception java.lang.Exception
+         */
+        public void stopReadingFromExternalSubset() throws Exception;
+        /**
          * Add an element declaration (forward reference)
          *
          * @param handle to the name of the element being declared
@@ -976,6 +990,7 @@ public final class XMLDTDScanner {
      */
     public boolean scanDoctypeDecl() throws Exception
     {
+        fEventHandler.callStartDTD();
         increaseMarkupDepth();
         fEntityReader = fEntityHandler.getEntityReader();
         fReaderId = fEntityHandler.getReaderId();
@@ -1027,11 +1042,8 @@ public final class XMLDTDScanner {
         }
         decreaseMarkupDepth();
 
-        /***
-        // REVISIT: What is this for?
         if (scanExternalSubset)
-            startReadingFromExternalSubset(publicId, systemId);
-        /***/
+            fEventHandler.startReadingFromExternalSubset(publicId, systemId);
 
         return true;
     }
@@ -1397,11 +1409,10 @@ public final class XMLDTDScanner {
             }
             parseTextDecl = newParseTextDecl;
         }
-        /***
-        // REVISIT: What is this for?
-        if (extSubset)
-            stopReadingFromExternalSubset();
-        /***/
+        if (extSubset) {
+            fEventHandler.stopReadingFromExternalSubset();
+            fEventHandler.callEndDTD();
+        }
     }
     //
     // [64] ignoreSectContents ::= Ignore ('<![' ignoreSectContents ']]>' Ignore)*
@@ -2640,18 +2651,6 @@ public final class XMLDTDScanner {
     private int validPublicId(String publicId) {
         return XMLCharacterProperties.validPublicId(publicId);
     }
-
-    /***
-    private void startReadingFromExternalSubset(int publicId, int systemId) throws Exception {
-        fEntityHandler.startReadingFromExternalSubset(fStringPool.toString(publicId),
-                                                      fStringPool.toString(systemId),
-                                                      markupDepth());
-    }
-
-    private void stopReadingFromExternalSubset() throws Exception {
-        fEntityHandler.stopReadingFromExternalSubset();
-    }
-    /***/
 
     private void scanElementType(XMLEntityHandler.EntityReader entityReader, 
                                 char fastchar, QName element) throws Exception {
