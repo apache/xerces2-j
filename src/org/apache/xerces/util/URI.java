@@ -91,7 +91,7 @@ import java.io.Serializable;
 * @version  $Id$
 *
 **********************************************************************/
-public class URI implements Serializable {
+ public class URI implements Serializable {
 
   /*******************************************************************
   * MalformedURIExceptions are thrown in the process of building a URI
@@ -377,9 +377,13 @@ public class URI implements Serializable {
     int uriSpecLen = uriSpec.length();
     int index = 0;
 
-    // check for scheme
-    if (uriSpec.indexOf(':') == -1) {
-      if (p_base == null) {
+    // Check for scheme, which must be before `/'. Also handle names with
+    // DOS drive letters ('D:'), so 1-character schemes are not allowed.
+    int colonIdx = uriSpec.indexOf(':');
+    if ((colonIdx < 2) || (colonIdx > uriSpec.indexOf('/'))) { 
+      int fragmentIdx = uriSpec.indexOf('#');
+      // A standalone base is a valid URI according to spec
+      if (p_base == null && fragmentIdx != 0 ) {
         throw new MalformedURIException("No scheme found in URI.");
       }
     }
