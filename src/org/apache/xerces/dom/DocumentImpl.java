@@ -96,7 +96,7 @@ import org.apache.xerces.dom.events.*;
  */
 public class DocumentImpl
     extends ParentNode
-    implements Document, DocumentTraversal, DocumentEvent {
+    implements Document, DocumentTraversal, DocumentEvent, DocumentRange {
 
     //
     // Constants
