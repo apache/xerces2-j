@@ -65,6 +65,7 @@ import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.parser.XMLDocumentSource;
 
 /**
  * This sample demonstrates how to implement a simple pass-through
@@ -89,6 +90,9 @@ public class PassThroughFilter
     
     /** The document handler. */
     protected XMLDocumentHandler fDocumentHandler;
+
+    /** The document source */
+    protected XMLDocumentSource fDocumentSource;
     
     //
     // Public methods
@@ -410,5 +414,17 @@ public class PassThroughFilter
             fDocumentHandler.endDocument(augs);
         }
     } // endDocument()
+
+
+    /** Sets the document source. */
+    public void setDocumentSource(XMLDocumentSource source){
+        fDocumentSource = source;    
+    }
+
+
+    /** Returns the document source. */
+    public XMLDocumentSource getDocumentSource(){
+        return fDocumentSource;
+    }
     
 } // class PassThroughFilter

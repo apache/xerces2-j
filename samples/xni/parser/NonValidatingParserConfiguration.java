@@ -117,6 +117,7 @@ public class NonValidatingParserConfiguration
         // setup document pipeline
         fScanner.setDocumentHandler(fNamespaceBinder);
         fNamespaceBinder.setDocumentHandler(fDocumentHandler);
+        fNamespaceBinder.setDocumentSource(fScanner);
 
     } // configurePipeline()
 

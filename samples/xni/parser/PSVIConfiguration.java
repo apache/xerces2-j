@@ -149,6 +149,7 @@ public class PSVIConfiguration extends StandardParserConfiguration {
         if (fSchemaValidator != null) {
             fSchemaValidator.setDocumentHandler(fPSVIWriter);
             fPSVIWriter.setDocumentHandler(fDocumentHandler);
+            fPSVIWriter.setDocumentSource(fSchemaValidator);
         }
 
     } // configurePipeline()
