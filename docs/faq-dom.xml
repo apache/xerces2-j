@@ -67,60 +67,57 @@
       <p>  
 	The following source code shows how to create the parser with JAXP:
       </p>
-      <source>
-    import java.io.IOException;
-	import javax.xml.parsers.DocumentBuilder;
-	import javax.xml.parsers.DocumentBuilderFactory;
-	import javax.xml.parsers.FactoryConfigurationError;
-	import javax.xml.parsers.ParserConfigurationException;
-	import org.w3c.dom.Document;
-	import org.xml.sax.SAXException;
+      <source>import java.io.IOException;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.FactoryConfigurationError;
+import javax.xml.parsers.ParserConfigurationException;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
-	...
+...
 
-	String xmlFile = &quot;file:///&parserdir;/data/personal.xml&quot;; 
-	try {
-	DocumentBuilderFactory factory = 
-        DocumentBuilderFactory.newInstance();
-	DocumentBuilder builder = factory.newDocumentBuilder();
-	Document document = builder.parse(xmlFile);
-	}
-	catch (FactoryConfigurationError e) {
-	// unable to get a document builder factory
-	} 
-	catch (ParserConfigurationException e) {
-	// parser was unable to be configured
-	catch (SAXException e) {
-	// parsing error
-	} 
-	catch (IOException e) {
-	// i/o error
-	}</source>
-    <anchor name="domparser"/>
+String xmlFile = &quot;file:///&parserdir;/data/personal.xml&quot;; 
+try {
+    DocumentBuilderFactory factory = 
+    DocumentBuilderFactory.newInstance();
+    DocumentBuilder builder = factory.newDocumentBuilder();
+    Document document = builder.parse(xmlFile);
+}
+catch (FactoryConfigurationError e) {
+    // unable to get a document builder factory
+} 
+catch (ParserConfigurationException e) {
+    // parser was unable to be configured
+catch (SAXException e) {
+    // parsing error
+} 
+catch (IOException e) {
+    // i/o error
+}</source>
+      <anchor name="domparser"/>
       <p>  
 	The following source code shows how to create the parser using <jump href="http://www.w3.org/DOM/DOMTR#DOML3">DOM Level 3</jump>:
       </p>
-      <source>
-	import  org.w3c.dom.DOMImplementationRegistry;
-	import  org.w3c.dom.Document;
-	import  org.w3c.dom.ls.DOMImplementationLS;
-	import  org.w3c.dom.ls.DOMBuilder;
+      <source>import  org.w3c.dom.DOMImplementationRegistry;
+import  org.w3c.dom.Document;
+import  org.w3c.dom.ls.DOMImplementationLS;
+import  org.w3c.dom.ls.DOMBuilder;
 
-	...
+...
 
-	System.setProperty(DOMImplementationRegistry.PROPERTY,
-	"org.apache.xerces.dom.DOMImplementationSourceImpl");
-	DOMImplementationRegistry registry = 
-	DOMImplementationRegistry.newInstance();
+System.setProperty(DOMImplementationRegistry.PROPERTY,
+    "org.apache.xerces.dom.DOMImplementationSourceImpl");
+DOMImplementationRegistry registry = 
+    DOMImplementationRegistry.newInstance();
 
-	DOMImplementationLS impl = 
-	(DOMImplementationLS)registry.getDOMImplementation("LS-Load");
+DOMImplementationLS impl = 
+    (DOMImplementationLS)registry.getDOMImplementation("LS-Load");
 
-	DOMBuilder builder = impl.createDOMBuilder(
-	DOMImplementationLS.MODE_SYNCHRONOUS, null);
+DOMBuilder builder = impl.createDOMBuilder(
+    DOMImplementationLS.MODE_SYNCHRONOUS, null);
 	
-	Document document = builder.parseURI("data/personal.xml");
-      </source>
+Document document = builder.parseURI("data/personal.xml");</source>
       <note>You can use DOM Level 3 Load/Save interfaces with the default Xerces distribution. 
 	To access the DOM Level 3 Core functionality you need to extract the code from 
 	CVS and build Xerces with the <strong>jars-dom3</strong> target.</note>
@@ -133,47 +130,43 @@
     <a> <p>
 	You can serialize a DOM tree by using Xerces <code>org.apache.xml.XMLSerializer</code>:
       </p>
-      <source>
-	import org.apache.xml.serialize.OutputFormat;
-	import org.apache.xml.serialize.XMLSerializer;
-	import org.apache.xml.serialize.LineSeparator;
+      <source>import org.apache.xml.serialize.OutputFormat;
+import org.apache.xml.serialize.XMLSerializer;
+import org.apache.xml.serialize.LineSeparator;
 
-	...
+...
 
-	OutputFormat format = new OutputFormat((Document)core);
-	format.setLineSeparator(LineSeparator.Windows);
-	format.setIndenting(true);
-	format.setLineWidth(0);             
-	format.setPreserveSpace(true);
-	XMLSerializer serializer = new XMLSerializer (
-	new FileWriter("output.xml"), format);
-	serializer.asDOMSerializer();
-	serializer.serialize(document);
-      </source>
+OutputFormat format = new OutputFormat((Document)core);
+format.setLineSeparator(LineSeparator.Windows);
+format.setIndenting(true);
+format.setLineWidth(0);             
+format.setPreserveSpace(true);
+XMLSerializer serializer = new XMLSerializer (
+    new FileWriter("output.xml"), format);
+serializer.asDOMSerializer();
+serializer.serialize(document);</source>
       <p>You can also serialize a DOM tree by using the DOM Level 3 Load and Save. 
 	<code>DOMWriter</code> performs automatic namespace fixup to make your document namespace
 	well-formed.
       </p>
-      <source>
-	import  org.w3c.dom.DOMImplementationRegistry;
-	import  org.w3c.dom.Document;
-	import  org.w3c.dom.ls.DOMImplementationLS;
-	import  org.w3c.dom.ls.DOMWriter;
+      <source>import  org.w3c.dom.DOMImplementationRegistry;
+import  org.w3c.dom.Document;
+import  org.w3c.dom.ls.DOMImplementationLS;
+import  org.w3c.dom.ls.DOMWriter;
 
-	...
+...
 
-	System.setProperty(DOMImplementationRegistry.PROPERTY,
-	"org.apache.xerces.dom.DOMImplementationSourceImpl");
-	DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
+System.setProperty(DOMImplementationRegistry.PROPERTY,
+    "org.apache.xerces.dom.DOMImplementationSourceImpl");
+DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
 
-	DOMImplementationLS impl = 
-	(DOMImplementationLS)registry.getDOMImplementation("LS-Load");
+DOMImplementationLS impl = 
+    (DOMImplementationLS)registry.getDOMImplementation("LS-Load");
 
-	...     
+...     
 
-	DOMWriter builder = impl.createDOMWriter();
-	writer.writeNode(System.out, document);
-      </source>  
+DOMWriter builder = impl.createDOMWriter();
+writer.writeNode(System.out, document);</source>  
     </a>
   </faq>
 
@@ -229,18 +222,15 @@
   		identify attribute nodes by their namespaceURI and localName. Because of this fundamental difference, mixing both 
   		sets of methods can lead to unpredictable results.</em></p>
  
-  		<source>
-import org.w3c.dom.Document; 
+  		<source>import org.w3c.dom.Document; 
 import org.w3c.dom.ls.DOMBuilder;
 
 ..... 
 
-Document document =
-builder.parseURI("data/personal.xml");
+Document document = builder.parseURI("data/personal.xml");
 document.setErrorHandler(new MyErrorHandler());
 document.setNormalizationFeature("validate", true);
-document.normalizeDocument();
-  		</source>
+document.normalizeDocument();</source>
 
   		<p>
   			For more information, please refer to the
@@ -263,29 +253,26 @@ document.normalizeDocument();
 	You can register an error handler on a <code>DocumentBuilder</code>
 	created using JAXP like this:
       </p>
-      <source>
-    import javax.xml.parsers.DocumentBuilder;
-	import org.xml.sax.ErrorHandler;
-	import org.xml.sax.SAXException;
-	import org.xml.sax.SAXParseException;
+      <source>import javax.xml.parsers.DocumentBuilder;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
-	ErrorHandler handler = new ErrorHandler() {
-	public void warning(SAXParseException e) throws SAXException {
+ErrorHandler handler = new ErrorHandler() {
+    public void warning(SAXParseException e) throws SAXException {
         System.err.println("[warning] "+e.getMessage());
-	}
-	public void error(SAXParseException e) throws SAXException {
+    }
+    public void error(SAXParseException e) throws SAXException {
         System.err.println("[error] "+e.getMessage());
-	}
-	public void fatalError(SAXParseException e) throws SAXException {
+    }
+    public void fatalError(SAXParseException e) throws SAXException {
         System.err.println("[fatal error] "+e.getMessage());
-	throw e;
-	}
-	};
+        throw e;
+    }
+};
 
-	DocumentBuilder builder = /* builder instance */;
-	builder.setErrorHandler(handler);
-
-      </source>
+DocumentBuilder builder = /* builder instance */;
+builder.setErrorHandler(handler);</source>
       <p>If you are using <jump href="http://www.w3.org/DOM/DOMTR#DOML3">DOM Level 3</jump> 
 	you can register an error handler with the <code>DOMBuilder</code> by supplying
 	a class which implements the <code>org.w3c.dom.DOMErrorHandler</code>

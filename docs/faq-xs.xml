@@ -16,19 +16,19 @@
 	Schema Part 1 section 4.3.2. 
 	Here is an example with no target namespace: </p>
       <source>&lt;document
-	xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
-	xsi:noNamespaceSchemaLocation='document.xsd'&gt;
-	...
-	&lt;/document&gt;</source>
+    xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+    xsi:noNamespaceSchemaLocation='document.xsd'&gt;
+    ...
+&lt;/document&gt;</source>
       <p>Here is an example with a target namespace. Note that it is an
 	error to specify a different namespace than the target namespace
 	defined in the Schema.</p>
       <source>&lt;document
-	xmlns='http://my.com'
-	xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' 
-	xsi:schemaLocation='http://my.com document.xsd'&gt;
-	...
-	&lt;/document&gt;</source>
+    xmlns='http://my.com'
+    xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' 
+    xsi:schemaLocation='http://my.com document.xsd'&gt;
+    ...
+&lt;/document&gt;</source>
       <p>Review the sample file, 'data/personal.xsd' for an example of an XML 
 	Schema grammar.</p>
       
@@ -79,16 +79,16 @@
 	information while in the scope of the document handler start/end element calls:</p>
       <source>import org.apache.xerces.xni.psvi.*;
 
-	...
+...
 
-	public void startElement(QName element, XMLAttributes attributes,
-	Augmentations augs) {
-	ElementPSVI elemPSVI = (ElementPSVI)augs.getItem("ELEMENT_PSVI");
-	// get PSVI items of this element out of elemPSVI
-	short attemp = elemPSVI.getValidationAttempted();
-	short validity = elemPSVI.getValidity();
-	...
-	}</source>
+public void startElement(QName element, XMLAttributes attributes,
+    Augmentations augs) {
+    ElementPSVI elemPSVI = (ElementPSVI)augs.getItem("ELEMENT_PSVI");
+    // get PSVI items of this element out of elemPSVI
+    short attemp = elemPSVI.getValidationAttempted();
+    short validity = elemPSVI.getValidity();
+    ...
+}</source>
       <note>For more information, please refer to the API documentation
 	of the PSVI interfaces.</note>
       
@@ -103,23 +103,21 @@
 	<code>endElement</code> method for the validation root. When this method
 	is called, information about various components can be retrieved by</p>
       <source>import org.apache.xerces.xni.psvi.*;
-	import org.apache.xerces.impl.xs.psvi.*;
+import org.apache.xerces.impl.xs.psvi.*;
 
-	...
+...
 
-	public void endElement(QName element, Augmentations augs) {
-	ElementPSVI elemPSVI = (ElementPSVI)augs.getItem("ELEMENT_PSVI");
-	XSModel xsModel = elemPSVI.getSchemaInformation();
-	// get a list of [namespace schema information information item]s,
-	// one for each namespace.
-	ObjectList nsItems = xsModel.getNamespaceItems();
-	// get an element declaration of the specified name and namespace
-	XSElementDeclaration elemDecl = xsModel.getElementDeclaration
-	(name, namespace);
-	...
-	
-	}</source>
-
+public void endElement(QName element, Augmentations augs) {
+    ElementPSVI elemPSVI = (ElementPSVI)augs.getItem("ELEMENT_PSVI");
+    XSModel xsModel = elemPSVI.getSchemaInformation();
+    // get a list of [namespace schema information information item]s,
+    // one for each namespace.
+    ObjectList nsItems = xsModel.getNamespaceItems();
+    // get an element declaration of the specified name and namespace
+    XSElementDeclaration elemDecl = xsModel.getElementDeclaration
+        (name, namespace);
+    ...
+}</source>
     </a>
   </faq>
 
@@ -136,22 +134,24 @@
         <code>org.apache.xerces.xni.psvi.AttributePSVI</code>. 
       </p>
       <source>import org.apache.xerces.xni.psvi.*;
-	import org.apache.xerces.impl.xs.psvi.XSModel;
-	import org.apache.xerces.impl.xs.psvi.XSNamedMap;
-	...
-	Document document = parser.getDocument();
-	Element root = document.getDocumentElement();
+import org.apache.xerces.impl.xs.psvi.XSModel;
+import org.apache.xerces.impl.xs.psvi.XSNamedMap;
 
-	// retrieve PSVI for the root element
-	ElementPSVI rootPSVI = (ElementPSVI)root;
+...
 
-	// retrieve the schema used in validation of this document
-	XSModel schema = rootPSVI.getSchemaInformation();
-	XSNamedMap elementDeclarations = schema.getComponents(XSConstants.ELEMENT_DECLARATION);
+Document document = parser.getDocument();
+Element root = document.getDocumentElement();
 
-	// get schema normalized value
-	String normalizedValue = rootPSVI.getSchemaNormalizedValue();    
-      </source>
+// retrieve PSVI for the root element
+ElementPSVI rootPSVI = (ElementPSVI)root;
+
+// retrieve the schema used in validation of this document
+XSModel schema = rootPSVI.getSchemaInformation();
+XSNamedMap elementDeclarations =
+    schema.getComponents(XSConstants.ELEMENT_DECLARATION);
+
+// get schema normalized value
+String normalizedValue = rootPSVI.getSchemaNormalizedValue();</source>
     </a>
   </faq>
 
@@ -166,14 +166,14 @@
 	element and its attributes.  
       </p>
       <source>import org.apache.xerces.impl.xs.psvi.PSVIProvider;
-	import javax.xml.parsers.SAXParser;
-	import javax.xml.parsers.SAXParserFactory;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
-	...
-	SAXParserFactory factory = SAXParserFactory.newInstance();
-	SAXParser parser = factory.newSAXParser();
-	PSVIProvider psviProvider = (PSVIProvider)parser;
-      </source>
+...
+
+SAXParserFactory factory = SAXParserFactory.newInstance();
+SAXParser parser = factory.newSAXParser();
+PSVIProvider psviProvider = (PSVIProvider)parser;</source>
     </a>
   </faq>
   <faq title="Parsing and analyzing an XML schema">

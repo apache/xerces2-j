@@ -186,8 +186,7 @@
         ignored.  
     </p>
     <source>&lt;!DOCTYPE myDoc SYSTEM "my.dtd"&gt;
-        &lt;myDoc ...&gt;...&lt;/myDoc&gt;
-    </source>
+&lt;myDoc ...&gt;...&lt;/myDoc&gt;</source>
     <p>
         Using these heuristics, Xerces's default grammar caching
         implementation appears to do a reasonable job at matching
@@ -250,8 +249,7 @@
         loader.  For DTD's, for instance, just call
         <code>registerPreparser</code> like:
     </p>
-    <source>grammarPreparser("http://www.w3.org/TR/REC-xml",
-    null)</source>
+    <source>grammarPreparser("http://www.w3.org/TR/REC-xml", null)</source>
     <p>
         Schema grammars correspond to the URI
         "http://www.w3.org/2001/XMLSchema"; both these constants
@@ -314,12 +312,10 @@
     <p>
         For SAX and DOM the case is simple.  Just do:
     </p>
-    <source>
-        XMLParserConfiguration config = new
-        StandardParserConfiguration();
-        config.setProperty("http://apache.org/xml/properties/internal/grammar-pool", myFullGrammarPool);
-        (SAX|DOM)Parser parser = new (SAX|DOM)Parser(config);
-    </source>
+    <source>XMLParserConfiguration config = new StandardParserConfiguration();
+config.setProperty("http://apache.org/xml/properties/internal/grammar-pool",
+    myFullGrammarPool);
+(SAX|DOM)Parser parser = new (SAX|DOM)Parser(config);</source>
     <p>
         Now your grammar pool instance will be used by all
         validators created by this parser to validate your
@@ -330,12 +326,10 @@
         is a bit trickier.  You'll need to do something like
         this:
     </p>
-    <source>
-        System.setProperty("org.apache.xerces.xni.parser.Configuration",
-        "org.apache.xerces.parsers.XMLGrammarCachingConfiguration");
-        DocumentBuilder builder = // JAXP factory invocation
-        //parse documents and store grammars
-    </source>
+    <source>System.setProperty("org.apache.xerces.xni.parser.Configuration",
+    "org.apache.xerces.parsers.XMLGrammarCachingConfiguration");
+DocumentBuilder builder = // JAXP factory invocation
+// parse documents and store grammars</source>
     <p>
         Note that this only supports the "passive" caching
         approach discussed in <jump href="#passive">above</jump>.  The
