@@ -104,8 +104,6 @@ import org.w3c.dom.ls.DOMOutput;
 public class DOMSerializerImpl implements DOMSerializer, DOMConfiguration {
 
     // data
-    private String fEncoding;
-
     // serializer
     private XMLSerializer serializer;
 
@@ -315,109 +313,6 @@ public class DOMSerializerImpl implements DOMSerializer, DOMConfiguration {
 
     /**
      * DOM L3 EXPERIMENTAL:
-     *  The character encoding in which the output will be written.
-     * <br> The encoding to use when writing is determined as follows: If the
-     * encoding attribute has been set, that value will be used.If the
-     * encoding attribute is <code>null</code> or empty, but the item to be
-     * written includes an encoding declaration, that value will be used.If
-     * neither of the above provides an encoding name, a default encoding of
-     * "UTF-8" will be used.
-     * <br>The default value is <code>null</code>.
-     */
-    public String getEncoding() {
-        return fEncoding;
-    }
-
-    /**
-     * DOM L3 EXPERIMENTAL:
-     *  The character encoding in which the output will be written.
-     * <br> The encoding to use when writing is determined as follows: If the
-     * encoding attribute has been set, that value will be used.If the
-     * encoding attribute is <code>null</code> or empty, but the item to be
-     * written includes an encoding declaration, that value will be used.If
-     * neither of the above provides an encoding name, a default encoding of
-     * "UTF-8" will be used.
-     * <br>The default value is <code>null</code>.
-     */
-    public void setEncoding(String encoding) {
-        serializer._format.setEncoding(encoding);
-        fEncoding = serializer._format.getEncoding();
-    }
-
-    /**
-     * DOM L3 EXPERIMENTAL:
-     * Write out the specified node as described above in the description of
-     * <code>DOMSerializer</code>. Writing a Document or Entity node produces a
-     * serialized form that is well formed XML. Writing other node types
-     * produces a fragment of text in a form that is not fully defined by
-     * this document, but that should be useful to a human for debugging or
-     * diagnostic purposes.
-     * @param destination The destination for the data to be written.
-     * @param wnode The <code>Document</code> or <code>Entity</code> node to
-     *   be written. For other node types, something sensible should be
-     *   written, but the exact serialized form is not specified.
-     * @return  Returns <code>true</code> if <code>node</code> was
-     *   successfully serialized and <code>false</code> in case a failure
-     *   occured and the failure wasn't canceled by the error handler.
-     * @exception none
-     */
-    public boolean writeNode(java.io.OutputStream destination,
-                             Node wnode) {
-        // determine which serializer to use:
-        Document doc = (wnode.getNodeType()== Node.DOCUMENT_NODE)?(Document)wnode:wnode.getOwnerDocument();
-        Method getVersion = null;
-        XMLSerializer ser = null;
-        String ver = null;
-        // this should run under JDK 1.1.8...
-        try {
-            getVersion = doc.getClass().getMethod("getVersion", new Class[]{});
-            if(getVersion != null ) {
-                ver = (String)getVersion.invoke(doc, null);
-            }
-        } catch (Exception e) {
-            // no way to test the version...
-            // ignore the exception
-        }
-        if(ver != null && ver.equals("1.1")) {
-            if(xml11Serializer == null) {
-                xml11Serializer = new XML11Serializer();
-                initSerializer(xml11Serializer);
-            }
-            // copy setting from "main" serializer to XML 1.1 serializer
-            copySettings(serializer, xml11Serializer);
-            ser = xml11Serializer;
-        } else {
-            ser = serializer;
-        }
-        checkAllFeatures(ser);
-        try {
-            ser.reset();
-            ser.setOutputByteStream(destination);
-            if (wnode == null)
-                return false;
-            else if (wnode.getNodeType() == Node.DOCUMENT_NODE)
-                ser.serialize((Document)wnode);
-            else if (wnode.getNodeType() == Node.DOCUMENT_FRAGMENT_NODE)
-                ser.serialize((DocumentFragment)wnode);
-            else if (wnode.getNodeType() == Node.ELEMENT_NODE)
-                ser.serialize((Element)wnode);
-            else
-                return false;
-        } catch (Exception e) {
-            if (ser.fDOMErrorHandler != null) {
-                  DOMErrorImpl error = new DOMErrorImpl();
-                  error.fException = e;
-                  error.fMessage = e.getMessage();
-                  error.fSeverity = DOMError.SEVERITY_ERROR;
-                  ser.fDOMErrorHandler.handleError(error);
-
-            }
-        }
-        return true;
-    }
-
-    /**
-     * DOM L3 EXPERIMENTAL:
      *  Serialize the specified node as described above in the description of
      * <code>DOMSerializer</code>. The result of serializing the node is
      * returned as a string. Writing a Document or Entity node produces a
@@ -442,7 +337,7 @@ public class DOMSerializerImpl implements DOMSerializer, DOMConfiguration {
         String ver = null;
         // this should run under JDK 1.1.8...
         try {
-            getVersion = doc.getClass().getMethod("getVersion", new Class[]{});
+            getVersion = doc.getClass().getMethod("getXmlVersion", new Class[]{});
             if(getVersion != null ) {
                 ver = (String)getVersion.invoke(doc, null);
             }
@@ -650,89 +545,121 @@ public class DOMSerializerImpl implements DOMSerializer, DOMConfiguration {
       *   successfully serialized and <code>false</code> in case the node
       *   couldn't be serialized.
       */
-    public boolean write(Node node,
-                         DOMOutput destination){
-      // Commented for time being 'coz uding DOM L3 Core fn
-      //Method getVersion = null;
-      //XMLSerializer ser = null;
-      //String ver = null;
-      //OutputStream fOutputStream = null;
-      //String fEncoding = null;
+    public boolean write(Node node, DOMOutput destination) {
 
-      //Document fDocument = (node.getNodeType()== Node.DOCUMENT_NODE)?(Document)node:node.getOwnerDocument();
-      // this should run under JDK 1.1.8...
-      //try {
-      //getVersion = fDocument.getClass().getMethod("getVersion", new Class[]{});
-      //if(getVersion != null ) {
-      //    ver = (String)getVersion.invoke(fDocument, null);
-      //}
-      //} catch (Exception e) {
-        // no way to test the version...
-        // ignore the exception
-      //}
-      // determine which serializer to use:
-      //if(ver != null && ver.equals("1.1")) {
-       // if(xml11Serializer == null) {
-        //  xml11Serializer = new XML11Serializer();
-         // initSerializer(xml11Serializer);
-        //}
-       // copy setting from "main" serializer to XML 1.1 serializer
-      //copySettings(serializer, xml11Serializer);
-      //ser = xml11Serializer;
-      //} else {
-      //ser = serializer;
-      //}
-      //checkAllFeatures(ser);
+        if (node == null)
+            return false;
+            
+        Method getVersion = null;
+        XMLSerializer ser = null;
+        String ver = null;
+        Document fDocument =(node.getNodeType() == Node.DOCUMENT_NODE)
+                ? (Document) node
+                : node.getOwnerDocument();
+        // this should run under JDK 1.1.8...
+        try {
+            getVersion = fDocument.getClass().getMethod("getXmlVersion", new Class[] {});
+            if (getVersion != null) {
+                ver = (String) getVersion.invoke(fDocument, null);
+            }
+        } catch (Exception e) {
+            //no way to test the version...
+            //ignore the exception
+        }
+        //determine which serializer to use:
+        if (ver != null && ver.equals("1.1")) {
+            if (xml11Serializer == null) {
+                xml11Serializer = new XML11Serializer();
+                initSerializer(xml11Serializer);
+            }
+            //copy setting from "main" serializer to XML 1.1 serializer
+            copySettings(serializer, xml11Serializer);
+            ser = xml11Serializer;
+        } else {
+            ser = serializer;
+        }
+        checkAllFeatures(ser);
 
-      //Writer fWriter = destination.getCharacterStream();
+        String encoding = null;
+        if ((encoding = destination.getEncoding()) == null) {
+            try {
+                Method getEncoding =
+                    fDocument.getClass().getMethod("getActualEncoding", new Class[] {});
+                if (getEncoding != null) {
+                    encoding = (String) getEncoding.invoke(fDocument, null);
+                }
+            } catch (Exception e) {
+                // ignore the exception
+            }
+            if (encoding == null) {
+                try {
+                    Method getEncoding =
+                        fDocument.getClass().getMethod("getXmlEncoding", new Class[] {});
+                    if (getEncoding != null) {
+                        encoding = (String) getEncoding.invoke(fDocument, null);
+                    }
+                } catch (Exception e) {
+                    // ignore the exception
+                }
+                if (encoding == null) {
+                    encoding = "UTF-8";
+                }
+            }
+        }
+        try {
+            ser.reset();
+            serializer._format.setEncoding(encoding);
+            OutputStream outputStream = destination.getByteStream();
+            Writer writer = destination.getCharacterStream();
+            String uri = uri = destination.getSystemId();
+            if (writer == null) {
+                if (outputStream == null) {
+                    if (uri == null) {
+                        if (ser.fDOMErrorHandler != null) {
+                            DOMErrorImpl error = new DOMErrorImpl();
+                            error.fMessage = "no-output-specified";
+                            error.fSeverity = DOMError.SEVERITY_FATAL_ERROR;
+                            ser.fDOMErrorHandler.handleError(error);
+                        }
+                        return false;
+                    }
+                    else {
+                        // uri was specified
+                        FileOutputStream fileOut = new FileOutputStream(new File(uri));
+                        ser.setOutputCharStream( new OutputStreamWriter(fileOut, encoding));
+                    }
+                }
+                else {
+                    // byte stream was specified
+                    ser.setOutputByteStream(outputStream);
+                }
+            }
+            else {
+                // character stream is specified
+                ser.setOutputCharStream(writer); 
+            }
 
-      //if(fWriter==null){
-      //fOutputStream = destination.getByteStream();
-      //if( fOutputStream ==null){
-       //   if (ser.fDOMErrorHandler != null) {
-       //     DOMErrorImpl error = new DOMErrorImpl();
-        //    error.fMessage = "no-output-specified";
-        //    error.fSeverity = DOMError.SEVERITY_FATAL_ERROR;
-        //    ser.fDOMErrorHandler.handleError(error);
-        //   }
-       //   return false;
-     // }
-      //if( (fEncoding = destination.getEncoding())== null){
-      //    fDocument = node.getOwnerDocument();
-      //    if( (fEncoding = fDocument.getActualEncoding()) == null)
-      //        if((fEncoding = fDocument.getXmlEncoding()) == null)
-      //           fEncoding = "UTF-8";
-     // }
-     // }
-     // try {
-     //   ser.reset();
-      //  if(fWriter!=null)
-      //    ser.setOutputCharStream(fWriter);
-      //  else if ( fOutputStream !=null){
-      //    serializer._format.setEncoding(fEncoding);
-      //    ser.setOutputByteStream(fOutputStream);
-      //  }
-      //  if (node == null)
-      //    return false;
-      //  else if (node.getNodeType() == Node.DOCUMENT_NODE)
-      //    ser.serialize((Document)node);
-      //  else if (node.getNodeType() == Node.DOCUMENT_FRAGMENT_NODE)
-      //    ser.serialize((DocumentFragment)node);
-      //  else if (node.getNodeType() == Node.ELEMENT_NODE)
-      //    ser.serialize((Element)node);
-      //  else
-      //    return false;
-      //} catch (Exception e) {
-      //if (ser.fDOMErrorHandler != null) {
-      //      DOMErrorImpl error = new DOMErrorImpl();
-      //      error.fException = e;
-      //      error.fMessage = e.getMessage();
-      //      error.fSeverity = DOMError.SEVERITY_ERROR;
-      //      ser.fDOMErrorHandler.handleError(error);
+            if (node.getNodeType() == Node.DOCUMENT_NODE)
+                ser.serialize((Document) node);
+            else if (node.getNodeType() == Node.DOCUMENT_FRAGMENT_NODE)
+                ser.serialize((DocumentFragment) node);
+            else if (node.getNodeType() == Node.ELEMENT_NODE)
+                ser.serialize((Element) node);
+            else
+                return false;
+        } catch (Exception e) {
+            if (ser.fDOMErrorHandler != null) {
+                DOMErrorImpl error = new DOMErrorImpl();
+                error.fException = e;
+                error.fMessage = e.getMessage();
+                error.fSeverity = DOMError.SEVERITY_ERROR;
+                ser.fDOMErrorHandler.handleError(error);
 
-      //}
-      //}
-        return false;
+            }
+            return false;
+        }
+        return true;
+
     } //write
 
     /**
@@ -760,72 +687,91 @@ public class DOMSerializerImpl implements DOMSerializer, DOMConfiguration {
       *   successfully serialized and <code>false</code> in case the node
       *   couldn't be serialized.
       */
-    public boolean writeURI(Node node,
-                            String URI){
-      // determine which serializer to use:
-      // commented using DOM L3 Core fn
-      // Method getVersion = null;
-      // XMLSerializer ser = null;
-      // String ver = null;
-      // String fEncoding = null;
+    public boolean writeURI(Node node, String URI) {
+        if (node == null){
+            return false;
+        }
 
-      // Document fDocument = (node.getNodeType()== Node.DOCUMENT_NODE)?(Document)node:node.getOwnerDocument();
-      // this should run under JDK 1.1.8...
-      // try {
-      //  getVersion = fDocument.getClass().getMethod("getVersion", new Class[]{});
-      //  if(getVersion != null ) {
-      //    ver = (String)getVersion.invoke(fDocument, null);
-      //  }
-      //} catch (Exception e) {
-        // no way to test the version...
-        // ignore the exception
-      //}
-     // if(ver != null && ver.equals("1.1")) {
-       // if(xml11Serializer == null) {
-       //   xml11Serializer = new XML11Serializer();
-       //   initSerializer(xml11Serializer);
-       // }
-        // copy setting from "main" serializer to XML 1.1 serializer
-      //  copySettings(serializer, xml11Serializer);
-      //  ser = xml11Serializer;
-      //} else {
-      //  ser = serializer;
-      //}
-     // checkAllFeatures(ser);
-     // if((fEncoding = fDocument.getActualEncoding())==null)
-     //   if((fEncoding = fDocument.getXmlEncoding())==null)
-     //     fEncoding = "UTF-8";
+        Method getXmlVersion = null;
+        XMLSerializer ser = null;
+        String ver = null;
+        String encoding = null;
 
-     // try {
-      //  ser.reset();
-      //  FileOutputStream fileOut = new FileOutputStream(new File(URI));
-      //  OutputStreamWriter fWriter = new OutputStreamWriter(fileOut, fEncoding);
-      //  if(fWriter!=null)
-      //    ser.setOutputCharStream(fWriter);
-      //  else
-      //    return false;
+        Document fDocument =(node.getNodeType() == Node.DOCUMENT_NODE)
+                ? (Document) node
+                : node.getOwnerDocument();
+        // this should run under JDK 1.1.8...
+        try {
+            getXmlVersion =
+                fDocument.getClass().getMethod("getXmlVersion", new Class[] {});
+            if (getXmlVersion != null) {
+                ver = (String) getXmlVersion.invoke(fDocument, null);
+            }
+        } catch (Exception e) {
+            // no way to test the version...
+            // ignore the exception
+        }
+        if (ver != null && ver.equals("1.1")) {
+            if (xml11Serializer == null) {
+                xml11Serializer = new XML11Serializer();
+                initSerializer(xml11Serializer);
+            }
+            // copy setting from "main" serializer to XML 1.1 serializer
+            copySettings(serializer, xml11Serializer);
+            ser = xml11Serializer;
+        } else {
+            ser = serializer;
+        }
+        checkAllFeatures(ser);
 
-     //   if (node == null)
-     //     return false;
-     //   else if (node.getNodeType() == Node.DOCUMENT_NODE)
-     //     ser.serialize((Document)node);
-     //   else if (node.getNodeType() == Node.DOCUMENT_FRAGMENT_NODE)
-     //     ser.serialize((DocumentFragment)node);
-     //   else if (node.getNodeType() == Node.ELEMENT_NODE)
-     //     ser.serialize((Element)node);
-     //   else
-     //     return false;
-     // } catch (Exception e) {
-     //   if (ser.fDOMErrorHandler != null) {
-     //     DOMErrorImpl error = new DOMErrorImpl();
-     //     error.fException = e;
-     //     error.fMessage = e.getMessage();
-     //     error.fSeverity = DOMError.SEVERITY_ERROR;
-     //     ser.fDOMErrorHandler.handleError(error);
+        try {
+            Method getEncoding =
+                fDocument.getClass().getMethod("getActualEncoding", new Class[] {});
+            if (getEncoding != null) {
+                encoding = (String) getEncoding.invoke(fDocument, null);
+            }
+        } catch (Exception e) {
+            // ignore the exception
+        }
+        if (encoding == null) {
+            try {
+                Method getEncoding =
+                    fDocument.getClass().getMethod("getXmlEncoding", new Class[] {});
+                if (getEncoding != null) {
+                    encoding = (String) getEncoding.invoke(fDocument, null);
+                }
+            } catch (Exception e) {
+                // ignore the exception
+            }
+            if (encoding == null) {
+                encoding = "UTF-8";
+            }
+        }
 
-     //   }
-     //  }
-             return false;
+        try {
+            ser.reset();
+            FileOutputStream fileOut = new FileOutputStream(new File(URI));
+            ser.setOutputCharStream(new OutputStreamWriter(fileOut, encoding));
+
+            if (node.getNodeType() == Node.DOCUMENT_NODE)
+                ser.serialize((Document) node);
+            else if (node.getNodeType() == Node.DOCUMENT_FRAGMENT_NODE)
+                ser.serialize((DocumentFragment) node);
+            else if (node.getNodeType() == Node.ELEMENT_NODE)
+                ser.serialize((Element) node);
+            else
+                return false;
+        } catch (Exception e) {
+            if (ser.fDOMErrorHandler != null) {
+                DOMErrorImpl error = new DOMErrorImpl();
+                error.fException = e;
+                error.fMessage = e.getMessage();
+                error.fSeverity = DOMError.SEVERITY_ERROR;
+                ser.fDOMErrorHandler.handleError(error);
+            }
+            return false;
+        }
+        return true;
     } //writeURI
 
 }//DOMSerializerImpl
