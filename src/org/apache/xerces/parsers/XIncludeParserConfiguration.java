@@ -69,7 +69,14 @@ import org.apache.xerces.xni.parser.XMLDTDSource;
 import org.apache.xerces.xni.parser.XMLDocumentSource;
 
 /**
+ * This parser configuration includes an <code>XIncludeHandler</code> in the pipeline
+ * before the schema validator, or as the last component in the pipeline if there is
+ * no schema validator.  Using this pipeline will enable processing according to the
+ * XML Inclusions specification, to the conformance level described in
+ * <code>XIncludeHandler</code>.
+ * 
  * @author Peter McCracken, IBM
+ * @see org.apache.xerces.xinclude.XIncludeHandler
  */
 public class XIncludeParserConfiguration extends XML11Configuration {
 
@@ -105,9 +112,6 @@ public class XIncludeParserConfiguration extends XML11Configuration {
      * Constructs a parser configuration using the specified symbol table and
      * grammar pool.
      * <p>
-     * <strong>REVISIT:</strong> 
-     * Grammar pool will be updated when the new validation engine is
-     * implemented.
      *
      * @param symbolTable The symbol table to use.
      * @param grammarPool The grammar pool to use.
@@ -122,9 +126,6 @@ public class XIncludeParserConfiguration extends XML11Configuration {
      * Constructs a parser configuration using the specified symbol table,
      * grammar pool, and parent settings.
      * <p>
-     * <strong>REVISIT:</strong> 
-     * Grammar pool will be updated when the new validation engine is
-     * implemented.
      *
      * @param symbolTable    The symbol table to use.
      * @param grammarPool    The grammar pool to use.
@@ -138,7 +139,7 @@ public class XIncludeParserConfiguration extends XML11Configuration {
 
         fXIncludeHandler = new XIncludeHandler();
         addComponent(fXIncludeHandler);
-            
+        
         final String[] recognizedFeatures = {
             ALLOW_UE_AND_NOTATION_EVENTS
         };
@@ -159,7 +160,6 @@ public class XIncludeParserConfiguration extends XML11Configuration {
     protected void configurePipeline() {
         // setup document pipeline
         super.configurePipeline();
-
         // insert before fSchemaValidator, if one exists.
         XMLDocumentSource prev = null;
         if (fFeatures.get(XMLSCHEMA_VALIDATION) == Boolean.TRUE) {
@@ -190,8 +190,8 @@ public class XIncludeParserConfiguration extends XML11Configuration {
         super.configureDTDPipeline();
         
         // It doesn't really matter where we stick the XIncludeHandler in the
-        // DTD pipeline, since it doesn't ever modify anything.
-        // We'll put it right after the scanner
+        // DTD pipeline, since it doesn't modify the pipeline.
+        // We'll put it right after the scanner.
         if (fDTDScanner != null) {
             XMLDTDHandler next = fDTDScanner.getDTDHandler();
             if (next != null) {

@@ -56,11 +56,9 @@
  */
 package org.apache.xerces.xinclude;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Enumeration;
+import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -68,8 +66,10 @@ import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.util.AugmentationsImpl;
+import org.apache.xerces.util.IntStack;
 import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.util.ParserConfigurationSettings;
+import org.apache.xerces.util.URI;
 import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.util.XMLResourceIdentifierImpl;
 import org.apache.xerces.util.XMLSymbols;
@@ -92,12 +92,46 @@ import org.apache.xerces.xni.parser.XMLDTDSource;
 import org.apache.xerces.xni.parser.XMLDocumentFilter;
 import org.apache.xerces.xni.parser.XMLDocumentSource;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
-import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
 /**
+ * <p>
+ * This is a pipeline component which performs XInclude handling, according to the
+ * W3C specification for XML Inclusions.
+ * </p>
+ * <p>
+ * This component analyzes each event in the pipeline, looking for &lt;include&gt;
+ * elements. An &lt;include&gt; element is one which has a namespace of
+ * <code>http://www.w3.org/2001/XInclude</code> and a localname of <code>include</code>.
+ * When it finds an &lt;include&gt; element, it attempts to include the file specified
+ * in the <code>href</code> attribute of the element.  If inclusion succeeds, all
+ * children of the &lt;include&gt; element are ignored (with the exception of
+ * checking for invalid children as outlined in the specification).  If the inclusion
+ * fails, the &lt;fallback&gt; child of the &lt;include&gt; element is processed.
+ * </p>
+ * <p>
+ * See the <a href="http://www.w3.org/TR/xinclude/">XInclude specification</a> for
+ * more information on how XInclude is to be used.
+ * </p>
+ * <p>
+ * This component requires the following features and properties from the
+ * component manager that uses it:
+ * <ul>
+ *  <li>http://xml.org/sax/features/allow-dtd-events-after-endDTD</li>
+ *  <li>http://apache.org/xml/properties/internal/error-reporter</li>
+ *  <li>http://apache.org/xml/properties/internal/entity-resolver</li>
+ * </ul>
+ * Furthermore, the <code>NamespaceContext</code> used in the pipeline is required
+ * to be an instance of <code>XIncludeNamespaceSupport</code>.
+ * </p>
+ * <p>
+ * Currently, this implementation has only partial support for the XInclude specification.
+ * Specifically, it is missing support for XPointer document fragments.  Thus, only whole
+ * documents can be included using this component in the pipeline.
+ * </p>
  * @author Peter McCracken, IBM
+ * @see XIncludeNamespaceSupport
  */
 public class XIncludeHandler
     implements XMLComponent, XMLDocumentFilter, XMLDTDFilter {
@@ -120,6 +154,9 @@ public class XIncludeHandler
     // Top Level Information Items have [included] property in infoset
     public final static String XINCLUDE_INCLUDED = "[included]".intern();
 
+    /** The identifier for the Augmentation that contains the current base URI */
+    public final static String CURRENT_BASE_URI = "currentBaseURI";
+
     // used for adding [base URI] attributes
     public final static String XINCLUDE_BASE = "base";
     public final static QName XML_BASE_QNAME =
@@ -138,7 +175,11 @@ public class XIncludeHandler
 
     // Processing States
     private final static int STATE_NORMAL_PROCESSING = 1;
+    // we go into this state after a successful include (thus we ignore the children
+    // of the include) or after a fallback
     private final static int STATE_IGNORE = 2;
+    // we go into this state after a failed include.  If we don't encounter a fallback
+    // before we reach the end include tag, it's a fatal error
     private final static int STATE_EXPECT_FALLBACK = 3;
 
     // recognized features and properties
@@ -184,7 +225,13 @@ public class XIncludeHandler
     // for XIncludeHandler
     protected XIncludeHandler fParentXIncludeHandler;
 
-    // for caching
+    // It's "feels wrong" to store this value here.  However,
+    // calculating it can be time consuming, so we cache it.
+    // It's never going to change in the lifetime of this XIncludeHandler
+    protected String fParentRelativeURI;
+
+    // we cache the child parser configuration, so we don't have to re-create
+    // the objects when the parser is re-used
     protected XMLParserConfiguration fChildConfig;
 
     protected XMLLocator fDocLocation;
@@ -192,17 +239,19 @@ public class XIncludeHandler
     protected XMLErrorReporter fErrorReporter;
     protected XMLEntityResolver fEntityResolver;
 
+    // these are needed for XML Base processing
+    protected XMLResourceIdentifier fCurrentBaseURI;
+    protected IntStack baseURIScope;
+    protected Stack baseURI;
+    protected Stack literalSystemID;
+    protected Stack expandedSystemID;
+
     // used for passing features on to child XIncludeHandler objects
     protected ParserConfigurationSettings fSettings;
 
-    // The current element depth.
-    // This is used to access the appropriate level of the following stacks.
+    // The current element depth.  We start at depth 0 (before we've reached any elements)
+    // The first element is at depth 1.
     private int fDepth;
-
-    // The depth of the first element to actually be part of the result infoset.
-    // This will normally be 1, but it could be larger when the top-level item
-    // is an include, and processing goes to the fallback.
-    private int fRootDepth;
 
     // this value must be at least 1
     private static final int INITIAL_SIZE = 8;
@@ -225,19 +274,26 @@ public class XIncludeHandler
     private Vector fNotations;
     private Vector fUnparsedEntities;
 
+    // for SAX compatibility.
+    // Has the value of the ALLOW_UE_AND_NOTATION_EVENTS feature
     private boolean fSendUEAndNotationEvents;
 
     // Constructors
 
     public XIncludeHandler() {
         fDepth = 0;
-        fRootDepth = 0;
 
         fSawFallback[fDepth] = false;
         fSawInclude[fDepth] = false;
         fState[fDepth] = STATE_NORMAL_PROCESSING;
         fNotations = new Vector();
         fUnparsedEntities = new Vector();
+
+        baseURIScope = new IntStack();
+        baseURI = new Stack();
+        literalSystemID = new Stack();
+        expandedSystemID = new Stack();
+        fCurrentBaseURI = new XMLResourceIdentifierImpl();
     }
 
     // XMLComponent methods
@@ -246,10 +302,16 @@ public class XIncludeHandler
         throws XNIException {
         fNamespaceContext = null;
         fDepth = 0;
-        fRootDepth = 0;
         fNotations = new Vector();
         fUnparsedEntities = new Vector();
+        fParentRelativeURI = null;
 
+        baseURIScope.clear();
+        baseURI.clear();
+        literalSystemID.clear();
+        expandedSystemID.clear();
+
+        // clear the previous settings from the arrays
         for (int i = 0; i < fState.length; i++) {
             // these three arrays will always be the same length, so this is safe
             fSawFallback[i] = false;
@@ -275,7 +337,6 @@ public class XIncludeHandler
             if (value != null) {
                 setErrorReporter(value);
                 if (fChildConfig != null) {
-                    // REVISIT: see setErrorReporter()
                     fChildConfig.setProperty(ERROR_REPORTER, value);
                 }
             }
@@ -369,7 +430,6 @@ public class XIncludeHandler
         if (propertyId.equals(ERROR_REPORTER)) {
             setErrorReporter((XMLErrorReporter)value);
             if (fChildConfig != null) {
-                // REVISIT: see setErrorReporter()
                 fChildConfig.setProperty(propertyId, value);
             }
         }
@@ -427,6 +487,14 @@ public class XIncludeHandler
 
     // XMLDocumentHandler methods
 
+    /**
+     * Event sent at the start of the document.
+     * 
+     * A fatal error will occur here, if it is detected that this document has been processed
+     * before.
+     * 
+     * This event is only passed on to the document handler if this is the root document.
+     */
     public void startDocument(
         XMLLocator locator,
         String encoding,
@@ -434,21 +502,32 @@ public class XIncludeHandler
         Augmentations augs)
         throws XNIException {
 
-        try {
-            if (!isRootDocument()
-                && fParentXIncludeHandler.searchForRecursiveIncludes(locator)) {
-                throw new XIncludeFatalError("RecursiveInclude", null);
-            }
-        }
-        catch (XIncludeFatalError e) {
-            reportFatalError(e.getKey(), e.getArgs());
+        // we do this to ensure that the proper location is reported in errors
+        // otherwise, the locator from the root document would always be used
+        fErrorReporter.setDocumentLocator(locator);
+
+        if (!isRootDocument()
+            && fParentXIncludeHandler.searchForRecursiveIncludes(locator)) {
+            reportFatalError(
+                "RecursiveInclude",
+                new Object[] { locator.getExpandedSystemId()});
         }
 
         if (!(namespaceContext instanceof XIncludeNamespaceSupport)) {
-            throw new XIncludeFatalError("IncompatibleNamespaceContext", null);
+            reportFatalError("IncompatibleNamespaceContext");
         }
         fNamespaceContext = (XIncludeNamespaceSupport)namespaceContext;
         fDocLocation = locator;
+
+        // initialize the current base URI
+        fCurrentBaseURI.setBaseSystemId(locator.getBaseSystemId());
+        fCurrentBaseURI.setExpandedSystemId(locator.getExpandedSystemId());
+        fCurrentBaseURI.setLiteralSystemId(locator.getLiteralSystemId());
+        saveBaseURI();
+        if (augs == null) {
+            augs = new AugmentationsImpl();
+        }
+        augs.putItem(CURRENT_BASE_URI, fCurrentBaseURI);
 
         if (isRootDocument() && fDocumentHandler != null) {
             fDocumentHandler.startDocument(
@@ -514,14 +593,16 @@ public class XIncludeHandler
         throws XNIException {
         fDepth++;
         setState(getState(fDepth - 1));
+
+        // we process the xml:base attributes regardless of what type of element it is
+        processXMLBaseAttributes(attributes);
+
         if (isIncludeElement(element)) {
-            try {
-                this.handleIncludeElement(attributes);
-                // since the above call returned, we've completed the include
-                // ignore any fallback elements, or other children, of the include element
+            boolean success = this.handleIncludeElement(attributes);
+            if (success) {
                 setState(STATE_IGNORE);
             }
-            catch (XIncludeResourceError e) {
+            else {
                 setState(STATE_EXPECT_FALLBACK);
             }
         }
@@ -531,9 +612,6 @@ public class XIncludeHandler
         else if (
             fDocumentHandler != null
                 && getState() == STATE_NORMAL_PROCESSING) {
-            if (fRootDepth < 1) {
-                fRootDepth = fDepth;
-            }
             augs = modifyAugmentations(augs);
             attributes = processAttributes(attributes);
             fDocumentHandler.startElement(element, attributes, augs);
@@ -547,12 +625,16 @@ public class XIncludeHandler
         throws XNIException {
         fDepth++;
         setState(getState(fDepth - 1));
+
+        // we process the xml:base attributes regardless of what type of element it is
+        processXMLBaseAttributes(attributes);
+
         if (isIncludeElement(element)) {
-            try {
-                this.handleIncludeElement(attributes);
+            boolean success = this.handleIncludeElement(attributes);
+            if (success) {
                 setState(STATE_IGNORE);
             }
-            catch (XIncludeResourceError e) {
+            else {
                 reportFatalError("NoFallback");
             }
         }
@@ -569,15 +651,18 @@ public class XIncludeHandler
         else if (
             fDocumentHandler != null
                 && getState() == STATE_NORMAL_PROCESSING) {
-            if (fRootDepth < 1) {
-                fRootDepth = fDepth;
-            }
             augs = modifyAugmentations(augs);
             attributes = processAttributes(attributes);
             fDocumentHandler.emptyElement(element, attributes, augs);
-            if (fRootDepth == fDepth) {
-                fRootDepth = 0;
-            }
+        }
+        // reset the out of scope stack elements
+        setSawFallback(fDepth + 1, false);
+        setSawInclude(fDepth + 1, false);
+
+        // check if an xml:base has gone out of scope
+        if (baseURIScope.size() > 0 && fDepth == baseURIScope.peek()) {
+            // pop the values from the stack
+            restoreBaseURI();
         }
         fDepth--;
     }
@@ -604,15 +689,17 @@ public class XIncludeHandler
             fDocumentHandler != null
                 && getState() == STATE_NORMAL_PROCESSING) {
             fDocumentHandler.endElement(element, augs);
-            if (fRootDepth == fDepth) {
-                fRootDepth = 0;
-            }
         }
 
         // reset the out of scope stack elements
         setSawFallback(fDepth + 1, false);
         setSawInclude(fDepth + 1, false);
 
+        // check if an xml:base has gone out of scope
+        if (baseURIScope.size() > 0 && fDepth == baseURIScope.peek()) {
+            // pop the values from the stack
+            restoreBaseURI();
+        }
         fDepth--;
     }
 
@@ -693,6 +780,8 @@ public class XIncludeHandler
     }
 
     // DTDHandler methods
+    // We are only interested in the notation and unparsed entity declarations,
+    // the rest we just pass on
 
     /* (non-Javadoc)
      * @see org.apache.xerces.xni.XMLDTDHandler#attributeDecl(java.lang.String, java.lang.String, java.lang.String, java.lang.String[], java.lang.String, org.apache.xerces.xni.XMLString, org.apache.xerces.xni.XMLString, org.apache.xerces.xni.Augmentations)
@@ -946,21 +1035,15 @@ public class XIncludeHandler
     // XIncludeHandler methods
 
     private void setErrorReporter(XMLErrorReporter reporter) {
-        // REVISIT:
-        // This results in the incorrect location being displayed, because
-        // the XMLLocator is shared across all of the files.
-        //
-        // Howver, we do want to share the error reporter,
-        // since it might be something other than the default.
-        //
-        // This problem only surfaces when the error is reported
-        // somewhere other than in XIncludeHandler, since the XInclude#reportFatalError()
-        // method uses the right XMLLocator
         fErrorReporter = reporter;
         if (fErrorReporter != null) {
             fErrorReporter.putMessageFormatter(
                 XIncludeMessageFormatter.XINCLUDE_DOMAIN,
                 new XIncludeMessageFormatter());
+            // this ensures the proper location is displayed in error messages
+            if (fDocLocation != null) {
+                fErrorReporter.setDocumentLocator(fDocLocation);
+            }
         }
     }
 
@@ -978,15 +1061,15 @@ public class XIncludeHandler
             setSawFallback(fDepth, true);
         }
 
-        // either the state is STATE_EXPECT_FALLBACK or it's STATE_IGNORE
-        // if we're ignoring, we want to stay ignoring. But if we're expecting this fallback element,
-        // we want to signal that we should process the children
+        // Either the state is STATE_EXPECT_FALLBACK or it's STATE_IGNORE.
+        // If we're ignoring, we want to stay ignoring. But if we're expecting this fallback element,
+        // we want to signal that we should process the children.
         if (getState() == STATE_EXPECT_FALLBACK) {
             setState(STATE_NORMAL_PROCESSING);
         }
     }
 
-    protected void handleIncludeElement(XMLAttributes attributes)
+    protected boolean handleIncludeElement(XMLAttributes attributes)
         throws XNIException {
         setSawInclude(fDepth, true);
         fNamespaceContext.setContextInvalid();
@@ -994,8 +1077,13 @@ public class XIncludeHandler
             reportFatalError("IncludeChild", new Object[] { XINCLUDE_INCLUDE });
         }
         if (getState() == STATE_IGNORE)
-            return;
+            return true;
 
+        // TODO: does Java use IURIs by default?
+        //       [Definition: An internationalized URI reference, or IURI, is a URI reference that directly uses [Unicode] characters.]
+        // TODO: figure out what section 4.1.1 of the XInclude spec is talking about
+        //       has to do with disallowed ASCII character escaping
+        //       this ties in with the above IURI section, but I suspect Java already does it
         String href = attributes.getValue(XINCLUDE_ATTR_HREF);
         String parse = attributes.getValue(XINCLUDE_ATTR_PARSE);
 
@@ -1006,29 +1094,36 @@ public class XIncludeHandler
             parse = XINCLUDE_PARSE_XML;
         }
 
-        XMLResourceIdentifier resourceIdentifier =
-            new XMLResourceIdentifierImpl(
-                null,
-                href,
-                fDocLocation.getBaseSystemId(),
-                null);
-
         XMLInputSource includedSource = null;
         if (fEntityResolver != null) {
             try {
+                XMLResourceIdentifier resourceIdentifier =
+                    new XMLResourceIdentifierImpl(
+                        null,
+                        href,
+                        fCurrentBaseURI.getExpandedSystemId(),
+                        XMLEntityManager.expandSystemId(
+                            href,
+                            fCurrentBaseURI.getExpandedSystemId(),
+                            false));
+
                 includedSource =
                     fEntityResolver.resolveEntity(resourceIdentifier);
             }
             catch (IOException e) {
-                throw new XIncludeResourceError(
+                reportResourceError(
                     "XMLResourceError",
-                    new Object[] { e.getMessage()});
+                    new Object[] { href, e.getMessage()});
+                return false;
             }
         }
 
         if (includedSource == null) {
             includedSource =
-                new XMLInputSource(null, href, fDocLocation.getBaseSystemId());
+                new XMLInputSource(
+                    null,
+                    href,
+                    fCurrentBaseURI.getExpandedSystemId());
         }
 
         if (parse.equals(XINCLUDE_PARSE_XML)) {
@@ -1043,7 +1138,6 @@ public class XIncludeHandler
                         true);
 
                 // use the same error reporter
-                // REVISIT: see setErrorReporter()
                 fChildConfig.setProperty(ERROR_REPORTER, fErrorReporter);
                 // use the same namespace context
                 fChildConfig.setProperty(
@@ -1072,23 +1166,37 @@ public class XIncludeHandler
             try {
                 fNamespaceContext.pushScope();
                 fChildConfig.parse(includedSource);
-            }
-            catch (XIncludeFatalError e) {
-                reportFatalError(e.getKey(), e.getArgs());
+                // necessary to make sure proper location is reported in errors
+                if (fErrorReporter != null) {
+                    fErrorReporter.setDocumentLocator(fDocLocation);
+                }
             }
             catch (XNIException e) {
-                reportFatalError("XMLParseError");
+                // necessary to make sure proper location is reported in errors
+                if (fErrorReporter != null) {
+                    fErrorReporter.setDocumentLocator(fDocLocation);
+                }
+                reportFatalError("XMLParseError", new Object[] { href });
             }
             catch (IOException e) {
-                throw new XIncludeResourceError(
+                // necessary to make sure proper location is reported in errors
+                if (fErrorReporter != null) {
+                    fErrorReporter.setDocumentLocator(fDocLocation);
+                }
+                // An IOException indicates that we had trouble reading the file, not
+                // that it was an invalid XML file.  So we send a resource error, not a
+                // fatal error.
+                reportResourceError(
                     "XMLResourceError",
-                    new Object[] { e.getMessage()});
+                    new Object[] { href, e.getMessage()});
+                return false;
             }
             finally {
                 fNamespaceContext.popScope();
             }
         }
         else if (parse.equals(XINCLUDE_PARSE_TEXT)) {
+            // we only care about encoding for parse="text"
             String encoding = attributes.getValue(XINCLUDE_ATTR_ENCODING);
             includedSource.setEncoding(encoding);
 
@@ -1098,9 +1206,10 @@ public class XIncludeHandler
                 reader.parse();
             }
             catch (IOException e) {
-                throw new XIncludeResourceError(
+                reportResourceError(
                     "TextResourceError",
-                    new Object[] { e.getMessage()});
+                    new Object[] { href, e.getMessage()});
+                return false;
             }
             finally {
                 if (reader != null) {
@@ -1108,9 +1217,10 @@ public class XIncludeHandler
                         reader.close();
                     }
                     catch (IOException e) {
-                        throw new XIncludeResourceError(
+                        reportResourceError(
                             "TextResourceError",
-                            new Object[] { e.getMessage()});
+                            new Object[] { href, e.getMessage()});
+                        return false;
                     }
                 }
             }
@@ -1118,50 +1228,72 @@ public class XIncludeHandler
         else {
             reportFatalError("InvalidParseValue", new Object[] { parse });
         }
+        return true;
     }
 
+    /**
+     * Returns true if the element has the namespace "http://www.w3.org/2001/XInclude"
+     * @param element the element to check
+     * @return true if the element has the namespace "http://www.w3.org/2001/XInclude"
+     */
     protected boolean hasXIncludeNamespace(QName element) {
         return element.uri == XINCLUDE_NS_URI
             || fNamespaceContext.getURI(element.prefix) == XINCLUDE_NS_URI;
     }
 
+    /**
+     * Checks if the element is an &lt;include&gt; element.  The element must have
+     * the XInclude namespace, and a local name of "include"
+     * @param element the element to check
+     * @return true if the element is an &lt;include&gt; element
+     * @see #hasXIncludeNamespace(QName)
+     */
     protected boolean isIncludeElement(QName element) {
         return element.localpart.equals(XINCLUDE_INCLUDE)
             && hasXIncludeNamespace(element);
     }
 
+    /**
+     * Checks if the element is an &lt;fallback&gt; element.  The element must have
+     * the XInclude namespace, and a local name of "fallback"
+     * @param element the element to check
+     * @return true if the element is an &lt;fallback; element
+     * @see #hasXIncludeNamespace(QName)
+     */
     protected boolean isFallbackElement(QName element) {
         return element.localpart.equals(XINCLUDE_FALLBACK)
             && hasXIncludeNamespace(element);
     }
 
-    protected boolean sameBaseURISourceAsParent() {
-        if (fDepth == fRootDepth) {
-            try {
-                // We test if the included file is in the same directory as it's parent
-                // by creating a new URL, with the filename of the included file and the
-                // base of the parent, and checking if it is the same file as the included file
-                // TODO: does Java use IURIs by default?
-                //       [Definition: An internationalized URI reference, or IURI, is a URI reference that directly uses [Unicode] characters.]
-                // TODO: figure out what section 4.1.1 of the XInclude spec is talking about
-                //       has to do with disallowed ASCII character escaping
-                //       this ties in with the above IURI section, but I suspect Java already does it
-                URL input = new URL(fDocLocation.getExpandedSystemId());
-                URL parent =
-                    new URL(
-                        fParentXIncludeHandler
-                            .fDocLocation
-                            .getExpandedSystemId());
-                URL test = new URL(parent, new File(input.getFile()).getName());
-                return input.sameFile(test);
-            }
-            catch (MalformedURLException e) {
-                return false;
-            }
-        }
-        return true;
+    /**
+     * Returns true if the current [base URI] is the same as the [base URI] that
+     * was in effect on the include parent.  This method should <em>only</em> be called
+     * when the current element is a top level included element, i.e. the direct child
+     * of a fallback element, or the root elements in an included document.
+     * The "include parent" is the element which, in the result infoset, will be the
+     * direct parent of the current element.
+     * @return true if the [base URIs] are the same string
+     */
+    protected boolean sameBaseURIAsIncludeParent() {
+        String parentBaseURI = getIncludeParentBaseURI();
+        String baseURI = fCurrentBaseURI.getExpandedSystemId();
+        // REVISIT: should we use File#sameFile() ?
+        //          I think the benefit of using it is that it resolves host names
+        //          instead of just doing a string comparison.
+        // TODO: [base URI] is still an open issue with the working group.
+        //       They're deciding if xml:base should be added if the [base URI] is different in terms
+        //       of resolving relative references, or if it should be added if they are different at all.
+        //       Revisit this after a final decision has been made.
+        //       The decision also affects whether we output the file name of the URI, or just the path.
+        return parentBaseURI.equals(baseURI);
     }
 
+    /**
+     * Checks if the file indicated by the given XMLLocator has already been included
+     * in the current stack.
+     * @param includedSource the source to check for inclusion
+     * @return true if the source has already been included
+     */
     protected boolean searchForRecursiveIncludes(XMLLocator includedSource) {
         String includedSystemId = includedSource.getExpandedSystemId();
 
@@ -1174,11 +1306,11 @@ public class XIncludeHandler
                         false);
             }
             catch (MalformedURIException e) {
-                throw new XIncludeFatalError("ExpandedSystemId", null);
+                reportFatalError("ExpandedSystemId");
             }
         }
 
-        if (includedSystemId.equals(fDocLocation.getExpandedSystemId())) {
+        if (includedSystemId.equals(fCurrentBaseURI.getExpandedSystemId())) {
             return true;
         }
 
@@ -1189,6 +1321,12 @@ public class XIncludeHandler
             includedSource);
     }
 
+    /**
+     * Returns true if the current element is a top level included item.  This means
+     * it's either the child of a fallback element, or the top level item in an
+     * included document
+     * @return true if the current element is a top level included item
+     */
     protected boolean isTopLevelIncludedItem() {
         return isTopLevelIncludedItemViaInclude()
             || isTopLevelIncludedItemViaFallback();
@@ -1199,6 +1337,10 @@ public class XIncludeHandler
     }
 
     protected boolean isTopLevelIncludedItemViaFallback() {
+        // Technically, this doesn't check if the parent was a fallback, it also
+        // would return true if any of the parent's sibling elements were fallbacks.
+        // However, this doesn't matter, since we will always be ignoring elements
+        // whose parent's siblings were fallbacks.
         return getSawFallback(fDepth - 1);
     }
 
@@ -1221,23 +1363,28 @@ public class XIncludeHandler
             // Modify attributes to fix the base URI (spec 4.5.5).
             // We only do it to top level included elements, which have a different
             // base URI than their include parent.
-            if (!sameBaseURISourceAsParent()) {
+            if (!sameBaseURIAsIncludeParent()) {
                 if (attributes == null) {
                     attributes = new XMLAttributesImpl();
                 }
 
-                // this causes errors with schema validation, since the schema doesn't specify that these elements can have an xml:base attribute
+                // This causes errors with schema validation, if the schema doesn't
+                // specify that these elements can have an xml:base attribute
                 // TODO: add a user option to turn this off?
-                // TODO: [base URI] is still an open issue with the working group.
-                //       They're deciding if xml:base should be added if the [base URI] is different in terms
-                //       of resolving relative references, or if it should be added if they are different at all.
-                //       Revisit this after a final decision has been made.
-                // TODO: Output a relative URI instead of an absolute one.
+                String uri = null;
+                try {
+                    uri = this.getRelativeBaseURI();
+                }
+                catch (MalformedURIException e) {
+                    // this shouldn't ever happen, since by definition, we had to traverse
+                    // the same URIs to even get to this place
+                    uri = fCurrentBaseURI.getExpandedSystemId();
+                }
                 int index =
                     attributes.addAttribute(
                         XML_BASE_QNAME,
                         XMLSymbols.fCDATASymbol,
-                        fDocLocation.getBaseSystemId());
+                        uri);
                 attributes.setSpecified(index, true);
             }
 
@@ -1319,10 +1466,99 @@ public class XIncludeHandler
         return attributes;
     }
 
+    /**
+     * Returns a URI, relative to the include parent's base URI, of the current
+     * [base URI].  For instance, if the current [base URI] was "dir1/dir2/file.xml"
+     * and the include parent's [base URI] was "dir/", this would return "dir2/file.xml".
+     * @return the relative URI
+     */
+    protected String getRelativeBaseURI() throws MalformedURIException {
+        int includeParentDepth = getIncludeParentDepth();
+        String relativeURI = this.getRelativeURI(includeParentDepth);
+        if (isRootDocument()) {
+            return relativeURI;
+        }
+        else {
+            if (relativeURI.equals("")) {
+                relativeURI = fCurrentBaseURI.getLiteralSystemId();
+            }
+
+            if (includeParentDepth == 0) {
+                if (fParentRelativeURI == null) {
+                    fParentRelativeURI =
+                        fParentXIncludeHandler.getRelativeBaseURI();
+                }
+                if (fParentRelativeURI.equals("")) {
+                    return relativeURI;
+                }
+                URI uri = new URI("file", fParentRelativeURI);
+                uri = new URI(uri, relativeURI);
+                return uri.getPath();
+            }
+            else {
+                return relativeURI;
+            }
+        }
+    }
+
+    /**
+     * Returns the [base URI] of the include parent.
+     * @return the base URI of the include parent.
+     */
+    private String getIncludeParentBaseURI() {
+        int depth = getIncludeParentDepth();
+        if (!isRootDocument() && depth == 0) {
+            return fParentXIncludeHandler.getIncludeParentBaseURI();
+        }
+        else {
+            return this.getBaseURI(depth);
+        }
+    }
+
+    /**
+     * Returns the depth of the include parent.  Here, the include parent is
+     * calculated as the last non-include or non-fallback element. It is assumed
+     * this method is called when the current element is a top level included item.
+     * Returning 0 indicates that the top level element in this document
+     * was an include element.
+     * @return the depth of the top level include element
+     */
+    private int getIncludeParentDepth() {
+        // We don't start at fDepth, since it is either the top level included item,
+        // or an include element, when this method is called.
+        for (int i = fDepth - 1; i >= 0; i--) {
+            // This technically might not always return the first non-include/fallback
+            // element that it comes to, since sawFallback() returns true if a fallback
+            // was ever encountered at that depth.  However, if a fallback was encountered
+            // at that depth, and it wasn't the direct descendant of the current element
+            // then we can't be in a situation where we're calling this method (because
+            // we'll always be in STATE_IGNORE)
+            if (!getSawInclude(i) && !getSawFallback(i)) {
+                return i;
+            }
+        }
+        // shouldn't get here, since depth 0 should never have an include element or
+        // a fallback element
+        return 0;
+    }
+
+    /**
+     * Modify the augmentations.  Add an [included] infoset item, if the current
+     * element is a top level included item.
+     * @param augs the Augmentations to modify.
+     * @return the modified Augmentations
+     */
     protected Augmentations modifyAugmentations(Augmentations augs) {
         return modifyAugmentations(augs, false);
     }
 
+    /**
+     * Modify the augmentations.  Add an [included] infoset item, if <code>force</code>
+     * is true, or if the current element is a top level included item.
+     * @param augs the Augmentations to modify.
+     * @param force whether to force modification
+     * @return the modified Augmentations
+     */
     protected Augmentations modifyAugmentations(
         Augmentations augs,
         boolean force) {
@@ -1352,6 +1588,14 @@ public class XIncludeHandler
         fState[fDepth] = state;
     }
 
+    /**
+     * Records that an &lt;fallback&gt; was encountered at the specified depth,
+     * as an ancestor of the current element, or as a sibling of an ancestor of the
+     * current element.
+     * 
+     * @param depth
+     * @param val
+     */
     protected void setSawFallback(int depth, boolean val) {
         if (depth >= fSawFallback.length) {
             boolean[] newarray = new boolean[depth * 2];
@@ -1361,6 +1605,13 @@ public class XIncludeHandler
         fSawFallback[depth] = val;
     }
 
+    /**
+     * Returns whether an &lt;fallback&gt; was encountered at the specified depth,
+     * as an ancestor of the current element, or as a sibling of an ancestor of the
+     * current element.
+     * 
+     * @param depth
+     */
     protected boolean getSawFallback(int depth) {
         if (depth >= fSawFallback.length) {
             return false;
@@ -1398,18 +1649,29 @@ public class XIncludeHandler
         return fSawInclude[depth];
     }
 
+    protected void reportResourceError(String key) {
+        this.reportFatalError(key, null);
+    }
+
+    protected void reportResourceError(String key, Object[] args) {
+        this.reportError(key, args, XMLErrorReporter.SEVERITY_WARNING);
+    }
+
     protected void reportFatalError(String key) {
         this.reportFatalError(key, null);
     }
 
     protected void reportFatalError(String key, Object[] args) {
+        this.reportError(key, args, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+    }
+
+    private void reportError(String key, Object[] args, short severity) {
         if (fErrorReporter != null) {
             fErrorReporter.reportError(
-                fDocLocation,
                 XIncludeMessageFormatter.XINCLUDE_DOMAIN,
                 key,
                 args,
-                XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                severity);
         }
         // we won't worry about when error reporter is null, since there should always be
         // at least the default error reporter
@@ -1483,19 +1745,8 @@ public class XIncludeHandler
         if (index != -1) {
             ent = (UnparsedEntity)fUnparsedEntities.get(index);
             // first check the notation of the unparsed entity
-            try {
-                checkNotation(ent.notation);
-            }
-            catch (XIncludeFatalError e) {
-                reportFatalError(e.getKey(), e.getArgs());
-            }
-
-            try {
-                checkAndSendUnparsedEntity(ent);
-            }
-            catch (XIncludeFatalError e) {
-                reportFatalError(e.getKey(), e.getArgs());
-            }
+            checkNotation(ent.notation);
+            checkAndSendUnparsedEntity(ent);
         }
     }
 
@@ -1512,12 +1763,7 @@ public class XIncludeHandler
         int index = fNotations.indexOf(not);
         if (index != -1) {
             not = (Notation)fNotations.get(index);
-            try {
-                checkAndSendNotation(not);
-            }
-            catch (XIncludeFatalError e) {
-                reportFatalError(e.getKey(), e.getArgs());
-            }
+            checkAndSendNotation(not);
         }
     }
 
@@ -1527,7 +1773,6 @@ public class XIncludeHandler
      * UnparsedEntity is sent by the root pipeline.
      * 
      * @param ent the UnparsedEntity to check for conflicts
-     * @throws XIncludeFatalError if there is an UnparsedEntity conflict as described in 4.5.1
      */
     protected void checkAndSendUnparsedEntity(UnparsedEntity ent)
         throws XIncludeFatalError {
@@ -1560,7 +1805,7 @@ public class XIncludeHandler
                 UnparsedEntity localEntity =
                     (UnparsedEntity)fUnparsedEntities.get(index);
                 if (!ent.isDuplicate(localEntity)) {
-                    throw new XIncludeFatalError(
+                    reportFatalError(
                         "NonDuplicateUnparsedEntity",
                         new Object[] { ent.name });
                 }
@@ -1577,7 +1822,6 @@ public class XIncludeHandler
      * Notation is sent by the root pipeline.
      * 
      * @param not the Notation to check for conflicts
-     * @throws XIncludeFatalError if there is a Notation conflict as described in 4.5.2
      */
     protected void checkAndSendNotation(Notation not)
         throws XIncludeFatalError {
@@ -1599,7 +1843,7 @@ public class XIncludeHandler
             else {
                 Notation localNotation = (Notation)fNotations.get(index);
                 if (!not.isDuplicate(localNotation)) {
-                    throw new XIncludeFatalError(
+                    reportFatalError(
                         "NonDuplicateNotation",
                         new Object[] { not.name });
                 }
@@ -1751,6 +1995,106 @@ public class XIncludeHandler
                         || (notation != null && notation.equals(other.notation)));
             }
             return false;
+        }
+    }
+
+    // The following methods are used for XML Base processing
+
+    /**
+     * Saves the current base URI to the top of the stack.
+     */
+    protected void saveBaseURI() {
+        baseURIScope.push(fDepth);
+        baseURI.push(fCurrentBaseURI.getBaseSystemId());
+        literalSystemID.push(fCurrentBaseURI.getLiteralSystemId());
+        expandedSystemID.push(fCurrentBaseURI.getExpandedSystemId());
+    }
+
+    /**
+     * Discards the URIs at the top of the stack, and restores the ones beneath it.
+     */
+    protected void restoreBaseURI() {
+        baseURI.pop();
+        literalSystemID.pop();
+        expandedSystemID.pop();
+        baseURIScope.pop();
+        fCurrentBaseURI.setBaseSystemId((String)baseURI.peek());
+        fCurrentBaseURI.setLiteralSystemId((String)literalSystemID.peek());
+        fCurrentBaseURI.setExpandedSystemId((String)expandedSystemID.peek());
+    }
+
+    /**
+     * Gets the base URI that was in use at that depth
+     * @param depth
+     * @return the base URI
+     */
+    public String getBaseURI(int depth) {
+        int scope = scopeOf(depth);
+        return (String)expandedSystemID.elementAt(scope);
+    }
+
+    /**
+     * Returns a relative URI, which when resolved against the base URI at the
+     * specified depth, will create the current base URI.
+     * This is accomplished by merged the literal system IDs.
+     * @param depth the depth at which to start creating the relative URI
+     * @return a relative URI to convert the base URI at the given depth to the current
+     *         base URI
+     */
+    public String getRelativeURI(int depth) throws MalformedURIException {
+        // The literal system id at the location given by "start" is *in focus* at
+        // the given depth. So we need to adjust it to the next scope, so that we
+        // only process out of focus literal system ids
+        int start = scopeOf(depth) + 1;
+        if (start == baseURIScope.size()) {
+            // If that is the last system id, then we don't need a relative URI
+            return "";
+        }
+        URI uri = new URI("file", (String)literalSystemID.elementAt(start));
+        for (int i = start + 1; i < baseURIScope.size(); i++) {
+            uri = new URI(uri, (String)literalSystemID.elementAt(i));
+        }
+        return uri.getPath();
+    }
+
+    // We need to find two consecutive elements in the scope stack,
+    // such that the first is lower than 'depth' (or equal), and the
+    // second is higher.
+    private int scopeOf(int depth) {
+        for (int i = baseURIScope.size() - 1; i >= 0; i--) {
+            if (baseURIScope.elementAt(i) <= depth)
+                return i;
+        }
+
+        // we should never get here, because 0 was put on the stack in startDocument()
+        return -1;
+    }
+
+    /**
+     * Search for a xml:base attribute, and if one is found, put the new base URI into
+     * effect.
+     */
+    protected void processXMLBaseAttributes(XMLAttributes attributes) {
+        String baseURIValue =
+            attributes.getValue(NamespaceContext.XML_URI, "base");
+        if (baseURIValue != null) {
+            try {
+                String expandedValue =
+                    XMLEntityManager.expandSystemId(
+                        baseURIValue,
+                        fCurrentBaseURI.getExpandedSystemId(),
+                        false);
+                fCurrentBaseURI.setLiteralSystemId(baseURIValue);
+                fCurrentBaseURI.setBaseSystemId(
+                    fCurrentBaseURI.getExpandedSystemId());
+                fCurrentBaseURI.setExpandedSystemId(expandedValue);
+
+                // push the new values on the stack
+                saveBaseURI();
+            }
+            catch (MalformedURIException e) {
+                // REVISIT: throw error here
+            }
         }
     }
 } // class XIncludeHandler

@@ -63,6 +63,15 @@ import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.NamespaceContext;
 
 /**
+ * This implementation of NamespaceContext has the ability to maintain multiple
+ * scopes of namespace/prefix bindings.  This is useful it situtions when it is
+ * not always appropriate for elements to inherit the namespace bindings of their
+ * ancestors (such as included elements in XInclude).
+ * 
+ * When searching for a URI to match a prefix, or a prefix to match a URI, it is
+ * searched for in the current context, then the ancestors of the current context,
+ * up to the beginning of the current scope.  Other scopes are not searched.
+ * 
  * @author Peter McCracken, IBM
  */
 public class MultipleScopeNamespaceSupport extends NamespaceSupport {
@@ -189,17 +198,19 @@ public class MultipleScopeNamespaceSupport extends NamespaceSupport {
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see org.apache.xerces.xni.NamespaceContext#reset()
-     * 
+    /**
      * Onlys resets the current scope -- all namespaces defined in lower scopes
-     * remain valid after a call to reset
+     * remain valid after a call to reset.
      */
     public void reset() {
         fCurrentContext = fScope[fCurrentScope];
         fNamespaceSize = fContext[fCurrentContext];
     }
 
+    /**
+     * Begins a new scope.  None of the previous namespace bindings will be used,
+     * until the new scope is popped with popScope()
+     */
     public void pushScope() {
         if (fCurrentScope + 1 == fScope.length) {
             int[] contextarray = new int[fScope.length * 2];
@@ -210,6 +221,10 @@ public class MultipleScopeNamespaceSupport extends NamespaceSupport {
         fScope[++fCurrentScope] = fCurrentContext;
     }
 
+    /**
+     * Pops the current scope.  The namespace bindings from the new current scope
+     * are then used for searching for namespaces and prefixes.
+     */
     public void popScope() {
         fCurrentContext = fScope[fCurrentScope--];
         popContext();
