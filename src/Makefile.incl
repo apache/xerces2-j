@@ -12,8 +12,8 @@ CP = cp
 #
 # Define the version strings
 #
-PRODUCTVERSION = 1_0_1
-PRODUCTVERSION_DOT = 1.0.1
+PRODUCTVERSION = 1_0_2
+PRODUCTVERSION_DOT = 1.0.2
 PRODUCTNAME = Xerces
 
 #define the jar file names
