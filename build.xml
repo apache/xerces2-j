@@ -1191,6 +1191,10 @@ Copyright:
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>  
     <replace file="${build.src}/org/apache/xerces/parsers/DOMParserImpl.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/> 
+    <replace file="${build.src}/org/apache/xerces/dom/ParentNode.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/> 
+    <replace file="${build.src}/org/apache/xerces/dom/DocumentTypeImpl.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/> 
     <replace file="${build.src}/org/apache/xerces/parsers/AbstractDOMParser.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>                                   
     <replace file="${build.src}/org/apache/xerces/util/DOMErrorHandlerWrapper.java"  
