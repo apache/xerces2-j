@@ -232,29 +232,18 @@ public class XMLDTDScannerImpl
         fEntityManager.setEntityHandler(this);
         if (fScannerState == SCANNER_STATE_TEXT_DECL) {
             fSeenExternalDTD = true;
-            boolean more = scanTextDecl(complete);
+            boolean textDecl = scanTextDecl();
             if (fScannerState == SCANNER_STATE_END_OF_INPUT) {
                 return false;
             }
-            /***
-            else if (!more || !complete) {
-                return more;
-            }
             else {
                 // next state is markup decls regardless of whether there
                 // is a TextDecl or not
                 setScannerState(SCANNER_STATE_MARKUP_DECL);
-            }
-            /***/
-            else {
-                // next state is markup decls regardless of whether there
-                // is a TextDecl or not
-                setScannerState(SCANNER_STATE_MARKUP_DECL);
-                if (!more || !complete) {
-                    return more;
+                if (textDecl && !complete) {
+                    return true;
                 }
             }
-            /***/
         }
         // keep dispatching "events"
         do {
@@ -572,7 +561,7 @@ public class XMLDTDScannerImpl
         // if we actually got a new entity and it's external
         // parse text decl if there is any
         if (depth != fPEDepth && fEntityScanner.isExternal()) {
-            scanTextDecl(true);
+            scanTextDecl();
         }
     }
 
@@ -582,17 +571,17 @@ public class XMLDTDScannerImpl
      * @param complete True if this method is intended to scan
      *                 and dispatch as much as possible.                 
      *
-     * @returns True if there is more to dispatch either from this 
-     *          or a another dispatcher.
+     * @returns True if a TextDecl was scanned.
      *
      * @throws IOException  Thrown on i/o error.
      * @throws XNIException Thrown on parse error.
      *
      */
-    protected final boolean scanTextDecl(boolean complete) 
+    protected final boolean scanTextDecl() 
         throws IOException, XNIException {
 
         // scan XMLDecl
+        boolean textDecl = false;
         if (fEntityScanner.skipString("<?xml")) {
             fMarkUpDepth++;
             // NOTE: special case where document starts with a PI
@@ -617,6 +606,7 @@ public class XMLDTDScannerImpl
                 String encoding = null;
 
                 scanXMLDeclOrTextDecl(true, fStrings);
+                textDecl = true;
                 fMarkUpDepth--;
 
                 version = fStrings[0];
@@ -629,12 +619,10 @@ public class XMLDTDScannerImpl
                     fDTDHandler.textDecl(version, encoding);
                 }
             }
-            return complete;
         }
 
-        // if no TextDecl, then scan piece of decls
-        return true;
-
+        return textDecl;
+    
     } // scanTextDecl(boolean):boolean
 
     /**
