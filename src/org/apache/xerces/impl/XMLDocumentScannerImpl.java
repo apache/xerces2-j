@@ -886,7 +886,7 @@ public class XMLDocumentScannerImpl
      * @author Andy Clark, IBM
      * @author Eric Ye, IBM
      */
-    protected final class ContentDispatcher
+    protected class ContentDispatcher
         extends FragmentContentDispatcher {
 
         //

@@ -1,0 +1,386 @@
+/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 2001, 2002 The Apache Software Foundation.  
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer. 
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:  
+ *       "This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/)."
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names "Xerces" and "Apache Software Foundation" must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written 
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called "Apache",
+ *    nor may "Apache" appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2002, International
+ * Business Machines, Inc., http://www.apache.org.  For more
+ * information on the Apache Software Foundation, please see
+ * <http://www.apache.org/>.
+ */
+
+package org.apache.xerces.parsers;
+
+import java.io.IOException;
+import java.util.Hashtable;
+import java.util.Vector;
+import java.util.Locale;
+
+import org.apache.xerces.impl.Constants;
+import org.apache.xerces.impl.msg.XMLMessageFormatter;
+import org.apache.xerces.impl.XMLDocumentScannerImpl;
+import org.apache.xerces.impl.XMLNSDocumentScannerImpl;
+import org.apache.xerces.impl.dtd.XMLDTDValidator;
+import org.apache.xerces.impl.dtd.XMLNSDTDValidator;
+import org.apache.xerces.impl.xs.XSMessageFormatter;
+import org.apache.xerces.impl.xs.XMLSchemaValidator;
+import org.apache.xerces.util.SymbolTable;
+
+import org.apache.xerces.xni.XMLLocator;
+import org.apache.xerces.xni.XNIException;
+
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
+import org.apache.xerces.xni.parser.XMLComponent;
+import org.apache.xerces.xni.parser.XMLDocumentScanner;
+import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLComponentManager;
+import org.apache.xerces.xni.parser.XMLDocumentSource;
+import org.apache.xerces.xni.parser.XMLInputSource;
+
+/**
+ * This is configuration uses a scanner that integrates both scanning of the document
+ * and binding namespaces.
+ *
+ * If namespace feature is turned on, the pipeline is constructured with the 
+ * following components:
+ * XMLNSDocumentScannerImpl -> XMLNSDTDValidator -> (optional) XMLSchemaValidator
+ * 
+ * If the namespace feature is turned off the default document scanner implementation
+ * is used (XMLDocumentScannerImpl).
+ * <p>
+ * In addition to the features and properties recognized by the base
+ * parser configuration, this class recognizes these additional 
+ * features and properties:
+ * <ul>
+ * <li>Features
+ *  <ul>
+ *  <li>http://apache.org/xml/features/validation/schema</li>
+ *  <li>http://apache.org/xml/features/validation/schema-full-checking</li>
+ *  <li>http://apache.org/xml/features/validation/schema/normalized-value</li>
+ *  <li>http://apache.org/xml/features/validation/schema/element-default</li>
+ *  </ul>
+ * <li>Properties
+ *  <ul>
+ *   <li>http://apache.org/xml/properties/internal/error-reporter</li>
+ *   <li>http://apache.org/xml/properties/internal/entity-manager</li>
+ *   <li>http://apache.org/xml/properties/internal/document-scanner</li>
+ *   <li>http://apache.org/xml/properties/internal/dtd-scanner</li>
+ *   <li>http://apache.org/xml/properties/internal/grammar-pool</li>
+ *   <li>http://apache.org/xml/properties/internal/validator/dtd</li>
+ *   <li>http://apache.org/xml/properties/internal/datatype-validator-factory</li>
+ *  </ul>
+ * </ul>
+ *
+ * @author Elena Litani, IBM
+ *
+ * @version $Id$
+ */
+public class IntegratedParserConfiguration
+extends StandardParserConfiguration {
+
+ 
+    //
+    // REVISIT: should this configuration depend on the others
+    //          like DTD/Standard one?
+    //
+
+    /** Document scanner that does namespace binding. */
+    protected XMLNSDocumentScannerImpl fNamespaceScanner;
+    protected XMLDocumentScannerImpl fNonNSScanner;
+
+    protected XMLNSDTDValidator fNSDTDValidator;
+
+    protected static final String XMLSCHEMA_VALIDATION = 
+    Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE;
+
+    
+    /** Default constructor. */
+    public IntegratedParserConfiguration() {
+        this(null, null, null);
+    } // <init>()
+    
+
+    public IntegratedParserConfiguration(SymbolTable symbolTable,
+                                       XMLGrammarPool grammarPool) {
+        this(symbolTable, grammarPool, null);
+    } // <init>(SymbolTable,XMLGrammarPool)
+
+    /**
+     * Constructs a parser configuration using the specified symbol table,
+     * grammar pool, and parent settings.
+     * <p>
+     * <strong>REVISIT:</strong> 
+     * Grammar pool will be updated when the new validation engine is
+     * implemented.
+     *
+     * @param symbolTable    The symbol table to use.
+     * @param grammarPool    The grammar pool to use.
+     * @param parentSettings The parent settings.
+     */
+    public IntegratedParserConfiguration(SymbolTable symbolTable,
+                                      XMLGrammarPool grammarPool,
+                                      XMLComponentManager parentSettings) {
+
+
+        // save parent
+        fParentSettings = parentSettings;
+        // create a vector to hold all the components in use
+        fComponents = new Vector();
+
+        // create storage for recognized features and properties
+        fRecognizedFeatures = new Vector();
+        fRecognizedProperties = new Vector();
+
+        // create table for features and properties
+        fFeatures = new Hashtable();
+        fProperties = new Hashtable();
+
+        // add default recognized features
+        final String[] recognizedFeatures = {
+
+            VALIDATION,                 NAMESPACES, 
+            EXTERNAL_GENERAL_ENTITIES,  EXTERNAL_PARAMETER_ENTITIES,
+            WARN_ON_DUPLICATE_ATTDEF,   WARN_ON_UNDECLARED_ELEMDEF,
+            ALLOW_JAVA_ENCODINGS,       CONTINUE_AFTER_FATAL_ERROR,
+            LOAD_EXTERNAL_DTD,          NOTIFY_BUILTIN_REFS,
+            NOTIFY_CHAR_REFS,       WARN_ON_DUPLICATE_ENTITYDEF,
+            NORMALIZE_DATA,             SCHEMA_ELEMENT_DEFAULT
+        };
+        addRecognizedFeatures(recognizedFeatures);
+
+        // set state for default features
+        setFeature(VALIDATION, false);
+        setFeature(NAMESPACES, true);
+        setFeature(EXTERNAL_GENERAL_ENTITIES, true);
+        setFeature(EXTERNAL_PARAMETER_ENTITIES, true);
+        setFeature(WARN_ON_DUPLICATE_ATTDEF, false);
+        setFeature(WARN_ON_DUPLICATE_ENTITYDEF, false);
+        setFeature(WARN_ON_UNDECLARED_ELEMDEF, false);
+        setFeature(ALLOW_JAVA_ENCODINGS, false);
+        setFeature(CONTINUE_AFTER_FATAL_ERROR, false);
+        setFeature(LOAD_EXTERNAL_DTD, true);
+        setFeature(NOTIFY_BUILTIN_REFS, false);
+        setFeature(NOTIFY_CHAR_REFS, false);
+        setFeature(SCHEMA_ELEMENT_DEFAULT, true);
+        setFeature(NORMALIZE_DATA, true);
+
+        // add default recognized properties
+        final String[] recognizedProperties = {
+            XML_STRING,     
+            SYMBOL_TABLE,
+            ERROR_HANDLER,  
+            ENTITY_RESOLVER,
+            ERROR_REPORTER,             
+            ENTITY_MANAGER, 
+            DOCUMENT_SCANNER,
+            DTD_SCANNER,
+            DTD_PROCESSOR,
+            DTD_VALIDATOR,
+            NAMESPACE_BINDER,
+            XMLGRAMMAR_POOL,   
+            DATATYPE_VALIDATOR_FACTORY,
+            VALIDATION_MANAGER 
+        };
+
+        addRecognizedProperties(recognizedProperties);
+
+        if (symbolTable == null) {
+            symbolTable = new SymbolTable();
+        }
+        fSymbolTable = symbolTable;
+        setProperty(SYMBOL_TABLE, fSymbolTable);
+
+        fGrammarPool = grammarPool;
+        if (fGrammarPool != null) {
+            setProperty(XMLGRAMMAR_POOL, fGrammarPool);
+        }
+
+        fEntityManager = createEntityManager();
+        setProperty(ENTITY_MANAGER, fEntityManager);
+        addComponent(fEntityManager);
+
+        fErrorReporter = createErrorReporter();
+        fErrorReporter.setDocumentLocator(fEntityManager.getEntityScanner());
+        setProperty(ERROR_REPORTER, fErrorReporter);
+        addComponent(fErrorReporter);
+
+        // create namespace aware scanner
+        fNamespaceScanner = new XMLNSDocumentScannerImpl();
+        addComponent((XMLComponent)fNamespaceScanner);
+        setProperty(DOCUMENT_SCANNER, fNamespaceScanner);
+
+        // create namespace + dtd validator
+        fNSDTDValidator = new XMLNSDTDValidator();
+        setProperty(DTD_VALIDATOR, fNSDTDValidator);
+        addComponent(fNSDTDValidator);                                                  
+
+        fDTDScanner = createDTDScanner();
+        if (fDTDScanner != null) {
+            setProperty(DTD_SCANNER, fDTDScanner);
+            if (fDTDScanner instanceof XMLComponent) {
+                addComponent((XMLComponent)fDTDScanner);
+            }
+        }
+
+        fDTDProcessor = createDTDProcessor();
+        if (fDTDProcessor != null) {
+            setProperty(DTD_PROCESSOR, fDTDProcessor);
+            if (fDTDProcessor instanceof XMLComponent) {
+                addComponent((XMLComponent)fDTDProcessor);
+            }
+        }
+
+        fDatatypeValidatorFactory = createDatatypeValidatorFactory();
+        if (fDatatypeValidatorFactory != null) {
+            setProperty(DATATYPE_VALIDATOR_FACTORY,
+                        fDatatypeValidatorFactory);
+        }
+        fValidationManager = createValidationManager();
+
+        if (fValidationManager != null) {
+            setProperty (VALIDATION_MANAGER, fValidationManager);
+        }
+        // add message formatters
+        if (fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN) == null) {
+            XMLMessageFormatter xmft = new XMLMessageFormatter();
+            fErrorReporter.putMessageFormatter(XMLMessageFormatter.XML_DOMAIN, xmft);
+            fErrorReporter.putMessageFormatter(XMLMessageFormatter.XMLNS_DOMAIN, xmft);
+        }
+
+        // set locale
+        try {
+            setLocale(Locale.getDefault());
+        } catch (XNIException e) {
+            // do nothing
+            // REVISIT: What is the right thing to do? -Ac
+        }
+
+    } // <init>(SymbolTable,XMLGrammarPool)
+
+    /** Configures the pipeline. */
+    protected void configurePipeline() {
+
+        // setup dtd pipeline
+        if (fDTDScanner != null) {
+            if (fDTDProcessor != null) {
+                fDTDScanner.setDTDHandler(fDTDProcessor);
+                fDTDProcessor.setDTDHandler(fDTDHandler);
+                fDTDScanner.setDTDContentModelHandler(fDTDProcessor);
+                fDTDProcessor.setDTDContentModelHandler(fDTDContentModelHandler);
+            } else {
+                fDTDScanner.setDTDHandler(fDTDHandler);
+                fDTDScanner.setDTDContentModelHandler(fDTDContentModelHandler);
+            }
+        }
+
+        // setup document pipeline
+        if ( fFeatures.get(XMLSCHEMA_VALIDATION) == Boolean.TRUE) {
+            // If schema validator was not in the pipeline insert it.
+            if (fSchemaValidator == null) {
+                fSchemaValidator = new XMLSchemaValidator(); 
+
+                // add schema component
+                fProperties.put(SCHEMA_VALIDATOR, fSchemaValidator);
+                addComponent(fSchemaValidator);
+                // add schema message formatter
+                if (fErrorReporter.getMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN) == null) {
+                    XSMessageFormatter xmft = new XSMessageFormatter();
+                    fErrorReporter.putMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN, xmft);
+                }
+
+            }
+
+            fProperties.put(DTD_VALIDATOR, fNSDTDValidator);
+            fProperties.put(DOCUMENT_SCANNER, fNamespaceScanner);
+            fScanner = fNamespaceScanner;
+            fNamespaceScanner.setComponents(null, fNSDTDValidator, fSchemaValidator);
+            fNamespaceScanner.setDocumentHandler(fNSDTDValidator);
+            fNSDTDValidator.setDocumentSource(fNamespaceScanner);
+            fNSDTDValidator.setDocumentHandler(fSchemaValidator);
+            fSchemaValidator.setDocumentSource(fNSDTDValidator);
+            fSchemaValidator.setDocumentHandler(fDocumentHandler);
+            fLastComponent = fSchemaValidator;
+
+        } 
+        else {
+
+            if (fFeatures.get(NAMESPACES) == Boolean.TRUE) {
+
+                fScanner = fNamespaceScanner;
+                fProperties.put(DOCUMENT_SCANNER, fNamespaceScanner);
+                fNamespaceScanner.setComponents(null, fNSDTDValidator, fDocumentHandler);
+                fNamespaceScanner.setDocumentHandler(fNSDTDValidator);
+                fNSDTDValidator.setDocumentSource(fNamespaceScanner);
+                fNSDTDValidator.setDocumentHandler(fDocumentHandler);
+                fDocumentHandler.setDocumentSource(fNSDTDValidator);
+                fLastComponent = fNSDTDValidator;
+            } 
+            else {
+                if (fNonNSScanner == null) {
+                    fNonNSScanner = new XMLDocumentScannerImpl();
+                    addComponent((XMLComponent)fNonNSScanner);
+                }
+
+                fScanner = fNonNSScanner;
+                fProperties.put(DTD_VALIDATOR, fNSDTDValidator);
+                fProperties.put(DOCUMENT_SCANNER, fNonNSScanner);
+                fNonNSScanner.setDocumentHandler(fNSDTDValidator);
+                fNSDTDValidator.setDocumentSource(fNonNSScanner);
+                fNSDTDValidator.setDocumentHandler(fDocumentHandler);
+                fDocumentHandler.setDocumentSource(fNSDTDValidator);
+                fLastComponent = fNSDTDValidator;
+            }
+
+        }
+
+    } // configurePipeline()
+
+
+} // class IntegratedParserConfiguration
+

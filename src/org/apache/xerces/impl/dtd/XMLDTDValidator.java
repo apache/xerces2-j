@@ -128,7 +128,7 @@ import java.util.StringTokenizer;
  * @version $Id$
  */
 public class XMLDTDValidator
-        implements XMLComponent, XMLDocumentFilter {
+        implements XMLComponent, XMLDocumentFilter, XMLDTDValidatorFilter {
 
     //
     // Constants
@@ -270,6 +270,9 @@ public class XMLDTDValidator
 
     // state
 
+    /** True if seen DOCTYPE declaration. */
+    protected boolean fSeenDoctypeDecl = false;
+
     /** Perform validation. */
     private boolean fPerformValidation;
 
@@ -289,9 +292,6 @@ public class XMLDTDValidator
 
     /** The root element name. */
     private final QName fRootElement = new QName();
-
-    /** True if seen DOCTYPE declaration. */
-    private boolean fSeenDoctypeDecl = false;
 
     private boolean fInCDATASection = false;
     // element stack
@@ -721,7 +721,7 @@ public class XMLDTDValidator
     public void startElement(QName element, XMLAttributes attributes, Augmentations augs)
     throws XNIException {
 
-        handleStartElement(element, attributes);
+        handleStartElement(element, attributes, augs);
         // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.startElement(element, attributes, augs);
@@ -742,7 +742,7 @@ public class XMLDTDValidator
     public void emptyElement(QName element, XMLAttributes attributes, Augmentations augs)
     throws XNIException {
 
-        boolean removed = handleStartElement(element, attributes);
+        boolean removed = handleStartElement(element, attributes, augs);
 
         if (fDocumentHandler !=null) {
             fDocumentHandler.emptyElement(element, attributes, augs);
@@ -1034,6 +1034,17 @@ public class XMLDTDValidator
         if (fDocumentHandler != null) {
             fDocumentHandler.textDecl(version, encoding, augs);
         }
+    }
+
+
+    public final boolean hasGrammar(){
+        
+        return (fDTDGrammar != null);
+    }
+    
+    public final boolean validate(){
+        return fValidation && (!fDynamicValidation || fSeenDoctypeDecl)  
+                             && (fDTDValidation || fSeenDoctypeDecl);
     }
 
     //
@@ -1518,7 +1529,7 @@ public class XMLDTDValidator
     }
 
     /** Root element specified. */
-    private void rootElementSpecified(QName rootElement) throws XNIException {
+    private final void rootElementSpecified(QName rootElement) throws XNIException {
         if (fPerformValidation) {
             String root1 = fRootElement.rawname;
             String root2 = rootElement.rawname;
@@ -1761,7 +1772,8 @@ public class XMLDTDValidator
 
         }
     } // ensureStackCapacity
-
+    
+    
     //
     // Protected methods
     //
@@ -1769,7 +1781,8 @@ public class XMLDTDValidator
     /** Handle element
      * @return true if validator is removed from the pipeline
      */
-    protected boolean handleStartElement(QName element, XMLAttributes attributes) throws XNIException {
+    protected boolean handleStartElement(QName element, XMLAttributes attributes, Augmentations augs) 
+                        throws XNIException {
 
         // REVISIT: Here are current assumptions about validation features
         //          given that XMLSchema validator is in the pipeline
@@ -1883,9 +1896,13 @@ public class XMLDTDValidator
         fElementQNamePartsStack[fElementDepth].setValues(fCurrentElement); 
         fElementIndexStack[fElementDepth] = fCurrentElementIndex;
         fContentSpecTypeStack[fElementDepth] = fCurrentContentSpecType;
+        startNamespaceScope(element, attributes, augs);
         return false;
 
-    } // handleStartElement(QName,XMLAttributes,boolean)
+    } // handleStartElement(QName,XMLAttributes)
+
+    protected void startNamespaceScope(QName element, XMLAttributes attributes, Augmentations augs){
+    }
 
     /** Handle end element. */
     protected void handleEndElement(QName element,  Augmentations augs, boolean isEmpty)
@@ -1926,16 +1943,7 @@ public class XMLDTDValidator
             fElementChildrenLength = fElementChildrenOffsetStack[fElementDepth + 1] + 1;
         }
         
-        // call handlers
-        if (fDocumentHandler != null && !isEmpty) {
-            // NOTE: The binding of the element doesn't actually happen
-            //       yet because the namespace binder does that. However,
-            //       if it does it before this point, then the endPrefix-
-            //       Mapping calls get made too soon! As long as the
-            //       rawnames match, we know it'll have a good binding,
-            //       so we can just use the current element. -Ac
-            fDocumentHandler.endElement(fCurrentElement, augs);
-        }
+        endNamespaceScope(fCurrentElement, augs, isEmpty);
         
         // now pop this element off the top of the element stack
         if (fElementDepth < -1) {
@@ -1973,5 +1981,19 @@ public class XMLDTDValidator
         fInElementContent = (fCurrentContentSpecType == XMLElementDecl.TYPE_CHILDREN);
 
     } // handleEndElement(QName,boolean)
+
+    protected void endNamespaceScope(QName element,  Augmentations augs, boolean isEmpty){
+
+        // call handlers
+        if (fDocumentHandler != null && !isEmpty) {
+            // NOTE: The binding of the element doesn't actually happen
+            //       yet because the namespace binder does that. However,
+            //       if it does it before this point, then the endPrefix-
+            //       Mapping calls get made too soon! As long as the
+            //       rawnames match, we know it'll have a good binding,
+            //       so we can just use the current element. -Ac
+            fDocumentHandler.endElement(fCurrentElement, augs);
+        }
+    }
 
 } // class XMLDTDValidator

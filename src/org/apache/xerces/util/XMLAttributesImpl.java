@@ -655,6 +655,17 @@ public class XMLAttributesImpl
         }
         return fAugmentations[attributeIndex];
     }
+
+    /**
+     * Sets the uri of the attribute at the specified index.
+     * 
+     * @param attrIndex The attribute index.
+     * @param uri       Namespace uri
+     */
+    public void setURI(int attrIndex, String uri) {
+        fAttributes[attrIndex].name.uri = uri;
+    } // getURI(int,QName)
+
     //
     // Classes
     //

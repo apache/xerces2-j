@@ -190,7 +190,7 @@ public class XMLDocumentFragmentScannerImpl
     private static final boolean DEBUG_DISPATCHER = false;
 
     /** Debug content dispatcher scanning. */
-    private static final boolean DEBUG_CONTENT_SCANNING = false;
+    protected static final boolean DEBUG_CONTENT_SCANNING = false;
 
     //
     // Data
@@ -250,14 +250,23 @@ public class XMLDocumentFragmentScannerImpl
 
     // temporary variables
 
+    /** Element QName. */
+    protected QName fElementQName = new QName();
+
+    /** Attribute QName. */
+    protected QName fAttributeQName = new QName();
+
+    /** Element attributes. */
+    protected XMLAttributesImpl fAttributes = new XMLAttributesImpl();
+
+    /** String. */
+    protected XMLString fTempString = new XMLString();
+
+    /** String. */
+    protected XMLString fTempString2 = new XMLString();
+
     /** Array of 3 strings. */
     private String[] fStrings = new String[3];
-
-    /** String. */
-    private XMLString fString = new XMLString();
-
-    /** String. */
-    private XMLString fString2 = new XMLString();
 
     /** String buffer. */
     private XMLStringBuffer fStringBuffer = new XMLStringBuffer();
@@ -265,17 +274,10 @@ public class XMLDocumentFragmentScannerImpl
     /** String buffer. */
     private XMLStringBuffer fStringBuffer2 = new XMLStringBuffer();
 
-    /** Element QName. */
-    private QName fElementQName = new QName();
-
-    /** Attribute QName. */
-    private QName fAttributeQName = new QName();
 
     /** Another QName. */
     private QName fQName = new QName();
 
-    /** Element attributes. */
-    private XMLAttributesImpl fAttributes = new XMLAttributesImpl();
 
     /** Single character array. */
     private final char[] fSingleChar = new char[1];
@@ -815,11 +817,11 @@ public class XMLDocumentFragmentScannerImpl
         }
         //REVISIT: one more case needs to be included: external PE and standalone is no
         boolean isVC =  fHasExternalDTD && !fStandalone;        
-        scanAttributeValue(fString, fString2,
+        scanAttributeValue(fTempString, fTempString2,
                            fAttributeQName.rawname, attributes,
                            oldLen, isVC);
-        attributes.setValue(oldLen, fString.toString());
-        attributes.setNonNormalizedValue(oldLen, fString2.toString());
+        attributes.setValue(oldLen, fTempString.toString());
+        attributes.setNonNormalizedValue(oldLen, fTempString2.toString());
         attributes.setSpecified(oldLen, true);
 
         if (DEBUG_CONTENT_SCANNING) System.out.println("<<< scanAttribute()");
@@ -832,13 +834,13 @@ public class XMLDocumentFragmentScannerImpl
      */
     protected int scanContent() throws IOException, XNIException {
 
-        XMLString content = fString;
+        XMLString content = fTempString;
         int c = fEntityScanner.scanContent(content);
         if (c == '\r') {
             // happens when there is the character reference &#13;
             fEntityScanner.scanChar();
             fStringBuffer.clear();
-            fStringBuffer.append(fString);
+            fStringBuffer.append(fTempString);
             fStringBuffer.append((char)c);
             content = fStringBuffer;
             c = -1;
@@ -847,7 +849,7 @@ public class XMLDocumentFragmentScannerImpl
             fDocumentHandler.characters(content, null);
         }
 
-        if (c == ']' && fString.length == 0) {
+        if (c == ']' && fTempString.length == 0) {
             fStringBuffer.clear();
             fStringBuffer.append((char)fEntityScanner.scanChar());
             // remember where we are in case we get an endEntity before we
@@ -881,7 +883,7 @@ public class XMLDocumentFragmentScannerImpl
     /** 
      * Scans a CDATA section. 
      * <p>
-     * <strong>Note:</strong> This method uses the fString and
+     * <strong>Note:</strong> This method uses the fTempString and
      * fStringBuffer variables.
      *
      * @param complete True if the CDATA section is to be scanned
@@ -1114,8 +1116,8 @@ public class XMLDocumentFragmentScannerImpl
             }
             
             fSingleChar[0] = c;
-            fString.setValues(fSingleChar, 0, 1);
-            fDocumentHandler.characters(fString, null);
+            fTempString.setValues(fSingleChar, 0, 1);
+            fDocumentHandler.characters(fTempString, null);
             
             if (fNotifyBuiltInRefs) {
                 fDocumentHandler.endGeneralEntity(entity, null);
@@ -1528,7 +1530,7 @@ public class XMLDocumentFragmentScannerImpl
                                         fStringBuffer.append((char)fEntityScanner.scanChar());
                                     }
                                     String target = fSymbolTable.addSymbol(fStringBuffer.ch, fStringBuffer.offset, fStringBuffer.length);
-                                    scanPIData(target, fString);
+                                    scanPIData(target, fTempString);
                                 }
                 
                                 // standard text declaration

@@ -57,7 +57,7 @@
 
 package org.apache.xerces.impl.xs.dom;
 
-import org.apache.xerces.parsers.NonValidatingConfiguration;
+import org.apache.xerces.parsers.IntegratedParserConfiguration;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.xs.SchemaSymbols;
@@ -114,7 +114,10 @@ public class DOMParser extends org.apache.xerces.parsers.DOMParser {
      * Constructs a DOM parser using the dtd/xml schema parser configuration.
      */
     public DOMParser() {
-        super(new NonValidatingConfiguration());
+        // REVISIT: should we use a new configuration with scannerNS->dom API with 
+        //          no dtd scanners/valitors..?
+        //
+        super(new IntegratedParserConfiguration());
         try {
             // use our own document implementation
             setProperty(DOCUMENT_CLASS, "org.apache.xerces.impl.xs.dom.DocumentImpl");
@@ -239,5 +242,8 @@ public class DOMParser extends org.apache.xerces.parsers.DOMParser {
                                              fLocator.getLineNumber(),
                                              fLocator.getColumnNumber());
     }
+
+
+
 
 } // class DOMParser
