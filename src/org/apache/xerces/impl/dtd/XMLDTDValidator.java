@@ -503,7 +503,6 @@ public class XMLDTDValidator
 
 
         fValidationManager= (ValidationManager)componentManager.getProperty(VALIDATION_MANAGER);
-        fValidationManager.reset();
         fValidationManager.addValidationState(fValidationState);
         fValidationState.resetIDTables();
         // get needed components

@@ -170,6 +170,7 @@ public class DOMValidationConfiguration extends ParserConfigurationSettings
     /** Components. */
     protected Vector fComponents;
 
+    protected ValidationManager fValidationManager;
 
     /** Locale. */
     protected Locale fLocale;
@@ -258,7 +259,8 @@ public class DOMValidationConfiguration extends ParserConfigurationSettings
         setProperty(ENTITY_MANAGER, manager);
         addComponent(manager);
         
-        setProperty(VALIDATION_MANAGER, new ValidationManager());
+        fValidationManager = createValidationManager();
+        setProperty(VALIDATION_MANAGER, fValidationManager);
 
 
         // add message formatters
@@ -499,6 +501,9 @@ public class DOMValidationConfiguration extends ParserConfigurationSettings
      */
     protected void reset() throws XNIException {
 
+        if (fValidationManager != null)
+            fValidationManager.reset();
+
         int count = fComponents.size();
         for (int i = 0; i < count; i++) {
             XMLComponent c = (XMLComponent) fComponents.elementAt(i);
@@ -566,5 +571,8 @@ public class DOMValidationConfiguration extends ParserConfigurationSettings
 
     } // addComponent(XMLComponent)
 
+    protected ValidationManager createValidationManager(){
+        return new ValidationManager();
+    }
 
 } // class XMLParser

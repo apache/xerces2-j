@@ -591,6 +591,8 @@ public class NonValidatingConfiguration
      */
     protected void reset() throws XNIException {
 
+        if (fValidationManager != null)
+            fValidationManager.reset();
         // configure the pipeline and initialize the components
         configurePipeline();
         super.reset();

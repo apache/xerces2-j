@@ -356,7 +356,7 @@ public class DTDConfiguration
 
         fGrammarPool = grammarPool;
         if(fGrammarPool != null){
-        	setProperty(XMLGRAMMAR_POOL, fGrammarPool);
+            setProperty(XMLGRAMMAR_POOL, fGrammarPool);
         }
 
         fEntityManager = createEntityManager();
@@ -623,6 +623,8 @@ public class DTDConfiguration
      */
     protected void reset() throws XNIException {
 
+        if (fValidationManager != null)
+            fValidationManager.reset();
         // configure the pipeline and initialize the components
         configurePipeline();
         super.reset();
