@@ -4,6 +4,12 @@
 <releases>
  <release version='Xerces 2.0.0'>
   <desc>
+    This is the first production-quality release of the Xerces2 Java
+    XML parser.  We are confident that it also marks the stabilization
+    of the XNI API, although changes in XNI are still possible.  As
+    well as these XNI improvements and extensions, a host of bugs
+    and limitations that existed in Xerces 2.0.0beta4 have been fixed in 
+    this release.
   </desc>
   <changes>
    
@@ -62,7 +68,7 @@
         entities, schemas etc.) for use in grammar caching and entity
         resolution.  Updated XMLEntityResolver, XMLLocator,
         XMLDocumentHandler, XMLDocumentFragmentHandler, and
-        XMLDTDHandler to use this new interface instead of unwieldy
+        XMLDTDHandler to use this new interface consistently instead of unwieldy
         lists of Strings in various callbacks.
     </note>
     <submitter name="Neil Graham"/>
@@ -165,7 +171,7 @@
     </fix>
 
     <fix>
-        <note>Fixed JAXP implemenation of schemaLanguage property.
+        <note>Fixed JAXP implementation of schemaLanguage property.
         </note>
         <submitter name="Edwin Goei"/>
     </fix>
