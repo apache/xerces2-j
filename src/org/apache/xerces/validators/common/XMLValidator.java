@@ -2746,7 +2746,12 @@ public final class XMLValidator
                 // pass parser's entity resolver (local Resolver), which also has reference to user's 
                 // entity resolver, and also can fall-back to entityhandler's expandSystemId()
                tst = new TraverseSchema( root, fStringPool, (SchemaGrammar)grammar, fGrammarResolver, fErrorReporter, source.getSystemId(), currentER);
-               fGrammarResolver.putGrammar(root.getAttribute("targetNamespace"), grammar);
+               
+               //allowing xsi:schemaLocation to appear on any element 
+               String targetNS =   root.getAttribute("targetNamespace");
+               fGrammarNameSpaceIndex = fStringPool.addSymbol(targetNS);
+
+               fGrammarResolver.putGrammar(targetNS, grammar);
                fGrammar = (SchemaGrammar)grammar;
             }
          } catch (Exception e) {
