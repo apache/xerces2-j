@@ -16,10 +16,16 @@
   <ul>
    <li><link anchor='Counter'>xni.Counter</link></li>
    <li><link anchor='DocumentTracer'>xni.DocumentTracer</link></li>
+   <li><link anchor='Writer'>xni.Writer</link></li>
+  </ul>
+  <ul>
+   <li><link anchor='PassThroughFilter'>xni.PassThroughFilter</link></li>
+   <li><link anchor='UpperCaseFilter'>xni.UpperCaseFilter</link></li>
   </ul>
   <p>Parser configuration samples:</p>
   <ul>
    <li><link anchor='NonValidatingParserConfiguration'>xni.parser.NonValidatingParserConfiguration</link></li>
+   <li><link anchor='AbstractConfiguration'>xni.parser.AbstractConfiguration</link></li>
    <!--
      - REVISIT: Add in this sample once the proper interfaces have been
      -          designed and implemented in the parser. *And* after the
@@ -27,6 +33,10 @@
      -
    <li><link anchor='DynamicParserConfiguration'>xni.parser.DynamicParserConfiguration</link></li>
    -->
+  </ul>
+  <ul>
+   <li><link anchor='CSVConfiguration'>xni.parser.CSVConfiguration</link></li>
+   <li><link anchor='CSVParser'>xni.parser.CSVParser</link></li>
   </ul>
   <p>
    Most of the XNI samples have a command line option that allows the
@@ -38,8 +48,8 @@
    interface.
   </p>
  </s2>
- <s2 title='xni.Counter'>
-  <anchor name='Counter'/>
+ <anchor name='Counter'/>
+ <s2 title='Sample xni.Counter'>
   <p>
    A sample XNI counter. The output of this program shows the time
    and count of elements, attributes, ignorable whitespaces, and 
@@ -111,8 +121,8 @@
    </p>
   </s3>
  </s2>
- <s2 title='xni.DocumentTracer'>
-  <anchor name='DocumentTracer'/>
+ <anchor name='DocumentTracer'/>
+ <s2 title='Sample xni.DocumentTracer'>
   <p>
    Provides a complete trace of XNI document and DTD events for 
    files parsed.
@@ -138,8 +148,71 @@
    </table>
   </s3>
  </s2>
- <s2 title='xni.parser.NonValidatingParserConfiguration'>
-  <anchor name='NonValidatingParserConfiguration'/>
+ <anchor name='Writer'/>
+ <s2 title='Sample xni.Writer'>
+  <p>
+   A sample XNI writer. This sample program illustrates how to
+   take receive XMLDocumentHandler callbacks in order to print 
+   a document that is parsed.
+  </p>
+  <s3 title='usage'>
+   <source>java xni.Writer (options) uri ...</source>
+  </s3>
+  <s3 title='options'>
+   <table>
+    <tr><th>Option</th><th>Description</th></tr>
+    <tr><td>-p name</td><td>Select parser configuration by name.</td></tr>
+    <tr><td>-n | -N</td><td>Turn on/off namespace processing.</td></tr>
+    <tr><td>-v | -V</td><td>Turn on/off validation.</td></tr>
+    <tr>
+     <td>-s | -S</td>
+     <td>
+      Turn on/off Schema validation support.<br/>
+      <strong>NOTE:</strong> Not supported by all parser configurations.
+     </td>
+    </tr>
+    <!--
+    <tr>
+     <td>-c | -C</td>
+     <td>
+      Turn on/off Canonical XML output.<br/>
+      <strong>NOTE:</strong> This is not W3C canonical output.
+     </td>
+    </tr>
+    -->
+    <tr><td>-h</td><td>Display help screen.</td></tr>
+   </table>
+  </s3>
+ </s2>
+ <anchor name='PassThroughFilter'/>
+ <s2 title='Sample xni.PassThroughFilter'>
+  <p>
+   This sample demonstrates how to implement a simple pass-through
+   filter for the document "streaming" information set using XNI.
+   This filter could be used in a pipeline of XNI parser components
+   that communicate document events.
+  </p>
+  <p>
+   This class can <strong>NOT</strong> be run as a standalone
+   program. It is only an example of how to write a document
+   handler.
+  </p>
+ </s2>
+ <anchor name='UpperCaseFilter'/>
+ <s2 title='Sample xni.UpperCaseFilter'>
+  <p>
+   This sample demonstrates how to create a filter for the document
+   "streaming" information set that turns element names into upper
+   case.
+  </p>
+  <p>
+   This class can <strong>NOT</strong> be run as a standalone
+   program. It is only an example of how to write a document
+   handler.
+  </p>
+ </s2>
+ <anchor name='NonValidatingParserConfiguration'/>
+ <s2 title='Sample xni.parser.NonValidatingParserConfiguration'>
   <p>Non-validating parser configuration.</p>
   <p>
    This class can <strong>NOT</strong> be run as a standalone
@@ -151,13 +224,85 @@
   </p>
   <source>java xni.Counter -p xni.parser.NonValidatingParserConfiguration document.xml</source>
  </s2>
+ <anchor name='AbstractConfiguration'/>
+ <s2 title='Sample xni.parser.AbstractConfiguration'>
+  <p>
+   This abstract parser configuration simply helps manage components, 
+   features and properties, and other tasks common to all parser
+   configurations. In order to subclass this configuration and use
+   it effectively, the subclass is required to do the following:
+  </p>
+  <ul>
+   <li>
+    Add all configurable components using the <code>addComponent</code>
+    method,</li>
+   <li>Implement the <code>parse</code> method, and</li>
+   <li>Call the <code>resetComponents</code> before parsing.</li>
+  </ul>
+  <p>
+   This class can <strong>NOT</strong> be run as a standalone
+   program. It is only an example of how to write a parser
+   configuration using XNI.
+  </p>
+ </s2>
  <!--
    - REVISIT: Add in this sample once the proper interfaces have been
    -          designed and implemented in the parser. *And* after the
    -          sample code has been written.
    -
- <s2 title='xni.parser.DynamicParserConfiguration'>
-  <anchor name='DynamicParserConfiguration'/>
+ <anchor name='DynamicParserConfiguration'/>
+ <s2 title='Sample xni.parser.DynamicParserConfiguration'>
  </s2>
  -->
+ <anchor name='CSVConfiguration'/>
+ <s2 title='Sample xni.parser.CSVConfiguration'>
+  <p>
+   This example is a very simple parser configuration that can 
+   parse files with comma-separated values (CSV) to generate XML
+   events. For example, the following CSV document:
+  </p>
+  <source>Andy Clark,16 Jan 1973,Cincinnati</source>
+  <p>
+   produces the following XML "document" as represented by the 
+   XNI streaming document information:
+  </p>
+  <source><![CDATA[<?xml version='1.0' encoding='UTF-8' standalone='true'?>
+<!DOCTYPE csv [
+<!ELEMENT csv (row)*>
+<!ELEMENT row (col)*>
+<!ELEMENT col (#PCDATA)>
+]>
+<csv>
+ <row>
+  <col>Andy Clark</col>
+  <col>16 Jan 1973</col>
+  <col>Cincinnati</col>
+ </row>
+</csv>]]></source>
+  <p>
+   This class can <strong>NOT</strong> be run as a standalone
+   program. It is only an example of how to write a parser
+   configuration using XNI. You can use this parser configuration
+   by specifying the fully qualified class name to all of the XNI
+   samples that accept a parser configuration using the 
+   <code>-p</code> option. For example:
+  </p>
+  <source>java xni.Counter -p xni.parser.CSVConfiguration document.xml</source>
+ </s2>
+ <anchor name='CSVParser'/>
+ <s2 title='Samples xni.parser.CSVParser'>
+  <p>
+   This parser class implements a SAX parser that can parse simple
+   comma-separated value (CSV) files.
+  </p>
+  <p>
+   This class can <strong>NOT</strong> be run as a standalone
+   program. It is only an example of how to write a parser
+   using XNI. You can use this parser
+   by specifying the fully qualified class name to all of the SAX
+   samples that accept a parser using the 
+   <code>-p</code> option. For example:
+  </p>
+  <source>java sax.Counter -p xni.parser.CSVParser document.xml</source>
+ </s2>
 </s1>

@@ -30,8 +30,8 @@
    SAX parser factory.
   </note>
  </s2>
- <s2 title='sax.Counter'>
-  <anchor name='Counter'/>
+ <anchor name='Counter'/>
+ <s2 title='Sample sax.Counter'>
   <p>
    A sample SAX2 counter. This sample program illustrates how to
    register a SAX2 ContentHandler and receive the callbacks in
@@ -106,8 +106,8 @@
    </p>
   </s3>
  </s2>
- <s2 title='sax.DocumentTracer'>
-  <anchor name='DocumentTracer'/>
+ <anchor name='DocumentTracer'/>
+ <s2 title='Sample sax.DocumentTracer'>
   <p>
    Provides a complete trace of SAX2 events for files parsed. This is
    useful for making sure that a SAX parser implementation faithfully
@@ -133,8 +133,8 @@
    </table>
   </s3>
  </s2>
- <s2 title='sax.Writer'>
-  <anchor name='Writer'/>
+ <anchor name='Writer'/>
+ <s2 title='Sample sax.Writer'>
   <p>
    A sample SAX2 writer. This sample program illustrates how to
    register a SAX2 ContentHandler and receive the callbacks in

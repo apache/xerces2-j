@@ -4,20 +4,19 @@
  <!--
    - REVISIT: The UI samples should be completely rewritten.
    -
- <s2 title='ui.DOMTree'>
-  <anchor name='DOMTree'/>
+ <anchor name='DOMTree'/>
+ <s2 title='Sample ui.DOMTree'>
   <p><strong>TODO</strong></p>
  </s2>
- <s2 title='ui.DOMTreeFull'>
-  <anchor name='DOMTreeFull'/>
+ <anchor name='DOMTreeFull'/>
+ <s2 title='Sample ui.DOMTreeFull'>
   <p><strong>TODO</strong></p>
  </s2>
- <s2 title='ui.TreeView'>
-  <anchor name='TreeView'/>
-  <p><strong>TODO</strong></p>
+ <p><strong>TODO</strong></p>
+ <s2 title='Sample ui.TreeView'>
  </s2>
- <s2 title='ui.TreeViewer'>
-  <anchor name='TreeViewer'/>
+ <anchor name='TreeViewer'/>
+ <s2 title='Sample ui.TreeViewer'>
   <p><strong>TODO</strong></p>
  </s2>
  -->

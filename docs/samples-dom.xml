@@ -45,8 +45,8 @@
    document builder factory.
   </note>
  </s2>
- <s2 title='dom.Counter'>
-  <anchor name='Counter'/>
+ <anchor name='Counter'/>
+ <s2 title='Sample dom.Counter'>
   <p>
    A sample DOM counter. This sample program illustrates how to
    traverse a DOM tree in order to get information about the document.
@@ -97,17 +97,17 @@
  </s2>
  <!--
    - Should the following samples be removed? rewritten? revamped?
- <s2 title='dom.DOMAddLines'>
-  <anchor name='DOMAddLines'/>
+ <anchor name='DOMAddLines'/>
+ <s2 title='Sample dom.DOMAddLines'>
   <p>TODO</p>
  </s2>
- <s2 title='dom.DOMGenerate'>
-  <anchor name='DOMGenerate'/>
+ <anchor name='DOMGenerate'/>
+ <s2 title='Sample dom.DOMGenerate'>
   <p>TODO</p>
  </s2>
  -->
- <s2 title='dom.GetElementsByTagName'>
-  <anchor name='GetElementsByTagName'/>
+ <anchor name='GetElementsByTagName'/>
+ <s2 title='Sample dom.GetElementsByTagName'>
   <p>
    A sample DOM filter. This sample program illustrates how to
    use the <code>Document#getElementsByTagName()</code> method 
@@ -135,8 +135,8 @@
    </table>
   </s3>
  </s2>
- <s2 title='dom.Writer'>
-  <anchor name='Writer'/>
+ <anchor name='Writer'/>
+ <s2 title='Sample dom.Writer'>
   <p>
    A sample DOM writer. This sample program illustrates how to
    traverse a DOM tree in order to print a document that is parsed.
@@ -169,16 +169,16 @@
  </s2>
  <!--
    - These samples should be redone.
- <s2 title='dom.traversal.IteratorView'>
-  <anchor name='IteratorView'/>
+ <anchor name='IteratorView'/>
+ <s2 title='Sample dom.traversal.IteratorView'>
   <p>TODO</p>
  </s2>
- <s2 title='dom.traversal.NameNodeFilter'>
-  <anchor name='NameNodeFilter'/>
+ <anchor name='NameNodeFilter'/>
+ <s2 title='Sample dom.traversal.NameNodeFilter'>
   <p>TODO</p>
  </s2>
- <s2 title='dom.traversal.TreeWalkerView'>
-  <anchor name='TreeWalkerView'/>
+ <anchor name='TreeWalkerView'/>
+ <s2 title='Sample dom.traversal.TreeWalkerView'>
   <p>TODO</p>
  </s2>
  -->

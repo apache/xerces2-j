@@ -23,8 +23,8 @@
    <li><link anchor='KeepSocketOpen'>socket.KeepSocketOpen</link></li>
   </ul>
  </s2>
- <s2 title='socket.DelayedInput'>
-  <anchor name='DelayedInput'/>
+ <anchor name='DelayedInput'/>
+ <s2 title='Sample socket.DelayedInput'>
   <p>
    This sample delays the input to the SAX parser to simulate reading data
    from a socket where data is not always immediately available. An XML
@@ -58,8 +58,8 @@
    </table>
   </s3>
  </s2>
- <s2 title='socket.KeepSocketOpen'>
-  <anchor name='KeepSocketOpen'/>
+ <anchor name='KeepSocketOpen'/>
+ <s2 title='Sample socket.KeepSocketOpen'>
   <p>
    This sample provides a solution to the problem of 1) sending multiple
    XML documents over a single socket connection or 2) sending other types
