@@ -1157,6 +1157,8 @@ public class TraverseSchema implements
                     String bName = (String)fRedefineAttributeGroupMap.get(dName);
                     if(bName != null) {
                         child.setAttribute(SchemaSymbols.ATT_NAME, bName);
+                        // and make sure we wipe this out of the grammar!
+                        fSchemaGrammar.topLevelAttrGrpDecls.remove(dName);
                         // Now we reuse this location in the array to store info we'll need for validation...
                         ComplexTypeInfo typeInfo = new ComplexTypeInfo();
                         int templateElementNameIndex = fStringPool.addSymbol("$"+bName);
@@ -1185,6 +1187,7 @@ public class TraverseSchema implements
                     }
                 }
                 traverseAttributeGroupDecl(child, null, null);
+//                fSchemaGrammar.topLevelAttrGrpDecls.remove(child.getAttribute("name"));
             } else if (name.equals( SchemaSymbols.ELT_ATTRIBUTE ) ) {
                 traverseAttributeDecl( child, null , false);
             } else if (name.equals(SchemaSymbols.ELT_GROUP)) {
@@ -1797,20 +1800,21 @@ public class TraverseSchema implements
         } else if (eltLocalname.equals(SchemaSymbols.ELT_GROUP)) {
 			QName processedBaseName = new QName(-1, fStringPool.addSymbol(oldName), fStringPool.addSymbol(oldName), fTargetNSURI);
 			int groupRefsCount = changeRedefineGroup(processedBaseName, eltLocalname, newName, child);
+            String restrictedName = newName.substring(0, newName.length()-redefIdentifier.length());
             if(!fRedefineSucceeded) {
-                fRestrictedRedefinedGroupRegistry.put(fTargetNSURIString+","+oldName, new Boolean(false));
+                fRestrictedRedefinedGroupRegistry.put(fTargetNSURIString+","+restrictedName, new Boolean(false));
             }
 			if(groupRefsCount > 1) {
                 fRedefineSucceeded = false;
-                fRestrictedRedefinedGroupRegistry.put(fTargetNSURIString+","+oldName, new Boolean(false));
+                fRestrictedRedefinedGroupRegistry.put(fTargetNSURIString+","+restrictedName, new Boolean(false));
 				// REVISIT:  localize
 				reportGenericSchemaError("if a group child of a <redefine> element contains a group ref'ing itself, it must have exactly 1; this one has " + groupRefsCount);
 			} else if (groupRefsCount == 1) {
-                fRestrictedRedefinedGroupRegistry.put(fTargetNSURIString+","+oldName, new Boolean(false));
+                fRestrictedRedefinedGroupRegistry.put(fTargetNSURIString+","+restrictedName, new Boolean(false));
                 return true;
 			}  else {
                 fGroupNameRegistry.put(fTargetNSURIString + "," + oldName, newName);
-                fRestrictedRedefinedGroupRegistry.put(fTargetNSURIString+","+oldName, new Boolean(true));
+                fRestrictedRedefinedGroupRegistry.put(fTargetNSURIString+","+restrictedName, new Boolean(true));
             }
 		} else {
             fRedefineSucceeded = false;
@@ -5989,7 +5993,7 @@ throws Exception {
 
                 return -1;
                 // TO DO
-                // REVISIST: different NS, not supported yet.
+                // REVISIT: different NS, not supported yet.
                 // REVISIT: Localize
                 //reportGenericSchemaError("Feature not supported: see an attribute from different NS");
             } else {
@@ -6027,10 +6031,12 @@ throws Exception {
                 traverseAttributeDecl(child, typeInfo, false);
             }
             else if ( child.getLocalName().equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ) {
-//				if(typeInfo != null)
+                NamespacesScope currScope = (NamespacesScope)fNamespacesScope.clone();
+			    //	if(typeInfo != null)
  					// only do this if we're traversing because we were ref'd here; when we come
 					// upon this decl by itself we're just validating.
                 	traverseAttributeGroupDecl(child, typeInfo,anyAttDecls);
+                fNamespacesScope = currScope;
             }
             else
 				break;
@@ -7417,7 +7423,7 @@ throws Exception {
             if ( componentCategory.equals(SchemaSymbols.ELT_GROUP) ) {
                 child = (Element) fSchemaGrammar.topLevelGroupDecls.get(name);
             }
-            else if ( componentCategory.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP ) ) {
+            else if ( componentCategory.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP ) && fSchemaInfoListRoot == null ) {
                 child = (Element) fSchemaGrammar.topLevelAttrGrpDecls.get(name);
             }
             else if ( componentCategory.equals(SchemaSymbols.ELT_ATTRIBUTE ) ) {
