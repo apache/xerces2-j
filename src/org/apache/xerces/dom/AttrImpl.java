@@ -282,11 +282,17 @@ public class AttrImpl
         if (syncChildren()) {
             synchronizeChildren();
         }
-    	StringBuffer value = new StringBuffer();
-    	ChildNode node = firstChild;
+        if (firstChild == null) {
+            return "";
+        }
+        ChildNode node = firstChild.nextSibling;
+        if (node == null) {
+            return firstChild.getNodeValue();
+        }
+    	StringBuffer value = new StringBuffer(firstChild.getNodeValue());
     	while (node != null) {
-    		value.append(node.getNodeValue());
-    		node = node.nextSibling;
+            value.append(node.getNodeValue());
+            node = node.nextSibling;
     	}
     	return value.toString();
 
