@@ -441,13 +441,32 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
          if (tst != null) {
             System.out.println("Table of ID = " + tst.toString());
          }
+         /*
          try {
             idData.validate( "a1", null );
          } catch ( Exception ex ) {
             ex.printStackTrace();// Should throw a unique exception
          }
+         */
 
       }
+
+      DatatypeValidator idRefData = tstRegistry.getDatatypeValidator("IDREF" );
+      if( idRefData != null ){
+         IDREFDatatypeValidator refData = (IDREFDatatypeValidator) idRefData;
+         refData.initialize( ((IDDatatypeValidator) idData).getTableIds());
+         try {
+            refData.validate( "a1", null );
+            refData.validate( "a2", null );
+            //refData.validate( "a3", null );//Should throw exception at validate()
+            refData.validate();
+         } catch( Exception ex ){
+            ex.printStackTrace();
+         }
+      }
+
+
+
 
    }
 
