@@ -214,11 +214,12 @@ public abstract class ParentNode
         if (needsSyncChildren()) {
             synchronizeChildren();
         }
+        super.setOwnerDocument(doc);
+        ownerDocument = doc;
 	for (ChildNode child = firstChild;
 	     child != null; child = child.nextSibling) {
 	    child.setOwnerDocument(doc);
 	}
-        ownerDocument = doc;
     }
 
     /**
