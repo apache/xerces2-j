@@ -61,6 +61,7 @@ import  org.apache.xerces.framework.XMLErrorReporter;
 import  org.apache.xerces.validators.common.GrammarResolver;
 import  org.apache.xerces.validators.common.GrammarResolverImpl;
 import  org.apache.xerces.validators.common.XMLElementDecl;
+import  org.apache.xerces.validators.common.XMLAttributeDecl;
 import  org.apache.xerces.validators.schema.SchemaSymbols;
 import  org.apache.xerces.validators.schema.XUtil;
 import  org.apache.xerces.validators.datatype.DatatypeValidator;
@@ -406,10 +407,11 @@ public class TraverseSchema implements
     private NamespacesScope fNamespacesScope = null;
 
     // REVISIT: maybe need to be moved into SchemaGrammar class
-    class ComplexTypeInfo {
+    public class ComplexTypeInfo {
         public String typeName;
         
-        public String base;
+        public DatatypeValidator baseDataTypeValidator;
+        public ComplexTypeInfo baseComplexTypeInfo;
         public int derivedBy;
         public int blockSet;
         public int finalSet;
@@ -441,6 +443,8 @@ public class TraverseSchema implements
     public void endNamespaceDeclScope(int prefix){
         //TO DO, do we need to do anything here?
     }
+
+    
 
     private String resolvePrefixToURI (String prefix) throws Exception  {
         String uriStr = fStringPool.toString(fNamespacesScope.getNamespaceForPrefix(fStringPool.addSymbol(prefix)));
@@ -653,7 +657,8 @@ public class TraverseSchema implements
                     facetData.put(facetElt.getNodeName(),facetElt.getAttribute( SchemaSymbols.ATT_VALUE ));
                     }
                 }
-            content = (Element) content.getNextSibling();
+                //content = (Element) content.getNextSibling();
+                content = XUtil.getNextSiblingElement(content);
             }
             if (numEnumerationLiterals > 0) {
                facetData.put(SchemaSymbols.ELT_ENUMERATION, enumData);
@@ -824,44 +829,44 @@ public class TraverseSchema implements
                             simpleTypeValidator = baseTypeValidator;
                             baseIsSimpleSimple = true;
                         }
-
+                    }
                         //Schema Spec : 5.11: Complex Type Definition Properties Correct : 2
-                        if (baseIsSimpleSimple && derivedByRestriction) {
-                            reportGenericSchemaError("base is a simpledType, can't derive by restriction in " + typeName); 
-                        }
+                    if (baseIsSimpleSimple && derivedByRestriction) {
+                        reportGenericSchemaError("base is a simpledType, can't derive by restriction in " + typeName); 
+                    }
 
-                        //if  the base is a complexType
-                        if (baseTypeInfo != null ) {
-
-                            //Schema Spec : 5.11: Derivation Valid ( Extension ) 1.1.1
-                            //              5.11: Derivation Valid ( Restriction, Complex ) 1.2.1
-                            if (derivedByRestriction) {
-                                //REVISIT: check base Type's finalset does not include "restriction"
-                            }
-                            else {
-                                //REVISIT: check base Type's finalset doest not include "extension"
-                            }
-
-                            if ( baseTypeInfo.contentSpecHandle > -1) {
-                                if (derivedByRestriction) {
-                                    //REVISIT: !!! really hairy staff to check the particle derivation OK in 5.10
-                                    checkParticleDerivationOK(complexTypeDecl, baseTypeNode);
-                                }
-                                baseContentSpecHandle = baseTypeInfo.contentSpecHandle;
-                            }
-                            else if ( baseTypeInfo.datatypeValidator != null ) {
-                                baseTypeValidator = baseTypeInfo.datatypeValidator;
-                                baseIsComplexSimple = true;
-                            }
-                        }
+                    //if  the base is a complexType
+                    if (baseTypeInfo != null ) {
 
                         //Schema Spec : 5.11: Derivation Valid ( Extension ) 1.1.1
-                        if (baseIsComplexSimple && !derivedByRestriction ) {
-                            reportGenericSchemaError("base is ComplexSimple, can't derive by extension in " + typeName);
+                        //              5.11: Derivation Valid ( Restriction, Complex ) 1.2.1
+                        if (derivedByRestriction) {
+                            //REVISIT: check base Type's finalset does not include "restriction"
+                        }
+                        else {
+                            //REVISIT: check base Type's finalset doest not include "extension"
                         }
 
-
+                        if ( baseTypeInfo.contentSpecHandle > -1) {
+                            if (derivedByRestriction) {
+                                //REVISIT: !!! really hairy staff to check the particle derivation OK in 5.10
+                                checkParticleDerivationOK(complexTypeDecl, baseTypeNode);
+                            }
+                            baseContentSpecHandle = baseTypeInfo.contentSpecHandle;
+                        }
+                        else if ( baseTypeInfo.datatypeValidator != null ) {
+                            baseTypeValidator = baseTypeInfo.datatypeValidator;
+                            baseIsComplexSimple = true;
+                        }
                     }
+
+                        //Schema Spec : 5.11: Derivation Valid ( Extension ) 1.1.1
+                    if (baseIsComplexSimple && !derivedByRestriction ) {
+                        reportGenericSchemaError("base is ComplexSimple, can't derive by extension in " + typeName);
+                    }
+
+
+                    
                 }
             }
         }
@@ -1075,8 +1080,12 @@ public class TraverseSchema implements
                                                  false);
         }
 
+//debugging
+//        System.out.println("!!!!!>>>>>" + typeName+", "+ baseTypeInfo + ", " + baseContentSpecHandle +", " + left);
+
         ComplexTypeInfo typeInfo = new ComplexTypeInfo();
-        typeInfo.base = base;
+        typeInfo.baseComplexTypeInfo = baseTypeInfo;
+        typeInfo.baseDataTypeValidator = baseTypeValidator;
         int derivedByInt = -1;
         if (derivedBy.length() > 0) {
             derivedByInt = parseComplexDerivedBy(derivedBy);
@@ -1304,6 +1313,7 @@ public class TraverseSchema implements
         DatatypeValidator dv = null;
         // attribute type
         int attType = -1;
+        boolean attIsList = false;
         int enumeration = -1;
 
         String ref = attrDecl.getAttribute(SchemaSymbols.ATT_REF); 
@@ -1336,32 +1346,37 @@ public class TraverseSchema implements
 
         if (datatype.equals("")) {
             Element child = XUtil.getFirstChildElement(attrDecl);
+
             while (child != null && !child.getNodeName().equals(SchemaSymbols.ELT_SIMPLETYPE))
                 child = XUtil.getNextSiblingElement(child);
             if (child != null && child.getNodeName().equals(SchemaSymbols.ELT_SIMPLETYPE)) {
-                attType = fStringPool.addSymbol("DATATYPE");
+                attType = XMLAttributeDecl.TYPE_SIMPLE;
                 enumeration = traverseSimpleTypeDecl(child);
-            } else 
-                attType = fStringPool.addSymbol("CDATA");
+            } 
+            else {
+                attType = XMLAttributeDecl.TYPE_SIMPLE;
+                enumeration = fStringPool.addSymbol("string");
+            }
+
         } else {
-            if (datatype.equals("string")) {
-                attType = fStringPool.addSymbol("CDATA");
-            } else if (datatype.equals("ID")) {
-                attType = fStringPool.addSymbol("ID");
+            if (datatype.equals("ID")) {
+                attType = XMLAttributeDecl.TYPE_ID;
             } else if (datatype.equals("IDREF")) {
-                attType = fStringPool.addSymbol("IDREF");
+                attType = XMLAttributeDecl.TYPE_IDREF;
             } else if (datatype.equals("IDREFS")) {
-                attType = fStringPool.addSymbol("IDREFS");
+                attType = XMLAttributeDecl.TYPE_IDREF;
+                attIsList = true;
             } else if (datatype.equals("ENTITY")) {
-                attType = fStringPool.addSymbol("ENTITY");
+                attType = XMLAttributeDecl.TYPE_ENTITY;
             } else if (datatype.equals("ENTITIES")) {
-                attType = fStringPool.addSymbol("ENTITIES");
+                attType = XMLAttributeDecl.TYPE_ENTITY;
+                attIsList = true;
             } else if (datatype.equals("NMTOKEN")) {
                 Element e = XUtil.getFirstChildElement(attrDecl, "enumeration");
                 if (e == null) {
-                    attType = fStringPool.addSymbol("NMTOKEN");
+                    attType = XMLAttributeDecl.TYPE_NMTOKEN;
                 } else {
-                    attType = fStringPool.addSymbol("ENUMERATION");
+                    attType = XMLAttributeDecl.TYPE_ENUMERATION;
                     enumeration = fStringPool.startStringList();
                     for (Element literal = XUtil.getFirstChildElement(e, "literal");
                          literal != null;
@@ -1372,12 +1387,14 @@ public class TraverseSchema implements
                     fStringPool.finishStringList(enumeration);
                 }
             } else if (datatype.equals("NMTOKENS")) {
-                attType = fStringPool.addSymbol("NMTOKENS");
+                attType = XMLAttributeDecl.TYPE_NMTOKEN;
+                attIsList = true;
+                //TO DO: should we do the the same enumeration thing here? 
             } else if (datatype.equals(SchemaSymbols.ELT_NOTATION)) {
-                attType = fStringPool.addSymbol("NOTATION");
+                attType = XMLAttributeDecl.TYPE_NOTATION;
             } else { // REVISIT: Danger: assuming all other ATTR types are datatypes
                 //REVISIT check against list of validators to ensure valid type name
-                attType = fStringPool.addSymbol("DATATYPE");
+                attType = XMLAttributeDecl.TYPE_SIMPLE;
                 enumeration = fStringPool.addSymbol(datatype);
             }
         }
@@ -1389,13 +1406,17 @@ public class TraverseSchema implements
         String use = attrDecl.getAttribute(SchemaSymbols.ATT_USE);
         boolean required = use.equals(SchemaSymbols.ATTVAL_REQUIRED);
 
+        if (attType == XMLAttributeDecl.TYPE_SIMPLE ) {
+            dv = fDatatypeRegistry.getValidatorFor(fStringPool.toString(enumeration));
+        }
+
         if (required) {
-            attDefaultType = fStringPool.addSymbol("#REQUIRED");
+            attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_REQUIRED;
         } else {
             if (use.equals(SchemaSymbols.ATTVAL_FIXED)) {
                 String fixed = attrDecl.getAttribute(SchemaSymbols.ATT_VALUE);
                 if (!fixed.equals("")) {
-                    attDefaultType = fStringPool.addSymbol("#FIXED");
+                    attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_FIXED;
                     attDefaultValue = fStringPool.addString(fixed);
                 } 
             }
@@ -1403,28 +1424,29 @@ public class TraverseSchema implements
                 // attribute default value
                 String defaultValue = attrDecl.getAttribute(SchemaSymbols.ATT_VALUE);
                 if (!defaultValue.equals("")) {
-                    attDefaultType = fStringPool.addSymbol("");
+                    attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_DEFAULT;
                     attDefaultValue = fStringPool.addString(defaultValue);
                 } 
             }
             else if (use.equals(SchemaSymbols.ATTVAL_PROHIBITED)) {
+                
                 attDefaultType = fStringPool.addSymbol("#PROHIBITED");
                 attDefaultValue = fStringPool.addString("");
             }
             else {
-                attDefaultType = fStringPool.addSymbol("#IMPLIED");
+                attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_IMPLIED;
             }       // check default value is valid for the datatype.
-            if (attType == fStringPool.addSymbol("DATATYPE") && attDefaultValue != -1) {
+
+            if (attType == XMLAttributeDecl.TYPE_SIMPLE && attDefaultValue != -1) {
                 try { 
                     // REVISIT - integrate w/ error handling
-                    String type = fStringPool.toString(enumeration);
-                    dv = fDatatypeRegistry.getValidatorFor(type);
-                    if (dv != null) ;
+                    dv = fDatatypeRegistry.getValidatorFor(datatype);
+                    if (dv != null) 
                         //REVISIT
-                        //dv.validate(fStringPool.toString(attDefaultValue));
+                        dv.validate(fStringPool.toString(attDefaultValue), attIsList);
                     else
                         reportSchemaError(SchemaMessageProvider.NoValidatorFor,
-                                          new Object [] { type });
+                                          new Object [] { datatype });
                 } /*catch (InvalidDatatypeValueException idve) {
                     reportSchemaError(SchemaMessageProvider.IncorrectDefaultType,
                                       new Object [] { attrDecl.getAttribute(SchemaSymbols.ATT_NAME), idve.getMessage() });
@@ -1442,7 +1464,8 @@ public class TraverseSchema implements
         }
 
         QName attQName = new QName(-1,attName,attName,uriIndex);
-
+//debugging
+//      System.out.println(" the dataType Validator for " + fStringPool.toString(attName) + " is " + dv);
         // add attribute to attr decl pool in fSchemaGrammar, 
         fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
                                   attQName, attType, 
@@ -2755,8 +2778,8 @@ public class TraverseSchema implements
         void initializeRegistry() {
             Hashtable facets = null;
             fRegistry.put("boolean", new BooleanValidator());
-            //DatatypeValidator integerValidator = new IntegerValidator();
-            //fRegistry.put("integer", integerValidator);
+            DatatypeValidator integerValidator = new IntegerValidator();
+            fRegistry.put("integer", integerValidator);
             fRegistry.put("string", new StringValidator());
             fRegistry.put("decimal", new DecimalValidator());
             fRegistry.put("float", new FloatValidator());
