@@ -494,12 +494,6 @@ public class TraverseSchema implements
             return "";
         }
 
-        //REVISIT, !!!! a hack: needs to be updated later, cause now we only use localpart to key build-in datatype.
-        if ( prefix.length()==0 && uriStr.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)
-             && fTargetNSURIString.length() == 0) {
-            uriStr = "";
-        }
-
         return uriStr;
     }
 
@@ -642,15 +636,15 @@ public class TraverseSchema implements
             if (attName.equals("xmlns")) {
 
                 String attValue = sattr.getValue();
-                fNamespacesScope.setNamespaceForPrefix( fStringPool.addSymbol(""),
+                fNamespacesScope.setNamespaceForPrefix( StringPool.EMPTY_STRING,
                                                         fStringPool.addSymbol(attValue) );
                 seenXMLNS = true;
             }
 
         }
         if (!seenXMLNS && fTargetNSURIString.length() == 0 ) {
-            fNamespacesScope.setNamespaceForPrefix( fStringPool.addSymbol(""),
-                                                    fStringPool.addSymbol("") );
+            fNamespacesScope.setNamespaceForPrefix( StringPool.EMPTY_STRING,
+                                                    StringPool.EMPTY_STRING);
         }
 
         fElementDefaultQualified =
@@ -1080,8 +1074,8 @@ public class TraverseSchema implements
 
         }
         if (!seenXMLNS && fTargetNSURIString.length() == 0 ) {
-            fNamespacesScope.setNamespaceForPrefix( fStringPool.addSymbol(""),
-                                                    fStringPool.addSymbol("") );
+            fNamespacesScope.setNamespaceForPrefix( StringPool.EMPTY_STRING,
+                                                    StringPool.EMPTY_STRING);
         }
 
         fElementDefaultQualified =
@@ -1194,7 +1188,6 @@ public class TraverseSchema implements
                     }
                 }
                 traverseAttributeGroupDecl(child, null, null);
-//                fSchemaGrammar.topLevelAttrGrpDecls.remove(child.getAttribute("name"));
             } else if (name.equals( SchemaSymbols.ELT_ATTRIBUTE ) ) {
                 traverseAttributeDecl( child, null , false);
             } else if (name.equals(SchemaSymbols.ELT_GROUP)) {
@@ -1594,7 +1587,7 @@ public class TraverseSchema implements
 				result += changeRedefineGroup(originalName, elementSought, newName, child);
 			else {
 				String ref = child.getAttribute( SchemaSymbols.ATT_REF );
-				if (!ref.equals("")) {
+				if (ref.length() != 0) {
             		String prefix = "";
             		String localpart = ref;
             		int colonptr = ref.indexOf(":");
@@ -1604,7 +1597,7 @@ public class TraverseSchema implements
             		}
             		String uriStr = resolvePrefixToURI(prefix);
 					if(originalName.equals(new QName(-1, fStringPool.addSymbol(localpart), fStringPool.addSymbol(localpart), fStringPool.addSymbol(uriStr)))) {
-                        if(prefix.equals(""))
+                        if(prefix.length() == 0)
 						    child.setAttribute(SchemaSymbols.ATT_REF, newName);
                         else
 						    child.setAttribute(SchemaSymbols.ATT_REF, prefix + ":" + newName);
@@ -2074,9 +2067,8 @@ public class TraverseSchema implements
                               new Object [] { elm.getAttribute( SchemaSymbols.ATT_BASE ),
                                   elm.getAttribute(SchemaSymbols.ATT_NAME)});
         } else {
-            finalValue = (uri.equals("")?
-                    ((Integer)fSimpleTypeFinalRegistry.get(localpart)):
-                    ((Integer)fSimpleTypeFinalRegistry.get(uri + "," +localpart)));
+            finalValue = 
+                    ((Integer)fSimpleTypeFinalRegistry.get(uri + "," +localpart));
             if((finalValue != null) &&
                     ((finalValue.intValue() & baseRefContext) != 0)) {
                 //REVISIT:  localize
@@ -2171,9 +2163,13 @@ public class TraverseSchema implements
             fStringPool.addSymbol(qualifiedName);
         }
         else {
-            if (fTargetNSURIString.length () != 0) {
+            // this behaviour has been changed so that we neither
+            // process unqualified names as if they came from the schemaforschema namespace nor
+            // fail to pick up unqualified names from schemas with no
+            // targetnamespace.  - NG
+            //if (fTargetNSURIString.length () != 0) {
                 qualifiedName = fTargetNSURIString+","+qualifiedName;
-            }
+            //}
             fStringPool.addSymbol( nameProperty );
         }
 
@@ -2709,7 +2705,7 @@ public class TraverseSchema implements
 
         DatatypeValidator dv = null;
 
-        if (uri.length()==0 || uri.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) {
+        if (uri.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) {
             dv = fDatatypeRegistry.getDatatypeValidator( localpart );
         }
         else {
@@ -2760,7 +2756,7 @@ public class TraverseSchema implements
             while (tokenizer.hasMoreElements()) {
                 String token = tokenizer.nextToken();
                 if (token.equals(SchemaSymbols.ATTVAL_TWOPOUNDLOCAL)) {
-                    tokenStr = fStringPool.EMPTY_STRING;
+                    tokenStr = StringPool.EMPTY_STRING;
                 } else {
                     if (token.equals(SchemaSymbols.ATTVAL_TWOPOUNDTARGETNS))
                     token = curTargetUri;
@@ -3164,7 +3160,7 @@ public class TraverseSchema implements
         // ------------------------------------------------------------------
         // Generate a type name, if one wasn't specified
         // ------------------------------------------------------------------
-        if (typeName.equals("")) { // gensym a unique name
+        if (typeName.length() == 0) { // gensym a unique name
             typeName = genAnonTypeName(complexTypeDecl);
         }
 
@@ -3264,7 +3260,7 @@ public class TraverseSchema implements
           }
           typeInfo.blockSet = parseBlockSet(blockSet);
           // make sure block's value was absent, #all or in {extension, restriction}
-          if( (blockSet != null ) && !blockSet.equals("") &&
+          if( (blockSet != null ) && blockSet.length() != 0 &&
                 (!blockSet.equals(SchemaSymbols.ATTVAL_POUNDALL) &&
                 (((typeInfo.blockSet & SchemaSymbols.RESTRICTION) == 0) &&
                 ((typeInfo.blockSet & SchemaSymbols.EXTENSION) == 0))))
@@ -3272,7 +3268,7 @@ public class TraverseSchema implements
 
           typeInfo.finalSet = parseFinalSet(finalSet);
           // make sure final's value was absent, #all or in {extension, restriction}
-          if( (finalSet != null ) && !finalSet.equals("") &&
+          if( (finalSet != null ) && finalSet.length() != 0 &&
                 (!finalSet.equals(SchemaSymbols.ATTVAL_POUNDALL) &&
                 (((typeInfo.finalSet & SchemaSymbols.RESTRICTION) == 0) &&
                 ((typeInfo.finalSet & SchemaSymbols.EXTENSION) == 0))))
@@ -3431,9 +3427,8 @@ public class TraverseSchema implements
 
         QName baseQName = parseBase(base);
         // check if we're extending a simpleType which has a "final" setting which precludes this
-        Integer finalValue = (baseQName.uri == StringPool.EMPTY_STRING?
-                ((Integer)fSimpleTypeFinalRegistry.get(fStringPool.toString(baseQName.localpart))):
-                ((Integer)fSimpleTypeFinalRegistry.get(fStringPool.toString(baseQName.uri) + "," +fStringPool.toString(baseQName.localpart))));
+        Integer finalValue = 
+                ((Integer)fSimpleTypeFinalRegistry.get(fStringPool.toString(baseQName.uri) + "," +fStringPool.toString(baseQName.localpart)));
         if(finalValue != null &&
                 (finalValue.intValue() == typeInfo.derivedBy))
             throw new ComplexTypeRecoverableError(
@@ -5378,7 +5373,7 @@ throws Exception {
 
         // Neither minOccurs nor maxOccurs may be specified
         // for the child of a model group definition.
-        if (isGroupChild && (!minOccurs.equals("") || !maxOccurs.equals(""))) {
+        if (isGroupChild && (minOccurs.length() != 0 || maxOccurs.length() != 00 )) {
             reportSchemaError(SchemaMessageProvider.MinMaxOnGroupChild, null);
             minOccurs = (maxOccurs = "1");
         }
@@ -5390,10 +5385,10 @@ throws Exception {
 
         int min=1, max=1;
 
-        if (minOccurs.equals("")) {
+        if (minOccurs.length() == 0) {
             minOccurs = "1";
         }
-        if (maxOccurs.equals("")) {
+        if (maxOccurs.length() == 0) {
             maxOccurs = "1";
         }
 
@@ -5556,7 +5551,7 @@ throws Exception {
         }
         errorContext.append(attNameStr).append(' ').append(refStr);
 
-        if(useStr.equals("") || useStr.equals(SchemaSymbols.ATTVAL_OPTIONAL)) {
+        if(useStr.length() == 0 || useStr.equals(SchemaSymbols.ATTVAL_OPTIONAL)) {
             attValueAndUseType |= XMLAttributeDecl.USE_TYPE_OPTIONAL;
             isOptional = true;
         }
@@ -5760,10 +5755,8 @@ throws Exception {
             }
             String typeURI = resolvePrefixToURI(prefix);
 
-            if ( typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)
-                 || typeURI.length()==0) {
-
-                dv = getDatatypeValidator("", localpart);
+            if ( typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) { 
+                dv = getDatatypeValidator(SchemaSymbols.URI_SCHEMAFORSCHEMA, localpart);
 
                 if (localpart.equals("ID")) {
                     attType = XMLAttributeDecl.TYPE_ID;
@@ -5994,11 +5987,11 @@ throws Exception {
         String ref = attrGrpDecl.getAttribute(SchemaSymbols.ATT_REF);
 		Element child = checkContent( attrGrpDecl, XUtil.getFirstChildElement(attrGrpDecl), true );
 
-        if (!ref.equals("")) {
+        if (ref.length() != 0) {
 			if(isTopLevel(attrGrpDecl))
 				// REVISIT:  localize
    	    	    reportGenericSchemaError ( "An attributeGroup with \"ref\" present must not have <schema> or <redefine> as its parent");
-			if(!attGrpNameStr.equals(""))
+			if(attGrpNameStr.length() != 0)
 				// REVISIT:  localize
    	    	    reportGenericSchemaError ( "attributeGroup " + attGrpNameStr + " cannot refer to another attributeGroup, but it refers to " + ref);
             if (XUtil.getFirstChildElement(attrGrpDecl) != null ||
@@ -6047,7 +6040,7 @@ throws Exception {
             	}
  				return -1;
 			}
-        } else if (attGrpNameStr.equals(""))
+        } else if (attGrpNameStr.length() == 0)
 				// REVISIT:  localize
                 reportGenericSchemaError ( "an attributeGroup must have a name or a ref attribute present");
 
@@ -6304,7 +6297,7 @@ throws Exception {
         if (blockAtt == null)
             blockStr = null;
         int blockSet = parseBlockSet(blockStr);
-        if( (blockStr != null) && !blockStr.equals("") &&
+        if( (blockStr != null) && blockStr.length() != 0 &&
                 (!blockStr.equals(SchemaSymbols.ATTVAL_POUNDALL) &&
                 (((blockSet & SchemaSymbols.RESTRICTION) == 0) &&
                 (((blockSet & SchemaSymbols.EXTENSION) == 0) &&
@@ -6313,7 +6306,7 @@ throws Exception {
         if (finalAtt == null)
             finalStr = null;
         int finalSet = parseFinalSet(finalStr);
-        if( (finalStr != null) && !finalStr.equals("") &&
+        if( (finalStr != null) && finalStr.length() != 0 &&
                 (!finalStr.equals(SchemaSymbols.ATTVAL_POUNDALL) &&
                 (((finalSet & SchemaSymbols.RESTRICTION) == 0) &&
                 ((finalSet & SchemaSymbols.EXTENSION) == 0))))
@@ -6766,7 +6759,7 @@ throws Exception {
         // Now we can handle validation etc. of default and fixed attributes,
         // since we finally have all the type information.
         if(fixedAtt != null) defaultStr = fixedStr;
-        if(!defaultStr.equals("")) {
+        if(defaultStr.length() != 0) {
             if(typeInfo != null &&
                     (typeInfo.contentType != XMLElementDecl.TYPE_MIXED_SIMPLE &&
                      typeInfo.contentType != XMLElementDecl.TYPE_MIXED_COMPLEX &&
@@ -6790,7 +6783,7 @@ throws Exception {
             }
         }
 
-        if (!defaultStr.equals("") &&
+        if (defaultStr.length() != 0 &&
             dv != null && dv instanceof IDDatatypeValidator) {
             reportGenericSchemaError ("e-props-correct.4: If the {type definition} or {type definition}'s {content type} is or is derived from ID then there must not be a {value constraint} -- element " + nameStr);
         }
@@ -7690,7 +7683,7 @@ throws Exception {
             //REVISIT: update error messages
             reportGenericSchemaError("<notation> declaration is invalid");
         }
-        if (name.equals("")) {
+        if (name.length() == 0) {
             //REVISIT: update error messages
             reportGenericSchemaError("<notation> declaration does not have a name");
 
@@ -7786,11 +7779,11 @@ throws Exception {
         GroupInfo gInfo = null;
 	Element child = checkContent( groupDecl, XUtil.getFirstChildElement(groupDecl), true );
 
-        if (!ref.equals("")) {
+        if (ref.length() != 0) {
             if (isTopLevel(groupDecl))
                 // REVISIT:  localize
                 reportGenericSchemaError ( "A group with \"ref\" present must not have <schema> or <redefine> as its parent");
-            if (!groupName.equals(""))
+            if (groupName.length() != 0)
                 // REVISIT:  localize
                 reportGenericSchemaError ( "group " + groupName + " cannot refer to another group, but it refers to " + ref);
 
@@ -7856,7 +7849,7 @@ throws Exception {
             }
             return gInfo;
 
-        } else if (groupName.equals(""))
+        } else if (groupName.length() == 0)
             // REVISIT: Localize
             reportGenericSchemaError("a <group> must have a name or a ref present");
 
@@ -7902,7 +7895,7 @@ throws Exception {
         else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
             index = traverseSequence(child);
         }
-        else if (!childName.equals("") || (child != null && XUtil.getNextSiblingElement(child) != null)) {
+        else if (childName.length() != 0 || (child != null && XUtil.getNextSiblingElement(child) != null)) {
             illegalChild = true;
             reportSchemaError(SchemaMessageProvider.GroupContentRestricted,
                               new Object [] { "group", childName });
@@ -8018,7 +8011,7 @@ throws Exception {
         else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
             index = traverseSequence(child);
         }
-        else if (!childName.equals("") || (child != null && XUtil.getNextSiblingElement(child) != null)) {
+        else if (childName.length() != 0 || (child != null && XUtil.getNextSiblingElement(child) != null)) {
             illegalChild = true;
             reportSchemaError(SchemaMessageProvider.GroupContentRestricted,
                               new Object [] { "group", childName });
