@@ -244,6 +244,9 @@ public class DOMParser
 
     /** Returns the document. */
     public Document getDocument() {
+        if (fDocumentImpl != null) {
+            fDocumentImpl.setErrorChecking(true);
+        }
         return fDocument;
     }
 
@@ -860,6 +863,7 @@ public class DOMParser
 
             if (documentClassName.equals(DEFAULT_DOCUMENT_CLASS_NAME)) {
                 fDocument = fDocumentImpl = new DocumentImpl(fGrammarAccess);
+                fDocumentImpl.setErrorChecking(false);
             }
             else {
                 try {

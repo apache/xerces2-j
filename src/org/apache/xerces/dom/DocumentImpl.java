@@ -133,6 +133,9 @@ public class DocumentImpl
     /** Allow grammar access. */
     protected boolean allowGrammarAccess;
 
+    /** Bypass error checking. */
+    protected boolean errorChecking = true;
+
     //
     // Constructors
     //
@@ -232,10 +235,12 @@ public class DocumentImpl
 
     	// Only one such child permitted
         int type = newChild.getNodeType();
-    	if((type == Node.ELEMENT_NODE && docElement != null) ||
-    	   (type == Node.DOCUMENT_TYPE_NODE && docType != null)) {
-    	    throw new DOMExceptionImpl(DOMException.HIERARCHY_REQUEST_ERR,
-    	                               "HIERARCHY_REQUEST_ERR");
+        if (errorChecking) {
+            if((type == Node.ELEMENT_NODE && docElement != null) ||
+               (type == Node.DOCUMENT_TYPE_NODE && docType != null)) {
+                throw new DOMExceptionImpl(DOMException.HIERARCHY_REQUEST_ERR,
+                                           "HIERARCHY_REQUEST_ERR");
+            }
         }
 
     	super.insertBefore(newChild,refChild);
@@ -302,7 +307,7 @@ public class DocumentImpl
     public Attr createAttribute(String name)
         throws DOMException {
 
-    	if(!isXMLName(name)) {
+    	if(errorChecking && !isXMLName(name)) {
     		throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR,
     		                           "INVALID_CHARACTER_ERR");
         }
@@ -357,7 +362,7 @@ public class DocumentImpl
     public Element createElement(String tagName)
         throws DOMException {
 
-    	if (!isXMLName(tagName)) {
+    	if (errorChecking && !isXMLName(tagName)) {
     		throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
     		                           "INVALID_CHARACTER_ERR");
         }
@@ -379,7 +384,7 @@ public class DocumentImpl
     public EntityReference createEntityReference(String name)
         throws DOMException {
 
-    	if (!isXMLName(name)) {
+    	if (errorChecking && !isXMLName(name)) {
     		throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
     		                           "INVALID_CHARACTER_ERR");
         }
@@ -404,7 +409,7 @@ public class DocumentImpl
     public ProcessingInstruction createProcessingInstruction(String target, String data)
         throws DOMException {
 
-    	if(!isXMLName(target)) {
+    	if(errorChecking && !isXMLName(target)) {
     		throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR,
     		                           "INVALID_CHARACTER_ERR");
         }
@@ -482,8 +487,39 @@ public class DocumentImpl
     // Public methods
     //
 
-    // non-DOM factory methods
+    // properties
 
+    /** 
+     * Sets whether the DOM implementation performs error checking
+     * upon operations. Turning off error checking only affects
+     * the following DOM checks:
+     * <ul>
+     * <li>Checking strings to make sure that all characters are
+     *     legal XML characters
+     * <li>Hierarchy checking such as allowed children, checks for
+     *     cycles, etc.
+     * </ul>
+     * <p>
+     * Turning off error checking does <em>not</em> turn off the
+     * following checks:
+     * <ul>
+     * <li>Read only checks
+     * <li>Checks related to DOM events
+     * </ul>
+     */
+    public void setErrorChecking(boolean check) {
+        errorChecking = check;
+    }
+
+    /**
+     * Returns true if the DOM implementation performs error checking.
+     */
+    public boolean getErrorChecking() {
+        return errorChecking;
+    }
+
+    // non-DOM factory methods
+    
     /**
      * NON-DOM
      * Factory method; creates a DocumentType having this Document
@@ -500,7 +536,7 @@ public class DocumentImpl
                                            String systemID)
         throws DOMException {
 
-    	if (!isXMLName(qualifiedName)) {
+    	if (errorChecking && !isXMLName(qualifiedName)) {
     		throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
     		                           "INVALID_CHARACTER_ERR");
         }
@@ -528,7 +564,7 @@ public class DocumentImpl
 
         // REVISIT: Should we be checking XML name chars?
         /***
-    	if (!isXMLName(name)) {
+    	if (errorChecking && !isXMLName(name)) {
     		throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
     		                           "INVALID_CHARACTER_ERR");
         }
@@ -555,7 +591,7 @@ public class DocumentImpl
 
         // REVISIT: Should we be checking XML name chars?
         /***
-    	if (!isXMLName(name)) {
+    	if (errorChecking && !isXMLName(name)) {
     		throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
     		                           "INVALID_CHARACTER_ERR");
         }
@@ -574,7 +610,7 @@ public class DocumentImpl
 
         // REVISIT: Should we be checking XML name chars?
         /***
-    	if (!isXMLName(name)) {
+    	if (errorChecking && !isXMLName(name)) {
     		throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
     		                           "INVALID_CHARACTER_ERR");
         }

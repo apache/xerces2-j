@@ -590,7 +590,8 @@ public abstract class NodeImpl
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"NO_MODIFICATION_ALLOWED_ERR");
      	
-    	if( !(newChild instanceof NodeImpl)
+        boolean errorChecking = ownerDocument.errorChecking;
+    	if(errorChecking && !(newChild instanceof NodeImpl)
     		||
     		!(
     		  newChild.getOwnerDocument() == ownerDocument
@@ -610,20 +611,22 @@ public abstract class NodeImpl
     	// Convert to internal type, to avoid repeated casting
     	NodeImpl newInternal = (NodeImpl)newChild;
 
-    	// Prevent cycles in the tree
-    	boolean treeSafe = true;
-    	for (NodeImpl a = parentNode; treeSafe && a != null; a = a.parentNode) {
-    		treeSafe = newInternal != a;
-        }
-    	if(!treeSafe) {
-    	  	throw new DOMExceptionImpl(DOMException.HIERARCHY_REQUEST_ERR, 
-    	  	                           "HIERARCHY_REQUEST_ERR");
-        }
+        if (errorChecking) {
+            // Prevent cycles in the tree
+            boolean treeSafe = true;
+            for (NodeImpl a = parentNode; treeSafe && a != null; a = a.parentNode) {
+                treeSafe = newInternal != a;
+            }
+            if(!treeSafe) {
+                throw new DOMExceptionImpl(DOMException.HIERARCHY_REQUEST_ERR, 
+                                           "HIERARCHY_REQUEST_ERR");
+            }
 
-    	// refChild must in fact be a child of this node (or null)
-    	if(refChild != null && refChild.getParentNode() != this) {
-    		throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR,
-    		                           "NOT_FOUND_ERR");
+            // refChild must in fact be a child of this node (or null)
+            if(refChild != null && refChild.getParentNode() != this) {
+                throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR,
+                                           "NOT_FOUND_ERR");
+            }
         }
     	
     	if (newInternal.getNodeType() == Node.DOCUMENT_FRAGMENT_NODE) {
@@ -648,7 +651,7 @@ public abstract class NodeImpl
     			kid != null;
     			kid = kid.getNextSibling()) {
 
-    		    if (!ownerDocument.isKidOK(this, kid)) {
+    		    if (errorChecking && !ownerDocument.isKidOK(this, kid)) {
         		  	throw new DOMExceptionImpl(DOMException.HIERARCHY_REQUEST_ERR, 
         		  	                           "HIERARCHY_REQUEST_ERR");
                 }
@@ -659,7 +662,7 @@ public abstract class NodeImpl
             }
     	}
     	
-    	else if (!ownerDocument.isKidOK(this, newInternal)) {
+    	else if (errorChecking && !ownerDocument.isKidOK(this, newInternal)) {
     		throw new DOMExceptionImpl(DOMException.HIERARCHY_REQUEST_ERR, 
     		                           "HIERARCHY_REQUEST_ERR");
         }
@@ -809,7 +812,8 @@ public abstract class NodeImpl
     			"NO_MODIFICATION_ALLOWED_ERR");
         }
      	
-    	if (oldChild != null && oldChild.getParentNode() != this) {
+    	if (ownerDocument.errorChecking && 
+            oldChild != null && oldChild.getParentNode() != this) {
     		throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR, 
     		                           "NOT_FOUND_ERR");
         }

@@ -338,7 +338,7 @@ public class ElementImpl
         if (syncData) {
             synchronizeData();
         }
-    	if (!DocumentImpl.isXMLName(prefix)) {
+    	if (ownerDocument.errorChecking && !DocumentImpl.isXMLName(prefix)) {
     	    throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
     	                               "INVALID_CHARACTER_ERR");
         }
@@ -371,7 +371,7 @@ public class ElementImpl
     public String getTagName() {
         if (syncData) {
             synchronizeData();
-            }
+        }
     	return name;
     }
 
@@ -566,7 +566,7 @@ public class ElementImpl
             synchronizeData();
         }
 
-    	if (!(newAttr instanceof AttrImpl)) {
+    	if (ownerDocument.errorChecking && !(newAttr instanceof AttrImpl)) {
     		throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR, 
     		                           "WRONG_DOCUMENT_ERR");
         }
@@ -746,7 +746,7 @@ public class ElementImpl
             synchronizeData();
         }
 
-    	if (!(newAttr instanceof AttrImpl)) {
+    	if (ownerDocument.errorChecking && !(newAttr instanceof AttrImpl)) {
     		throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR, 
     		"WRONG_DOCUMENT_ERR");
         }

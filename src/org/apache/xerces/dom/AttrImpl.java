@@ -404,7 +404,7 @@ public class AttrImpl
         if (syncData) {
             synchronizeData();
         }
-    	if (!DocumentImpl.isXMLName(prefix)) {
+    	if (ownerDocument.errorChecking && !DocumentImpl.isXMLName(prefix)) {
     	    throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
     	                               "INVALID_CHARACTER_ERR");
         }
