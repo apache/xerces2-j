@@ -977,8 +977,6 @@ public class XMLAttributesImpl
      * @return the value passed in or NMTOKEN if it's an enumerated type.
      */
     protected String getReportableType(String type) {
-		if(type == null)
-			return type;
 
         if (type.indexOf('(') == 0 && type.lastIndexOf(')') == type.length()-1) {
             return "NMTOKEN";
