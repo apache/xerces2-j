@@ -2575,6 +2575,14 @@ public final class XMLValidator
                if (attPrefix == fNamespacesPrefix) {
                   int nsPrefix = attrList.getAttrLocalpart(index);
                   int uri = fStringPool.addSymbol(attrList.getAttValue(index));
+                  if(uri == StringPool.EMPTY_STRING) {
+ 		 		      Object[] args = { fStringPool.toString(nsPrefix) };
+ 		 		      fErrorReporter.reportError(fErrorReporter.getLocator(),
+ 		 		 		 		 		 		 XMLMessages.XMLNS_DOMAIN,
+ 		 		 		 		 		 		 XMLMessages.MSG_NAMESPACE_NAME_EMPTY,
+ 		 		 		 		 		 		 XMLMessages.NC_NAMESPACE_NAME_EMPTY,
+ 		 		 		 		 		 		 args, XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+ 		 		   }
                   fNamespacesScope.setNamespaceForPrefix(nsPrefix, uri);
 
                   if (fValidating && fSchemaValidation) {

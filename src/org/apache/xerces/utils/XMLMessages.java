@@ -312,6 +312,7 @@ public class XMLMessages implements XMLMessageProvider {
         MSG_ATT_DEFAULT_INVALID = 168,
         MSG_GENERIC_SCHEMA_ERROR = 169,
         MSG_DTD_SCHEMA_ERROR = 170,
+        MSG_NAMESPACE_NAME_EMPTY = 171,
 
         // ...
         MSG_MAX_CODE = 200;
@@ -488,6 +489,7 @@ public class XMLMessages implements XMLMessageProvider {
         "MSG_ATT_DEFAULT_INVALID",      // 168, "MSG_ATT_DEFAULT_INVALID"
         "MSG_GENERIC_SCHEMA_ERROR",     // 169  "MSG_GENERIC_SCHEMA_ERROR"
         "MSG_DTD_SCHEMA_ERROR",         // 170
+        "NamespaceNameEmpty",           // 171, "MSG_NAMESPACE_NAME_EMPTY"
         // ...
         ""                              //
     };
@@ -641,6 +643,7 @@ public class XMLMessages implements XMLMessageProvider {
         NC_PREFIX_DECLARED = 144,
         VC_ATTRIBUTE_DEFAULT_LEGAL = 145,
         SCHEMA_GENERIC_ERROR = 146,
+        NC_NAMESPACE_NAME_EMPTY = 147,
         
         // ...
         CONSTRAINT_MAX_CODE = 200;
@@ -1239,6 +1242,8 @@ public class XMLMessages implements XMLMessageProvider {
                        "No element type may have more than one NOTATION attribute specified."),
     // NC_PREFIX_DECLARED = 144
         new Constraint("4.", "", "NC: Prefix Declared", ""),
+    // NC_NAMESPACE_NAME_EMPTY = 147
+        new Constraint("","","NC: Namespace name is empty",""),
 
         // ...
         new Constraint(null, null, null, null)
