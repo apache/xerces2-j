@@ -375,6 +375,16 @@ public abstract class NodeImpl
     }
 
     /**
+     * Returns the node number
+     */
+    protected int getNodeNumber() {
+        int nodeNumber;
+        CoreDocumentImpl cd = (CoreDocumentImpl)(this.getOwnerDocument());
+        nodeNumber = cd.getNodeNumber(this);   
+        return nodeNumber;
+    }
+
+    /**
      * Obtain the DOM-tree parent of this node, or null if it is not
      * currently active in the DOM tree (perhaps because it has just been
      * created or removed). Note that Document, DocumentFragment, and
@@ -1003,6 +1013,16 @@ public abstract class NodeImpl
         if (this==other) 
           return 0; 
 
+        // check if other is from a different implementation
+        try {
+            NodeImpl node = (NodeImpl) other;
+        } catch (ClassCastException e) {
+            // other comes from a different implementation
+            String msg = DOMMessageFormatter.formatMessage(
+               DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+            throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+        }
+
         Document thisOwnerDoc, otherOwnerDoc;
         // get the respective Document owners.  
         if (this.getNodeType() == Node.DOCUMENT_NODE) 
@@ -1015,11 +1035,24 @@ public abstract class NodeImpl
           otherOwnerDoc = other.getOwnerDocument();
 
         // If from different documents, we know they are disconnected. 
-        // Set DISCONNECTED for now.  
-        // TODO:  set order of Document nodes by assigning doc numbers to them
-        if (thisOwnerDoc != otherOwnerDoc) 
-          return DOCUMENT_POSITION_DISCONNECTED;
- 
+        // and have an implementation dependent order 
+        if (thisOwnerDoc != otherOwnerDoc && 
+            thisOwnerDoc !=null && 
+            otherOwnerDoc !=null) 
+ {
+          int otherDocNum = ((CoreDocumentImpl)otherOwnerDoc).getNodeNumber();
+          int thisDocNum = ((CoreDocumentImpl)thisOwnerDoc).getNodeNumber();
+          if (otherDocNum > thisDocNum)  
+            return DOCUMENT_POSITION_DISCONNECTED | 
+                   DOCUMENT_POSITION_FOLLOWING | 
+                   DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
+          else
+            return DOCUMENT_POSITION_DISCONNECTED | 
+                   DOCUMENT_POSITION_PRECEDING | 
+                   DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
+                  
+        }
+     
         // Find the ancestor of each node, and the distance each node is from 
         // its ancestor.
         // During this traversal, look for ancestor/descendent relationships 
@@ -1100,8 +1133,9 @@ public abstract class NodeImpl
             if (otherNode == thisOwnerDoc) 
               return (DOCUMENT_POSITION_PRECEDING | 
                       DOCUMENT_POSITION_CONTAINS);
-            else
+            else if (thisOwnerDoc!=null && thisOwnerDoc==otherOwnerDoc)
               return (DOCUMENT_POSITION_FOLLOWING);
+            break;
           }
           case Node.ATTRIBUTE_NODE: {
             thisNode = ((AttrImpl)thisAncestor).getOwnerElement();
@@ -1123,9 +1157,7 @@ public abstract class NodeImpl
                 thisDepth +=1;
                 if (node == otherNode) 
                   // The other node is an ancestor of the owning element
-                  {
                   return DOCUMENT_POSITION_PRECEDING;
-                  }
                 thisAncestor = node;
             }
           }
@@ -1143,8 +1175,9 @@ public abstract class NodeImpl
             if (thisNode == otherOwnerDoc) 
               return (DOCUMENT_POSITION_FOLLOWING | 
                       DOCUMENT_POSITION_IS_CONTAINED);
-            else
+            else if (otherOwnerDoc!=null && thisOwnerDoc==otherOwnerDoc)
               return (DOCUMENT_POSITION_PRECEDING);
+            break;
           }
           case Node.ATTRIBUTE_NODE: {
             otherDepth=0;
@@ -1163,10 +1196,21 @@ public abstract class NodeImpl
         }
  
         // thisAncestor and otherAncestor must be the same at this point,  
-        // otherwise, we are not in the same document fragment
-        // TODO: need to look at ordering document fragments as well?
-        if (thisAncestor != otherAncestor) 
-          return DOCUMENT_POSITION_DISCONNECTED; 
+        // otherwise, the original nodes are disconnected 
+        if (thisAncestor != otherAncestor) {
+          int thisAncestorNum, otherAncestorNum;
+          thisAncestorNum = ((NodeImpl)thisAncestor).getNodeNumber();
+          otherAncestorNum = ((NodeImpl)otherAncestor).getNodeNumber();
+          
+          if (thisAncestorNum > otherAncestorNum) 
+            return DOCUMENT_POSITION_DISCONNECTED | 
+                   DOCUMENT_POSITION_FOLLOWING | 
+                   DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
+          else
+            return DOCUMENT_POSITION_DISCONNECTED | 
+                   DOCUMENT_POSITION_PRECEDING | 
+                   DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
+        }
 
       
         // Go up the parent chain of the deeper node, until we find a node 
@@ -1179,7 +1223,9 @@ public abstract class NodeImpl
           // happen in the case of attributes.  In this case, otherNode 
           // "precedes" this.
           if (thisNode == otherNode) 
+{
             return DOCUMENT_POSITION_PRECEDING;
+          }
         }
  
         else {

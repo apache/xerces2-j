@@ -210,6 +210,17 @@ public class CoreDocumentImpl
     /** Bypass error checking. */
     protected boolean errorChecking = true;
 
+    /** The following are required for compareDocumentPosition 
+    */
+    // Document number.   Documents are ordered across the implementation using
+    // positive integer values.  Documents are assigned numbers on demand. 
+    private int documentNumber=0;
+    // Node counter and table.  Used to assign numbers to nodes for this 
+    // document.  Node number values are negative integers.  Nodes are 
+    // assigned numbers on demand. 
+    private int nodeCounter = 0;
+    private Hashtable nodeTable;
+
     //
     // Static initialization
     //
@@ -1229,6 +1240,47 @@ public class CoreDocumentImpl
     } // createElementDefinition(String):ElementDefinitionImpl
 
     // other non-DOM methods
+
+    /** NON-DOM:  Get the number associated with this document.   Used to 
+        order documents in the implementation.    
+    */
+    protected int getNodeNumber() {
+         if (documentNumber==0) {
+          
+            CoreDOMImplementationImpl cd = (CoreDOMImplementationImpl)CoreDOMImplementationImpl.getDOMImplementation();
+            documentNumber = cd.assignDocumentNumber();   
+         }
+         return documentNumber;
+    }
+           
+        
+    /** NON-DOM:  Get a number associated with a node created with respect 
+        to this document.   Needed for compareDocumentPosition when nodes 
+        are disconnected.  This is only used on demand. 
+    */ 
+    protected int getNodeNumber(Node node) {
+
+         // Check if the node is already in the hash 
+         // If so, retrieve the node number  
+         // If not, assign a number to the node 
+         // Node numbers are negative, from -1 to -n
+         int num;
+         if (nodeTable == null) {
+             nodeTable = new Hashtable();
+             num = --nodeCounter;
+             nodeTable.put(node, new Integer(num));   
+         }
+         else {
+             Integer n = (Integer)nodeTable.get(node);
+             if (n== null) {
+                 num = --nodeCounter;
+                 nodeTable.put(node, new Integer(num));
+             }
+             else
+                 num = n.intValue();
+         }
+         return num;
+    }
 
     /**
      * Copies a node from another document to this document. The new nodes are

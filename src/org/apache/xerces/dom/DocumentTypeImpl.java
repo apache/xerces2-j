@@ -123,6 +123,12 @@ public class DocumentTypeImpl
     // DOM2: support internal subset.
     protected String internalSubset;
 
+    /** The following are required for compareDocumentPosition 
+    */
+    // Doctype number.   Doc types which have no owner may be assigned 
+    // a number, on demand, for ordering purposes for compareDocumentPosition
+    private int doctypeNumber=0;
+
     //
     // Constructors
     //
@@ -266,6 +272,25 @@ public class DocumentTypeImpl
         entities.setOwnerDocument(doc);
         notations.setOwnerDocument(doc);
         elements.setOwnerDocument(doc);
+    }
+
+    /** NON-DOM  
+        Get the number associated with this doctype.    
+    */
+    protected int getNodeNumber() {
+         // If the doctype has a document owner, get the node number 
+         // relative to the owner doc
+         if (getOwnerDocument()!=null) 
+            return super.getNodeNumber();
+
+         // The doctype is disconnected and not associated with any document.
+         // Assign the doctype a number relative to the implementation.
+         if (doctypeNumber==0) {
+          
+            CoreDOMImplementationImpl cd = (CoreDOMImplementationImpl)CoreDOMImplementationImpl.getDOMImplementation();
+            doctypeNumber = cd.assignDocTypeNumber();   
+         }
+         return doctypeNumber;
     }
 
     //

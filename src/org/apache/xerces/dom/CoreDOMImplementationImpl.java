@@ -99,6 +99,11 @@ public class CoreDOMImplementationImpl
     private int freeValidatorIndex = -1;
     private int currentSize = SIZE;
 
+    // Document and doctype counter.  Used to assign order to documents and 
+    // doctypes without owners, on an demand basis.   Used for  
+    // compareDocumentPosition
+    private int docAndDoctypeCounter = 0;
+
 	// static
 	/** Dom implementation singleton. */
 	static CoreDOMImplementationImpl singleton =
@@ -352,5 +357,15 @@ public class CoreDOMImplementationImpl
        }
        validators[freeValidatorIndex]=validator;
 	}
+
+       /** NON-DOM:  increment document/doctype counter */
+       protected synchronized int assignDocumentNumber() {
+            return ++docAndDoctypeCounter;
+       }
+       /** NON-DOM:  increment document/doctype counter */
+       protected synchronized int assignDocTypeNumber() {
+            return ++docAndDoctypeCounter;
+       }
+
     
 } // class DOMImplementationImpl
