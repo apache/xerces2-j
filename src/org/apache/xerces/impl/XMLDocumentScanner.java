@@ -180,10 +180,10 @@ public class XMLDocumentScanner
     // debugging
 
     /** Debug scanner state. */
-    private static final boolean DEBUG_SCANNER_STATE = false;
+    private static final boolean DEBUG_SCANNER_STATE = true;
 
     /** Debug dispatcher. */
-    private static final boolean DEBUG_DISPATCHER = false;
+    private static final boolean DEBUG_DISPATCHER = true;
 
     /** Debug content dispatcher scanning. */
     private static final boolean DEBUG_CONTENT_SCANNING = false;
@@ -1366,7 +1366,7 @@ public class XMLDocumentScanner
      *
      * @param state The new scanner state.
      */
-    protected void setScannerState(int state) {
+    protected final void setScannerState(int state) {
 
         fScannerState = state;
         if (DEBUG_SCANNER_STATE) {
@@ -1382,7 +1382,7 @@ public class XMLDocumentScanner
      *
      * @param dispatcher The new dispatcher.
      */
-    protected void setDispatcher(Dispatcher dispatcher) {
+    protected final void setDispatcher(Dispatcher dispatcher) {
         fDispatcher = dispatcher;
         if (DEBUG_DISPATCHER) {
             System.out.print("%%% setDispatcher: ");
@@ -1632,8 +1632,6 @@ public class XMLDocumentScanner
                 // NOTE: special case where document starts with a PI
                 //       whose name starts with "xml" (e.g. "xmlfoo")
                 if (XMLChar.isName(fEntityScanner.peekChar())) {
-                    setScannerState(SCANNER_STATE_PROLOG);
-                    setDispatcher(fPrologDispatcher);
                     fStringBuffer.clear();
                     fStringBuffer.append("xml");
                     while (XMLChar.isName(fEntityScanner.peekChar())) {
@@ -1684,7 +1682,6 @@ public class XMLDocumentScanner
         public boolean dispatch(boolean complete) 
             throws IOException, SAXException {
 
-            // TODO
             boolean again;
             do {
                 again = false;
@@ -1832,10 +1829,6 @@ public class XMLDocumentScanner
                         setScannerState(SCANNER_STATE_CONTENT);
                         break;  
                     }
-                    case SCANNER_STATE_DOCTYPE: {
-                        // REVISIT: report error
-                        throw new SAXException("doctype not allowed in content");
-                    }
                     // REVISIT: Handle CDATA so that we can split up
                     //          the processing over multiple callbacks.
                     case SCANNER_STATE_CDATA: {
@@ -1924,6 +1917,10 @@ public class XMLDocumentScanner
                             throw new SAXException("expected comment, pi, doctype, or root element");
                         }
                         break;
+                    }
+                    case SCANNER_STATE_DOCTYPE: {
+                        // REVISIT: report error
+                        throw new SAXException("doctype not allowed in content");
                     }
                 }
             } while (complete || again);

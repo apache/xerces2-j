@@ -103,6 +103,26 @@ public class QName {
     public String uri;
 
     //
+    // Constructors
+    //
+
+    /** Default constructor. */
+    public QName() {
+        clear();
+    }
+
+    /** Constructs a QName with the specified values. */
+    public QName(String prefix, String localpart, String rawname,
+                 String uri) {
+        setValues(prefix, localpart, rawname, uri);
+    }
+
+    /** Constructs a copy of the specified QName. */
+    public QName(QName qname) {
+        setValues(qname);
+    }
+
+    //
     // Public methods
     //
 
