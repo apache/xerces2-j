@@ -8,6 +8,14 @@
   <changes>
    <add>
     <note>
+     Separated the XMLDocumentScannerImpl class so that it derives
+     from XMLDocumentFragmentScannerImpl which enables an
+     application to parse document fragments.
+    </note>
+    <submitter name='Andy Clark'/>
+   </add>
+   <add>
+    <note>
      Ported the deferred DOM implementation from the Xerces 1.x
      codebase.
     </note>
