@@ -1770,66 +1770,8 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
 
     // query attribute information
-
-    /** Returns the validatator for an attribute type. */
-    private AttributeValidator getValidatorForAttType(int attType, boolean list) {
-        if (attType == XMLAttributeDecl.TYPE_CDATA) {
-            if (fAttValidatorCDATA == null) {
-                fAttValidatorCDATA = new AttValidatorCDATA();
-            }
-            return fAttValidatorCDATA;
-        }
-        if (attType == XMLAttributeDecl.TYPE_ENTITY) {
-            if (!list) {
-                if (fAttValidatorENTITY == null) {
-                    fAttValidatorENTITY = new AttValidatorENTITY();
-                }
-                return fAttValidatorENTITY;
-            }
-            else{
-                if (fAttValidatorENTITIES == null) {
-                    fAttValidatorENTITIES = new AttValidatorENTITIES();
-                }
-                return fAttValidatorENTITIES;
-            }
-        }
-        if (attType == XMLAttributeDecl.TYPE_NMTOKEN) {
-            if (!list) {
-                if (fAttValidatorNMTOKEN == null) {
-                    fAttValidatorNMTOKEN = new AttValidatorNMTOKEN();
-                }
-                return fAttValidatorNMTOKEN;
-            }
-            else{
-                if (fAttValidatorNMTOKENS == null) {
-                    fAttValidatorNMTOKENS = new AttValidatorNMTOKENS();
-                }
-                return fAttValidatorNMTOKENS;
-            }
-        }
-        if (attType == XMLAttributeDecl.TYPE_NOTATION) {
-            if (fAttValidatorNOTATION == null) {
-                fAttValidatorNOTATION = new AttValidatorNOTATION();
-            }
-            return fAttValidatorNOTATION;
-        }
-        if (attType == XMLAttributeDecl.TYPE_ENUMERATION) {
-            if (fAttValidatorENUMERATION == null) {
-                fAttValidatorENUMERATION = new AttValidatorENUMERATION();
-            }
-            return fAttValidatorENUMERATION;
-        }
-        if (attType == XMLAttributeDecl.TYPE_SIMPLE) {
-            if (fAttValidatorDATATYPE == null) {
-                fAttValidatorDATATYPE = null; //REVISIT : !!! used to be fSchemaImporter.createDatatypeAttributeValidator();
-            }
-            //return fAttValidatorDATATYPE;
-        }
-        return null;
-        //throw new RuntimeException("getValidatorForAttType(" + fStringPool.toString(attType) + ")");
-    }
-
-    /** Returns an attribute definition for an element type. */
+    
+      /** Returns an attribute definition for an element type. */
     // this is only used by DTD validation.
     private int getAttDef(QName element, QName attribute) {
         if (fGrammar != null) {
@@ -2780,16 +2722,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                         ) {
                                         validateDTDattribute(element, attrList.getAttValue(index), fTempAttDecl);
                                     }
-                                    // Now this code should be redundants
-                                    //if (fGrammarIsSchemaGrammar && 
-                                      //  (fTempAttDecl.type == XMLAttributeDecl.TYPE_ID ||
-                                        // fTempAttDecl.type == XMLAttributeDecl.TYPE_IDREF )
-                                        //) {
-
-                                       // System.out.println("Before call to schema Gramm " );
-                                        //validateDTDattribute(element, attrList.getAttValue(index), fTempAttDecl);
-                                        //}
-
                                     // check to see if this attribute matched an attribute wildcard
                                     if ( fGrammarIsSchemaGrammar && 
                                          (fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_ANY 
@@ -2993,6 +2925,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             {
                 String  unTrimValue = fStringPool.toString(attValue);
                 String  value       = unTrimValue.trim();
+                boolean isAlistAttribute = attributeDecl.list;//Caveat - Save this information because invalidStandaloneAttDef
                 if (fValidationEnabled){
                     if (value != unTrimValue) {
                         if (invalidStandaloneAttDef(element, attributeDecl.name)) {
@@ -3004,7 +2937,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 }
 
                 try{
-                    if ( attributeDecl.list ){
+                    if ( isAlistAttribute ){
                         fValIDRefs.validate( value, this.fStoreIDRef );
                     } else {
                         fValIDRef.validate( value, this.fStoreIDRef );
