@@ -10,10 +10,10 @@ our mirrors.  You <em>must</em> <link anchor="verify">verify the
 integrity</link> of the downloaded files using signatures downloaded from
 our main distribution directory.</p>
 
-<p>If you do not see the file you need in the links below, please see
+<p>You can download the &ParserName; distributions from
 the <jump href="http://www.apache.org/dist/xml/xerces-j/">master distribution
 directory</jump> or, preferably, its <jump
-href="[preferred]/xml/xerces-j/">mirror</jump>.  Only current recommended
+href="[preferred]/xml/xerces-j/">mirror</jump>. Only current recommended
 releases are available on the main distribution site and its mirrors.
 Older releases are available from the <jump
 href="http://archive.apache.org/dist/xml/xerces-j/">archive download
@@ -94,39 +94,40 @@ href="http://www.pc-tools.net/win32/freeware/console/">here</jump>, or
 
 </s2>
 
-
-
-<s2 title="Current Binary Releases of Xerces-J">
+<!--
+<s2 title="&ParserName; &ParserVersion; Binary Releases">
 
 <ul>
-<li>Windows/Java <code>.zip</code> archive: 
-<jump href="[preferred]/xml/xerces-j/binaries/Xerces-J-bin.2.5.0.zip">Xerces-J-bin.2.5.0.zip</jump> 
-[<jump href="http://www.apache.org/dist/xml/xerces-j/binaries/Xerces-J-bin.2.5.0.zip.sig">PGP</jump>]
-[<jump href="http://www.apache.org/dist/xml/xerces-j/binaries/Xerces-J-bin.2.5.0.zip.md5">MD5</jump>]</li>
+<li>Windows/Java <code>.zip</code>: 
+<jump href="[preferred]/xml/xerces-j/binaries/Xerces-J-bin.&ParserVersion;.zip">Xerces-J-bin.&ParserVersion;.zip</jump> 
+[<jump href="http://www.apache.org/dist/xml/xerces-j/binaries/Xerces-J-bin.&ParserVersion;.zip.sig">PGP</jump>]
+</li>
+
+<li>Unix <code>.tar.gz</code>: 
+<jump href="[preferred]/xml/xerces-j/binaries/Xerces-J-bin.&ParserVersion;.tar.gz">Xerces-J-bin.&ParserVersion;.tar.gz</jump> 
+[<jump href="http://www.apache.org/dist/xml/xerces-j/binaries/Xerces-J-bin.&ParserVersion;.tar.gz.sig">PGP</jump>]
+</li>
+
+</ul>
+
+</s2>
+
+<s2 title="&ParserName; &ParserVersion; Source Releases">
+
+<ul>
+<li>Windows/Java <code>.zip</code>: 
+<jump href="[preferred]/xml/xerces-j/Xerces-J-src.&ParserVersion;.zip">Xerces-J-src.&ParserVersion;.zip</jump> 
+[<jump href="http://www.apache.org/dist/xml/xerces-j/Xerces-J-current.zip.sig">PGP</jump>]
+</li>
 
 <li>Unix <code>.tar.gz</code> archive: 
-<jump href="[preferred]/xml/xerces-j/binaries/Xerces-J-bin.2.5.0.tar.gz">Xerces-J-bin.2.5.0.tar.gz</jump> 
-[<jump href="http://www.apache.org/dist/xml/xerces-j/binaries/Xerces-J-bin.2.5.0.tar.gz.sig">PGP</jump>]
-[<jump href="http://www.apache.org/dist/xml/xerces-j/binaries/Xerces-J-bin.2.5.0.tar.gz.md5">MD5</jump>]</li>
+<jump href="[preferred]/xml/xerces-j/binaries/Xerces-J-src.&ParserVersion;.tar.gz">Xerces-J-src.&ParserVersion;.tar.gz</jump> 
+[<jump href="http://www.apache.org/dist/xml/xerces-j/binaries/Xerces-J-src.&ParserVersion;.tar.gz.sig">PGP</jump>]
 
+
+</li>
 </ul>
-
 </s2>
-
-<s2 title="Current Source Releases of Xerces-J">
-
-<ul>
-<li>Windows/Java <code>.zip</code> archive: 
-<jump href="[preferred]/xml/xerces-j/Xerces-J-current.zip">Xerces-J-current.zip</jump> 
-[<jump href="http://www.apache.org/dist/xml/xerces-j/Xerces-J-current.zip.sig">PGP</jump>]
-[<jump href="http://www.apache.org/dist/xml/xerces-j/Xerces-J-current.zip.md5">MD5</jump>]</li>
-
-<li>Windows/Java <code>.zip</code> complier tools archive: 
-<jump href="[preferred]/xml/xerces-j/source/Xerces-J-tools.2.5.0.zip">Xerces-J-tools.2.5.0.zip</jump> 
-[<jump href="http://www.apache.org/dist/xml/xerces-j/source/Xerces-J-tools.2.5.0.zip.sig">PGP</jump>]
-[<jump href="http://www.apache.org/dist/xml/xerces-j/source/Xerces-J-tools.2.5.0.zip.md5">MD5</jump>]</li>
-</ul>
-
-</s2>
+-->
 
 </s1>

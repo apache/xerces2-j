@@ -110,12 +110,12 @@
     <ul>
        <li>Finalized XML Schema API (see <code>org.apache.xerces.xs</code>) and updated implementation accordingly.</li>
        
-       <li>Implemented the following W3C specifications:</li>
+       <li>Implemented the following specifications:</li>
          <ul>
-           <li>DOM Level 3 "Core" and "Load and Save" Candidate Recommendations</li>
+           <li>W3C DOM Level 3 "Core" and "Load and Save" Candidate Recommendations</li>
            <li>SAX 2.0.1</li>
-           <li>Extensible Markup Language (XML) 1.1 Proposed Recommendation</li>
-           <li>Namespaces in XML 1.1 Proposed Recommendation</li>
+           <li>W3C Extensible Markup Language (XML) 1.1 Proposed Recommendation</li>
+           <li>W3C Namespaces in XML 1.1 Proposed Recommendation</li>
          </ul>
     </ul>
     <p>
