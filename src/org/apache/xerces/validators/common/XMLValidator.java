@@ -199,15 +199,15 @@ public final class XMLValidator
     //          attribute declaration is required to accomodate
     //          Schema facets on simple types.
     private AttributeValidator fAttValidatorCDATA = null;
-    private AttributeValidator fAttValidatorID = null;
-    private AttributeValidator fAttValidatorIDREF = null;
-    private AttributeValidator fAttValidatorIDREFS = null;
-    private AttributeValidator fAttValidatorENTITY = null;
-    private AttributeValidator fAttValidatorENTITIES = null;
-    private AttributeValidator fAttValidatorNMTOKEN = null;
-    private AttributeValidator fAttValidatorNMTOKENS = null;
-    private AttributeValidator fAttValidatorNOTATION = null;
-    private AttributeValidator fAttValidatorENUMERATION = null;
+    private AttributeValidator fAttValidatorID = new AttValidatorID();
+    private AttributeValidator fAttValidatorIDREF = new AttValidatorIDREF();
+    private AttributeValidator fAttValidatorIDREFS = new AttValidatorIDREFS();
+    private AttributeValidator fAttValidatorENTITY = new AttValidatorENTITY();
+    private AttributeValidator fAttValidatorENTITIES = new AttValidatorENTITIES();
+    private AttributeValidator fAttValidatorNMTOKEN = new AttValidatorNMTOKEN();
+    private AttributeValidator fAttValidatorNMTOKENS = new AttValidatorNMTOKENS();
+    private AttributeValidator fAttValidatorNOTATION = new AttValidatorNOTATION();
+    private AttributeValidator fAttValidatorENUMERATION = new AttValidatorENUMERATION();
     private AttributeValidator fAttValidatorDATATYPE = null;
 
     // Package access for use by AttributeValidator classes.
@@ -3620,9 +3620,21 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                     }
                     else  {
 
-                        fGrammar.getAttributeDecl(attDefIndex, fTempAttDecl);
+                        fGrammar.getAttributeDecl(attDefIndex, fTempAttDecl); 
 
                         //TO DO: special handling needed here for IDs IDrefs, ENTITIES, ?NOTations
+
+                        if (fGrammar instanceof DTDGrammar && 
+                            (fTempAttDecl.type == XMLAttributeDecl.TYPE_ENTITY ||
+                            fTempAttDecl.type == XMLAttributeDecl.TYPE_ENUMERATION ||
+                            fTempAttDecl.type == XMLAttributeDecl.TYPE_ID ||
+                            fTempAttDecl.type == XMLAttributeDecl.TYPE_IDREF ||
+                            fTempAttDecl.type == XMLAttributeDecl.TYPE_NMTOKEN ||
+                            fTempAttDecl.type == XMLAttributeDecl.TYPE_NOTATION)
+                            ) {
+
+                            validateDTDattribute(element, attrList.getAttValue(index), fTempAttDecl);
+                        }
 
                         if (fTempAttDecl.datatypeValidator == null) {
                             Object[] args = { fStringPool.toString(element.rawname),
@@ -3684,6 +3696,51 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         fInElementContent = (contentSpecType == fCHILDRENSymbol);
 
     } // validateElementAndAttributes(QName,XMLAttrList)
+
+
+    //validate attributes in DTD fashion
+    private void validateDTDattribute(QName element, int attValue, 
+                                      XMLAttributeDecl attributeDecl) throws Exception{
+        AttributeValidator av = null;
+        switch (attributeDecl.type) {
+        case XMLAttributeDecl.TYPE_ENTITY:
+            if (attributeDecl.list) {
+                av = fAttValidatorENTITIES;
+            }
+            else {
+                av = fAttValidatorENTITY;
+            }
+            break;
+        case XMLAttributeDecl.TYPE_ENUMERATION:
+                av = fAttValidatorENUMERATION;
+                break;
+        case XMLAttributeDecl.TYPE_ID:
+            av = fAttValidatorID;
+            break;
+        case XMLAttributeDecl.TYPE_IDREF:
+            if (attributeDecl.list) {
+                av = fAttValidatorIDREFS;
+            }
+            else {
+                av = fAttValidatorIDREF;
+            }
+            break;
+        case XMLAttributeDecl.TYPE_NOTATION:
+            av = fAttValidatorNOTATION;
+            break;
+        case XMLAttributeDecl.TYPE_NMTOKEN:
+            if (attributeDecl.list) {
+                av = fAttValidatorNMTOKENS;
+            }
+            else {
+                av = fAttValidatorNMTOKEN;
+            }
+            break;
+        }
+
+        av.normalize(element, attributeDecl.name, attValue, 
+                     attributeDecl.type, attributeDecl.enumeration);
+    }
 
     /** Character data in content. */
     private void charDataInContent() {
@@ -4207,8 +4264,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         //
         // AttributeValidator methods
         //
-
+        
         /** Normalize. */
+        
         public int normalize(QName element, QName attribute, 
                              int attValueHandle, int attType, 
                              int enumHandle) throws Exception {

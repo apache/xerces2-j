@@ -2023,6 +2023,9 @@ public final class XMLDocumentScanner {
     /** Sets whether the parser validates. */
     public void setValidationEnabled(boolean enabled) {
         fValidationEnabled = enabled;
+        if (fDTDScanner != null) {
+            fDTDScanner.setValidationEnabled(enabled);
+        }
     }
 
     /** Returns true if validation is turned on. */
@@ -2147,6 +2150,7 @@ public final class XMLDocumentScanner {
         /***/
         if (fDTDScanner == null) {
             fDTDScanner = new XMLDTDScanner(fStringPool, fErrorReporter, fEntityHandler, new ChunkyCharArray(fStringPool));
+            fDTDScanner.setValidationEnabled(fValidationEnabled);
         }
         else {
             fDTDScanner.reset(fStringPool, new ChunkyCharArray(fStringPool));

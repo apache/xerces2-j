@@ -183,6 +183,7 @@ public final class XMLDTDScanner {
     private DTDGrammar fDTDGrammar = null;
     private GrammarResolver fGrammarResolver = null;
     private boolean fNamespacesEnabled = false;
+    private boolean fValidationEnabled = false;
     private XMLElementDecl fTempElementDecl = new XMLElementDecl();
     private QName fElementQName = new QName();
     private QName fAttributeQName = new QName();
@@ -241,6 +242,11 @@ public final class XMLDTDScanner {
     /** Sets the grammar resolver. */
     public void setGrammarResolver(GrammarResolver resolver) {
         fGrammarResolver = resolver;
+    }
+
+    /** set fValidationEnabled  **/
+    public void setValidationEnabled(boolean enabled) {
+        fValidationEnabled = enabled;
     }
 
     /**
@@ -571,6 +577,20 @@ public final class XMLDTDScanner {
     //
     //
     //
+
+    protected void reportRecoverableXMLError(int majorCode, int minorCode, 
+                                         String string1) throws Exception {
+
+        Object[] args = { string1 };
+        fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                   XMLMessages.XML_DOMAIN,
+                                   majorCode,
+                                   minorCode,
+                                   args,
+                                   XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+
+    } // reportRecoverableXMLError(int,int,String)
+
     private void reportFatalXMLError(int majorCode, int minorCode) throws Exception {
         fErrorReporter.reportError(fErrorReporter.getLocator(),
                                    XMLMessages.XML_DOMAIN,
@@ -1685,7 +1705,17 @@ public final class XMLDTDScanner {
             }
             else {
                 //REVISIT, valiate VC duplicate element type. 
-                //if (fValidationEnabled) {reportError}
+                if ( fValidationEnabled )
+                    //&& 
+                    // (elemenetDeclIsExternal==fDTDGrammar.getElementDeclIsExternal(elementIndex)
+                {
+
+                    reportRecoverableXMLError(
+                        XMLMessages.MSG_ELEMENT_ALREADY_DECLARED,
+                        XMLMessages.VC_UNIQUE_ELEMENT_TYPE_DECLARATION,
+                        fStringPool.toString(fElementQName.rawname)
+                        );
+                }
             }
         }
 
@@ -2831,11 +2861,11 @@ public final class XMLDTDScanner {
 
     public int scanDefaultAttValue(QName element, QName attribute, 
                                    int attType, int enumeration) throws Exception {
-        /***
-        if (fValidating && attType == fIDSymbol) {
+        /***/
+        if (fValidationEnabled && attType == XMLAttributeDecl.TYPE_ID) {
             reportRecoverableXMLError(XMLMessages.MSG_ID_DEFAULT_TYPE_INVALID,
                                       XMLMessages.VC_ID_ATTRIBUTE_DEFAULT,
-                                      attribute.rawname);
+                                      fStringPool.toString(attribute.rawname));
         }
         /***/
         int defaultAttValue = scanDefaultAttValue(element, attribute);

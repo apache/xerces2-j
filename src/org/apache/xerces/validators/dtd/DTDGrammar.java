@@ -525,6 +525,7 @@ public class DTDGrammar
         fAttributeDecl.name.setValues(attributeDecl);
         fAttributeDecl.type = attType;
         fAttributeDecl.list = attList;
+        fAttributeDecl.enumeration = enumeration;
         fAttributeDecl.datatypeValidator = 
             DatatypeValidatorRegistry.getDatatypeRegistry().getDatatypeValidator(attTypeString);
         // REVISIT: Don't forget the enumeration

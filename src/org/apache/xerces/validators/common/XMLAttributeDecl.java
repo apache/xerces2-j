@@ -109,6 +109,7 @@ public class XMLAttributeDecl {
     public boolean list;
 
     // values
+    public int enumeration;
 
     public int defaultType;
 
@@ -135,6 +136,7 @@ public class XMLAttributeDecl {
         datatypeValidator = null;
         type = -1;
         list = false;
+        enumeration = -1;
         defaultType = DEFAULT_TYPE_IMPLIED;
         defaultValue = null;
     }
@@ -144,6 +146,7 @@ public class XMLAttributeDecl {
         datatypeValidator = attributeDecl.datatypeValidator;
         type = attributeDecl.type;
         list = attributeDecl.list;
+        enumeration = attributeDecl.enumeration;
         defaultType = attributeDecl.defaultType;
         defaultValue = attributeDecl.defaultValue;
     }
