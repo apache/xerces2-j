@@ -792,8 +792,7 @@ public class XMLDocumentFragmentScannerImpl
         fEntityScanner.skipSpaces();
         if (!fEntityScanner.skipChar('=')) {
             reportFatalError("EqRequiredInAttribute",
-                             new Object[]{fCurrentElement.rawname,
-                                          fAttributeQName.rawname});
+                             new Object[]{fAttributeQName.rawname});
         }
         fEntityScanner.skipSpaces();
 
