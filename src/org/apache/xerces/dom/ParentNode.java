@@ -1008,14 +1008,9 @@ public abstract class ParentNode
         // perform default deseralization
         ois.defaultReadObject();
 
-        // hardset synchildren - so we don't try to sync- it does not make any sense
-        // to try to synchildren when we just desealize object.
-
+        // hardset synchildren - so we don't try to sync - it does not make any
+        // sense to try to synchildren when we just deserialize object.
         needsSyncChildren(false);
-
-        // initialize transients
-        fNodeListCache.fLength = -1;
-        fNodeListCache.fChildIndex = -1;
 
     } // readObject(ObjectInputStream)
 
