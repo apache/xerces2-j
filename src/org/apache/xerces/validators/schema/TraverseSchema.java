@@ -3213,6 +3213,7 @@ public class TraverseSchema implements
         String typeName = complexTypeDecl.getAttribute(SchemaSymbols.ATT_NAME);
         String mixed = complexTypeDecl.getAttribute(SchemaSymbols.ATT_MIXED);
         boolean isNamedType = false;
+        Stack savedGroupNameStack = null;
 
         // ------------------------------------------------------------------
         // Generate a type name, if one wasn't specified
@@ -3260,6 +3261,14 @@ public class TraverseSchema implements
         int scopeDefined = fScopeCount++;
         int previousScope = fCurrentScope;
         fCurrentScope = scopeDefined;
+
+        // Squirrel away the groupNameStack.     
+        // If we are in the middle of processing a group, and we hit the group again 
+        // because of a complexType for an element, it's not an error. 
+        if (!fCurrentGroupNameStack.isEmpty()) {
+          savedGroupNameStack = fCurrentGroupNameStack;
+          fCurrentGroupNameStack = new Stack(); 
+        }
 
         Element child = null;
         ComplexTypeInfo typeInfo = new ComplexTypeInfo();
@@ -3365,7 +3374,9 @@ public class TraverseSchema implements
         // Before exiting, restore the scope, mainly for nested anonymous types
         // ------------------------------------------------------------------
         fCurrentScope = previousScope;
-        fCurrentTypeNameStack.pop();
+        if (savedGroupNameStack != null)
+          fCurrentGroupNameStack = savedGroupNameStack;
+	fCurrentTypeNameStack.pop();
         checkRecursingComplexType();
 
         //set template element's typeInfo
@@ -3892,29 +3903,14 @@ public class TraverseSchema implements
      */
     private String genAnonTypeName(Element complexTypeDecl) throws Exception {
 
+        // Generate a unique name for the anonymous type by concatenating together the 
+        // names of parent nodes
         String typeName;
-
-        // If the anonymous type is not nested within another type, we can
-        // simply assign the type a numbered name
-        //
-        if (fCurrentTypeNameStack.empty())
-            typeName = "#"+fAnonTypeCount++;
-
-        // Otherwise, we must generate a name that can be looked up later
-        // Do this by concatenating outer type names with the name of the parent
-        // element
-        else {
-            String parentName = ((Element)complexTypeDecl.getParentNode()).getAttribute(
-                                SchemaSymbols.ATT_NAME);
-            typeName = parentName + "_AnonType";
-            int index=fCurrentTypeNameStack.size() -1;
-	    for (int i = index; i > -1; i--) {
-               String parentType = (String)fCurrentTypeNameStack.elementAt(i);
-               typeName = parentType + "_" + typeName;
-               if (!(parentType.startsWith("#")))
-                  break;
-            }
-            typeName = "#" + typeName;
+        Element node=complexTypeDecl;
+        typeName="#AnonType_";
+        while (!isTopLevel(node))   {
+          node = (Element)node.getParentNode();
+          typeName = typeName+node.getAttribute(SchemaSymbols.ATT_NAME); 
         }
 
         return typeName;
@@ -7894,8 +7890,10 @@ throws Exception {
 
             if (!uriStr.equals(fTargetNSURIString)) {
                 gInfo = traverseGroupDeclFromAnotherSchema(localpart, uriStr);
-                if (DEBUG_NEW_GROUP)
-                  findAndCreateElements(gInfo.contentSpecIndex,gInfo.scope);
+                if (gInfo != null) {
+                  if (DEBUG_NEW_GROUP)
+                    findAndCreateElements(gInfo.contentSpecIndex,gInfo.scope);
+                }
                 return gInfo;
             }
 
