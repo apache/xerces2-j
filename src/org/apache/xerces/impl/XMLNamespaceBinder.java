@@ -735,6 +735,13 @@ public class XMLNamespaceBinder
         // add new namespace context
         fNamespaceSupport.pushContext();
 
+        if (element.prefix == fXmlnsSymbol) {
+            fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
+                                       "ElementXMLNSPrefix",
+                                       new Object[]{element.rawname},
+                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
+        }
+        
         // search for new namespace bindings
         int length = attributes.getLength();
         for (int i = 0; i < length; i++) {
