@@ -326,7 +326,7 @@ public class XMLEntityManager
 
         Entity entity = (Entity)fEntities.get(entityName);
         if (entity == null) {
-            if (fStandalone && entityName.startsWith("%")) {
+            if (fStandalone && !entityName.startsWith("%")) {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "EntityNotDeclared",
                                            new Object[] { entityName },
@@ -378,7 +378,7 @@ public class XMLEntityManager
 
         Entity entity = (Entity)fEntities.get(entityName);
         if (entity == null) {
-            if (fStandalone && entityName.startsWith("%")) {
+            if (fStandalone && !entityName.startsWith("%")) {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "EntityNotDeclared",
                                            new Object[] { entityName },
@@ -469,7 +469,7 @@ public class XMLEntityManager
         // was entity declared?
         Entity entity = (Entity)fEntities.get(entityName);
         if (entity == null) {
-            if (fStandalone && entityName.startsWith("%")) {
+            if (fStandalone && !entityName.startsWith("%")) {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "EntityNotDeclared",
                                            new Object[] { entityName },
