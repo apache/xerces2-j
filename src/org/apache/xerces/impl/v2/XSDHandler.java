@@ -268,7 +268,8 @@ class XSDHandler {
             fElementTraverser.reportGenericSchemaError("Could not locate a schema document corresponding to grammar " + schemaNamespace);
             return null;
         }
-        fRoot = constructTrees(schemaRoot);
+        schemaNamespace = fSymbolTable.addSymbol(schemaNamespace);
+        fRoot = constructTrees(schemaRoot, schemaNamespace);
         if(fRoot == null) {
             // REVISIT:  something went wrong; print error about no schema found
             fElementTraverser.reportGenericSchemaError("Could not locate a schema document");
@@ -307,9 +308,19 @@ class XSDHandler {
     // itself recursively on that document's root.  It also records in
     // the DependencyMap object what XSDocumentInfo objects its XSDocumentInfo
     // depends on.
-    protected XSDocumentInfo constructTrees(Document schemaRoot) {
+    // It also makes sure the targetNamespace of the schema it was
+    // called to parse is correct.
+    protected XSDocumentInfo constructTrees(Document schemaRoot, String callerTNS) {
         if(schemaRoot == null) return null;
         XSDocumentInfo currSchemaInfo = new XSDocumentInfo(schemaRoot, fAttributeChecker, fSymbolTable);
+        if(callerTNS != null) {
+            // only set if we were included or redefined in.
+            if(currSchemaInfo.fTargetNamespace == null) {
+                currSchemaInfo.fTargetNamespace = callerTNS;
+            } else if(callerTNS != currSchemaInfo.fTargetNamespace) {
+                fElementTraverser.reportSchemaError("src-include.2", new Object [] {callerTNS, currSchemaInfo.fTargetNamespace});
+            }
+        }
         SchemaGrammar sg = null;
         if((sg = fGrammarResolver.getGrammar(currSchemaInfo.fTargetNamespace)) == null) {
             sg = new SchemaGrammar(fSymbolTable, currSchemaInfo.fTargetNamespace);
@@ -320,13 +331,12 @@ class XSDHandler {
         dependencies.addElement(currSchemaInfo);
         Element rootNode = DOMUtil.getRoot(schemaRoot);
 
-        String schemaNamespace=EMPTY_STRING;
-        String schemaHint=EMPTY_STRING;
         Document newSchemaRoot = null;
-        for (Element child =
-             DOMUtil.getFirstChildElement(rootNode);
-            child != null;
-            child = DOMUtil.getNextSiblingElement(child)) {
+        for (Element child = DOMUtil.getFirstChildElement(rootNode);
+                child != null;
+                child = DOMUtil.getNextSiblingElement(child)) {
+            String schemaNamespace=null;
+            String schemaHint=null;
             String localName = DOMUtil.getLocalName(child);
             if (localName.equals(SchemaSymbols.ELT_ANNOTATION))
                 continue;
@@ -336,6 +346,11 @@ class XSDHandler {
                 Object[] includeAttrs = fAttributeChecker.checkAttributes(child, true, currSchemaInfo);
                 schemaHint = (String)includeAttrs[XSAttributeChecker.ATTIDX_SCHEMALOCATION];
                 schemaNamespace = (String)includeAttrs[XSAttributeChecker.ATTIDX_NAMESPACE];
+                if(schemaNamespace != null) 
+                    schemaNamespace = fSymbolTable.addSymbol(schemaNamespace);
+                if(schemaNamespace == currSchemaInfo.fTargetNamespace) {
+                    fElementTraverser.reportSchemaError("src-import.1.1", new Object [] {schemaNamespace});
+                } 
                 fAttributeChecker.returnAttrArray(includeAttrs, currSchemaInfo);
                 // consciously throw away whether was a duplicate; don't care.
                 newSchemaRoot = getSchema(schemaNamespace, schemaHint);
@@ -349,13 +364,14 @@ class XSDHandler {
                 schemaHint = (String)includeAttrs[XSAttributeChecker.ATTIDX_SCHEMALOCATION];
                 fAttributeChecker.returnAttrArray(includeAttrs, currSchemaInfo);
                 newSchemaRoot = getSchema(null, schemaHint);
+                schemaNamespace = currSchemaInfo.fTargetNamespace;
             }
             else {
                 // no more possibility of schema references in well-formed
                 // schema...
                 break;
             }
-            XSDocumentInfo newSchemaInfo = constructTrees(newSchemaRoot);
+            XSDocumentInfo newSchemaInfo = constructTrees(newSchemaRoot, schemaNamespace);
             if (localName.equals(SchemaSymbols.ELT_REDEFINE)) {
                 // must record which schema we're redefining so that we can
                 // rename the right things later!
@@ -609,7 +625,7 @@ class XSDHandler {
     // well), call the appropriate traverser with the appropriate
     // XSDocumentInfo object.
     // This method returns whatever the traverser it called returned;
-    // this will be an index into an array of Objects of some kind
+    // this will be an Object of some kind
     // that lives in the Grammar.
     protected Object getGlobalDecl(XSDocumentInfo currSchema,
                                    int declType,

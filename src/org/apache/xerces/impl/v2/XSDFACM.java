@@ -1039,8 +1039,7 @@ public class XSDFACM
         {
             curIndex = postTreeBuildInit(((XSCMUniOp)nodeCur).getChild(), curIndex);
         }
-         else if (nodeCur.type() == XSParticleDecl.PARTICLE_ELEMENT)
-        {
+         else if (nodeCur.type() == XSParticleDecl.PARTICLE_ELEMENT) {
             //
             //  Put this node in the leaf list at the current index if its
             //  a non-epsilon leaf.

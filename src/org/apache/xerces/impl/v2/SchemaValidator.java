@@ -664,8 +664,8 @@ public class SchemaValidator
     // some constants that'll be added into the symbol table
     String XMLNS;
     String URI_XSI;
-    String XSI_SCHEMALOCACTION;
-    String XSI_NONAMESPACESCHEMALOCACTION;
+    String XSI_SCHEMALOCATION;
+    String XSI_NONAMESPACESCHEMALOCATION;
     String XSI_TYPE;
     String XSI_NIL;
     String URI_SCHEMAFORSCHEMA;
@@ -748,7 +748,7 @@ public class SchemaValidator
     /**
      * This table has to be own by instance of XMLValidator and shared
      * among ID, IDREF and IDREFS.
-     * REVISIT: Should replace with a ligther structure.
+     * REVISIT: Should replace with a lighter structure.
      */
     Hashtable fTableOfIDs = new Hashtable();
     Hashtable fTableOfIDRefs = new Hashtable();
@@ -785,8 +785,8 @@ public class SchemaValidator
         if (symbolTable != fSymbolTable) {
             XMLNS = symbolTable.addSymbol(SchemaSymbols.O_XMLNS);
             URI_XSI = symbolTable.addSymbol(SchemaSymbols.URI_XSI);
-            XSI_SCHEMALOCACTION = symbolTable.addSymbol(SchemaSymbols.OXSI_SCHEMALOCACTION);
-            XSI_NONAMESPACESCHEMALOCACTION = symbolTable.addSymbol(SchemaSymbols.OXSI_NONAMESPACESCHEMALOCACTION);
+            XSI_SCHEMALOCATION = symbolTable.addSymbol(SchemaSymbols.OXSI_SCHEMALOCATION);
+            XSI_NONAMESPACESCHEMALOCATION = symbolTable.addSymbol(SchemaSymbols.OXSI_NONAMESPACESCHEMALOCATION);
             XSI_TYPE = symbolTable.addSymbol(SchemaSymbols.OXSI_TYPE);
             XSI_NIL = symbolTable.addSymbol(SchemaSymbols.OXSI_NIL);
             URI_SCHEMAFORSCHEMA = symbolTable.addSymbol(SchemaSymbols.OURI_SCHEMAFORSCHEMA);
@@ -910,8 +910,8 @@ public class SchemaValidator
         // parser them to get the grammars
         // REVISIT: we'll defer this operation until there is a reference to
         //          a component from that namespace
-        String sLocation = attributes.getValue(URI_XSI, XSI_SCHEMALOCACTION);
-        String nsLocation = attributes.getValue(URI_XSI, XSI_NONAMESPACESCHEMALOCACTION);
+        String sLocation = attributes.getValue(URI_XSI, XSI_SCHEMALOCATION);
+        String nsLocation = attributes.getValue(URI_XSI, XSI_NONAMESPACESCHEMALOCATION);
         if (sLocation != null) {
             StringTokenizer t = new StringTokenizer(sLocation, " \n\t\r");
             String namespace, location;
@@ -939,9 +939,13 @@ public class SchemaValidator
         // if there is a content model, then get the decl from that
         if (fCurrentCM != null) {
             Object decl = fCurrentCM.oneTransition(element, fCurrCMState);
-                        // it could be an element decl or a wildcard decl
-            // REVISIT: is there a more effecient way than 'instanceof'
-            if (fCurrCMState[0] == XSCMValidator.FIRST_ERROR &&
+            // it could be an element decl or a wildcard decl
+            // REVISIT: is there a more efficient way than 'instanceof'
+            if (decl instanceof XSElementDecl) {
+                fCurrentElemDecl = (XSElementDecl)decl;
+            } else if (decl instanceof XSWildcardDecl) {
+                wildcard = (XSWildcardDecl)decl;
+            } else if (fCurrCMState[0] == XSCMValidator.FIRST_ERROR &&
                        fDoValidation) {
                 XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
                 //REVISIT: is it the only case we will have particle = null?
@@ -1227,8 +1231,8 @@ public class SchemaValidator
             for (int index = 0; index < attCount; index++) {
                 attributes.getName(index, fTempQName);
                 if (fTempQName.uri == URI_XSI) {
-                    if (fTempQName.localpart != XSI_SCHEMALOCACTION &&
-                        fTempQName.localpart != XSI_NONAMESPACESCHEMALOCACTION &&
+                    if (fTempQName.localpart != XSI_SCHEMALOCATION &&
+                        fTempQName.localpart != XSI_NONAMESPACESCHEMALOCATION &&
                         fTempQName.localpart != XSI_NIL &&
                         fTempQName.localpart != XSI_TYPE) {
                         reportSchemaError("cvc-type.3.1.1", new Object[]{element.rawname});
@@ -1257,8 +1261,8 @@ public class SchemaValidator
             attributes.getName(index, fTempQName);
             // if it's from xsi namespace, it must be one of the four
             if (fTempQName.uri == URI_XSI) {
-                if (fTempQName.localpart == XSI_SCHEMALOCACTION ||
-                    fTempQName.localpart == XSI_NONAMESPACESCHEMALOCACTION ||
+                if (fTempQName.localpart == XSI_SCHEMALOCATION ||
+                    fTempQName.localpart == XSI_NONAMESPACESCHEMALOCATION ||
                     fTempQName.localpart == XSI_NIL ||
                     fTempQName.localpart == XSI_TYPE) {
                     continue;
@@ -1335,10 +1339,10 @@ public class SchemaValidator
             // normalize it
             // REVISIT: or should the normalize() be called within validate()?
             attrValue = XSAttributeChecker.normalize(attrValue, attDV.getWSFacet());
-            Object acturalValue = null;
+            Object actualValue = null;
             try {
                 // REVISIT: use XSSimpleTypeDecl.ValidateContext to replace null
-                acturalValue = attDV.validate(attrValue, null);
+                actualValue = attDV.validate(attrValue, null);
             } catch (InvalidDatatypeValueException idve) {
                 reportSchemaError("cvc-attribute.3", new Object[]{element.rawname, fTempQName.rawname, attrValue});
             }
@@ -1348,7 +1352,7 @@ public class SchemaValidator
             if (currDecl.fConstraintType == XSAttributeDecl.FIXED_VALUE) {
                 // REVISIT: compare should be equal, and takes object, instead of string
                 //          do it in the new datatype design
-                if (attDV.compare((String)acturalValue, (String)currDecl.fDefault) != 0)
+                if (attDV.compare((String)actualValue, (String)currDecl.fDefault) != 0)
                     reportSchemaError("cvc-attribute.4", new Object[]{element.rawname, fTempQName.rawname, attrValue});
             }
 
@@ -1356,7 +1360,7 @@ public class SchemaValidator
             if (currUse != null && currUse.fConstraintType == XSAttributeDecl.FIXED_VALUE) {
                 // REVISIT: compare should be equal, and takes object, instead of string
                 //          do it in the new datatype design
-                if (attDV.compare((String)acturalValue, (String)currUse.fDefault) != 0)
+                if (attDV.compare((String)actualValue, (String)currUse.fDefault) != 0)
                     reportSchemaError("cvc-complex-type.3.1", new Object[]{element.rawname, fTempQName.rawname, attrValue});
             }
         } // end of for (all attributes)
@@ -1496,7 +1500,7 @@ public class SchemaValidator
             // 3.1.3 If clause 3.2 of Element Locally Valid (Element) (§3.3.4) did not apply, then the ·normalized value· must be ·valid· with respect to the type definition as defined by String Valid (§3.14.4).
             if (!fNil) {
                 DatatypeValidator dv = (DatatypeValidator)fCurrentType;
-                // REVISIT: or should the normalize() be called withing validate()?
+                // REVISIT: or should the normalize() be called within validate()?
                 String content = XSAttributeChecker.normalize(textContent, dv.getWSFacet());
                 try {
                     // REVISIT: use XSSimpleTypeDecl.ValidateContext to replace null
@@ -1531,7 +1535,7 @@ public class SchemaValidator
                 if (fChildCount != 0)
                     reportSchemaError("cvc-complex-type.2.2", new Object[]{element.rawname});
                 DatatypeValidator dv = ctype.fDatatypeValidator;
-                // REVISIT: or should the normalize() be called withing validate()?
+                // REVISIT: or should the normalize() be called within validate()?
                 String content = XSAttributeChecker.normalize(textContent, dv.getWSFacet());
                 try {
                     // REVISIT: use XSSimpleTypeDecl.ValidateContext to replace null

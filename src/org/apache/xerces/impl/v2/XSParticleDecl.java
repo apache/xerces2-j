@@ -105,6 +105,7 @@ public class XSParticleDecl {
     void appendParticle(StringBuffer fBuffer) {
         switch (fType) {
         case PARTICLE_EMPTY:
+            fBuffer.append("EMPTY");
             break;
         case PARTICLE_ELEMENT:
         case PARTICLE_WILDCARD:
