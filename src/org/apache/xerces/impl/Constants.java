@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -162,10 +162,10 @@ public final class Constants {
 
     /** Notify character references feature (scanner/notify-char-refs"). */
     public static final String NOTIFY_CHAR_REFS_FEATURE = "scanner/notify-char-refs";
-    
+
     /** Notify built-in (&amp;amp;, etc.) references feature (scanner/notify-builtin-refs"). */
     public static final String NOTIFY_BUILTIN_REFS_FEATURE = "scanner/notify-builtin-refs";
-    
+
     // xerces properties
 
     /** Xerces properties prefix ("http://apache.org/xml/properties/"). */
@@ -179,7 +179,7 @@ public final class Constants {
 
     /** Symbol table property ("internal/symbol-table"). */
     public static final String SYMBOL_TABLE_PROPERTY = "internal/symbol-table";
-    
+
     /** Error reporter property ("internal/error-reporter"). */
     public static final String ERROR_REPORTER_PROPERTY = "internal/error-reporter";
 
@@ -209,6 +209,9 @@ public final class Constants {
 
     /** Validator property ("internal/validator/dtd"). */
     public static final String DTD_VALIDATOR_PROPERTY = "internal/validator/dtd";
+
+    /** Validator property ("internal/validator/schema"). */
+    public static final String SCHEMA_VALIDATOR_PROPERTY = "internal/validator/schema";
 
     /** Namespace binder property ("internal/namespace-binder"). */
     public static final String NAMESPACE_BINDER_PROPERTY = "internal/namespace-binder";
@@ -287,13 +290,13 @@ public final class Constants {
 
     /** Returns an enumeration of the SAX features. */
     public static Enumeration getSAXFeatures() {
-        return fgSAXFeatures.length > 0 
+        return fgSAXFeatures.length > 0
                ? new ArrayEnumeration(fgSAXFeatures) : fgEmptyEnumeration;
     } // getSAXFeatures():Enumeration
 
     /** Returns an enumeration of the SAX properties. */
     public static Enumeration getSAXProperties() {
-        return fgSAXProperties.length > 0 
+        return fgSAXProperties.length > 0
                ? new ArrayEnumeration(fgSAXProperties) : fgEmptyEnumeration;
     } // getSAXProperties():Enumeration
 
@@ -301,13 +304,13 @@ public final class Constants {
 
     /** Returns an enumeration of the Xerces features. */
     public static Enumeration getXercesFeatures() {
-        return fgXercesFeatures.length > 0 
+        return fgXercesFeatures.length > 0
                ? new ArrayEnumeration(fgXercesFeatures) : fgEmptyEnumeration;
     } // getXercesFeatures():Enumeration
 
     /** Returns an enumeration of the Xerces properties. */
     public static Enumeration getXercesProperties() {
-        return fgXercesProperties.length > 0 
+        return fgXercesProperties.length > 0
                ? new ArrayEnumeration(fgXercesProperties) : fgEmptyEnumeration;
     } // getXercesProperties():Enumeration
 
@@ -336,7 +339,7 @@ public final class Constants {
         //
         // Constructors
         //
-        
+
         /** Constructs an array enumeration. */
         public ArrayEnumeration(Object[] array) {
             this.array = array;
