@@ -1,24 +1,24 @@
 /*
- * Copyright (c) 2002 World Wide Web Consortium,
- * (Massachusetts Institute of Technology, Institut National de
- * Recherche en Informatique et en Automatique, Keio University). All
- * Rights Reserved. This program is distributed under the W3C's Software
- * Intellectual Property License. This program is distributed in the
- * hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- * PURPOSE.
- * See W3C License http://www.w3.org/Consortium/Legal/ for more details.
+ * Copyright (c) 2003 World Wide Web Consortium,
+ *
+ * (Massachusetts Institute of Technology, European Research Consortium for
+ * Informatics and Mathematics, Keio University). All Rights Reserved. This
+ * work is distributed under the W3C(r) Software License [1] in the hope that
+ * it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
  */
 
 package org.w3c.dom;
 
-/**
+/** 
  * DOM Level 3 WD Experimental:
  * The DOM Level 3 specification is at the stage 
  * of Working Draft, which represents work in 
  * progress and thus may be updated, replaced, 
  * or obsoleted by other documents at any time. 
- * <p>
+ * 
  * <code>DocumentFragment</code> is a "lightweight" or "minimal" 
  * <code>Document</code> object. It is very common to want to be able to 
  * extract a portion of a document's tree or to create a new fragment of a 
@@ -52,11 +52,12 @@ package org.w3c.dom;
  * <code>DocumentFragment</code> acts as the parent of these nodes so that 
  * the user can use the standard methods from the <code>Node</code> 
  * interface, such as <code>insertBefore</code> and <code>appendChild</code>.
- *  The properties [notations] and [unparsed entities] defined by the 
- * Document Information Item in  are accessible through the 
- * <code>DocumentType</code> interface. The property [all declarations 
- * processed] is not accessible through the DOM API. 
- * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020409'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p ><b>Note:</b>  The properties [notations] and [unparsed entities] 
+ * defined by the Document Information Item in [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information set</a>]
+ *  are accessible through the <code>DocumentType</code> interface. The 
+ * property [all declarations processed] is not accessible through the DOM 
+ * API. 
+ * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226'>Document Object Model (DOM) Level 3 Core Specification</a>.
  */
 public interface DocumentFragment extends Node {
 }

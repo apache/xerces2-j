@@ -83,12 +83,6 @@ public class DOMLocatorImpl implements DOMLocator {
    public int fColumnNumber = -1;
 
    /**
-    * The DOM Node where the error occured, or 
-    * null if there is no Node available.
-    */
-   public Node fErrorNode = null;
-
-   /**
     * The line number where the error occured, 
     * or -1 if there is no line number available.
     */
@@ -101,6 +95,9 @@ public class DOMLocatorImpl implements DOMLocator {
     * is parsed then the offset will be the character offset
     */
    public int fOffset = -1;
+   
+   /** related data node*/
+   public Node fRelatedNode = null;
 
    /**
     * The URI where the error occured, 
@@ -121,11 +118,11 @@ public class DOMLocatorImpl implements DOMLocator {
 	fUri = uri;
    } // DOMLocatorImpl (int lineNumber, int columnNumber, String uri )
 
-   public DOMLocatorImpl (int lineNumber, int columnNumber, int offset, Node errorNode, String uri ){
+   public DOMLocatorImpl (int lineNumber, int columnNumber, int offset, Node relatedData, String uri ){
 	fLineNumber = lineNumber ;
 	fColumnNumber = columnNumber ;
 	fOffset = offset ;
-	fErrorNode = errorNode ;
+	fRelatedNode = relatedData ;
 	fUri = uri;
    } // DOMLocatorImpl (int lineNumber, int columnNumber, int offset, Node errorNode, String uri )
 
@@ -154,13 +151,7 @@ public class DOMLocatorImpl implements DOMLocator {
   public int getOffset(){
 	return fOffset;
   }
-  /**
-   * The DOM Node where the error occured, or null if there is no Node 
-   * available.
-   */
-  public Node getErrorNode(){
-	return fErrorNode;
-  }
+
 
   /**
    * The URI where the error occured, or null if there is no URI available.
@@ -169,6 +160,10 @@ public class DOMLocatorImpl implements DOMLocator {
 	return fUri;
   }
 
+
+  public Node getRelatedNode(){
+    return fRelatedNode;
+  }
   
 
 }// class DOMLocatorImpl

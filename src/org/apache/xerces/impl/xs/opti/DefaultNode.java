@@ -224,8 +224,7 @@ public class DefaultNode implements Node {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
 
     }
-    public String lookupNamespacePrefix(String namespaceURI, 
-                                        boolean useDefault){
+    public String lookupPrefix(String namespaceURI){
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
                                         }
     public boolean isDefaultNamespace(String namespaceURI){
@@ -241,7 +240,7 @@ public class DefaultNode implements Node {
 
     }
     
-    public Node getInterface(String feature){
+    public Node getFeature(String feature, String version){
         return null;
     }
     public Object setUserData(String key,  Object data, UserDataHandler handler){

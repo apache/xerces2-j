@@ -1,24 +1,24 @@
 /*
- * Copyright (c) 2002 World Wide Web Consortium,
- * (Massachusetts Institute of Technology, Institut National de
- * Recherche en Informatique et en Automatique, Keio University). All
- * Rights Reserved. This program is distributed under the W3C's Software
- * Intellectual Property License. This program is distributed in the
- * hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- * PURPOSE.
- * See W3C License http://www.w3.org/Consortium/Legal/ for more details.
+ * Copyright (c) 2003 World Wide Web Consortium,
+ *
+ * (Massachusetts Institute of Technology, European Research Consortium for
+ * Informatics and Mathematics, Keio University). All Rights Reserved. This
+ * work is distributed under the W3C(r) Software License [1] in the hope that
+ * it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
  */
 
 package org.w3c.dom;
 
-/**
+/** 
  * DOM Level 3 WD Experimental:
  * The DOM Level 3 specification is at the stage 
  * of Working Draft, which represents work in 
  * progress and thus may be updated, replaced, 
  * or obsoleted by other documents at any time. 
- * <p>
+ * 
  * Each <code>Document</code> has a <code>doctype</code> attribute whose value 
  * is either <code>null</code> or a <code>DocumentType</code> object. The 
  * <code>DocumentType</code> interface in the DOM Core provides an interface 
@@ -26,9 +26,11 @@ package org.w3c.dom;
  * else because the effect of namespaces and the various XML schema efforts 
  * on DTD representation are not clearly understood as of this writing.
  * <p>The DOM Level 2 doesn't support editing <code>DocumentType</code> nodes. 
- * The property [children] defined by the Document Type Declaration 
- * Information Item in  is not accessible from DOM Level 3 Core. 
- * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020409'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <code>DocumentType</code> nodes are read-only.
+ * <p ><b>Note:</b>  The property [children] defined by the Document Type 
+ * Declaration Information Item in [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information set</a>]
+ *  is not accessible from DOM Level 3 Core. 
+ * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226'>Document Object Model (DOM) Level 3 Core Specification</a>.
  */
 public interface DocumentType extends Node {
     /**
@@ -61,14 +63,16 @@ public interface DocumentType extends Node {
      * <br>The DOM Level 2 does not support editing notations, therefore 
      * <code>notations</code> cannot be altered in any way.
      * <br> This attribute represents the property [notations] defined by the 
-     * Document Information Item in . 
+     * Document Information Item in [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information set</a>]
+     * . 
      */
     public NamedNodeMap getNotations();
 
     /**
      * The public identifier of the external subset.
      * <br> This attribute represents the property [public identifier] defined 
-     * by the Document Type Declaration Information Item in . 
+     * by the Document Type Declaration Information Item in [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information set</a>]
+     * . 
      * @since DOM Level 2
      */
     public String getPublicId();
@@ -77,17 +81,19 @@ public interface DocumentType extends Node {
      * The system identifier of the external subset. This may be an absolute 
      * URI or not.
      * <br> This attribute represents the property [system identifier] defined 
-     * by the Document Type Declaration Information Item in . 
+     * by the Document Type Declaration Information Item in [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information set</a>]
+     * . 
      * @since DOM Level 2
      */
     public String getSystemId();
 
     /**
      * The internal subset as a string, or <code>null</code> if there is none. 
-     * This is does not contain the delimiting square brackets.The actual 
-     * content returned depends on how much information is available to the 
-     * implementation. This may vary depending on various parameters, 
-     * including the XML processor used to build the document.
+     * This is does not contain the delimiting square brackets.
+     * <p ><b>Note:</b> The actual content returned depends on how much 
+     * information is available to the implementation. This may vary 
+     * depending on various parameters, including the XML processor used to 
+     * build the document.
      * @since DOM Level 2
      */
     public String getInternalSubset();

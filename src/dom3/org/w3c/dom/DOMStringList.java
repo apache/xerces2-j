@@ -19,28 +19,29 @@ package org.w3c.dom;
  * progress and thus may be updated, replaced, 
  * or obsoleted by other documents at any time. 
  * 
- * The <code>NodeList</code> interface provides the abstraction of an ordered 
- * collection of nodes, without defining or constraining how this collection 
- * is implemented. <code>NodeList</code> objects in the DOM are live.
- * <p>The items in the <code>NodeList</code> are accessible via an integral 
- * index, starting from 0.
+ *  The <code>DOMStringList</code> interface provides the abstraction of an 
+ * ordered collection of parallel pairs of name and namespace values, 
+ * without defining or constraining how this collection is implemented. The 
+ * items in the <code>DOMStringList</code> are accessible via an integral 
+ * index, starting from 0. 
  * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * @since DOM Level 3
  */
-public interface NodeList {
+public interface DOMStringList {
     /**
-     * Returns the <code>index</code>th item in the collection. If 
-     * <code>index</code> is greater than or equal to the number of nodes in 
-     * the list, this returns <code>null</code>.
+     *  Returns the <code>index</code>th item in the collection. If 
+     * <code>index</code> is greater than or equal to the number of 
+     * <code>DOMString</code>s in the list, this returns <code>null</code>. 
      * @param index Index into the collection.
-     * @return The node at the <code>index</code>th position in the 
-     *   <code>NodeList</code>, or <code>null</code> if that is not a valid 
-     *   index.
+     * @return  The <code>DOMString</code> at the <code>index</code>th 
+     *   position in the <code>DOMStringList</code>, or <code>null</code> if 
+     *   that is not a valid index. 
      */
-    public Node item(int index);
+    public String item(int index);
 
     /**
-     * The number of nodes in the list. The range of valid child node indices 
-     * is 0 to <code>length-1</code> inclusive.
+     * The number of <code>DOMString</code>s in the list. The range of valid 
+     * child node indices is 0 to <code>length-1</code> inclusive.
      */
     public int getLength();
 

@@ -1,24 +1,24 @@
 /*
- * Copyright (c) 2002 World Wide Web Consortium,
- * (Massachusetts Institute of Technology, Institut National de
- * Recherche en Informatique et en Automatique, Keio University). All
- * Rights Reserved. This program is distributed under the W3C's Software
- * Intellectual Property License. This program is distributed in the
- * hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- * PURPOSE.
- * See W3C License http://www.w3.org/Consortium/Legal/ for more details.
+ * Copyright (c) 2003 World Wide Web Consortium,
+ *
+ * (Massachusetts Institute of Technology, European Research Consortium for
+ * Informatics and Mathematics, Keio University). All Rights Reserved. This
+ * work is distributed under the W3C(r) Software License [1] in the hope that
+ * it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
  */
 
 package org.w3c.dom;
 
-/**
+/** 
  * DOM Level 3 WD Experimental:
  * The DOM Level 3 specification is at the stage 
  * of Working Draft, which represents work in 
  * progress and thus may be updated, replaced, 
  * or obsoleted by other documents at any time. 
- * <p>
+ * 
  * The <code>CharacterData</code> interface extends Node with a set of 
  * attributes and methods for accessing character data in the DOM. For 
  * clarity this set is defined here rather than on each object that uses 
@@ -30,7 +30,7 @@ package org.w3c.dom;
  * the DOM are represented in UTF-16, i.e. as a sequence of 16-bit units. In 
  * the following, the term 16-bit units is used whenever necessary to 
  * indicate that indexing on CharacterData is done in 16-bit units.
- * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020409'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226'>Document Object Model (DOM) Level 3 Core Specification</a>.
  */
 public interface CharacterData extends Node {
     /**
@@ -43,11 +43,11 @@ public interface CharacterData extends Node {
      * appropriately sized pieces.
      * <br> When the <code>CharacterData</code> is a <code>Text</code>, or a 
      * <code>CDATASection</code>, this attribute contains the property 
-     * [character code] defined in . When the <code>CharacterData</code> is 
-     * a <code>Comment</code>, this attribute contains the property 
-     * [content] defined by the Comment Information Item in . 
-     * @exception DOMException
-     *   NO_MODIFICATION_ALLOWED_ERR: Raised when the node is readonly.
+     * [character code] defined in [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information set</a>]
+     * . When the <code>CharacterData</code> is a <code>Comment</code>, this 
+     * attribute contains the property [content] defined by the Comment 
+     * Information Item in [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information set</a>]
+     * . 
      * @exception DOMException
      *   DOMSTRING_SIZE_ERR: Raised when it would return more characters than 
      *   fit in a <code>DOMString</code> variable on the implementation 
@@ -65,15 +65,13 @@ public interface CharacterData extends Node {
      * appropriately sized pieces.
      * <br> When the <code>CharacterData</code> is a <code>Text</code>, or a 
      * <code>CDATASection</code>, this attribute contains the property 
-     * [character code] defined in . When the <code>CharacterData</code> is 
-     * a <code>Comment</code>, this attribute contains the property 
-     * [content] defined by the Comment Information Item in . 
+     * [character code] defined in [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information set</a>]
+     * . When the <code>CharacterData</code> is a <code>Comment</code>, this 
+     * attribute contains the property [content] defined by the Comment 
+     * Information Item in [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information set</a>]
+     * . 
      * @exception DOMException
      *   NO_MODIFICATION_ALLOWED_ERR: Raised when the node is readonly.
-     * @exception DOMException
-     *   DOMSTRING_SIZE_ERR: Raised when it would return more characters than 
-     *   fit in a <code>DOMString</code> variable on the implementation 
-     *   platform.
      */
     public void setData(String data)
                             throws DOMException;

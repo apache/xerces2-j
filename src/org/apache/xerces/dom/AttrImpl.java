@@ -244,10 +244,13 @@ public class AttrImpl
      * @param id
      */
     public void setIdAttribute(boolean id){
+        if (needsSyncData()) {
+            synchronizeData();
+        }
         isIdAttribute(id);
     }
     /** DOM Level 3: isId*/
-    public boolean getIsId(){
+    public boolean isId(){
         // REVISIT: should an attribute that is not in the tree return
         // isID true?
         return isIdAttribute();

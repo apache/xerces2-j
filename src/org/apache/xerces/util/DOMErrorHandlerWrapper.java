@@ -168,7 +168,7 @@ implements XMLErrorHandler, DOMErrorHandler {
             locator.fColumnNumber = exception.getColumnNumber();
             locator.fLineNumber = exception.getLineNumber();
             locator.fUri = exception.getExpandedSystemId();
-            locator.fErrorNode = fCurrentNode;
+            locator.fRelatedNode = fCurrentNode;
         }
         fDomErrorHandler.handleError(fDOMError); 
     } // warning(String,String,XMLParseException)
@@ -200,7 +200,7 @@ implements XMLErrorHandler, DOMErrorHandler {
             locator.fColumnNumber = exception.getColumnNumber();
             locator.fLineNumber = exception.getLineNumber();
             locator.fUri = exception.getExpandedSystemId();
-            locator.fErrorNode = fCurrentNode;
+            locator.fRelatedNode= fCurrentNode;
         }
         fDomErrorHandler.handleError(fDOMError); 
     } // error(String,String,XMLParseException)
@@ -240,7 +240,7 @@ implements XMLErrorHandler, DOMErrorHandler {
             locator.fColumnNumber = exception.getColumnNumber();
             locator.fLineNumber = exception.getLineNumber();
             locator.fUri = exception.getExpandedSystemId();
-            locator.fErrorNode = fCurrentNode;
+            locator.fRelatedNode = fCurrentNode;
         }
         fDomErrorHandler.handleError(fDOMError); 
     } // fatalError(String,String,XMLParseException)
@@ -272,7 +272,7 @@ implements XMLErrorHandler, DOMErrorHandler {
             fOut.print(locator.getColumnNumber());
             fOut.print(":");
             fOut.print(locator.getOffset());
-            Node node = locator.getErrorNode();
+            Node node = locator.getRelatedNode();
             if (node != null) {
                 fOut.print("[");
                 fOut.print(node.getNodeName());

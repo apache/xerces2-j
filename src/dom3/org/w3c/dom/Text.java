@@ -1,32 +1,31 @@
 /*
- * Copyright (c) 2002 World Wide Web Consortium,
- * (Massachusetts Institute of Technology, Institut National de
- * Recherche en Informatique et en Automatique, Keio University). All
- * Rights Reserved. This program is distributed under the W3C's Software
- * Intellectual Property License. This program is distributed in the
- * hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- * PURPOSE.
- * See W3C License http://www.w3.org/Consortium/Legal/ for more details.
+ * Copyright (c) 2003 World Wide Web Consortium,
+ *
+ * (Massachusetts Institute of Technology, European Research Consortium for
+ * Informatics and Mathematics, Keio University). All Rights Reserved. This
+ * work is distributed under the W3C(r) Software License [1] in the hope that
+ * it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
  */
 
 package org.w3c.dom;
 
-/**
+/** 
  * DOM Level 3 WD Experimental:
  * The DOM Level 3 specification is at the stage 
  * of Working Draft, which represents work in 
  * progress and thus may be updated, replaced, 
  * or obsoleted by other documents at any time. 
- * <p>
+ * 
  * The <code>Text</code> interface inherits from <code>CharacterData</code> 
- * and represents the textual content (termed character data in XML) of an 
- * <code>Element</code> or <code>Attr</code>. If there is no markup inside 
- * an element's content, the text is contained in a single object 
- * implementing the <code>Text</code> interface that is the only child of 
- * the element. If there is markup, it is parsed into the information items 
- * (elements, comments, etc.) and <code>Text</code> nodes that form the list 
- * of children of the element.
+ * and represents the textual content (termed <a href='http://www.w3.org/TR/2000/REC-xml-20001006#syntax'>character data</a> in XML) of an <code>Element</code> or <code>Attr</code>. If there is no 
+ * markup inside an element's content, the text is contained in a single 
+ * object implementing the <code>Text</code> interface that is the only 
+ * child of the element. If there is markup, it is parsed into the 
+ * information items (elements, comments, etc.) and <code>Text</code> nodes 
+ * that form the list of children of the element.
  * <p>When a document is first made available via the DOM, there is only one 
  * <code>Text</code> node for each block of text. Users may create adjacent 
  * <code>Text</code> nodes that represent the contents of a given element 
@@ -36,7 +35,7 @@ package org.w3c.dom;
  * <code>normalize</code> method on <code>Node</code> merges any such 
  * adjacent <code>Text</code> objects into a single node for each block of 
  * text.
- * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020409'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226'>Document Object Model (DOM) Level 3 Core Specification</a>.
  */
 public interface Text extends CharacterData {
     /**
@@ -61,14 +60,15 @@ public interface Text extends CharacterData {
 
     /**
      * Returns whether this text node contains whitespace in element content, 
-     * often abusively called "ignorable whitespace".An implementation can 
-     * only return <code>true</code> if, one way or another, it has access 
-     * to the relevant information (e.g., the DTD or schema).
+     * often abusively called "ignorable whitespace".
      * <br> This attribute represents the property [element content 
-     * whitespace] defined in . 
+     * whitespace] defined in [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information set</a>]
+     * . 
+     * @return Returns <code>true</code> if this text node contains 
+     *   whitespace in element content, <code>false</code> otherwise.
      * @since DOM Level 3
      */
-    public boolean getIsWhitespaceInElementContent();
+    public boolean isWhitespaceInElementContent();
 
     /**
      * Returns all text of <code>Text</code> nodes logically-adjacent text 
@@ -78,8 +78,8 @@ public interface Text extends CharacterData {
     public String getWholeText();
 
     /**
-     * Substitutes the a specified text for the text of the current node and 
-     * all logically-adjacent text nodes.
+     * Substitutes the specified text for the text of the current node and all 
+     * logically-adjacent text nodes.
      * <br>This method returns the node in the hierarchy which received the 
      * replacement text, which is null if the text was empty or is the 
      * current node if the current node is not read-only or otherwise is a 

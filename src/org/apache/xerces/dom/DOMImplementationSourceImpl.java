@@ -58,11 +58,10 @@
 package org.apache.xerces.dom;
 
 import org.w3c.dom.DOMImplementation;
-import org.apache.xerces.dom3.DOMImplementationRegistry;
+import org.apache.xerces.dom3.DOMImplementationList;
+import org.apache.xerces.dom3.bootstrap.DOMImplementationRegistry;
 import org.apache.xerces.dom3.DOMImplementationSource;
 
-import org.apache.xerces.dom.CoreDOMImplementationImpl;
-import org.apache.xerces.dom.DOMImplementationImpl;
 
 import java.util.StringTokenizer;
 
@@ -106,6 +105,24 @@ public class DOMImplementationSourceImpl
         }
         return null;
     }
+    
+	public DOMImplementationList getDOMImplementations(String features) {
+		// first check whether the CoreDOMImplementation would do
+		DOMImplementation impl = CoreDOMImplementationImpl.getDOMImplementation();
+        DOMImplementationListImpl list = new DOMImplementationListImpl();
+		if (testImpl(impl, features)) {
+            list.add(impl);			
+		}
+		impl = DOMImplementationImpl.getDOMImplementation();
+		if (testImpl(impl, features)) {
+			list.add(impl);
+		}
+		impl = PSVIDOMImplementationImpl.getDOMImplementation();
+		if (testImpl(impl, features)) {
+			list.add(impl);
+		}
+		return list;
+	}
 
     boolean testImpl(DOMImplementation impl, String features) {
        

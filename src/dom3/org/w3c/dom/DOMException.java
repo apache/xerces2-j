@@ -1,24 +1,24 @@
 /*
- * Copyright (c) 2002 World Wide Web Consortium,
- * (Massachusetts Institute of Technology, Institut National de
- * Recherche en Informatique et en Automatique, Keio University). All
- * Rights Reserved. This program is distributed under the W3C's Software
- * Intellectual Property License. This program is distributed in the
- * hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- * PURPOSE.
- * See W3C License http://www.w3.org/Consortium/Legal/ for more details.
+ * Copyright (c) 2003 World Wide Web Consortium,
+ *
+ * (Massachusetts Institute of Technology, European Research Consortium for
+ * Informatics and Mathematics, Keio University). All Rights Reserved. This
+ * work is distributed under the W3C(r) Software License [1] in the hope that
+ * it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
  */
 
 package org.w3c.dom;
 
-/**
+/** 
  * DOM Level 3 WD Experimental:
  * The DOM Level 3 specification is at the stage 
  * of Working Draft, which represents work in 
  * progress and thus may be updated, replaced, 
  * or obsoleted by other documents at any time. 
- * <p>
+ * 
  * DOM operations only raise exceptions in "exceptional" circumstances, i.e., 
  * when an operation is impossible to perform (either for logical reasons, 
  * because data is lost, or because the implementation has become unstable). 
@@ -34,7 +34,7 @@ package org.w3c.dom;
  * native error reporting mechanisms. For some bindings, for example, 
  * methods may return error codes similar to those listed in the 
  * corresponding method descriptions.
- * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020409'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226'>Document Object Model (DOM) Level 3 Core Specification</a>.
  */
 public class DOMException extends RuntimeException {
     public DOMException(short code, String message) {
@@ -61,10 +61,7 @@ public class DOMException extends RuntimeException {
      */
     public static final short WRONG_DOCUMENT_ERR        = 4;
     /**
-     * If an invalid or illegal character is specified, such as in a name. See 
-     * production 2 in the XML specification for the definition of a legal 
-     * character, and production 5 for the definition of a legal name 
-     * character.
+     * If an invalid or illegal character is specified, such as in a name. See <a href='http://www.w3.org/TR/2000/REC-xml-20001006#NT-Char'>production 2</a> in the XML specification for the definition of a legal character, and <a href='http://www.w3.org/TR/2000/REC-xml-20001006#NT-Name'>production 5</a> for the definition of a legal name character.
      */
     public static final short INVALID_CHARACTER_ERR     = 5;
     /**
@@ -123,8 +120,8 @@ public class DOMException extends RuntimeException {
      * If a call to a method such as <code>insertBefore</code> or 
      * <code>removeChild</code> would make the <code>Node</code> invalid 
      * with respect to "partial validity", this exception would be raised 
-     * and the operation would not be done. This code is used in . Refer to 
-     * this specification for further information.
+     * and the operation would not be done. This code is used in [<a href='http://www.w3.org/TR/DOM-Level-3-Val'>DOM Level 3 Validation</a>]. 
+     * Refer to this specification for further information.
      * @since DOM Level 3
      */
     public static final short VALIDATION_ERR            = 16;

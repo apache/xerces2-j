@@ -1,4 +1,23 @@
-/**
+/*
+ * Copyright (c) 2003 World Wide Web Consortium,
+ *
+ * (Massachusetts Institute of Technology, European Research Consortium for
+ * Informatics and Mathematics, Keio University). All Rights Reserved. This
+ * work is distributed under the W3C(r) Software License [1] in the hope that
+ * it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
+ */
+
+
+/** 
+ * DOM Level 3 WD Experimental:
+ * The DOM Level 3 specification is at the stage 
+ * of Working Draft, which represents work in 
+ * progress and thus may be updated, replaced, 
+ * or obsoleted by other documents at any time. 
+ * 
  * This class holds the list of registered DOMImplementations. The contents 
  * of the registry are drawn from the System Property 
  * <code>org.w3c.dom.DOMImplementationSourceList</code>, which must contain a 
@@ -14,9 +33,10 @@
  *
  * @see DOMImplementation
  * @see DOMImplementationSource
+ * @since DOM Level 3
  */
 
-package org.w3c.dom;
+package org.w3c.dom.bootstrap;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
@@ -27,6 +47,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 import org.w3c.dom.DOMImplementationSource;
+import org.w3c.dom.DOMImplementationList;
 import org.w3c.dom.DOMImplementation;
 
 public class DOMImplementationRegistry { 
@@ -110,6 +131,37 @@ public class DOMImplementationRegistry {
     }
 
     /**
+     * Return the list of all registered implementation that support the desired
+     * features.
+     *
+     * @param features A string that specifies which features are required.
+     *                 This is a space separated list in which each feature is
+     *                 specified by its name optionally followed by a space
+     *                 and a version number.
+     *                 This is something like: "XML 1.0 Traversal Events 2.0"
+     * @return A list of DOMImplementations that support the desired features.
+     */
+    public DOMImplementationList getDOMImplementations(String features)
+            throws ClassNotFoundException,
+            InstantiationException, IllegalAccessException, ClassCastException
+    {
+        Enumeration names = sources.keys();
+        DOMImplementationListImpl list = new DOMImplementationListImpl();
+        String name = null;
+        while(names.hasMoreElements()) {
+            name = (String)names.nextElement();
+            DOMImplementationSource source =
+                (DOMImplementationSource) sources.get(name);
+
+            DOMImplementation impl = source.getDOMImplementation(features);
+            if (impl != null) {
+                list.add(impl);
+            }
+        }
+        return list;
+    }
+
+    /**
      * Register an implementation.
      */
     public void addSource(DOMImplementationSource s)
@@ -155,4 +207,4 @@ public class DOMImplementationRegistry {
         }
     }
 }
-
+  

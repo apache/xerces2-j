@@ -60,6 +60,7 @@ import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 // DOM L3 LS
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.DOMBuilder;
@@ -262,28 +263,18 @@ public class CoreDOMImplementationImpl
 		doc.appendChild(e);
 		return doc;
 	}
+    
 	/**
 	 * DOM Level 3 WD - Experimental.
-	 * This method makes available a <code>DOMImplementation</code>'s 
-	 * specialized interface (see ).
-	 * @param feature The name of the feature requested (case-insensitive).
-	 * @return Returns an alternate <code>DOMImplementation</code> which 
-	 *   implements the specialized APIs of the specified feature, if any, 
-	 *   or <code>null</code> if there is no alternate 
-	 *   <code>DOMImplementation</code> object which implements interfaces 
-	 *   associated with that feature. Any alternate 
-	 *   <code>DOMImplementation</code> returned by this method must 
-	 *   delegate to the primary core <code>DOMImplementation</code> and not 
-	 *   return results inconsistent with the primary 
-	 *   <code>DOMImplementation</code>
-	 */
-	public DOMImplementation getInterface(String feature) {
+     */
+	public Node getFeature(String feature, String version) {
 		String msg =
 			DOMMessageFormatter.formatMessage(
 				DOMMessageFormatter.DOM_DOMAIN,
 				"NOT_SUPPORTED_ERR",
 				null);
 		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+        
 	}
 	// DOM L3 LS
 	/**

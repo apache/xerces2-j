@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 1999-2003 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ *    notice, this list of conditions and the following disclaimer. 
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:
+ *    if any, must include the following acknowledgment:  
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written
+ *    software without prior written permission. For written 
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -49,93 +49,68 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2001, International
+ * originally based on software copyright (c) 2003, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.impl.xs.opti;
 
-import org.apache.xerces.dom3.TypeInfo;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Node;
-import org.w3c.dom.Element;
+package org.apache.xerces.dom;
 
-import org.w3c.dom.DOMException;
+import java.util.Vector;
 
+import org.apache.xerces.dom3.DOMImplementationList;
+import org.w3c.dom.DOMImplementation;
 
-/**
- * This class represents a single attribute.
- *
- * @author Rahul Srivastava, Sun Microsystems Inc.
- *
- * @version $Id$
- */
-public class AttrImpl extends NodeImpl 
-                      implements Attr {
+/** DOM Level 3: implementation of DOMImplementationList */
 
-    Element element;
-    String value;
+public class DOMImplementationListImpl
+             implements DOMImplementationList { 
     
-    /** Default Constructor */
-    public AttrImpl() {
-        nodeType = Node.ATTRIBUTE_NODE;
+    private Vector sources;
+
+    /* 
+     * Construct an empty list of DOMImplementations
+     * @return  an initialized instance of DOMImplementationRegistry
+     */ 
+    public DOMImplementationListImpl()
+    {
+        sources = new Vector();    
     }
-    
+
     /**
-     * Constructs an attribute.
-     *
-     * @param element Element which owns this attribute
-     * @param prefix The QName prefix.
-     * @param localpart The QName localpart.
-     * @param rawname The QName rawname.
-     * @param uri The uri binding for the associated prefix.
-     * @param value The value of the attribute.
+     *  Returns the <code>index</code>th item in the collection. If 
+     * <code>index</code> is greater than or equal to the number of 
+     * <code>DOMImplementation</code>s in the list, this returns 
+     * <code>null</code>. 
+     * @param index Index into the collection.
+     * @return  The <code>DOMImplementation</code> at the <code>index</code>
+     *   th position in the <code>DOMImplementationList</code>, or 
+     *   <code>null</code> if that is not a valid index. 
      */
-    public AttrImpl(Element element, String prefix, String localpart, String rawname, String uri, String value) {
-        super(prefix, localpart, rawname, uri, Node.ATTRIBUTE_NODE);
-        this.element = element;
-        this.value = value;
-    }
-    
-    
-    public String getName() {
-        return rawname;
-    }
-    
-    
-    public boolean getSpecified() {
-        return true;
-    }
-    
-    public String getValue() {
-        return value;
-    }
-    
-    
-    public Element getOwnerElement() {
-        return element;
-    }
-    
-    
-    public void setValue(String value) throws DOMException {
-        this.value = value;
-    }
-    
-    /**
-     * @since DOM Level 3 
-     */
-    public boolean isId(){
-        return false;
-    }
-    
-        /**
-     * Method getSchemaTypeInfo.
-     * @return TypeInfo
-     */
-    public TypeInfo getSchemaTypeInfo(){
-      return null;
+    public DOMImplementation item(int index)
+    {
+       try {
+           return (DOMImplementation) sources.elementAt(index);
+       } catch (ArrayIndexOutOfBoundsException e) {
+           return null;
+       }
     }
 
+    /**
+     * The number of <code>DOMImplementation</code>s in the list. The range 
+     * of valid child node indices is 0 to <code>length-1</code> inclusive. 
+     */
+    public int getLength() {
+        return sources.size();
+    }
+
+    /**
+     * Add a <code>DOMImplementation</code> in the list.
+     */
+    protected void add(DOMImplementation domImpl) {
+        sources.add(domImpl);
+    }
 }
+  

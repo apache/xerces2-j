@@ -48,10 +48,9 @@ public interface DOMLocator {
     public int getOffset();
 
     /**
-     * The DOM Node where the error occured, or null if there is no Node 
-     * available.
+     * The node this locator is pointing to, or null if no node is available
      */
-    public Node getErrorNode();
+    public Node getRelatedNode();
 
     /**
      * The URI where the error occured, or null if there is no URI available.

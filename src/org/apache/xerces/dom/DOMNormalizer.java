@@ -878,7 +878,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
         fDOMError.fMessage = message;
         fDOMError.fSeverity = severity;
         fDOMError.fLocator = fLocator;
-        fLocator.fErrorNode = node;
+        fLocator.fRelatedNode = node;
         return fDOMError;
     }
 

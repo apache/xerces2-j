@@ -150,7 +150,7 @@ public class TextImpl
      * Returns whether this text node contains whitespace in element content, 
      * often abusively called "ignorable whitespace".     
      */
-    public boolean getIsWhitespaceInElementContent(){
+    public boolean isWhitespaceInElementContent(){
         // REVISIT: is this implemenation correct?
         if (needsSyncData()) {
             synchronizeData();

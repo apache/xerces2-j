@@ -1,28 +1,26 @@
 /*
- * Copyright (c) 2002 World Wide Web Consortium,
- * (Massachusetts Institute of Technology, Institut National de
- * Recherche en Informatique et en Automatique, Keio University). All
- * Rights Reserved. This program is distributed under the W3C's Software
- * Intellectual Property License. This program is distributed in the
- * hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- * PURPOSE.
- * See W3C License http://www.w3.org/Consortium/Legal/ for more details.
+ * Copyright (c) 2003 World Wide Web Consortium,
+ *
+ * (Massachusetts Institute of Technology, European Research Consortium for
+ * Informatics and Mathematics, Keio University). All Rights Reserved. This
+ * work is distributed under the W3C(r) Software License [1] in the hope that
+ * it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
  */
 
 package org.w3c.dom;
 
-/**
+/** 
  * DOM Level 3 WD Experimental:
  * The DOM Level 3 specification is at the stage 
  * of Working Draft, which represents work in 
  * progress and thus may be updated, replaced, 
  * or obsoleted by other documents at any time. 
- * <p>
- * This interface represents an entity, either parsed or unparsed, in an XML 
- * document. Note that this models the entity itself not the entity 
- * declaration. <code>Entity</code> declaration modeling has been left for a 
- * later Level of the DOM specification.
+ * 
+ * This interface represents a known entity, either parsed or unparsed, in an 
+ * XML document. Note that this models the entity itself <em>not</em> the entity declaration.
  * <p>The <code>nodeName</code> attribute that is inherited from 
  * <code>Node</code> contains the name of the entity.
  * <p>An XML processor may choose to completely expand entities before the 
@@ -33,33 +31,35 @@ package org.w3c.dom;
  * external parameter entities. This means that parsed entities declared in 
  * the external subset need not be expanded by some classes of applications, 
  * and that the replacement text of the entity may not be available. When 
- * the replacement text is available, the corresponding <code>Entity</code> 
- * node's child list represents the structure of that replacement value. 
- * Otherwise, the child list is empty.
+ * the <a href='http://www.w3.org/TR/2000/REC-xml-20001006#intern-replacement'>
+ * replacement text</a> is available, the corresponding <code>Entity</code> node's child list 
+ * represents the structure of that replacement value. Otherwise, the child 
+ * list is empty.
  * <p>The DOM Level 2 does not support editing <code>Entity</code> nodes; if a 
  * user wants to make changes to the contents of an <code>Entity</code>, 
  * every related <code>EntityReference</code> node has to be replaced in the 
  * structure model by a clone of the <code>Entity</code>'s contents, and 
  * then the desired changes must be made to each of those clones instead. 
  * <code>Entity</code> nodes and all their descendants are readonly.
- * <p>An <code>Entity</code> node does not have any parent.If the entity 
- * contains an unbound namespace prefix, the <code>namespaceURI</code> of 
- * the corresponding node in the <code>Entity</code> node subtree is 
- * <code>null</code>. The same is true for <code>EntityReference</code> 
- * nodes that refer to this entity, when they are created using the 
- * <code>createEntityReference</code> method of the <code>Document</code> 
- * interface. The DOM Level 2 does not support any mechanism to resolve 
- * namespace prefixes. The properties [notation name] and [notation] defined 
- * in  are not accessible from DOM Level 3 Core. However,  does provide a 
- * way to access them. 
- * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020409'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>An <code>Entity</code> node does not have any parent.
+ * <p ><b>Note:</b> If the entity contains an unbound namespace prefix, the 
+ * <code>namespaceURI</code> of the corresponding node in the 
+ * <code>Entity</code> node subtree is <code>null</code>. The same is true 
+ * for <code>EntityReference</code> nodes that refer to this entity, when 
+ * they are created using the <code>createEntityReference</code> method of 
+ * the <code>Document</code> interface. The DOM Level 2 does not support any 
+ * mechanism to resolve namespace prefixes.
+ * <p ><b>Note:</b>  The properties [notation name] and [notation] defined in [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information set</a>]
+ *  are not accessible from DOM Level 3 Core. 
+ * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226'>Document Object Model (DOM) Level 3 Core Specification</a>.
  */
 public interface Entity extends Node {
     /**
      * The public identifier associated with the entity if specified, and 
      * <code>null</code> otherwise.
      * <br> This attribute represents the property [public identifier] defined 
-     * by the Unparsed Entity Information Item in . 
+     * by the Unparsed Entity Information Item in [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information set</a>]
+     * . 
      */
     public String getPublicId();
 
@@ -67,7 +67,8 @@ public interface Entity extends Node {
      * The system identifier associated with the entity if specified, and 
      * <code>null</code> otherwise. This may be an absolute URI or not.
      * <br> This attribute represents the property [system identifier] defined 
-     * by the Unparsed Entity Information Item in . 
+     * by the Unparsed Entity Information Item in [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information set</a>]
+     * . 
      */
     public String getSystemId();
 

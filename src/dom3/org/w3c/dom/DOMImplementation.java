@@ -1,28 +1,28 @@
 /*
- * Copyright (c) 2002 World Wide Web Consortium,
- * (Massachusetts Institute of Technology, Institut National de
- * Recherche en Informatique et en Automatique, Keio University). All
- * Rights Reserved. This program is distributed under the W3C's Software
- * Intellectual Property License. This program is distributed in the
- * hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- * PURPOSE.
- * See W3C License http://www.w3.org/Consortium/Legal/ for more details.
+ * Copyright (c) 2003 World Wide Web Consortium,
+ *
+ * (Massachusetts Institute of Technology, European Research Consortium for
+ * Informatics and Mathematics, Keio University). All Rights Reserved. This
+ * work is distributed under the W3C(r) Software License [1] in the hope that
+ * it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
  */
 
 package org.w3c.dom;
 
-/**
+/** 
  * DOM Level 3 WD Experimental:
  * The DOM Level 3 specification is at the stage 
  * of Working Draft, which represents work in 
  * progress and thus may be updated, replaced, 
  * or obsoleted by other documents at any time. 
- * <p>
+ * 
  * The <code>DOMImplementation</code> interface provides a number of methods 
  * for performing operations that are independent of any particular instance 
  * of the document object model.
- * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020409'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226'>Document Object Model (DOM) Level 3 Core Specification</a>.
  */
 public interface DOMImplementation {
     /**
@@ -47,9 +47,7 @@ public interface DOMImplementation {
     /**
      * Creates an empty <code>DocumentType</code> node. Entity declarations 
      * and notations are not made available. Entity reference expansions and 
-     * default attribute additions do not occur. It is expected that a 
-     * future version of the DOM will provide a way for populating a 
-     * <code>DocumentType</code>.
+     * default attribute additions do not occur..
      * @param qualifiedName The qualified name of the document type to be 
      *   created.
      * @param publicId The external subset public identifier.
@@ -61,12 +59,9 @@ public interface DOMImplementation {
      *   contains an illegal character.
      *   <br>NAMESPACE_ERR: Raised if the <code>qualifiedName</code> is 
      *   malformed.
-     *   <br>NOT_SUPPORTED_ERR: May be raised by DOM implementations which do 
-     *   not support the <code>"XML"</code> feature, if they choose not to 
-     *   support this method. Other features introduced in the future, by 
-     *   the DOM WG or in extensions defined by other groups, may also 
-     *   demand support for this method; please consult the definition of 
-     *   the feature to see if it requires this method. 
+     *   <br>NOT_SUPPORTED_ERR: May be raised if the implementation does not 
+     *   support the feature "XML" and the language exposed through the 
+     *   Document does not support XML Namespaces (such as [<a href='http://www.w3.org/TR/1999/REC-html401-19991224/'>HTML 4.01</a>]). 
      * @since DOM Level 2
      */
     public DocumentType createDocumentType(String qualifiedName, 
@@ -80,12 +75,13 @@ public interface DOMImplementation {
      * <br>Note that based on the <code>DocumentType</code> given to create 
      * the document, the implementation may instantiate specialized 
      * <code>Document</code> objects that support additional features than 
-     * the "Core", such as "HTML" . On the other hand, setting the 
-     * <code>DocumentType</code> after the document was created makes this 
-     * very unlikely to happen. Alternatively, specialized 
-     * <code>Document</code> creation methods, such as 
-     * <code>createHTMLDocument</code> , can be used to obtain specific 
-     * types of <code>Document</code> objects.
+     * the "Core", such as "HTML" [<a href='http://www.w3.org/TR/2003/REC-DOM-Level-2-HTML-20030109'>DOM Level 2 HTML</a>]
+     * . On the other hand, setting the <code>DocumentType</code> after the 
+     * document was created makes this very unlikely to happen. 
+     * Alternatively, specialized <code>Document</code> creation methods, 
+     * such as <code>createHTMLDocument</code> [<a href='http://www.w3.org/TR/2003/REC-DOM-Level-2-HTML-20030109'>DOM Level 2 HTML</a>]
+     * , can be used to obtain specific types of <code>Document</code> 
+     * objects.
      * @param namespaceURI The namespace URI of the document element to 
      *   create or <code>null</code>.
      * @param qualifiedName The qualified name of the document element to be 
@@ -107,20 +103,17 @@ public interface DOMImplementation {
      *   <code>qualifiedName</code> is <code>null</code> and the 
      *   <code>namespaceURI</code> is different from <code>null</code>, or 
      *   if the <code>qualifiedName</code> has a prefix that is "xml" and 
-     *   the <code>namespaceURI</code> is different from "
-     *   http://www.w3.org/XML/1998/namespace" , or if the DOM 
-     *   implementation does not support the <code>"XML"</code> feature but 
-     *   a non-null namespace URI was provided, since namespaces were 
-     *   defined by XML.
+     *   the <code>namespaceURI</code> is different from "<a href='http://www.w3.org/XML/1998/namespace'>
+     *   http://www.w3.org/XML/1998/namespace</a>" [<a href='http://www.w3.org/TR/1999/REC-xml-names-19990114/'>XML Namespaces</a>]
+     *   , or if the DOM implementation does not support the 
+     *   <code>"XML"</code> feature but a non-null namespace URI was 
+     *   provided, since namespaces were defined by XML.
      *   <br>WRONG_DOCUMENT_ERR: Raised if <code>doctype</code> has already 
      *   been used with a different document or was created from a different 
      *   implementation.
-     *   <br>NOT_SUPPORTED_ERR: May be raised by DOM implementations which do 
-     *   not support the "XML" feature, if they choose not to support this 
-     *   method. Other features introduced in the future, by the DOM WG or 
-     *   in extensions defined by other groups, may also demand support for 
-     *   this method; please consult the definition of the feature to see if 
-     *   it requires this method. 
+     *   <br>NOT_SUPPORTED_ERR: May be raised if the implementation does not 
+     *   support the feature "XML" and the language exposed through the 
+     *   Document does not support XML Namespaces (such as [<a href='http://www.w3.org/TR/1999/REC-html401-19991224/'>HTML 4.01</a>]). 
      * @since DOM Level 2
      */
     public Document createDocument(String namespaceURI, 
@@ -129,20 +122,29 @@ public interface DOMImplementation {
                                    throws DOMException;
 
     /**
-     * This method makes available a <code>DOMImplementation</code>'s 
-     * specialized interface (see ).
+     *  This method returns a specialized object which implements the 
+     * specialized APIs of the specified feature and version. The 
+     * specialized object may also be obtained by using binding-specific 
+     * casting methods but is not necessarily expected to, as discussed in . 
+     * This method also allow the implementation to provide specialized 
+     * objects which do not support the <code>DOMImplementation</code> 
+     * interface. 
      * @param feature The name of the feature requested (case-insensitive).
-     * @return Returns an alternate <code>DOMImplementation</code> which 
-     *   implements the specialized APIs of the specified feature, if any, 
-     *   or <code>null</code> if there is no alternate 
-     *   <code>DOMImplementation</code> object which implements interfaces 
-     *   associated with that feature. Any alternate 
-     *   <code>DOMImplementation</code> returned by this method must 
-     *   delegate to the primary core <code>DOMImplementation</code> and not 
-     *   return results inconsistent with the primary 
-     *   <code>DOMImplementation</code>
+     * @param version  This is the version number of the feature to test. If 
+     *   the version is <code>null</code> or the empty string, supporting 
+     *   any version of the feature will cause the method to return an 
+     *   object that supports at least one version of the feature. 
+     * @return  Returns an object which implements the specialized APIs of 
+     *   the specified feature and version, if any, or <code>null</code> if 
+     *   there is no object which implements interfaces associated with that 
+     *   feature. If the <code>DOMObject</code> returned by this method 
+     *   implements the <code>DOMImplementation</code> interface, it must 
+     *   delegate to the primary core <code>Node</code> and not return 
+     *   results inconsistent with the primary core <code>Node</code> such 
+     *   as attributes, childNodes, etc. 
      * @since DOM Level 3
      */
-    public DOMImplementation getInterface(String feature);
+    public Node getFeature(String feature, 
+                           String version);
 
 }

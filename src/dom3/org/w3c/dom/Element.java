@@ -1,24 +1,24 @@
 /*
- * Copyright (c) 2002 World Wide Web Consortium,
- * (Massachusetts Institute of Technology, Institut National de
- * Recherche en Informatique et en Automatique, Keio University). All
- * Rights Reserved. This program is distributed under the W3C's Software
- * Intellectual Property License. This program is distributed in the
- * hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- * PURPOSE.
- * See W3C License http://www.w3.org/Consortium/Legal/ for more details.
+ * Copyright (c) 2003 World Wide Web Consortium,
+ *
+ * (Massachusetts Institute of Technology, European Research Consortium for
+ * Informatics and Mathematics, Keio University). All Rights Reserved. This
+ * work is distributed under the W3C(r) Software License [1] in the hope that
+ * it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
  */
 
 package org.w3c.dom;
 
-/**
+/** 
  * DOM Level 3 WD Experimental:
  * The DOM Level 3 specification is at the stage 
  * of Working Draft, which represents work in 
  * progress and thus may be updated, replaced, 
  * or obsoleted by other documents at any time. 
- * <p>
+ * 
  * The <code>Element</code> interface represents an element in an HTML or XML 
  * document. Elements may have attributes associated with them; since the 
  * <code>Element</code> interface inherits from <code>Node</code>, the 
@@ -30,13 +30,13 @@ package org.w3c.dom;
  * <code>Attr</code> object should be retrieved to examine the possibly 
  * fairly complex sub-tree representing the attribute value. On the other 
  * hand, in HTML, where all attributes have simple string values, methods to 
- * directly access an attribute value can safely be used as a convenience.In 
- * DOM Level 2, the method <code>normalize</code> is inherited from the 
- * <code>Node</code> interface where it was moved. The property [in-scope 
- * namespaces] defined in  are not accessible from DOM Level 3 Core. 
- * However,  does provide a way to access the property [in-scope namespaces].
- *  
- * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020409'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * directly access an attribute value can safely be used as a convenience.
+ * <p ><b>Note:</b> In DOM Level 2, the method <code>normalize</code> is 
+ * inherited from the <code>Node</code> interface where it was moved.
+ * <p ><b>Note:</b>  The property [in-scope namespaces] defined in [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information set</a>]
+ *  are not accessible from DOM Level 3 Core. However, [<a href='http://www.w3.org/TR/DOM-Level-3-XPath/'>DOM Level 3 XPath</a>] does 
+ * provide a way to access the property [in-scope namespaces]. 
+ * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226'>Document Object Model (DOM) Level 3 Core Specification</a>.
  */
 public interface Element extends Node {
     /**
@@ -86,11 +86,13 @@ public interface Element extends Node {
                              throws DOMException;
 
     /**
-     * Removes an attribute by name. If the removed attribute is known to have 
-     * a default value, an attribute immediately appears containing the 
-     * default value as well as the corresponding namespace URI, local name, 
-     * and prefix when applicable. If the attribute does not have a 
-     * specified or default value, calling this method has no effect.
+     * Removes an attribute by name. If a default value for the removed 
+     * attribute is defined in the DTD, a new attribute immediately appears 
+     * with the default value as well as the corresponding namespace URI, 
+     * local name, and prefix when applicable. The implementation may handle 
+     * default values from other schemas similarly but applications should 
+     * use normalizeDocument() to guarantee this information is up-to-date.
+     * <br>If no attribute with this name is found, this method has no effect.
      * <br>To remove an attribute by local name and namespace URI, use the 
      * <code>removeAttributeNS</code> method.
      * @param name The name of the attribute to remove.
@@ -136,10 +138,13 @@ public interface Element extends Node {
                                  throws DOMException;
 
     /**
-     * Removes the specified attribute node. If the removed <code>Attr</code> 
-     * has a default value it is immediately replaced. The replacing 
-     * attribute has the same namespace URI and local name, as well as the 
-     * original prefix, when applicable.
+     * Removes the specified attribute node. If a default value for the 
+     * removed <code>Attr</code> node is defined in the DTD, a new node 
+     * immediately appears with the default value as well as the 
+     * corresponding namespace URI, local name, and prefix when applicable. 
+     * The implementation may handle default values from other schemas 
+     * similarly but applications should use normalizeDocument() to 
+     * guarantee this information is up-to-date.
      * @param oldAttr The <code>Attr</code> node to remove from the attribute 
      *   list.
      * @return The <code>Attr</code> node that was removed.
@@ -162,20 +167,22 @@ public interface Element extends Node {
 
     /**
      * Retrieves an attribute value by local name and namespace URI.
-     * <br>Documents which do not support the "XML" feature will permit only 
-     * the DOM Level 1 calls for creating/setting elements and attributes. 
-     * Hence, if you specify a non-null namespace URI, these DOMs will never 
-     * find a matching node.
-     * <br>Per , applications must use the value null as the namespaceURI 
-     * parameter for methods if they wish to have no namespace.
+     * <br>Per [<a href='http://www.w3.org/TR/1999/REC-xml-names-19990114/'>XML Namespaces</a>]
+     * , applications must use the value null as the namespaceURI parameter 
+     * for methods if they wish to have no namespace.
      * @param namespaceURI The namespace URI of the attribute to retrieve.
      * @param localName The local name of the attribute to retrieve.
      * @return The <code>Attr</code> value as a string, or the empty string 
      *   if that attribute does not have a specified or default value.
+     * @exception DOMException
+     *   NOT_SUPPORTED_ERR: May be raised if the implementation does not 
+     *   support the feature "XML" and the language exposed through the 
+     *   Document does not support XML Namespaces (such as [<a href='http://www.w3.org/TR/1999/REC-html401-19991224/'>HTML 4.01</a>]). 
      * @since DOM Level 2
      */
     public String getAttributeNS(String namespaceURI, 
-                                 String localName);
+                                 String localName)
+                                 throws DOMException;
 
     /**
      * Adds a new attribute. If an attribute with the same local name and 
@@ -192,8 +199,9 @@ public interface Element extends Node {
      * and use <code>setAttributeNodeNS</code> or 
      * <code>setAttributeNode</code> to assign it as the value of an 
      * attribute.
-     * <br>Per , applications must use the value null as the namespaceURI 
-     * parameter for methods if they wish to have no namespace.
+     * <br>Per [<a href='http://www.w3.org/TR/1999/REC-xml-names-19990114/'>XML Namespaces</a>]
+     * , applications must use the value null as the namespaceURI parameter 
+     * for methods if they wish to have no namespace.
      * @param namespaceURI The namespace URI of the attribute to create or 
      *   alter.
      * @param qualifiedName The qualified name of the attribute to create or 
@@ -201,21 +209,19 @@ public interface Element extends Node {
      * @param value The value to set in string form.
      * @exception DOMException
      *   INVALID_CHARACTER_ERR: Raised if the specified qualified name 
-     *   contains an illegal character, per the XML 1.0 specification .
+     *   contains an illegal character.
      *   <br>NO_MODIFICATION_ALLOWED_ERR: Raised if this node is readonly.
      *   <br>NAMESPACE_ERR: Raised if the <code>qualifiedName</code> is 
      *   malformed per the Namespaces in XML specification, if the 
      *   <code>qualifiedName</code> has a prefix and the 
      *   <code>namespaceURI</code> is <code>null</code>, if the 
      *   <code>qualifiedName</code> has a prefix that is "xml" and the 
-     *   <code>namespaceURI</code> is different from "
-     *   http://www.w3.org/XML/1998/namespace", or if the 
-     *   <code>qualifiedName</code>, or its prefix, is "xmlns" and the 
-     *   <code>namespaceURI</code> is different from "
-     *   http://www.w3.org/2000/xmlns/".
-     *   <br>NOT_SUPPORTED_ERR: Always thrown if the current document does not 
-     *   support the <code>"XML"</code> feature, since namespaces were 
-     *   defined by XML.
+     *   <code>namespaceURI</code> is different from "<a href='http://www.w3.org/XML/1998/namespace'>
+     *   http://www.w3.org/XML/1998/namespace</a>", if the <code>qualifiedName</code> or its prefix is "xmlns" and the 
+     *   <code>namespaceURI</code> is different from "<a href='http://www.w3.org/2000/xmlns/'>http://www.w3.org/2000/xmlns/</a>", or if the <code>namespaceURI</code> is "<a href='http://www.w3.org/2000/xmlns/'>http://www.w3.org/2000/xmlns/</a>" and neither the <code>qualifiedName</code> nor its prefix is "xmlns".
+     *   <br>NOT_SUPPORTED_ERR: May be raised if the implementation does not 
+     *   support the feature "XML" and the language exposed through the 
+     *   Document does not support XML Namespaces (such as [<a href='http://www.w3.org/TR/1999/REC-html401-19991224/'>HTML 4.01</a>]). 
      * @since DOM Level 2
      */
     public void setAttributeNS(String namespaceURI, 
@@ -224,21 +230,25 @@ public interface Element extends Node {
                                throws DOMException;
 
     /**
-     * Removes an attribute by local name and namespace URI. If the removed 
-     * attribute has a default value it is immediately replaced. The 
-     * replacing attribute has the same namespace URI and local name, as 
-     * well as the original prefix. If the attribute does not have a 
-     * specified or default value, calling this method has no effect.
-     * <br>Documents which do not support the "XML" feature will permit only 
-     * the DOM Level 1 calls for creating/setting elements and attributes. 
-     * Hence, if you specify a non-null namespace URI, these DOMs will never 
-     * find a matching node.
-     * <br>Per , applications must use the value null as the namespaceURI 
-     * parameter for methods if they wish to have no namespace.
+     * Removes an attribute by local name and namespace URI. If a default 
+     * value for the removed attribute is defined in the DTD, a new 
+     * attribute immediately appears with the default value as well as the 
+     * corresponding namespace URI, local name, and prefix when applicable. 
+     * The implementation may handle default values from other schemas 
+     * similarly but applications should use normalizeDocument() to 
+     * guarantee this information is up-to-date.
+     * <br>If no attribute with this local name and namespace URI is found, 
+     * this method has no effect.
+     * <br>Per [<a href='http://www.w3.org/TR/1999/REC-xml-names-19990114/'>XML Namespaces</a>]
+     * , applications must use the value null as the namespaceURI parameter 
+     * for methods if they wish to have no namespace.
      * @param namespaceURI The namespace URI of the attribute to remove.
      * @param localName The local name of the attribute to remove.
      * @exception DOMException
      *   NO_MODIFICATION_ALLOWED_ERR: Raised if this node is readonly.
+     *   <br>NOT_SUPPORTED_ERR: May be raised if the implementation does not 
+     *   support the feature "XML" and the language exposed through the 
+     *   Document does not support XML Namespaces (such as [<a href='http://www.w3.org/TR/1999/REC-html401-19991224/'>HTML 4.01</a>]). 
      * @since DOM Level 2
      */
     public void removeAttributeNS(String namespaceURI, 
@@ -247,28 +257,31 @@ public interface Element extends Node {
 
     /**
      * Retrieves an <code>Attr</code> node by local name and namespace URI.
-     * <br>Documents which do not support the "XML" feature will permit only 
-     * the DOM Level 1 calls for creating/setting elements and attributes. 
-     * Hence, if you specify a non-null namespace URI, these DOMs will never 
-     * find a matching node.
-     * <br>Per , applications must use the value null as the namespaceURI 
-     * parameter for methods if they wish to have no namespace.
+     * <br>Per [<a href='http://www.w3.org/TR/1999/REC-xml-names-19990114/'>XML Namespaces</a>]
+     * , applications must use the value null as the namespaceURI parameter 
+     * for methods if they wish to have no namespace.
      * @param namespaceURI The namespace URI of the attribute to retrieve.
      * @param localName The local name of the attribute to retrieve.
      * @return The <code>Attr</code> node with the specified attribute local 
      *   name and namespace URI or <code>null</code> if there is no such 
      *   attribute.
+     * @exception DOMException
+     *   NOT_SUPPORTED_ERR: May be raised if the implementation does not 
+     *   support the feature "XML" and the language exposed through the 
+     *   Document does not support XML Namespaces (such as [<a href='http://www.w3.org/TR/1999/REC-html401-19991224/'>HTML 4.01</a>]). 
      * @since DOM Level 2
      */
     public Attr getAttributeNodeNS(String namespaceURI, 
-                                   String localName);
+                                   String localName)
+                                   throws DOMException;
 
     /**
      * Adds a new attribute. If an attribute with that local name and that 
      * namespace URI is already present in the element, it is replaced by 
      * the new one. Replacing an attribute node by itself has no effect.
-     * <br>Per , applications must use the value null as the namespaceURI 
-     * parameter for methods if they wish to have no namespace.
+     * <br>Per [<a href='http://www.w3.org/TR/1999/REC-xml-names-19990114/'>XML Namespaces</a>]
+     * , applications must use the value null as the namespaceURI parameter 
+     * for methods if they wish to have no namespace.
      * @param newAttr The <code>Attr</code> node to add to the attribute list.
      * @return If the <code>newAttr</code> attribute replaces an existing 
      *   attribute with the same local name and namespace URI, the replaced 
@@ -282,9 +295,9 @@ public interface Element extends Node {
      *   attribute of another <code>Element</code> object. The DOM user must 
      *   explicitly clone <code>Attr</code> nodes to re-use them in other 
      *   elements.
-     *   <br>NOT_SUPPORTED_ERR: Always thrown if the current document does not 
-     *   support the <code>"XML"</code> feature, since namespaces were 
-     *   defined by XML.
+     *   <br>NOT_SUPPORTED_ERR: May be raised if the implementation does not 
+     *   support the feature "XML" and the language exposed through the 
+     *   Document does not support XML Namespaces (such as [<a href='http://www.w3.org/TR/1999/REC-html401-19991224/'>HTML 4.01</a>]). 
      * @since DOM Level 2
      */
     public Attr setAttributeNodeNS(Attr newAttr)
@@ -294,20 +307,21 @@ public interface Element extends Node {
      * Returns a <code>NodeList</code> of all the descendant 
      * <code>Elements</code> with a given local name and namespace URI in 
      * document order.
-     * <br>Documents which do not support the "XML" feature will permit only 
-     * the DOM Level 1 calls for creating/setting elements and attributes. 
-     * Hence, if you specify a non-null namespace URI, these DOMs will never 
-     * find a matching node.
      * @param namespaceURI The namespace URI of the elements to match on. The 
      *   special value "*" matches all namespaces.
      * @param localName The local name of the elements to match on. The 
      *   special value "*" matches all local names.
      * @return A new <code>NodeList</code> object containing all the matched 
      *   <code>Elements</code>.
+     * @exception DOMException
+     *   NOT_SUPPORTED_ERR: May be raised if the implementation does not 
+     *   support the feature "XML" and the language exposed through the 
+     *   Document does not support XML Namespaces (such as [<a href='http://www.w3.org/TR/1999/REC-html401-19991224/'>HTML 4.01</a>]). 
      * @since DOM Level 2
      */
     public NodeList getElementsByTagNameNS(String namespaceURI, 
-                                           String localName);
+                                           String localName)
+                                           throws DOMException;
 
     /**
      * Returns <code>true</code> when an attribute with a given name is 
@@ -325,72 +339,98 @@ public interface Element extends Node {
      * Returns <code>true</code> when an attribute with a given local name and 
      * namespace URI is specified on this element or has a default value, 
      * <code>false</code> otherwise.
-     * <br>Documents which do not support the "XML" feature will permit only 
-     * the DOM Level 1 calls for creating/setting elements and attributes. 
-     * Hence, if you specify a non-null namespace URI, these DOMs will never 
-     * find a matching node.
-     * <br>Per , applications must use the value null as the namespaceURI 
-     * parameter for methods if they wish to have no namespace.
+     * <br>Per [<a href='http://www.w3.org/TR/1999/REC-xml-names-19990114/'>XML Namespaces</a>]
+     * , applications must use the value null as the namespaceURI parameter 
+     * for methods if they wish to have no namespace.
      * @param namespaceURI The namespace URI of the attribute to look for.
      * @param localName The local name of the attribute to look for.
      * @return <code>true</code> if an attribute with the given local name 
      *   and namespace URI is specified or has a default value on this 
      *   element, <code>false</code> otherwise.
+     * @exception DOMException
+     *   NOT_SUPPORTED_ERR: May be raised if the implementation does not 
+     *   support the feature "XML" and the language exposed through the 
+     *   Document does not support XML Namespaces (such as [<a href='http://www.w3.org/TR/1999/REC-html401-19991224/'>HTML 4.01</a>]). 
      * @since DOM Level 2
      */
     public boolean hasAttributeNS(String namespaceURI, 
-                                  String localName);
+                                  String localName)
+                                  throws DOMException;
 
-    /**
-     * Declares the attribute specified by node to be of type ID. 
-     * If the value of the specified attribute is unique then this 
-     * element node can later be retrieved using getElementById on Document. 
-     * Note, however, that this simply affects this node and does not change 
-     * any grammar that may be in use. 
-     * 
-     * @param at
-     * @param makeId
-     * @since DOM Level 3
-     */
-    public void setIdAttributeNode(Attr at, boolean makeId) throws DOMException;
-
-    /**
-     * Declares the attribute specified by name to be of type ID.
-     * If the value of the specified attribute is unique then this
-     * element node can later be retrieved using getElementById on Document.
-     * Note, however, that this simply affects this node and does not change
-     * any grammar that may be in use.
-     * To specify an attribute by local name and namespace URI, use the setIdAttributeNS method.
-     * 
-     * @param name
-     * @param makeId
-     * @exception DOMException
-     * @since DOM Level 3
-     */
-    public void setIdAttribute(String name, boolean makeId) throws DOMException;
-
-    /**
-     * Declares the attribute specified by local name and namespace URI 
-     * to be of type ID. If the value of the specified attribute is unique 
-     * then this element node can later be retrieved using getElementById on 
-     * Document. Note, however, that this simply affects this node and does 
-     * not change any grammar that may be in use. 
-     * 
-     * @param namespaceURI
-     * @param localName
-     * @param makeId
-     * @exception DOMException
-    * @since DOM Level 3
-     */
-    public void setIdAttributeNS(String namespaceURI, String localName,
-                                    boolean makeId) throws DOMException;
-                                    
     /**
      *  The type information associated with this element. 
      * @since DOM Level 3
      */
     public TypeInfo getSchemaTypeInfo();
 
+    /**
+     * Declares the attribute specified by name to be of type ID. If the value 
+     * of the specified attribute is unique then this element node can later 
+     * be retrieved using <code>getElementById</code> on 
+     * <code>Document</code>. Note, however, that this simply affects this 
+     * node and does not change any grammar that may be in use. 
+     * Consequently, it may be reset according to the grammar when the 
+     * document is normalized.
+     * <br>To specify an attribute by local name and namespace URI, use the 
+     * <code>setIdAttributeNS</code> method.
+     * @param name The name of the attribute.
+     * @param isId Whether the attribute is a of type ID.
+     * @exception DOMException
+     *   NO_MODIFICATION_ALLOWED_ERR: Raised if this node is readonly.
+     *   <br>NOT_FOUND_ERR: Raised if the specified node is not an attribute 
+     *   of this element.removeAttribute is a no-op if the attribute does 
+     *   not exist. Does it matter?removeAttribute is fine as a no-op 
+     *   because the application gets the right result. This isn't true 
+     *   here. So keep the exception. (Telcon 2002 June 12)
+     * @since DOM Level 3
+     */
+    public void setIdAttribute(String name, 
+                               boolean isId)
+                               throws DOMException;
 
+    /**
+     * Declares the attribute specified by local name and namespace URI to be 
+     * of type ID. If the value of the specified attribute is unique then 
+     * this element node can later be retrieved using 
+     * <code>getElementById</code> on <code>Document</code>. Note, however, 
+     * that this simply affects this node and does not change any grammar 
+     * that may be in use. Consequently, it may be reset according to the 
+     * grammar when the document is normalized.
+     * @param namespaceURI The namespace URI of the attribute.
+     * @param localName The local name of the attribute.
+     * @param isId Whether the attribute is a of type ID.
+     * @exception DOMException
+     *   NO_MODIFICATION_ALLOWED_ERR: Raised if this node is readonly.
+     *   <br>NOT_FOUND_ERR: Raised if the specified node is not an attribute 
+     *   of this element.removeAttributeNS is a no-op if the attribute does 
+     *   not exist. Does it matter?removeAttributeNS is fine as a no-op 
+     *   because the application gets the right result. This isn't true 
+     *   here. So keep the exception. (Telcon 2002 June 12)
+     * @since DOM Level 3
+     */
+    public void setIdAttributeNS(String namespaceURI, 
+                                 String localName, 
+                                 boolean isId)
+                                 throws DOMException;
+
+    /**
+     * Declares the attribute specified by node to be of type ID. If the value 
+     * of the specified attribute is unique then this element node can later 
+     * be retrieved using <code>getElementById</code> on 
+     * <code>Document</code>. Note, however, that this simply affects this 
+     * node and does not change any grammar that may be in use. 
+     * Consequently, it may be reset according to the grammar when the 
+     * document is normalized.
+     * @param idAttr The attribute node.
+     * @param isId Whether the attribute is a of type ID.
+     * @exception DOMException
+     *   NO_MODIFICATION_ALLOWED_ERR: Raised if this node is readonly.
+     *   <br>NOT_FOUND_ERR: Raised if the specified node is not an attribute 
+     *   of this element.
+     * @since DOM Level 3
+     */
+    public void setIdAttributeNode(Attr idAttr, 
+                                   boolean isId)
+                                   throws DOMException;
 
 }

@@ -1450,11 +1450,9 @@ public abstract class NodeImpl
      * Look up the prefix associated to the given namespace URI, starting from this node.
      * 
      * @param namespaceURI
-     * @param useDefault
      * @return the prefix for the namespace
      */
-    public String lookupNamespacePrefix(String namespaceURI, 
-                                        boolean useDefault){
+    public String lookupPrefix(String namespaceURI){
         
         // REVISIT: When Namespaces 1.1 comes out this may not be true
         // Prefix can't be bound to null namespace
@@ -1468,10 +1466,10 @@ public abstract class NodeImpl
         case Node.ELEMENT_NODE: {
 
                 String namespace = this.getNamespaceURI(); // to flip out children 
-                return lookupNamespacePrefix(namespaceURI, useDefault, (ElementImpl)this);
+                return lookupNamespacePrefix(namespaceURI, (ElementImpl)this);
             }
         case Node.DOCUMENT_NODE:{
-                return((NodeImpl)((Document)this).getDocumentElement()).lookupNamespacePrefix(namespaceURI, useDefault);
+                return((NodeImpl)((Document)this).getDocumentElement()).lookupPrefix(namespaceURI);
             }
 
         case Node.ENTITY_NODE :
@@ -1482,7 +1480,7 @@ public abstract class NodeImpl
             return null;
         case Node.ATTRIBUTE_NODE:{
                 if (this.ownerNode.getNodeType() == Node.ELEMENT_NODE) {
-                    return ownerNode.lookupNamespacePrefix(namespaceURI, useDefault);
+                    return ownerNode.lookupPrefix(namespaceURI);
 
                 }
                 return null;
@@ -1490,7 +1488,7 @@ public abstract class NodeImpl
         default:{   
                 NodeImpl ancestor = (NodeImpl)getElementAncestor(this);
                 if (ancestor != null) {
-                    return ancestor.lookupNamespacePrefix(namespaceURI, useDefault);
+                    return ancestor.lookupPrefix(namespaceURI);
                 }
                 return null;
             }
@@ -1595,14 +1593,14 @@ public abstract class NodeImpl
         return null;
     }
 
-    String lookupNamespacePrefix(String namespaceURI, boolean useDefault, ElementImpl el){
+    String lookupNamespacePrefix(String namespaceURI, ElementImpl el){
         String namespace = this.getNamespaceURI();
         // REVISIT: if no prefix is available is it null or empty string, or 
         //          could be both?
         String prefix = this.getPrefix();
 
         if (namespace!=null && namespace.equals(namespaceURI)) {
-            if (useDefault || prefix != null) {
+            if (prefix != null) {
                 String foundNamespace =  el.lookupNamespaceURI(prefix);
                 if (foundNamespace !=null && foundNamespace.equals(namespaceURI)) {
                     return prefix;
@@ -1620,7 +1618,7 @@ public abstract class NodeImpl
                 namespace = attr.getNamespaceURI();
                 if (namespace !=null && namespace.equals("http://www.w3.org/2000/xmlns/")) {
                     // DOM Level 2 nodes
-                    if (((useDefault && attr.getNodeName().equals("xmlns")) ||
+                    if (((attr.getNodeName().equals("xmlns")) ||
                          (attrPrefix !=null && attrPrefix.equals("xmlns")) &&
                          value.equals(namespaceURI))) {
 
@@ -1638,7 +1636,7 @@ public abstract class NodeImpl
         NodeImpl ancestor = (NodeImpl)getElementAncestor(this);
 
         if (ancestor != null) {
-            return ancestor.lookupNamespacePrefix(namespaceURI, useDefault, el);
+            return ancestor.lookupNamespacePrefix(namespaceURI, el);
         }
         return null;
     }
@@ -1752,22 +1750,29 @@ public abstract class NodeImpl
     }
 
     /**
-     * This method makes available a <code>Node</code>'s specialized interface.
+     *  This method returns a specialized object which implements the 
+     * specialized APIs of the specified feature and version. The 
+     * specialized object may also be obtained by using binding-specific 
+     * casting methods but is not necessarily expected to, as discussed in Mixed DOM implementations. 
      * @param feature The name of the feature requested (case-insensitive).
-     * @return Returns an alternate <code>Node</code> which implements the 
-     *   specialized APIs of the specified feature, if any, or 
-     *   <code>null</code> if there is no alternate <code>Node</code> which 
-     *   implements interfaces associated with that feature. Any alternate 
-     *   <code>Node</code> returned by this method must delegate to the 
+     * @param version  This is the version number of the feature to test. If 
+     *   the version is <code>null</code> or the empty string, supporting 
+     *   any version of the feature will cause the method to return an 
+     *   object that supports at least one version of the feature. 
+     * @return  Returns an object which implements the specialized APIs of 
+     *   the specified feature and version, if any, or <code>null</code> if 
+     *   there is no object which implements interfaces associated with that 
+     *   feature. If the <code>DOMObject</code> returned by this method 
+     *   implements the <code>Node</code> interface, it must delegate to the 
      *   primary core <code>Node</code> and not return results inconsistent 
-     *   with the primary core <code>Node</code> such as <code>key</code>, 
-     *   <code>attributes</code>, <code>childNodes</code>, etc.
+     *   with the primary core <code>Node</code> such as attributes, 
+     *   childNodes, etc. 
      * @since DOM Level 3
      */
-    public Node getInterface(String feature) {
+    public Node getFeature(String feature, String version) {
         // we don't have any alternate node, either this node does the job
         // or we don't have anything that does
-        return isSupported(feature, null) ? this : null;
+        return isSupported(feature, version) ? this : null;
     }
 
     /**

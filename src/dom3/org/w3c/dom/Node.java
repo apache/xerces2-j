@@ -1,24 +1,24 @@
 /*
- * Copyright (c) 2002 World Wide Web Consortium,
- * (Massachusetts Institute of Technology, Institut National de
- * Recherche en Informatique et en Automatique, Keio University). All
- * Rights Reserved. This program is distributed under the W3C's Software
- * Intellectual Property License. This program is distributed in the
- * hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- * PURPOSE.
- * See W3C License http://www.w3.org/Consortium/Legal/ for more details.
+ * Copyright (c) 2003 World Wide Web Consortium,
+ *
+ * (Massachusetts Institute of Technology, European Research Consortium for
+ * Informatics and Mathematics, Keio University). All Rights Reserved. This
+ * work is distributed under the W3C(r) Software License [1] in the hope that
+ * it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
  */
 
 package org.w3c.dom;
 
-/**
+/** 
  * DOM Level 3 WD Experimental:
  * The DOM Level 3 specification is at the stage 
  * of Working Draft, which represents work in 
  * progress and thus may be updated, replaced, 
  * or obsoleted by other documents at any time. 
- * <p>
+ * 
  * The <code>Node</code> interface is the primary datatype for the entire 
  * Document Object Model. It represents a single node in the document tree. 
  * While all objects implementing the <code>Node</code> interface expose 
@@ -126,7 +126,7 @@ package org.w3c.dom;
  * <td valign='top' rowspan='1' colspan='1'>null</td>
  * </tr>
  * </table> 
- * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020409'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226'>Document Object Model (DOM) Level 3 Core Specification</a>.
  */
 public interface Node {
     // NodeType
@@ -186,9 +186,8 @@ public interface Node {
 
     /**
      * The value of this node, depending on its type; see the table above. 
-     * When it is defined to be <code>null</code>, setting it has no effect.
-     * @exception DOMException
-     *   NO_MODIFICATION_ALLOWED_ERR: Raised when the node is readonly.
+     * When it is defined to be <code>null</code>, setting it has no effect, 
+     * including if the node is read-only.
      * @exception DOMException
      *   DOMSTRING_SIZE_ERR: Raised when it would return more characters than 
      *   fit in a <code>DOMString</code> variable on the implementation 
@@ -198,13 +197,11 @@ public interface Node {
                               throws DOMException;
     /**
      * The value of this node, depending on its type; see the table above. 
-     * When it is defined to be <code>null</code>, setting it has no effect.
+     * When it is defined to be <code>null</code>, setting it has no effect, 
+     * including if the node is read-only.
      * @exception DOMException
-     *   NO_MODIFICATION_ALLOWED_ERR: Raised when the node is readonly.
-     * @exception DOMException
-     *   DOMSTRING_SIZE_ERR: Raised when it would return more characters than 
-     *   fit in a <code>DOMString</code> variable on the implementation 
-     *   platform.
+     *   NO_MODIFICATION_ALLOWED_ERR: Raised when the node is readonly and if 
+     *   it is not defined to be <code>null</code>.
      */
     public void setNodeValue(String nodeValue)
                               throws DOMException;
@@ -225,7 +222,8 @@ public interface Node {
      * <code>ProcessingInstruction</code>, an <code>EntityReference</code>, 
      * a <code>CharacterData</code>, a <code>Comment</code>, or a 
      * <code>DocumentType</code>, this attribute represents the properties 
-     * [parent] defined in . 
+     * [parent] defined in [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information set</a>]
+     * . 
      */
     public Node getParentNode();
 
@@ -236,7 +234,7 @@ public interface Node {
      * <br> When the node is a <code>Document</code>, or an 
      * <code>Element</code>, and if the <code>NodeList</code> does not 
      * contain <code>EntityReference</code> or <code>CDATASection</code> 
-     * nodes, this attribute represents the properties [children] defined in 
+     * nodes, this attribute represents the properties [children] defined in [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information set</a>]
      * . 
      */
     public NodeList getChildNodes();
@@ -269,10 +267,11 @@ public interface Node {
      * A <code>NamedNodeMap</code> containing the attributes of this node (if 
      * it is an <code>Element</code>) or <code>null</code> otherwise.
      * <br> If no namespace declaration appear in the attributes, this 
-     * attribute represents the property [attributes] defined in . If 
-     * namespace declarations appear in the attributes, this attribute 
+     * attribute represents the property [attributes] defined in [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information set</a>]
+     * . If namespace declarations appear in the attributes, this attribute 
      * combines the properties [attributes] and [namespace attributes] 
-     * defined in . 
+     * defined in [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information set</a>]
+     * . 
      */
     public NamedNodeMap getAttributes();
 
@@ -343,7 +342,7 @@ public interface Node {
      *   the new node is readonly.
      *   <br>NOT_FOUND_ERR: Raised if <code>oldChild</code> is not a child of 
      *   this node.
-     *   <br>NOT_SUPPORTED_ERR: if this node if of type <code>Document</code>, 
+     *   <br>NOT_SUPPORTED_ERR: if this node is of type <code>Document</code>, 
      *   this exception might be raised if the DOM implementation doesn't 
      *   support the replacement of the <code>DocumentType</code> child or 
      *   <code>Element</code> child.
@@ -362,7 +361,7 @@ public interface Node {
      *   NO_MODIFICATION_ALLOWED_ERR: Raised if this node is readonly.
      *   <br>NOT_FOUND_ERR: Raised if <code>oldChild</code> is not a child of 
      *   this node.
-     *   <br>NOT_SUPPORTED_ERR: if this node if of type <code>Document</code>, 
+     *   <br>NOT_SUPPORTED_ERR: if this node is of type <code>Document</code>, 
      *   this exception might be raised if the DOM implementation doesn't 
      *   support the removal of the <code>DocumentType</code> child or the 
      *   <code>Element</code> child.
@@ -394,7 +393,7 @@ public interface Node {
 
     /**
      * Returns whether this node has any children.
-     * @return <code>true</code> if this node has any children, 
+     * @return Returns <code>true</code> if this node has any children, 
      *   <code>false</code> otherwise.
      */
     public boolean hasChildNodes();
@@ -444,8 +443,10 @@ public interface Node {
      * <code>Text</code> nodes nor empty <code>Text</code> nodes. This can 
      * be used to ensure that the DOM view of a document is the same as if 
      * it were saved and re-loaded, and is useful when operations (such as 
-     * XPointer  lookups) that depend on a particular document tree 
-     * structure are to be used.In cases where the document contains 
+     * XPointer [<a href='http://www.w3.org/TR/2002/PR-xptr-framework-20021113/'>XPointer</a>] 
+     * lookups) that depend on a particular document tree structure are to 
+     * be used.
+     * <p ><b>Note:</b> In cases where the document contains 
      * <code>CDATASections</code>, the normalize operation alone may not be 
      * sufficient, since XPointers do not differentiate between 
      * <code>Text</code> nodes and <code>CDATASection</code> nodes.
@@ -460,9 +461,9 @@ public interface Node {
      *   which can be passed to the method <code>hasFeature</code> on 
      *   <code>DOMImplementation</code>.
      * @param version This is the version number of the feature to test. In 
-     *   Level 2, version 1, this is the string "2.0". If the version is not 
-     *   specified, supporting any version of the feature will cause the 
-     *   method to return <code>true</code>.
+     *   Level 2, version 1, this is the string "2.0". If the version is 
+     *   <code>null</code> or empty string, supporting any version of the 
+     *   feature will cause the method to return <code>true</code>.
      * @return Returns <code>true</code> if the specified feature is 
      *   supported on this node, <code>false</code> otherwise.
      * @since DOM Level 2
@@ -474,17 +475,19 @@ public interface Node {
      * The namespace URI of this node, or <code>null</code> if it is 
      * unspecified.
      * <br> When the node is <code>Element</code>, or <code>Attr</code>, this 
-     * attribute represents the properties [namespace name] defined in . 
+     * attribute represents the properties [namespace name] defined in [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information set</a>]
+     * . 
      * <br>This is not a computed value that is the result of a namespace 
      * lookup based on an examination of the namespace declarations in 
      * scope. It is merely the namespace URI given at creation time.
      * <br>For nodes of any type other than <code>ELEMENT_NODE</code> and 
      * <code>ATTRIBUTE_NODE</code> and nodes created with a DOM Level 1 
      * method, such as <code>createElement</code> from the 
-     * <code>Document</code> interface, this is always <code>null</code>.Per 
-     * the Namespaces in XML Specification  an attribute does not inherit 
-     * its namespace from the element it is attached to. If an attribute is 
-     * not explicitly given a namespace, it simply has no namespace.
+     * <code>Document</code> interface, this is always <code>null</code>.
+     * <p ><b>Note:</b> Per the <em>Namespaces in XML</em> Specification [<a href='http://www.w3.org/TR/1999/REC-xml-names-19990114/'>XML Namespaces</a>]
+     *  an attribute does not inherit its namespace from the element it is 
+     * attached to. If an attribute is not explicitly given a namespace, it 
+     * simply has no namespace.
      * @since DOM Level 2
      */
     public String getNamespaceURI();
@@ -493,12 +496,15 @@ public interface Node {
      * The namespace prefix of this node, or <code>null</code> if it is 
      * unspecified.
      * <br> When the node is <code>Element</code>, or <code>Attr</code>, this 
-     * attribute represents the properties [prefix] defined in . 
+     * attribute represents the properties [prefix] defined in [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information set</a>]
+     * . 
      * <br>Note that setting this attribute, when permitted, changes the 
      * <code>nodeName</code> attribute, which holds the qualified name, as 
      * well as the <code>tagName</code> and <code>name</code> attributes of 
      * the <code>Element</code> and <code>Attr</code> interfaces, when 
      * applicable.
+     * <br>Setting the prefix to <code>null</code> makes it unspecified, 
+     * setting it to an empty string is implementation dependent.
      * <br>Note also that changing the prefix of an attribute that is known to 
      * have a default value, does not make a new attribute with the default 
      * value and the original prefix appear, since the 
@@ -507,19 +513,6 @@ public interface Node {
      * <code>ATTRIBUTE_NODE</code> and nodes created with a DOM Level 1 
      * method, such as <code>createElement</code> from the 
      * <code>Document</code> interface, this is always <code>null</code>.
-     * @exception DOMException
-     *   INVALID_CHARACTER_ERR: Raised if the specified prefix contains an 
-     *   illegal character, per the XML 1.0 specification .
-     *   <br>NO_MODIFICATION_ALLOWED_ERR: Raised if this node is readonly.
-     *   <br>NAMESPACE_ERR: Raised if the specified <code>prefix</code> is 
-     *   malformed per the Namespaces in XML specification, if the 
-     *   <code>namespaceURI</code> of this node is <code>null</code>, if the 
-     *   specified prefix is "xml" and the <code>namespaceURI</code> of this 
-     *   node is different from "http://www.w3.org/XML/1998/namespace", if 
-     *   this node is an attribute and the specified prefix is "xmlns" and 
-     *   the <code>namespaceURI</code> of this node is different from "
-     *   http://www.w3.org/2000/xmlns/", or if this node is an attribute and 
-     *   the <code>qualifiedName</code> of this node is "xmlns" .
      * @since DOM Level 2
      */
     public String getPrefix();
@@ -527,12 +520,15 @@ public interface Node {
      * The namespace prefix of this node, or <code>null</code> if it is 
      * unspecified.
      * <br> When the node is <code>Element</code>, or <code>Attr</code>, this 
-     * attribute represents the properties [prefix] defined in . 
+     * attribute represents the properties [prefix] defined in [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information set</a>]
+     * . 
      * <br>Note that setting this attribute, when permitted, changes the 
      * <code>nodeName</code> attribute, which holds the qualified name, as 
      * well as the <code>tagName</code> and <code>name</code> attributes of 
      * the <code>Element</code> and <code>Attr</code> interfaces, when 
      * applicable.
+     * <br>Setting the prefix to <code>null</code> makes it unspecified, 
+     * setting it to an empty string is implementation dependent.
      * <br>Note also that changing the prefix of an attribute that is known to 
      * have a default value, does not make a new attribute with the default 
      * value and the original prefix appear, since the 
@@ -543,17 +539,17 @@ public interface Node {
      * <code>Document</code> interface, this is always <code>null</code>.
      * @exception DOMException
      *   INVALID_CHARACTER_ERR: Raised if the specified prefix contains an 
-     *   illegal character, per the XML 1.0 specification .
+     *   illegal character.
      *   <br>NO_MODIFICATION_ALLOWED_ERR: Raised if this node is readonly.
      *   <br>NAMESPACE_ERR: Raised if the specified <code>prefix</code> is 
      *   malformed per the Namespaces in XML specification, if the 
      *   <code>namespaceURI</code> of this node is <code>null</code>, if the 
      *   specified prefix is "xml" and the <code>namespaceURI</code> of this 
-     *   node is different from "http://www.w3.org/XML/1998/namespace", if 
-     *   this node is an attribute and the specified prefix is "xmlns" and 
-     *   the <code>namespaceURI</code> of this node is different from "
-     *   http://www.w3.org/2000/xmlns/", or if this node is an attribute and 
-     *   the <code>qualifiedName</code> of this node is "xmlns" .
+     *   node is different from "<a href='http://www.w3.org/XML/1998/namespace'>
+     *   http://www.w3.org/XML/1998/namespace</a>", if this node is an attribute and the specified prefix is "xmlns" and 
+     *   the <code>namespaceURI</code> of this node is different from "<a href='http://www.w3.org/2000/xmlns/'>http://www.w3.org/2000/xmlns/</a>", or if this node is an attribute and the <code>qualifiedName</code> of 
+     *   this node is "xmlns" [<a href='http://www.w3.org/TR/1999/REC-xml-names-19990114/'>XML Namespaces</a>]
+     *   .
      * @since DOM Level 2
      */
     public void setPrefix(String prefix)
@@ -562,7 +558,8 @@ public interface Node {
     /**
      * Returns the local part of the qualified name of this node.
      * <br> When the node is <code>Element</code>, or <code>Attr</code>, this 
-     * attribute represents the properties [local name] defined in . 
+     * attribute represents the properties [local name] defined in [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information set</a>]
+     * . 
      * <br>For nodes of any type other than <code>ELEMENT_NODE</code> and 
      * <code>ATTRIBUTE_NODE</code> and nodes created with a DOM Level 1 
      * method, such as <code>createElement</code> from the 
@@ -573,7 +570,7 @@ public interface Node {
 
     /**
      * Returns whether this node (if it is an element) has any attributes.
-     * @return <code>true</code> if this node has any attributes, 
+     * @return Returns <code>true</code> if this node has any attributes, 
      *   <code>false</code> otherwise.
      * @since DOM Level 2
      */
@@ -581,30 +578,33 @@ public interface Node {
 
     /**
      * The absolute base URI of this node or <code>null</code> if undefined. 
-     * This value is computed according to . However, when the 
-     * <code>Document</code> supports the feature "HTML" , the base URI is 
-     * computed using first the value of the href attribute of the HTML BASE 
-     * element if any, and the value of the <code>documentURI</code> 
-     * attribute from the <code>Document</code> interface otherwise.
+     * This value is computed according to [<a href='http://www.w3.org/TR/2001/REC-xmlbase-20010627/'>XML Base</a>]. 
+     * However, when the <code>Document</code> supports the feature "HTML" [<a href='http://www.w3.org/TR/2003/REC-DOM-Level-2-HTML-20030109'>DOM Level 2 HTML</a>]
+     * , the base URI is computed using first the value of the href 
+     * attribute of the HTML BASE element if any, and the value of the 
+     * <code>documentURI</code> attribute from the <code>Document</code> 
+     * interface otherwise.
      * <br> When the node is an <code>Element</code>, a <code>Document</code> 
      * or a a <code>ProcessingInstruction</code>, this attribute represents 
-     * the properties [base URI] defined in . When the node is a 
-     * <code>Notation</code>, an <code>Entity</code>, or an 
-     * <code>EntityReference</code>, this attribute represents the 
-     * properties [declaration base URI] in the . How will this be affected 
-     * by resolution of relative namespace URIs issue?It's not.Should this 
-     * only be on Document, Element, ProcessingInstruction, Entity, and 
-     * Notation nodes, according to the infoset? If not, what is it equal to 
-     * on other nodes? Null? An empty string? I think it should be the 
-     * parent's.No.Should this be read-only and computed or and actual 
-     * read-write attribute?Read-only and computed (F2F 19 Jun 2000 and 
-     * teleconference 30 May 2001).If the base HTML element is not yet 
+     * the properties [base URI] defined in [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information set</a>]
+     * . When the node is a <code>Notation</code>, an <code>Entity</code>, 
+     * or an <code>EntityReference</code> representing an unexpanded entity 
+     * reference or an internal entity reference, this attribute represents 
+     * the properties [declaration base URI] in the [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information set</a>]
+     *  . When the node is an EntityReference representing an external 
+     * entity reference this is the absolute URI of the entity. How will 
+     * this be affected by resolution of relative namespace URIs issue?It's 
+     * not.Should this only be on Document, Element, ProcessingInstruction, 
+     * Entity, and Notation nodes, according to the infoset? If not, what is 
+     * it equal to on other nodes? Null? An empty string? I think it should 
+     * be the parent's.No.Should this be read-only and computed or and 
+     * actual read-write attribute?Read-only and computed (F2F 19 Jun 2000 
+     * and teleconference 30 May 2001).If the base HTML element is not yet 
      * attached to a document, does the insert change the Document.baseURI?
      * Yes. (F2F 26 Sep 2001)
      * @since DOM Level 3
      */
     public String getBaseURI();
-
 
     // DocumentPosition
     /**
@@ -654,7 +654,6 @@ public interface Node {
     public short compareDocumentPosition(Node other)
                                          throws DOMException;
 
-
     /**
      * This attribute returns the text content of this node and its 
      * descendants. When it is defined to be null, setting it has no effect. 
@@ -678,32 +677,29 @@ public interface Node {
      * DOCUMENT_FRAGMENT_NODE</td>
      * <td valign='top' rowspan='1' colspan='1'>concatenation of the <code>textContent</code> 
      * attribute value of every child node, excluding COMMENT_NODE and 
-     * PROCESSING_INSTRUCTION_NODE nodes</td>
+     * PROCESSING_INSTRUCTION_NODE nodes. This is the empty string if the 
+     * node has no children.</td>
      * </tr>
      * <tr>
-     * <td valign='top' rowspan='1' colspan='1'>ATTRIBUTE_NODE, TEXT_NODE, 
-     * CDATA_SECTION_NODE, COMMENT_NODE, PROCESSING_INSTRUCTION_NODE</td>
-     * <td valign='top' rowspan='1' colspan='1'>
-     * <code>nodeValue</code></td>
+     * <td valign='top' rowspan='1' colspan='1'>ATTRIBUTE_NODE, TEXT_NODE, CDATA_SECTION_NODE, 
+     * COMMENT_NODE, PROCESSING_INSTRUCTION_NODE</td>
+     * <td valign='top' rowspan='1' colspan='1'><code>nodeValue</code></td>
      * </tr>
      * <tr>
-     * <td valign='top' rowspan='1' colspan='1'>DOCUMENT_NODE, DOCUMENT_TYPE_NODE, NOTATION_NODE</td>
      * <td valign='top' rowspan='1' colspan='1'>
-     * null</td>
+     * DOCUMENT_NODE, DOCUMENT_TYPE_NODE, NOTATION_NODE</td>
+     * <td valign='top' rowspan='1' colspan='1'><em>null</em></td>
      * </tr>
-     * </table> Should any whitespace normalization be performed? MS' text 
-     * property doesn't but what about "ignorable whitespace"?Does not 
-     * perform any whitespace normalization and ignores "ignorable 
-     * whitespace".Should this be two methods instead?No. Keep it a read 
-     * write attribute.What about the name? MS uses text and innerText. text 
-     * conflicts with HTML DOM.Keep the current name, MS has a different 
-     * name and different semantic.Should this be optional?No.Setting the 
-     * text property on a Document, Document Type, or Notation node is an 
-     * error for MS. How do we expose it? Exception? Which one?
-     * (teleconference 23 May 2001) consistency with nodeValue. Remove 
-     * Document from the list.
-     * @exception DOMException
-     *   NO_MODIFICATION_ALLOWED_ERR: Raised when the node is readonly.
+     * </table> Should any whitespace normalization be performed? MS' text property 
+     * doesn't but what about "ignorable whitespace"?Does not perform any 
+     * whitespace normalization and ignores "ignorable whitespace".Should 
+     * this be two methods instead?No. Keep it a read write attribute.What 
+     * about the name? MS uses text and innerText. text conflicts with HTML 
+     * DOM.Keep the current name, MS has a different name and different 
+     * semantic.Should this be optional?No.Setting the text property on a 
+     * Document, Document Type, or Notation node is an error for MS. How do 
+     * we expose it? Exception? Which one?(teleconference 23 May 2001) 
+     * consistency with nodeValue. Remove Document from the list.
      * @exception DOMException
      *   DOMSTRING_SIZE_ERR: Raised when it would return more characters than 
      *   fit in a <code>DOMString</code> variable on the implementation 
@@ -711,7 +707,7 @@ public interface Node {
      * @since DOM Level 3
      */
     public String getTextContent()
-                                     throws DOMException;
+                                         throws DOMException;
     /**
      * This attribute returns the text content of this node and its 
      * descendants. When it is defined to be null, setting it has no effect. 
@@ -735,40 +731,35 @@ public interface Node {
      * DOCUMENT_FRAGMENT_NODE</td>
      * <td valign='top' rowspan='1' colspan='1'>concatenation of the <code>textContent</code> 
      * attribute value of every child node, excluding COMMENT_NODE and 
-     * PROCESSING_INSTRUCTION_NODE nodes</td>
+     * PROCESSING_INSTRUCTION_NODE nodes. This is the empty string if the 
+     * node has no children.</td>
      * </tr>
      * <tr>
-     * <td valign='top' rowspan='1' colspan='1'>ATTRIBUTE_NODE, TEXT_NODE, 
-     * CDATA_SECTION_NODE, COMMENT_NODE, PROCESSING_INSTRUCTION_NODE</td>
-     * <td valign='top' rowspan='1' colspan='1'>
-     * <code>nodeValue</code></td>
+     * <td valign='top' rowspan='1' colspan='1'>ATTRIBUTE_NODE, TEXT_NODE, CDATA_SECTION_NODE, 
+     * COMMENT_NODE, PROCESSING_INSTRUCTION_NODE</td>
+     * <td valign='top' rowspan='1' colspan='1'><code>nodeValue</code></td>
      * </tr>
      * <tr>
-     * <td valign='top' rowspan='1' colspan='1'>DOCUMENT_NODE, DOCUMENT_TYPE_NODE, NOTATION_NODE</td>
      * <td valign='top' rowspan='1' colspan='1'>
-     * null</td>
+     * DOCUMENT_NODE, DOCUMENT_TYPE_NODE, NOTATION_NODE</td>
+     * <td valign='top' rowspan='1' colspan='1'><em>null</em></td>
      * </tr>
-     * </table> Should any whitespace normalization be performed? MS' text 
-     * property doesn't but what about "ignorable whitespace"?Does not 
-     * perform any whitespace normalization and ignores "ignorable 
-     * whitespace".Should this be two methods instead?No. Keep it a read 
-     * write attribute.What about the name? MS uses text and innerText. text 
-     * conflicts with HTML DOM.Keep the current name, MS has a different 
-     * name and different semantic.Should this be optional?No.Setting the 
-     * text property on a Document, Document Type, or Notation node is an 
-     * error for MS. How do we expose it? Exception? Which one?
-     * (teleconference 23 May 2001) consistency with nodeValue. Remove 
-     * Document from the list.
+     * </table> Should any whitespace normalization be performed? MS' text property 
+     * doesn't but what about "ignorable whitespace"?Does not perform any 
+     * whitespace normalization and ignores "ignorable whitespace".Should 
+     * this be two methods instead?No. Keep it a read write attribute.What 
+     * about the name? MS uses text and innerText. text conflicts with HTML 
+     * DOM.Keep the current name, MS has a different name and different 
+     * semantic.Should this be optional?No.Setting the text property on a 
+     * Document, Document Type, or Notation node is an error for MS. How do 
+     * we expose it? Exception? Which one?(teleconference 23 May 2001) 
+     * consistency with nodeValue. Remove Document from the list.
      * @exception DOMException
      *   NO_MODIFICATION_ALLOWED_ERR: Raised when the node is readonly.
-     * @exception DOMException
-     *   DOMSTRING_SIZE_ERR: Raised when it would return more characters than 
-     *   fit in a <code>DOMString</code> variable on the implementation 
-     *   platform.
      * @since DOM Level 3
      */
     public void setTextContent(String textContent)
-                                     throws DOMException;
+                                         throws DOMException;
 
     /**
      * Returns whether this node is the same node as the given one.
@@ -792,31 +783,28 @@ public interface Node {
 
     /**
      * Look up the prefix associated to the given namespace URI, starting from 
-     * this node.
+     * this node. The default namespace declarations are ignored by this 
+     * method.
      * <br>See  for details on the algorithm used by this method.Should this 
      * be optional?No.How does the lookup work? Is it based on the prefix of 
      * the nodes, the namespace declaration attributes, or a combination of 
      * both?See .
      * @param namespaceURI The namespace URI to look for.
-     * @param useDefault  Indicates if the lookup mechanism should take into 
-     *   account the default namespace or not. 
-     * @return Returns an associated namespace prefix if found, 
-     *   <code>null</code> if none is found and <code>useDefault</code> is 
-     *   false, or <code>null</code> if not found or it is the default 
-     *   namespace and <code>useDefault</code> is <code>true</code>. If more 
-     *   than one prefix are associated to the namespace prefix, the 
-     *   returned namespace prefix is implementation dependent.
+     * @return Returns an associated namespace prefix if found or 
+     *   <code>null</code> if none is found. If more than one prefix are 
+     *   associated to the namespace prefix, the returned namespace prefix 
+     *   is implementation dependent.
      * @since DOM Level 3
      */
-    public String lookupNamespacePrefix(String namespaceURI, 
-                                        boolean useDefault);
+    public String lookupPrefix(String namespaceURI);
 
     /**
      *  This method checks if the specified <code>namespaceURI</code> is the 
      * default namespace or not. 
      * @param namespaceURI The namespace URI to look for.
-     * @return  <code>true</code> if the specified <code>namespaceURI</code> 
-     *   is the default namespace, <code>false</code> otherwise. 
+     * @return Returns <code>true</code> if the specified 
+     *   <code>namespaceURI</code> is the default namespace, 
+     *   <code>false</code> otherwise. 
      * @since DOM Level 3
      */
     public boolean isDefaultNamespace(String namespaceURI);
@@ -845,60 +833,94 @@ public interface Node {
      * tested with <code>Node.isSameNode</code>. All nodes that are the same 
      * will also be equal, though the reverse may not be true.
      * <br>Two nodes are equal if and only if the following conditions are 
-     * satisfied: The two nodes are of the same type.The following string 
+     * satisfied: 
+     * <ul>
+     * <li>The two nodes are of the same type.
+     * </li>
+     * <li>The following string 
      * attributes are equal: <code>nodeName</code>, <code>localName</code>, 
      * <code>namespaceURI</code>, <code>prefix</code>, <code>nodeValue</code>
-     * , <code>baseURI</code>. This is: they are both <code>null</code>, or 
-     * they have the same length and are character for character identical.
-     * The <code>attributes</code> <code>NamedNodeMaps</code> are equal. 
+     * . This is: they are both <code>null</code>, or they have the same 
+     * length and are character for character identical.
+     * </li>
+     * <li>The 
+     * <code>attributes</code> <code>NamedNodeMaps</code> are equal. This 
+     * is: they are both <code>null</code>, or they have the same length and 
+     * for each node that exists in one map there is a node that exists in 
+     * the other map and is equal, although not necessarily at the same 
+     * index.
+     * </li>
+     * <li>The <code>childNodes</code> <code>NodeLists</code> are equal. 
      * This is: they are both <code>null</code>, or they have the same 
-     * length and for each node that exists in one map there is a node that 
-     * exists in the other map and is equal, although not necessarily at the 
-     * same index.The <code>childNodes</code> <code>NodeLists</code> are 
-     * equal. This is: they are both <code>null</code>, or they have the 
-     * same length and contain equal nodes at the same index. Note that 
+     * length and contain equal nodes at the same index. Note that 
      * normalization can affect equality; to avoid this, nodes should be 
-     * normalized before being compared. 
+     * normalized before being compared.
+     * </li>
+     * </ul> 
      * <br>For two <code>DocumentType</code> nodes to be equal, the following 
-     * conditions must also be satisfied: The following string attributes 
+     * conditions must also be satisfied: 
+     * <ul>
+     * <li>The following string attributes 
      * are equal: <code>publicId</code>, <code>systemId</code>, 
-     * <code>internalSubset</code>.The <code>entities</code> 
-     * <code>NamedNodeMaps</code> are equal.The <code>notations</code> 
-     * <code>NamedNodeMaps</code> are equal. 
+     * <code>internalSubset</code>.
+     * </li>
+     * <li>The <code>entities</code> 
+     * <code>NamedNodeMaps</code> are equal.
+     * </li>
+     * <li>The <code>notations</code> 
+     * <code>NamedNodeMaps</code> are equal.
+     * </li>
+     * </ul> 
      * <br>On the other hand, the following do not affect equality: the 
-     * <code>ownerDocument</code> attribute, the <code>specified</code> 
-     * attribute for <code>Attr</code> nodes, the 
+     * <code>ownerDocument</code>, <code>baseURI</code>, and 
+     * <code>parentNode</code> attributes, the <code>specified</code> and 
+     * attribute for <code>Attr</code> nodes, the <code>schemaTypeInfo</code>
+     *  attribute for <code>Attr</code> and <code>Element</code> nodes, the 
      * <code>isWhitespaceInElementContent</code> attribute for 
      * <code>Text</code> nodes, as well as any user data or event listeners 
-     * registered on the nodes.Should this be optional?No.Should the deep 
-     * parameter be dropped?Yes (Telcon Apr 3, 2002).
+     * registered on the nodes. 
+     * <p ><b>Note:</b>  As a general rule, anything not mentioned in the 
+     * description above is not significant in consideration of equality 
+     * checking. Note that future versions of this specification may take 
+     * into account more attributes and implementations conform to this 
+     * specification are expected to be updated accordingly. Should this be 
+     * optional?No.Should the deep parameter be dropped?Yes (Telcon Apr 3, 
+     * 2002).
      * @param arg The node to compare equality with.
-     * @return If the nodes, and possibly subtrees are equal, 
-     *   <code>true</code> otherwise <code>false</code>.
+     * @return Returns <code>true</code> if the nodes are equal, 
+     *   <code>false</code> otherwise.
      * @since DOM Level 3
      */
     public boolean isEqualNode(Node arg);
 
     /**
-     * This method makes available a <code>Node</code>'s specialized interface 
-     * (see ).What are the relations between Node.isSupported and 
-     * Node3.getInterface?Should we rename this method (and also 
-     * DOMImplementation.getInterface?)?getInterface can return a node that 
-     * doesn't actually support the requested interface and will lead to a 
-     * cast exception. Other solutions are returning null or throwing an 
-     * exception.
+     *  This method returns a specialized object which implements the 
+     * specialized APIs of the specified feature and version. The 
+     * specialized object may also be obtained by using binding-specific 
+     * casting methods but is not necessarily expected to, as discussed in . 
+     * This method also allow the implementation to provide specialized 
+     * objects which do not support the <code>Node</code> interface. What 
+     * are the relations between Node.isSupported and Node3.getFeature?
+     * getFeature can return a node that doesn't actually support the 
+     * requested interface and will lead to a cast exception. Other 
+     * solutions are returning null or throwing an exception.
      * @param feature The name of the feature requested (case-insensitive).
-     * @return Returns an alternate <code>Node</code> which implements the 
-     *   specialized APIs of the specified feature, if any, or 
-     *   <code>null</code> if there is no alternate <code>Node</code> which 
-     *   implements interfaces associated with that feature. Any alternate 
-     *   <code>Node</code> returned by this method must delegate to the 
+     * @param version  This is the version number of the feature to test. If 
+     *   the version is <code>null</code> or the empty string, supporting 
+     *   any version of the feature will cause the method to return an 
+     *   object that supports at least one version of the feature. 
+     * @return  Returns an object which implements the specialized APIs of 
+     *   the specified feature and version, if any, or <code>null</code> if 
+     *   there is no object which implements interfaces associated with that 
+     *   feature. If the <code>DOMObject</code> returned by this method 
+     *   implements the <code>Node</code> interface, it must delegate to the 
      *   primary core <code>Node</code> and not return results inconsistent 
-     *   with the primary core <code>Node</code> such as <code>key</code>, 
-     *   <code>attributes</code>, <code>childNodes</code>, etc.
+     *   with the primary core <code>Node</code> such as attributes, 
+     *   childNodes, etc. 
      * @since DOM Level 3
      */
-    public Node getInterface(String feature);
+    public Node getFeature(String feature, 
+                           String version);
 
     /**
      * Associate an object to a key on this node. The object can later be 
