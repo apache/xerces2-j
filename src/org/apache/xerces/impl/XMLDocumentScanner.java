@@ -246,6 +246,9 @@ public class XMLDocumentScanner
     /** Element QName. */
     private QName fElementQName = new QName();
 
+    /** Element QName. */
+    private QName fElementQName2 = new QName();
+
     /** Attribute QName. */
     private QName fAttributeQName = new QName();
 
@@ -916,7 +919,9 @@ public class XMLDocumentScanner
 
         // name
         if (fNamespaces) {
-            fEntityScanner.scanQName(fElementQName);
+            if (!fEntityScanner.scanQName(fElementQName)) {
+                fElementQName.clear();
+            }
         }
         else {
             String name = fEntityScanner.scanName();
@@ -1027,6 +1032,9 @@ public class XMLDocumentScanner
      * the end element name matches the current element and notify
      * the handler about the end of the element and the end of any
      * relevent prefix mappings.
+     * <p>
+     * <strong>Note:</strong> This method uses the fElementQName2 variable.
+     * The contents of this variable will be destroyed.
      *
      * @param element The element.
      *
@@ -1034,11 +1042,12 @@ public class XMLDocumentScanner
      *
      * @throws SAXException Thrown if the handler throws a SAX exception
      *                      upon notification.
+     *
      */
     protected int handleEndElement(QName element) throws SAXException {
 
         // make sure the elements match
-        QName startElement = fElementQName;
+        QName startElement = fElementQName2;
         fElementStack.popElement(startElement);
         if (element.rawname != startElement.rawname) {
             reportFatalError("ETagRequired",
