@@ -667,18 +667,10 @@ public class RangeImpl  implements Range {
     			DOMException.INVALID_STATE_ERR, 
 			"DOM011 Invalid state");
     	}
-        if ( ((NodeImpl)fStartContainer.getParentNode()).getReadOnly() ) {
-            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR,"DOM007 Read Only node");
-
-        }
         if ( fDocument != newNode.getOwnerDocument() ) {
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR,"DOM004 Wrong document");
         }
-        if ( isAncestorOf( newNode, fStartContainer) ) {
-            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "DOM003 Hierarchy request");
-        }
-
-
+       
         int type = newNode.getNodeType();
         if (type == Node.ATTRIBUTE_NODE
             || type == Node.ENTITY_NODE
