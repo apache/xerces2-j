@@ -421,9 +421,9 @@ public class ElementImpl
             synchronizeData();
         }
 
-    	AttrImpl newAttr = (AttrImpl)getAttributeNode(name);
+    	AttrImpl newAttr = (AttrImpl) getAttributeNode(name);
         if (newAttr == null) {
-            newAttr = getOwnerDocument().createAttribute(name);
+            newAttr = (AttrImpl) getOwnerDocument().createAttribute(name);
             attributes.setNamedItem(newAttr);
             newAttr.owned = true;
         }
