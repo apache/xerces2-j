@@ -692,7 +692,7 @@ public class HTMLDocumentImpl
      * #_elementTypesHTML}). Will be called multiple times but populate the list
      * only the first time. Replacement for static constructor.
      */
-    private static void populateElementTypes()
+    private synchronized static void populateElementTypes()
     {
         // This class looks like it is due to some strange
         // (read: inconsistent) JVM bugs.
