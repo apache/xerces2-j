@@ -135,19 +135,15 @@ public final class IntStack {
     //
 
     /** Ensures capacity. */
-    private boolean ensureCapacity(int size) {
-        try {
-            return fData[size] != 0;
-        }
-        catch (NullPointerException e) {
+    private void ensureCapacity(int size) {
+        if (fData == null) {
             fData = new int[32];
         }
-        catch (ArrayIndexOutOfBoundsException e) {
+        else if (fData.length <= size) {
             int[] newdata = new int[fData.length * 2];
             System.arraycopy(fData, 0, newdata, 0, fData.length);
             fData = newdata;
         }
-        return true;
     }
 
 } // class IntStack
