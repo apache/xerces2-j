@@ -1009,6 +1009,17 @@ public class XSDHandler {
         "type definition",
     };
 
+    private static final String[] CIRCULAR_CODES = {
+        "Internal-Error",
+        "Internal-Error",
+        "src-attribute_group.3",
+        "e-props-correct.6",
+        "mg-props-correct.2",
+        "Internal-Error",
+        "Internal-Error",
+        "st-props-correct.2",       //or ct-props-correct.3
+    };
+
     // since it is forbidden for traversers to talk to each other
     // directly (except wen a traverser encounters a local declaration),
     // this provides a generic means for a traverser to call
@@ -1145,8 +1156,13 @@ public class XSDHandler {
         // but we didn't find it in the grammar, so it's the latter case, and
         // a circular reference. error!
         if (DOMUtil.isHidden(decl)) {
+            String code = CIRCULAR_CODES[declType];
+            if (declType == TYPEDECL_TYPE) {
+                if (SchemaSymbols.ELT_COMPLEXTYPE.equals(DOMUtil.getLocalName(decl)))
+                    code = "ct-props-correct.3";
+            }
             // decl must not be null if we're here...
-            reportSchemaError("st-props-correct.2", new Object [] {declToTraverse.prefix+":"+declToTraverse.localpart}, elmNode);
+            reportSchemaError(code, new Object [] {declToTraverse.prefix+":"+declToTraverse.localpart}, elmNode);
             return null;
         }
 
