@@ -142,6 +142,13 @@ implements XMLContentSpec.Provider {
         return fGrammarDocument;
     }
 
+    public int getElementDeclIndex(int localpartIndex, int scopeIndex) {
+        if ( localpartIndex > -1 && scopeIndex >-2 ) {
+            return fElementNameAndScopeToElementDeclIndexMapping.get(-1, localpartIndex, scopeIndex);
+        }
+        return -1;
+    }
+    
     public int getElementDeclIndex(int uriIndex, int localpartIndex, int scopeIndex) {
         if ( localpartIndex > -1 && scopeIndex >-2 ) {
             return fElementNameAndScopeToElementDeclIndexMapping.get(uriIndex, localpartIndex, scopeIndex);

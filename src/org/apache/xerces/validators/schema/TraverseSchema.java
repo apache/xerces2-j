@@ -1022,11 +1022,28 @@ public class TraverseSchema implements
 
             baseValidator = fDatatypeRegistry.getDatatypeValidator( localpart );
             if (baseValidator == null) {
-                reportSchemaError(SchemaMessageProvider.UnknownBaseDatatype,
-                new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_BASE ),
-                                                  simpleTypeDecl.getAttribute(SchemaSymbols.ATT_NAME) });
-                return -1;
+                Element baseTypeNode = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
+                if (baseTypeNode != null) {
+                    traverseSimpleTypeDecl( baseTypeNode );
+                    baseValidator = fDatatypeRegistry.getDatatypeValidator(localpart);
+                    if (baseValidator == null) {
+                        reportSchemaError(SchemaMessageProvider.UnknownBaseDatatype,
+                        new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_BASE ),
+                                                          simpleTypeDecl.getAttribute(SchemaSymbols.ATT_NAME) });
+                        return -1;
+                        //reportGenericSchemaError("Base type could not be found : " + baseTypeQNameProperty);
+                    }
+
                 }
+                else {
+                    reportSchemaError(SchemaMessageProvider.UnknownBaseDatatype,
+                    new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_BASE ),
+                                                      simpleTypeDecl.getAttribute(SchemaSymbols.ATT_NAME) });
+                    return -1;
+                    //reportGenericSchemaError("Base type could not be found : " + baseTypeQNameProperty);
+                }
+                
+            }
         }
         // Any Children if so then check Content otherwise bail out
 
@@ -1571,13 +1588,17 @@ public class TraverseSchema implements
                 else if (childName.equals(SchemaSymbols.ELT_ANNOTATION)) {
                     //REVISIT, do nothing for annotation for now.
                 } 
+                else if (childName.equals(SchemaSymbols.ELT_ANYATTRIBUTE)) {
+                    //REVISIT, do nothing for attribute wildcard for now.
+                } 
                 else { // datatype qual 
                     if (!baseIsComplexSimple ) 
                     if (base.equals(""))
-                        reportSchemaError(SchemaMessageProvider.DatatypeWithType, null);
+                        reportSchemaError(SchemaMessageProvider.GenericError, 
+                                          new Object [] { "unrecogized child '"+childName+"' in compelx type "+typeName });
                     else
-                        reportSchemaError(SchemaMessageProvider.DatatypeQualUnsupported,
-                                          new Object [] { childName });
+                        reportSchemaError(SchemaMessageProvider.GenericError,
+                                          new Object [] { "unrecogized child '"+childName+"' in compelx type '"+typeName+"' with base "+base  });
                 }
 
                 // if base is complextype with simpleType content, can't have any particle children at all.
@@ -1639,10 +1660,14 @@ public class TraverseSchema implements
         // compose the final content model by concatenating the base and the 
         // current in sequence.
         if (!derivedByRestriction && baseContentSpecHandle > -1 ) {
-            left = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ, 
-                                                 baseContentSpecHandle,
-                                                 left,
-                                                 false);
+            if (left == -2) {
+                left = baseContentSpecHandle;
+            }
+            else 
+                left = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ, 
+                                                         baseContentSpecHandle,
+                                                         left,
+                                                         false);
         }
 
         // REVISIT: this is when sees a topelevel <complexType name="abc">attrs*</complexType>
@@ -2119,7 +2144,8 @@ public class TraverseSchema implements
             }
             else if (use.equals(SchemaSymbols.ATTVAL_PROHIBITED)) {
                 
-                attDefaultType = fStringPool.addSymbol("#PROHIBITED");
+                //REVISIT, TO DO. !!!
+                attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_IMPLIED;
                 //attDefaultValue = fStringPool.addString("");
             }
             else {
@@ -2749,8 +2775,9 @@ public class TraverseSchema implements
                                                          attrListHead, dv);
         if ( DEBUGGING ) {
             /***/
-            System.out.println("########elementIndex:"+elementIndex+" "+elementDecl.getAttribute(SchemaSymbols.ATT_NAME)
-                               +" eltType:"+name+" contentSpecType:"+contentSpecType+
+            System.out.println("########elementIndex:"+elementIndex+" ("+fStringPool.toString(eltQName.uri)+","
+                               + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) + ")"+
+                               " eltType:"+type+" contentSpecType:"+contentSpecType+
                                " SpecNodeIndex:"+ contentSpecNodeIndex +" enclosingScope: " +enclosingScope +
                                " scopeDefined: " +scopeDefined);
              /***/

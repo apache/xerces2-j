@@ -2270,8 +2270,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         //REVISIT, is it possible, fValidating is false and fGrammar is no null.???
         if ( fGrammar != null ){
             if (DEBUG_SCHEMA_VALIDATION) {
-                System.out.println("localpart: '" + fStringPool.toString(element.localpart)
-                                   +"' and scope : " + fCurrentScope);
+                System.out.println("*******Lookup element: uri: " + fStringPool.toString(element.uri)+
+                                   "localpart: '" + fStringPool.toString(element.localpart)
+                                   +"' and scope : " + fCurrentScope+"\n");
             }
 
             elementIndex = fGrammar.getElementDeclIndex(element,fCurrentScope);
@@ -2323,7 +2324,8 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 System.out.println("elementIndex: " + elementIndex+" \n and itsName : '" 
                                    + fStringPool.toString(fTempElementDecl.name.localpart)
                                    +"' \n its ContentType:" + fTempElementDecl.type
-                                   +"\n its ContentSpecIndex : " + fTempElementDecl.contentSpecIndex +"\n");
+                                   +"\n its ContentSpecIndex : " + fTempElementDecl.contentSpecIndex +"\n"+
+                                   " and the current enclosing scope: " + fCurrentScope);
             }
         }
 
