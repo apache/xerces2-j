@@ -1548,8 +1548,8 @@ public final class XMLValidator
                  fGrammarIsDTDGrammar = false;
                 } else if (!switchGrammar(fGrammarNameSpaceIndex)) {
                      reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR,
-                                               "Grammar with uri 1: " + fStringPool.toString(fGrammarNameSpaceIndex)
-                                               + " , can not be found");
+                                               "Grammar with uri: " + fStringPool.toString(fGrammarNameSpaceIndex)
+                                               + " , can not be found; possible mismatch between instance document's namespace and that of schema");
              }
       }
 
@@ -3150,8 +3150,9 @@ public final class XMLValidator
 
             if (!success && !laxThisOne) {
                reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR,
-                                         "Grammar with uri 2: " + fStringPool.toString(fGrammarNameSpaceIndex)
-                                         + " , can not be found");
+                                         "Grammar with uri: " + fStringPool.toString(fGrammarNameSpaceIndex)
+                                         + " , can not be found; schema namespace may be wrong:  Xerces supports schemas from the \"http://www.w3.org/2001/XMLSchema\" namespace"
+                                         + " or the instance document's namespace may not match the targetNamespace of the schema");
             }
          }
 
@@ -3266,7 +3267,7 @@ public final class XMLValidator
                         if (!success && !fNeedValidationOff) {
                            reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
                                                      XMLMessages.SCHEMA_GENERIC_ERROR,
-                                                     "Grammar with uri 3: "
+                                                     "Grammar with uri: "
                                                      + fStringPool.toString(fCurrentSchemaURI)
                                                      + " , can not be found");
                         }
@@ -3499,7 +3500,7 @@ public final class XMLValidator
                       if (!success && !fNeedValidationOff) {
                          reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
                                                    XMLMessages.SCHEMA_GENERIC_ERROR,
-                                                   "Grammar with uri 4: "
+                                                   "Grammar with uri: "
                                                    + fStringPool.toString(fCurrentSchemaURI)
                                                    + " , can not be found");
                       }
