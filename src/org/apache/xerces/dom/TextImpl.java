@@ -88,7 +88,7 @@ public class TextImpl
 
     /** Serialization version. */
     static final long serialVersionUID = -5294980852957403469L;
-    
+        
     //
     // Constructors
     //
@@ -165,18 +165,127 @@ public class TextImpl
      * @since DOM Level 3
      */
     public String getWholeText(){
-
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, 
-                               "getWholeText() not implemented.");
+        
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+        if (nextSibling == null) {
+            return data;
+        }
+        StringBuffer buffer = new StringBuffer();
+        if (data != null && data.length() != 0) {
+            buffer.append(data);
+        }
+        getWholeText(nextSibling, buffer);
+        return buffer.toString();
+    
     }
+
+    /**
+     * Concatenates the text of all logically-adjacent text nodes
+     * 
+     * @param node
+     * @param buffer
+     * @return true - if execution was stopped because the type of node
+     *         other than EntityRef, Text, CDATA is encountered, otherwise
+     *         return false
+     */
+    private boolean getWholeText(Node node, StringBuffer buffer){
+        String text;
+        while (node != null) {
+            short type = node.getNodeType();
+            if (type == Node.ENTITY_REFERENCE_NODE) {
+                if (getWholeText(node.getFirstChild(), buffer)){
+                    return true;
+                }
+            }
+            else if (type == Node.TEXT_NODE || 
+                     type == Node.CDATA_SECTION_NODE) {
+                ((NodeImpl)node).getTextContent(buffer);
+            }
+            else {
+                return true; 
+            }
+
+            node = node.getNextSibling();
+        }
+        return false;
+    }
+
     /**
     * DOM Level 3 WD - Experimental.
     */
     public Text replaceWholeText(String content)
                                  throws DOMException{
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, 
-                       "replaceWholeText() not implemented.");
 
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+
+        // make sure we can make the replacement
+        if (!canModify(nextSibling)) {
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                           "No modification is allowed");
+        }
+
+        Node parent = this.getParentNode();
+        if (content == null || content.length() == 0) {
+            // remove current node
+            if (parent !=null) { // check if node in the tree 
+                parent.removeChild(this);
+                return null;
+            }
+        }
+        Text currentNode = null;
+    	if (isReadOnly()){
+            Text newNode = this.ownerDocument().createTextNode(content);
+            if (parent !=null) { // check if node in the tree                
+                parent.insertBefore(newNode, this);
+                parent.removeChild(this);
+                currentNode = newNode;
+            } else {
+                return newNode;
+            }
+        }  else {
+            this.setData(content);
+            currentNode = this;
+        }
+        Node sibling =  currentNode.getNextSibling();
+        while ( sibling !=null) {
+            parent.removeChild(sibling);
+            sibling = currentNode.getNextSibling();
+        }
+
+        return currentNode;
+    }
+
+    /**
+     * If any EntityReference to be removed has descendants
+     * that are not EntityReference, Text, or CDATASection
+     * nodes, the replaceWholeText method must fail before
+     * performing any modification of the document, raising a
+     * DOMException with the code NO_MODIFICATION_ALLOWED_ERR.
+     * 
+     * @param node
+     * @return true - can replace text
+     *         false - can't replace exception must be raised
+     */
+    private boolean canModify(Node node){
+        while (node != null) {
+            short type = node.getNodeType();
+            if (type == Node.ENTITY_REFERENCE_NODE) {
+                if (!canModify(node.getFirstChild())){
+                    return false;
+                }
+            }
+            else if (type != Node.TEXT_NODE && 
+                     type != Node.CDATA_SECTION_NODE) {
+                return false;
+            }
+
+            node = node.getNextSibling();
+        }
+        return true;
     }
 
     /**
