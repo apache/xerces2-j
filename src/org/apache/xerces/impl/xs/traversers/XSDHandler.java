@@ -410,16 +410,21 @@ public class XSDHandler {
 
     public SchemaGrammar parseSchema(XMLInputSource is, XSDDescription desc) {
 
+        // first try to find it in the bucket/pool, return if one is found
+        SchemaGrammar grammar = findGrammar(desc);
+        if (grammar != null)
+            return grammar;
+        
+        // before parsing a schema, need to reset all traversers and
+        // clear all registries
+        prepare();
+
         String schemaNamespace = desc.getTargetNamespace();
         // handle empty string URI as null
         if (schemaNamespace != null) {
             schemaNamespace = fSymbolTable.addSymbol(schemaNamespace);
         }
         short referType = desc.getContextType();
-        
-        // before parsing a schema, need to reset all traversers and
-        // clear all registries
-        prepare();
         
         // first phase:  construct trees.
         Document schemaRoot = getSchema(schemaNamespace, is,
@@ -431,7 +436,7 @@ public class XSDHandler {
         }
         fRoot = constructTrees(schemaRoot, is.getSystemId(), desc);
         if (fRoot == null) {
-            return fGrammarBucket.getGrammar(schemaNamespace);
+            return null;
         }
 
         // second phase:  fill global registries.
@@ -446,10 +451,11 @@ public class XSDHandler {
         // fifth phase:  handle Keyrefs
         resolveKeyRefs();
 
-        // sixth phase: validate attribute of non-schema namespaces
+        // sixth phase:  validate attribute of non-schema namespaces
         // REVISIT: skip this for now. we really don't want to do it.
         //fAttributeChecker.checkNonSchemaAttributes(fGrammarBucket);
 
+        // seventh phase:  store imported grammars
         // for all grammars with <import>s
         for (int i = fAllTNSs.size() - 1; i >= 0; i--) {
             // get its target namespace
@@ -479,6 +485,31 @@ public class XSDHandler {
         return fGrammarBucket.getGrammar(schemaNamespace);
     } // end parseSchema
 
+    /**
+     * First try to find a grammar in the bucket, if failed, consult the
+     * grammar pool. If a grammar is found in the pool, then add it (and all
+     * imported ones) into the bucket.
+     */
+    protected SchemaGrammar findGrammar(XSDDescription desc) {
+        SchemaGrammar sg = fGrammarBucket.getGrammar(desc.getTargetNamespace());
+        if (sg == null) {
+            if (fGrammarPool != null) {
+                sg = (SchemaGrammar)fGrammarPool.retrieveGrammar(desc);
+                if (sg != null) {
+                    // put this grammar into the bucket, along with grammars
+                    // imported by it (directly or indirectly)
+                    if (!fGrammarBucket.putGrammar(sg, true)) {
+                        // REVISIT: a conflict between new grammar(s) and grammars
+                        // in the bucket. What to do? A warning? An exception?
+                        reportSchemaWarning("GrammarConflict", null, null);
+                        sg = null;
+                    }
+                }
+            }
+        }
+        return sg;
+    }
+    
     // may wish to have setter methods for ErrorHandler,
     // EntityResolver...
 
@@ -550,14 +581,16 @@ public class XSDHandler {
                     reportSchemaError(NS_ERROR_CODES[referType][secondIdx],
                                       new Object [] {callerTNS, currSchemaInfo.fTargetNamespace},
                                       DOMUtil.getRoot(schemaRoot));
+                    return null;
                 }
             }
-            // for preparse, callerTNS is null, so it's not possible
+            // for preparse, callerTNS is null, so it's not possible;
             // for instance and import, the two NS's must be the same
             else if (callerTNS != currSchemaInfo.fTargetNamespace) {
                 reportSchemaError(NS_ERROR_CODES[referType][secondIdx],
                                   new Object [] {callerTNS, currSchemaInfo.fTargetNamespace},
                                   DOMUtil.getRoot(schemaRoot));
+                return null;
             }
         }
         // now there is no caller/expected NS, it's an error for the referred
@@ -575,6 +608,7 @@ public class XSDHandler {
                 reportSchemaError(NS_ERROR_CODES[referType][secondIdx],
                                   new Object [] {callerTNS, currSchemaInfo.fTargetNamespace},
                                   DOMUtil.getRoot(schemaRoot));
+                return null;
             }
         }
         // the other cases (callerTNS == currSchemaInfo.fTargetNamespce == null)
@@ -585,30 +619,10 @@ public class XSDHandler {
 
         SchemaGrammar sg = null;
         
-        // In the case of preparse, if the grammar is not available in the bucket we ask the pool
-        // If the context is instance, the validator would have already consulted the pool
-        if ((sg = fGrammarBucket.getGrammar(currSchemaInfo.fTargetNamespace)) == null && referType == XSDDescription.CONTEXT_PREPARSE) {
-            if (fGrammarPool != null) {
-                sg = (SchemaGrammar)fGrammarPool.retrieveGrammar(desc);
-                if (sg != null) {
-                    // put this grammar into the bucket, along with grammars
-                    // imported by it (directly or indirectly)
-                    if (!fGrammarBucket.putGrammar(sg, true)) {
-                        // REVISIT: a conflict between new grammar(s) and grammars
-                        // in the bucket. What to do? A warning? An exception?
-                        reportSchemaWarning("GrammarConflict", null, null);
-                        sg = null;
-                    }
-                }
-            }
-        }
-        if (sg == null) {
+        if (referType != XSDDescription.CONTEXT_INCLUDE &&
+            referType != XSDDescription.CONTEXT_REDEFINE) {
             sg = new SchemaGrammar(fSymbolTable, currSchemaInfo.fTargetNamespace, desc.makeClone());
             fGrammarBucket.putGrammar(sg);
-        }
-        // we got a grammar of the same namespace in the bucket, should ignore this one 
-        else if (referType == XSDDescription.CONTEXT_PREPARSE) {
-            return null;
         }
             
         fDoc2XSDocumentMap.put(schemaRoot, currSchemaInfo);
@@ -637,11 +651,17 @@ public class XSDHandler {
                 schemaNamespace = (String)includeAttrs[XSAttributeChecker.ATTIDX_NAMESPACE];
                 if (schemaNamespace != null)
                     schemaNamespace = fSymbolTable.addSymbol(schemaNamespace);
+                // a document can't import another document with the same namespace
                 if (schemaNamespace == currSchemaInfo.fTargetNamespace) {
                     reportSchemaError("src-import.1.1", new Object [] {schemaNamespace}, child);
                 }
                 fAttributeChecker.returnAttrArray(includeAttrs, currSchemaInfo);
                 
+                // if this namespace has been imported by this document,
+                // ignore the <import> statement
+                if (currSchemaInfo.isAllowedNS(schemaNamespace))
+                    continue;
+
                 // a schema document can access it's imported namespaces
                 currSchemaInfo.addAllowedNS(schemaNamespace);
                 
@@ -667,6 +687,12 @@ public class XSDHandler {
                 fSchemaGrammarDescription.setBaseSystemId((String)fDoc2SystemId.get(schemaRoot));
                 fSchemaGrammarDescription.setLocationHints(new String[]{schemaHint});
                 fSchemaGrammarDescription.setTargetNamespace(schemaNamespace);
+
+                // if a grammar with the same namespace exists (or being
+                // built), ignore this one (don't traverse it).
+                if (findGrammar(fSchemaGrammarDescription) != null)
+                    continue;
+                
                 newSchemaRoot = getSchema(fSchemaGrammarDescription, false, child);
             }
             else if ((localName.equals(SchemaSymbols.ELT_INCLUDE)) ||
@@ -678,10 +704,11 @@ public class XSDHandler {
                 schemaHint = (String)includeAttrs[XSAttributeChecker.ATTIDX_SCHEMALOCATION];
                 fAttributeChecker.returnAttrArray(includeAttrs, currSchemaInfo);
                 // schemaLocation is required on <include> and <redefine>
-                if (schemaHint == null)
+                if (schemaHint == null) {
                     reportSchemaError("s4s-att-must-appear", new Object [] {
                                       "<include> or <redefine>", "schemaLocation"},
                                       child);
+                }
                 // pass the systemId of the current document as the base systemId
                 boolean mustResolve = false;
                 refType = XSDDescription.CONTEXT_INCLUDE;
@@ -705,7 +732,6 @@ public class XSDHandler {
 
             // If the schema is duplicate, we needn't call constructTrees() again.
             // To handle mutual <include>s
-
             XSDocumentInfo newSchemaInfo = null;
             if (fLastSchemaWasDuplicate) {
                 newSchemaInfo = (XSDocumentInfo)fDoc2XSDocumentMap.get(newSchemaRoot);
@@ -713,6 +739,7 @@ public class XSDHandler {
             else {
                 newSchemaInfo = constructTrees(newSchemaRoot, schemaHint, fSchemaGrammarDescription);
             }
+
             if (localName.equals(SchemaSymbols.ELT_REDEFINE) &&
                 newSchemaInfo != null) {
                 // must record which schema we're redefining so that we can
@@ -725,6 +752,7 @@ public class XSDHandler {
                 newSchemaRoot = null;
             }
         }
+        
         fDependencyMap.put(currSchemaInfo, dependencies);
         return currSchemaInfo;
     } // end constructTrees
@@ -1405,12 +1433,11 @@ public class XSDHandler {
         fDoc2SystemId.clear();
         fDoc2XSDocumentMap.clear();
         fRedefine2XSDMap.clear();
+        fAllTNSs.removeAllElements();
+        fImportMap.clear();
         fRoot = null;
         fLastSchemaWasDuplicate = false;
 
-        fAllTNSs.removeAllElements();
-        fImportMap.clear();
-        
         // clear local element stack
         for (int i = 0; i < fLocalElemStackPos; i++) {
             fParticle[i] = null;
@@ -1930,7 +1957,13 @@ public class XSDHandler {
         }
         
         public int hashCode() {
-            return systemId.hashCode();
+            if (referType == XSDDescription.CONTEXT_INCLUDE ||
+                referType == XSDDescription.CONTEXT_REDEFINE) {
+                return systemId.hashCode();
+            }
+            else {
+                return referNS == null ? 0 : referNS.hashCode();
+            }
         }
 
         public boolean equals(Object obj) {
@@ -1938,25 +1971,23 @@ public class XSDHandler {
                 return false;
             }
             XSDKey key = (XSDKey)obj;
-            // if they have different system id, then read the document
-            if (!systemId.equals(key.systemId)) {
-                return false;
-            }
+            
             // for include and redefine
             if (referType == XSDDescription.CONTEXT_INCLUDE ||
                 referType == XSDDescription.CONTEXT_REDEFINE ||
                 key.referType == XSDDescription.CONTEXT_INCLUDE ||
                 key.referType == XSDDescription.CONTEXT_REDEFINE) {
-                // the refer type must be the same, and the referer NS must be
-                // the same
-                if (referType != key.referType || referNS != key.referNS) {
-                    return false;
-                }
+                // only when the same document is included (or redefined)
+                // twice by the same namespace, we consider it a duplicate,
+                // and ignore the second one.
+                return referType == key.referType &&
+                       referNS == key.referNS &&
+                       systemId.equals(key.systemId);
             }
-            // for import/instance/preparse, as long as the system id
+
+            // for import/instance/preparse, as long as the target namespaces
             // are the same, we don't need to parse the document again
-            
-            return true;
+            return referNS == key.referNS;
         }
     }
     
