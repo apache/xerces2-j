@@ -261,13 +261,13 @@ public class XMLEntityManager
      * External general entities. This feature identifier is:
      * http://xml.org/sax/features/external-general-entities
      */
-    protected boolean fExternalGeneralEntities;
+    protected boolean fExternalGeneralEntities = true;
 
     /**
      * External parameter entities. This feature identifier is:
      * http://xml.org/sax/features/external-parameter-entities
      */
-    protected boolean fExternalParameterEntities;
+    protected boolean fExternalParameterEntities = true;
 
     /**
      * Allow Java encoding names. This feature identifier is:
