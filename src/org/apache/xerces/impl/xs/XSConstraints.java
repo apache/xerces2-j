@@ -343,17 +343,17 @@ public class XSConstraints {
                 if (!fullChecked) {
                 // 1. Element Decl Consistent
                   if (types[j].fParticle!=null) {
-                    elemTable.clear();
-                    try {
-                      checkElementDeclsConsistent(types[j], types[j].fParticle,
-                                                  elemTable, SGHandler);
-                    }
-                    catch (XMLSchemaException e) {
-                      errorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                                e.getKey(),
-                                                e.getArgs(),
-                                                XMLErrorReporter.SEVERITY_ERROR);
-                    }
+                   // elemTable.clear();
+                   // try {
+                   //   checkElementDeclsConsistent(types[j], types[j].fParticle,
+                   //                               elemTable, SGHandler);
+                   // }
+                   // catch (XMLSchemaException e) {
+                   //   errorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                   //                             e.getKey(),
+                   //                             e.getArgs(),
+                   //                             XMLErrorReporter.SEVERITY_ERROR);
+                   // }
                   }
                 }
 
