@@ -549,18 +549,40 @@ implements XMLContentSpec.Provider {
         //  encapsulates all of the work to create the DFA.
         //
         int leafCount = countLeaves(contentSpecIndex);
+	fLeafCount = 0;
         CMNode cmn    = buildSyntaxTree(contentSpecIndex, contentSpec);
-        return new DFAContentModel(  cmn, leafCount);
+
+	return new DFAContentModel(  cmn, leafCount);
     }
 
+    private void printSyntaxTree(CMNode cmn){
+	System.out.println("CMNode : " + cmn.type());
+
+	if (cmn.type() == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+	    System.out.println( "     Leaf: " + ((CMLeaf)cmn).getElement());
+	    return;
+	}
+	if (cmn instanceof CMBinOp) {
+	    printSyntaxTree( ((CMBinOp)cmn).getLeft());
+	    printSyntaxTree( ((CMBinOp)cmn).getRight());
+	}
+	if (cmn instanceof CMUniOp) {
+	    printSyntaxTree( ((CMUniOp)cmn).getChild());
+	}
+	
+    }
+
+    
     private int countLeaves(int contentSpecIndex) {
         return countLeaves(contentSpecIndex, new XMLContentSpec());
     }
+    
     private int countLeaves(int contentSpecIndex, XMLContentSpec contentSpec) {
-        /***
+        
         if (contentSpecIndex == -1) {
             return 0;
         }
+	/****
         int chunk = contentSpecIndex >> CHUNK_SHIFT;
         int index = contentSpecIndex & CHUNK_MASK;
         int type = fContentSpecType[chunk][index];
@@ -582,13 +604,12 @@ implements XMLContentSpec.Provider {
     }
 
     private int fLeafCount = 0;
-    private int fEpsilonIndex = -1;
+    private int fEpsilonIndex = -2;
     private final CMNode buildSyntaxTree(int startNode, XMLContentSpec contentSpec) throws CMException
     {
         // We will build a node at this level for the new tree
         CMNode nodeRet = null;
         getContentSpec(startNode, contentSpec);
-
         //
         //  If this node is a leaf, then its an easy one. We just add it
         //  to the tree.
@@ -626,7 +647,7 @@ implements XMLContentSpec.Provider {
                 // Convert to (x|epsilon)
                 nodeRet = new CMBinOp( XMLContentSpec.CONTENTSPECNODE_CHOICE,
                                        buildSyntaxTree(leftNode, contentSpec)
-                                       , new CMLeaf( new QName(), fEpsilonIndex));
+                                       , new CMLeaf( new QName(-1,-2,-2,-1), fEpsilonIndex));
             } else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE) {
                 // Convert to (x,x*)
                 nodeRet = new CMBinOp( XMLContentSpec.CONTENTSPECNODE_SEQ, 
