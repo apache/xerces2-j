@@ -1,7 +1,7 @@
 /*
  * The Apache Software License, Version 1.1
  *
- * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2004 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -131,9 +131,10 @@ public class XJavac extends Javac {
                 setBootclasspath(bcp);
             }
             // need to do special things for Sun too and also
-            // for Blackdown: a Linux port of Sun Java
+            // for Apple and Blackdown: a Linux port of Sun Java
             else if( (vendor.indexOf("SUN") >= 0) || 
-                     (vendor.indexOf("BLACKDOWN") >= 0) ) {
+                     (vendor.indexOf("BLACKDOWN") >= 0) || 
+                     (vendor.indexOf("APPLE") >= 0) ) {
                 // we're on an SUN 1.4; fiddle with the bootclasspath.
                 // since we can't eviscerate XML-related info here,
                 // we must use the classpath
