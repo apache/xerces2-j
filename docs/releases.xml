@@ -14,7 +14,7 @@
    <changes>
    <update>
     <note>
-     Modifined XNI XMLResourceIdentifier to include set/getNamespace.
+     Modified XNI XMLResourceIdentifier to include set/getNamespace.
      Added getEncoding method to the XNI XMLLocator interface.  
     </note>
     <submitter name="Sandy Gao, Neil Graham"/>
