@@ -58,6 +58,7 @@
 package org.apache.xerces.validators.schema;
 
 import  org.apache.xerces.framework.XMLErrorReporter;
+import  org.apache.xerces.validators.common.GrammarResolver;
 import  org.apache.xerces.validators.schema.SchemaSymbols;
 import  org.apache.xerces.validators.schema.XUtil;
 import  org.apache.xerces.validators.datatype.DatatypeValidator;
@@ -80,11 +81,6 @@ import  org.apache.xerces.utils.NamespacesScope;
 import  org.apache.xerces.parsers.SAXParser;
 import  org.apache.xerces.framework.XMLParser;
 import  org.apache.xerces.framework.XMLDocumentScanner;
-//import org.apache.xerces.readers.DefaultEntityHandler;
-//import org.apache.xerces.readers.XMLDeclRecognizer;
-//import org.apache.xerces.readers.XMLEntityHandler;
-//import org.apache.xerces.readers.XMLEntityReaderFactory;
-//import org.apache.xerces.utils.ChunkyCharArray;
 
 import  org.xml.sax.InputSource;
 import  org.xml.sax.SAXParseException;
@@ -370,6 +366,8 @@ import  org.apache.xerces.validators.schema.SchemaSymbols;
  * @author Jeffrey Rodriguez
  *         Eric Ye
  * @see                  org.apache.xerces.validators.common.Grammar
+ *
+ * @version $Id$
  */
 
 public class TraverseSchema implements 
@@ -385,6 +383,7 @@ public class TraverseSchema implements
     private XMLErrorReporter    fErrorReporter = null;
     private StringPool          fStringPool    = null;
 
+    private GrammarResolver fGrammarResolver = null;
     private SchemaGrammar fSchemaGrammar = null;
 
     private Element fSchemaRootElement;
@@ -429,6 +428,9 @@ public class TraverseSchema implements
     }
 
 
+    public void setGrammarResolver(GrammarResolver grammarResolver){
+        fGrammarResolver = grammarResolver;
+    }
     public void startNamespaceDeclScope(int prefix, int uri){
         //TO DO
     }
@@ -453,15 +455,10 @@ public class TraverseSchema implements
         fStringPool = stringPool;
         fSchemaGrammar = schemaGrammar;
         
-        /*
-        fErrorReporter = new SAXParser();
-        fEntityHandler = new DefaultEntityHandler(fStringPool, fErrorReporter);
-        fScanner = new XMLDocumentScanner(fStringPool, fErrorReporter, fEntityHandler, new ChunkyCharArray(fStringPool));
-        fValidator = new XMLValidator(fStringPool,fErrorReporter,fEntityHandler,fScanner);
-
-        if (root == null) { // Anything to do?
+        if (root == null) { 
+            // REVISIT: Anything to do?
             return;
-        }*/
+        }
 
         //Retrieve the targetnamespace URI information
         fTargetNSURIString = root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE);
@@ -533,6 +530,13 @@ public class TraverseSchema implements
                 ;  //TO DO
             }
         } // for each child node
+
+        if (fGrammarResolver == null) {
+            reportGenericSchemaError("Internal error: don't have a GrammarResolver for TraverseSchem");
+        }
+        else{
+            fGrammarResolver.putGrammar(fTargetNSURIString, fSchemaGrammar);
+        }
     } // traverseSchema(Element)
 
     private void checkTopLevelDuplicateNames(Element root) {
@@ -1079,7 +1083,7 @@ public class TraverseSchema implements
                                           (fTargetNSURI==-1) ? -1 : fCurrentScope, scopeDefined,
                                             contentSpecType, left, 
                                           -1, simpleTypeValidator);
-        typeInfo.attlistHead = fSchemaGrammar.getFirstAttributeIndex(typeInfo.templateElementIndex);
+        typeInfo.attlistHead = fSchemaGrammar.getFirstAttributeDeclIndex(typeInfo.templateElementIndex);
 
 
 
@@ -1104,7 +1108,7 @@ public class TraverseSchema implements
                 traverseAttributeGroupDecl(child,typeInfo);
             }
         }
-        typeInfo.attlistHead = fSchemaGrammar.getFirstAttributeIndex(typeInfo.templateElementIndex);
+        typeInfo.attlistHead = fSchemaGrammar.getFirstAttributeDeclIndex(typeInfo.templateElementIndex);
 
         if (baseTypeInfo != null)
             if ( !derivedByRestriction) {
@@ -1427,8 +1431,8 @@ public class TraverseSchema implements
         // add attribute to attr decl pool in fSchemaGrammar, 
         fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
                                   attQName, attType, 
-                                  enumeration, attDefaultType, 
-                                  attDefaultValue, dv);
+                                  enumeration, fStringPool.toString( attDefaultType ), 
+                                  fStringPool.toString( attDefaultValue), dv);
         return -1;
     } // end of method traverseAttribute
 
@@ -1850,6 +1854,9 @@ public class TraverseSchema implements
         return false;
     }
     
+    DatatypeValidator getTypeValidatorFromNS(String typeURI, String localpart){
+        return null;
+    }
     ComplexTypeInfo getTypeInfoFromNS(String typeURI, String localpart){
         return null;
     }
