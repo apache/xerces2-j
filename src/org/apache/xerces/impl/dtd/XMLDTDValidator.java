@@ -717,7 +717,14 @@ public class XMLDTDValidator
         fDTDGrammar = fGrammarBucket.getGrammar(grammarDesc);
         if(fDTDGrammar == null) {
             // give grammar pool a chance...
-            if(fGrammarPool != null) {
+            //
+            // Do not bother checking the pool if no public or system identifier was provided. 
+            // Since so many different DTDs have roots in common, using only a root name as the 
+            // key may cause an unexpected grammar to be retrieved from the grammar pool. This scenario
+            // would occur when an ExternalSubsetResolver has been queried and the
+            // XMLInputSource returned contains an input stream but no external identifier.
+            // This can never happen when the instance document specified a DOCTYPE. -- mrglavas
+            if (fGrammarPool != null && (systemId != null || publicId != null)) {
                 fDTDGrammar = (DTDGrammar)fGrammarPool.retrieveGrammar(grammarDesc);
             }
         }
