@@ -292,9 +292,12 @@ public class DOMASBuilderImpl
         SchemaGrammar grammar = gramConfig.parseXMLSchema(is);
         gramConfig.unlockGrammarPool();
 
-        ASModelImpl newAsModel = new ASModelImpl();
-        fGrammarBucket.putGrammar (grammar, true);
-        addGrammars(newAsModel, fGrammarBucket);
+        ASModelImpl newAsModel = null;
+        if (grammar != null) {
+            newAsModel = new ASModelImpl();
+            fGrammarBucket.putGrammar (grammar, true);
+            addGrammars(newAsModel, fGrammarBucket);
+        }
         return newAsModel;
     }
 
