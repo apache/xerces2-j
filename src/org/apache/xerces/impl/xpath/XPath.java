@@ -1422,6 +1422,25 @@ public class XPath {
                         addToken(tokens, XPath.Tokens.EXPRTOKEN_PERIOD);
                         starIsMultiplyOperator = true;
                         currentOffset++;
+                    } else if (ch == '|') {
+                        addToken(tokens, XPath.Tokens.EXPRTOKEN_PERIOD);
+                        starIsMultiplyOperator = true;
+                        currentOffset++;
+                        break;
+                    } else if (ch == ' ' || ch == 0x0A || ch == 0x09 || ch == 0x0D) {
+                        // this is legal if the next token is non-existent or |
+                        do {
+                            if (++currentOffset == endOffset) {
+                                break;
+                            }
+                            ch = data.charAt(currentOffset);
+                        } while (ch == ' ' || ch == 0x0A || ch == 0x09 || ch == 0x0D); 
+                        if (currentOffset == endOffset || ch == '|') {
+                            addToken(tokens, XPath.Tokens.EXPRTOKEN_PERIOD);
+                            starIsMultiplyOperator = true;
+                            break;
+                        }
+                        throw new XPathException ("c-general-xpath");
                     } else {                    // '.'
                         throw new XPathException ("c-general-xpath");
                     }
