@@ -1519,10 +1519,6 @@ public class XML11Configuration extends ParserConfigurationSettings
             addXML11Component(fXML11NSDocScanner);
             fXML11NSDTDValidator = new XML11NSDTDValidator();
             addXML11Component(fXML11NSDTDValidator);
-
-            
-            if (fSchemaValidator != null)
-                addXML11Component(fSchemaValidator);
 				
             f11Initialized = true;
         }
