@@ -239,12 +239,12 @@ public class AttrImpl
             // Need to break the association w/ original kids
             clone.value = null;
 
-            // Then, if deep, clone the kids too.
-            if (deep) {
-                for (Node child = (Node) value; child != null;
-                     child = child.getNextSibling()) {
-                    clone.appendChild(child.cloneNode(true));
-                }
+            // Cloning an Attribute always clones its children, 
+            // since they represent its value, no matter whether this 
+            // is a deep clone or not
+            for (Node child = (Node) value; child != null;
+                 child = child.getNextSibling()) {
+                 clone.appendChild(child.cloneNode(true));
             }
         }
         clone.isSpecified(true);
