@@ -1803,47 +1803,25 @@ public class TraverseSchema implements
      * @exception Exception
      */
     private int traverseAttributeDecl( Element attrDecl, ComplexTypeInfo typeInfo ) throws Exception {
-        int attributeForm  =  fStringPool.addSymbol(
-                                                   attrDecl.getAttribute( SchemaSymbols.ATT_FORM ));
-
-        int attributeID    =  fStringPool.addSymbol(
-                                                   attrDecl.getAttribute( SchemaSymbols.ATTVAL_ID ));
-
-        int attributeName  =  fStringPool.addSymbol(
-                                                   attrDecl.getAttribute( SchemaSymbols.ATT_NAME ));
-
-        int attributeRef   =  fStringPool.addSymbol(
-                                                   attrDecl.getAttribute( SchemaSymbols.ATT_REF ));
-
-        int attributeType  =  fStringPool.addSymbol(
-                                                   attrDecl.getAttribute( SchemaSymbols.ATT_TYPE ));
-
-        int attributeUse   =  fStringPool.addSymbol(
-                                                   attrDecl.getAttribute( SchemaSymbols.ATT_USE ));
-
-        int attributeValue =  fStringPool.addSymbol(
-                                                   attrDecl.getAttribute( SchemaSymbols.ATT_VALUE ));
-
-        String attNameStr = attrDecl.getAttribute(SchemaSymbols.ATT_NAME);
-        // attribute name
-        int attName = fStringPool.addSymbol(attNameStr);
-        // form attribute
-        String isQName = attrDecl.getAttribute(SchemaSymbols.ATT_EQUIVCLASS);
+        String attNameStr    = attrDecl.getAttribute(SchemaSymbols.ATT_NAME);
+        int attName          = fStringPool.addSymbol(attNameStr);// attribute name
+        String isQName       = attrDecl.getAttribute(SchemaSymbols.ATT_EQUIVCLASS);//form attribute
 
         DatatypeValidator dv = null;
         // attribute type
-        int attType = -1;
-        boolean attIsList = false;
-        int dataTypeSymbol = -1;
+        int attType          = -1;
+        boolean attIsList    = false;
+        int dataTypeSymbol   = -1;
 
-        String ref = attrDecl.getAttribute(SchemaSymbols.ATT_REF); 
-        String datatype = attrDecl.getAttribute(SchemaSymbols.ATT_TYPE);
+        String ref       = attrDecl.getAttribute(SchemaSymbols.ATT_REF); 
+        String datatype  = attrDecl.getAttribute(SchemaSymbols.ATT_TYPE);
+        String localpart = null;
 
         if (!ref.equals("")) {
             if (XUtil.getFirstChildElement(attrDecl) != null)
                 reportSchemaError(SchemaMessageProvider.NoContentForRef, null);
             String prefix = "";
-            String localpart = ref;
+            localpart = ref;
             int colonptr = ref.indexOf(":");
             if ( colonptr > 0) {
                 prefix = ref.substring(0,colonptr);
@@ -1870,25 +1848,29 @@ public class TraverseSchema implements
             return -1;
         }
 
+
         if (datatype.equals("")) {
             Element child = XUtil.getFirstChildElement(attrDecl);
 
-            while (child != null && !child.getNodeName().equals(SchemaSymbols.ELT_SIMPLETYPE))
+            while (child != null && 
+                             !child.getNodeName().equals(SchemaSymbols.ELT_SIMPLETYPE))
                 child = XUtil.getNextSiblingElement(child);
+
+
             if (child != null && child.getNodeName().equals(SchemaSymbols.ELT_SIMPLETYPE)) {
-                attType = XMLAttributeDecl.TYPE_SIMPLE;
+                attType        = XMLAttributeDecl.TYPE_SIMPLE;
                 dataTypeSymbol = traverseSimpleTypeDecl(child);
             } 
             else {
-                attType = XMLAttributeDecl.TYPE_SIMPLE;
+                attType        = XMLAttributeDecl.TYPE_SIMPLE;
                 dataTypeSymbol = fStringPool.addSymbol("string");
             }
 
         } else {
 
             String prefix = "";
-            String localpart = datatype;
-            int colonptr = datatype.indexOf(":");
+            localpart = datatype;
+            int  colonptr = datatype.indexOf(":");
             if ( colonptr > 0) {
                 prefix = datatype.substring(0,colonptr);
                 localpart = datatype.substring(colonptr+1);
@@ -1920,11 +1902,11 @@ public class TraverseSchema implements
                 else {
                     attType = XMLAttributeDecl.TYPE_SIMPLE;
                 }
-            }
-            else { // REVISIT: Danger: assuming all other ATTR types are datatypes
+            } else { // REVISIT: Danger: assuming all other ATTR types are datatypes
                 //REVISIT check against list of validators to ensure valid type name
 
                 // check if the type is from the same Schema
+
                 if (!typeURI.equals(fTargetNSURIString) ) {
                     dv = getTypeValidatorFromNS(typeURI, localpart);
                     if (dv == null) {
@@ -1935,17 +1917,6 @@ public class TraverseSchema implements
                 }
                 else {
                     dv = fDatatypeRegistry.getDatatypeValidator(localpart);
-                    if ( dv == null )  {
-                        Element topleveltype = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
-                        if (topleveltype != null) {
-                            traverseSimpleTypeDecl( topleveltype );
-                            dv = fDatatypeRegistry.getDatatypeValidator(localpart);
-                            //   TO DO:  the Default and fixed attribute handling should be here.
-                        }
-                        else {
-                            reportGenericSchemaError("simpleType not found : " + localpart);
-                        }
-                    }
                 }
 
                 attType = XMLAttributeDecl.TYPE_SIMPLE;
@@ -1953,17 +1924,29 @@ public class TraverseSchema implements
 
         }
 
+
         // attribute default type
         int attDefaultType = -1;
         int attDefaultValue = -1;
 
-        String use = attrDecl.getAttribute(SchemaSymbols.ATT_USE);
+        String  use      = attrDecl.getAttribute(SchemaSymbols.ATT_USE);
         boolean required = use.equals(SchemaSymbols.ATTVAL_REQUIRED);
 
-        //if (attType == XMLAttributeDecl.TYPE_SIMPLE ) {
-        if(dv==null)
-            dv = fDatatypeRegistry.getDatatypeValidator(fStringPool.toString(dataTypeSymbol));
-        //}
+
+        if(dv==null){
+            dv = fDatatypeRegistry.getDatatypeValidator(localpart); 
+            if ( dv == null )  {
+                 Element topleveltype = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
+                 if (topleveltype != null) {
+                      traverseSimpleTypeDecl( topleveltype );
+                      dv = fDatatypeRegistry.getDatatypeValidator(localpart);
+                            //   TO DO:  the Default and fixed attribute handling should be here.
+                      }else {
+                      reportGenericSchemaError("simpleType not found : " + localpart);
+                      }
+                 }
+        }
+
 
         if (dv == null) {
             reportGenericSchemaError("null validator for datatype : " 
