@@ -97,6 +97,8 @@ public class GeneralAttrCheck {
 
     // used to initialize fEleAttrsMap
     // step 1: all possible data types
+    // DT_??? >= 0 : validate using a validator, which is initialized staticly
+    // DT_??? <  0 : validate directly, which is done in "validate()"
     protected static int dtCount             = 0;
 
     protected static final int DT_ANYURI           = dtCount++;
@@ -108,6 +110,7 @@ public class GeneralAttrCheck {
     protected static final int DT_TOKEN            = dtCount++;
     protected static final int DT_NCNAME           = dtCount++;
     protected static final int DT_XPATH            = dtCount++;
+    protected static final int DT_XPATH1           = dtCount++;
 
     protected static final int DT_BLOCK            = -1;
     protected static final int DT_BLOCK1           = DT_BLOCK-1;
@@ -132,6 +135,7 @@ public class GeneralAttrCheck {
         int ATT_ABSTRACT_D          = attCount++;
         int ATT_ATTRIBUTE_FD_D      = attCount++;
         int ATT_BASE_R              = attCount++;
+        int ATT_BASE_N              = attCount++;
         int ATT_BLOCK_N             = attCount++;
         int ATT_BLOCK1_N            = attCount++;
         int ATT_BLOCK_D_D           = attCount++;
@@ -173,6 +177,7 @@ public class GeneralAttrCheck {
         int ATT_VALUE_WS_N          = attCount++;
         int ATT_VERSION_N           = attCount++;
         int ATT_XPATH_R             = attCount++;
+        int ATT_XPATH1_R            = attCount++;
 
         // step 3: store all these attributes in an array
         OneAttr[] allAttrs = new OneAttr[attCount];
@@ -187,6 +192,10 @@ public class GeneralAttrCheck {
         allAttrs[ATT_BASE_R]            =   new OneAttr(SchemaSymbols.ATT_BASE,
                                                         DT_QNAME,
                                                         ATT_REQUIRED,
+                                                        null);
+        allAttrs[ATT_BASE_N]            =   new OneAttr(SchemaSymbols.ATT_BASE,
+                                                        DT_QNAME,
+                                                        ATT_OPT_NODFLT,
                                                         null);
         allAttrs[ATT_BLOCK_N]           =   new OneAttr(SchemaSymbols.ATT_BLOCK,
                                                         DT_BLOCK,
@@ -352,6 +361,10 @@ public class GeneralAttrCheck {
                                                         DT_XPATH,
                                                         ATT_REQUIRED,
                                                         null);
+        allAttrs[ATT_XPATH1_R]          =   new OneAttr(SchemaSymbols.ATT_XPATH,
+                                                        DT_XPATH1,
+                                                        ATT_REQUIRED,
+                                                        null);
 
         // step 4: for each element, make a list of possible attributes
         Hashtable attrList;
@@ -506,12 +519,19 @@ public class GeneralAttrCheck {
         // for element "restriction" - local name
         attrList = new Hashtable();
         // base = QName
-        attrList.put(SchemaSymbols.ATT_BASE, allAttrs[ATT_BASE_R]);
+        attrList.put(SchemaSymbols.ATT_BASE, allAttrs[ATT_BASE_N]);
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
         oneEle = new OneElement (attrList);
         fEleAttrsMap.put(PRE_LOC_NAME+SchemaSymbols.ELT_RESTRICTION, oneEle);
+
         // for element "extension" - local name
+        attrList = new Hashtable();
+        // base = QName
+        attrList.put(SchemaSymbols.ATT_BASE, allAttrs[ATT_BASE_R]);
+        // id = ID
+        attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
+        oneEle = new OneElement (attrList);
         fEleAttrsMap.put(PRE_LOC_NAME+SchemaSymbols.ELT_EXTENSION, oneEle);
 
         // for element "attributeGroup" - local ref
@@ -647,7 +667,14 @@ public class GeneralAttrCheck {
         attrList.put(SchemaSymbols.ATT_XPATH, allAttrs[ATT_XPATH_R]);
         oneEle = new OneElement (attrList);
         fEleAttrsMap.put(PRE_LOC_NAME+SchemaSymbols.ELT_SELECTOR, oneEle);
+
         // for element "field" - local name
+        attrList = new Hashtable();
+        // id = ID
+        attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
+        // xpath = a subset of XPath expression
+        attrList.put(SchemaSymbols.ATT_XPATH, allAttrs[ATT_XPATH1_R]);
+        oneEle = new OneElement (attrList);
         fEleAttrsMap.put(PRE_LOC_NAME+SchemaSymbols.ELT_FIELD, oneEle);
 
         // for element "notation" - local name
@@ -885,6 +912,11 @@ public class GeneralAttrCheck {
             extraDV = new StringDatatypeValidator(fExtraDVs[DT_TOKEN], facets, false);
             fExtraDVs[DT_XPATH] = extraDV;
 
+            // xpath = a subset of XPath expression
+            facets = new Hashtable();
+            facets.put(SchemaSymbols.ELT_PATTERN, "(\\.//)?((((child::)?((\\i\\c*:)?(\\i\\c*|\\*)))|\\.)/)*((((child::)?((\\i\\c*:)?(\\i\\c*|\\*)))|\\.)|((attribute::|@)((\\i\\c*:)?(\\i\\c*|\\*))))(\\|(\\.//)?((((child::)?((\\i\\c*:)?(\\i\\c*|\\*)))|\\.)/)*((((child::)?((\\i\\c*:)?(\\i\\c*|\\*)))|\\.)|((attribute::|@)((\\i\\c*:)?(\\i\\c*|\\*)))))*");
+            extraDV = new StringDatatypeValidator(fExtraDVs[DT_TOKEN], facets, false);
+            fExtraDVs[DT_XPATH1] = extraDV;
         } catch (InvalidDatatypeFacetException ide) {
             // shouldn't be any problem
         }
@@ -960,10 +992,13 @@ public class GeneralAttrCheck {
                 // TraverseSchema, the validator would think it's already defined.
                 // disable this temprorily. Enable it after modify TraverseSchema.
                 // and URI doesn't validate relative URIs, so disable it too.
+                // no checking on string needs to be done here.
+                // no checking on xpath needs to be done here.
+                // xpath values are validated in xpath parser
                 if (oneAttr.dvIndex >= 0) {
-                    if (!(fExtraDVs[oneAttr.dvIndex] instanceof IDDatatypeValidator) &&
-                        !(fExtraDVs[oneAttr.dvIndex] instanceof AnyURIDatatypeValidator) &&
-                        !(fExtraDVs[oneAttr.dvIndex] instanceof NOTATIONDatatypeValidator)) //???
+                    if (oneAttr.dvIndex != DT_ID && oneAttr.dvIndex != DT_ANYURI &&
+                        oneAttr.dvIndex != DT_STRING &&
+                        oneAttr.dvIndex != DT_XPATH && oneAttr.dvIndex != DT_XPATH1) //???
                         fExtraDVs[oneAttr.dvIndex].validate(attrVal, null);
                     attrValues.put(attrName, attrVal);
                 } else {
