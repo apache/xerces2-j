@@ -2055,9 +2055,17 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             }
 
             // expand it before passing it to the parser
-            loc = fEntityHandler.expandSystemId(loc);
+            InputSource source = null;
+            EntityResolver currentER = parser.getEntityResolver();
+            if (currentER != null) {
+                source = currentER.resolveEntity("", loc);
+            }
+            if (source == null) {
+                loc = fEntityHandler.expandSystemId(loc);
+                source = new InputSource(loc);
+            }
             try {
-                parser.parse( loc );
+                parser.parse( source );
             }catch( IOException e ) {
                 e.printStackTrace();
             }catch( SAXException e ) {
@@ -2086,7 +2094,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                     }
                     grammar = new SchemaGrammar();
                     grammar.setGrammarDocument(document);
-                    tst = new TraverseSchema( root, fStringPool, (SchemaGrammar)grammar, fGrammarResolver, fErrorReporter, loc);
+                    tst = new TraverseSchema( root, fStringPool, (SchemaGrammar)grammar, fGrammarResolver, fErrorReporter, source.getSystemId());
                     fGrammarResolver.putGrammar(document.getDocumentElement().getAttribute("targetNamespace"), grammar);
                 }
             }
