@@ -57,9 +57,6 @@
 
 package org.apache.xerces.util;
 
-import org.apache.xerces.impl.xs.psvi.XSModel;
-import org.apache.xerces.impl.xs.SchemaGrammar;
-import org.apache.xerces.impl.xs.XSModelImpl;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
@@ -299,30 +296,6 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
         return false;
     }
     } // containsGrammar(XMLGrammarDescription):boolean
-
-    /**
-     * Return an <code>XSModel</code> that represents components in
-     * the schema grammars in this pool implementation.
-     *
-     * @return  an <code>XSModel</code> representing this schema grammar
-     */
-    public XSModel toXSModel() {
-        java.util.Vector list = new java.util.Vector();
-        for (int i = 0; i < fGrammars.length; i++) {
-            for (Entry entry = fGrammars[i] ; entry != null ; entry = entry.next) {
-                if (entry.desc.getGrammarType().equals(XMLGrammarDescription.XML_SCHEMA))
-                    list.addElement(entry.grammar);
-            }
-        }
-
-        int size = list.size();
-        if (size == 0)
-            return null;
-        SchemaGrammar[] gs = new SchemaGrammar[size];
-        for (int i = 0; i < size; i++)
-            gs[i] = (SchemaGrammar)list.elementAt(i);
-        return new XSModelImpl(gs);
-    }
 
     /* <p> Sets this grammar pool to a "locked" state--i.e.,
      * no new grammars will be added until it is "unlocked".
