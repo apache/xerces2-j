@@ -1261,6 +1261,10 @@ extends BaseMarkupSerializer {
             _printer.printText("&lt;");
         } else if (ch == '&') {
             _printer.printText("&amp;");
+        } else if (ch == '>'){
+        	// character sequence "]]>" can't appear in content, therefore
+        	// we should escape '>' 
+			_printer.printText("&gt;");        	
         } else if ( ch == '"' && ! keepQuot) {
             _printer.printText("&quot;");
         } else if ( ( ch >= ' ' && _encodingInfo.isPrintable((char)ch)) ||
