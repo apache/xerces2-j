@@ -305,6 +305,14 @@ public class SchemaGrammar {
      */
     public final void addGlobalElementDecl(XSElementDecl decl) {
         fGlobalElemDecls.put(decl.fName, decl);
+
+        // if there is a substitution group affiliation, store in an array,
+        // for further constraint checking: UPA, PD, EDC
+        if (decl.fSubGroup != null) {
+            if (fSubGroupCount == fSubGroups.length)
+                fSubGroups = resize(fSubGroups, fSubGroupCount+INC_SIZE);
+            fSubGroups[fSubGroupCount++] = decl;
+        }
     }
 
     /**
@@ -387,6 +395,8 @@ public class SchemaGrammar {
 
     // array to store complex type decls
     private static final int INITIAL_SIZE = 16;
+    private static final int INC_SIZE     = 16;
+
     private int fCTCount = 0;
     private XSComplexTypeDecl[] fComplexTypeDecls = new XSComplexTypeDecl[INITIAL_SIZE];
 
@@ -395,7 +405,7 @@ public class SchemaGrammar {
      */
     final void addComplexTypeDecl(XSComplexTypeDecl decl) {
         if (fCTCount == fComplexTypeDecls.length)
-            fComplexTypeDecls = resize(fComplexTypeDecls, fCTCount*2);
+            fComplexTypeDecls = resize(fComplexTypeDecls, fCTCount+INC_SIZE);
         fComplexTypeDecls[fCTCount++] = decl;
     }
 
@@ -406,6 +416,20 @@ public class SchemaGrammar {
         if (fCTCount < fComplexTypeDecls.length)
             fComplexTypeDecls = resize(fComplexTypeDecls, fCTCount);
         return fComplexTypeDecls;
+    }
+
+    // used to store all substitution group information declared in
+    // this namespace
+    private int fSubGroupCount = 0;
+    private XSElementDecl[] fSubGroups = new XSElementDecl[INITIAL_SIZE];
+
+    /**
+     * get all substitution group information: for the 3 constraint checking
+     */
+    final XSElementDecl[] getSubstitutionGroups() {
+        if (fSubGroupCount < fSubGroups.length)
+            fSubGroups = resize(fSubGroups, fSubGroupCount);
+        return fSubGroups;
     }
 
     // anyType and anySimpleType: because there are so many places where
@@ -443,4 +467,10 @@ public class SchemaGrammar {
         return newArray;
     }
 
-} // class SchemaGrammar
+    static final XSElementDecl[] resize(XSElementDecl[] oldArray, int newSize) {
+        XSElementDecl[] newArray = new XSElementDecl[newSize];
+        System.arraycopy(oldArray, 0, newArray, 0, Math.min(oldArray.length, newSize));
+        return newArray;
+    }
+
+    } // class SchemaGrammar
