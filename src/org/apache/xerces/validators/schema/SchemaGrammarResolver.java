@@ -64,7 +64,7 @@ import org.apache.xerces.validators.common.GrammarResolver;
 
 
 /**
- * This class embodies the representation of a Grammar
+ * This class embodies the representation of a Schema Grammar
  * pool.
  * This class is called from the validator.
  * Grammar pool maps to a set of Grammar Proxy classes.
@@ -105,7 +105,7 @@ public class SchemaGrammarResolver implements GrammarResolver {
     public String[] getNSKeysInPool() {
         int numberOfNSKeysInPool = fGrammarRegistry.size();
         String[] NSArray         = new String[numberOfNSKeysInPool];
-        Enumeration  enumOfKeys  = fGrammarRegistry.keys();
+        Enumeration enumOfKeys   = nameSpaceKeys();
         for (int i = 0; i<numberOfNSKeysInPool; i ++ ) {
             NSArray[i] = (String )( enumOfKeys.nextElement() );
         }
@@ -129,46 +129,6 @@ public class SchemaGrammarResolver implements GrammarResolver {
     }
 
     /**
-     * Removes association of Namespace key and Grammar from                         
-     * Grammar pool
-     * 
-     * @param nameSpaceKey
-     *               Name space key
-     */
-    public void deleteGrammarForNS( String nameSpaceKey ) {
-        if ( isNSInPool( nameSpaceKey ) == true )
-            fGrammarRegistry.remove( nameSpaceKey );
-    }
-
-    /**
-     *         Is Grammar abstraction in Grammar pool?
-     * 
-     * @param grammar Grammar Abstraction
-     * @return true  - Yes there is at least one instance
-     *         false - No
-     */
-    public boolean isGrammarInPool( Grammar grammar ) {
-        return fGrammarRegistry.contains( grammar );
-    }
-
-    /**
-     *                Is Namespace key in Grammar pool
-     * 
-     * @param nameSpaceKey
-     *               Namespace key
-     * @return                Boolean- true - Namespace key association
-     *         is in grammar pool.
-     */
-    public boolean isNSInPool( String nameSpaceKey ) { 
-        return fGrammarRegistry.containsKey( nameSpaceKey );
-    }
-    /**
-     *         Reset internal Namespace/Grammar registry.
-     */
-    public void resetGrammarResolver() {
-        fGrammarRegistry.clear( );
-    }
-    /**
      * 
      * @return           Only instance of Grammar pool ( Singleton
      *         pattern).
@@ -191,7 +151,7 @@ public class SchemaGrammarResolver implements GrammarResolver {
      */
 
     public Enumeration nameSpaceKeys(){
-        return null;
+        return fGrammarRegistry.keys();
     }
 
 
@@ -203,6 +163,8 @@ public class SchemaGrammarResolver implements GrammarResolver {
      *               Name space key
      */
     public Grammar removeGrammar( String nameSpaceKey ) {
+        if ( containsNamesSpace( nameSpaceKey ) == true )
+          fGrammarRegistry.remove( nameSpaceKey );
         return null;
     }
 
@@ -216,8 +178,7 @@ public class SchemaGrammarResolver implements GrammarResolver {
      *         false - No
      */
     public boolean contains( Grammar grammar ){
-        return false;
-
+        return fGrammarRegistry.contains( grammar );
     }
 
     /**
@@ -229,13 +190,14 @@ public class SchemaGrammarResolver implements GrammarResolver {
      *         is in grammar pool.
      */
     public boolean containsNamesSpace( String nameSpaceKey ){
-        return false;
+        return fGrammarRegistry.containsKey( nameSpaceKey );
     }
 
     /**
      *         Reset internal Namespace/Grammar registry.
      */
     public void clearGrammarResolver() { 
+        fGrammarRegistry.clear();
     }
 
 
