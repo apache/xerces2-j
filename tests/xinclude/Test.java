@@ -56,6 +56,7 @@
  */
 package xinclude;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -114,6 +115,8 @@ public class Test implements XMLErrorHandler {
         true, false, true, false, false, false, true, true, false, true, // 30
         true, false, true, true, true, true, true, true, false, false, // 40
         true, };
+    
+    private String fOutputDirectory = "tests/xinclude/output";
 
     public static void main(String[] args) {
         Test tester = new Test();
@@ -123,6 +126,17 @@ public class Test implements XMLErrorHandler {
                 switch (args[i].charAt(1)) {
                     case 'g' :
                         tester.fGenerate = true;
+                        if (args.length > i + 1
+                            && args[i + 1].charAt(0) != '-') {
+                            try {
+                                Integer.parseInt(args[i + 1]);
+                                // if it parses as an integer, we'll assume it's a test number
+                                tester.setLogFile(System.err);
+                            }
+                            catch (NumberFormatException e) {
+                                tester.fOutputDirectory = args[++i];
+                            }
+                        }
                         break;
                     case 'h' :
                         printUsage();
@@ -141,7 +155,7 @@ public class Test implements XMLErrorHandler {
                                 try {
                                     tester.setLogFile(
                                         new PrintStream(
-                                            new FileOutputStream(args[i++])));
+                                            new FileOutputStream(args[++i])));
                                 }
                                 catch (IOException ioe) {
                                     System.err.println(
@@ -168,7 +182,14 @@ public class Test implements XMLErrorHandler {
                 tester.addTest(i);
             }
         }
-
+        
+        // Create output directory if it does not already exist.
+        if (tester.fGenerate) {
+            File outputDir = new File(tester.fOutputDirectory);
+            if (!outputDir.exists()) {
+                outputDir.mkdirs();
+            }
+        }
         tester.runTests();
     }
 
@@ -242,23 +263,28 @@ public class Test implements XMLErrorHandler {
 
     private boolean runTest(int testnum) {
         String testname = "tests/xinclude/tests/test";
-        String outputFilename = "tests/xinclude/output/test";
+        String outputFilename = fOutputDirectory + "/test";
+        String expectedOutputFilename = "tests/xinclude/output/test";
         if (testnum < 10) {
             testname += "0" + testnum;
             outputFilename += "0" + testnum;
+            expectedOutputFilename += "0" + testnum;
         }
         else {
             testname += testnum;
             outputFilename += testnum;
+            expectedOutputFilename += testnum;
         }
         testname += XML_EXTENSION;
         // we output to an .xml file if we expect success,
         // or a .txt file if we expect failure
         if (TEST_RESULTS[testnum - 1]) {
             outputFilename += XML_EXTENSION;
+            expectedOutputFilename += XML_EXTENSION;
         }
         else {
             outputFilename += TXT_EXTENSION;
+            expectedOutputFilename += TXT_EXTENSION;
         }
 
         boolean passed = true;
@@ -284,18 +310,20 @@ public class Test implements XMLErrorHandler {
         return processTestResults(
             passed,
             TEST_RESULTS[testnum - 1],
-            outputFilename);
+            outputFilename,
+            expectedOutputFilename);
     }
 
     private boolean processTestResults(
         boolean passed,
         boolean expectedPass,
+        String outputFilename,
         String expectedOutputFile) {
         if (fGenerate) {
             try {
-                fLogStream.println("Generated: " + expectedOutputFile);
+                fLogStream.println("Generated: " + outputFilename);
                 PrintWriter outputFile =
-                    new PrintWriter(new FileWriter(expectedOutputFile));
+                    new PrintWriter(new FileWriter(outputFilename));
                 outputFile.print(fResults);
                 outputFile.close();
             }
@@ -365,18 +393,19 @@ public class Test implements XMLErrorHandler {
     private static void printUsage() {
         System.out.println("java xinclude.Test [OPTIONS] [TESTS]");
         System.out.println("OPTIONS:");
-        System.out.println(
-            "  -f [file] : Specifies a log file to print detailed error messages to.");
-        System.out.println(
-            "              Omitting the FILE parameter makes messages print to standard error.");
-        System.out.println(
-            "              If this option is absent, the messages will not be output.");
-        System.out.println("  -g : Generates the expected output files.");
-        System.out.println(
-            "       Only use this option when the output is sure to be correct.");
-        System.out.println(
-            "       The previous expected output files will be overwritten.");
-        System.out.println("  -h : Prints this help message and exits.");
+        System.out.println("  -f [file] :      Specifies a log file to print detailed error messages to.");
+        System.out.println("                   Omitting the FILE parameter makes messages print to ");
+        System.out.println("                   standard error. If this option is absent, the messages");
+        System.out.println("                   will not be output.");
+        System.out.println("");
+        System.out.println("  -g [directory] : Generates the expected output files in the ");
+        System.out.println("                   given directory if specified, otherwise the files");
+        System.out.println("                   are written to the expected output directory.");
+        System.out.println("                   Only use this option without a target when the output ");
+        System.out.println("                   is sure to be correct. The previous expected output files ");
+        System.out.println("                   will be overwritten.");
+        System.out.println("");
+        System.out.println("  -h :             Prints this help message and exits.");
         System.out.println("TESTS:");
         System.out.println(
             "  A whitespace separated list of tests to run, specified by test number.");
