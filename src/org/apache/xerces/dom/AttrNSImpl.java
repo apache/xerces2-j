@@ -96,7 +96,12 @@ public class AttrNSImpl
 
         this.ownerDocument = ownerDocument;
         this.name = qualifiedName;
-        this.namespaceURI = namespaceURI;
+	// treat an empty string as a null
+	if (namespaceURI != null && !namespaceURI.equals("")) {
+	    this.namespaceURI =  namespaceURI;
+	} else {
+	    this.namespaceURI = null;
+	}
         int index = qualifiedName.indexOf(':');
         if (index < 0) {
             this.prefix = null;

@@ -96,8 +96,13 @@ public class ElementNSImpl
         throws DOMException
     {
 	this.ownerDocument = ownerDocument;
-        this.namespaceURI = namespaceURI;
-        this.name = qualifiedName;
+	// treat an empty string as a null
+	if (namespaceURI != null && !namespaceURI.equals("")) {
+	    this.namespaceURI =  namespaceURI;
+	} else {
+	    this.namespaceURI = null;
+	}
+	this.name = qualifiedName;
         int index = qualifiedName.indexOf(':');
         if (index < 0) {
             this.prefix = null;
