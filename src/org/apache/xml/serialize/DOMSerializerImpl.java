@@ -59,15 +59,18 @@
 
 package org.apache.xml.serialize;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.OutputStream;
 import java.io.Writer;
-import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-import java.io.File;
 import java.lang.reflect.Method;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -81,6 +84,7 @@ import org.apache.xerces.dom3.DOMErrorHandler;
 import org.apache.xerces.dom3.DOMStringList;
 
 import org.apache.xerces.impl.Constants;
+import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
 import org.w3c.dom.DOMException;
@@ -688,9 +692,36 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                         return false;
                     }
                     else {
-                        // uri was specified
-                        FileOutputStream fileOut = new FileOutputStream(new File(uri));
-                        ser.setOutputCharStream( new OutputStreamWriter(fileOut, encoding));
+                        // URI was specified. Handle relative URIs.
+                        String expanded = XMLEntityManager.expandSystemId(uri, null, true);
+                        URL url = new URL(expanded != null ? expanded : uri);
+                        OutputStream out = null;
+                        String protocol = url.getProtocol();
+                        String host = url.getHost();
+                        // Use FileOutputStream if this URI is for a local file.
+                        if (protocol.equals("file") 
+                            && (host == null || host.length() == 0 || host.equals("localhost"))) {
+                            // REVISIT: We have to decode %nn sequences. For
+                            // now files containing spaces and other characters
+                            // which were escaped in the URI will fail. -- mrglavas
+                            out = new FileOutputStream(new File(url.getPath()));
+                        }
+                        // Try to write to some other kind of URI. Some protocols
+                        // won't support this, though HTTP should work.
+                        else {
+                            URLConnection urlCon = url.openConnection();
+                            urlCon.setDoInput(false);
+                            urlCon.setDoOutput(true);
+                            urlCon.setUseCaches(false); // Enable tunneling.
+                            if (urlCon instanceof HttpURLConnection) {
+                                // The DOM L3 LS CR says if we are writing to an HTTP URI
+                                // it is to be done with an HTTP PUT. 
+                                HttpURLConnection httpCon = (HttpURLConnection) urlCon;
+                                httpCon.setRequestMethod("PUT");
+                            }
+                            out = urlCon.getOutputStream();
+                        }
+                        ser.setOutputCharStream( new OutputStreamWriter(out, encoding) );
                     }
                 }
                 else {
@@ -824,8 +855,37 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
 
         try {
             ser.reset();
-            FileOutputStream fileOut = new FileOutputStream(new File(URI));
-            ser.setOutputCharStream(new OutputStreamWriter(fileOut, encoding));
+            
+            // URI was specified. Handle relative URIs.
+            String expanded = XMLEntityManager.expandSystemId(URI, null, true);
+            URL url = new URL(expanded != null ? expanded : URI);
+            OutputStream out = null;
+            String protocol = url.getProtocol();
+            String host = url.getHost();
+            // Use FileOutputStream if this URI is for a local file.
+            if (protocol.equals("file") 
+                && (host == null || host.length() == 0 || host.equals("localhost"))) {
+                // REVISIT: We have to decode %nn sequences. For
+                // now files containing spaces and other characters
+                // which were escaped in the URI will fail. -- mrglavas
+                out = new FileOutputStream(new File(url.getPath()));
+            }
+            // Try to write to some other kind of URI. Some protocols
+            // won't support this, though HTTP should work.
+            else {
+            	URLConnection urlCon = url.openConnection();
+                urlCon.setDoInput(false);
+                urlCon.setDoOutput(true);
+                urlCon.setUseCaches(false); // Enable tunneling.
+                if (urlCon instanceof HttpURLConnection) {
+                    // The DOM L3 LS CR says if we are writing to an HTTP URI
+                    // it is to be done with an HTTP PUT. 
+                    HttpURLConnection httpCon = (HttpURLConnection) urlCon;
+                    httpCon.setRequestMethod("PUT");
+                }
+                out = urlCon.getOutputStream();
+            }
+            ser.setOutputCharStream( new OutputStreamWriter(out, encoding) );
 
             if (node.getNodeType() == Node.DOCUMENT_NODE)
                 ser.serialize((Document) node);
