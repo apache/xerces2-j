@@ -7,6 +7,26 @@
     TBD
    </desc>
    <changes>
+   <fix>
+    <note>
+     Fixed an ArrayIndexOutOfBoundsException in the scanner caused by some
+     invalid character references.
+    </note>
+    <submitter name="Michael Glavassevich"/>
+   </fix>
+   <fix>
+    <note>
+     Fixed various bugs related to XML 1.1.
+    </note>
+    <submitter name="Neil Graham, Neil Delima, Michael Glavassevich"/>
+   </fix>
+   <fix>
+    <note>
+     Fixed various bugs in the URI implementation, and added previously missing
+     support for IPv6 addresses.
+    </note>
+    <submitter name="Michael Glavassevich"/>
+   </fix>
    <update>
     <note>
         Added annotation support to the XML Schema component model API implementation.
@@ -61,14 +81,14 @@
    </fix>
    <fix>
     <note>
-     Fixed various bug related to &lt;redefine&gt; in XML Schema traversal.
+     Fixed various bugs related to &lt;redefine&gt; in XML Schema traversal.
     </note>
     <submitter name='Khaled Noaman, Sandy Gao'/>
    </fix>
 
    <fix>
     <note>
-     Fixed various bug related to the pattern facet (regular expression)
+     Fixed various bugs related to the pattern facet (regular expression)
      in XML Schema.
     </note>
     <submitter name='Khaled Noaman, Sandy Gao'/>
