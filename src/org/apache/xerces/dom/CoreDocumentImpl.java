@@ -872,6 +872,12 @@ public class CoreDocumentImpl
      */
     public void setErrorHandler(DOMErrorHandler errorHandler) {
         try {
+            // REVISIT: we probably should not use configuration here.
+            if (fConfiguration == null) {
+                // if symbol table is not available                
+                // it will be created by the configuration
+                fConfiguration =  new DOMValidationConfiguration(fSymbolTable);
+            }
             fConfiguration.setErrorHandler(new DOMErrorHandlerWrapper(errorHandler));
         } catch (Exception e) {
 

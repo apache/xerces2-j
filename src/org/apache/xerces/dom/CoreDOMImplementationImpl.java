@@ -70,7 +70,7 @@ import org.apache.xerces.dom3.ls.DOMBuilder;
 import org.apache.xerces.dom3.ls.DOMWriter;
 import org.apache.xerces.dom3.ls.DOMInputSource;
 import org.apache.xerces.parsers.DOMBuilderImpl;
-import org.apache.xml.serialize.XMLSerializer;
+import org.apache.xml.serialize.DOMWriterImpl;
 
 // DOM Revalidation
 import org.apache.xerces.impl.RevalidationHandler;
@@ -237,10 +237,7 @@ implements DOMImplementation, DOMImplementationLS {
      * DOM Level 3 WD - Experimental.
      */                
     public DOMWriter createDOMWriter() {
-        XMLSerializer serializer = new XMLSerializer();
-        serializer.setNamespaces(true);
-        serializer.initDOMFeatures();
-        return serializer;
+        return new DOMWriterImpl(true);
     }
     /**
      * DOM Level 3 WD - Experimental.

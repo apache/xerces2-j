@@ -301,12 +301,6 @@ public interface DOMWriter {
      */
     public void setEncoding(String encoding);
 
-    /**
-     *  The actual character encoding that was last used by this formatter. 
-     * This convenience method allows the encoding that was used when 
-     * serializing a document to be directly obtained. 
-     */
-    public String getLastEncoding();
 
     /**
      *  The end-of-line sequence of characters to be used in the XML being 
@@ -406,7 +400,7 @@ public interface DOMWriter {
      * @param wnode  The node to be written. 
      * @return  Returns the serialized data, or <code>null</code> in case a 
      *   failure occured and the failure wasn't canceled by the error 
-     *   handler. 
+     *   handler.                                     
      * @exception DOMException
      *    DOMSTRING_SIZE_ERR: The resulting string is too long to fit in a 
      *   <code>DOMString</code>. 

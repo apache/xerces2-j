@@ -78,8 +78,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.io.OutputStream;
 import java.io.Writer;
-import java.io.StringWriter;
-import java.util.Hashtable;
 import java.util.Enumeration;
 
 import org.w3c.dom.*;
@@ -90,13 +88,9 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import org.apache.xerces.dom3.DOMErrorHandler;
 import org.apache.xerces.dom3.DOMError;
-import org.apache.xerces.dom3.ls.DOMWriter;
-import org.apache.xerces.dom3.DOMErrorHandler;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.NamespaceSupport;
-import org.apache.xerces.xni.NamespaceContext;
 
 /**
  * Implements an XML serializer supporting both DOM and SAX pretty
@@ -131,18 +125,21 @@ import org.apache.xerces.xni.NamespaceContext;
  * @see Serializer
  */
 public class XMLSerializer
-extends BaseMarkupSerializer
-implements DOMWriter {
+extends BaseMarkupSerializer{
 
     //
     // constants
     //
 
     protected static final boolean DEBUG = false;
-
+                              
     // 
     // data
     //
+
+    // 
+    // DOM Level 3 implementation: variables intialized in DOMWriterImpl
+    // 
 
     /** stores namespaces in scope */
     protected NamespaceSupport fNSBinder;
@@ -151,7 +148,7 @@ implements DOMWriter {
     protected NamespaceSupport fLocalNSBinder;
 
     /** symbol table for serialization */
-    protected final SymbolTable fSymbolTable = new SymbolTable();    
+    protected SymbolTable fSymbolTable;    
 
     protected String fEmptySymbol;
     protected String fXmlSymbol;
@@ -162,11 +159,17 @@ implements DOMWriter {
     // counter for new prefix names
     protected int fNamespaceCounter = 1;
 
+    /**
+     * Controls whether namespace fixup should be performed during
+     * the serialization. 
+     * NOTE: if this field is set to true the following 
+     * fields need to be initialized: fNSBinder, fLocalNSBinder, fSymbolTable, 
+     * fEmptySymbol, fXmlSymbol, fXmlnsSymbol, fNamespaceCounter.
+     */
+    protected boolean fNamespaces = false;
+
 
     private boolean fPreserveSpace;
-    protected boolean fNamespaces = false;
-    private String fEncoding;
-    private String fLastEncoding;
 
 
     /**
@@ -223,6 +226,8 @@ implements DOMWriter {
     public void setOutputFormat( OutputFormat format ) {
         super.setOutputFormat( format != null ? format : new OutputFormat( Method.XML, null, false ) );
     }
+
+    
 
 
     //-----------------------------------------//
@@ -670,7 +675,7 @@ implements DOMWriter {
         
             // reset local binder
             fLocalNSBinder.reset(fSymbolTable);
-            //note: the values that added to namespace binder
+            // note: the values that added to namespace binder
             // must be already be added to the symbol table
             fLocalNSBinder.pushContext();
             // add new namespace context        
@@ -743,7 +748,7 @@ implements DOMWriter {
                 value = attr.getValue();
                 if ( value == null )
                     value = "";
-                if ( attr.getSpecified() || !getFeature("discard-default-content") ) {
+                if ( attr.getSpecified()) {
                     _printer.printSpace();
                     _printer.printText( name );
                     _printer.printText( "=\"" );
@@ -762,7 +767,7 @@ implements DOMWriter {
             }
         }
         else { // do namespace fixup
-             
+            
             //-----------------------
             // get element uri/prefix
             //-----------------------
@@ -773,6 +778,8 @@ implements DOMWriter {
             //----------------------
             // output element name
             //----------------------
+            // REVISIT: this could be removed if we always convert empty string to null
+            //          for the namespaces.
             if ((uri !=null && prefix !=null ) && uri.length() == 0 && prefix.length()!=0) {
                  // uri is an empty string and element has some prefix
                 // the namespace alg later will fix up the namespace attributes
@@ -1158,12 +1165,14 @@ implements DOMWriter {
             if (DEBUG) {
                 System.out.println("=>add xmlns:"+prefix+"=\""+uri+"\" declaration");
             }
-            _printer.printText( fXmlnsSymbol+ ":"+prefix );
+            _printer.printText( "xmlns:"+prefix );
         }
         _printer.printText( "=\"" );
         printEscaped( uri );
         _printer.printText( '"' );
     }
+
+   
 
     /**
      * Prints attribute. 
@@ -1176,7 +1185,8 @@ implements DOMWriter {
      */
     private void printAttribute (String name, String value, boolean isSpecified) throws IOException{
 
-        if (isSpecified || !getFeature("discard-default-content")) {
+        if (isSpecified || (fFeatures != null && 
+                            !((Boolean)fFeatures.get("discard-default-content")).booleanValue())) {
             _printer.printSpace();
             _printer.printText( name );
             _printer.printText( "=\"" );
@@ -1253,328 +1263,9 @@ implements DOMWriter {
         return attrsOnly;
     }
 
-    //
-    // DOM Level 3 implementation   
-    //
-
-    /**
-     * If true, activate namespace support by performing 
-     * DOM L3 namespace fixup algorithm
-     * 
-     * @param namespaces
-     * @return 
-     */
-    public void setNamespaces(boolean namespaces){
-        fNamespaces = namespaces;
-        if (fNSBinder == null) {        
-            fNSBinder = new NamespaceSupport();
-            fLocalNSBinder = new NamespaceSupport();
-        }
-    }
-
-    /**
-     * Initialize DOM Level 3 features
-     */
-    public void initDOMFeatures() {
-        fFeatures = new Hashtable();
-        fFeatures.put("normalize-characters",new Boolean(false));
-        fFeatures.put("split-cdata-sections",new Boolean(true));
-        fFeatures.put("validation",new Boolean(false));
-        fFeatures.put("expand-entity-references",new Boolean(false));
-        fFeatures.put("whitespace-in-element-content",new Boolean(true));
-        fFeatures.put("discard-default-content",new Boolean(true));
-        fFeatures.put("format-canonical",new Boolean(false));
-        fFeatures.put("format-pretty-print",new Boolean(false));
-    }
-
-    private void checkAllFeatures() {
-        if (getFeature("whitespace-in-element-content"))
-            _format.setPreserveSpace(true);
-        else
-            _format.setPreserveSpace(false);
-    }
-
-    /**
-     * Set the state of a feature.
-     * <br>The feature name has the same form as a DOM hasFeature string.
-     * <br>It is possible for a <code>DOMWriter</code> to recognize a feature 
-     * name but to be unable to set its value.
-     * @param name The feature name.
-     * @param state The requested state of the feature (<code>true</code> or 
-     *   <code>false</code>).
-     * @exception DOMException
-     *   Raise a NOT_SUPPORTED_ERR exception when the <code>DOMWriter</code> 
-     *   recognizes the feature name but cannot set the requested value. 
-     *   <br>Raise a NOT_FOUND_ERR When the <code>DOMWriter</code> does not 
-     *   recognize the feature name.
-     */
-    public void setFeature(String name, 
-                           boolean state)
-    throws DOMException {
-        if (name != null && fFeatures.containsKey(name))
-            if (canSetFeature(name,state))
-                fFeatures.put(name,new Boolean(state));
-            else
-                throw new DOMException(DOMException.NOT_SUPPORTED_ERR,"Feature "+name+" cannot be set as "+state);
-        else
-            throw new DOMException(DOMException.NOT_FOUND_ERR,"Feature "+name+" not found");
-    }
-
-    /**
-     * Query whether setting a feature to a specific value is supported.
-     * <br>The feature name has the same form as a DOM hasFeature string.
-     * @param name The feature name, which is a DOM has-feature style string.
-     * @param state The requested state of the feature (<code>true</code> or 
-     *   <code>false</code>).
-     * @return <code>true</code> if the feature could be successfully set to 
-     *   the specified value, or <code>false</code> if the feature is not 
-     *   recognized or the requested value is not supported. The value of 
-     *   the feature itself is not changed.
-     */
-    public boolean canSetFeature(String name, boolean state) {
-        if (name.equals("normalize-characters") && state)
-            return false;
-        else if (name.equals("validation") && state)
-            return false;
-        else if (name.equals("whitespace-in-element-content") && !state)
-            return false;
-        else if (name.equals("format-canonical") && state)
-            return false;
-        else if (name.equals("format-pretty-print") && state)
-            return false;
-        else
-            return true;
-    }   
-
-    /**
-     * Look up the value of a feature.
-     * <br>The feature name has the same form as a DOM hasFeature string
-     * @param name The feature name, which is a string with DOM has-feature 
-     *   syntax.
-     * @return The current state of the feature (<code>true</code> or 
-     *   <code>false</code>).
-     * @exception DOMException
-     *   Raise a NOT_FOUND_ERR When the <code>DOMWriter</code> does not 
-     *   recognize the feature name.
-     */
-    public boolean getFeature(String name)
-    throws DOMException {
-        Boolean state = (Boolean)fFeatures.get(name);
-        if (state == null)
-            throw new DOMException(DOMException.NOT_FOUND_ERR,"Feature "+name+" not found");
-        return state.booleanValue();
-    }
-
-    /**
-     *  The character encoding in which the output will be written. 
-     * <br> The encoding to use when writing is determined as follows: If the 
-     * encoding attribute has been set, that value will be used.If the 
-     * encoding attribute is <code>null</code> or empty, but the item to be 
-     * written includes an encoding declaration, that value will be used.If 
-     * neither of the above provides an encoding name, a default encoding of 
-     * "UTF-8" will be used.
-     * <br>The default value is <code>null</code>.
-     */
-    public String getEncoding() {
-        return fEncoding;
-    }
-
-    /**
-     *  The character encoding in which the output will be written. 
-     * <br> The encoding to use when writing is determined as follows: If the 
-     * encoding attribute has been set, that value will be used.If the 
-     * encoding attribute is <code>null</code> or empty, but the item to be 
-     * written includes an encoding declaration, that value will be used.If 
-     * neither of the above provides an encoding name, a default encoding of 
-     * "UTF-8" will be used.
-     * <br>The default value is <code>null</code>.
-     */
-    public void setEncoding(String encoding) {
-        _format.setEncoding(encoding);
-        fEncoding = _format.getEncoding();
-    }
-
-    /**
-     *  The actual character encoding that was last used by this formatter. 
-     * This convenience method allows the encoding that was used when 
-     * serializing a document to be directly obtained. 
-     */
-    public String getLastEncoding() {
-        return fLastEncoding;
-    }
-
-    /**
-     *  The end-of-line sequence of characters to be used in the XML being 
-     * written out. The only permitted values are these: 
-     * <dl>
-     * <dt><code>null</code></dt>
-     * <dd> 
-     * Use a default end-of-line sequence. DOM implementations should choose 
-     * the default to match the usual convention for text files in the 
-     * environment being used. Implementations must choose a default 
-     * sequence that matches one of those allowed by  2.11 "End-of-Line 
-     * Handling". </dd>
-     * <dt>CR</dt>
-     * <dd>The carriage-return character (#xD).</dd>
-     * <dt>CR-LF</dt>
-     * <dd> The 
-     * carriage-return and line-feed characters (#xD #xA). </dd>
-     * <dt>LF</dt>
-     * <dd> The line-feed 
-     * character (#xA). </dd>
-     * </dl>
-     * <br>The default value for this attribute is <code>null</code>.
-     */
-    public String getNewLine() {
-        return _format.getLineSeparator();
-    }
-
-    /**
-     *  The end-of-line sequence of characters to be used in the XML being 
-     * written out. The only permitted values are these: 
-     * <dl>
-     * <dt><code>null</code></dt>
-     * <dd> 
-     * Use a default end-of-line sequence. DOM implementations should choose 
-     * the default to match the usual convention for text files in the 
-     * environment being used. Implementations must choose a default 
-     * sequence that matches one of those allowed by  2.11 "End-of-Line 
-     * Handling". </dd>
-     * <dt>CR</dt>
-     * <dd>The carriage-return character (#xD).</dd>
-     * <dt>CR-LF</dt>
-     * <dd> The 
-     * carriage-return and line-feed characters (#xD #xA). </dd>
-     * <dt>LF</dt>
-     * <dd> The line-feed 
-     * character (#xA). </dd>
-     * </dl>
-     * <br>The default value for this attribute is <code>null</code>.
-     */
-    public void setNewLine(String newLine) {
-        _format.setLineSeparator(newLine);
-    }
-
-    /**
-     *  The error handler that will receive error notifications during 
-     * serialization. The node where the error occured is passed to this 
-     * error handler, any modification to nodes from within an error 
-     * callback should be avoided since this will result in undefined, 
-     * implementation dependent behavior. 
-     */
-    public DOMErrorHandler getErrorHandler() {
-        return fDOMErrorHandler;
-    }
-
-    /**
-     *  The error handler that will receive error notifications during 
-     * serialization. The node where the error occured is passed to this 
-     * error handler, any modification to nodes from within an error 
-     * callback should be avoided since this will result in undefined, 
-     * implementation dependent behavior. 
-     */
-    public void setErrorHandler(DOMErrorHandler errorHandler) {
-        fDOMErrorHandler = errorHandler;
-    }
-
-    /**
-     * Write out the specified node as described above in the description of 
-     * <code>DOMWriter</code>. Writing a Document or Entity node produces a 
-     * serialized form that is well formed XML. Writing other node types 
-     * produces a fragment of text in a form that is not fully defined by 
-     * this document, but that should be useful to a human for debugging or 
-     * diagnostic purposes. 
-     * @param destination The destination for the data to be written.
-     * @param wnode The <code>Document</code> or <code>Entity</code> node to 
-     *   be written. For other node types, something sensible should be 
-     *   written, but the exact serialized form is not specified.
-     * @return  Returns <code>true</code> if <code>node</code> was 
-     *   successfully serialized and <code>false</code> in case a failure 
-     *   occured and the failure wasn't canceled by the error handler. 
-     * @exception DOMSystemException
-     *   This exception will be raised in response to any sort of IO or system 
-     *   error that occurs while writing to the destination. It may wrap an 
-     *   underlying system exception.
-     */
-    public boolean writeNode(java.io.OutputStream destination, 
-                             Node wnode)
-    throws Exception {
-        checkAllFeatures();
-        try {
-            setOutputByteStream(destination);
-            if (wnode == null)
-                return false;
-            else if (wnode.getNodeType() == Node.DOCUMENT_NODE)
-                serialize((Document)wnode);
-            else if (wnode.getNodeType() == Node.DOCUMENT_FRAGMENT_NODE)
-                serialize((DocumentFragment)wnode);
-            else if (wnode.getNodeType() == Node.ELEMENT_NODE)
-                serialize((Element)wnode);
-            else
-                return false;
-        }
-        catch (NullPointerException npe) {
-            throw npe;
-        }
-        catch (IOException ioe) {
-            throw ioe;
-        }
-        fLastEncoding = getEncoding();
-        return true;
-    }
-
-    /**
-     *  Serialize the specified node as described above in the description of 
-     * <code>DOMWriter</code>. The result of serializing the node is 
-     * returned as a string. Writing a Document or Entity node produces a 
-     * serialized form that is well formed XML. Writing other node types 
-     * produces a fragment of text in a form that is not fully defined by 
-     * this document, but that should be useful to a human for debugging or 
-     * diagnostic purposes. 
-     * @param wnode  The node to be written. 
-     * @return  Returns the serialized data, or <code>null</code> in case a 
-     *   failure occured and the failure wasn't canceled by the error 
-     *   handler. 
-     * @exception DOMException
-     *    DOMSTRING_SIZE_ERR: The resulting string is too long to fit in a 
-     *   <code>DOMString</code>. 
-     */
-    public String writeToString(Node wnode)
-    throws DOMException {
-        checkAllFeatures();
-        StringWriter destination = new StringWriter();
-        try {
-            setOutputCharStream(destination);
-            if (wnode == null)
-                return null;
-            else if (wnode.getNodeType() == Node.DOCUMENT_NODE)
-                serialize((Document)wnode);
-            else if (wnode.getNodeType() == Node.DOCUMENT_FRAGMENT_NODE)
-                serialize((DocumentFragment)wnode);
-            else if (wnode.getNodeType() == Node.ELEMENT_NODE)
-                serialize((Element)wnode);
-            else
-                return null;
-        }
-        catch (IOException ioe) {
-            throw new DOMException(DOMException.DOMSTRING_SIZE_ERR,"The resulting string is too long to fit in a DOMString: "+ioe.getMessage());
-        }
-        fLastEncoding = getEncoding();
-        return destination.toString();
-    }
 
     public boolean reset() {
         super.reset();
-        if (fNamespaces) {
-            fNSBinder.reset(fSymbolTable);
-            // during serialization always have a mapping to empty string
-            // so we assume there is a declaration.
-            fNSBinder.declarePrefix(fEmptySymbol, fEmptySymbol);
-            fNamespaceCounter = 1;
-            fXmlSymbol = fSymbolTable.addSymbol("xml");
-            fXmlnsSymbol = fSymbolTable.addSymbol("xmlns");
-            fEmptySymbol=fSymbolTable.addSymbol("");
-        }
         return true;
 
     }
