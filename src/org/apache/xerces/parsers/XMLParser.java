@@ -72,6 +72,7 @@ import org.apache.xerces.xni.XMLComponentManager;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
@@ -118,6 +119,9 @@ public abstract class XMLParser
 
     /** Symbol table. */
     protected SymbolTable fSymbolTable;
+
+    /** Locator */
+    protected Locator fLocator;
 
     // components (configurable)
 
@@ -187,7 +191,9 @@ public abstract class XMLParser
         fErrorReporter = new XMLErrorReporter( fEntityManager.getEntityScanner() );
         final String ERROR_REPORTER = Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
         fProperties.put(ERROR_REPORTER, fErrorReporter);
-        
+
+        fLocator = (Locator) fEntityManager.getEntityScanner();
+
         XMLMessageFormatter xmft = new XMLMessageFormatter();
         fErrorReporter.putMessageFormatter(XMLMessageFormatter.XML_DOMAIN, xmft);
         fErrorReporter.putMessageFormatter(XMLMessageFormatter.XMLNS_DOMAIN, xmft);

@@ -534,6 +534,7 @@ public class SAXParser
      */
     public void setDocumentHandler(DocumentHandler documentHandler) {
         fDocumentHandler = documentHandler;
+        fDocumentHandler.setDocumentLocator(fLocator);
     } // setDocumentHandler
 
     //
