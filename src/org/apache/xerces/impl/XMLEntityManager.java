@@ -1631,7 +1631,7 @@ public class XMLEntityManager
          * entity, or null if none is available.
          */
         public String getBaseSystemId() {
-            return fCurrentEntity.baseSystemId;
+            return fCurrentEntity != null ? fCurrentEntity.baseSystemId : null;
         } // getBaseSystemId():String
 
         /**
