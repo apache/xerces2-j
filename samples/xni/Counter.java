@@ -104,6 +104,9 @@ public class Counter
     /** Namespaces feature id (http://xml.org/sax/features/namespaces). */
     protected static final String NAMESPACES_FEATURE_ID = "http://xml.org/sax/features/namespaces";
     
+    /** Namespace prefixes feature id (http://xml.org/sax/features/namespace-prefixes). */
+    protected static final String NAMESPACE_PREFIXES_FEATURE_ID = "http://xml.org/sax/features/namespace-prefixes";
+
     /** Validation feature id (http://xml.org/sax/features/validation). */
     protected static final String VALIDATION_FEATURE_ID = "http://xml.org/sax/features/validation";
 
@@ -115,8 +118,14 @@ public class Counter
     /** Default parser configuration (org.apache.xerces.parsers.StandardParserConfiguration). */
     protected static final String DEFAULT_PARSER_CONFIG = "org.apache.xerces.parsers.StandardParserConfiguration";
 
+    /** Default repetition (1). */
+    protected static final int DEFAULT_REPETITION = 1;
+
     /** Default namespaces support (true). */
     protected static final boolean DEFAULT_NAMESPACES = true;
+
+    /** Default namespace prefixes (false). */
+    protected static final boolean DEFAULT_NAMESPACE_PREFIXES = false;
 
     /** Default validation support (false). */
     protected static final boolean DEFAULT_VALIDATION = false;
@@ -168,12 +177,22 @@ public class Counter
 
     /** Prints the results. */
     public void printResults(PrintWriter out, String uri, long time, 
-                             long memory, boolean tagginess) {
+                             long memory, boolean tagginess,
+                             int repetition) {
 
         // filename.xml: 631 ms (4 elems, 0 attrs, 78 spaces, 0 chars)
         out.print(uri);
         out.print(": ");
-        out.print(time);
+        if (repetition == 1) {
+            out.print(time);
+        }
+        else {
+            out.print(time);
+            out.print('/');
+            out.print(repetition);
+            out.print('=');
+            out.print(time/repetition);
+        }
         out.print(" ms");
         if (memory != Long.MIN_VALUE) {
             out.print(", ");
@@ -357,7 +376,9 @@ public class Counter
         PrintWriter out = new PrintWriter(System.out);
         XMLDocumentParser parser = null;
         XMLParserConfiguration parserConfig = null;
+        int repetition = DEFAULT_REPETITION;
         boolean namespaces = DEFAULT_NAMESPACES;
+        boolean namespacePrefixes = DEFAULT_NAMESPACE_PREFIXES;
         boolean validation = DEFAULT_VALIDATION;
         boolean schemaValidation = DEFAULT_SCHEMA_VALIDATION;
         boolean memoryUsage = DEFAULT_MEMORY_USAGE;
@@ -379,6 +400,9 @@ public class Counter
                     // create parser
                     try {
                         parserConfig = (XMLParserConfiguration)Class.forName(parserName).newInstance();
+                        parserConfig.addRecognizedFeatures(new String[] {
+                            NAMESPACE_PREFIXES_FEATURE_ID,
+                        });
                         parser = null;
                     }
                     catch (Exception e) {
@@ -387,8 +411,31 @@ public class Counter
                     }
                     continue;
                 }
+                if (option.equals("x")) {
+                    if (++i == argv.length) {
+                        System.err.println("error: Missing argument to -x option.");
+                        continue;
+                    }
+                    String number = argv[i];
+                    try {
+                        int value = Integer.parseInt(number);
+                        if (value < 1) {
+                            System.err.println("error: Repetition must be at least 1.");
+                            continue;
+                        }
+                        repetition = value;
+                    }
+                    catch (NumberFormatException e) {
+                        System.err.println("error: invalid number ("+number+").");
+                    }
+                    continue;
+                }
                 if (option.equalsIgnoreCase("n")) {
                     namespaces = option.equals("n");
+                    continue;
+                }
+                if (option.equalsIgnoreCase("np")) {
+                    namespacePrefixes = option.equals("np");
                     continue;
                 }
                 if (option.equalsIgnoreCase("v")) {
@@ -430,6 +477,9 @@ public class Counter
                 // create parser
                 try {
                     parserConfig = (XMLParserConfiguration)Class.forName(DEFAULT_PARSER_CONFIG).newInstance();
+                    parserConfig.addRecognizedFeatures(new String[] {
+                        NAMESPACE_PREFIXES_FEATURE_ID,
+                    });
                 }
                 catch (Exception e) {
                     System.err.println("error: Unable to instantiate parser configuration ("+DEFAULT_PARSER_CONFIG+")");
@@ -446,6 +496,12 @@ public class Counter
             }
             catch (SAXException e) {
                 System.err.println("warning: Parser does not support feature ("+NAMESPACES_FEATURE_ID+")");
+            }
+            try {
+                parser.setFeature(NAMESPACE_PREFIXES_FEATURE_ID, namespacePrefixes);
+            }
+            catch (SAXException e) {
+                System.err.println("warning: Parser does not support feature ("+NAMESPACE_PREFIXES_FEATURE_ID+")");
             }
             try {
                 parser.setFeature(VALIDATION_FEATURE_ID, validation);
@@ -467,7 +523,9 @@ public class Counter
             try {
                 long timeBefore = System.currentTimeMillis();
                 long memoryBefore = Runtime.getRuntime().freeMemory();
-                parser.parse(arg);
+                for (int j = 0; j < repetition; j++) {
+                    parser.parse(arg);
+                }
                 long memoryAfter = Runtime.getRuntime().freeMemory();
                 long timeAfter = System.currentTimeMillis();
                 
@@ -475,7 +533,8 @@ public class Counter
                 long memory = memoryUsage 
                             ? memoryBefore - memoryAfter : Long.MIN_VALUE;
                 ((Counter)parser).printResults(out, arg, time, 
-                                               memory, tagginess);
+                                               memory, tagginess,
+                                               repetition);
             }
             catch (SAXParseException e) {
                 // ignore
@@ -503,19 +562,25 @@ public class Counter
         
         System.err.println("options:");
         System.err.println("  -p name     Select parser configuration by name.");
-        System.err.println("  -n | -N     Turn on/off namespace processing.");
-        System.err.println("  -v | -V     Turn on/off validation.");
-        System.err.println("  -s | -S     Turn on/off Schema validation support.");
-        System.err.println("  -m | -M     Turn on/off memory usage report.");
-        System.err.println("  -t | -T     Turn on/off \"tagginess\" report.");
+        System.err.println("  -x number   Select number of repetitions.");
+        System.err.println("  -n  | -N    Turn on/off namespace processing.");
+        System.err.println("  -np | -NP   Turn on/off namespace prefixes.");
+        System.err.println("              NOTE: Requires use of -n.");
+        System.err.println("  -v  | -V    Turn on/off validation.");
+        System.err.println("  -s  | -S    Turn on/off Schema validation support.");
+        System.err.println("  -m  | -M    Turn on/off memory usage report.");
+        System.err.println("  -t  | -T    Turn on/off \"tagginess\" report.");
         System.err.println("  --rem text  Output user defined comment before next parse.");
         System.err.println("  -h          This help screen.");
 
         System.err.println();
         System.err.println("defaults:");
-        System.err.println("  Config:      "+DEFAULT_PARSER_CONFIG);
+        System.err.println("  Config:     "+DEFAULT_PARSER_CONFIG);
+        System.err.println("  Repetition: "+DEFAULT_REPETITION);
         System.err.print("  Namespaces: ");
         System.err.println(DEFAULT_NAMESPACES ? "on" : "off");
+        System.err.print("  Prefixes:   ");
+        System.err.println(DEFAULT_NAMESPACE_PREFIXES ? "on" : "off");
         System.err.print("  Validation: ");
         System.err.println(DEFAULT_VALIDATION ? "on" : "off");
         System.err.print("  Schema:     ");
@@ -532,13 +597,13 @@ public class Counter
         System.err.println("  used. For better results, perform multiple document parses within the same");
         System.err.println("  virtual machine to remove class loading from parse time and memory usage.");
         System.err.println();
-        System.out.println("  The \"tagginess\" measurement gives a rough estimate of the percentage of");
-        System.out.println("  markup versus content in the XML document. The percent tagginess of a ");
-        System.out.println("  document is equal to the minimum amount of tag characters required for ");
-        System.out.println("  elements, attributes, and processing instructions divided by the total");
-        System.out.println("  amount of characters (characters, ignorable whitespace, and tag characters)");
-        System.out.println("  in the document.");
-        System.out.println();
+        System.err.println("  The \"tagginess\" measurement gives a rough estimate of the percentage of");
+        System.err.println("  markup versus content in the XML document. The percent tagginess of a ");
+        System.err.println("  document is equal to the minimum amount of tag characters required for ");
+        System.err.println("  elements, attributes, and processing instructions divided by the total");
+        System.err.println("  amount of characters (characters, ignorable whitespace, and tag characters)");
+        System.err.println("  in the document.");
+        System.err.println();
         System.err.println("  Not all features are supported by different parser configurations.");
 
     } // printUsage()

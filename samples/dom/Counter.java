@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999-2001 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -100,6 +100,9 @@ public class Counter {
     /** Namespaces feature id (http://xml.org/sax/features/namespaces). */
     protected static final String NAMESPACES_FEATURE_ID = "http://xml.org/sax/features/namespaces";
     
+    /** Namespace prefixes feature id (http://xml.org/sax/features/namespace-prefixes). */
+    protected static final String NAMESPACE_PREFIXES_FEATURE_ID = "http://xml.org/sax/features/namespace-prefixes";
+
     /** Validation feature id (http://xml.org/sax/features/validation). */
     protected static final String VALIDATION_FEATURE_ID = "http://xml.org/sax/features/validation";
 
@@ -111,8 +114,14 @@ public class Counter {
     /** Default parser name (dom.wrappers.Xerces). */
     protected static final String DEFAULT_PARSER_NAME = "dom.wrappers.Xerces";
 
+    /** Default repetition (1). */
+    protected static final int DEFAULT_REPETITION = 1;
+
     /** Default namespaces support (true). */
     protected static final boolean DEFAULT_NAMESPACES = true;
+
+    /** Default namespace prefixes (false). */
+    protected static final boolean DEFAULT_NAMESPACE_PREFIXES = false;
 
     /** Default validation support (false). */
     protected static final boolean DEFAULT_VALIDATION = false;
@@ -210,15 +219,25 @@ public class Counter {
 
     /** Prints the results. */
     public void printResults(PrintWriter out, String uri, 
-                             long parse, long traverse1, long traverse2) {
+                             long parse, long traverse1, long traverse2,
+                             int repetition) {
 
         // filename.xml: 631/200/100 ms (4 elems, 0 attrs, 78 spaces, 0 chars)
         out.print(uri);
         out.print(": ");
-        out.print(parse);
-        out.print('/');
+        if (repetition == 1) {
+            out.print(parse);
+        }
+        else {
+            out.print(parse);
+            out.print('/');
+            out.print(repetition);
+            out.print('=');
+            out.print(parse/repetition);
+        }
+        out.print(';');
         out.print(traverse1);
-        out.print('/');
+        out.print(';');
         out.print(traverse2);
         out.print(" ms (");
         out.print(fElements);
@@ -251,7 +270,9 @@ public class Counter {
         Counter counter = new Counter();
         PrintWriter out = new PrintWriter(System.out);
         ParserWrapper parser = null;
+        int repetition = DEFAULT_REPETITION;
         boolean namespaces = DEFAULT_NAMESPACES;
+        boolean namespacePrefixes = DEFAULT_NAMESPACE_PREFIXES;
         boolean validation = DEFAULT_VALIDATION;
         boolean schemaValidation = DEFAULT_SCHEMA_VALIDATION;
         
@@ -277,8 +298,31 @@ public class Counter {
                     }
                     continue;
                 }
+                if (option.equals("x")) {
+                    if (++i == argv.length) {
+                        System.err.println("error: Missing argument to -x option.");
+                        continue;
+                    }
+                    String number = argv[i];
+                    try {
+                        int value = Integer.parseInt(number);
+                        if (value < 1) {
+                            System.err.println("error: Repetition must be at least 1.");
+                            continue;
+                        }
+                        repetition = value;
+                    }
+                    catch (NumberFormatException e) {
+                        System.err.println("error: invalid number ("+number+").");
+                    }
+                    continue;
+                }
                 if (option.equalsIgnoreCase("n")) {
                     namespaces = option.equals("n");
+                    continue;
+                }
+                if (option.equalsIgnoreCase("np")) {
+                    namespacePrefixes = option.equals("np");
                     continue;
                 }
                 if (option.equalsIgnoreCase("v")) {
@@ -316,6 +360,12 @@ public class Counter {
                 System.err.println("warning: Parser does not support feature ("+NAMESPACES_FEATURE_ID+")");
             }
             try {
+                parser.setFeature(NAMESPACE_PREFIXES_FEATURE_ID, namespacePrefixes);
+            }
+            catch (SAXException e) {
+                System.err.println("warning: Parser does not support feature ("+NAMESPACE_PREFIXES_FEATURE_ID+")");
+            }
+            try {
                 parser.setFeature(VALIDATION_FEATURE_ID, validation);
             }
             catch (SAXException e) {
@@ -331,7 +381,10 @@ public class Counter {
             // parse file
             try {
                 long beforeParse = System.currentTimeMillis();
-                Document document = parser.parse(arg);
+                Document document = null;
+                for (int j = 0; j < repetition; j++) {
+                    document = parser.parse(arg);
+                }
                 long afterParse = System.currentTimeMillis();
                 long parse = afterParse - beforeParse;
 
@@ -347,7 +400,8 @@ public class Counter {
                 counter.count(document);
                 long afterTraverse2 = System.currentTimeMillis();
                 long traverse2 = afterTraverse2 - beforeTraverse2;
-                counter.printResults(out, arg, parse, traverse1, traverse2);
+                counter.printResults(out, arg, parse, traverse1, traverse2,
+                                     repetition);
             }
             catch (SAXParseException e) {
                 // ignore
@@ -374,18 +428,24 @@ public class Counter {
         System.err.println();
         
         System.err.println("options:");
-        System.err.println("  -p name  Select parser by name.");
-        System.err.println("  -n | -N  Turn on/off namespace processing.");
-        System.err.println("  -v | -V  Turn on/off validation.");
-        System.err.println("  -s | -S  Turn on/off Schema validation support.");
-        System.err.println("           NOTE: Not supported by all parsers.");
-        System.err.println("  -h       This help screen.");
+        System.err.println("  -p name     Select parser by name.");
+        System.err.println("  -x number   Select number of repetitions.");
+        System.err.println("  -n  | -N    Turn on/off namespace processing.");
+        System.err.println("  -np | -NP   Turn on/off namespace prefixes.");
+        System.err.println("              NOTE: Requires use of -n.");
+        System.err.println("  -v  | -V    Turn on/off validation.");
+        System.err.println("  -s  | -S    Turn on/off Schema validation support.");
+        System.err.println("              NOTE: Not supported by all parsers.");
+        System.err.println("  -h          This help screen.");
         System.err.println();
 
         System.err.println("defaults:");
         System.err.println("  Parser:     "+DEFAULT_PARSER_NAME);
+        System.err.println("  Repetition: "+DEFAULT_REPETITION);
         System.err.print("  Namespaces: ");
         System.err.println(DEFAULT_NAMESPACES ? "on" : "off");
+        System.err.print("  Prefixes:   ");
+        System.err.println(DEFAULT_NAMESPACE_PREFIXES ? "on" : "off");
         System.err.print("  Validation: ");
         System.err.println(DEFAULT_VALIDATION ? "on" : "off");
         System.err.print("  Schema:     ");
