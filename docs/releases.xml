@@ -7,6 +7,12 @@
       This release fixes a number of bugs, and adds some functionality.
     </desc>
     <changes>
+      <add>
+	<note>Schema Component API interfaces and implementation; full PSVI support.
+	</note>
+	<submitter name='Sandy Gao, Elena Litani'/>
+      </add>
+
       <update>
 	<note>
 	  Add XMLResourceIdentifier to startExternalSubset() method defined in 
@@ -125,6 +131,38 @@
 	</note>
 	<submitter name='Elena Litani'/>
       </update>
+
+      <update>
+	<note>According to the namespace spec erreta, namespace declaration
+          attributes should be bound to a special namespace; and errors should
+          be reported on illegal bindings of "xmlns" and "xml" prefixes and
+          their namespaces.
+	</note>
+	<submitter name='Sandy Gao'/>
+      </update>
+
+      <update>
+	<note>Refined schema error messages: provide more descriptive error
+          messages for simple type validation errors; avoid cascading errors
+          when a grammar for a given namespace is not found, or when components
+          from a certain namespace can't be accessed from a given schema
+          document.
+	</note>
+	<submitter name='Sandy Gao'/>
+      </update>
+
+      <update>
+	<note>Changed the lexical representation of gMonth from "--MM--" to "--MM".
+	</note>
+	<submitter name='Sandy Gao'/>
+      </update>
+
+      <fix>
+	<note>Decimal point shouldn't be allowed in integer-derived types;
+           "fractionDigits" and "totalDigits" should be calculated on the value space.
+	</note>
+	<submitter name='Sandy Gao'/>
+      </fix>
 
       <fix>
 	<note>Fixed several DOM bugs. Xerces now passes 
