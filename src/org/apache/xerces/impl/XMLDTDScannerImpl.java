@@ -1693,7 +1693,7 @@ public class XMLDTDScannerImpl
      * </pre>
      * <p>
      * <strong>Note:</strong> Called after scanning past '&lt;![' */
-    private final void scanConditionalSect()
+    private final void scanConditionalSect(int currPEDepth)
         throws IOException, XNIException {
 
         fReportEntity = false;
@@ -1701,6 +1701,12 @@ public class XMLDTDScannerImpl
 
         if (fEntityScanner.skipString("INCLUDE")) {
             skipSeparator(false, !scanningInternalSubset());
+            if(currPEDepth != fPEDepth && fValidation) {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "INVALID_PE_IN_CONDITIONAL",
+                                           new Object[]{ fEntityManager.fCurrentEntity.name},
+                                           XMLErrorReporter.SEVERITY_ERROR);
+            }
             // call handler
             if (!fEntityScanner.skipChar('[')) {
                 reportFatalError("MSG_MARKUP_NOT_RECOGNIZED_IN_DTD", null);
@@ -1716,6 +1722,12 @@ public class XMLDTDScannerImpl
         }
         else if (fEntityScanner.skipString("IGNORE")) {
             skipSeparator(false, !scanningInternalSubset());
+            if(currPEDepth != fPEDepth && fValidation) {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "INVALID_PE_IN_CONDITIONAL",
+                                           new Object[]{ fEntityManager.fCurrentEntity.name},
+                                           XMLErrorReporter.SEVERITY_ERROR);
+            }
             // call handler
             if (fDTDHandler != null) {
                 fDTDHandler.startConditional(XMLDTDHandler.CONDITIONAL_IGNORE,
@@ -1850,7 +1862,7 @@ public class XMLDTDScannerImpl
                     }
                     else if (fEntityScanner.skipChar('[') &&
                              !scanningInternalSubset()) {
-                        scanConditionalSect();
+                        scanConditionalSect(fPEDepth);
                     }
                     else {
                         fMarkUpDepth--;
