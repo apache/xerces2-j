@@ -1128,9 +1128,19 @@ public class TraverseSchema implements
         return newSimpleTypeName;
     }
 
+    /*
+    * <any 
+    *   id = ID 
+    *   maxOccurs = string 
+    *   minOccurs = nonNegativeInteger 
+    *   namespace = ##any | ##other | ##local | list of {uri, ##targetNamespace} 
+    *   processContents = lax | skip | strict>
+    *   Content: (annotation?)
+    * </any>
+    */
     private int traverseAny(Element child) throws Exception {
         int anyIndex = -1;
-        String namespace = child.getAttribute("namespace").trim();
+        String namespace = child.getAttribute(SchemaSymbols.ATT_NAMESPACE).trim();
         if (namespace.length() == 0 || namespace.equals("##any")) {
             anyIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ANY, -1, -1, false);
         }
@@ -1187,6 +1197,21 @@ public class TraverseSchema implements
             reportGenericSchemaError("Only value of strict supported for processContents attribute");
         }
         return anyIndex;
+    }
+
+    /*
+    * <anyAttribute 
+    *   id = ID 
+    *   namespace = ##any | ##other | ##local | list of {uri, ##targetNamespace}>
+    *   Content: (annotation?)
+    * </anyAttribute>
+    */
+    private XMLAttributeDecl traverseAnyAttribute(Element anyAttributeDecl) throws Exception {
+        int type = 0;
+        String processContents = anyAttributeDecl.getAttribute(SchemaSymbols.ATT_PROCESSCONTENTS).trim();
+        String namespace = anyAttributeDecl.getAttribute(SchemaSymbols.ATT_NAMESPACE).trim();
+
+        return null;
     }
 
     /**
@@ -1761,7 +1786,9 @@ public class TraverseSchema implements
                 fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
                                           fTempAttributeDecl.name, fTempAttributeDecl.type, 
                                           -1, fTempAttributeDecl.defaultType, 
-                                          fTempAttributeDecl.defaultValue, fTempAttributeDecl.datatypeValidator);
+                                          fTempAttributeDecl.defaultValue, 
+                                          fTempAttributeDecl.datatypeValidator,
+                                          fTempAttributeDecl.list);
                 attDefIndex = fSchemaGrammar.getNextAttributeDeclIndex(attDefIndex);
             }
         }
@@ -2187,6 +2214,7 @@ public class TraverseSchema implements
             fTempAttributeDecl.name.setValues(attQName);
             fTempAttributeDecl.type = attType;
             fTempAttributeDecl.defaultType = attDefaultType;
+            fTempAttributeDecl.list = attIsList;
             if (attDefaultValue != -1 ) {
                 fTempAttributeDecl.defaultValue = new String(fStringPool.toString(attDefaultValue));
             }
@@ -2197,7 +2225,7 @@ public class TraverseSchema implements
         fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
                                   attQName, attType, 
                                   dataTypeSymbol, attDefaultType, 
-                                  fStringPool.toString( attDefaultValue), dv);
+                                  fStringPool.toString( attDefaultValue), dv, attIsList);
         return -1;
     } // end of method traverseAttribute
 
@@ -2230,11 +2258,13 @@ public class TraverseSchema implements
                                   tempAttrDecl.name, tempAttrDecl.type,
                                   -1, tempAttrDecl.defaultType,
                                   tempAttrDecl.defaultValue, 
-                                  tempAttrDecl.datatypeValidator);
+                                  tempAttrDecl.datatypeValidator, 
+                                  tempAttrDecl.list);
 
 
         return 0;
     }
+
     /*
     * 
     * <attributeGroup 

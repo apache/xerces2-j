@@ -422,13 +422,14 @@ public class SchemaGrammar extends Grammar{
     protected void addAttDef(  int templateElementIndex, 
                       QName attQName, int attType, 
                       int enumeration, int attDefaultType, 
-                      String attDefaultValue, DatatypeValidator dv){
+                      String attDefaultValue, DatatypeValidator dv, boolean isList){
         int attrDeclIndex = createAttributeDecl();
         fTempAttributeDecl.name.setValues(attQName);
         fTempAttributeDecl.datatypeValidator = dv;
         fTempAttributeDecl.type = attType;
         fTempAttributeDecl.defaultType = attDefaultType;
         fTempAttributeDecl.defaultValue = attDefaultValue;
+        fTempAttributeDecl.list = isList;
         // TO DO: what about enumeration?
         // setAttributeDecl(attrDeclIndex,fTempAttributeDecl);
 
