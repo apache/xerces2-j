@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -88,12 +88,12 @@ import org.apache.xerces.utils.StringPool;
  * Note that Elements do not permit attributes to appear to be shared
  * (see the INUSE exception), so this object's mutability is
  * officially not an issue.
- * 
+ *
  * @version
  * @since  PR-DOM-Level-1-19980818.
  */
-public final class DeferredAttrImpl 
-    extends AttrImpl 
+public final class DeferredAttrImpl
+    extends AttrImpl
     implements DeferredNode {
 
     //
@@ -115,7 +115,7 @@ public final class DeferredAttrImpl
     //
 
     /**
-     * This is the deferred constructor. Only the fNodeIndex is given here. 
+     * This is the deferred constructor. Only the fNodeIndex is given here.
      * All other data, can be requested from the ownerDocument via the index.
      */
     DeferredAttrImpl(DeferredDocumentImpl ownerDocument, int nodeIndex) {
@@ -148,21 +148,15 @@ public final class DeferredAttrImpl
 
         // fluff data
         DeferredDocumentImpl ownerDocument = (DeferredDocumentImpl)this.ownerDocument;
-        name = ownerDocument.getNodeNameString(fNodeIndex);
+        int elementTypeName = ownerDocument.getNodeName(fNodeIndex);
+        StringPool pool = ownerDocument.getStringPool();
+        name = pool.toString(elementTypeName);
         specified = ownerDocument.getNodeValue(fNodeIndex) == 1;
-        
+
         if (ownerDocument.fNamespacesEnabled) {
-            int elementTypeName = ownerDocument.getNodeName(fNodeIndex);
-            StringPool fStringPool = ownerDocument.fStringPool;
-            prefix = 
-                fStringPool.toString(
-                    fStringPool.getPrefixForQName(elementTypeName));
-            namespaceURI = 
-                fStringPool.toString(
-                    fStringPool.getURIForQName(elementTypeName));
-            localName = 
-                fStringPool.toString(
-                    fStringPool.getLocalPartForQName(elementTypeName));
+            prefix = pool.toString(pool.getPrefixForQName(elementTypeName));
+            namespaceURI = pool.toString(pool.getURIForQName(elementTypeName));
+            localName = pool.toString(pool.getLocalPartForQName(elementTypeName));
         }
 		else {
 			localName = name;
@@ -177,15 +171,15 @@ public final class DeferredAttrImpl
      * editing the tree -- this makes it a lot easier.
      */
     protected void synchronizeChildren() {
-                         
+
         // no need to sync in the future
         syncChildren = false;
 
         // create children and link them as siblings
         DeferredDocumentImpl ownerDocument = (DeferredDocumentImpl)this.ownerDocument;
         NodeImpl last = null;
-        for (int index = ownerDocument.getFirstChild(fNodeIndex); 
-             index != -1; 
+        for (int index = ownerDocument.getFirstChild(fNodeIndex);
+             index != -1;
              index = ownerDocument.getNextSibling(index)) {
 
             NodeImpl node = (NodeImpl)ownerDocument.getNodeObject(index);

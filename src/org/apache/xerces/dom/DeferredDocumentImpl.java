@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -80,7 +80,8 @@ import org.w3c.dom.*;
  * @since  PR-DOM-Level-1-19980818.
  */
 public class DeferredDocumentImpl
-    extends DocumentImpl {
+    extends DocumentImpl
+    implements DeferredNode {
 
     //
     // Constants
@@ -90,6 +91,9 @@ public class DeferredDocumentImpl
     static final long serialVersionUID = 5186323580749626857L;
 
     // debugging
+
+    /** To include code for printing the ref count tables. */
+    private static final boolean DEBUG_PRINT_REF_COUNTS = true;
 
     /** To include code for printing the internal tables. */
     private static final boolean DEBUG_PRINT_TABLES = false;
@@ -121,7 +125,7 @@ public class DeferredDocumentImpl
     protected transient int fNodeCount = 0;
 
     /** Node types. */
-    protected transient byte fNodeType[][];
+    protected transient int fNodeType[][];
 
     /** Node names. */
     protected transient int fNodeName[][];
@@ -134,12 +138,6 @@ public class DeferredDocumentImpl
 
     /** Node first children. */
     protected transient int fNodeFirstChild[][];
-
-    /** Node last children. */
-    protected transient int fNodeLastChild[][];
-
-    /** Node previous siblings. */
-    protected transient int fNodePrevSib[][];
 
     /** Node next siblings. */
     protected transient int fNodeNextSib[][];
@@ -161,6 +159,7 @@ public class DeferredDocumentImpl
 	// Implementation Note: The deferred element and attribute must know how to
 	// interpret the int representing the qname.
     protected boolean fNamespacesEnabled = false;
+
     //
     // Constructors
     //
@@ -214,83 +213,90 @@ public class DeferredDocumentImpl
 
     /** Creates a doctype. */
     public int createDocumentType(int rootElementNameIndex, int publicId, int systemId) {
+
+        // create node
         int nodeIndex = createNode(Node.DOCUMENT_TYPE_NODE);
         int chunk     = nodeIndex >> CHUNK_SHIFT;
         int index     = nodeIndex & CHUNK_MASK;
-        fNodeName[chunk][index] = rootElementNameIndex;
 
         // added for DOM2: createDoctype factory method includes
         // name, publicID, systemID
 
-        // make extra data node
-        int extraDataIndex = createNode(Node.TEXT_NODE);
+        // create extra data node
+        int extraDataIndex = createNode((short)0); // node type unimportant
         int echunk = extraDataIndex >> CHUNK_SHIFT;
         int eindex = extraDataIndex & CHUNK_MASK;
 
         // save name, public id, system id
-        fNodeValue[chunk][index] = extraDataIndex;
-        fNodeFirstChild[echunk][eindex] = publicId;
-        fNodeLastChild[echunk][eindex]  = systemId;
+        setChunkIndex(fNodeName, rootElementNameIndex, chunk, index);
+        setChunkIndex(fNodeValue, extraDataIndex, chunk, index);
+        setChunkIndex(fNodeName, publicId, echunk, eindex);
+        setChunkIndex(fNodeValue, systemId, echunk, eindex);
 
+        // return node index
         return nodeIndex;
-    }
+
+    } // createDocumentType(int,int,int):int
 
     /** Creates a notation in the table. */
     public int createNotation(int notationName, int publicId, int systemId) throws Exception {
 
-        // make entity node
+        // create node
         int nodeIndex = createNode(Node.NOTATION_NODE);
         int chunk     = nodeIndex >> CHUNK_SHIFT;
         int index     = nodeIndex & CHUNK_MASK;
 
-        // make extra data node
-        int extraDataIndex = createNode(Node.TEXT_NODE);
+        // create extra data node
+        int extraDataIndex = createNode((short)0); // node type unimportant
         int echunk = extraDataIndex >> CHUNK_SHIFT;
         int eindex = extraDataIndex & CHUNK_MASK;
 
         // save name, public id, system id, and notation name
-        fNodeValue[chunk][index] = extraDataIndex;
-        fNodeName[chunk][index]         = notationName;
-        fNodeFirstChild[echunk][eindex] = publicId;
-        fNodeLastChild[echunk][eindex]  = systemId;
+        setChunkIndex(fNodeName, notationName, chunk, index);
+        setChunkIndex(fNodeValue, extraDataIndex, chunk, index);
+        setChunkIndex(fNodeName, publicId, echunk, eindex);
+        setChunkIndex(fNodeValue, systemId, echunk, eindex);
 
+        // return node index
         return nodeIndex;
 
-    } // createNotation(int):int
+    } // createNotation(int,int,int):int
 
     /** Creates an entity in the table. */
     public int createEntity(int entityName, int publicId, int systemId, int notationName) throws Exception {
 
-        // make entity node
+        // create node
         int nodeIndex = createNode(Node.ENTITY_NODE);
         int chunk     = nodeIndex >> CHUNK_SHIFT;
         int index     = nodeIndex & CHUNK_MASK;
 
-        // make extra data node
-        int extraDataIndex = createNode(Node.TEXT_NODE);
+        // create extra data node
+        int extraDataIndex = createNode((short)0); // node type unimportant
         int echunk = extraDataIndex >> CHUNK_SHIFT;
         int eindex = extraDataIndex & CHUNK_MASK;
 
         // save name, public id, system id, and notation name
-        fNodeValue[chunk][index] = extraDataIndex;
-        fNodeName[chunk][index]         = entityName;
-        fNodeFirstChild[echunk][eindex] = publicId;
-        fNodeLastChild[echunk][eindex]  = systemId;
-        fNodePrevSib[echunk][eindex]    = notationName;
+        setChunkIndex(fNodeName, entityName, chunk, index);
+        setChunkIndex(fNodeValue, extraDataIndex, chunk, index);
+        setChunkIndex(fNodeName, publicId, echunk, eindex);
+        setChunkIndex(fNodeValue, systemId, echunk, eindex);
+        setChunkIndex(fNodeFirstChild, notationName, echunk, eindex);
 
+        // return node index
         return nodeIndex;
 
-    } // createEntity(int):int
+    } // createEntity(int,int,int,int):int
 
     /** Creates an entity reference node in the table. */
     public int createEntityReference(int nameIndex) throws Exception {
 
+        // create node
         int nodeIndex = createNode(Node.ENTITY_REFERENCE_NODE);
         int chunk     = nodeIndex >> CHUNK_SHIFT;
         int index     = nodeIndex & CHUNK_MASK;
+        setChunkIndex(fNodeName, nameIndex, chunk, index);
 
-        // save name
-        fNodeName[chunk][index] = nameIndex;
+        // return node index
         return nodeIndex;
 
     } // createEntityReference(int):int
@@ -298,12 +304,11 @@ public class DeferredDocumentImpl
     /** Creates an element node in the table. */
     public int createElement(int elementNameIndex, XMLAttrList attrList, int attrListIndex) {
 
-        // create element
+        // create node
         int elementNodeIndex = createNode(Node.ELEMENT_NODE);
         int elementChunk     = elementNodeIndex >> CHUNK_SHIFT;
         int elementIndex     = elementNodeIndex & CHUNK_MASK;
-        fNodeName[elementChunk][elementIndex] = elementNameIndex;
-        //fNodeValue[chunk][index] = attrListIndex;
+        setChunkIndex(fNodeName, elementNameIndex, elementChunk, elementIndex);
 
         // create attributes
         if (attrListIndex != -1) {
@@ -311,7 +316,8 @@ public class DeferredDocumentImpl
             int lastAttrNodeIndex = -1;
             int lastAttrChunk = -1;
             int lastAttrIndex = -1;
-            for (int index = first; index != -1;
+            for (int index = first;
+                 index != -1;
                  index = attrList.getNextAttr(index)) {
 
                 // create attribute
@@ -320,15 +326,14 @@ public class DeferredDocumentImpl
                                                     attrList.isSpecified(index));
                 int attrChunk = attrNodeIndex >> CHUNK_SHIFT;
                 int attrIndex  = attrNodeIndex & CHUNK_MASK;
-                fNodeParent[attrChunk][attrIndex] = elementNodeIndex;
+                setChunkIndex(fNodeParent, elementNodeIndex, attrChunk, attrIndex);
 
                 // add links
                 if (index == first) {
-                    fNodeValue[elementChunk][elementIndex] = attrNodeIndex;
+                    setChunkIndex(fNodeValue, attrNodeIndex, elementChunk, elementIndex);
                 }
                 else {
-                    fNodeNextSib[lastAttrChunk][lastAttrIndex] = attrNodeIndex;
-                    fNodePrevSib[attrChunk][attrIndex] = lastAttrNodeIndex;
+                    setChunkIndex(fNodeNextSib, attrNodeIndex, lastAttrChunk, lastAttrIndex);
                 }
 
                 // save last chunk and index
@@ -338,38 +343,41 @@ public class DeferredDocumentImpl
             }
         }
 
+        // return node index
         return elementNodeIndex;
 
-    } // createElement(int,int):int
+    } // createElement(int,XMLAttrList,int):int
 
     /** Creates an attributes in the table. */
     public int createAttribute(int attrNameIndex, int attrValueIndex,
                                boolean specified) {
 
-        // create attribute and set specified
+        // create node
         int nodeIndex = createNode(NodeImpl.ATTRIBUTE_NODE);
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
-        fNodeName[chunk][index]  = attrNameIndex;
-        fNodeValue[chunk][index] = specified ? 1 : 0;
+        setChunkIndex(fNodeName, attrNameIndex, chunk, index);
+        setChunkIndex(fNodeValue, specified ? 1 : 0, chunk, index);
 
         // append value as text node
         int textNodeIndex = createTextNode(attrValueIndex, false);
         appendChild(nodeIndex, textNodeIndex);
 
-        // return attribute node
+        // return node index
         return nodeIndex;
 
-    } // createAttribute(int):int
+    } // createAttribute(int,int,boolean):int
 
     /** Creates an element definition in the table. */
     public int createElementDefinition(int elementNameIndex) {
 
+        // create node
         int nodeIndex = createNode(NodeImpl.ELEMENT_DEFINITION_NODE);
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
-        fNodeName[chunk][index] = elementNameIndex;
+        setChunkIndex(fNodeName, elementNameIndex, chunk, index);
 
+        // return node index
         return nodeIndex;
 
     } // createElementDefinition(int):int
@@ -377,36 +385,44 @@ public class DeferredDocumentImpl
     /** Creates a text node in the table. */
     public int createTextNode(int dataIndex, boolean ignorableWhitespace) {
 
+        // create node
         int nodeIndex = createNode(Node.TEXT_NODE);
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
-        fNodeValue[chunk][index] = dataIndex;
-        fNodeFirstChild[chunk][index] = ignorableWhitespace ?  1 : 0;
+        setChunkIndex(fNodeValue, dataIndex, chunk, index);
+        setChunkIndex(fNodeFirstChild, ignorableWhitespace ?  1 : 0, chunk, index);
+
+        // return node index
         return nodeIndex;
 
-    }
+    } // createTextNode(int,boolean):int
 
     /** Creates a CDATA section node in the table. */
     public int createCDATASection(int dataIndex, boolean ignorableWhitespace) {
 
+        // create node
         int nodeIndex = createNode(Node.CDATA_SECTION_NODE);
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
-        fNodeValue[chunk][index] = dataIndex;
-        fNodeFirstChild[chunk][index] = ignorableWhitespace ?  1 : 0;
+        setChunkIndex(fNodeValue, dataIndex, chunk, index);
+        setChunkIndex(fNodeFirstChild, ignorableWhitespace ?  1 : 0, chunk, index);
+
+        // return node index
         return nodeIndex;
 
-    }
+    } // createCDATASection(int,boolean):int
 
     /** Creates a processing instruction node in the table. */
     public int createProcessingInstruction(int targetIndex, int dataIndex) {
 
+        // create node
         int nodeIndex = createNode(Node.PROCESSING_INSTRUCTION_NODE);
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
-        fNodeName[chunk][index] = targetIndex;
-        fNodeValue[chunk][index] = dataIndex;
+        setChunkIndex(fNodeName, targetIndex, chunk, index);
+        setChunkIndex(fNodeValue, dataIndex, chunk, index);
 
+        // return node index
         return nodeIndex;
 
     } // createProcessingInstruction(int,int):int
@@ -414,11 +430,13 @@ public class DeferredDocumentImpl
     /** Creates a comment node in the table. */
     public int createComment(int dataIndex) {
 
+        // create node
         int nodeIndex = createNode(Node.COMMENT_NODE);
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
-        fNodeValue[chunk][index] = dataIndex;
+        setChunkIndex(fNodeValue, dataIndex, chunk, index);
 
+        // return node index
         return nodeIndex;
 
     } // createComment(int):int
@@ -426,22 +444,36 @@ public class DeferredDocumentImpl
     /** Appends a child to the specified parent in the table. */
     public void appendChild(int parentIndex, int childIndex) {
 
+        // append parent index
         int pchunk = parentIndex >> CHUNK_SHIFT;
         int pindex = parentIndex & CHUNK_MASK;
-        int chunk = childIndex >> CHUNK_SHIFT;
-        int index = childIndex & CHUNK_MASK;
-        fNodeParent[chunk][index] = parentIndex;
-        int prev = fNodeLastChild[pchunk][pindex];
-        fNodePrevSib[chunk][index] = prev;
-        if (prev == -1) {
-            fNodeFirstChild[pchunk][pindex] = childIndex;
+        int cchunk = childIndex >> CHUNK_SHIFT;
+        int cindex = childIndex & CHUNK_MASK;
+        setChunkIndex(fNodeParent, parentIndex, cchunk, cindex);
+
+        // look for last child
+        int prev = -1;
+        int index = getChunkIndex(fNodeFirstChild, pchunk, pindex);
+        while (index != -1) {
+            prev = index;
+            int nextIndex = getChunkIndex(fNodeNextSib, index >> CHUNK_SHIFT, index & CHUNK_MASK);
+            if (nextIndex == -1) {
+                break;
             }
+            index = nextIndex;
+        }
+
+        // first child
+        if (prev == -1) {
+            setChunkIndex(fNodeFirstChild, childIndex, pchunk, pindex);
+            }
+
+        // last child
         else {
             int chnk = prev >> CHUNK_SHIFT;
             int indx = prev & CHUNK_MASK;
-            fNodeNextSib[chnk][indx] = childIndex;
+            setChunkIndex(fNodeNextSib, childIndex, chnk, indx);
         }
-        fNodeLastChild[pchunk][pindex] = childIndex;
 
     } // appendChild(int,int)
 
@@ -454,59 +486,59 @@ public class DeferredDocumentImpl
         int aindex = attrIndex & CHUNK_MASK;
 
         // see if this attribute is already here
-        String attrName = fStringPool.toString(fNodeName[achunk][aindex]);
-        int oldAttrIndex = fNodeValue[echunk][eindex];
+        String attrName = fStringPool.toString(getChunkIndex(fNodeName, achunk, aindex));
+        int oldAttrIndex = getChunkIndex(fNodeValue, echunk, eindex);
+        int prevIndex = -1;
         int oachunk = -1;
         int oaindex = -1;
         while (oldAttrIndex != -1) {
             oachunk = oldAttrIndex >> CHUNK_SHIFT;
             oaindex = oldAttrIndex & CHUNK_MASK;
-            String oldAttrName = fStringPool.toString(fNodeName[oachunk][oaindex]);
+            String oldAttrName = fStringPool.toString(getChunkIndex(fNodeName, oachunk, oaindex));
             if (oldAttrName.equals(attrName)) {
                 break;
             }
-            oldAttrIndex = fNodeNextSib[oachunk][oaindex];
+            prevIndex = oldAttrIndex;
+            oldAttrIndex = getChunkIndex(fNodeNextSib, oachunk, oaindex);
         }
 
         // remove old attribute
         if (oldAttrIndex != -1) {
 
             // patch links
-            int prevIndex = fNodePrevSib[oachunk][oaindex];
-            int nextIndex = fNodeNextSib[oachunk][oaindex];
+            int nextIndex = getChunkIndex(fNodeNextSib, oachunk, oaindex);
             if (prevIndex == -1) {
-                fNodeValue[echunk][eindex] = nextIndex;
+                setChunkIndex(fNodeValue, nextIndex, echunk, eindex);
             }
             else {
                 int pchunk = prevIndex >> CHUNK_SHIFT;
                 int pindex = prevIndex & CHUNK_MASK;
-                fNodeNextSib[pchunk][pindex] = nextIndex;
-            }
-            if (nextIndex != -1) {
-                int nchunk = nextIndex >> CHUNK_SHIFT;
-                int nindex = nextIndex & CHUNK_MASK;
-                fNodePrevSib[nchunk][nindex] = prevIndex;
+                setChunkIndex(fNodeNextSib, nextIndex, pchunk, pindex);
             }
 
             // remove connections to siblings
-            fNodePrevSib[oachunk][oaindex] = -1;
-            fNodeNextSib[oachunk][oaindex] = -1;
+            clearChunkIndex(fNodeType, oachunk, oaindex);
+            clearChunkIndex(fNodeName, oachunk, oaindex);
+            clearChunkIndex(fNodeValue, oachunk, oaindex);
+            clearChunkIndex(fNodeParent, oachunk, oaindex);
+            clearChunkIndex(fNodeNextSib, oachunk, oaindex);
+            int attrTextIndex = clearChunkIndex(fNodeFirstChild, oachunk, oaindex);
+            int atchunk = attrTextIndex >> CHUNK_SHIFT;
+            int atindex = attrTextIndex & CHUNK_MASK;
+            clearChunkIndex(fNodeType, atchunk, atindex);
+            clearChunkIndex(fNodeValue, atchunk, atindex);
+            clearChunkIndex(fNodeParent, atchunk, atindex);
+            clearChunkIndex(fNodeFirstChild, atchunk, atindex);
         }
 
         // add new attribute
-        int nextIndex = fNodeValue[echunk][eindex];
-        fNodeValue[echunk][eindex] = attrIndex;
-        fNodeNextSib[achunk][aindex] = nextIndex;
-        if (nextIndex != -1) {
-            int nchunk = nextIndex >> CHUNK_SHIFT;
-            int nindex = nextIndex & CHUNK_MASK;
-            fNodePrevSib[nchunk][nindex] = attrIndex;
-        }
+        int nextIndex = getChunkIndex(fNodeValue, echunk, eindex);
+        setChunkIndex(fNodeValue, attrIndex, echunk, eindex);
 
         // return
         return oldAttrIndex;
 
-    } // setAttributeNode(int,int)
+    } // setAttributeNode(int,int):int
 
     /** Inserts a child before the specified node in the table. */
     public int insertBefore(int parentIndex, int newChildIndex, int refChildIndex) {
@@ -527,30 +559,35 @@ public class DeferredDocumentImpl
         //      begin
         //        ref.parent.first := new;
         //      end;
-        int firstIndex = getFirstChild(parentIndex);
+        int firstIndex = getChunkIndex(fNodeFirstChild, pchunk, pindex);
         if (firstIndex == refChildIndex) {
-            fNodeFirstChild[pchunk][pindex] = newChildIndex;
+            setChunkIndex(fNodeFirstChild, newChildIndex, pchunk, pindex);
         }
         // 2) if ref.prev != null then
         //      begin
         //        ref.prev.next := new;
         //      end;
-        int prevIndex = getPreviousSibling(refChildIndex);
+        int prevIndex = -1;
+        for (int index = getChunkIndex(fNodeFirstChild, pchunk, pindex);
+             index != -1;
+             index = getChunkIndex(fNodeNextSib, index >> CHUNK_SHIFT, index & CHUNK_MASK)) {
+
+            if (index == refChildIndex) {
+                break;
+            }
+            prevIndex = index;
+        }
         if (prevIndex != -1) {
             int chunk = prevIndex >> CHUNK_SHIFT;
             int index = prevIndex & CHUNK_MASK;
-            fNodeNextSib[chunk][index] = newChildIndex;
+            setChunkIndex(fNodeNextSib, newChildIndex, chunk, index);
         }
-        // 3) new.prev := ref.prev;
-        fNodePrevSib[nchunk][nindex] = prevIndex;
-        // 4) new.next := ref;
-        fNodeNextSib[nchunk][nindex] = refChildIndex;
-        // 5) ref.prev := new;
-        fNodePrevSib[rchunk][rindex] = newChildIndex;
+        // 3) new.next := ref;
+        setChunkIndex(fNodeNextSib, refChildIndex, nchunk, nindex);
 
         return newChildIndex;
 
-    } // insertBefore(int,int):int
+    } // insertBefore(int,int,int):int
 
     /** Sets the first child of the parentIndex to childIndex. */
     public void setAsFirstChild(int parentIndex, int childIndex) {
@@ -559,19 +596,15 @@ public class DeferredDocumentImpl
         int pindex = parentIndex & CHUNK_MASK;
         int chunk = childIndex >> CHUNK_SHIFT;
         int index = childIndex & CHUNK_MASK;
-        fNodeFirstChild[pchunk][pindex] = childIndex;
+        setChunkIndex(fNodeFirstChild, childIndex, pchunk, pindex);
 
         int next = childIndex;
-
         while (next != -1) {
-
             childIndex = next;
-            next = fNodeNextSib[chunk][index];
+            next = getChunkIndex(fNodeNextSib, chunk, index);
             chunk = next >> CHUNK_SHIFT;
             index = next & CHUNK_MASK;
         }
-
-        fNodeLastChild[pchunk][pindex] = childIndex;
 
     } // setAsFirstChild(int,int)
 
@@ -588,7 +621,7 @@ public class DeferredDocumentImpl
 
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
-        return fNodeParent[chunk][index];
+        return getChunkIndex(fNodeParent, chunk, index);
 
     } // getParentNode(int):int
 
@@ -601,81 +634,9 @@ public class DeferredDocumentImpl
 
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
-        return fNodeFirstChild[chunk][index];
+        return clearChunkIndex(fNodeFirstChild, chunk, index);
 
     } // getFirstChild(int):int
-
-    /** Returns the last child of the given node. */
-    public int getLastChild(int nodeIndex) {
-
-        if (nodeIndex == -1) {
-            return -1;
-        }
-
-        int chunk = nodeIndex >> CHUNK_SHIFT;
-        int index = nodeIndex & CHUNK_MASK;
-        int lastChild =  fNodeLastChild[chunk][index];
-
-        // revisit: the following could be more efficient.
-
-        // if the last child is a TEXT_NODE
-        if (lastChild != -1 && fNodeType[chunk][index] == Node.TEXT_NODE) {
-            // get the previous sibling.
-            int previousIndex = fNodePrevSib[chunk][index];
-            chunk = previousIndex >> CHUNK_SHIFT;
-            index = previousIndex & CHUNK_MASK;
-            // if the previous Sibling is a TEXT_NODE
-            if (previousIndex != -1 && fNodeType[chunk][index] == Node.TEXT_NODE) {
-                // while previous sibling is a text node.
-                while (previousIndex != -1 && fNodeType[chunk][index] == Node.TEXT_NODE) {
-                    nodeIndex = previousIndex;
-                    previousIndex = fNodePrevSib[chunk][index];
-                    chunk = previousIndex >> CHUNK_SHIFT;
-                    index = previousIndex & CHUNK_MASK;
-                }
-                return nodeIndex;
-            }
-        }
-
-        return lastChild;
-
-    } // getLastChild(int):int
-
-    /** Returns the previous sibling of the given node. */
-    public int getPreviousSibling(int nodeIndex) {
-
-        if (nodeIndex == -1) {
-            return -1;
-        }
-
-        int chunk = nodeIndex >> CHUNK_SHIFT;
-        int index = nodeIndex & CHUNK_MASK;
-        int previousIndex = fNodePrevSib[chunk][index];
-
-        // revisit: the following could be more efficient.
-
-        // if the previous sibling exists and this node is not a text node.
-        if (previousIndex != -1
-        && fNodeType[chunk][index] != Node.TEXT_NODE) {
-            chunk = previousIndex >> CHUNK_SHIFT;
-            index = previousIndex & CHUNK_MASK;
-            // if the previous node is a text node.
-            if (fNodeType[chunk][index] == Node.TEXT_NODE) {
-                // while the previous node exists and is a text node.
-                while (previousIndex != -1
-                    && fNodeType[chunk][index] == Node.TEXT_NODE) {
-                    nodeIndex = previousIndex;
-                    previousIndex = fNodePrevSib[chunk][index];
-                    chunk = previousIndex >> CHUNK_SHIFT;
-                    index = previousIndex & CHUNK_MASK;
-                }
-                return nodeIndex;
-            }
-        }
-
-        return previousIndex;
-
-    } // getPreviousSibling(int):int
 
     /** Returns the next sibling of the given node.
      *  This is post-normalization of Text Nodes.
@@ -688,10 +649,10 @@ public class DeferredDocumentImpl
 
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
-        nodeIndex = fNodeNextSib[chunk][index];
+        nodeIndex = clearChunkIndex(fNodeNextSib, chunk, index);
 
-        while (nodeIndex != -1 && fNodeType[chunk][index] == Node.TEXT_NODE) {
-            nodeIndex = fNodeNextSib[chunk][index];
+        while (nodeIndex != -1 && getChunkIndex(fNodeType, chunk, index) == Node.TEXT_NODE) {
+            nodeIndex = getChunkIndex(fNodeNextSib, chunk, index);
             chunk = nodeIndex >> CHUNK_SHIFT;
             index = nodeIndex & CHUNK_MASK;
         }
@@ -713,9 +674,9 @@ public class DeferredDocumentImpl
 
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
-        return fNodeNextSib[chunk][index];
+        return clearChunkIndex(fNodeNextSib, chunk, index);
 
-        } // getReadNextSibling(int):int
+    } // getReadNextSibling(int):int
 
     /**
      * Returns the index of the element definition in the table
@@ -728,20 +689,33 @@ public class DeferredDocumentImpl
 
             // find doctype
             int docTypeIndex = -1;
-            for (int index = getFirstChild(0); // 0 == document node
+            int nchunk = 0;
+            int nindex = 0;
+            for (int index = getChunkIndex(fNodeFirstChild, nchunk, nindex);
                  index != -1;
-                 index = getNextSibling(index)) {
-                if (getNodeType(index) == Node.DOCUMENT_TYPE_NODE) {
+                 index = getChunkIndex(fNodeNextSib, nchunk, nindex)) {
+
+                nchunk = index >> CHUNK_SHIFT;
+                nindex = index  & CHUNK_MASK;
+                if (getChunkIndex(fNodeType, nchunk, nindex) == Node.DOCUMENT_TYPE_NODE) {
                     docTypeIndex = index;
                     break;
                 }
             }
 
             // find element definition
-            for (int index = getFirstChild(docTypeIndex);
+            if (docTypeIndex == -1) {
+                return -1;
+            }
+            nchunk = docTypeIndex >> CHUNK_SHIFT;
+            nindex = docTypeIndex & CHUNK_MASK;
+            for (int index = getChunkIndex(fNodeFirstChild, nchunk, nindex);
                  index != -1;
-                 index = getNextSibling(index)) {
-                if (getNodeName(index) == elementNameIndex) {
+                 index = getChunkIndex(fNodeNextSib, nchunk, nindex)) {
+
+                nchunk = index >> CHUNK_SHIFT;
+                nindex = index & CHUNK_MASK;
+                if (getChunkIndex(fNodeName, nchunk, nindex) == elementNameIndex) {
                     return index;
                 }
             }
@@ -750,19 +724,6 @@ public class DeferredDocumentImpl
         return -1;
 
     } // lookupElementDefinition(int):int
-
-    /** Returns the attribute list index for elements. */
-    public int getAttributeList(int elementNodeIndex) {
-
-        if (elementNodeIndex == -1) {
-            return -1;
-        }
-
-        int chunk = elementNodeIndex >> CHUNK_SHIFT;
-        int index = elementNodeIndex & CHUNK_MASK;
-        return fNodeValue[chunk][index];
-
-    } // getAttributeList(int):int
 
     /** Instantiates the requested node object. */
     public DeferredNode getNodeObject(int nodeIndex) {
@@ -775,7 +736,8 @@ public class DeferredDocumentImpl
         // get node type
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
-        int type = fNodeType[chunk][index];
+        int type = clearChunkIndex(fNodeType, chunk, index);
+        clearChunkIndex(fNodeParent, chunk, index);
 
         // create new node
         DeferredNode node = null;
@@ -807,13 +769,11 @@ public class DeferredDocumentImpl
             //       are used by the application *after* the parse.
             //
             // case Node.DOCUMENT_FRAGMENT_NODE: { break; }
-            /***
             case Node.DOCUMENT_NODE: {
                 // this node is never "fast"
                 node = this;
                 break;
             }
-            /***/
 
             case Node.DOCUMENT_TYPE_NODE: {
                 node = new DeferredDocumentTypeImpl(this, nodeIndex);
@@ -908,6 +868,10 @@ public class DeferredDocumentImpl
                 break;
             }
 
+            default: {
+                throw new IllegalArgumentException("type: "+type);
+            }
+
         } // switch node type
 
         // store and return
@@ -929,7 +893,7 @@ public class DeferredDocumentImpl
 
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
-        int nameIndex = fNodeName[chunk][index];
+        int nameIndex = clearChunkIndex(fNodeName, chunk, index);
         if (nameIndex == -1) {
             return null;
         }
@@ -947,7 +911,7 @@ public class DeferredDocumentImpl
 
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
-        int valueIndex = fNodeValue[chunk][index];
+        int valueIndex = clearChunkIndex(fNodeValue, chunk, index);
         if (valueIndex == -1) {
             return null;
         }
@@ -965,7 +929,7 @@ public class DeferredDocumentImpl
 
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
-        return fNodeName[chunk][index];
+        return clearChunkIndex(fNodeName, chunk, index);
 
     } // getNodeName(int):int
 
@@ -981,7 +945,7 @@ public class DeferredDocumentImpl
 
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
-        return fNodeValue[chunk][index];
+        return clearChunkIndex(fNodeValue, chunk, index);
 
     } // getNodeValue(int):int
 
@@ -994,7 +958,7 @@ public class DeferredDocumentImpl
 
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
-        return fNodeType[chunk][index];
+        return (short)clearChunkIndex(fNodeType, chunk, index);
 
     } // getNodeType(int):int
 
@@ -1008,7 +972,7 @@ public class DeferredDocumentImpl
                                " // "+
                                fStringPool.toString(nameIndex)+
                                ", "+
-                               fStringPool.toString(fNodeName[elementNodeIndex >> CHUNK_SHIFT][elementNodeIndex & CHUNK_MASK]));
+                               fStringPool.toString(getChunkIndex(fNodeName, elementNodeIndex >> CHUNK_SHIFT, elementNodeIndex & CHUNK_MASK)));
         }
 
         // initialize arrays
@@ -1042,36 +1006,106 @@ public class DeferredDocumentImpl
     /** Prints out the tables. */
     public void print() {
 
+        if (DEBUG_PRINT_REF_COUNTS) {
+            System.out.print("num\t");
+            System.out.print("type\t");
+            System.out.print("name\t");
+            System.out.print("val\t");
+            System.out.print("par\t");
+            System.out.print("fch\t");
+            System.out.print("nsib");
+            System.out.println();
+            for (int i = 0; i < fNodeType.length; i++) {
+                if (fNodeType[i] != null) {
+                    // separator
+                    System.out.print("--------");
+                    System.out.print("--------");
+                    System.out.print("--------");
+                    System.out.print("--------");
+                    System.out.print("--------");
+                    System.out.print("--------");
+                    System.out.print("--------");
+                    System.out.println();
+
+                    // set count
+                    System.out.print(i);
+                    System.out.print('\t');
+                    System.out.print(fNodeType[i][CHUNK_SIZE]);
+                    System.out.print('\t');
+                    System.out.print(fNodeName[i][CHUNK_SIZE]);
+                    System.out.print('\t');
+                    System.out.print(fNodeValue[i][CHUNK_SIZE]);
+                    System.out.print('\t');
+                    System.out.print(fNodeParent[i][CHUNK_SIZE]);
+                    System.out.print('\t');
+                    System.out.print(fNodeFirstChild[i][CHUNK_SIZE]);
+                    System.out.print('\t');
+                    System.out.print(fNodeNextSib[i][CHUNK_SIZE]);
+                    System.out.println();
+
+                    // clear count
+                    System.out.print(i);
+                    System.out.print('\t');
+                    System.out.print(fNodeType[i][CHUNK_SIZE + 1]);
+                    System.out.print('\t');
+                    System.out.print(fNodeName[i][CHUNK_SIZE + 1]);
+                    System.out.print('\t');
+                    System.out.print(fNodeValue[i][CHUNK_SIZE + 1]);
+                    System.out.print('\t');
+                    System.out.print(fNodeParent[i][CHUNK_SIZE + 1]);
+                    System.out.print('\t');
+                    System.out.print(fNodeFirstChild[i][CHUNK_SIZE + 1]);
+                    System.out.print('\t');
+                    System.out.print(fNodeNextSib[i][CHUNK_SIZE + 1]);
+                    System.out.println();
+                }
+            }
+        }
+
         if (DEBUG_PRINT_TABLES) {
             // This assumes that the document is small
             System.out.println("# start table");
             for (int i = 0; i < fNodeCount; i++) {
+                int chunk = i >> CHUNK_SHIFT;
+                int index = i & CHUNK_MASK;
                 if (i % 10 == 0) {
-                    System.out.println("num\ttype\tname\tval\tpar\tfch\tlch\tpsib\tnsib");
+                    System.out.print("num\t");
+                    System.out.print("type\t");
+                    System.out.print("name\t");
+                    System.out.print("val\t");
+                    System.out.print("par\t");
+                    System.out.print("fch\t");
+                    System.out.print("nsib");
+                    System.out.println();
                 }
                 System.out.print(i);
                 System.out.print('\t');
-                System.out.print(fNodeType[0][i]);
+                System.out.print(getChunkIndex(fNodeType, chunk, index));
                 System.out.print('\t');
-                System.out.print(fNodeName[0][i]);
+                System.out.print(getChunkIndex(fNodeName, chunk, index));
                 System.out.print('\t');
-                System.out.print(fNodeValue[0][i]);
+                System.out.print(getChunkIndex(fNodeValue, chunk, index));
                 System.out.print('\t');
-                System.out.print(fNodeParent[0][i]);
+                System.out.print(getChunkIndex(fNodeParent, chunk, index));
                 System.out.print('\t');
-                System.out.print(fNodeFirstChild[0][i]);
+                System.out.print(getChunkIndex(fNodeFirstChild, chunk, index));
                 System.out.print('\t');
-                System.out.print(fNodeLastChild[0][i]);
-                System.out.print('\t');
-                System.out.print(fNodePrevSib[0][i]);
-                System.out.print('\t');
-                System.out.print(fNodeNextSib[0][i]);
+                System.out.print(getChunkIndex(fNodeNextSib, chunk, index));
                 System.out.println();
             }
             System.out.println("# end table");
         }
 
     } // print()
+
+    //
+    // DeferredNode methods
+    //
+
+    /** Returns the node index. */
+    public int getNodeIndex() {
+        return 0;
+    }
 
     //
     // Protected methods
@@ -1113,7 +1147,9 @@ public class DeferredDocumentImpl
                 int index = elementNodeIndex;
                 do {
                     path.addElement(index);
-                    index = getParentNode(index);
+                    int pchunk = index >> CHUNK_SHIFT;
+                    int pindex = index & CHUNK_MASK;
+                    index = getChunkIndex(fNodeParent, pchunk, pindex);
                 } while (index != -1);
 
                 // Traverse path (backwards), fluffing the elements
@@ -1164,6 +1200,8 @@ public class DeferredDocumentImpl
         // no need to sync in the future
         syncChildren = false;
 
+        getNodeType(0);
+
         // create children and link them as siblings
         NodeImpl last = null;
         for (int index = getFirstChild(0);
@@ -1204,13 +1242,11 @@ public class DeferredDocumentImpl
 
         // create buffers
         if (fNodeType == null) {
-            fNodeType       = new byte[INITIAL_CHUNK_COUNT][];
+            fNodeType       = new int[INITIAL_CHUNK_COUNT][];
             fNodeName       = new int[INITIAL_CHUNK_COUNT][];
             fNodeValue      = new int[INITIAL_CHUNK_COUNT][];
             fNodeParent     = new int[INITIAL_CHUNK_COUNT][];
             fNodeFirstChild = new int[INITIAL_CHUNK_COUNT][];
-            fNodeLastChild  = new int[INITIAL_CHUNK_COUNT][];
-            fNodePrevSib    = new int[INITIAL_CHUNK_COUNT][];
             fNodeNextSib    = new int[INITIAL_CHUNK_COUNT][];
         }
 
@@ -1221,41 +1257,31 @@ public class DeferredDocumentImpl
 
         // resize the tables
         catch (ArrayIndexOutOfBoundsException ex) {
-            //int newsize = chunk + (int)((float)chunk * 0.5);
             int newsize = chunk * 2;
-            //System.out.println("chunk: "+chunk+", newsize: "+newsize);
 
-            byte[][] newByteArray = new byte[newsize][];
-            System.arraycopy(fNodeType, 0, newByteArray, 0, chunk);
-            fNodeType = newByteArray;
+            int[][] newArray = new int[newsize][];
+            System.arraycopy(fNodeType, 0, newArray, 0, chunk);
+            fNodeType = newArray;
 
-            int[][] newIntArray = new int[newsize][];
-            System.arraycopy(fNodeName, 0, newIntArray, 0, chunk);
-            fNodeName = newIntArray;
+            newArray = new int[newsize][];
+            System.arraycopy(fNodeName, 0, newArray, 0, chunk);
+            fNodeName = newArray;
 
-            newIntArray = new int[newsize][];
-            System.arraycopy(fNodeValue, 0, newIntArray, 0, chunk);
-            fNodeValue = newIntArray;
+            newArray = new int[newsize][];
+            System.arraycopy(fNodeValue, 0, newArray, 0, chunk);
+            fNodeValue = newArray;
 
-            newIntArray = new int[newsize][];
-            System.arraycopy(fNodeParent, 0, newIntArray, 0, chunk);
-            fNodeParent = newIntArray;
+            newArray = new int[newsize][];
+            System.arraycopy(fNodeParent, 0, newArray, 0, chunk);
+            fNodeParent = newArray;
 
-            newIntArray = new int[newsize][];
-            System.arraycopy(fNodeFirstChild, 0, newIntArray, 0, chunk);
-            fNodeFirstChild = newIntArray;
+            newArray = new int[newsize][];
+            System.arraycopy(fNodeFirstChild, 0, newArray, 0, chunk);
+            fNodeFirstChild = newArray;
 
-            newIntArray = new int[newsize][];
-            System.arraycopy(fNodeLastChild, 0, newIntArray, 0, chunk);
-            fNodeLastChild = newIntArray;
-
-            newIntArray = new int[newsize][];
-            System.arraycopy(fNodePrevSib, 0, newIntArray, 0, chunk);
-            fNodePrevSib = newIntArray;
-
-            newIntArray = new int[newsize][];
-            System.arraycopy(fNodeNextSib, 0, newIntArray, 0, chunk);
-            fNodeNextSib = newIntArray;
+            newArray = new int[newsize][];
+            System.arraycopy(fNodeNextSib, 0, newArray, 0, chunk);
+            fNodeNextSib = newArray;
         }
 
         catch (NullPointerException ex) {
@@ -1263,17 +1289,14 @@ public class DeferredDocumentImpl
         }
 
         // create chunks
-        fNodeType[chunk]       = new byte[CHUNK_SIZE];
-        fNodeName[chunk]       = new int[CHUNK_SIZE];
-        fNodeValue[chunk]      = new int[CHUNK_SIZE];
-        fNodeParent[chunk]     = new int[CHUNK_SIZE];
-        fNodeFirstChild[chunk] = new int[CHUNK_SIZE];
-        fNodeLastChild[chunk]  = new int[CHUNK_SIZE];
-        fNodePrevSib[chunk]    = new int[CHUNK_SIZE];
-        fNodeNextSib[chunk]    = new int[CHUNK_SIZE];
+        createChunk(fNodeType, chunk);
+        createChunk(fNodeName, chunk);
+        createChunk(fNodeValue, chunk);
+        createChunk(fNodeParent, chunk);
+        createChunk(fNodeFirstChild, chunk);
+        createChunk(fNodeNextSib, chunk);
 
         // success
-        //System.out.println("/ensureCapacity");
         return true;
 
     } // ensureCapacity(int,int):boolean
@@ -1287,14 +1310,7 @@ public class DeferredDocumentImpl
         ensureCapacity(chunk, index);
 
         // initialize node
-        fNodeType[chunk][index]       = (byte)nodeType;
-        fNodeName[chunk][index]       = -1;
-        fNodeValue[chunk][index]      = -1;
-        fNodeParent[chunk][index]     = -1;
-        fNodeFirstChild[chunk][index] = -1;
-        fNodeLastChild[chunk][index]  = -1;
-        fNodePrevSib[chunk][index]    = -1;
-        fNodeNextSib[chunk][index]    = -1;
+        setChunkIndex(fNodeType, nodeType, chunk, index);
 
         // return node index number
         return fNodeCount++;
@@ -1365,12 +1381,63 @@ public class DeferredDocumentImpl
     // Private methods
     //
 
+    /** Creates the specified chunk in the given array of chunks. */
+    private final void createChunk(int data[][], int chunk) {
+        data[chunk] = new int[CHUNK_SIZE + 2];
+        for (int i = 0; i < CHUNK_SIZE; i++) {
+            data[chunk][i] = -1;
+        }
+    }
+
+    /**
+     * Sets the specified value in the given of data at the chunk and index.
+     *
+     * @return Returns the old value.
+     */
+    private final int setChunkIndex(int data[][], int value, int chunk, int index) {
+        if (value == -1) {
+            return clearChunkIndex(data, chunk, index);
+        }
+        int ovalue = data[chunk][index];
+        if (ovalue == -1) {
+            data[chunk][CHUNK_SIZE]++;
+        }
+        data[chunk][index] = value;
+        return ovalue;
+    }
+
+    /**
+     * Returns the specified value in the given data at the chunk and index.
+     */
+    private final int getChunkIndex(int data[][], int chunk, int index) {
+        return data[chunk] != null ? data[chunk][index] : -1;
+    }
+
+    /**
+     * Clears the specified value in the given data at the chunk and index.
+     * Note that this method will clear the given chunk if the reference
+     * count becomes zero.
+     *
+     * @return Returns the old value.
+     */
+    private final int clearChunkIndex(int data[][], int chunk, int index) {
+        int value = data[chunk] != null ? data[chunk][index] : -1;
+        if (value != -1) {
+            data[chunk][CHUNK_SIZE + 1]++;
+            data[chunk][index] = -1;
+            if (data[chunk][CHUNK_SIZE] == data[chunk][CHUNK_SIZE + 1]) {
+                data[chunk] = null;
+            }
+        }
+        return value;
+    }
+
     /**
      * This version of putIdentifier is needed to avoid fluffing
      * all of the paths to ID attributes when a node object is
      * created that contains an ID attribute.
      */
-    private void putIdentifier0(String idName, Element element) {
+    private final void putIdentifier0(String idName, Element element) {
 
         if (DEBUG_IDS) {
             System.out.println("putIdentifier0("+
