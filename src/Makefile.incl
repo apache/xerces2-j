@@ -29,7 +29,9 @@ PACKAGES = org.apache.xerces.parsers \
            org.apache.xerces.dom.traversal \
            org.apache.xerces.domx.traversal \
            org.apache.xml.serialize \
+           org.apache.html.dom \
            org.w3c.dom \
+           org.w3c.dom.html \
            org.xml.sax \
            org.xml.sax.helpers
 
