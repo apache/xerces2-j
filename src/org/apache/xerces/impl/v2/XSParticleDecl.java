@@ -109,6 +109,14 @@ public class XSParticleDecl {
     public static final short PARTICLE_ANY_OTHER_SKIP = PARTICLE_ANY_OTHER | WILDCARD_SKIP;
     public static final short PARTICLE_ANY_LIST_SKIP  = PARTICLE_ANY_LIST  | WILDCARD_SKIP;
 
+    public static final short PARTICLE_ZERO_OR_ONE = 21;
+
+    /** Represents a zero or more occurence count, '*'. */
+    public static final short PARTICLE_ZERO_OR_MORE = 22;
+    
+    /** Represents a one or more occurence count, '+'. */
+    public static final short PARTICLE_ONE_OR_MORE = 23;
+
     //
     // Data
     //

@@ -61,7 +61,8 @@ import org.apache.xerces.impl.v2.datatypes.*;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.SymbolHash;
 import org.apache.xerces.xni.QName;
-import org.apache.xerces.impl.validation.ContentModelValidator;
+import org.apache.xerces.impl.validation.XSCMValidator;
+import org.apache.xerces.impl.validation.models.CMBuilder; 
 
 import java.util.Vector;
 import java.util.Hashtable;
@@ -155,6 +156,7 @@ public class SchemaGrammar {
     private int fParticleOtherValue[][];
     private int fParticleMinOccurs[][];
     private int fParticleMaxOccurs[][];
+    private XSParticleDecl fParticleDecl = new XSParticleDecl();
 
     // notations
     private String fNotationName[][];
@@ -532,6 +534,19 @@ public class SchemaGrammar {
     } // getElementDecl(int,XSElementDecl):XSElementDecl
 
 
+    public String getElementName(int elementDeclIndex) {
+
+        if (elementDeclIndex < 0 || elementDeclIndex >= fElementDeclCount) {
+            return null;
+        }
+
+        int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        int index = elementDeclIndex &  CHUNK_MASK;
+
+        return fElementDeclName[chunk][index];
+    }
+
+
     /**
      * getElementDecl
      * 
@@ -726,6 +741,24 @@ public class SchemaGrammar {
         return fParticleCount;
     }
 
+    public int addParticleDecl (short type, int value, String uri, 
+                                int otherValue, String otherUri){
+        fParticleCount++;
+        int chunk = fParticleCount >> CHUNK_SHIFT;
+        int index = fParticleCount & CHUNK_MASK;
+        //
+        //Implement
+        //ensureParticleCapacity(chunk);
+        fParticleType[chunk][index] = type;
+        fParticleUri[chunk][index] = uri;
+        fParticleValue[chunk][index] = value;
+        fParticleOtherUri[chunk][index] = otherUri;
+        fParticleOtherValue[chunk][index] = otherValue;
+        fParticleMinOccurs[chunk][index] = 1;
+        fParticleMaxOccurs[chunk][index] = 1;
+        return fParticleCount;
+    }
+
     public int addParticleDecl (XSParticleDecl particle){
         fParticleCount++;
         int chunk = fParticleCount >> CHUNK_SHIFT;
@@ -758,6 +791,7 @@ public class SchemaGrammar {
         int chunk = particleIndex >> CHUNK_SHIFT;
         int index = particleIndex & CHUNK_MASK;
 
+        particle.clear();
         particle.type = fParticleType[chunk][index];
         particle.value = fParticleValue[chunk][index];
         particle.uri =   fParticleUri[chunk][index];
@@ -866,7 +900,89 @@ public class SchemaGrammar {
         return getTypeDecl(typeIndex);
     }
 
+
     static SchemaGrammar SG_SchemaNS = new SchemaGrammar(null, true);
     static SchemaGrammar SG_SchemaBasicSet = new SchemaGrammar(null, false);
+    static CMBuilder fCMBuilder = new CMBuilder();
     
+
+    //
+    // Content model create and get methods
+    //
+
+    
+    //REVISIT: add substitution comparator!!
+    
+    /**
+     * Get content model for the a given type
+     * 
+     * @param elementDeclIndex
+     * @param comparator
+     * @return 
+     * @exception Exception
+     */
+    
+    public XSCMValidator getContentModel(int typeIndex) {
+
+        if (typeIndex < 0 || typeIndex >= fXSTypeCount)
+            return null;
+
+        int chunk = typeIndex >> CHUNK_SHIFT;
+        int index = typeIndex & CHUNK_MASK;
+
+        // REVISIT: can we assume that this method never called for elements of simpleType
+        // content?
+        XSComplexTypeDecl typeDecl = (XSComplexTypeDecl)fTypeDeclType[chunk][index];
+        short contentType = typeDecl.fContentType;
+        if (contentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE || 
+            contentType == XSComplexTypeDecl.CONTENTTYPE_EMPTY) {
+            return null;
+        }
+
+        XSCMValidator cmValidator = typeDecl.fCMValidator;
+
+        // If we have one, just return that. Otherwise, gotta create one
+        if (cmValidator != null)
+            return cmValidator;
+
+        int particleIndex = typeDecl.fParticleIndex;
+        if (fDeferParticleExpantion) {
+            // expand particle
+            getParticleDecl(particleIndex, fParticleDecl);
+            particleIndex = fCMBuilder.expandParticleTree(this, typeDecl.fParticleIndex, fParticleDecl);
+            
+        }
+        // And create the content model according to the spec type
+        if ( contentType == XSComplexTypeDecl.CONTENTTYPE_MIXED ) {
+            //
+            //  Just create a mixel content model object. This type of
+            //  content model is optimized for mixed content validation.
+            //
+            //ChildrenList children = new ChildrenList();
+            //contentSpecTree(contentSpecIndex, contentSpec, children);
+            //contentModel = new MixedContentModel(children.qname,
+            //                                     children.type,
+            //                                     0, children.length, 
+            //                                     false, isDTD());
+        } else if (contentType == XSComplexTypeDecl.CONTENTTYPE_ELEMENT) {
+            //  This method will create an optimal model for the complexity
+            //  of the element's defined model. If its simple, it will create
+            //  a SimpleContentModel object. If its a simple list, it will
+            //  create a SimpleListContentModel object. If its complex, it
+            //  will create a DFAContentModel object.
+            //
+             cmValidator = fCMBuilder.createChildModel(this, fParticleDecl, particleIndex);
+        } else {
+            throw new RuntimeException("Unknown content type for a element decl "
+                                     + "in getElementContentModelValidator() in Grammar class");
+        }
+
+        // Add the new model to the content model for this element
+        typeDecl.fCMValidator = cmValidator;
+
+        return cmValidator;
+    }
+    
+
+
 } // class SchemaGrammar

@@ -262,5 +262,6 @@ public final  class SchemaSymbols {
 
     // maxOccurs = "unbounded"
     // REVISIT:  the original value (-1) causes an ArrayIndexOutOfBoundsException at XSAttributeChecker:167
-    public static final int OCCURRENCE_UNBOUNDED = 0;
+    //           "0" is wrong too (empty particle)
+   public static final int OCCURRENCE_UNBOUNDED = 0x7fffffff;
 }

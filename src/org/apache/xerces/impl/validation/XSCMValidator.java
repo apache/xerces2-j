@@ -55,65 +55,41 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.impl.v2; 
+package org.apache.xerces.impl.validation;
 
-import org.apache.xerces.impl.v2.datatypes.DatatypeValidator;
 import org.apache.xerces.xni.QName;
-import org.apache.xerces.impl.validation.XSCMValidator;
 
 /**
- * @author Elena Litani, IBM
+ * 
  * @author Sandy Gao, IBM
+ * @author  Elena Litani, IBM
  * @version $Id$
  */
-public class XSComplexTypeDecl implements XSType {
+public interface XSCMValidator {
 
-    static final short CONTENTTYPE_EMPTY   = 1;
-    static final short CONTENTTYPE_SIMPLE  = 2;
-    static final short CONTENTTYPE_MIXED   = 3;
-    static final short CONTENTTYPE_ELEMENT = 4;
-
-    public String fName;
-    public String fTargetNamespace;
-    public int fBaseIdx = SchemaGrammar.I_EMPTY_DECL;
-    public String fBaseUri;
-    public short fDerivedBy = 0;
-    public short fFinalSet = 0;
-    public short fMiscFlags = 0;
-    public int fAttUseIndex = SchemaGrammar.I_EMPTY_DECL;
-    public int fAttWildcardIndex = SchemaGrammar.I_EMPTY_DECL;
-    public short fContentType = 0;
-    public DatatypeValidator fDatatypeValidator = null;
-    public int fParticleIndex = SchemaGrammar.I_EMPTY_DECL;
-    public short fBlockSet = 0;
-
-
-    public XSCMValidator fCMValidator = null;
-    public int fTemplateElmIndex = SchemaGrammar.I_EMPTY_DECL;
-
-    public short getXSType () {
-        return COMPLEX_TYPE;
-    }
     
-    public String getXSTypeName() {
-        return fName;
-    }
+    /**
+     * This methods to be called on entering a first element whose type 
+     * has this content model. It will store and reset state of the content model.
+     */
+    public void startContentModel();
 
-    private static final short CT_IS_ABSTRACT = 1;
-    private static final short CT_HAS_TYPE_ID = 2;
 
-    public boolean isAbstractType() {
-        return((fMiscFlags & CT_IS_ABSTRACT) != 0);
-    }
-    public boolean containsTypeID () {
-        return((fMiscFlags & CT_HAS_TYPE_ID) != 0);
-    }
+    /**
+     * The method corresponds to one transaction in the content model.
+     * 
+     * @param elementName
+     *               Current element
+     * @return element index corresponding to the element from the Schema grammar
+     */
+    public int oneTransition (QName elementName);
+    
+    
+    /**
+     * The method indicates the end of list of children
+     * 
+     * @return true if the last state was a valid final state
+     */
+    public boolean endContentModel ();
 
-    public void setIsAbstractType() {
-        fMiscFlags |= CT_IS_ABSTRACT;
-    }
-    public void setContainsTypeID() {
-        fMiscFlags |= CT_HAS_TYPE_ID;
-    }
-
-} // class XSComplexTypeDecl
+} // XSCMValidator 
