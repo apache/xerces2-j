@@ -301,10 +301,11 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
             fGrammarDescription.fContextType = XSDDescription.CONTEXT_PREPARSE;
             fGrammarDescription.setNamespace(SchemaSymbols.URI_SCHEMAFORSCHEMA);
             
-            // no global decls other than types
+            // no global decls other than types and
+            // element declarations for <annotation>, <documentation> and <appinfo>.
             fGlobalAttrDecls  = new SymbolHash(1);
             fGlobalAttrGrpDecls = new SymbolHash(1);
-            fGlobalElemDecls = new SymbolHash(3);
+            fGlobalElemDecls = new SymbolHash(6);
             fGlobalGroupDecls = new SymbolHash(1);
             fGlobalNotationDecls = new SymbolHash(1);
             fGlobalIDConstraintDecls = new SymbolHash(1);
@@ -378,12 +379,10 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
                 annotationAttrs.addAttributeUse(annotationIDAttr);
                 annotationAttrs.fAttributeWC = otherAttrs;
                 
-                documentationAttrs = new XSAttributeGroupDecl();
                 documentationAttrs.addAttributeUse(documentationSourceAttr);
                 documentationAttrs.addAttributeUse(documentationLangAttr);
                 documentationAttrs.fAttributeWC = otherAttrs;
                 
-                appinfoAttrs = new XSAttributeGroupDecl();
                 appinfoAttrs.addAttributeUse(appinfoSourceAttr);
                 appinfoAttrs.fAttributeWC = otherAttrs;
             }
@@ -400,11 +399,8 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
                 annotationParticle.fValue = annotationChoice;
             }
             
-            // create particles for <documentation>
-            XSParticleDecl documentationParticle = createUnboundedAnyWildcardSequenceParticle();
-            
-            // create particles for <appinfo>
-            XSParticleDecl appinfoParticle = createUnboundedAnyWildcardSequenceParticle();
+            // create wildcard particle for <documentation> and <appinfo>
+            XSParticleDecl anyWCSequenceParticle = createUnboundedAnyWildcardSequenceParticle();
             
             // fill complex types
             annotationType.setValues("#AnonType_" + SchemaSymbols.ELT_ANNOTATION, fTargetNamespace, SchemaGrammar.fAnyType,
@@ -415,13 +411,13 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
             
             documentationType.setValues("#AnonType_" + SchemaSymbols.ELT_DOCUMENTATION, fTargetNamespace, SchemaGrammar.fAnyType,
                     XSConstants.DERIVATION_RESTRICTION, XSConstants.DERIVATION_NONE, (short) (XSConstants.DERIVATION_EXTENSION | XSConstants.DERIVATION_RESTRICTION),
-                    XSComplexTypeDecl.CONTENTTYPE_MIXED, false, documentationAttrs, null, documentationParticle, new XSObjectListImpl(null, 0));
+                    XSComplexTypeDecl.CONTENTTYPE_MIXED, false, documentationAttrs, null, anyWCSequenceParticle, new XSObjectListImpl(null, 0));
             documentationType.setName("#AnonType_" + SchemaSymbols.ELT_DOCUMENTATION);
             documentationType.setIsAnonymous();
             
             appinfoType.setValues("#AnonType_" + SchemaSymbols.ELT_APPINFO, fTargetNamespace, SchemaGrammar.fAnyType,
                     XSConstants.DERIVATION_RESTRICTION, XSConstants.DERIVATION_NONE, (short) (XSConstants.DERIVATION_EXTENSION | XSConstants.DERIVATION_RESTRICTION),
-                    XSComplexTypeDecl.CONTENTTYPE_MIXED, false, appinfoAttrs, null, appinfoParticle, new XSObjectListImpl(null, 0));
+                    XSComplexTypeDecl.CONTENTTYPE_MIXED, false, appinfoAttrs, null, anyWCSequenceParticle, new XSObjectListImpl(null, 0));
             appinfoType.setName("#AnonType_" + SchemaSymbols.ELT_APPINFO);
             appinfoType.setIsAnonymous();
             
