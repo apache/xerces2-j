@@ -121,4 +121,12 @@ public class AttrImpl extends NodeImpl
     public void setValue(String value) throws DOMException {
         this.value = value;
     }
+    
+    /**
+     * @since DOM Level 3 
+     */
+    public boolean getIsId(){
+        return false;
+    }
+
 }

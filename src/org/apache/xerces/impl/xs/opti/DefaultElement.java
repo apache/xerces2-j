@@ -166,6 +166,18 @@ public class DefaultElement extends NodeImpl
     public Attr setAttributeNodeNS(Attr newAttr) throws DOMException {
     	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
     }
+    
+    public void setIdAttributeNode(Attr at) throws DOMException{
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
+    }
+    public void setIdAttribute(String name, boolean makeId) throws DOMException{
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
+    }
+    
+    public void setIdAttributeNS(String namespaceURI, String localName,
+                                    boolean makeId) throws DOMException{
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
+    }
 
 }
 	
