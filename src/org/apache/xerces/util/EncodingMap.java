@@ -803,6 +803,9 @@ public class EncodingMap {
         fIANA2JavaMap.put("CSISOLATIN5",      "ISO8859_9");
         fIANA2JavaMap.put("L5",      "ISO8859_9");
 
+        fIANA2JavaMap.put("ISO-8859-15",      "ISO8859_15"); 
+        fIANA2JavaMap.put("ISO_8859-15",      "ISO8859_15"); 
+
         fIANA2JavaMap.put("KOI8-R",          "KOI8_R");
         fIANA2JavaMap.put("CSKOI8R",          "KOI8_R");
         fIANA2JavaMap.put("US-ASCII",        "ASCII"); 
@@ -890,6 +893,7 @@ public class EncodingMap {
         fJava2IANAMap.put("ISO8859_7",    "ISO-8859-7");
         fJava2IANAMap.put("ISO8859_8",    "ISO-8859-8");
         fJava2IANAMap.put("ISO8859_9",    "ISO-8859-9");
+        fJava2IANAMap.put("ISO8859_15",    "ISO-8859-15");
         fJava2IANAMap.put("Big5",      "BIG5");
         fJava2IANAMap.put("CP037",     "EBCDIC-CP-US");
         fJava2IANAMap.put("CP273",     "IBM273");
