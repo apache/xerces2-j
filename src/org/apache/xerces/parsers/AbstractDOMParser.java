@@ -464,7 +464,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
         fCurrentCDATASection = null;
         fCurrentCDATASectionIndex = -1;
 
-        fBaseURIStack.clear();
+        fBaseURIStack.removeAllElements();
 
 
     } // reset()
