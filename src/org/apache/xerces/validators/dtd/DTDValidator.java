@@ -705,9 +705,13 @@ public final class DTDValidator
                     if (!fStringPool.equalNames(attName, fNamespacesPrefix)) {
                         int attPrefix = fStringPool.getPrefixForQName(attName);
                         if (attPrefix != fNamespacesPrefix) {
-                            if (attPrefix == -1) {
-                                fStringPool.setURIForQName(attName, elementURI);
-                            } else {
+                            //if (attPrefix == -1) {
+                                // Confirmed by NS spec, and all IBM devs...
+                                // An Attr w/o a prefix should not inherit
+                                // the Element's prefix. -rip
+                                //fStringPool.setURIForQName(attName, elementURI);
+                            //} else {
+                            if (attPrefix != -1) {
                                 int uri = fNamespacesScope.getNamespaceForPrefix(attPrefix);
                                 if (uri == -1) {
                                     Object[] args = { fStringPool.toString(attPrefix) };
