@@ -185,17 +185,4 @@ public abstract class ChildNode
         return isFirstChild() ? null : previousSibling;
     }
 
-    //
-    // Protected methods
-    //
-
-    /** Denotes that this node has changed. */
-    protected void changed() {
-        // ++changes; we just let the parent know
-        NodeImpl parentNode = parentNode();
-    	if (parentNode != null) {
-            parentNode.changed();
-        }
-    }
-
 } // class ChildNode

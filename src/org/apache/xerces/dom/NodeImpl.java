@@ -1244,16 +1244,21 @@ public abstract class NodeImpl
     /**
      * Denotes that this node has changed.
      */
-    protected void changed() {} // overridden in subclasses
+    protected void changed() {
+        // we do not actually store this information on every node, we only
+        // have a global indicator on the Document. Doing otherwise cost us too
+        // much for little gain.
+        ownerDocument().changed();
+    }
 
     /**
      * Returns the number of changes to this node.
      */
     protected int changes() {
-        // overridden in subclasses
-        throw new RuntimeException(
-                    "changes() called on a NodeImpl or one of its subclasses" +
-                    "which doesn't really implement it");
+        // we do not actually store this information on every node, we only
+        // have a global indicator on the Document. Doing otherwise cost us too
+        // much for little gain.
+        return ownerDocument().changes();
     }
 
     /**

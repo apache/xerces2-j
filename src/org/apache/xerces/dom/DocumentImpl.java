@@ -134,6 +134,42 @@ public class DocumentImpl
     /** Table for quick check of child insertion. */
     protected Hashtable userData;
 
+    /**
+     * Number of alterations made to this document since its creation.
+     * Serves as a "dirty bit" so that live objects such as NodeList can
+     * recognize when an alteration has been made and discard its cached
+     * state information.
+     * <p>
+     * Any method that alters the tree structure MUST cause or be
+     * accompanied by a call to changed(), to inform it that any outstanding
+     * NodeLists may have to be updated.
+     * <p>
+     * (Required because NodeList is simultaneously "live" and integer-
+     * indexed -- a bad decision in the DOM's design.)
+     * <p>
+     * Note that changes which do not affect the tree's structure -- changing
+     * the node's name, for example -- do _not_ have to call changed().
+     * <p>
+     * Alternative implementation would be to use a cryptographic
+     * Digest value rather than a count. This would have the advantage that
+     * "harmless" changes (those producing equal() trees) would not force
+     * NodeList to resynchronize. Disadvantage is that it's slightly more prone
+     * to "false negatives", though that's the difference between "wildly
+     * unlikely" and "absurdly unlikely". IF we start maintaining digests,
+     * we should consider taking advantage of them.
+     *
+     * Note: This used to be done a node basis, so that we knew what
+     * subtree changed. But since only DeepNodeList really use this today,
+     * the gain appears to be really small compared to the cost of having
+     * an int on every (parent) node plus having to walk up the tree all the
+     * way to the root to mark the branch as changed everytime a node is
+     * changed.
+     * So we now have a single counter global to the document. It means that
+     * some objects may flush their cache more often than necessary, but this
+     * makes nodes smaller and only the document needs to be marked as changed.
+     */
+    protected int changes = 0;
+
     // experimental
 
     /** Allow grammar access. */
@@ -1468,6 +1504,20 @@ public class DocumentImpl
             return child.getNodeType() == Node.ELEMENT_NODE;
         }
     	return 0 != (kidOK[parent.getNodeType()] & 1 << child.getNodeType());
+    }
+
+    /**
+     * Denotes that this node has changed.
+     */
+    protected void changed() {
+        changes++;
+    }
+
+    /**
+     * Returns the number of changes to this node.
+     */
+    protected int changes() {
+        return changes;
     }
 
 } // class DocumentImpl

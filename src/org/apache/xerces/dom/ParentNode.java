@@ -93,31 +93,6 @@ public abstract class ParentNode
     /** First child. */
     protected ChildNode firstChild = null;
 
-    /**
-     * Number of alterations made to this subtree since its creation.
-     * Serves as a "dirty bit" so NodeList can recognize when an
-     * alteration has been made and discard its cached state information.
-     * <p>
-     * Any method that alters the tree structure MUST cause or be
-     * accompanied by a call to changed(), to inform it and its
-     * parents that any outstanding NodeLists may have to be updated.
-     * <p>
-     * (Required because NodeList is simultaneously "live" and integer-
-     * indexed -- a bad decision in the DOM's design.)
-     * <p>
-     * Note that changes which do not affect the tree's structure -- changing
-     * the node's name, for example -- do _not_ have to call changed().
-     * <p>
-     * Alternative implementation would be to use a cryptographic
-     * Digest value rather than a count. This would have the advantage that
-     * "harmless" changes (those producing equal() trees) would not force
-     * NodeList to resynchronize. Disadvantage is that it's slightly more prone
-     * to "false negatives", though that's the difference between "wildly
-     * unlikely" and "absurdly unlikely". IF we start maintaining digests,
-     * we should consider taking advantage of them.
-     */
-    protected int changes = 0;
-
     // transients
 
     /** Cached node list length. */
@@ -859,22 +834,6 @@ public abstract class ParentNode
     //
     // Protected methods
     //
-
-    /** Denotes that this node has changed. */
-    protected void changed() {
-    	++changes;
-        // invalidate cache for children NodeList
-        nodeListIndex = -1;
-        nodeListLength = -1;
-        NodeImpl parentNode = parentNode();
-    	if (parentNode != null) {
-            parentNode.changed();
-        }
-    }
-
-    protected int changes() {
-        return changes;
-    }
 
     /**
      * Override this method in subclass to hook in efficient
