@@ -6836,6 +6836,9 @@ throws Exception {
         }
         String eName = getElementNameFor(uElem);
         Unique unique = new Unique(uName, eName);
+        if(fIdentityConstraintNames.get(fTargetNSURIString+","+uName) != null) {
+            reportGenericSchemaError("More than one identity constraint named " + uName);
+        }
         fIdentityConstraintNames.put(fTargetNSURIString+","+uName, unique);
 
         // get selector and fields
@@ -6860,6 +6863,9 @@ throws Exception {
         }
         String eName = getElementNameFor(kElem);
         Key key = new Key(kName, eName);
+        if(fIdentityConstraintNames.get(fTargetNSURIString+","+kName) != null) {
+            reportGenericSchemaError("More than one identity constraint named " + kName);
+        }
         fIdentityConstraintNames.put(fTargetNSURIString+","+kName, key);
 
         // get selector and fields
@@ -6882,6 +6888,10 @@ throws Exception {
         String kName = krElem.getAttribute(SchemaSymbols.ATT_REFER);
         if (DEBUG_IDENTITY_CONSTRAINTS) {
             System.out.println("<IC>: traverseKeyRef(\""+krElem.getNodeName()+"\") ["+krName+','+kName+']');
+        }
+
+        if(fIdentityConstraintNames.get(fTargetNSURIString+","+krName) != null) {
+            reportGenericSchemaError("More than one identity constraint named " + krName);
         }
 
         // verify that key reference "refer" attribute is valid
@@ -6908,6 +6918,9 @@ throws Exception {
 
         // add key reference to element decl
         eDecl.keyRef.addElement(keyRef);
+        // store in fIdentityConstraintNames so can flag schemas in which multiple
+        // keyrefs with the same name are present.
+        fIdentityConstraintNames.put(fTargetNSURIString+","+krName, keyRef);  
 
     } // traverseKeyRef(Element,XMLElementDecl)
 

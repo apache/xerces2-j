@@ -149,7 +149,8 @@ public class Selector {
             //       the element container because the fields could be
             //       relative to that element. -Ac
 			//       Unless xpath starts with a descendant node -Achille Fokoue
-			super(((xpath.trim().startsWith("//") ||xpath.trim().startsWith(".//"))?
+            //      ... or a '.' or a '/' - NG
+			super(((xpath.trim().startsWith("/") ||xpath.trim().startsWith("."))?
 				xpath:"./"+xpath), stringPool, context);
     
             // verify that an attribute is not selected

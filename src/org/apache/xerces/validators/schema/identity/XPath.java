@@ -207,7 +207,7 @@ public class XPath {
             switch (token) {
 				case  XPath.Tokens.EXPRTOKEN_OPERATOR_UNION :{
 					if (i == 0) {
-						throw new XPathException("not allowed to have '|' here");
+						throw new XPathException("not allowed to have '|' at the beginning of an xpath value");
 					}
 					
 					int size = stepsVector.size();
@@ -410,6 +410,9 @@ public class XPath {
 					throw new XPathException("'//' only allowed after '.' at the beginning of an xpath");
 				}
                 case XPath.Tokens.EXPRTOKEN_OPERATOR_SLASH: {
+					if (i == 0) {
+						throw new XPathException("not allowed to have '/' at the beginning of an xpath value");
+					}
                     // keep on truckin'
 					if (firstTokenOfLocationPath) {
                         throw new XPathException("not allowed to select the root");
@@ -1571,10 +1574,12 @@ public class XPath {
                         addToken(tokens, XPath.Tokens.EXPRTOKEN_NUMBER);
                         starIsMultiplyOperator = true;
                         currentOffset = scanNumber(tokens, data, endOffset, currentOffset/*, encoding*/);
-                    } else {                    // '.'
+                    } else if (ch == '/') {
                         addToken(tokens, XPath.Tokens.EXPRTOKEN_PERIOD);
                         starIsMultiplyOperator = true;
                         currentOffset++;
+                    } else {                    // '.'
+                        throw new XPathException ("Invalid character following '.'");
                     }
                     if (currentOffset == endOffset) {
                         break;
