@@ -156,7 +156,7 @@ public class StandardParserConfiguration
         super(symbolTable);
 
         final String GRAMMAR_POOL = Constants.XERCES_PROPERTY_PREFIX + Constants.GRAMMAR_POOL_PROPERTY;
-        fGrammarPool = new GrammarPool();
+        fGrammarPool = grammarPool;
         fProperties.put(GRAMMAR_POOL, fGrammarPool);
     }
 

@@ -199,7 +199,7 @@ public abstract class BasicParserConfiguration
     protected BasicParserConfiguration(SymbolTable symbolTable) {
         this();
         final String SYMBOL_TABLE = Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
-        fSymbolTable = new SymbolTable();
+        fSymbolTable = symbolTable;
         fProperties.put(SYMBOL_TABLE, fSymbolTable);
     } // <init>(SymbolTable)
 
