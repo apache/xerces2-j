@@ -893,24 +893,24 @@ public class DOMParser
             throw new RuntimeException("PAR009 Fatal error reading expansion mode.");
         }
         try {
-            Class docClass = Class.forName(documentClassName);
-            Class defaultDeferredDocClass = Class.forName(DEFAULT_DEFERRED_DOCUMENT_CLASS_NAME);
-            if (deferNodeExpansion && docClass.isAssignableFrom(defaultDeferredDocClass)) {
+            boolean isDocumentImpl = fDocumentClassName.equals(DEFAULT_DOCUMENT_CLASS_NAME);
+            boolean isDeferredImpl = fDocumentClassName.equals(DEFAULT_DEFERRED_DOCUMENT_CLASS_NAME);
+            if (deferNodeExpansion && (isDocumentImpl || isDeferredImpl)) {
                 boolean nsEnabled = false;
                 try { nsEnabled = getNamespaces(); }
                 catch (SAXException s) {}
-                fDocument = fDeferredDocumentImpl =
-                    new DeferredDocumentImpl(fStringPool, nsEnabled, fGrammarAccess);
+                fDeferredDocumentImpl = new DeferredDocumentImpl(fStringPool, nsEnabled, fGrammarAccess);
+                fDocument = fDeferredDocumentImpl;
                 fDocumentIndex = fDeferredDocumentImpl.createDocument();
                 fCurrentNodeIndex = fDocumentIndex;
             }
 
             // full expansion
             else {
+                Class docClass = Class.forName(documentClassName);
                 Class defaultDocClass = Class.forName(DEFAULT_DOCUMENT_CLASS_NAME);
-                if (docClass.isAssignableFrom(defaultDocClass)) {
-                    fDocument = fDocumentImpl = new DocumentImpl(fGrammarAccess);
-                    fDocumentImpl.setErrorChecking(false);
+                if (isDocumentImpl) {
+                    fDocument = new DocumentImpl(fGrammarAccess);
                 }
                 else {
                     try {
@@ -923,6 +923,10 @@ public class DOMParser
                         //          exception that can occur here is if the class
                         //          doesn't have a zero-arg constructor. -Ac
                     }
+                }
+                if (docClass.isAssignableFrom(defaultDocClass)) {
+                    fDocumentImpl = (DocumentImpl)fDocument;
+                    fDocumentImpl.setErrorChecking(false);
                 }
 
                 fCurrentElementNode = fDocument;
