@@ -220,33 +220,51 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
             }
         }// End Facet definition
 
-        // REVISIT: to do proper validation with given facets
-        //          see new PR schema specs
-        if ( fMaxExclusive!=null && fMinExclusive!=null ) {
-            if (compareDates(fMaxExclusive, fMinExclusive)!=GREATER_THAN) {
-                System.err.println("[Error]: minExclusive '"+dateToString(fMinExclusive) +
-                                   "' is greater than maxExclusive '"+dateToString(fMaxExclusive));
-            }
+        // check 4.3.8.c1 error: maxInclusive + maxExclusive
+        if ( fMaxExclusive!=null && fMaxInclusive != null ) {
+            System.err.println( "[Error] It is an error for both maxInclusive and maxExclusive to be specified for the same datatype." );
         }
-        if ( fMaxInclusive!=null && fMinInclusive!=null ) {
-            if (compareDates(fMaxInclusive, fMinInclusive) == LESS_THAN) {
-                System.err.println("[Error]: maxInclusive '"+dateToString(fMaxInclusive) +
-                                   "' is less than minInclusive '"+dateToString(fMinInclusive));
-            }
-        }
-        if ( fMaxExclusive!=null && fMinInclusive!=null ) {
-            if (compareDates(fMaxExclusive, fMinInclusive) == LESS_THAN) {
-                System.err.println("[Error]: maxExclusive '"+dateToString(fMaxExclusive) +
-                                   "' is less than minInclusive '"+dateToString(fMinInclusive));
-            }
-        }
-        if ( fMaxInclusive!=null && fMinExclusive!=null ) {
-            if (compareDates(fMinExclusive, fMaxInclusive) == GREATER_THAN) {
-                System.err.println("[Error]: minExclusive '"+dateToString(fMinExclusive) +
-                                   "' is greater than minInclusive '"+dateToString(fMaxInclusive));
-            }
+        // check 4.3.9.c1 error: minInclusive + minExclusive
+        if ( fMinExclusive !=null && fMinInclusive !=null ) {
+            System.err.println("[Error] It is an error for both minInclusive and minExclusive to be specified for the same datatype." );
         }
 
+        // check 4.3.7.c1 must: minInclusive <= maxInclusive
+        int compare;
+        if ( fMaxInclusive != null && fMinInclusive !=null ) {
+            compare = compareDates(fMinInclusive, fMaxInclusive, false);
+            if ( compare == GREATER_THAN || compare == INDETERMINATE )
+                System.err.println("[Error] minInclusive value ='" + dateToString(fMinInclusive) 
+                                    + "'must be <= maxInclusive value ='" +
+                                    dateToString(fMaxInclusive) + "'. " );
+        }
+        // check 4.3.8.c2 must: minExclusive <= maxExclusive ??? minExclusive < maxExclusive
+        if ( fMaxExclusive !=null && fMinExclusive !=null ) {
+            compare = compareDates(fMinExclusive,fMaxExclusive, false);
+            if ( compare == GREATER_THAN || compare == INDETERMINATE )
+                System.err.println( "[Error] minExclusive value ='" +dateToString(fMinExclusive)
+                                    + "'must be <= maxExclusive value ='" +
+                                    dateToString(fMaxExclusive) + "'. " );
+        }
+        // check 4.3.9.c2 must: minExclusive < maxInclusive
+        if ( fMaxInclusive != null && fMinExclusive !=null ) {
+            compare = compareDates(fMinExclusive, fMaxExclusive, true);
+            if ( compare != LESS_THAN )
+                System.err.println( "[Error] minExclusive value ='" + dateToString(fMinExclusive) 
+                                    + "'must be < maxInclusive value ='" +
+                                    dateToString(fMaxInclusive) + "'. " );
+        }
+        // check 4.3.10.c1 must: minInclusive < maxExclusive
+        if ( fMaxExclusive !=null && fMinInclusive !=null ) {
+            compare = compareDates(fMinInclusive, fMaxExclusive, true); 
+            if ( compare != LESS_THAN )
+                System.err.println( "[Error] minInclusive value ='" + dateToString(fMinInclusive) 
+                                    + "'must be < maxExclusive value ='" +
+                                    dateToString(fMaxExclusive) + "'. " );
+        }
+        //
+        //REVISIT: Inherit facets from the base type
+        //
 
         if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION ) != 0 ) {
             Vector v = (Vector) facets.get(SchemaSymbols.ELT_ENUMERATION);    
@@ -289,7 +307,7 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
      * @exception InvalidDatatypeValueException
      */
     public Object validate(String content, Object state) throws InvalidDatatypeValueException{
-        
+
         try {
             resetDateObj(fDateValue);
             parse(content, fDateValue);
@@ -319,12 +337,11 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
             }
             //validate against base type
             ((DateTimeValidator)this.fBaseValidator).validateDate( date, content);
-
             if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION ) != 0 ) {
                 int count=0;
                 boolean valid = false;
                 while ( count < fEnumSize ) {
-                    if ( compareDates(date, fEnumeration[count]) == EQUAL ) {
+                    if ( compareDates(date, fEnumeration[count], false) == EQUAL ) {
                         valid = true;
                         break;
                     }
@@ -340,7 +357,7 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
             short c;
             if ( fMinInclusive != null ) {
 
-                c = compareDates(date, fMinInclusive);
+                c = compareDates(date, fMinInclusive, false);
                 if ( c == LESS_THAN || c == INDETERMINATE ) {
                     throw new InvalidDatatypeValueException("Value '"+content+
                                                             "' is less than minInclusive: " +dateToString(fMinInclusive) );
@@ -348,7 +365,7 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
             }
             if ( fMinExclusive != null ) {
 
-                if ( compareDates(date, fMinExclusive) != GREATER_THAN ) {
+                if ( compareDates(date, fMinExclusive, true) != GREATER_THAN ) {
                     throw new InvalidDatatypeValueException("Value '"+content+
                                                             "' is less than or equal to minExclusive: " +dateToString(fMinExclusive));
                 }
@@ -356,7 +373,7 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
 
             if ( fMaxInclusive != null ) {
 
-                c = compareDates(date, fMaxInclusive );
+                c = compareDates(date, fMaxInclusive, false );
                 if ( c  == GREATER_THAN  || c == INDETERMINATE ) {
                     throw new InvalidDatatypeValueException("Value '"+content+
                                                             "' is greater than maxInclusive: " +dateToString(fMaxInclusive) );
@@ -365,7 +382,7 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
 
             if ( fMaxExclusive != null ) {
 
-                if ( compareDates(date, fMaxExclusive ) != LESS_THAN ) {
+                if ( compareDates(date, fMaxExclusive, true ) != LESS_THAN ) {
                     throw new InvalidDatatypeValueException("Value '"+content+
                                                             "' is greater than or equal to maxExlusive: " +dateToString(fMaxExclusive) );
                 }
@@ -390,15 +407,15 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
 
 
     /**
-     * Compare algorithm described in dateDime (3.2.7). 
+     * Compare algorithm described in dateDime (3.2.7).
      * Duration datatype overwrites this method
      * 
      * @param date1  normalized date representation of the first value
      * @param date2  normalized date representation of the second value
-     *               
-     * @return   less, greater, less_equal, greater_equal, equal
+     * @param strict
+     * @return less, greater, less_equal, greater_equal, equal
      */
-    protected  short compareDates(int[] date1, int[] date2) {
+    protected  short compareDates(int[] date1, int[] date2, boolean strict) {
         if ( date1[utc]==date2[utc] ) {
             return compareOrder(date1, date2);    
         }

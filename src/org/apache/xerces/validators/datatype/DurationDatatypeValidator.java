@@ -80,7 +80,7 @@ public class DurationDatatypeValidator extends DateTimeValidator {
         {1903, 3, 1, 0, 0, 0, 0, 'Z'},
         {1903, 7, 1, 0, 0, 0, 0, 'Z'}};
 
-    private int[][] fDuration = new int[2][TOTAL_SIZE];
+    private int[][] fDuration = null;
 
 
     public  DurationDatatypeValidator() throws InvalidDatatypeFacetException{
@@ -133,8 +133,12 @@ public class DurationDatatypeValidator extends DateTimeValidator {
         //at least one number and designator must be seen after P
         boolean designator = false;
 
+        int endDate = indexOf (fStart, fEnd, 'T'); 
+        if ( endDate == -1 ) {
+            endDate = fEnd;
+        }
         //find 'Y'        
-        int end = indexOf (fStart, fEnd, 'Y');
+        int end = indexOf (fStart, endDate, 'Y');
         if ( end!=-1 ) {
             //scan year
             date[CY]=negate * parseInt(fStart,end);
@@ -142,7 +146,7 @@ public class DurationDatatypeValidator extends DateTimeValidator {
             designator = true;
         }
 
-        end = indexOf (fStart, fEnd, 'M');
+        end = indexOf (fStart, endDate, 'M');
         if ( end!=-1 ) {
             //scan month
             date[M]=negate * parseInt(fStart,end);
@@ -150,34 +154,30 @@ public class DurationDatatypeValidator extends DateTimeValidator {
             designator = true;
         }
 
-        end = indexOf (fStart, fEnd, 'D');
+        end = indexOf (fStart, endDate, 'D');
         if ( end!=-1 ) {
             //scan day
             date[D]=negate * parseInt(fStart,end);
+            fStart = end+1;
             designator = true;
         }
 
-        end = indexOf (fStart, fEnd, 'T'); 
-        if ( end != -1 ) {
+        if ( fEnd == endDate && fStart!=fEnd ) {
+            throw new Exception();
+        }
+        if ( fEnd !=endDate ) {
 
             //scan hours, minutes, seconds
             //REVISIT: can any item include a decimal fraction or only seconds?
             //         
 
-            if ( (end+1) == fEnd ) {
-                //P01Y01M01DT
-                throw new Exception();
-            }
-
-            fStart = end+1;
-            end = indexOf (fStart, fEnd, 'H');
+            end = indexOf (++fStart, fEnd, 'H');
             if ( end!=-1 ) {
                 //scan hours
                 date[h]=negate * parseInt(fStart,end);
                 fStart=end+1;
                 designator = true;
             }
-
 
             end = indexOf (fStart, fEnd, 'M');
             if ( end!=-1 ) {
@@ -186,7 +186,6 @@ public class DurationDatatypeValidator extends DateTimeValidator {
                 fStart=end+1;
                 designator = true;
             }
-
 
             end = indexOf (fStart, fEnd, 'S');
             if ( end!=-1 ) {
@@ -199,27 +198,34 @@ public class DurationDatatypeValidator extends DateTimeValidator {
                 else {
                     date[s]=negate * parseInt(fStart,end);
                 }
+                fStart=end+1;
                 designator = true;
             }
+            // no additional data shouls appear after last item
+            // P1Y1M1DT is illigal value as well
+            if ( fStart != fEnd || fBuffer.charAt(--fStart)=='T' ) {
+                throw new Exception();
+            }
         }
+
         if ( !designator ) {
             throw new Exception();
         }
-        //REVISIT:  add error checking for some digits/chars in the end..?
-        //          should pattern take care of that?
 
         return date;
     }
 
 
     /**
-     * Compares 2 given durations. 
+     * Compares 2 given durations. (refer to W3C Schema Datatypes "3.2.6 duration")
      * 
      * @param date1  Unnormalized duration
      * @param date2  Unnormalized duration
+     * @param strict (min/max)Exclusive strict == true ( LESS_THAN ) or ( GREATER_THAN )
+     *               (min/max)Inclusive strict == false (LESS_EQUAL) or (GREATER_EQUAL)
      * @return 
      */
-    protected  short compareDates(int[] date1, int[] date2) {
+    protected  short compareDates(int[] date1, int[] date2, boolean strict) {
 
         //REVISIT: this is unoptimazed vs of comparing 2 durations
         //         Algorithm is described in 3.2.6.2 W3C Schema Datatype specs
@@ -233,7 +239,9 @@ public class DurationDatatypeValidator extends DateTimeValidator {
         if ( resultA == EQUAL ) {
             return EQUAL;
         }
-
+        if ( fDuration == null ) {
+            fDuration = new int[2][TOTAL_SIZE];
+        }
         //long comparison algorithm is required
         int[] tempA = addDuration (date1, 0, fDuration[0]);
         int[] tempB = addDuration (date2, 0, fDuration[1]);
@@ -244,29 +252,46 @@ public class DurationDatatypeValidator extends DateTimeValidator {
 
         tempA = addDuration(date1, 1, fDuration[0]);
         tempB = addDuration(date2, 1, fDuration[1]);
-        resultB =  compareOrder(tempA, tempB);
-        if ( resultB == INDETERMINATE || resultA!=resultB ) {
+        resultB = compareOrder(tempA, tempB);
+        resultA = compareResults(resultA, resultB, strict);
+        if (resultA == INDETERMINATE) {
             return INDETERMINATE;
         }
 
         tempA = addDuration(date1, 2, fDuration[0]);
         tempB = addDuration(date2, 2, fDuration[1]);
-        resultB =  compareOrder(tempA, tempB);
-        if ( resultB == INDETERMINATE || resultA!=resultB ) {
+        resultB = compareOrder(tempA, tempB);
+        resultA = compareResults(resultA, resultB, strict);
+        if (resultA == INDETERMINATE) {
             return INDETERMINATE;
         }
 
         tempA = addDuration(date1, 3, fDuration[0]);
         tempB = addDuration(date2, 3, fDuration[1]);
-        resultB =  compareOrder(tempA, tempB);
-        if ( resultB == INDETERMINATE || resultB!=resultA ) {
-            return INDETERMINATE;
-        }
-
+        resultB = compareOrder(tempA, tempB);
+        resultA = compareResults(resultA, resultB, strict);
 
         return resultA;
     }
 
+    private short compareResults(short resultA, short resultB, boolean strict){
+
+      if ( resultB == INDETERMINATE ) {
+            return INDETERMINATE;
+        }
+        else if ( resultA!=resultB && strict ) {
+            return INDETERMINATE;
+        }
+        else if ( resultA!=resultB && !strict ) {
+            if ( resultA!=EQUAL && resultB!=EQUAL ) {
+                return INDETERMINATE;
+            }
+            else {
+                return (resultA!=EQUAL)?resultA:resultB;
+            }
+        }
+        return resultA;
+    }
 
     private int[] addDuration(int[] date, int index, int[] duration) {
 
@@ -289,7 +314,7 @@ public class DurationDatatypeValidator extends DateTimeValidator {
         carry = temp/60;
 
         //add hours
-        temp = DATETIMES[index][h] + date[hh] + carry;
+        temp = DATETIMES[index][h] + date[h] + carry;
         duration[h] = temp%24;
         carry = temp/24;
 
