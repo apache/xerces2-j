@@ -198,6 +198,9 @@ public class XMLDocumentScanner
     /** Entity depth. */
     protected int fEntityDepth;
 
+    /** The entity at the beginning of a piece of markup. */
+    protected XMLEntity fMarkupEntity;
+
     /** Scanner state. */
     protected int fScannerState;
 
@@ -266,10 +269,11 @@ public class XMLDocumentScanner
     /** Single character array. */
     private final char[] fSingleChar = new char[1];
 
-    private String[] fPseudoAttributeValues = new String[3];
-
     /** External entity. */
     private XMLEntityManager.ExternalEntity fExternalEntity = new XMLEntityManager.ExternalEntity();
+
+    /** Pseudo-attribute values. */
+    private String[] fPseudoAttributeValues = new String[3];
 
     // symbols
 
@@ -359,11 +363,10 @@ public class XMLDocumentScanner
         // initialize vars
         fEntityStack.removeAllElements();
         fEntityDepth = 0;
-
+        fMarkupEntity = null;
         fElementDepth = 0;
         fCurrentElement = null;
         fElementStack.clear();
-        
         fSeenDoctypeDecl = false;
         fStandalone = false;
         fScanningDTD = false;
@@ -498,11 +501,22 @@ public class XMLDocumentScanner
      */
     public void endEntity(String name) throws SAXException {
 
+        // pop entity
+        fEntityDepth--;
+        Entity entity = (Entity)fEntityStack.pop();
+
+        // check bounds
+        if (fMarkupEntity != null) {
+            fMarkupEntity = null;
+            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                       "MarkupEntityMismatch",
+                                       null,
+                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
+        }
+
         // sanity check
         // REVISIT: Shouldn't the entity manager perform this sanity
         //          check? -Ac
-        fEntityDepth--;
-        Entity entity = (Entity)fEntityStack.pop();
         if (!name.equals(entity.name)) {
             // REVISIT: report error
             throw new SAXException("internal error: startEntity(\""+entity.name+"\") "+
@@ -575,14 +589,14 @@ public class XMLDocumentScanner
      * Scans an XML or text declaration.
      * <p>
      * <pre>
-     * [23] XMLDecl ::= '<?xml' VersionInfo EncodingDecl? SDDecl? S? '?>'
+     * [23] XMLDecl ::= '&lt;?xml' VersionInfo EncodingDecl? SDDecl? S? '?>'
      * [24] VersionInfo ::= S 'version' Eq (' VersionNum ' | " VersionNum ")
      * [80] EncodingDecl ::= S 'encoding' Eq ('"' EncName '"' |  "'" EncName "'" )
      * [81] EncName ::= [A-Za-z] ([A-Za-z0-9._] | '-')*
      * [32] SDDecl ::= S 'standalone' Eq (("'" ('yes' | 'no') "'")
      *                 | ('"' ('yes' | 'no') '"'))
      *
-     * [77] TextDecl ::= '<?xml' VersionInfo? EncodingDecl S? '?>'
+     * [77] TextDecl ::= '&lt;?xml' VersionInfo? EncodingDecl S? '?>'
      * </pre>
      *
      * @param scanningTextDecl True if a text declaration is to
@@ -592,17 +606,16 @@ public class XMLDocumentScanner
     protected void scanXMLDeclOrTextDecl(boolean scanningTextDecl) 
         throws IOException, SAXException {
 
-        // pseudo-attribute values
-        String version = null;
-        String encoding = null;
-        String standalone = null;
-
+        // scan decl
         super.scanXMLDeclOrTextDecl(scanningTextDecl, fPseudoAttributeValues);
+        fMarkupEntity = null;
 
-        version = fPseudoAttributeValues[0];
-        encoding = fPseudoAttributeValues[1];
-        standalone = fPseudoAttributeValues[2];
+        // pseudo-attribute values
+        String version = fPseudoAttributeValues[0];
+        String encoding = fPseudoAttributeValues[1];
+        String standalone = fPseudoAttributeValues[2];
 
+        // set standalone
         fStandalone = standalone != null && standalone.equals("yes");
         fEntityManager.setStandalone(fStandalone);
 
@@ -635,6 +648,7 @@ public class XMLDocumentScanner
         throws IOException, SAXException {
 
         super.scanPIData(target, data);
+        fMarkupEntity = null;
 
         // call handler
         if (fDocumentHandler != null) {
@@ -655,6 +669,7 @@ public class XMLDocumentScanner
     protected void scanComment() throws IOException, SAXException {
 
         scanComment(fStringBuffer);
+        fMarkupEntity = null;
 
         // call handler
         if (fDocumentHandler != null) {
@@ -807,6 +822,7 @@ public class XMLDocumentScanner
                                        new Object[]{name},
                                        XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
+        fMarkupEntity = null;
 
         // call handler
         if (fDocumentHandler != null) {
@@ -902,6 +918,7 @@ public class XMLDocumentScanner
             scanAttribute(fAttributes);
 
         } while (true);
+        fMarkupEntity = null;
 
         // push element stack
         fCurrentElement = fElementStack.pushElement(fElementQName);
@@ -965,6 +982,7 @@ public class XMLDocumentScanner
                                        XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
         fEntityScanner.scanChar();
+        int entityDepth = fEntityDepth;
 
         // content
         attributes.addAttribute(fAttributeQName, fCDATASymbol, null);
@@ -982,9 +1000,7 @@ public class XMLDocumentScanner
                 System.out.println("*** set attribute offset: "+fAttributeOffset);
             }
             fStringBuffer.clear();
-            int entityDepth = fEntityStack.size();
             do {
-                //System.out.println(">>> appending \""+fString.toString()+'"');
                 fStringBuffer.append(fString);
                 fAttributeOffset += fString.length;
                 if (DEBUG_ATTR_ENTITIES) {
@@ -1061,6 +1077,7 @@ public class XMLDocumentScanner
                                         System.out.println("*** scanning TextDecl");
                                     }
                                     if (fEntityScanner.skipString("<?xml")) {
+                                        fMarkupEntity = fEntityManager.getCurrentEntity();
                                         scanXMLDeclOrTextDecl(true);
                                     }
                                 }
@@ -1176,6 +1193,7 @@ public class XMLDocumentScanner
                 fDocumentHandler.characters(fString);
             }
         }
+        fMarkupEntity = null;
 
         // call handler
         if (fDocumentHandler != null) {
@@ -1220,6 +1238,7 @@ public class XMLDocumentScanner
                                        new Object[]{fElementQName.rawname},
                                        XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
+        fMarkupEntity = null;
 
         // handle end element
         int depth = handleEndElement(fElementQName);
@@ -1272,6 +1291,7 @@ public class XMLDocumentScanner
                                        "SemicolonRequiredInReference",
                                        null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
+        fMarkupEntity = null;
 
         // handle built-in entities
         if (name == fAmpSymbol) {
@@ -1662,10 +1682,10 @@ public class XMLDocumentScanner
         /**
          * Sets the values of this structure.
          *
-         * @param name         The name.
-         * @param publicId     The public identifier.
-         * @param systemId     The system identifier.
-         * @param elementDepth The element depth.
+         * @param name        The name.
+         * @param publicId    The public identifier.
+         * @param systemId    The system identifier.
+         * @param markupDepth The markup depth.
          */
         public void setValues(String name, String publicId, String systemid,
                               int elementDepth) {
@@ -1785,6 +1805,7 @@ public class XMLDocumentScanner
 
             // scan XMLDecl
             if (fEntityScanner.skipString("<?xml")) {
+                fMarkupEntity = fEntityManager.getCurrentEntity();
                 // NOTE: special case where document starts with a PI
                 //       whose name starts with "xml" (e.g. "xmlfoo")
                 if (XMLChar.isName(fEntityScanner.peekChar())) {
@@ -1859,6 +1880,7 @@ public class XMLDocumentScanner
                         break;
                     }
                     case SCANNER_STATE_START_OF_MARKUP: {
+                        fMarkupEntity = fEntityManager.getCurrentEntity();
                         if (fEntityScanner.skipChar('?')) {
                             setScannerState(SCANNER_STATE_PI);
                             again = true;
@@ -1933,7 +1955,7 @@ public class XMLDocumentScanner
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "RootElementRequired",
                                            null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
-           }
+            }
             setScannerState(SCANNER_STATE_ROOT_ELEMENT);
             setDispatcher(fContentDispatcher);
 
@@ -1988,11 +2010,13 @@ public class XMLDocumentScanner
                             do {
                                 int c = scanContent();
                                 if (c == '<') {
+                                    fMarkupEntity = fEntityManager.getCurrentEntity();
                                     fEntityScanner.scanChar();
                                     setScannerState(SCANNER_STATE_START_OF_MARKUP);
                                     break;
                                 }
                                 else if (c == '&') {
+                                    fMarkupEntity = fEntityManager.getCurrentEntity();
                                     fEntityScanner.scanChar();
                                     setScannerState(SCANNER_STATE_REFERENCE);
                                     break;
@@ -2018,6 +2042,7 @@ public class XMLDocumentScanner
                         break;
                     }
                     case SCANNER_STATE_START_OF_MARKUP: {
+                        fMarkupEntity = fEntityManager.getCurrentEntity();
                         if (fEntityScanner.skipChar('?')) {
                             setScannerState(SCANNER_STATE_PI);
                             again = true;
@@ -2074,15 +2099,12 @@ public class XMLDocumentScanner
                         setScannerState(SCANNER_STATE_CONTENT);
                         break;  
                     }
-                    // REVISIT: Handle CDATA so that we can split up
-                    //          the processing over multiple callbacks.
                     case SCANNER_STATE_CDATA: {
-                        if (scanCDATASection(complete)) {
-                            setScannerState(SCANNER_STATE_CONTENT);
-                        }
+                        scanCDATASection(complete);
                         break;
                     }
                     case SCANNER_STATE_REFERENCE: {
+                        fMarkupEntity = fEntityManager.getCurrentEntity();
                         // NOTE: We need to set the state beforehand
                         //       because the XMLEntityHandler#startEntity
                         //       callback could set the state to
@@ -2100,6 +2122,7 @@ public class XMLDocumentScanner
                     case SCANNER_STATE_TEXT_DECL: {
                         // scan text decl
                         if (fEntityScanner.skipString("<?xml")) {
+                            fMarkupEntity = fEntityManager.getCurrentEntity();
                             // NOTE: special case where entity starts with a PI
                             //       whose name starts with "xml" (e.g. "xmlfoo")
                             if (XMLChar.isName(fEntityScanner.peekChar())) {
@@ -2179,10 +2202,17 @@ public class XMLDocumentScanner
                     if (fScannerState == SCANNER_STATE_TRAILING_MISC) {
                         fEntityScanner.skipSpaces();
                         if (fEntityScanner.skipChar('<')) {
+                            fMarkupEntity = fEntityManager.getCurrentEntity();
                             if (fEntityScanner.skipChar('?')) {
                                 scanPI();
                             }
-                            else if ( fEntityScanner.skipChar('!')) {
+                            else if (fEntityScanner.skipChar('!')) {
+                                if (!fEntityScanner.skipString("--")) {
+                                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                               "InvalidCommentStart",
+                                                               null,
+                                                               XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                                }
                                 scanComment();
                             }
                         }

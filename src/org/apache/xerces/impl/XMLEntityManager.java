@@ -2422,7 +2422,11 @@ public class XMLEntityManager
          *         if none is available.
          */
         public String getSystemId() {
-            return fCurrentEntity != null ? fCurrentEntity.systemId : null;
+            if (fCurrentEntity != null) {
+                return fCurrentEntity.systemId != null
+                     ? fCurrentEntity.systemId : fCurrentEntity.name;
+            }
+            return null;
         } // getSystemId():String
     
         /**
