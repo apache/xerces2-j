@@ -892,9 +892,6 @@ public class XMLSchemaValidator
             }
         }
 
-        // we saw first chunk of characters
-        fFirstChunk = false;
-
         return allWhiteSpace;
     }
 
@@ -1575,9 +1572,6 @@ public class XMLSchemaValidator
             }
         }
 
-        // we saw first chunk of characters
-        fFirstChunk = false;
-
         return text;
     } // handleCharacters(XMLString)
 
@@ -1590,8 +1584,8 @@ public class XMLSchemaValidator
     private void normalizeWhitespace( XMLString value, boolean collapse) {
         boolean skipSpace = collapse;
         boolean sawNonWS = false;
-        int leading = 0;
-        int trailing = 0;
+        boolean leading = false;
+        boolean trailing = false;
         char c;
         int size = value.offset+value.length;
         
@@ -1613,7 +1607,7 @@ public class XMLSchemaValidator
                 }
                 if (!sawNonWS) {
                     // this is a leading whitespace, record it
-                    leading = 1;
+                    leading = true;
                 }
             }
             else {
@@ -1626,21 +1620,15 @@ public class XMLSchemaValidator
             if ( fNormalizedStr.length > 1) {
                 // if we finished on a space trim it but also record it
                 fNormalizedStr.length--;
-                trailing = 2;
+                trailing = true;
             }
-            else if (leading != 0 && !sawNonWS) {
+            else if (leading && !fFirstChunk) {
                 // if all we had was whitespace we skipped record it as
                 // trailing whitespace as well
-                trailing = 2;
+                trailing = true;
             }
         }
 
-        // 0 if no triming is done or if there is neither leading nor
-        //   trailing whitespace,
-        // 1 if there is only leading whitespace,
-        // 2 if there is only trailing whitespace,
-        // 3 if there is both leading and trailing whitespace.
-        int spaces = collapse ? leading + trailing : 0;
         if (fNormalizedStr.length > 1) {
             if (!fFirstChunk && (fWhiteSpace==XSSimpleType.WS_COLLAPSE) ) {
                 if (fTrailing) {
@@ -1648,7 +1636,7 @@ public class XMLSchemaValidator
                     // insert whitespace
                     fNormalizedStr.offset = 0;
                     fNormalizedStr.ch[0] = ' ';
-                } else if (spaces == 1 || spaces == 3) {
+                } else if (leading) {
                     // previous chunk ended on character,
                     // this chunk starts with whitespace
                     fNormalizedStr.offset = 0;
@@ -1660,7 +1648,10 @@ public class XMLSchemaValidator
         // The length includes the leading ' '. Now removing it.
         fNormalizedStr.length -= fNormalizedStr.offset;
         
-        fTrailing = (spaces > 1)?true:false;
+        fTrailing = trailing;
+        
+        if (trailing || sawNonWS)
+            fFirstChunk = false;
     }
 
 
