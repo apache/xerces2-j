@@ -2159,7 +2159,7 @@ public class TraverseSchema implements
         // set qualified name
         //---------------------------------------------------
         if ( nameProperty.length() == 0) { // anonymous simpleType
-            qualifiedName = "#S#"+(fSimpleTypeAnonCount++);
+            qualifiedName = fTargetNSURIString+","+"#S#"+(fSimpleTypeAnonCount++);
             fStringPool.addSymbol(qualifiedName);
         }
         else {
@@ -6642,14 +6642,14 @@ throws Exception {
 
                     if ( substitutionGroupElementDeclIndex == -1) {
                         // check for mutual recursion!
-                        if(fSubstitutionGroupRecursionRegistry.contains(substitutionGroupElementDecl.getAttribute("name"))) {
+                        if(fSubstitutionGroupRecursionRegistry.contains(fTargetNSURIString+","+substitutionGroupElementDecl.getAttribute(SchemaSymbols.ATT_NAME))) {
                             ignoreSub = true;
                         } else {
-                            fSubstitutionGroupRecursionRegistry.addElement(substitutionGroupElementDecl.getAttribute(SchemaSymbols.ATT_NAME));
+                            fSubstitutionGroupRecursionRegistry.addElement(fTargetNSURIString+","+substitutionGroupElementDecl.getAttribute(SchemaSymbols.ATT_NAME));
                             traverseElementDecl(substitutionGroupElementDecl);
                             substitutionGroupElementDeclIndex =
                                 fSchemaGrammar.getElementDeclIndex(fTargetNSURI, getLocalPartIndex(substitutionGroupStr),TOP_LEVEL_SCOPE);
-                            fSubstitutionGroupRecursionRegistry.removeElement((Object)substitutionGroupElementDecl.getAttribute(SchemaSymbols.ATT_NAME));
+                            fSubstitutionGroupRecursionRegistry.removeElement((Object)fTargetNSURIString+","+substitutionGroupElementDecl.getAttribute(SchemaSymbols.ATT_NAME));
                         }
                     }
                 }
