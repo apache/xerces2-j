@@ -4481,7 +4481,7 @@ public class TraverseSchema implements
 
                  }
                }
-               fElementRecurseComplex.clear();
+               fElementRecurseComplex.removeAllElements();
             }
         }
     }
