@@ -146,6 +146,8 @@ public class XSParticleDecl implements XSParticle {
             buffer.append("EMPTY");
             break;
         case PARTICLE_ELEMENT:
+            buffer.append(fValue.toString());
+            break;
         case PARTICLE_WILDCARD:
             buffer.append('(');
             buffer.append(fValue.toString());

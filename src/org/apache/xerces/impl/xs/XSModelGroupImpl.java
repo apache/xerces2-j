@@ -137,11 +137,12 @@ public class XSModelGroupImpl implements XSModelGroup {
      */
     private String fDescription = null;
     public String toString() {
+    	// REVISIT: Commented code may help to eliminate redundant parentheses (test first before committing)
         if (fDescription == null) {
             StringBuffer buffer = new StringBuffer();
             if (fCompositor == MODELGROUP_ALL)
                 buffer.append("all(");
-            else
+            else  //if (fMinOccurs != 1 || fMaxOccurs != 1)
                 buffer.append('(');
             if (fParticleCount > 0)
                 buffer.append(fParticles[0].toString());
@@ -152,7 +153,8 @@ public class XSModelGroupImpl implements XSModelGroup {
                     buffer.append(',');
                 buffer.append(fParticles[i].toString());
             }
-            buffer.append(')');
+            //if (fCompositor == MODELGROUP_ALL || fMinOccurs != 1 || fMaxOccurs != 1)
+                  buffer.append(')');
             fDescription = buffer.toString();
         }
         return fDescription;
