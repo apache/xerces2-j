@@ -258,9 +258,6 @@ public class XMLDocumentScanner
     /** External entity. */
     private XMLEntityManager.ExternalEntity fExternalEntity = new XMLEntityManager.ExternalEntity();
 
-    /** Pseudo-attribute values. */
-    private String[] fPseudoAttributeValues = new String[3];
-
     // symbols
 
     /** Symbol: "CDATA". */
@@ -517,13 +514,13 @@ public class XMLDocumentScanner
         throws IOException, SAXException {
 
         // scan decl
-        super.scanXMLDeclOrTextDecl(scanningTextDecl, fPseudoAttributeValues);
+        super.scanXMLDeclOrTextDecl(scanningTextDecl, fStrings);
         fInMarkup = false;
 
         // pseudo-attribute values
-        String version = fPseudoAttributeValues[0];
-        String encoding = fPseudoAttributeValues[1];
-        String standalone = fPseudoAttributeValues[2];
+        String version = fStrings[0];
+        String encoding = fStrings[1];
+        String standalone = fStrings[2];
 
         // set standalone
         fStandalone = standalone != null && standalone.equals("yes");
@@ -606,69 +603,10 @@ public class XMLDocumentScanner
         // external id
         String systemId = null;
         String publicId = null;
-        boolean spaces = fEntityScanner.skipSpaces();
-        if (spaces) {
-            if (fEntityScanner.skipString("SYSTEM")) {
-                if (!fEntityScanner.skipSpaces()) {
-                    reportFatalError("SpaceRequiredAfterSYSTEM", null);
-                }
-                int quote = fEntityScanner.peekChar();
-                if (quote != '\'' && quote != '"') {
-                    reportFatalError("QuoteRequiredInSystemID", null);
-                }
-                fEntityScanner.scanChar();
-                XMLString value = fString;
-                if (fEntityScanner.scanLiteral(quote, fString) != quote) {
-                    fStringBuffer.clear();
-                    do {
-                        fStringBuffer.append(fString);
-                        int c = fEntityScanner.peekChar();
-                        if (XMLChar.isMarkup(c) || c == ']') {
-                            fStringBuffer.append((char)fEntityScanner.scanChar());
-                        }
-                    } while (fEntityScanner.scanLiteral(quote, fString) != quote);
-                    fStringBuffer.append(fString);
-                    value = fStringBuffer;
-                }
-                systemId = value.toString();
-                if (!fEntityScanner.skipChar(quote)) {
-                    reportFatalError("SystemIDUnterminated", null);
-                }
-            }
-            else if (fEntityScanner.skipString("PUBLIC")) {
-                if (!fEntityScanner.skipSpaces()) {
-                    reportFatalError("SpaceRequiredAfterPUBLIC", null);
-                }
-                
-                scanPubidLiteral(fString);
-                publicId = fString.toString();
-
-                if (!fEntityScanner.skipSpaces()) {
-                    reportFatalError("SpaceRequiredBetweenPublicAndSystem",
-                                     null);
-                }
-                int quote = fEntityScanner.peekChar();
-                if (quote != '\'' && quote != '"') {
-                    reportFatalError("QuoteRequiredInSystemID", null);
-                }
-                fEntityScanner.scanChar();
-                XMLString value = fString;
-                if (fEntityScanner.scanLiteral(quote, fString) != quote) {
-                    fStringBuffer.clear();
-                    do {
-                        fStringBuffer.append(fString);
-                        if (XMLChar.isMarkup(fEntityScanner.peekChar())) {
-                            fStringBuffer.append((char)fEntityScanner.scanChar());
-                        }
-                    } while (fEntityScanner.scanLiteral(quote, fString) != quote);
-                    fStringBuffer.append(fString);
-                    value = fStringBuffer;
-                }
-                systemId = value.toString();
-                if (!fEntityScanner.skipChar(quote)) {
-                    reportFatalError("SystemIDUnterminated", null);
-                }
-            }
+        if (fEntityScanner.skipSpaces()) {
+            scanExternalID(fStrings, false);
+            systemId = fStrings[0];
+            publicId = fStrings[1];
             fEntityScanner.skipSpaces();
         }
 
