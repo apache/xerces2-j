@@ -838,13 +838,20 @@ Copyright:
             excludes="**/classfiles_updated **/CVS* **/.#* **/XMLMessages.java
                        **/DatatypeContentModel.java **/ComplexTypeInfo.java
                        **/v1/** **/v2/**
-                       javax.xml.parsers.ConvertToURI.java
-                        org/apache/xerces/impl/xs/**
+                        javax.xml.parsers.ConvertToURI.java
+                        org/apache/xerces/impl/xs/*.java
                         org/apache/xerces/impl/dv/xs/**
                         org/apache/xerces/impl/xs/identity/**
                         org/apache/xerces/impl/xs/traversers/**
                         org/apache/xerces/impl/xs/models/**
-                        org/apache/xerces/impl/xs/util/**
+			org/apache/xerces/impl/xs/opti/**
+                        org/apache/xerces/impl/xs/util/NSItemListImpl.java
+                        org/apache/xerces/impl/xs/util/SimpleLocator.java
+                        org/apache/xerces/impl/xs/util/XInt.java
+                        org/apache/xerces/impl/xs/util/XIntPool.java
+                        org/apache/xerces/impl/xs/util/XSNamedMap4Types.java
+                        org/apache/xerces/impl/xs/util/XSNamedMapImpl.java
+                        org/apache/xerces/impl/xs/util/XSGrammarPool.java
                         org/apache/xerces/impl/xs/dom/**
                         org/apache/xerces/impl/xpath/**
                         org/apache/xerces/impl/xpath/regex/**
@@ -853,10 +860,12 @@ Copyright:
                         org/apache/xerces/parsers/DOMASBuilderImpl.java
                         org/apache/xerces/parsers/StandardParserConfiguration.java
                         org/apache/xerces/parsers/IntegratedParserConfiguration.java
+			org/apache/xerces/parsers/XIncludeParserConfiguration.java
                         org/apache/xerces/parsers/SecurityConfiguration.java
                         org/apache/xerces/parsers/XML11Configuration.java
                         org/apache/xerces/parsers/XMLGrammarCachingConfiguration.java
                         org/apache/xerces/parsers/CachingParserPool.java
+                        org/apache/xerces/xinclude/**
                         org/apache/xerces/dom/ASModelImpl.java
                         org/apache/xerces/dom/ASDOMImplementationImpl.java
                         org/apache/xerces/impl/XML11D*.java
@@ -974,6 +983,8 @@ Copyright:
 			org/apache/xerces/impl/xs/psvi/XSTerm.java
 			org/apache/xerces/impl/xs/psvi/XSTypeDefinition.java
 			org/apache/xerces/impl/xs/psvi/XSWildcard.java
+			org/apache/xerces/impl/xs/psvi/XSFacet.java
+			org/apache/xerces/impl/xs/psvi/XSMultiValueFacet.java
                       org/apache/xerces/impl/xs/util/StringListImpl.java,
                       org/apache/xerces/impl/xs/util/XSObjectListImpl.java,
                       org/apache/xerces/util/ObjectFactory.java,
