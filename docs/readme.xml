@@ -114,7 +114,8 @@
   <s2 title='Changes from Previous Release'>
     
     <p>
-      The &ParserNameLong; &ParserVersion; fixes bugs and adds the following functionality:
+      The &ParserNameLong; &ParserVersion; contains several bug fixes but adds
+      no new features. The following functionality was added in the previous release:
     </p>
     
     <ul>
