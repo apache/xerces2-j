@@ -23,7 +23,7 @@
     all of the tools you need (including Ant) are contained
     in the <ref>&ParserName;-tools.&parserversion;.zip</ref>
     file, packaged separately. Go to the &ParserName; 
-    <jump href='http://xml.apache.org/dist/xerces-j/'>download</jump>
+    <jump href='http://xml.apache.org/xerces2-j/download.cgi'>download</jump>
     page to download the tools package and then extract it in the
     same location as the source package.
    </p>
@@ -47,10 +47,10 @@
   </a>
  </faq>
  <faq title='Regenerating API documention?'>
-  <q>How do I regenerate the api documentation?</q>
+  <q>How do I regenerate the API documentation?</q>
   <a>
    <p>
-    To regenerate the api documentation, you need to set up
+    To regenerate the API documentation, you need to set up
     your environment to build &ParserName;.  Instead of typing 
     "build all", you type "build javadocs".
    </p>
@@ -364,10 +364,7 @@
   </a>
  </faq>
  <faq title='Visual Cafe exception error?'>
-  <q>
-   Why do I get ArrayIndexOutOfBoundsException in the Symantec Visual 
-   Cafe debugger?
-  </q>
+  <q>Why do I get an ArrayIndexOutOfBoundsException in the Symantec Visual Cafe debugger?</q>
   <a>
    <p>
     The Visual Cafe debugger is set to trap 
