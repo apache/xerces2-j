@@ -60,6 +60,7 @@ package org.apache.xerces.impl.xs.traversers;
 import org.w3c.dom.Element;
 import org.w3c.dom.Attr;
 import java.util.Hashtable;
+import java.util.Locale;
 import java.util.Vector;
 import java.util.StringTokenizer;
 import java.util.Enumeration;
@@ -1072,7 +1073,7 @@ public class XSAttributeChecker {
 
             // skip anything starts with x/X m/M l/L
             // simply put their values in the return hashtable
-            if (attrName.toLowerCase().startsWith("xml")) {
+            if (attrName.toLowerCase(Locale.ENGLISH).startsWith("xml")) {
                 //attrValues.put(attrName, attrVal);
                 //otherValues.put(attrName, attrVal);
                 continue;

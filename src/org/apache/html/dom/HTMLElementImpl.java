@@ -61,6 +61,8 @@ import org.w3c.dom.*;
 import org.w3c.dom.html.*;
 import org.apache.xerces.dom.ElementImpl;
 
+import java.util.Locale;
+
 
 /**
  * Implements an HTML-specific element, an {@link org.w3c.dom.Element} that
@@ -92,7 +94,7 @@ public class HTMLElementImpl
      */
     HTMLElementImpl( HTMLDocumentImpl owner, String tagName )
     {
-        super( owner, tagName.toUpperCase() );
+        super( owner, tagName.toUpperCase(Locale.ENGLISH) );
     }
     
     
@@ -211,7 +213,7 @@ public class HTMLElementImpl
 
     public Attr getAttributeNode( String attrName )
     {
-	return super.getAttributeNode( attrName.toLowerCase() );
+	return super.getAttributeNode( attrName.toLowerCase(Locale.ENGLISH) );
     }
 
 
@@ -221,13 +223,13 @@ public class HTMLElementImpl
 	if ( namespaceURI != null && namespaceURI.length() > 0 )
 	    return super.getAttributeNodeNS( namespaceURI, localName );
 	else
-	    return super.getAttributeNode( localName.toLowerCase() );
+	    return super.getAttributeNode( localName.toLowerCase(Locale.ENGLISH) );
     }
     
     
     public String getAttribute( String attrName )
     {
-	return super.getAttribute( attrName.toLowerCase() );
+	return super.getAttribute( attrName.toLowerCase(Locale.ENGLISH) );
     }
 
 
@@ -237,13 +239,13 @@ public class HTMLElementImpl
 	if ( namespaceURI != null && namespaceURI.length() > 0 )
 	    return super.getAttributeNS( namespaceURI, localName );
 	else
-	    return super.getAttribute( localName.toLowerCase() );
+	    return super.getAttribute( localName.toLowerCase(Locale.ENGLISH) );
     }
 
 
     public final NodeList getElementsByTagName( String tagName )
     {
-	return super.getElementsByTagName( tagName.toUpperCase() );
+	return super.getElementsByTagName( tagName.toUpperCase(Locale.ENGLISH) );
     }
 
 
@@ -251,9 +253,9 @@ public class HTMLElementImpl
 					          String localName )
     {
 	if ( namespaceURI != null && namespaceURI.length() > 0 )
-	    return super.getElementsByTagNameNS( namespaceURI, localName.toUpperCase() );
+	    return super.getElementsByTagNameNS( namespaceURI, localName.toUpperCase(Locale.ENGLISH) );
 	else
-	    return super.getElementsByTagName( localName.toUpperCase() );
+	    return super.getElementsByTagName( localName.toUpperCase(Locale.ENGLISH) );
     } 
 
 

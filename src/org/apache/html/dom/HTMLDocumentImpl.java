@@ -427,7 +427,7 @@ public class HTMLDocumentImpl
 
     public final NodeList getElementsByTagName( String tagName )
     {
-        return super.getElementsByTagName( tagName.toUpperCase() );
+        return super.getElementsByTagName( tagName.toUpperCase(Locale.ENGLISH) );
     }
 
 
@@ -435,9 +435,9 @@ public class HTMLDocumentImpl
                                                   String localName )
     {
         if ( namespaceURI != null && namespaceURI.length() > 0 )
-            return super.getElementsByTagNameNS( namespaceURI, localName.toUpperCase() );
+            return super.getElementsByTagNameNS( namespaceURI, localName.toUpperCase(Locale.ENGLISH) );
         else
-            return super.getElementsByTagName( localName.toUpperCase() );
+            return super.getElementsByTagName( localName.toUpperCase(Locale.ENGLISH) );
     } 
 
 
@@ -480,7 +480,7 @@ public class HTMLDocumentImpl
         // First, make sure tag name is all upper case, next get the associated
         // element class. If no class is found, generate a generic HTML element.
         // Do so also if an unexpected exception occurs.
-        tagName = tagName.toUpperCase();
+        tagName = tagName.toUpperCase(Locale.ENGLISH);
         elemClass = (Class) _elementTypesHTML.get( tagName );
         if ( elemClass != null )
         {
@@ -523,7 +523,7 @@ public class HTMLDocumentImpl
     public Attr createAttribute( String name )
         throws DOMException
     {
-        return super.createAttribute( name.toLowerCase() );
+        return super.createAttribute( name.toLowerCase(Locale.ENGLISH) );
     }
 
 

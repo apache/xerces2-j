@@ -68,6 +68,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.BufferedReader;
 import java.util.Hashtable;
+import java.util.Locale;
 
 
 /**
@@ -335,7 +336,7 @@ public final class HTMLdtd
     {
         String[] attrNames;
 
-        attrNames = (String[]) _boolAttrs.get( tagName.toUpperCase() );
+        attrNames = (String[]) _boolAttrs.get( tagName.toUpperCase(Locale.ENGLISH) );
         if ( attrNames == null )
             return false;
         for ( int i = 0 ; i < attrNames.length ; ++i )
@@ -491,7 +492,7 @@ public final class HTMLdtd
     {
         Integer flags;
 
-        flags = (Integer) _elemDefs.get( name.toUpperCase() );
+        flags = (Integer) _elemDefs.get( name.toUpperCase(Locale.ENGLISH) );
         if ( flags == null )
             return false;
         else

@@ -67,6 +67,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.Hashtable;
+import java.util.Locale;
 import java.util.Stack;
 import java.util.Vector;
 
@@ -1356,7 +1357,7 @@ public class XMLEntityManager
         }
 
         // try to use an optimized reader
-        String ENCODING = encoding.toUpperCase();
+        String ENCODING = encoding.toUpperCase(Locale.ENGLISH);
         if (ENCODING.equals("UTF-8")) {
             if (DEBUG_ENCODINGS) {
                 System.out.println("$$$ creating UTF8Reader");
@@ -1922,7 +1923,7 @@ public class XMLEntityManager
                     // If it's ISO-10646-UCS-(2|4), then we'll have to deduce
                     // the endian-ness from the encoding we presently have.
                     if(fCurrentEntity.encoding != null && fCurrentEntity.encoding.startsWith("UTF-16")) {
-                        String ENCODING = encoding.toUpperCase();
+                        String ENCODING = encoding.toUpperCase(Locale.ENGLISH);
                         if(ENCODING.equals("UTF-16")) return;
                         if(ENCODING.equals("ISO-10646-UCS-4")) {
                             if(fCurrentEntity.encoding.equals("UTF-16BE")) {

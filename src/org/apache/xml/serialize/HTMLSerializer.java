@@ -79,6 +79,7 @@ import java.io.UnsupportedEncodingException;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.util.Enumeration;
+import java.util.Locale;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Attr;
@@ -293,7 +294,7 @@ public class HTMLSerializer
             // XHTML: element names are lower case, DOM will be different
             _printer.printText( '<' );
             if ( _xhtml )
-                _printer.printText( rawName.toLowerCase() );
+                _printer.printText( rawName.toLowerCase(Locale.ENGLISH) );
             else
                 _printer.printText( rawName );
             _printer.indent();
@@ -304,7 +305,7 @@ public class HTMLSerializer
             if ( attrs != null ) {
                 for ( i = 0 ; i < attrs.getLength() ; ++i ) {
                     _printer.printSpace();
-                    name = attrs.getQName( i ).toLowerCase();;
+                    name = attrs.getQName( i ).toLowerCase(Locale.ENGLISH);;
                     value = attrs.getValue( i );
                     if ( _xhtml || namespaceURI != null ) {
                         // XHTML: print empty string for null values.
@@ -442,7 +443,7 @@ public class HTMLSerializer
                     _printer.printText( "]]>" );
                 // XHTML: element names are lower case, DOM will be different
                 _printer.printText( "</" );
-                _printer.printText( state.rawName.toLowerCase() );
+                _printer.printText( state.rawName.toLowerCase(Locale.ENGLISH) );
                 _printer.printText( '>' );
             }
         } else {
@@ -541,7 +542,7 @@ public class HTMLSerializer
             // XHTML: element names are lower case, DOM will be different
             _printer.printText( '<' );
             if ( _xhtml )
-                _printer.printText( tagName.toLowerCase() );
+                _printer.printText( tagName.toLowerCase(Locale.ENGLISH) );
             else
                 _printer.printText( tagName );
             _printer.indent();
@@ -552,7 +553,7 @@ public class HTMLSerializer
             if ( attrs != null ) {
                 for ( i = 0 ; i < attrs.getLength() ; ++i ) {
                     _printer.printSpace();
-                    name = attrs.getName( i ).toLowerCase();;
+                    name = attrs.getName( i ).toLowerCase(Locale.ENGLISH);;
                     value = attrs.getValue( i );
                     if ( _xhtml ) {
                         // XHTML: print empty string for null values.
@@ -749,7 +750,7 @@ public class HTMLSerializer
         // XHTML: element names are lower case, DOM will be different
         _printer.printText( '<' );
         if ( _xhtml )
-            _printer.printText( tagName.toLowerCase() );
+            _printer.printText( tagName.toLowerCase(Locale.ENGLISH) );
         else
             _printer.printText( tagName );
         _printer.indent();
@@ -763,7 +764,7 @@ public class HTMLSerializer
         if ( attrMap != null ) {
             for ( i = 0 ; i < attrMap.getLength() ; ++i ) {
                 attr = (Attr) attrMap.item( i );
-                name = attr.getName().toLowerCase();
+                name = attr.getName().toLowerCase(Locale.ENGLISH);
                 value = attr.getValue();
                 if ( attr.getSpecified() ) {
                     _printer.printSpace();
