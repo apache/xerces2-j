@@ -106,27 +106,27 @@ public class OutputFormat
     {
 
         /**
-         * Public identifier for HTML document type.
+         * Public identifier for HTML 4.01 (Strict) document type.
          */
-        public static final String HTMLPublicId = "-//W3C//DTD HTML 4.0//EN";
+        public static final String HTMLPublicId = "-//W3C//DTD HTML 4.01//EN";
 
         /**
-         * System identifier for HTML document type.
+         * System identifier for HTML 4.01 (Strict) document type.
          */
         public static final String HTMLSystemId =
-            "http://www.w3.org/TR/WD-html-in-xml/DTD/xhtml1-strict.dtd";
+            "http://www.w3.org/TR/html4/strict.dtd";
 
         /**
-         * Public identifier for XHTML document type.
+         * Public identifier for XHTML 1.0 (Strict) document type.
          */
         public static final String XHTMLPublicId =
             "-//W3C//DTD XHTML 1.0 Strict//EN";
 
         /**
-         * System identifier for XHTML document type.
+         * System identifier for XHTML 1.0 (Strict) document type.
          */
         public static final String XHTMLSystemId =
-            "http://www.w3.org/TR/WD-html-in-xml/DTD/xhtml1-strict.dtd";
+            "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd";
 
     }
 

@@ -1367,140 +1367,115 @@ public class XML11Configuration extends ParserConfigurationSettings
     } // checkProperty(String)
 
 
-	/** 
-	 * Adds a component to the parser configuration. This method will
-	 * also add all of the component's recognized features and properties
-	 * to the list of default recognized features and properties.
-	 *
-	 * @param component The component to add.
-	 */
-	protected void addComponent(XMLComponent component) {
-		// don't add a component more than once
-		if (fComponents.contains(component)) {
-			return;
-		}
-		fComponents.addElement(component);
+    /** 
+     * Adds a component to the parser configuration. This method will
+     * also add all of the component's recognized features and properties
+     * to the list of default recognized features and properties.
+     *
+     * @param component The component to add.
+     */
+    protected void addComponent(XMLComponent component) {
 
-		// register component's recognized features
-		String[] recognizedFeatures = component.getRecognizedFeatures();
-		addRecognizedFeatures(recognizedFeatures);
-        
-		// register component's recognized properties
-		String[] recognizedProperties = component.getRecognizedProperties();
-		addRecognizedProperties(recognizedProperties);
-
-		// set default values
-		if (recognizedFeatures != null) {
-			for (int i = 0; i < recognizedFeatures.length; i++) {
-				String featureId = recognizedFeatures[i];
-				Boolean state = component.getFeatureDefault(featureId);
-				if (state != null) {
-					super.setFeature(featureId, state.booleanValue());
-				}
-			}
-		}
-		if (recognizedProperties != null) {
-			for (int i = 0; i < recognizedProperties.length; i++) {
-				String propertyId = recognizedProperties[i];
-				Object value = component.getPropertyDefault(propertyId);
-				if (value != null) {
-					super.setProperty(propertyId, value);
-				}
-			}
-		}
-
-	} // addComponent(XMLComponent)
-    
-	/** 
-	 * Adds common component to the parser configuration. This method will
-	 * also add all of the component's recognized features and properties
-	 * to the list of default recognized features and properties.
-	 *
-	 * @param component The component to add.
-	 */
-	protected void addCommonComponent(XMLComponent component) {
-		// don't add a component more than once
-		if (fCommonComponents.contains(component)) {
-			return;
-		}
-		fCommonComponents.addElement(component);
-
-		// register component's recognized features
-		String[] recognizedFeatures = component.getRecognizedFeatures();
-		addRecognizedFeatures(recognizedFeatures);
-        
-		// register component's recognized properties
-		String[] recognizedProperties = component.getRecognizedProperties();
-		addRecognizedProperties(recognizedProperties);
-
-		// set default values
-		if (recognizedFeatures != null) {
-			for (int i = 0; i < recognizedFeatures.length; i++) {
-				String featureId = recognizedFeatures[i];
-				Boolean state = component.getFeatureDefault(featureId);
-				if (state != null) {
-					super.setFeature(featureId, state.booleanValue());
-				}
-			}
-		}
-		if (recognizedProperties != null) {
-			for (int i = 0; i < recognizedProperties.length; i++) {
-				String propertyId = recognizedProperties[i];
-				Object value = component.getPropertyDefault(propertyId);
-				if (value != null) {
-					super.setProperty(propertyId, value);
-				}
-			}
-		}
-
-	} // addCommonComponent(XMLComponent)
+        // don't add a component more than once
+        if (fComponents.contains(component)) {
+            return;
+        }
+        fComponents.addElement(component);
+        addRecognizedParamsAndSetDefaults(component);
 	
-	/** 
-	 * Adds an XML 1.1 component to the parser configuration. This method will
-	 * also add all of the component's recognized features and properties
-	 * to the list of default recognized features and properties.
-	 *
-	 * @param component The component to add.
-	 */
-	protected void addXML11Component(XMLComponent component) {
-		// don't add a component more than once
-		if (fXML11Components.contains(component)) {
-			return;
-		}
-		fXML11Components.addElement(component);
+    } // addComponent(XMLComponent)
+    
+    /** 
+     * Adds common component to the parser configuration. This method will
+     * also add all of the component's recognized features and properties
+     * to the list of default recognized features and properties.
+     *
+     * @param component The component to add.
+     */
+    protected void addCommonComponent(XMLComponent component) {
 
-		// register component's recognized features
-		String[] recognizedFeatures = component.getRecognizedFeatures();
-		addRecognizedFeatures(recognizedFeatures);
+        // don't add a component more than once
+        if (fCommonComponents.contains(component)) {
+            return;
+        }
+        fCommonComponents.addElement(component);
+        addRecognizedParamsAndSetDefaults(component);
+
+    } // addCommonComponent(XMLComponent)
+	
+    /** 
+     * Adds an XML 1.1 component to the parser configuration. This method will
+     * also add all of the component's recognized features and properties
+     * to the list of default recognized features and properties.
+     *
+     * @param component The component to add.
+     */
+    protected void addXML11Component(XMLComponent component) {
+
+        // don't add a component more than once
+        if (fXML11Components.contains(component)) {
+            return;
+        }
+        fXML11Components.addElement(component);
+        addRecognizedParamsAndSetDefaults(component);
         
-		// register component's recognized properties
-		String[] recognizedProperties = component.getRecognizedProperties();
-		addRecognizedProperties(recognizedProperties);
+    } // addXML11Component(XMLComponent)
+    
+    /**
+     * Adds all of the component's recognized features and properties
+     * to the list of default recognized features and properties, and
+     * sets default values on the configuration for features and
+     * properties which were previously absent from the configuration.
+     *
+     * @param component The component whose recognized features
+     * and properties will be added to the configuration
+     */
+    protected void addRecognizedParamsAndSetDefaults(XMLComponent component) {
+        
+        // register component's recognized features
+        String[] recognizedFeatures = component.getRecognizedFeatures();
+        addRecognizedFeatures(recognizedFeatures);
+        
+        // register component's recognized properties
+        String[] recognizedProperties = component.getRecognizedProperties();
+        addRecognizedProperties(recognizedProperties);
 
-		// set default values
-		if (recognizedFeatures != null) {
-			for (int i = 0; i < recognizedFeatures.length; i++) {
-				String featureId = recognizedFeatures[i];
-				Boolean state = component.getFeatureDefault(featureId);
-				if (state != null) {
-					checkFeature(featureId);
-					fFeatures.put(featureId, state);
-				}
-			}
-		}
-		if (recognizedProperties != null) {
-			for (int i = 0; i < recognizedProperties.length; i++) {
-				String propertyId = recognizedProperties[i];
-				Object value = component.getPropertyDefault(propertyId);
-				if (value != null) {
-					checkProperty(propertyId);
-					fProperties.put(propertyId, value);
-				}
-			}
-		}
-
-	} // addXML11Component(XMLComponent)
-
+        // set default values
+        if (recognizedFeatures != null) {
+            for (int i = 0; i < recognizedFeatures.length; ++i) {
+                String featureId = recognizedFeatures[i];
+                Boolean state = component.getFeatureDefault(featureId);
+                if (state != null) {
+                    // Do not overwrite values already set on the configuration.
+                    if (!fFeatures.containsKey(featureId)) {
+                        fFeatures.put(featureId, state);
+                        // For newly added components who recognize this feature
+                        // but did not offer a default value, we need to make
+                        // sure these components will get an opportunity to read
+                        // the value before parsing begins.
+                        fConfigUpdated = true;
+                    }
+                }
+            }
+        }
+        if (recognizedProperties != null) {
+            for (int i = 0; i < recognizedProperties.length; ++i) {
+                String propertyId = recognizedProperties[i];
+                Object value = component.getPropertyDefault(propertyId);
+                if (value != null) {
+                    // Do not overwrite values already set on the configuration.
+                    if (!fProperties.containsKey(propertyId)) {
+                        fProperties.put(propertyId, value);
+                        // For newly added components who recognize this property
+                        // but did not offer a default value, we need to make
+                        // sure these components will get an opportunity to read
+                        // the value before parsing begins.
+                        fConfigUpdated = true;
+                    }
+                }
+            }
+        }
+    } 
 
     private void initXML11Components() {
         if (!f11Initialized) {
