@@ -419,10 +419,19 @@ public class Grammar {
         fElementDeclName[chunk][index]              = elementDecl.name.rawname;
         
         fElementDeclType[chunk][index]              = elementDecl.type; 
+
+        /*
         fElementDeclDatatypeValidator[chunk][index] =
                                         elementDecl.simpleType.datatypeValidator;
         fElementDeclContentModelValidator[chunk][index] =
                                         elementDecl.contentModelValidator;
+                                        */
+        fElementDeclDatatypeValidator[chunk][index] = null;
+                                       
+       fElementDeclContentModelValidator[chunk][index] = null;
+                                       
+
+
         if (elementDecl.simpleType.list  == true ) {
             fElementDeclType[chunk][index] |= LIST_FLAG;
         }
