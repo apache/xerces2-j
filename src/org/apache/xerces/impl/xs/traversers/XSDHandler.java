@@ -1062,8 +1062,10 @@ public class XSDHandler {
         // now check whether this document can access the requsted namespace
         if (!currSchema.isAllowedNS(declToTraverse.uri)) {
             // cannot get to this schema from the one containing the requesting decl
-            if (currSchema.needReportTNSError(declToTraverse.uri))
-                reportSchemaError("src-resolve.4", new Object[]{fDoc2SystemId.get(currSchema.fSchemaDoc), declToTraverse.uri}, elmNode);
+            if (currSchema.needReportTNSError(declToTraverse.uri)) {
+                String code = declToTraverse.uri == null ? "src-resolve.4.1" : "src-resolve.4.2";
+                reportSchemaError(code, new Object[]{fDoc2SystemId.get(currSchema.fSchemaDoc), declToTraverse.uri}, elmNode);
+            }
             return null;
         }
 
@@ -1149,7 +1151,8 @@ public class XSDHandler {
         schemaWithDecl = findXSDocumentForDecl(currSchema, decl);
         if (schemaWithDecl == null) {
             // cannot get to this schema from the one containing the requesting decl
-            reportSchemaError("src-resolve.4", new Object[]{fDoc2SystemId.get(currSchema.fSchemaDoc), declToTraverse.uri}, elmNode);
+            String code = declToTraverse.uri == null ? "src-resolve.4.1" : "src-resolve.4.2";
+            reportSchemaError(code, new Object[]{fDoc2SystemId.get(currSchema.fSchemaDoc), declToTraverse.uri}, elmNode);
             return null;
         }
         // a component is hidden, meaning either it's traversed, or being traversed.
