@@ -498,7 +498,8 @@ public abstract class NodeImpl
     public Node insertBefore(Node newChild, Node refChild) 
 	throws DOMException {
 	throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, 
-				   "DOM006 Hierarchy request error");
+              DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN,
+                 "HIERARCHY_REQUEST_ERR", null));
     }
 
     /**
@@ -519,7 +520,8 @@ public abstract class NodeImpl
     public Node removeChild(Node oldChild) 
 		throws DOMException {
 	throw new DOMException(DOMException.NOT_FOUND_ERR, 
-				   "DOM008 Not found");
+              DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN,
+                 "NOT_FOUND_ERR", null));
     }
 
     /**
@@ -549,7 +551,8 @@ public abstract class NodeImpl
     public Node replaceChild(Node newChild, Node oldChild)
         throws DOMException {
 	throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, 
-				   "DOM006 Hierarchy request error");
+              DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN,
+                 "HIERARCHY_REQUEST_ERR", null));
     }
 
     //
@@ -696,7 +699,8 @@ public abstract class NodeImpl
         throws DOMException
     {
 	throw new DOMException(DOMException.NAMESPACE_ERR, 
-				   "DOM003 Namespace error");
+              DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN,
+                 "NAMESPACE_ERR", null));
     }
 
     /**
