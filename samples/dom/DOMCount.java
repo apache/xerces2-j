@@ -256,7 +256,7 @@ public class DOMCount {
                              "options:",
                              "  -p name  Specify DOM parser wrapper by name.",
                              "  -n | -N  Turn on/off namespace [default=on]",
-                             "  -v | -V  Turn on/off validation [default=on]",
+                             "  -v | -V  Turn on/off validation [default=off]",
                              "  -s | -S  Turn on/off Schema support [default=on]",
                              "  -d | -D  Turn on/off deferred DOM [default=on]",
                              "  -h       This help screen."} );
