@@ -240,8 +240,9 @@ public abstract class XMLScanner
 
         // end
         if (!fEntityScanner.skipChar(';')) {
-            // REVISIT: report error
-            throw new SAXException("character reference must end with semi-colon");
+            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                       "SemicolonRequiredInCharRef",
+                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
         
         // convert string to number
@@ -256,8 +257,10 @@ public abstract class XMLScanner
 
         // character reference must be a valid XML character
         if (!XMLChar.isValid((char)value)) {
-            // REVISIT: report error
-            throw new SAXException("MSG_INVALID_CHARREF");
+            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                       "InvalidCharRef",
+                                       new Object[]{ String.valueOf((char)value) },
+                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
         return value;
     }
