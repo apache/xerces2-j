@@ -171,15 +171,8 @@ implements Locator {
      */
     public int peekChar()
     throws IOException {
-        int charToReturn;
-
-        charToReturn = read();
-        unread(charToReturn );//pushback character
-        if (XMLChar.isValid( charToReturn ) ) {
-            return charToReturn;
-        } else {
-            return -1;
-        }
+         if (DEBUG) System.out.println("#peekChar()");
+        return peek(); 
     } // peekChar
 
     /**
@@ -190,13 +183,9 @@ implements Locator {
     public int scanChar()
     throws IOException {
         int charToReturn;
+        if (DEBUG) System.out.println("#scanChar()");
+        return read();
 
-        charToReturn = read();//consume character
-        if (XMLChar.isValid( charToReturn ) ) {
-            return charToReturn;
-        } else {
-            return -1;
-        }
     } // scanChar
 
     /**
@@ -208,19 +197,19 @@ implements Locator {
      */
     public String scanNmtoken()
     throws IOException {
-        int charValue;
+        if (DEBUG) System.out.println("#scanNmtoken()");
+
+        fLength = 0;
         boolean nmtoken = false;
-        StringBuffer  buffer = new StringBuffer();
-        while ( XMLChar.isName( charValue = read() ) == true ) {
+        while (XMLChar.isName(peek())) {
             nmtoken = true;
-            buffer.append( (char) (charValue & 0xffff ) );
-            fCharPosition++;
-        }
-        String symbol = null;
-        if (nmtoken) {
-            symbol = fSymbolTable.addSymbol(buffer.toString());
+            fBuffer[fLength++] = (char)read();
         }
 
+        String symbol = null;
+        if (nmtoken) {
+            symbol = fSymbolTable.addSymbol(fBuffer, 0, fLength);
+        }
         return symbol;
     } // scanNmtoken
 
@@ -233,6 +222,25 @@ implements Locator {
      */
     public String scanName()
     throws IOException {
+        if (DEBUG) System.out.println("#scanName()");
+
+        fLength = 0;
+        boolean name = false;
+        if (XMLChar.isNameStart(peek())) {
+            name = true;
+            fBuffer[fLength++] = (char)read();
+            while (XMLChar.isName(peek())) {
+                fBuffer[fLength++] = (char)read();
+            }
+        }
+
+        String symbol = null;
+        if (name) {
+            symbol = fSymbolTable.addSymbol(fBuffer, 0, fLength);
+        }
+        return symbol;
+
+        /*
         int charValue;
         boolean name = false;
         StringBuffer  buffer = new StringBuffer();
@@ -252,6 +260,7 @@ implements Locator {
             symbol = fSymbolTable.addSymbol(buffer.toString() );
         }
         return symbol;
+        */
     } // scanName
 
     /**
@@ -272,6 +281,41 @@ implements Locator {
      */
     public boolean scanQName(QName qname)
     throws IOException {
+        if (DEBUG) System.out.println("#scanQName()");
+
+        String prefix = null;
+        String localpart = null;
+        String rawname = null;
+
+        fLength = 0;
+        int colons = -1;
+        int index = 0;
+        if (XMLChar.isNameStart(peek())) {
+            colons = 0;
+            fBuffer[fLength++] = (char)read();
+            int c = -1;
+            while (XMLChar.isName(c = peek())) {
+                if (c == ':') {
+                    colons++;
+                    if (colons == 1) {
+                        index = fLength + 1;
+                        prefix = fSymbolTable.addSymbol(fBuffer, 0, fLength);
+                    }
+                }
+                fBuffer[fLength++] = (char)read();
+            }
+            localpart = fSymbolTable.addSymbol(fBuffer, index, fLength - index);
+            rawname = fSymbolTable.addSymbol(fBuffer, 0, fLength);
+        }
+
+        if (colons >= 0 && colons < 2) {
+            qname.setValues(prefix, localpart, rawname, null);
+            return true;
+        }
+
+        return false;
+
+        /*
         int           charValue;
         String prefix    = null;
         String localpart = null;
@@ -319,6 +363,7 @@ implements Locator {
             fSymbolTable.addSymbol(qname.localpart);
         }
         return true;
+        */
     } // scanQName
 
     /**
@@ -450,9 +495,28 @@ implements Locator {
      * 
      * 
      */
-    public void skipSpaces() throws IOException {
-        int charValue;
+    public boolean skipSpaces() throws IOException {
+       if (DEBUG) System.out.println("#skipSpaces()");
 
+       int charValue;
+       boolean spaces = false;
+       while (XMLChar.isSpace(peek())) {
+           fCharPosition++;
+           spaces = true;
+           charValue = read();
+           if ( charValue == 0x0a ) {
+              fLineNumber++;
+              fColumnNumber = 1;
+          } else {
+              fColumnNumber++;
+          }
+       }
+
+       return spaces;
+
+
+        /*
+        int charValue;
         while (  XMLChar.isSpace(
                                 charValue = read() ) == true ) {
             fCharPosition++;
@@ -464,6 +528,7 @@ implements Locator {
             }
         }
         unread( charValue );//unread non-space
+        */
     } // skipSpaces
 
 
@@ -473,6 +538,25 @@ implements Locator {
      * skipString -  
      */
     public boolean skipString(String s) throws IOException {
+        if (DEBUG) System.out.println("#skipString(\""+s+"\")");
+
+     int length = s.length();
+     for (int i = 0; i < length; i++) {
+         int c = read();
+         if (c != s.charAt(i)) {
+             unread(c);
+             if (i > 0) {
+                 char[] ch = new char[i];
+                 s.getChars(0, i, ch, 0);
+                 unread(ch, 0, ch.length);
+             }
+             return false;
+         }
+     }
+
+     return true;
+
+        /*
         int     charValue;
         int     sLength           = s.length();
         char[]  skippedString     = s.toCharArray();
@@ -504,6 +588,7 @@ implements Locator {
             fCharPosition++;
         }
         return true;
+        */
     } // skipString
 
     //
