@@ -1038,7 +1038,8 @@ class Token implements java.io.Serializable {
     static protected boolean isRegisterNonXS(String name) {
         if (Token.nonxs == null)
             return false;
-        System.err.println("isRegisterNonXS: "+name);
+        //DEBUG
+        //System.err.println("isRegisterNonXS: "+name);
         return Token.nonxs.containsKey(name);
     }
 
