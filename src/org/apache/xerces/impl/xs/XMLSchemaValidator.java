@@ -261,7 +261,7 @@ public class XMLSchemaValidator
         // set the external error reporter, clear errors
         public void reset(XMLErrorReporter errorReporter) {
             fErrorReporter = errorReporter;
-            fErrors.clear();
+            fErrors.removeAllElements();
             fContextCount = 0;
         }
 

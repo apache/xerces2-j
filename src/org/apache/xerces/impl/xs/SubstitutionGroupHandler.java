@@ -207,7 +207,7 @@ public class SubstitutionGroupHandler {
                 fSubGroups.put(subHead, subGroup);
             }
             // add to the vactor
-            subGroup.add(element);
+            subGroup.addElement(element);
         }
     }
 
@@ -236,13 +236,14 @@ public class SubstitutionGroupHandler {
             // then for each of the direct substitutions, get its substitution
             // group, and combine the groups together.
             for (int i = group.size()-1, j; i >= 0; i--) {
-                group1 = getSubstitutionGroup((XSElementDecl)group.get(i));
+                group1 = getSubstitutionGroup((XSElementDecl)group.elementAt(i));
                 for (j = group1.length-1; j >= 0; j--)
-                    group.add(group1[j]);
+                    group.addElement(group1[j]);
             }
             ret = new XSElementDecl[group.size()];
-            for (int i = group.size()-1; i >= 0; i--)
+            for (int i = group.size()-1; i >= 0; i--) {
                 ret[i] = (XSElementDecl)group.elementAt(i);
+            }
             fSubGroups.put(element, ret);
         }
 
