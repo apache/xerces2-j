@@ -1,0 +1,90 @@
+<html>
+ <!-- $Id$ -->
+ <head>
+  <title>AndyC | Xerces 2</title>
+  <link rel='stylesheet' type='text/css' href='../site.css'>
+  <style type='text/css'>
+   .needs { font-size: smaller }
+  </style>
+ </head>
+ <body>
+  <a name='TOP'></a>
+  <h1>Xerces 2 Concept</h1>
+  <a name='Goals'></a>
+  <h2>Goals</h2>
+  <p>
+   The ultimate goal of the Xerces 2 refactoring effort is to
+   develop an XML parser that is simple, clean, and modular.
+   By clearly defining the internal interfaces of the parser
+   components, the design of the parser will be better understood
+   and enable people to add features and fix bugs. Also, the
+   modularity of the design will enable custom configurations of
+   the parser that can be used in a wide variety of applications.
+  </p>
+  <a name='Scenarios'></a>
+  <h2>Scenarios</h2>
+  <p>
+   Xerces is a general purpose XML parser designed to be suitable
+   for a wide range of applications. A parser with better
+   performance can be written but it is believed that a general
+   design will suit a larger audience of XML application developers.
+   Therefore, any design should take into consideration what the
+   <em>users</em> of the parser need.
+  </p>
+  <p>
+   A few scenarios highlight the disparate needs of the developer
+   audience:
+   <ul>
+    <li>
+     <strong>XML Editor</strong><br>
+     <span class='needs'>grammar access; document 
+     editing and events; re-validation</span>
+    </li>
+    <li>
+     <strong>Transaction Server that "Speaks" XML</strong><br>
+     <span class='needs'>high performance; grammar caching</span>
+    </li>
+    <li>
+     <strong>Client-side XML Applets</strong><br>
+     <span class='needs'>small footprint; serialization</span>
+    </li>
+   </ul>
+  </p>
+  <a name='Documentation'></a>
+  <h2>Documentation</h2>
+  <p>
+   <dl>
+    <dt><strong>Overview and Architecture</strong></dt>
+    <dd><em>coming soon...</em></dd>
+    <dt><strong>Interfaces and Classes</strong></dt>
+    <dd>
+     Design
+     [<a href='design.html'>.html</a>] 
+     [<a href='design.css'>.css</a>] 
+     [<a href='design.dtd'>.dtd</a>] 
+     [<a href='design.xml'>.xml</a>] 
+     [<a href='design.xsl'>.xsl</a>] 
+     [<a href='design.zip'>.zip</a>]
+    </dd>
+    <dt><strong>Useful Programs</strong></dt>
+    <dd>
+     Stylesheet
+     [<a href='Stylesheet.java'>.java</a>]
+     [<a href='Stylesheet.class'>.class</a>]
+    </dd>
+    <dd>
+     DesignDoc
+     [<a href='DesignDoc.java'>.java</a>]
+     [<a href='DesignDoc.class'>.class</a>]
+     [<a href='DesignDoc$IndentingWriter.class'>.class</a>]
+    </dd>
+   </dl>
+  </p>
+  <a name='BOTTOM'></a>
+  <hr>
+  <div class='copyright'>
+   (C) Copyright 2000, Andy Clark. All rights reserved.
+  </div>
+  Last modified: $Date$
+ </body>
+</html>
