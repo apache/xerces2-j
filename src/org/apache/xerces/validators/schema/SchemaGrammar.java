@@ -60,7 +60,11 @@ package org.apache.xerces.validators.schema;
 
 import org.apache.xerces.framework.XMLContentSpec;
 import org.apache.xerces.utils.QName;
+import org.apache.xerces.framework.XMLContentSpec;
 import org.apache.xerces.validators.datatype.DatatypeValidator;
+import org.apache.xerces.validators.common.XMLAttributeDecl;
+import org.apache.xerces.validators.common.XMLContentModel;
+import org.apache.xerces.validators.common.XMLElementDecl;
 import org.apache.xerces.validators.common.Grammar;
 import org.w3c.dom.Document;
 
@@ -74,6 +78,11 @@ public class SchemaGrammar extends Grammar{
     private static final int CHUNK_SIZE = (1 << CHUNK_SHIFT);
     private static final int CHUNK_MASK = CHUNK_SIZE - 1;
     private static final int INITIAL_CHUNK_COUNT = (1 << (10 - CHUNK_SHIFT)); // 2^10 = 1k
+
+    //Temp objects for decls structs.
+    private XMLContentSpec fTempContentSpecNode = new XMLContentSpec();
+    private XMLElementDecl fTempElementDecl = new XMLElementDecl();
+    private XMLAttributeDecl fTempAttributeDecl = new XMLAttributeDecl();
 
     //
     // Data
@@ -89,8 +98,8 @@ public class SchemaGrammar extends Grammar{
     // these arrays are indexed by elementdeclindex.
 
     private int fScopeDefinedByElement[][] = new int[INITIAL_CHUNK_COUNT][];
-    private String fFromAnotherSchemaURI = new String[INITIAL_CHUNK_COUNT][];
-    private TraverseSchema.ComplexTypeInfo fComplexTypeInfo = 
+    private String fFromAnotherSchemaURI[][] = new String[INITIAL_CHUNK_COUNT][];
+    private TraverseSchema.ComplexTypeInfo fComplexTypeInfo[][] = 
 	new TraverseSchema.ComplexTypeInfo[INITIAL_CHUNK_COUNT][];
     
     /*
@@ -152,12 +161,17 @@ public class SchemaGrammar extends Grammar{
     }
 
     protected void setElementDecl(int elementDeclIndex, XMLElementDecl elementDecl) {
-	super.setElementDecl(elementIndex,elementDecl);
+	super.setElementDecl(elementDeclIndex,elementDecl);
     }
 
     public void addAttributeDecl(int attributeDeclIndex, int elementDeclIndex) {
-	super.addAttribueDecl(attributeDeclIndex, elementDeclIndex);
+	super.addAttributeDecl(attributeDeclIndex, elementDeclIndex);
     }
+
+    public int addAttributeDeclByHead(int attributeDeclIndex, int attributeListHead) {
+	return super.addAttributeDeclByHead(attributeDeclIndex, attributeListHead);
+    }
+
 
     protected int createContentSpec() {
         return super.createContentSpec();
@@ -176,9 +190,11 @@ public class SchemaGrammar extends Grammar{
     }
 
     protected void setElementDefinedScope(int elementDeclIndex, int scopeDefined) {
-	/*if (elementDeclIndex > -1 ) {
-	    fElementDefinedScope[elementDeclIndex]
-	}*/
+	if (elementDeclIndex > -1 ) {
+	    int chunk = elementDeclIndex >> CHUNK_SHIFT;
+	    int index = elementDeclIndex & CHUNK_MASK;
+	    fScopeDefinedByElement[chunk][index] = scopeDefined;
+	}
 	
     }
 
@@ -188,6 +204,66 @@ public class SchemaGrammar extends Grammar{
     protected void setElementComplexTypeInfo(int elementDeclIndex, TraverseSchema.ComplexTypeInfo typeInfo){
 
     }
+
+    //convenience method for TraverseSchema
+    /**
+     *@return elementDecl Index, 
+     */
+
+    protected int addElementDecl(QName eltQName, int enclosingScope, int scopeDefined, 
+				 int contentSpecType, int contentSpecIndex, 
+				 int attrListHead, DatatypeValidator dv){
+	int elementDeclIndex = getElementDeclIndex(eltQName.localpart, enclosingScope);
+	if (elementDeclIndex == -1) {
+	    if (enclosingScope<-1 || scopeDefined < -1 ) {
+		//TO DO: report error here;
+	    }
+	    fTempElementDecl.name = eltQName;
+	    fTempElementDecl.enclosingScope = enclosingScope;
+	    fTempElementDecl.type = contentSpecType;
+	    fTempElementDecl.contentSpecIndex = contentSpecIndex;
+	    fTempElementDecl.datatypeValidator = dv;
+	    //REVISIT, attlist head is missing int he XMLElementDecl
+	    //fTempElementDecl.attListHead = attrListHead;
+	    elementDeclIndex = createElementDecl();
+	    setElementDecl(elementDeclIndex,fTempElementDecl);
+	    //note, this is the scope defined by the element, not its enclosing scope
+	    setElementDefinedScope(elementDeclIndex, scopeDefined);
+	}
+	return elementDeclIndex;
+
+    }
+
+    /**
+     *@return the new attribute List Head
+     */
+    protected int addAttDef(  int attrListHead, 
+		      QName attQName, int attType, 
+		      int enumeration, int attDefaultType, 
+		      int attDefaultValue, DatatypeValidator dv){
+	int attrDeclIndex = createAttributeDecl();
+	fTempAttributeDecl.name = attQName;
+        fTempAttributeDecl.datatypeValidator = dv;
+        fTempAttributeDecl.defaultType = new String(); //TO DO: fStringPool.toString(attDefaultType);
+	fTempAttributeDecl.defaultValue = new String(); //TO DO: fStringPool.toString(attDefaultValue);
+        setAttributeDecl(attrDeclIndex,fTempAttributeDecl);
+
+	return addAttributeDeclByHead(attrListHead, attrDeclIndex);
+    }
+    /**
+     *@return the new contentSpec Index
+     */
+    protected int addContentSpecNode(int contentSpecType, int value, int otherValue, boolean mustBeUnique) {
+	fTempContentSpecNode.type = contentSpecType;
+	fTempContentSpecNode.value = value;
+	fTempContentSpecNode.otherValue = otherValue;
+
+	int contentSpecIndex = createContentSpec();
+	setContentSpec(contentSpecIndex, fTempContentSpecNode);
+
+	return contentSpecIndex;
+    }
+                                                
 
     //
     // Private methods
