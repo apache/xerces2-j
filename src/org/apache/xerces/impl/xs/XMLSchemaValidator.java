@@ -2086,8 +2086,7 @@ public class XMLSchemaValidator
             if(length >= locations.length ){
                 resize(length, length*2);
             }
-            //REVISIT:should we expanded location hints??
-            locations[length++] = XMLEntityManager.expandSystemId(location, null);
+            locations[length++] = location;
         }//setLocation()
 
         public String [] getLocationArray(){
