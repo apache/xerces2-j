@@ -57,8 +57,6 @@
 
 package org.apache.xerces.impl.v2.new_datatypes;
 
-import java.util.StringTokenizer;
-
 /**
  * Represent the schema union types
  *

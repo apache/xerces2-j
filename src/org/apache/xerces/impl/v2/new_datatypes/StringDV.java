@@ -57,8 +57,6 @@
 
 package org.apache.xerces.impl.v2.new_datatypes;
 
-import java.util.Locale;
-
 /**
  * Represent the schema type "string"
  *

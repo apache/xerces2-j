@@ -57,9 +57,6 @@
 
 package org.apache.xerces.impl.v2.new_datatypes;
 
-import org.apache.xerces.impl.xs.util.HexBin;
-import java.io.UnsupportedEncodingException;
-
 /**
  * Represent the schema type "hexBinary"
  *

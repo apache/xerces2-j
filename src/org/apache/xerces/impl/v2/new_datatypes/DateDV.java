@@ -58,9 +58,6 @@
 
 package org.apache.xerces.impl.v2.new_datatypes;
 
-import java.util.Hashtable;
-import org.apache.xerces.impl.XMLErrorReporter;
-
 /**
  * Validator for <date> datatype (W3C Schema datatypes)
  *

@@ -77,4 +77,8 @@ public class ListDV extends TypeValidator{
         return content;
     }
 
+    // length of a list type is the number of items in the list
+    public int getDataLength(Object value) {
+        return ((Object[])value).length;
+    }
 } // class ListDV

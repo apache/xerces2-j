@@ -57,6 +57,8 @@
 
 package org.apache.xerces.impl.v2.new_datatypes;
 
+import java.util.Hashtable;
+
 /**
  * All the interfaces that need to be implemented by DV implementations,
  * and those interfaces/classes that DV implementations depend on.
@@ -149,6 +151,9 @@ interface SchemaDVFactory {
     // we need to pass in anyType as the base of anySimpleType
     public XSSimpleType getBuiltInType(String name);
 
+    // get all built-in DVs, which are stored in a hashtable keyed by the name
+    public Hashtable getBuiltInTypes();
+
     // create a user-defined DV according to how it's defined:
     // <restriction> / <list> / <union>
     public XSSimpleType createTypeRestriction(String name, String targetNamespace,
@@ -164,6 +169,8 @@ interface SchemaDVFactory {
  */
 interface XSFacet {
     public String getName();
+    // maybe it's a better idea to always expose strings
+    // so String getValue(); and String[] getValues() for enumeration
     public Object getValue();
     public boolean isFixed();
 }
@@ -240,6 +247,7 @@ interface XSSimpleType extends XSTypeDecl, DatatypeValidator {
 
     public short getFinalSet();
     public short getVariety();
+    public short getDefinedFacets();
 
     // the following methods are for PSVI. they are not implemented yet.
     //public XSFacet[] getFacets();
@@ -255,6 +263,8 @@ interface XSSimpleType extends XSTypeDecl, DatatypeValidator {
  */
 interface XSAtomicSimpleType extends XSSimpleType {
     // return the built-in primitive type
+    // is this what we really want? or
+    // public int getPrimitiveKind()?
     public XSSimpleType getPrimitiveType();
 }
 
