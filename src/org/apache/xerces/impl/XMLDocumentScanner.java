@@ -193,7 +193,7 @@ public class XMLDocumentScanner
     protected XMLDocumentHandler fDocumentHandler;
 
     /** Entity stack. */
-    protected Stack fEntityStack = new Stack();
+    protected int[] fEntityStack = new int[4];
 
     /** Entity depth. */
     protected int fEntityDepth;
@@ -361,7 +361,6 @@ public class XMLDocumentScanner
         fDTDScanner = (XMLDTDScanner)componentManager.getProperty(DTD_SCANNER);
 
         // initialize vars
-        fEntityStack.removeAllElements();
         fEntityDepth = 0;
         fMarkupEntity = null;
         fElementDepth = 0;
@@ -460,9 +459,12 @@ public class XMLDocumentScanner
                             String encoding) throws SAXException {
 
         // keep track of this entity
-        Entity entity = new Entity(name, publicId, systemId, fElementDepth);
-        fEntityStack.push(entity);
-        fEntityDepth++;
+        if (fEntityDepth == fEntityStack.length) {
+            int[] entityarray = new int[fEntityStack.length * 2];
+            System.arraycopy(fEntityStack, 0, entityarray, 0, fEntityStack.length);
+            fEntityStack = entityarray;
+        }
+        fEntityStack[fEntityDepth++] = fElementDepth;
 
         // prepare to look for a TextDecl if external general entity
         if (!name.equals("[xml]") && fEntityScanner.isExternal()) {
@@ -501,11 +503,14 @@ public class XMLDocumentScanner
      */
     public void endEntity(String name) throws SAXException {
 
-        // pop entity
-        fEntityDepth--;
-        Entity entity = (Entity)fEntityStack.pop();
+        // make sure elements are balanced
+        int elementDepth = fEntityStack[--fEntityDepth];
+        if (fElementDepth != elementDepth) {
+            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, "ElementEntityMismatch", 
+                                       new Object[]{fCurrentElement.rawname}, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+        }
 
-        // check bounds
+        // make sure markup is properly balanced
         if (fMarkupEntity != null) {
             fMarkupEntity = null;
             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
@@ -514,57 +519,12 @@ public class XMLDocumentScanner
                                        XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
 
-        // sanity check
-        // REVISIT: Shouldn't the entity manager perform this sanity
-        //          check? -Ac
-        if (!name.equals(entity.name)) {
-            // REVISIT: report error
-            throw new SAXException("internal error: startEntity(\""+entity.name+"\") "+
-                                   "doesn't match endEntity(\""+name+"\")");
-        }
-
         // keep track of entities appearing in attribute values
         if (fScanningAttribute) {
             if (DEBUG_ATTR_ENTITIES) {
                 System.out.println("*** popAttrEntity("+fAttributeOffset+") \""+name+'"');
             }
             fAttributeEntityStack.popAttrEntity(fAttributeOffset);
-        }
-
-        // check for un-balanced entity content
-        // 1) state isn't set back to SCANNER_STATE_CONTENT
-        /***
-        // REVISIT: Put these checks back and verify that this is the
-        //          right way to detect and signal these errors. -Ac
-        if (fScannerState != SCANNER_STATE_CONTENT) {
-            switch (fScannerState) {
-                case SCANNER_STATE_COMMENT: {
-                    fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "COMMENT_NOT_IN_ONE_ENTITY",
-                                                null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                }
-                case SCANNER_STATE_PI: {
-                    fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "PI_NOT_IN_ONE_ENTITY",
-                                                null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                }
-                default: {
-                    // REVISIT: report error
-                    throw new SAXException("internal error: at end of entity, state should be CONTENT, not "+fScannerState);
-                }
-            }
-        }
-        /***/
-
-        // if we got a start/end external entity, then we need to
-        // stop looking for a text declaration
-        if (fScannerState == SCANNER_STATE_TEXT_DECL) {
-            setScannerState(SCANNER_STATE_CONTENT);
-        }
-
-        // 2) scanner markup depth isn't what it was at the start of
-        //    the entity
-        if (fElementDepth != entity.elementDepth) {
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, "ElementEntityMismatch", 
-                                       new Object[]{fCurrentElement.rawname}, XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
 
         // call handler
@@ -1066,9 +1026,9 @@ public class XMLDocumentScanner
                             }
                         }
                         else {
-                            int odepth = fEntityStack.size();
+                            int odepth = fEntityDepth;
                             fEntityManager.startEntity(entityName, false);
-                            int ndepth = fEntityStack.size();
+                            int ndepth = fEntityDepth;
                             // if we actually got a new entity and it's external
                             // parse text decl if there is any
                             if (odepth != ndepth) {
@@ -1090,6 +1050,13 @@ public class XMLDocumentScanner
                                                "LessthanInAttValue",
                                                new Object[] { null, fAttributeQName.rawname }, 
                                                XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                }
+                else if (c != -1 && XMLChar.isInvalid(c)) {
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
+                                               "InvalidCharInContent",
+                                               new Object[] {Integer.toString(c, 16)},
+                                               XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    fEntityScanner.scanChar();
                 }
                 while (true) {
                     c = fEntityScanner.scanLiteral(quote, fString);
@@ -1187,10 +1154,19 @@ public class XMLDocumentScanner
                     fStringBuffer.append("]]");
                     fDocumentHandler.characters(fStringBuffer);
                 }
-                // REVISIT: handle invalid char
             }
-            else if (fDocumentHandler != null) {
-                fDocumentHandler.characters(fString);
+            else {
+                int c = fEntityScanner.peekChar();
+                if (c != -1 && XMLChar.isInvalid(c)) {
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
+                                               "InvalidCharInContent",
+                                               new Object[] {Integer.toString(c, 16)},
+                                               XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    fEntityScanner.scanChar();
+                }
+                if (fDocumentHandler != null) {
+                    fDocumentHandler.characters(fString);
+                }
             }
         }
         fMarkupEntity = null;
@@ -1629,118 +1605,6 @@ public class XMLDocumentScanner
 
     } // class AttrEntityStack
 
-    /**
-     * Entity for entity stack. 
-     * <p>
-     * <strong>Note:</strong> The fields in this class are public but should
-     * only be set at construction time (or at the time when it is pushed
-     * onto the entity stack). In other words, once pushed onto the entity
-     * stack, the entity information is considered read-only.
-     *
-     * @author Andy Clark, IBM
-     */
-    protected static class Entity {
-
-        //
-        // Data
-        //
-
-        /** Entity name. */
-        public String name;
-
-        /** Public identifier. */
-        public String publicId;
-
-        /** System identifier. */
-        public String systemId;
-
-        /** Element depth. */
-        public int elementDepth;
-
-        //
-        // Constructors
-        //
-
-        /** Constructs an entity. */
-        public Entity(String name, String publicId, String systemId, 
-                      int elementDepth) {
-            setValues(name, publicId, systemId, elementDepth);
-        } // <init>(String,String,String,int)
-
-        //
-        // Public methods
-        //
-
-        /** Clears the structure. */
-        public void removeAllEntities() {
-            name = null;
-            publicId = null;
-            systemId = null;
-            elementDepth = -1;
-        } // removeAllEntities()
-
-        /**
-         * Sets the values of this structure.
-         *
-         * @param name        The name.
-         * @param publicId    The public identifier.
-         * @param systemId    The system identifier.
-         * @param markupDepth The markup depth.
-         */
-        public void setValues(String name, String publicId, String systemid,
-                              int elementDepth) {
-            this.name = name;
-            this.publicId = publicId;
-            this.systemId = systemId;
-            this.elementDepth = elementDepth;
-        } // setValues(String,String,String,int)
-
-        //
-        // Object methods
-        //
-
-        /** Returns a string representation of this object. */
-        public String toString() {
-
-            StringBuffer str = new StringBuffer();
-            boolean comma = false;
-            if (name != null) {
-                str.append("name=\"");
-                str.append(name);
-                str.append('"');
-                comma = true;
-            }
-            if (publicId != null) {
-                if (comma) {
-                    str.append(',');
-                }
-                str.append("publicId=\"");
-                str.append(publicId);
-                str.append('"');
-                comma = true;
-            }
-            if (systemId != null) {
-                if (comma) {
-                    str.append(',');
-                }
-                str.append("systemId=\"");
-                str.append(systemId);
-                str.append('"');
-                comma = true;
-            }
-            if (elementDepth != -1) {
-                if (comma) {
-                    str.append(',');
-                }
-                str.append("elementDepth=");
-                str.append(elementDepth);
-            }
-            return str.toString();
-
-        } // toString():String
-
-    } // class Entity
-
     /** 
      * This interface defines an XML "event" dispatching model. Classes
      * that implement this interface are responsible for scanning parts
@@ -1954,6 +1818,7 @@ public class XMLDocumentScanner
                             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                        "ContentIllegalInProlog",
                                                        null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                            fEntityScanner.scanChar();
                         }
                         case SCANNER_STATE_REFERENCE: {
                             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
@@ -2059,6 +1924,7 @@ public class XMLDocumentScanner
                                                                    "InvalidCharInContent",
                                                                    new Object[] {Integer.toString(c, 16)},
                                                                    XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                                        fEntityScanner.scanChar();
                                     }
                                 } while (complete);
                             }
@@ -2276,17 +2142,11 @@ public class XMLDocumentScanner
                                 setScannerState(SCANNER_STATE_TERMINATED);
                                 return false;
                             }
-                            if (XMLChar.isInvalid(ch)) {
-                                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                           "MarkupNotRecognizedInMisc",
-                                                           null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                            }
-                            else {
-                                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                           "ContentIllegalInTrailingMisc",
-                                                           null,
-                                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                            }
+                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                       "ContentIllegalInTrailingMisc",
+                                                       null,
+                                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                            fEntityScanner.scanChar();
                             setScannerState(SCANNER_STATE_TRAILING_MISC);
                             break;
                         }
