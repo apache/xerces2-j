@@ -380,22 +380,32 @@ public class XSWildcardDecl  {
 
     // REVISIT: how to prepresent wildcard in string.
     //          "namespace:usr=someuri," is not so descriptive
+
+    /**
+     * get the string description of this wildcard
+     */
+    private String fDescription = null;
     public String toString() {
-        String ret = null;
-        switch (fType) {
-        case WILDCARD_ANY:
-            ret = SchemaSymbols.ATTVAL_TWOPOUNDANY;
-            break;
-        case WILDCARD_OTHER:
-            ret = SchemaSymbols.ATTVAL_TWOPOUNDOTHER + ":uri=" + fNamespaceList[0];
-            break;
-        case WILDCARD_LIST:
-            ret = "namespace:uri=" + fNamespaceList[0];
-            for (int i = 1; i < fNamespaceList.length; i++)
-                ret += "," + fNamespaceList[i];
-            break;
+        if (fDescription == null) {
+            String ret = null;
+            switch (fType) {
+            case WILDCARD_ANY:
+                fDescription = SchemaSymbols.ATTVAL_TWOPOUNDANY;
+                break;
+            case WILDCARD_OTHER:
+                fDescription = SchemaSymbols.ATTVAL_TWOPOUNDOTHER + ":uri=" + fNamespaceList[0];
+                break;
+            case WILDCARD_LIST: {
+                StringBuffer buffer = new StringBuffer();
+                buffer.append("namespace:uri=" + fNamespaceList[0]);
+                for (int i = 1; i < fNamespaceList.length; i++)
+                    buffer.append("," + fNamespaceList[i]);
+                fDescription = buffer.toString();
+                break;
+            }
+            }
         }
 
-        return ret;
+        return fDecription;
     }
 } // class XSWildcardDecl

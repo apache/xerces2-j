@@ -141,7 +141,13 @@ public class XSElementDecl {
         return newArray;
     }
 
+    /**
+     * get the string description of this element
+     */
+    private String fDescription = null;
     public String toString() {
-        return fTargetNamespace+":"+fName;
+        if (fDescription == null)
+            fDescription = fTargetNamespace+":"+fName;
+        return fDescription;
     }
 } // class XMLElementDecl

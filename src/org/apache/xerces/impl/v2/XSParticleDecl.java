@@ -92,34 +92,129 @@ public class XSParticleDecl {
     // maximum occurrence of this particle
     public int fMaxOccurs = 1;
 
+    /**
+     * 3.9.6 Schema Component Constraint: Particle Emptiable
+     * whether this particle is emptible
+     */
+    public boolean emptiable() {
+        return minEffectiveTotalRange() == 0;
+    }
 
-    private StringBuffer fBuffer = null;
+    /**
+     * 3.8.6 Effective Total Range (all and sequence) and
+     *       Effective Total Range (choice)
+     * The following methods are used to return min/max range for a particle.
+     * They are not exactly the same as it's described in the spec, but all the
+     * values from the spec are retrievable by these methods.
+     */
+    public int minEffectiveTotalRange() {
+        switch (fType) {
+        case PARTICLE_EMPTY:
+            return 0;
+        case PARTICLE_ALL:
+        case PARTICLE_SEQUENCE:
+            return minEffectiveTotalRangeAllSeq();
+        case PARTICLE_CHOICE:
+            return minEffectiveTotalRangeChoice();
+        default:
+            return fMinOccurs;
+        }
+    }
 
+    private int minEffectiveTotalRangeAllSeq() {
+        int fromLeft = ((XSParticleDecl)fValue).minEffectiveTotalRange();
+        if (fOtherValue != null)
+            fromLeft += ((XSParticleDecl)fOtherValue).minEffectiveTotalRange();
+        return fMinOccurs * fromLeft;
+    }
+
+    private int minEffectiveTotalRangeChoice() {
+        int fromLeft = ((XSParticleDecl)fValue).minEffectiveTotalRange();
+        if (fOtherValue != null) {
+            int fromRight = ((XSParticleDecl)fOtherValue).minEffectiveTotalRange();
+            if (fromRight < fromLeft)
+                fromLeft = fromRight;
+        }
+        return fMinOccurs * fromLeft;
+    }
+
+    public int maxEffectiveTotalRange() {
+        switch (fType) {
+        case PARTICLE_EMPTY:
+            return 0;
+        case PARTICLE_ALL:
+        case PARTICLE_SEQUENCE:
+            return maxEffectiveTotalRangeAllSeq();
+        case PARTICLE_CHOICE:
+            return maxEffectiveTotalRangeChoice();
+        default:
+            return fMaxOccurs;
+        }
+    }
+
+    private int maxEffectiveTotalRangeAllSeq() {
+        int fromLeft = ((XSParticleDecl)fValue).maxEffectiveTotalRange();
+        if (fromLeft == SchemaSymbols.OCCURRENCE_UNBOUNDED)
+            return SchemaSymbols.OCCURRENCE_UNBOUNDED;
+        if (fOtherValue != null) {
+            int fromRight = ((XSParticleDecl)fValue).maxEffectiveTotalRange();
+            if (fromRight == SchemaSymbols.OCCURRENCE_UNBOUNDED)
+                return SchemaSymbols.OCCURRENCE_UNBOUNDED;
+            fromLeft += fromRight;
+        }
+
+        if (fromLeft != 0 && fMaxOccurs == SchemaSymbols.OCCURRENCE_UNBOUNDED)
+            return SchemaSymbols.OCCURRENCE_UNBOUNDED;
+
+        return fMaxOccurs * fromLeft;
+    }
+
+    private int maxEffectiveTotalRangeChoice() {
+        int fromLeft = ((XSParticleDecl)fValue).maxEffectiveTotalRange();
+        if (fromLeft == SchemaSymbols.OCCURRENCE_UNBOUNDED)
+            return SchemaSymbols.OCCURRENCE_UNBOUNDED;
+        if (fOtherValue != null) {
+            int fromRight = ((XSParticleDecl)fValue).maxEffectiveTotalRange();
+            if (fromRight == SchemaSymbols.OCCURRENCE_UNBOUNDED)
+                return SchemaSymbols.OCCURRENCE_UNBOUNDED;
+            if (fromRight < fromLeft)
+                fromLeft = fromRight;
+        }
+
+        if (fromLeft != 0 && fMaxOccurs == SchemaSymbols.OCCURRENCE_UNBOUNDED)
+            return SchemaSymbols.OCCURRENCE_UNBOUNDED;
+
+        return fMaxOccurs * fromLeft;
+    }
+
+    /**
+     * get the string description of this particle
+     */
+    private String fDescription = null;
     public String toString() {
-        if (fBuffer == null) {
-            fBuffer = new StringBuffer();
-            appendParticle(fBuffer);
+        if (fDescription == null) {
+            StringBuffer buffer = new StringBuffer();
+            appendParticle(buffer);
             // REVISIT: what would be the best form?
-            // 1. do we output "element[1-1]" or just "element"?
-            // 2. do we output "element[3-3]" or "elment[3]"?
-            // 3. how to output "unbounded"?
+            // how to output "unbounded"?
             if (!(fMinOccurs == 0 && fMaxOccurs == 0 ||
                   fMinOccurs == 1 && fMaxOccurs == 1)) {
-                fBuffer.append("[" + fMinOccurs);
+                buffer.append("[" + fMinOccurs);
                 if (fMaxOccurs == SchemaSymbols.OCCURRENCE_UNBOUNDED)
-                    fBuffer.append("-UNBOUNDED");
+                    buffer.append("-UNBOUNDED");
                 else if (fMinOccurs != fMaxOccurs)
-                    fBuffer.append("-" + fMaxOccurs);
-                fBuffer.append("]");
+                    buffer.append("-" + fMaxOccurs);
+                buffer.append("]");
             }
+            fDescription = buffer.toString();
         }
-        return fBuffer.toString();
+        return fDescription;
     }
 
-    public boolean emptiable() {
-        return false;
-    }
-
+    /**
+     * append the string description of this particle to the string buffer
+     * this is for error message.
+     */
     void appendParticle(StringBuffer fBuffer) {
         switch (fType) {
         case PARTICLE_EMPTY:
