@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -87,7 +87,28 @@ import java.util.Hashtable;
 public final class HTMLdtd
 {
 
+    /**
+     * Public identifier for HTML document type.
+     */
+    public static final String HTMLPublicId = "-//W3C//DTD HTML 4.0//EN";
 
+    /**
+     * System identifier for HTML document type.
+     */
+    public static final String HTMLSystemId =
+        "http://www.w3.org/TR/WD-html-in-xml/DTD/xhtml1-strict.dtd";
+
+    /**
+     * Public identifier for XHTML document type.
+     */
+    public static final String XHTMLPublicId =
+        "-//W3C//DTD XHTML 1.0 Strict//EN";
+
+    /**
+     * System identifier for XHTML document type.
+     */
+    public static final String XHTMLSystemId =
+        "http://www.w3.org/TR/WD-html-in-xml/DTD/xhtml1-strict.dtd";
     /**
      * Table of reverse character reference mapping. Character codes are held
      * as single-character strings, mapped to their reference name.
@@ -115,7 +136,8 @@ public final class HTMLdtd
      * Locates the HTML entities file that is loaded upon initialization.
      * This file is a resource loaded with the default class loader.
      */
-    private static final String     ENTITIES_RESOURCE = "org/apache/xml/serialize/HTMLEntities.res";
+    private static final String     ENTITIES_RESOURCE = "HTMLEntities.res";
+
 
     /**
      * Only opening tag should be printed.
@@ -185,7 +207,7 @@ public final class HTMLdtd
     /**
      * Returns true if element is declared to be empty. HTML elements are
      * defines as empty in the DTD, not by the document syntax.
-     * 
+     *
      * @param tagName The element tag name (upper case)
      * @return True if element is empty
      */
@@ -199,7 +221,7 @@ public final class HTMLdtd
      * Returns true if element is declared to have element content.
      * Whitespaces appearing inside element content will be ignored,
      * other text will simply report an error.
-     * 
+     *
      * @param tagName The element tag name (upper case)
      * @return True if element content
      */
@@ -208,12 +230,12 @@ public final class HTMLdtd
         return isElement( tagName, ELEM_CONTENT );
     }
 
-    
+
     /**
      * Returns true if element's textual contents preserves spaces.
      * This only applies to PRE and TEXTAREA, all other HTML elements
      * do not preserve space.
-     * 
+     *
      * @param tagName The element tag name (upper case)
      * @return True if element's text content preserves spaces
      */
@@ -259,7 +281,7 @@ public final class HTMLdtd
      * @param tagName The newly opened element
      * @param openTag The already opened element
      * @return True if closing tag closes opening tag
-     */    
+     */
     public static boolean isClosing( String tagName, String openTag )
     {
         // Several elements are defined as closing the HEAD
@@ -276,7 +298,7 @@ public final class HTMLdtd
             return isElement( tagName, CLOSE_SELF );
         // Each of these table sections closes all the others
         if ( openTag.equalsIgnoreCase( "THEAD" ) || openTag.equalsIgnoreCase( "TFOOT" ) ||
-             openTag.equalsIgnoreCase( "TBODY" ) || openTag.equalsIgnoreCase( "TR" ) || 
+             openTag.equalsIgnoreCase( "TBODY" ) || openTag.equalsIgnoreCase( "TR" ) ||
              openTag.equalsIgnoreCase( "COLGROUP" ) )
             return isElement( tagName, CLOSE_TABLE );
         // TD closes TH and TH closes TD
@@ -284,8 +306,8 @@ public final class HTMLdtd
             return isElement( tagName, CLOSE_TH_TD );
         return false;
     }
-    
-    
+
+
     /**
      * Returns true if the specified attribute it a URI and should be
      * escaped appropriately. In HTML URIs are escaped differently
@@ -300,11 +322,11 @@ public final class HTMLdtd
         return ( attrName.equalsIgnoreCase( "href" ) || attrName.equalsIgnoreCase( "src" ) );
     }
 
-        
+
     /**
      * Returns true if the specified attribute is a boolean and should be
      * printed without the value. This applies to attributes that are true
-     * if they exist, such as selected (OPTION/INPUT). 
+     * if they exist, such as selected (OPTION/INPUT).
      *
      * @param tagName The element's tag name
      * @param attrName The attribute's name
@@ -312,7 +334,7 @@ public final class HTMLdtd
     public static boolean isBoolean( String tagName, String attrName )
     {
         String[] attrNames;
-        
+
         attrNames = (String[]) _boolAttrs.get( tagName.toUpperCase() );
         if ( attrNames == null )
             return false;
@@ -334,16 +356,16 @@ public final class HTMLdtd
     public static int charFromName( String name )
     {
         Object    value;
-        
+
         initialize();
         value = _byName.get( name );
-        if ( value != null && value instanceof Character )
-            return ( (Character) value ).charValue();
+        if ( value != null && value instanceof Integer )
+            return ( (Integer) value ).intValue();
         else
             return -1;
     }
-    
-    
+
+
     /**
      * Returns the name of an HTML character reference based on its character
      * value. Only valid for entities defined from character references. If no
@@ -354,19 +376,16 @@ public final class HTMLdtd
      */
     public static String fromChar(int value )
     {
-        if (value > 0xffff)
+       if (value > 0xffff)
             return null;
 
-        String    name;
-        
+        String name;
+
         initialize();
-        name = (String) _byChar.get( String.valueOf( value ) );
-        if ( name == null )
-            return null;
-        else
-            return name;
+        name = (String) _byChar.get( new Integer( value ) );
+        return name;
     }
-    
+
 
     /**
      * Initialize upon first access. Will load all the HTML character references
@@ -383,21 +402,14 @@ public final class HTMLdtd
         String          value;
         int             code;
         String          line;
-        
+
         // Make sure not to initialize twice.
         if ( _byName != null )
             return;
         try {
             _byName = new Hashtable();
             _byChar = new Hashtable();
-
-            ClassLoader cl=HTMLdtd.class.getClassLoader();
-            if( cl == null ) {
-                is=ClassLoader.getSystemResourceAsStream( ENTITIES_RESOURCE );
-            } else {
-                is=cl.getResourceAsStream( ENTITIES_RESOURCE );
-            }
-
+            is = HTMLdtd.class.getResourceAsStream( ENTITIES_RESOURCE );
             if ( is == null )
                 throw new RuntimeException( "SER003 The resource [" + ENTITIES_RESOURCE + "] could not be found.\n" + ENTITIES_RESOURCE);
             reader = new BufferedReader( new InputStreamReader( is ) );
@@ -434,7 +446,7 @@ public final class HTMLdtd
             }
         }
     }
-    
+
 
     /**
      * Defines a new character reference. The reference's name and value are
@@ -451,8 +463,8 @@ public final class HTMLdtd
     private static void defineEntity( String name, char value )
     {
         if ( _byName.get( name ) == null ) {
-            _byName.put( name, new Character( value ) );
-            _byChar.put( String.valueOf( value ), name );
+            _byName.put( name, new Integer( value ) );
+            _byChar.put( new Integer( value ), name );
         }
     }
 
@@ -461,32 +473,32 @@ public final class HTMLdtd
     {
         _elemDefs.put( name, new Integer( flags ) );
     }
-    
-    
+
+
     private static void defineBoolean( String tagName, String attrName )
     {
         defineBoolean( tagName, new String[] { attrName } );
     }
-    
-    
+
+
     private static void defineBoolean( String tagName, String[] attrNames )
     {
         _boolAttrs.put( tagName, attrNames );
     }
-    
-    
+
+
     private static boolean isElement( String name, int flag )
     {
         Integer flags;
-        
+
         flags = (Integer) _elemDefs.get( name.toUpperCase() );
         if ( flags == null )
             return false;
         else
             return ( ( flags.intValue() & flag ) == flag );
     }
-    
-    
+
+
     static
     {
         _elemDefs = new Hashtable();
@@ -542,7 +554,7 @@ public final class HTMLdtd
         defineElement( "TITLE", ALLOWED_HEAD );
         defineElement( "TR", ELEM_CONTENT | OPT_CLOSING | CLOSE_TABLE );
         defineElement( "UL", ELEM_CONTENT | CLOSE_P );
-        
+
         _boolAttrs = new Hashtable();
         defineBoolean( "AREA", "href" );
         defineBoolean( "BUTTON", "disabled" );
@@ -565,7 +577,7 @@ public final class HTMLdtd
         defineBoolean( "TH", "nowrap" );
         defineBoolean( "TEXTAREA", new String[] { "disabled", "readonly" } );
         defineBoolean( "UL", "compact" );
-        
+
         initialize();
     }
 

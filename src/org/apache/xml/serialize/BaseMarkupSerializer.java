@@ -56,6 +56,15 @@
  */
 
 
+// Sep 14, 2000:
+//  Fixed comments to preserve whitespaces and add a line break
+//  when indenting. Reported by Gervase Markham <GRM@dataconnection.com>
+// Sep 14, 2000:
+//  Fixed serializer to report IO exception directly, instead at
+//  the end of document processing.
+//  Reported by Patrick Higgins <phiggins@transzap.com>
+// Sep 13, 2000:
+//   CR in character data will print as &#0D;
 // Aug 25, 2000:
 //   Fixed processing instruction printing inside element content
 //   to not escape content. Reported by Mikael Staldal
@@ -359,7 +368,6 @@ public abstract class BaseMarkupSerializer
         state.preserveSpace = _format.getPreserveSpace();
         state.empty = true;
         state.afterElement = false;
-        state.afterComment = false;
         state.doCData = state.inCData = false;
         state.prefixes = null;
 
@@ -455,10 +463,13 @@ public abstract class BaseMarkupSerializer
     
     
     public void characters( char[] chars, int start, int length )
+        throws SAXException
     {
         ElementState state;
 
+        try {
         state = content();
+
         // Check if text should be print as CDATA section or unescaped
         // based on elements listed in the output format (the element
         // state) or whether we are inside a CDATA section or entity.
@@ -507,13 +518,18 @@ public abstract class BaseMarkupSerializer
                 printText( chars, start, length, false, state.unescaped );
             }
         }
+        } catch ( IOException except ) {
+            throw new SAXException( except );
+        }
     }
 
 
     public void ignorableWhitespace( char[] chars, int start, int length )
+        throws SAXException
     {
         int i;
 
+        try {
         content();
 
         // Print ignorable whitespaces only when indenting, after
@@ -524,10 +540,24 @@ public abstract class BaseMarkupSerializer
             for ( i = start ; length-- > 0 ; ++i )
                 _printer.printText( chars[ i ] );
         }
+        } catch ( IOException except ) {
+            throw new SAXException( except );
+        }
     }
 
 
     public void processingInstruction( String target, String code )
+        throws SAXException
+    {
+        try {
+            processingInstructionIO( target, code );
+        } catch ( IOException except ) {
+        throw new SAXException( except );
+        }
+    }
+
+    public void processingInstructionIO( String target, String code )
+        throws IOException
     {
         int          index;
         StringBuffer buffer;
@@ -563,17 +593,25 @@ public abstract class BaseMarkupSerializer
             _printer.indent();
             printText( buffer.toString(), true, true );
             _printer.unindent();
+            if ( _indenting )
+            state.afterElement = true;
         }
     }
 
 
     public void comment( char[] chars, int start, int length )
+        throws SAXException
     {
+        try {
         comment( new String( chars, start, length ) );
+        } catch ( IOException except ) {
+            throw new SAXException( except );
+    }
     }
 
 
     public void comment( String text )
+        throws IOException
     {
         StringBuffer buffer;
         int          index;
@@ -599,17 +637,12 @@ public abstract class BaseMarkupSerializer
                 _preRoot = new Vector();
             _preRoot.addElement( buffer.toString() );
         } else {
-            // Indent this element on a new line if the first
-            // content of the parent element or immediately
-            // following an element.
-            if ( _indenting && ! state.preserveSpace)
-                _printer.breakLine();
       _printer.indent();
-            printText( buffer.toString(), false, true );
+            printText( buffer.toString(), true, true );
       _printer.unindent();
+            if ( _indenting )
+                state.afterElement = true;
         }
-    state.afterComment = true;
-    state.afterElement = false;
     }
 
 
@@ -678,15 +711,15 @@ public abstract class BaseMarkupSerializer
     public void endDocument()
         throws SAXException
     {
+        try {
         // Print all the elements accumulated outside of
         // the root element.
         serializePreRoot();
         // Flush the output, this is necessary for buffered output.
         _printer.flush();
-        // If an exception was thrown during serializing, this would
-        // be the best time to report it.
-        if ( _printer.getException() != null )
-            throw new SAXException( _printer.getException() );
+        } catch ( IOException except ) {
+            throw new SAXException( except );
+    }
     }
 
 
@@ -716,11 +749,15 @@ public abstract class BaseMarkupSerializer
     public void skippedEntity ( String name )
         throws SAXException
     {
+        try {
         endCDATA();
         content();
         _printer.printText( '&' );
         _printer.printText( name );
         _printer.printText( ';' );
+        } catch ( IOException except ) {
+            throw new SAXException( except );
+    }
     }
 
 
@@ -745,10 +782,15 @@ public abstract class BaseMarkupSerializer
 
 
     public void startDTD( String name, String publicId, String systemId )
+        throws SAXException
     {
+        try {
         _printer.enterDTD();
         _docTypePublicId = publicId;
         _docTypeSystemId = systemId;
+        } catch ( IOException except ) {
+            throw new SAXException( except );
+        }
     }
 
 
@@ -759,7 +801,9 @@ public abstract class BaseMarkupSerializer
 
 
     public void elementDecl( String name, String model )
+        throws SAXException
     {
+        try {
         _printer.enterDTD();
         _printer.printText( "<!ELEMENT " );
         _printer.printText( name );
@@ -768,12 +812,17 @@ public abstract class BaseMarkupSerializer
         _printer.printText( '>' );
         if ( _indenting )
             _printer.breakLine();
+        } catch ( IOException except ) {
+            throw new SAXException( except );
+        }
     }
 
 
     public void attributeDecl( String eName, String aName, String type,
                                String valueDefault, String value )
+        throws SAXException
     {
+        try {
         _printer.enterDTD();
         _printer.printText( "<!ATTLIST " );
         _printer.printText( eName );
@@ -793,11 +842,16 @@ public abstract class BaseMarkupSerializer
         _printer.printText( '>' );
         if ( _indenting )
             _printer.breakLine();
+        } catch ( IOException except ) {
+            throw new SAXException( except );
+    }
     }
 
 
     public void internalEntityDecl( String name, String value )
+        throws SAXException
     {
+        try {
         _printer.enterDTD();
         _printer.printText( "<!ENTITY " );
         _printer.printText( name );
@@ -806,19 +860,29 @@ public abstract class BaseMarkupSerializer
         _printer.printText( "\">" );
         if ( _indenting )
             _printer.breakLine();
+        } catch ( IOException except ) {
+            throw new SAXException( except );
+        }
     }
 
 
     public void externalEntityDecl( String name, String publicId, String systemId )
+        throws SAXException
     {
+        try {
         _printer.enterDTD();
         unparsedEntityDecl( name, publicId, systemId, null );
+        } catch ( IOException except ) {
+            throw new SAXException( except );
+        }
     }
 
 
     public void unparsedEntityDecl( String name, String publicId,
                                     String systemId, String notationName )
+        throws SAXException
     {
+        try {
         _printer.enterDTD();
         if ( publicId == null ) {
             _printer.printText( "<!ENTITY " );
@@ -840,11 +904,16 @@ public abstract class BaseMarkupSerializer
         _printer.printText( '>' );
         if ( _indenting )
             _printer.breakLine();
+        } catch ( IOException except ) {
+            throw new SAXException( except );
+    }
     }
 
 
     public void notationDecl( String name, String publicId, String systemId )
+        throws SAXException
     {
+        try {
         _printer.enterDTD();
         if ( publicId != null ) {
             _printer.printText( "<!NOTATION " );
@@ -864,6 +933,9 @@ public abstract class BaseMarkupSerializer
         _printer.printText( '>' );
         if ( _indenting )
             _printer.breakLine();
+        } catch ( IOException except ) {
+            throw new SAXException( except );
+        }
     }
 
 
@@ -879,8 +951,11 @@ public abstract class BaseMarkupSerializer
      *
      * @param node The node to serialize
      * @see #serializeElement
+     * @throws IOException An I/O exception occured while
+     *   serializing
      */
     protected void serializeNode( Node node )
+        throws IOException
     {
         // Based on the node type call the suitable SAX handler.
         // Only comments entities and documents which are not
@@ -891,7 +966,6 @@ public abstract class BaseMarkupSerializer
 
             text = node.getNodeValue();
             if ( text != null )
-        if ( !_indenting || getElementState().preserveSpace || !(text.replace('\n',' ').trim() != ""))
           characters( node.getNodeValue() );
             break;
         }
@@ -933,7 +1007,7 @@ public abstract class BaseMarkupSerializer
         }
 
         case Node.PROCESSING_INSTRUCTION_NODE :
-            processingInstruction( node.getNodeName(), node.getNodeValue() );
+            processingInstructionIO( node.getNodeName(), node.getNodeValue() );
             break;
 
         case Node.ELEMENT_NODE :
@@ -957,7 +1031,9 @@ public abstract class BaseMarkupSerializer
                 try {
                     String internal;
 
-                    startDTD( docType.getName(), docType.getPublicId(), docType.getSystemId() );
+                    _printer.enterDTD();
+                    _docTypePublicId = docType.getPublicId();
+                    _docTypeSystemId = docType.getSystemId();
                     internal = docType.getInternalSubset();
                     if ( internal != null && internal.length() > 0 )
                         _printer.printText( internal );
@@ -987,7 +1063,9 @@ public abstract class BaseMarkupSerializer
                     catch (Exception e) {
                         // ignore
                     }
-                    startDTD( docType.getName(), docTypePublicId, docTypeSystemId);
+                    _printer.enterDTD();
+                    _docTypePublicId = docTypePublicId;
+                    _docTypeSystemId = docTypeSystemId;
                     endDTD();
                 }
             }
@@ -1020,8 +1098,11 @@ public abstract class BaseMarkupSerializer
      * state with <tt>empty</tt> and <tt>afterElement</tt> set to false.
      *
      * @return The current element state
+     * @throws IOException An I/O exception occured while
+     *   serializing
      */
     protected ElementState content()
+        throws IOException
     {
         ElementState state;
 
@@ -1043,10 +1124,6 @@ public abstract class BaseMarkupSerializer
             // are not last element. That one content
             // type will take care of itself.
             state.afterElement = false;
-            // Except for one content type, all of them
-            // are not last comment. That one content
-            // type will take care of itself.
-            state.afterComment = false;
         }
         return state;
     }
@@ -1061,8 +1138,11 @@ public abstract class BaseMarkupSerializer
      *
      * @param text The text to print
      * @param unescaped True is should print unescaped
+     * @throws IOException An I/O exception occured while
+     *   serializing
      */
     protected void characters( String text )
+        throws IOException
     {
         ElementState state;
 
@@ -1124,7 +1204,7 @@ public abstract class BaseMarkupSerializer
      * @param ch Character value
      * @return Character entity name, or null
      */
-    protected abstract String getEntityRef(int ch);
+    protected abstract String getEntityRef( int ch );
 
 
     /**
@@ -1132,8 +1212,11 @@ public abstract class BaseMarkupSerializer
      * the serializer's method (XML, HTML, XHTML).
      *
      * @param elem The element to serialize
+     * @throws IOException An I/O exception occured while
+     *   serializing
      */
-    protected abstract void serializeElement( Element elem );
+    protected abstract void serializeElement( Element elem )
+        throws IOException;
 
 
     /**
@@ -1143,14 +1226,19 @@ public abstract class BaseMarkupSerializer
      * accumulated inside a vector and serialized by calling this
      * method. Will be called when the root element is serialized
      * and when the document finished serializing.
+     *
+     * @throws IOException An I/O exception occured while
+     *   serializing
      */
     protected void serializePreRoot()
+        throws IOException
     {
         int i;
 
         if ( _preRoot != null ) {
             for ( i = 0 ; i < _preRoot.size() ; ++i ) {
                 printText( (String) _preRoot.elementAt( i ), true, true );
+                if ( _indenting )
                 _printer.breakLine();
             }
             _preRoot.removeAllElements();
@@ -1178,6 +1266,7 @@ public abstract class BaseMarkupSerializer
      */
     protected final void printText( char[] chars, int start, int length,
                                     boolean preserveSpace, boolean unescaped )
+        throws IOException
     {
         int index;
         char ch;
@@ -1190,7 +1279,7 @@ public abstract class BaseMarkupSerializer
             while ( length-- > 0 ) {
                 ch = chars[ start ];
                 ++start;
-                if ( ch == '\n' || ch == '\r' || unescaped )
+                if ( ch == '\n' || unescaped )
                     _printer.printText( ch );
                 else
                     printEscaped( ch );
@@ -1204,7 +1293,7 @@ public abstract class BaseMarkupSerializer
             while ( length-- > 0 ) {
                 ch = chars[ start ];
                 ++start;
-                if ( ch == ' ' || ch == '\f' || ch == '\t' || ch == '\n' || ch == '\r' )
+                if ( ch == ' ' || ch == '\f' || ch == '\t' || ch == '\n' )
                     _printer.printSpace();
                 else if ( unescaped )
                     _printer.printText( ch );
@@ -1216,6 +1305,7 @@ public abstract class BaseMarkupSerializer
 
 
     protected final void printText( String text, boolean preserveSpace, boolean unescaped )
+        throws IOException
     {
         int index;
         char ch;
@@ -1227,7 +1317,7 @@ public abstract class BaseMarkupSerializer
             // break will occur.
             for ( index = 0 ; index < text.length() ; ++index ) {
                 ch = text.charAt( index );
-                if ( ch == '\n' || ch == '\r' || unescaped ) 
+                if ( ch == '\n' || unescaped )
                     _printer.printText( ch );
                 else
                     printEscaped( ch );
@@ -1240,7 +1330,7 @@ public abstract class BaseMarkupSerializer
             // no different than other text part.
             for ( index = 0 ; index < text.length() ; ++index ) {
                 ch = text.charAt( index );
-                if ( ch == ' ' || ch == '\f' || ch == '\t' || ch == '\n' || ch == '\r' )
+                if ( ch == ' ' || ch == '\f' || ch == '\t' || ch == '\n' )
                     _printer.printSpace();
                 else if ( unescaped )
                     _printer.printText( ch );
@@ -1259,6 +1349,7 @@ public abstract class BaseMarkupSerializer
      * @param url The document type url to print
      */
     protected void printDoctypeURL( String url )
+        throws IOException
     {
         int                i;
 
@@ -1274,7 +1365,8 @@ public abstract class BaseMarkupSerializer
     }
 
 
-    protected void printEscaped(int ch)
+    protected void printEscaped( int ch )
+        throws IOException
     {
         String charRef;
 
@@ -1288,7 +1380,7 @@ public abstract class BaseMarkupSerializer
             _printer.printText( charRef );
             _printer.printText( ';' );
         } else if ( ( ch >= ' ' && _encodingInfo.isPrintable(ch) && ch != 0xF7 ) ||
-                    ch == '\n' || ch == '\r' || ch == '\t' ) {
+                    ch == '\n' || ch == '\t' ) {
             // If the character is not printable, print as character reference.
             // Non printables are below ASCII space but not tab or line
             // terminator, ASCII delete, or above a certain Unicode threshold.
@@ -1298,10 +1390,11 @@ public abstract class BaseMarkupSerializer
                 _printer.printText((char)(((ch-0x10000)>>10)+0xd800));
                 _printer.printText((char)(((ch-0x10000)&0x3ff)+0xdc00));
             }
+
         } else {
-            _printer.printText("&#x");
+            _printer.printText( "&#x" );
             _printer.printText(Integer.toHexString(ch));
-            _printer.printText(';');
+            _printer.printText( ';' );
         }
     }
 
@@ -1315,6 +1408,7 @@ public abstract class BaseMarkupSerializer
      * @param source The string to escape
      */
     protected void printEscaped( String source )
+        throws IOException
     {
         for ( int i = 0 ; i < source.length() ; ++i ) {
             int ch = source.charAt(i);
@@ -1379,7 +1473,6 @@ public abstract class BaseMarkupSerializer
         state.preserveSpace = preserveSpace;
         state.empty = true;
         state.afterElement = false;
-        state.afterComment = false;
         state.doCData = state.inCData = false;
         state.unescaped = false;
         state.prefixes = _prefixes;
@@ -1399,7 +1492,9 @@ public abstract class BaseMarkupSerializer
     protected ElementState leaveElementState()
     {
         if ( _elementStateCount > 0 ) {
-            _prefixes = _elementStates[ _elementStateCount ].prefixes;
+            /*Corrected by David Blondeau (blondeau@intalio.com)*/
+		_prefixes = null;
+		//_prefixes = _elementStates[ _elementStateCount ].prefixes;
             -- _elementStateCount;
             return _elementStates[ _elementStateCount ];
         } else

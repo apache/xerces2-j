@@ -56,6 +56,14 @@
  */
 
 
+
+// Sep 14, 2000:
+//  Fixed problem with namespace handling. Contributed by
+//  David Blondeau <blondeau@intalio.com>
+// Sep 14, 2000:
+//  Fixed serializer to report IO exception directly, instead at
+//  the end of document processing.
+//  Reported by Patrick Higgins <phiggins@transzap.com>
 // Aug 21, 2000:
 //  Fixed bug in startDocument not calling prepare.
 //  Reported by Mikael Staldal <d96-mst-ingen-reklam@d.kth.se>
@@ -77,6 +85,8 @@ import org.xml.sax.DocumentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.AttributeList;
 import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
 
 
 /**
@@ -108,7 +118,7 @@ import org.xml.sax.Attributes;
  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
  * @see Serializer
  */
-public class XMLSerializer
+public final class XMLSerializer
     extends BaseMarkupSerializer
 {
 
@@ -181,6 +191,7 @@ public class XMLSerializer
 
     public void startElement( String namespaceURI, String localName,
                               String rawName, Attributes attrs )
+        throws SAXException
     {
         int          i;
         boolean      preserveSpace;
@@ -189,6 +200,7 @@ public class XMLSerializer
         String       value;
         boolean      addNSAttr = false;
 
+        try {
         if ( _printer == null )
             throw new IllegalStateException( "SER002 No writer supplied for serializer" );
 
@@ -199,7 +211,7 @@ public class XMLSerializer
             // the document's DOCTYPE. Space preserving defaults
             // to that of the output format.
             if ( ! _started )
-                startDocument( localName == null ? rawName : localName );
+                    startDocument( ( localName == null || localName.length() == 0 ) ? rawName : localName );
         } else {
             // For any other element, if first in parent, then
             // close parent's opening tag and use the parnet's
@@ -214,23 +226,31 @@ public class XMLSerializer
             }
             // Indent this element on a new line if the first
             // content of the parent element or immediately
-            // following an element or a comment
+                // following an element.
             if ( _indenting && ! state.preserveSpace &&
-                 ( state.empty || state.afterElement || state.afterComment) )
+                     ( state.empty || state.afterElement ) )
                 _printer.breakLine();
         }
         preserveSpace = state.preserveSpace;
 
+            //We remove the namespaces from the attributes list so that they will
+            //be in _prefixes
+            attrs = extractNamespaces(attrs);
+
         // Do not change the current element state yet.
         // This only happens in endElement().
-        if ( rawName == null ) {
-            rawName = localName;
-            if ( namespaceURI != null ) {
+            if ( rawName == null || rawName.length() == 0 ) {
+                if ( localName == null )
+                    throw new SAXException( "No rawName and localName is null" );
+                if ( namespaceURI != null && ! namespaceURI.equals( "" ) ) {
                 String prefix;
                 prefix = getPrefix( namespaceURI );
-                if ( prefix.length() > 0 )
+                    if ( prefix != null && prefix.length() > 0 )
                     rawName = prefix + ":" + localName;
-            }
+                    else
+                        rawName = localName;
+                } else
+                    rawName = localName;
             addNSAttr = true;
         }
 
@@ -246,13 +266,14 @@ public class XMLSerializer
                 _printer.printSpace();
 
                 name = attrs.getQName( i );
-                if ( name == null ) {
+                    if ( name != null && name.length() == 0 ) {
                     String prefix;
                     String attrURI;
 
                     name = attrs.getLocalName( i );
                     attrURI = attrs.getURI( i );
-                    if ( attrURI != null && ( namespaceURI == null ||
+                        if ( ( attrURI != null && attrURI.length() != 0 ) &&
+                             ( namespaceURI == null || namespaceURI.length() == 0 ||
                                               ! attrURI.equals( namespaceURI ) ) ) {
                         prefix = getPrefix( attrURI );
                         if ( prefix != null && prefix.length() > 0 )
@@ -280,7 +301,7 @@ public class XMLSerializer
             }
         }
 
-        if ( addNSAttr ) {
+            if ( _prefixes != null ) {
             Enumeration enum;
 
             enum = _prefixes.keys();
@@ -306,15 +327,30 @@ public class XMLSerializer
         // with the tag name and space preserving.
         // We still do not change the curent element state.
         state = enterElementState( namespaceURI, localName, rawName, preserveSpace );
-        state.doCData = _format.isCDataElement( namespaceURI == null ? rawName :
-                                                namespaceURI + "^" + localName );
-        state.unescaped = _format.isNonEscapingElement( namespaceURI == null ? rawName :
-                                                        namespaceURI + "^" + localName );
+            name = ( localName == null || localName.length() == 0 ) ? rawName : namespaceURI + "^" + localName;
+            state.doCData = _format.isCDataElement( name );
+            state.unescaped = _format.isNonEscapingElement( name );
+        } catch ( IOException except ) {
+            throw new SAXException( except );
+        }
     }
 
 
     public void endElement( String namespaceURI, String localName,
                             String rawName )
+        throws SAXException
+    {
+        try {
+            endElementIO( namespaceURI, localName, rawName );
+        } catch ( IOException except ) {
+            throw new SAXException( except );
+        }
+    }
+
+
+    public void endElementIO( String namespaceURI, String localName,
+                            String rawName )
+        throws IOException
     {
         ElementState state;
 
@@ -332,7 +368,7 @@ public class XMLSerializer
             // This element is not empty and that last content was
             // another element, so print a line break before that
             // last element and this element's closing tag.
-            if ( _indenting && ! state.preserveSpace && (state.afterElement || state.afterComment) )
+            if ( _indenting && ! state.preserveSpace && state.afterElement )
                 _printer.breakLine();
             _printer.printText( "</" );
             _printer.printText( state.rawName );
@@ -342,7 +378,6 @@ public class XMLSerializer
         // (if we're not root) to not empty and after element.
         state = leaveElementState();
         state.afterElement = true;
-        state.afterComment = false;
         state.empty = false;
         if ( isDocumentState() )
             _printer.flush();
@@ -355,6 +390,7 @@ public class XMLSerializer
 
 
     public void startElement( String tagName, AttributeList attrs )
+        throws SAXException
     {
         int          i;
         boolean      preserveSpace;
@@ -362,6 +398,7 @@ public class XMLSerializer
         String       name;
         String       value;
 
+        try {
         if ( _printer == null )
             throw new IllegalStateException( "SER002 No writer supplied for serializer" );
 
@@ -389,7 +426,7 @@ public class XMLSerializer
             // content of the parent element or immediately
             // following an element.
             if ( _indenting && ! state.preserveSpace &&
-                 ( state.empty || state.afterElement || state.afterComment) )
+                     ( state.empty || state.afterElement ) )
                 _printer.breakLine();
         }
         preserveSpace = state.preserveSpace;
@@ -433,10 +470,15 @@ public class XMLSerializer
         state = enterElementState( null, null, tagName, preserveSpace );
         state.doCData = _format.isCDataElement( tagName );
         state.unescaped = _format.isNonEscapingElement( tagName );
+        } catch ( IOException except ) {
+            throw new SAXException( except );
+    }
+
     }
 
 
     public void endElement( String tagName )
+        throws SAXException
     {
         endElement( null, null, tagName );
     }
@@ -461,6 +503,7 @@ public class XMLSerializer
      * this is not the first root element of the document.
      */
     protected void startDocument( String rootTagName )
+        throws IOException
     {
         int    i;
         String dtd;
@@ -547,6 +590,7 @@ public class XMLSerializer
      * inbetween, but better optimized.
      */
     protected void serializeElement( Element elem )
+        throws IOException
     {
         Attr         attr;
         NamedNodeMap attrMap;
@@ -583,7 +627,7 @@ public class XMLSerializer
             // content of the parent element or immediately
             // following an element.
             if ( _indenting && ! state.preserveSpace &&
-                 ( state.empty || state.afterElement || state.afterComment) )
+                 ( state.empty || state.afterElement ) )
                 _printer.breakLine();
         }
         preserveSpace = state.preserveSpace;
@@ -640,13 +684,12 @@ public class XMLSerializer
                 serializeNode( child );
                 child = child.getNextSibling();
             }
-            endElement( tagName );
+            endElementIO( null, null, tagName );
         } else {
             _printer.unindent();
             _printer.printText( "/>" );
             // After element but parent element is no longer empty.
             state.afterElement = true;
-            state.afterComment = false;
             state.empty = false;
             if ( isDocumentState() )
                 _printer.flush();
@@ -654,7 +697,7 @@ public class XMLSerializer
     }
 
 
-    protected String getEntityRef(int ch)
+    protected String getEntityRef( int ch )
     {
         // Encode special XML characters into the equivalent character references.
         // These five are defined by default for all XML documents.
@@ -671,6 +714,46 @@ public class XMLSerializer
             return "amp";
         }
         return null;
+    }
+
+
+    /** Retrieve and remove the namespaces declarations from the list of attributes.
+     *
+     */
+    private Attributes extractNamespaces( Attributes attrs )
+        throws SAXException
+    {
+        AttributesImpl attrsOnly;
+        String         rawName;
+        int            i;
+        int            indexColon;
+        String         prefix;
+        int            length;
+
+        length = attrs.getLength();
+        attrsOnly = new AttributesImpl( attrs );
+
+        for ( i = length - 1 ; i >= 0 ; --i ) {
+            rawName = attrsOnly.getQName( i );
+
+            //We have to exclude the namespaces declarations from the attributes
+            //Append only when the feature http://xml.org/sax/features/namespace-prefixes"
+            //is TRUE
+            if ( rawName.startsWith( "xmlns" ) ) {
+                indexColon = rawName.indexOf( ':' );
+
+                //is there a prefix
+                if ( indexColon != -1 && ( indexColon + 1 ) < rawName.length() )
+                    prefix = rawName.substring( indexColon + 1 );
+                else
+                    prefix = "";
+
+                startPrefixMapping( prefix, attrs.getValue( i ) );
+                //Remove it
+                attrsOnly.removeAttribute( i );
+            }
+        }
+        return attrsOnly;
     }
 
 

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -54,6 +54,12 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
+
+
+// Sep 14, 2000:
+//  Fixed serializer to report IO exception directly, instead at
+//  the end of document processing.
+//  Reported by Patrick Higgins <phiggins@transzap.com>
 
 
 package org.apache.xml.serialize;
@@ -159,40 +165,47 @@ public class Printer
      * and get the accumulated DTD, call {@link #leaveDTD}.
      */
     public void enterDTD()
+        throws IOException
     {
         // Can only enter DTD state once. Once we're out of DTD
         // state, can no longer re-enter it.
         if ( _dtdWriter == null ) {
-            flushLine( false );
-            _dtdWriter = new StringWriter();
+            //bug fixed by david (blondeau@intalio.com)
+			//flushLine( false );
+            flush();
+			_dtdWriter = new StringWriter();
             _docWriter = _writer;
             _writer = _dtdWriter;
         }
     }
-    
-    
+
+
     /**
      * Called by the root element to leave DTD mode and if any
      * DTD parts were printer, will return a string with their
      * textual content.
      */
     public String leaveDTD()
+        throws IOException
     {
         // Only works if we're going out of DTD mode.
         if ( _writer == _dtdWriter ) {
-            flushLine( false );
-            _writer = _docWriter;
+            //bug fixed by david (blondeau@intalio.com)
+			//flushLine( false );
+            flush();
+			_writer = _docWriter;
             return _dtdWriter.toString();
         } else
             return null;
     }
-    
-    
+
+
     public void printText( String text )
+        throws IOException
     {
         try {
             int length = text.length();
-            for ( int i = 0 ; i < length ; ++i ) { 
+            for ( int i = 0 ; i < length ; ++i ) {
                 if ( _pos == BufferSize ) {
                     _writer.write( _buffer );
                     _pos = 0;
@@ -205,15 +218,17 @@ public class Printer
             // until the end of the document.
             if ( _exception == null )
                 _exception = except;
+            throw except;
         }
     }
-    
-    
+
+
     public void printText( StringBuffer text )
+        throws IOException
     {
         try {
             int length = text.length();
-            for ( int i = 0 ; i < length ; ++i ) { 
+            for ( int i = 0 ; i < length ; ++i ) {
                 if ( _pos == BufferSize ) {
                     _writer.write( _buffer );
                     _pos = 0;
@@ -226,11 +241,13 @@ public class Printer
             // until the end of the document.
             if ( _exception == null )
                 _exception = except;
+            throw except;
         }
     }
 
 
     public void printText( char[] chars, int start, int length )
+        throws IOException
     {
         try {
             while ( length-- > 0 ) {
@@ -247,11 +264,13 @@ public class Printer
             // until the end of the document.
             if ( _exception == null )
                 _exception = except;
+            throw except;
         }
     }
-    
+
 
     public void printText( char ch )
+        throws IOException
     {
         try {
             if ( _pos == BufferSize ) {
@@ -265,11 +284,13 @@ public class Printer
             // until the end of the document.
             if ( _exception == null )
                 _exception = except;
+            throw except;
         }
     }
 
 
     public void printSpace()
+        throws IOException
     {
         try {
             if ( _pos == BufferSize ) {
@@ -283,11 +304,13 @@ public class Printer
             // until the end of the document.
             if ( _exception == null )
                 _exception = except;
+            throw except;
         }
     }
 
 
     public void breakLine()
+        throws IOException
     {
         try {
             if ( _pos == BufferSize ) {
@@ -301,17 +324,20 @@ public class Printer
             // until the end of the document.
             if ( _exception == null )
                 _exception = except;
+            throw except;
         }
     }
 
 
     public void breakLine( boolean preserveSpace )
+        throws IOException
     {
         breakLine();
     }
-    
+
 
     public void flushLine( boolean preserveSpace )
+        throws IOException
     {
         // Write anything left in the buffer into the writer.
         try {
@@ -324,13 +350,14 @@ public class Printer
         }
         _pos = 0;
     }
-    
-    
+
+
     /**
      * Flush the output stream. Must be called when done printing
      * the document, otherwise some text might be buffered.
      */
     public void flush()
+        throws IOException
     {
         try {
             _writer.write( _buffer, 0, _pos );
@@ -340,6 +367,7 @@ public class Printer
             // until the end of the document.
             if ( _exception == null )
                 _exception = except;
+            throw except;
         }
         _pos = 0;
     }
