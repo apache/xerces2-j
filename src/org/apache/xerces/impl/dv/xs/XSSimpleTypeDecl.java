@@ -245,7 +245,9 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 	private Vector fPatternStr;
 	private Vector fEnumeration;
 	private short[] fEnumerationType;
-	private ShortList fEnumerationTypeList;
+	private ShortList[] fEnumerationItemType;   // used in case fenumerationType value is LIST or LISTOFUNION 
+    private ShortList fEnumerationTypeList;
+    private ObjectList fEnumerationItemTypeList;
 	private StringList fLexicalPattern;
 	private StringList fLexicalEnumeration;
 	private ObjectList fActualEnumeration;
@@ -793,6 +795,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 				fEnumeration = new Vector();
 				Vector enumVals = facets.enumeration;
 				fEnumerationType = new short[enumVals.size()];
+                fEnumerationItemType = new ShortList[enumVals.size()];
 				Vector enumNSDecls = facets.enumNSDecls;
 				ValidationContextImpl ctx = new ValidationContextImpl(context);
 				enumerationAnnotations = facets.enumAnnotations;
@@ -804,6 +807,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 						// check 4.3.5.c0 must: enumeration values from the value space of base
 						fEnumeration.addElement(info.actualValue);
 						fEnumerationType[i] = info.actualValueType;
+                        fEnumerationItemType[i] = info.itemValueTypes;
 					} catch (InvalidDatatypeValueException ide) {
 						reportError("enumeration-valid-restriction", new Object[]{enumVals.elementAt(i), this.getBaseType().getName()});
 					}
@@ -2110,6 +2114,37 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 		}
 		return fActualEnumeration;
 	}
+    
+    /**
+     * A list of enumeration type values (as a list of ShortList objects) if it exists, otherwise returns
+     * null
+     */
+    public ObjectList getEnumerationItemTypeList() {
+        if (fEnumerationItemTypeList == null) {
+            if(fEnumerationItemType == null)
+                return null;
+            fEnumerationItemTypeList = new ObjectList () {
+                public int getLength() {
+                    return (fEnumerationItemType != null) ? fEnumerationItemType.length : 0;
+                }
+                public boolean contains(Object item) {
+                   if(fEnumerationItemType == null || !(item instanceof ShortList))
+                       return false;
+                   for(int i = 0;i < fEnumerationItemType.length; i++)
+                       if(fEnumerationItemType[i] == item)
+                           return true;
+                   return false;
+                }
+                public Object item(int index) {
+                    if (index < 0 || index >= getLength()) {
+                        return null;
+                    }
+                    return fEnumerationItemType[index];
+                }
+            };
+        }
+        return fEnumerationItemTypeList;
+    }
 	
 	public ShortList getEnumerationTypeList() {
 		if (fEnumerationTypeList == null) {
