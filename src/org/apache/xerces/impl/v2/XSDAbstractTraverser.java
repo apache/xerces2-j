@@ -347,8 +347,9 @@ abstract class XSDAbstractTraverser {
     //
     // Traverse a set of attribute and attribute group elements
     // Needed by complexType and attributeGroup traversal
+    // This method will return the first non-attribute/attrgrp found
     //
-    boolean traverseAttrsAndAttrGrps(Element firstAttr, XSAttributeGroupDecl attrGrp,
+    Element traverseAttrsAndAttrGrps(Element firstAttr, XSAttributeGroupDecl attrGrp,
                                      XSDocumentInfo schemaDoc, SchemaGrammar grammar ) {
 
         Element child=null;
@@ -422,12 +423,12 @@ abstract class XSDAbstractTraverser {
 
             if (child != null) {
                 // Error - the element is not an attribute, attributeGroup or anyAttr
-                return false;
+                return child;
             }
         }
 
         // Success
-        return true;
+        return null;
 
     }
 
