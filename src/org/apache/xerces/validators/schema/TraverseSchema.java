@@ -8084,6 +8084,13 @@ throws Exception {
           if (right != -2)
              findAndCreateElements(right,scope);
         }
+        
+	else if (type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE
+	      || type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE
+	      || type == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE) {
+
+          findAndCreateElements(left,scope);
+	}
         return;
 
     }
