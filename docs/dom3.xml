@@ -179,7 +179,7 @@
 				<em>true/false</em>
 				] -- (NON-DOM) setting the value of this parameter to true will include 
 				PSVI information in the DOM tree. 
-				To access the information, cast dom.Element to org.apache.xerces.xni.psvi.ElementPSVI and dom.Attr to org.apache.xerces.xni.psvi.AttributePSVI.
+				To access the information, cast dom.Element to org.apache.xerces.xs.ElementPSVI and dom.Attr to org.apache.xerces.xs.AttributePSVI.
 			</li>
 
 		</ul>
