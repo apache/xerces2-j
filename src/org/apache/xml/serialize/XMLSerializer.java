@@ -675,6 +675,8 @@ implements DOMWriter {
 
         // reset local binder
         fLocalNSBinder.reset(fSymbolTable);
+        //note: the values that added to namespace binder
+        // must be already be added to the symbol table
         fLocalNSBinder.pushContext();
 
         // add new namespace context
@@ -882,10 +884,11 @@ implements DOMWriter {
                     if (prefix == fXmlnsSymbol) { //xmlns:prefix
                         uri =  fNSBinder.getURI(localpart); // global prefix mapping
                         localUri = fLocalNSBinder.getURI(localpart);  // local prefix mapping
-                        
-                        // don't output local declaration which is identical to the 
-                        // global declaration
-                        if (uri == null || ( localUri == null && !uri.equals(value))) {
+                        value = fSymbolTable.addSymbol(value);
+                        // REVISIT: don't output local declaration which is identical to the 
+                        // global declaration  
+                        // uri == null || ( localUri == null && !uri.equals(value)
+                        if (uri == null || localUri == null) {
                             // REVISIT: we are skipping invalid decls
                             //          xmlns:foo = ""
                             if (value.length() != 0) { 
@@ -900,6 +903,7 @@ implements DOMWriter {
                         // empty prefix is always bound ("" or some string)
                         uri = fNSBinder.getURI(fEmptySymbol);
                         localUri=fLocalNSBinder.getURI(fEmptySymbol);
+                        value = fSymbolTable.addSymbol(value);
                         if (localUri == null) {
                             // there was no local default ns decl
 
@@ -945,6 +949,7 @@ implements DOMWriter {
                             }
                             // add declaration for the new prefix
                             printNamespaceAttr(prefix, uri);
+                            value = fSymbolTable.addSymbol(value);
                             fLocalNSBinder.declarePrefix(prefix, value);
                             fNSBinder.declarePrefix(prefix, uri);
                         }
@@ -978,6 +983,8 @@ implements DOMWriter {
                             
                               // REVISIT: should we output duplicate xmlns="" decls?
                               //if (value.length() !=0 && !uri.equals(value)) {
+
+                                value = fSymbolTable.addSymbol(value);
                                 fNSBinder.declarePrefix(fEmptySymbol, value);
                                 fLocalNSBinder.declarePrefix(fEmptySymbol, value);
                                 printAttribute (name, value, attr.getSpecified());
@@ -1011,11 +1018,13 @@ implements DOMWriter {
 
                             uri =  fNSBinder.getURI(prefix);           // global prefix mapping
                             localUri = fLocalNSBinder.getURI(prefix);  // local prefix mapping
-                            if (uri == null || ( localUri == null && !uri.equals(value))) {
+                            if (uri == null || localUri == null) {
                                 // REVISIT: we are skipping invalid decls
                                 //          xmlns:foo = ""
                                 if (value.length() != 0) { 
                                     //printNamespaceAttr(prefix, value);
+
+                                    value = fSymbolTable.addSymbol(value);
                                     fNSBinder.declarePrefix(prefix, value);
                                     fLocalNSBinder.declarePrefix(prefix, value);
                                    
