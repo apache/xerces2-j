@@ -493,7 +493,7 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
             fRedefinedGroupDecls = resize(fRedefinedGroupDecls, fRGCount << 1);
             fRGLocators = resize(fRGLocators, fRGCount);
         }
-        fRGLocators[fCTCount/2] = locator;
+        fRGLocators[fRGCount/2] = locator;
         fRedefinedGroupDecls[fRGCount++] = derived;
         fRedefinedGroupDecls[fRGCount++] = base;
     }
