@@ -585,7 +585,7 @@ public abstract class XMLScanner
     } // scanComment()
 
     /**
-     * Scans an attribute value.
+     * Scans an attribute value and normalizes it as necessary.
      * 
      * [10] AttValue ::= '"' ([^<&"] | Reference)* '"' | "'" ([^<&'] | Reference)* "'"
      *
@@ -593,6 +593,8 @@ public abstract class XMLScanner
      * @param atName The name of the attribute being parsed (for error msgs).
      * @param attributes The attributes list for the scanned attribute.
      * @param attrIndex The index of the attribute to use from the list.
+     * @param cdata Specifies whether the attribute is of type CDATA or not, so
+     *              that the appropriate normalization can be performed.
      *
      * <strong>Note:</strong> This method uses fStringBuffer2, anything in it
      * at the time of calling is lost.
@@ -612,7 +614,8 @@ public abstract class XMLScanner
         int entityDepth = fEntityDepth;
 
         int c = fEntityScanner.scanLiteral(quote, value);
-        normalizeWhitespace(value);
+        int prevspaces = 0;
+        int spaces = normalizeWhitespace(value, !cdata);
         if (c != quote) {
             fScanningAttribute = true;
             if (DEBUG_ATTR_ENTITIES) {
@@ -624,7 +627,16 @@ public abstract class XMLScanner
                 System.out.println("*** set attribute offset: "+fAttributeOffset);
             }
             fStringBuffer2.clear();
+            // get rid of leading whitespace if there is any
+            if ((spaces & 1) == 1) {// this is 1 or 3
+                spaces--;
+            }
             do {
+                if ((prevspaces > 1 || (spaces & 1) == 1)
+                    && fStringBuffer2.length != 0) {
+                    fStringBuffer2.append(' ');
+                    fAttributeOffset++;
+                }
                 fStringBuffer2.append(value);
                 fAttributeOffset += value.length;
                 if (DEBUG_ATTR_ENTITIES) {
@@ -651,13 +663,23 @@ public abstract class XMLScanner
                                              null);
                         }
                         if (entityName == fAmpSymbol) {
+                            if (spaces > 1 && fStringBuffer2.length != 0) {
+                                fStringBuffer2.append(' ');
+                                fAttributeOffset++;
+                            }
                             fStringBuffer2.append('&');
                             fAttributeOffset++;
+                            spaces = 0;
                             if (DEBUG_ATTR_ENTITIES) {
                                 System.out.println("*** increment attribute offset: "+fAttributeOffset);
                             }
                         }
                         else if (entityName == fAposSymbol) {
+                            if (spaces > 1 && fStringBuffer2.length != 0) {
+                                fStringBuffer2.append(' ');
+                                fAttributeOffset++;
+                            }
+                            spaces = 0;
                             fStringBuffer2.append('\'');
                             fAttributeOffset++;
                             if (DEBUG_ATTR_ENTITIES) {
@@ -665,22 +687,37 @@ public abstract class XMLScanner
                             }
                         }
                         else if (entityName == fLtSymbol) {
+                            if (spaces > 1 && fStringBuffer2.length != 0) {
+                                fStringBuffer2.append(' ');
+                                fAttributeOffset++;
+                            }
                             fStringBuffer2.append('<');
                             fAttributeOffset++;
+                            spaces = 0;
                             if (DEBUG_ATTR_ENTITIES) {
                                 System.out.println("*** increment attribute offset: "+fAttributeOffset);
                             }
                         }
                         else if (entityName == fGtSymbol) {
+                            if (spaces > 1 && fStringBuffer2.length != 0) {
+                                fStringBuffer2.append(' ');
+                                fAttributeOffset++;
+                            }
                             fStringBuffer2.append('>');
                             fAttributeOffset++;
+                            spaces = 0;
                             if (DEBUG_ATTR_ENTITIES) {
                                 System.out.println("*** increment attribute offset: "+fAttributeOffset);
                             }
                         }
                         else if (entityName == fQuotSymbol) {
+                            if (spaces > 1 && fStringBuffer2.length != 0) {
+                                fStringBuffer2.append(' ');
+                                fAttributeOffset++;
+                            }
                             fStringBuffer2.append('"');
                             fAttributeOffset++;
+                            spaces = 0;
                             if (DEBUG_ATTR_ENTITIES) {
                                 System.out.println("*** increment attribute offset: "+fAttributeOffset);
                             }
@@ -701,32 +738,68 @@ public abstract class XMLScanner
                                      new Object[] { null, atName });
                 }
                 else if (c == '%') {
+                    if (spaces > 1 && fStringBuffer2.length != 0) {
+                        fStringBuffer2.append(' ');
+                        fAttributeOffset++;
+                    }
                     fStringBuffer2.append((char)fEntityScanner.scanChar());
+                    spaces = 0;
                 }
                 else if (c == '\r') {
-                    // this happens when we have the character reference &#13;
+                    // This happens when parsing the entity replacement text of
+                    // an entity which had a character reference &#13; in its
+                    // literal entity value. The character is normalized to
+                    // #x20 and collapsed per the normal rules.
                     fEntityScanner.scanChar();
-                    fStringBuffer2.append(' '); // normalize to #x20
+                    if (cdata) {
+                        fStringBuffer2.append(' ');
+                        fAttributeOffset++;
+                    }
+                    else if ((spaces & 1) == 0) {
+                        // record a trailing space
+                        spaces++;
+                    }
                 }
                 else if (c != -1 && XMLChar.isHighSurrogate(c)) {
-                    scanSurrogates(fStringBuffer2);
+                    scanSurrogates(fStringBuffer);
+                    if (fStringBuffer.length != 0) {
+                        if (spaces > 1 && fStringBuffer2.length != 0) {
+                            fStringBuffer2.append(' ');
+                            fAttributeOffset++;
+                        }
+                        fStringBuffer2.append(fStringBuffer);
+                        spaces = 0;
+                    }
                 }
                 else if (c != -1 && XMLChar.isInvalid(c)) {
                     reportFatalError("InvalidCharInAttValue",
                                      new Object[] {Integer.toString(c, 16)});
                     fEntityScanner.scanChar();
                 }
+                // the following is to handle quotes we get from entities
+                // which we must not confused with the end quote
                 while (true) {
                     c = fEntityScanner.scanLiteral(quote, value);
-                    normalizeWhitespace(value);
+                    prevspaces = spaces;
+                    spaces = normalizeWhitespace(value, !cdata);
+                    // this is: !(c == quote && entityDepth != fEntityDepth)
                     if (c != quote || entityDepth == fEntityDepth) {
                         break;
                     }
+                    if (prevspaces > 1 || (spaces & 1) == 1) {
+                        fStringBuffer2.append(' ');
+                        fAttributeOffset++;
+                    }
                     fStringBuffer2.append(value);
                     fStringBuffer2.append((char)fEntityScanner.scanChar());
+                    fAttributeOffset += value.length + 1;
                 }
             } while (c != quote);
             fAttributeOffset += value.length;
+            if (prevspaces > 1 || (spaces & 1) == 1) {
+                fStringBuffer2.append(' ');
+                fAttributeOffset++;
+            }
             fStringBuffer2.append(value);
             value.setValues(fStringBuffer2);
             int attrEntityCount = fAttributeEntityStack.size();
@@ -740,10 +813,6 @@ public abstract class XMLScanner
                 fAttributeEntityStack.popAttrEntity(fAttributeOffset);
             }
             fScanningAttribute = false;
-        }
-
-        if (!cdata) {
-            normalizeNonCDATAValue(value);
         }
 
         // quote
@@ -894,72 +963,49 @@ public abstract class XMLScanner
      * Normalize whitespace in an XMLString according to the rules of attribute
      * value normalization - converting all whitespace characters to space
      * characters.
+     * In addition for attributes of type other than CDATA: trim leading and
+     * trailing spaces and collapse spaces (0x20 only).
      *
      * @param value The string to normalize.
+     * @returns 0 if no triming is done or if there is neither leading nor
+     *            trailing whitespace,
+     *          1 if there is only leading whitespace,
+     *          2 if there is only trailing whitespace,
+     *          3 if there is both leading and trailing whitespace.
      */
-    protected void normalizeWhitespace(XMLString value) {
-        int end = value.offset + value.length;
-        for (int i = value.offset; i < end; i++) {
-            int ch = value.ch[i];
-            if (ch == '\r' || ch == '\n' || ch == '\t') {
-                value.ch[i] = ' ';
-            }
-        }
-    }
-
-    /**
-     * Further normalize an attribute value according to the rules of attribute
-     * value normalization of attributes of type other than CDATA: triming
-     * space characters (0x20 only).
-     *
-     * @param value The string to normalize.
-     */
-    protected void normalizeNonCDATAValue(XMLString value) {
-        // trim leading spaces
-        while (value.length > 0 && value.ch[value.offset] == ' ') {
-            value.offset++;
-            value.length--;
-        }
-        // trim trailing spaces
-        while (value.length > 0 &&
-               value.ch[value.offset + value.length - 1] == ' ') {
-            value.length--;
-        }
-        // skip all non spaces
-        int index = value.offset;
-        int end = value.offset + value.length;
-        while (index < end && value.ch[index] != ' ') {
-            index++;
-        }
-        if (index == value.offset + value.length) {
-            // we only have one token, we're done
-            return;
-        }
+    protected int normalizeWhitespace(XMLString value, boolean collapse) {
         fStringBuffer.clear();
-        do {
-            // copy what we have so far (including one space)
-            fStringBuffer.append(value.ch, value.offset,
-                                 index - value.offset + 1);
-            // shift to the end of this
-            value.length -= index - value.offset + 1;
-            value.offset = index + 1;
-
-            // skip all leading spaces
-            while (value.length > 0 && value.ch[value.offset] == ' ') {
-                value.offset++;
-                value.length--;
+        int end = value.offset + value.length;
+        boolean skipSpace = collapse;
+        boolean sawNonWS = false;
+        int leading = 0;
+        int trailing = 0;
+        for (int i = value.offset; i < end; i++) {
+            int c = value.ch[i];
+            if (XMLChar.isSpace(c)) {
+                if (!skipSpace) {
+                    // take the first whitespace as a space and skip the others
+                    fStringBuffer.append(' ');
+                    skipSpace = collapse;
+                }
+                if (!sawNonWS) {
+                    // this is a leading whitespace, record it
+                    leading = 1;
+                }
             }
-            // skip all non spaces
-            index = value.offset;
-            end = value.offset + value.length;
-            while (index < end && value.ch[index] != ' ') {
-                index++;
+            else {
+                fStringBuffer.append((char)c);
+                skipSpace = false;
+                sawNonWS = true;
             }
-        } while (index < end);
-
-        fStringBuffer.append(value.ch, value.offset, index - value.offset);
-
+        }
+        if (skipSpace && fStringBuffer.length != 0) {
+            // if we finished on a space trim it but also record it
+            fStringBuffer.length--;
+            trailing = 2;
+        }
         value.setValues(fStringBuffer);
+        return collapse ? leading + trailing : 0;
     }
 
     //
