@@ -390,8 +390,10 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 simpleContent = DOMUtil.getNextSiblingElement(simpleContent);
             }
 
-            if (simpleContent !=null && DOMUtil.getLocalName(simpleContent).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                reportGenericSchemaError("ComplexType "+typeName+" simpleContent has more than one annotation.");
+            if (simpleContent !=null && 
+                DOMUtil.getLocalName(simpleContent).equals(SchemaSymbols.ELT_ANNOTATION)){
+                throw new ComplexTypeRecoverableError("src-ct.0.1",
+                       new Object[]{typeName,SchemaSymbols.ELT_ANNOTATION});
             }
         }
 
@@ -404,8 +406,11 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             // There may be a simple type definition in the restriction element
             // The data type validator will be based on it, if specified
             // -----------------------------------------------------------------------
-            if (simpleContent !=null && DOMUtil.getLocalName(simpleContent).equals(SchemaSymbols.ELT_SIMPLETYPE )) {
-                DatatypeValidator dv =fSchemaHandler.fSimpleTypeTraverser.traverseLocal(simpleContent, schemaDoc, grammar);
+            if (simpleContent !=null && 
+            DOMUtil.getLocalName(simpleContent).equals(SchemaSymbols.ELT_SIMPLETYPE )) {
+
+                DatatypeValidator dv=fSchemaHandler.fSimpleTypeTraverser.traverseLocal(
+                      simpleContent, schemaDoc, grammar);
                 if (dv == null)
                     throw new ComplexTypeRecoverableError();
 
@@ -414,8 +419,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 
                 if (!XSConstraints.checkSimpleDerivationOk(dv, baseValidator,
                                                            baseValidator.getFinalSet())) {
-                    reportGenericSchemaError("ComplexType " + typeName + ": " +
-                                             "derivation-ok-restriction.5.1.1:  The content type is not a valid restriction of the content type of the base");
+                    throw new ComplexTypeRecoverableError("derivation-ok-restriction.5.1.1",
+                           new Object[]{typeName});
                 }
                 baseValidator = dv;
                 simpleContent = DOMUtil.getNextSiblingElement(simpleContent);
@@ -434,10 +439,10 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             }
 
 
-            typeInfo.fDatatypeValidator = createRestrictedValidator(baseValidator, fFacetData, fErrorReporter);
+            typeInfo.fDatatypeValidator = createRestrictedValidator(baseValidator, 
+                                                          fFacetData, fErrorReporter);
             if (typeInfo.fDatatypeValidator == null) {
-                // REVISIT error msg
-                reportGenericSchemaError("Internal error - could not create a new validator");
+                // Internal error 
                 throw new ComplexTypeRecoverableError();
             }
 
@@ -447,13 +452,13 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             if (attrNode != null) {
                 if (!isAttrOrAttrGroup(attrNode)) {
                     throw new ComplexTypeRecoverableError("src-ct.0.1",
-                                                          new Object[]{typeInfo.fName,DOMUtil.getLocalName(attrNode)});
+                             new Object[]{typeInfo.fName,DOMUtil.getLocalName(attrNode)});
                 }
                 Element node=traverseAttrsAndAttrGrps(attrNode,typeInfo.fAttrGrp,
                                                       schemaDoc,grammar);
                 if (node!=null) {
                     throw new ComplexTypeRecoverableError("src-ct.0.1",
-                                                          new Object[]{typeInfo.fName,DOMUtil.getLocalName(node)});
+                             new Object[]{typeInfo.fName,DOMUtil.getLocalName(node)});
                 }
             }
 
@@ -461,10 +466,10 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             // Prohibited uses must be removed after merge for RESTRICTION
             typeInfo.fAttrGrp.removeProhibitedAttrs();
 
-            String error = typeInfo.fAttrGrp.validRestrictionOf(baseComplexType.fAttrGrp);
-            if (error != null) {
-                reportGenericSchemaError("ComplexType " + typeName + ": " + error);
-                throw new ComplexTypeRecoverableError();
+            String errorCode=typeInfo.fAttrGrp.validRestrictionOf(baseComplexType.fAttrGrp);
+            if (errorCode != null) {
+                throw new ComplexTypeRecoverableError(errorCode, 
+                             new Object[]{typeInfo.fName});
             }
 
         }
@@ -540,9 +545,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
         // If there are no children, return
         if (complexContent==null) {
-            reportGenericSchemaError("ComplexType " + typeName + ": " +
-                                     "complexContent must have either restriction or extension as child");
-            throw new ComplexTypeRecoverableError();
+            throw new ComplexTypeRecoverableError("src-ct.0.2", 
+                      new Object[]{typeName,SchemaSymbols.ELT_COMPLEXCONTENT});
         }
 
         // -----------------------------------------------------------------------
@@ -554,16 +558,13 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         else if (complexContentName.equals(SchemaSymbols.ELT_EXTENSION))
             typeInfo.fDerivedBy = SchemaSymbols.EXTENSION;
         else {
-            // REVISIT - should create a msg in properties file
-            reportGenericSchemaError("ComplexType " + typeName + ": " +
-                                     "Child of complexContent must be restriction or extension");
-            throw new ComplexTypeRecoverableError();
+            throw new ComplexTypeRecoverableError("src-ct.0.1",
+                      new Object[]{typeName, complexContentName});
         }
         if (DOMUtil.getNextSiblingElement(complexContent) != null) {
-            // REVISIT - should create a msg in properties file
-            reportGenericSchemaError("ComplexType " + typeName + ": " +
-                                     "Invalid child of complexContent");
-            throw new ComplexTypeRecoverableError();
+            String siblingName = DOMUtil.getLocalName(DOMUtil.getNextSiblingElement(complexContent));
+            throw new ComplexTypeRecoverableError("src-ct.0.1",
+                      new Object[]{typeName, siblingName});
         }
 
         attrValues = fAttrChecker.checkAttributes(complexContent, false,
@@ -576,10 +577,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         // Need a base type.  Check that it's a complex type
         // -----------------------------------------------------------------------
         if (baseTypeName==null) {
-            // REVISIT - should create a msg in properties file
-            reportGenericSchemaError("ComplexType " + typeName + ": " +
-                                     "The base attribute must be specified for the restriction or extension");
-            throw new ComplexTypeRecoverableError();
+            throw new ComplexTypeRecoverableError("src-ct.0.3",
+                      new Object[]{typeName});
         }
 
         XSTypeDecl type = (XSTypeDecl)fSchemaHandler.getGlobalDecl(schemaDoc,
@@ -589,10 +588,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             throw new ComplexTypeRecoverableError();
 
         if (! (type instanceof XSComplexTypeDecl)) {
-            // REVISIT - should create a msg in properties file
-            reportGenericSchemaError("ComplexType " + typeName + ": " +
-                                     "The base type must be complex");
-            throw new ComplexTypeRecoverableError();
+            throw new ComplexTypeRecoverableError("src-ct.1",
+                      new Object[]{typeName});
         }
         XSComplexTypeDecl baseType = (XSComplexTypeDecl)type;
         typeInfo.fBaseType = baseType;
@@ -601,10 +598,10 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         // Check that the base permits the derivation
         // -----------------------------------------------------------------------
         if ((baseType.fFinal & typeInfo.fDerivedBy)!=0) {
-            //REVISIT - generate error
-            reportGenericSchemaError("ComplexType " + typeName + ": " +
-                                     "The base type has a final value that prohibits this derivation");
-            throw new ComplexTypeRecoverableError();
+            String errorKey = (typeInfo.fDerivedBy==SchemaSymbols.EXTENSION) ? 
+                              "cos-ct-extends.1.1" : "derivation-ok-restriction.1";
+            throw new ComplexTypeRecoverableError(errorKey,  
+                                new Object[]{typeInfo.fName});
         }
 
         // -----------------------------------------------------------------------
@@ -618,8 +615,10 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 traverseAnnotationDecl(complexContent, null, false, schemaDoc);
                 complexContent = DOMUtil.getNextSiblingElement(complexContent);
             }
-            if (complexContent !=null && DOMUtil.getLocalName(complexContent).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                reportGenericSchemaError("ComplexType "+typeName+" complexContent has more than one annotation.");
+            if (complexContent !=null && 
+               DOMUtil.getLocalName(complexContent).equals(SchemaSymbols.ELT_ANNOTATION)){
+                throw new ComplexTypeRecoverableError("src-ct.0.1",
+                       new Object[]{typeName,SchemaSymbols.ELT_ANNOTATION});
             }
         }
         // -----------------------------------------------------------------------
@@ -639,22 +638,22 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 
             if (typeInfo.fParticle==null && (!(baseContent==null ||
                                                baseContent.emptiable()))) {
-                //REVISIT - need better error msg
-                throw new ComplexTypeRecoverableError("derivation-ok-restriction",
-                                                      null);
+                throw new ComplexTypeRecoverableError("derivation-ok-restriction.5.2",
+                                          new Object[]{typeName}); 
             }
             if (typeInfo.fParticle!=null && baseContent==null) {
                 //REVISIT - need better error msg
-                throw new ComplexTypeRecoverableError("derivation-ok-restriction",
-                                                      null);
+                throw new ComplexTypeRecoverableError("derivation-ok-restriction.5.3",
+                                          new Object[]{typeName}); 
             }
 
             mergeAttributes(baseType.fAttrGrp, typeInfo.fAttrGrp, typeName, false);
             String error = typeInfo.fAttrGrp.validRestrictionOf(baseType.fAttrGrp);
             if (error != null) {
-                reportGenericSchemaError("ComplexType " + typeName + ": " + error);
-                throw new ComplexTypeRecoverableError();
+                throw new ComplexTypeRecoverableError(error, 
+                          new Object[]{typeName});
             }
+
             // Remove prohibited uses.   Must be done after merge for RESTRICTION.
             typeInfo.fAttrGrp.removeProhibitedAttrs();
 
@@ -673,11 +672,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                     ((baseType.fContentType ==
                       XSComplexTypeDecl.CONTENTTYPE_MIXED) && !mixedContent)) {
 
-                    // REVISIT - need to add a property message
-
-                    reportGenericSchemaError("cos-ct-extends.1.4.2.2.2.1: The content type of the base type " + baseTypeName + " and derived type " +
-                                             typeName + " must both be mixed or element-only");
-                    throw new ComplexTypeRecoverableError();
+                    throw new ComplexTypeRecoverableError("cos-ct-extends.1.4.2.2.2.2.1",
+                          new Object[]{typeName});
                 }
 
             }
@@ -691,8 +687,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             else {
                 if (typeInfo.fParticle.fType == XSParticleDecl.PARTICLE_ALL ||
                     baseType.fParticle.fType == XSParticleDecl.PARTICLE_ALL) {
-                    reportGenericSchemaError("cos-all-limited.1.2:  An \"all\" model group that is part of a complex type definition must constitute the entire {content type} of the definition");
-                    throw new ComplexTypeRecoverableError();
+                    throw new ComplexTypeRecoverableError("cos-all-limited.1.2",
+                          new Object[]{typeName});
                 }
                 XSParticleDecl temp = new XSParticleDecl();
                 temp.fType = XSParticleDecl.PARTICLE_SEQUENCE;
@@ -735,17 +731,14 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             if (existingAttrUse == null) {
                 String idName = toAttrGrp.addAttributeUse(attrUseS[i]);
                 if (idName != null) {
-                    reportGenericSchemaError("Two distinct members of the {attribute uses} '" +
-                                             idName + "' and '" + attrUseS[i].fAttrDecl.fName +
-                                             "' have {attribute declaration}s both of whose {type definition}s are or are derived from ID");
+                    throw new ComplexTypeRecoverableError("ct-props-correct.5", 
+                          new Object[]{typeName, idName, attrUseS[i].fAttrDecl.fName});
                 }
             }
             else {
                 if (extension) {
-                    //REVISIT - should create a msg in properties file
-                    reportGenericSchemaError("ComplexType " + typeName + ": " +
-                                             "Duplicate attribute use " + existingAttrUse.fAttrDecl.fName );
-                    throw new ComplexTypeRecoverableError();
+                    throw new ComplexTypeRecoverableError("ct-props-correct.4", 
+                          new Object[]{typeName, existingAttrUse.fAttrDecl.fName});
                 }
             }
         }
@@ -757,9 +750,6 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             }
             else if (fromAttrGrp.fAttributeWC != null) {
                 toAttrGrp.fAttributeWC = toAttrGrp.fAttributeWC.performUnionWith(fromAttrGrp.fAttributeWC, toAttrGrp.fAttributeWC.fProcessContents);
-                if (toAttrGrp.fAttributeWC == null) {
-                    reportGenericSchemaError("intersection of wildcards is not expressible");
-                }
             }
 
         }
