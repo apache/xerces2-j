@@ -92,10 +92,6 @@ class XSDElementTraverser extends XSDAbstractTraverser{
                                                              SchemaSymbols.ATTVAL_ANYTYPE,
                                                              SchemaSymbols.ATTVAL_ANYTYPE,
                                                              SchemaSymbols.URI_SCHEMAFORSCHEMA);
-    protected static final QName ANY_SIMPLE_TYPE = new QName(null,
-                                                             SchemaSymbols.ATTVAL_ANYSIMPLETYPE,
-                                                             SchemaSymbols.ATTVAL_ANYTYPE,
-                                                             SchemaSymbols.URI_SCHEMAFORSCHEMA);
 
     protected XSElementDecl fTempElementDecl = new XSElementDecl();
 
@@ -162,7 +158,7 @@ class XSDElementTraverser extends XSDAbstractTraverser{
                        SchemaGrammar grammar) {
 
         // General Attribute Checking
-        Hashtable attrValues = fAttrChecker.checkAttributes(elmDecl, true);
+        Object[] attrValues = fAttrChecker.checkAttributes(elmDecl, true);
 
         return traverseNamedElement(elmDecl, attrValues, schemaDoc, grammar, true);
     }
@@ -178,22 +174,22 @@ class XSDElementTraverser extends XSDAbstractTraverser{
      * @return the element declaration index
      */
     int traverseNamedElement(Element elmDecl,
-                             Hashtable attrValues,
+                             Object[] attrValues,
                              XSDocumentInfo schemaDoc,
                              SchemaGrammar grammar,
                              boolean isGlobal) {
 
-        Integer abstractAtt  = (Integer) attrValues.get(SchemaSymbols.ATT_ABSTRACT);
-        Integer blockAtt     = (Integer) attrValues.get(SchemaSymbols.ATT_BLOCK);
-        String  defaultAtt   = (String)  attrValues.get(SchemaSymbols.ATT_DEFAULT);
-        Integer finalAtt     = (Integer) attrValues.get(SchemaSymbols.ATT_FINAL);
-        String  fixedAtt     = (String)  attrValues.get(SchemaSymbols.ATT_FIXED);
-        Integer formAtt      = (Integer) attrValues.get(SchemaSymbols.ATT_FORM);
-        String  nameAtt      = (String)  attrValues.get(SchemaSymbols.ATT_NAME);
-        Integer nillableAtt  = (Integer) attrValues.get(SchemaSymbols.ATT_NILLABLE);
-        QName   refAtt       = (QName)   attrValues.get(SchemaSymbols.ATT_REF);
-        QName   subGroupAtt  = (QName)   attrValues.get(SchemaSymbols.ATT_SUBSTITUTIONGROUP);
-        QName   typeAtt      = (QName)   attrValues.get(SchemaSymbols.ATT_TYPE);
+        Integer abstractAtt  = (Integer) attrValues[XSAttributeChecker.ATTIDX_ABSTRACT];
+        Integer blockAtt     = (Integer) attrValues[XSAttributeChecker.ATTIDX_BLOCK];
+        String  defaultAtt   = (String)  attrValues[XSAttributeChecker.ATTIDX_DEFAULT];
+        Integer finalAtt     = (Integer) attrValues[XSAttributeChecker.ATTIDX_FINAL];
+        String  fixedAtt     = (String)  attrValues[XSAttributeChecker.ATTIDX_FIXED];
+        Integer formAtt      = (Integer) attrValues[XSAttributeChecker.ATTIDX_FORM];
+        String  nameAtt      = (String)  attrValues[XSAttributeChecker.ATTIDX_NAME];
+        Integer nillableAtt  = (Integer) attrValues[XSAttributeChecker.ATTIDX_NILLABLE];
+        QName   refAtt       = (QName)   attrValues[XSAttributeChecker.ATTIDX_REF];
+        QName   subGroupAtt  = (QName)   attrValues[XSAttributeChecker.ATTIDX_SUBSGROUP];
+        QName   typeAtt      = (QName)   attrValues[XSAttributeChecker.ATTIDX_TYPE];
 
         //REVISIT: notation datatype error checking
         //checkEnumerationRequiredNotation(nameStr, typeStr);
@@ -292,7 +288,7 @@ class XSDElementTraverser extends XSDAbstractTraverser{
         }
         // type specified as an attribute and no child is type decl.
         else if (!haveAnonType && typeAtt != null) {
-            elementType = fSchemaHandler.getGlobalDecl(schemaDoc, fSchemaHandler.TYPE_TYPE, typeAtt);
+            elementType = fSchemaHandler.getComponentDecl(schemaDoc, fSchemaHandler.TYPEDECL_TYPE, typeAtt);
             if (elementType == -1) {
                 noErrorSoFar = false;
                 reportGenericSchemaError("type not found: "+typeAtt.uri+":"+typeAtt.localpart);
@@ -415,7 +411,7 @@ class XSDElementTraverser extends XSDAbstractTraverser{
         }*/
 
         if (elementType == -1 && noErrorSoFar) {
-            elementType = fSchemaHandler.getGlobalDecl(schemaDoc, fSchemaHandler.TYPE_TYPE, ANY_TYPE);
+            elementType = fSchemaHandler.getComponentDecl(schemaDoc, fSchemaHandler.TYPEDECL_TYPE, ANY_TYPE);
         }
 
         // Now we can handle validation etc. of default and fixed attributes,
@@ -465,8 +461,10 @@ class XSDElementTraverser extends XSDAbstractTraverser{
         if (isGlobal) {
             namespace = schemaDoc.fTargetNamespace;
         }
-        else if ((formAtt.intValue() & SchemaSymbols.REAL_VALUE) == SchemaSymbols.FORM_QUALIFIED ||
-                 schemaDoc.fAreLocalElementsQualified) {
+        else if (formAtt != null) {
+            if ((formAtt.intValue() & SchemaSymbols.REAL_VALUE) == SchemaSymbols.FORM_QUALIFIED)
+                namespace = schemaDoc.fTargetNamespace;
+        } else if (schemaDoc.fAreLocalElementsQualified) {
             namespace = schemaDoc.fTargetNamespace;
         }
 
@@ -474,7 +472,7 @@ class XSDElementTraverser extends XSDAbstractTraverser{
         fTempElementDecl.clear();
         fTempElementDecl.fQName.setValues(null, nameAtt, nameAtt, namespace);
         fTempElementDecl.fTypeNS = typeAtt == null ? schemaDoc.fTargetNamespace : typeAtt.uri;
-        fTempElementDecl.fXSTypeDecl = elementType;
+        fTempElementDecl.fTypeIdx = elementType;
         fTempElementDecl.fElementMiscFlags = elementMiscFlags;
         fTempElementDecl.fBlock = blockSet;
         fTempElementDecl.fFinal = finalSet;

@@ -75,12 +75,11 @@ public class XSAttributeDecl {
            
 
     public final QName fQName = new QName();
-    public String fDefaultValue = null;
-    
-    public XSType fType = null;
-
+    public String fTypeNS;
+    public int fType;
     // value default, fixed or !specified
     public short fConstraintType = NO_CONSTRAINT; 
+    public String fDefaultValue = null;
     
     //
     // Public methods
@@ -90,6 +89,5 @@ public class XSAttributeDecl {
         fQName.clear();
         fConstraintType = NO_CONSTRAINT;
     }
-
 
 } // class XSAttributeDecl

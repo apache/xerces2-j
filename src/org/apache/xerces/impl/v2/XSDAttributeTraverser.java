@@ -57,9 +57,10 @@
 
 package org.apache.xerces.impl.v2;
 
+import  org.apache.xerces.xni.QName;
 import  org.apache.xerces.impl.XMLErrorReporter;
 import  org.w3c.dom.Element;
-import java.util.Hashtable;
+import  java.util.Hashtable;
 
 
 /**
@@ -82,7 +83,10 @@ import java.util.Hashtable;
  */
 class  XSDAttributeTraverser extends XSDAbstractTraverser {
 
-
+    protected static final QName ANY_SIMPLE_TYPE = new QName(null,
+                                                             SchemaSymbols.ATTVAL_ANYSIMPLETYPE,
+                                                             SchemaSymbols.ATTVAL_ANYTYPE,
+                                                             SchemaSymbols.URI_SCHEMAFORSCHEMA);
 
     public XSDAttributeTraverser (XSDHandler handler,
                                   XMLErrorReporter errorReporter,

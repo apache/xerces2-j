@@ -60,18 +60,16 @@ package org.apache.xerces.impl.v2;
 import java.util.Vector;
 import org.apache.xerces.xni.QName;
 
-
 /**
- * The XML representation for an element declaration schema component is an <element> element information item
+ * The XML representation for an element declaration schema component is
+ * an <element> element information item.
+ * 
  * @version $Id$
  */
 public class XSElementDecl {
 
-
-    // REVISIT: should element decl have contentSpec information
-    // like EMPTY/MIXED, CHILDREN etc..?
-    // This information will be accessable via type info object..
-    //
+    // REVISIT: should the following information stored in the form of
+    // miscFlag, or separate boolean values?
     public static final short NILLABLE = 1;
     public static final short ABSTRACT = 2;
     public static final short FIXED    = 4;
@@ -80,9 +78,9 @@ public class XSElementDecl {
 
     // index to the type registry: simpleType or complexType
     public String fTypeNS;
-    public int fXSTypeDecl;
+    public int fTypeIdx;
 
-    // nillable/abstract/final
+    // nillable/abstract/fixed
     public short fElementMiscFlags;
 
     public short fBlock;
@@ -92,13 +90,6 @@ public class XSElementDecl {
     public String fSubGroupNS;
     public int fSubGroupIdx;
 
-    // REVISIT: should we expose more type information:
-    // datatypeValidators or contentSpecIndex
-    //
-
-    // REVISIT: should we expose specified or it can wait till PSVI?
-    // false if element value was provided by the schema
-    // true otherwise
 
     // identity constraints
 
@@ -109,7 +100,6 @@ public class XSElementDecl {
     public final Vector fKeyRef = new Vector();
 
 
-
     //
     // Constructors
     //
@@ -118,9 +108,10 @@ public class XSElementDecl {
         clear();
     }
 
-    public XSElementDecl(XSElementDecl elementDecl) {
+    //REVISIT: we should never clone a particle, so we don't need this method.
+    /*public XSElementDecl(XSElementDecl elementDecl) {
         setValues(elementDecl);
-    }
+    }*/
 
     //
     // Public methods
@@ -128,18 +119,25 @@ public class XSElementDecl {
 
     public void clear() {
         fQName.clear();
-        fXSTypeDecl = - 1;
+        fTypeIdx = -1;
         fUnique.removeAllElements();
         fKey.removeAllElements();
         fKeyRef.removeAllElements();
     }
 
-    public void setValues(XSElementDecl elementDecl) {
+    //REVISIT: we should never clone a particle, so we don't need this method.
+    /*public void setValues(XSElementDecl elementDecl) {
         fQName.setValues(elementDecl.fQName);
-        fXSTypeDecl = elementDecl.fXSTypeDecl;
+        fTypeNS = elementDecl.fTypeNS;
+        fTypeIdx = elementDecl.fXSTypeDecl;
+        fElementMiscFlags = elementDecl.fElementMiscFlags;
+        fBlock = elementDecl.fBlock;
+        fFinal = elementDecl.fFinal;
+        fDefault = elementDecl.fDefault;
+        fSubGroupNS = elementDecl.fSubGroupNS;
+        fSubGroupIdx = elementDecl.fSubGroupIdx;
         copyIdentityConstraints(elementDecl.fUnique,elementDecl.fKey, elementDecl.fKeyRef);
-    }
-
+    }*/
 
     public void copyIdentityConstraints (Vector unique, Vector key, Vector keyRef){
         //REVISIT: IMPLEMENT!

@@ -57,12 +57,10 @@
 
 package org.apache.xerces.impl.v2;
 
-
+import org.apache.xerces.impl.v2.datatypes.*;
 import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.impl.v1.datatype.DatatypeValidator;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.impl.validation.ContentModelValidator;
-import org.apache.xerces.impl.validation.*;
 
 import java.lang.Integer;
 import java.util.Hashtable;
@@ -70,6 +68,7 @@ import java.util.Vector;
 /**
  * @version $Id$
  */
+
 public class SchemaGrammar {
 
     /** Chunk shift (8). */
@@ -90,104 +89,52 @@ public class SchemaGrammar {
     /** Target namespace of grammar. */
     private String fTargetNamespace;
 
-    // element, attribute, notation decl count
+    // decl count: element, attribute, notation, particle, type
     private int fElementDeclCount = 0;
     private int fAttributeDeclCount = 0 ;
     private int fNotationCount = 0;
+    private int fParticleCount = 0;
+    private int fXSTypeCount = 0;
 
-    // content spec count
-    private int fContentSpecCount = 0;
-
-
-    /** Element declaration name. */
-    private QName fElementDeclName[][] = new QName[INITIAL_CHUNK_COUNT][];
-
-    /** 
-     * Element declaration default value. This value is used when
-     * the element is of simple type.
-     */
-    private String fElementDeclDefaultValue[][] = new String[INITIAL_CHUNK_COUNT][];
-
-    /** 
-     * Element declaration default type. This value is used when
-     * the element is of simple type.
-     */
-    //REVISIT do we need this array?
-    private short   fElementDeclDefaultType[][] = new short[INITIAL_CHUNK_COUNT][];
-
-    /** 
-     * Element declaration type. This value is an index to types array 
-     * {both simpleType / complexType}  
-     */
-    private int fElementTypeDecl[][] = new int[INITIAL_CHUNK_COUNT][];
-
-    /** 
-    * Element declaration content spec index. This index value is used
-    * to refer to the content spec information tables.
-    */
-    private int fElementDeclContentSpecIndex[][] = new int[INITIAL_CHUNK_COUNT][];
-    private String fElementDeclSubGroupAffFullName[][] = new String[INITIAL_CHUNK_COUNT][];
-    private Vector fElementDeclSubGroupQNames[][] = new Vector[INITIAL_CHUNK_COUNT][];
-    private Vector fElementDeclAllSubGroupQNamesBlock[][] = new Vector[INITIAL_CHUNK_COUNT][];
-    private Vector fElementDeclAllSubGroupQNames[][] = new Vector[INITIAL_CHUNK_COUNT][];
-    private int fElementDeclBlockSet[][] = new int[INITIAL_CHUNK_COUNT][];
-    private int fElementDeclFinalSet[][] = new int[INITIAL_CHUNK_COUNT][];
-    private int fElementDeclMiscFlags[][] = new int[INITIAL_CHUNK_COUNT][];
-
-    /** 
-     * Element declaration content model validator. This validator is
-     * constructed from the content spec nodes.
-     */
-    private ContentModelValidator fElementDeclContentModelValidator[][] = new ContentModelValidator[INITIAL_CHUNK_COUNT][];
+    /** Element declaration contents. */
+    private QName fElementDeclName[][];
+    private String fElementDeclTypeNS[][];
+    private int fElementDeclTypeDecl[][];
+    private short fElementDeclMiscFlags[][];
+    private int fElementDeclBlockSet[][];
+    private int fElementDeclFinalSet[][];
+    private String fElementDeclDefault[][];
+    private int fElementDeclSubGroupNS[][];
+    private int fElementDeclSubGroupIdx[][];
+    private Vector fElementDeclUnique[][];
+    private Vector fElementDeclKey[][];
+    private Vector fElementDeclKeyRef[][];
 
     // attribute declarations
+    private QName fAttributeDeclName[][];
+    private String fAttributeDeclTypeNS[][];
+    private int fAttributeDeclType[][];
+    private short fAttributeDeclConstraintType[][];
+    private String fAttributeDeclDefault[][];
 
-    /** Attribute declaration name. */
-    private QName fAttributeDeclName[][] = new QName[INITIAL_CHUNK_COUNT][];
-
-    /** 
-     * Attribute declaration type.
-     * @see XSAttributeDecl
-     */
-
-    /** 
-     * Element declaration type. This value is an index to types array  
-     */
-    private int fAttributeDeclType[][] = new int[INITIAL_CHUNK_COUNT][];
-    private short fAttributeDeclDefaultType[][] = new short[INITIAL_CHUNK_COUNT][];
-    private String fAttributeDeclDefaultValue[][] = new String[INITIAL_CHUNK_COUNT][];
-    private int fAttributeDeclNextAttributeDeclIndex[][] = new int[INITIAL_CHUNK_COUNT][];
-
-    // content specs
-
-    // here saves the content spec binary trees for element decls, 
-    // each element with a content model will hold a pointer which is 
-    // the index of the head node of the content spec tree. 
-
-    private short fContentSpecType[][] = new short[INITIAL_CHUNK_COUNT][];
-    private Object fContentSpecValue[][] = new Object[INITIAL_CHUNK_COUNT][];
-    private Object fContentSpecOtherValue[][] = new Object[INITIAL_CHUNK_COUNT][];
-
-    // additional content spec tables
-    // used if deferContentSpecExansion is enabled
-    private int fContentSpecMinOccurs[][] = new int[INITIAL_CHUNK_COUNT][];
-    private int fContentSpecMaxOccurs[][] = new int[INITIAL_CHUNK_COUNT][];
-    // store the original uri
-    private int fContentSpecOrgUri[][] = new int[INITIAL_CHUNK_COUNT][];
+    // particles
+    private short fParticleType[][];
+    private String fParticleUri[][];
+    private int fParticleValue[][];
+    private String fParticleOtherUri[][];
+    private int fParticleOtherValue[][];
+    private int fParticleMinOccurs[][];
+    private int fParticleMaxOccurs[][];
 
     // notations
-
-    private String fNotationName[][] = new String[INITIAL_CHUNK_COUNT][];
-    private String[][] fNotationPublicId = new String[INITIAL_CHUNK_COUNT][];
-    private String[][] fNotationSystemId = new String[INITIAL_CHUNK_COUNT][];
-
+    private String fNotationName[][];
+    private String fNotationPublicId[][];
+    private String fNotationSystemId[][];
 
     //REVISIT: as temporary solution store complexTypes/simpleTypes as objects
     // Add XML Schema datatypes 
-    // 
-    private QName fXSTypeQName[][] = new QName[INITIAL_CHUNK_COUNT][];
-    private XSType fXSTypes[][]     = new XSType[INITIAL_CHUNK_COUNT][];
-
+    private QName fTypeDeclQName[][];
+    private XSType fTypeDeclType[][];
 
     // other information
 
@@ -199,12 +146,7 @@ public class SchemaGrammar {
     Hashtable topLevelElemDecls = new Hashtable();
     Hashtable topLevelTypeDecls = new Hashtable();
 
-    // UPA checking
-
-    // Set if we defer min/max expansion for content trees.   This is required if we
-    // are doing particle derivation checking for schema.
-    private boolean deferContentSpecExpansion = false;
-
+    // REVISIT: do we need the option?
     // Set if we check Unique Particle Attribution
     // This one onle takes effect when deferContentSpecExpansion is set
     private boolean checkUniqueParticleAttribution = false;
@@ -217,6 +159,235 @@ public class SchemaGrammar {
     /** Default constructor. */
     public SchemaGrammar(SymbolTable symbolTable) {
         fSymbolTable = symbolTable;
+
+        // element decl
+        fElementDeclName = new QName[INITIAL_CHUNK_COUNT][];
+        fElementDeclTypeNS = new String[INITIAL_CHUNK_COUNT][];
+        fElementDeclTypeDecl = new int[INITIAL_CHUNK_COUNT][];
+        fElementDeclMiscFlags = new short[INITIAL_CHUNK_COUNT][];
+        fElementDeclBlockSet = new int[INITIAL_CHUNK_COUNT][];
+        fElementDeclFinalSet = new int[INITIAL_CHUNK_COUNT][];
+        fElementDeclDefault = new String[INITIAL_CHUNK_COUNT][];
+        fElementDeclSubGroupNS = new int[INITIAL_CHUNK_COUNT][];
+        fElementDeclSubGroupIdx = new int[INITIAL_CHUNK_COUNT][];
+        fElementDeclUnique = new Vector[INITIAL_CHUNK_COUNT][];
+        fElementDeclKey = new Vector[INITIAL_CHUNK_COUNT][];
+        fElementDeclKeyRef = new Vector[INITIAL_CHUNK_COUNT][];
+
+        // attribute declarations
+        fAttributeDeclName = new QName[INITIAL_CHUNK_COUNT][];
+        fAttributeDeclTypeNS = new String[INITIAL_CHUNK_COUNT][];
+        fAttributeDeclType = new int[INITIAL_CHUNK_COUNT][];
+        fAttributeDeclConstraintType = new short[INITIAL_CHUNK_COUNT][];
+        fAttributeDeclDefault = new String[INITIAL_CHUNK_COUNT][];
+
+        // particles
+        fParticleType = new short[INITIAL_CHUNK_COUNT][];
+        fParticleUri = new String[INITIAL_CHUNK_COUNT][];
+        fParticleValue = new int[INITIAL_CHUNK_COUNT][];
+        fParticleOtherUri = new String[INITIAL_CHUNK_COUNT][];
+        fParticleOtherValue = new int[INITIAL_CHUNK_COUNT][];
+        fParticleMinOccurs = new int[INITIAL_CHUNK_COUNT][];
+        fParticleMaxOccurs = new int[INITIAL_CHUNK_COUNT][];
+
+        // notations
+        fNotationName = new String[INITIAL_CHUNK_COUNT][];
+        fNotationPublicId = new String[INITIAL_CHUNK_COUNT][];
+        fNotationSystemId = new String[INITIAL_CHUNK_COUNT][];
+
+        //REVISIT: as temporary solution store complexTypes/simpleTypes as objects
+        // Add XML Schema datatypes 
+        fTypeDeclQName = new QName[INITIAL_CHUNK_COUNT][];
+        fTypeDeclType = new XSType[INITIAL_CHUNK_COUNT][];
+
+    } // <init>(SymbolTable)
+
+    private static final int BASICSET_COUNT = 29;
+    private static final int FULLSET_COUNT  = 46;
+
+    /** Constructor for schema for schemas. */
+    private SchemaGrammar(SymbolTable symbolTable, boolean fullSet) {
+        fSymbolTable = symbolTable;
+
+        fXSTypeCount = fullSet?BASICSET_COUNT:FULLSET_COUNT;
+        fTypeDeclType = new XSType[1][fXSTypeCount];
+        topLevelTypeDecls = new Hashtable();
+
+        try {
+            int typeIndex = 0;
+            XSComplexTypeDecl anyType = new XSComplexTypeDecl();
+            fTypeDeclType[0][typeIndex] = anyType;
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_ANYTYPE, new Integer(typeIndex++));
+            //REVISIT: make anyType the base of anySimpleType
+            //DatatypeValidator anySimpleType = new AnySimpleType(anyType, null, false);
+            DatatypeValidator anySimpleType = new AnySimpleType(null, null, false);
+            fTypeDeclType[0][typeIndex] = anySimpleType;
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_ANYSIMPLETYPE, new Integer(typeIndex++));
+            DatatypeValidator stringDV = new StringDatatypeValidator(anySimpleType, null, false);
+            fTypeDeclType[0][typeIndex] = stringDV;
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_STRING, new Integer(typeIndex++));
+            fTypeDeclType[0][typeIndex] = new BooleanDatatypeValidator(anySimpleType, null, false);
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_BOOLEAN, new Integer(typeIndex++));
+            DatatypeValidator decimalDV = new DecimalDatatypeValidator(anySimpleType, null, false);
+            fTypeDeclType[0][typeIndex] = decimalDV;
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_DECIMAL, new Integer(typeIndex++));
+            fTypeDeclType[0][typeIndex] = new AnyURIDatatypeValidator(anySimpleType, null, false);
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_ANYURI, new Integer(typeIndex++));
+            fTypeDeclType[0][typeIndex] = new Base64BinaryDatatypeValidator(anySimpleType, null, false);
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_BASE64BINARY, new Integer(typeIndex++));
+            fTypeDeclType[0][typeIndex] = new DurationDatatypeValidator(anySimpleType, null, false);
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_DURATION, new Integer(typeIndex++));
+            fTypeDeclType[0][typeIndex] = new DateTimeDatatypeValidator(anySimpleType, null, false);
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_DATETIME, new Integer(typeIndex++));
+            fTypeDeclType[0][typeIndex] = new TimeDatatypeValidator(anySimpleType, null, false);
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_TIME, new Integer(typeIndex++));
+            fTypeDeclType[0][typeIndex] = new DateDatatypeValidator(anySimpleType, null, false);
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_DATE, new Integer(typeIndex++));
+            fTypeDeclType[0][typeIndex] = new YearMonthDatatypeValidator(anySimpleType, null, false);
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_YEARMONTH, new Integer(typeIndex++));
+            fTypeDeclType[0][typeIndex] = new YearDatatypeValidator(anySimpleType, null, false);
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_YEAR, new Integer(typeIndex++));
+            fTypeDeclType[0][typeIndex] = new MonthDayDatatypeValidator(anySimpleType, null, false);
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_MONTHDAY, new Integer(typeIndex++));
+            fTypeDeclType[0][typeIndex] = new DayDatatypeValidator(anySimpleType, null, false);
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_DAY, new Integer(typeIndex++));
+            fTypeDeclType[0][typeIndex] = new MonthDatatypeValidator(anySimpleType, null, false);
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_MONTH, new Integer(typeIndex++));
+    
+            Hashtable facets = new Hashtable(2);
+            facets.put(SchemaSymbols.ELT_FRACTIONDIGITS, "0");
+            DatatypeValidator integerDV = new DecimalDatatypeValidator(decimalDV, facets, false);
+            fTypeDeclType[0][typeIndex] = integerDV;
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_INTEGER, new Integer(typeIndex++));
+            facets.clear();
+            facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "0" );
+            DatatypeValidator nonPositiveDV = new DecimalDatatypeValidator(integerDV, facets, false);
+            fTypeDeclType[0][typeIndex] = nonPositiveDV;
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_NONPOSITIVEINTEGER, new Integer(typeIndex++));
+            facets.clear();
+            facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "-1" );
+            fTypeDeclType[0][typeIndex] = new DecimalDatatypeValidator(nonPositiveDV, facets, false);
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_NEGATIVEINTEGER, new Integer(typeIndex++));
+            facets.clear();
+            facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "9223372036854775807");
+            facets.put(SchemaSymbols.ELT_MININCLUSIVE,  "-9223372036854775808");
+            DatatypeValidator longDV = new DecimalDatatypeValidator(integerDV, facets, false);
+            fTypeDeclType[0][typeIndex] = longDV;
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_LONG, new Integer(typeIndex++));
+            facets.clear();
+            facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "2147483647");
+            facets.put(SchemaSymbols.ELT_MININCLUSIVE,  "-2147483648");
+            DatatypeValidator intDV = new DecimalDatatypeValidator(longDV, facets, false);
+            fTypeDeclType[0][typeIndex] = intDV;
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_INT, new Integer(typeIndex++));
+            facets.clear();
+            facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "32767");
+            facets.put(SchemaSymbols.ELT_MININCLUSIVE,  "-32768");
+            DatatypeValidator shortDV = new DecimalDatatypeValidator(intDV, facets, false);
+            fTypeDeclType[0][typeIndex] = shortDV;
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_SHORT, new Integer(typeIndex++));
+            facets.clear();
+            facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "127");
+            facets.put(SchemaSymbols.ELT_MININCLUSIVE,  "-128");
+            fTypeDeclType[0][typeIndex] = new DecimalDatatypeValidator(shortDV, facets, false);
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_BYTE, new Integer(typeIndex++));
+            facets.clear();
+            facets.put(SchemaSymbols.ELT_MININCLUSIVE, "0" );
+            DatatypeValidator nonNegativeDV = new DecimalDatatypeValidator(integerDV, facets, false);
+            fTypeDeclType[0][typeIndex] = nonNegativeDV;
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_NONNEGATIVEINTEGER, new Integer(typeIndex++));
+            facets.clear();
+            facets.put(SchemaSymbols.ELT_MAXINCLUSIVE, "18446744073709551615" );
+            DatatypeValidator unsignedLongDV = new DecimalDatatypeValidator(nonNegativeDV, facets, false);
+            fTypeDeclType[0][typeIndex] = unsignedLongDV;
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_UNSIGNEDLONG, new Integer(typeIndex++));
+            facets.clear();
+            facets.put(SchemaSymbols.ELT_MAXINCLUSIVE, "4294967295" );
+            DatatypeValidator unsignedIntDV = new DecimalDatatypeValidator(unsignedLongDV, facets, false);
+            fTypeDeclType[0][typeIndex] = unsignedIntDV;
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_UNSIGNEDINT, new Integer(typeIndex++));
+            facets.clear();
+            facets.put(SchemaSymbols.ELT_MAXINCLUSIVE, "65535" );
+            DatatypeValidator unsignedShortDV = new DecimalDatatypeValidator(unsignedIntDV, facets, false);
+            fTypeDeclType[0][typeIndex] = unsignedShortDV;
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_UNSIGNEDSHORT, new Integer(typeIndex++));
+            facets.clear();
+            facets.put(SchemaSymbols.ELT_MAXINCLUSIVE, "255" );
+            fTypeDeclType[0][typeIndex] = new DecimalDatatypeValidator(unsignedShortDV, facets, false);
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_UNSIGNEDBYTE, new Integer(typeIndex++));
+            facets.clear();
+            facets.put(SchemaSymbols.ELT_MININCLUSIVE, "1" );
+            fTypeDeclType[0][typeIndex] = new DecimalDatatypeValidator(nonNegativeDV, facets, false);
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_POSITIVEINTEGER, new Integer(typeIndex++));
+    
+            if (!fullSet)
+                return;
+    
+            fTypeDeclType[0][typeIndex] = new FloatDatatypeValidator(anySimpleType, null, false);
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_FLOAT, new Integer(typeIndex++));
+            fTypeDeclType[0][typeIndex] = new DoubleDatatypeValidator(anySimpleType, null, false);
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_DOUBLE, new Integer(typeIndex++));
+            fTypeDeclType[0][typeIndex] = new HexBinaryDatatypeValidator(anySimpleType, null, false);
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_HEXBINARY, new Integer(typeIndex++));
+            fTypeDeclType[0][typeIndex] = new NOTATIONDatatypeValidator(anySimpleType, null, false);
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_NOTATION, new Integer(typeIndex++));
+            fTypeDeclType[0][typeIndex] = new QNameDatatypeValidator(anySimpleType, null, false);
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_QNAME, new Integer(typeIndex++));
+            
+            facets.clear();
+            facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATTVAL_REPLACE);
+            DatatypeValidator normalizedDV = new StringDatatypeValidator(stringDV, facets, false);
+            fTypeDeclType[0][typeIndex] = normalizedDV;
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_NORMALIZEDSTRING, new Integer(typeIndex++));
+            facets.clear();
+            facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATTVAL_COLLAPSE);
+            DatatypeValidator tokenDV = new StringDatatypeValidator(normalizedDV, facets, false);
+            fTypeDeclType[0][typeIndex] = tokenDV;
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_TOKEN, new Integer(typeIndex++));
+            facets.clear();
+            facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATTVAL_COLLAPSE);
+            facets.put(SchemaSymbols.ELT_PATTERN , "([a-zA-Z]{2}|[iI]-[a-zA-Z]+|[xX]-[a-zA-Z]+)(-[a-zA-Z]+)*" );
+            fTypeDeclType[0][typeIndex] = new StringDatatypeValidator(tokenDV, facets, false);
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_LANGUAGE, new Integer(typeIndex++));
+            facets.clear();
+            facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATTVAL_COLLAPSE);
+            facets.put(AbstractStringValidator.FACET_SPECIAL_TOKEN, AbstractStringValidator.SPECIAL_TOKEN_NAME);
+            DatatypeValidator nameDV = new StringDatatypeValidator(tokenDV, facets, false);
+            fTypeDeclType[0][typeIndex] = nameDV;
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_NAME, new Integer(typeIndex++));
+            facets.clear();
+            facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATTVAL_COLLAPSE);
+            facets.put(AbstractStringValidator.FACET_SPECIAL_TOKEN, AbstractStringValidator.SPECIAL_TOKEN_NCNAME);
+            DatatypeValidator ncnameDV = new StringDatatypeValidator(nameDV, facets, false);
+            fTypeDeclType[0][typeIndex] = ncnameDV;
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_NCNAME, new Integer(typeIndex++));
+            fTypeDeclType[0][typeIndex] = new IDDatatypeValidator(ncnameDV, null, false);
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_ID, new Integer(typeIndex++));
+            DatatypeValidator idrefDV = new IDREFDatatypeValidator(ncnameDV, null, false);
+            fTypeDeclType[0][typeIndex] = idrefDV;
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_IDREF, new Integer(typeIndex++));
+            fTypeDeclType[0][typeIndex] = new ListDatatypeValidator(idrefDV, null, true);
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_IDREFS, new Integer(typeIndex++));
+            //REVISIT: entity validators
+            //DatatypeValidator entityDV = new ENTITYDatatypeValidator(ncnameDV, null, false);
+            DatatypeValidator entityDV = new StringDatatypeValidator(ncnameDV, null, false);
+            fTypeDeclType[0][typeIndex] = entityDV;
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_ENTITY, new Integer(typeIndex++));
+            //REVISIT: entity validators
+            //fTypeDeclType[0][typeIndex] = new ListDatatypeValidator(entityDV, null, true);
+            fTypeDeclType[0][typeIndex] = new StringDatatypeValidator(entityDV, null, true);
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_ENTITIES, new Integer(typeIndex++));
+            facets.clear();
+            facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATTVAL_COLLAPSE);
+            facets.put(AbstractStringValidator.FACET_SPECIAL_TOKEN, AbstractStringValidator.SPECIAL_TOKEN_NMTOKEN);
+            DatatypeValidator nmtokenDV = new StringDatatypeValidator(tokenDV, facets, false);
+            fTypeDeclType[0][typeIndex] = nmtokenDV;
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_NMTOKEN, new Integer(typeIndex++));
+            fTypeDeclType[0][typeIndex] = new ListDatatypeValidator(nmtokenDV, null, true);
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_NMTOKENS, new Integer(typeIndex++));
+        } catch (InvalidDatatypeFacetException idf) {
+            System.err.println("Internal error");
+        }
     } // <init>(SymbolTable)
 
     /** Returns the symbol table. */
@@ -231,28 +402,39 @@ public class SchemaGrammar {
 
 
     /**
-     * Returns the index of the first element declaration. This index
-     * is then used to query more information about the element declaration.
-     *
-     * @see #getNextElementDeclIndex
-     * @see #getElementDecl
+     * getElementIndex
+     * 
+     * @param elementName
+     * 
+     * @return REVISIT: previously if failed returned false 
      */
-    public int getFirstElementDeclIndex() {
-        return fElementDeclCount > 0 ? fElementDeclCount : -1;
-    } // getFirstElementDeclIndex():int
+    public int getElementIndex(String elementName) {
+        Integer elementIndex = (Integer)topLevelElemDecls.get(elementName);
+        return elementIndex == null ? -1 : elementIndex.intValue();
+    } // getElementDecl(int,XSElementDecl):XSElementDecl
+
 
     /**
-     * Returns the next index of the element declaration following the
-     * specified element declaration.
+     * addElementDecl
      * 
-     * @param elementDeclIndex The element declaration index.
+     * @param name
+     * @param element
+     * 
+     * @return index
      */
-    public int getNextElementDeclIndex(int elementDeclIndex) {
-        return elementDeclIndex < fElementDeclCount - 1 
-        ? elementDeclIndex + 1 : -1;
-    } // getNextElementDeclIndex(int):int
-
-
+    public int addElementDecl(XSElementDecl element) {
+        //REVISIT
+        //ensureCapacityElement();
+        int elementIndex = fElementDeclCount++;
+        int chunk = elementIndex >> CHUNK_SHIFT;
+        int index = elementIndex & CHUNK_MASK;
+        fElementDeclName[chunk][index].setValues(element.fQName);
+        //REVISIT: other fields
+        
+        topLevelElemDecls.put(element.fQName.localpart, new Integer(elementIndex));
+        
+        return elementIndex;
+    }
 
     /**
      * getElementDecl
@@ -266,7 +448,7 @@ public class SchemaGrammar {
                                         XSElementDecl elementDecl) {
 
         if (elementDeclIndex < 0 || elementDeclIndex >= fElementDeclCount) {
-            return elementDecl;
+            return null;
         }
 
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
@@ -282,6 +464,22 @@ public class SchemaGrammar {
 
 
     /**
+     * getElementDecl
+     * 
+     * @param elementName
+     * @param elementDecl The values of this structure are set by this call.
+     * 
+     * @return REVISIT: previously if failed returned false 
+     */
+    public XSElementDecl getElementDecl(String elementName, 
+                                        XSElementDecl elementDecl) {
+
+        int elementIndex = getElementIndex(elementName);
+        return getElementDecl(elementIndex, elementDecl);
+    } // getElementDecl(int,XSElementDecl):XSElementDecl
+
+
+    /**
      * getAttributeDecl
      * 
      * @param attributeDeclIndex 
@@ -291,8 +489,9 @@ public class SchemaGrammar {
      */
     public XSAttributeDecl getAttributeDecl(int attributeDeclIndex, XSAttributeDecl attributeDecl) {
         if (attributeDeclIndex < 0 || attributeDeclIndex >= fAttributeDeclCount) {
-            return attributeDecl;
+            return null;
         }
+        
         int chunk = attributeDeclIndex >> CHUNK_SHIFT;
         int index = attributeDeclIndex & CHUNK_MASK;
 
@@ -302,7 +501,7 @@ public class SchemaGrammar {
         return attributeDecl;
     } // getAttributeDecl
 
-       /**
+    /**
      * getNotationDecl
      * 
      * @param notationDeclIndex 
@@ -328,43 +527,92 @@ public class SchemaGrammar {
 
 
     /**
-     * getContentSpec
+     * getParticleDecl
      * 
-     * @param contentSpecIndex 
-     * @param contentSpec
+     * @param particleIndex 
+     * @param particle
      * 
      * @return REVISIT: previously if failed returned false
      */
-    public XMLContentSpec getContentSpec(int contentSpecIndex, XMLContentSpec contentSpec) {
-        if (contentSpecIndex < 0 || contentSpecIndex >= fContentSpecCount )
-            return contentSpec;
+    public XSParticleDecl getParticleDecl(int particleIndex, XSParticleDecl particle) {
+        if (particleIndex < 0 || particleIndex >= fParticleCount )
+            return null;
 
-        int chunk = contentSpecIndex >> CHUNK_SHIFT;
-        int index = contentSpecIndex & CHUNK_MASK;
+        int chunk = particleIndex >> CHUNK_SHIFT;
+        int index = particleIndex & CHUNK_MASK;
 
-        contentSpec.type       = fContentSpecType[chunk][index];
-        contentSpec.value      = fContentSpecValue[chunk][index];
-        contentSpec.otherValue = fContentSpecOtherValue[chunk][index];
-        return contentSpec;
+        particle.type = fParticleType[chunk][index];
+
+        // REVISIT: 
+        // add code
+        
+        return particle;
     }
 
-    protected int createAttributeDecl() {
-        return -1;
+    /**
+     * addTypeDecl
+     * 
+     * @param name
+     * @param type
+     * 
+     * @return index
+     */
+    public int addTypeDecl(XSType type) {
+        //REVISIT
+        //ensureCapacityType();
+        int typeIndex = fXSTypeCount++;
+        int chunk = typeIndex >> CHUNK_SHIFT;
+        int index = typeIndex & CHUNK_MASK;
+        fTypeDeclType[chunk][index] = type;
+
+        //REVISIT: type name
+        //topLevelTypeDecls.put(typename, new Integer(typeIndex));
+        
+        return typeIndex;
     }
 
-    protected int createElementDecl() {
-        return -1;
+    /**
+     * getTypeIndex
+     * 
+     * @param typeName
+     * 
+     * @return REVISIT: previously if failed returned false
+     */
+    public int getTypeIndex(String typeName) {
+        Integer typeIndex = (Integer)topLevelTypeDecls.get(typeName);
+        return typeIndex == null ? -1 : typeIndex.intValue();
     }
 
-    protected int createContentSpec() {
-        return -1;
+    /**
+     * getTypeDecl
+     * 
+     * @param typeIndex 
+     * 
+     * @return REVISIT: previously if failed returned false
+     */
+    public XSType getTypeDecl(int typeIndex) {
+        if (typeIndex < 0 || typeIndex >= fXSTypeCount )
+            return null;
+
+        int chunk = typeIndex >> CHUNK_SHIFT;
+        int index = typeIndex & CHUNK_MASK;
+
+        return fTypeDeclType[chunk][index];
     }
 
-    protected int createNotationDecl() {
-        return -1;
+    /**
+     * getTypeDecl
+     * 
+     * @param typeName
+     * 
+     * @return REVISIT: previously if failed returned false
+     */
+    public XSType getTypeDecl(String typeName) {
+        int typeIndex = getTypeIndex(typeName);
+        return getTypeDecl(typeIndex);
     }
 
-    protected int createXSTypeDecl(){
-        return -1;
-    }
+    static SchemaGrammar SG_SchemaNS = new SchemaGrammar(null, true);
+    static SchemaGrammar SG_SchemaBasicSet = new SchemaGrammar(null, false);
+    
 } // class SchemaGrammar

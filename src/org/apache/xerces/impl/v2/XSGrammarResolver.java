@@ -57,14 +57,53 @@
 
 package org.apache.xerces.impl.v2;
 
+import java.util.Hashtable;
+
 /**
  * @version $Id$
  */
 class XSGrammarResolver {
+
+    /**
+     * Hashtable that maps between Namespace and a Grammar
+     */
+    private Hashtable fGrammarRegistry = new Hashtable();
+
+    /**
+     * Get the schema grammar for the specified namespace
+     * 
+     * @param namespace
+     * @return SchemaGrammar associated with the namespace
+     */
     public SchemaGrammar getGrammar(String namespace) {
-        return null;
+        return (SchemaGrammar)fGrammarRegistry.get(namespace);
     }
 
+    /**
+     * put a schema grammar into the registry
+     * 
+     * @param namespace namespace associated with the grammar
+     * @param grammar   the grammar to put in the registry
+     */
     public void putGrammar(String namespace, SchemaGrammar grammar) {
+        fGrammarRegistry.put(namespace, grammar);
     }
+
+    /**
+     * Check if a grammar for the specified namespace is in the registry
+     * 
+     * @param namespace
+     * @return boolean true if contains
+     */
+    public boolean contains(String namespace) {
+        return fGrammarRegistry.containsKey(namespace);
+    }
+
+    /**
+     * Clear the registry.
+     */
+    public void clearGrammarResolver() { 
+        fGrammarRegistry.clear();
+    }
+    
 } // class XSGrammarResolver

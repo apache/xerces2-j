@@ -694,9 +694,13 @@ public class SchemaValidator
         System.out.println("endElement: " + element.rawname);
         
         SchemaGrammar grammar = fGrammarResolver.getGrammar(fTempElementDecl.fTypeNS);
-        XSType elemType = grammar.getTypeDecl(fTempElementDecl.fXSTypeDecl, fTempTypeDecl);
+        XSType elemType = grammar.getTypeDecl(fTempElementDecl.fTypeIdx);
         if (elemType.getXSType() == XSType.SIMPLE_TYPE)
-            ((DatatypeValidator)elemType).validate(fBuffer.toString(), null);
+            try {
+                ((DatatypeValidator)elemType).validate(fBuffer.toString(), null);
+            } catch (InvalidDatatypeValueException e) {
+                System.out.println("error: " + e.toString());
+            }
         
         if (fDocumentHandler != null) {
             fDocumentHandler.endElement(element);

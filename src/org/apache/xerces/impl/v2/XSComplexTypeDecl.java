@@ -85,7 +85,7 @@ public class XSComplexTypeDecl implements XSType {
     public short fMiscFlags=0;
 
     public int fContentType;
-    public int fContentSpecHandle = -1;
+    public int fParticleIndex = -1;
     public int fTemplateElmIndex = -1;
     public int fAttlistHead = -1;
     public DatatypeValidator fDatatypeValidator;

@@ -130,4 +130,7 @@ public interface DatatypeValidator extends XSType {
      */
     public int compare( String value1, String value2);
 
+    public int getFinalSet();
+    
+    public void setFinalSet(int finalSet);
 }

@@ -98,12 +98,11 @@ class XSDHandler {
     // traverser calling more efficient/less bulky.
     public final static int ATTRIBUTE_TYPE = 1;
     public final static int ATTRIBUTEGROUP_TYPE = 2;
-    public final static int COMPLEXTYPE_TYPE = 4;
-    public final static int ELEMENT_TYPE = 8;
-    public final static int GROUP_TYPE = 16;
-    public final static int IDENTITYCONSTRAINT_TYPE = 32;
-    public final static int NOTATION_TYPE = 64;
-    public final static int SIMPLETYPE_TYPE = 128;
+    public final static int ELEMENT_TYPE = 4;
+    public final static int GROUP_TYPE = 8;
+    public final static int IDENTITYCONSTRAINT_TYPE = 16;
+    public final static int NOTATION_TYPE = 32;
+    public final static int TYPEDECL_TYPE = 64;
 
     // this string gets appended to redefined names; it's purpose is to be
     // as unlikely as possible to cause collisions.
@@ -116,9 +115,6 @@ class XSDHandler {
     //protected data that can be accessable by any traverser
     // stores <notation> decl
     protected Hashtable fNotationRegistry = new Hashtable();
-
-    // stores "final" values of simpleTypes--no clean way to integrate this into the existing datatype validation structure...
-    protected Hashtable fSimpleTypeFinalRegistry = new Hashtable();
 
     // These tables correspond to the symbol spaces defined in the
     // spec.
@@ -485,9 +481,6 @@ class XSDHandler {
         case ATTRIBUTEGROUP_TYPE :
             decl = (Element)fUnparsedAttributeGroupRegistry.get(declKey); 
             break;
-        case COMPLEXTYPE_TYPE :
-            decl = (Element)fUnparsedTypeRegistry.get(declKey); 
-            break;
         case ELEMENT_TYPE :
             decl = (Element)fUnparsedElementRegistry.get(declKey); 
             break;
@@ -500,7 +493,7 @@ class XSDHandler {
         case NOTATION_TYPE :
             decl = (Element)fUnparsedNotationRegistry.get(declKey); 
             break;
-        case SIMPLETYPE_TYPE :
+        case TYPEDECL_TYPE :
             decl = (Element)fUnparsedTypeRegistry.get(declKey); 
             break;
         default:
@@ -518,8 +511,6 @@ class XSDHandler {
             return fAttributeTraverser.traverse(decl, schemaWithDecl, null);
         case ATTRIBUTEGROUP_TYPE :
             return fAttributeGroupTraverser.traverse(decl, schemaWithDecl, null);
-        case COMPLEXTYPE_TYPE :
-            return fComplexTypeTraverser.traverseGlobal(decl, schemaWithDecl, null, null);
         case ELEMENT_TYPE :
             return fElementTraverser.traverseGlobal(decl, schemaWithDecl, null);
         case GROUP_TYPE :
@@ -528,15 +519,19 @@ class XSDHandler {
             return -1;
         case NOTATION_TYPE :
             return fNotationTraverser.traverse(decl, schemaWithDecl, null);
-        case SIMPLETYPE_TYPE :
-            fSimpleTypeTraverser.traverseGlobal(decl, schemaWithDecl,
-                null);
-            // right now this returns String; REVISIT!
-            return -1;
+        case TYPEDECL_TYPE :
+            if (DOMUtil.getLocalName(decl).equals(SchemaSymbols.ELT_COMPLEXTYPE))
+                return fComplexTypeTraverser.traverseGlobal(decl, schemaWithDecl, null, null);
+            else
+                return fSimpleTypeTraverser.traverseGlobal(decl, schemaWithDecl, null);
         }
         // if we get here there's *really* something up...
         return -1;
     } // getComponentDecl(XSDocumentInfo, int, QName):  int
+
+    protected Object getDecl(String namespace, int declType, int declIndex) {
+        return null;
+    } // end getDecl
 
     // Since ID constraints can occur in local elements, unless we
     // wish to completely traverse all our DOM trees looking for ID
@@ -580,7 +575,7 @@ class XSDHandler {
     // of this object; it creates the traversers that will be used to
     // construct schemaGrammars.
     private void createTraversers() {
-        fAttributeChecker = new XSAttributeChecker(this, fDatatypeRegistry, fErrorReporter);
+        fAttributeChecker = new XSAttributeChecker(this, fErrorReporter);
         fAttributeGroupTraverser = new
                                    XSDAttributeGroupTraverser(this, fErrorReporter, fAttributeChecker);
         fAttributeTraverser = new XSDAttributeTraverser(this,
@@ -631,7 +626,8 @@ class XSDHandler {
     } // reset
 
 
-    protected DatatypeValidator getDatatypeValidator(String uri, String localpart) {
+    
+    /*protected DatatypeValidator getDatatypeValidator(String uri, String localpart) {
 
         DatatypeValidator dv = null;
 
@@ -669,7 +665,7 @@ class XSDHandler {
             //REVISIT
             //reportSchemaError(SchemaMessageProvider.DatatypeError,new Object [] { e.getMessage()});
         }
-    }
+    }*/
 
     /** This method makes sure that
      * if this component is being redefined that it lives in the

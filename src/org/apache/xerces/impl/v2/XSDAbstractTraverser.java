@@ -100,11 +100,11 @@ abstract class XSDAbstractTraverser {
 
     // traver the annotation declaration
     // REVISIT: store annotation information for PSVI
-    int traverseAnnotationDecl(Element annotationDecl, Hashtable parentAttrs) {
+    int traverseAnnotationDecl(Element annotationDecl, Object[] parentAttrs) {
         // General Attribute Checking
         // There is no difference between global or local annotation,
         // so we assume it's always global.
-        Hashtable attrValues = fAttrChecker.checkAttributes(annotationDecl, true);
+        Object[] attrValues = fAttrChecker.checkAttributes(annotationDecl, true);
 
         for(Element child = DOMUtil.getFirstChildElement(annotationDecl);
             child != null;
@@ -142,11 +142,11 @@ abstract class XSDAbstractTraverser {
     //
 
     //REVISIT: Implement
+    //REVISIT: if we want to expose annotation information to the application,
+    //         then we should never call this method. different traversers
+    //         should call traverseAnnotationDecl() directly, and store the
+    //         returned value.
     Element checkContent( Element elm, Element content, boolean isEmpty ) {
         return null;
-    }
-    //REVISIT: Implement
-    int parseFinalSet (String finalString){
-        return -1;
     }
 }

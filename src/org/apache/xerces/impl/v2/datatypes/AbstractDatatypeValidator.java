@@ -135,4 +135,11 @@ public abstract class AbstractDatatypeValidator implements DatatypeValidator, Cl
         return XSType.DATATYPE_TYPE;
     }
 
+    protected int fFinalSet = 0;
+    public int getFinalSet() {
+        return fFinalSet;
+    }
+    public void setFinalSet(int finalSet) {
+        fFinalSet = finalSet;
+    }
 }
