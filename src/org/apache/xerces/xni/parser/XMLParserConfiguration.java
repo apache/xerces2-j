@@ -171,7 +171,7 @@ public interface XMLParserConfiguration
      * @throws XMLConfigurationException Thrown if there is a configuration
      *                                   error.
      */
-    public void setFeature(String featureId, boolean statek)
+    public void setFeature(String featureId, boolean state)
         throws XMLConfigurationException;
 
     /**
