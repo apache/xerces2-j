@@ -2398,18 +2398,19 @@ System.out.println("!!!!!!!!In XMLValidator, the return value from checkContent 
         fANYSymbol = XMLElementDecl.TYPE_ANY;
         fMIXEDSymbol = XMLElementDecl.TYPE_MIXED;
         fCHILDRENSymbol = XMLElementDecl.TYPE_CHILDREN;
-        fCDATASymbol = fStringPool.addSymbol("CDATA");
-        fIDSymbol = fStringPool.addSymbol("ID");
-        fIDREFSymbol = fStringPool.addSymbol("IDREF");
-        fIDREFSSymbol = fStringPool.addSymbol("IDREFS");
-        fENTITYSymbol = fStringPool.addSymbol("ENTITY");
-        fENTITIESSymbol = fStringPool.addSymbol("ENTITIES");
-        fNMTOKENSymbol = fStringPool.addSymbol("NMTOKEN");
-        fNMTOKENSSymbol = fStringPool.addSymbol("NMTOKENS");
+
+        fCDATASymbol = XMLAttributeDecl.TYPE_CDATA;
+        fIDSymbol = XMLAttributeDecl.TYPE_ID;
+        fIDREFSymbol = XMLAttributeDecl.TYPE_IDREF;
+        fIDREFSSymbol = XMLAttributeDecl.TYPE_IDREF;
+        fENTITYSymbol = XMLAttributeDecl.TYPE_ENTITY;
+        fENTITIESSymbol = XMLAttributeDecl.TYPE_ENTITY;
+        fNMTOKENSymbol = XMLAttributeDecl.TYPE_NMTOKEN;
+        fNMTOKENSSymbol = XMLAttributeDecl.TYPE_NMTOKEN;
         fNOTATIONSymbol = fStringPool.addSymbol("NOTATION");
-        fENUMERATIONSymbol = fStringPool.addSymbol("ENUMERATION");
-        fREQUIREDSymbol = fStringPool.addSymbol("#REQUIRED");
-        fFIXEDSymbol = fStringPool.addSymbol("#FIXED");
+        fENUMERATIONSymbol = XMLAttributeDecl.TYPE_ENUMERATION;
+        fREQUIREDSymbol = XMLAttributeDecl.DEFAULT_TYPE_REQUIRED;
+        fFIXEDSymbol = XMLAttributeDecl.DEFAULT_TYPE_FIXED;
         fDATATYPESymbol = XMLElementDecl.TYPE_SIMPLE;
         fEpsilonIndex = fStringPool.addSymbol("<<CMNODE_EPSILON>>");
         fXMLLang = fStringPool.addSymbol("xml:lang");
@@ -2504,14 +2505,14 @@ System.out.println("!!!!!!!!In XMLValidator, the return value from checkContent 
             fGrammar.getAttributeDecl(attlistIndex, fTempAttDecl);
 
             // TO DO: For ericye Debug only
-            /***
+            /***/
             if (fTempAttDecl != null) {
                 XMLElementDecl element = new XMLElementDecl();
                 fGrammar.getElementDecl(elementIndex, element);
                 System.out.println("element: "+fStringPool.toString(element.name.localpart));
                 System.out.println("attlistIndex " + attlistIndex + "\n"+
                     "attName : '"+fStringPool.toString(fTempAttDecl.name.localpart) + "'\n"
-                                   + "attType : '"+fStringPool.toString(fTempAttDecl.type) + "'\n"
+                                   + "attType : '"+fTempAttDecl.type + "'\n"
                                    + "attDefaultType : '"+fTempAttDecl.defaultType + "'\n"
                                    + "attDefaultValue : '"+fTempAttDecl.defaultValue + "'\n"
                                    );
@@ -2521,8 +2522,11 @@ System.out.println("!!!!!!!!In XMLValidator, the return value from checkContent 
             int attPrefix = fTempAttDecl.name.prefix;
             int attName = fTempAttDecl.name.localpart;
             int attType = fTempAttDecl.type;
-            int attDefType = fStringPool.addSymbol(fTempAttDecl.defaultType);
-            int attValue = fStringPool.addSymbol(fTempAttDecl.defaultValue);
+            int attDefType =fTempAttDecl.defaultType;
+            int attValue = -1 ;
+            if (fTempAttDecl.defaultValue != null ) {
+                attValue = fStringPool.addSymbol(fTempAttDecl.defaultValue);
+            }
             boolean specified = false;
             boolean required = attDefType == fREQUIREDSymbol;
             if (firstCheck != -1) {
@@ -3642,7 +3646,7 @@ System.out.println("!!!!!!!!In XMLValidator, the return value from checkContent 
             String strTmp = fStringPool.toString(elementType);
             System.out.println("Name: "+strTmp+", "+
                                "Count: "+childCount+", "+
-                               "ContentSpec: "); //+getContentSpecAsString(elementIndex));
+                               "ContentSpecType: " +fCurrentContentSpecType); //+getContentSpecAsString(elementIndex));
             for (int index = 0; index < childCount && index < 10; index++) {
                 if (index == 0) {
                     System.out.print("  (");
