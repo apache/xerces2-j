@@ -47,6 +47,15 @@ public class DoubleDV extends TypeValidator {
     public int compare(Object value1, Object value2) {
         return ((XDouble)value1).compareTo((XDouble)value2);
     }//compare()
+    
+    //distinguishes between identity and equality for double datatype
+    //0.0 is equal but not identical to -0.0
+    public boolean isIdentical (Object value1, Object value2) {
+        if (value2 instanceof XDouble) {
+            return ((XDouble)value1).isIdentical((XDouble)value2);
+        }
+        return false;
+    }//isIdentical()
 
     private static final class XDouble implements XSDouble {
         private double value;
@@ -86,6 +95,19 @@ public class DoubleDV extends TypeValidator {
                 return true;
 
             return false;
+        }
+        
+        // NOTE: 0.0 is equal but not identical to -0.0
+        public boolean isIdentical (XDouble val) {
+            if (val == this) {
+                return true;
+            }
+            
+            Double d1 = new Double(value);
+            Double d2 = new Double(val.value);
+            
+            //Double values of 0.0 and -0.0 return false for Double#equals method
+            return d1.equals(d2); 
         }
 
         private int compareTo(XDouble val) {

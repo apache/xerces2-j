@@ -52,6 +52,27 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
     public short getAllowedFacets(){
         return ( XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_WHITESPACE | XSSimpleTypeDecl.FACET_ENUMERATION |XSSimpleTypeDecl.FACET_MAXINCLUSIVE |XSSimpleTypeDecl.FACET_MININCLUSIVE | XSSimpleTypeDecl.FACET_MAXEXCLUSIVE  | XSSimpleTypeDecl.FACET_MINEXCLUSIVE  );
     }//getAllowedFacets()
+    
+    
+    // distinguishes between identity and equality for date/time values
+    // ie: two values representing the same "moment in time" but with different 
+    // remembered timezones are now equal but not identical.
+    public boolean isIdentical (Object value1, Object value2) {
+        if (!(value1 instanceof DateTimeData) || !(value2 instanceof DateTimeData)) {
+            return false;
+        }
+        
+        DateTimeData v1 = (DateTimeData)value1;
+        DateTimeData v2 = (DateTimeData)value2;
+        
+        // original timezones must be the same in addition to date/time values
+        // being 'equal'
+        if ((v1.timezoneHr == v2.timezoneHr) && (v1.timezoneMin == v2.timezoneMin)) {
+            return v1.equals(v2);
+        }
+        
+        return false;
+    }//isIdentical()
 
     // the parameters are in compiled form (from getActualValue)
     public int compare (Object value1, Object value2) {

@@ -58,6 +58,14 @@ public abstract class TypeValidator {
     public static final short EQUAL         = 0;
     public static final short GREATER_THAN  = 1;
     public static final short INDETERMINATE = 2;
+    
+    // where there is distinction between identity and equality, this method
+    // will be overwritten
+    // checks whether the two values are identical; for ex, this distinguishes 
+    // -0.0 from 0.0 
+    public boolean isIdentical (Object value1, Object value2) {
+        return value1.equals(value2);
+    }
 
     // check the order relation between the two values
     // the parameters are in compiled form (from getActualValue)

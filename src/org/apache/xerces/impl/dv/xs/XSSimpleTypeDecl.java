@@ -1780,10 +1780,19 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }//getActualValue()
 
     public boolean isEqual(Object value1, Object value2) {
-        if (value1 == null)
+        if (value1 == null) {
             return false;
+        }
         return value1.equals(value2);
     }//isEqual()
+    
+    // determine whether the two values are identical
+    public boolean isIdentical (Object value1, Object value2) {
+        if (value1 == null) {
+            return false;
+        }
+        return fDVs[fValidationDV].isIdentical(value1, value2);
+    }//isIdentical()
 
     // normalize the string according to the whiteSpace facet
     public static String normalize(String content, short ws) {

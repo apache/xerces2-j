@@ -47,6 +47,15 @@ public class FloatDV extends TypeValidator {
     public int compare(Object value1, Object value2){
         return ((XFloat)value1).compareTo((XFloat)value2);
     }//compare()
+    
+    //distinguishes between identity and equality for float datatype
+    //0.0 is equal but not identical to -0.0
+    public boolean isIdentical (Object value1, Object value2) {  	 	
+        if (value2 instanceof XFloat) {
+            return ((XFloat)value1).isIdentical((XFloat)value2);
+        }
+        return false;
+    }//isIdentical()
 
     private static final class XFloat implements XSFloat {
 
@@ -87,6 +96,19 @@ public class FloatDV extends TypeValidator {
                 return true;
 
             return false;
+        }
+        
+        // NOTE: 0.0 is equal but not identical to -0.0
+        public boolean isIdentical (XFloat val) {
+            if (val == this) {
+                return true;
+            }
+            
+            Float f1 = new Float(value);
+            Float f2 = new Float(val.value);
+            
+            //Float values of 0.0 and -0.0 return false for Float#equals method
+            return f1.equals(f2); 
         }
 
         private int compareTo(XFloat val) {
