@@ -1168,35 +1168,36 @@ public class XMLEntityManager
         if (b0 == 0x00 && b1 == 0x00 && b2 == 0x00 && b3 == 0x3C) {
             // UCS-4, big endian (1234)
             // REVISIT: What should this be?
-            return "UCS-4";
+            return "UnicodeBig";
         }
         if (b0 == 0x3C && b1 == 0x00 && b2 == 0x00 && b3 == 0x00) {
             // UCS-4, little endian (4321)
             // REVISIT: What should this be?
-            return "UCS-4";
+            return "UnicodeLittle";
         }
         if (b0 == 0x00 && b1 == 0x00 && b2 == 0x3C && b3 == 0x00) {
             // UCS-4, unusual octet order (2143)
             // REVISIT: What should this be?
-            return "UCS-4";
+            return "UnicodeBigUnmarked";
         }
         if (b0 == 0x00 && b1 == 0x3C && b2 == 0x00 && b3 == 0x00) {
             // UCS-4, unusual octect order (3412)
             // REVISIT: What should this be?
-            return "UCS-4";
+            return "UnicodeLittleUnmarked";
         }
-        if (b1 == 0x00 && b1 == 0x3C && b2 == 0x00 && b3 == 0x3F) {
+        if (b0 == 0x00 && b1 == 0x3C && b2 == 0x00 && b3 == 0x3F) {
             // UTF-16, big-endian, no BOM
             // REVISIT: What should this be?
-            return "UCS-4";
+            return "UTF-16";
         }
-        if (b1 == 0x3C && b1 == 0x00 && b2 == 0x3F && b3 == 0x00) {
+        if (b0 == 0x3C && b1 == 0x00 && b2 == 0x3F && b3 == 0x00) {
             // UTF-16, little-endian, no BOM
-            return "UCS-4";
+            return "UTF-16";
         }
-        if (b1 == 0x4C && b1 == 0x6F && b2 == 0xA7 && b3 == 0x94) {
+        if (b0 == 0x4C && b1 == 0x6F && b2 == 0xA7 && b3 == 0x94) {
             // EBCDIC
-            return "EBCDIC";
+            // a la xerces1, return CP037 instead of EBCDIC here
+            return "CP037";
         }
 
         // default encoding
