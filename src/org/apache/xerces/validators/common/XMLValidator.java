@@ -1882,7 +1882,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 }
                 index = attrList.getNextAttr(index);
             }
-
             // if validating, walk through the list again to deal with "xsi:...."
             if (fValidating && fSchemaValidation) {
 
@@ -2242,7 +2241,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     private void validateElementAndAttributes(QName element, 
                                               XMLAttrList attrList) 
         throws Exception {
-
+        
         if (fGrammar == null && 
             !fValidating && !fNamespacesEnabled) {
             fCurrentElementIndex = -1;
@@ -2280,7 +2279,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
             if (elementIndex == -1) {
                 // if validating based on a Schema, try to resolve the element again by look it up in its ancestor types
-                if (fGrammarIsSchemaGrammar && fCurrentElementIndex != -1) {
+                if (element.uri == -1 && fGrammarIsSchemaGrammar && fCurrentElementIndex != -1) {
                     TraverseSchema.ComplexTypeInfo baseTypeInfo = null;
                     baseTypeInfo = ((SchemaGrammar)fGrammar).getElementComplexTypeInfo(fCurrentElementIndex);
                     while (baseTypeInfo != null) {
