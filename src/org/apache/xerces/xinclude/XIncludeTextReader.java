@@ -65,7 +65,6 @@ public class XIncludeTextReader {
     
     // Content negotation parameters
     private String fAccept;
-    private String fAcceptCharset;
     private String fAcceptLanguage;
  
     /**
@@ -92,16 +91,13 @@ public class XIncludeTextReader {
     }
     
     /**
-     * Sets content negotation parameters to 
-     * be attached to an HTTP request.
+     * Sets content negotation parameters to be attached to an HTTP request.
      * 
      * @param accept the Accept HTTP request property
-     * @param acceptCharset the Accept-Charset HTTP request property
      * @param acceptLanguage the Accept-Language HTTP request property
      */
-    public void setHttpProperties(String accept, String acceptCharset, String acceptLanguage) {
+    public void setHttpProperties(String accept, String acceptLanguage) {
         fAccept = accept;
-        fAcceptCharset = acceptCharset;
         fAcceptLanguage = acceptLanguage;
     }
 
@@ -139,9 +135,6 @@ public class XIncludeTextReader {
                 if (urlCon instanceof HttpURLConnection) {
                     if( fAccept != null && fAccept.length() > 0) {
                         urlCon.setRequestProperty(XIncludeHandler.HTTP_ACCEPT, fAccept);
-                    }
-                    if( fAcceptCharset != null && fAcceptCharset.length() > 0) {
-                        urlCon.setRequestProperty(XIncludeHandler.HTTP_ACCEPT_CHARSET, fAcceptCharset);
                     }
                     if( fAcceptLanguage != null && fAcceptLanguage.length() > 0) {
                         urlCon.setRequestProperty(XIncludeHandler.HTTP_ACCEPT_LANGUAGE, fAcceptLanguage);

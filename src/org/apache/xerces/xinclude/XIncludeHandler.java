@@ -106,7 +106,6 @@ public class XIncludeHandler
         "org.apache.xerces.parsers.XIncludeParserConfiguration";
     public final static String HTTP_ACCEPT = "Accept";
     public final static String HTTP_ACCEPT_LANGUAGE = "Accept-Language";
-    public final static String HTTP_ACCEPT_CHARSET = "Accept-Charset";
     public final static String XPOINTER = "xpointer";
 
     public final static String XINCLUDE_NS_URI =
@@ -122,7 +121,6 @@ public class XIncludeHandler
     public final static String XINCLUDE_ATTR_ENCODING = "encoding".intern();
     public final static String XINCLUDE_ATTR_ACCEPT = "accept".intern();
     public final static String XINCLUDE_ATTR_ACCEPT_LANGUAGE = "accept-language".intern();
-    public final static String XINCLUDE_ATTR_ACCEPT_CHARSET = "accept-charset".intern();
 
     // Top Level Information Items have [included] property in infoset
     public final static String XINCLUDE_INCLUDED = "[included]".intern();
@@ -1116,14 +1114,27 @@ public class XIncludeHandler
         // TODO: figure out what section 4.1.1 of the XInclude spec is talking about
         //       has to do with disallowed ASCII character escaping
         //       this ties in with the above IURI section, but I suspect Java already does it
+        
         String href = attributes.getValue(XINCLUDE_ATTR_HREF);
         String parse = attributes.getValue(XINCLUDE_ATTR_PARSE);
         String xpointer =  attributes.getValue(XPOINTER);
+        String accept = attributes.getValue(XINCLUDE_ATTR_ACCEPT);
+        String acceptLanguage = attributes.getValue(XINCLUDE_ATTR_ACCEPT_LANGUAGE);
+        
         if (href == null && xpointer == null) {
             reportFatalError("XpointerMissing");
         }
         if (parse == null) {
             parse = XINCLUDE_PARSE_XML;
+        }
+        
+        // Verify that if an accept and/or an accept-language attribute exist
+        // that the value(s) don't contain disallowed characters.
+        if (accept != null && !isValidInHTTPHeader(accept)) {
+        	reportFatalError("AcceptMalformed", null);
+        }
+        if (acceptLanguage != null && !isValidInHTTPHeader(acceptLanguage)) {
+            reportFatalError("AcceptLanguageMalformed", null);
         }
 
         XMLInputSource includedSource = null;
@@ -1253,9 +1264,7 @@ public class XIncludeHandler
                 }
                 if (includedSource.getCharacterStream() == null
                     && includedSource.getByteStream() == null) {
-                    reader.setHttpProperties(attributes.getValue(XINCLUDE_ATTR_ACCEPT),
-                        attributes.getValue(XINCLUDE_ATTR_ACCEPT_CHARSET),
-                        attributes.getValue(XINCLUDE_ATTR_ACCEPT_LANGUAGE));
+                    reader.setHttpProperties(accept, acceptLanguage);
                 }
                 reader.setErrorReporter(fErrorReporter);
                 reader.parse();
@@ -2163,5 +2172,24 @@ public class XIncludeHandler
                 // REVISIT: throw error here
             }
         }
+    }
+    
+    /**
+     * Returns <code>true</code> if the given string 
+     * would be valid in an HTTP header.
+     * 
+     * @param value string to check
+     * @return <code>true</code> if the given string
+     * would be valid in an HTTP header
+     */
+    private boolean isValidInHTTPHeader (String value) {
+        char ch;
+        for (int i = value.length() - 1; i >= 0; --i) {
+            ch = value.charAt(i);
+            if (ch < 0x20 || ch > 0x7E) {
+                return false;
+            }
+        }
+        return true;
     }
 }
