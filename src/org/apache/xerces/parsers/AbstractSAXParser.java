@@ -443,33 +443,40 @@ public abstract class AbstractSAXParser
             }
 
             // SAX2
-            if (fContentHandler != null) {
+            if (fContentHandler != null) {                
                 
-                // send prefix mapping events
-                startNamespaceMapping();
+                if (fNamespaces) {
+                    // send prefix mapping events
+                    int count = startNamespaceMapping();
+
+                    // If there were no new namespaces declared
+                    // then we can skip searching the attribute list
+                    // for namespace declarations.
+                    if (count > 0) {
+                        int len = attributes.getLength();
+                        for (int i = len - 1; i >= 0; i--) {
+                            attributes.getName(i, fQName);
+
+                            if ((fQName.prefix != null && fQName.prefix.equals("xmlns")) || 
+                                fQName.rawname.equals("xmlns")) {
+                                if (!fNamespacePrefixes) {
+                                    // remove namespace declaration attributes
+                                    attributes.removeAttributeAt(i);
+                                }
+                                else {
+                                    // localpart should be empty string as per SAX documentation:
+                                    // http://www.saxproject.org/?selected=namespaces
+                                    fQName.prefix = "";
+                                    fQName.uri = "";
+                                    fQName.localpart = "";
+                                    attributes.setName(i, fQName);
+                                }
+                            }
+                        }
+                    }
+                }
                 
                 fAugmentations = augs;
-
-                int len = attributes.getLength();
-                for (int i = len - 1; i >= 0; i--) {
-                    attributes.getName(i, fQName);
-
-                    if ((fQName.prefix != null && fQName.prefix.equals("xmlns")) || 
-                        fQName.rawname.equals("xmlns")) {
-                        if (!fNamespacePrefixes) {
-                            // remove namespace declaration attributes
-                            attributes.removeAttributeAt(i);
-                        }
-                        if (fNamespaces && fNamespacePrefixes) {
-                            // localpart should be empty string as per SAX documentation:
-                            // http://www.saxproject.org/?selected=namespaces
-                            fQName.prefix = "";
-                            fQName.uri = "";
-                            fQName.localpart = "";
-                            attributes.setName(i, fQName);
-                        }
-                    } 
-                }
                 
                 String uri = element.uri != null ? element.uri : "";
                 String localpart = fNamespaces ? element.localpart : "";
@@ -576,7 +583,9 @@ public abstract class AbstractSAXParser
                 String localpart = fNamespaces ? element.localpart : "";
                 fContentHandler.endElement(uri, localpart,
                                            element.rawname);
-                endNamespaceMapping();
+                if (fNamespaces) {
+                    endNamespaceMapping();
+                } 
             }
         }
         catch (SAXException e) {
@@ -1890,33 +1899,36 @@ public abstract class AbstractSAXParser
         return fLexicalHandler;
     } // getLexicalHandler():LexicalHandler
 
-	/**
-	 * Send startPrefixMapping events
-	 */
-	protected final void startNamespaceMapping() throws SAXException{
-		int count = fNamespaceContext.getDeclaredPrefixCount();
-		if (count > 0) {
-			String prefix = null;
+    /**
+     * Send startPrefixMapping events
+     */
+    protected final int startNamespaceMapping() throws SAXException{
+        int count = fNamespaceContext.getDeclaredPrefixCount();
+        if (count > 0) {
+            String prefix = null;
             String uri = null;
-			for (int i = 0; i < count; i++) {
-				prefix = fNamespaceContext.getDeclaredPrefixAt(i);
+            for (int i = 0; i < count; i++) {
+                prefix = fNamespaceContext.getDeclaredPrefixAt(i);
                 uri = fNamespaceContext.getURI(prefix);
-				fContentHandler.startPrefixMapping(prefix, 
-                (uri == null)?"":uri);
-			}
-		}
-	}
+                fContentHandler.startPrefixMapping(prefix, 
+                    (uri == null) ? "" : uri);
+            }
+        }
+        return count;
+    }
+    
     /**
      * Send endPrefixMapping events
      */
-	protected final void endNamespaceMapping() throws SAXException {
-		int count = fNamespaceContext.getDeclaredPrefixCount();
-		if (count > 0) {
-			for (int i = 0; i < count; i++) {
-		        fContentHandler.endPrefixMapping(fNamespaceContext.getDeclaredPrefixAt(i));
-			}
-		}
-	}
+    protected final void endNamespaceMapping() throws SAXException {
+        int count = fNamespaceContext.getDeclaredPrefixCount();
+        if (count > 0) {
+            for (int i = 0; i < count; i++) {
+                fContentHandler.endPrefixMapping(fNamespaceContext.getDeclaredPrefixAt(i));
+            }
+        }
+    }
+	
     //
     // XMLDocumentParser methods
     //
