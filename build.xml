@@ -153,9 +153,9 @@ Copyright:
     <!-- copy src files -->
     <copydir src="${src.dir}" dest="${build.src}" includes="**/Makefile, **/Makefile.incl, javax/**, org/**"
              excludes="**/classfiles_updated **/CVS* **/.#*
-                       **/DatatypeValidatorFactory.java **/SchemaImporter.java
-                       **/RevalidatingDOMParser.java **/DatatypeContentModel.java
-                       **/ComplexTypeInfo.java **/DTDImporter.java "/>
+                       **/SchemaImporter.java **/RevalidatingDOMParser.java
+                       **/DatatypeContentModel.java **/ComplexTypeInfo.java
+                       **/DTDImporter.java "/>
 	<deltree dir="${build.src}/whiteboard"/>
 
     <!-- substitute tokens as needed -->
@@ -216,7 +216,7 @@ Copyright:
   <!-- =================================================================== -->
   <target name="docs" depends="prepare, prepare-docs">
 	<echo message="Building docs for ${Name} ${version} ..." />
-    <java fork="no"
+    <java fork="yes"
           classpath="${java.class.path}:${doc.generator.package}"
           classname="${doc.generator}"
           args="targetDirectory=${build.docs} ${docs.book} ${doc.style}"/>
