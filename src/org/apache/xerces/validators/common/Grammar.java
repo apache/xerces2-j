@@ -60,10 +60,13 @@ package org.apache.xerces.validators.common;
 import org.apache.xerces.framework.XMLContentSpec;
 import org.apache.xerces.utils.Hash2intTable;
 import org.apache.xerces.utils.QName;
-
 import org.apache.xerces.validators.datatype.DatatypeValidator;
 import org.apache.xerces.validators.common.XMLContentModel;
+import org.apache.xerces.validators.common.CMException;
+import org.apache.xerces.utils.ImplementationMessages;
 import org.w3c.dom.Document;
+import java.util.Vector;
+
 
 /**
  * @version $Id$
@@ -79,6 +82,10 @@ implements XMLContentSpec.Provider {
     private static final int CHUNK_SIZE = (1 << CHUNK_SHIFT);
     private static final int CHUNK_MASK = CHUNK_SIZE - 1;
     private static final int INITIAL_CHUNK_COUNT = (1 << (10 - CHUNK_SHIFT)); // 2^10 = 1k
+
+    public static final int MIXEDCONTENT    = -10;
+    public static final int CHILDRENCONTENT = -11;
+    public static final int DATATYPECONTENT = -12;
 
     //
     // Data
@@ -132,9 +139,9 @@ implements XMLContentSpec.Provider {
     }
 
     public int getElementDeclIndex(int nameIndex, int scopeIndex) {//TODO
-	if (nameIndex > -1 && scopeIndex >-2 ) {
-	    return fElementNameAndScopeToElementDeclIndexMapping.get(nameIndex, scopeIndex);
-	}
+        if (nameIndex > -1 && scopeIndex >-2 ) {
+            return fElementNameAndScopeToElementDeclIndexMapping.get(nameIndex, scopeIndex);
+        }
         return -1;
     }
 
@@ -175,7 +182,7 @@ implements XMLContentSpec.Provider {
 
     public boolean getContentSpec(int contentSpecIndex, XMLContentSpec contentSpec) {
         if (contentSpecIndex < 0 || contentSpecIndex >= fContentSpecCount )
-           return false;
+            return false;
 
         int chunk = contentSpecIndex >> CHUNK_SHIFT;
         int index = contentSpecIndex & CHUNK_MASK;
@@ -201,12 +208,73 @@ implements XMLContentSpec.Provider {
 
 
     public boolean getElementContentModel(int elementDeclIndex,
-                                          XMLContentModel contentModel ) {
+                                          XMLContentModel contentModel ) throws CMException {
+
         if (elementDeclIndex < 0 || elementDeclIndex >= fElementDeclCount)
             return false;
-        int chunk = elementDeclIndex >> CHUNK_SHIFT;
-        int index = elementDeclIndex & CHUNK_MASK;
-        contentModel =  fElementDeclContentModelValidator[chunk][index];
+
+        int chunk       = elementDeclIndex >> CHUNK_SHIFT;
+        int index       = elementDeclIndex & CHUNK_MASK;
+
+        contentModel    =  fElementDeclContentModelValidator[chunk][index];
+
+        // If we have one, just return that. Otherwise, gotta create one
+        if (contentModel != null)
+            return true;
+
+        // Get the type of content this element has
+
+        int contentSpecIndex = fElementDeclContentSpecIndex[chunk][index]; 
+
+        if ( contentSpecIndex == -1 )
+            return false;
+
+        XMLContentSpec  contentSpec = new XMLContentSpec();
+        getContentSpec( contentSpecIndex, contentSpec );
+
+        // And create the content model according to the spec type
+        
+        if ( contentSpec.type == MIXEDCONTENT ) {
+            //
+            //  Just create a mixel content model object. This type of
+            //  content model is optimized for mixed content validation.
+            //
+
+            Vector vQName = new Vector(); 
+            try {
+                contentSpecTree( contentSpecIndex, vQName, contentSpec ); //traverse content spec and build QName vector
+
+                QName[] childList            = new QName[ vQName.size()];
+                vQName.copyInto( childList );
+                vQName = null;
+                contentModel = new MixedContentModel(childList.length, childList);
+            }catch(  CMException ex ){
+                ex.printStackTrace();
+            }
+
+        } else if (contentSpec.type == CHILDRENCONTENT) {
+            //  This method will create an optimal model for the complexity
+            //  of the element's defined model. If its simple, it will create
+            //  a SimpleContentModel object. If its a simple list, it will
+            //  create a SimpleListContentModel object. If its complex, it
+            //  will create a DFAContentModel object.
+            //
+            try {
+            contentModel = createChildModel(contentSpecIndex);
+            }catch( CMException ex ) {
+                 ex.printStackTrace();
+            }
+        } else if (contentSpec.type == DATATYPECONTENT) {
+            // ?? What do we do here
+        } else {
+            throw new CMException(ImplementationMessages.VAL_CST);
+        }
+
+        // Add the new model to the content model for this element
+
+        fElementDeclContentModelValidator[chunk][index] = contentModel;
+
+        //build it  ..... in XMLValidator
         return true;
     }
 
@@ -257,9 +325,9 @@ implements XMLContentSpec.Provider {
         fElementDeclContentSpecIndex[chunk][index]        = elementDecl.contentSpecIndex;
         fElementDeclContentModelValidator[chunk][index]   = elementDecl.contentModelValidator;
 
-	// add the mapping information to the 
+        // add the mapping information to the 
         fElementNameAndScopeToElementDeclIndexMapping.put(elementDecl.name.localpart, elementDecl.enclosingScope, 
-							  elementDeclIndex);
+                                                          elementDeclIndex);
         //fElementDeclFirstAttributeDeclIndex[chunk][index] = 
         //fElementDeclLastAttributeDeclIndex[chunk][index]  = 
     }
@@ -293,8 +361,8 @@ implements XMLContentSpec.Provider {
 
         if ( ensureAttributeDeclCapacity(chunk) == true ) { // create an AttributeDecl
             fAttributeDeclName[chunk][index]                    = null;
-	    fAttributeDeclType[chunk][index]                    = -1;
-	    fAttributeDeclDefaultType[chunk][index]             = null; 
+            fAttributeDeclType[chunk][index]                    = -1;
+            fAttributeDeclDefaultType[chunk][index]             = null; 
             fAttributeDeclDatatypeValidator[chunk][index]       = null;
             fAttributeDeclDefaultValue[chunk][index]            = null;
             fAttributeDeclNextAttributeDeclIndex[chunk][index]  = -1;
@@ -304,35 +372,232 @@ implements XMLContentSpec.Provider {
 
 
     protected void setAttributeDecl(int elementDeclIndex, int attributeDeclIndex, XMLAttributeDecl attributeDecl) {
-       int elemChunk     = elementDeclIndex >> CHUNK_SHIFT;
-       int elemIndex     = elementDeclIndex &  CHUNK_MASK;
+        int elemChunk     = elementDeclIndex >> CHUNK_SHIFT;
+        int elemIndex     = elementDeclIndex &  CHUNK_MASK;
 
-       int thisAttrChunk = attributeDeclIndex >> CHUNK_SHIFT;
-       int thisAttrIndex = attributeDeclIndex &  CHUNK_MASK; 
+        int thisAttrChunk = attributeDeclIndex >> CHUNK_SHIFT;
+        int thisAttrIndex = attributeDeclIndex &  CHUNK_MASK; 
 
-       fAttributeDeclName[thisAttrChunk][thisAttrIndex]  =  attributeDecl.name;
-       fAttributeDeclType[thisAttrChunk][thisAttrIndex]  =  attributeDecl.type;
-       fAttributeDeclDefaultType[thisAttrChunk][thisAttrIndex]  =  attributeDecl.defaultType;
-       fAttributeDeclDatatypeValidator[thisAttrChunk][thisAttrIndex] =  attributeDecl.datatypeValidator;
-       fAttributeDeclDefaultValue[thisAttrChunk][thisAttrIndex]      =  attributeDecl.defaultValue;
+        fAttributeDeclName[thisAttrChunk][thisAttrIndex]  =  attributeDecl.name;
+        fAttributeDeclType[thisAttrChunk][thisAttrIndex]  =  attributeDecl.type;
+        fAttributeDeclDefaultType[thisAttrChunk][thisAttrIndex]  =  attributeDecl.defaultType;
+        fAttributeDeclDatatypeValidator[thisAttrChunk][thisAttrIndex] =  attributeDecl.datatypeValidator;
+        fAttributeDeclDefaultValue[thisAttrChunk][thisAttrIndex]      =  attributeDecl.defaultValue;
 
 
-       int lastAttrDeclIndex = fElementDeclLastAttributeDeclIndex[elemChunk][elemIndex];
-       int lastAttrChunk     = lastAttrDeclIndex >> CHUNK_SHIFT; 
-       int lastAttrIndex     = lastAttrDeclIndex &  CHUNK_MASK;
+        int lastAttrDeclIndex = fElementDeclLastAttributeDeclIndex[elemChunk][elemIndex];
+        int lastAttrChunk     = lastAttrDeclIndex >> CHUNK_SHIFT; 
+        int lastAttrIndex     = lastAttrDeclIndex &  CHUNK_MASK;
 
-       fAttributeDeclNextAttributeDeclIndex[lastAttrChunk][lastAttrIndex]
-                                                                = attributeDeclIndex;
+        fAttributeDeclNextAttributeDeclIndex[lastAttrChunk][lastAttrIndex]
+        = attributeDeclIndex;
 
-       fElementDeclLastAttributeDeclIndex[elemChunk][elemIndex] = attributeDeclIndex;
+        fElementDeclLastAttributeDeclIndex[elemChunk][elemIndex] = attributeDeclIndex;
 
-       fAttributeDeclNextAttributeDeclIndex[thisAttrChunk][thisAttrIndex]
-                                      =  -1; // we are created at the end of ElementDecl
+        fAttributeDeclNextAttributeDeclIndex[thisAttrChunk][thisAttrIndex]
+        =  -1; // we are created at the end of ElementDecl
     }
 
     //
     // Private methods
     //
+
+    //
+    //  When the element has a 'CHILDREN' model, this method is called to
+    //  create the content model object. It looks for some special case simple
+    //  models and creates SimpleContentModel objects for those. For the rest
+    //  it creates the standard DFA style model.
+    //
+    private final XMLContentModel createChildModel(int contentSpecIndex) throws CMException
+    {
+        //
+        //  Get the content spec node for the element we are working on.
+        //  This will tell us what kind of node it is, which tells us what
+        //  kind of model we will try to create.
+        //
+        XMLContentSpec contentSpec = new XMLContentSpec();
+
+
+        getContentSpec(contentSpecIndex, contentSpec);
+
+        //
+        //  Check that the left value is not -1, since any content model
+        //  with PCDATA should be MIXED, so we should not have gotten here.
+        //
+        if ( contentSpec.value == -1)
+            throw new CMException(ImplementationMessages.VAL_NPCD);
+
+        if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+            //
+            //  Its a single leaf, so its an 'a' type of content model, i.e.
+            //  just one instance of one element. That one is definitely a
+            //  simple content model.
+            //
+
+            return new SimpleContentModel( new QName(-1,contentSpec.value, -1, -1),
+                                           null, contentSpec.type);
+        } else if ((contentSpec.type == XMLContentSpec.CONTENTSPECNODE_CHOICE)
+                   ||  (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_SEQ)) {
+            //
+            //  Lets see if both of the children are leafs. If so, then it
+            //  it has to be a simple content model
+            //
+            XMLContentSpec contentSpecLeft  = new XMLContentSpec();
+            XMLContentSpec contentSpecRight = new XMLContentSpec();
+
+            getContentSpec(contentSpec.value, contentSpecLeft);
+            getContentSpec(contentSpec.otherValue, contentSpecRight);
+
+            if ((contentSpecLeft.type == XMLContentSpec.CONTENTSPECNODE_LEAF)
+                &&  (contentSpecRight.type == XMLContentSpec.CONTENTSPECNODE_LEAF)) {
+                //
+                //  Its a simple choice or sequence, so we can do a simple
+                //  content model for it.
+                //
+                return new SimpleContentModel( new QName(-1,contentSpecLeft.value, -1, -1),
+                                               new QName(-1,contentSpecRight.value, -1, -1),
+                                               contentSpec.type );
+            }
+        } else if ((contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE)
+                   ||  (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE)
+                   ||  (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE)) {
+            //
+            //  Its a repetition, so see if its one child is a leaf. If so
+            //  its a repetition of a single element, so we can do a simple
+            //  content model for that.
+            //
+            XMLContentSpec contentSpecLeft = new XMLContentSpec();
+            getContentSpec(contentSpec.value, contentSpecLeft);
+
+            if (contentSpecLeft.type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+                //
+                //  It is, so we can create a simple content model here that
+                //  will check for this repetition. We pass -1 for the unused
+                //  right node.
+                //
+                return new SimpleContentModel( new QName(-1,contentSpecLeft.value, -1, -1), null,
+                                               contentSpec.type);
+            }
+        } else {
+            throw new CMException(ImplementationMessages.VAL_CST);
+        }
+
+        //
+        //  Its not a simple content model, so here we have to create a DFA
+        //  for this element. So we create a DFAContentModel object. He
+        //  encapsulates all of the work to create the DFA.
+        //
+        fLeafCount    = 0;
+
+        //fEpsilonIndex = fStringPool.addSymbol("<<CMNODE_EPSILON>>");
+        CMNode cmn    = buildSyntaxTree(contentSpecIndex, contentSpec);
+        return new DFAContentModel(  cmn, fLeafCount);
+    }
+
+    private int   fLeafCount = 0;
+    private int   fEpsilonIndex = -1;
+    private final CMNode buildSyntaxTree(int startNode, XMLContentSpec contentSpec) throws CMException
+    {
+        // We will build a node at this level for the new tree
+        CMNode nodeRet = null;
+        getContentSpec(startNode, contentSpec);
+
+        //
+        //  If this node is a leaf, then its an easy one. We just add it
+        //  to the tree.
+        //
+        if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+            //
+            //  Create a new leaf node, and pass it the current leaf count,
+            //  which is its DFA state position. Bump the leaf count after
+            //  storing it. This makes the positions zero based since we
+            //  store first and then increment.
+            //
+            nodeRet = new CMLeaf( new QName( -1, contentSpec.value, -1, contentSpec.otherValue ),
+                                                                                      fLeafCount++);
+        } else {
+            //
+            //  Its not a leaf, so we have to recurse its left and maybe right
+            //  nodes. Save both values before we recurse and trash the node.
+            //
+            final int leftNode = contentSpec.value;
+            final int rightNode = contentSpec.otherValue;
+
+            if ((contentSpec.type == XMLContentSpec.CONTENTSPECNODE_CHOICE)
+                ||  (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_SEQ)) {
+                //
+                //  Recurse on both children, and return a binary op node
+                //  with the two created sub nodes as its children. The node
+                //  type is the same type as the source.
+                //
+
+                nodeRet = new CMBinOp( contentSpec.type, buildSyntaxTree(leftNode, contentSpec)
+                                       , buildSyntaxTree(rightNode, contentSpec));
+            } else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE) {
+                nodeRet = new CMUniOp( contentSpec.type, buildSyntaxTree(leftNode, contentSpec));
+            } else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE) {
+                // Convert to (x|epsilon)
+                nodeRet = new CMBinOp( XMLContentSpec.CONTENTSPECNODE_CHOICE,
+                                       buildSyntaxTree(leftNode, contentSpec)
+                                       , new CMLeaf( new QName(), fEpsilonIndex));
+            } else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE) {
+                // Convert to (x,x*)
+                nodeRet = new CMBinOp( XMLContentSpec.CONTENTSPECNODE_SEQ, 
+                                       buildSyntaxTree(leftNode, contentSpec), 
+                                       new CMUniOp( XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE,
+                                                    buildSyntaxTree(leftNode, contentSpec) ));
+            } else {
+                throw new CMException(ImplementationMessages.VAL_CST);
+            }
+        }
+        // And return our new node for this level
+        return nodeRet;
+    }
+
+
+
+
+    /**
+     * Build a vector of valid QNames from Content Spec
+     * table.
+     * 
+     * @param contentSpecIndex
+     *               Content Spec index
+     * @param vectorQName
+     *               Array of QName
+     * @exception CMException
+     */
+
+    private void contentSpecTree( int contentSpecIndex, Vector vectorQName,
+                                  XMLContentSpec contentSpec ) throws CMException {
+
+        getContentSpec( contentSpecIndex, contentSpec);
+
+        if ( contentSpec.type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+            vectorQName.addElement( new QName( -1, contentSpec.value, -1, contentSpec.otherValue ) );
+        }
+
+        //
+        //  Its not a leaf, so we have to recurse its left and maybe right
+        //  nodes. Save both values before we recurse and trash the node.
+        //
+        final int leftNode  = contentSpec.value;
+        final int rightNode = contentSpec.otherValue;
+
+        if ((contentSpec.type == XMLContentSpec.CONTENTSPECNODE_CHOICE) ||
+            (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_SEQ)) {
+            contentSpecTree(leftNode, vectorQName, contentSpec); // recurse to left
+            contentSpecTree(rightNode, vectorQName, contentSpec);// recurse to right
+        } else if ((contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE)
+                   ||  (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE)
+                   ||  (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE)) {
+            contentSpecTree(leftNode, vectorQName, contentSpec);//only recurse to left on this node 
+        } else {
+            throw new CMException(ImplementationMessages.VAL_CST);
+        }
+    }
+
+
 
     // ensure capacity
 
@@ -429,5 +694,6 @@ implements XMLContentSpec.Provider {
         System.arraycopy(array, 0, newarray, 0, array.length);
         return newarray;
     }
+
 
 } // class Grammar

@@ -60,7 +60,7 @@ package org.apache.xerces.validators.common;
 import org.apache.xerces.framework.XMLContentSpec;
 import org.apache.xerces.utils.ImplementationMessages;
 import org.apache.xerces.utils.QName;
-import org.apache.xerces.utils.StringPool;
+//import org.apache.xerces.utils.StringPool;
 
 /**
  * DFAContentModel is the derivative of ContentModel that does
@@ -82,14 +82,15 @@ public class DFAContentModel
     //
     // Constants
     //
-
     // special strings
 
     /** Epsilon string. */
-    private static final String fEpsilonString = "<<CMNODE_EPSILON>>";
+    //private static final String fEpsilonString = "<<CMNODE_EPSILON>>";
+    private static final int EPSILON = -2;
 
     /** End-of-content string. */
-    private static final String fEOCString = "<<CMNODE_EOC>>";
+    //private static final String fEOCString = "<<CMNODE_EOC>>";
+    private static final int EOC     = -3;
 
     // debugging
 
@@ -169,7 +170,7 @@ public class DFAContentModel
      * The string pool of our parser session. This is set during construction
      * and kept around.
      */
-    private StringPool fStringPool = null;
+    //private StringPool fStringPool = null;
 
     /**
      * This is the transition table that is the main by product of all
@@ -219,12 +220,13 @@ public class DFAContentModel
      *
      * @exception CMException Thrown if DMA can't be built.
      */
-    public DFAContentModel(StringPool stringPool, 
-                           CMNode syntaxTree, 
+
+   // public DFAContentModel(StringPool stringPool, 
+   public DFAContentModel( CMNode syntaxTree, 
                            int leafCount) throws CMException {
 
         // Store away our index and pools in members
-        fStringPool = stringPool;
+        //fStringPool = stringPool;
         fLeafCount = leafCount;
 
         //
@@ -240,8 +242,13 @@ public class DFAContentModel
             fEOCString.intern();
         }
         /***/
-        fEpsilonIndex = fStringPool.addSymbol(fEpsilonString);
-        fEOCIndex = fStringPool.addSymbol(fEOCString);
+
+       // fEpsilonIndex = fStringPool.addSymbol(fEpsilonString);
+       // fEOCIndex = fStringPool.addSymbol(fEOCString);
+
+        fEpsilonIndex = EPSILON;
+        fEOCIndex     = EOC;
+
 
         //
         //  Ok, so lets grind through the building of the DFA. This method
@@ -308,11 +315,13 @@ public class DFAContentModel
                 for (int i = 0; i < fElemMap.length; i++) {
                     int uriIndex = fElemMap[i].uri;
                     int localpartIndex = fElemMap[i].localpart;
+                    /*
                     System.out.println("fElemMap["+i+"]="+uriIndex+","+
                                        localpartIndex+" ("+
                                        fStringPool.toString(uriIndex)+", "+
                                        fStringPool.toString(localpartIndex)+
                                        ')');
+                                       */
                 }
                 System.out.println("EOCIndex="+fEOCIndex);
             }
@@ -1018,5 +1027,6 @@ public class DFAContentModel
         }
         return curIndex;
     }
+
 
 } // class DFAContentModel
