@@ -245,12 +245,14 @@ abstract class XSDAbstractTraverser {
 
                     }
                     String uriStr = schemaDoc.fNamespaceSupport.getURI(prefix);
+                    if (prefix != fSchemaHandler.EMPTY_STRING && uriStr == null) {
+                        reportGenericSchemaError("Cannot resolve the prefix of the NOTATION  value '"+enumVal+"'");
+                    }
                     fQName.setValues(prefix, localpart, null, uriStr );
                     XSNotationDecl notation = (XSNotationDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.NOTATION_TYPE , fQName);
                     if (notation == null) {
                         reportGenericSchemaError("Notation '" + localpart +
                                                  "' not found in the grammar "+ uriStr);
-
                     }
 
                     enumVal = (uriStr!=null)?(uriStr+","+localpart):localpart;

@@ -152,7 +152,7 @@ public class NOTATIONDatatypeValidator extends AbstractStringValidator {
         //
         if (state !=null && (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 &&
             (fEnumeration != null)) {
-            String prefix = state.getSymbol("");
+            String prefix = "";
             String localpart = content;
             int colonptr = content.indexOf(":");
             if (colonptr > 0) {
@@ -161,7 +161,14 @@ public class NOTATIONDatatypeValidator extends AbstractStringValidator {
 
             }
             String uriStr = state.getURI(state.getSymbol(prefix));
-            String fullName =  (uriStr!=null)?(uriStr+","+localpart):localpart;
+            String fullName = null;
+            if (uriStr == null) {
+                if (prefix.length() != 0)
+                    throw new InvalidDatatypeValueException("Cannot resolve the prefix of the NOTATION  value '"+content+"'");
+                fullName = localpart;
+            } else {
+                fullName = uriStr+","+localpart;
+            }
             if (fEnumeration.contains( fullName ) == false)
                 throw new InvalidDatatypeValueException("Value '"+content+"' must be one of "+fEnumeration);
         }

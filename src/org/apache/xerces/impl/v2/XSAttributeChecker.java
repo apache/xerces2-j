@@ -1548,6 +1548,7 @@ public class XSAttributeChecker {
         return sb.toString();
     }
 
+    // REVISIT: should remove this method once the DVs return compiled value
     protected QName resolveQName (String attrVal, XSDocumentInfo currSchema) {
         SchemaNamespaceSupport nsSupport = currSchema.fNamespaceSupport;
         String prefix = fSchemaHandler.EMPTY_STRING;

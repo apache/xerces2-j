@@ -100,13 +100,16 @@ public class QNameDatatypeValidator extends  AbstractStringValidator {
         String msg = getErrorString(
             DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.ILLEGAL_STRING_FACET],
             new Object[] { key });
-        throw new InvalidDatatypeFacetException(msg);       
+        throw new InvalidDatatypeFacetException(msg);
     }
 
 
     protected void checkValueSpace (String content) throws InvalidDatatypeValueException {
 
         // check 3.2.18.c0 must: "NCName:NCName"
+        // REVISIT: we need to check whether the prefix of the content is
+        //          resolvable. not sure where to do it, checkValueSpace()
+        //          or checkContent() or validate().
         try {
             int posColon = content.indexOf(':');
             if (posColon >= 0)

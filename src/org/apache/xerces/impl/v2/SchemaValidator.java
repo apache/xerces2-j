@@ -1350,9 +1350,6 @@ public class SchemaValidator
                 prefix = fSymbolTable.addSymbol(xsiType.substring(0,colonptr));
                 localpart = xsiType.substring(colonptr+1);
             }
-            // REVISIT: if we take the null approach (instead of ""),
-            //          we need to chech the retrned value from getURI
-            //          to see whether a binding is found.
             String uri = fNamespaceSupport.getURI(prefix);
             typeName = new QName(prefix, localpart, xsiType, uri);
         } catch (InvalidDatatypeValueException e) {
@@ -1531,8 +1528,6 @@ public class SchemaValidator
             attrValue = XSAttributeChecker.normalize(attrValue, attDV.getWSFacet());
             Object actualValue = null;
             try {
-                // REVISIT: use XSSimpleTypeDecl.ValidateContext to replace null
-                // actualValue = attDV.validate(attrValue, null);
                 attDV.validate(attrValue, fValidationState);
             } catch (InvalidDatatypeValueException idve) {
                 reportSchemaError("cvc-attribute.3", new Object[]{element.rawname, fTempQName.rawname, attrValue});
