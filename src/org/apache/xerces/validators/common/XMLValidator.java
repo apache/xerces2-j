@@ -2297,12 +2297,13 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                     }
                 }
                 //if still can't resolve it, try TOP_LEVEL_SCOPE AGAIN
-                if (element.uri == -1 && elementIndex == -1) {
+                if ( element.uri == -1 && elementIndex == -1 
+                     && fNamespacesScope.getNamespaceForPrefix(StringPool.EMPTY_STRING) != -1 ) {
                     elementIndex = fGrammar.getElementDeclIndex(element.localpart, TOP_LEVEL_SCOPE);
                     // REVISIT:
                     // this is a hack to handle the situation where namespace prefix "" is bound to nothing, and there
                     // is a "noNamespaceSchemaLocation" specified, and element 
-                    element.uri = fStringPool.addSymbol("");
+                    element.uri = StringPool.EMPTY_STRING;
                 }
 
                 /****/
