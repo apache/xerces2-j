@@ -1218,8 +1218,8 @@ public class DeferredDocumentImpl
             System.out.print("name\t");
             System.out.print("val\t");
             System.out.print("par\t");
-            System.out.print("fch\t");
-            System.out.print("nsib");
+            System.out.print("lch\t");
+            System.out.print("psib");
             System.out.println();
             for (int i = 0; i < fNodeType.length; i++) {
                 if (fNodeType[i] != null) {
@@ -1236,7 +1236,19 @@ public class DeferredDocumentImpl
                     // ref count
                     System.out.print(i);
                     System.out.print('\t');
-                    System.out.print(fNodeType[i][CHUNK_SIZE]);
+                    switch (fNodeType[i][CHUNK_SIZE]) {
+                        case DocumentImpl.ELEMENT_DEFINITION_NODE: { System.out.print("EDef"); break; }
+                        case Node.DOCUMENT_NODE: { System.out.print("Doc"); break; }
+                        case Node.DOCUMENT_TYPE_NODE: { System.out.print("DType"); break; }
+                        case Node.COMMENT_NODE: { System.out.print("Com"); break; }
+                        case Node.PROCESSING_INSTRUCTION_NODE: { System.out.print("PI"); break; }
+                        case Node.ELEMENT_NODE: { System.out.print("Elem"); break; }
+                        case Node.ENTITY_NODE: { System.out.print("Ent"); break; }
+                        case Node.ENTITY_REFERENCE_NODE: { System.out.print("ERef"); break; }
+                        case Node.TEXT_NODE: { System.out.print("Text"); break; }
+                        case Node.ATTRIBUTE_NODE: { System.out.print("Attr"); break; }
+                        default: { System.out.print("?"+fNodeType[i][CHUNK_SIZE]); }
+                    }
                     System.out.print('\t');
                     System.out.print(fNodeName[i][CHUNK_SIZE]);
                     System.out.print('\t');
@@ -1269,14 +1281,26 @@ public class DeferredDocumentImpl
                     System.out.print("val\t");
                     System.out.print("uri\t");
                     System.out.print("par\t");
-                    System.out.print("fch\t");
-                    System.out.print("nsib\t");
+                    System.out.print("lch\t");
+                    System.out.print("psib\t");
                     System.out.print("xtra");
                     System.out.println();
                 }
                 System.out.print(i);
                 System.out.print('\t');
-                System.out.print(getChunkIndex(fNodeType, chunk, index));
+                switch (getChunkIndex(fNodeType, chunk, index)) {
+                    case DocumentImpl.ELEMENT_DEFINITION_NODE: { System.out.print("EDef"); break; }
+                    case Node.DOCUMENT_NODE: { System.out.print("Doc"); break; }
+                    case Node.DOCUMENT_TYPE_NODE: { System.out.print("DType"); break; }
+                    case Node.COMMENT_NODE: { System.out.print("Com"); break; }
+                    case Node.PROCESSING_INSTRUCTION_NODE: { System.out.print("PI"); break; }
+                    case Node.ELEMENT_NODE: { System.out.print("Elem"); break; }
+                    case Node.ENTITY_NODE: { System.out.print("Ent"); break; }
+                    case Node.ENTITY_REFERENCE_NODE: { System.out.print("ERef"); break; }
+                    case Node.TEXT_NODE: { System.out.print("Text"); break; }
+                    case Node.ATTRIBUTE_NODE: { System.out.print("Attr"); break; }
+                    default: { System.out.print("?"+getChunkIndex(fNodeType, chunk, index)); }
+                }
                 System.out.print('\t');
                 System.out.print(getChunkValue(fNodeName, chunk, index));
                 System.out.print('\t');
@@ -1291,23 +1315,6 @@ public class DeferredDocumentImpl
                 System.out.print(getChunkIndex(fNodePrevSib, chunk, index));
                 System.out.print('\t');
                 System.out.print(getChunkIndex(fNodeExtra, chunk, index));
-                /***
-                System.out.print(fNodeType[0][i]);
-                System.out.print('\t');
-                System.out.print(fNodeName[0][i]);
-                System.out.print('\t');
-                System.out.print(fNodeValue[0][i]);
-                System.out.print('\t');
-                System.out.print(fNodeParent[0][i]);
-                System.out.print('\t');
-                System.out.print(fNodeFirstChild[0][i]);
-                System.out.print('\t');
-                System.out.print(fNodeLastChild[0][i]);
-                System.out.print('\t');
-                System.out.print(fNodePrevSib[0][i]);
-                System.out.print('\t');
-                System.out.print(fNodeNextSib[0][i]);
-                /***/
                 System.out.println();
             }
             System.out.println("# end table");
