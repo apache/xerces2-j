@@ -804,24 +804,24 @@ public class XMLDocumentScanner
             fDocumentHandler.characters(fString);
         }
 
-        // REVISIT: Handle this better.
         if (c == ']' && fString.length == 0) {
-            if (fEntityScanner.skipString("]]>")) {
-                reportFatalError("CDEndInContent", null);
-            }
-            else if (fEntityScanner.skipString("]]")) {
-                fStringBuffer.clear();
-                fStringBuffer.append("]]");
-                if (fDocumentHandler != null) {
-                    fDocumentHandler.characters(fStringBuffer);
+            fStringBuffer.clear();
+            fStringBuffer.append((char)fEntityScanner.scanChar());
+            //
+            // We work on a single character basis to handle cases such as:
+            // ']]]>' which we might otherwise miss.
+            //
+            if (fEntityScanner.skipChar(']')) {
+                fStringBuffer.append(']');
+                while (fEntityScanner.skipChar(']')) {
+                    fStringBuffer.append(']');
+                }
+                if (fEntityScanner.skipChar('>')) {
+                    reportFatalError("CDEndInContent", null);
                 }
             }
-            else {
-                fStringBuffer.clear();
-                fStringBuffer.append((char)fEntityScanner.scanChar());
-                if (fDocumentHandler != null) {
-                    fDocumentHandler.characters(fStringBuffer);
-                }
+            if (fDocumentHandler != null) {
+                fDocumentHandler.characters(fStringBuffer);
             }
             c = -1;
         }
