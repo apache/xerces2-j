@@ -134,7 +134,7 @@ public class TextImpl extends DefaultText {
      */
     public int getLength() {
         if(fData == null) return 0;
-        return fData.length();;
+        return fData.length();
     }
 
     /**
