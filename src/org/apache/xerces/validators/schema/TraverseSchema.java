@@ -2452,7 +2452,7 @@ public class TraverseSchema implements
      *         id = ID           
      *         {any attributes with non-schema namespace...}>
      *
-     *         Content: (annotation? , ((minExclusive | minInclusive | maxExclusive
+     *         Content: (annotation?,(simpleType?, (minExclusive|minInclusive|maxExclusive
      *                    | maxInclusive | precision | scale | length | minLength 
      *                    | maxLength | encoding | period | duration | enumeration 
      *                    | pattern | whiteSpace)*) ? ,  
@@ -2569,6 +2569,23 @@ public class TraverseSchema implements
                typeInfo.baseDataTypeValidator = typeInfo.baseComplexTypeInfo.datatypeValidator;
             }
 
+            // -----------------------------------------------------------------------
+            // There may be a simple type definition in the restriction element
+            // The data type validator will be based on it, if specified          
+            // -----------------------------------------------------------------------
+            if (content.getLocalName().equals(SchemaSymbols.ELT_SIMPLETYPE )) { 
+                int simpleTypeNameIndex = traverseSimpleTypeDecl(content); 
+                if (simpleTypeNameIndex!=-1) {
+                    typeInfo.baseDataTypeValidator=fDatatypeRegistry.getDatatypeValidator(
+                       fStringPool.toString(simpleTypeNameIndex));
+                    content = XUtil.getNextSiblingElement(content);
+                }
+                else {
+                    throw new ComplexTypeRecoverableError();
+                }
+            }
+
+ 
             //
             // Build up facet information
             //
@@ -2634,14 +2651,18 @@ public class TraverseSchema implements
             }
             else
                 typeInfo.datatypeValidator = 
-                             typeInfo.baseComplexTypeInfo.datatypeValidator;
+                             typeInfo.baseDataTypeValidator;
 
             if (child != null) {
-                // REVISIT: Shouldn't we allow attributes???
-                throw new ComplexTypeRecoverableError(
-                  "Only facets and annotations are allowed " +
-                   " in the content of a RESTRICTION element for a "+
-                   " derived complexType");
+               //
+               // Check that we have attributes
+               //
+               if (!isAttrOrAttrGroup(child)) {
+                  throw new ComplexTypeRecoverableError(
+                     "Invalid child in the RESTRICTION element of simpleContent");
+               }
+               else
+                  attrNode = child;
             }
             
         } // end RESTRICTION
