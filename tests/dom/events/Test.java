@@ -182,7 +182,7 @@ class EventReporter implements EventListener
             
         System.out.print("EVT "+count+": '"+
             evt.getType()+
-            "' listener '"+(evt.getCurrentNode()).getNodeName()+
+            "' listener '"+((Node)evt.getCurrentTarget()).getNodeName()+
             "' target '"+((Node)evt.getTarget()).getNodeName()+
             "' while "+phasename[evt.getEventPhase()] +
             "... ");

@@ -159,7 +159,7 @@ public class TreeWalkerView
             parser.parse(filename);
             document = parser.getDocument();
             
-            if (!document.supports("Traversal", "2.0")) {
+            if (!document.isSupported("Traversal", "2.0")) {
                 // This cannot happen with the DOMParser...
                 throw new RuntimeException("This DOM Document does not support Traversal");
             

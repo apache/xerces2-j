@@ -150,7 +150,7 @@ public class IteratorView
             parser.parse(filename);
             document = parser.getDocument();
             
-            if (!document.supports("Traversal", "2.0")) {
+            if (!document.isSupported("Traversal", "2.0")) {
                 // This cannot happen with ou DOMParser...
                 throw new RuntimeException("This DOM Document does not support Traversal");
             }
@@ -317,7 +317,7 @@ public class IteratorView
             }    
             
             // This cast must work, because we have tested above
-            // with document.supports("Traversal")
+            // with document.isSupported("Traversal")
             iterator = ((DocumentTraversal)document).
                 createNodeIterator(
                     document, 
