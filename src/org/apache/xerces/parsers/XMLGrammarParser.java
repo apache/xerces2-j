@@ -57,9 +57,9 @@
 
 package org.apache.xerces.parsers;
 
-import org.apache.xerces.framework.XMLComponentManager;
-import org.apache.xerces.utils.SymbolTable;
-import org.apache.xerces.validators.DatatypeValidatorFactory;
+import org.apache.xerces.xni.XMLComponentManager;
+import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.impl.validation.DatatypeValidatorFactory;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 

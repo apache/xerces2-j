@@ -55,7 +55,7 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.utils;
+package org.apache.xerces.util;
 
 /**
  * This class defines the basic XML character properties. The data

@@ -55,11 +55,11 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.scanners;
+package org.apache.xerces.xni;
 
-import org.apache.xerces.framework.XMLString;
-import org.apache.xerces.readers.XMLEntityHandler;
-import org.apache.xerces.utils.QName;
+import org.apache.xerces.xni.XMLString;
+import org.apache.xerces.xni.XMLEntityHandler;
+import org.apache.xerces.xni.QName;
 
 import org.xml.sax.SAXException;
 

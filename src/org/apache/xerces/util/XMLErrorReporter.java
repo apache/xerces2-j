@@ -55,11 +55,13 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.framework;
+package org.apache.xerces.util;
 
 import java.util.Hashtable;
 import java.util.Locale;
-import org.apache.xerces.utils.MessageFormatter;
+import org.apache.xerces.util.MessageFormatter;
+import org.apache.xerces.xni.XMLComponent;
+import org.apache.xerces.xni.XMLComponentManager;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;

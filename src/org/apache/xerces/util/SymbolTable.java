@@ -55,7 +55,7 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.utils;
+package org.apache.xerces.util;
 
 /**
  * This class is a symbol table implementation that guarantees that

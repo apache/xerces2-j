@@ -59,12 +59,12 @@ package org.apache.xerces.parsers;
 
 import java.io.IOException;
 
-import org.apache.xerces.framework.XMLString;
-import org.apache.xerces.scanners.XMLAttributes;
-import org.apache.xerces.scanners.XMLDTDHandler;
-import org.apache.xerces.utils.QName;
-import org.apache.xerces.utils.SymbolTable;
-import org.apache.xerces.validators.GrammarPool;
+import org.apache.xerces.xni.XMLString;
+import org.apache.xerces.xni.XMLAttributes;
+import org.apache.xerces.xni.XMLDTDHandler;
+import org.apache.xerces.xni.QName;
+import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.impl.validation.GrammarPool;
 
 import org.xml.sax.ContentHandler;
 import org.xml.sax.DTDHandler;

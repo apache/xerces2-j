@@ -55,14 +55,14 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.msg;
+package org.apache.xerces.impl.msg;
 
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.PropertyResourceBundle;
 
-import org.apache.xerces.utils.MessageFormatter;
+import org.apache.xerces.util.MessageFormatter;
 
 /**
  * XMLMessageFormatter provides error messages for the XML 1.0 Recommendation and for 
@@ -107,9 +107,9 @@ public class XMLMessageFormatter implements MessageFormatter {
         
         if (fResourceBundle == null || locale != fLocale) {
             if (locale != null)
-                fResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.msg.XMLMessages", locale);
+                fResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLMessages", locale);
             if (fResourceBundle == null)
-                fResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.msg.XMLMessages");
+                fResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLMessages");
         }
         
         String msg = fResourceBundle.getString(key);
@@ -124,7 +124,7 @@ public class XMLMessageFormatter implements MessageFormatter {
 
         if (msg == null) {
             msg = fResourceBundle.getString("BadMessageKey");
-            throw new MissingResourceException(msg, "org.apache.xerces.msg.XMLMessages", key);
+            throw new MissingResourceException(msg, "org.apache.xerces.impl.msg.XMLMessages", key);
         }
 
         return null;

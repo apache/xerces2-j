@@ -55,7 +55,7 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.msg;
+package org.apache.xerces.impl.msg;
 
 import java.util.ListResourceBundle;
 

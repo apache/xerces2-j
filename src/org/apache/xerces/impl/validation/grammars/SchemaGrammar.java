@@ -55,10 +55,10 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.validators.grammars;
+package org.apache.xerces.impl.validation.grammars;
 
-import org.apache.xerces.validators.Grammar;
-import org.apache.xerces.validators.GrammarPool;
+import org.apache.xerces.impl.validation.Grammar;
+import org.apache.xerces.impl.validation.GrammarPool;
 import org.w3c.dom.Document;
 
 /**

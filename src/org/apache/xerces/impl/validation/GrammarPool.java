@@ -55,7 +55,7 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.validators;
+package org.apache.xerces.impl.validation;
 
 import java.util.Hashtable;
 

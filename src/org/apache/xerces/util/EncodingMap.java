@@ -55,7 +55,7 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.utils;
+package org.apache.xerces.util;
 
 import java.util.Hashtable;
 

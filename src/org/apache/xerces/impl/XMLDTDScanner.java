@@ -55,15 +55,19 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.scanners;
+package org.apache.xerces.impl;
 
 import java.io.IOException;
-import org.apache.xerces.framework.XMLComponent;
-import org.apache.xerces.framework.XMLComponentManager;
-import org.apache.xerces.framework.XMLErrorReporter;
-import org.apache.xerces.readers.XMLEntityManager;
-import org.apache.xerces.utils.SymbolTable;
-import org.apache.xerces.validators.GrammarPool;
+import org.apache.xerces.impl.XMLEntityManager;
+import org.apache.xerces.impl.validation.GrammarPool;
+import org.apache.xerces.xni.XMLComponent;
+import org.apache.xerces.xni.XMLComponentManager;
+import org.apache.xerces.xni.XMLDTDContentModelHandler;
+import org.apache.xerces.xni.XMLDTDContentModelSource;
+import org.apache.xerces.xni.XMLDTDHandler;
+import org.apache.xerces.xni.XMLDTDSource;
+import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLErrorReporter;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;

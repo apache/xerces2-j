@@ -55,7 +55,7 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.msg;
+package org.apache.xerces.impl.msg;
 
 import java.util.ListResourceBundle;
 
@@ -69,7 +69,7 @@ public class ExceptionMessages extends ListResourceBundle {
     /** The list resource bundle contents. */
     public static final Object CONTENTS[][] = {
     
-    // org.apache.xerces.msg.ExceptionMessageLocalizer
+    // org.apache.xerces.impl.msg.ExceptionMessageLocalizer
     { "FMT001", "Message Formatting Error." },
     
 
@@ -154,7 +154,7 @@ public class ExceptionMessages extends ListResourceBundle {
     { "RDR001", "untested" },
     { "RDR002", "cannot happen" },
             
-    //org.apache.xerces.utils
+    //org.apache.xerces.util
     { "UTL001", "untested" },
     { "UTL002", "cannot happen" },
 

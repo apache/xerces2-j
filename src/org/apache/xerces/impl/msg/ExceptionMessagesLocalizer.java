@@ -55,7 +55,7 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.msg;
+package org.apache.xerces.impl.msg;
 
 import java.util.Locale;
 import java.util.ListResourceBundle;
@@ -76,9 +76,9 @@ public class ExceptionMessagesLocalizer {
         
         ResourceBundle fResourceBundle = null;
         if (locale != null)
-            fResourceBundle = ListResourceBundle.getBundle("org.apache.xerces.msg.ExceptionMessages", locale);
+            fResourceBundle = ListResourceBundle.getBundle("org.apache.xerces.impl.msg.ExceptionMessages", locale);
         if (fResourceBundle == null || locale == null)
-            fResourceBundle = ListResourceBundle.getBundle("org.apache.xerces.msg.ExceptionMessages");
+            fResourceBundle = ListResourceBundle.getBundle("org.apache.xerces.impl.msg.ExceptionMessages");
         
         int keyIndex = string.indexOf(' ');
         String key = string.substring(0, keyIndex);

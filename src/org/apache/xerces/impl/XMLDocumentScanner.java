@@ -55,24 +55,27 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.scanners;
+package org.apache.xerces.impl;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Stack;
 
-import org.apache.xerces.framework.XMLComponent;
-import org.apache.xerces.framework.XMLComponentManager;
-import org.apache.xerces.framework.XMLErrorReporter;
-import org.apache.xerces.framework.XMLString;
-import org.apache.xerces.framework.XMLStringBuffer;
-import org.apache.xerces.readers.XMLEntityHandler;
-import org.apache.xerces.readers.XMLEntityManager;
-import org.apache.xerces.readers.XMLEntityScanner;
-import org.apache.xerces.utils.SymbolTable;
-import org.apache.xerces.utils.QName;
-import org.apache.xerces.utils.XMLChar;
+import org.apache.xerces.impl.XMLEntityManager;
+import org.apache.xerces.impl.XMLEntityScanner;
+import org.apache.xerces.util.XMLErrorReporter;
+import org.apache.xerces.util.XMLStringBuffer;
+import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLChar;
+import org.apache.xerces.xni.QName;
+import org.apache.xerces.xni.XMLAttributes;
+import org.apache.xerces.xni.XMLComponent;
+import org.apache.xerces.xni.XMLComponentManager;
+import org.apache.xerces.xni.XMLDocumentHandler;
+import org.apache.xerces.xni.XMLDocumentSource;
+import org.apache.xerces.xni.XMLEntityHandler;
+import org.apache.xerces.xni.XMLString;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
@@ -180,10 +183,10 @@ public class XMLDocumentScanner
     // debugging
 
     /** Debug scanner state. */
-    private static final boolean DEBUG_SCANNER_STATE = true;
+    private static final boolean DEBUG_SCANNER_STATE = false;
 
     /** Debug dispatcher. */
-    private static final boolean DEBUG_DISPATCHER = true;
+    private static final boolean DEBUG_DISPATCHER = false;
 
     /** Debug content dispatcher scanning. */
     private static final boolean DEBUG_CONTENT_SCANNING = false;

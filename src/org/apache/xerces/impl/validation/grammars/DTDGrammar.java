@@ -55,14 +55,14 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.validators.grammars;
+package org.apache.xerces.impl.validation.grammars;
 
-import org.apache.xerces.framework.XMLString;
-import org.apache.xerces.scanners.XMLDTDContentModelHandler;
-import org.apache.xerces.scanners.XMLDTDContentModelSource;
-import org.apache.xerces.scanners.XMLDTDHandler;
-import org.apache.xerces.scanners.XMLDTDSource;
-import org.apache.xerces.validators.Grammar;
+import org.apache.xerces.xni.XMLString;
+import org.apache.xerces.xni.XMLDTDContentModelHandler;
+import org.apache.xerces.xni.XMLDTDContentModelSource;
+import org.apache.xerces.xni.XMLDTDHandler;
+import org.apache.xerces.xni.XMLDTDSource;
+import org.apache.xerces.impl.validation.Grammar;
 import org.xml.sax.SAXException;
 
 /**

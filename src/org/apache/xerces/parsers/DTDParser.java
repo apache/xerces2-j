@@ -57,12 +57,12 @@
 
 package org.apache.xerces.parsers;
 
-import org.apache.xerces.framework.XMLString;
-import org.apache.xerces.scanners.XMLDTDContentModelHandler;
-import org.apache.xerces.scanners.XMLDTDHandler;
-import org.apache.xerces.scanners.XMLDTDScanner;
-import org.apache.xerces.utils.SymbolTable;
-import org.apache.xerces.validators.grammars.DTDGrammar;
+import org.apache.xerces.xni.XMLString;
+import org.apache.xerces.xni.XMLDTDContentModelHandler;
+import org.apache.xerces.xni.XMLDTDHandler;
+import org.apache.xerces.impl.XMLDTDScanner;
+import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.impl.validation.grammars.DTDGrammar;
 import org.xml.sax.SAXException;
 
 /**

@@ -55,7 +55,7 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.framework;
+package org.apache.xerces.impl;
 
 /**
  * This class defines the version number of the parser.

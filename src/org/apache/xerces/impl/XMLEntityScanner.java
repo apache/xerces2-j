@@ -55,7 +55,7 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.readers;
+package org.apache.xerces.impl;
 
 import java.io.EOFException;
 import java.io.FileInputStream;
@@ -66,10 +66,11 @@ import java.io.IOException;
 import java.io.PushbackReader;
 import java.io.Reader;
 
-import org.apache.xerces.framework.XMLString;
-import org.apache.xerces.utils.QName;
-import org.apache.xerces.utils.SymbolTable;
-import org.apache.xerces.utils.XMLChar;
+import org.apache.xerces.xni.QName;
+import org.apache.xerces.xni.XMLEntityHandler;
+import org.apache.xerces.xni.XMLString;
+import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLChar;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;

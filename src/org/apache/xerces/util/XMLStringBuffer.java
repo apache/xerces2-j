@@ -55,7 +55,9 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.framework;
+package org.apache.xerces.util;
+
+import org.apache.xerces.xni.XMLString;
 
 /**
  * XMLString is a structure used to pass character arrays. However,

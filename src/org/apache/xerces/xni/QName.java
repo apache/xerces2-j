@@ -55,7 +55,7 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.utils;
+package org.apache.xerces.xni;
 
 /**
  * A structure that holds the components of an XML Namespaces qualified

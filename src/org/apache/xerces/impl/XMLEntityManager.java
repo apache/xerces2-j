@@ -55,13 +55,14 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.readers;
+package org.apache.xerces.impl;
 
 import java.io.IOException;
 
-import org.apache.xerces.framework.XMLComponent;
-import org.apache.xerces.framework.XMLComponentManager;
-import org.apache.xerces.utils.SymbolTable;
+import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.xni.XMLComponent;
+import org.apache.xerces.xni.XMLComponentManager;
+import org.apache.xerces.xni.XMLEntityHandler;
 
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
@@ -74,7 +75,7 @@ import org.xml.sax.SAXNotSupportedException;
  * entities; resolves entities; and starts entities. The entity manager
  * is a central component in a standard parser configuration and this
  * class works directly with the entity scanner to manage the underlying
- * readers.
+ * xni.
  * <p>
  * This component requires the following features and properties from the
  * component manager that uses it:

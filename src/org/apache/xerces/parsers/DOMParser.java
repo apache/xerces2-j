@@ -57,8 +57,8 @@
 
 package org.apache.xerces.parsers;
 
-import org.apache.xerces.utils.SymbolTable;
-import org.apache.xerces.validators.GrammarPool;
+import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.impl.validation.GrammarPool;
 import org.w3c.dom.Document;
 
 /**

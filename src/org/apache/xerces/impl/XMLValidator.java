@@ -55,17 +55,18 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.validators;
+package org.apache.xerces.impl;
 
-import org.apache.xerces.framework.XMLComponent;
-import org.apache.xerces.framework.XMLComponentManager;
-import org.apache.xerces.framework.XMLErrorReporter;
-import org.apache.xerces.framework.XMLString;
-import org.apache.xerces.scanners.XMLAttributes;
-import org.apache.xerces.scanners.XMLDocumentHandler;
-import org.apache.xerces.scanners.XMLDocumentSource;
-import org.apache.xerces.utils.QName;
-import org.apache.xerces.utils.SymbolTable;
+import org.apache.xerces.impl.validation.GrammarPool;
+import org.apache.xerces.xni.QName;
+import org.apache.xerces.xni.XMLComponent;
+import org.apache.xerces.xni.XMLComponentManager;
+import org.apache.xerces.xni.XMLString;
+import org.apache.xerces.xni.XMLAttributes;
+import org.apache.xerces.xni.XMLDocumentHandler;
+import org.apache.xerces.xni.XMLDocumentSource;
+import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLErrorReporter;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
