@@ -80,7 +80,9 @@ import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLDTDFilter;
+import org.apache.xerces.xni.parser.XMLDTDSource;
 import org.apache.xerces.xni.parser.XMLDTDContentModelFilter;
+import org.apache.xerces.xni.parser.XMLDTDContentModelSource;
 import org.apache.xerces.xni.parser.XMLInputSource;
 
 import java.util.Enumeration;
@@ -228,8 +230,14 @@ public class XMLDTDProcessor
     /** DTD handler. */
     protected XMLDTDHandler fDTDHandler;
 
+    /** DTD source. */
+    protected XMLDTDSource fDTDSource;
+
     /** DTD content model handler. */
     protected XMLDTDContentModelHandler fDTDContentModelHandler;
+
+    /** DTD content model source. */
+    protected XMLDTDContentModelSource fDTDContentModelSource;
 
     // grammars
 
@@ -478,6 +486,15 @@ public class XMLDTDProcessor
         fDTDHandler = dtdHandler;
     } // setDTDHandler(XMLDTDHandler)
 
+    /**
+     * Returns the DTD handler.
+     * 
+     * @return The DTD handler.
+     */
+    public XMLDTDHandler getDTDHandler() {
+        return fDTDHandler;
+    } // getDTDHandler():  XMLDTDHandler
+
     //
     // XMLDTDContentModelSource methods
     //
@@ -490,6 +507,15 @@ public class XMLDTDProcessor
     public void setDTDContentModelHandler(XMLDTDContentModelHandler dtdContentModelHandler) {
         fDTDContentModelHandler = dtdContentModelHandler;
     } // setDTDContentModelHandler(XMLDTDContentModelHandler)
+
+    /**
+     * Gets the DTD content model handler.
+     * 
+     * @return dtdContentModelHandler The DTD content model handler.
+     */
+    public XMLDTDContentModelHandler getDTDContentModelHandler() {
+        return fDTDContentModelHandler;
+    } // getDTDContentModelHandler():  XMLDTDContentModelHandler
 
     //
     // XMLDTDContentModelHandler and XMLDTDHandler methods
@@ -941,14 +967,14 @@ public class XMLDTDProcessor
                         while (true) {
                             String nmtoken = tokenizer.nextToken();
                             if (type == XMLSymbols.fNMTOKENSSymbol) {
-                                if (!XMLChar.isValidNmtoken(nmtoken)) {
+                                if (!isValidNmtoken(nmtoken)) {
                                     ok = false;
                                     break;
                                 }
                             }
                             else if (type == XMLSymbols.fENTITIESSymbol ||
                                      type == XMLSymbols.fIDREFSSymbol) {
-                                if (!XMLChar.isValidName(nmtoken)) {
+                                if (!isValidName(nmtoken)) {
                                     ok = false;
                                     break;
                                 }
@@ -966,7 +992,7 @@ public class XMLDTDProcessor
                         type == XMLSymbols.fIDREFSymbol ||
                         type == XMLSymbols.fNOTATIONSymbol) {
 
-                        if (!XMLChar.isValidName(value)) {
+                        if (!isValidName(value)) {
                             ok = false;
                         }
 
@@ -974,7 +1000,7 @@ public class XMLDTDProcessor
                     else if (type == XMLSymbols.fNMTOKENSymbol ||
                              type == XMLSymbols.fENUMERATIONSymbol) {
 
-                        if (!XMLChar.isValidNmtoken(value)) {
+                        if (!isValidNmtoken(value)) {
                             ok = false;
                         }
                     }
@@ -1275,9 +1301,30 @@ public class XMLDTDProcessor
 
     } // endDTD()
 
+    // sets the XMLDTDSource of this handler
+    public void setDTDSource(XMLDTDSource source ) {
+        fDTDSource = source;
+    } // setDTDSource(XMLDTDSource)
+
+    // returns the XMLDTDSource of this handler
+    public XMLDTDSource getDTDSource() {
+        return fDTDSource;
+    } // getDTDSource():  XMLDTDSource
+
     //
     // XMLDTDContentModelHandler methods
     //
+
+    // sets the XMLContentModelDTDSource of this handler
+    public void setDTDContentModelSource(XMLDTDContentModelSource source ) {
+        fDTDContentModelSource = source;
+    } // setDTDContentModelSource(XMLDTDContentModelSource)
+
+    // returns the XMLDTDSource of this handler
+    public XMLDTDContentModelSource getDTDContentModelSource() {
+        return fDTDContentModelSource;
+    } // getDTDContentModelSource():  XMLDTDContentModelSource
+
 
     /**
      * The start of a content model. Depending on the type of the content
@@ -1581,5 +1628,12 @@ public class XMLDTDProcessor
         }
 
     } // init()
-
+    
+    protected boolean isValidNmtoken(String nmtoken) {
+        return XMLChar.isValidNmtoken(nmtoken);
+    } // isValidNmtoken(String):  boolean
+    
+    protected boolean isValidName(String name) {
+        return XMLChar.isValidName(name);
+    } // isValidName(String):  boolean
 } // class XMLDTDProcessor

@@ -386,28 +386,28 @@ public class XMLDTDValidator
     // attribute validators
 
     /** Datatype validator: ID. */
-    private DatatypeValidator fValID;
+    protected DatatypeValidator fValID;
 
     /** Datatype validator: IDREF. */
-    private DatatypeValidator fValIDRef;
+    protected DatatypeValidator fValIDRef;
 
     /** Datatype validator: IDREFS. */
-    private DatatypeValidator fValIDRefs;
+    protected DatatypeValidator fValIDRefs;
 
     /** Datatype validator: ENTITY. */
-    private DatatypeValidator fValENTITY;
+    protected DatatypeValidator fValENTITY;
 
     /** Datatype validator: ENTITIES. */
-    private DatatypeValidator fValENTITIES;
+    protected DatatypeValidator fValENTITIES;
 
     /** Datatype validator: NMTOKEN. */
-    private DatatypeValidator fValNMTOKEN;
+    protected DatatypeValidator fValNMTOKEN;
 
     /** Datatype validator: NMTOKENS. */
-    private DatatypeValidator fValNMTOKENS;
+    protected DatatypeValidator fValNMTOKENS;
 
     /** Datatype validator: NOTATION. */
-    private DatatypeValidator fValNOTATION;
+    protected DatatypeValidator fValNOTATION;
 
     // to check for duplicate ID or ANNOTATION attribute declare in
     // ATTLIST, and misc VCs
@@ -626,7 +626,7 @@ public class XMLDTDValidator
     /** Returns the document handler */
     public XMLDocumentHandler getDocumentHandler() {
         return fDocumentHandler;
-    } // setDocumentHandler(XMLDocumentHandler)
+    } // getDocumentHandler():  XMLDocumentHandler
 
 
     //
@@ -850,7 +850,7 @@ public class XMLDTDValidator
         //          look at the characters again. -Ac
         boolean allWhiteSpace = true;
         for (int i=text.offset; i< text.offset+text.length; i++) {
-            if (!XMLChar.isSpace(text.ch[i])) {
+            if (!isSpace(text.ch[i])) {
                 allWhiteSpace = false;
                 break;
             }
@@ -1798,8 +1798,8 @@ public class XMLDTDValidator
 
     } // getAttributeTypeName(XMLAttributeDecl):String
 
-    /** intialization */
-    private void init() {
+    /** initialization */
+    protected void init() {
 
         // datatype validators
         if (fValidation) {
@@ -2076,5 +2076,11 @@ public class XMLDTDValidator
             fDocumentHandler.endElement(fCurrentElement, augs);
         }
     }
+
+    // returns whether a character is space according to the
+    // version of XML this validator supports.
+    protected boolean isSpace(int c) {
+        return XMLChar.isSpace(c);
+    } // isSpace(int):  boolean
 
 } // class XMLDTDValidator

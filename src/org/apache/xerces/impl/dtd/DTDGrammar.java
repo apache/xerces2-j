@@ -93,6 +93,8 @@ import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.parser.XMLDTDSource;
+import org.apache.xerces.xni.parser.XMLDTDContentModelSource;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 
@@ -148,6 +150,9 @@ public class DTDGrammar
     //
     // Data
     //
+
+    protected XMLDTDSource fDTDSource = null;
+    protected XMLDTDContentModelSource fDTDContentModelSource = null;
 
     /** Current element index. */
     protected int fCurrentElementIndex;
@@ -880,6 +885,16 @@ public class DTDGrammar
         }
     } // endDTD()
 
+    // sets the source of this handler
+    public void setDTDSource(XMLDTDSource source) {
+        fDTDSource = source;
+    } // setDTDSource(XMLDTDSource)
+
+    // returns the source of this handler
+    public XMLDTDSource getDTDSource() {
+        return fDTDSource;
+    } // getDTDSource():  XMLDTDSource
+
     // no-op methods
 
     /**
@@ -985,6 +1000,16 @@ public class DTDGrammar
     //
     // XMLDTDContentModelHandler methods
     //
+
+    // set content model source
+    public void setDTDContentModelSource(XMLDTDContentModelSource source) {
+        fDTDContentModelSource = source;
+    }
+
+    // get content model source
+    public XMLDTDContentModelSource getDTDContentModelSource() {
+        return fDTDContentModelSource;
+    }
 
     /**
      * The start of a content model. Depending on the type of the content
