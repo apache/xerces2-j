@@ -58,6 +58,7 @@
 package org.apache.xerces.util;
 
 import java.util.Hashtable;
+import java.util.Enumeration;
 
 import org.apache.xerces.xni.Augmentations;
 
@@ -110,6 +111,14 @@ public class AugmentationsImpl implements Augmentations{
      */
     public Object removeItem (String key){
         return fAugmentations.remove(key);
+    }
+
+    /**
+     * Returns an enumeration of the keys in the Augmentations structure
+     *
+     */
+    public Enumeration keys (){
+        return fAugmentations.keys();
     }
 
     /**

@@ -79,7 +79,7 @@ public class XMLConfigurationException
     public static final short NOT_RECOGNIZED = 0;
 
     /** Exception type: identifier not supported. */
-    public static final short NOT_SUPPORTED = 0;
+    public static final short NOT_SUPPORTED = 1;
 
     //
     // Data

@@ -57,6 +57,8 @@
 
 package org.apache.xerces.xni;
 
+import java.util.Enumeration;
+
 /**
  * The Augmentations interface defines a table of additional data that may
  * be passed along the document pipeline. The information can contain extra
@@ -107,13 +109,17 @@ public interface Augmentations {
      */
     public Object removeItem (String key);
 
+    
+    /**
+     * Returns an enumeration of the keys in the Augmentations structure
+     *
+     */
+    public Enumeration keys ();
+
+
     /**
      * Remove all objects from the Augmentations structure.
      */
     public void clear ();
 
-    //
-    // REVISIT:
-    // provide a way to iterate through all of the items in the augmentations.
-    //
 }

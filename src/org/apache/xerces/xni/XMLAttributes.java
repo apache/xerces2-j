@@ -385,8 +385,17 @@ public interface XMLAttributes {
      */
     public boolean isSpecified(int attrIndex);
 
+
     /**
-     * Look up an augmentations by attributes namespace name.
+     * Look up an augmentation by attribute's index.
+     * 
+     * @param attributeIndex The attribute index.
+     * @return Augmentations
+     */
+    public Augmentations getAugmentations (int attributeIndex);
+
+    /**
+     * Look up an augmentation by namespace name.
      * 
      * @param uri       The Namespace URI, or the empty string if
      *                  the name has no Namespace URI.
@@ -395,12 +404,18 @@ public interface XMLAttributes {
      */
     public Augmentations getAugmentations (String uri, String localPart);
 
+
     /**
-     * Look up an augmentations by attributes index.
-     * 
-     * @param attributeIndex The attribute index.
+     * Look up an augmentation by XML 1.0 qualified name.
+     * <p>
+     *
+     * @param qName The XML 1.0 qualified name.
+     *
      * @return Augmentations
+     *
      */
-    public Augmentations getAugmentations (int attributeIndex);
+    public Augmentations getAugmentations(String qName);
+
+
 
 } // interface XMLAttributes

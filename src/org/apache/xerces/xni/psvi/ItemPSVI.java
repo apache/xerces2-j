@@ -129,7 +129,7 @@ public interface ItemPSVI {
      * @return The canonical lexical representation of the declaration's {value constraint} value.
      * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-schema_default">XML Schema Part 1: Structures [schema default]</a>
      */
-    public String schemaDefault();
+    public String getSchemaDefault();
 
     /**
      * [schema normalized value] 
@@ -138,14 +138,14 @@ public interface ItemPSVI {
      * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-schema_normalized_value">XML Schema Part 1: Structures [schema normalized value]</a>
      * @return the normalized value of this item after validation
      */
-    public String schemaNormalizedValue();
+    public String getSchemaNormalizedValue();
 
     /**
      * [schema specified] 
      * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-schema_specified">XML Schema Part 1: Structures [schema specified]</a>
-     * @return true if return is schema, false if infoset
+     * @return false - value was specified in schema, true - value comes from the infoset
      */
-    public boolean schemaSpecified();
+    public boolean isSpecified();
 
 
     /**

@@ -721,7 +721,7 @@ public abstract class AbstractDOMParser
                 if (fNormalizeData) {
                     AttributePSVI attrPSVI = (AttributePSVI)attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI);
                     if (attrPSVI != null) {
-                        attrValue = attrPSVI.schemaNormalizedValue();
+                        attrValue = attrPSVI.getSchemaNormalizedValue();
                     }
 
                 }
@@ -756,7 +756,7 @@ public abstract class AbstractDOMParser
                 if (fNormalizeData) {
                     AttributePSVI attrPSVI = (AttributePSVI)attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI);
                     if (attrPSVI != null) {
-                        attrValue = attrPSVI.schemaNormalizedValue();
+                        attrValue = attrPSVI.getSchemaNormalizedValue();
                     }
 
                 }
@@ -813,7 +813,7 @@ public abstract class AbstractDOMParser
                 if (fNormalizeData && augs != null) {
                     ElementPSVI elemPSVI = (ElementPSVI)augs.getItem(Constants.ELEMENT_PSVI);
                     if (elemPSVI != null) {
-                        value = elemPSVI.schemaNormalizedValue();
+                        value = elemPSVI.getSchemaNormalizedValue();
                     } 
                 } 
                 if (value == null) {
@@ -864,7 +864,7 @@ public abstract class AbstractDOMParser
                 if (fNormalizeData && augs != null) {
                     ElementPSVI elemPSVI = (ElementPSVI)augs.getItem(Constants.ELEMENT_PSVI);
                     if (elemPSVI != null) {
-                        value = elemPSVI.schemaNormalizedValue();
+                        value = elemPSVI.getSchemaNormalizedValue();
                     } 
                 } 
 

@@ -627,11 +627,24 @@ public class XMLAttributesImpl
     public Augmentations getAugmentations (String uri, String localName) {
         int index = getIndex(uri, localName);
 
-        if (index < 0 || index >= fLength) {
-            return null;
-        }
-        return fAugmentations[index];
+        return index != -1 ? fAugmentations[index] : null;
     }
+
+    /**
+     * Look up an augmentation by XML 1.0 qualified name.
+     * <p>
+     *
+     * @param qName The XML 1.0 qualified name.
+     *
+     * @return Augmentations
+     *
+     */
+    public Augmentations getAugmentations(String qName){
+        int index = getIndex(qName);
+        return index != -1 ? fAugmentations[index] : null;
+    }
+
+
 
     /**
      * Look up an augmentations by attributes index.

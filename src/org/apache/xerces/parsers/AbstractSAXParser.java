@@ -416,7 +416,7 @@ public abstract class AbstractSAXParser
                     if (fNormalizeData) {
                         AttributePSVI attrPSVI = (AttributePSVI)attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI);
                         if (attrPSVI != null) {
-                            attributes.setValue(i, attrPSVI.schemaNormalizedValue());
+                            attributes.setValue(i, attrPSVI.getSchemaNormalizedValue());
                         }
                     }
 
@@ -485,7 +485,7 @@ public abstract class AbstractSAXParser
                 if (fNormalizeData && augs != null) {
                     ElementPSVI elemPSVI = (ElementPSVI)augs.getItem(Constants.ELEMENT_PSVI);
                     if (elemPSVI != null) {
-                        value = elemPSVI.schemaNormalizedValue();
+                        value = elemPSVI.getSchemaNormalizedValue();
                     }
                 }
 

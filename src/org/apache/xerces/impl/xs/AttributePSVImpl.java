@@ -143,7 +143,7 @@ public class AttributePSVImpl implements AttributePSVI {
      * @return The canonical lexical representation of the declaration's {value constraint} value.
      * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-schema_default>XML Schema Part 1: Structures [schema default]</a>
      */
-    public String   schemaDefault() {
+    public String   getSchemaDefault() {
         Object dValue = null;
         if( fDeclaration !=null ) {
             dValue = fDeclaration.fDefault;
@@ -158,17 +158,16 @@ public class AttributePSVImpl implements AttributePSVI {
      * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-schema_normalized_value>XML Schema Part 1: Structures [schema normalized value]</a>
      * @return the normalized value of this item after validation
      */
-    public String schemaNormalizedValue() {
+    public String getSchemaNormalizedValue() {
         return fNormalizedValue;
     }
 
     /**
-     * [schema specified]
-     * 
-     * @return if return is true - schema, otherwise - infoset
-     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-schema_specified>XML Schema Part 1: Structures [schema specified]</a>
+     * [schema specified] 
+     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-schema_specified">XML Schema Part 1: Structures [schema specified]</a>
+     * @return false value was specified in schema, true value comes from the infoset
      */
-    public boolean schemaSpecified() {
+    public boolean isSpecified() {
         return fSpecified;
     }
 
