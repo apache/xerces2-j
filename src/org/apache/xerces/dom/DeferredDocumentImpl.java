@@ -543,6 +543,7 @@ public class DeferredDocumentImpl
         // add new attribute
         int nextIndex = getChunkIndex(fNodeValue, echunk, eindex);
         setChunkIndex(fNodeValue, attrIndex, echunk, eindex);
+        setChunkIndex(fNodeNextSib, nextIndex, achunk, aindex);
 
         // return
         return oldAttrIndex;
@@ -619,10 +620,19 @@ public class DeferredDocumentImpl
 
     // methods used when objects are "fluffed-up"
 
-    /** Returns the parent node of the given node. */
+    /** 
+     * Returns the parent node of the given node. 
+     * <em>Calling this method does not free the parent index.</em>
+     */
     public int getParentNode(int nodeIndex) {
+        return getParentNode(nodeIndex, false);
+    }
 
-        // REVISIT: should this be "public"? -Ac
+    /** 
+     * Returns the parent node of the given node. 
+     * @param free True to free parent node.
+     */
+    public int getParentNode(int nodeIndex, boolean free) {
 
         if (nodeIndex == -1) {
             return -1;
@@ -630,12 +640,21 @@ public class DeferredDocumentImpl
 
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
-        return getChunkIndex(fNodeParent, chunk, index);
+        return free ? clearChunkIndex(fNodeParent, chunk, index)
+                    : getChunkIndex(fNodeParent, chunk, index);
 
     } // getParentNode(int):int
 
     /** Returns the first child of the given node. */
     public int getFirstChild(int nodeIndex) {
+        return getFirstChild(nodeIndex, true);
+    }
+
+    /** 
+     * Returns the first child of the given node. 
+     * @param free True to free child index.
+     */
+    public int getFirstChild(int nodeIndex, boolean free) {
 
         if (nodeIndex == -1) {
             return -1;
@@ -643,14 +662,24 @@ public class DeferredDocumentImpl
 
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
-        return clearChunkIndex(fNodeFirstChild, chunk, index);
+        return free ? clearChunkIndex(fNodeFirstChild, chunk, index)
+                    : getChunkIndex(fNodeFirstChild, chunk, index);
 
-    } // getFirstChild(int):int
+    } // getFirstChild(int,boolean):int
 
-    /** Returns the next sibling of the given node.
-     *  This is post-normalization of Text Nodes.
+    /** 
+     * Returns the next sibling of the given node.
+     * This is post-normalization of Text Nodes.
      */
     public int getNextSibling(int nodeIndex) {
+        return getNextSibling(nodeIndex, true);
+    }
+
+    /** 
+     * Returns the next sibling of the given node.
+     * @param free True to free sibling index.
+     */
+    public int getNextSibling(int nodeIndex, boolean free) {
 
         if (nodeIndex == -1) {
             return -1;
@@ -658,7 +687,8 @@ public class DeferredDocumentImpl
 
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
-        nodeIndex = clearChunkIndex(fNodeNextSib, chunk, index);
+        nodeIndex = free ? clearChunkIndex(fNodeNextSib, chunk, index)
+                         : getChunkIndex(fNodeNextSib, chunk, index);
 
         while (nodeIndex != -1 && getChunkIndex(fNodeType, chunk, index) == Node.TEXT_NODE) {
             nodeIndex = getChunkIndex(fNodeNextSib, chunk, index);
@@ -668,7 +698,7 @@ public class DeferredDocumentImpl
 
         return nodeIndex;
 
-    } // getNextSibling(int):int
+    } // getNextSibling(int,boolean):int
 
     /**
      * Returns the <i>real</i> next sibling of the given node,
@@ -676,6 +706,14 @@ public class DeferredDocumentImpl
      * to normalize values.
      */
     public int getRealNextSibling(int nodeIndex) {
+        return getRealNextSibling(nodeIndex, true);
+    }
+
+    /**
+     * Returns the <i>real</i> next sibling of the given node.
+     * @param free True to free sibling index.
+     */
+    public int getRealNextSibling(int nodeIndex, boolean free) {
 
         if (nodeIndex == -1) {
             return -1;
@@ -683,9 +721,10 @@ public class DeferredDocumentImpl
 
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
-        return clearChunkIndex(fNodeNextSib, chunk, index);
+        return free ? clearChunkIndex(fNodeNextSib, chunk, index)
+                    : getChunkIndex(fNodeNextSib, chunk, index);
 
-    } // getReadNextSibling(int):int
+    } // getReadNextSibling(int,boolean):int
 
     /**
      * Returns the index of the element definition in the table
@@ -903,6 +942,14 @@ public class DeferredDocumentImpl
 
     /** Returns the name of the given node. */
     public String getNodeNameString(int nodeIndex) {
+        return getNodeNameString(nodeIndex, true);
+    } // getNodeNameString(int):String
+
+    /** 
+     * Returns the name of the given node. 
+     * @param free True to free the string index.
+     */
+    public String getNodeNameString(int nodeIndex, boolean free) {
 
         if (nodeIndex == -1) {
             return null;
@@ -910,17 +957,27 @@ public class DeferredDocumentImpl
 
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
-        int nameIndex = clearChunkIndex(fNodeName, chunk, index);
+        int nameIndex = free 
+                      ? clearChunkIndex(fNodeName, chunk, index)
+                      : getChunkIndex(fNodeName, chunk, index);
         if (nameIndex == -1) {
             return null;
         }
 
         return fStringPool.toString(nameIndex);
 
-    } // getNodeNameString(int):String
+    } // getNodeNameString(int,boolean):String
 
     /** Returns the value of the given node. */
     public String getNodeValueString(int nodeIndex) {
+        return getNodeValueString(nodeIndex, true);
+    } // getNodeValueString(int):String
+
+    /** 
+     * Returns the value of the given node. 
+     * @param free True to free the string index.
+     */
+    public String getNodeValueString(int nodeIndex, boolean free) {
 
         if (nodeIndex == -1) {
             return null;
@@ -928,17 +985,27 @@ public class DeferredDocumentImpl
 
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
-        int valueIndex = clearChunkIndex(fNodeValue, chunk, index);
+        int valueIndex = free
+                       ? clearChunkIndex(fNodeValue, chunk, index)
+                       : getChunkIndex(fNodeValue, chunk, index);
         if (valueIndex == -1) {
             return null;
         }
 
         return fStringPool.toString(valueIndex);
 
-    } // getNodeValueString(int):String
+    } // getNodeValueString(int,boolean):String
 
     /** Returns the real int name of the given node. */
     public int getNodeName(int nodeIndex) {
+        return getNodeName(nodeIndex, true);
+    }
+
+    /** 
+     * Returns the real int name of the given node. 
+     * @param free True to free the name index.
+     */
+    public int getNodeName(int nodeIndex, boolean free) {
 
         if (nodeIndex == -1) {
             return -1;
@@ -946,15 +1013,24 @@ public class DeferredDocumentImpl
 
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
-        return clearChunkIndex(fNodeName, chunk, index);
+        return free ? clearChunkIndex(fNodeName, chunk, index)
+                    : getChunkIndex(fNodeName, chunk, index);
 
-    } // getNodeName(int):int
+    } // getNodeName(int,boolean):int
 
     /**
      * Returns the real int value of the given node.
      *  Used by AttrImpl to store specified value (1 == true).
      */
     public int getNodeValue(int nodeIndex) {
+        return getNodeValue(nodeIndex, true);
+    }
+
+    /**
+     * Returns the real int value of the given node.
+     * @param free True to free the value index. 
+     */
+    public int getNodeValue(int nodeIndex, boolean free) {
 
         if (nodeIndex == -1) {
             return -1;
@@ -962,12 +1038,21 @@ public class DeferredDocumentImpl
 
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
-        return clearChunkIndex(fNodeValue, chunk, index);
+        return free ? clearChunkIndex(fNodeValue, chunk, index)
+                    : getChunkIndex(fNodeValue, chunk, index);
 
-    } // getNodeValue(int):int
+    } // getNodeValue(int,boolean):int
 
     /** Returns the type of the given node. */
     public short getNodeType(int nodeIndex) {
+        return getNodeType(nodeIndex, true);
+    }
+
+    /** 
+     * Returns the type of the given node. 
+     * @param True to free type index.
+     */
+    public short getNodeType(int nodeIndex, boolean free) {
 
         if (nodeIndex == -1) {
             return -1;
@@ -975,7 +1060,10 @@ public class DeferredDocumentImpl
 
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
-        return (short)clearChunkIndex(fNodeType, chunk, index);
+        if (free) {
+            return (short)clearChunkIndex(fNodeType, chunk, index);
+        }
+        return (short)getChunkIndex(fNodeType, chunk, index);
 
     } // getNodeType(int):int
 

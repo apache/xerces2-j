@@ -1104,7 +1104,7 @@ public class DOMParser
 
         // deferred node expansion
         if (fDeferredDocumentImpl != null) {
-            fCurrentNodeIndex = fDeferredDocumentImpl.getParentNode(fCurrentNodeIndex);
+            fCurrentNodeIndex = fDeferredDocumentImpl.getParentNode(fCurrentNodeIndex, false);
             fWithinElement = false;
         }
 
@@ -1351,28 +1351,28 @@ public class DOMParser
 
             String name = fStringPool.toString(entityName);
 
-            int erChild = fCurrentNodeIndex;//fDeferredDocumentImpl.getParentNode(fCurrentNodeIndex);
-            fCurrentNodeIndex = fDeferredDocumentImpl.getParentNode(erChild);
+            int erChild = fCurrentNodeIndex;
+            fCurrentNodeIndex = fDeferredDocumentImpl.getParentNode(erChild, false);
 
             // should never be true - we should not return here.
-            if (fDeferredDocumentImpl.getNodeType(erChild) != Node.ENTITY_REFERENCE_NODE)  return;
+            if (fDeferredDocumentImpl.getNodeType(erChild, false) != Node.ENTITY_REFERENCE_NODE)  return;
 
-            erChild = fDeferredDocumentImpl.getFirstChild(erChild); // first Child of EntityReference
+            erChild = fDeferredDocumentImpl.getFirstChild(erChild, false); // first Child of EntityReference
 
             if (fDocumentTypeIndex != -1) {
                 // find Entity decl for this EntityReference.
-                int entityDecl = fDeferredDocumentImpl.getFirstChild(fDocumentTypeIndex);
+                int entityDecl = fDeferredDocumentImpl.getFirstChild(fDocumentTypeIndex, false);
                 while (entityDecl != -1) {
-                    if (fDeferredDocumentImpl.getNodeType(entityDecl) == Node.ENTITY_NODE
-                    && fDeferredDocumentImpl.getNodeNameString(entityDecl).equals(name)) // string compare...
+                    if (fDeferredDocumentImpl.getNodeType(entityDecl, false) == Node.ENTITY_NODE
+                    && fDeferredDocumentImpl.getNodeNameString(entityDecl, false).equals(name)) // string compare...
                     {
                         break;
                     }
-                    entityDecl = fDeferredDocumentImpl.getNextSibling(entityDecl);
+                    entityDecl = fDeferredDocumentImpl.getNextSibling(entityDecl, false);
                 }
 
                 if (entityDecl != -1
-                    && fDeferredDocumentImpl.getFirstChild(entityDecl) == -1) {
+                    && fDeferredDocumentImpl.getFirstChild(entityDecl, false) == -1) {
                     // found entityDecl with same name as this reference
                     // AND it doesn't have any children.
 
@@ -1440,10 +1440,12 @@ public class DOMParser
             if (fGrammarAccess) {
                 Element schema = fDocument.createElement("schema");
                 // REVISIT: What should the namespace be? -Ac
-                schema.setAttribute("xmlns", "http://www.w3.org/XML/Group/1999/09/23-xmlschema/");
+                schema.setAttribute("xmlns", "http://www.w3.org/1999/XMLSchema");
                 ((AttrImpl)schema.getAttributeNode("xmlns")).setSpecified(false);
-                schema.setAttribute("model", "closed");
-                ((AttrImpl)schema.getAttributeNode("model")).setSpecified(false);
+                schema.setAttribute("finalDefault", "");
+                ((AttrImpl)schema.getAttributeNode("finalDefault")).setSpecified(false);
+                schema.setAttribute("exactDefault", "");
+                ((AttrImpl)schema.getAttributeNode("exactDefault")).setSpecified(false);
                 fDocumentType.appendChild(schema);
             }
         }
@@ -1459,14 +1461,20 @@ public class DOMParser
                 int handle = fAttrList.startAttrList();
                 fAttrList.addAttr(
                     fStringPool.addSymbol("xmlns"),
-                    fStringPool.addString("http://www.w3.org/XML/Group/1999/09/23-xmlschema/"),
+                    fStringPool.addString("http://www.w3.org/1999/XMLSchema"),
                     fStringPool.addSymbol("CDATA"),
                     false,
                     false); // search
                 fAttrList.addAttr(
-                    fStringPool.addSymbol("model"),
-                    fStringPool.addString("closed"),
-                    fStringPool.addSymbol("ENUMERATION"),
+                    fStringPool.addSymbol("finalDefault"),
+                    fStringPool.addString(""),
+                    fStringPool.addSymbol("CDATA"),
+                    false,
+                    false); // search
+                fAttrList.addAttr(
+                    fStringPool.addSymbol("exactDefault"),
+                    fStringPool.addString(""),
+                    fStringPool.addSymbol("CDATA"),
                     false,
                     false); // search
                 fAttrList.endAttrList();
@@ -1507,7 +1515,8 @@ public class DOMParser
     /**
      * &lt;!ELEMENT Name contentspec&gt;
      */
-    public void elementDecl(int elementTypeIndex, XMLValidator.ContentSpec contentSpec)
+    public void elementDecl(int elementTypeIndex, 
+                            XMLValidator.ContentSpec contentSpec)
         throws Exception {
 
         if (DEBUG_ATTLIST_DECL) {
@@ -1524,6 +1533,10 @@ public class DOMParser
 
             if (fDeferredDocumentImpl != null) {
 
+                //
+                // Build element
+                //
+
                 // get element declaration; create if necessary
                 int schemaIndex = getFirstChildElement(fDocumentTypeIndex, "schema");
                 String elementName = fStringPool.toString(elementTypeIndex);
@@ -1537,66 +1550,107 @@ public class DOMParser
                         true,
                         false); // search
                     fAttrList.addAttr(
-                        fStringPool.addSymbol("export"),
-                        fStringPool.addString("true"),
-                        fStringPool.addSymbol("ENUMERATION"),
-                        false,
+                        fStringPool.addSymbol("minOccurs"), // name
+                        fStringPool.addString("1"), // value
+                        fStringPool.addSymbol("NMTOKEN"), // type
+                        false, // specified
+                        false); // search
+                    fAttrList.addAttr(
+                        fStringPool.addSymbol("nullable"), // name
+                        fStringPool.addString("false"), // value
+                        fStringPool.addSymbol("ENUMERATION"), // type
+                        false, // specified
+                        false); // search
+                    fAttrList.addAttr(
+                        fStringPool.addSymbol("abstract"), // name
+                        fStringPool.addString("false"), // value
+                        fStringPool.addSymbol("ENUMERATION"), // type
+                        false, // specified
+                        false); // search
+                    fAttrList.addAttr(
+                        fStringPool.addSymbol("final"), // name
+                        fStringPool.addString("false"), // value
+                        fStringPool.addSymbol("ENUMERATION"), // type
+                        false, // specified
                         false); // search
                     fAttrList.endAttrList();
                     elementIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("element"), fAttrList, handle);
                     fDeferredDocumentImpl.appendChild(schemaIndex, elementIndex);
                 }
 
-                // get archetype element; create if necessary
-                int archetypeIndex = getFirstChildElement(elementIndex, "archetype");
-                if (archetypeIndex == -1) {
-                    archetypeIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("archetype"), null, -1);
-                    // REVISIT: Check for archetype redeclaration? -Ac
-                    fDeferredDocumentImpl.insertBefore(elementIndex, archetypeIndex, getFirstChildElement(elementIndex));
-                }
+                //
+                // Build content model
+                //
 
-                // build content model
+                // <!ELEMENT name (#PCDATA)>
                 int contentType = contentSpec.getType();
                 String contentTypeName = fStringPool.toString(contentType);
-                if (contentTypeName.equals("EMPTY")) {
-                    int attributeIndex = fDeferredDocumentImpl.createAttribute(fStringPool.addSymbol("content"), fStringPool.addString("empty"), true);
-                    fDeferredDocumentImpl.setAttributeNode(archetypeIndex, attributeIndex);
+                XMLContentSpecNode node = new XMLContentSpecNode();
+                int contentSpecHandle = contentSpec.getHandle();
+                if (contentSpecHandle != -1) {
+                    contentSpec.getNode(contentSpecHandle, node);
                 }
-                else if (contentTypeName.equals("ANY")) {
-                    int attributeIndex = fDeferredDocumentImpl.createAttribute(fStringPool.addSymbol("content"), fStringPool.addString("any"), true);
-                    fDeferredDocumentImpl.setAttributeNode(archetypeIndex, attributeIndex);
-                }
-                else if (contentTypeName.equals("CHILDREN")) {
-                    int attributeIndex = fDeferredDocumentImpl.createAttribute(fStringPool.addSymbol("content"), fStringPool.addString("elemOnly"), false);
-                    fDeferredDocumentImpl.setAttributeNode(archetypeIndex, attributeIndex);
-                    attributeIndex = fDeferredDocumentImpl.createAttribute(fStringPool.addSymbol("order"), fStringPool.addString("seq"), false);
-                    fDeferredDocumentImpl.setAttributeNode(archetypeIndex, attributeIndex);
 
-                    XMLContentSpecNode node = new XMLContentSpecNode();
-                    int contentSpecIndex = contentSpec.getHandle();
-                    contentSpec.getNode(contentSpecIndex, node);
-                    Element model = createContentModel(contentSpec, node);
-
-                    int modelIndex = createDeferredContentModel(model);
-                    int firstChildIndex = getFirstChildElement(archetypeIndex);
-                    fDeferredDocumentImpl.insertBefore(archetypeIndex, modelIndex, firstChildIndex);
+                // (#PCDATA)
+                if (contentTypeName.equals("MIXED") && node.type == 0) {
+                    int attrNameIndex = fStringPool.addSymbol("type");
+                    int attrValueIndex = fStringPool.addString("string");
+                    boolean attrSpecified = true;
+                    int attrIndex = fDeferredDocumentImpl.createAttribute(attrNameIndex, attrValueIndex, attrSpecified);
+                    fDeferredDocumentImpl.setAttributeNode(elementIndex, attrIndex);
                 }
+
+                // other content models
                 else {
-                    // REVISIT: Any chance of getting other than MIXED? -Ac
-                    int attributeIndex = fDeferredDocumentImpl.createAttribute(fStringPool.addSymbol("content"), fStringPool.addString("mixed"), true);
-                    fDeferredDocumentImpl.setAttributeNode(archetypeIndex, attributeIndex);
+                    // get type element; create if necessary
+                    int typeIndex = getFirstChildElement(elementIndex, "type");
+                    if (typeIndex == -1) {
+                        typeIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("type"), null, -1);
+                        // REVISIT: Check for type redeclaration? -Ac
+                        fDeferredDocumentImpl.insertBefore(elementIndex, typeIndex, getFirstChildElement(elementIndex));
+                    }
 
-                    XMLContentSpecNode node = new XMLContentSpecNode();
-                    int index = contentSpec.getHandle();
-                    contentSpec.getNode(index, node);
-                    if (node.type != 0) {
+                    // <!ELEMENT name EMPTY>
+                    if (contentTypeName.equals("EMPTY")) {
+                        int attributeIndex = fDeferredDocumentImpl.createAttribute(fStringPool.addSymbol("content"), fStringPool.addString("empty"), true);
+                        fDeferredDocumentImpl.setAttributeNode(typeIndex, attributeIndex);
+                    }
+
+                    // <!ELEMENT name ANY>
+                    else if (contentTypeName.equals("ANY")) {
+                        int anyIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("any"), null, -1);
+                        fDeferredDocumentImpl.insertBefore(typeIndex, anyIndex, getFirstChildElement(typeIndex));
+                    }
+
+                    // <!ELEMENT name (a,b,...)> or <!ELEMENT name (a|b|...)>
+                    else if (contentTypeName.equals("CHILDREN")) {
+                        int attributeIndex = fDeferredDocumentImpl.createAttribute(fStringPool.addSymbol("content"), fStringPool.addString("elementOnly"), true);
+                        fDeferredDocumentImpl.setAttributeNode(typeIndex, attributeIndex);
+                        //attributeIndex = fDeferredDocumentImpl.createAttribute(fStringPool.addSymbol("order"), fStringPool.addString("seq"), false);
+                        //fDeferredDocumentImpl.setAttributeNode(typeIndex, attributeIndex);
+
+                        int contentSpecIndex = contentSpec.getHandle();
+                        contentSpec.getNode(contentSpecIndex, node);
+                        Element model = createContentModel(contentSpec, node);
+
+                        int modelIndex = createDeferredContentModel(model);
+                        int firstChildIndex = getFirstChildElement(typeIndex);
+                        fDeferredDocumentImpl.insertBefore(typeIndex, modelIndex, firstChildIndex);
+                    }
+
+                    // <!ELEMENT name (#PCDATA|a|...)*>
+                    else {
+                        // REVISIT: Any chance of getting other than MIXED? -Ac
+                        // set content type
+                        int attrIndex = fDeferredDocumentImpl.createAttribute(fStringPool.addSymbol("content"), fStringPool.addString("mixed"), true);
+                        fDeferredDocumentImpl.setAttributeNode(typeIndex, attrIndex);
 
                         // skip '*' node
                         contentSpec.getNode(node.value, node);
 
                         // add leaves (on descent)
                         do {
-                            index = node.value;
+                            int index = node.value;
                             int handle = fAttrList.startAttrList();
                             contentSpec.getNode(node.otherValue, node);
                             String elementRefName = fStringPool.toString(node.value);
@@ -1608,7 +1662,7 @@ public class DOMParser
                                 false); // search
                             fAttrList.endAttrList();
                             int elementRefIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("element"), fAttrList, handle);
-                            fDeferredDocumentImpl.insertBefore(archetypeIndex, elementRefIndex, getFirstChildElement(archetypeIndex, "element"));
+                            fDeferredDocumentImpl.insertBefore(typeIndex, elementRefIndex, getFirstChildElement(typeIndex, "element"));
                             contentSpec.getNode(index, node);
                         } while (node.type != XMLContentSpecNode.CONTENTSPECNODE_LEAF);
                     }
@@ -1618,6 +1672,10 @@ public class DOMParser
 
             else if (fDocumentImpl != null) {
 
+                //
+                // Build element
+                //
+
                 // get element declaration; create if necessary
                 Element schema = XUtil.getFirstChildElement(fDocumentType, "schema");
                 String elementName = fStringPool.toString(elementTypeIndex);
@@ -1625,63 +1683,91 @@ public class DOMParser
                 if (element == null) {
                     element = fDocument.createElement("element");
                     element.setAttribute("name", elementName);
-                    element.setAttribute("export", "true");
-                    ((AttrImpl)element.getAttributeNode("export")).setSpecified(false);
+                    element.setAttribute("minOccurs", "1");
+                    ((AttrImpl)element.getAttributeNode("minOccurs")).setSpecified(false);
+                    element.setAttribute("nullable", "false");
+                    ((AttrImpl)element.getAttributeNode("nullable")).setSpecified(false);
+                    element.setAttribute("abstract", "false");
+                    ((AttrImpl)element.getAttributeNode("abstract")).setSpecified(false);
+                    element.setAttribute("final", "false");
+                    ((AttrImpl)element.getAttributeNode("final")).setSpecified(false);
                     schema.appendChild(element);
                 }
 
-                // get archetype element; create if necessary
-                Element archetype = XUtil.getFirstChildElement(element, "archetype");
-                if (archetype == null) {
-                    archetype = fDocument.createElement("archetype");
-                    // REVISIT: Check for archetype redeclaration? -Ac
-                    element.insertBefore(archetype, XUtil.getFirstChildElement(element));
-                }
+                //
+                // Build content model
+                //
 
-                // build content model
+                // <!ELEMENT name (#PCDATA)>
                 int contentType = contentSpec.getType();
                 String contentTypeName = fStringPool.toString(contentType);
-                if (contentTypeName.equals("EMPTY")) {
-                    archetype.setAttribute("content", "empty");
+                XMLContentSpecNode node = new XMLContentSpecNode();
+                int contentSpecHandle = contentSpec.getHandle();
+                if (contentSpecHandle != -1) {
+                    contentSpec.getNode(contentSpecHandle, node);
                 }
-                else if (contentTypeName.equals("ANY")) {
-                    archetype.setAttribute("content", "any");
-                }
-                else if (contentTypeName.equals("CHILDREN")) {
 
-                    // build content model
-                    archetype.setAttribute("content", "elemOnly");
-                    ((AttrImpl)archetype.getAttributeNode("content")).setSpecified(false);
-                    archetype.setAttribute("order", "seq");
-                    ((AttrImpl)archetype.getAttributeNode("order")).setSpecified(false);
-                    XMLContentSpecNode node = new XMLContentSpecNode();
-                    int handle = contentSpec.getHandle();
-                    contentSpec.getNode(handle, node);
-
-                    Element model = createContentModel(contentSpec, node);
-                    Element firstChild = XUtil.getFirstChildElement(archetype);
-                    archetype.insertBefore(model, firstChild);
+                // (#PCDATA)
+                if (contentTypeName.equals("MIXED") && node.type == 0) {
+                    element.setAttribute("type", "string");
                 }
+
+                // other content models
                 else {
-                    // REVISIT: Any chance of getting other than MIXED? -Ac
-                    archetype.setAttribute("content", "mixed");
-                    XMLContentSpecNode node = new XMLContentSpecNode();
-                    int handle = contentSpec.getHandle();
-                    contentSpec.getNode(handle, node);
-                    if (node.type != 0) {
+                    // get type element; create if necessary
+                    Element type = XUtil.getFirstChildElement(element, "type");
+                    if (type == null) {
+                        type = fDocumentImpl.createElement("type");
+                        // REVISIT: Check for type redeclaration? -Ac
+                        element.insertBefore(type, XUtil.getFirstChildElement(element));
+                    }
+
+                    // <!ELEMENT name EMPTY>
+                    if (contentTypeName.equals("EMPTY")) {
+                        type.setAttribute("content", "empty");
+                    }
+
+                    // <!ELEMENT name ANY>
+                    else if (contentTypeName.equals("ANY")) {
+                        Element any = fDocumentImpl.createElement("any");
+                        type.insertBefore(any, XUtil.getFirstChildElement(type));
+                    }
+
+                    // <!ELEMENT name (a,b,...)> or <!ELEMENT name (a|b|...)>
+                    else if (contentTypeName.equals("CHILDREN")) {
+                        type.setAttribute("content", "elementOnly");
+                        //((AttrImpl)type.getAttributeNode("content")).setSpecified(false);
+                        //type.setAttribute("order", "seq");
+                        //((AttrImpl)type.getAttributeNode("order")).setSpecified(false);
+
+                        int contentSpecIndex = contentSpec.getHandle();
+                        contentSpec.getNode(contentSpecIndex, node);
+                        Element model = createContentModel(contentSpec, node);
+                        Node fragment = fDocument.createDocumentFragment();
+                        XUtil.copyInto(model, fragment);
+                        Element firstChild = XUtil.getFirstChildElement(type);
+                        type.insertBefore(fragment, firstChild);
+                    }
+
+                    // <!ELEMENT name (#PCDATA|a|...)*>
+                    else {
+                        // REVISIT: Any chance of getting other than MIXED? -Ac
+                        // set content type
+                        type.setAttribute("content", "mixed");
 
                         // skip '*' node
                         contentSpec.getNode(node.value, node);
 
                         // add leaves (on descent)
                         do {
-                            handle = node.value;
-                            Element elementRef = fDocument.createElement("element");
+                            int index = node.value;
+                            int handle = fAttrList.startAttrList();
                             contentSpec.getNode(node.otherValue, node);
                             String elementRefName = fStringPool.toString(node.value);
+                            Element elementRef = fDocumentImpl.createElement("element");
                             elementRef.setAttribute("ref", elementRefName);
-                            archetype.insertBefore(elementRef, XUtil.getFirstChildElement(archetype, "element"));
-                            contentSpec.getNode(handle, node);
+                            type.insertBefore(elementRef, XUtil.getFirstChildElement(type, "element"));
+                            contentSpec.getNode(index, node);
                         } while (node.type != XMLContentSpecNode.CONTENTSPECNODE_LEAF);
                     }
                 }
@@ -1764,11 +1850,11 @@ public class DOMParser
                     fDeferredDocumentImpl.appendChild(schemaIndex, elementIndex);
                 }
 
-                // get archetype element; create it if necessary
-                int archetypeIndex = getFirstChildElement(elementIndex, "archetype");
-                if (archetypeIndex == -1) {
-                    archetypeIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("archetype"), null, -1);
-                    fDeferredDocumentImpl.insertBefore(elementIndex, archetypeIndex, getFirstChildElement(elementIndex));
+                // get type element; create it if necessary
+                int typeIndex = getFirstChildElement(elementIndex, "type");
+                if (typeIndex == -1) {
+                    typeIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("type"), null, -1);
+                    fDeferredDocumentImpl.insertBefore(elementIndex, typeIndex, getFirstChildElement(elementIndex));
                 }
 
                 // create attribute and set its attributes
@@ -1782,6 +1868,14 @@ public class DOMParser
                         fStringPool.addSymbol("NMTOKEN"),
                         true,
                         false); // search
+                    /***
+                    fAttrList.addAttr(
+                        fStringPool.addSymbol("type"),
+                        fStringPool.addString("string"),
+                        fStringPool.addSymbol("CDATA"),
+                        true,
+                        false); // search
+                    /***/
                     fAttrList.addAttr(
                         fStringPool.addSymbol("minOccurs"),
                         fStringPool.addString("0"),
@@ -1796,7 +1890,7 @@ public class DOMParser
                         false); // search
                     fAttrList.endAttrList();
                     attributeIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("attribute"), fAttrList, handle);
-                    fDeferredDocumentImpl.appendChild(archetypeIndex, attributeIndex);
+                    fDeferredDocumentImpl.appendChild(typeIndex, attributeIndex);
 
                     // attribute type: CDATA, ENTITY, ... , NMTOKENS; ENUMERATION
                     String attributeTypeName = fStringPool.toString(attType);
@@ -1805,18 +1899,30 @@ public class DOMParser
                         fDeferredDocumentImpl.setAttributeNode(attributeIndex, typeAttrIndex);
                     }
                     else if (attributeTypeName.equals("ENUMERATION")) {
-                        int typeAttrIndex = fDeferredDocumentImpl.createAttribute(fStringPool.addSymbol("type"), fStringPool.addString("NMTOKEN"), true);
-                        fDeferredDocumentImpl.setAttributeNode(attributeIndex, typeAttrIndex);
+                        handle = fAttrList.startAttrList();
+                        fAttrList.addAttr(
+                            fStringPool.addSymbol("source"),
+                            fStringPool.addString("NMTOKEN"),
+                            fStringPool.addSymbol("CDATA"),
+                            true,
+                            false); // search
+                        fAttrList.endAttrList();
+                        int datatypeIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("datatype"), fAttrList, handle);
+                        fDeferredDocumentImpl.appendChild(attributeIndex, datatypeIndex);
 
-                        int enumerationIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("enumeration"), null, -1);
-                        fDeferredDocumentImpl.appendChild(attributeIndex, enumerationIndex);
                         String tokenizerString = enumString.substring(1, enumString.length() - 1);
                         StringTokenizer tokenizer = new StringTokenizer(tokenizerString, "|");
                         while (tokenizer.hasMoreTokens()) {
-                            int literalIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("literal"), null, -1);
-                            int textIndex = fDeferredDocumentImpl.createTextNode(fStringPool.addString(tokenizer.nextToken()), false);
-                            fDeferredDocumentImpl.appendChild(literalIndex, textIndex);
-                            fDeferredDocumentImpl.appendChild(enumerationIndex, literalIndex);
+                            handle = fAttrList.startAttrList();
+                            fAttrList.addAttr(
+                                fStringPool.addSymbol("value"),
+                                fStringPool.addString(tokenizer.nextToken()),
+                                fStringPool.addSymbol("CDATA"),
+                                true,
+                                false); // search
+                            fAttrList.endAttrList();
+                            int enumerationIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("enumeration"), fAttrList, handle);
+                            fDeferredDocumentImpl.appendChild(datatypeIndex, enumerationIndex);
                         }
                     }
                     else {
@@ -1832,7 +1938,7 @@ public class DOMParser
                         if (attributeDefaultTypeName.equals("#REQUIRED")) {
                             int minOccursAttrIndex = fDeferredDocumentImpl.createAttribute(fStringPool.addSymbol("minOccurs"), fStringPool.addString("1"), true);
                             int oldMinOccursAttrIndex = fDeferredDocumentImpl.setAttributeNode(attributeIndex, minOccursAttrIndex);
-                            fStringPool.releaseString(fDeferredDocumentImpl.getNodeValue(oldMinOccursAttrIndex));
+                            fStringPool.releaseString(fDeferredDocumentImpl.getNodeValue(oldMinOccursAttrIndex, false));
                         }
                         else if (attributeDefaultTypeName.equals("#FIXED")) {
                             fixed = true;
@@ -1900,17 +2006,17 @@ public class DOMParser
                 if (element == null) {
                     element = fDocument.createElement("element");
                     element.setAttribute("name", elementName);
-                    element.setAttribute("export", "true");
-                    ((AttrImpl)element.getAttributeNode("export")).setSpecified(false);
+                    //element.setAttribute("export", "true");
+                    //((AttrImpl)element.getAttributeNode("export")).setSpecified(false);
                     schema.appendChild(element);
                 }
 
-                // get archetype element; create it if necessary
-                Element archetype = XUtil.getFirstChildElement(element, "archetype");
-                if (archetype == null) {
-                    archetype = fDocument.createElement("archetype");
+                // get type element; create it if necessary
+                Element type = XUtil.getFirstChildElement(element, "type");
+                if (type == null) {
+                    type = fDocument.createElement("type");
                     // REVISIT: Check for archetype redeclaration? -Ac
-                    element.insertBefore(archetype, XUtil.getFirstChildElement(element));
+                    element.insertBefore(type, XUtil.getFirstChildElement(element));
                 }
 
                 // create attribute and set its attributes
@@ -1923,7 +2029,7 @@ public class DOMParser
                     ((AttrImpl)attribute.getAttributeNode("minOccurs")).setSpecified(false);
                     attribute.setAttribute("maxOccurs", "1");
                     ((AttrImpl)attribute.getAttributeNode("maxOccurs")).setSpecified(false);
-                    archetype.appendChild(attribute);
+                    type.appendChild(attribute);
 
                     // attribute type: CDATA, ENTITY, ... , NMTOKENS; ENUMERATION
                     String attributeTypeName = fStringPool.toString(attType);
@@ -1932,16 +2038,15 @@ public class DOMParser
                         ((AttrImpl)attribute.getAttributeNode("type")).setSpecified(false);
                     }
                     else if (attributeTypeName.equals("ENUMERATION")) {
-                        attribute.setAttribute("type", "NMTOKEN");
-                        Element enumeration = fDocument.createElement("enumeration");
-                        attribute.appendChild(enumeration);
+                        Element datatype = fDocumentImpl.createElement("datatype");
+                        datatype.setAttribute("source", "NMTOKEN");
+                        attribute.appendChild(datatype);
                         String tokenizerString = enumString.substring(1, enumString.length() - 1);
                         StringTokenizer tokenizer = new StringTokenizer(tokenizerString, "|");
                         while (tokenizer.hasMoreTokens()) {
-                            Element literal = fDocument.createElement("literal");
-                            Text text = fDocument.createTextNode(tokenizer.nextToken());
-                            literal.appendChild(text);
-                            enumeration.appendChild(literal);
+                            Element enumeration = fDocument.createElement("enumeration");
+                            enumeration.setAttribute("value", tokenizer.nextToken());
+                            datatype.appendChild(enumeration);
                         }
                     }
                     else {
@@ -2003,6 +2108,8 @@ public class DOMParser
             int newEntityIndex = fDeferredDocumentImpl.createEntity(entityNameIndex, -1, -1, -1);
             fDeferredDocumentImpl.appendChild(fDocumentTypeIndex, newEntityIndex);
 
+            /***
+            // REVISIT: Entities were removed from latest working draft. -Ac
             // create internal entity declaration
             if (fGrammarAccess) {
                 int schemaIndex = getFirstChildElement(fDocumentTypeIndex, "schema");
@@ -2031,6 +2138,7 @@ public class DOMParser
                     fDeferredDocumentImpl.appendChild(textEntityIndex, textIndex);
                 }
             }
+            /***/
         }
 
         // full expansion
@@ -2045,6 +2153,8 @@ public class DOMParser
             Entity entity = fDocumentImpl.createEntity(entityName);
             fDocumentType.getEntities().setNamedItem(entity);
 
+            /***
+            // REVISIT: Entities were removed from latest working draft. -Ac
             // create internal entity declaration
             if (fGrammarAccess) {
                 Element schema = XUtil.getFirstChildElement(fDocumentType, "schema");
@@ -2060,6 +2170,7 @@ public class DOMParser
                     schema.appendChild(textEntity);
                 }
             }
+            /***/
         }
 
     } // internalEntityDecl(int,int)
@@ -2080,6 +2191,8 @@ public class DOMParser
 
             fDeferredDocumentImpl.appendChild(fDocumentTypeIndex, newEntityIndex);
 
+            /***
+            // REVISIT: Entities were removed from latest working draft. -Ac
             // create external entity declaration
             if (fGrammarAccess) {
                 int schemaIndex = getFirstChildElement(fDocumentTypeIndex, "schema");
@@ -2118,6 +2231,7 @@ public class DOMParser
                     fDeferredDocumentImpl.appendChild(schemaIndex, externalEntityIndex);
                 }
             }
+            /***/
         }
 
         // full expansion
@@ -2137,6 +2251,8 @@ public class DOMParser
             entity.setSystemId(systemId);
             fDocumentType.getEntities().setNamedItem(entity);
 
+            /***
+            // REVISIT: Entities were removed from latest working draft. -Ac
             // create external entity declaration
             if (fGrammarAccess) {
                 Element schema = XUtil.getFirstChildElement(fDocumentType, "schema");
@@ -2153,6 +2269,7 @@ public class DOMParser
                     schema.appendChild(externalEntity);
                 }
             }
+            /***/
         }
 
     } // externalEntityDecl(int,int,int)
@@ -2173,6 +2290,9 @@ public class DOMParser
             int newEntityIndex = fDeferredDocumentImpl.createEntity(entityNameIndex, publicIdIndex, systemIdIndex, notationNameIndex);
 
             fDeferredDocumentImpl.appendChild(fDocumentTypeIndex, newEntityIndex);
+
+            /***
+            // REVISIT: Entities were removed from latest working draft. -Ac
             // add unparsed entity declaration
             if (fGrammarAccess) {
                 int schemaIndex = getFirstChildElement(fDocumentTypeIndex, "schema");
@@ -2217,6 +2337,7 @@ public class DOMParser
                     fDeferredDocumentImpl.appendChild(schemaIndex, unparsedEntityIndex);
                 }
             }
+            /***/
         }
 
         // full expansion
@@ -2238,6 +2359,8 @@ public class DOMParser
             entity.setNotationName(notationName);
             fDocumentType.getEntities().setNamedItem(entity);
 
+            /***
+            // REVISIT: Entities were removed from latest working draft. -Ac
             // add unparsed entity declaration
             if (fGrammarAccess) {
                 Element schema = XUtil.getFirstChildElement(fDocumentType, "schema");
@@ -2255,6 +2378,7 @@ public class DOMParser
                     schema.appendChild(unparsedEntity);
                 }
             }
+            /***/
         }
 
     } // unparsedEntityDecl(int,int,int,int)
@@ -2288,12 +2412,14 @@ public class DOMParser
                         fStringPool.addSymbol("NMTOKEN"),
                         true,
                         false); // search
+                    /***
                     fAttrList.addAttr(
                         fStringPool.addSymbol("export"),
                         fStringPool.addString("true"),
                         fStringPool.addSymbol("ENUMERATION"),
                         false,
                         false); // search
+                    /***/
                     if (publicIdIndex == -1) {
                         publicIdIndex = 0; // empty string in string pool
                     }
@@ -2343,8 +2469,8 @@ public class DOMParser
                 if (notation == null) {
                     notation = fDocument.createElement("notation");
                     notation.setAttribute("name", notationName);
-                    notation.setAttribute("export", "true");
-                    ((AttrImpl)notation.getAttributeNode("export")).setSpecified(false);
+                    //notation.setAttribute("export", "true");
+                    //((AttrImpl)notation.getAttributeNode("export")).setSpecified(false);
                     if (publicId == null) {
                         publicId = "";
                     }
@@ -2369,9 +2495,11 @@ public class DOMParser
      * containing element, even when the content model contains a
      * single element reference.
      */
-    private Element createContentModel(XMLValidator.ContentSpec contentSpec, XMLContentSpecNode node) {
+    private Element createContentModel(XMLValidator.ContentSpec contentSpec, 
+                                       XMLContentSpecNode node) {
 
-        Element model = createContentModel(contentSpec, node, null);
+        Element model = createContentModel(contentSpec, node, 
+                                           new DocumentImpl(), null);
         return model;
 
     } // createContentModel(XMLContentSpecNode):Element
@@ -2380,7 +2508,10 @@ public class DOMParser
      * This is the real <em>createContentModel</em> method. This is a
      * recursive solution.
      */
-    private Element createContentModel(XMLValidator.ContentSpec contentSpec, XMLContentSpecNode node, Element parent) {
+    private Element createContentModel(XMLValidator.ContentSpec contentSpec, 
+                                       XMLContentSpecNode node, 
+                                       Document factory, 
+                                       Element parent) {
 
         // figure out occurrence count
         int minOccur = 1;
@@ -2418,11 +2549,13 @@ public class DOMParser
                 int leftIndex  = node.value;
                 int rightIndex = node.otherValue;
                 contentSpec.getNode(leftIndex, node);
-                Element left = createContentModel(contentSpec, node, parent);
+                Element left = createContentModel(contentSpec, node, 
+                                                  factory, parent);
 
                 // go down right side
                 contentSpec.getNode(rightIndex, node);
-                Element right = createContentModel(contentSpec, node, null);
+                Element right = createContentModel(contentSpec, node, 
+                                                   factory, null);
 
                 // append left children
                 String  type  = nodeType == XMLContentSpecNode.CONTENTSPECNODE_CHOICE
@@ -2435,9 +2568,7 @@ public class DOMParser
                     if (parent == null ||
                         ((minOccurs.equals("1") || minOccurs.length() == 0) &&
                         (maxOccurs.equals("1") || maxOccurs.length() == 0))) {
-                        model = fDocument.createElement("group");
-                        model.setAttribute("collection", "no");
-                        ((AttrImpl)model.getAttributeNode("collection")).setSpecified(false);
+                        model = factory.createElement("group");
                         model.setAttribute("order", type);
                         if (type.equals("seq")) {
                             ((AttrImpl)model.getAttributeNode("order")).setSpecified(false);
@@ -2462,7 +2593,7 @@ public class DOMParser
             // LEAF
             case XMLContentSpecNode.CONTENTSPECNODE_LEAF: {
                 String  name = fStringPool.toString(node.value);
-                Element leaf = fDocument.createElement("element");
+                Element leaf = factory.createElement("element");
                 leaf.setAttribute("ref", name);
 
                 // set occurrence count and return
@@ -2501,24 +2632,24 @@ public class DOMParser
 
     /** Returns the first child element of the specified node. */
     private int getFirstChildElement(int nodeIndex) {
-        int childIndex = fDeferredDocumentImpl.getFirstChild(nodeIndex);
+        int childIndex = fDeferredDocumentImpl.getFirstChild(nodeIndex, false);
         while (childIndex != -1) {
-            if (fDeferredDocumentImpl.getNodeType(childIndex) == Node.ELEMENT_NODE) {
+            if (fDeferredDocumentImpl.getNodeType(childIndex, false) == Node.ELEMENT_NODE) {
                 return childIndex;
             }
-            childIndex = fDeferredDocumentImpl.getNextSibling(childIndex);
+            childIndex = fDeferredDocumentImpl.getNextSibling(childIndex, false);
         }
         return -1;
     }
 
     /** Returns the next sibling element of the specified node. */
     private int getNextSiblingElement(int nodeIndex) {
-        int siblingIndex = fDeferredDocumentImpl.getNextSibling(nodeIndex);
+        int siblingIndex = fDeferredDocumentImpl.getNextSibling(nodeIndex, false);
         while (siblingIndex != -1) {
-            if (fDeferredDocumentImpl.getNodeType(siblingIndex) == Node.ELEMENT_NODE) {
+            if (fDeferredDocumentImpl.getNodeType(siblingIndex, false) == Node.ELEMENT_NODE) {
                 return siblingIndex;
             }
-            siblingIndex = fDeferredDocumentImpl.getNextSibling(siblingIndex);
+            siblingIndex = fDeferredDocumentImpl.getNextSibling(siblingIndex, false);
         }
         return -1;
     }
@@ -2528,8 +2659,8 @@ public class DOMParser
         int childIndex = getFirstChildElement(nodeIndex);
         if (childIndex != -1) {
             while (childIndex != -1) {
-                String nodeName = fDeferredDocumentImpl.getNodeNameString(childIndex);
-                if (fDeferredDocumentImpl.getNodeNameString(childIndex).equals(elementName)) {
+                String nodeName = fDeferredDocumentImpl.getNodeNameString(childIndex, false);
+                if (nodeName.equals(elementName)) {
                     return childIndex;
                 }
                 childIndex = getNextSiblingElement(childIndex);
@@ -2543,7 +2674,7 @@ public class DOMParser
         int siblingIndex = getNextSiblingElement(nodeIndex);
         if (siblingIndex != -1) {
             while (siblingIndex != -1) {
-                String nodeName = fDeferredDocumentImpl.getNodeNameString(siblingIndex);
+                String nodeName = fDeferredDocumentImpl.getNodeNameString(siblingIndex, false);
                 if (nodeName.equals(elementName)) {
                     return siblingIndex;
                 }
@@ -2558,18 +2689,18 @@ public class DOMParser
         int childIndex = getFirstChildElement(nodeIndex, elemName);
         if (childIndex != -1) {
             while (childIndex != -1) {
-                int attrIndex = fDeferredDocumentImpl.getNodeValue(childIndex);
+                int attrIndex = fDeferredDocumentImpl.getNodeValue(childIndex, false);
                 while (attrIndex != -1) {
-                    String nodeName = fDeferredDocumentImpl.getNodeNameString(attrIndex);
+                    String nodeName = fDeferredDocumentImpl.getNodeNameString(attrIndex, false);
                     if (nodeName.equals(attrName)) {
                         // REVISIT: Do we need to normalize the text? -Ac
-                        int textIndex = fDeferredDocumentImpl.getFirstChild(attrIndex);
-                        String nodeValue = fDeferredDocumentImpl.getNodeValueString(textIndex);
+                        int textIndex = fDeferredDocumentImpl.getFirstChild(attrIndex, false);
+                        String nodeValue = fDeferredDocumentImpl.getNodeValueString(textIndex, false);
                         if (nodeValue.equals(attrValue)) {
                             return childIndex;
                         }
                     }
-                    attrIndex = fDeferredDocumentImpl.getNextSibling(attrIndex);
+                    attrIndex = fDeferredDocumentImpl.getNextSibling(attrIndex, false);
                 }
                 childIndex = getNextSiblingElement(childIndex, elemName);
             }
@@ -2583,13 +2714,13 @@ public class DOMParser
         if (siblingIndex != -1) {
             int attributeNameIndex = fStringPool.addSymbol(attrName);
             while (siblingIndex != -1) {
-                int attrIndex = fDeferredDocumentImpl.getNodeValue(siblingIndex);
+                int attrIndex = fDeferredDocumentImpl.getNodeValue(siblingIndex, false);
                 while (attrIndex != -1) {
-                    int attrValueIndex = fDeferredDocumentImpl.getNodeValue(attrIndex);
+                    int attrValueIndex = fDeferredDocumentImpl.getNodeValue(attrIndex, false);
                     if (attrValue.equals(fStringPool.toString(attrValueIndex))) {
                         return siblingIndex;
                     }
-                    attrIndex = fDeferredDocumentImpl.getNextSibling(attrIndex);
+                    attrIndex = fDeferredDocumentImpl.getNextSibling(attrIndex, false);
                 }
                 siblingIndex = getNextSiblingElement(siblingIndex, elemName);
             }
@@ -2691,7 +2822,7 @@ public class DOMParser
                 while (place == null && parent != start) {
                     place = parent.getNextSibling();
                     parent = parent.getParentNode();
-                    destIndex = fDeferredDocumentImpl.getParentNode(destIndex);
+                    destIndex = fDeferredDocumentImpl.getParentNode(destIndex, false);
                 }
             }
 
