@@ -1161,7 +1161,20 @@ public final class XMLValidator
 
       validateElementAndAttributes(element, fAttrList);
       if (fAttrListHandle != -1) {
-         fAttrList.endAttrList();
+         //fAttrList.endAttrList();
+         int dupAttrs[];
+         if ((dupAttrs = fAttrList.endAttrList()) != null) {
+            Object[] args = {fStringPool.toString(element.rawname), null};
+            for (int i = 0; i < dupAttrs.length; i++) {
+                args[1] = fStringPool.toString(dupAttrs[i]);
+                fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                           XMLMessages.XMLNS_DOMAIN,
+                                           XMLMessages.MSG_ATTRIBUTE_NOT_UNIQUE,
+                                           XMLMessages.WFC_UNIQUE_ATT_SPEC,
+                                           args,
+                                           XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+            }
+         }
       }
 
       // activate identity constraints
@@ -3013,7 +3026,20 @@ public final class XMLValidator
          fCurrentContentSpecType = -1;
          fInElementContent = false;
          if (fAttrListHandle != -1) {
-            fAttrList.endAttrList();
+            //fAttrList.endAttrList();
+            int dupAttrs[];
+            if ((dupAttrs = fAttrList.endAttrList()) != null) {
+               Object[] args = {fStringPool.toString(element.rawname), null};
+               for (int i = 0; i < dupAttrs.length; i++) {
+                   args[1] = fStringPool.toString(dupAttrs[i]);
+                   fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                              XMLMessages.XMLNS_DOMAIN,
+                                              XMLMessages.MSG_ATTRIBUTE_NOT_UNIQUE,
+                                              XMLMessages.WFC_UNIQUE_ATT_SPEC,
+                                              args,
+                                              XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+               }
+            }
             int index = fAttrList.getFirstAttr(fAttrListHandle);
             while (index != -1) {
                if (fStringPool.equalNames(fAttrList.getAttrName(index), fXMLLang)) {
@@ -3499,7 +3525,20 @@ public final class XMLValidator
             fAttrListHandle = addDefaultAttributes(elementIndex, attrList, fAttrListHandle, fValidating, fStandaloneReader != -1);
          }
          if (fAttrListHandle != -1) {
-            fAttrList.endAttrList();
+            //fAttrList.endAttrList();
+            int dupAttrs[];
+            if ((dupAttrs = fAttrList.endAttrList()) != null) {
+               Object[] args = {fStringPool.toString(element.rawname), null};
+               for (int i = 0; i < dupAttrs.length; i++) {
+                   args[1] = fStringPool.toString(dupAttrs[i]);
+                   fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                              XMLMessages.XMLNS_DOMAIN,
+                                              XMLMessages.MSG_ATTRIBUTE_NOT_UNIQUE,
+                                              XMLMessages.WFC_UNIQUE_ATT_SPEC,
+                                              args,
+                                              XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+               }
+            }
          }
 
          if (DEBUG_PRINT_ATTRIBUTES) {
@@ -3849,9 +3888,14 @@ public final class XMLValidator
                fValID.validate( value, fIdDefs );
                fValIDRef.validate( value, this.fValidateIDRef ); //just in case we called id after IDREF
             } catch ( InvalidDatatypeValueException ex ) {
-               reportRecoverableXMLError(XMLMessages.MSG_ID_INVALID,
-                                         XMLMessages.VC_ID,
-                                         fStringPool.toString( attributeDecl.name.rawname), value );
+               int major = ex.getMajorCode(), minor = ex.getMinorCode();
+               if (major == -1) {
+                   major = XMLMessages.MSG_ID_INVALID;
+                   minor = XMLMessages.VC_ID;
+               }
+               reportRecoverableXMLError(major, minor,
+                                         fStringPool.toString( attributeDecl.name.rawname),
+                                         value );
             }
 
             if (fNormalizeAttributeValues && value != unTrimValue) {
