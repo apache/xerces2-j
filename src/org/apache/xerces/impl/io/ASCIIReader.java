@@ -134,7 +134,10 @@ public class ASCIIReader
      */
     public int read() throws IOException {
         int b0 = fInputStream.read();
-        return b0 != -1 ? b0 : b0 & 0x7F;
+        if (b0 > 0x80) {
+            throw new IOException("character not 7-bit ASCII");
+        }
+        return b0;
     } // read():int
 
     /**
@@ -157,7 +160,11 @@ public class ASCIIReader
         }
         int count = fInputStream.read(fBuffer, 0, length);
         for (int i = 0; i < count; i++) {
-            ch[offset + i] = (char)(fBuffer[i] & 0x7F);
+            int b0 = fBuffer[i];
+            if (b0 > 0x80) {
+                throw new IOException("character not 7-bit ASCII");
+            }
+            ch[offset + i] = (char)b0;
         }
         return count;
     } // read(char[],int,int)
