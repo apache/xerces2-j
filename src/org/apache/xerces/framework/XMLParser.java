@@ -951,22 +951,21 @@ public abstract class XMLParser
             if (parseSomeSetup(source)) {
                 fScanner.parseSome(true);
             }
-            fParseInProgress = false;
         } catch (org.xml.sax.SAXException ex) {
-            fParseInProgress = false;
             if (PRINT_EXCEPTION_STACK_TRACE)
                 ex.printStackTrace();
             throw ex;
         } catch (IOException ex) {
-            fParseInProgress = false;
             if (PRINT_EXCEPTION_STACK_TRACE)
                 ex.printStackTrace();
             throw ex;
         } catch (Exception ex) {
-            fParseInProgress = false;
             if (PRINT_EXCEPTION_STACK_TRACE)
                 ex.printStackTrace();
             throw new org.xml.sax.SAXException(ex);
+        }
+        finally {
+            fParseInProgress = false;
         }
 
     } // parse(InputSource)
@@ -974,10 +973,12 @@ public abstract class XMLParser
     /**
      * Parses the input source specified by the given system identifier.
      * <p>
-     * This method is equivalent to the following:
+     * This method is <em>almost</em> equivalent to the following:
      * <pre>
      *     parse(new InputSource(systemId));
      * </pre>
+     * The only difference is that this method will attempt to close
+     * the stream that was opened.
      *
      * @param source The input source.
      *
@@ -988,21 +989,27 @@ public abstract class XMLParser
         throws SAXException, IOException {
 
         InputSource source = new InputSource(systemId);
-        parse(source);
         try {
-            Reader reader = source.getCharacterStream();
-            if (reader != null) {
-                reader.close();
-            }
-            else {
-                InputStream is = source.getByteStream();
-                if (is != null) {
-                    is.close();
+            parse(source);
+        }
+        finally {
+            // NOTE: Changed code to attempt to close the stream
+            //       even after parsing failure. -Ac
+            try {
+                Reader reader = source.getCharacterStream();
+                if (reader != null) {
+                    reader.close();
+                }
+                else {
+                    InputStream is = source.getByteStream();
+                    if (is != null) {
+                        is.close();
+                    }
                 }
             }
-        }
-        catch (IOException e) {
-            // ignore
+            catch (IOException e) {
+                // ignore
+            }
         }
 
     } // parse(String)
