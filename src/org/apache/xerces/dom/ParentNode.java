@@ -909,6 +909,7 @@ public abstract class ParentNode
      * Even though this is only used in deferred classes this method is
      * put here so that it can be shared by all deferred classes.
      */
+    /***
     protected final void synchronizeChildren(int nodeIndex) {
 
         // no need to sync in the future
@@ -942,6 +943,7 @@ public abstract class ParentNode
         }
 
     } // synchronizeChildren()
+    /***/
 
     //
     // Serialization methods
