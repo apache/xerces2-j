@@ -2,52 +2,38 @@
 <!-- $Id$ -->
 
 <!-- Entities -->
-<!ENTITY % block 'p|pre'>
-<!ENTITY % link 'a'>
-<!ENTITY % list 'ul|ol|dl'>
+<!ENTITY % link    'a'>
+<!ENTITY % content '(#PCDATA|%link;)*'>
 
-<!ENTITY % text '(#PCDATA)'>
-<!ENTITY % content '(#PCDATA|%block;|%link;|%list;)*'>
 <!ENTITY % status '(open|deferred|rejected|closed)'>
-<!ENTITY % space '(default|preserve)'>
+<!ENTITY % space  '(default|preserve)'>
 
 <!-- Main elements -->
-<!ELEMENT issues (date,person*,issue*)>
-<!ELEMENT date (#PCDATA)>
+<!ELEMENT issues (person*,issue*)>
+<!ATTLIST issues date CDATA #REQUIRED>
 
 <!-- Authors of issues and comments -->
-<!ELEMENT person %text;>
-<!ATTLIST person id    ID    #REQUIRED
-                 email CDATA #IMPLIED>
+<!ENTITY % person SYSTEM 'person.dtd'>
+%person;
 
 <!-- Issue information -->
-<!ELEMENT issue (title,detail?,(problem,resolution?)*,comment*)>
+<!ELEMENT issue (title,detail?,see*,problem*)>
 <!ATTLIST issue id         ID       #REQUIRED
                 status     %status;           'open'
                 originator IDREF    #IMPLIED
                 owner      IDREF    #IMPLIED>
 
-<!ELEMENT title %text;>
-<!ATTLIST title xml:space %space; 'default'>
+<!ELEMENT title (#PCDATA)>
 <!ELEMENT detail %content;>
-<!ATTLIST detail xml:space %space; 'default'>
-<!ELEMENT problem %content;>
-<!ATTLIST problem xml:space %space; 'default'>
-<!ELEMENT resolution %content;>
-<!ATTLIST resolution xml:space %space; 'default'>
+<!ELEMENT see EMPTY>
+<!ATTLIST see idref IDREF #REQUIRED>
+<!ELEMENT problem (detail,comment*,resolution?)>
+<!ATTLIST problem link CDATA #IMPLIED>
 <!ELEMENT comment %content;>
 <!ATTLIST comment author    IDREF   #REQUIRED
-                  link      CDATA   #IMPLIED
-                  xml:space %space;           'default'>
+                  link      CDATA   #IMPLIED>
+<!ELEMENT resolution %content;>
 
 <!-- HTML elements -->
-<!ELEMENT a %text;>
+<!ELEMENT a (#PCDATA)>
 <!ATTLIST a href CDATA #REQUIRED>
-
-<!ELEMENT ul (li)*>
-<!ELEMENT ol (li)*>
-<!ELEMENT li %content;>
-
-<!ELEMENT dl (dt|dd)*>
-<!ELEMENT dt %content;>
-<!ELEMENT dd %content;>

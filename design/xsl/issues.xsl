@@ -50,7 +50,7 @@
     <A name='BOTTOM'/>
     <HR/>
     <SPAN class='netscape'>
-     Last updated on <xsl:value-of select='date'/>
+     Last updated on <xsl:value-of select='@date'/>
     </SPAN>
    </BODY>
   </HTML>
@@ -78,29 +78,29 @@
       <TD><xsl:apply-templates select='detail'/></TD>
      </TR>
     </xsl:if>
-    <xsl:if test='problem'>
-     <xsl:for-each select='problem|resolution'>
-      <xsl:choose>
-       <xsl:when test='name()="problem"'>
-        <TR>
-         <TH>Problem:</TH>
-         <TD><xsl:apply-templates select='.'/></TD>
-        </TR>
-       </xsl:when>
-       <xsl:otherwise>
-        <TR>
-         <TH>Resolution:</TH>
-         <TD><xsl:apply-templates select='.'/></TD>
-        </TR>
-       </xsl:otherwise>
-      </xsl:choose>
-     </xsl:for-each>
-    </xsl:if>
+    <xsl:for-each select='problem'>
+     <TR>
+      <TH>Problem:</TH>
+      <TD>
+       <xsl:apply-templates select='detail'/>
+       <xsl:for-each select='comment'>
+        <BR/>
+        <STRONG>Comment: </STRONG>
+        <xsl:value-of select='.'/>
+       </xsl:for-each>
+       <xsl:if test='resolution'>
+        <BR/>
+        <STRONG>Resolution: </STRONG>
+        <xsl:value-of select='resolution'/>
+       </xsl:if>
+      </TD>
+     </TR>
+    </xsl:for-each>
     <xsl:for-each select='comment'>
      <TR>
       <TH>Comment:</TH>
       <TD>
-       <STRONG><xsl:apply-templates select='@author'/>:</STRONG>
+       <STRONG><xsl:apply-templates select='@author'/>: </STRONG>
        <xsl:if test='@link'>
         [<A href='{@link}'>link</A>]
        </xsl:if>
@@ -112,12 +112,6 @@
     </xsl:for-each>
    </TABLE>
   </P>
- </xsl:template>
-
- <xsl:template match='detail'>
-  <DIV>
-   <xsl:apply-templates/>
-  </DIV>
  </xsl:template>
 
  <xsl:template match='@author|@originator|@owner'>

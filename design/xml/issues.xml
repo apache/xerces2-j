@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='US-ASCII'?>
 <!-- $Id$ -->
-<!DOCTYPE issues SYSTEM 'issues.dtd'>
-<issues>
- <date>$Date$</date>
+<!DOCTYPE issues SYSTEM 'issues.dtd' [
+<!ENTITY people SYSTEM 'people.ent'>
+]>
+<issues date='$Date$'>
 
- <!-- Authors -->
- <person id='andyc' email='andyc@apache.org'>Andy Clark</person>
- <person id='estaub' email='estaub@mediaone.net'>Ed Staub</person>
+ <!-- People -->
+ &people;
 
  <!-- Issues -->
  <issue id='I1' originator='andyc'>
@@ -19,21 +19,29 @@
    scanner and reader should be simple and straightforward.
   </detail>
   <problem>
-   Entity stack management. The scanners can push readers on the
-   stack when an entity reference is seen but who pops the reader?
+   <detail>
+    Entity stack management. The scanners can push readers on the
+    stack when an entity reference is seen but who pops the reader?
+   </detail>
   </problem>
   <problem>
-   Who scans the XMLDecl and TextDecl lines? The scanner(s) or
-   the entity reader?
+   <detail>
+    Who scans the XMLDecl and TextDecl lines? The scanner(s) or
+    the entity reader?
+   </detail>
   </problem>
   <problem>
-   Handling the changing of the input stream reader based
-   on the encoding specified in the XMLDecl or TextDecl lines.
+   <detail>
+    Handling the changing of the input stream reader based
+    on the encoding specified in the XMLDecl or TextDecl lines.
+   </detail>
   </problem>
   <problem>
-   How do we handle the pushback buffer needed at certain
-   times during parsing while still keeping the amount of
-   delegation down to a minimum?
+   <detail>
+    How do we handle the pushback buffer needed at certain
+    times during parsing while still keeping the amount of
+    delegation down to a minimum?
+   </detail>
   </problem>
  </issue>
 
@@ -44,10 +52,12 @@
    to be connected together and configured.
   </detail>
   <problem>
-   Is there a generic way to put components together in 
-   order to construct the pipeline? If users want to
-   construct a new parser object with a different pipeline
-   configuration, this should be easy to do.
+   <detail>
+    Is there a generic way to put components together in 
+    order to construct the pipeline? If users want to
+    construct a new parser object with a different pipeline
+    configuration, this should be easy to do.
+   </detail>
   </problem>
  </issue>
 
@@ -61,16 +71,26 @@
    Infoset.
   </detail>
   <problem>
-   When should these operations take place in the parser 
-   pipeline: before or after validation? And if it's after 
-   validation, then what does it mean for the parser to say a 
-   document is "valid"? The inclusion could cause the document to 
-   become invalid. This is more than an implementation issue; it's
-   a standards issue.
+   <detail>
+    When should these operations take place in the parser 
+    pipeline: before or after validation? And if it's after 
+    validation, then what does it mean for the parser to say a 
+    document is "valid"? The inclusion could cause the document to 
+    become invalid. This is more than an implementation issue; it's
+    a standards issue.
+   </detail>
+   <comment author='estaub' link='http://archive.covalent.net/xml/xerces-j-dev/2000/09/0482.xml'>
+    If XInclude processing were called after validation, then what would be
+    validated would be the unexpanded XInclude.  In other words, the schema or
+    DTD would describe the original unexpanded xinclude:href attributes, and so
+    forth.
+   </comment>
   </problem>
   <problem>
-   Should operations on the XML Infoset even be in the parser
-   pipeline?
+   <detail>
+    Should operations on the XML Infoset even be in the parser
+    pipeline?
+   </detail>
   </problem>
  </issue>
 
