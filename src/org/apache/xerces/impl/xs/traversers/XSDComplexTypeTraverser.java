@@ -724,6 +724,9 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             }
 
             mergeAttributes(baseType.getAttrGrp(), fAttrGrp, fName, false, complexContent);
+            // Remove prohibited uses.   Must be done after merge for RESTRICTION.
+            fAttrGrp.removeProhibitedAttrs();
+
             if (baseType != SchemaGrammar.fAnyType) {
                 String error = fAttrGrp.validRestrictionOf(baseType.getAttrGrp());
                 if (error != null) {
@@ -731,10 +734,6 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                             new Object[]{fName}, complexContent);
                 }
             }
-
-            // Remove prohibited uses.   Must be done after merge for RESTRICTION.
-            fAttrGrp.removeProhibitedAttrs();
-
         }
         else {
 
