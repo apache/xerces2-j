@@ -5,6 +5,19 @@
   <release version='&ParserName; TBD'>
    <desc>TBD</desc>
    <changes>
+    <add>
+     <note>
+      Added support for XML Base to the XInclude implementation.
+     </note>
+     <submitter name='Peter McCracken'/>
+    </add>
+    <update>
+     <note>
+      Fixed various bugs regarding text inclusion and relative URI 
+      resolution in the XInclude implementation.
+     </note>
+     <submitter name='Peter McCracken, Neil Pitman'/>
+    </update>
     <update>
      <note>
       Implemented <jump href="http://www.w3.org/XML/xml-V10-2e-errata">errata</jump>
@@ -524,7 +537,7 @@
                 Reorganized identity constraint support to improve both conformance 
                 and performance.
             </note>
-            <submitter name="neil Graham"/>
+            <submitter name="Neil Graham"/>
         </fix>
         <fix>
             <note>General bug fixes.
