@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -69,11 +69,11 @@ public interface XSAnnotation extends XSObject {
     /**
      * The object type is <code>org.w3c.dom.Document</code>.
      */
-    public static final short SAX_CONTENTHANDLER        = 2;
+    public static final short W3C_DOM_DOCUMENT          = 2;
     /**
      * The object type is <code>org.xml.sax.ContentHandler</code>.
      */
-    public static final short W3C_DOM_DOCUMENT          = 3;
+    public static final short SAX_CONTENTHANDLER        = 3;
 
     /**
      *  Write contents of the annotation to the specified DOM object. If the 
