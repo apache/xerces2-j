@@ -16,6 +16,8 @@
 
 package org.apache.xerces.impl.dv.xs;
 
+import org.apache.xerces.impl.Constants;
+
 /**
  * This is the base class of all date/time datatype validators.
  * It implements common code for parsing, validating and comparing datatypes.
@@ -372,7 +374,9 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 
         //REVISIT: should we throw an exception for not valid dates
         //          or reporting an error message should be sufficient?
-        if ( data.year==0 ) {
+    	
+    	
+        if (!Constants.SCHEMA_1_1_SUPPORT && data.year==0 ) {
             throw new RuntimeException("The year \"0000\" is an illegal year value");
 
         }
