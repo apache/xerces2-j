@@ -529,7 +529,8 @@ public class XMLDTDScanner
         throws IOException, SAXException {
         int depth = fPEDepth;
         if (fValidation && !fEntityManager.isDeclaredEntity("%"+name)) {
-            reportFatalError("EntityNotDeclared", new Object[]{name});
+            fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,"EntityNotDeclared", 
+                                        new Object[]{name}, XMLErrorReporter.SEVERITY_ERROR);
         }
         fEntityManager.startEntity(fSymbolTable.addSymbol("%" + name),
                                    literal);
