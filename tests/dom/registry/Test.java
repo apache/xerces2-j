@@ -79,7 +79,7 @@ public class Test {
         DOMImplementationRegistry registry = null;
         try {
             registry = DOMImplementationRegistry.newInstance();
-            Assertion.assert(registry != null);
+            Assertion.verify(registry != null);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -87,7 +87,7 @@ public class Test {
         try {
             DOMImplementation i = registry.getDOMImplementation("XML");
 
-            Assertion.assert(i ==
+            Assertion.verify(i ==
                              CoreDOMImplementationImpl.getDOMImplementation());
 
         } catch (Exception e) {
@@ -98,7 +98,7 @@ public class Test {
             DOMImplementation i =
                 registry.getDOMImplementation("XML MutationEvents");
 
-            Assertion.assert(i ==
+            Assertion.verify(i ==
                              DOMImplementationImpl.getDOMImplementation());
 
         } catch (Exception e) {

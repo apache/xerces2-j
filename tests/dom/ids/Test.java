@@ -126,46 +126,46 @@ public class Test {
 
         System.out.println("DOM IDs Test...");
         Element el = doc.getElementById("one.worker");
-        Assertion.assert(el != null);
+        Assertion.verify(el != null);
         Element el2 = doc.getElementById("one.worker there");
-        Assertion.assert(el2 == null);
+        Assertion.verify(el2 == null);
 
         if (el != null) {
             Assertion.equals(el.getAttribute("id"), "one.worker");
             el.setAttribute("id", "my.worker");
             el2 = doc.getElementById("my.worker");
-            Assertion.assert(el2 == el);
+            Assertion.verify(el2 == el);
             
             el2 = doc.getElementById("one.worker");
-            Assertion.assert(el2 == null);
+            Assertion.verify(el2 == null);
             el.removeAttribute("id");
             el2 = doc.getElementById("my.worker");
-            Assertion.assert(el2 == null);
+            Assertion.verify(el2 == null);
         }
 
         // find default id attribute and check its value
         NodeList elementList = doc.getElementsByTagName("person");
         Element testEmployee = (Element)elementList.item(1);
         Attr id = testEmployee.getAttributeNode("id2");
-        Assertion.assert(id.getNodeValue().equals("id02"), "value == 'id02'");
+        Assertion.verify(id.getNodeValue().equals("id02"), "value == 'id02'");
 
 
         Element elem = doc.getElementById("id02");
-        Assertion.assert(elem.getNodeName().equals("person"), "return by id 'id02'");
+        Assertion.verify(elem.getNodeName().equals("person"), "return by id 'id02'");
         
         // 
         // remove default attribute and check on retrieval what its value
         Attr removedAttr = testEmployee.removeAttributeNode(id);
         String value = testEmployee.getAttribute("id2");
-        Assertion.assert(value.equals("default.id"), "value='default.id'");
+        Assertion.verify(value.equals("default.id"), "value='default.id'");
 
 
         elem = doc.getElementById("default.id");
-        Assertion.assert(elem !=null, "elem by id 'default.id'");
+        Assertion.verify(elem !=null, "elem by id 'default.id'");
 
 
         elem = doc.getElementById("id02");
-        Assertion.assert(elem ==null, "elem by id '02'");
+        Assertion.verify(elem ==null, "elem by id '02'");
         
         ElementImpl person = (ElementImpl)doc.getElementsByTagNameNS(null, "person").item(0);
         person.removeAttribute("id");
@@ -174,23 +174,23 @@ public class Test {
         person.setIdAttribute("idAttr", true);
         
         elem = doc.getElementById("eb0009");
-        Assertion.assert(elem !=null, "elem by id 'eb0009'");
+        Assertion.verify(elem !=null, "elem by id 'eb0009'");
        
         doc.getDocumentElement().removeChild(person);
         elem = doc.getElementById("eb0009");
-        Assertion.assert(elem ==null, "element with id 'eb0009 removed'");
+        Assertion.verify(elem ==null, "element with id 'eb0009 removed'");
 
         doc.getDocumentElement().appendChild(person);
         elem = doc.getElementById("eb0009");
-        Assertion.assert(elem !=null, "elem by id 'eb0009'");
+        Assertion.verify(elem !=null, "elem by id 'eb0009'");
         AttrImpl attr = (AttrImpl)person.getAttributeNode("idAttr");
-        Assertion.assert(attr.isId(), "attribute is id");
+        Assertion.verify(attr.isId(), "attribute is id");
 
         person.setIdAttribute("idAttr", false);
         elem = doc.getElementById("eb0009");
-        Assertion.assert(elem ==null, "element with id 'eb0009 removed'");
+        Assertion.verify(elem ==null, "element with id 'eb0009 removed'");
         
-        Assertion.assert(!attr.isId(), "attribute is not id");        
+        Assertion.verify(!attr.isId(), "attribute is not id");        
 
         System.out.println("done.");
 

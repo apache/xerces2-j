@@ -68,11 +68,11 @@ import java.io.PrintWriter;
 
 public class Assertion {
 
-    public static boolean assert(boolean result) {
-	return assert(result, null);
+    public static boolean verify(boolean result) {
+	return verify(result, null);
     }
 
-    public static boolean assert(boolean result, String error) {
+    public static boolean verify(boolean result, String error) {
 	if (!result) {
 	    System.err.print("Assertion failed: ");
 	    if (error != null) {
@@ -88,7 +88,7 @@ public class Assertion {
         boolean result = ((s1 != null && s1.equals(s2))
 			  || (s1 == null && s2 == null));
 	if (!result) {
-	    assert(result);
+	    verify(result);
 	    System.err.println("  was: equals(" + s1 + ", \"" + s2 + "\")");
 	}
 	return result;

@@ -105,7 +105,7 @@ public class Test implements DOMErrorHandler, DOMEntityResolver{
             
             DOMImplementationLS impl = (DOMImplementationLS)DOMImplementationRegistry.newInstance().getDOMImplementation("LS-Load");
 
-            Assertion.assert(impl!=null, "domImplementation != null");
+            Assertion.verify(impl!=null, "domImplementation != null");
 
             DOMBuilder builder = impl.createDOMBuilder(DOMImplementationLS.MODE_SYNCHRONOUS, 
                                                        null);
@@ -129,30 +129,30 @@ public class Test implements DOMErrorHandler, DOMEntityResolver{
                 NodeImpl elem = (NodeImpl)ls.item(0);
                 if (namespaces) {
                     //System.out.println("[a:elem_a].lookupPrefix('http://www.example.com', true) == null");
-                    Assertion.assert(elem.lookupPrefix("http://www.example.com").equals("ns1"), 
+                    Assertion.verify(elem.lookupPrefix("http://www.example.com").equals("ns1"), 
                                      "[a:elem_a].lookupPrefix(http://www.example.com)==null");
 
 
                     //System.out.println("[a:elem_a].isDefaultNamespace('http://www.example.com') == true");
-                    Assertion.assert(elem.isDefaultNamespace("http://www.example.com") == true, 
+                    Assertion.verify(elem.isDefaultNamespace("http://www.example.com") == true, 
                                      "[a:elem_a].isDefaultNamespace(http://www.example.com)==true");
 
 
                     //System.out.println("[a:elem_a].lookupPrefix('http://www.example.com', false) == ns1");
-                    Assertion.assert(elem.lookupPrefix("http://www.example.com").equals("ns1"), 
+                    Assertion.verify(elem.lookupPrefix("http://www.example.com").equals("ns1"), 
                                      "[a:elem_a].lookupPrefix(http://www.example.com)==ns1");
 
 
-                    Assertion.assert(elem.lookupNamespaceURI("xsi").equals("http://www.w3.org/2001/XMLSchema-instance"), 
+                    Assertion.verify(elem.lookupNamespaceURI("xsi").equals("http://www.w3.org/2001/XMLSchema-instance"), 
                                      "[a:elem_a].lookupNamespaceURI('xsi') == 'http://www.w3.org/2001/XMLSchema-instance'" );
 
                 } else {
-                    Assertion.assert( elem.lookupPrefix("http://www.example.com") == null,"lookupPrefix(http://www.example.com)==null"); 
+                    Assertion.verify( elem.lookupPrefix("http://www.example.com") == null,"lookupPrefix(http://www.example.com)==null"); 
                 }
 
                 ls = doc.getElementsByTagName("bar:leaf");
                 elem = (NodeImpl)ls.item(0);
-                Assertion.assert(elem.lookupPrefix("url1:").equals("foo"), 
+                Assertion.verify(elem.lookupPrefix("url1:").equals("foo"), 
                                  "[bar:leaf].lookupPrefix('url1:', false) == foo");
                 //System.out.println("[bar:leaf].lookupPrefix('url1:', false) == "+ );
 
@@ -166,14 +166,14 @@ public class Test implements DOMErrorHandler, DOMEntityResolver{
                 elem.appendChild(e1);
 
 
-                Assertion.assert(((NodeImpl)e1).lookupPrefix("b:").equals("p"), 
+                Assertion.verify(((NodeImpl)e1).lookupPrefix("b:").equals("p"), 
                                  "[p:baz].lookupPrefix('b:', false) == p");
 
 
 
                 //System.out.println("[p:baz].lookupPrefix('b:', false) == "+ ((NodeImpl)e1).lookupPrefix("b:",false));
 
-                Assertion.assert(elem.lookupNamespaceURI("xsi").equals("http://www.w3.org/2001/XMLSchema-instance"), 
+                Assertion.verify(elem.lookupNamespaceURI("xsi").equals("http://www.w3.org/2001/XMLSchema-instance"), 
                                  "[bar:leaf].lookupNamespaceURI('xsi') == 'http://www.w3.org/2001/XMLSchema-instance'" );
 
             
@@ -189,7 +189,7 @@ public class Test implements DOMErrorHandler, DOMEntityResolver{
                 config.setParameter("error-handler",errorHandler);
                 config.setParameter("validate", Boolean.TRUE);
                 DocumentImpl core = (DocumentImpl)builder.parseURI("tests/dom/dom3/schema.xml");
-                Assertion.assert(errorCounter == 0, "No errors should be reported");
+                Assertion.verify(errorCounter == 0, "No errors should be reported");
                 
                 errorCounter = 0;    
                 NodeList ls2 = core.getElementsByTagName("decVal");
@@ -218,13 +218,13 @@ public class Test implements DOMErrorHandler, DOMEntityResolver{
                 config.setParameter("error-handler",errorHandler);
                 config.setParameter("validate", Boolean.TRUE);
                 core.normalizeDocument();
-                Assertion.assert(errorCounter == 3, "3 errors should be reported");
+                Assertion.verify(errorCounter == 3, "3 errors should be reported");
 
                 errorCounter = 0;
                 config.setParameter("validate", Boolean.FALSE);
                 config.setParameter("comments", Boolean.FALSE);
                 core.normalizeDocument();
-                Assertion.assert(errorCounter == 0, "No errors should be reported");
+                Assertion.verify(errorCounter == 0, "No errors should be reported");
 
 
                 config = builder.getConfig();
@@ -244,12 +244,12 @@ public class Test implements DOMErrorHandler, DOMEntityResolver{
                 config.setParameter("validate", Boolean.TRUE);
                 config.setParameter("psvi", Boolean.TRUE);
                 DocumentImpl core = (DocumentImpl)builder.parseURI("data/personal-schema.xml");
-                Assertion.assert(errorCounter == 0, "No errors should be reported");
+                Assertion.verify(errorCounter == 0, "No errors should be reported");
 
                 NodeList ls2 = core.getElementsByTagName("person");
 
                 Element testElem = (Element)ls2.item(0);
-                Assertion.assert(((ElementPSVI)testElem).getElementDeclaration().getName().equals("person"), "testElem decl");
+                Assertion.verify(((ElementPSVI)testElem).getElementDeclaration().getName().equals("person"), "testElem decl");
                 Element e1 = core.createElementNS(null, "person");
                 
                 core.getDocumentElement().appendChild(e1);
@@ -271,8 +271,8 @@ public class Test implements DOMErrorHandler, DOMEntityResolver{
                 config.setParameter("error-handler",errorHandler);
                 config.setParameter("validate", Boolean.TRUE);
                 core.normalizeDocument();
-                Assertion.assert(errorCounter == 0, "No errors should be reported");
-                Assertion.assert(((ElementPSVI)e1).getElementDeclaration().getName().equals("person"), "e1 decl");              
+                Assertion.verify(errorCounter == 0, "No errors should be reported");
+                Assertion.verify(((ElementPSVI)e1).getElementDeclaration().getName().equals("person"), "e1 decl");              
                 
                 config = builder.getConfig();
                 config.setParameter("validate", Boolean.FALSE);
@@ -320,57 +320,57 @@ public class Test implements DOMErrorHandler, DOMEntityResolver{
 
                 // xsl:stylesheet should include 2 namespace declarations
                 String name = root.getNodeName();
-                Assertion.assert(name.equals("xsl:stylesheet"), "xsl:stylesheet");
+                Assertion.verify(name.equals("xsl:stylesheet"), "xsl:stylesheet");
 
                 String value = root.getAttributeNS("http://www.w3.org/2000/xmlns/", "xsl");
-                Assertion.assert(value!=null, "xmlns:xsl != null");
-                Assertion.assert(value.equals("http://www.w3.org/1999/XSL/Transform"), "xmlns:xsl="+value);
+                Assertion.verify(value!=null, "xmlns:xsl != null");
+                Assertion.verify(value.equals("http://www.w3.org/1999/XSL/Transform"), "xmlns:xsl="+value);
                 
                 value = root.getAttributeNS("http://www.w3.org/2000/xmlns/", "NS1");
 
-                Assertion.assert(value!=null && 
+                Assertion.verify(value!=null && 
                                  value.equals("http://attr1"), "xmlns:NS1="+value);
 
                 // child includes 2 namespace decls
 
-                Assertion.assert(child1.getNodeName().equals("NS2:child1"), "NS2:child1");
+                Assertion.verify(child1.getNodeName().equals("NS2:child1"), "NS2:child1");
                 value = child1.getAttributeNS("http://www.w3.org/2000/xmlns/", "NS2");
-                Assertion.assert(value!=null && 
+                Assertion.verify(value!=null && 
                                  value.equals("http://child1"), "xmlns:NS2="+value);
 
                 value = child1.getAttributeNS("http://www.w3.org/2000/xmlns/", "NS1");
-                Assertion.assert(value!=null && 
+                Assertion.verify(value!=null && 
                                  value.equals("http://attr2"), "xmlns:NS1="+value);
 
 
                 // child3
                 
 
-                Assertion.assert(child3.getNodeName().equals("xsl:child3"), "xsl:child3");
+                Assertion.verify(child3.getNodeName().equals("xsl:child3"), "xsl:child3");
                 value = child3.getAttributeNS("http://www.w3.org/2000/xmlns/", "NS1");
-                Assertion.assert(value!=null && 
+                Assertion.verify(value!=null && 
                                  value.equals("http://a2"), "xmlns:NS1="+value);
 
 
                 value = child3.getAttributeNS("http://www.w3.org/2000/xmlns/", "a1");
-                Assertion.assert(value!=null && 
+                Assertion.verify(value!=null && 
                                  value.equals("http://a1"), "xmlns:a1="+value);
 
 
                 value = child3.getAttributeNS("http://www.w3.org/2000/xmlns/", "xsl");
-                Assertion.assert(value!=null && 
+                Assertion.verify(value!=null && 
                                  value.equals("http://www.w3.org/1999/XSL/Transform"), "xmlns:xsl="+value);
 
                 
                 Attr attr = child3.getAttributeNodeNS("http://a2", "attr2");
-                Assertion.assert(attr != null, "NS1:attr2 !=null");
+                Assertion.verify(attr != null, "NS1:attr2 !=null");
 
-                Assertion.assert(child3.getAttributes().getLength() == 5, "xsl:child3 has 5 attrs");
+                Assertion.verify(child3.getAttributes().getLength() == 5, "xsl:child3 has 5 attrs");
                 
                 // child 4
                 Attr temp = child4.getAttributeNodeNS("http://www.w3.org/2000/xmlns/", "xmlns");
-                Assertion.assert(temp.getNodeName().equals("xmlns"), "attribute name is xmlns");
-                Assertion.assert(temp.getNodeValue().length() == 0, "xmlns=''");                
+                Assertion.verify(temp.getNodeName().equals("xmlns"), "attribute name is xmlns");
+                Assertion.verify(temp.getNodeValue().length() == 0, "xmlns=''");                
                 /*
                 OutputFormat format = new OutputFormat((Document)doc);
                 format.setLineSeparator(LineSeparator.Windows);
@@ -437,52 +437,52 @@ public class Test implements DOMErrorHandler, DOMEntityResolver{
 
                 // xsl:stylesheet should include 2 namespace declarations
                 String name = root.getNodeName();
-                Assertion.assert(name.equals("xsl:stylesheet"), "xsl:stylesheet");
+                Assertion.verify(name.equals("xsl:stylesheet"), "xsl:stylesheet");
 
                 String value = root.getAttributeNS("http://www.w3.org/2000/xmlns/", "xsl");
-                Assertion.assert(value!=null, "xmlns:xsl != null");
-                Assertion.assert(value.equals("http://www.w3.org/1999/XSL/Transform"), "xmlns:xsl="+value);
+                Assertion.verify(value!=null, "xmlns:xsl != null");
+                Assertion.verify(value.equals("http://www.w3.org/1999/XSL/Transform"), "xmlns:xsl="+value);
                 
                 value = root.getAttributeNS("http://www.w3.org/2000/xmlns/", "NS1");
 
-                Assertion.assert(value!=null && 
+                Assertion.verify(value!=null && 
                                  value.equals("http://attr1"), "xmlns:NS1="+value);
 
                 // child includes 2 namespace decls
 
-                Assertion.assert(child1.getNodeName().equals("NS2:child1"), "NS2:child1");
+                Assertion.verify(child1.getNodeName().equals("NS2:child1"), "NS2:child1");
                 value = child1.getAttributeNS("http://www.w3.org/2000/xmlns/", "NS2");
-                Assertion.assert(value!=null && 
+                Assertion.verify(value!=null && 
                                  value.equals("http://child1"), "xmlns:NS2="+value);
 
                 value = child1.getAttributeNS("http://www.w3.org/2000/xmlns/", "NS1");
-                Assertion.assert(value!=null && 
+                Assertion.verify(value!=null && 
                                  value.equals("http://attr2"), "xmlns:NS1="+value);
 
 
                 // child3
                 
 
-                Assertion.assert(child3.getNodeName().equals("xsl:child3"), "xsl:child3");
+                Assertion.verify(child3.getNodeName().equals("xsl:child3"), "xsl:child3");
                 value = child3.getAttributeNS("http://www.w3.org/2000/xmlns/", "NS1");
-                Assertion.assert(value!=null && 
+                Assertion.verify(value!=null && 
                                  value.equals("http://a2"), "xmlns:NS1="+value);
 
 
                 value = child3.getAttributeNS("http://www.w3.org/2000/xmlns/", "a1");
-                Assertion.assert(value!=null && 
+                Assertion.verify(value!=null && 
                                  value.equals("http://a1"), "xmlns:a1="+value);
 
 
                 value = child3.getAttributeNS("http://www.w3.org/2000/xmlns/", "xsl");
-                Assertion.assert(value!=null && 
+                Assertion.verify(value!=null && 
                                  value.equals("http://www.w3.org/1999/XSL/Transform"), "xmlns:xsl="+value);
 
                 
                 Attr attr = child3.getAttributeNodeNS("http://a2", "attr2");
-                Assertion.assert(attr != null, "NS6:attr2 !=null");
+                Assertion.verify(attr != null, "NS6:attr2 !=null");
 
-                Assertion.assert(child3.getAttributes().getLength() == 5, "xsl:child3 has 5 attrs");
+                Assertion.verify(child3.getAttributes().getLength() == 5, "xsl:child3 has 5 attrs");
 
 
                 
@@ -524,12 +524,12 @@ public class Test implements DOMErrorHandler, DOMEntityResolver{
             Node entity = doctype.getEntities().getNamedItem("ent3");
 
             NodeList ls = test.getChildNodes();
-            Assertion.assert(ls.getLength()==5, "List length");
+            Assertion.verify(ls.getLength()==5, "List length");
             
             String compare1 = "Home Address: 1900 Dallas Road (East) City: Dallas. California. USA  PO #5668";
-            Assertion.assert(((TextImpl)ls.item(0)).getWholeText().equals(compare1), "Compare1");
+            Assertion.verify(((TextImpl)ls.item(0)).getWholeText().equals(compare1), "Compare1");
             String compare2 = "Address: 1900 Dallas Road (East) City: Dallas. California. USA  PO #5668";
-            Assertion.assert(((TextImpl)ls.item(1)).getWholeText().equals(compare2), "Compare2");
+            Assertion.verify(((TextImpl)ls.item(1)).getWholeText().equals(compare2), "Compare2");
             
 
             //TEST replaceWholeText()
@@ -538,22 +538,22 @@ public class Test implements DOMErrorHandler, DOMEntityResolver{
             TextImpl original = (TextImpl)ls.item(0);
             Node newNode = original.replaceWholeText("Replace with this text");
             ls = test.getChildNodes();
-            Assertion.assert(ls.getLength() == 1, "Length == 1");
-            Assertion.assert(ls.item(0).getNodeValue().equals("Replace with this text"), "Replacement works");
-            Assertion.assert(newNode != original, "New node created");
+            Assertion.verify(ls.getLength() == 1, "Length == 1");
+            Assertion.verify(ls.item(0).getNodeValue().equals("Replace with this text"), "Replacement works");
+            Assertion.verify(newNode != original, "New node created");
 
             // replace text for node which is not yet attached to the tree
             Text text = doc.createTextNode("readonly");
             ((NodeImpl)text).setReadOnly(true, true);
             text = ((TextImpl)text).replaceWholeText("Data");
-            Assertion.assert(text.getNodeValue().equals("Data"), "New value 'Data'");
+            Assertion.verify(text.getNodeValue().equals("Data"), "New value 'Data'");
 
             // test with second child that does not have any content
             test = (Element)doc.getElementsByTagName("elem").item(1);
             try {            
                 ((TextImpl)test.getFirstChild()).replaceWholeText("can't replace");
             } catch (DOMException e){
-               Assertion.assert(e !=null);
+               Assertion.verify(e !=null);
             }
             String compare3 = "Test: The Content ends here. ";
             //Assertion.assert(((Text)test.getFirstChild()).getWholeText().equals(compare3), "Compare3");
@@ -576,21 +576,21 @@ public class Test implements DOMErrorHandler, DOMEntityResolver{
                 // schema-type is not set validate against both grammars 
                 errorCounter = 0;
                 DocumentImpl core2 = (DocumentImpl)builder.parseURI("tests/dom/dom3/both-error.xml");
-                Assertion.assert(errorCounter == 4, "4 errors should be reported");
+                Assertion.verify(errorCounter == 4, "4 errors should be reported");
                 
                 errorCounter = 0;
                 // set schema-type to be XML Schema 
                 config.setParameter("schema-type", "http://www.w3.org/2001/XMLSchema");
                 // test parsing a file that has both XML schema and DTD
                 core2 = (DocumentImpl)builder.parseURI("tests/dom/dom3/both.xml");
-                Assertion.assert(errorCounter == 0, "No errors should be reported");
+                Assertion.verify(errorCounter == 0, "No errors should be reported");
                 
             
                 // parse a file with XML schema and DTD but validate against DTD only
                 errorCounter = 0;
                 config.setParameter("schema-type","http://www.w3.org/TR/REC-xml");
                 core2 = (DocumentImpl)builder.parseURI("tests/dom/dom3/both-error.xml");
-                Assertion.assert(errorCounter == 3, "3 errors should be reported");
+                Assertion.verify(errorCounter == 3, "3 errors should be reported");
                 
                 // parse a file with DTD only but set schema-location and 
                 // validate against XML Schema
@@ -611,7 +611,7 @@ public class Test implements DOMErrorHandler, DOMEntityResolver{
                 config.setParameter("entity-resolver",resolver);
                 config.setParameter("validate", Boolean.TRUE);
                 core2.normalizeDocument();
-                Assertion.assert(errorCounter == 1, "1 error should be reported: "+errorCounter);
+                Assertion.verify(errorCounter == 1, "1 error should be reported: "+errorCounter);
  
     
             }

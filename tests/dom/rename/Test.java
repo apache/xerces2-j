@@ -127,14 +127,14 @@ public class Test implements UserDataHandler {
 	// getting the first "email" element
 	NodeList elements = doc.getElementsByTagName("email");
 	Element child = (Element) elements.item(0);
-	Assertion.assert(child != null);
+	Assertion.verify(child != null);
 	Assertion.equals(child.getNodeName(), "email");
 
 	// default must be there
 	Attr at = child.getAttributeNode("defaultEmailAttr");
-	Assertion.assert(at != null);
+	Assertion.verify(at != null);
 	Assertion.equals(at.getValue(), "defaultEmailValue");
-	Assertion.assert(at.getSpecified() == false);
+	Assertion.verify(at.getSpecified() == false);
 
 	// attach some data
 	child.setUserData("mydata", "yo", this);
@@ -144,27 +144,27 @@ public class Test implements UserDataHandler {
 	Element newChild = (Element) doc.renameNode(child, null, "url");
 
 	Assertion.equals(newChild.getNodeName(), "url");
-	Assertion.assert(newChild.getNamespaceURI() == null);
+	Assertion.verify(newChild.getNamespaceURI() == null);
 
 	// old default must no longer be there
-	Assertion.assert(newChild.hasAttribute("defaultEmailAttr") == false);
-	Assertion.assert(at.getSpecified() == true);
+	Assertion.verify(newChild.hasAttribute("defaultEmailAttr") == false);
+	Assertion.verify(at.getSpecified() == true);
 
 	// new default must be there
 	at = newChild.getAttributeNode("defaultUrlAttr");
-	Assertion.assert(at != null);
+	Assertion.verify(at != null);
 	Assertion.equals(at.getValue(), "defaultUrlValue");
-	Assertion.assert(at.getSpecified() == false);
+	Assertion.verify(at.getSpecified() == false);
 
 	// data must still be there
 	Assertion.equals((String) newChild.getUserData("mydata"), "yo");
 	// and handler must have been called if new node was created
 	if (newChild != child) {
-	    Assertion.assert(lastOperation == UserDataHandler.NODE_RENAMED);
-	    Assertion.assert(lastKey == "mydata");
+	    Assertion.verify(lastOperation == UserDataHandler.NODE_RENAMED);
+	    Assertion.verify(lastKey == "mydata");
 	    Assertion.equals((String) lastData, "yo");
-	    Assertion.assert(lastSource == child);
-	    Assertion.assert(lastDestination == newChild);
+	    Assertion.verify(lastSource == child);
+	    Assertion.verify(lastDestination == newChild);
 	    resetHandlerData();
 	}
 
@@ -173,29 +173,29 @@ public class Test implements UserDataHandler {
 
 	Assertion.equals(newChild2.getNodeName(), "foo");
 	Assertion.equals(newChild2.getNamespaceURI(), "ns1");
-	Assertion.assert(newChild2.hasAttribute("defaultUrlAttr") == false);
+	Assertion.verify(newChild2.hasAttribute("defaultUrlAttr") == false);
 	// data must still be there
 	Assertion.equals((String) newChild2.getUserData("mydata"), "yo");
 	// and handler must have been called if new node was created
 	if (newChild2 != newChild) {
-	    Assertion.assert(lastOperation == UserDataHandler.NODE_RENAMED);
-	    Assertion.assert(lastKey == "mydata");
+	    Assertion.verify(lastOperation == UserDataHandler.NODE_RENAMED);
+	    Assertion.verify(lastKey == "mydata");
 	    Assertion.equals((String) lastData, "yo");
-	    Assertion.assert(lastSource == newChild);
-	    Assertion.assert(lastDestination == newChild2);
+	    Assertion.verify(lastSource == newChild);
+	    Assertion.verify(lastDestination == newChild2);
 	    resetHandlerData();
 	}
 
 	// getting the second "email" element
 	child = (Element) elements.item(1);
-	Assertion.assert(child != null);
+	Assertion.verify(child != null);
 	Assertion.equals(child.getNodeName(), "email");
 
 	// default must be there
 	at = child.getAttributeNode("defaultEmailAttr");
-	Assertion.assert(at != null);
+	Assertion.verify(at != null);
 	Assertion.equals(at.getValue(), "defaultEmailValue");
-	Assertion.assert(at.getSpecified() == false);
+	Assertion.verify(at.getSpecified() == false);
 
 	// attach some data
 	at.setUserData("mydata", "yo", this);
@@ -203,43 +203,43 @@ public class Test implements UserDataHandler {
 
 	// renaming an attribute without a url
 	Attr newAt = (Attr) doc.renameNode(at, null, "foo");
-	Assertion.assert(newAt != null);
+	Assertion.verify(newAt != null);
 	Assertion.equals(newAt.getNodeName(), "foo");
 	Assertion.equals(newAt.getNamespaceURI(), null);
 	Assertion.equals(newAt.getValue(), "defaultEmailValue");
-	Assertion.assert(newAt.getSpecified() == true);
-	Assertion.assert(child.hasAttribute("foo") == true);
+	Assertion.verify(newAt.getSpecified() == true);
+	Assertion.verify(child.hasAttribute("foo") == true);
 	// default must be back
-	Assertion.assert(child.hasAttribute("defaultEmailAttr") == true);
+	Assertion.verify(child.hasAttribute("defaultEmailAttr") == true);
 	// data must still be there
 	Assertion.equals((String) newAt.getUserData("mydata"), "yo");
 	// and handler must have been called if new node was created
 	if (newAt != at) {
-	    Assertion.assert(lastOperation == UserDataHandler.NODE_RENAMED);
-	    Assertion.assert(lastKey == "mydata");
+	    Assertion.verify(lastOperation == UserDataHandler.NODE_RENAMED);
+	    Assertion.verify(lastKey == "mydata");
 	    Assertion.equals((String) lastData, "yo");
-	    Assertion.assert(lastSource == at);
-	    Assertion.assert(lastDestination == newAt);
+	    Assertion.verify(lastSource == at);
+	    Assertion.verify(lastDestination == newAt);
 	    resetHandlerData();
 	}
 
 	// renaming an attribute with a url
 	Attr newAt2 = (Attr) doc.renameNode(newAt, "ns1", "bar");
-	Assertion.assert(newAt2 != null);
+	Assertion.verify(newAt2 != null);
 	Assertion.equals(newAt2.getNodeName(), "bar");
 	Assertion.equals(newAt2.getNamespaceURI(), "ns1");
 	Assertion.equals(newAt2.getValue(), "defaultEmailValue");
-	Assertion.assert(newAt2.getSpecified() == true);
-	Assertion.assert(child.hasAttributeNS("ns1", "bar") == true);
+	Assertion.verify(newAt2.getSpecified() == true);
+	Assertion.verify(child.hasAttributeNS("ns1", "bar") == true);
 	// data must still be there
 	Assertion.equals((String) newAt2.getUserData("mydata"), "yo");
 	// and handler must have been called if new node was created
 	if (newAt2 != newAt) {
-	    Assertion.assert(lastOperation == UserDataHandler.NODE_RENAMED);
-	    Assertion.assert(lastKey == "mydata");
+	    Assertion.verify(lastOperation == UserDataHandler.NODE_RENAMED);
+	    Assertion.verify(lastKey == "mydata");
 	    Assertion.equals((String) lastData, "yo");
-	    Assertion.assert(lastSource == newAt);
-	    Assertion.assert(lastDestination == newAt2);
+	    Assertion.verify(lastSource == newAt);
+	    Assertion.verify(lastDestination == newAt2);
 	    resetHandlerData();
 	}
 
