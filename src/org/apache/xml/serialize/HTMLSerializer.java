@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 1999-2004 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -123,7 +123,7 @@ import org.xml.sax.SAXException;
  * <li>Contents of SCRIPT and STYLE elements serialized as CDATA
  * </ul>
  *
- *
+ * @deprecated
  * @version $Revision$ $Date$
  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
  * @see Serializer
@@ -253,7 +253,8 @@ public class HTMLSerializer
                 // the document's DOCTYPE. Space preserving defaults
                 // to that of the output format.
                 if ( ! _started )
-                    startDocument( localName == null ? rawName : localName );
+                    startDocument( (localName == null || localName.length() == 0) 
+                        ? rawName : localName );
             } else {
                 // For any other element, if first in parent, then
                 // close parent's opening tag and use the parnet's
@@ -271,18 +272,25 @@ public class HTMLSerializer
 
             // Do not change the current element state yet.
             // This only happens in endElement().
+            
+            // As per SAX2, the namespace URI is an empty string if the element has no
+            // namespace URI, or namespaces is turned off. The check against null protects
+            // against broken SAX implementations, so I've left it there. - mrglavas
+            boolean hasNamespaceURI = (namespaceURI != null && namespaceURI.length() != 0);
 
-            if ( rawName == null ) {
+            // SAX2: rawName (QName) could be empty string if 
+            // namespace-prefixes property is false.
+            if ( rawName == null || rawName.length() == 0) {
                 rawName = localName;
-                if ( namespaceURI != null ) {
+                if ( hasNamespaceURI ) {
                     String prefix;
                     prefix = getPrefix( namespaceURI );
-                    if ( prefix.length() > 0 )
+                    if ( prefix != null && prefix.length() != 0 )
                         rawName = prefix + ":" + localName;
                 }
                 addNSAttr = true;
             }
-            if ( namespaceURI == null )
+            if ( !hasNamespaceURI )
                 htmlName = rawName;
             else {
                 if ( namespaceURI.equals( XHTMLNamespace ) ||
@@ -306,9 +314,9 @@ public class HTMLSerializer
             if ( attrs != null ) {
                 for ( i = 0 ; i < attrs.getLength() ; ++i ) {
                     _printer.printSpace();
-                    name = attrs.getQName( i ).toLowerCase(Locale.ENGLISH);;
+                    name = attrs.getQName( i ).toLowerCase(Locale.ENGLISH);
                     value = attrs.getValue( i );
-                    if ( _xhtml || namespaceURI != null ) {
+                    if ( _xhtml || hasNamespaceURI ) {
                         // XHTML: print empty string for null values.
                         if ( value == null ) {
                             _printer.printText( name );
@@ -425,7 +433,7 @@ public class HTMLSerializer
         _printer.unindent();
         state = getElementState();
 
-        if ( state.namespaceURI == null )
+        if ( state.namespaceURI == null || state.namespaceURI.length() == 0 )
             htmlName = state.rawName;
         else {
             if ( state.namespaceURI.equals( XHTMLNamespace ) ||
@@ -558,7 +566,7 @@ public class HTMLSerializer
             if ( attrs != null ) {
                 for ( i = 0 ; i < attrs.getLength() ; ++i ) {
                     _printer.printSpace();
-                    name = attrs.getName( i ).toLowerCase(Locale.ENGLISH);;
+                    name = attrs.getName( i ).toLowerCase(Locale.ENGLISH);
                     value = attrs.getValue( i );
                     if ( _xhtml ) {
                         // XHTML: print empty string for null values.
@@ -675,10 +683,12 @@ public class HTMLSerializer
             }
 
             if ( ! _format.getOmitDocumentType() ) {
-                // XHTML: If public idnentifier and system identifier
+                // XHTML: If public identifier and system identifier
                 //  specified, print them, else print just system identifier
                 // HTML: If public identifier specified, print it with
                 //  system identifier, if specified.
+                // XHTML requires that all element names are lower case, so the
+                // root on the DOCTYPE must be 'html'. - mrglavas
                 if ( _docTypePublicId != null && ( ! _xhtml || _docTypeSystemId != null )  ) {
                     if (_xhtml) {
                         _printer.printText( "<!DOCTYPE html PUBLIC " );
