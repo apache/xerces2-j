@@ -310,6 +310,7 @@ public class XMLMessages implements XMLMessageProvider {
         MSG_REFERENCE_UNTERMINATED = 166,
         MSG_PREFIX_DECLARED = 167,
         MSG_ATT_DEFAULT_INVALID = 168,
+        MSG_GENERIC_SCHEMA_ERROR = 169,
 
         // ...
         MSG_MAX_CODE = 200;
@@ -484,6 +485,7 @@ public class XMLMessages implements XMLMessageProvider {
         "ReferenceUnterminated",        // 166, "MSG_REFERENCE_UNTERMINATED"
         "PrefixDeclared",               // 167, "MSG_PREFIX_DECLARED"
         "MSG_ATT_DEFAULT_INVALID",      // 168, "MSG_ATT_DEFAULT_INVALID"
+        "MSG_GENERIC_SCHEMA_ERROR",     // 169  "MSG_GENERIC_SCHEMA_ERROR"
 
         // ...
         ""                              //
@@ -636,6 +638,7 @@ public class XMLMessages implements XMLMessageProvider {
         VC_ONE_NOTATION_PER_ELEMENT_TYPE = 143,
         NC_PREFIX_DECLARED = 144,
         VC_ATTRIBUTE_DEFAULT_LEGAL = 145,
+        SCHEMA_GENERIC_ERROR = 146,
 
         // ...
         CONSTRAINT_MAX_CODE = 200;

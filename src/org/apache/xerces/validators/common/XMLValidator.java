@@ -2061,7 +2061,8 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             }catch( SAXException e ) {
                 //System.out.println("loc = "+loc);
                 //e.printStackTrace();
-                reportRecoverableXMLError(167, 144, e.getMessage() );
+                reportRecoverableXMLError( XMLMessages.MSG_GENERIC_SCHEMA_ERROR, 
+                                           XMLMessages.SCHEMA_GENERIC_ERROR, e.getMessage() );
             }
 
             Document     document   = parser.getDocument(); //Our Grammar
@@ -2074,11 +2075,11 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
                 Element root   = document.getDocumentElement();// This is what we pass to TraverserSchema
                 if (root == null) {
-                    reportRecoverableXMLError(167, 144, "Can't get back Schema document's root element :" + loc); 
+                    reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR, "Can't get back Schema document's root element :" + loc); 
                 }
                 else {
                     if (uri == null || !uri.equals(root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE)) ) {
-                        reportRecoverableXMLError(167,144, "Schema in " + loc + " has a different target namespace " + 
+                        reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR, "Schema in " + loc + " has a different target namespace " + 
                                            "from the one specified in the instance document :" + uri); 
                     }
                     grammar = new SchemaGrammar();
@@ -2355,8 +2356,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
                 Hashtable complexRegistry = ((SchemaGrammar)fGrammar).getComplexTypeRegistry();
                 if (complexRegistry==null) {
-                    //TO DO: consistent error reporting is needed here
-                    System.out.println("[Schema Error]"+fErrorReporter.getLocator().getSystemId()
+                    reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR, fErrorReporter.getLocator().getSystemId()
                                        +" line"+fErrorReporter.getLocator().getLineNumber()
                                        +", canot resolve xsi:type = " + xsiType+"  ---2");
                 }
@@ -2369,7 +2369,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                     //      the SchemaGrammar.
 
                     if (typeInfo==null) {
-                        System.out.println("[Schema Error] unsupported case in xsi:type handling");
+                        reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR, "unsupported case in xsi:type handling");
                     }
                     else 
                         elementIndex = typeInfo.templateElementIndex;
@@ -2446,8 +2446,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                         //  this error once for each unique occurrence
                         Object[] args = { fStringPool.toString(element.rawname),
                                           fStringPool.toString(attrList.getAttrName(index)) };
-                        System.out.println("[Error] attribute " + fStringPool.toString(attrList.getAttrName(index))
-                                           + " not found in element type " + fStringPool.toString(element.rawname));
 
                         /*****/
                         fErrorReporter.reportError(fAttrNameLocator,
