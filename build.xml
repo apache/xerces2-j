@@ -910,7 +910,10 @@ Copyright:
                         org/apache/xerces/parsers/IntegratedParserConfiguration.java
                         org/apache/xerces/parsers/XIncludeParserConfiguration.java
                         org/apache/xerces/parsers/SecurityConfiguration.java
+                        org/apache/xerces/parsers/XML11Configurable.java
                         org/apache/xerces/parsers/XML11Configuration.java
+                        org/apache/xerces/parsers/XML11DTDConfiguration.java
+                        org/apache/xerces/parsers/XML11NonValidatingConfiguration.java
                         org/apache/xerces/parsers/XMLGrammarCachingConfiguration.java
                         org/apache/xerces/parsers/CachingParserPool.java
                         org/apache/xerces/xinclude/**
@@ -950,6 +953,10 @@ Copyright:
              token="return ((String)type).getName();" value="return (String)type;"/>
     <replace file="${build.dir}/src/org/apache/xerces/dom/AttrNSImpl.java" 
              token="return ((String)type).getNamespace();" value="return null;"/>
+             
+    <!-- HACK: Remove reference to XML11Configurable from SAX parser -->
+    <replace file="${build.dir}/src/org/apache/xerces/parsers/AbstractSAXParser.java"
+             token="return (fConfiguration instanceof XML11Configurable);" value="return false;"/>
  
     <!-- now deal with API's:  -->
     <unzip src="${src.apis.zip}" dest="${build.src}">
