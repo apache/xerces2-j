@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- This test doesn't test anything in particular.  But it is an example of a
      somewhat complicated setup. -->
-<xit:myRoot xmlns:xit="http://www.schemaTest.org/xinclude-test" xmlns:xi="http://www.w3.org/2003/XInclude" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.schemaTest.org/xinclude-test tests.xsd">
+<xit:myRoot xmlns:xit="http://www.schemaTest.org/xinclude-test" xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.schemaTest.org/xinclude-test tests.xsd">
 	[Warning] test01.xml:8:87: Include operation failed, reverting to fallback. Resource error reading file as XML (href='../included/invalid.xml'). Reason: tests\xinclude\included\invalid.xml (The system cannot find the file specified)
 
 			[Warning] test01.xml:11:47: Include operation failed, reverting to fallback. Resource error reading file as XML (href='../included/invalid.xml'). Reason: tests\xinclude\included\invalid.xml (The system cannot find the file specified)
