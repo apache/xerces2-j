@@ -493,8 +493,8 @@ public class DTDGrammar
         }
         fSimpleType.defaultValue      = defaultValue.length >= 0 ?  defaultValue.toString() : null;
         fSimpleType.enumeration       = enumeration;
-        fSimpleType.datatypeValidator = fDatatypeValidatorFactory.createDatatypeValidator(type, null, null, false);
 
+        Hashtable facets = new Hashtable();
         if (type.equals("CDATA")) {
             fSimpleType.type = XMLSimpleType.TYPE_CDATA;
         }
@@ -523,20 +523,24 @@ public class DTDGrammar
         }
         else if (type.startsWith("NOTATION") ) {
             fSimpleType.type = XMLSimpleType.TYPE_NOTATION;
-            Hashtable facets = new Hashtable();
             facets.put(SchemaSymbols.ELT_ENUMERATION, fSimpleType.enumeration);
         }
         else if (type.startsWith("ENUMERATION") ) {
             fSimpleType.type = XMLSimpleType.TYPE_ENUMERATION;
-            Hashtable facets = new Hashtable();
             facets.put(SchemaSymbols.ELT_ENUMERATION, fSimpleType.enumeration);
         }
+        else {
+            // REVISIT: Report error message. -Ac
+            System.err.println("!!! unknown attribute type "+type);
+        }
+        // REVISIT: The datatype should be stored with the attribute value
+        //          and not special-cased in the XMLValidator. -Ac
+        //fSimpleType.datatypeValidator = fDatatypeValidatorFactory.createDatatypeValidator(type, null, facets, fSimpleType.list);
 
         fQName.setValues(null, attributeName, attributeName, null);
         fAttributeDecl.setValues( fQName, fSimpleType, false );
 
-        setAttributeDecl( elementIndex, fCurrentAttributeIndex,
-                           fAttributeDecl );
+        setAttributeDecl(elementIndex, fCurrentAttributeIndex, fAttributeDecl);
 
         int chunk = fCurrentAttributeIndex >> CHUNK_SHIFT;
         int index = fCurrentAttributeIndex & CHUNK_MASK;
@@ -922,6 +926,11 @@ public class DTDGrammar
     //
     // Grammar methods
     //
+
+    /** Returns true if this grammar is namespace aware. */
+    public boolean isNamespaceAware() {
+        return false;
+    } // isNamespaceAware():boolean
 
     /** Returns the element decl index. */
     public int getElementDeclIndex(QName elementDeclQName, int scope) {

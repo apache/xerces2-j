@@ -95,7 +95,7 @@ public class DatatypeMessageProvider implements MessageFormatter {
     public String formatMessage(Locale locale, String key, Object[] arguments)
        throws MissingResourceException{
        //TODO
-       return "TODO";
+       return "TODO: "+key;
     }
 
     /**

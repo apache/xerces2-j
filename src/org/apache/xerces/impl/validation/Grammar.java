@@ -94,11 +94,16 @@ import org.apache.xerces.impl.validation.models.SimpleContentModel;
  *
  * @version $Id$
  */
-public class Grammar {
+public abstract class Grammar {
 
     //
     // Constants
     //
+
+    /** Top level scope (-1). */
+    public static final int TOP_LEVEL_SCOPE = -1;
+
+    // private
 
     /** Chunk shift (8). */
     private static final int CHUNK_SHIFT = 8; // 2^8 = 256
@@ -249,12 +254,15 @@ public class Grammar {
     //
 
     /** Default constructor. */
-    public Grammar() {
+    protected Grammar() {
     } // <init>()
 
     //
     // Public methods
     //
+
+    /** Returns true if this grammar is namespace aware. */
+    public abstract boolean isNamespaceAware();
 
     /** Returns this grammar's target namespace. */
     public String getTargetNamespace() {

@@ -306,6 +306,15 @@ public class SchemaGrammar
     }
 
     //
+    // Grammar methods
+    //
+
+    /** Returns true if this grammar is namespace aware. */
+    public boolean isNamespaceAware() {
+        return true;
+    } // isNamespaceAware():boolean
+
+    //
     // Protected methods
     //
     protected void  setAttributeDeclRegistry(Hashtable attrReg){
