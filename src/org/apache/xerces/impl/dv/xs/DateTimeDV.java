@@ -85,7 +85,7 @@ public class DateTimeDV extends AbstractDateTimeDV {
      *               with possible time zone Z or (-),(+)hh:mm
      * @param date   uninitialized date object
      * @return normalized dateTime representation
-     * @exception Exception Invalid lexical representation
+     * @exception SchemaDateTimeException Invalid lexical representation
      */
     protected int[] parse(String str, int[] date) throws SchemaDateTimeException {
         resetBuffer(str);

@@ -100,7 +100,7 @@ public abstract class DTDParser
     /**
      * getDTDGrammar
      * 
-     * @return 
+     * @return the grammar created by this parser
      */
     public DTDGrammar getDTDGrammar() {
         return null;

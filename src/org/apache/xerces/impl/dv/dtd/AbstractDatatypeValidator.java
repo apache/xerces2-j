@@ -103,7 +103,7 @@ public class AbstractDatatypeValidator
     /**
      * getFacets
      * 
-     * @return 
+     * @return A Hashtable containing the facets for this datatype.
      */
     public Hashtable getFacets() {
         return null;
@@ -125,7 +125,8 @@ public class AbstractDatatypeValidator
      * @param value1 
      * @param value2 
      * 
-     * @return 
+     * @return  0 if value1 and value2 are equal, a value less than 0 if value1 is less than value2, 
+     * a value greater than 0 if value1 is greater than value2
      */
     public int compare(String value1, String value2)
         throws InvalidDatatypeValueException {

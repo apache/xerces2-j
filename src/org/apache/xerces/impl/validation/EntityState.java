@@ -70,7 +70,7 @@ public interface EntityState {
      * Query method to check if entity with this name was declared.
      * 
      * @param name
-     * @return 
+     * @return true if name is a declared entity
      */
     public boolean isEntityDeclared (String name);
 
@@ -78,7 +78,7 @@ public interface EntityState {
      * Query method to check if entity is unparsed.
      * 
      * @param name
-     * @return 
+     * @return true if name is an unparsed entity
      */
     public boolean isEntityUnparsed (String name);
 }

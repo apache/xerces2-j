@@ -139,15 +139,6 @@ public class MixedContentModel
     // ContentModelValidator methods
     //
 
-    /**
-     * validate
-     * 
-     * @param children 
-     * @param offset 
-     * @param length 
-     * 
-     * @return 
-     */
     
     /**
      * Check that the specified content is valid according to this

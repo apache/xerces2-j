@@ -92,7 +92,7 @@ public class MonthDV extends AbstractDateTimeDV {
      *               with possible time zone Z or (-),(+)hh:mm
      * @param date   uninitialized date object
      * @return normalized date representation
-     * @exception Exception Invalid lexical representation
+     * @exception SchemaDateTimeException Invalid lexical representation
      */
     protected int[] parse(String str, int[] date) throws SchemaDateTimeException{
 
@@ -145,7 +145,7 @@ public class MonthDV extends AbstractDateTimeDV {
      *
      * @param date1
      * @param date2
-     * @return
+     * @return less, greater, equal, indeterminate
      */
     protected  short compareDates(int[] date1, int[] date2) {
 

@@ -94,7 +94,7 @@ public interface DatatypeValidator {
     /**
      * getFacets
      * 
-     * @return 
+     * @return a hashtable of the facet suported by the validator
      */
     public Hashtable getFacets();
 
@@ -113,7 +113,8 @@ public interface DatatypeValidator {
      * @param value1 
      * @param value2 
      * 
-     * @return 
+     * @return 0 if value1 and value2 are equal, a value less than 0 if value1 is less than value2, 
+     * a value greater than 0 if value1 is greater than value2
      */
     public int compare(String value1, String value2)
         throws InvalidDatatypeValueException;

@@ -328,7 +328,7 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
      * @param elementDeclName 
      * @param scope 
      * 
-     * @return 
+     * @return index of the elementDeclName in scope
      */
     public int getElementDeclIndex(String elementDeclName, int scope) {
         int mapping = fScopeMapping.get(scope, elementDeclName, null);
@@ -342,7 +342,7 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
      * @param elementDeclQName 
      * @param scope 
      * 
-     * @return 
+     * @return  index of elementDeclQName in scope
      */
     public int getElementDeclIndex(QName elementDeclQName, int scope) {
         int mapping = fScopeMapping.get(scope, elementDeclQName.localpart, elementDeclQName.uri);
@@ -398,7 +398,7 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
      * 
      * @param elementDeclIndex 
      * 
-     * @return int
+     * @return index of the first attribute for element declaration elementDeclIndex
      */
     public int getFirstAttributeDeclIndex(int elementDeclIndex) {
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
@@ -412,7 +412,7 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
      * 
      * @param attributeDeclIndex 
      * 
-     * @return 
+     * @return index of the next attribute of the attribute at attributeDeclIndex
      */
     public int getNextAttributeDeclIndex(int attributeDeclIndex) {
         int chunk = attributeDeclIndex >> CHUNK_SHIFT;
@@ -427,7 +427,7 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
      * @param elementDeclIndex 
      * @param attributeDeclName 
      * 
-     * @return 
+     * @return index of the attribue named attributeDeclName for the element with index elementDeclIndex
      */
     public int getAttributeDeclIndex(int elementDeclIndex, String attributeDeclName) {
         // REVISIT: [Q] How is this supposed to be overridden efficiently by 
@@ -441,7 +441,7 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
      * @param attributeDeclIndex 
      * @param attributeDecl The values of this structure are set by this call.
      * 
-     * @return 
+     * @return true if getAttributeDecl was able to fill in the value of attributeDecl
      */
     public boolean getAttributeDecl(int attributeDeclIndex, XMLAttributeDecl attributeDecl) {
         if (attributeDeclIndex < 0 || attributeDeclIndex >= fAttributeDeclCount) {
@@ -496,7 +496,7 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
     /**
      * getFirstEntityDeclIndex
      * 
-     * @return 
+     * @return index of the first EntityDecl
      */
     public int getFirstEntityDeclIndex() {
         throw new RuntimeException("implement Grammar#getFirstEntityDeclIndex():int");
@@ -507,7 +507,7 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
      * 
      * @param elementDeclIndex 
      * 
-     * @return 
+     * @return index of the next EntityDecl
      */
     public int getNextEntityDeclIndex(int elementDeclIndex) {
         throw new RuntimeException("implement Grammar#getNextEntityDeclIndex(int):int");
@@ -518,7 +518,7 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
      * 
      * @param entityDeclName 
      * 
-     * @return 
+     * @return the index of the EntityDecl
      */
     public int getEntityDeclIndex(String entityDeclName) {
         if (entityDeclName == null) {
@@ -541,7 +541,8 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
      * @param entityDeclIndex 
      * @param entityDecl 
      * 
-     * @return 
+     * @return true if getEntityDecl was able to fill entityDecl with the contents of the entity
+     * with index entityDeclIndex
      */
     public boolean getEntityDecl(int entityDeclIndex, XMLEntityDecl entityDecl) {
         if (entityDeclIndex < 0 || entityDeclIndex >= fEntityCount) {
@@ -565,7 +566,7 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
     /**
      * getFirstNotationDeclIndex
      * 
-     * @return 
+     * @return the index of the first notation declaration in the grammar
      */
     public int getFirstNotationDeclIndex() {
         throw new RuntimeException("implement Grammar#getFirstNotationDeclIndex():int");
@@ -576,7 +577,7 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
      * 
      * @param elementDeclIndex 
      * 
-     * @return 
+     * @return index of the next notation declaration in the grammar
      */
     public int getNextNotationDeclIndex(int elementDeclIndex) {
         throw new RuntimeException("implement Grammar#getNextNotationDeclIndex(int):int");
@@ -610,7 +611,8 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
      * @param notationDeclIndex 
      * @param notationDecl 
      * 
-     * @return 
+     * @return return true of getNotationDecl can fill notationDecl with information about 
+     * the notation at notationDeclIndex.
      */
     public boolean getNotationDecl(int notationDeclIndex, XMLNotationDecl notationDecl) {
         if (notationDeclIndex < 0 || notationDeclIndex >= fNotationCount) {

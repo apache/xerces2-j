@@ -318,7 +318,6 @@ public class NamespaceSupport
      *         does not map to any prefix.
      *
      * @see #getPrefix
-     * @see #getPrefixes
      */
     public String getPrefix(String uri) {
 
@@ -424,7 +423,6 @@ public class NamespaceSupport
          *         is undeclared in this context.
          *
          * @see #getPrefix
-         * @see #getPrefixes
          */
         public String getURI(String prefix) {
 

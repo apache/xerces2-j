@@ -88,7 +88,7 @@ public class DayDV extends AbstractDateTimeDV {
      *               Pattern: ---(\\d\\d)(Z|(([-+])(\\d\\d)(:(\\d\\d))?
      * @param date   uninitialized date object
      * @return normalized date representation
-     * @exception Exception Invalid lexical representation
+     * @exception SchemaDateTimeException Invalid lexical representation
      */
     protected int[] parse(String str, int[] date) throws SchemaDateTimeException {
 

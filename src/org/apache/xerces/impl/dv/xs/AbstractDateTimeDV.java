@@ -164,7 +164,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
      *                If null - new object will be created, otherwise
      *                date will be reset and reused
      * @return updated date/time object
-     * @exception Exception
+     * @exception SchemaDateTimeException
      */
      abstract protected int[] parse (String content, int[] date) throws SchemaDateTimeException;
 
@@ -256,7 +256,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
      *
      * @param date1  date/time object
      * @param date2  date/time object
-     * @return
+     * @return 0 if date1 and date2 are equal, a value less than 0 if date1 is less than date2, a value greater than 0 if date1 is greater than date2
      */
     protected short compareOrder (int[] date1, int[] date2) {
 
@@ -277,8 +277,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
      * @param start
      * @param end
      * @param data
-     * @return
-     * @exception Exception
+     * @exception RuntimeException
      */
     protected  void getTime (int start, int end, int[] data) throws RuntimeException{
 
@@ -338,8 +337,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
      * @param start
      * @param end
      * @param data
-     * @return
-     * @exception Exception
+     * @exception RuntimeException
      */
     protected void getDate (int start, int end, int[] date) throws RuntimeException{
 
@@ -359,8 +357,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
      * @param start
      * @param end
      * @param data
-     * @return
-     * @exception Exception
+     * @exception RuntimeException
      */
     protected void getYearMonth (int start, int end, int[] date) throws RuntimeException{
 
@@ -395,8 +392,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
      *
      * @param end
      * @param date
-     * @return
-     * @exception Exception
+     * @exception RuntimeException
      */
     protected void parseTimeZone (int end, int[] date) throws RuntimeException{
 
@@ -418,7 +414,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
      *
      * @param data
      * @param sign
-     * @return
+     * @exception RuntimeException
      */
     protected void getTimeZone (int[] data, int sign) throws RuntimeException{
         data[utc]=fBuffer.charAt(sign);
@@ -476,7 +472,6 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
      * [D.1 ISO 8601 Conventions]
      *
      * @param data
-     * @return
      */
     protected void validateDateTime (int[]  data) {
 
@@ -529,7 +524,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
      *
      * @param start
      * @param end
-     * @return
+     * @return index of the UTC character that was found
      */
     protected int findUTCSign (int start, int end) {
         int c;
@@ -703,7 +698,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
      *
      * @param year
      * @param month
-     * @return
+     * @return integer containg the number of days in a given month
      */
     protected int maxDayInMonthFor(int year, int month) {
         //validate days

@@ -154,7 +154,6 @@ implements StatefullDatatypeValidator {
      * @param content A string containing the content to be validated
      * @param state  Generic Object state that can be use to pass
      *               Structures
-     * @return 
      * @exception throws InvalidDatatypeException if the content is
      *                   invalid according to the rules for the validators
      * @exception InvalidDatatypeValueException
@@ -202,7 +201,7 @@ implements StatefullDatatypeValidator {
      * 
      * @param o1
      * @param o2
-     * @return 
+     * @return 0 if value1 and value2 are equal, a value less than 0 if value1 is less than value2, a value greater than 0 if value1 is greater than value2
      */
     public int compare( String content1, String content2) {
         return -1;
@@ -225,7 +224,7 @@ implements StatefullDatatypeValidator {
      * This method should be used by the IDREF datatype
      * validator which needs read access to ID table.
      * 
-     * @return 
+     * @return internal state of the validator (in this case the ID table)
      */
     public Object getInternalStateInformation() {
         return fTableOfId;

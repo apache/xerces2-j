@@ -273,6 +273,13 @@ public abstract class AbstractDOMParser
     } // <init>(XMLParserConfiguration)
 
     /**
+     * This method retreives the name of current document class.
+     */
+    protected String getDocumentClassName() {
+	return documentClassName;
+    }
+
+    /**
      * This method allows the programmer to decide which document
      * factory to use when constructing the DOM tree. However, doing
      * so will lose the functionality of the default factory. Also,

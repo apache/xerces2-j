@@ -207,7 +207,7 @@ implements StatefullDatatypeValidator{
     * 
     * @param o1
     * @param o2
-    * @return 
+    * @return 0 if value1 and value2 are equal, a value less than 0 if value1 is less than value2, a value greater than 0 if value1 is greater than value2
     */
    public int compare( String content1, String content2){
       return -1;

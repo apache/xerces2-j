@@ -97,7 +97,7 @@ public class DurationDV extends AbstractDateTimeDV {
      * @param str    The lexical representation of duration object PnYn MnDTnH nMnS
      * @param date   uninitialized date object
      * @return normalized date representation
-     * @exception Exception Invalid lexical representation
+     * @exception SchemaDateTimeException Invalid lexical representation
      */
     protected int[] parse(String str, int[] date) throws SchemaDateTimeException{
 
@@ -220,7 +220,12 @@ public class DurationDV extends AbstractDateTimeDV {
      * @param date2  Unnormalized duration
      * @param strict (min/max)Exclusive strict == true ( LESS_THAN ) or ( GREATER_THAN )
      *               (min/max)Inclusive strict == false (LESS_EQUAL) or (GREATER_EQUAL)
-     * @return
+     * @return INDETERMINATE if the order relationship between date1 and date2 is indeterminate. 
+     * EQUAL if the order relation between date1 and date2 is EQUAL.  
+     * If the strict parameter is true, return LESS_THAN if date1 is less than date2 and
+     * return GREATER_THAN if date1 is greater than date2. 
+     * If the strict parameter is false, return LESS_THAN if date1 is less than OR equal to date2 and
+     * return GREATER_THAN if date1 is greater than OR equal to date2 
      */
     protected  short compareDates(int[] date1, int[] date2, boolean strict) {
 

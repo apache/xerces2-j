@@ -222,7 +222,7 @@ public class Selector {
          * @param attributes The element attributes.
          * @param elementDecl:  The element declaration 
          *
-         * @throws SAXException Thrown by handler to signal an error.
+         * @throws XNIException Thrown by handler to signal an error.
          */
         public void startElement(QName element, XMLAttributes attributes, 
                                  XSElementDecl elementDecl) throws XNIException {
