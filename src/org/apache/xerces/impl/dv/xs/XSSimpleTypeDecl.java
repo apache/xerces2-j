@@ -1973,7 +1973,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             }
             for (int i = 0; i < size; i++)
                 strs[i] = (String)fPatternStr.elementAt(i);
-            fLexicalPattern = new StringListImpl(strs, size);
+            fLexicalPattern = new StringListImpl(strs, strs.length);
         }
         return fLexicalPattern;
     }
