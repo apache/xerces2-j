@@ -120,21 +120,108 @@ import java.io.Serializable;
     }
   }
 
-  /** reserved characters */
+  private static final byte [] fgLookupTable = new byte[128];
+  
+  /**
+   * Character Classes
+   */
+  
+  /** reserved characters ;/?:@&=+$,[] */
   //RFC 2732 added '[' and ']' as reserved characters
-  //private static final String RESERVED_CHARACTERS = ";/?:@&=+$,";
-  private static final String RESERVED_CHARACTERS = ";/?:@&=+$,[]";
-
-  /** URI punctuation mark characters - these, combined with
+  private static final int RESERVED_CHARACTERS = 0x01;
+  
+  /** URI punctuation mark characters: -_.!~*'() - these, combined with
       alphanumerics, constitute the "unreserved" characters */
-  private static final String MARK_CHARACTERS = "-_.!~*'()";
-
-  /** scheme can be composed of alphanumerics and these characters */
-  private static final String SCHEME_CHARACTERS = "+-.";
-
+  private static final int MARK_CHARACTERS = 0x02;
+  
+  /** scheme can be composed of alphanumerics and these characters: +-. */
+  private static final int SCHEME_CHARACTERS = 0x04;
+  
   /** userinfo can be composed of unreserved, escaped and these
-      characters */
-  private static final String USERINFO_CHARACTERS = ";:&=+$,";
+      characters: ;:&=+$, */
+  private static final int USERINFO_CHARACTERS = 0x08;
+  
+  /** ASCII letter characters */
+  private static final int ASCII_ALPHA_CHARACTERS = 0x10;
+  
+  /** ASCII digit characters */
+  private static final int ASCII_DIGIT_CHARACTERS = 0x20;
+  
+  /** ASCII hex characters */
+  private static final int ASCII_HEX_CHARACTERS = 0x40;
+
+  /** Mask for alpha-numeric characters */
+  private static final int MASK_ALPHA_NUMERIC = ASCII_ALPHA_CHARACTERS | ASCII_DIGIT_CHARACTERS;
+  
+  /** Mask for unreserved characters */
+  private static final int MASK_UNRESERVED_MASK = MASK_ALPHA_NUMERIC | MARK_CHARACTERS;
+  
+  /** Mask for URI allowable characters except for % */
+  private static final int MASK_URI_CHARACTER = MASK_UNRESERVED_MASK | RESERVED_CHARACTERS;
+  
+  /** Mask for scheme characters */
+  private static final int MASK_SCHEME_CHARACTER = MASK_ALPHA_NUMERIC | SCHEME_CHARACTERS;
+  
+  /** Mask for userinfo characters */
+  private static final int MASK_USERINFO_CHARACTER = MASK_UNRESERVED_MASK | USERINFO_CHARACTERS;
+  
+  static {
+      // Add ASCII Digits and ASCII Hex Numbers
+      for (int i = '0'; i <= '9'; ++i) {
+          fgLookupTable[i] |= ASCII_DIGIT_CHARACTERS | ASCII_HEX_CHARACTERS;
+      }
+
+      // Add ASCII Letters and ASCII Hex Numbers
+      for (int i = 'A'; i <= 'F'; ++i) {
+          fgLookupTable[i] |= ASCII_ALPHA_CHARACTERS | ASCII_HEX_CHARACTERS;
+          fgLookupTable[i+0x00000020] |= ASCII_ALPHA_CHARACTERS | ASCII_HEX_CHARACTERS;
+      }
+
+      // Add ASCII Letters
+      for (int i = 'G'; i <= 'Z'; ++i) {
+          fgLookupTable[i] |= ASCII_ALPHA_CHARACTERS;
+          fgLookupTable[i+0x00000020] |= ASCII_ALPHA_CHARACTERS;
+      }
+
+      // Add Reserved Characters
+      fgLookupTable[';'] |= RESERVED_CHARACTERS;
+      fgLookupTable['/'] |= RESERVED_CHARACTERS;
+      fgLookupTable['?'] |= RESERVED_CHARACTERS;
+      fgLookupTable[':'] |= RESERVED_CHARACTERS;
+      fgLookupTable['@'] |= RESERVED_CHARACTERS;
+      fgLookupTable['&'] |= RESERVED_CHARACTERS;
+      fgLookupTable['='] |= RESERVED_CHARACTERS;
+      fgLookupTable['+'] |= RESERVED_CHARACTERS;
+      fgLookupTable['$'] |= RESERVED_CHARACTERS;
+      fgLookupTable[','] |= RESERVED_CHARACTERS;
+      fgLookupTable['['] |= RESERVED_CHARACTERS;
+      fgLookupTable[']'] |= RESERVED_CHARACTERS;
+
+      // Add Mark Characters
+      fgLookupTable['-'] |= MARK_CHARACTERS;
+      fgLookupTable['_'] |= MARK_CHARACTERS;
+      fgLookupTable['.'] |= MARK_CHARACTERS;
+      fgLookupTable['!'] |= MARK_CHARACTERS;
+      fgLookupTable['~'] |= MARK_CHARACTERS;
+      fgLookupTable['*'] |= MARK_CHARACTERS;
+      fgLookupTable['\''] |= MARK_CHARACTERS;
+      fgLookupTable['('] |= MARK_CHARACTERS;
+      fgLookupTable[')'] |= MARK_CHARACTERS;
+
+      // Add Scheme Characters
+      fgLookupTable['+'] |= SCHEME_CHARACTERS;
+      fgLookupTable['-'] |= SCHEME_CHARACTERS;
+      fgLookupTable['.'] |= SCHEME_CHARACTERS;
+
+      // Add Userinfo Characters
+      fgLookupTable[';'] |= USERINFO_CHARACTERS;
+      fgLookupTable[':'] |= USERINFO_CHARACTERS;
+      fgLookupTable['&'] |= USERINFO_CHARACTERS;
+      fgLookupTable['='] |= USERINFO_CHARACTERS;
+      fgLookupTable['+'] |= USERINFO_CHARACTERS;
+      fgLookupTable['$'] |= USERINFO_CHARACTERS;
+      fgLookupTable[','] |= USERINFO_CHARACTERS;
+  }
 
   /** Stores the scheme (usually the protocol) for this URI. */
   private String m_scheme = null;
@@ -363,20 +450,21 @@ import java.io.Serializable;
   */
   private void initialize(URI p_base, String p_uriSpec)
                          throws MalformedURIException {
-    if (p_base == null &&
-        (p_uriSpec == null || p_uriSpec.trim().length() == 0)) {
+	  
+	String uriSpec = (p_uriSpec != null) ? p_uriSpec.trim() : null;
+	int uriSpecLen = (uriSpec != null) ? uriSpec.length() : 0;
+	
+	if (p_base == null && uriSpecLen == 0) {
       throw new MalformedURIException(
                   "Cannot initialize URI with empty parameters.");
-      }
+    }
 
     // just make a copy of the base if spec is empty
-    if (p_uriSpec == null || p_uriSpec.trim().length() == 0) {
+    if (uriSpecLen == 0) {
       initialize(p_base);
       return;
     }
 
-    String uriSpec = p_uriSpec.trim();
-    int uriSpecLen = uriSpec.length();
     int index = 0;
 
     // Check for scheme, which must be before '/', '?' or '#'. Also handle
@@ -403,7 +491,7 @@ import java.io.Serializable;
 
     // two slashes means generic URI syntax, so we get the authority
     if (((index+1) < uriSpecLen) &&
-        (uriSpec.substring(index).startsWith("//"))) {
+        (uriSpec.charAt(index) == '/' && uriSpec.charAt(index+1) == '/')) {
       index += 2;
       int startPos = index;
 
@@ -420,14 +508,14 @@ import java.io.Serializable;
       // if we found authority, parse it out, otherwise we set the
       // host to empty string
       if (index > startPos) {
-        initializeAuthority(uriSpec.substring(startPos, index));
+        initializeAuthority(uriSpec, startPos, index);
       }
       else {
         m_host = "";
       }
     }
 
-    initializePath(uriSpec.substring(index));
+    initializePath(uriSpec, index);
 
     // Resolve relative URI to base URI - see RFC 2396 Section 5.2
     // In some cases, it might make more sense to throw an exception
@@ -582,14 +670,17 @@ import java.io.Serializable;
   * URI from a URI string spec.
   *
   * @param p_uriSpec the URI specification (cannot be null)
+  * @param p_nStartIndex the index to begin scanning from
+  * @param p_nEndIndex the index to end scanning at
   *
   * @exception MalformedURIException if p_uriSpec violates syntax rules
   */
-  private void initializeAuthority(String p_uriSpec)
+  private void initializeAuthority(String p_uriSpec, int p_nStartIndex, int p_nEndIndex)
                  throws MalformedURIException {
-    int index = 0;
-    int start = 0;
-    int end = p_uriSpec.length();
+    
+	int index = p_nStartIndex;
+    int start = p_nStartIndex;
+    int end = p_nEndIndex;
     char testChar = '\0';
     String userinfo = null;
 
@@ -653,18 +744,19 @@ import java.io.Serializable;
   * Initialize the path for this URI from a URI string spec.
   *
   * @param p_uriSpec the URI specification (cannot be null)
+  * @param p_nStartIndex the index to begin scanning from
   *
   * @exception MalformedURIException if p_uriSpec violates syntax rules
   */
-  private void initializePath(String p_uriSpec)
+  private void initializePath(String p_uriSpec, int p_nStartIndex)
                  throws MalformedURIException {
     if (p_uriSpec == null) {
       throw new MalformedURIException(
                 "Cannot initialize path from null string!");
     }
 
-    int index = 0;
-    int start = 0;
+    int index = p_nStartIndex;
+    int start = p_nStartIndex;
     int end = p_uriSpec.length();
     char testChar = '\0';
 
@@ -683,8 +775,7 @@ import java.io.Serializable;
                 "Path contains invalid escape sequence!");
          }
       }
-      else if (!isReservedCharacter(testChar) &&
-               !isUnreservedCharacter(testChar)) {
+      else if (!isURICharacter(testChar)) {
         throw new MalformedURIException(
                   "Path contains invalid character: " + testChar);
       }
@@ -709,8 +800,7 @@ import java.io.Serializable;
                     "Query string contains invalid escape sequence!");
            }
         }
-        else if (!isReservedCharacter(testChar) &&
-                 !isUnreservedCharacter(testChar)) {
+        else if (!isURICharacter(testChar)) {
           throw new MalformedURIException(
                 "Query string contains invalid character:" + testChar);
         }
@@ -734,8 +824,7 @@ import java.io.Serializable;
                     "Fragment contains invalid escape sequence!");
            }
         }
-        else if (!isReservedCharacter(testChar) &&
-                 !isUnreservedCharacter(testChar)) {
+        else if (!isURICharacter(testChar)) {
           throw new MalformedURIException(
                 "Fragment contains invalid character:"+testChar);
         }
@@ -942,8 +1031,7 @@ import java.io.Serializable;
                   "Userinfo contains invalid escape sequence!");
           }
         }
-        else if (!isUnreservedCharacter(testChar) &&
-                 USERINFO_CHARACTERS.indexOf(testChar) == -1) {
+        else if (!isUserinfoCharacter(testChar)) {
           throw new MalformedURIException(
                   "Userinfo contains invalid character:"+testChar);
         }
@@ -1019,7 +1107,7 @@ import java.io.Serializable;
       m_fragment = null;
     }
     else {
-      initializePath(p_path);
+      initializePath(p_path, 0);
     }
   }
 
@@ -1221,8 +1309,7 @@ import java.io.Serializable;
     char testChar;
     for (int i = 1; i < p_scheme.length(); i++) {
       testChar = p_scheme.charAt(i);
-      if (!isAlphanum(testChar) &&
-          SCHEME_CHARACTERS.indexOf(testChar) == -1) {
+      if (!isSchemeCharacter(testChar)) {
         return false;
       }
     }
@@ -1328,9 +1415,7 @@ import java.io.Serializable;
   *         or 'A' and 'F', false otherwise
   */
   private static boolean isHex(char p_char) {
-    return (isDigit(p_char) ||
-            (p_char >= 'a' && p_char <= 'f') ||
-            (p_char >= 'A' && p_char <= 'F'));
+    return (p_char <= 'f' && (fgLookupTable[p_char] & ASCII_HEX_CHARACTERS) != 0);
   }
 
  /**
@@ -1339,8 +1424,7 @@ import java.io.Serializable;
   * @return true if the char is alphabetic, false otherwise
   */
   private static boolean isAlpha(char p_char) {
-    return ((p_char >= 'a' && p_char <= 'z') ||
-            (p_char >= 'A' && p_char <= 'Z' ));
+      return ((p_char >= 'a' && p_char <= 'z') || (p_char >= 'A' && p_char <= 'Z' ));
   }
 
  /**
@@ -1349,17 +1433,17 @@ import java.io.Serializable;
   * @return true if the char is alphanumeric, false otherwise
   */
   private static boolean isAlphanum(char p_char) {
-    return (isAlpha(p_char) || isDigit(p_char));
+     return (p_char <= 'z' && (fgLookupTable[p_char] & MASK_ALPHA_NUMERIC) != 0);
   }
 
  /**
   * Determine whether a character is a reserved character:
-  * ';', '/', '?', ':', '@', '&', '=', '+', '$' or ','
+  * ';', '/', '?', ':', '@', '&', '=', '+', '$', ',', '[', or ']'
   *
   * @return true if the string contains any reserved characters
   */
   private static boolean isReservedCharacter(char p_char) {
-    return RESERVED_CHARACTERS.indexOf(p_char) != -1;
+     return (p_char <= ']' && (fgLookupTable[p_char] & RESERVED_CHARACTERS) != 0);
   }
 
  /**
@@ -1368,8 +1452,35 @@ import java.io.Serializable;
   * @return true if the char is unreserved, false otherwise
   */
   private static boolean isUnreservedCharacter(char p_char) {
-    return (isAlphanum(p_char) ||
-            MARK_CHARACTERS.indexOf(p_char) != -1);
+     return (p_char <= '~' && (fgLookupTable[p_char] & MASK_UNRESERVED_MASK) != 0);
+  }
+
+ /**
+  * Determine whether a char is a URI character (reserved or 
+  * unreserved, not including '%' for escaped octets).
+  *
+  * @return true if the char is a URI character, false otherwise
+  */
+  private static boolean isURICharacter (char p_char) {
+      return (p_char <= '~' && (fgLookupTable[p_char] & MASK_URI_CHARACTER) != 0);
+  }
+
+ /**
+  * Determine whether a char is a scheme character.
+  *
+  * @return true if the char is a scheme character, false otherwise
+  */
+  private static boolean isSchemeCharacter (char p_char) {
+      return (p_char <= 'z' && (fgLookupTable[p_char] & MASK_SCHEME_CHARACTER) != 0);
+  }
+
+ /**
+  * Determine whether a char is a userinfo character.
+  *
+  * @return true if the char is a userinfo character, false otherwise
+  */
+  private static boolean isUserinfoCharacter (char p_char) {
+      return (p_char <= 'z' && (fgLookupTable[p_char] & MASK_USERINFO_CHARACTER) != 0);
   }
 
  /**
@@ -1398,8 +1509,7 @@ import java.io.Serializable;
           continue;
         }
       }
-      if (isReservedCharacter(testChar) ||
-          isUnreservedCharacter(testChar)) {
+      if (isURICharacter(testChar)) {
           continue;
       }
       else {
