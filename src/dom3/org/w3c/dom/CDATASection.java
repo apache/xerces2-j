@@ -19,8 +19,8 @@ package org.w3c.dom;
  * section. CDATA sections cannot be nested. Their primary purpose is for 
  * including material such as XML fragments, without needing to escape all 
  * the delimiters.
- * <p>The <code>DOMString</code> attribute of the <code>Text</code> node holds 
- * the text that is contained by the CDATA section. Note that this <em>may</em> contain characters that need to be escaped outside of CDATA sections and 
+ * <p>The <code>CharacterData.data</code> attribute holds the text that is 
+ * contained by the CDATA section. Note that this <em>may</em> contain characters that need to be escaped outside of CDATA sections and 
  * that, depending on the character encoding ("charset") chosen for 
  * serialization, it may be impossible to write out some characters as part 
  * of a CDATA section.
@@ -48,7 +48,7 @@ package org.w3c.dom;
  * conversion libraries at the time of writing do not return an error or 
  * exception when a character is missing from the encoding, making the task 
  * of ensuring that data is not corrupted on serialization more difficult.
- * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>Document Object Model (DOM) Level 3 Core Specification</a>.
  */
 public interface CDATASection extends Text {
 }

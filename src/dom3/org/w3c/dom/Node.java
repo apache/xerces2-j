@@ -131,7 +131,7 @@ package org.w3c.dom;
  * <td valign='top' rowspan='1' colspan='1'><code>null</code></td>
  * </tr>
  * </table> 
- * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>Document Object Model (DOM) Level 3 Core Specification</a>.
  */
 public interface Node {
     // NodeType
@@ -423,7 +423,7 @@ public interface Node {
     public Node cloneNode(boolean deep);
 
     /**
-     * Puts all <code>Text</code> nodes in the full depth of the sub-tree 
+     *  Puts all <code>Text</code> nodes in the full depth of the sub-tree 
      * underneath this <code>Node</code>, including attribute nodes, into a 
      * "normal" form where only structure (e.g., elements, comments, 
      * processing instructions, CDATA sections, and entity references) 
@@ -433,12 +433,16 @@ public interface Node {
      * it were saved and re-loaded, and is useful when operations (such as 
      * XPointer [<a href='http://www.w3.org/TR/2003/REC-xptr-framework-20030325/'>XPointer</a>]
      *  lookups) that depend on a particular document tree structure are to 
-     * be used.
+     * be used. If the parameter "normalize-characters" of the 
+     * <code>DOMConfiguration</code> object attached to the 
+     * <code>Node.ownerDocument</code> is <code>true</code>, this method 
+     * will also fully normalize the characters of the <code>Text</code> 
+     * nodes. 
      * <p ><b>Note:</b> In cases where the document contains 
      * <code>CDATASections</code>, the normalize operation alone may not be 
      * sufficient, since XPointers do not differentiate between 
      * <code>Text</code> nodes and <code>CDATASection</code> nodes.
-     * @version DOM Level 2
+     * @version DOM Level 3
      */
     public void normalize();
 
@@ -456,7 +460,7 @@ public interface Node {
 
     /**
      * The namespace URI of this node, or <code>null</code> if it is 
-     * unspecified.
+     * unspecified (see ).
      * <br>This is not a computed value that is the result of a namespace 
      * lookup based on an examination of the namespace declarations in 
      * scope. It is merely the namespace URI given at creation time.
@@ -474,7 +478,8 @@ public interface Node {
 
     /**
      * The namespace prefix of this node, or <code>null</code> if it is 
-     * unspecified.
+     * unspecified. When it is defined to be <code>null</code>, setting it 
+     * has no effect, including if the node is read-only.
      * <br>Note that setting this attribute, when permitted, changes the 
      * <code>nodeName</code> attribute, which holds the qualified name, as 
      * well as the <code>tagName</code> and <code>name</code> attributes of 
@@ -495,7 +500,8 @@ public interface Node {
     public String getPrefix();
     /**
      * The namespace prefix of this node, or <code>null</code> if it is 
-     * unspecified.
+     * unspecified. When it is defined to be <code>null</code>, setting it 
+     * has no effect, including if the node is read-only.
      * <br>Note that setting this attribute, when permitted, changes the 
      * <code>nodeName</code> attribute, which holds the qualified name, as 
      * well as the <code>tagName</code> and <code>name</code> attributes of 
@@ -549,8 +555,9 @@ public interface Node {
     public boolean hasAttributes();
 
     /**
-     * The absolute base URI of this node or <code>null</code> if undefined. 
-     * This value is computed according to [<a href='http://www.w3.org/TR/2001/REC-xmlbase-20010627/'>XML Base</a>]. 
+     * The absolute base URI of this node or <code>null</code> if the 
+     * implementation wasn't able to obtain an absolute URI. This value is 
+     * computed according to [<a href='http://www.w3.org/TR/2001/REC-xmlbase-20010627/'>XML Base</a>]. 
      * However, when the <code>Document</code> supports the feature "HTML" [<a href='http://www.w3.org/TR/2003/REC-DOM-Level-2-HTML-20030109'>DOM Level 2 HTML</a>]
      * , the base URI is computed using first the value of the href 
      * attribute of the HTML BASE element if any, and the value of the 
@@ -615,10 +622,10 @@ public interface Node {
      * <br> On getting, no serialization is performed, the returned string 
      * does not contain any markup. No whitespace normalization is performed 
      * and the returned string does not contain the white spaces in element 
-     * content (see the method 
-     * <code>Text.isWhitespaceInElementContent()</code>). Similarly, on 
-     * setting, no parsing is performed either, the input string is taken as 
-     * pure textual content. 
+     * content (see the attribute 
+     * <code>Text.isElementContentWhitespace</code>). Similarly, on setting, 
+     * no parsing is performed either, the input string is taken as pure 
+     * textual content. 
      * <br>The string returned is made of the text content of this node 
      * depending on its type, as defined below: 
      * <table border='1'>
@@ -664,10 +671,10 @@ public interface Node {
      * <br> On getting, no serialization is performed, the returned string 
      * does not contain any markup. No whitespace normalization is performed 
      * and the returned string does not contain the white spaces in element 
-     * content (see the method 
-     * <code>Text.isWhitespaceInElementContent()</code>). Similarly, on 
-     * setting, no parsing is performed either, the input string is taken as 
-     * pure textual content. 
+     * content (see the attribute 
+     * <code>Text.isElementContentWhitespace</code>). Similarly, on setting, 
+     * no parsing is performed either, the input string is taken as pure 
+     * textual content. 
      * <br>The string returned is made of the text content of this node 
      * depending on its type, as defined below: 
      * <table border='1'>
@@ -803,10 +810,10 @@ public interface Node {
      * </ul> 
      * <br>On the other hand, the following do not affect equality: the 
      * <code>ownerDocument</code>, <code>baseURI</code>, and 
-     * <code>parentNode</code> attributes, the <code>specified</code> and 
+     * <code>parentNode</code> attributes, the <code>specified</code> 
      * attribute for <code>Attr</code> nodes, the <code>schemaTypeInfo</code>
      *  attribute for <code>Attr</code> and <code>Element</code> nodes, the 
-     * <code>Text.isWhitespaceInElementContent()</code> method for 
+     * <code>Text.isElementContentWhitespace</code> attribute for 
      * <code>Text</code> nodes, as well as any user data or event listeners 
      * registered on the nodes. 
      * <p ><b>Note:</b>  As a general rule, anything not mentioned in the 

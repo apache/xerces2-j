@@ -29,14 +29,15 @@ package org.w3c.dom;
  * resolution depends on where the entity reference is, the descendants of 
  * the <code>EntityReference</code> node may be bound to different namespace 
  * URIs. When an <code>EntityReference</code> node represents a reference to 
- * an unknown entity, its content is empty.
+ * an unknown entity, the node has no children and its replacement value, 
+ * when used by <code>Attr.value</code> for example, is empty.
  * <p>As for <code>Entity</code> nodes, <code>EntityReference</code> nodes and 
  * all their descendants are readonly.
  * <p ><b>Note:</b> <code>EntityReference</code> nodes may cause element 
  * content and attribute value normalization problems when, such as in XML 
- * 1.0 and XML Schema, the normalization is be performed after entity 
- * reference are expanded.
- * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * 1.0 and XML Schema, the normalization is performed after entity reference 
+ * are expanded.
+ * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>Document Object Model (DOM) Level 3 Core Specification</a>.
  */
 public interface EntityReference extends Node {
 }

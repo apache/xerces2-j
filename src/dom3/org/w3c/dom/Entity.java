@@ -22,10 +22,9 @@ package org.w3c.dom;
  * <code>EntityReference</code> nodes in the document tree.
  * <p>XML does not mandate that a non-validating XML processor read and 
  * process entity declarations made in the external subset or declared in 
- * external parameter entities. This means that parsed entities declared in 
- * the external subset need not be expanded by some classes of applications, 
- * and that the replacement text of the entity may not be available. When 
- * the <a href='http://www.w3.org/TR/2000/REC-xml-20001006#intern-replacement'>
+ * parameter entities. This means that parsed entities declared in the 
+ * external subset need not be expanded by some classes of applications, and 
+ * that the replacement text of the entity may not be available. When the <a href='http://www.w3.org/TR/2000/REC-xml-20001006#intern-replacement'>
  * replacement text</a> is available, the corresponding <code>Entity</code> node's child list 
  * represents the structure of that replacement value. Otherwise, the child 
  * list is empty.
@@ -43,7 +42,7 @@ package org.w3c.dom;
  * they are created using the <code>createEntityReference</code> method of 
  * the <code>Document</code> interface. The DOM Level 2 does not support any 
  * mechanism to resolve namespace prefixes.
- * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>Document Object Model (DOM) Level 3 Core Specification</a>.
  */
 public interface Entity extends Node {
     /**
@@ -65,12 +64,13 @@ public interface Entity extends Node {
     public String getNotationName();
 
     /**
-     * An attribute specifying the actual encoding of this entity, when it is 
-     * an external parsed entity. This is <code>null</code> if it an entity 
-     * from the internal subset or if it is not known.
+     * An attribute specifying the encoding used for this entity at the time 
+     * of parsing, when it is an external parsed entity. This is 
+     * <code>null</code> if it an entity from the internal subset or if it 
+     * is not known.
      * @since DOM Level 3
      */
-    public String getActualEncoding();
+    public String getInputEncoding();
 
     /**
      * An attribute specifying, as part of the text declaration, the encoding 
@@ -79,13 +79,6 @@ public interface Entity extends Node {
      * @since DOM Level 3
      */
     public String getXmlEncoding();
-    /**
-     * An attribute specifying, as part of the text declaration, the encoding 
-     * of this entity, when it is an external parsed entity. This is 
-     * <code>null</code> otherwise.
-     * @since DOM Level 3
-     */
-    public void setXmlEncoding(String xmlEncoding);
 
     /**
      * An attribute specifying, as part of the text declaration, the version 
@@ -94,12 +87,5 @@ public interface Entity extends Node {
      * @since DOM Level 3
      */
     public String getXmlVersion();
-    /**
-     * An attribute specifying, as part of the text declaration, the version 
-     * number of this entity, when it is an external parsed entity. This is 
-     * <code>null</code> otherwise.
-     * @since DOM Level 3
-     */
-    public void setXmlVersion(String xmlVersion);
 
 }

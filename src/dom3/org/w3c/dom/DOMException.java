@@ -28,7 +28,7 @@ package org.w3c.dom;
  * native error reporting mechanisms. For some bindings, for example, 
  * methods may return error codes similar to those listed in the 
  * corresponding method descriptions.
- * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>Document Object Model (DOM) Level 3 Core Specification</a>.
  */
 public class DOMException extends RuntimeException {
     public DOMException(short code, String message) {
@@ -38,20 +38,21 @@ public class DOMException extends RuntimeException {
     public short   code;
     // ExceptionCode
     /**
-     * If index or size is negative, or greater than the allowed value
+     * If index or size is negative, or greater than the allowed value.
      */
     public static final short INDEX_SIZE_ERR            = 1;
     /**
-     * If the specified range of text does not fit into a DOMString
+     * If the specified range of text does not fit into a 
+     * <code>DOMString</code>.
      */
     public static final short DOMSTRING_SIZE_ERR        = 2;
     /**
-     * If any node is inserted somewhere it doesn't belong
+     * If any <code>Node</code> is inserted somewhere it doesn't belong.
      */
     public static final short HIERARCHY_REQUEST_ERR     = 3;
     /**
-     * If a node is used in a different document than the one that created it 
-     * (that doesn't support it)
+     * If a <code>Node</code> is used in a different document than the one 
+     * that created it (that doesn't support it).
      */
     public static final short WRONG_DOCUMENT_ERR        = 4;
     /**
@@ -59,17 +60,18 @@ public class DOMException extends RuntimeException {
      */
     public static final short INVALID_CHARACTER_ERR     = 5;
     /**
-     * If data is specified for a node which does not support data
+     * If data is specified for a <code>Node</code> which does not support 
+     * data.
      */
     public static final short NO_DATA_ALLOWED_ERR       = 6;
     /**
      * If an attempt is made to modify an object where modifications are not 
-     * allowed
+     * allowed.
      */
     public static final short NO_MODIFICATION_ALLOWED_ERR = 7;
     /**
-     * If an attempt is made to reference a node in a context where it does 
-     * not exist
+     * If an attempt is made to reference a <code>Node</code> in a context 
+     * where it does not exist.
      */
     public static final short NOT_FOUND_ERR             = 8;
     /**
@@ -79,7 +81,7 @@ public class DOMException extends RuntimeException {
     public static final short NOT_SUPPORTED_ERR         = 9;
     /**
      * If an attempt is made to add an attribute that is already in use 
-     * elsewhere
+     * elsewhere/
      */
     public static final short INUSE_ATTRIBUTE_ERR       = 10;
     /**
@@ -114,7 +116,7 @@ public class DOMException extends RuntimeException {
      * If a call to a method such as <code>insertBefore</code> or 
      * <code>removeChild</code> would make the <code>Node</code> invalid 
      * with respect to "partial validity", this exception would be raised 
-     * and the operation would not be done. This code is used in [<a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Val-20030205'>DOM Level 3 Validation</a>]
+     * and the operation would not be done. This code is used in [<a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Val-20030730'>DOM Level 3 Validation</a>]
      * . Refer to this specification for further information.
      * @since DOM Level 3
      */

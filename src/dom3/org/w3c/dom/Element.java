@@ -27,19 +27,20 @@ package org.w3c.dom;
  * directly access an attribute value can safely be used as a convenience.
  * <p ><b>Note:</b> In DOM Level 2, the method <code>normalize</code> is 
  * inherited from the <code>Node</code> interface where it was moved.
- * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>Document Object Model (DOM) Level 3 Core Specification</a>.
  */
 public interface Element extends Node {
     /**
-     * The name of the element. For example, in: 
-     * <pre> &lt;elementExample 
-     * id="demo"&gt; ... &lt;/elementExample&gt; , </pre>
-     *  <code>tagName</code> has 
-     * the value <code>"elementExample"</code>. Note that this is 
-     * case-preserving in XML, as are all of the operations of the DOM. The 
-     * HTML DOM returns the <code>tagName</code> of an HTML element in the 
-     * canonical uppercase form, regardless of the case in the source HTML 
-     * document.
+     * The name of the element. If <code>Node.localName</code> is different 
+     * from <code>null</code>, this attribute is a qualified name. For 
+     * example, in: 
+     * <pre> &lt;elementExample id="demo"&gt; ... 
+     * &lt;/elementExample&gt; , </pre>
+     *  <code>tagName</code> has the value 
+     * <code>"elementExample"</code>. Note that this is case-preserving in 
+     * XML, as are all of the operations of the DOM. The HTML DOM returns 
+     * the <code>tagName</code> of an HTML element in the canonical 
+     * uppercase form, regardless of the case in the source HTML document.
      */
     public String getTagName();
 
@@ -368,10 +369,10 @@ public interface Element extends Node {
     /**
      *  Declares the attribute specified by name to be of type ID, i.e. the 
      * <code>Attr</code> node becomes a user-determined ID attribute and its 
-     * method <code>Attr.isId()</code> will return <code>true</code>. Note, 
-     * however, that this simply affects the method <code>Attr.isId()</code> 
-     * of the <code>Attr</code> node and does not change any schema that may 
-     * be in use, in particular this does not affect the 
+     * attribute <code>Attr.isId</code> will be <code>true</code>. Note, 
+     * however, that this simply affects the attribute <code>Attr.isId</code>
+     *  of the <code>Attr</code> node and does not change any schema that 
+     * may be in use, in particular this does not affect the 
      * <code>Attr.schemaTypeInfo</code> of the specified <code>Attr</code> 
      * node. 
      * <br> To specify an attribute by local name and namespace URI, use the 
@@ -391,11 +392,11 @@ public interface Element extends Node {
     /**
      *  Declares the attribute specified by local name and namespace URI to be 
      * of type ID, i.e. the <code>Attr</code> node becomes a user-determined 
-     * ID attribute and its method <code>Attr.isId()</code> will return 
-     * <code>true</code>. Note, however, that this simply affects the method 
-     * <code>Attr.isId()</code> of the <code>Attr</code> node and does not 
-     * change any schema that may be in use, in particular this does not 
-     * affect the <code>Attr.schemaTypeInfo</code> of the specified 
+     * ID attribute and its attribute <code>Attr.isId</code> will be 
+     * <code>true</code>. Note, however, that this simply affects the 
+     * attribute <code>Attr.isId</code> of the <code>Attr</code> node and 
+     * does not change any schema that may be in use, in particular this 
+     * does not affect the <code>Attr.schemaTypeInfo</code> of the specified 
      * <code>Attr</code> node. 
      * @param namespaceURI The namespace URI of the attribute.
      * @param localName The local name of the attribute.
@@ -414,10 +415,10 @@ public interface Element extends Node {
     /**
      *  Declares the attribute specified by node to be of type ID, i.e. the 
      * <code>Attr</code> node becomes a user-determined ID attribute and its 
-     * method <code>Attr.isId()</code> will return <code>true</code>. Note, 
-     * however, that this simply affects the method <code>Attr.isId()</code> 
-     * of the <code>Attr</code> node and does not change any schema that may 
-     * be in use, in particular this does not affect the 
+     * attribute <code>Attr.isId</code> will be <code>true</code>. Note, 
+     * however, that this simply affects the attribute <code>Attr.isId</code>
+     *  of the <code>Attr</code> node and does not change any schema that 
+     * may be in use, in particular this does not affect the 
      * <code>Attr.schemaTypeInfo</code> of the specified <code>Attr</code> 
      * node. 
      * @param idAttr The attribute node.

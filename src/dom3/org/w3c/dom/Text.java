@@ -34,11 +34,8 @@ package org.w3c.dom;
  * characters "&lt;&amp;" if the textual content is part of an element or of 
  * an attribute, the character sequence "]]&gt;" when part of an element, 
  * the quotation mark character " or the apostrophe character ' when part of 
- * an attribute. If the <code>Text</code> node is a direct child of the 
- * <code>Document</code> node, white spaces, as defined per section 2.3 of [<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>], are the 
- * only characters allowed in the content and the presence of other 
- * characters must generate a fatal error during serialization. 
- * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * an attribute. 
+ * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>Document Object Model (DOM) Level 3 Core Specification</a>.
  */
 public interface Text extends CharacterData {
     /**
@@ -62,37 +59,44 @@ public interface Text extends CharacterData {
                           throws DOMException;
 
     /**
-     * Returns whether this text node contains whitespace in element content, 
-     * often abusively called "ignorable whitespace". The text node is 
+     * Returns whether this text node contains <a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024#infoitem.character'>
+     * element content whitespace</a>, often abusively called "ignorable whitespace". The text node is 
      * determined to contain whitespace in element content during the load 
      * of the document or if validation occurs while using 
      * <code>Document.normalizeDocument()</code>.
-     * @return Returns <code>true</code> if this text node contains 
-     *   whitespace in element content, <code>false</code> otherwise.
      * @since DOM Level 3
      */
-    public boolean isWhitespaceInElementContent();
+    public boolean isElementContentWhitespace();
 
     /**
      * Returns all text of <code>Text</code> nodes logically-adjacent text 
      * nodes to this node, concatenated in document order.
      * <br>For instance, in the example below <code>wholeText</code> on the 
      * <code>Text</code> node that contains "bar" returns "barfoo", while on 
-     * the <code>Text</code> node that contains "foo" it returns "foo". 
+     * the <code>Text</code> node that contains "foo" it returns "barfoo". 
      * @since DOM Level 3
      */
     public String getWholeText();
 
     /**
-     * Substitutes the specified text for the text of the current node and all 
-     * logically-adjacent text nodes.
-     * <br>This method returns the node in the hierarchy which received the 
-     * replacement text, which is null if the text was empty or is the 
-     * current node if the current node is not read-only or otherwise is a 
-     * new node of the same type as the current node inserted at the site of 
-     * the replacement. All logically-adjacent text nodes are removed 
-     * including the current node unless it was the recipient of the 
+     * Replaces the text of the current node and all logically-adjacent text 
+     * nodes with the specified text. All logically-adjacent text nodes are 
+     * removed including the current node unless it was the recipient of the 
      * replacement text.
+     * <br>This method returns the node which received the replacement text. 
+     * The returned node is: 
+     * <ul>
+     * <li><code>null</code>, when the replacement text is 
+     * the empty string;
+     * </li>
+     * <li>the current node, except when the current node is 
+     * read-only;
+     * </li>
+     * <li> a new <code>Text</code> node of the same type (
+     * <code>Text</code> or <code>CDATASection</code>) as the current node 
+     * inserted at the location of the replacement.
+     * </li>
+     * </ul>
      * <br>For instance, in the above example calling 
      * <code>replaceWholeText</code> on the <code>Text</code> node that 
      * contains "bar" with "yo" in argument results in the following: 
@@ -108,7 +112,7 @@ public interface Text extends CharacterData {
      * <br>For instance, in the example below calling 
      * <code>replaceWholeText</code> on the <code>Text</code> node that 
      * contains "bar" fails, because the <code>EntityReference</code> node 
-     * "ent" contains an <code>Element</code> node which cannot be removed. 
+     * "ent" contains an <code>Element</code> node which cannot be removed.
      * @param content The content of the replacing <code>Text</code> node.
      * @return The <code>Text</code> node created with the specified content.
      * @exception DOMException

@@ -23,20 +23,22 @@ package org.w3c.dom;
  * passed to the error handler are implementation dependent. 
  * <p> The application that is using the DOM implementation is expected to 
  * implement this interface. 
- * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>Document Object Model (DOM) Level 3 Core Specification</a>.
  * @since DOM Level 3
  */
 public interface DOMErrorHandler {
     /**
      * This method is called on the error handler when an error occurs.
+     * <br> If an exception is thrown from this method, it is considered to be 
+     * equivalent of returning <code>true</code>. 
      * @param error  The error object that describes the error. This object 
      *   may be reused by the DOM implementation across multiple calls to 
      *   the <code>handleError</code> method. 
      * @return  If the <code>handleError</code> method returns 
-     *   <code>true</code>, the DOM implementation should continue as if the 
-     *   error didn't happen when possible, if the method returns 
-     *   <code>false</code> then the DOM implementation should stop the 
-     *   current processing when possible. 
+     *   <code>false</code>, the DOM implementation should stop the current 
+     *   processing when possible. If the method returns <code>true</code>, 
+     *   the processing may continue depending on 
+     *   <code>DOMError.severity</code>. 
      */
     public boolean handleError(DOMError error);
 

@@ -45,8 +45,9 @@ package org.w3c.dom;
  * useful when the user wishes to create nodes that are siblings; the 
  * <code>DocumentFragment</code> acts as the parent of these nodes so that 
  * the user can use the standard methods from the <code>Node</code> 
- * interface, such as <code>insertBefore</code> and <code>appendChild</code>.
- * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * interface, such as <code>Node.insertBefore</code> and 
+ * <code>Node.appendChild</code>.
+ * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>Document Object Model (DOM) Level 3 Core Specification</a>.
  */
 public interface DocumentFragment extends Node {
 }

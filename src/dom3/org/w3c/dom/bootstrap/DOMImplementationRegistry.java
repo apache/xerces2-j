@@ -45,7 +45,7 @@ import java.lang.ClassLoader;
 import java.lang.String;
 import java.util.StringTokenizer;
 import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.Vector;
 
 import org.w3c.dom.DOMImplementationSource;
 import org.w3c.dom.DOMImplementationList;
@@ -57,15 +57,15 @@ public class DOMImplementationRegistry {
     public final static String PROPERTY =
         "org.w3c.dom.DOMImplementationSourceList";
 
-    private Hashtable sources;
+    private Vector _sources;
 
     // deny construction by other classes
     private DOMImplementationRegistry() {
     }
 
     // deny construction by other classes
-    private DOMImplementationRegistry(Hashtable srcs) {
-        sources = srcs;
+    private DOMImplementationRegistry(Vector srcs) {
+        _sources = srcs;
     }
 
 
@@ -82,7 +82,7 @@ public class DOMImplementationRegistry {
             throws ClassNotFoundException, InstantiationException, 
             IllegalAccessException
     {
-        Hashtable sources = new Hashtable();    
+        Vector _sources = new Vector();    
 
         // fetch system property:
         String p = System.getProperty(PROPERTY);
@@ -93,10 +93,10 @@ public class DOMImplementationRegistry {
                 // Use context class loader, falling back to Class.forName
                 // if and only if this fails...
                 Object source = getClass(sourceName).newInstance();
-                sources.put(sourceName, source);
+                _sources.add(source);
             }
         }
-        return new DOMImplementationRegistry(sources);
+        return new DOMImplementationRegistry(_sources);
     }
 
 
@@ -116,17 +116,16 @@ public class DOMImplementationRegistry {
             throws ClassNotFoundException,
             InstantiationException, IllegalAccessException, ClassCastException
     {
-        Enumeration names = sources.keys();
-        String name = null;
-        while(names.hasMoreElements()) {
-            name = (String)names.nextElement();
+	int    size  = _sources.size();
+        String name  = null;
+        for (int i = 0; i < size; i++) {
             DOMImplementationSource source =
-                (DOMImplementationSource) sources.get(name);
+                (DOMImplementationSource) _sources.get(i);
 
             DOMImplementation impl = source.getDOMImplementation(features);
             if (impl != null) {
                 return impl;
-            }
+            }	    
         }
         return null;
     }
@@ -142,21 +141,21 @@ public class DOMImplementationRegistry {
      *                 This is something like: "XML 1.0 Traversal +Events 2.0"
      * @return A list of DOMImplementations that support the desired features.
      */
-    public DOMImplementationList getDOMImplementations(String features)
+    public DOMImplementationList getDOMImplementationList(String features)
             throws ClassNotFoundException,
             InstantiationException, IllegalAccessException, ClassCastException
     {
-        Enumeration names = sources.keys();
+	int    size  = _sources.size();
         DOMImplementationListImpl list = new DOMImplementationListImpl();
         String name = null;
-        while(names.hasMoreElements()) {
-            name = (String)names.nextElement();
+        for (int i = 0; i < size; i++) {
             DOMImplementationSource source =
-                (DOMImplementationSource) sources.get(name);
+                (DOMImplementationSource) _sources.get(i);
 
-            DOMImplementation impl = source.getDOMImplementation(features);
-            if (impl != null) {
-                list.add(impl);
+            DOMImplementationList impls =
+                 source.getDOMImplementationList(features);
+            for (int j = 0; j < impls.getLength(); j++) {
+                list.add(impls.item(j));
             }
         }
         return list;
@@ -169,8 +168,7 @@ public class DOMImplementationRegistry {
             throws ClassNotFoundException,
             InstantiationException, IllegalAccessException
     {
-        String sourceName = s.getClass().getName(); 
-        sources.put(sourceName, s);
+        _sources.add(s);
     }
 
     private static Class getClass (String className)

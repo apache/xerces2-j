@@ -71,14 +71,14 @@ package org.w3c.dom;
  * right options have been set). But this may not be the case after 
  * mutation, independently of whether the mutation is performed by setting 
  * the string value directly or by changing the <code>Attr</code> child 
- * nodes. In particular, this is true when character entity references are 
- * involved, given that they are not represented in the DOM and they impact 
- * attribute value normalization. On the other hand, if the implementation 
- * knows about the schema in use when the attribute value is changed, and it 
- * is of a different type than CDATA, it may normalize it again at that 
- * time. This is especially true of specialized DOM implementations, such as 
- * SVG DOM implementations, which store attribute values in an internal form 
- * different from a string.
+ * nodes. In particular, this is true when <a href='http://www.w3.org/TR/2000/REC-xml-20001006#dt-charref'>character 
+ * references</a> are involved, given that they are not represented in the DOM and they 
+ * impact attribute value normalization. On the other hand, if the 
+ * implementation knows about the schema in use when the attribute value is 
+ * changed, and it is of a different type than CDATA, it may normalize it 
+ * again at that time. This is especially true of specialized DOM 
+ * implementations, such as SVG DOM implementations, which store attribute 
+ * values in an internal form different from a string.
  * <p>The following table gives some examples of the relations between the 
  * attribute value in the original document (parsed attribute), the value as 
  * exposed in the DOM, and the serialization of the value: 
@@ -152,11 +152,12 @@ package org.w3c.dom;
  * <td valign='top' rowspan='1' colspan='1'><em>Dependent on Implementation and Load/Save Options</em></td>
  * </tr>
  * </table>
- * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>Document Object Model (DOM) Level 3 Core Specification</a>.
  */
 public interface Attr extends Node {
     /**
-     * Returns the name of this attribute.
+     * Returns the name of this attribute. If <code>Node.localName</code> is 
+     * different from <code>null</code>, this attribute is a qualified name.
      */
     public String getName();
 
@@ -204,7 +205,7 @@ public interface Attr extends Node {
      *   NO_MODIFICATION_ALLOWED_ERR: Raised when the node is readonly.
      */
     public void setValue(String value)
-                        throws DOMException;
+                            throws DOMException;
 
     /**
      * The <code>Element</code> node this attribute is attached to or 
@@ -251,9 +252,9 @@ public interface Attr extends Node {
      * <code>Element.setIdAttributeNS()</code>, or 
      * <code>Element.setIdAttributeNode()</code>, i.e. it is an 
      * user-determined ID attribute; 
-     * <p ><b>Note:</b>  An XPointer framework processing (see section 3.2 in [<a href='http://www.w3.org/TR/2003/REC-xptr-framework-20030325/'>XPointer</a>]
-     * ) would consider the DOM user-determined ID attribute as being part 
-     * of their externally-determined ID definition. 
+     * <p ><b>Note:</b>  XPointer framework (see section 3.2 in [<a href='http://www.w3.org/TR/2003/REC-xptr-framework-20030325/'>XPointer</a>]
+     * ) consider the DOM user-determined ID attribute as being part of the 
+     * XPointer externally-determined ID definition. 
      * </li>
      * <li> using mechanisms that 
      * are outside the scope of this specification, it is then an 
@@ -267,8 +268,6 @@ public interface Attr extends Node {
      * reevaluated in accordance to the schema used. As a consequence, if 
      * the <code>Attr.schemaTypeInfo</code> attribute contains an ID type, 
      * <code>isId</code> will always return true. 
-     * @return  <code>true</code> if this attribute is of type ID, 
-     *   <code>false</code> otherwise. 
      * @since DOM Level 3
      */
     public boolean isId();

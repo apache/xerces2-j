@@ -19,17 +19,17 @@ package org.w3c.dom;
  * cloned, imported, or renamed. This can be used by the application to 
  * implement various behaviors regarding the data it associates to the DOM 
  * nodes. This interface defines that handler. 
- * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>Document Object Model (DOM) Level 3 Core Specification</a>.
  * @since DOM Level 3
  */
 public interface UserDataHandler {
     // OperationType
     /**
-     * The node is cloned.
+     * The node is cloned, using <code>Node.cloneNode()</code>.
      */
     public static final short NODE_CLONED               = 1;
     /**
-     * The node is imported.
+     * The node is imported, using <code>Node.importNode()</code>.
      */
     public static final short NODE_IMPORTED             = 2;
     /**
@@ -40,19 +40,25 @@ public interface UserDataHandler {
      */
     public static final short NODE_DELETED              = 3;
     /**
-     * The node is renamed.
+     * The node is renamed, using <code>Node.renameNode()</code>.
      */
     public static final short NODE_RENAMED              = 4;
+    /**
+     * The node is adopted, using <code>Node.adoptNode()</code>.
+     */
+    public static final short NODE_ADOPTED              = 5;
 
     /**
      * This method is called whenever the node for which this handler is 
      * registered is imported or cloned.
+     * <br> Any exceptions thrown inside a <code>UserDataHandler</code> will 
+     * be ignored. 
      * @param operation Specifies the type of operation that is being 
      *   performed on the node.
      * @param key Specifies the key for which this handler is being called. 
      * @param data Specifies the data for which this handler is being called. 
-     * @param src Specifies the node being cloned, imported, or renamed. This 
-     *   is <code>null</code> when the node is being deleted.
+     * @param src Specifies the node being cloned, adopted, imported, or 
+     *   renamed. This is <code>null</code> when the node is being deleted.
      * @param dst Specifies the node newly created if any, or 
      *   <code>null</code>.
      */

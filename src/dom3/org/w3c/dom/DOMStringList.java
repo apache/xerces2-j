@@ -14,11 +14,11 @@ package org.w3c.dom;
 
 /**
  *  The <code>DOMStringList</code> interface provides the abstraction of an 
- * ordered collection of parallel pairs of name and namespace values, 
- * without defining or constraining how this collection is implemented. The 
- * items in the <code>DOMStringList</code> are accessible via an integral 
- * index, starting from 0. 
- * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * ordered collection of <code>DOMString</code> values, without defining or 
+ * constraining how this collection is implemented. The items in the 
+ * <code>DOMStringList</code> are accessible via an integral index, starting 
+ * from 0. 
+ * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>Document Object Model (DOM) Level 3 Core Specification</a>.
  * @since DOM Level 3
  */
 public interface DOMStringList {
@@ -38,5 +38,13 @@ public interface DOMStringList {
      * child node indices is 0 to <code>length-1</code> inclusive.
      */
     public int getLength();
+
+    /**
+     *  Test if a string is part of this <code>DOMStringList</code>. 
+     * @param str  The string to look for. 
+     * @return  <code>true</code> if the string has been found, 
+     *   <code>false</code> otherwise. 
+     */
+    public boolean contains(String str);
 
 }

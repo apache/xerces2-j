@@ -21,7 +21,7 @@ package org.w3c.dom;
  * <p>The DOM Core does not support editing <code>Notation</code> nodes; they 
  * are therefore readonly.
  * <p>A <code>Notation</code> node does not have any parent.
- * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>Document Object Model (DOM) Level 3 Core Specification</a>.
  */
 public interface Notation extends Node {
     /**

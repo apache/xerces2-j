@@ -22,7 +22,7 @@ package org.w3c.dom;
  * to create these objects. The <code>Node</code> objects created have a 
  * <code>ownerDocument</code> attribute which associates them with the 
  * <code>Document</code> within whose context they were created.
- * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>Document Object Model (DOM) Level 3 Core Specification</a>.
  */
 public interface Document extends Node {
     /**
@@ -33,8 +33,8 @@ public interface Document extends Node {
      * <br>This provides direct access to the <code>DocumentType</code> node, 
      * child node of this <code>Document</code>. This node can be set at 
      * document creation time and later changed through the use of child 
-     * nodes manipulation methods, such as <code>insertBefore</code>, or 
-     * <code>replaceChild</code>. Note, however, that while some 
+     * nodes manipulation methods, such as <code>Node.insertBefore</code>, 
+     * or <code>Node.replaceChild</code>. Note, however, that while some 
      * implementations may instantiate different types of 
      * <code>Document</code> objects supporting additional features than the 
      * "Core", such as "HTML" [<a href='http://www.w3.org/TR/2003/REC-DOM-Level-2-HTML-20030109'>DOM Level 2 HTML</a>]
@@ -78,7 +78,7 @@ public interface Document extends Node {
      * @exception DOMException
      *   INVALID_CHARACTER_ERR: Raised if the specified name contains an 
      *   illegal character according to the XML version in use specified in 
-     *   the <code>version</code> attribute.
+     *   the <code>Document.xmlVersion</code> attribute.
      */
     public Element createElement(String tagName)
                                  throws DOMException;
@@ -117,13 +117,19 @@ public interface Document extends Node {
     /**
      * Creates a <code>ProcessingInstruction</code> node given the specified 
      * name and data strings.
-     * @param target The target part of the processing instruction.
+     * @param target The target part of the processing instruction.Unlike 
+     *   <code>Document.createElementNS</code> or 
+     *   <code>Document.createAttributeNS</code>, no namespace well-formed 
+     *   checking is done on the target name. Applications should invoke 
+     *   <code>Document.normalizeDocument()</code> with the parameter "
+     *   namespaces" set to <code>true</code> in order to ensure that the 
+     *   target name is namespace well-formed. 
      * @param data The data for the node.
      * @return The new <code>ProcessingInstruction</code> object.
      * @exception DOMException
      *   INVALID_CHARACTER_ERR: Raised if the specified target contains an 
      *   illegal character according to the XML version in use specified in 
-     *   the <code>version</code> attribute.
+     *   the <code>Document.xmlVersion</code> attribute.
      *   <br>NOT_SUPPORTED_ERR: Raised if this document is an HTML document.
      */
     public ProcessingInstruction createProcessingInstruction(String target, 
@@ -144,7 +150,7 @@ public interface Document extends Node {
      * @exception DOMException
      *   INVALID_CHARACTER_ERR: Raised if the specified name contains an 
      *   illegal character according to the XML version in use specified in 
-     *   the <code>version</code> attribute.
+     *   the <code>Document.xmlVersion</code> attribute.
      */
     public Attr createAttribute(String name)
                                 throws DOMException;
@@ -160,12 +166,18 @@ public interface Document extends Node {
      * <code>namespaceURI</code> is <code>null</code>). The DOM Level 2 and 
      * 3 do not support any mechanism to resolve namespace prefixes in this 
      * case.
-     * @param name The name of the entity to reference.
+     * @param name The name of the entity to reference.Unlike 
+     *   <code>Document.createElementNS</code> or 
+     *   <code>Document.createAttributeNS</code>, no namespace well-formed 
+     *   checking is done on the entity name. Applications should invoke 
+     *   <code>Document.normalizeDocument()</code> with the parameter "
+     *   namespaces" set to <code>true</code> in order to ensure that the 
+     *   entity name is namespace well-formed. 
      * @return The new <code>EntityReference</code> object.
      * @exception DOMException
      *   INVALID_CHARACTER_ERR: Raised if the specified name contains an 
      *   illegal character according to the XML version in use specified in 
-     *   the <code>version</code> attribute.
+     *   the <code>Document.xmlVersion</code> attribute.
      *   <br>NOT_SUPPORTED_ERR: Raised if this document is an HTML document.
      */
     public EntityReference createEntityReference(String name)
@@ -175,19 +187,20 @@ public interface Document extends Node {
      * Returns a <code>NodeList</code> of all the <code>Elements</code> in 
      * document order with a given tag name and are contained in the 
      * document.
-     * @param tagname The name of the tag to match on. The special value "*" 
-     *   matches all tags. For XML, this is case-sensitive, otherwise it 
-     *   depends on the case-sensitivity of the markup language in use.
+     * @param tagname  The name of the tag to match on. The special value "*" 
+     *   matches all tags. For XML, the <code>tagname</code> parameter is 
+     *   case-sensitive, otherwise it depends on the case-sensitivity of the 
+     *   markup language in use. 
      * @return A new <code>NodeList</code> object containing all the matched 
      *   <code>Elements</code>.
      */
     public NodeList getElementsByTagName(String tagname);
 
     /**
-     * Imports a node from another document to this document. The returned 
-     * node has no parent; (<code>parentNode</code> is <code>null</code>). 
-     * The source node is not altered or removed from the original document; 
-     * this method creates a new copy of the source node.
+     * Imports a node from another document to this document, without altering 
+     * or removing the source node from the original document; this method 
+     * creates a new copy of the source node. The returned node has no 
+     * parent; (<code>parentNode</code> is <code>null</code>).
      * <br>For all nodes, importing a node creates a node object owned by the 
      * importing document, with attribute values identical to the source 
      * node's <code>nodeName</code> and <code>nodeType</code>, plus the 
@@ -289,8 +302,8 @@ public interface Document extends Node {
      *   supported.
      *   <br>INVALID_CHARACTER_ERR: Raised if one the imported names contain 
      *   an illegal character according to the XML version in use specified 
-     *   in the <code>version</code> attribute. This may happen when 
-     *   importing an XML 1.1 [<a href='http://www.w3.org/TR/2002/CR-xml11-20021015/'>XML 1.1</a>] element 
+     *   in the <code>Document.xmlVersion</code> attribute. This may happen 
+     *   when importing an XML 1.1 [<a href='http://www.w3.org/TR/2003/PR-xml11-20031105/'>XML 1.1</a>] element 
      *   into an XML 1.0 document, for instance.
      * @since DOM Level 2
      */
@@ -343,8 +356,8 @@ public interface Document extends Node {
      * @exception DOMException
      *   INVALID_CHARACTER_ERR: Raised if the specified 
      *   <code>qualifiedName</code> contains an illegal character according 
-     *   to the XML version in use specified in the <code>version</code> 
-     *   attribute.
+     *   to the XML version in use specified in the 
+     *   <code>Document.xmlVersion</code> attribute.
      *   <br>NAMESPACE_ERR: Raised if the <code>qualifiedName</code> is a 
      *   malformed qualified name, if the <code>qualifiedName</code> has a 
      *   prefix and the <code>namespaceURI</code> is <code>null</code>, or 
@@ -413,8 +426,8 @@ public interface Document extends Node {
      * @exception DOMException
      *   INVALID_CHARACTER_ERR: Raised if the specified 
      *   <code>qualifiedName</code> contains an illegal character according 
-     *   to the XML version in use specified in the <code>version</code> 
-     *   attribute.
+     *   to the XML version in use specified in the 
+     *   <code>Document.xmlVersion</code> attribute.
      *   <br>NAMESPACE_ERR: Raised if the <code>qualifiedName</code> is a 
      *   malformed qualified name, if the <code>qualifiedName</code> has a 
      *   prefix and the <code>namespaceURI</code> is <code>null</code>, if 
@@ -450,8 +463,8 @@ public interface Document extends Node {
      * given value. If no such element exists, this returns <code>null</code>
      * . If more than one element has an ID attribute with that value, what 
      * is returned is undefined. 
-     * <br> The DOM implementation is expected to use the method 
-     * <code>Attr.isId()</code> to determine if an attribute is of type ID. 
+     * <br> The DOM implementation is expected to use the attribute 
+     * <code>Attr.isId</code> to determine if an attribute is of type ID. 
      * <p ><b>Note:</b> Attributes with the name "ID" or "id" are not of type 
      * ID unless so defined.
      * @param elementId The unique <code>id</code> value for an element.
@@ -461,65 +474,98 @@ public interface Document extends Node {
     public Element getElementById(String elementId);
 
     /**
-     * An attribute specifying the actual encoding of this document. This is 
-     * <code>null</code> when it is not known.
+     * An attribute specifying the encoding used for this document at the time 
+     * of the parsing. This is <code>null</code> when it is not known, such 
+     * as when the <code>Document</code> was created in memory.
      * @since DOM Level 3
      */
-    public String getActualEncoding();
+    public String getInputEncoding();
 
     /**
-     * An attribute specifying, as part of the XML declaration, the encoding 
-     * of this document. This is <code>null</code> when unspecified.
+     * An attribute specifying, as part of the <a href='http://www.w3.org/TR/2000/REC-xml-20001006#NT-XMLDecl'>XML declaration</a>, the encoding of this document. This is <code>null</code> when 
+     * unspecified.
      * @since DOM Level 3
      */
     public String getXmlEncoding();
-    /**
-     * An attribute specifying, as part of the XML declaration, the encoding 
-     * of this document. This is <code>null</code> when unspecified.
-     * @since DOM Level 3
-     */
-    public void setXmlEncoding(String xmlEncoding);
 
     /**
-     * An attribute specifying, as part of the XML declaration, whether this 
-     * document is standalone.
+     * An attribute specifying, as part of the <a href='http://www.w3.org/TR/2000/REC-xml-20001006#NT-XMLDecl'>XML declaration</a>, whether this document is standalone. This is <code>false</code> when 
+     * unspecified.
+     * <p ><b>Note:</b>  No verification is done on the value when setting 
+     * this attribute. Applications should use 
+     * <code>Document.normalizeDocument()</code> with the "validate" 
+     * parameter to verify if the value matches the <a href='http://www.w3.org/TR/2000/REC-xml-20001006#sec-rmd'>validity 
+     * constraint for standalone document declaration</a> as defined in [<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>]. 
      * @since DOM Level 3
      */
     public boolean getXmlStandalone();
     /**
-     * An attribute specifying, as part of the XML declaration, whether this 
-     * document is standalone.
+     * An attribute specifying, as part of the <a href='http://www.w3.org/TR/2000/REC-xml-20001006#NT-XMLDecl'>XML declaration</a>, whether this document is standalone. This is <code>false</code> when 
+     * unspecified.
+     * <p ><b>Note:</b>  No verification is done on the value when setting 
+     * this attribute. Applications should use 
+     * <code>Document.normalizeDocument()</code> with the "validate" 
+     * parameter to verify if the value matches the <a href='http://www.w3.org/TR/2000/REC-xml-20001006#sec-rmd'>validity 
+     * constraint for standalone document declaration</a> as defined in [<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>]. 
      * @exception DOMException
-     *    NOT_SUPPORTED_ERR: Raised if this document does support the "XML" 
-     *   feature. 
+     *    NOT_SUPPORTED_ERR: Raised if this document does not support the 
+     *   "XML" feature. 
      * @since DOM Level 3
      */
     public void setXmlStandalone(boolean xmlStandalone)
                                   throws DOMException;
 
     /**
-     *  An attribute specifying, as part of the XML declaration, the version 
-     * number of this document. If there is no declaration, the value is 
-     * <code>"1.0"</code>. Changing this attribute will affect methods that 
-     * check for illegal characters in XML names. Application should invoke 
+     *  An attribute specifying, as part of the <a href='http://www.w3.org/TR/2000/REC-xml-20001006#NT-XMLDecl'>XML declaration</a>, the version number of this document. If there is no declaration and if 
+     * this document supports the "XML" feature, the value is 
+     * <code>"1.0"</code>. If this document does not support the "XML" 
+     * feature, the value is always <code>null</code>. Changing this 
+     * attribute will affect methods that check for illegal characters in 
+     * XML names. Application should invoke 
      * <code>Document.normalizeDocument()</code> in order to check for 
      * illegal characters in the <code>Node</code>s that are already part of 
      * this <code>Document</code>. 
+     * <br> DOM applications may use the 
+     * <code>DOMImplementation.hasFeature(feature, version)</code> method 
+     * with parameter values "XMLVersion" and "1.0" (respectively) to 
+     * determine if an implementation supports [<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>]. DOM 
+     * applications may use the same method with parameter values 
+     * "XMLVersion" and "1.1" (respectively) to determine if an 
+     * implementation supports [<a href='http://www.w3.org/TR/2003/PR-xml11-20031105/'>XML 1.1</a>]. In both 
+     * cases, in order to support XML, an implementation must also support 
+     * the "XML" feature defined in this specification. <code>Document</code>
+     *  objects supporting a version of the "XMLVersion" feature must not 
+     * raise a <code>NOT_SUPPORTED_ERR</code> exception for the same version 
+     * number when using <code>Document.xmlVersion</code>. 
      * @since DOM Level 3
      */
     public String getXmlVersion();
     /**
-     *  An attribute specifying, as part of the XML declaration, the version 
-     * number of this document. If there is no declaration, the value is 
-     * <code>"1.0"</code>. Changing this attribute will affect methods that 
-     * check for illegal characters in XML names. Application should invoke 
+     *  An attribute specifying, as part of the <a href='http://www.w3.org/TR/2000/REC-xml-20001006#NT-XMLDecl'>XML declaration</a>, the version number of this document. If there is no declaration and if 
+     * this document supports the "XML" feature, the value is 
+     * <code>"1.0"</code>. If this document does not support the "XML" 
+     * feature, the value is always <code>null</code>. Changing this 
+     * attribute will affect methods that check for illegal characters in 
+     * XML names. Application should invoke 
      * <code>Document.normalizeDocument()</code> in order to check for 
      * illegal characters in the <code>Node</code>s that are already part of 
      * this <code>Document</code>. 
+     * <br> DOM applications may use the 
+     * <code>DOMImplementation.hasFeature(feature, version)</code> method 
+     * with parameter values "XMLVersion" and "1.0" (respectively) to 
+     * determine if an implementation supports [<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>]. DOM 
+     * applications may use the same method with parameter values 
+     * "XMLVersion" and "1.1" (respectively) to determine if an 
+     * implementation supports [<a href='http://www.w3.org/TR/2003/PR-xml11-20031105/'>XML 1.1</a>]. In both 
+     * cases, in order to support XML, an implementation must also support 
+     * the "XML" feature defined in this specification. <code>Document</code>
+     *  objects supporting a version of the "XMLVersion" feature must not 
+     * raise a <code>NOT_SUPPORTED_ERR</code> exception for the same version 
+     * number when using <code>Document.xmlVersion</code>. 
      * @exception DOMException
      *    NOT_SUPPORTED_ERR: Raised if the version is set to a value that is 
      *   not supported by this <code>Document</code> or if this document 
-     *   does support the "XML" feature. 
+     *   does not support the "XML" feature. 
      * @since DOM Level 3
      */
     public void setXmlVersion(String xmlVersion)
@@ -549,33 +595,47 @@ public interface Document extends Node {
     public void setStrictErrorChecking(boolean strictErrorChecking);
 
     /**
-     * The location of the document or <code>null</code> if undefined.
-     * <br>Beware that when the <code>Document</code> supports the feature 
+     *  The location of the document or <code>null</code> if undefined or if 
+     * the <code>Document</code> was created using 
+     * <code>DOMImplementation.createDocument</code>. No lexical checking is 
+     * performed when setting this attribute; this could result in a 
+     * <code>null</code> value returned when using <code>Node.baseURI</code>
+     * . 
+     * <br> Beware that when the <code>Document</code> supports the feature 
      * "HTML" [<a href='http://www.w3.org/TR/2003/REC-DOM-Level-2-HTML-20030109'>DOM Level 2 HTML</a>]
      * , the href attribute of the HTML BASE element takes precedence over 
-     * this attribute.
+     * this attribute when computing <code>Node.baseURI</code>. 
      * @since DOM Level 3
      */
     public String getDocumentURI();
     /**
-     * The location of the document or <code>null</code> if undefined.
-     * <br>Beware that when the <code>Document</code> supports the feature 
+     *  The location of the document or <code>null</code> if undefined or if 
+     * the <code>Document</code> was created using 
+     * <code>DOMImplementation.createDocument</code>. No lexical checking is 
+     * performed when setting this attribute; this could result in a 
+     * <code>null</code> value returned when using <code>Node.baseURI</code>
+     * . 
+     * <br> Beware that when the <code>Document</code> supports the feature 
      * "HTML" [<a href='http://www.w3.org/TR/2003/REC-DOM-Level-2-HTML-20030109'>DOM Level 2 HTML</a>]
      * , the href attribute of the HTML BASE element takes precedence over 
-     * this attribute.
+     * this attribute when computing <code>Node.baseURI</code>. 
      * @since DOM Level 3
      */
     public void setDocumentURI(String documentURI);
 
     /**
-     * Changes the <code>ownerDocument</code> of a node, its children, as well 
-     * as the attached attribute nodes if there are any. If the node has a 
-     * parent it is first removed from its parent child list. This 
-     * effectively allows moving a subtree from one document to another. The 
-     * following list describes the specifics for each type of node. 
+     *  Attempts to adopt a node from another document to this document. If 
+     * supported, it changes the <code>ownerDocument</code> of the source 
+     * node, its children, as well as the attached attribute nodes if there 
+     * are any. If the source node has a parent it is first removed from the 
+     * child list of its parent. This effectively allows moving a subtree 
+     * from one document to another (unlike <code>importNode()</code> which 
+     * create a copy of the source node instead of moving it). When it 
+     * fails, applications should use <code>Document.importNode()</code> 
+     * instead. The following list describes the specifics for each type of 
+     * node. 
      * <dl>
-     * <dt>
-     * ATTRIBUTE_NODE</dt>
+     * <dt>ATTRIBUTE_NODE</dt>
      * <dd>The <code>ownerElement</code> attribute is set to 
      * <code>null</code> and the <code>specified</code> flag is set to 
      * <code>true</code> on the adopted <code>Attr</code>. The descendants 
@@ -591,34 +651,33 @@ public interface Document extends Node {
      * <dd><code>DocumentType</code> nodes cannot 
      * be adopted.</dd>
      * <dt>ELEMENT_NODE</dt>
-     * <dd><em>Specified</em> attribute nodes of the source element are adopted, and the generated 
-     * <code>Attr</code> nodes. Default attributes are discarded, though if 
-     * the document being adopted into defines default attributes for this 
-     * element name, those are assigned. The descendants of the source 
-     * element are recursively adopted.</dd>
+     * <dd><em>Specified</em> attribute nodes of the source element are adopted. Default attributes 
+     * are discarded, though if the document being adopted into defines 
+     * default attributes for this element name, those are assigned. The 
+     * descendants of the source element are recursively adopted.</dd>
      * <dt>ENTITY_NODE</dt>
-     * <dd><code>Entity</code> nodes 
-     * cannot be adopted.</dd>
+     * <dd>
+     * <code>Entity</code> nodes cannot be adopted.</dd>
      * <dt>ENTITY_REFERENCE_NODE</dt>
-     * <dd>Only the 
-     * <code>EntityReference</code> node itself is adopted, the descendants 
-     * are discarded, since the source and destination documents might have 
-     * defined the entity differently. If the document being imported into 
-     * provides a definition for this entity name, its value is assigned.</dd>
-     * <dt>
-     * NOTATION_NODE</dt>
-     * <dd><code>Notation</code> nodes cannot be adopted.</dd>
-     * <dt>
-     * PROCESSING_INSTRUCTION_NODE, TEXT_NODE, CDATA_SECTION_NODE, 
+     * <dd>Only 
+     * the <code>EntityReference</code> node itself is adopted, the 
+     * descendants are discarded, since the source and destination documents 
+     * might have defined the entity differently. If the document being 
+     * imported into provides a definition for this entity name, its value 
+     * is assigned.</dd>
+     * <dt>NOTATION_NODE</dt>
+     * <dd><code>Notation</code> nodes cannot be 
+     * adopted.</dd>
+     * <dt>PROCESSING_INSTRUCTION_NODE, TEXT_NODE, CDATA_SECTION_NODE, 
      * COMMENT_NODE</dt>
      * <dd>These nodes can all be adopted. No specifics.</dd>
      * </dl> 
-     * <p ><b>Note:</b>  Unlike the <code>Document.importNode()</code> method, 
-     * this method does not raise an <code>INVALID_CHARACTER_ERR</code> 
-     * exception and applications should use the 
-     * <code>Document.normalizeDocument()</code> method to check if an 
-     * imported name contain an illegal character according to the XML 
-     * version in use. 
+     * <p ><b>Note:</b>  Since it does not create new nodes unlike the 
+     * <code>Document.importNode()</code> method, this method does not raise 
+     * an <code>INVALID_CHARACTER_ERR</code> exception, and applications 
+     * should use the <code>Document.normalizeDocument()</code> method to 
+     * check if an imported name contain an illegal character according to 
+     * the XML version in use. 
      * @param source The node to move into this document.
      * @return The adopted node, or <code>null</code> if this operation 
      *   fails, such as when the source node comes from a different 
@@ -638,7 +697,7 @@ public interface Document extends Node {
      * is invoked. 
      * @since DOM Level 3
      */
-    public DOMConfiguration getConfig();
+    public DOMConfiguration getDomConfig();
 
     /**
      *  This method acts as if the document was going through a save and load 
@@ -647,15 +706,15 @@ public interface Document extends Node {
      * <code>EntityReference</code> nodes and normalizes <code>Text</code> 
      * nodes, as defined in the method <code>Node.normalize()</code>. 
      * <br> Otherwise, the actual result depends on the features being set on 
-     * the <code>Document.config</code> object and governing what operations 
-     * actually take place. Noticeably this method could also make the 
-     * document "namespace wellformed" according to the algorithm described 
-     * in , check the character normalization, remove the 
+     * the <code>Document.xmlConfig</code> object and governing what 
+     * operations actually take place. Noticeably this method could also 
+     * make the document namespace well-formed according to the algorithm 
+     * described in , check the character normalization, remove the 
      * <code>CDATASection</code> nodes, etc. See 
      * <code>DOMConfiguration</code> for details. 
      * <pre>// Keep in the document 
      * the information defined // in the XML Information Set (Java example) 
-     * DOMConfiguration docConfig = myDocument.getConfig(); 
+     * DOMConfiguration docConfig = myDocument.getDomConfig(); 
      * docConfig.setParameter("infoset", Boolean.TRUE); 
      * myDocument.normalizeDocument();</pre>
      * 
@@ -664,9 +723,12 @@ public interface Document extends Node {
      * <br> If errors occur during the invocation of this method, such as an 
      * attempt to update a read-only node or a <code>Node.nodeName</code> 
      * contains an invalid character according to the XML version in use, 
-     * errors will be reported using the <code>DOMErrorHandler</code> object 
-     * associated with the "error-handler" parameter. Note that this method 
-     * does not generate fatal errors. 
+     * errors or warnings (<code>DOMError.SEVERITY_ERROR</code> or 
+     * <code>DOMError.SEVERITY_WARNING</code>) will be reported using the 
+     * <code>DOMErrorHandler</code> object associated with the "error-handler
+     * " parameter. Note this method might also report fatal errors (
+     * <code>DOMError.SEVERITY_FATAL_ERROR</code>) if an implementation 
+     * cannot recover from an error. 
      * @since DOM Level 3
      */
     public void normalizeDocument();
@@ -722,6 +784,9 @@ public interface Document extends Node {
      *   neither <code>ELEMENT_NODE</code> nor <code>ATTRIBUTE_NODE</code>, 
      *   or if the implementation does not support the renaming of the 
      *   document element.
+     *   <br>INVALID_CHARACTER_ERR: Raised if the new qualified name contains 
+     *   an illegal character according to the XML version in use specified 
+     *   in the <code>Document.xmlVersion</code> attribute.
      *   <br>WRONG_DOCUMENT_ERR: Raised when the specified node was created 
      *   from a different document than this document.
      *   <br>NAMESPACE_ERR: Raised if the <code>qualifiedName</code> is a 
@@ -733,6 +798,9 @@ public interface Document extends Node {
      *   . Also raised, when the node being renamed is an attribute, if the 
      *   <code>qualifiedName</code>, or its prefix, is "xmlns" and the 
      *   <code>namespaceURI</code> is different from "<a href='http://www.w3.org/2000/xmlns/'>http://www.w3.org/2000/xmlns/</a>".
+     *   <br>INVALID_CHARACTER_ERR: Raised if the specified name contains an 
+     *   illegal character according to the XML version in use specified in 
+     *   the <code>Document.xmlVersion</code> attribute.
      * @since DOM Level 3
      */
     public Node renameNode(Node n, 

@@ -18,7 +18,7 @@ package org.w3c.dom;
  * constraining how this collection is implemented. The items in the 
  * <code>DOMImplementationList</code> are accessible via an integral index, 
  * starting from 0. 
- * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>Document Object Model (DOM) Level 3 Core Specification</a>.
  * @since DOM Level 3
  */
 public interface DOMImplementationList {

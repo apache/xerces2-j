@@ -22,7 +22,7 @@ package org.w3c.dom;
  * <ul>
  * <li> If this type is referenced from an 
  * <code>Attr</code> node, <code>typeNamespace</code> is <code>null</code> 
- * and <code>typeName</code> represents the <b>[attribute type]</b> property in the [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information set</a>]
+ * and <code>typeName</code> represents the <b>[attribute type]</b> property in the [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information Set</a>]
  * . If there is no declaration for the attribute, <code>typeName</code> is 
  * <code>null</code>. 
  * </li>
@@ -87,7 +87,7 @@ package org.w3c.dom;
  * <p ><b>Note:</b>  Other schema languages are outside the scope of the W3C 
  * and therefore should define how to represent their type systems using 
  * <code>TypeInfo</code>. 
- * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>Document Object Model (DOM) Level 3 Core Specification</a>.
  * @since DOM Level 3
  */
 public interface TypeInfo {
@@ -103,5 +103,62 @@ public interface TypeInfo {
      * declaration or if no namespace information is available. 
      */
     public String getTypeNamespace();
+
+    // DerivationMethods
+    /**
+     *  If the document's schema is an XML Schema [<a href='http://www.w3.org/TR/2001/REC-xmlschema-1-20010502/'>XML Schema Part 1</a>]
+     * , this constant represents the derivation by <a href='http://www.w3.org/TR/2001/REC-xmlschema-1-20010502/#key-typeRestriction'>
+     * restriction</a> if complex types are involved, or a <a href='http://www.w3.org/TR/2001/REC-xmlschema-1-20010502/#element-restriction'>
+     * restriction</a> if simple types are involved. 
+     */
+    public static final int DERIVATION_RESTRICTION    = 0x00000001;
+    /**
+     *  If the document's schema is an XML Schema [<a href='http://www.w3.org/TR/2001/REC-xmlschema-1-20010502/'>XML Schema Part 1</a>]
+     * , this constant represents the derivation by <a href='http://www.w3.org/TR/2001/REC-xmlschema-1-20010502/#key-typeExtension'>
+     * extension</a> if complex types are involved. 
+     */
+    public static final int DERIVATION_EXTENSION      = 0x00000002;
+    /**
+     *  If the document's schema is an XML Schema [<a href='http://www.w3.org/TR/2001/REC-xmlschema-1-20010502/'>XML Schema Part 1</a>]
+     * , this constant represents the <a href='http://www.w3.org/TR/2001/REC-xmlschema-1-20010502/#element-union'>
+     * union</a> if simple types are involved. 
+     */
+    public static final int DERIVATION_UNION          = 0x00000004;
+    /**
+     *  If the document's schema is an XML Schema [<a href='http://www.w3.org/TR/2001/REC-xmlschema-1-20010502/'>XML Schema Part 1</a>]
+     * , this constant represents the <a href='http://www.w3.org/TR/2001/REC-xmlschema-1-20010502/#element-list'>list</a> if simple types are involved. 
+     */
+    public static final int DERIVATION_LIST           = 0x00000008;
+
+    /**
+     *  The method checks if this <code>TypeInfo</code> derives from the 
+     * specified ancestor type. 
+     * @param typeNamespaceArg  the namespace of the ancestor type. 
+     * @param typeNameArg  the name of the ancestor type. 
+     * @param derivationMethod  the type of derivation and conditions applied 
+     *   between two types, as described in the list of constants provided 
+     *   in this interface. Note that those constants: 
+     * <ul>
+     * <li> are only defined if 
+     *   the document's schema is an XML Schema; 
+     * </li>
+     * <li> could be combined if XML 
+     *   Schema types are involved. 
+     * </li>
+     * <li> 
+     *   <code>TypeInfo.DERIVATION_EXTENSION</code> only applies to XML 
+     *   Schema complex types. 
+     * </li>
+     * </ul> The value <code>0x00000000</code> represents 
+     *   any kind of derivation method. 
+     * @return  <code>true</code> if the specified type is an ancestor 
+     *   according to the derivation parameter, <code>false</code> 
+     *   otherwise. If the document's schema is a DTD or no schema is 
+     *   associated with the document, this method will always return 
+     *   <code>false</code>. 
+     */
+    public boolean isDerivedFrom(String typeNamespaceArg, 
+                                 String typeNameArg, 
+                                 int derivationMethod);
 
 }

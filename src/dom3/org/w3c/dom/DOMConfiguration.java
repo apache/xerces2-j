@@ -20,7 +20,7 @@ package org.w3c.dom;
  * <code>CDATASection</code> nodes with <code>Text</code> nodes or 
  * specifying the type of the schema that must be used when the validation 
  * of the <code>Document</code> is requested. <code>DOMConfiguration</code> 
- * objects are also used in [<a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-LS-20030226'>DOM Level 3 Load and Save</a>]
+ * objects are also used in [<a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-LS-20031107'>DOM Level 3 Load and Save</a>]
  *  in the <code>DOMParser</code> and <code>DOMSerializer</code> interfaces. 
  * <p> The parameter names used by the <code>DOMConfiguration</code> object 
  * are defined throughout the DOM Level 3 specifications. Names are 
@@ -48,7 +48,7 @@ package org.w3c.dom;
  * DOM.This forces the following parameters to <code>false</code>: "entities
  * ", "normalize-characters", "cdata-sections".This forces the following 
  * parameters to <code>true</code>: "namespaces", "namespace-declarations", "
- * well-formed", "whitespace-in-element-content".Other parameters are not 
+ * well-formed", "element-content-whitespace".Other parameters are not 
  * changed unless explicitly specified in the description of the parameters. 
  * In addition, the <code>DocumentType</code> node is removed from the tree 
  * if any and superfluous namespace declarations are removed from each 
@@ -76,8 +76,9 @@ package org.w3c.dom;
  * <dl>
  * <dt><code>true</code></dt>
  * <dd>[<em>optional</em>] Check if the characters in the document are fully normalized according 
- * to the rules defined in [<a href='http://www.w3.org/TR/2002/WD-charmod-20020430'>CharModel</a>] 
- * supplemented by the definitions of relevant constructs from <a href='http://www.w3.org/TR/2002/CR-xml11-20021015/#sec2.13'>Section 2.13</a> of [<a href='http://www.w3.org/TR/2002/CR-xml11-20021015/'>XML 1.1</a>]. </dd>
+ * to the rules defined in [<a href='http://www.w3.org/TR/2003/WD-charmod-20030822/'>CharModel</a>] 
+ * supplemented by the definitions of relevant constructs from <a href='http://www.w3.org/TR/2003/PR-xml11-20031105/#sec-normalization-checking'>
+ * Section 2.13</a> of [<a href='http://www.w3.org/TR/2003/PR-xml11-20031105/'>XML 1.1</a>]. </dd>
  * <dt>
  * <code>false</code></dt>
  * <dd>[<em>required</em>] (<em>default</em>)Do not check if characters are normalized.</dd>
@@ -96,7 +97,7 @@ package org.w3c.dom;
  * <dd>
  * <dl>
  * <dt><code>true</code></dt>
- * <dd>[<em>required</em>] Exposed schema-normalized values in the tree. Since this parameter 
+ * <dd>[<em>optional</em>] Exposed schema-normalized values in the tree. Since this parameter 
  * requires to have schema information, the "validate" parameter will also 
  * be set to <code>true</code>. Having this parameter activated when 
  * "validate" is <code>false</code> has no effect and no 
@@ -127,22 +128,24 @@ package org.w3c.dom;
  * <dt><code>"error-handler"</code></dt>
  * <dd>[<em>required</em>] Contains a <code>DOMErrorHandler</code> object. If an error is 
  * encountered in the document, the implementation will call back the 
- * <code>DOMErrorHandler</code> registered using this parameter.  When 
- * called, <code>DOMError.relatedData</code> will contain the closest node 
- * to where the error occurred. If the implementation is unable to determine 
- * the node where the error occurs, <code>DOMError.relatedData</code> will 
- * contain the <code>Document</code> node. Mutations to the document from 
- * within an error handler will result in implementation dependent behavior. </dd>
- * <dt>
- * <code>"infoset"</code></dt>
+ * <code>DOMErrorHandler</code> registered using this parameter. The 
+ * implementation may provide a default <code>DOMErrorHandler</code> object. 
+ *  When called, <code>DOMError.relatedData</code> will contain the closest 
+ * node to where the error occurred. If the implementation is unable to 
+ * determine the node where the error occurs, 
+ * <code>DOMError.relatedData</code> will contain the <code>Document</code> 
+ * node. Mutations to the document from within an error handler will result 
+ * in implementation dependent behavior. </dd>
+ * <dt><code>"infoset"</code></dt>
  * <dd>
  * <dl>
- * <dt><code>true</code></dt>
- * <dd>[<em>required</em>]Keep in the document the information defined in the XML Information Set [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information set</a>]
+ * <dt>
+ * <code>true</code></dt>
+ * <dd>[<em>required</em>]Keep in the document the information defined in the XML Information Set [<a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024/'>XML Information Set</a>]
  * .This forces the following parameters to <code>false</code>: "
  * validate-if-schema", "entities", "datatype-normalization", "cdata-sections
  * ".This forces the following parameters to <code>true</code>: "
- * namespace-declarations", "well-formed", "whitespace-in-element-content", "
+ * namespace-declarations", "well-formed", "element-content-whitespace", "
  * comments", "namespaces".Other parameters are not changed unless 
  * explicitly specified in the description of the parameters. Note that 
  * querying this parameter with <code>getParameter</code> returns 
@@ -169,7 +172,7 @@ package org.w3c.dom;
  * <dd>[<em>required</em>] (<em>default</em>) Include namespace declaration attributes, specified or defaulted from 
  * the schema, in the document. See also the sections "Declaring Namespaces" 
  * in [<a href='http://www.w3.org/TR/1999/REC-xml-names-19990114/'>XML Namespaces</a>]
- *  and [<a href='http://www.w3.org/TR/2002/CR-xml-names11-20021218/'>XML Namespaces 1.1</a>]
+ *  and [<a href='http://www.w3.org/TR/2003/PR-xml-names11-20031105/'>XML Namespaces 1.1</a>]
  * .</dd>
  * <dt><code>false</code></dt>
  * <dd>[<em>required</em>]Discard all namespace declaration attributes. The namespace prefixes (
@@ -181,8 +184,9 @@ package org.w3c.dom;
  * <dl>
  * <dt><code>true</code></dt>
  * <dd>[<em>optional</em>] Fully normalize the characters in the document according to the rules 
- * defined in [<a href='http://www.w3.org/TR/2002/WD-charmod-20020430'>CharModel</a>] 
- * supplemented by the definitions of relevant constructs from <a href='http://www.w3.org/TR/2002/CR-xml11-20021015/#sec2.13'>Section 2.13</a> of [<a href='http://www.w3.org/TR/2002/CR-xml11-20021015/'>XML 1.1</a>]. </dd>
+ * defined in [<a href='http://www.w3.org/TR/2003/WD-charmod-20030822/'>CharModel</a>] 
+ * supplemented by the definitions of relevant constructs from <a href='http://www.w3.org/TR/2003/PR-xml11-20031105/#sec-normalization-checking'>
+ * Section 2.13</a> of [<a href='http://www.w3.org/TR/2003/PR-xml11-20031105/'>XML 1.1</a>]. </dd>
  * <dt>
  * <code>false</code></dt>
  * <dd>[<em>required</em>] (<em>default</em>)Do not perform character normalization.</dd>
@@ -205,8 +209,8 @@ package org.w3c.dom;
  * the same <code>targetNamespace</code> or have no namespace, the behavior 
  * is implementation dependent.  If no location has been provided, this 
  * parameter is <code>null</code>. 
- * <p ><b>Note:</b>  It is illegal to set the <code>"schema-location"</code> 
- * parameter if the "schema-type" parameter value is not set. It is strongly 
+ * <p ><b>Note:</b>  The <code>"schema-location"</code> parameter is ignored 
+ * unless the "schema-type" parameter value is set. It is strongly 
  * recommended that <code>Document.documentURI</code> will be set so that an 
  * implementation can successfully resolve any external entities referenced. </dd>
  * <dt>
@@ -257,12 +261,12 @@ package org.w3c.dom;
  * <code>Attr.specified</code> equals to <code>false</code>, as specified in 
  * the description of the <code>Attr</code> interface; 
  * </li>
- * <li> The result of the 
- * method <code>Text.isWhitespaceInElementContent()</code> for all 
+ * <li> The value of the 
+ * attribute <code>Text.isElementContentWhitespace</code> for all 
  * <code>Text</code> nodes; 
  * </li>
- * <li> The result of the method 
- * <code>Attr.isId()</code> for all <code>Attr</code> nodes; 
+ * <li> The value of the attribute 
+ * <code>Attr.isId</code> for all <code>Attr</code> nodes; 
  * </li>
  * <li> The attributes 
  * <code>Element.schemaTypeInfo</code> and <code>Attr.schemaTypeInfo</code>. 
@@ -307,45 +311,50 @@ package org.w3c.dom;
  * <li> check if the attribute 
  * <code>Node.nodeName</code> contains invalid characters according to its 
  * node type and generate a <code>DOMError</code> of type 
- * <code>"wf-invalid-character-in-node-name"</code> if necessary; 
+ * <code>"wf-invalid-character-in-node-name"</code>, with a 
+ * <code>DOMError.SEVERITY_ERROR</code> severity, if necessary; 
  * </li>
  * <li> check if 
  * the text content inside <code>Attr</code>, <code>Element</code>, 
  * <code>Comment</code>, <code>Text</code>, <code>CDATASection</code> nodes 
  * for invalid characters and generate a <code>DOMError</code> of type 
- * <code>"wf-invalid-character"</code> if necessary; 
+ * <code>"wf-invalid-character"</code>, with a 
+ * <code>DOMError.SEVERITY_ERROR</code> severity, if necessary; 
  * </li>
- * <li> check if the data 
- * inside <code>ProcessingInstruction</code> nodes for invalid characters 
- * and generate a <code>DOMError</code> of type 
- * <code>"wf-invalid-character"</code> if necessary; 
+ * <li> check if 
+ * the data inside <code>ProcessingInstruction</code> nodes for invalid 
+ * characters and generate a <code>DOMError</code> of type 
+ * <code>"wf-invalid-character"</code>, with a 
+ * <code>DOMError.SEVERITY_ERROR</code> severity, if necessary; 
  * </li>
  * </ul></dd>
- * <dt><code>false</code></dt>
+ * <dt>
+ * <code>false</code></dt>
  * <dd>[<em>optional</em>] Do not check for XML well-formedness. </dd>
  * </dl></dd>
  * <dt>
- * <code>"whitespace-in-element-content"</code></dt>
+ * <code>"element-content-whitespace"</code></dt>
  * <dd>
  * <dl>
  * <dt><code>true</code></dt>
  * <dd>[<em>required</em>] (<em>default</em>)Keep all whitespaces in the document.</dd>
  * <dt><code>false</code></dt>
  * <dd>[<em>optional</em>] Discard all <code>Text</code> nodes that contain whitespaces in element 
- * content. The implementation is expected to use the method 
- * <code>Text.isWhitespaceInElementContent</code> to determine if a 
+ * content, as described in <a href='http://www.w3.org/TR/2001/REC-xml-infoset-20011024#infoitem.character'>
+ * [element content whitespace]</a>. The implementation is expected to use the attribute 
+ * <code>Text.isElementContentWhitespace</code> to determine if a 
  * <code>Text</code> node should be discarded or not.</dd>
  * </dl></dd>
  * </dl>
  * <p> The resolution of the system identifiers associated with entities is 
  * done using <code>Document.documentURI</code>. However, when the feature 
- * "LS" defined in [<a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-LS-20030226'>DOM Level 3 Load and Save</a>]
+ * "LS" defined in [<a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-LS-20031107'>DOM Level 3 Load and Save</a>]
  *  is supported by the DOM implementation, the parameter 
  * "resource-resolver" can also be used on <code>DOMConfiguration</code> 
  * objects attached to <code>Document</code> nodes. If this parameter is 
- * set, <code>Document.normalizeDocument()</code> will invoke the entity 
+ * set, <code>Document.normalizeDocument()</code> will invoke the resource 
  * resolver instead of using <code>Document.documentURI</code>. 
- * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * <p>See also the <a href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107'>Document Object Model (DOM) Level 3 Core Specification</a>.
  * @since DOM Level 3
  */
 public interface DOMConfiguration {
@@ -393,5 +402,13 @@ public interface DOMConfiguration {
      */
     public boolean canSetParameter(String name, 
                                    Object value);
+
+    /**
+     *  The list of the parameters supported by this 
+     * <code>DOMConfiguration</code> object and for which at least one value 
+     * can be set by the application. Note that this list can also contain 
+     * parameter names defined outside this specification. 
+     */
+    public DOMStringList getParameterNames();
 
 }
