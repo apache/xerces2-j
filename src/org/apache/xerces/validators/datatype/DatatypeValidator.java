@@ -80,8 +80,8 @@ public interface DatatypeValidator {
     public static final int FACET_MAXEXCLUSIVE = 1<<6;
     public static final int FACET_MININCLUSIVE = 1<<7;
     public static final int FACET_MINEXCLUSIVE = 1<<8;
-    public static final int FACET_PRECISSION   = 1<<9;
-    public static final int FACET_SCALE        = 1<<10;
+    public static final int FACET_TOTALDIGITS  = 1<<9;
+    public static final int FACET_FRACTIONDIGITS = 1<<10;
     public static final int FACET_ENCODING     = 1<<11;
     public static final int FACET_DURATION     = 1<<12;
     public static final int FACET_PERIOD       = 1<<13;

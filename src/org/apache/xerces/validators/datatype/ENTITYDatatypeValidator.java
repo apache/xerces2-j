@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -58,13 +58,11 @@
 package org.apache.xerces.validators.datatype;
 
 import java.util.Hashtable;
-import java.util.Locale;
-import java.util.StringTokenizer;
 import org.apache.xerces.readers.DefaultEntityHandler;
 import org.apache.xerces.utils.XMLMessages;
 import org.apache.xerces.utils.StringPool;
 import org.apache.xerces.validators.datatype.StateMessageDatatype;
-
+import org.apache.xerces.validators.schema.SchemaSymbols;
 
 
 /**
@@ -80,9 +78,9 @@ import org.apache.xerces.validators.datatype.StateMessageDatatype;
  * strings that match the NCName production.
  * The value space of ENTITY is scoped to a specific
  * instance document.
- * 
+ *
  * Some caveats:
- * 
+ *
  * Because of the Xerces Architecture, where all
  * symbols are stored in a StringPool and Strings
  * are referenced by int then this datatype needs
@@ -93,17 +91,17 @@ import org.apache.xerces.validators.datatype.StateMessageDatatype;
  * - a reference to the DefaultEntityHandler  used
  * by the XMLValidator.
  * - a reference to the StringPool.
- * 
- * 
+ *
+ *
  * This validator extends also the XML1.0 validation
  * provided in DTD by providing "only on Schemas"
  * facet validation.
  * This validator also embodies the Derived datatype
  * ENTITIES which is an ENTITY derived by list.
- * 
+ *
  * These validators can be supplied by the application writer and may be useful as
  * standalone code as well as plugins to the validator architecture.
- * 
+ *
  * @author Jeffrey Rodriguez-
  * @author Mark Swinkles - List Validation refactoring
  * @version $Id$
@@ -112,13 +110,12 @@ import org.apache.xerces.validators.datatype.StateMessageDatatype;
  * @see org.apache.xerces.validators.datatype.DatatypeValidatorFactory
  * @see org.apache.xerces.validators.common.XMLValidator
  */
-public class ENTITYDatatypeValidator extends AbstractDatatypeValidator {
-    // moved to AbstractDatatypeValidator
-    // private DatatypeValidator        fBaseValidator    = null;
-    private DefaultEntityHandler     fEntityHandler    = null;
-    private StringPool               fStringPool       = null;
+public class ENTITYDatatypeValidator extends StringDatatypeValidator {
+    private static StringDatatypeValidator  fgStrValidator      = null;
+    private DefaultEntityHandler            fEntityHandler      = null;
+    private StringPool                      fStringPool         = null;
 
-    public  static final int         ENTITY_INITIALIZE = 0;
+    public  static final int                ENTITY_INITIALIZE   = 0;
 
 
     public ENTITYDatatypeValidator () throws InvalidDatatypeFacetException {
@@ -128,21 +125,40 @@ public class ENTITYDatatypeValidator extends AbstractDatatypeValidator {
     public ENTITYDatatypeValidator ( DatatypeValidator base, Hashtable facets,
                                      boolean derivedByList  ) throws InvalidDatatypeFacetException {
 
-        setBasetype( base ); // Set base type
+        // all facets are handled in StringDatatypeValidator
+        super (base, facets, derivedByList);
+
+        // list types are handled by ListDatatypeValidator, we do nothing here.
+        if ( derivedByList )
+            return;
+
+        // make a string validator for NCName
+        if ( fgStrValidator == null) {
+            Hashtable strFacets = new Hashtable();
+            strFacets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATT_COLLAPSE);
+            strFacets.put(SchemaSymbols.ELT_PATTERN , "[\\i-[:]][\\c-[:]]*"  );
+            fgStrValidator = new StringDatatypeValidator (null, strFacets, false);
+        }
     }
 
+    /**
+     * return value of whiteSpace facet
+     */
+    public short getWSFacet(){
+        return fgStrValidator.getWSFacet();
+    }
 
     /**
-     * Checks that "content" string is valid 
+     * Checks that "content" string is valid
      * datatype.
      * If invalid a Datatype validation exception is thrown.
-     * 
+     *
      * @param content A string containing the content to be validated
      * @param derivedBylist
      *                Flag which is true when type
      *                is derived by list otherwise it
      *                it is derived by extension.
-     *                
+     *
      * @exception throws InvalidDatatypeException if the content is
      *                   invalid according to the rules for the validators
      * @exception InvalidDatatypeValueException
@@ -151,39 +167,36 @@ public class ENTITYDatatypeValidator extends AbstractDatatypeValidator {
     public Object validate(String content, Object state ) throws InvalidDatatypeValueException{
 
         StateMessageDatatype message = (StateMessageDatatype) state;
-        int                  attValueHandle;
-
 
         if ( message!= null && message.getDatatypeState() == ENTITYDatatypeValidator.ENTITY_INITIALIZE ){
             Object[]   unpackMessage = (Object[] ) message.getDatatypeObject();
-
-            //System.out.println("unpackMessage = " + unpackMessage );
-
-            //System.out.println("obj1 = " + unpackMessage[0] );
-            //System.out.println("obj2 = " + unpackMessage[1] );
-
-
             this.fEntityHandler      = (DefaultEntityHandler) unpackMessage[0];
             this.fStringPool         = (StringPool) unpackMessage[1];
         } else {
-
-
             if ( this.fEntityHandler == null ) {
-                InvalidDatatypeValueException error = 
-                new InvalidDatatypeValueException( "ERROR: ENTITYDatatype Validator: Failed Initialization DefaultEntityHandler is null" );//Need Message
-                throw error;
+                throw new InvalidDatatypeValueException( "ERROR: ENTITYDatatype Validator: Failed Initialization DefaultEntityHandler is null" );
             }
             if ( this.fStringPool == null ) {
-                InvalidDatatypeValueException error = 
-                new InvalidDatatypeValueException( "ERROR: ENTITYDatatype Validator: Failed Initialization StrinPool is null" );//Need Message
+                throw new InvalidDatatypeValueException( "ERROR: ENTITYDatatype Validator: Failed Initialization StrinPool is null" );
+            }
+
+            // use StringDatatypeValidator to validate content against facets
+            super.validate(content, state);
+
+            // check if content is a valid NCName
+            try {
+                fgStrValidator.validate(content, null);
+            } catch (InvalidDatatypeValueException idve) {
+                InvalidDatatypeValueException error =  new InvalidDatatypeValueException( "ID is not valid: " + content );
+                error.setMinorCode(XMLMessages.MSG_ENTITY_INVALID);
+                error.setMajorCode(XMLMessages.VC_ENTITY_NAME);
                 throw error;
             }
 
-
-            attValueHandle = this.fStringPool.addSymbol( content );
+            int attValueHandle = this.fStringPool.addSymbol( content );
             if (!this.fEntityHandler.isUnparsedEntity( attValueHandle ) ) {
-                InvalidDatatypeValueException error = 
-                new InvalidDatatypeValueException( "ENTITY '"+ content +"' is not valid" );//Need Message
+                InvalidDatatypeValueException error =
+                new InvalidDatatypeValueException( "ENTITY '"+ content +"' is not valid" );
                 error.setMinorCode(XMLMessages.MSG_ENTITY_INVALID );
                 error.setMajorCode(XMLMessages.VC_ENTITY_NAME);
                 throw error;
@@ -195,15 +208,11 @@ public class ENTITYDatatypeValidator extends AbstractDatatypeValidator {
     /**
      * REVISIT
      * Compares two Datatype for order
-     * 
-     * @return 
+     *
+     * @return
      */
     public int compare( String  content1, String content2){
         return -1;
-    }
-
-    public Hashtable getFacets(){
-        return null;
     }
 
     // Private methods start here
@@ -214,16 +223,4 @@ public class ENTITYDatatypeValidator extends AbstractDatatypeValidator {
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
     }
-
-
-    /**
-     * 
-     * @param base   the validator for this type's base type
-     */
-    private void setBasetype(DatatypeValidator base){
-        fBaseValidator = base;
-    }
-
-
-
 }

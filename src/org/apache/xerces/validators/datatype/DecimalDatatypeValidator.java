@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -69,7 +69,7 @@ import org.apache.xerces.utils.regex.RegularExpression;
 
 /**
  *
- * DecimalValidator validates that content satisfies the W3C XML Datatype for decimal
+ * DecimalDatatypeValidator validates that content satisfies the W3C XML Datatype for decimal
  *
  * @author  Elena Litani
  * @author Ted Leung
@@ -79,29 +79,24 @@ import org.apache.xerces.utils.regex.RegularExpression;
  */
 
 public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
-    private Locale            fLocale           = null;
-    // moved to AbstractDatatypeValidator
-    // private DatatypeValidator fBaseValidator    = null; // Null means a native datatype
-    private BigDecimal[]      fEnumDecimal      = null;
-    private String            fPattern          = null;
-    private BigDecimal        fMaxInclusive     = null;
-    private BigDecimal        fMaxExclusive     = null;
-    private BigDecimal        fMinInclusive     = null;
-    private BigDecimal        fMinExclusive     = null;
-    private int               fFacetsDefined    = 0;
-    private int               fScale            = 0;
-    private int               fPrecision        = 0;
-    private boolean           isMaxExclusiveDefined = false;
-    private boolean           isMaxInclusiveDefined = false;
-    private boolean           isMinExclusiveDefined = false;
-    private boolean           isMinInclusiveDefined = false;
-    private boolean           isScaleDefined        = false;
-    private boolean           isPrecisionDefined    = false;
-    private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
-    private RegularExpression       fRegex           = null;
-    private Hashtable               fFacets          = null;
-
-
+    private Locale                  fLocale                 = null;
+    private BigDecimal[]            fEnumDecimal            = null;
+    private String                  fPattern                = null;
+    private BigDecimal              fMaxInclusive           = null;
+    private BigDecimal              fMaxExclusive           = null;
+    private BigDecimal              fMinInclusive           = null;
+    private BigDecimal              fMinExclusive           = null;
+    private int                     fFacetsDefined          = 0;
+    private int                     fTotalDigits            = 0;
+    private int                     fFractionDigits         = 0;
+    private boolean                 isMaxExclusiveDefined   = false;
+    private boolean                 isMaxInclusiveDefined   = false;
+    private boolean                 isMinExclusiveDefined   = false;
+    private boolean                 isMinInclusiveDefined   = false;
+    private boolean                 isTotalDigitsDefined    = false;
+    private boolean                 isFractionDigitsDefined = false;
+    private DatatypeMessageProvider fMessageProvider        = new DatatypeMessageProvider();
+    private RegularExpression       fRegex                  = null;
 
     public DecimalDatatypeValidator () throws InvalidDatatypeFacetException {
         this( null, null, false ); // Native, No Facets defined, Restriction
@@ -109,121 +104,170 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
 
     public DecimalDatatypeValidator ( DatatypeValidator base, Hashtable facets,
                                       boolean derivedByList ) throws InvalidDatatypeFacetException {
-        setBasetype( base ); // Set base type 
+         // Set base type
+        setBasetype( base );
 
+        // list types are handled by ListDatatypeValidator, we do nothing here.
+        if ( derivedByList )
+            return;
 
-        if ( facets != null ) {   // Set Facet
-            //fFacets = facets;
-            fFacets = checkForFacetConsistency( facets, base.getFacets() );// Check the current facets against base facets
-
-            fFacets = facets;
-
+        // Set Facets if any defined
+        if ( facets != null  ){
             Vector enumeration = null;
-            String value       = null;
             for (Enumeration e = facets.keys(); e.hasMoreElements();) {
                 String key   = (String) e.nextElement();
+                String value = null;
                 try {
                     if (key.equals(SchemaSymbols.ELT_PATTERN)) {
-                        value = ((String) facets.get(key ));
                         fFacetsDefined += DatatypeValidator.FACET_PATTERN;
-                        fPattern        = value;
+                        fPattern = (String) facets.get(key);
                         if ( fPattern != null )
                             fRegex = new RegularExpression(fPattern, "X" );
                     } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
-                        fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
                         enumeration     = (Vector)facets.get(key);
+                        fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
                     } else if (key.equals(SchemaSymbols.ELT_MAXINCLUSIVE)) {
                         value = ((String) facets.get(key ));
                         fFacetsDefined += DatatypeValidator.FACET_MAXINCLUSIVE;
+                        isMaxInclusiveDefined = true;
                         fMaxInclusive    = new BigDecimal(stripPlusIfPresent(value));
                     } else if (key.equals(SchemaSymbols.ELT_MAXEXCLUSIVE)) {
                         value = ((String) facets.get(key ));
                         fFacetsDefined += DatatypeValidator.FACET_MAXEXCLUSIVE;
+                        isMaxExclusiveDefined = true;
                         fMaxExclusive   = new BigDecimal(stripPlusIfPresent( value));
                     } else if (key.equals(SchemaSymbols.ELT_MININCLUSIVE)) {
                         value = ((String) facets.get(key ));
                         fFacetsDefined += DatatypeValidator.FACET_MININCLUSIVE;
+                        isMinInclusiveDefined = true;
                         fMinInclusive   = new BigDecimal(stripPlusIfPresent(value));
                     } else if (key.equals(SchemaSymbols.ELT_MINEXCLUSIVE)) {
                         value = ((String) facets.get(key ));
                         fFacetsDefined += DatatypeValidator.FACET_MINEXCLUSIVE;
+                        isMinExclusiveDefined = true;
                         fMinExclusive   = new BigDecimal(stripPlusIfPresent(value));
-                    } else if (key.equals(SchemaSymbols.ELT_PRECISION)) {
+                    } else if (key.equals(SchemaSymbols.ELT_TOTALDIGITS)) {
                         value = ((String) facets.get(key ));
-                        fFacetsDefined += DatatypeValidator.FACET_PRECISSION;
-                        isPrecisionDefined = true;
-                        fPrecision      = Integer.parseInt(value );
-                    } else if (key.equals(SchemaSymbols.ELT_SCALE)) {
+                        fFacetsDefined += DatatypeValidator.FACET_TOTALDIGITS;
+                        isTotalDigitsDefined = true;
+                        fTotalDigits      = Integer.parseInt(value );
+                        // check 4.3.11.c0 must: totalDigits > 0
+                        if ( fTotalDigits <= 0 )
+                            throw new InvalidDatatypeFacetException("totalDigits value '"+fTotalDigits+"' must be a positiveInteger.");
+                    } else if (key.equals(SchemaSymbols.ELT_FRACTIONDIGITS)) {
                         value = ((String) facets.get(key ));
-                        fFacetsDefined += DatatypeValidator.FACET_SCALE;
-                        isScaleDefined  = true;
-                        fScale          = Integer.parseInt( value );
+                        fFacetsDefined += DatatypeValidator.FACET_FRACTIONDIGITS;
+                        isFractionDigitsDefined  = true;
+                        fFractionDigits          = Integer.parseInt( value );
+                        // check 4.3.12.c0 must: fractionDigits > 0
+                        if ( fFractionDigits < 0 )
+                            throw new InvalidDatatypeFacetException("fractionDigits value '"+fFractionDigits+"' must be a positiveInteger.");
                     } else {
-                        throw new InvalidDatatypeFacetException(
-                                                                getErrorString( DatatypeMessageProvider.MSG_FORMAT_FAILURE,
-                                                                                DatatypeMessageProvider.MSG_NONE, null));
+                        throw new InvalidDatatypeFacetException( getErrorString( DatatypeMessageProvider.MSG_FORMAT_FAILURE,
+                                                                                 DatatypeMessageProvider.MSG_NONE, null));
                     }
                 } catch ( Exception ex ){
-                    throw new InvalidDatatypeFacetException( getErrorString(
-                                                                            DatatypeMessageProvider.IllegalFacetValue, 
-                                                                            DatatypeMessageProvider.MSG_NONE, new Object [] { value, key}));
+                    throw new InvalidDatatypeFacetException( getErrorString( DatatypeMessageProvider.IllegalFacetValue,
+                                                                             DatatypeMessageProvider.MSG_NONE, new Object [] { value, key}));
                 }
             }
-            isMaxExclusiveDefined = ((fFacetsDefined & 
-                                        DatatypeValidator.FACET_MAXEXCLUSIVE ) != 0 )?true:false;
-            isMaxInclusiveDefined = ((fFacetsDefined & 
-                                        DatatypeValidator.FACET_MAXINCLUSIVE ) != 0 )?true:false;
 
-            isMinExclusiveDefined = ((fFacetsDefined &
-                                        DatatypeValidator.FACET_MINEXCLUSIVE ) != 0 )?true:false;
-            isMinInclusiveDefined = ((fFacetsDefined &
-                                        DatatypeValidator.FACET_MININCLUSIVE ) != 0 )?true:false;
+            if ( base != null ) {
+                // check 4.3.5.c0 must: enumeration values from the value space of base
+                if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 ) {
+                    if ( enumeration != null ) {
+                        int i = 0;
+                        try {
+                            for ( ; i < enumeration.size(); i++) {
+                                base.validate ((String)enumeration.elementAt(i), null);
+                            }
+                        } catch ( Exception idve ){
+                            throw new InvalidDatatypeFacetException( "Value of enumeration = '" + enumeration.elementAt(i) +
+                                                                     "' must be from the value space of base.");
+                        }
+                    }
+                }
+                // check 4.3.7.c0 must: maxInclusive value from the value space of base
+                if ( isMaxInclusiveDefined ) {
+                    try {
+                        base.validate (fMaxInclusive.toString(), null);
+                    } catch ( Exception idve ){
+                        throw new InvalidDatatypeFacetException( "Value of maxInclusive = '" + fMaxInclusive +
+                                                                 "' must be from the value space of base.");
+                    }
+                }
+                // check 4.3.8.c0 must: maxInclusive value from the value space of base
+                if ( isMaxExclusiveDefined ) {
+                    try {
+                        base.validate (fMaxExclusive.toString(), null);
+                    } catch ( Exception idve ){
+                        throw new InvalidDatatypeFacetException( "Value of maxExclusive = '" + fMaxExclusive +
+                                                                 "' must be from the value space of base.");
+                    }
+                }
+                // check 4.3.9.c0 must: minInclusive value from the value space of base
+                if ( isMinInclusiveDefined ) {
+                    try {
+                        base.validate (fMinInclusive.toString(), null);
+                    } catch ( Exception idve ){
+                        throw new InvalidDatatypeFacetException( "Value of minInclusive = '" + fMinInclusive +
+                                                                 "' must be from the value space of base.");
+                    }
+                }
+                // check 4.3.10.c0 must: minInclusive value from the value space of base
+                if ( isMinExclusiveDefined ) {
+                    try {
+                        base.validate (fMinExclusive.toString(), null);
+                    } catch ( Exception idve ){
+                        throw new InvalidDatatypeFacetException( "Value of minExclusive = '" + fMinExclusive +
+                                                                 "' must be from the value space of base.");
+                    }
+                }
+            }
 
-            //checkForFacetConsistency( base );// Check the current facets against base facets
-
+            // check 4.3.8.c1 error: maxInclusive + maxExclusive
             if ( isMaxExclusiveDefined && isMaxInclusiveDefined ) {
-                throw new InvalidDatatypeFacetException(
-                                                        "It is an error for both maxInclusive and maxExclusive to be specified for the same datatype." ); 
+                throw new InvalidDatatypeFacetException( "It is an error for both maxInclusive and maxExclusive to be specified for the same datatype." );
             }
+            // check 4.3.9.c1 error: minInclusive + minExclusive
             if ( isMinExclusiveDefined && isMinInclusiveDefined ) {
-                throw new InvalidDatatypeFacetException(
-                                                        "It is an error for both minInclusive and minExclusive to be specified for the same datatype." ); 
+                throw new InvalidDatatypeFacetException( "It is an error for both minInclusive and minExclusive to be specified for the same datatype." );
             }
 
-            if ( isMaxExclusiveDefined && isMinExclusiveDefined ){
-                int compareTo = this.fMaxExclusive.compareTo( this.fMinExclusive );
-                if ( compareTo != 1)
-                    throw new InvalidDatatypeFacetException(
-                                                            "maxExclusive value ='" + this.fMaxExclusive + "'must be > than minExclusive value ='" + 
-                                                            this.fMinExclusive + "'. " );
-
-            }
+            // check 4.3.7.c1 must: minInclusive <= maxInclusive
             if ( isMaxInclusiveDefined && isMinInclusiveDefined ){
-                int compareTo = this.fMaxInclusive.compareTo( this.fMinInclusive );
-
-                if ( compareTo == -1  )
-                    throw new InvalidDatatypeFacetException(
-                                                            "maxInclusive value ='" + this.fMaxInclusive + "'must be >= than minInclusive value ='" + 
-                                                            this.fMinInclusive + "'. " );
+                int compareTo = this.fMinInclusive.compareTo( this.fMaxInclusive );
+                if ( compareTo == 1 )
+                    throw new InvalidDatatypeFacetException( "minInclusive value ='" + this.fMinInclusive + "'must be <= maxInclusive value ='" +
+                                                             this.fMaxInclusive + "'. " );
             }
-
-
-            if ( isMaxExclusiveDefined && isMinInclusiveDefined ){
-                int compareTo = this.fMaxExclusive.compareTo( this.fMinInclusive );
-                if ( compareTo != 1)
-                    throw new InvalidDatatypeFacetException(
-                                                            "maxExclusive value ='" + this.fMaxExclusive + "'must be > than minInclusive value ='" + 
-                                                            this.fMinInclusive + "'. " );
-
+            // check 4.3.8.c2 must: minExclusive <= maxExclusive ??? minExclusive < maxExclusive
+            if ( isMaxExclusiveDefined && isMinExclusiveDefined ){
+                int compareTo = this.fMinExclusive.compareTo( this.fMaxExclusive );
+                if ( compareTo == 1 )
+                    throw new InvalidDatatypeFacetException( "minExclusive value ='" + this.fMinExclusive + "'must be <= maxExclusive value ='" +
+                                                             this.fMaxExclusive + "'. " );
             }
+            // check 4.3.9.c2 must: minExclusive < maxInclusive
             if ( isMaxInclusiveDefined && isMinExclusiveDefined ){
-                int compareTo = this.fMaxInclusive.compareTo( this.fMinExclusive );
-                if ( compareTo != 1)
-                    throw new InvalidDatatypeFacetException(
-                                                            "maxInclusive value ='" + this.fMaxInclusive + "'must be > than minExclusive value ='" + 
-                                                            this.fMinExclusive + "'. " );
+                int compareTo = this.fMinInclusive.compareTo( this.fMaxExclusive );
+                if ( compareTo != -1 )
+                    throw new InvalidDatatypeFacetException( "minInclusive value ='" + this.fMinInclusive + "'must be < maxExclusive value ='" +
+                                                             this.fMaxExclusive + "'. " );
             }
-
+            // check 4.3.10.c1 must: minInclusive < maxExclusive
+            if ( isMaxExclusiveDefined && isMinInclusiveDefined ){
+                int compareTo = this.fMinExclusive.compareTo( this.fMaxInclusive );
+                if ( compareTo != -1 )
+                    throw new InvalidDatatypeFacetException( "minExclusive value ='" + this.fMinExclusive + "'must be > maxInclusive value ='" +
+                                                             this.fMaxInclusive + "'. " );
+            }
+            // check 4.3.12.c1 must: fractionDigits <= totalDigits
+            if ( isFractionDigitsDefined && isTotalDigitsDefined ){
+                if ( fFractionDigits > fTotalDigits )
+                    throw new InvalidDatatypeFacetException( "fractionDigits value ='" + this.fFractionDigits + "'must be <= totalDigits value ='" +
+                                                             this.fTotalDigits + "'. " );
+            }
 
             if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION ) != 0 ) {
                 if (enumeration != null) {
@@ -231,115 +275,286 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
                     int i = 0;
                     try {
                         for ( ; i < enumeration.size(); i++) {
-                            fEnumDecimal[i] = 
+                            fEnumDecimal[i] =
                             new BigDecimal( stripPlusIfPresent(((String) enumeration.elementAt(i))));
-                            boundsCheck(fEnumDecimal[i]); // Check against max,min Inclusive, Exclusives
                         }
 
                     } catch ( Exception idve ){
-                        throw new InvalidDatatypeFacetException(
-                                                                getErrorString(DatatypeMessageProvider.InvalidEnumValue,
+                        throw new InvalidDatatypeFacetException( getErrorString(DatatypeMessageProvider.InvalidEnumValue,
                                                                                 DatatypeMessageProvider.MSG_NONE,
                                                                                 new Object [] { enumeration.elementAt(i)}));
                     }
+                }
+            }
 
+            if (base != null && base instanceof DecimalDatatypeValidator) {
+                DecimalDatatypeValidator numBase = (DecimalDatatypeValidator)base;
+
+                // check 4.3.7.c2 error:
+                // maxInclusive > base.maxInclusive
+                // maxInclusive >= base.maxExclusive
+                // maxInclusive < base.minInclusive
+                // maxInclusive <= base.minExclusive
+                if ( isMaxInclusiveDefined ) {
+                    if ( numBase.isMaxInclusiveDefined &&
+                         fMaxInclusive.compareTo (numBase.fMaxInclusive) == 1 )
+                        throw new InvalidDatatypeFacetException( "maxInclusive value ='" + fMaxInclusive + "' must be <= base.maxInclusive value ='" +
+                                                                 numBase.fMaxInclusive + "'." );
+                    if ( numBase.isMaxExclusiveDefined &&
+                         fMaxInclusive.compareTo (numBase.fMaxExclusive) != -1 )
+                        throw new InvalidDatatypeFacetException(
+                                                                "maxInclusive value ='" + fMaxInclusive + "' must be < base.maxExclusive value ='" +
+                                                                numBase.fMaxExclusive + "'." );
+                    if ( numBase.isMinInclusiveDefined &&
+                         fMaxInclusive.compareTo (numBase.fMinInclusive) == -1 )
+                        throw new InvalidDatatypeFacetException( "maxInclusive value ='" + fMaxInclusive + "' must be >= base.minInclusive value ='" +
+                                                                 numBase.fMinInclusive + "'." );
+                    if ( numBase.isMinExclusiveDefined &&
+                         fMaxInclusive.compareTo (numBase.fMinExclusive) != 1 )
+                        throw new InvalidDatatypeFacetException(
+                                                                "maxInclusive value ='" + fMaxInclusive + "' must be > base.minExclusive value ='" +
+                                                                numBase.fMinExclusive + "'." );
+                }
+
+                // check 4.3.8.c3 error:
+                // maxExclusive > base.maxExclusive
+                // maxExclusive > base.maxInclusive
+                // maxExclusive <= base.minInclusive
+                // maxExclusive <= base.minExclusive
+                if ( isMaxExclusiveDefined ) {
+                    if ( numBase.isMaxExclusiveDefined &&
+                         fMaxExclusive.compareTo (numBase.fMaxExclusive) == 1 )
+                        throw new InvalidDatatypeFacetException( "maxExclusive value ='" + fMaxExclusive + "' must be <= base.maxExclusive value ='" +
+                                                                 numBase.fMaxExclusive + "'." );
+                    if ( numBase.isMaxInclusiveDefined &&
+                         fMaxExclusive.compareTo (numBase.fMaxInclusive) == 1 )
+                        throw new InvalidDatatypeFacetException( "maxExclusive value ='" + fMaxExclusive + "' must be <= base.maxInclusive value ='" +
+                                                                 numBase.fMaxInclusive + "'." );
+                    if ( numBase.isMinExclusiveDefined &&
+                         fMaxExclusive.compareTo (numBase.fMinExclusive) != 1 )
+                        throw new InvalidDatatypeFacetException( "maxExclusive value ='" + fMaxExclusive + "' must be > base.minExclusive value ='" +
+                                                                 numBase.fMinExclusive + "'." );
+                    if ( numBase.isMinInclusiveDefined &&
+                         fMaxExclusive.compareTo (numBase.fMinInclusive) != 1 )
+                        throw new InvalidDatatypeFacetException( "maxExclusive value ='" + fMaxExclusive + "' must be > base.minInclusive value ='" +
+                                                                 numBase.fMinInclusive + "'." );
+                }
+
+                // check 4.3.9.c3 error:
+                // minExclusive < base.minExclusive
+                // minExclusive > base.maxInclusive ??? minExclusive >= base.maxInclusive
+                // minExclusive < base.minInclusive
+                // minExclusive >= base.maxExclusive
+                if ( isMinExclusiveDefined ) {
+                    if ( numBase.isMinExclusiveDefined &&
+                         fMinExclusive.compareTo (numBase.fMinExclusive) == -1 )
+                        throw new InvalidDatatypeFacetException( "minExclusive value ='" + fMinExclusive + "' must be >= base.minExclusive value ='" +
+                                                                 numBase.fMinExclusive + "'." );
+                    if ( numBase.isMaxInclusiveDefined &&
+                         fMinExclusive.compareTo (numBase.fMaxInclusive) == 1 )
+                        throw new InvalidDatatypeFacetException(
+                                                                "minExclusive value ='" + fMinExclusive + "' must be <= base.maxInclusive value ='" +
+                                                                numBase.fMaxInclusive + "'." );
+                    if ( numBase.isMinInclusiveDefined &&
+                         fMinExclusive.compareTo (numBase.fMinInclusive) == -1 )
+                        throw new InvalidDatatypeFacetException(
+                                                                "minExclusive value ='" + fMinExclusive + "' must be >= base.minInclusive value ='" +
+                                                                numBase.fMinInclusive + "'." );
+                    if ( numBase.isMaxExclusiveDefined &&
+                         fMinExclusive.compareTo (numBase.fMaxExclusive) != -1 )
+                        throw new InvalidDatatypeFacetException( "minExclusive value ='" + fMinExclusive + "' must be < base.maxExclusive value ='" +
+                                                                 numBase.fMaxExclusive + "'." );
+                }
+
+                // check 4.3.10.c2 error:
+                // minInclusive < base.minInclusive
+                // minInclusive > base.maxInclusive
+                // minInclusive <= base.minExclusive
+                // minInclusive >= base.maxExclusive
+                if ( isMinInclusiveDefined ) {
+                    if ( numBase.isMinInclusiveDefined &&
+                         fMinInclusive.compareTo (numBase.fMinInclusive) == -1 )
+                        throw new InvalidDatatypeFacetException( "minInclusive value ='" + fMinInclusive + "' must be >= base.minInclusive value ='" +
+                                                                 numBase.fMinInclusive + "'." );
+                    if ( numBase.isMaxInclusiveDefined &&
+                         fMinInclusive.compareTo (numBase.fMaxInclusive) == 1 )
+                        throw new InvalidDatatypeFacetException( "minInclusive value ='" + fMinInclusive + "' must be <= base.maxInclusive value ='" +
+                                                                 numBase.fMaxInclusive + "'." );
+                    if ( numBase.isMinExclusiveDefined &&
+                         fMinInclusive.compareTo (numBase.fMinExclusive) != 1 )
+                        throw new InvalidDatatypeFacetException( "minInclusive value ='" + fMinInclusive + "' must be > base.minExclusive value ='" +
+                                                                 numBase.fMinExclusive + "'." );
+                    if ( numBase.isMaxExclusiveDefined &&
+                         fMinInclusive.compareTo (numBase.fMaxExclusive) != -1 )
+                        throw new InvalidDatatypeFacetException( "minInclusive value ='" + fMinInclusive + "' must be < base.maxExclusive value ='" +
+                                                                 numBase.fMaxExclusive + "'." );
+                }
+
+                // check 4.3.11.c1 error: totalDigits > base.totalDigits
+                if ( isTotalDigitsDefined ) {
+                    if ( numBase.isTotalDigitsDefined &&
+                         fTotalDigits > numBase.fTotalDigits )
+                        throw new InvalidDatatypeFacetException( "totalDigits value ='" + fTotalDigits + "' must be <= base.totalDigits value ='" +
+                                                                 numBase.fTotalDigits + "'." );
+                }
+
+                // check question error: fractionDigits > base.fractionDigits ???
+                // check question error: fractionDigits > base.totalDigits ???
+                // check question error: totalDigits conflicts with bounds ???
+
+                // inherit enumeration
+                if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) == 0 &&
+                     (numBase.fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 ) {
+                    fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
+                    fEnumDecimal = numBase.fEnumDecimal;
+                }
+                // inherit maxExclusive
+                if ( numBase.isMaxExclusiveDefined &&
+                     !isMaxExclusiveDefined && !isMaxInclusiveDefined ) {
+                    isMaxExclusiveDefined = true;
+                    fFacetsDefined += FACET_MAXEXCLUSIVE;
+                    fMaxExclusive = numBase.fMaxExclusive;
+                }
+                // inherit maxInclusive
+                if ( numBase.isMaxInclusiveDefined &&
+                     !isMaxExclusiveDefined && !isMaxInclusiveDefined ) {
+                    isMaxInclusiveDefined = true;
+                    fFacetsDefined += FACET_MAXINCLUSIVE;
+                    fMaxInclusive = numBase.fMaxInclusive;
+                }
+                // inherit minExclusive
+                if ( numBase.isMinExclusiveDefined &&
+                     !isMinExclusiveDefined && !isMinInclusiveDefined ) {
+                    isMinExclusiveDefined = true;
+                    fFacetsDefined += FACET_MINEXCLUSIVE;
+                    fMinExclusive = numBase.fMinExclusive;
+                }
+                // inherit minExclusive
+                if ( numBase.isMinInclusiveDefined &&
+                     !isMinExclusiveDefined && !isMinInclusiveDefined ) {
+                    isMinInclusiveDefined = true;
+                    fFacetsDefined += FACET_MININCLUSIVE;
+                    fMinInclusive = numBase.fMinInclusive;
+                }
+                // inherit totalDigits
+                if ( numBase.isTotalDigitsDefined && !isTotalDigitsDefined ) {
+                    isTotalDigitsDefined = true;
+                    fFacetsDefined += FACET_TOTALDIGITS;
+                    fTotalDigits = numBase.fTotalDigits;
+                }
+                // inherit fractionDigits
+                if ( numBase.isFractionDigitsDefined && !isFractionDigitsDefined ) {
+                    isFractionDigitsDefined = true;
+                    fFacetsDefined += FACET_FRACTIONDIGITS;
+                    fFractionDigits = numBase.fFractionDigits;
                 }
             }
         }//End of Facet setup
-
     }
-
 
     /**
      * validate that a string matches the decimal datatype
      *
      * validate returns true or false depending on whether the string content is a
      * W3C decimal type.
-     * 
+     *
      * @param content A string containing the content to be validated
-     *                            cd 
+     *                            cd
      * @exception throws InvalidDatatypeException if the content is
      *  is not a W3C decimal type
      */
 
     public Object validate(String content, Object state) throws InvalidDatatypeValueException {
         //REVISIT: should we pass state?
-        checkContentEnum(content, state, null);
+        checkContent(content, state, null, false);
         return null;
     }
 
-
     /**
      * validate if the content is valid against base datatype and facets (if any)
-     * this function might be called directly from UnionDatatype or ListDatatype     
-     * 
+     * this function might be called directly from UnionDatatype or ListDatatype
+     *
      * @param content A string containing the content to be validated
-     * @param enumeration A vector with enumeration strings  
+     * @param enumeration A vector with enumeration strings
      * @exception throws InvalidDatatypeException if the content is
      *  is not a W3C decimal type;
      * @exception throws InvalidDatatypeFacetException if enumeration is not BigDecimal
      */
 
-    protected void checkContentEnum(String content, Object state, Vector enumeration) 
-                                           throws InvalidDatatypeValueException{
-        if ( this.fBaseValidator != null ) {//validate against parent type if any
-            ((DecimalDatatypeValidator)this.fBaseValidator).checkContentEnum( content, state, enumeration );
+    protected void checkContentEnum(String content, Object state, Vector enumeration)
+    throws InvalidDatatypeValueException {
+        checkContent(content, state, enumeration, false);
+    }
+
+    protected void checkContent(String content, Object state, Vector enumeration, boolean asBase)
+    throws InvalidDatatypeValueException {
+        // validate against parent type if any
+        if ( this.fBaseValidator != null ) {
+            // validate content as a base type
+            if (fBaseValidator instanceof DecimalDatatypeValidator) {
+                ((DecimalDatatypeValidator)fBaseValidator).checkContent(content, state, enumeration, true);
+            } else {
+                this.fBaseValidator.validate( content, state );
+            }
         }
 
+        // we check pattern first
         if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
             if ( fRegex == null || fRegex.matches( content) == false )
                 throw new InvalidDatatypeValueException("Value'"+content+
-                    "' does not match regular expression facet " + fRegex.getPattern() );
+                                                        "' does not match regular expression facet " + fRegex.getPattern() );
         }
 
-         
-        BigDecimal d = null; // Is content a Decimal 
+        // if this is a base validator, we only need to check pattern facet
+        // all other facet were inherited by the derived type
+        if (asBase)
+            return;
+
+        BigDecimal d = null; // Is content a Decimal
         try {
             d = new BigDecimal( stripPlusIfPresent( content));
         } catch (Exception nfe) {
-            throw new InvalidDatatypeValueException(
-                                                    getErrorString(DatatypeMessageProvider.NotDecimal,
+            throw new InvalidDatatypeValueException( getErrorString(DatatypeMessageProvider.NotDecimal,
                                                                     DatatypeMessageProvider.MSG_NONE,
                                                                     new Object[] { "'" + content +"'"}));
         }
-        
+
         if (enumeration != null) { //the call was made from List or Union
             int size= enumeration.size();
             BigDecimal[]     enumDecimal  = new BigDecimal[size];
             int i = 0;
             try {
-                for ( ; i < size; i++) 
+                for ( ; i < size; i++)
                     enumDecimal[i] = new BigDecimal( stripPlusIfPresent(((String) enumeration.elementAt(i))));
             } catch (NumberFormatException nfe) {
-                   throw new InvalidDatatypeValueException(
-                                                                getErrorString(DatatypeMessageProvider.InvalidEnumValue,
-                                                                                DatatypeMessageProvider.MSG_NONE,
-                                                                                new Object [] { enumeration.elementAt(i)}));
+                throw new InvalidDatatypeValueException( getErrorString(DatatypeMessageProvider.InvalidEnumValue,
+                                                                        DatatypeMessageProvider.MSG_NONE,
+                                                                        new Object [] { enumeration.elementAt(i)}));
             }
             enumCheck(d, enumDecimal);
         }
 
-        if ( isScaleDefined == true ) {
-            if (d.scale() > fScale)
+        if ( isFractionDigitsDefined == true ) {
+            if (d.scale() > fFractionDigits)
                 throw new InvalidDatatypeValueException(
-                                                        getErrorString(DatatypeMessageProvider.ScaleExceeded,
+                                                        getErrorString(DatatypeMessageProvider.FractionDigitsExceeded,
                                                                         DatatypeMessageProvider.MSG_NONE,
                                                                         new Object[] { content}));
         }
-        if ( isPrecisionDefined == true ) {
-            int precision = d.movePointRight(d.scale()).toString().length() - 
+        if ( isTotalDigitsDefined == true ) {
+            int totalDigits = d.movePointRight(d.scale()).toString().length() -
                             ((d.signum() < 0) ? 1 : 0); // account for minus sign
-            if (precision > fPrecision)
+            if (totalDigits > fTotalDigits)
                 throw new InvalidDatatypeValueException(
-                                getErrorString(DatatypeMessageProvider.PrecisionExceeded,
+                                getErrorString(DatatypeMessageProvider.TotalDigitsExceeded,
                                  DatatypeMessageProvider.MSG_NONE,
-                                 new Object[] { "'" + content + "'" + "with precision = '"+ precision +"'" 
-                                              , "'" + fPrecision + "'" } ));
+                                 new Object[] { "'" + content + "'" + "with totalDigits = '"+ totalDigits +"'"
+                                              , "'" + fTotalDigits + "'" } ));
         }
         boundsCheck(d);
         if (  fEnumDecimal != null )
             enumCheck(d, fEnumDecimal);
-            
+
         return;
 
     }
@@ -354,7 +569,7 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
                               ( ( fMaxInclusive != null )?fMaxInclusive.toString():"");
 
         String  lowerBound =  (fMinExclusive != null )? ( fMinExclusive.toString() ):
-                              (( fMinInclusive != null )?fMinInclusive.toString():""); 
+                              (( fMinInclusive != null )?fMinInclusive.toString():"");
         String  lowerBoundIndicator = "";
         String  upperBoundIndicator = "";
 
@@ -363,7 +578,7 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
             maxOk = (d.compareTo(fMaxInclusive) <= 0);
             upperBound          = fMaxInclusive.toString();
             if ( upperBound != null ){
-                upperBoundIndicator = "<="; 
+                upperBoundIndicator = "<=";
             } else {
                 upperBound="";
             }
@@ -444,7 +659,7 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
         throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
     }
 
-        
+
     public int compare( String value1, String value2){
         try {
             //REVISIT: datatypes create lots of *new* objects..
@@ -466,16 +681,16 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
      * This class deals with a bug in BigDecimal class
      * present up to version 1.1.2. 1.1.3 knows how
      * to deal with the + sign.
-     * 
+     *
      * This method strips the first '+' if it found
      * alone such as.
      * +33434.344
-     * 
+     *
      * If we find +- then nothing happens we just
      * return the string passed
-     * 
+     *
      * @param value
-     * @return 
+     * @return
      */
     static private String stripPlusIfPresent( String value ){
         String strippedPlus = value;
@@ -485,132 +700,4 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
         }
         return strippedPlus;
     }
-
-    /**
-     * This method checks the current Facet being set
-     * against the base Facet.
-     * Current Facet should be more restrictive than
-     * parent.
-     * Facet values are inherited from base. 
-     * 
-     * @param thisTypeFacets
-     * @param baseTypeFacets
-     * @return 
-     * @exception InvalidDatatypeFacetException
-     */
-    private Hashtable checkForFacetConsistency( Hashtable thisTypeFacets, 
-                                                Hashtable baseTypeFacets ) throws InvalidDatatypeFacetException{
-        String  thisTypeFacetValue;
-        String  baseValue;
-        if ( baseTypeFacets  != null ) {//Merge base type facets into thisType if not defined
-            Enumeration setOfBaseKeys = baseTypeFacets.keys();
-            String keyInBase;
-            BigDecimal  valueOfThisType = null;
-            BigDecimal  valueOfBase     = null;
-            while (  setOfBaseKeys.hasMoreElements() ) {
-                keyInBase          = (String) setOfBaseKeys.nextElement();
-                baseValue          = (String) baseTypeFacets.get(keyInBase);
-                thisTypeFacetValue = (String) thisTypeFacets.get(keyInBase);
-                if ( thisTypeFacetValue == null )    {
-                    String strThisType = null;
-                    thisTypeFacets.put( keyInBase, 
-                                        baseValue );
-                    if ( keyInBase.equals( SchemaSymbols.ELT_MAXEXCLUSIVE ) &&
-                         thisTypeFacets.containsKey( SchemaSymbols.ELT_MAXINCLUSIVE ) ){
-
-                        strThisType     = (String) thisTypeFacets.get( SchemaSymbols.ELT_MAXINCLUSIVE );
-                        valueOfThisType = new BigDecimal(stripPlusIfPresent(strThisType));
-                        valueOfBase     = new BigDecimal(stripPlusIfPresent( baseValue));
-                        if ( valueOfThisType.compareTo( valueOfBase) == -1 ){ 
-                            thisTypeFacets.remove( keyInBase);
-                        } else {
-                            thisTypeFacets.remove( SchemaSymbols.ELT_MAXINCLUSIVE );
-                        }
-
-                    } else if ( keyInBase.equals( SchemaSymbols.ELT_MAXINCLUSIVE ) && 
-                                thisTypeFacets.containsKey( SchemaSymbols.ELT_MAXEXCLUSIVE ) ){
-                        strThisType     = (String) thisTypeFacets.get( SchemaSymbols.ELT_MAXEXCLUSIVE );
-                        valueOfThisType = new BigDecimal(stripPlusIfPresent(strThisType));
-                        valueOfBase     = new BigDecimal(stripPlusIfPresent( baseValue));
-                        if ( valueOfThisType.compareTo( valueOfBase) == -1 ){ 
-                            thisTypeFacets.remove( keyInBase);
-                        } else {
-                            thisTypeFacets.remove( SchemaSymbols.ELT_MAXEXCLUSIVE );
-                        }
-                    } else if ( keyInBase.equals( SchemaSymbols.ELT_MINEXCLUSIVE) &&
-                                thisTypeFacets.containsKey( SchemaSymbols.ELT_MININCLUSIVE ) ){
-                        strThisType     = (String) thisTypeFacets.get( SchemaSymbols.ELT_MININCLUSIVE );
-                        valueOfThisType = new BigDecimal(stripPlusIfPresent(strThisType));
-                        valueOfBase     = new BigDecimal(stripPlusIfPresent( baseValue));
-                        if ( valueOfThisType.compareTo( valueOfBase) == 1 ){ 
-                            thisTypeFacets.remove( keyInBase);
-                        } else {
-                            thisTypeFacets.remove( SchemaSymbols.ELT_MININCLUSIVE );
-                        }
-                    } else if ( keyInBase.equals( SchemaSymbols.ELT_MININCLUSIVE ) &&
-                                thisTypeFacets.containsKey( SchemaSymbols.ELT_MINEXCLUSIVE ) ){
-                        strThisType     = (String) thisTypeFacets.get( SchemaSymbols.ELT_MINEXCLUSIVE );
-                        valueOfThisType = new BigDecimal(stripPlusIfPresent(strThisType));
-                        valueOfBase     = new BigDecimal(stripPlusIfPresent(baseValue));
-                        if ( valueOfThisType.compareTo( valueOfBase) ==  1 ){ 
-                            thisTypeFacets.remove( keyInBase);
-                        } else {
-                            thisTypeFacets.remove( SchemaSymbols.ELT_MINEXCLUSIVE );
-                        }
-
-                    }
-                    //else {
-                    //  thisTypeFacets.put( keyInBase, 
-                    //                    baseValue );//If facet is set in base type it should be set in derived type
-                    // }
-                } else{ //Check for conflicts 
-                        //Assumptions are:
-                        //   enumerations are merged
-                        //   pattern facets are not replaced so this type pattern wins
-                        //   
-
-                    if ( keyInBase.equals( SchemaSymbols.ELT_MAXEXCLUSIVE ) ){
-                        valueOfThisType = new BigDecimal(stripPlusIfPresent(thisTypeFacetValue));
-                        valueOfBase     = new BigDecimal(stripPlusIfPresent( baseValue));
-                        if ( ( valueOfThisType.compareTo( valueOfBase) ) == -1 ){ 
-                            ;
-                        } else { // should throw exception - Can not extend range of value 
-                            ;
-                        }
-                    } else if ( keyInBase.equals( SchemaSymbols.ELT_MAXINCLUSIVE ) ){
-                        valueOfThisType = new BigDecimal(stripPlusIfPresent(thisTypeFacetValue));
-                        valueOfBase     = new BigDecimal(stripPlusIfPresent( baseValue));
-                        if ( ( valueOfThisType.compareTo( valueOfBase) ) == -1 ){ 
-                            ;
-                        } else { // should throw exception - Can not extend range of value 
-                            ;
-                        }
-                    } else if ( keyInBase.equals( SchemaSymbols.ELT_MINEXCLUSIVE ) ){
-                        valueOfThisType = new BigDecimal(stripPlusIfPresent(thisTypeFacetValue));
-                        valueOfBase     = new BigDecimal(stripPlusIfPresent( baseValue));
-                        if ( ( valueOfThisType.compareTo( valueOfBase) ) == -1 ){ 
-                            ;
-                        } else { // should throw exception - Can not extend range of value 
-                            ;
-                        }
-                    } else if ( keyInBase.equals( SchemaSymbols.ELT_MININCLUSIVE ) ){
-                        valueOfThisType = new BigDecimal(stripPlusIfPresent(thisTypeFacetValue));
-                        valueOfBase     = new BigDecimal(stripPlusIfPresent( baseValue));
-                        if ( ( valueOfThisType.compareTo( valueOfBase) ) == -1 ){ 
-                            ;
-                        } else { // should throw exception - Can not extend range of value 
-                            ;
-                        }
-
-                    }
-                }
-            }
-        }
-        //Check for consistency and conflicting facets/
-        //This are the assumptions
-        //We will merge the enumeration facets
-
-        return thisTypeFacets;
-    }
 }
-

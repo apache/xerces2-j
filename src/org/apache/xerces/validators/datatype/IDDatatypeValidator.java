@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -58,13 +58,10 @@
 package org.apache.xerces.validators.datatype;
 
 import java.util.Hashtable;
-import java.util.Locale;
-import java.util.Vector;
 import java.util.Enumeration;
 import org.apache.xerces.utils.XMLCharacterProperties;
 import org.apache.xerces.utils.XMLMessages;
 import org.apache.xerces.validators.schema.SchemaSymbols;
-
 
 /**
  * DataTypeValidator defines the interface that data type validators must obey.
@@ -74,65 +71,54 @@ import org.apache.xerces.validators.schema.SchemaSymbols;
  * @author Mark Swinkles - List Validation refactoring
  * @version $Id$
  */
-public class IDDatatypeValidator extends AbstractDatatypeValidator {
-    // moved to AbstractDatatypeValidator
-    // private DatatypeValidator             fBaseValidator = null;
-    private Object                        fNullValue = null;
-    private DatatypeMessageProvider       fMessageProvider = new DatatypeMessageProvider();
-    private Hashtable                     fTableOfId;
-    private Locale                        fLocale           = null;
-    
-    //REVISIT: facets when Schema Datatypes go to PR..
-    private int        fFacetsDefined    = 0;
-    private int        fLength           = 0;
-    private Vector     fEnumeration      = new Vector();
-    
-    public static final  int          IDREF_STORE    = 0;
-    public static final  int          ID_CLEAR       = 1;
+public class IDDatatypeValidator extends StringDatatypeValidator {
+    private static StringDatatypeValidator  fgStrValidator  = null;
+    private static Object                   fNullValue      = null;
+    protected static Hashtable              fTableOfId      = null;
 
+    public static final  int                IDREF_STORE     = 0;
+    public static final  int                ID_CLEAR        = 1;
 
 
     public IDDatatypeValidator () throws InvalidDatatypeFacetException {
         this( null, null, false ); // Native, No Facets defined, Restriction
     }
 
-    public IDDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
+    public IDDatatypeValidator ( DatatypeValidator base, Hashtable facets,
                                  boolean derivedByList ) throws InvalidDatatypeFacetException  {
-         setBasetype( base ); // Set base type 
-         if ( facets != null  ){
-             for (Enumeration e = facets.keys(); e.hasMoreElements();) {
-                 String key = (String) e.nextElement();
-                 if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
-                    fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
-                    fEnumeration    = (Vector)facets.get(key);
-                 }else if ( key.equals(SchemaSymbols.ELT_LENGTH) ) {
-                    fFacetsDefined += DatatypeValidator.FACET_LENGTH;
-                    String lengthValue = (String)facets.get(key);
-                    try {
-                        fLength     = Integer.parseInt( lengthValue );
-                    } catch (NumberFormatException nfe) {
-                        throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"' is invalid.");
-                    }
-                    if ( fLength < 0 )
-                        throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"'  must be a nonNegativeInteger.");
-                 }
-             }
-         }
-    
-    
+
+        // all facets are handled in StringDatatypeValidator
+        super (base, facets, derivedByList);
+
+        // list types are handled by ListDatatypeValidator, we do nothing here.
+        if ( derivedByList )
+            return;
+
+        // make a string validator for NCName
+        if ( fgStrValidator == null) {
+            Hashtable strFacets = new Hashtable();
+            strFacets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATT_COLLAPSE);
+            strFacets.put(SchemaSymbols.ELT_PATTERN , "[\\i-[:]][\\c-[:]]*"  );
+            fgStrValidator = new StringDatatypeValidator (null, strFacets, false);
+        }
     }
 
-
+    /**
+     * return value of whiteSpace facet
+     */
+    public short getWSFacet(){
+        return fgStrValidator.getWSFacet();
+    }
 
     /**
      * Checks that "content" string is valid
      * datatype.
      * If invalid a Datatype validation exception is thrown.
-     * 
+     *
      * @param content A string containing the content to be validated
      * @param state  Generic Object state that can be use to pass
      *               Structures
-     * @return 
+     * @return
      * @exception throws InvalidDatatypeException if the content is
      *                   invalid according to the rules for the validators
      * @exception InvalidDatatypeValueException
@@ -140,55 +126,50 @@ public class IDDatatypeValidator extends AbstractDatatypeValidator {
      */
     public Object validate(String content, Object IDStorage ) throws InvalidDatatypeValueException{
 
-        StateMessageDatatype message;
-
-        if (fBaseValidator!=null) { 
-            if ( (fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 ) {
-              if ( content.length() != fLength ) {
-                throw new InvalidDatatypeValueException("Value '"+content+
-                                                        "' with length '"+content.length()+
-                                                        "' is not equal to length facet '"+fLength+"'.");
-              }
-            }
-            if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 ) {
-              if ( fEnumeration.contains( content ) == false ) {
-                  throw new InvalidDatatypeValueException("Value '"+content+"' must be one of "+fEnumeration);
-              }
-            }
-            //REVISIT: should we propagate content to fBaseValidator?
-         }
-
-
-        if (IDStorage != null ){
-            //System.out.println("We received reset" );
-            message = (StateMessageDatatype) IDStorage;    
+        // no validation if asked to clear ID hash table
+        if (IDStorage != null) {
+            StateMessageDatatype message = (StateMessageDatatype) IDStorage;
             if (message.getDatatypeState() == IDDatatypeValidator.ID_CLEAR ){
-                if ( this.fTableOfId  != null ){
-                    this.fTableOfId.clear(); //Clean the ID Hash Table see the XMLValidator pool reset method
+                if ( this.fTableOfId != null ){
+                    this.fTableOfId.clear();
                     this.fTableOfId = null;
                 }
                 return null;
             }
         }
-        
-        if (!XMLCharacterProperties.validName(content)) {//Check if is valid key-[81] EncName ::= [A-Za-z] ([A-Za-z0-9._] | '-')*
-            InvalidDatatypeValueException error =  new
-                                                    InvalidDatatypeValueException( "ID is not valid: " + content );
+
+        // use StringDatatypeValidator to validate content against facets
+        super.validate(content, IDStorage);
+
+        // check if content is a valid NCName
+        try {
+            fgStrValidator.validate(content, null);
+        } catch (InvalidDatatypeValueException idve) {
+            InvalidDatatypeValueException error =  new InvalidDatatypeValueException( "ID is not valid: " + content );
             error.setMinorCode(XMLMessages.MSG_ID_INVALID);
             error.setMajorCode(XMLMessages.VC_ID);
             throw error;
         }
 
-        if (!addId( content, IDStorage) ){ //It is OK to pass a null here
-            InvalidDatatypeValueException error = 
+        //Check if is valid key-[81] EncName ::= [A-Za-z] ([A-Za-z0-9._] | '-')*
+        /*if (!XMLCharacterProperties.validName(content)) {
+            InvalidDatatypeValueException error =  new
+                                                    InvalidDatatypeValueException( "ID is not valid: " + content );
+            error.setMinorCode(XMLMessages.MSG_ID_INVALID);
+            error.setMajorCode(XMLMessages.VC_ID);
+            throw error;
+        }*/
+
+        if (!addId( content, IDStorage) ) {
+            InvalidDatatypeValueException error =
             new InvalidDatatypeValueException( "ID '" + content +"'  has to be unique" );
             error.setMinorCode(XMLMessages.MSG_ID_NOT_UNIQUE);
             error.setMajorCode(XMLMessages.VC_ID);
             throw error;
         }
-        //System.out.println("IDStorage = " + IDStorage );
-        //System.out.println("Bef return = " + fTableOfId );
-        return fTableOfId;//Return the table of Id
+
+        //Return the table of Ids
+        return fTableOfId;
     }
 
 
@@ -200,50 +181,23 @@ public class IDDatatypeValidator extends AbstractDatatypeValidator {
     }
 
 
-    /**
-     * @param base   the validator for this type's base type
-     */
-    private void setBasetype(DatatypeValidator base){
-        fBaseValidator = base;
-    }
-
     /** addId. */
     private boolean addId(String content, Object idTable) {
 
-        //System.out.println("Added ID = " + content );
         if ( this.fTableOfId == null ) {
-            //System.out.println("Create table");
-            this.fTableOfId = new Hashtable();//Gain reference to table
-        } else if ( this.fTableOfId.containsKey( content ) ){ 
-            //System.out.println("ID - it already has this key =" + content +"table = " + this.fTableOfId  );
+            this.fTableOfId = new Hashtable();
+        } else if ( this.fTableOfId.containsKey( content ) ){
             return false;
         }
         if ( this.fNullValue == null ){
             fNullValue = new Object();
         }
-        //System.out.println("Before putting content" + content );
         try {
-            this.fTableOfId.put( content, fNullValue ); 
-        } catch ( Exception ex ){
+            this.fTableOfId.put( content, fNullValue );
+        } catch( OutOfMemoryError ex ){
+            System.out.println( "Out of Memory: Hashtable of ID's has " + this.fTableOfId.size() + " Elements" );
             ex.printStackTrace();
         }
         return true;
     } // addId(int):boolean
-
-
-    /**
-     * set the locate to be used for error messages
-     */
-    public void setLocale(Locale locale) {
-        fLocale = locale;
-    }
-
-
-    private String getErrorString(int major, int minor, Object args[]) {
-        try {
-            return fMessageProvider.createMessage(fLocale, major, minor, args);
-        } catch (Exception e) {
-            return "Illegal Errorcode "+minor;
-        }
-    }
 }

@@ -2297,7 +2297,7 @@ public class TraverseSchema implements
      *         {any attributes with non-schema namespace...}>
      *
      *         Content: (annotation?,(simpleType?, (minExclusive|minInclusive|maxExclusive
-     *                    | maxInclusive | precision | scale | length | minLength 
+     *                    | maxInclusive | totalDigits | fractionDigits | length | minLength
      *                    | maxLength | encoding | period | duration | enumeration 
      *                    | pattern | whiteSpace)*) ? ,  
      *                    ((attribute | attributeGroup)* , anyAttribute?))
@@ -2453,12 +2453,11 @@ public class TraverseSchema implements
                            child.getLocalName().equals(SchemaSymbols.ELT_MININCLUSIVE) ||
                            child.getLocalName().equals(SchemaSymbols.ELT_MAXEXCLUSIVE) ||
                            child.getLocalName().equals(SchemaSymbols.ELT_MAXINCLUSIVE) ||
-                           child.getLocalName().equals(SchemaSymbols.ELT_PRECISION) ||
-                           child.getLocalName().equals(SchemaSymbols.ELT_SCALE) ||
+                           child.getLocalName().equals(SchemaSymbols.ELT_TOTALDIGITS) ||
+                           child.getLocalName().equals(SchemaSymbols.ELT_FRACTIONDIGITS) ||
                            child.getLocalName().equals(SchemaSymbols.ELT_LENGTH) ||
                            child.getLocalName().equals(SchemaSymbols.ELT_MINLENGTH) ||
                            child.getLocalName().equals(SchemaSymbols.ELT_MAXLENGTH) ||
-                           child.getLocalName().equals(SchemaSymbols.ELT_ENCODING) ||
                            child.getLocalName().equals(SchemaSymbols.ELT_PERIOD) ||
                            child.getLocalName().equals(SchemaSymbols.ELT_DURATION) ||
                            child.getLocalName().equals(SchemaSymbols.ELT_ENUMERATION) ||

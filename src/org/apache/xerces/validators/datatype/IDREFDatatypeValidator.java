@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -58,103 +58,124 @@
 package org.apache.xerces.validators.datatype;
 
 import java.util.Hashtable;
-import java.util.Locale;
 import java.util.Enumeration;
-import java.util.StringTokenizer;
 import org.apache.xerces.utils.XMLCharacterProperties;
 import org.apache.xerces.utils.XMLMessages;
-
-
-
-
+import org.apache.xerces.validators.schema.SchemaSymbols;
 
 /**
  * IDREFValidator defines the interface that data type validators must obey.
  * These validators can be supplied by the application writer and may be useful as
  * standalone code as well as plugins to the validator architecture.
- * 
+ *
  * @author Jeffrey Rodriguez-
  * @author Mark Swinkles - List Validation refactoring
  * @version $Id$
  */
-public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
-    // moved to AbstractDatatypeValidator
-    // private DatatypeValidator fBaseValidator    = null;
-    private Hashtable              fTableOfId   = null; //This is pass to us through the state object
-    private Hashtable              fTableIDRefs = null;
-    private Object                   fNullValue = null;
-    private Locale            fLocale           = null;
-    private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
+public class IDREFDatatypeValidator extends StringDatatypeValidator {
+    private static StringDatatypeValidator  fgStrValidator  = null;
+    private static Object                   fNullValue      = null;
+    protected static Hashtable              fTableOfId      = null; //This is pass to us through the state object
+    private static Hashtable                fTableIDRefs    = null;
 
-    public static final  int       IDREF_STORE    = 0;
-    public static final  int       IDREF_CLEAR    = 1;
-    public static final  int       IDREF_VALIDATE = 2; 
-
+    public static final  int                IDREF_STORE     = 0;
+    public static final  int                IDREF_CLEAR     = 1;
+    public static final  int                IDREF_VALIDATE  = 2;
 
 
     public IDREFDatatypeValidator () throws InvalidDatatypeFacetException {
         this( null, null, false ); // Native, No Facets defined, Restriction
     }
 
-    public IDREFDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
-                                    boolean derivedByList ) throws InvalidDatatypeFacetException { 
+    public IDREFDatatypeValidator ( DatatypeValidator base, Hashtable facets,
+                                    boolean derivedByList ) throws InvalidDatatypeFacetException {
 
-        setBasetype( base ); // Set base type 
+        // all facets are handled in StringDatatypeValidator
+        super (base, facets, derivedByList);
 
+        // list types are handled by ListDatatypeValidator, we do nothing here.
+        if ( derivedByList )
+            return;
+
+        // make a string validator for NCName
+        if ( fgStrValidator == null) {
+            Hashtable strFacets = new Hashtable();
+            strFacets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATT_COLLAPSE);
+            strFacets.put(SchemaSymbols.ELT_PATTERN , "[\\i-[:]][\\c-[:]]*"  );
+            fgStrValidator = new StringDatatypeValidator (null, strFacets, false);
+        }
     }
 
+    /**
+     * return value of whiteSpace facet
+     */
+    public short getWSFacet(){
+        return fgStrValidator.getWSFacet();
+    }
 
     /**
-     * Checks that "content" string is valid 
+     * Checks that "content" string is valid
      * datatype.
      * If invalid a Datatype validation exception is thrown.
-     * 
+     *
      * @param content A string containing the content to be validated
      * @param derivedBylist
      *                Flag which is true when type
      *                is derived by list otherwise it
      *                it is derived by extension.
-     *                
+     *
      * @exception throws InvalidDatatypeException if the content is
      *                   invalid according to the rules for the validators
      * @exception InvalidDatatypeValueException
      * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
      */
     public Object validate(String content, Object state ) throws InvalidDatatypeValueException{
-        //Pass content as a String
-        //System.out.println( "base = " + this.fBaseValidator );
 
-        //if( this.fBaseValidator != null ){
-          //  this.fBaseValidator.validate( content, state );
-        //}
-        StateMessageDatatype message;
-        //System.out.println("conten = " + content );
         if (state!= null){
-            message = (StateMessageDatatype) state;    
+            StateMessageDatatype message = (StateMessageDatatype) state;
             if (message.getDatatypeState() == IDREFDatatypeValidator.IDREF_CLEAR ){
                 if ( this.fTableOfId != null ){
                     fTableOfId.clear(); //This is pass to us through the state object
+                    fTableOfId = null;
                 }
                 if ( this.fTableIDRefs != null ){
-                    fTableIDRefs.clear(); 
+                    fTableIDRefs.clear();
+                    fTableIDRefs = null;
                 }
                 return null;
             } else if ( message.getDatatypeState() == IDREFDatatypeValidator.IDREF_VALIDATE ){
-                this.checkIdRefs();//Validate that all keyRef is a keyIds
-            } else if ( message.getDatatypeState() == IDREFDatatypeValidator.IDREF_STORE ) {
+                // Validate that all keyRef is a keyIds
+                this.checkIdRefs();
+                return null;
+            }
+             else if ( message.getDatatypeState() == IDREFDatatypeValidator.IDREF_STORE ) {
                 this.fTableOfId = (Hashtable) message.getDatatypeObject();
-                if (!XMLCharacterProperties.validName(content)) {//Check if is valid key
-
-                    InvalidDatatypeValueException error = new InvalidDatatypeValueException( "IDREF is not valid" );//Need Message
-
-                    error.setMinorCode(XMLMessages.MSG_IDREF_INVALID );
-                    error.setMajorCode(XMLMessages.VC_IDREF);
-                    throw error;//Need Message
-                }
-                //System.out.println("Content REF = " + content );
-                addIdRef( content, state);// We are storing IDs 
             }
         }
+
+        // use StringDatatypeValidator to validate content against facets
+        super.validate(content, state);
+        // check if content is a valid NCName
+        try {
+            fgStrValidator.validate(content, null);
+        } catch (InvalidDatatypeValueException idve) {
+            InvalidDatatypeValueException error =  new InvalidDatatypeValueException( "ID is not valid: " + content );
+            error.setMinorCode(XMLMessages.MSG_IDREF_INVALID);
+            error.setMajorCode(XMLMessages.VC_IDREF);
+            throw error;
+        }
+
+        /*if (!XMLCharacterProperties.validName(content)) {//Check if is valid key
+
+            InvalidDatatypeValueException error = new InvalidDatatypeValueException( "IDREF is not valid" );//Need Message
+
+            error.setMinorCode(XMLMessages.MSG_IDREF_INVALID );
+            error.setMajorCode(XMLMessages.VC_IDREF);
+            throw error;//Need Message
+        }*/
+
+        addIdRef( content, state);// We are storing IDs
+
         return null;
     }
 
@@ -162,19 +183,15 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
     /**
      * REVISIT
      * Compares two Datatype for order
-     * 
+     *
      * @param o1
      * @param o2
-     * @return 
+     * @return
      */
     public int compare( String content1, String content2){
         return -1;
     }
 
-
-    public Hashtable getFacets(){
-        return null;
-    }
     /**
        * Returns a copy of this object.
        */
@@ -182,42 +199,24 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
         throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
     }
 
-    /**
-      * Name of base type as a string.
-      * A Native datatype has the string "native"  as its
-      * base type.
-      * 
-      * @param base   the validator for this type's base type
-      */
-    private void setBasetype(DatatypeValidator base){
-        fBaseValidator = base;
-    }
-
     /** addId. */
     private void addIdRef(String content, Object state) {
-        //System.out.println("this.fTableOfId = " + content );
-        //System.out.println("state =  " + state  );
-        //System.out.println("table = " + this.fTableOfId );
-
-
         if ( this.fTableOfId != null &&  this.fTableOfId.containsKey( content ) ){
-            //System.out.println("It already contains key = " + content );
             return;
         }
-        //System.out.println("Table of IDRefs = " + this.fTableIDRefs );
+
         if ( this.fTableIDRefs == null ){
             this.fTableIDRefs = new Hashtable();
         } else if ( fTableIDRefs.containsKey( content ) ){
             return;
         }
 
-
         if ( this.fNullValue == null ){
             fNullValue = new Object();
         }
-        //System.out.println("tabl IDREFs = " + this.fTableIDRefs );
+
         try {
-            this.fTableIDRefs.put( content, fNullValue ); 
+            this.fTableIDRefs.put( content, fNullValue );
         } catch( OutOfMemoryError ex ){
             System.out.println( "Out of Memory: Hashtable of ID's has " + this.fTableIDRefs.size() + " Elements" );
             ex.printStackTrace();
@@ -229,18 +228,14 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
 
         if ( this.fTableIDRefs == null)
             return;
-        
+
         Enumeration en = this.fTableIDRefs.keys();
-        //System.out.println("TabIDREFs=  " + this.fTableIDRefs );
 
         while (en.hasMoreElements()) {
             String key = (String)en.nextElement();
-            //System.out.println( "Key here = x>>" + key + "<<" );
-            //System.out.println("Tab Ids = " + this.fTableOfId );
             if ( this.fTableOfId == null || ! this.fTableOfId.containsKey(key)) {
-                
-                InvalidDatatypeValueException error =  new
-                            InvalidDatatypeValueException( key );
+
+                InvalidDatatypeValueException error = new InvalidDatatypeValueException( key );
                 error.setMinorCode(XMLMessages.MSG_ELEMENT_WITH_ID_REQUIRED);
                 error.setMajorCode(XMLMessages.VC_IDREF);
                 throw error;
@@ -248,24 +243,4 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
         }
 
     } // checkIdRefs()
-
-
-    /**
-    * set the locate to be used for error messages
-    */
-    public void setLocale(Locale locale) {
-        fLocale = locale;
-    }
-
-
-    private String getErrorString(int major, int minor, Object args[]) {
-        try {
-            return fMessageProvider.createMessage(fLocale, major, minor, args);
-        } catch (Exception e) {
-            return "Illegal Errorcode "+minor;
-        }
-    }
-
-
 }
-

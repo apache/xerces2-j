@@ -88,7 +88,6 @@ public final  class SchemaSymbols {
     public static final String ELT_CONTENT =  "content";
     public static final String ELT_DURATION =  "duration";
     public static final String ELT_ELEMENT =  "element";
-    public static final String ELT_ENCODING =  "encoding";
     public static final String ELT_ENUMERATION =  "enumeration";
     public static final String ELT_FIELD = "field";
     public static final String ELT_WHITESPACE =  "whiteSpace";
@@ -108,8 +107,8 @@ public final  class SchemaSymbols {
     public static final String ELT_NOTATION =  "notation";
     public static final String ELT_PATTERN =  "pattern";
     public static final String ELT_PERIOD =  "period";
-    public static final String ELT_PRECISION =  "precision";
-    public static final String ELT_SCALE =  "scale";
+    public static final String ELT_TOTALDIGITS =  "totalDigits";
+    public static final String ELT_FRACTIONDIGITS =  "fractionDigits";
     public static final String ELT_SCHEMA =  "schema";
     public static final String ELT_SELECTOR =  "selector";
     public static final String ELT_SEQUENCE =  "sequence";
@@ -154,11 +153,13 @@ public final  class SchemaSymbols {
     public static final String ATT_VALUE = "value";
     public static final String ATT_MIXED = "mixed";
     public static final String ATT_XPATH = "xpath";
+    public static final String ATT_PRESERVE = "preserve";
+    public static final String ATT_REPLACE = "replace";
+    public static final String ATT_COLLAPSE = "collapse";
     public static final String ATTVAL_TWOPOUNDANY =  "##any";
     public static final String ATTVAL_TWOPOUNDLOCAL =  "##local";
     public static final String ATTVAL_TWOPOUNDOTHER =  "##other";
     public static final String ATTVAL_POUNDALL =  "#all";
-    public static final String ATTVAL_BASE64 =  "base64";
     public static final String ATTVAL_BOOLEAN =  "boolean";
     public static final String ATTVAL_DEFAULT =  "default";
     public static final String ATTVAL_ELEMENTONLY =  "elementOnly";
@@ -166,7 +167,6 @@ public final  class SchemaSymbols {
     public static final String ATTVAL_EXTENSION =  "extension";
     public static final String ATTVAL_FALSE =  "false";
     public static final String ATTVAL_FIXED =  "fixed";
-    public static final String ATTVAL_HEX =  "hex";
     public static final String ATTVAL_ID =  "ID";
     public static final String ATTVAL_LAX =  "lax";
     public static final String ATTVAL_MAXLENGTH =  "maxLength";
@@ -185,8 +185,7 @@ public final  class SchemaSymbols {
     public static final String ATTVAL_TIMEDURATION =  "timeDuration";
     public static final String ATTVAL_TRUE =  "true";
     public static final String ATTVAL_UNQUALIFIED =  "unqualified";
-    public static final String ATTVAL_URI =  "uri";
-    public static final String ATTVAL_URIREFERENCE =  "uriReference";
+    public static final String ATTVAL_ANYURI =  "anyURI";
     public static final String ATTVAL_SUBSTITUTIONGROUP = "substitutionGroup";
     public static final String ATTVAL_SUBSTITUTION = "substitution";
 

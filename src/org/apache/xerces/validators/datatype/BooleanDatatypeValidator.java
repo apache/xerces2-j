@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -68,7 +68,7 @@ import org.apache.xerces.validators.datatype.InvalidDatatypeFacetException;
  *
  * BooleanValidator validates that content satisfies the W3C XML Datatype for Boolean
  *
- * @author Ted Leung 
+ * @author Ted Leung
  * @author Jeffrey Rodriguez
  * @author Mark Swinkles - List Validation refactoring
  * @version  $Id$
@@ -76,8 +76,6 @@ import org.apache.xerces.validators.datatype.InvalidDatatypeFacetException;
 
 public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
     private Locale                  fLocale          = null;
-    // moved to AbstractDatatypeValidator
-    // private DatatypeValidator       fBaseValidator   = null; //Basetype null means we are a native type
     private String                  fPattern         = null;
     private int                     fFacetsDefined   = 0;
     private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
@@ -90,31 +88,28 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
 
     public BooleanDatatypeValidator ( DatatypeValidator base, Hashtable facets,
                  boolean derivedByList ) throws InvalidDatatypeFacetException {
-        setBasetype( base ); // Set base type 
+        setBasetype( base ); // Set base type
+
+        // list types are handled by ListDatatypeValidator, we do nothing here.
+        if ( derivedByList )
+            return;
 
         // Set Facets if any defined
-        if ( facets != null  ) { 
-            if ( derivedByList == false ) {
-                for (Enumeration e = facets.keys(); e.hasMoreElements();) {
-                    String key = (String) e.nextElement();
+        if ( facets != null  ) {
+            for (Enumeration e = facets.keys(); e.hasMoreElements();) {
+                String key = (String) e.nextElement();
 
-                    if (key.equals(SchemaSymbols.ELT_PATTERN)) {
-                        fFacetsDefined += DatatypeValidator.FACET_PATTERN;
-                        fPattern = (String)facets.get(key);
-                        if( fPattern != null )
-                           fRegex = new RegularExpression(fPattern, "X" );
-                    } else {
-                        throw new
-                           InvalidDatatypeFacetException( 
-                                "Only constraining facet in boolean datatype is PATTERN" );
-                    }
+                if (key.equals(SchemaSymbols.ELT_PATTERN)) {
+                    fFacetsDefined += DatatypeValidator.FACET_PATTERN;
+                    fPattern = (String)facets.get(key);
+                    if( fPattern != null )
+                       fRegex = new RegularExpression(fPattern, "X" );
+                } else {
+                    throw new InvalidDatatypeFacetException("invalid facet tag : " + key);
                 }
-            } else { // By List
-
             }
         }// End of facet setting
     }
-
 
     /**
      * validate that a string matches the boolean datatype
@@ -125,15 +120,14 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
      */
 
     public Object validate(String content, Object state) throws InvalidDatatypeValueException {
-
-        checkContent( content );
+        checkContent( content, false );
         return null;
     }
 
 
     /**
      * Compare two boolean data types
-     * 
+     *
      * @param content1
      * @param content2
      * @return  0 if equal, 1 if not equal
@@ -150,7 +144,7 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
 
     /**
      * Return a Hashtable that contains facet information
-     * 
+     *
      * @return Hashtable
      */
 
@@ -158,12 +152,11 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
         return null;
     }
 
-
     //Begin private method definitions
 
     /**
      * Sets the base datatype name.
-     * 
+     *
      * @param base
      */
 
@@ -190,11 +183,34 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
 
     /**
      * Checks content for validity.
-     * 
+     *
      * @param content
      * @exception InvalidDatatypeValueException
      */
-    private void checkContent( String content )throws InvalidDatatypeValueException {
+    private void checkContent( String content, boolean asBase )
+    throws InvalidDatatypeValueException {
+        // validate against parent type if any
+        if ( this.fBaseValidator != null ) {
+            // validate content as a base type
+            if (fBaseValidator instanceof BooleanDatatypeValidator) {
+                ((BooleanDatatypeValidator)fBaseValidator).checkContent(content, true);
+            } else {
+                this.fBaseValidator.validate( content, null );
+            }
+        }
+
+        // we check pattern first
+        if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
+            if ( fRegex == null || fRegex.matches( content) == false )
+                throw new InvalidDatatypeValueException("Value'"+content+
+                                                        "does not match regular expression facet" + fPattern );
+        }
+
+        // if this is a base validator, we only need to check pattern facet
+        // all other facet were inherited by the derived type
+        if (asBase)
+            return;
+
         boolean  isContentInDomain = false;
         for ( int i = 0;i<fValueSpace.length;i++ ) {
             if ( content.equals(fValueSpace[i] ) )
@@ -205,10 +221,5 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
                                                    getErrorString(DatatypeMessageProvider.NotBoolean,
                                                                   DatatypeMessageProvider.MSG_NONE,
                                                                   new Object[] { content}));
-        if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
-            if ( fRegex == null || fRegex.matches( content) == false )
-                throw new InvalidDatatypeValueException("Value'"+content+
-                                                        "does not match regular expression facet" + fPattern );
-        }
     }
 }
