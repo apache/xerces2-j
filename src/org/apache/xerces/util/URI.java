@@ -284,14 +284,14 @@ import java.io.Serializable;
    * 
    * @param p_uriSpec the URI specification string (cannot be null or
    *                  empty)
-   * @param allowRelativeURI true to set up not throwing an exception 
-   *                      in case of relative URI, false otherwise.
+   * @param allowNonAbsoluteURI true to permit non-absolute URIs, 
+   *                            false otherwise.
    *
    * @exception MalformedURIException if p_uriSpec violates any syntax
    *                                   rules
    */
-  public URI(String p_uriSpec, boolean allowRelativeURI) throws MalformedURIException {
-      this((URI)null, p_uriSpec, allowRelativeURI);
+  public URI(String p_uriSpec, boolean allowNonAbsoluteURI) throws MalformedURIException {
+      this((URI)null, p_uriSpec, allowNonAbsoluteURI);
   }
   
  /**
@@ -321,14 +321,14 @@ import java.io.Serializable;
    *               empty)
    * @param p_uriSpec the URI specification string (cannot be null or
    *                  empty if p_base is null)
-   * @param allowRelativeURI true to set up not throwing an exception 
-   *                      in case of relative URI, false otherwise.
+   * @param allowNonAbsoluteURI true to permit non-absolute URIs, 
+   *                            false otherwise.
    *
    * @exception MalformedURIException if p_uriSpec violates any syntax
    *                                  rules
    */
-  public URI(URI p_base, String p_uriSpec, boolean allowRelativeURI) throws MalformedURIException {
-      initialize(p_base, p_uriSpec, allowRelativeURI);
+  public URI(URI p_base, String p_uriSpec, boolean allowNonAbsoluteURI) throws MalformedURIException {
+      initialize(p_base, p_uriSpec, allowNonAbsoluteURI);
   }
 
  /**
@@ -477,20 +477,24 @@ import java.io.Serializable;
    * @param p_uriSpec the URI spec string which may be an absolute or
    *                  relative URI (can only be null/empty if p_base
    *                  is not null)
-   * @param allowRelativeURI true to set up not throwing an exception 
+   * @param allowNonAbsoluteURI true to permit non-absolute URIs, 
    *                         in case of relative URI, false otherwise.
    *
    * @exception MalformedURIException if p_base is null and p_uriSpec
    *                                  is not an absolute URI or if
    *                                  p_uriSpec violates syntax rules
    */
-  private void initialize(URI p_base, String p_uriSpec, boolean allowRelativeURI)
+  private void initialize(URI p_base, String p_uriSpec, boolean allowNonAbsoluteURI)
       throws MalformedURIException {
       
       String uriSpec = p_uriSpec;
       int uriSpecLen = (uriSpec != null) ? uriSpec.length() : 0;
       
       if (p_base == null && uriSpecLen == 0) {
+          if (allowNonAbsoluteURI) {
+              m_path = "";
+              return;
+          }
           throw new MalformedURIException("Cannot initialize URI with empty parameters.");
       }
       
@@ -516,7 +520,7 @@ import java.io.Serializable;
           if (colonIdx < 2 || slashIdx != -1 || 
               queryIdx != -1 || fragmentIdx != -1) {
               // A standalone base is a valid URI according to spec
-              if (colonIdx == 0 || (p_base == null && fragmentIdx != 0 && !allowRelativeURI)) {
+              if (colonIdx == 0 || (p_base == null && fragmentIdx != 0 && !allowNonAbsoluteURI)) {
                   throw new MalformedURIException("No scheme found in URI.");
               }
           }
@@ -530,7 +534,7 @@ import java.io.Serializable;
               }
           }
       }
-      else if (p_base == null && uriSpec.indexOf('#') != 0 && !allowRelativeURI) {
+      else if (p_base == null && uriSpec.indexOf('#') != 0 && !allowNonAbsoluteURI) {
           throw new MalformedURIException("No scheme found in URI.");    
       }
       
@@ -728,6 +732,10 @@ import java.io.Serializable;
           
           if (m_queryString == null) {
               m_queryString = p_base.getQueryString();
+              
+              if (m_fragment == null) {
+                  m_fragment = p_base.getFragment();
+              }
           }
           return;
       }
