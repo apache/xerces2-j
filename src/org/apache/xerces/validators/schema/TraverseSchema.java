@@ -540,10 +540,31 @@ public class TraverseSchema implements
             reportGenericSchemaError("Internal error: don't have a GrammarResolver for TraverseSchema");
         }
         else{
-            fSchemaGrammar.setComplexTypeRegistry(fComplexTypeRegistry);
+            // for complex type registry, attribute decl registry and 
+            // namespace mapping, needs to check whether the passed in 
+            // Grammar was a newly instantiated one.
+            if (fSchemaGrammar.getComplexTypeRegistry() == null ) {
+                fSchemaGrammar.setComplexTypeRegistry(fComplexTypeRegistry);
+            }
+            else {
+                fComplexTypeRegistry = fSchemaGrammar.getComplexTypeRegistry();
+            }
+
+            if (fSchemaGrammar.getAttirubteDeclRegistry() == null ) {
+                fSchemaGrammar.setAttributeDeclRegistry(fAttributeDeclRegistry);
+            }
+            else {
+                fAttributeDeclRegistry = fSchemaGrammar.getAttirubteDeclRegistry();
+            }
+
+            if (fSchemaGrammar.getNamespacesScope() == null ) {
+                fSchemaGrammar.setNamespacesScope(fNamespacesScope);
+            }
+            else {
+                fNamespacesScope = fSchemaGrammar.getNamespacesScope();
+            }
+
             fSchemaGrammar.setDatatypeRegistry(fDatatypeRegistry);
-            fSchemaGrammar.setAttributeDeclRegistry(fAttributeDeclRegistry);
-            fSchemaGrammar.setNamespacesScope(fNamespacesScope);
             fSchemaGrammar.setTargetNamespaceURI(fTargetNSURIString);
             fGrammarResolver.putGrammar(fTargetNSURIString, fSchemaGrammar);
         }
