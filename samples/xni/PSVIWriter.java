@@ -654,6 +654,20 @@ implements XMLComponent, XMLDocumentFilter {
      */
     public void characters(XMLString text, Augmentations augs)
     throws XNIException {
+        if (fPSVInfoset) {
+            checkForChildren();
+            // REVISIT: 2.6. Character Information Items requires character property for   
+            //          each character. However, it also says:   
+            // "Each character is a logically separate information item,   
+            //  but XML applications are free to chunk characters into larger   
+            //  groups as necessary or desirable"   
+            //  XSV outputs each character separately.   
+            printIndentTag("<character>");
+            printElement("characterCode", text.toString());
+            printElement("elementContentWhitespace", "false");
+            printUnIndentTag("</character>");
+
+        }
         if (fDocumentHandler != null) {
             fDocumentHandler.characters(text,augs);
         }
@@ -675,7 +689,6 @@ implements XMLComponent, XMLDocumentFilter {
     public void ignorableWhitespace(XMLString text, Augmentations augs)
     throws XNIException {
         if (fPSVInfoset && fIncludeIgnorableWhitespace) {
-            int textLength = text.length;
             checkForChildren();
             // REVISIT: see characters()
             printIndentTag("<character>");
