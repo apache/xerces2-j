@@ -75,6 +75,7 @@ import  org.apache.xerces.validators.schema.identity.XPathException;
 import  org.apache.xerces.validators.datatype.DatatypeValidator;
 import  org.apache.xerces.validators.datatype.DatatypeValidatorFactoryImpl;
 import  org.apache.xerces.validators.datatype.NOTATIONDatatypeValidator;
+import  org.apache.xerces.validators.datatype.StringDatatypeValidator;  
 import  org.apache.xerces.validators.datatype.UnionDatatypeValidator;  
 import  org.apache.xerces.validators.datatype.InvalidDatatypeValueException;
 import  org.apache.xerces.utils.StringPool;
@@ -1720,7 +1721,8 @@ public class TraverseSchema implements
                             checkContent(simpleTypeDecl, XUtil.getFirstChildElement( content ), true);
                         }
                         else if (facet.equals(SchemaSymbols.ELT_ANNOTATION) || facet.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
-                                  reportSchemaError(SchemaMessageProvider.ListUnionRestrictionError,                                                    new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )});
+                                  reportSchemaError(SchemaMessageProvider.ListUnionRestrictionError,
+                                  new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )});
                         }         
                         else if (facet.equals(SchemaSymbols.ELT_PATTERN)) {
                             if (pattern == null) {                                
@@ -4062,8 +4064,6 @@ public class TraverseSchema implements
                                 //cause scope can never be -2.
         DatatypeValidator dv = null;
 
-
-
         String name = elementDecl.getAttribute(SchemaSymbols.ATT_NAME);
 
         if ( DEBUGGING )
@@ -4132,6 +4132,9 @@ public class TraverseSchema implements
         if (isAbstract) {
             elementMiscFlags += SchemaSymbols.ABSTRACT;
         }
+        // make the property of the element's value being fixed also appear in elementMiscFlags
+        if(!fixed.equals(""))
+            elementMiscFlags += SchemaSymbols.FIXED;
 
         //if this is a reference to a global element
         if (!ref.equals("")) {
@@ -4335,7 +4338,6 @@ public class TraverseSchema implements
             	child = XUtil.getNextSiblingElement(child);
             } 
             else if (childName.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
-                //   TO DO:  the Default and fixed attribute handling should be here.                
                 if (child.getAttribute(SchemaSymbols.ATT_NAME).length() > 0) {
                     noErrorSoFar = false;
                     // REVISIT: Localize
@@ -4452,7 +4454,6 @@ public class TraverseSchema implements
                             if (topleveltype != null) {
                                 typeNameIndex = traverseSimpleTypeDecl( topleveltype );
                                 dv = getDatatypeValidator(typeURI, localpart);
-                                //   TO DO:  the Default and fixed attribute handling should be here.
                             }
                             else {
                                 noErrorSoFar = false;
@@ -4494,6 +4495,7 @@ public class TraverseSchema implements
                 reportGenericSchemaError ("untyped element : " + name );
             }
         }
+
         // if element belongs to a compelx type
         if (typeInfo!=null) {
             contentSpecNodeIndex = typeInfo.contentSpecHandle;
@@ -4507,6 +4509,23 @@ public class TraverseSchema implements
             contentSpecType = XMLElementDecl.TYPE_SIMPLE;
             if (typeInfo == null) {
                 fromAnotherSchema = null; // not to switch schema in this case
+            }
+        }
+
+        // Now we can handle validation etc. of default and fixed attributes, 
+        // since we finally have all the type information.
+        if(!fixed.equals("")) dflt = fixed;
+        if(!dflt.equals("")) {
+            if(dv == null) { // in this case validate according to xs:string
+                new StringDatatypeValidator().validate(dflt, null);
+            } else {
+                dv.validate(dflt, null);
+            }
+            if(typeInfo != null && 
+                    (typeInfo.contentType != XMLElementDecl.TYPE_MIXED &&
+                    typeInfo.contentType != XMLElementDecl.TYPE_SIMPLE)) {
+                // REVISIT: Localize
+                reportGenericSchemaError ("element " + name + " has a fixed or default value and must have a mixed or simple content model");
             }
         }
 
@@ -4579,6 +4598,7 @@ public class TraverseSchema implements
         fSchemaGrammar.setElementDeclBlockSet(elementIndex, blockSet);
         fSchemaGrammar.setElementDeclFinalSet(elementIndex, finalSet);
         fSchemaGrammar.setElementDeclMiscFlags(elementIndex, elementMiscFlags);
+        fSchemaGrammar.setElementDefault(elementIndex, dflt);
 
         // setSubstitutionGroupElementFullName
         fSchemaGrammar.setElementDeclSubstitutionGroupElementFullName(elementIndex, substitutionGroupFullName);

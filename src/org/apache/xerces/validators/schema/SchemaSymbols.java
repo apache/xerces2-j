@@ -207,5 +207,6 @@ public final  class SchemaSymbols {
 
     public static final int NULLABLE = 1;
     public static final int ABSTRACT = 2;
+    public static final int FIXED = 4;
 
 }

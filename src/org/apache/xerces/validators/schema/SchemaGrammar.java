@@ -331,12 +331,11 @@ public class SchemaGrammar extends Grammar{
         }
     }
 
-    protected void setElementDefault(int elementDeclIndex, int defaultType, String defaultValue) {
+    protected void setElementDefault(int elementDeclIndex, String defaultValue) {
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex & CHUNK_MASK;
         ensureElementDeclCapacity(chunk);
         if (elementDeclIndex > -1 ) {
-            fElementDeclDefaultType[chunk][index] = defaultType;
             fElementDeclDefaultValue[chunk][index] = defaultValue;
         }
     }
