@@ -4984,11 +4984,11 @@ public class TraverseSchema implements
             && schemaURI.length() != 0 )
          aGrammar= (SchemaGrammar) fGrammarResolver.getGrammar(schemaURI);
 
-      int eltndx1 =  findElement(derivedScope, localpart1, aGrammar, null);
-      if (eltndx1 < 0)
+      int eltndx1 =  findElement(derivedScope, uri1, localpart1, aGrammar, null);
+      if (eltndx1 < 0) 
          return;
 
-      int eltndx2 = findElement(baseScope, localpart2, aGrammar, bInfo);
+      int eltndx2 = findElement(baseScope, uri2, localpart2, aGrammar, bInfo);
       if (eltndx2 < 0)
          return;
 
@@ -5050,13 +5050,14 @@ public class TraverseSchema implements
 
       for(; tempType != null; tempType = tempType.baseComplexTypeInfo) {
         if (tempType.derivedBy != SchemaSymbols.RESTRICTION) {
-          throw new ParticleRecoverableError("rcase-nameAndTypeOK.6:  Derived element " + elementName + " has a type that does not derives from that of the base");
+          throw new ParticleRecoverableError("rcase-nameAndTypeOK.6:  Derived element " + elementName + " has a type that does not derive from that of the base");
         }
         if (bType != null && tempType.typeName.equals(bType.typeName))
           break;
       }
+
       if(tempType == null && !(bType == null && base.datatypeValidator == null)) {
-        throw new ParticleRecoverableError("rcase-nameAndTypeOK.6:  Derived element " + elementName + " has a type that does not derives from that of the base");
+        throw new ParticleRecoverableError("rcase-nameAndTypeOK.6:  Derived element " + elementName + " has a type that does not derive from that of the base");
       }
     }
 
@@ -5171,10 +5172,10 @@ throws Exception {
         return false;
     }
 
-    private int findElement(int scope, int nameIndex, SchemaGrammar gr, ComplexTypeInfo bInfo) {
+    private int findElement(int scope, int uriIndex, int nameIndex, SchemaGrammar gr, ComplexTypeInfo bInfo) {
 
       // check for element at given scope first
-      int elementDeclIndex = gr.getElementDeclIndex(nameIndex,scope);
+      int elementDeclIndex = gr.getElementDeclIndex(uriIndex,nameIndex,scope);
 
       // if not found, check at global scope
       if (elementDeclIndex == -1) {
