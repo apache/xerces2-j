@@ -1169,6 +1169,7 @@ public class XMLDocumentScannerImpl
                         while (fDTDScanner.scanDTDExternalSubset(true));
                     }
                     else {
+                        // This sends startDTD and endDTD calls down the pipeline.
                         fDTDScanner.setInputSource(null);
                     }
                 }
