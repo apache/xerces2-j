@@ -225,7 +225,6 @@ Copyright:
          compress="true"
          includes="org/apache/**, META-INF/**
                    org/w3c/dom/ls/**
-	           org/w3c/dom/xpath/**
                    org/w3c/dom/DOMError.class
                    org/w3c/dom/DOMErrorHandler.class
                    org/w3c/dom/DOMImplementationSource.class
@@ -780,6 +779,7 @@ Copyright:
                         org/apache/xerces/impl/validation/XMLGrammarPoolImpl.java
                         org/apache/xerces/parsers/DOMASBuilderImpl.java
                         org/apache/xerces/parsers/StandardParserConfiguration.java
+                        org/apache/xerces/parsers/IntegratedParserConfiguration.java
                         org/apache/xerces/parsers/XML11Configuration.java
                         org/apache/xerces/parsers/XMLGrammarCachingConfiguration.java
                         org/apache/xerces/parsers/CachingParserPool.java
@@ -825,7 +825,6 @@ Copyright:
          compress="true"
          includes="org/apache/**, META-INF/**
                    org/w3c/dom/ls/**
-	           org/w3c/dom/xpath/**
                    org/w3c/dom/DOMError.class
                    org/w3c/dom/DOMErrorHandler.class
                    org/w3c/dom/DOMImplementationSource.class
