@@ -144,10 +144,14 @@ public class SubstitutionGroupHandler {
         XSTypeDefinition type = element.fType;
         while (type != exemplar.fType && type != SchemaGrammar.fAnyType) {
             if (type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE)
-                devMethod = ((XSComplexTypeDecl)type).fDerivedBy;
+                devMethod |= ((XSComplexTypeDecl)type).fDerivedBy;
             else
-                devMethod = XSConstants.DERIVATION_RESTRICTION;
+                devMethod |= XSConstants.DERIVATION_RESTRICTION;
             type = type.getBaseType();
+            // type == null means the current type is anySimpleType,
+            // whose base type should be anyType
+            if (type == null)
+                type = SchemaGrammar.fAnyType;
             if (type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE)
                 blockConstraint |= ((XSComplexTypeDecl)type).fBlock;
         }
