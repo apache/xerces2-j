@@ -155,7 +155,7 @@ public class WrappedOutputStream
         if (fPosition == fBuffer.length) {
             fPosition = 0;
             fDataOutputStream.writeInt(fBuffer.length);
-            write(fBuffer, 0, fBuffer.length);
+            super.out.write(fBuffer, 0, fBuffer.length);
         }
     } // write(int)
 
