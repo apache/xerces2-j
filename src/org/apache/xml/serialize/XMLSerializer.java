@@ -126,14 +126,14 @@ import org.apache.xerces.dom.DOMMessageFormatter;
  * @see Serializer
  */
 public class XMLSerializer
-extends BaseMarkupSerializer{
+extends BaseMarkupSerializer {
 
     //
     // constants
     //
 
     protected static final boolean DEBUG = false;
-                              
+
     // 
     // data
     //
@@ -159,6 +159,7 @@ extends BaseMarkupSerializer{
     protected boolean fDOML1 = false;
     // counter for new prefix names
     protected int fNamespaceCounter = 1;
+    protected final static String PREFIX = "NS";
 
     /**
      * Controls whether namespace fixup should be performed during
@@ -228,7 +229,7 @@ extends BaseMarkupSerializer{
         super.setOutputFormat( format != null ? format : new OutputFormat( Method.XML, null, false ) );
     }
 
-    
+
 
 
     //-----------------------------------------//
@@ -266,8 +267,7 @@ extends BaseMarkupSerializer{
                 // to that of the output format.
                 if (! _started)
                     startDocument( ( localName == null || localName.length() == 0 ) ? rawName : localName );
-            }
-            else {
+            } else {
                 // For any other element, if first in parent, then
                 // close parent's opening tag and use the parnet's
                 // space preserving.
@@ -305,8 +305,7 @@ extends BaseMarkupSerializer{
                         rawName = prefix + ":" + localName;
                     else
                         rawName = localName;
-                }
-                else
+                } else
                     rawName = localName;
                 addNSAttr = true;
             }
@@ -370,8 +369,7 @@ extends BaseMarkupSerializer{
                         _printer.printText( "xmlns=\"" );
                         printEscaped( value );
                         _printer.printText( '"' );
-                    }
-                    else {
+                    } else {
                         _printer.printText( "xmlns:" );
                         _printer.printText( name );
                         _printer.printText( "=\"" );
@@ -388,8 +386,7 @@ extends BaseMarkupSerializer{
             name = ( localName == null || localName.length() == 0 ) ? rawName : namespaceURI + "^" + localName;
             state.doCData = _format.isCDataElement( name );
             state.unescaped = _format.isNonEscapingElement( name );
-        }
-        catch (IOException except) {
+        } catch (IOException except) {
             throw new SAXException( except );
         }
     }
@@ -401,8 +398,7 @@ extends BaseMarkupSerializer{
     {
         try {
             endElementIO( namespaceURI, localName, rawName );
-        }
-        catch (IOException except) {
+        } catch (IOException except) {
             throw new SAXException( except );
         }
     }
@@ -423,8 +419,7 @@ extends BaseMarkupSerializer{
         state = getElementState();
         if (state.empty) {
             _printer.printText( "/>" );
-        }
-        else {
+        } else {
             // Must leave CData section first
             if (state.inCData)
                 _printer.printText( "]]>" );
@@ -481,8 +476,7 @@ extends BaseMarkupSerializer{
                 // to that of the output format.
                 if (! _started)
                     startDocument( tagName );
-            }
-            else {
+            } else {
                 // For any other element, if first in parent, then
                 // close parent's opening tag and use the parnet's
                 // space preserving.
@@ -541,8 +535,7 @@ extends BaseMarkupSerializer{
             state = enterElementState( null, null, tagName, preserveSpace );
             state.doCData = _format.isCDataElement( tagName );
             state.unescaped = _format.isNonEscapingElement( tagName );
-        }
-        catch (IOException except) {
+        } catch (IOException except) {
             throw new SAXException( except );
         }
 
@@ -622,12 +615,10 @@ extends BaseMarkupSerializer{
                             _printer.breakLine();
                             for (i = 0 ; i < 18 + rootTagName.length() ; ++i)
                                 _printer.printText( " " );
-                        }
-                        else
+                        } else
                             _printer.printText( " " );
                         printDoctypeURL( _docTypeSystemId );
-                    }
-                    else {
+                    } else {
                         _printer.printText( " SYSTEM " );
                         printDoctypeURL( _docTypeSystemId );
                     }
@@ -642,8 +633,7 @@ extends BaseMarkupSerializer{
 
                     _printer.printText( ">" );
                     _printer.breakLine();
-                }
-                else if (dtd != null && dtd.length() > 0) {
+                } else if (dtd != null && dtd.length() > 0) {
                     _printer.printText( "<!DOCTYPE " );
                     _printer.printText( rootTagName );
                     _printer.printText( " [" );
@@ -676,10 +666,10 @@ extends BaseMarkupSerializer{
         String       value;
         String       tagName;
 
-        String prefix;
+        String prefix, localUri;
         String uri;
         if (fNamespaces) {
-        
+
             // reset local binder
             fLocalNSBinder.reset(fSymbolTable);
             // note: the values that added to namespace binder
@@ -706,8 +696,7 @@ extends BaseMarkupSerializer{
             if (! _started) {
                 startDocument( tagName);
             }
-        }
-        else {
+        } else {
             // For any other element, if first in parent, then
             // close parent's opening tag and use the parent's
             // space preserving.
@@ -730,22 +719,22 @@ extends BaseMarkupSerializer{
         // This only happens in endElement().
         fPreserveSpace = state.preserveSpace;
 
-        
+
         int length = 0;
         attrMap = null;
         // retrieve attributes 
         if (elem.hasAttributes()) {
-          attrMap = elem.getAttributes();
-          length = attrMap.getLength();
+            attrMap = elem.getAttributes();
+            length = attrMap.getLength();
         }
 
         if (!fNamespaces) { // no namespace fixup should be perform                    
-           
+
             // serialize element name
             _printer.printText( '<' );
             _printer.printText( tagName );
             _printer.indent();
-            
+
             // For each attribute print it's name and value as one part,
             // separated with a space so the element can be broken on
             // multiple lines.
@@ -772,9 +761,64 @@ extends BaseMarkupSerializer{
                         fPreserveSpace = _format.getPreserveSpace();
                 }
             }
-        }
-        else { // do namespace fixup
-            
+        } else { // do namespace fixup
+
+            // REVISIT: some optimization could probably be done to avoid traversing 
+            //          attributes twice.
+            //
+
+            // ---------------------------------------
+            // record all valid namespace declarations
+            // before attempting to fix element's namespace
+            // ---------------------------------------
+            for (i = 0;i < length;i++) {
+
+                attr = (Attr) attrMap.item( i );
+                uri = attr.getNamespaceURI();
+                // check if attribute is a namespace decl 
+                if (uri != null && uri.equals(NamespaceSupport.XMLNS_URI)) {
+
+                    value = attr.getNodeValue();
+                    if (value == null) {
+                        value=fEmptySymbol;
+                    }
+
+                    if (value.equals(NamespaceSupport.XMLNS_URI)) {
+                        if (fDOMErrorHandler != null) {
+                            modifyDOMError("No prefix other than 'xmlns' can be bound to 'http://www.w3.org/2000/xmlns/' namespace name", 
+                                           DOMError.SEVERITY_ERROR, attr);
+                            boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
+                            if (!continueProcess) {
+                                // stop the namespace fixup and validation
+                                throw new RuntimeException("Stopped at user request");
+                            }
+                        }
+                    } else {
+                        prefix = attr.getPrefix();
+                        prefix = (prefix == null || 
+                                  prefix.length() == 0) ? fEmptySymbol :fSymbolTable.addSymbol(prefix);
+                        String localpart = fSymbolTable.addSymbol( attr.getLocalName());
+                        if (prefix == fXmlnsSymbol) { //xmlns:prefix
+                            value = fSymbolTable.addSymbol(value);
+                            // record valid decl
+                            if (value.length() != 0) {
+                                fNSBinder.declarePrefix(localpart, value);
+                            } else {
+                                // REVISIT: issue error on invalid declarations
+                                //          xmlns:foo = ""
+                            }
+                            continue;
+                        } else { // xmlns
+                            // empty prefix is always bound ("" or some string)
+
+                            value = fSymbolTable.addSymbol(value);
+                            fNSBinder.declarePrefix(fEmptySymbol, value);
+                            continue;
+                        }
+                    }  // end-else: valid declaration
+                } // end-if: namespace declaration 
+            }  // end-for
+
             //-----------------------
             // get element uri/prefix
             //-----------------------
@@ -788,21 +832,19 @@ extends BaseMarkupSerializer{
             // REVISIT: this could be removed if we always convert empty string to null
             //          for the namespaces.
             if ((uri !=null && prefix !=null ) && uri.length() == 0 && prefix.length()!=0) {
-                 // uri is an empty string and element has some prefix
+                // uri is an empty string and element has some prefix
                 // the namespace alg later will fix up the namespace attributes
                 // remove element prefix 
                 prefix = null; 
                 _printer.printText( '<' );
                 _printer.printText( elem.getLocalName() );
                 _printer.indent();
-            }
-            else {
+            } else {
                 _printer.printText( '<' );
                 _printer.printText( tagName );
                 _printer.indent();
             }
 
-            // REVISIT: should we report error/warning if DOM 1 nodes mix with DOM 2 nodes?
 
             // ---------------------------------------------------------
             // Fix up namespaces for element: per DOM L3 
@@ -819,84 +861,69 @@ extends BaseMarkupSerializer{
             // We need to bind default namespace to empty string, to be able to 
             // omit duplicate declarations for the same element
             //
+            // case 3: <xsl:stylesheet xmlns:xsl="http://xsl">
+            // We create another element body bound to the "http://xsl" namespace
+            // as well as namespace attribute rebounding xsl to another namespace.
+            // <xsl:body xmlns:xsl="http://another">
+            // Need to make sure that the new namespace decl value is changed to 
+            // "http://xsl"
+            //
             // ---------------------------------------------------------
             // check if prefix/namespace is correct for current element
             // ---------------------------------------------------------
+
+
             if (uri != null) {  // Element has a namespace
                 uri = fSymbolTable.addSymbol(uri);
                 prefix = (prefix == null || 
                           prefix.length() == 0) ? fEmptySymbol :fSymbolTable.addSymbol(prefix);
                 if (fNSBinder.getURI(prefix) == uri) {
-                // The xmlns:prefix=namespace or xmlns="default" was declared at parent.
-                // The binder always stores mapping of empty prefix to "".
-                // (NOTE: local binder does not store this kind of binding!)
-                // Thus the case where element was declared with uri="" (with or without a prefix)
-                // will be covered here.
+                    // The xmlns:prefix=namespace or xmlns="default" was declared at parent.
+                    // The binder always stores mapping of empty prefix to "".
+                    // (NOTE: local binder does not store this kind of binding!)
+                    // Thus the case where element was declared with uri="" (with or without a prefix)
+                    // will be covered here.
 
-                }
-                else {
+                } else {
                     // the prefix is either undeclared 
                     // or
                     // conflict: the prefix is bound to another URI
                     printNamespaceAttr(prefix, uri);
                     fLocalNSBinder.declarePrefix(prefix, uri);
-                    fNSBinder.declarePrefix(prefix, uri);
+                    //fNSBinder.declarePrefix(prefix, uri);
                 }
-            }
-            else { // Element has no namespace
+            } else { // Element has no namespace
                 int colon = tagName.indexOf(':');
                 if (colon > -1) {
                     //  DOM Level 1 node!
-                    int colon2 = tagName.lastIndexOf(':');
-                    if (colon != colon2) {
-                        //not a QName: report an error
-                        if (fDOMErrorHandler != null) {
-                            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "ElementQName", new Object[]{tagName});
-                            modifyDOMError(msg, DOMError.SEVERITY_ERROR);
-                            boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
-                            // REVISIT: should we terminate upon request?                        
+
+                    if (fDOMErrorHandler != null) {
+                        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "ElementQName", new Object[]{tagName});
+                        modifyDOMError(msg, DOMError.SEVERITY_ERROR, elem);
+                        boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
+                        // REVISIT: should we terminate upon request?
+                        if (!continueProcess) {
+                            throw new RuntimeException("Process stoped at user request");
                         }
                     }
-                    else {
-                        // if we got here no namespace processing was performed
-                        // report warnings
-                        if (fDOMErrorHandler != null) {
-                            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "ElementPrefix", new Object[]{tagName});
-                            modifyDOMError(msg, DOMError.SEVERITY_WARNING);
-                            boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
-                        }
-                    }
-                }
-                else { // uri=null and no colon (DOM L2 node)
+                } else { // uri=null and no colon (DOM L2 node)
                     uri = fNSBinder.getURI(fEmptySymbol);
-                    
+
                     if (uri !=null && uri.length() > 0) {
                         // there is a default namespace decl that is bound to
                         // non-zero length uri, output xmlns=""
                         printNamespaceAttr(fEmptySymbol, fEmptySymbol);
                         fLocalNSBinder.declarePrefix(fEmptySymbol, fEmptySymbol);
-                        fNSBinder.declarePrefix(fEmptySymbol, fEmptySymbol);
+                        //fNSBinder.declarePrefix(fEmptySymbol, fEmptySymbol);
                     }
                 }
             }
+
 
             // -----------------------------------------
             // Fix up namespaces for attributes: per DOM L3 
             // check if prefix/namespace is correct the attributes
             // -----------------------------------------
-            String localUri;
-
-            // REVISIT: common code for handling namespace attributes for DOM L2 nodes
-            //          and DOM L1 nodes. Currently because we don't skip invalid declarations
-            //          for L1, we might output more namespace declarations than we would have
-            //          if namespace processing was performed (duplicate decls on different elements)
-            // Open issues:
-            // 1. Is it allowed to mix DOM L1 with DOM L2 nodes
-            // 2. Should we skip invalid namespace declarations or attributes not with QName
-            //    [what should be the default behaviour]
-            // 3. What should happen if the tree is DOM L1 tree (no namespace processing was
-            //    performed)? Should we attempt any fixup??
-            //
 
             for (i = 0; i < length; i++) {
 
@@ -926,44 +953,48 @@ extends BaseMarkupSerializer{
                     String localpart = fSymbolTable.addSymbol( attr.getLocalName());
 
 
-                    // check if attribute is a namespace decl 
-                    if (prefix == fXmlnsSymbol) { //xmlns:prefix
-                        uri =  fNSBinder.getURI(localpart); // global prefix mapping
-                        localUri = fLocalNSBinder.getURI(localpart);  // local prefix mapping
-                        value = fSymbolTable.addSymbol(value);
-                        // REVISIT: don't output local declaration which is identical to the 
-                        // global declaration  
-                        // uri == null || ( localUri == null && !uri.equals(value)
-                        if (uri == null || localUri == null) {
-                            // REVISIT: we are skipping invalid decls
-                            //          xmlns:foo = ""
-                            if (value.length() != 0) { 
-                                printNamespaceAttr(localpart, value);
-                                fNSBinder.declarePrefix(localpart, value);
-                                fLocalNSBinder.declarePrefix(localpart, value);
+
+                    // ---------------------------------------------------
+                    // print namespace declarations namespace declarations 
+                    // ---------------------------------------------------
+                    if (uri != null && uri.equals(NamespaceSupport.XMLNS_URI)) {
+                        // check if we need to output this declaration
+                        prefix = attr.getPrefix();
+                        prefix = (prefix == null || 
+                                  prefix.length() == 0) ? fEmptySymbol :fSymbolTable.addSymbol(prefix);
+                        localpart = fSymbolTable.addSymbol( attr.getLocalName());
+                        if (prefix == fXmlnsSymbol) { //xmlns:prefix
+                            localUri = fLocalNSBinder.getURI(localpart);  // local prefix mapping
+                            value = fSymbolTable.addSymbol(value);
+                            if (value.length() != 0 ) {
+                                // add declaration to the global binder.
+                                if (localUri != null) {
+                                    // declaration was redeclared and printed above
+                                    fNSBinder.declarePrefix(localpart, localUri);
+                                } else {
+                                    printNamespaceAttr(localpart, value);
+                                }
+                            } else {
+                                // REVISIT: issue error on invalid declarations
+                                //          xmlns:foo = ""
                             }
-                        }
-                        continue;
-                    }
-                    else if (localpart == fXmlnsSymbol && prefix == fEmptySymbol) { // xmlns
-                        // empty prefix is always bound ("" or some string)
-                        uri = fNSBinder.getURI(fEmptySymbol);
-                        localUri=fLocalNSBinder.getURI(fEmptySymbol);
-                        value = fSymbolTable.addSymbol(value);
-                        if (localUri == null) {
-                            // there was no local default ns decl
+                            continue;
+                        } else { // xmlns
+                            // empty prefix is always bound ("" or some string)
 
-                            // REVISIT: should we output duplicate xmlns="" decls?
-                            //if (value.length() !=0 && !uri.equals(value)) {
-                            
-                            printNamespaceAttr(fEmptySymbol, value);
-                            fLocalNSBinder.declarePrefix(fEmptySymbol, value);
-                            fNSBinder.declarePrefix(fEmptySymbol, value);
-                            
+                            uri = fNSBinder.getURI(fEmptySymbol);
+                            localUri=fLocalNSBinder.getURI(fEmptySymbol);
+                            value = fSymbolTable.addSymbol(value);
+                            if (localUri != null) {
+                                // declaration was redeclared and printed above
+                                fNSBinder.declarePrefix(fEmptySymbol, value);
+                            } else {
+                                printNamespaceAttr(fEmptySymbol, value);
+                            }
+                            continue;
                         }
-                        continue;
-                    }
 
+                    }
                     uri = fSymbolTable.addSymbol(uri);
 
                     // find if for this prefix a URI was already declared
@@ -979,143 +1010,70 @@ extends BaseMarkupSerializer{
                         name  = attr.getNodeName();
                         // Find if any prefix for attributes namespace URI is available
                         // in the scope
-                        String declaredPrefix = fNSBinder.getPrefix(uri);
-                        if (declaredPrefix == null || declaredPrefix == fEmptySymbol) {
-                            // could not find a prefix/prefix is empty string
+
+                        String declaredPrefix = fLocalNSBinder.getPrefix(uri);
+                        if (declaredPrefix == null) {
+                            declaredPrefix = fNSBinder.getPrefix(uri);
+
+                        }
+
+                        if (declaredPrefix !=null && declaredPrefix !=fEmptySymbol) {
+                            // use the prefix that was found
+                            prefix = declaredPrefix;
+                            name=prefix+":"+localpart;
+                        } else {
                             if (DEBUG) {
                                 System.out.println("==> cound not find prefix for the attribute: " +prefix);
                             }
-                            if (prefix != fEmptySymbol) {
-                                // no need to create a new prefix:
-                                // use the one on the attribute
-                            }
-                            else {
-                                // create new prefix
-                                prefix = "NS" +fNamespaceCounter++; 
+
+                            if (prefix != fEmptySymbol && fLocalNSBinder.getURI(prefix) == null) {
+                                // the current prefix is not null and it has no in scope declaration
+
+                                // use this prefix
+                            } else {
+                                // find a prefix following the pattern "NS" +index (starting at 1)
+                                // make sure this prefix is not declared in the current scope.
+                                prefix = fSymbolTable.addSymbol(PREFIX +fNamespaceCounter++);
+                                while (fLocalNSBinder.getURI(prefix)!=null) {
+                                    prefix = fSymbolTable.addSymbol(PREFIX +fNamespaceCounter++);
+                                }
+                                name=prefix+":"+localpart;
                             }
                             // add declaration for the new prefix
                             printNamespaceAttr(prefix, uri);
                             value = fSymbolTable.addSymbol(value);
                             fLocalNSBinder.declarePrefix(prefix, value);
                             fNSBinder.declarePrefix(prefix, uri);
-                        }
-                        else {
-                            // use the prefix that was found (declared previously for this URI
-                            prefix = declaredPrefix;
-                        }
-                        name=prefix+":"+localpart;
+                        }                        
+
                         // change prefix for this attribute
                     }
 
                     printAttribute (name, (value==null)?fEmptySymbol:value, attr.getSpecified());
-                }
-                else { // attribute uri == null
+                } else { // attribute uri == null
 
                     // data
                     int colon = name.indexOf(':');
-                    int colon2 = name.lastIndexOf(':');
-                    //
-                    // process namespace declarations
-                    //
-                    if (name.startsWith(fXmlnsSymbol)) {
-                        //
-                        //  DOM Level 1 node!
-                        // 
-                        if (colon < 0) {  // xmlns decl
-                            // empty prefix is always bound ("" or some string)
-                            uri = fNSBinder.getURI(fEmptySymbol); 
-                            localUri=fLocalNSBinder.getURI(fEmptySymbol);
-                            if (localUri == null) {
-                            
-                              // REVISIT: should we output duplicate xmlns="" decls?
-                              //if (value.length() !=0 && !uri.equals(value)) {
-
-                                value = fSymbolTable.addSymbol(value);
-                                fNSBinder.declarePrefix(fEmptySymbol, value);
-                                fLocalNSBinder.declarePrefix(fEmptySymbol, value);
-                                printAttribute (name, value, attr.getSpecified());
+                    if (colon < 0) {
+                        if (fDOMErrorHandler != null) {
+                            modifyDOMError("DOM Level 1 Node: "+name, 
+                                           DOMError.SEVERITY_ERROR, attr);
+                            boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
+                            if (!continueProcess) {
+                                // stop the namespace fixup and validation
+                                throw new RuntimeException("Stopped at user request");
                             }
-                            continue;
+                            printAttribute (name, value, attr.getSpecified());
                         }
-                        else if (colon == colon2) { // xmlns:prefix decl
-                            // get prefix
-                            prefix = name.substring(6);
-                            prefix = (prefix.length() ==0) ? fEmptySymbol :fSymbolTable.addSymbol(prefix);
-                            if (prefix.length() == 0) {
-                                // report an error - invalid namespace declaration
-                                if (fDOMErrorHandler != null) {
-                                    String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "InvalidNSDecl", new Object[]{name});
-                                    modifyDOMError(msg, DOMError.SEVERITY_ERROR);
-                                    boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
-                                }
-                                // REVISIT: skip invalid declaration?
-                                // report an error later on
-                                //continue;
+                    } else { // uri=null and no colon
 
-                            }
-                            else if (value.length() == 0) {
-                                if (fDOMErrorHandler != null) {
-                                    String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "InvalidNSDecl", new Object[]{name});
-                                    modifyDOMError(msg, DOMError.SEVERITY_ERROR);
-                                    boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
-                                }
-                                // REVISIT: skip invalid declaration?
-                                // report an error later on
-                                //continue;
-                            }
-
-                            uri =  fNSBinder.getURI(prefix);           // global prefix mapping
-                            localUri = fLocalNSBinder.getURI(prefix);  // local prefix mapping
-                            if (uri == null || localUri == null) {
-                                // REVISIT: we are skipping invalid decls
-                                //          xmlns:foo = ""
-                                if (value.length() != 0) { 
-                                    //printNamespaceAttr(prefix, value);
-
-                                    value = fSymbolTable.addSymbol(value);
-                                    fNSBinder.declarePrefix(prefix, value);
-                                    fLocalNSBinder.declarePrefix(prefix, value);
-                                   
-                                }
-                                // REVISIT: only if we can skip continue;
-                            }
-                        }
-                    }
-
-                    if (colon > -1) {
-                        //
-                        //  DOM Level 1 node!
-                        // 
-                        if (colon != colon2) {
-                            //not a QName: report an error
-                            if (fDOMErrorHandler != null) {
-                                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "AttributeQName", new Object[]{name});
-                                modifyDOMError(msg, DOMError.SEVERITY_ERROR);
-                                boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);                                                        
-                            }
-
-                        }
-                        else {
-                            // if we got here no namespace processing was performed
-                            // report warnings
-                            if (fDOMErrorHandler != null) {
-                                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "AttributePrefix", new Object[]{name});
-                                modifyDOMError(msg, DOMError.SEVERITY_WARNING);
-                                boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
-                            }
-                        }
-
-                        printAttribute (name, value, attr.getSpecified());
-                    }
-                    else { // uri=null and no colon
                         // no fix up is needed: default namespace decl does not 
                         // apply to attributes
-
                         printAttribute (name, value, attr.getSpecified());
                     }
                 }
             } // end loop for attributes
-         
+
         }// end namespace fixup algorithm
 
 
@@ -1132,16 +1090,15 @@ extends BaseMarkupSerializer{
                 serializeNode( child );
                 child = child.getNextSibling();
             }
-            if (fNamespaces) {                
+            if (fNamespaces) {
                 fNSBinder.popContext();
             }
             endElementIO( null, null, tagName );
-        }
-        else {
+        } else {
             if (DEBUG) {
                 System.out.println("==>endElement: " +elem.getNodeName());
             }
-            if (fNamespaces) {                
+            if (fNamespaces) {
                 fNSBinder.popContext();
             }
             _printer.unindent();
@@ -1173,8 +1130,7 @@ extends BaseMarkupSerializer{
                 System.out.println("=>add xmlns=\""+uri+"\" declaration");
             }
             _printer.printText( fXmlnsSymbol );
-        }
-        else {
+        } else {
             if (DEBUG) {
                 System.out.println("=>add xmlns:"+prefix+"=\""+uri+"\" declaration");
             }
@@ -1185,7 +1141,7 @@ extends BaseMarkupSerializer{
         _printer.printText( '"' );
     }
 
-   
+
 
     /**
      * Prints attribute. 
@@ -1266,8 +1222,7 @@ extends BaseMarkupSerializer{
                 if (rawName.length() == 5) {
                     startPrefixMapping( "", attrs.getValue( i ) );
                     attrsOnly.removeAttribute( i );
-                }
-                else if (rawName.charAt(5) == ':') {
+                } else if (rawName.charAt(5) == ':') {
                     startPrefixMapping(rawName.substring(6), attrs.getValue(i));
                     attrsOnly.removeAttribute( i );
                 }
@@ -1275,7 +1230,7 @@ extends BaseMarkupSerializer{
         }
         return attrsOnly;
     }
-   
+
     //
     // overwrite printing functions to make sure serializer prints out valid XML
     //
@@ -1286,8 +1241,7 @@ extends BaseMarkupSerializer{
             if (!XMLChar.isValid(ch)) {
                 if (++i <length) {
                     surrogates(ch, source.charAt(i));
-                } 
-                else {
+                } else {
                     fatalError("The character '"+(char)ch+"' is an invalid XML character"); 
                 }
                 continue;
@@ -1301,20 +1255,16 @@ extends BaseMarkupSerializer{
 
         if ( ch == '<') {
             _printer.printText("&lt;");
-        }
-        else  if (ch == '&') {
+        } else if (ch == '&') {
             _printer.printText("&amp;");
-        } 
-        else if ( ch == '"') {
+        } else if ( ch == '"') {
             // REVISIT: for character data we should not convert this into 
             //          char reference
             _printer.printText("&quot;");
-        }
-        else if ( ( ch >= ' ' && _encodingInfo.isPrintable(ch)) ||
+        } else if ( ( ch >= ' ' && _encodingInfo.isPrintable(ch)) ||
                     ch == '\n' || ch == '\r' || ch == '\t' ) {
             _printer.printText((char)ch);
-        } 
-        else {
+        } else {
             // The character is not printable, print as character reference.
             _printer.printText( "&#x" );
             _printer.printText(Integer.toHexString(ch));
@@ -1325,7 +1275,7 @@ extends BaseMarkupSerializer{
 
 
     protected void printText( String text, boolean preserveSpace, boolean unescaped )
-        throws IOException {
+    throws IOException {
         int index;
         char ch;
         int length = text.length();
@@ -1340,16 +1290,14 @@ extends BaseMarkupSerializer{
                     // check if it is surrogate
                     if (++index <length) {
                         surrogates(ch, text.charAt(index));
-                    } 
-                    else {
+                    } else {
                         fatalError("The character '"+(char)ch+"' is an invalid XML character"); 
                     }
                     continue;
-                } 
-                if ( unescaped ) { 
-                    _printer.printText( ch );
                 }
-                else
+                if ( unescaped ) {
+                    _printer.printText( ch );
+                } else
                     printXMLChar( ch );
             }
         } else {
@@ -1364,12 +1312,11 @@ extends BaseMarkupSerializer{
                     // check if it is surrogate
                     if (++index <length) {
                         surrogates(ch, text.charAt(index));
-                    } 
-                    else {
+                    } else {
                         fatalError("The character '"+(char)ch+"' is an invalid XML character"); 
                     }
                     continue;
-                } 
+                }
                 if ( XMLChar.isSpace(ch))
                     _printer.printSpace();
                 else if ( unescaped )
@@ -1383,7 +1330,7 @@ extends BaseMarkupSerializer{
 
 
     protected void printText( char[] chars, int start, int length,
-                                    boolean preserveSpace, boolean unescaped ) throws IOException {
+                              boolean preserveSpace, boolean unescaped ) throws IOException {
         int index;
         char ch;
 
@@ -1399,12 +1346,11 @@ extends BaseMarkupSerializer{
                     // check if it is surrogate
                     if (++start <length) {
                         surrogates(ch, chars[start]);
-                    } 
-                    else {
+                    } else {
                         fatalError("The character '"+(char)ch+"' is an invalid XML character"); 
                     }
                     continue;
-                } 
+                }
                 if ( unescaped )
                     _printer.printText( ch );
                 else
@@ -1424,12 +1370,11 @@ extends BaseMarkupSerializer{
                     // check if it is surrogate
                     if (++start <length) {
                         surrogates(ch, chars[start]);
-                    } 
-                    else {
+                    } else {
                         fatalError("The character '"+(char)ch+"' is an invalid XML character"); 
                     }
                     continue;
-                } 
+                }
                 if ( XMLChar.isSpace(ch))
                     _printer.printSpace();
                 else if ( unescaped )

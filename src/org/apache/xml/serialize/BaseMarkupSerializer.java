@@ -1485,7 +1485,7 @@ public abstract class BaseMarkupSerializer
                     if (!getFeature(Constants.DOM_SPLIT_CDATA)) {
                         // issue fatal error
                         String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "EndingCDATA", null);
-                        modifyDOMError(msg, DOMError.SEVERITY_FATAL_ERROR);
+                        modifyDOMError(msg, DOMError.SEVERITY_FATAL_ERROR, fCurrentNode);
                         boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
                         if (!continueProcess) {
                             throw new IOException();
@@ -1493,7 +1493,7 @@ public abstract class BaseMarkupSerializer
                     } else {
                         // issue warning
                         String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "SplittingCDATA", null);
-                        modifyDOMError(msg, DOMError.SEVERITY_WARNING);
+                        modifyDOMError(msg, DOMError.SEVERITY_WARNING, fCurrentNode);
                         fDOMErrorHandler.handleError(fDOMError);
                     }
                 }
@@ -1865,11 +1865,11 @@ public abstract class BaseMarkupSerializer
      * @param severity
      * @return a DOMError
      */
-    protected DOMError modifyDOMError(String message, short severity){
+    protected DOMError modifyDOMError(String message, short severity, Node node){
             fDOMError.reset();
             fDOMError.setMessage(message);
             fDOMError.setSeverity(severity);
-            fDOMError.setLocator(new DOMLocatorImpl(-1, -1, -1, fCurrentNode, null));
+            fDOMError.setLocator(new DOMLocatorImpl(-1, -1, -1, node, null));
             return fDOMError;
         
     }
@@ -1881,7 +1881,7 @@ public abstract class BaseMarkupSerializer
 
     protected void fatalError(String message) throws IOException{
         if (fDOMErrorHandler != null) {
-            modifyDOMError(message, DOMError.SEVERITY_FATAL_ERROR);
+            modifyDOMError(message, DOMError.SEVERITY_FATAL_ERROR, fCurrentNode);
             fDOMErrorHandler.handleError(fDOMError);
         } 
         else {
