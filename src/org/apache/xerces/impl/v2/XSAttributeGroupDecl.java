@@ -139,12 +139,12 @@ public class XSAttributeGroupDecl {
              //
              // derivation-ok-restriction.  Constraint 2.1.1
              //
-             // Need to revisit - not sure where the method to check this is.  LM.
-             //if (!(checkSimpleTypeDerivationOK(attrDecl.fDatatypeValidator,
-             //   baseAttrDecl.fDatatypeValidator))) {
-             //   errorCode="derivation-ok-restriction.2.1.2";
-             //   return errorCode;
-             //}
+             if (! XSConstraints.checkSimpleDerivationOk(attrDecl.fType,
+                                           baseAttrDecl.fType,
+                                           baseAttrDecl.fType.getFinalSet()) ) {
+             	errorCode="derivation-ok-restriction.2.1.2";
+             	return errorCode;
+             }
 
              
              //
