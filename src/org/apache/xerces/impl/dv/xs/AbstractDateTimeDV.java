@@ -452,8 +452,8 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 		}
 		
 		//validate
-		if ( data.second>60 || data.second<0 ) {
-			throw new RuntimeException("Second must have values 0-60");
+		if ( data.second>=60 || data.second<0 ) {
+			throw new RuntimeException("Second must have values 0-59");
 			
 		}
 		
