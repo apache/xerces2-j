@@ -67,6 +67,10 @@ import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentFilter;
 import org.apache.xerces.xni.XMLDocumentHandler;
+import org.apache.xerces.xni.XMLDTDFilter;
+import org.apache.xerces.xni.XMLDTDHandler;
+import org.apache.xerces.xni.XMLDTDContentModelFilter;
+import org.apache.xerces.xni.XMLDTDContentModelHandler;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
@@ -77,11 +81,14 @@ import org.xml.sax.SAXNotSupportedException;
  * @version $Id$
  */
 public class XMLValidator
-    implements XMLComponent, XMLDocumentFilter {
+    implements XMLComponent, 
+               XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
     //
     // Data
     //
+
+    // components
 
     /** fSymbolTable */
     protected SymbolTable fSymbolTable;
@@ -92,6 +99,8 @@ public class XMLValidator
     /** fGrammarPool */
     protected GrammarPool fGrammarPool;
 
+    // features
+
     /** fNamespaces */
     protected boolean fNamespaces;
 
@@ -101,224 +110,794 @@ public class XMLValidator
     /** fDynamicValidation */
     protected boolean fDynamicValidation;
 
-    /** fDocumentHandler */
+    // handlers
+
+    /** Document handler. */
     protected XMLDocumentHandler fDocumentHandler;
+
+    /** DTD handler. */
+    protected XMLDTDHandler fDTDHandler;
+
+    /** DTD content model handler. */
+    protected XMLDTDContentModelHandler fDTDContentModelHandler;
 
     //
     // Constructors
     //
 
-    /**
-     * 
-     */
+    /** Default constructor. */
     public XMLValidator() {
-    }
+    } // <init>()
 
     //
     // XMLComponent methods
     //
 
     /**
-     * reset
+     * Resets the component. The component can query the component manager
+     * about any features and properties that affect the operation of the
+     * component.
      * 
-     * @param configurationManager 
+     * @param componentManager The component manager.
+     *
+     * @throws SAXException Thrown by component on initialization error.
+     *                      For example, if a feature or property is
+     *                      required for the operation of the component, the
+     *                      component manager may throw a 
+     *                      SAXNotRecognizedException or a
+     *                      SAXNotSupportedException.
      */
     public void reset(XMLComponentManager configurationManager)
         throws SAXException {
-    } // reset
+    } // reset(XMLComponentManager)
 
     /**
-     * setFeature
+     * Sets the state of a feature. This method is called by the component
+     * manager any time after reset when a feature changes state. 
+     * <p>
+     * <strong>Note:</strong> Components should silently ignore features
+     * that do not affect the operation of the component.
      * 
-     * @param featureId 
-     * @param state 
+     * @param featureId The feature identifier.
+     * @param state     The state of the feature.
+     *
+     * @throws SAXNotRecognizedException The component should not throw
+     *                                   this exception.
+     * @throws SAXNotSupportedException The component should not throw
+     *                                  this exception.
      */
     public void setFeature(String featureId, boolean state)
         throws SAXNotRecognizedException, SAXNotSupportedException {
-    } // setFeature
+    } // setFeature(String,boolean)
 
     /**
-     * setProperty
+     * Sets the value of a property. This method is called by the component
+     * manager any time after reset when a property changes value. 
+     * <p>
+     * <strong>Note:</strong> Components should silently ignore properties
+     * that do not affect the operation of the component.
      * 
-     * @param propertyId 
-     * @param value 
+     * @param propertyId The property identifier.
+     * @param value      The value of the property.
+     *
+     * @throws SAXNotRecognizedException The component should not throw
+     *                                   this exception.
+     * @throws SAXNotSupportedException The component should not throw
+     *                                  this exception.
      */
     public void setProperty(String propertyId, Object value)
         throws SAXNotRecognizedException, SAXNotSupportedException {
-    } // setProperty
+    } // setProperty(String,Object)
 
     //
     // XMLDocumentSource methods
     //
 
     /**
-     * setDocumentHandler
+     * Sets the document handler to receive information about the document.
      * 
-     * @param documentHandler 
+     * @param documentHandler The document handler.
      */
     public void setDocumentHandler(XMLDocumentHandler documentHandler) {
-    } // setDocumentHandler
+        fDocumentHandler = documentHandler;
+    } // setDocumentHandler(XMLDocumentHandler)
 
     //
-    // XMLEntityHandler methods
+    // XMLDTDSource methods
     //
-
-    /** 
-     * startEntity
-     *
-     * @param name
-     * @param publicId
-     * @param systemId
-     * @param encoding
-     */
-    public void startEntity(String name, String publicId, String systemId,
-                            String encoding) throws SAXException {
-    }
 
     /**
-     * endEntity
+     * Sets the DTD handler.
      * 
-     * @param name 
+     * @param dtdHandler The DTD handler.
      */
-    public void endEntity(String name)
-        throws SAXException {
-    } // endEntity
+    public void setDTDHandler(XMLDTDHandler dtdHandler) {
+        fDTDHandler = dtdHandler;
+    } // setDTDHandler(XMLDTDHandler)
+
+    //
+    // XMLDTDContentModelSource methods
+    //
+
+    /**
+     * Sets the DTD content model handler.
+     * 
+     * @param dtdContentModelHandler The DTD content model handler.
+     */
+    public void setDTDContentModelHandler(XMLDTDContentModelHandler dtdContentModelHandler) {
+        fDTDContentModelHandler = dtdContentModelHandler;
+    } // setDTDContentModelHandler(XMLDTDContentModelHandler)
 
     //
     // XMLDocumentHandler methods
     //
 
     /**
-     * startDocument
+     * The start of the document.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
      */
-    public void startDocument()
-        throws SAXException {
-    } // startDocument
+    public void startDocument() throws SAXException {
+        if (fDocumentHandler != null) {
+            fDocumentHandler.startDocument();
+        }
+    } // startDocument()
 
     /**
-     * xmlDecl
+     * Notifies of the presence of an XMLDecl line in the document. If
+     * present, this method will be called immediately following the
+     * startDocument call.
      * 
-     * @param version 
-     * @param encoding 
-     * @param standalone 
+     * @param version    The XML version.
+     * @param encoding   The IANA encoding name of the document, or null if
+     *                   not specified.
+     * @param standalone The standalone value, or null if not specified.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
      */
     public void xmlDecl(String version, String encoding, String standalone)
         throws SAXException {
-    } // xmlDecl
+        if (fDocumentHandler != null) {
+            fDocumentHandler.xmlDecl(version, encoding, standalone);
+        }
+    } // xmlDecl(String,String,String)
 
     /**
-     * doctypeDecl
+     * Notifies of the presence of the DOCTYPE line in the document.
      * 
-     * @param rootElement 
-     * @param publicId 
-     * @param systemId 
+     * @param rootElement The name of the root element.
+     * @param publicId    The public identifier if an external DTD or null
+     *                    if the external DTD is specified using SYSTEM.
+     * @param systemId    The system identifier if an external DTD, null
+     *                    otherwise.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
      */
     public void doctypeDecl(String rootElement, String publicId, String systemId)
         throws SAXException {
-    } // doctypeDecl
+        if (fDocumentHandler != null) {
+            fDocumentHandler.doctypeDecl(rootElement, publicId, systemId);
+        }
+    } // doctypeDecl(String,String,String)
 
     /**
-     * comment
+     * The start of a namespace prefix mapping. This method will only be
+     * called when namespace processing is enabled.
      * 
-     * @param text 
-     */
-    public void comment(XMLString text)
-        throws SAXException {
-    } // comment
-
-    /**
-     * processingInstruction
-     * 
-     * @param target 
-     * @param data 
-     */
-    public void processingInstruction(String target, XMLString data)
-        throws SAXException {
-    } // processingInstruction
-
-    /**
-     * startPrefixMapping
-     * 
-     * @param prefix 
-     * @param uri 
+     * @param prefix The namespace prefix.
+     * @param uri    The URI bound to the prefix.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
      */
     public void startPrefixMapping(String prefix, String uri)
         throws SAXException {
-    } // startPrefixMapping
+        if (fDocumentHandler != null) {
+            fDocumentHandler.startPrefixMapping(prefix, uri);
+        }
+    } // startPrefixMapping(String,String)
 
     /**
-     * startElement
+     * The start of an element. If the document specifies the start element
+     * by using an empty tag, then the startElement method will immediately
+     * be followed by the endElement method, with no intervening methods.
      * 
-     * @param element 
-     * @param attributes 
+     * @param element    The name of the element.
+     * @param attributes The element attributes.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
      */
     public void startElement(QName element, XMLAttributes attributes)
         throws SAXException {
-    } // startElement
+        if (fDocumentHandler != null) {
+            fDocumentHandler.startElement(element, attributes);
+        }
+    } // startElement(QName,XMLAttributes)
 
     /**
-     * characters
+     * Character content.
      * 
-     * @param text 
+     * @param text The content.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
      */
     public void characters(XMLString text) throws SAXException {
-    } // characters
+        if (fDocumentHandler != null) {
+            fDocumentHandler.characters(text);
+        }
+    } // characters(XMLString)
 
     /**
-     * ignorableWhitespace
+     * Ignorable whitespace. For this method to be called, the document
+     * source must have some way of determining that the text containing
+     * only whitespace characters should be considered ignorable. For
+     * example, the validator can determine if a length of whitespace
+     * characters in the document are ignorable based on the element
+     * content model.
      * 
-     * @param text 
+     * @param text The ignorable whitespace.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
      */
-    public void ignorableWhitespace(XMLString text)
-        throws SAXException {
-    } // ignorableWhitespace
+    public void ignorableWhitespace(XMLString text) throws SAXException {
+        if (fDocumentHandler != null) {
+            fDocumentHandler.ignorableWhitespace(text);
+        }
+    } // ignorableWhitespace(XMLString)
 
     /**
-     * endElement
+     * The end of an element.
      * 
-     * @param element 
+     * @param element The name of the element.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
      */
-    public void endElement(QName element)
-        throws SAXException {
-    } // endElement
+    public void endElement(QName element) throws SAXException {
+        if (fDocumentHandler != null) {
+            fDocumentHandler.endElement(element);
+        }
+    } // endElement(QName)
 
     /**
-     * endPrefixMapping
+     * The end of a namespace prefix mapping. This method will only be
+     * called when namespace processing is enabled.
      * 
-     * @param prefix 
+     * @param prefix The namespace prefix.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
      */
-    public void endPrefixMapping(String prefix)
-        throws SAXException {
-    } // endPrefixMapping
+    public void endPrefixMapping(String prefix) throws SAXException {
+        if (fDocumentHandler != null) {
+            fDocumentHandler.endPrefixMapping(prefix);
+        }
+    } // endPrefixMapping(String)
+
+    /** 
+     * The start of a CDATA section. 
+     *
+     * @throws SAXException Thrown by handler to signal an error.
+     */
+    public void startCDATA() throws SAXException {
+        if (fDocumentHandler != null) {
+            fDocumentHandler.startCDATA();
+        }
+    } // startCDATA()
 
     /**
-     * startCDATA
+     * The end of a CDATA section. 
+     *
+     * @throws SAXException Thrown by handler to signal an error.
      */
-    public void startCDATA()
-        throws SAXException {
-    } // startCDATA
+    public void endCDATA() throws SAXException {
+        if (fDocumentHandler != null) {
+            fDocumentHandler.endCDATA();
+        }
+    } // endCDATA()
 
     /**
-     * endCDATA
+     * The end of the document.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
      */
-    public void endCDATA()
-        throws SAXException {
-    } // endCDATA
+    public void endDocument() throws SAXException {
+        if (fDocumentHandler != null) {
+            fDocumentHandler.endDocument();
+        }
+    } // endDocument()
+
+    //
+    // XMLDocumentHandler and XMLDTDHandler methods
+    //
 
     /**
-     * textDecl
+     * This method notifies of the start of an entity. The document entity
+     * has the pseudo-name of "[xml]"; The DTD has the pseudo-name of "[dtd]; 
+     * parameter entity names start with '%'; and general entity names are
+     * just the entity name.
+     * <p>
+     * <strong>Note:</strong> Since the document is an entity, the handler
+     * will be notified of the start of the document entity by calling the
+     * startEntity method with the entity name "[xml]" <em>before</em> calling
+     * the startDocument method. When exposing entity boundaries through the
+     * SAX API, the document entity is never reported, however.
+     * <p>
+     * <strong>Note:</strong> Since the DTD is an entity, the handler
+     * will be notified of the start of the DTD entity by calling the
+     * startEntity method with the entity name "[dtd]" <em>before</em> calling
+     * the startDTD method.
+     * <p>
+     * <strong>Note:</strong> This method is not called for entity references
+     * appearing as part of attribute values.
      * 
-     * @param version 
-     * @param encoding 
+     * @param name     The name of the entity.
+     * @param publicId The public identifier of the entity if the entity
+     *                 is external, null otherwise.
+     * @param systemId The system identifier of the entity if the entity
+     *                 is external, null otherwise.
+     * @param encoding The auto-detected IANA encoding name of the entity
+     *                 stream. This value will be null in those situations
+     *                 where the entity encoding is not auto-detected (e.g.
+     *                 internal parameter entities).
+     *
+     * @throws SAXException Thrown by handler to signal an error.
+     */
+    public void startEntity(String name, String publicId, String systemId,
+                            String encoding) throws SAXException {
+        if (fDocumentHandler != null) {
+            fDocumentHandler.startEntity(name, publicId, systemId, encoding);
+        }
+        if (fDTDHandler != null && fDTDHandler != fDocumentHandler) {
+            fDTDHandler.startEntity(name, publicId, systemId, encoding);
+        }
+    } // startEntity(String,String,String,String)
+
+    /**
+     * Notifies of the presence of a TextDecl line in an entity. If present,
+     * this method will be called immediately following the startEntity call.
+     * <p>
+     * <strong>Note:</strong> This method will never be called for the
+     * document entity; it is only called for external general entities
+     * referenced in document content.
+     * <p>
+     * <strong>Note:</strong> This method is not called for entity references
+     * appearing as part of attribute values.
+     * 
+     * @param version  The XML version, or null if not specified.
+     * @param encoding The IANA encoding name of the entity.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
      */
     public void textDecl(String version, String encoding) throws SAXException {
-    } // textDecl
+        if (fDocumentHandler != null) {
+            fDocumentHandler.textDecl(version, encoding);
+        }
+        if (fDTDHandler != null && fDTDHandler != fDocumentHandler) {
+            fDTDHandler.textDecl(version, encoding);
+        }
+    } // textDecl(String,String)
 
     /**
-     * endDocument
+     * A comment.
+     * 
+     * @param text The text in the comment.
+     *
+     * @throws SAXException Thrown by application to signal an error.
      */
-    public void endDocument()
+    public void comment(XMLString text) throws SAXException {
+        if (fDocumentHandler != null) {
+            fDocumentHandler.comment(text);
+        }
+        if (fDTDHandler != null && fDTDHandler != fDocumentHandler) {
+            fDTDHandler.comment(text);
+        }
+    } // comment(XMLString)
+
+    /**
+     * A processing instruction. Processing instructions consist of a
+     * target name and, optionally, text data. The data is only meaningful
+     * to the application.
+     * <p>
+     * Typically, a processing instruction's data will contain a series
+     * of pseudo-attributes. These pseudo-attributes follow the form of
+     * element attributes but are <strong>not</strong> parsed or presented
+     * to the application as anything other than text. The application is
+     * responsible for parsing the data.
+     * 
+     * @param target The target.
+     * @param data   The data or null if none specified.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
+     */
+    public void processingInstruction(String target, XMLString data)
         throws SAXException {
-    } // endDocument
+        if (fDocumentHandler != null) {
+            fDocumentHandler.processingInstruction(target, data);
+        }
+        if (fDTDHandler != null && fDTDHandler != fDocumentHandler) {
+            fDTDHandler.processingInstruction(target, data);
+        }
+    } // processingInstruction(String,XMLString)
+
+    /**
+     * This method notifies the end of an entity. The document entity has
+     * the pseudo-name of "[xml]"; the DTD has the pseudo-name of "[dtd]; 
+     * parameter entity names start with '%'; and general entity names are
+     * just the entity name.
+     * <p>
+     * <strong>Note:</strong> Since the document is an entity, the handler
+     * will be notified of the end of the document entity by calling the
+     * endEntity method with the entity name "[xml]" <em>after</em> calling
+     * the endDocument method. When exposing entity boundaries through the
+     * SAX API, the document entity is never reported, however.
+     * <p>
+     * <strong>Note:</strong> Since the DTD is an entity, the handler
+     * will be notified of the end of the DTD entity by calling the
+     * endEntity method with the entity name "[dtd]" <em>after</em> calling
+     * the endDTD method.
+     * <p>
+     * <strong>Note:</strong> This method is not called for entity references
+     * appearing as part of attribute values.
+     * 
+     * @param name The name of the entity.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
+     */
+    public void endEntity(String name) throws SAXException {
+        if (fDocumentHandler != null) {
+            fDocumentHandler.endEntity(name);
+        }
+        if (fDTDHandler != null && fDTDHandler != fDocumentHandler) {
+            fDocumentHandler.endEntity(name);
+        }
+    } // endEntity(String)
+
+    //
+    // XMLDTDHandler methods
+    //
+
+    /**
+     * The start of the DTD.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
+     */
+    public void startDTD() throws SAXException {
+        if (fDTDHandler != null) {
+            fDTDHandler.startDTD();
+        }
+    } // startDTD()
+
+    /**
+     * An element declaration.
+     * 
+     * @param name         The name of the element.
+     * @param contentModel The element content model.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
+     */
+    public void elementDecl(String name, String contentModel)
+        throws SAXException {
+        if (fDTDHandler != null) {
+            fDTDHandler.elementDecl(name, contentModel);
+        }
+    } // elementDecl(String,String)
+
+    /**
+     * The start of an attribute list.
+     * 
+     * @param elementName The name of the element that this attribute
+     *                    list is associated with.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
+     */
+    public void startAttlist(String elementName) throws SAXException {
+        if (fDTDHandler != null) {
+            fDTDHandler.startAttlist(elementName);
+        }
+    } // startAttlist(String)
+
+    /**
+     * An attribute declaration.
+     * 
+     * @param elementName   The name of the element that this attribute
+     *                      is associated with.
+     * @param attributeName The name of the attribute.
+     * @param type          The attribute type. This value will be one of
+     *                      the following: "CDATA", "ENTITY", "ENTITIES",
+     *                      "ENUMERATION", "ID", "IDREF", "IDREFS", 
+     *                      "NMTOKEN", "NMTOKENS", or "NOTATION".
+     * @param enumeration   If the type has the value "ENUMERATION", this
+     *                      array holds the allowed attribute values;
+     *                      otherwise, this array is null.
+     * @param defaultType   The attribute default type. This value will be
+     *                      one of the following: "#FIXED", "#IMPLIED",
+     *                      "#REQUIRED", or null.
+     * @param defaultValue  The attribute default value, or null if no
+     *                      default value is specified.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
+     */
+    public void attributeDecl(String elementName, String attributeName, 
+                              String type, String[] enumeration, 
+                              String defaultType, XMLString defaultValue)
+        throws SAXException {
+        if (fDTDHandler != null) {
+            fDTDHandler.attributeDecl(elementName, attributeName, 
+                                      type, enumeration, 
+                                      defaultType, defaultValue);
+        }
+    } // attributeDecl(String,String,String,String[],String,XMLString)
+
+    /**
+     * The end of an attribute list.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
+     */
+    public void endAttlist() throws SAXException {
+        if (fDTDHandler != null) {
+            fDTDHandler.endAttlist();
+        }
+    } // endAttlist()
+
+    /**
+     * An internal entity declaration.
+     * 
+     * @param name The name of the entity. Parameter entity names start with
+     *             '%', whereas the name of a general entity is just the 
+     *             entity name.
+     * @param text The value of the entity.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
+     */
+    public void internalEntityDecl(String name, XMLString text) 
+        throws SAXException {
+        if (fDTDHandler != null) {
+            fDTDHandler.internalEntityDecl(name, text);
+        }
+    } // internalEntityDecl(String,XMLString)
+
+    /**
+     * An external entity declaration.
+     * 
+     * @param name     The name of the entity. Parameter entity names start
+     *                 with '%', whereas the name of a general entity is just
+     *                 the entity name.
+     * @param publicId The public identifier of the entity or null if the
+     *                 the entity was specified with SYSTEM.
+     * @param systemId The system identifier of the entity.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
+     */
+    public void externalEntityDecl(String name, 
+                                   String publicId, String systemId) 
+        throws SAXException {
+        if (fDTDHandler != null) {
+            fDTDHandler.externalEntityDecl(name, publicId, systemId);
+        }
+    } // externalEntityDecl(String,String,String)
+
+    /**
+     * An unparsed entity declaration.
+     * 
+     * @param name     The name of the entity.
+     * @param publicId The public identifier of the entity, or null if not
+     *                 specified.
+     * @param systemId The system identifier of the entity, or null if not
+     *                 specified.
+     * @param notation The name of the notation.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
+     */
+    public void unparsedEntityDecl(String name, 
+                                   String publicId, String systemId, 
+                                   String notation) throws SAXException {
+        if (fDTDHandler != null) {
+            fDTDHandler.unparsedEntityDecl(name, publicId, systemId, notation);
+        }
+    } // unparsedEntityDecl(String,String,String,String)
+
+    /**
+     * A notation declaration
+     * 
+     * @param name     The name of the notation.
+     * @param publicId The public identifier of the notation, or null if not
+     *                 specified.
+     * @param systemId The system identifier of the notation, or null if not
+     *                 specified.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
+     */
+    public void notationDecl(String name, String publicId, String systemId)
+        throws SAXException {
+        if (fDTDHandler != null) {
+            fDTDHandler.notationDecl(name, publicId, systemId);
+        }
+    } // notationDecl(String,String,String)
+
+    /**
+     * The start of a conditional section.
+     * 
+     * @param type The type of the conditional section. This value will
+     *             either be CONDITIONAL_INCLUDE or CONDITIONAL_IGNORE.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
+     *
+     * @see CONDITIONAL_INCLUDE
+     * @see CONDITIONAL_IGNORE
+     */
+    public void startConditional(short type) throws SAXException {
+        if (fDTDHandler != null) {
+            fDTDHandler.startConditional(type);
+        }
+    } // startConditional(short)
+
+    /**
+     * The end of a conditional section.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
+     */
+    public void endConditional() throws SAXException {
+        if (fDTDHandler != null) {
+            fDTDHandler.endConditional();
+        }
+    } // endConditional()
+
+    /**
+     * The end of the DTD.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
+     */
+    public void endDTD() throws SAXException {
+        if (fDTDHandler != null) {
+            fDTDHandler.endDTD();
+        }
+    } // endDTD()
+
+    //
+    // XMLDTDContentModelHandler methods
+    //
+
+    /**
+     * The start of a content model. Depending on the type of the content
+     * model, specific methods may be called between the call to the
+     * startContentModel method and the call to the endContentModel method.
+     * 
+     * @param elementName The name of the element.
+     * @param type        The content model type.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
+     *
+     * @see TYPE_EMPTY
+     * @see TYPE_ANY
+     * @see TYPE_MIXED
+     * @see TYPE_CHILDREN
+     */
+    public void startContentModel(String elementName, short type)
+        throws SAXException {
+        if (fDTDContentModelHandler != null) {
+            fDTDContentModelHandler.startContentModel(elementName, type);
+        }
+    } // startContentModel(String,short)
+
+    /**
+     * A referenced element in a mixed content model. If the mixed content 
+     * model only allows text content, then this method will not be called
+     * for that model. However, if this method is called for a mixed
+     * content model, then the zero or more occurrence count is implied.
+     * <p>
+     * <strong>Note:</strong> This method is only called after a call to 
+     * the startContentModel method where the type is TYPE_MIXED.
+     * 
+     * @param elementName The name of the referenced element. 
+     *
+     * @throws SAXException Thrown by handler to signal an error.
+     *
+     * @see TYPE_MIXED
+     */
+    public void mixedElement(String elementName) throws SAXException {
+        if (fDTDContentModelHandler != null) {
+            fDTDContentModelHandler.mixedElement(elementName);
+        }
+    } // mixedElement(elementName)
+
+    /**
+     * The start of a children group.
+     * <p>
+     * <strong>Note:</strong> This method is only called after a call to
+     * the startContentModel method where the type is TYPE_CHILDREN.
+     * <p>
+     * <strong>Note:</strong> Children groups can be nested and have
+     * associated occurrence counts.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
+     *
+     * @see TYPE_CHILDREN
+     */
+    public void childrenStartGroup() throws SAXException {
+        if (fDTDContentModelHandler != null) {
+            fDTDContentModelHandler.childrenStartGroup();
+        }
+    } // childrenStartGroup()
+
+    /**
+     * A referenced element in a children content model.
+     * 
+     * @param elementName The name of the referenced element.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
+     *
+     * @see TYPE_CHILDREN
+     */
+    public void childrenElement(String elementName) throws SAXException {
+        if (fDTDContentModelHandler != null) {
+            fDTDContentModelHandler.childrenElement(elementName);
+        }
+    } // childrenElement(String)
+
+    /**
+     * The separator between choices or sequences of a children content
+     * model.
+     * <p>
+     * <strong>Note:</strong> This method is only called after a call to
+     * the startContentModel method where the type is TYPE_CHILDREN.
+     * 
+     * @param separator The type of children separator.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
+     *
+     * @see SEPARATOR_CHOICE
+     * @see SEPARATOR_SEQUENCE
+     * @see TYPE_CHILDREN
+     */
+    public void childrenSeparator(short separator) throws SAXException {
+        if (fDTDContentModelHandler != null) {
+            fDTDContentModelHandler.childrenSeparator(separator);
+        }
+    } // childrenSeparator(short)
+
+    /**
+     * The occurrence count for a child in a children content model.
+     * <p>
+     * <strong>Note:</strong> This method is only called after a call to
+     * the startContentModel method where the type is TYPE_CHILDREN.
+     * 
+     * @param occurrence The occurrence count for the last children element
+     *                   or children group.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
+     *
+     * @see OCCURS_ZERO_OR_ONE
+     * @see OCCURS_ZERO_OR_MORE
+     * @see OCCURS_ONE_OR_MORE
+     * @see TYPE_CHILDREN
+     */
+    public void childrenOccurrence(short occurrence) throws SAXException {
+        if (fDTDContentModelHandler != null) {
+            fDTDContentModelHandler.childrenOccurrence(occurrence);
+        }
+    } // childrenOccurrence(short)
+
+    /**
+     * The end of a children group.
+     * <p>
+     * <strong>Note:</strong> This method is only called after a call to
+     * the startContentModel method where the type is TYPE_CHILDREN.
+     *
+     * @see TYPE_CHILDREN
+     */
+    public void childrenEndGroup() throws SAXException {
+        if (fDTDContentModelHandler != null) {
+            fDTDContentModelHandler.childrenEndGroup();
+        }
+    } // childrenEndGroup()
+
+    /**
+     * The end of a content model.
+     *
+     * @throws SAXException Thrown by handler to signal an error.
+     */
+    public void endContentModel() throws SAXException {
+        if (fDTDContentModelHandler != null) {
+            fDTDContentModelHandler.endContentModel();
+        }
+    } // endContentModel()
 
 } // class XMLValidator

@@ -178,9 +178,7 @@ public class XMLDocumentScanner
     // properties
 
     /** DTD scanner. */
-    /*** REVISIT: Add DTD support. ***
     protected XMLDTDScanner fDTDScanner;
-    /***/
 
     // protected data
 
@@ -359,10 +357,8 @@ public class XMLDocumentScanner
         fExternalGeneralEntities = componentManager.getFeature(EXTERNAL_GENERAL_ENTITIES);
 
         // Xerces properties
-        /*** REVISIT: Add DTD support. ***
         final String DTD_SCANNER = Constants.XERCES_PROPERTY_PREFIX + Constants.DTD_SCANNER_PROPERTY;
         fDTDScanner = (XMLDTDScanner)componentManager.getProperty(DTD_SCANNER);
-        /***/
 
         // initialize vars
         fEntityStack.removeAllElements();
@@ -429,13 +425,10 @@ public class XMLDocumentScanner
         // Xerces properties
         if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
             String property = propertyId.substring(Constants.XERCES_PROPERTY_PREFIX.length());
-            /*** REVISIT: Add DTD support. ***
             if (property.equals(Constants.DTD_SCANNER_PROPERTY)) {
                 fDTDScanner = (XMLDTDScanner)value;
             }
-            else 
-            /***/
-            if (property.equals(Constants.ENTITY_MANAGER_PROPERTY)) {
+            else if (property.equals(Constants.ENTITY_MANAGER_PROPERTY)) {
                 fEntityManager = (XMLEntityManager)value;
             }
             return;
@@ -726,10 +719,14 @@ public class XMLDocumentScanner
 
         // internal subset
         if (fEntityScanner.skipChar('[')) {
+            /***
             // TODO: scan internal subset
             while (fEntityScanner.scanData("]", fString)) {
                 // skip to end of internal subset
             }
+            /***/
+            fDTDScanner.scanDTDInternalSubset(true);
+            /***/
             fEntityScanner.skipSpaces();
         }
 
@@ -740,6 +737,14 @@ public class XMLDocumentScanner
                                        "DoctypedeclUnterminated",
                                        new Object[]{name},
                                        XMLErrorReporter.SEVERITY_FATAL_ERROR);
+        }
+
+        // external subset
+        if (systemId != null) {
+            XMLInputSource xmlInputSource = 
+                fEntityManager.resolveEntity(publicId, systemId, null);
+            fEntityManager.startDTDEntity(xmlInputSource);
+            fDTDScanner.scanDTD(true);
         }
 
         // call handler
