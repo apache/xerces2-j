@@ -415,13 +415,14 @@ public class XMLSchemaValidator
     /**
      * The start of the document.
      *
-     * @param systemId The system identifier of the entity if the entity
+     * @param locator The system identifier of the entity if the entity
      *                 is external, null otherwise.
      * @param encoding The auto-detected IANA encoding name of the entity
      *                 stream. This value will be null in those situations
      *                 where the entity encoding is not auto-detected (e.g.
      *                 internal entities or a document entity that is
      *                 parsed from a java.io.Reader).
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -445,6 +446,7 @@ public class XMLSchemaValidator
      * @param encoding   The IANA encoding name of the document, or null if
      *                   not specified.
      * @param standalone The standalone value, or null if not specified.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -466,6 +468,7 @@ public class XMLSchemaValidator
      *                    if the external DTD is specified using SYSTEM.
      * @param systemId    The system identifier if an external DTD, null
      *                    otherwise.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -486,6 +489,7 @@ public class XMLSchemaValidator
      *
      * @param prefix The namespace prefix.
      * @param uri    The URI bound to the prefix.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -505,6 +509,7 @@ public class XMLSchemaValidator
      *
      * @param element    The name of the element.
      * @param attributes The element attributes.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -524,6 +529,7 @@ public class XMLSchemaValidator
      *
      * @param element    The name of the element.
      * @param attributes The element attributes.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -557,6 +563,7 @@ public class XMLSchemaValidator
      * Character content.
      *
      * @param text The content.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -579,6 +586,7 @@ public class XMLSchemaValidator
      * content model.
      *
      * @param text The ignorable whitespace.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -596,6 +604,7 @@ public class XMLSchemaValidator
      * The end of an element.
      *
      * @param element The name of the element.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -619,6 +628,7 @@ public class XMLSchemaValidator
      * called when namespace processing is enabled.
      *
      * @param prefix The namespace prefix.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -634,6 +644,8 @@ public class XMLSchemaValidator
     /**
      * The start of a CDATA section.
      *
+     * @param augs     Additional information that may include infoset augmentations
+     *
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void startCDATA(Augmentations augs) throws XNIException {
@@ -648,6 +660,8 @@ public class XMLSchemaValidator
     /**
      * The end of a CDATA section.
      *
+     * @param augs     Additional information that may include infoset augmentations
+     *
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void endCDATA(Augmentations augs) throws XNIException {
@@ -661,6 +675,8 @@ public class XMLSchemaValidator
 
     /**
      * The end of the document.
+     *
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -679,26 +695,21 @@ public class XMLSchemaValidator
     //
 
     /**
-     * This method notifies of the start of an entity. The DTD has the
-     * pseudo-name of "[dtd]" parameter entity names start with '%'; and
-     * general entity names are just the entity name.
+     * This method notifies the start of a general entity.
      * <p>
      * <strong>Note:</strong> This method is not called for entity references
      * appearing as part of attribute values.
-     *
-     * @param name     The name of the entity.
-     * @param publicId The public identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param systemId The system identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param baseSystemId The base system identifier of the entity if
-     *                     the entity is external, null otherwise.
+     * 
+     * @param name     The name of the general entity.
+     * @param identifier The resource identifier.
      * @param encoding The auto-detected IANA encoding name of the entity
      *                 stream. This value will be null in those situations
      *                 where the entity encoding is not auto-detected (e.g.
-     *                 internal parameter entities).
-     *
-     * @throws XNIException Thrown by handler to signal an error.
+     *                 internal entities or a document entity that is
+     *                 parsed from a java.io.Reader).
+     * @param augs     Additional information that may include infoset augmentations
+     *                 
+     * @exception XNIException Thrown by handler to signal an error.
      */
     public void startGeneralEntity(String name,
                                    XMLResourceIdentifier identifier,
@@ -725,6 +736,7 @@ public class XMLSchemaValidator
      *
      * @param version  The XML version, or null if not specified.
      * @param encoding The IANA encoding name of the entity.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -741,6 +753,7 @@ public class XMLSchemaValidator
      * A comment.
      *
      * @param text The text in the comment.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by application to signal an error.
      */
@@ -769,6 +782,7 @@ public class XMLSchemaValidator
      *
      * @param target The target.
      * @param data   The data or null if none specified.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -786,16 +800,16 @@ public class XMLSchemaValidator
     } // processingInstruction(String,XMLString)
 
     /**
-     * This method notifies the end of an entity. The DTD has the pseudo-name
-     * of "[dtd]" parameter entity names start with '%'; and general entity
-     * names are just the entity name.
+     * This method notifies the end of a general entity.
      * <p>
      * <strong>Note:</strong> This method is not called for entity references
      * appearing as part of attribute values.
-     *
-     * @param name The name of the entity.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
+     * 
+     * @param name   The name of the entity.
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
      */
     public void endGeneralEntity(String name, Augmentations augs) throws XNIException {
 

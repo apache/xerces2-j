@@ -679,7 +679,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
     /**
      * The start of the document.
      *
-     * @param systemId The system identifier of the entity if the entity
+     * @param locator The system identifier of the entity if the entity
      *                 is external, null otherwise.
      * @param encoding The auto-detected IANA encoding name of the entity
      *                 stream. This value will be null in those situations
@@ -687,6 +687,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      *                 internal entities or a document entity that is
      *                 parsed from a java.io.Reader).
      * @param augs   Additional information that may include infoset augmentations
+     *
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void startDocument(XMLLocator locator, String encoding, Augmentations augs) 
@@ -759,6 +760,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      * @param prefix The namespace prefix.
      * @param uri    The URI bound to the prefix.     
      * @param augs   Additional information that may include infoset augmentations
+     *
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void startPrefixMapping(String prefix, String uri, Augmentations augs)
@@ -821,6 +823,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      * @param text The content.
      *
      * @param augs   Additional information that may include infoset augmentations
+     *
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void characters(XMLString text, Augmentations augs) throws XNIException {
@@ -885,8 +888,8 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      * content model.
      * 
      * @param text The ignorable whitespace.
-     *
      * @param augs   Additional information that may include infoset augmentations
+     *
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void ignorableWhitespace(XMLString text, Augmentations augs) throws XNIException {
@@ -984,17 +987,47 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
     // XMLDocumentHandler and XMLDTDHandler methods
     //
 
-    /** Start external subset. */
+    /**
+     * The start of the DTD external subset.
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
     public void startExternalSubset(Augmentations augs) throws XNIException {
         fDTDGrammar.startExternalSubset(augs);
     }
 
-    /** End external subset. */
+    /**
+     * The end of the DTD external subset.
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
     public void endExternalSubset(Augmentations augs) throws XNIException {
         fDTDGrammar.startExternalSubset(augs);
     }
 
-    /** Start general entity. */
+    /**
+     * This method notifies the start of a general entity.
+     * <p>
+     * <strong>Note:</strong> This method is not called for entity references
+     * appearing as part of attribute values.
+     * 
+     * @param name     The name of the general entity.
+     * @param identifier The resource identifier.
+     * @param encoding The auto-detected IANA encoding name of the entity
+     *                 stream. This value will be null in those situations
+     *                 where the entity encoding is not auto-detected (e.g.
+     *                 internal entities or a document entity that is
+     *                 parsed from a java.io.Reader).
+     * @param augs     Additional information that may include infoset augmentations
+     *                 
+     * @exception XNIException Thrown by handler to signal an error.
+     */
     public void startGeneralEntity(String name, 
                                    XMLResourceIdentifier identifier,
                                    String encoding, 
@@ -1005,7 +1038,13 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         }
     }
 
-    /** Check standalone entity reference. */
+    /** 
+     * Check standalone entity reference. 
+     * 
+     * @param name
+     *
+     * @throws XNIException Thrown by application to signal an error.
+     */
     protected void checkStandaloneEntityRef(String name) throws XNIException {
         // check VC: Standalone Document Declartion, entities references appear in the document.
         if (fPerformValidation && fDTDGrammar != null) {
@@ -1027,8 +1066,8 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      * A comment.
      * 
      * @param text The text in the comment.
-     *
      * @param augs   Additional information that may include infoset augmentations
+     *
      * @throws XNIException Thrown by application to signal an error.
      */
     public void comment(XMLString text, Augmentations augs) throws XNIException {
@@ -1084,7 +1123,18 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
     } // processingInstruction(String,XMLString)
 
 
-    /** End general entity. */
+    /**
+     * This method notifies the end of a general entity.
+     * <p>
+     * <strong>Note:</strong> This method is not called for entity references
+     * appearing as part of attribute values.
+     * 
+     * @param name   The name of the entity.
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
+     */
     public void endGeneralEntity(String name, Augmentations augs) throws XNIException {
         // call handlers
         if (fDocumentHandler != null) {
@@ -1098,6 +1148,15 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
     /**
      * The start of the DTD.
+     *
+     * @param locator  The document locator, or null if the document
+     *                 location cannot be reported during the parsing of 
+     *                 the document DTD. However, it is <em>strongly</em>
+     *                 recommended that a locator be supplied that can 
+     *                 at least report the base system identifier of the
+     *                 DTD.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -1124,9 +1183,11 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
     } // startDTD(XMLLocator)
 
     /**
-     * Character content.
-     * 
-     * @param text The content.
+     * Characters within an IGNORE conditional section.
+     *
+     * @param text The ignored text.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -1140,13 +1201,15 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
     /**
      * Notifies of the presence of a TextDecl line in an entity. If present,
-     * this method will be called immediately following the startEntity call.
+     * this method will be called immediately following the startParameterEntity call.
      * <p>
      * <strong>Note:</strong> This method is only called for external
      * parameter entities referenced in the DTD.
      * 
      * @param version  The XML version, or null if not specified.
      * @param encoding The IANA encoding name of the entity.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -1167,20 +1230,17 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
     }
 
     /**
-     * This method notifies of the start of an entity. The DTD has the 
-     * pseudo-name of "[dtd]" and parameter entity names start with '%'.
+     * This method notifies of the start of a parameter entity. The parameter
+     * entity name start with a '%' character.
      * 
-     * @param name     The name of the entity.
-     * @param publicId The public identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param systemId The system identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param baseSystemId The base system identifier of the entity if
-     *                     the entity is external, null otherwise.
+     * @param name     The name of the parameter entity.
+     * @param identifier The resource identifier.
      * @param encoding The auto-detected IANA encoding name of the entity
      *                 stream. This value will be null in those situations
      *                 where the entity encoding is not auto-detected (e.g.
      *                 internal parameter entities).
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -1196,11 +1256,14 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
             fDTDHandler.startParameterEntity(name, identifier, encoding, augs);
         }
     }
+
     /**
-     * This method notifies the end of an entity. The DTD has the pseudo-name
-     * of "[dtd]" and parameter entity names start with '%'.
+     * This method notifies the end of a parameter entity. Parameter entity
+     * names begin with a '%' character.
      * 
-     * @param name The name of the entity.
+     * @param name The name of the parameter entity.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -1218,6 +1281,8 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      * 
      * @param name         The name of the element.
      * @param contentModel The element content model.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -1250,6 +1315,8 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      * 
      * @param elementName The name of the element that this attribute
      *                    list is associated with.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -1274,14 +1341,16 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      *                      the following: "CDATA", "ENTITY", "ENTITIES",
      *                      "ENUMERATION", "ID", "IDREF", "IDREFS", 
      *                      "NMTOKEN", "NMTOKENS", or "NOTATION".
-     * @param enumeration   If the type has the value "ENUMERATION", this
-     *                      array holds the allowed attribute values;
-     *                      otherwise, this array is null.
+     * @param enumeration   If the type has the value "ENUMERATION" or
+     *                      "NOTATION", this array holds the allowed attribute
+     *                      values; otherwise, this array is null.
      * @param defaultType   The attribute default type. This value will be
      *                      one of the following: "#FIXED", "#IMPLIED",
      *                      "#REQUIRED", or null.
      * @param defaultValue  The attribute default value, or null if no
      *                      default value is specified.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -1434,6 +1503,9 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
     /**
      * The end of an attribute list.
      *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void endAttlist(Augmentations augs) throws XNIException {
@@ -1457,6 +1529,8 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      *             value contains the same sequence of characters that was in 
      *             the internal entity declaration, without any entity
      *             references expanded.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -1472,6 +1546,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
     } // internalEntityDecl(String,XMLString,XMLString)
 
+
     /**
      * An external entity declaration.
      * 
@@ -1481,8 +1556,10 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      * @param publicId The public identifier of the entity or null if the
      *                 the entity was specified with SYSTEM.
      * @param systemId The system identifier of the entity.
-     * @param baseSystemId The base system identifier of where the entity
+     * @param baseSystemId The base system identifier where this entity
      *                     is declared.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -1509,6 +1586,8 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      * @param systemId The system identifier of the entity, or null if not
      *                 specified.
      * @param notation The name of the notation.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -1538,6 +1617,8 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      *                 specified.
      * @param systemId The system identifier of the notation, or null if not
      *                 specified.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -1557,11 +1638,13 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      * 
      * @param type The type of the conditional section. This value will
      *             either be CONDITIONAL_INCLUDE or CONDITIONAL_IGNORE.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      *
-     * @see XMLDTDHandler#CONDITIONAL_INCLUDE
-     * @see XMLDTDHandler#CONDITIONAL_IGNORE
+     * @see #CONDITIONAL_INCLUDE
+     * @see #CONDITIONAL_IGNORE
      */
     public void startConditional(short type, Augmentations augs) throws XNIException {
 
@@ -1578,6 +1661,9 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
     /**
      * The end of a conditional section.
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -1596,6 +1682,9 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
     /**
      * The end of the DTD.
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -1654,7 +1743,17 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
     // XMLDTDContentModelHandler methods
     //
 
-    /** Start content model. */
+    /**
+     * The start of a content model. Depending on the type of the content
+     * model, specific methods may be called between the call to the
+     * startContentModel method and the call to the endContentModel method.
+     * 
+     * @param elementName The name of the element.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
     public void startContentModel(String elementName, Augmentations augs) 
         throws XNIException {
 
@@ -1671,7 +1770,17 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
     } // startContentModel(String)
 
-    /** ANY. */
+    /** 
+     * A content model of ANY. 
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     *
+     * @see #empty
+     * @see #startGroup
+     */
     public void any(Augmentations augs) throws XNIException {
         fDTDGrammar.any(augs);
         if (fDTDContentModelHandler != null) {
@@ -1679,7 +1788,17 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         }
     } // any()
 
-    /** EMPTY. */
+    /**
+     * A content model of EMPTY.
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     *
+     * @see #any
+     * @see #startGroup
+     */
     public void empty(Augmentations augs) throws XNIException {
         fDTDGrammar.empty(augs);
         if (fDTDContentModelHandler != null) {
@@ -1687,7 +1806,20 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         }
     } // empty()
 
-    /** Start group. */
+    /**
+     * A start of either a mixed or children content model. A mixed
+     * content model will immediately be followed by a call to the
+     * <code>pcdata()</code> method. A children content model will
+     * contain additional groups and/or elements.
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     *
+     * @see #any
+     * @see #empty
+     */
     public void startGroup(Augmentations augs) throws XNIException {
 
         fMixed = false;
@@ -1699,7 +1831,18 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
     } // startGroup()
 
-    /** #PCDATA. */
+    /**
+     * The appearance of "#PCDATA" within a group signifying a
+     * mixed content model. This method will be the first called
+     * following the content model's <code>startGroup()</code>.
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *     
+     * @throws XNIException Thrown by handler to signal an error.
+     *
+     * @see #startGroup
+     */
     public void pcdata(Augmentations augs) {
         fMixed = true;
         fDTDGrammar.pcdata(augs);
@@ -1708,7 +1851,15 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         }
     } // pcdata()
 
-    /** Element. */
+    /**
+     * A referenced element in a mixed or children content model.
+     * 
+     * @param elementName The name of the referenced element.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
     public void element(String elementName, Augmentations augs) throws XNIException {
 
         // check VC: No duplicate Types, in a single mixed-content declaration
@@ -1732,7 +1883,19 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
     } // childrenElement(String)
 
-    /** Separator. */
+    /**
+     * The separator between choices or sequences of a mixed or children
+     * content model.
+     * 
+     * @param separator The type of children separator.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     *
+     * @see #SEPARATOR_CHOICE
+     * @see #SEPARATOR_SEQUENCE
+     */
     public void separator(short separator, Augmentations augs) 
         throws XNIException {
 
@@ -1744,7 +1907,21 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
     } // separator(short)
 
-    /** Occurrence. */
+    /**
+     * The occurrence count for a child in a children content model or
+     * for the mixed content model group.
+     * 
+     * @param occurrence The occurrence count for the last element
+     *                   or group.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     *
+     * @see #OCCURS_ZERO_OR_ONE
+     * @see #OCCURS_ZERO_OR_MORE
+     * @see #OCCURS_ONE_OR_MORE
+     */
     public void occurrence(short occurrence, Augmentations augs) 
         throws XNIException {
 
@@ -1756,7 +1933,14 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
     } // occurrence(short)
 
-    /** End group. */
+    /**
+     * The end of a group for mixed or children content models.
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
     public void endGroup(Augmentations augs) throws XNIException {
 
         // call handlers
@@ -1767,7 +1951,14 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
     } // endGroup()
 
-    /** End content model. */
+    /**
+     * The end of a content model.
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
     public void endContentModel(Augmentations augs) throws XNIException {
 
         // call handlers

@@ -371,24 +371,21 @@ public abstract class AbstractDOMParser
     //
 
     /**
-     * This method notifies of the start of an entity. The DTD has the
-     * pseudo-name of "[dtd]" parameter entity names start with '%'; and
-     * general entity names are just the entity name.
+     * This method notifies the start of a general entity.
      * <p>
      * <strong>Note:</strong> This method is not called for entity references
      * appearing as part of attribute values.
-     *
-     * @param name     The name of the entity.
-     * @param publicId The public identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param systemId The system identifier of the entity if the entity
-     *                 is external, null otherwise.
+     * 
+     * @param name     The name of the general entity.
+     * @param identifier The resource identifier.
      * @param encoding The auto-detected IANA encoding name of the entity
      *                 stream. This value will be null in those situations
      *                 where the entity encoding is not auto-detected (e.g.
-     *                 internal parameter entities).
-     *
-     * @throws XNIException Thrown by handler to signal an error.
+     *                 internal entities or a document entity that is
+     *                 parsed from a java.io.Reader).
+     * @param augs     Additional information that may include infoset augmentations
+     *                 
+     * @exception XNIException Thrown by handler to signal an error.
      */
     public void startGeneralEntity(String name, 
                                    XMLResourceIdentifier identifier,
@@ -478,6 +475,7 @@ public abstract class AbstractDOMParser
      * A comment.
      *
      * @param text The text in the comment.
+     * @param augs       Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by application to signal an error.
      */
@@ -511,6 +509,7 @@ public abstract class AbstractDOMParser
      *
      * @param target The target.
      * @param data   The data or null if none specified.
+     * @param augs       Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -533,7 +532,7 @@ public abstract class AbstractDOMParser
     /**
      * The start of the document.
      *
-     * @param systemId The system identifier of the entity if the entity
+     * @param locator The system identifier of the entity if the entity
      *                 is external, null otherwise.
      * @param encoding The auto-detected IANA encoding name of the entity
      *                 stream. This value will be null in those situations
@@ -941,17 +940,16 @@ public abstract class AbstractDOMParser
     } // endDocument()
 
     /**
-     * This method notifies the end of an entity. The DTD has the pseudo-name
-     * of "[dtd]" parameter entity names start with '%'; and general entity
-     * names are just the entity name.
+     * This method notifies the end of a general entity.
      * <p>
      * <strong>Note:</strong> This method is not called for entity references
      * appearing as part of attribute values.
-     *
-     * @param name The name of the entity.
-     * @param augs     Additional information that may include infoset augmentations
-     *
-     * @throws XNIException Thrown by handler to signal an error.
+     * 
+     * @param name   The name of the entity.
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
      */
     public void endGeneralEntity(String name, Augmentations augs) throws XNIException {
 
@@ -1017,6 +1015,15 @@ public abstract class AbstractDOMParser
     /**
      * The start of the DTD.
      *
+     * @param locator  The document locator, or null if the document
+     *                 location cannot be reported during the parsing of 
+     *                 the document DTD. However, it is <em>strongly</em>
+     *                 recommended that a locator be supplied that can 
+     *                 at least report the base system identifier of the
+     *                 DTD.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void startDTD(XMLLocator locator, Augmentations augs) throws XNIException {
@@ -1028,6 +1035,9 @@ public abstract class AbstractDOMParser
 
     /**
      * The end of the DTD.
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -1047,12 +1057,26 @@ public abstract class AbstractDOMParser
         }
     } // endDTD()
 
-    /** Start external subset. */
+    /**
+     * The start of the DTD external subset.
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
     public void startExternalSubset(Augmentations augs) throws XNIException {
         fInDTDExternalSubset = true;
     } // startExternalSubset(Augmentations)
 
-    /** End external subset. */
+    /**
+     * The end of the DTD external subset.
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
     public void endExternalSubset(Augmentations augs) throws XNIException {
         fInDTDExternalSubset = false;
     } // endExternalSubset(Augmentations)
@@ -1068,6 +1092,8 @@ public abstract class AbstractDOMParser
      *             value contains the same sequence of characters that was in 
      *             the internal entity declaration, without any entity
      *             references expanded.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -1146,6 +1172,8 @@ public abstract class AbstractDOMParser
      * @param systemId The system identifier of the entity.
      * @param baseSystemId The base system identifier where this entity
      *                     is declared.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -1229,6 +1257,8 @@ public abstract class AbstractDOMParser
      * @param systemId The system identifier of the entity, or null if not
      *                 specified.
      * @param notation The name of the notation.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -1308,6 +1338,8 @@ public abstract class AbstractDOMParser
      *                 specified.
      * @param systemId The system identifier of the notation, or null if not
      *                 specified.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -1376,6 +1408,8 @@ public abstract class AbstractDOMParser
      * 
      * @param name         The name of the element.
      * @param contentModel The element content model.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -1411,6 +1445,8 @@ public abstract class AbstractDOMParser
      *                      "#REQUIRED", or null.
      * @param defaultValue  The attribute default value, or null if no
      *                      default value is specified.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */

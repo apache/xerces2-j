@@ -441,12 +441,19 @@ public class XMLDTDScannerImpl
     //
 
     /**
-     * startEntity
+     * This method notifies of the start of an entity. The DTD has the 
+     * pseudo-name of "[dtd]" parameter entity names start with '%'; and 
+     * general entities are just specified by their name.
      * 
-     * @param name 
-     * @param publicId 
-     * @param systemId 
-     * @param encoding
+     * @param name     The name of the entity.
+     * @param identifier The resource identifier.
+     * @param encoding The auto-detected IANA encoding name of the entity
+     *                 stream. This value will be null in those situations
+     *                 where the entity encoding is not auto-detected (e.g.
+     *                 internal entities or a document entity that is
+     *                 parsed from a java.io.Reader).
+     *
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void startEntity(String name, 
                             XMLResourceIdentifier identifier,
@@ -478,9 +485,13 @@ public class XMLDTDScannerImpl
     } // startEntity(String,XMLResourceIdentifier,String)
 
     /**
-     * endEntity
+     * This method notifies the end of an entity. The DTD has the pseudo-name
+     * of "[dtd]" parameter entity names start with '%'; and general entities 
+     * are just specified by their name.
      * 
-     * @param name 
+     * @param name The name of the entity.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
      */
     public void endEntity(String name) 
         throws XNIException {

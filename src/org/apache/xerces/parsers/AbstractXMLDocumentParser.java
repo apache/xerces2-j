@@ -125,7 +125,7 @@ public abstract class AbstractXMLDocumentParser
     /**
      * The start of the document.
      *
-     * @param systemId The system identifier of the entity if the entity
+     * @param locator The system identifier of the entity if the entity
      *                 is external, null otherwise.
      * @param encoding The auto-detected IANA encoding name of the entity
      *                 stream. This value will be null in those situations
@@ -399,6 +399,15 @@ public abstract class AbstractXMLDocumentParser
     /**
      * The start of the DTD.
      *
+     * @param locator  The document locator, or null if the document
+     *                 location cannot be reported during the parsing of 
+     *                 the document DTD. However, it is <em>strongly</em>
+     *                 recommended that a locator be supplied that can 
+     *                 at least report the base system identifier of the
+     *                 DTD.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void startDTD(XMLLocator locator, Augmentations augs) throws XNIException {
@@ -470,13 +479,13 @@ public abstract class AbstractXMLDocumentParser
     } // endParameterEntity(String,Augmentations)
     
     /**
-     * Character content.
-     * 
-     * @param text   The content.
-     * @param augs   Additional information that may include infoset augmentations
-     *               
-     * @exception XNIException
-     *                   Thrown by handler to signal an error.
+     * Characters within an IGNORE conditional section.
+     *
+     * @param text The ignored text.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
      */
      public void ignoredCharacters(XMLString text, Augmentations augs) throws XNIException {}
 
@@ -485,6 +494,8 @@ public abstract class AbstractXMLDocumentParser
      * 
      * @param name         The name of the element.
      * @param contentModel The element content model.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -497,6 +508,8 @@ public abstract class AbstractXMLDocumentParser
      * 
      * @param elementName The name of the element that this attribute
      *                    list is associated with.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -513,14 +526,16 @@ public abstract class AbstractXMLDocumentParser
      *                      the following: "CDATA", "ENTITY", "ENTITIES",
      *                      "ENUMERATION", "ID", "IDREF", "IDREFS", 
      *                      "NMTOKEN", "NMTOKENS", or "NOTATION".
-     * @param enumeration   If the type has the value "ENUMERATION", this
-     *                      array holds the allowed attribute values;
-     *                      otherwise, this array is null.
+     * @param enumeration   If the type has the value "ENUMERATION" or
+     *                      "NOTATION", this array holds the allowed attribute
+     *                      values; otherwise, this array is null.
      * @param defaultType   The attribute default type. This value will be
      *                      one of the following: "#FIXED", "#IMPLIED",
      *                      "#REQUIRED", or null.
      * @param defaultValue  The attribute default value, or null if no
      *                      default value is specified.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -532,6 +547,9 @@ public abstract class AbstractXMLDocumentParser
 
     /**
      * The end of an attribute list.
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -549,6 +567,8 @@ public abstract class AbstractXMLDocumentParser
      *             value contains the same sequence of characters that was in 
      *             the internal entity declaration, without any entity
      *             references expanded.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -568,6 +588,8 @@ public abstract class AbstractXMLDocumentParser
      * @param systemId The system identifier of the entity.
      * @param baseSystemId The base system identifier where this entity
      *                     is declared.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -585,6 +607,8 @@ public abstract class AbstractXMLDocumentParser
      * @param systemId The system identifier of the entity, or null if not
      *                 specified.
      * @param notation The name of the notation.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -601,6 +625,8 @@ public abstract class AbstractXMLDocumentParser
      *                 specified.
      * @param systemId The system identifier of the notation, or null if not
      *                 specified.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -613,17 +639,22 @@ public abstract class AbstractXMLDocumentParser
      * 
      * @param type The type of the conditional section. This value will
      *             either be CONDITIONAL_INCLUDE or CONDITIONAL_IGNORE.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      *
-     * @see XMLDTDHandler#CONDITIONAL_INCLUDE
-     * @see XMLDTDHandler#CONDITIONAL_IGNORE
+     * @see #CONDITIONAL_INCLUDE
+     * @see #CONDITIONAL_IGNORE
      */
     public void startConditional(short type, Augmentations augs) throws XNIException {
     } // startConditional(short)
 
     /**
      * The end of a conditional section.
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -632,6 +663,9 @@ public abstract class AbstractXMLDocumentParser
 
     /**
      * The end of the DTD.
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -643,34 +677,136 @@ public abstract class AbstractXMLDocumentParser
     // XMLDTDContentModelHandler methods
     //
 
-    /** Start content model. */
+    /**
+     * The start of a content model. Depending on the type of the content
+     * model, specific methods may be called between the call to the
+     * startContentModel method and the call to the endContentModel method.
+     * 
+     * @param elementName The name of the element.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
     public void startContentModel(String elementName, Augmentations augs) throws XNIException {}
 
-    /** ANY. */
+    /** 
+     * A content model of ANY. 
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     *
+     * @see #empty
+     * @see #startGroup
+     */
     public void any(Augmentations augs) throws XNIException {}
 
-    /** EMPTY. */
+    /**
+     * A content model of EMPTY.
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     *
+     * @see #any
+     * @see #startGroup
+     */
     public void empty(Augmentations augs) throws XNIException {}
 
-    /** Start group. */
+    /**
+     * A start of either a mixed or children content model. A mixed
+     * content model will immediately be followed by a call to the
+     * <code>pcdata()</code> method. A children content model will
+     * contain additional groups and/or elements.
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     *
+     * @see #any
+     * @see #empty
+     */
     public void startGroup(Augmentations augs) throws XNIException {}
 
-    /** #PCDATA. */
+    /**
+     * The appearance of "#PCDATA" within a group signifying a
+     * mixed content model. This method will be the first called
+     * following the content model's <code>startGroup()</code>.
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *     
+     * @throws XNIException Thrown by handler to signal an error.
+     *
+     * @see #startGroup
+     */
     public void pcdata(Augmentations augs) throws XNIException {}
 
-    /** Element. */
+    /**
+     * A referenced element in a mixed or children content model.
+     * 
+     * @param elementName The name of the referenced element.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
     public void element(String elementName, Augmentations augs) throws XNIException {}
 
-    /** Separator. */
+    /**
+     * The separator between choices or sequences of a mixed or children
+     * content model.
+     * 
+     * @param separator The type of children separator.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     *
+     * @see #SEPARATOR_CHOICE
+     * @see #SEPARATOR_SEQUENCE
+     */
     public void separator(short separator, Augmentations augs) throws XNIException {}
 
-    /** Occurrence. */
+    /**
+     * The occurrence count for a child in a children content model or
+     * for the mixed content model group.
+     * 
+     * @param occurrence The occurrence count for the last element
+     *                   or group.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     *
+     * @see #OCCURS_ZERO_OR_ONE
+     * @see #OCCURS_ZERO_OR_MORE
+     * @see #OCCURS_ONE_OR_MORE
+     */
     public void occurrence(short occurrence, Augmentations augs) throws XNIException {}
 
-    /** End group. */
+    /**
+     * The end of a group for mixed or children content models.
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
     public void endGroup(Augmentations augs) throws XNIException {}
 
-    /** End content model. */
+    /**
+     * The end of a content model.
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
     public void endContentModel(Augmentations augs) throws XNIException {}
 
     //
