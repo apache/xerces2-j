@@ -746,8 +746,9 @@ public class DocumentImpl
                 Vector nodeListeners = getEventListeners(nn);
                 if (nodeListeners != null) {
                     Vector nl = (Vector) nodeListeners.clone();
-                    // count-down more efficient
-                    for (int i = nl.size() - 1; i >= 0; --i) {
+                    // call listeners in the order in which they got registered
+                    int nlsize = nl.size();
+                    for (int i = 0; i < nlsize; i++) {
                         LEntry le = (LEntry) nl.elementAt(i);
                         if (le.useCapture && le.type.equals(evt.type) &&
                             nodeListeners.contains(le)) {
@@ -773,8 +774,9 @@ public class DocumentImpl
             Vector nodeListeners = getEventListeners(node);
             if (!evt.stopPropagation && nodeListeners != null) {
                 Vector nl = (Vector) nodeListeners.clone();
-                // count-down is more efficient
-                for (int i = nl.size() - 1; i >= 0; --i) {
+                // call listeners in the order in which they got registered
+                int nlsize = nl.size();
+                for (int i = 0; i < nlsize; i++) {
                     LEntry le = (LEntry) nl.elementAt(i);
                     if (!le.useCapture && le.type.equals(evt.type) &&
                         nodeListeners.contains(le)) {
@@ -794,7 +796,8 @@ public class DocumentImpl
             // Note that not all events bubble.
             if (evt.bubbles) {
                 evt.eventPhase = Event.BUBBLING_PHASE;
-                for (int j = 0; j < pv.size(); ++j) {
+                int pvsize = pv.size();
+                for (int j = 0; j < pvsize; j++) {
                     if (evt.stopPropagation)
                         break;  // Someone set the flag. Phase ends.
 
@@ -804,8 +807,10 @@ public class DocumentImpl
                     nodeListeners = getEventListeners(nn);
                     if (nodeListeners != null) {
                         Vector nl = (Vector) nodeListeners.clone();
-                        // count-down more efficient
-                        for (int i = nl.size() - 1; i >= 0; --i) {
+                        // call listeners in the order in which they got
+                        // registered
+                        int nlsize = nl.size();
+                        for (int i = 0; i < nlsize; i++) {
                             LEntry le = (LEntry) nl.elementAt(i);
                             if (!le.useCapture && le.type.equals(evt.type) &&
                                 nodeListeners.contains(le)) {
