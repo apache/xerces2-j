@@ -183,6 +183,7 @@ public final class XMLDTDScanner {
     private DTDGrammar fDTDGrammar = null;
     private GrammarResolver fGrammarResolver = null;
     private boolean fNamespacesEnabled = false;
+    private XMLElementDecl fTempElementDecl = new XMLElementDecl();
     private QName fElementQName = new QName();
     private QName fAttributeQName = new QName();
     private QName fElementRefQName = new QName();
@@ -401,7 +402,7 @@ public final class XMLDTDScanner {
          * @return handle to the element declaration that was added 
          * @exception java.lang.Exception
          */
-        public int addElementDecl(QName elementDecl, int contentSpecType, int contentSpec) throws Exception;
+        public int addElementDecl(QName elementDecl, int contentSpecType, int contentSpec, boolean isExternal) throws Exception;
         /**
          * Add an attribute definition
          *
@@ -416,7 +417,7 @@ public final class XMLDTDScanner {
          */
         public int addAttDef(QName elementDecl, QName attributeDecl, 
                              int attType, boolean attList, int enumeration, 
-                             int attDefaultType, int attDefaultValue) throws Exception;
+                             int attDefaultType, int attDefaultValue, boolean isExternal) throws Exception;
         /**
          * create an XMLContentSpec for a leaf
          *
@@ -999,7 +1000,6 @@ public final class XMLDTDScanner {
         if (fEntityReader.lookingAtSpace(true)) {
             fEntityReader.skipPastSpaces();
             if (!(lbrkt = fEntityReader.lookingAtChar('[', true)) && !fEntityReader.lookingAtChar('>', false)) {
-//System.out.println("XMLDTDScanner#scanDoctypeDecl() 1113");
                 if (!scanExternalID(false)) {
                     skipPastEndOfCurrentMarkup();
                     return false;
@@ -1013,7 +1013,6 @@ public final class XMLDTDScanner {
         } else
             lbrkt = fEntityReader.lookingAtChar('[', true);
         fDTDGrammar.doctypeDecl(fElementQName, publicId, systemId);
-//System.out.println("XMLDTDScanner#scanDoctypeDecl() 1114");
         if (lbrkt) {
             scanDecls(false);
             fEntityReader.skipPastSpaces();
@@ -1026,7 +1025,7 @@ public final class XMLDTDScanner {
             }
             return false;
         }
-//System.out.println("XMLDTDScanner#scanDoctypeDecl() 1115");
+
         decreaseMarkupDepth();
 
         //System.out.println("  scanExternalSubset: "+scanExternalSubset);
@@ -1670,9 +1669,24 @@ public final class XMLDTDScanner {
         }
         decreaseMarkupDepth();
         int elementIndex = fDTDGrammar.getElementDeclIndex(fElementQName.localpart, -1);
+        boolean elementDeclIsExternal = getReadingExternalEntity();
         if (elementIndex == -1) {
-            elementIndex = fDTDGrammar.addElementDecl(fElementQName, contentSpecType, contentSpec);
+            elementIndex = fDTDGrammar.addElementDecl(fElementQName, contentSpecType, contentSpec, elementDeclIsExternal);
             //System.out.println("XMLDTDScanner#scanElementDecl->DTDGrammar#addElementDecl: "+elementIndex+" ("+fElementQName.localpart+","+fStringPool.toString(fElementQName.localpart)+')');
+        }
+        else {
+            //now check if we already add this element Decl by foward reference
+            fDTDGrammar.getElementDecl(elementIndex, fTempElementDecl);
+            if (fTempElementDecl.type == -1) {
+                fTempElementDecl.type = contentSpecType;
+                fTempElementDecl.contentSpecIndex = contentSpec;
+                fDTDGrammar.setElementDeclDTD(elementIndex, fTempElementDecl);
+                fDTDGrammar.setElementDeclIsExternal(elementIndex, elementDeclIsExternal);
+            }
+            else {
+                //REVISIT, valiate VC duplicate element type. 
+                //if (fValidationEnabled) {reportError}
+            }
         }
 
     } // scanElementDecl()
@@ -1996,7 +2010,10 @@ public final class XMLDTDScanner {
             }
             sawSpace = checkForPEReference(true);
             if (fEntityReader.lookingAtChar('>', true)) {
-                int attDefIndex = fDTDGrammar.addAttDef(fElementQName, fAttributeQName, attDefType, attDefList, attDefEnumeration, attDefDefaultType, attDefDefaultValue);
+                int attDefIndex = fDTDGrammar.addAttDef(fElementQName, fAttributeQName, 
+                                                        attDefType, attDefList, attDefEnumeration, 
+                                                        attDefDefaultType, attDefDefaultValue, 
+                                                        getReadingExternalEntity());
                 //System.out.println("XMLDTDScanner#scanAttlistDecl->DTDGrammar#addAttDef: "+attDefIndex+
                 //                   " ("+fElementQName.localpart+","+fStringPool.toString(fElementQName.rawname)+')'+
                 //                   " ("+fAttributeQName.localpart+","+fStringPool.toString(fAttributeQName.rawname)+')');
@@ -2016,14 +2033,20 @@ public final class XMLDTDScanner {
                 }
             }
             if (fEntityReader.lookingAtChar('>', true)) {
-                int attDefIndex = fDTDGrammar.addAttDef(fElementQName, fAttributeQName, attDefType, attDefList, attDefEnumeration, attDefDefaultType, attDefDefaultValue);
+                int attDefIndex = fDTDGrammar.addAttDef(fElementQName, fAttributeQName, 
+                                                        attDefType, attDefList, attDefEnumeration, 
+                                                        attDefDefaultType, attDefDefaultValue,
+                                                        getReadingExternalEntity() );
                 //System.out.println("XMLDTDScanner#scanAttlistDecl->DTDGrammar#addAttDef: "+attDefIndex+
                 //                   " ("+fElementQName.localpart+","+fStringPool.toString(fElementQName.rawname)+')'+
                 //                   " ("+fAttributeQName.localpart+","+fStringPool.toString(fAttributeQName.rawname)+')');
                 decreaseMarkupDepth();
                 return;
             }
-            int attDefIndex = fDTDGrammar.addAttDef(fElementQName, fAttributeQName, attDefType, attDefList, attDefEnumeration, attDefDefaultType, attDefDefaultValue);
+            int attDefIndex = fDTDGrammar.addAttDef(fElementQName, fAttributeQName, 
+                                                    attDefType, attDefList, attDefEnumeration, 
+                                                    attDefDefaultType, attDefDefaultValue,
+                                                    getReadingExternalEntity());
             //System.out.println("XMLDTDScanner#scanAttlistDecl->DTDGrammar#addAttDef: "+attDefIndex+
             //                   " ("+fElementQName.localpart+","+fStringPool.toString(fElementQName.rawname)+')'+
             //                   " ("+fAttributeQName.localpart+","+fStringPool.toString(fAttributeQName.rawname)+')');

@@ -66,6 +66,7 @@ import org.apache.xerces.utils.StringPool;
 import org.apache.xerces.validators.common.Grammar;
 import org.apache.xerces.validators.common.XMLAttributeDecl;
 import org.apache.xerces.validators.common.XMLElementDecl;
+import org.apache.xerces.validators.datatype.DatatypeValidatorRegistry;
 import org.apache.xerces.validators.schema.XUtil;
 
 import org.w3c.dom.Document;
@@ -147,9 +148,13 @@ public class DTDGrammar
     /** DTD event handler for pass-through processing. */
     private XMLDTDScanner.EventHandler fDTDEventHandler;
 
+    /** flag if the elementDecl is External. */
+    private int fElementDeclIsExternal[][] = new int[INITIAL_CHUNK_COUNT][];
     /** Mapping for element declarations. */
     private int fElementDeclMap[][] = new int[INITIAL_CHUNK_COUNT][];
 
+    /** flag if the AttributeDecl is External. */
+    private int fAttributeDeclIsExternal[][] = new int[INITIAL_CHUNK_COUNT][];
     /** Mapping for attribute declarations. */
     private int fAttributeDeclMap[][] = new int[INITIAL_CHUNK_COUNT][];
 
@@ -369,7 +374,8 @@ public class DTDGrammar
      */
     public int addElementDecl(QName elementDecl, 
                               int contentSpecType, 
-                              int contentSpec) throws Exception {
+                              int contentSpec,
+                              boolean isExternal) throws Exception {
 
         // create element decl element
         Element elementDeclElement = fGrammarDocument.createElement("elementDecl");
@@ -392,15 +398,17 @@ public class DTDGrammar
         fElementDecl.type = contentSpecType;
         fElementDecl.contentSpecIndex = contentSpec;
         setElementDecl(elementDeclIndex, fElementDecl);
+        
+        int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        int index = elementDeclIndex & CHUNK_MASK;
+        ensureElementDeclCapacity(chunk);
+        fElementDeclIsExternal[chunk][index] = isExternal? 1 : 0;
 
         // pass-through, saving mapping
         if (fDTDEventHandler != null) {
             int mapping = fDTDEventHandler.addElementDecl(elementDecl, 
                                                           contentSpecType, 
-                                                          contentSpec);
-            int chunk = elementDeclIndex >> CHUNK_SHIFT;
-            int index = elementDeclIndex & CHUNK_MASK;
-            ensureElementDeclCapacity(chunk);
+                                                          contentSpec, isExternal);
             fElementDeclMap[chunk][index] = mapping;
         }
 
@@ -408,6 +416,36 @@ public class DTDGrammar
         return elementDeclIndex;
 
     } // addElementDecl(QName,int,int):int
+
+    public void setElementDeclDTD(int elementDeclIndex, XMLElementDecl elementDecl) {
+        super.setElementDecl(elementDeclIndex, elementDecl);
+    }
+
+    public void setElementDeclIsExternal(int elementDeclIndex, boolean  isExternal) {
+        int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        int index = elementDeclIndex & CHUNK_MASK;
+        ensureElementDeclCapacity(chunk);
+        fElementDeclIsExternal[chunk][index] = isExternal? 1 : 0;
+    }
+
+    // getters for isExternals 
+    public boolean getElementDeclIsExternal(int elementDeclIndex) {
+        if (elementDeclIndex < 0) {
+            return false;
+        }
+        int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        int index = elementDeclIndex & CHUNK_MASK;
+        return (fElementDeclIsExternal[chunk][index] != 0);
+    }
+
+    public boolean getAttributeDeclIsExternal(int attributeDeclIndex) {
+        if (attributeDeclIndex < 0) {
+            return false;
+        }
+        int chunk = attributeDeclIndex >> CHUNK_SHIFT;
+        int index = attributeDeclIndex & CHUNK_MASK;
+        return (fAttributeDeclIsExternal[chunk][index] != 0);
+    }
 
     /**
      * Add an attribute definition
@@ -423,7 +461,7 @@ public class DTDGrammar
      */
     public int addAttDef(QName elementDecl, QName attributeDecl, 
                          int attType, boolean attList, int enumeration, 
-                         int attDefaultType, int attDefaultValue) 
+                         int attDefaultType, int attDefaultValue, boolean isExternal) 
         throws Exception {
         
         // create attribute decl element
@@ -444,28 +482,51 @@ public class DTDGrammar
         // create attribute decl
         int attributeDeclIndex = createAttributeDecl();
 
+        // find the dataTypeValidator associcated with this attType
+        String attTypeString = "";
+        switch (attType) {
+        case XMLAttributeDecl.TYPE_CDATA:
+            attTypeString = "string";
+        case XMLAttributeDecl.TYPE_ENTITY:
+            attTypeString = "ENTITY";;
+        case XMLAttributeDecl.TYPE_ENUMERATION:
+            attTypeString = "ENUMERATION";;
+        case XMLAttributeDecl.TYPE_ID:
+            attTypeString = "ID";;
+        case XMLAttributeDecl.TYPE_IDREF:
+            attTypeString = "IDREF";;
+        case XMLAttributeDecl.TYPE_NMTOKEN:
+            attTypeString = "NMTOKEN";;
+        case XMLAttributeDecl.TYPE_NOTATION:
+            attTypeString = "NOTATION";;
+        default:
+            ;
+        }
+
         // set attribute decl values
         fAttributeDecl.clear();
         fAttributeDecl.name.setValues(attributeDecl);
         fAttributeDecl.type = attType;
         fAttributeDecl.list = attList;
-        // REVISIT: Set the datatype validator
+        fAttributeDecl.datatypeValidator = 
+            DatatypeValidatorRegistry.getDatatypeRegistry().getDatatypeValidator(attTypeString);
         // REVISIT: Don't forget the enumeration
         fAttributeDecl.defaultValue = fStringPool.toString(attDefaultValue);
 
         int elementDeclIndex = getElementDeclIndex(elementDecl.localpart, -1);
         setAttributeDecl(elementDeclIndex, attributeDeclIndex, fAttributeDecl);
 
+        int chunk = attributeDeclIndex >> CHUNK_SHIFT;
+        int index = attributeDeclIndex & CHUNK_MASK;
+        ensureAttributeDeclCapacity(chunk);
+        fAttributeDeclIsExternal[chunk][index] = isExternal ?  1 : 0;
         // pass-through, saving mapping
         if (fDTDEventHandler != null) {
             int mapping = fDTDEventHandler.addAttDef(elementDecl, 
                                                      attributeDecl, 
                                                      attType, attList, enumeration,
                                                      attDefaultType, 
-                                                     attDefaultValue);
-            int chunk = attributeDeclIndex >> CHUNK_SHIFT;
-            int index = attributeDeclIndex & CHUNK_MASK;
-            ensureAttributeDeclCapacity(chunk);
+                                                     attDefaultValue, isExternal);
             fAttributeDeclMap[chunk][index] = mapping;
         }
 
@@ -978,10 +1039,13 @@ public class DTDGrammar
         } catch (ArrayIndexOutOfBoundsException ex) {
             fElementDeclMap = resize(fElementDeclMap, 
                                      fElementDeclMap.length * 2);
+            fElementDeclIsExternal = resize(fElementDeclIsExternal, 
+                                     fElementDeclIsExternal.length * 2);
         } catch (NullPointerException ex) {
             // ignore
         }
         fElementDeclMap[chunk] = new int[CHUNK_SIZE];
+        fElementDeclIsExternal[chunk] = new int[CHUNK_SIZE];
         return true;
     }
 
@@ -992,10 +1056,13 @@ public class DTDGrammar
         } catch (ArrayIndexOutOfBoundsException ex) {
             fAttributeDeclMap = resize(fAttributeDeclMap, 
                                        fAttributeDeclMap.length * 2);
+            fAttributeDeclIsExternal = resize(fAttributeDeclIsExternal, 
+                                       fAttributeDeclIsExternal.length * 2);
         } catch (NullPointerException ex) {
             // ignore
         }
         fAttributeDeclMap[chunk] = new int[CHUNK_SIZE];
+        fAttributeDeclIsExternal[chunk] = new int[CHUNK_SIZE];
         return true;
     }
 

@@ -195,6 +195,13 @@ public final class XMLDocumentScanner {
      */
     public interface EventHandler {
         /**
+         * Signal standalone = "yes"
+         *
+         * @exception java.lang.Exception
+         */
+        public void callStandaloneIsYes() throws Exception;
+
+        /**
          * Signal the start of a document
          *
          * @exception java.lang.Exception
@@ -1735,6 +1742,10 @@ public final class XMLDocumentScanner {
             // handler before returning.
             //
             fEventHandler.callXMLDecl(version, encoding, standalone);
+            // if we see standalone = 'yes', call the eventHandler - XMLValidator
+            if (fStandalone) {
+                fEventHandler.callStandaloneIsYes();
+            }
         }
     }
     //
