@@ -178,6 +178,9 @@ public class DOMNormalizer implements XMLGrammarPool {
     /** DOM Error object */
     protected final DOMErrorImpl fDOMError = new DOMErrorImpl();
 
+    /** DOM Locator -  for namespace fixup algorithm */
+    protected final DOMLocatorImpl fLocator = new DOMLocatorImpl();
+
 
 
     // 
@@ -324,6 +327,11 @@ public class DOMNormalizer implements XMLGrammarPool {
                     //         or rely on the PSVI information.
                     fAttrProxy.setAttributes(attributes, fDocument, elem);
                     updateQName(elem, fQName); // updates global qname
+                    //
+                    // set error node in the dom error wrapper
+                    // so if error occurs we can report an error node
+                    fDocument.fErrorHandlerWrapper.fCurrentNode = node;
+                    // call re-validation handler
                     fValidationHandler.startElement(fQName, fAttrProxy, null);
                 }
 
@@ -349,6 +357,11 @@ public class DOMNormalizer implements XMLGrammarPool {
 
                 if (fValidationHandler != null) {
                     updateQName(elem, fQName); // updates global qname
+                    //
+                    // set error node in the dom error wrapper
+                    // so if error occurs we can report an error node
+                    fDocument.fErrorHandlerWrapper.fCurrentNode = node;
+
                     fValidationHandler.endElement(fQName, null);
                     int count = fNamespaceBinder.getDeclaredPrefixCount();
                     for (int i = count - 1; i >= 0; i--) {
@@ -430,6 +443,12 @@ public class DOMNormalizer implements XMLGrammarPool {
                 }
                 // send characters call for CDATA
                 if (fValidationHandler != null) {
+
+                    //
+                    // set error node in the dom error wrapper
+                    // so if error occurs we can report an error node
+                    fDocument.fErrorHandlerWrapper.fCurrentNode = node;
+                    
                     fValidationHandler.startCDATA(null);
                     fValidationHandler.characterData(node.getNodeValue(), null);
                     fValidationHandler.endCDATA(null);
@@ -486,6 +505,11 @@ public class DOMNormalizer implements XMLGrammarPool {
                                nextType == Node.COMMENT_NODE) ||
                               ((fDocument.features & CoreDocumentImpl.CDATA) == 0) &&
                               nextType == Node.CDATA_SECTION_NODE)) {
+
+                            //
+                            // set error node in the dom error wrapper
+                            // so if error occurs we can report an error node
+                            fDocument.fErrorHandlerWrapper.fCurrentNode = node;
                             fValidationHandler.characterData(node.getNodeValue(), null);
                             if (DEBUG_ND) {
                                 System.out.println("=====>characterData(),"+nextType);
@@ -851,12 +875,11 @@ public class DOMNormalizer implements XMLGrammarPool {
 
     protected final DOMError modifyDOMError(String message, short severity, Node node){
         fDOMError.reset();
-        fDOMError.setMessage(message);
-        fDOMError.setSeverity(severity);
-        // REVISIT: do we need to create a new locator for each error??
-        fDOMError.setLocator(new DOMLocatorImpl(-1, -1, -1, node, null));
+        fDOMError.fMessage = message;
+        fDOMError.fSeverity = severity;
+        fDOMError.fLocator = fLocator;
+        fLocator.fErrorNode = node;
         return fDOMError;
-
     }
 
     protected final void updateQName (Node node, QName qname){

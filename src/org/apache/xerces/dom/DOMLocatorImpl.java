@@ -80,19 +80,19 @@ public class DOMLocatorImpl implements DOMLocator {
     * The column number where the error occured, 
     * or -1 if there is no column number available.
     */
-   int fColumnNumber = -1;
+   public int fColumnNumber = -1;
 
    /**
     * The DOM Node where the error occured, or 
     * null if there is no Node available.
     */
-   Node fErrorNode = null;
+   public Node fErrorNode = null;
 
    /**
     * The line number where the error occured, 
     * or -1 if there is no line number available.
     */
-   int fLineNumber = -1;
+   public int fLineNumber = -1;
 
    /**
     * The byte or character offset into the input source, 
@@ -100,17 +100,20 @@ public class DOMLocatorImpl implements DOMLocator {
     * will be the byte offset into that stream, but if a character media 
     * is parsed then the offset will be the character offset
     */
-   int fOffset = -1;
+   public int fOffset = -1;
 
    /**
     * The URI where the error occured, 
     * or null if there is no URI available.
     */
-   String fUri = null;
+   public String fUri = null;
      
    //
    // Constructors
    //
+
+   public DOMLocatorImpl(){
+   }
 
    public DOMLocatorImpl (int lineNumber, int columnNumber, String uri ){
 	fLineNumber = lineNumber ;
@@ -118,13 +121,13 @@ public class DOMLocatorImpl implements DOMLocator {
 	fUri = uri;
    } // DOMLocatorImpl (int lineNumber, int columnNumber, String uri )
 
-  public DOMLocatorImpl (int lineNumber, int columnNumber, int offset, Node errorNode, String uri ){
+   public DOMLocatorImpl (int lineNumber, int columnNumber, int offset, Node errorNode, String uri ){
 	fLineNumber = lineNumber ;
 	fColumnNumber = columnNumber ;
 	fOffset = offset ;
 	fErrorNode = errorNode ;
 	fUri = uri;
-  } // DOMLocatorImpl (int lineNumber, int columnNumber, int offset, Node errorNode, String uri )
+   } // DOMLocatorImpl (int lineNumber, int columnNumber, int offset, Node errorNode, String uri )
 
   /**
    * The line number where the error occured, or -1 if there is no line 

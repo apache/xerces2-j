@@ -88,10 +88,10 @@ public class DOMErrorImpl implements DOMError {
     // Data
     //
 
-    short fSeverity = DOMError.SEVERITY_WARNING;
-    String fMessage = null;    
-    DOMLocator fLocation = null;
-    Exception fException = null;
+    public short fSeverity = DOMError.SEVERITY_WARNING;
+    public String fMessage = null;
+    public DOMLocatorImpl fLocator = new DOMLocatorImpl();
+    public Exception fException = null;
 
 
     //
@@ -106,8 +106,7 @@ public class DOMErrorImpl implements DOMError {
     public DOMErrorImpl (short severity, XMLParseException exception) {
         fSeverity = severity;
         fException = exception;
-        fMessage = exception.getMessage();
-        fLocation = createDOMLocator (exception);
+        fLocator = createDOMLocator (exception);
     }
 
     /**
@@ -132,11 +131,11 @@ public class DOMErrorImpl implements DOMError {
      */
 
     public DOMLocator getLocation() {
-        return fLocation;
+        return fLocator;
     }
 
     // method to get the DOMLocator Object
-    private DOMLocator createDOMLocator(XMLParseException exception) {
+    private DOMLocatorImpl createDOMLocator(XMLParseException exception) {
         // assuming DOMLocator wants the *expanded*, not the literal, URI of the doc... - neilg
         return new DOMLocatorImpl(exception.getLineNumber(),
                                   exception.getColumnNumber(),
@@ -144,26 +143,6 @@ public class DOMErrorImpl implements DOMError {
                                  );
     } // createDOMLocator()
 
-    //
-    // non-DOM methods
-    // The setter methods allow to reuse DOMError object
-    //
-
-    public void setSeverity(short error){
-        fSeverity = error;
-    }
-
-    public void setMessage(String msg){
-        fMessage = msg;
-    }
-
-    public void setLocator(DOMLocator locator){
-        fLocation = locator;
-    }
-
-    public void setException(Exception ex){
-        fException = ex;
-    }
 
     /**
      * The related platform dependent exception if any.exception is a reserved 
@@ -176,8 +155,6 @@ public class DOMErrorImpl implements DOMError {
 
     public void reset(){
         fSeverity = DOMError.SEVERITY_WARNING; 
-        fMessage = null;    
-        fLocation = null;
         fException = null;
     }
 
