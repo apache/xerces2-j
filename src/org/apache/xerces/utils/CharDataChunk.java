@@ -415,6 +415,7 @@ public final class CharDataChunk implements StringPool.StringProducer {
                 /*** Only keep one free chunk at a time! ***
                 fNextChunk = fgFreeChunks;
                 /***/
+                fNextChunk = null;
                 fgFreeChunks = this;
             }
         }

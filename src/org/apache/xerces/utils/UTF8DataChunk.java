@@ -572,6 +572,7 @@ public class UTF8DataChunk implements StringPool.StringProducer {
                 /*** Only keep one free chunk at a time! ***
                 fNextChunk = fgFreeChunks;
                 /***/
+                fNextChunk = null;
                 fgFreeChunks = this;
             }
         }
@@ -599,5 +600,5 @@ public class UTF8DataChunk implements StringPool.StringProducer {
     private UTF8DataChunk fNextChunk;
     private UTF8DataChunk fPreviousChunk;
     private static UTF8DataChunk fgFreeChunks = null;
-    private static char[] fTempBuffer = null;
+    private char[] fTempBuffer = null;
 }
