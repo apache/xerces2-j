@@ -477,7 +477,8 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
 
         StringWriter destination = new StringWriter();
         try {
-            prepareForSerialization(ser, wnode);           
+            prepareForSerialization(ser, wnode);
+            ser._format.setEncoding("UTF-16");
             ser.setOutputCharStream(destination);
             if (wnode == null)
                 return null;
