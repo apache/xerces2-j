@@ -195,7 +195,7 @@
 
     		<li>
     			<strong>LSParser</strong> <jump href="http://www.w3.org/TR/2003/CR-DOM-Level-3-LS-20031107/load-save.html#LS-LSParser-parseWithContext">
-    			parserWithContext</jump>
+    			parseWithContext</jump>
     			 -- not supported.
 	    	</li>
 	      <li><strong>DOMImplementationLS</strong> <jump href="http://www.w3.org/TR/2003/CR-DOM-Level-3-LS-20031107/load-save.html#LS-DOMIMplementationLS-MODE_ASYNCH">
