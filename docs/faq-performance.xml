@@ -22,8 +22,8 @@
    </p>
    <p>
     The parser configuration will affect the performance of the parser.
-    If you are interested in evaluating the parser performance with DTDs use     StandardParserConfiguration (Note: this is the default parser configuration). 
-    For testing the performance for XML Schema evaluation turn on schema validation feature (this will insert XML Schema Validator in the pipeline).
+    If you are interested in evaluating the parser performance with DTDs use the StandardParserConfiguration (Note: this is the default parser configuration). 
+    For testing the performance for XML Schema evaluation turn on the schema validation feature (this will insert the XML Schema Validator in the pipeline).
    </p>
   </a>
  </faq>
@@ -83,11 +83,14 @@ If you are only interested in validating against DTDs don't include XML Schema v
      is specified even when validation feature is set to false.
     </li>
     <li>
-     For large documents, avoid using DOM which uses a lot of memory.
-     Instead, use SAX if appropriate. The DOM parser requires that 
-     the entire document be read into memory before the application
-     processes the document. The SAX parser uses very little memory
-     and notifies the application as parts of the document are parsed.
+     By default, the DOM feature defer-node-expansion is true, causing DOM nodes to 
+     be expanded as the tree is traversed.  
+     This allows the parser to return
+     a document faster than if the tree is fully expanded during parsing and
+     improves memory usage when the whole tree is not traversed.    
+     If memory usage using DOM is still a concern, SAX should be considered;      
+     the SAX parser uses very little memory and notifies the   
+     application as parts of the document are parsed.
     </li>
    </ul>
   </a>
