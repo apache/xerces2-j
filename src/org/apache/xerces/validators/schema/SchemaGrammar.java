@@ -64,12 +64,14 @@ import org.apache.xerces.framework.XMLContentSpec;
 import org.apache.xerces.utils.QName;
 import org.apache.xerces.framework.XMLContentSpec;
 import org.apache.xerces.validators.datatype.DatatypeValidator;
+import org.apache.xerces.validators.datatype.DatatypeValidatorRegistry;
 import org.apache.xerces.validators.common.XMLAttributeDecl;
 import org.apache.xerces.validators.common.XMLContentModel;
 import org.apache.xerces.validators.common.XMLElementDecl;
 import org.apache.xerces.validators.common.Grammar;
 import org.w3c.dom.Document;
 
+import java.util.Hashtable;
 
 public class SchemaGrammar extends Grammar{
 
@@ -104,35 +106,17 @@ public class SchemaGrammar extends Grammar{
     private TraverseSchema.ComplexTypeInfo fComplexTypeInfo[][] = 
         new TraverseSchema.ComplexTypeInfo[INITIAL_CHUNK_COUNT][];
     
-    /*
-    private int fElementDeclCount;
-    private int fElementDeclNameIndex[][] = new int[INITIAL_CHUNK_COUNT][];
-    private int fElementDeclType[][] = new int[INITIAL_CHUNK_COUNT][];
-    private DatatypeValidator fElementDeclDatatypeValidator[][] = new DatatypeValidator[INITIAL_CHUNK_COUNT][];
-    private int fElementDeclContentSpecIndex[][] = new int[INITIAL_CHUNK_COUNT][];
-    private XMLContentModel fElementDeclContentModelValidator[][] = new XMLContentModel[INITIAL_CHUNK_COUNT][];
-    private int fElementDeclFirstAttributeDeclIndex[][] = new int[INITIAL_CHUNK_COUNT][];
-    private int fElementDeclLastAttributeDeclIndex[][] = new int[INITIAL_CHUNK_COUNT][];
-    //
 
-    // content spec tables
+    //ComplexType and SimpleTypeRegistries
+    private Hashtable fComplexTypeRegistry = null;
+    private DatatypeValidatorRegistry fDatatypeRegistry = null;
 
-    private int fContentSpecCount;
-    private int fContentSpecType[][] = new int[INITIAL_CHUNK_COUNT][];
-    private int fContentSpecValue[][] = new int[INITIAL_CHUNK_COUNT][];
-    private int fContentSpecOtherValue[][] = new int[INITIAL_CHUNK_COUNT][];
-
-    // attribute decl tables
-
-    private int fAttributeDeclCount;
-    private QName fAttributeDeclName[][] = new QName[INITIAL_CHUNK_COUNT][];
-    private DatatypeValidator fAttributeDeclDatatypeValidator[][] = new DatatypeValidator[INITIAL_CHUNK_COUNT][];
-    private String fAttributeDeclDefaultValue[][] = new String[INITIAL_CHUNK_COUNT][];
-    private int fAttributeDeclNextAttributeDeclIndex[][] = new int[INITIAL_CHUNK_COUNT][];
-
-    // scope mapping tables
-
-   */
+    public Hashtable getComplexTypeRegistry(){
+        return fComplexTypeRegistry;
+    }
+    public DatatypeValidatorRegistry getDatatypeRegistry(){
+        return fDatatypeRegistry;
+    }
 
     //
     // Public methods
@@ -175,6 +159,12 @@ public class SchemaGrammar extends Grammar{
     //
     // Protected methods
     //
+    protected void  setComplexTypeRegistry(Hashtable cTypeReg){
+        fComplexTypeRegistry = cTypeReg;
+    }
+    protected void setDatatypeRegistry(DatatypeValidatorRegistry dTypeReg){
+        fDatatypeRegistry = dTypeReg;
+    }
 
 
     protected int createElementDecl() {
@@ -260,7 +250,7 @@ public class SchemaGrammar extends Grammar{
             //note, this is the scope defined by the element, not its enclosing scope
             setElementDefinedScope(elementDeclIndex, scopeDefined);
 // debugging
-//System.out.println("xxxxxEltIndex :" + elementDeclIndex + ", contentSpecType: " + contentSpecType);
+//System.out.println("#######EltIndex :" + elementDeclIndex + ", contentSpecType: " + contentSpecType);
         }
 
 //debugging
@@ -295,6 +285,24 @@ public class SchemaGrammar extends Grammar{
 
         super.setAttributeDecl(templateElementIndex, attrDeclIndex, fTempAttributeDecl);
     }
+
+    protected int getAttributeDeclIndex(int elementIndex, QName attribute) {
+        if (elementIndex == -1) {
+            return -1;
+        }
+        int attDefIndex = getFirstAttributeDeclIndex(elementIndex);
+        while (attDefIndex != -1) {
+            getAttributeDecl(attDefIndex, fTempAttributeDecl);
+            if (fTempAttributeDecl.name.localpart == attribute.localpart &&
+                fTempAttributeDecl.name.uri == attribute.uri ) {
+                return attDefIndex;
+            }
+            attDefIndex = getNextAttributeDeclIndex(attDefIndex);
+        }
+        return -1;
+
+    } // getAttDef(int,QName)
+
     /**
      *@return the new contentSpec Index
      */
@@ -339,13 +347,6 @@ public class SchemaGrammar extends Grammar{
         return true;
     }
 
-    /*private boolean ensureContentSpecCapacity(int chunk) {
-        return true;
-    }
-
-    private boolean ensureAttributeDeclCapacity(int chunk) {
-        return true;
-    }*/
 
     // resize initial chunk
 

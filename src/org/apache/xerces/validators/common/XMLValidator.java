@@ -279,7 +279,6 @@ public final class XMLValidator
     private int fXMLLang = -1;
     private LocatorImpl fAttrNameLocator = null;
     private boolean fCheckedForSchema = false;
-    private Document fSchemaDocument = null;
     private boolean fDeclsAreExternal = false;
     private StringPool.CharArrayRange fCurrentElementCharArrayRange = null;
     private char[] fCharRefData = null;
@@ -398,13 +397,6 @@ public final class XMLValidator
         resetCommon(stringPool);
     }
 
-    // schema information
-
-    /** Returns the schema document. */
-    public Document getSchemaDocument() {
-        // REVISIT: Is this method needed? Should it be removed?
-        return fSchemaDocument;
-    }
     
     // settings
 
@@ -941,6 +933,14 @@ public final class XMLValidator
         //REVISIT: Validation
         fCurrentScope = fScopeStack[fElementDepth];
 
+//debugging
+/****
+System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)+
+                   "\n fCurrentElementIndex : " + fCurrentElementIndex +
+                   "\n fCurrentScope : " + fCurrentScope +
+                   "\n fCurrentContentSpecType : " + fCurrentContentSpecType +
+                   "\n++++++++++++++++++++++++++++++++++++++++++++++++" );
+/****/                   
         // if enclosing element's Schema is different, need to switch "context"
         if ( fGrammarNameSpaceIndex != fGrammarNameSpaceIndexStack[fElementDepth] ) {
             fGrammarNameSpaceIndex = fGrammarNameSpaceIndexStack[fElementDepth];
@@ -2375,7 +2375,6 @@ public final class XMLValidator
         fAttrListHandle = -1;
         //fElementDeclCount = 0;
         fCheckedForSchema = false;
-        fSchemaDocument = null;
 
         fCurrentScope = TOP_LEVEL_SCOPE;
         fCurrentSchemaURI = -1;
@@ -3179,6 +3178,7 @@ public final class XMLValidator
                         // REVISIT
                     } 
                     else {
+//debugging
 //System.out.println("deal with XSI");
 //System.out.println("before find XSI: "+fStringPool.toString(attPrefix)+","+fStringPool.toString(fXsiPrefix) );
                         if (attPrefix == fXsiPrefix && fXsiPrefix != -1 ) {
@@ -3187,6 +3187,9 @@ public final class XMLValidator
                             int localpart = attrList.getAttrLocalpart(index);
                             if (localpart == fStringPool.addSymbol(SchemaSymbols.XSI_SCHEMALOCACTION)) {
                                 parseSchemaLocation(fStringPool.toString(attrList.getAttValue(index)), locationUriPairs);
+                            }
+                            else if (localpart == fStringPool.addSymbol(SchemaSymbols.XSI_NONAMESPACESCHEMALOCACTION))  {
+                                locationUriPairs.put(fStringPool.toString(attrList.getAttValue(index)), "");
                             }
                             // REVISIT: should we break here? 
                             break;
@@ -3217,9 +3220,14 @@ public final class XMLValidator
 
         int elementURI;
         if (prefix == -1) {
-            elementURI = fNamespacesScope.getNamespaceForPrefix(StringPool.EMPTY_STRING);
-            if (elementURI != -1) {
-                element.uri = elementURI;
+            if (fGrammar.getElementDeclIndex(element.localpart, fCurrentScope) > -1) {
+                element.uri = -1;
+            }
+            else {
+                elementURI = fNamespacesScope.getNamespaceForPrefix(StringPool.EMPTY_STRING);
+                if (elementURI != -1) {
+                    element.uri = elementURI;
+                }
             }
         } 
         else {
@@ -3329,6 +3337,11 @@ public final class XMLValidator
         try {
             System.out.println("I am geting the Schema Document");
             Element root   = document.getDocumentElement();// This is what we pass to TraverserSchema
+            if (uri == null || !uri.equals(root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE)) ) {
+                //TO DO : consistent report error here
+                System.out.println("Schema in " + loc + " has a different target namespace " + 
+                                   "from the one specified in the instance document :" + uri); 
+            }
             //serial.serialize( root );
             //System.out.println(outWriter.toString());
             if (fGrammar == null) {
@@ -3339,6 +3352,12 @@ public final class XMLValidator
         catch (Exception e) {
             e.printStackTrace(System.err);
         }
+
+    }
+
+    private void resolveSchemaGrammar(String uri){
+
+        resolveSchemaGrammar(uri, uri);
 
     }
 
@@ -3423,9 +3442,6 @@ public final class XMLValidator
     } // getLocationString(SAXParseException):String
     }
 
-    private void resolveSchemaGrammar(String uri){
-        //TO DO
-    }
 
         /** Validates element and attributes. */
     private void validateElementAndAttributes(QName element, 
@@ -3468,9 +3484,10 @@ public final class XMLValidator
             else {
                 elementIndex = fGrammar.getElementDeclIndex(element.localpart, TOP_LEVEL_SCOPE);
             }
+
             if (elementIndex == -1) {
                 // if validating based on a Schema, try to resolve the element again by look it up in its ancestor types
-                if (fGrammar instanceof SchemaGrammar) {
+                if (fGrammar instanceof SchemaGrammar && fCurrentElementIndex != -1) {
                     TraverseSchema.ComplexTypeInfo baseTypeInfo = null;
                     baseTypeInfo = ((SchemaGrammar)fGrammar).getElementComplexTypeInfo(fCurrentElementIndex);
                     while (baseTypeInfo != null) {

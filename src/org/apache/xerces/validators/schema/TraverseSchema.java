@@ -58,6 +58,7 @@
 package org.apache.xerces.validators.schema;
 
 import  org.apache.xerces.framework.XMLErrorReporter;
+import  org.apache.xerces.validators.common.Grammar;
 import  org.apache.xerces.validators.common.GrammarResolver;
 import  org.apache.xerces.validators.common.GrammarResolverImpl;
 import  org.apache.xerces.validators.common.XMLElementDecl;
@@ -408,6 +409,8 @@ public class TraverseSchema implements
     private String fTargetNSURIString = "";
     private NamespacesScope fNamespacesScope = null;
 
+    private XMLAttributeDecl fTempAttributeDecl = new XMLAttributeDecl();
+
     // REVISIT: maybe need to be moved into SchemaGrammar class
     public class ComplexTypeInfo {
         public String typeName;
@@ -466,6 +469,16 @@ public class TraverseSchema implements
         fSchemaGrammar = schemaGrammar;
         fGrammarResolver = grammarResolver;
         
+        if (fGrammarResolver == null) {
+            reportGenericSchemaError("Internal error: don't have a GrammarResolver for TraverseSchem");
+        }
+        else{
+            fSchemaGrammar.setComplexTypeRegistry(fComplexTypeRegistry);
+            fSchemaGrammar.setDatatypeRegistry(fDatatypeRegistry);
+            fGrammarResolver.putGrammar(fTargetNSURIString, fSchemaGrammar);
+        }
+        
+
         if (root == null) { 
             // REVISIT: Anything to do?
             return;
@@ -545,12 +558,6 @@ public class TraverseSchema implements
             }
         } // for each child node
 
-        if (fGrammarResolver == null) {
-            reportGenericSchemaError("Internal error: don't have a GrammarResolver for TraverseSchem");
-        }
-        else{
-            fGrammarResolver.putGrammar(fTargetNSURIString, fSchemaGrammar);
-        }
     } // traverseSchema(Element)
 
     private void checkTopLevelDuplicateNames(Element root) {
@@ -772,6 +779,8 @@ public class TraverseSchema implements
         //int parsedderivedBy = parseComplexDerivedBy(derivedBy);
         //handle the inhreitance here. 
         if (base.length()>0) {
+
+            //first check if derivedBy is present
             if (derivedBy.length() == 0) {
                 reportGenericSchemaError("derivedBy must be present when base is present in " 
                                          +SchemaSymbols.ELT_COMPLEXTYPE
@@ -791,10 +800,21 @@ public class TraverseSchema implements
                 }
                 int localpartIndex = fStringPool.addSymbol(localpart);
                 String typeURI = resolvePrefixToURI(prefix);
-                if (!typeURI.equals(fTargetNSURIString)) {
+                
+                // check if the base type is from the same Schema;
+                if (!typeURI.equals(fTargetNSURIString) && !typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) ) {
                     baseTypeInfo = getTypeInfoFromNS(typeURI, localpart);
-                    //TO DO 
-                    // REVISIT: baseTypeValidator = getTypeValidatorFromNS(typeURI, localpart);
+                    if (baseTypeInfo == null) {
+                        baseTypeValidator = getTypeValidatorFromNS(typeURI, localpart);
+                        if (baseTypeValidator == null) {
+                            //TO DO: report error here;
+                            System.out.println("Counld not find base type " +localpart 
+                                               + " in schema " + typeURI);
+                        }
+                        else{
+                            baseIsSimpleSimple = true;
+                        }
+                    }
                 }
                 else {
                 
@@ -812,7 +832,7 @@ public class TraverseSchema implements
                             if (baseTypeNode != null) {
                                 baseTypeSymbol = traverseComplexTypeDecl( baseTypeNode );
                                 baseTypeInfo = (ComplexTypeInfo)
-                                fComplexTypeRegistry.get(fStringPool.toString(baseTypeSymbol)); //REVIST: should it be fullBaseName;
+                                fComplexTypeRegistry.get(fStringPool.toString(baseTypeSymbol)); //REVISIT: should it be fullBaseName;
                             }
                             else {
                                 baseTypeNode = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
@@ -835,46 +855,45 @@ public class TraverseSchema implements
                             baseIsSimpleSimple = true;
                         }
                     }
-                        //Schema Spec : 5.11: Complex Type Definition Properties Correct : 2
-                    if (baseIsSimpleSimple && derivedByRestriction) {
-                        reportGenericSchemaError("base is a simpledType, can't derive by restriction in " + typeName); 
-                    }
-
-                    //if  the base is a complexType
-                    if (baseTypeInfo != null ) {
-
-                        //Schema Spec : 5.11: Derivation Valid ( Extension ) 1.1.1
-                        //              5.11: Derivation Valid ( Restriction, Complex ) 1.2.1
-                        if (derivedByRestriction) {
-                            //REVISIT: check base Type's finalset does not include "restriction"
-                        }
-                        else {
-                            //REVISIT: check base Type's finalset doest not include "extension"
-                        }
-
-                        if ( baseTypeInfo.contentSpecHandle > -1) {
-                            if (derivedByRestriction) {
-                                //REVISIT: !!! really hairy staff to check the particle derivation OK in 5.10
-                                checkParticleDerivationOK(complexTypeDecl, baseTypeNode);
-                            }
-                            baseContentSpecHandle = baseTypeInfo.contentSpecHandle;
-                        }
-                        else if ( baseTypeInfo.datatypeValidator != null ) {
-                            baseTypeValidator = baseTypeInfo.datatypeValidator;
-                            baseIsComplexSimple = true;
-                        }
-                    }
-
-                        //Schema Spec : 5.11: Derivation Valid ( Extension ) 1.1.1
-                    if (baseIsComplexSimple && !derivedByRestriction ) {
-                        reportGenericSchemaError("base is ComplexSimple, can't derive by extension in " + typeName);
-                    }
-
-
-                    
                 }
-            }
-        }
+                        //Schema Spec : 5.11: Complex Type Definition Properties Correct : 2
+                if (baseIsSimpleSimple && derivedByRestriction) {
+                    reportGenericSchemaError("base is a simpledType, can't derive by restriction in " + typeName); 
+                }
+
+                //if  the base is a complexType
+                if (baseTypeInfo != null ) {
+
+                    //Schema Spec : 5.11: Derivation Valid ( Extension ) 1.1.1
+                    //              5.11: Derivation Valid ( Restriction, Complex ) 1.2.1
+                    if (derivedByRestriction) {
+                        //REVISIT: check base Type's finalset does not include "restriction"
+                    }
+                    else {
+                        //REVISIT: check base Type's finalset doest not include "extension"
+                    }
+
+                    if ( baseTypeInfo.contentSpecHandle > -1) {
+                        if (derivedByRestriction) {
+                            //REVISIT: !!! really hairy staff to check the particle derivation OK in 5.10
+                            checkParticleDerivationOK(complexTypeDecl, baseTypeNode);
+                        }
+                        baseContentSpecHandle = baseTypeInfo.contentSpecHandle;
+                    }
+                    else if ( baseTypeInfo.datatypeValidator != null ) {
+                        baseTypeValidator = baseTypeInfo.datatypeValidator;
+                        baseIsComplexSimple = true;
+                    }
+                }
+
+                //Schema Spec : 5.11: Derivation Valid ( Extension ) 1.1.1
+                if (baseIsComplexSimple && !derivedByRestriction ) {
+                    reportGenericSchemaError("base is ComplexSimple, can't derive by extension in " + typeName);
+                }
+
+
+            } // END of if (derivedBy.length() == 0) {} else {}
+        } // END of if (base.length() > 0) {}
 
         // skip refinement and annotations
         child = null;
@@ -939,10 +958,7 @@ public class TraverseSchema implements
         }
 
             // if content = textonly, base is a datatype
-        if (content.length() == 0 && base.length() == 0) {
-            contentSpecType = XMLElementDecl.TYPE_ANY;
-        }
-        else if (content.equals(SchemaSymbols.ATTVAL_TEXTONLY)) {
+        if (content.equals(SchemaSymbols.ATTVAL_TEXTONLY)) {
             //TO DO
             if (fDatatypeRegistry.getDatatypeValidator(base) == null) // must be datatype
                         reportSchemaError(SchemaMessageProvider.NotADatatype,
@@ -1077,7 +1093,7 @@ public class TraverseSchema implements
                                                      left, -1, false);
             }
         }
-        
+
         // if derived by extension and base complextype has a content model, 
         // compose the final content model by concatenating the base and the 
         // current in sequence.
@@ -1088,8 +1104,13 @@ public class TraverseSchema implements
                                                  false);
         }
 
+        // REVISIT: this is when sees a topelevel <complexType name="abc">attrs*</complexType>
+        if (content.length() == 0 && base.length() == 0 && left == -2) {
+            contentSpecType = XMLElementDecl.TYPE_ANY;
+        }
+
 //debugging
-//        System.out.println("!!!!!>>>>>" + typeName+", "+ baseTypeInfo + ", " + baseContentSpecHandle +", " + left);
+//        System.out.println("!!!!!>>>>>" + typeName+", "+ baseTypeInfo + ", " + baseContentSpecHandle +", " + left +", "+scopeDefined);
 
         ComplexTypeInfo typeInfo = new ComplexTypeInfo();
         typeInfo.baseComplexTypeInfo = baseTypeInfo;
@@ -1128,20 +1149,32 @@ public class TraverseSchema implements
                 traverseAttributeDecl(child, typeInfo);
             } 
             else if ( childName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ) { 
-
                 traverseAttributeGroupDecl(child,typeInfo);
             }
         }
         typeInfo.attlistHead = fSchemaGrammar.getFirstAttributeDeclIndex(typeInfo.templateElementIndex);
 
-        if (baseTypeInfo != null)
-            if ( !derivedByRestriction) {
-                //TO DO: add the base attributes here, if duplicates happens, signal error.
+        // merge in base type's attribute decls
+        if (baseTypeInfo != null && baseTypeInfo.attlistHead > -1 ) {
+            int attDefIndex = baseTypeInfo.attlistHead;
+            while ( attDefIndex > -1 ) {
+                fSchemaGrammar.getAttributeDecl(attDefIndex, fTempAttributeDecl);
+                attDefIndex = fSchemaGrammar.getNextAttributeDeclIndex(attDefIndex);
+                // if found a duplicate, if it is derived by restriction. then skip the one from the base type
+                if (fSchemaGrammar.getAttributeDeclIndex(typeInfo.templateElementIndex, fTempAttributeDecl.name) > -1) {
+                    if (derivedByRestriction) {
+                        continue;
+                    }
+                }
+                //REVISIT:
+                // int enumeration = ????
+                fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
+                                          fTempAttributeDecl.name, fTempAttributeDecl.type, 
+                                          -1, fTempAttributeDecl.defaultType, 
+                                          fTempAttributeDecl.defaultValue, fTempAttributeDecl.datatypeValidator);
             }
-            else{
-                //TO DO, add base attributes that is not duplicates
-            }
-            
+        }
+
         if (!typeName.startsWith("#")) {
             typeName = fTargetNSURIString + "," + typeName;
         }
@@ -1150,6 +1183,7 @@ public class TraverseSchema implements
         // before exit the complex type definition, restore the scope, mainly for nested Anonymous Types
         fCurrentScope = previousScope;
 
+        typeNameIndex = fStringPool.addSymbol(typeName);
         return typeNameIndex;
 
 
@@ -1467,6 +1501,7 @@ public class TraverseSchema implements
         QName attQName = new QName(-1,attName,attName,uriIndex);
 //debugging
 //      System.out.println(" the dataType Validator for " + fStringPool.toString(attName) + " is " + dv);
+
         // add attribute to attr decl pool in fSchemaGrammar, 
         fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
                                   attQName, attType, 
@@ -1506,12 +1541,13 @@ public class TraverseSchema implements
                 localpart = ref.substring(colonptr+1);
             }
             if (!resolvePrefixToURI(prefix).equals(fTargetNSURIString)) {
+                // TO DO 
                 // REVISIST: different NS, not supported yet.
                 reportGenericSchemaError("Feature not supported: see an attribute from different NS");
             }
             Element referredAttrGrp = getTopLevelComponentByName(SchemaSymbols.ELT_ATTRIBUTEGROUP,localpart);
             if (referredAttrGrp != null) {
-                traverseAttributeDecl(referredAttrGrp, typeInfo);
+                traverseAttributeGroupDecl(referredAttrGrp, typeInfo);
             }
             else {
                 reportGenericSchemaError ( "Couldn't find top level attributegroup " + ref);
@@ -1686,6 +1722,7 @@ public class TraverseSchema implements
                                       fStringPool.addSymbol(resolvePrefixToURI(prefix)) );
             int elementIndex = fSchemaGrammar.getElementDeclIndex(localpartIndex, TOP_LEVEL_SCOPE);
             //if not found, traverse the top level element that if referenced
+
             if (elementIndex == -1 ) {
                 eltName= 
                     traverseElementDecl(
@@ -1727,7 +1764,8 @@ public class TraverseSchema implements
                     fComplexTypeRegistry.get(fStringPool.toString(typeNameIndex));
                 
                 haveAnonType = true;
-
+//debugging
+//System.out.println("--------element Typeinfo : " + name + " : " + typeInfo.scopeDefined + "," + fCurrentScope);
             } 
             else if (childName.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
                 //   TO DO:  the Default and fixed attribute handling should be here.                
@@ -1762,33 +1800,47 @@ public class TraverseSchema implements
                 localpart = type.substring(colonptr+1);
             }
             String typeURI = resolvePrefixToURI(prefix);
-            if (!typeURI.equals(fTargetNSURIString)) {
+            
+            // check if the type is from the same Schema
+            if (!typeURI.equals(fTargetNSURIString) && !typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) {
                 fromAnotherSchema = typeURI;
                 typeInfo = getTypeInfoFromNS(typeURI, localpart);
-            }
-            typeInfo = (ComplexTypeInfo) fComplexTypeRegistry.get(typeURI+","+localpart);
-            if (typeInfo == null) {
-                dv = fDatatypeRegistry.getDatatypeValidator(localpart);
-                if (dv == null) {
-                    Element topleveltype = getTopLevelComponentByName(SchemaSymbols.ELT_COMPLEXTYPE,localpart);
-                    if (topleveltype != null) {
-                        typeNameIndex = traverseComplexTypeDecl( topleveltype );
-                        typeInfo = (ComplexTypeInfo)
-                            fComplexTypeRegistry.get(fStringPool.toString(typeNameIndex));
+                if (typeInfo == null) {
+                    dv = getTypeValidatorFromNS(typeURI, localpart);
+                    if (dv == null) {
+                        //TO DO: report error here;
+                        System.out.println("Counld not find base type " +localpart 
+                                           + " in schema " + typeURI);
                     }
-                    else {
-                        topleveltype = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
+                }
+            }
+            else {
+//debugging
+//System.out.println("typeURI : " + typeURI + ","+fCurrentScope + "," + name);
+                typeInfo = (ComplexTypeInfo) fComplexTypeRegistry.get(typeURI+","+localpart);
+                if (typeInfo == null) {
+                    dv = fDatatypeRegistry.getDatatypeValidator(localpart);
+                    if (dv == null) {
+                        Element topleveltype = getTopLevelComponentByName(SchemaSymbols.ELT_COMPLEXTYPE,localpart);
                         if (topleveltype != null) {
-                            typeNameIndex = traverseSimpleTypeDecl( topleveltype );
-                            dv = fDatatypeRegistry.getDatatypeValidator(localpart);
-                            //   TO DO:  the Default and fixed attribute handling should be here.
+                            typeNameIndex = traverseComplexTypeDecl( topleveltype );
+                            typeInfo = (ComplexTypeInfo)
+                                fComplexTypeRegistry.get(fStringPool.toString(typeNameIndex));
                         }
                         else {
-                            reportGenericSchemaError("type not found : " + localpart);
+                            topleveltype = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
+                            if (topleveltype != null) {
+                                typeNameIndex = traverseSimpleTypeDecl( topleveltype );
+                                dv = fDatatypeRegistry.getDatatypeValidator(localpart);
+                                //   TO DO:  the Default and fixed attribute handling should be here.
+                            }
+                            else {
+                                reportGenericSchemaError("type not found : " + localpart);
+                            }
+
                         }
 
                     }
-
                 }
             }
    
@@ -1845,7 +1897,7 @@ public class TraverseSchema implements
         // add element decl to pool
         
         int attrListHead = -1 ;
-        
+
         // copy up attribute decls from type object
         if (typeInfo != null) {
             attrListHead = typeInfo.attlistHead;
@@ -1853,9 +1905,13 @@ public class TraverseSchema implements
         int elementIndex = fSchemaGrammar.addElementDecl(eltQName, enclosingScope, scopeDefined, 
                                                          contentSpecType, contentSpecNodeIndex, 
                                                          attrListHead, dv);
-        //        System.out.println("elementIndex:"+elementIndex+" "+elementDecl.getAttribute(ATT_NAME)+" eltType:"+elementName+" contentSpecType:"+contentSpecType+
-        //                           " SpecNodeIndex:"+ contentSpecNodeIndex);
-
+//debugging
+        /***
+        System.out.println("########elementIndex:"+elementIndex+" "+elementDecl.getAttribute(SchemaSymbols.ATT_NAME)
+                           +" eltType:"+name+" contentSpecType:"+contentSpecType+
+                           " SpecNodeIndex:"+ contentSpecNodeIndex +" enclosingScope: " +enclosingScope +
+                           " scopeDefined: " +scopeDefined);
+         /***/
         if (typeInfo != null) {
             fSchemaGrammar.setElementComplexTypeInfo(elementIndex, typeInfo);
         }
@@ -1925,10 +1981,31 @@ public class TraverseSchema implements
         return false;
     }
     
-    DatatypeValidator getTypeValidatorFromNS(String typeURI, String localpart){
+    DatatypeValidator getTypeValidatorFromNS(String newSchemaURI, String localpart){
+        Grammar grammar = fGrammarResolver.getGrammar(newSchemaURI);
+        if (grammar != null && grammar instanceof SchemaGrammar) {
+            SchemaGrammar sGrammar = (SchemaGrammar) grammar;
+            DatatypeValidator dv = (DatatypeValidator) fSchemaGrammar.getDatatypeRegistry().getDatatypeValidator(localpart);
+            return dv;
+        }
+        else {
+            //TO DO: report internal erro here
+            System.out.println("could not resolver URI : " + newSchemaURI + " to a SchemaGrammar");
+        }
         return null;
     }
-    ComplexTypeInfo getTypeInfoFromNS(String typeURI, String localpart){
+
+    ComplexTypeInfo getTypeInfoFromNS(String newSchemaURI, String localpart){
+        Grammar grammar = fGrammarResolver.getGrammar(newSchemaURI);
+        if (grammar != null && grammar instanceof SchemaGrammar) {
+            SchemaGrammar sGrammar = (SchemaGrammar) grammar;
+            ComplexTypeInfo typeInfo = (ComplexTypeInfo) fSchemaGrammar.getComplexTypeRegistry().get(newSchemaURI+","+localpart);
+            return typeInfo;
+        }
+        else {
+            //TO DO: report internal erro here
+            System.out.println("could not resolver URI : " + newSchemaURI + " to a SchemaGrammar");
+        }
         return null;
     }
     /**
@@ -1999,6 +2076,9 @@ public class TraverseSchema implements
                 localpart = ref.substring(colonptr+1);
             }
             int localpartIndex = fStringPool.addSymbol(localpart);
+
+            //TO DO;
+            // here also need to address the issue if the named group is from another schema
             int contentSpecIndex = 
                 traverseGroupDecl(
                     getTopLevelComponentByName(SchemaSymbols.ELT_GROUP,localpart)
