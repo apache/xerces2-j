@@ -3149,7 +3149,13 @@ public final class XMLValidator
       if (skipThisOne) {
          fNeedValidationOff = true;
       } else {
-
+        String euri = fStringPool.toString(element.uri);
+        String elocal = fStringPool.toString(element.localpart);
+        String eraw = fStringPool.toString(element.rawname);
+        if (elocal.equals("shapeElement")) {
+            int asdf = 0;
+            asdf++;
+        }
          //REVISIT: is this the right place to check on if the Schema has changed?
          TraverseSchema.ComplexTypeInfo baseTypeInfo = null;
         if (fGrammarIsSchemaGrammar && fCurrentElementIndex != -1)
@@ -3258,6 +3264,9 @@ public final class XMLValidator
          final int oldElementIndex = elementIndex;
 
          contentSpecType =  getContentSpecType(elementIndex);
+         XMLElementDecl tempElementDecl = new XMLElementDecl();
+         if (elementIndex != -1)
+             fGrammar.getElementDecl(elementIndex, tempElementDecl);
 
          if (fGrammarIsSchemaGrammar) {
 
@@ -3318,8 +3327,6 @@ public final class XMLValidator
                      else if (elementIndex != -1) {
                         // make sure the new type is related to the
                         // type of the expected element
-                        XMLElementDecl tempElementDecl = new XMLElementDecl();
-                        fGrammar.getElementDecl(elementIndex, tempElementDecl);
                         DatatypeValidator ancestorValidator = tempElementDecl.datatypeValidator;
                         DatatypeValidator tempVal = fXsiTypeValidator;
                         for(; tempVal != null; tempVal = tempVal.getBaseValidator())
@@ -3401,8 +3408,6 @@ public final class XMLValidator
                          // now we look at whether there is a type
                          // relation and whether the type (and element) allow themselves to be substituted for.
 
-                         XMLElementDecl tempElementDecl = new XMLElementDecl();
-                         fGrammar.getElementDecl(elementIndex, tempElementDecl);
                          TraverseSchema.ComplexTypeInfo tempType = typeInfo;
                          TraverseSchema.ComplexTypeInfo destType = ((SchemaGrammar)fGrammar).getElementComplexTypeInfo(elementIndex);
                          for(; tempType != null && destType != null; tempType = tempType.baseComplexTypeInfo) {
