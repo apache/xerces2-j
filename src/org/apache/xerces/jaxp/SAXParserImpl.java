@@ -77,7 +77,6 @@ import java.util.*;
 /**
  * @author Rajiv Mordani
  * @author Edwin Goei
- * @version $Revision$
  */
 
 /**

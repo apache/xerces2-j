@@ -87,7 +87,6 @@ import org.apache.xerces.dom.DOMImplementationImpl;
 /**
  * @author Rajiv Mordani
  * @author Edwin Goei
- * @version $Revision$
  */
 public class DocumentBuilderImpl extends DocumentBuilder {
     /** Xerces features */
@@ -128,12 +127,18 @@ public class DocumentBuilderImpl extends DocumentBuilder {
                              namespaceAware);
 
         // Set various parameters obtained from DocumentBuilderFactory
-        domParser.setFeature(XERCES_FEATURE_PREFIX +
-                             INCLUDE_IGNORABLE_WHITESPACE,
-                             !dbf.isIgnoringElementContentWhitespace());
-        domParser.setFeature(XERCES_FEATURE_PREFIX +
-                             CREATE_ENTITY_REF_NODES_FEATURE,
-                             !dbf.isExpandEntityReferences());
+        //
+        // XXX Note: Ignore features that are not yet implemented in
+        // Xerces 2.  This code is different than in Xerces 1!
+        try {
+            domParser.setFeature(XERCES_FEATURE_PREFIX +
+                                 INCLUDE_IGNORABLE_WHITESPACE,
+                                 !dbf.isIgnoringElementContentWhitespace());
+            domParser.setFeature(XERCES_FEATURE_PREFIX +
+                                 CREATE_ENTITY_REF_NODES_FEATURE,
+                                 !dbf.isExpandEntityReferences());
+        } catch (Exception e) {
+        }
 
         // XXX No way to control dbf.isIgnoringComments() or
         // dbf.isCoalescing()

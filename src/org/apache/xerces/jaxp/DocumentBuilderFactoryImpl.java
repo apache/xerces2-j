@@ -72,7 +72,6 @@ import org.apache.xerces.parsers.DOMParser;
 /**
  * @author Rajiv Mordani
  * @author Edwin Goei
- * @version $Revision$
  */
 public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
     /** These are DocumentBuilderFactory attributes not DOM attributes */
