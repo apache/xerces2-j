@@ -57,8 +57,14 @@
 package org.apache.html.dom;
 
 
-import org.w3c.dom.*;
-import org.w3c.dom.html.*;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.html.HTMLCollection;
+import org.w3c.dom.html.HTMLElement;
+import org.w3c.dom.html.HTMLTableCellElement;
+import org.w3c.dom.html.HTMLTableElement;
+import org.w3c.dom.html.HTMLTableRowElement;
+import org.w3c.dom.html.HTMLTableSectionElement;
 
 
 /**

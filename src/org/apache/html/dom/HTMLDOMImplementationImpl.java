@@ -57,9 +57,10 @@
 package org.apache.html.dom;
     
 
-import org.w3c.dom.DOMException;
-import org.w3c.dom.html.*;
 import org.apache.xerces.dom.DOMImplementationImpl;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.html.HTMLDOMImplementation;
+import org.w3c.dom.html.HTMLDocument;
 
 
 /**

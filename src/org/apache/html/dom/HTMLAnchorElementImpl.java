@@ -1,7 +1,7 @@
 /*
  * The Apache Software License, Version 1.1
  *
- *
+ * 
  * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
@@ -57,8 +57,7 @@
 package org.apache.html.dom;
 
 
-import org.w3c.dom.*;
-import org.w3c.dom.html.*;
+import org.w3c.dom.html.HTMLAnchorElement;
 
 
 /**

@@ -57,8 +57,8 @@
 package org.apache.html.dom;
 
 
-import org.w3c.dom.*;
-import org.w3c.dom.html.*;
+import org.w3c.dom.html.HTMLCollection;
+import org.w3c.dom.html.HTMLMapElement;
 
 
 /**

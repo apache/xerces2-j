@@ -58,12 +58,16 @@ package org.apache.html.dom;
 
 
 import java.util.Vector;
-import org.w3c.dom.*;
-import org.w3c.dom.html.*;
-import org.xml.sax.*;
-import org.apache.xerces.dom.TextImpl;
+
 import org.apache.xerces.dom.ElementImpl;
 import org.apache.xerces.dom.ProcessingInstructionImpl;
+import org.apache.xerces.dom.TextImpl;
+import org.w3c.dom.Node;
+import org.w3c.dom.html.HTMLDocument;
+import org.xml.sax.AttributeList;
+import org.xml.sax.DocumentHandler;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
 
 
 /**

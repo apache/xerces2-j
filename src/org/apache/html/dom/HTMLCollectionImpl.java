@@ -57,8 +57,20 @@
 package org.apache.html.dom;
 
 
-import org.w3c.dom.*;
-import org.w3c.dom.html.*;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.html.HTMLAnchorElement;
+import org.w3c.dom.html.HTMLAppletElement;
+import org.w3c.dom.html.HTMLAreaElement;
+import org.w3c.dom.html.HTMLCollection;
+import org.w3c.dom.html.HTMLElement;
+import org.w3c.dom.html.HTMLFormElement;
+import org.w3c.dom.html.HTMLImageElement;
+import org.w3c.dom.html.HTMLObjectElement;
+import org.w3c.dom.html.HTMLOptionElement;
+import org.w3c.dom.html.HTMLTableCellElement;
+import org.w3c.dom.html.HTMLTableRowElement;
+import org.w3c.dom.html.HTMLTableSectionElement;
 
 
 /**

@@ -57,11 +57,14 @@
 package org.apache.html.dom;
 
 
-import org.w3c.dom.*;
-import org.w3c.dom.html.*;
-import org.apache.xerces.dom.ElementImpl;
-
 import java.util.Locale;
+
+import org.apache.xerces.dom.ElementImpl;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.html.HTMLElement;
+import org.w3c.dom.html.HTMLFormElement;
 
 
 /**

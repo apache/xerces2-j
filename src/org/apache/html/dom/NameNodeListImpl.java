@@ -113,11 +113,11 @@
 
 package org.apache.html.dom;
 
-import org.w3c.dom.*;
-import java.util.Vector;
-import org.apache.xerces.dom.NodeImpl;
-import org.apache.xerces.dom.ElementImpl;
 import org.apache.xerces.dom.DeepNodeListImpl;
+import org.apache.xerces.dom.ElementImpl;
+import org.apache.xerces.dom.NodeImpl;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * This class implements the DOM's NodeList behavior for

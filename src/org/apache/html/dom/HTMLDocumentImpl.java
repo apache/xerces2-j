@@ -57,15 +57,27 @@
 package org.apache.html.dom;
 
 
-import java.io.*;
-import java.util.*;
-import java.lang.reflect.*;
-import org.w3c.dom.*;
-import org.w3c.dom.html.*;
+import java.io.StringWriter;
+import java.lang.reflect.Constructor;
+import java.util.Hashtable;
+import java.util.Locale;
+
 import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.dom.NodeImpl;
 import org.apache.xerces.util.ObjectFactory;
+import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.html.HTMLBodyElement;
+import org.w3c.dom.html.HTMLCollection;
+import org.w3c.dom.html.HTMLDocument;
+import org.w3c.dom.html.HTMLElement;
+import org.w3c.dom.html.HTMLFrameSetElement;
+import org.w3c.dom.html.HTMLHeadElement;
+import org.w3c.dom.html.HTMLHtmlElement;
+import org.w3c.dom.html.HTMLTitleElement;
 
 
 /**
