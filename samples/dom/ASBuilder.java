@@ -63,9 +63,12 @@ import org.apache.xerces.dom3.DOMErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import org.apache.xerces.dom.ASModelImpl;
-import org.apache.xerces.parsers.DOMASBuilderImpl;
+import org.apache.xerces.dom.DOMImplementationImpl;
+import org.apache.xerces.dom3.as.DOMImplementationAS;
+import org.apache.xerces.dom3.as.ASModel;
+import org.apache.xerces.dom3.as.DOMASBuilder;
 
+import org.w3c.dom.DOMImplementation;
 import java.util.Vector;
 
 /**
@@ -73,13 +76,22 @@ import java.util.Vector;
  * preparse ASModels and associate ASModels with an instance document to be
  * validated.
  * <p>
- * Current Xerces only support preparsing XML Schema grammars, so all ASModel
+ * Xerces only support preparsing XML Schema grammars, so all ASModel
  * appears in this sample program are assumed to be XML Schema grammars. When
  * Xerces provide more complete DOM AS support, the sample should be extended
  * for other types of grammars.
- *
+ * <p>
+ * <p>
+ * Since XML Schema document might import other schemas: it is better to set each 
+ * parsed schema (ASModel)  on the parser before parsing another schema document. 
+ * The schema on the parser will be used in the case it is referenced from a 
+ * schema document the parser is parsing.
+ * If a schema document imports other schemas, the parser returns a container ASModel that
+ * includes the list of all schemas that are referenced plus the schema that was set
+ * on the parser.
+ * NOTE: this behavior might be changed
+ * 
  * @author Sandy Gao, IBM
- *
  * @version $Id$
  */
 public class ASBuilder implements DOMErrorHandler {
@@ -119,9 +131,10 @@ public class ASBuilder implements DOMErrorHandler {
             printUsage();
             System.exit(1);
         }
-
+        // get DOM implementation
+        DOMImplementationAS domImpl = (DOMImplementationAS)DOMImplementationImpl.getDOMImplementation();
         // create a new parser, and set the error handler
-        DOMASBuilderImpl parser = new DOMASBuilderImpl();
+        DOMASBuilder parser = domImpl.createDOMASBuilder();
         parser.setErrorHandler(new ASBuilder());
 
         boolean schemaFullChecking = DEFAULT_SCHEMA_FULL_CHECKING;
@@ -188,11 +201,14 @@ public class ASBuilder implements DOMErrorHandler {
             }
         }
 
-        // now parse all as model files
+        //
+        // PARSING XML SCHEMAS
+        //
+
         try {
-            ASModelImpl asmodel = null;
+            ASModel asmodel = null;
             for (i = 0; i < asfiles.size(); i++) {
-                asmodel = (ASModelImpl)parser.parseASURI((String)asfiles.elementAt(i));
+                asmodel = parser.parseASURI((String)asfiles.elementAt(i));
                 parser.setAbstractSchema(asmodel);
             }
         } catch (Exception e) {
@@ -233,6 +249,10 @@ public class ASBuilder implements DOMErrorHandler {
         System.err.println("default:");
         System.err.print("  Schema full checking:     ");
         System.err.println(DEFAULT_SCHEMA_FULL_CHECKING ? "on" : "off");
+        System.err.println();
+        System.err.println("notes:");
+        System.err.println("DOM Level 3 APIs might change in the future.");
+
 
     } // printUsage()
 
