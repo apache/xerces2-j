@@ -278,6 +278,12 @@ public class NodeIteratorImpl implements NodeIterator {
     
     /** Return node, if matches or any parent if matches. */
     Node matchNodeOrParent(Node node) {
+        // Additions and removals in the underlying data structure may occur
+        // before any iterations, and in this case the reference_node is null.
+        if (fCurrentNode == null) return null;
+        
+        // check if the removed node is an _ancestor_ of the 
+        // reference node
         for (Node n = fCurrentNode; n != fRoot; n = n.getParentNode()) {
             if (node == n) return n;
         }
