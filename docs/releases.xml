@@ -2,6 +2,25 @@
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
+ <release version='Not released'>
+  <desc>
+      This release fixes a number of bugs.
+</desc>
+  <changes>
+   
+   <fix>
+    <note>Fixed bugs in namespace algorithm for serialization.</note>
+    <submitter name='Elena Litani'/>
+   </fix>
+
+    <fix>
+     <note>Fixed a bug in deferred DOM for CDATA nodes.</note>
+     <submitter name='Elena Litani'/>
+   </fix>
+
+  </changes>
+</release>
+
  <release version='Xerces 2.0.0'>
   <desc>
     This is the first production-quality release of the Xerces2 Java
