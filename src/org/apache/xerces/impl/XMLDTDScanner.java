@@ -198,36 +198,28 @@ public class XMLDTDScanner
         if (fDTDHandler != null && fStartDTDCalled == false) {
             fDTDHandler.startDTD();
         }
-        try {
-            // set starting state
-            setScannerState(SCANNER_STATE_TEXT_DECL);
 
-            scanTextDecl(complete);
+        // set starting state
+        setScannerState(SCANNER_STATE_TEXT_DECL);
 
-            // next state is markup decls regardless of whether there
-            // is a TextDecl or not
-            setScannerState(SCANNER_STATE_MARKUP_DECL);
+        scanTextDecl(complete);
 
-            // keep dispatching "events"
-            while (complete) {
-                if (!scanDecls(complete)) {
-                    return false;
-                }
-            }
-        } catch (EOFException e) {
-            if (fScannerState == SCANNER_STATE_MARKUP_DECL) {
-                // no opened markup, this is the normal eof, we're all set
+        // next state is markup decls regardless of whether there
+        // is a TextDecl or not
+        setScannerState(SCANNER_STATE_MARKUP_DECL);
+
+        // keep dispatching "events"
+        while (complete) {
+            if (!scanDecls(complete)) {
                 // call handler
                 if (fDTDHandler != null) {
                     fDTDHandler.endDTD();
                 }
-            } else {
-                // markup is truncated, forward exception
-                throw e;
+                return false;
             }
         }
 
-        // return success
+        // return that there is more to scan
         return true;
 
     } // scanDTD
@@ -260,7 +252,7 @@ public class XMLDTDScanner
             }
         } while (complete);
 
-        // return success
+        // return that there is more to scan
         return true;
 
     } // scanDTDFragment
@@ -299,7 +291,7 @@ public class XMLDTDScanner
             fDTDHandler.endDTD();
         }
 
-        // return success
+        // return that there is more to scan
         return true;
 
     } // scanDTDInternalSubset
@@ -615,13 +607,11 @@ public class XMLDTDScanner
             contentModel = "ANY";
         }
         else {
-            int c = fEntityScanner.peekChar();
-            if (c != '(') {
+            if (!fEntityScanner.skipChar('(')) {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "OpenParenthesisRequiredInContentModel",
                                            null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
             }
-            fEntityScanner.scanChar();
             fStringBuffer.clear();
             fStringBuffer.append('(');
             fEntityScanner.skipSpaces();
@@ -665,9 +655,7 @@ public class XMLDTDScanner
 
         fStringBuffer.append("#PCDATA");
         fEntityScanner.skipSpaces();
-        int c = fEntityScanner.peekChar();
-        while (c == '|') {
-            fEntityScanner.scanChar();
+        while (fEntityScanner.skipChar('|')) {
             fStringBuffer.append('|');
             fEntityScanner.skipSpaces();
 
@@ -679,19 +667,15 @@ public class XMLDTDScanner
             }
             fStringBuffer.append(childName);
             fEntityScanner.skipSpaces();
-            c = fEntityScanner.peekChar();
         }
-        if (c != ')') {
+        if (!fEntityScanner.skipChar(')')) {
             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                        "CloseParenthesisRequiredInContentModel",
                                        null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
-        fEntityScanner.scanChar();
         fStringBuffer.append(')');
         // occurence operator
-        c = fEntityScanner.peekChar();
-        if (c == '*') {
-            fEntityScanner.scanChar();
+        if (fEntityScanner.skipChar('*')) {
             fStringBuffer.append('*');
         }
         // we are done
@@ -1277,7 +1261,7 @@ public class XMLDTDScanner
                     }
                     if (!fEndOfDTD) {
                         fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                   "MarkupNotRecognizedInProlog",
+                                                   "MarkupNotRecognizedInDTD",
                                                    null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
                     }
                     complete = false;
