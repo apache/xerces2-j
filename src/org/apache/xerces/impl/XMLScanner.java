@@ -446,6 +446,9 @@ public abstract class XMLScanner
                     if (c == '&' || c == '%' || c == '<' || c == ']') {
                         fStringBuffer2.append((char)fEntityScanner.scanChar());
                     }
+                    else if (XMLChar.isHighSurrogate(c)) {
+                        scanSurrogates(fStringBuffer2);
+                    }
                     else if (XMLChar.isInvalid(c)) {
                         String key = scanningTextDecl
                             ? "InvalidCharInTextDecl" : "InvalidCharInXMLDecl";
@@ -536,10 +539,15 @@ public abstract class XMLScanner
             do {
                 fStringBuffer.append(data);
                 int c = fEntityScanner.peekChar();
-                if (c != -1 && XMLChar.isInvalid(c)) {
-                    reportFatalError("InvalidCharInPI",
-                                     new Object[] { Integer.toHexString(c) });
-                    fEntityScanner.scanChar();
+                if (c != -1) {
+                    if (XMLChar.isHighSurrogate(c)) {
+                        scanSurrogates(fStringBuffer);
+                    }
+                    else if (XMLChar.isInvalid(c)) {
+                        reportFatalError("InvalidCharInPI",
+                                         new Object[]{Integer.toHexString(c)});
+                        fEntityScanner.scanChar();
+                    }
                 }
             } while (fEntityScanner.scanData("?>", data));
             fStringBuffer.append(data);
@@ -571,10 +579,15 @@ public abstract class XMLScanner
             text.append(fString);
             /***/
             int c = fEntityScanner.peekChar();
-            if (XMLChar.isInvalid(c)) {
-                reportFatalError("InvalidCharInComment",
-                                 new Object[] { Integer.toHexString(c) }); 
-                fEntityScanner.scanChar();
+            if (c != -1) {
+                if (XMLChar.isHighSurrogate(c)) {
+                    scanSurrogates(text);
+                }
+                if (XMLChar.isInvalid(c)) {
+                    reportFatalError("InvalidCharInComment",
+                                     new Object[] { Integer.toHexString(c) }); 
+                    fEntityScanner.scanChar();
+                }
             }
         }
         text.append(fString);

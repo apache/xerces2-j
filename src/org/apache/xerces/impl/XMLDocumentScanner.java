@@ -915,14 +915,23 @@ public class XMLDocumentScanner
                 }
             }
             else {
-                int c = fEntityScanner.peekChar();
-                if (c != -1 && XMLChar.isInvalid(c)) {
-                    reportFatalError("InvalidCharInCDSect",
-                                     new Object[] {Integer.toString(c, 16)});
-                    fEntityScanner.scanChar();
-                }
                 if (fDocumentHandler != null) {
                     fDocumentHandler.characters(fString);
+                }
+                int c = fEntityScanner.peekChar();
+                if (c != -1) {
+                    if (XMLChar.isHighSurrogate(c)) {
+                        fStringBuffer.clear();
+                        scanSurrogates(fStringBuffer);
+                        if (fDocumentHandler != null) {
+                            fDocumentHandler.characters(fStringBuffer);
+                        }
+                    }
+                    else if (XMLChar.isInvalid(c)) {
+                        reportFatalError("InvalidCharInCDSect",
+                                         new Object[]{Integer.toString(c,16)});
+                        fEntityScanner.scanChar();
+                    }
                 }
             }
         }
@@ -1570,7 +1579,6 @@ public class XMLDocumentScanner
                                         // special case: we have surrogates
                                         fStringBuffer.clear();
                                         if (scanSurrogates(fStringBuffer)) {
-
                                             // call handler
                                             if (fDocumentHandler != null) {
                                                 fDocumentHandler.characters(fStringBuffer);
@@ -1579,7 +1587,8 @@ public class XMLDocumentScanner
                                     }
                                     else if (c != -1 && XMLChar.isInvalid(c)) {
                                         reportFatalError("InvalidCharInContent",
-                                                         new Object[] {Integer.toString(c, 16)});
+                                                         new Object[] {
+                                                             Integer.toString(c, 16)});
                                         fEntityScanner.scanChar();
                                     }
                                 } while (complete);
