@@ -57,15 +57,8 @@
 
 package org.apache.xerces.impl.dv.dtd;
 
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Locale;
-import java.util.StringTokenizer;
-
-
-import org.apache.xerces.impl.dtd.XMLEntityDecl;
-import org.apache.xerces.impl.dtd.DTDGrammar;
-
+import org.apache.xerces.impl.validation.ValidationContext;
+import org.apache.xerces.impl.dv.*;
 
 /**
  * <P>ENTITYDatatypeValidator implements the
@@ -80,137 +73,33 @@ import org.apache.xerces.impl.dtd.DTDGrammar;
  * strings that match the NCName production.
  * The value space of ENTITY is scoped to a specific
  * instance document.</P>
- * <P>This is a statefull datatype validator and it
- * needs access to a valid Grammar structure to being 
- * able to validate entities.</P>
  * 
- * @author Jeffrey Rodriguez-
+ * @author Jeffrey Rodriguez, IBM
+ * @author Sandy Gao, IBM
+ * 
  * @version $Id$
- * @see org.apache.xerces.impl.dtd.AbstractDTDGrammar
- * @see org.apache.xerces.impl.dtd.DTDGrammar
- * @see org.apache.xerces.impl.xs.SchemaGrammar
  */
-public class ENTITYDatatypeValidator extends AbstractDatatypeValidator 
-implements StatefullDatatypeValidator {
-    private DatatypeValidator        fBaseValidator    = null;
-    private DTDGrammar                  fGrammar          = null;
-    private XMLEntityDecl            fEntityDecl       = new XMLEntityDecl();
+public class ENTITYDatatypeValidator implements DatatypeValidator {
 
-    public ENTITYDatatypeValidator () throws InvalidDatatypeFacetException {
-        this( null, null, false ); // Native, No Facets defined, Restriction
+    // construct an ENTITY datatype validator
+    public ENTITYDatatypeValidator() {
     }
-
-    public ENTITYDatatypeValidator ( DatatypeValidator base, Hashtable facets,
-                                     boolean derivedByList  ) throws InvalidDatatypeFacetException {
-        setBasetype( base ); // Set base type
-    }
-
 
     /**
-     * <P>Checks that "content" string is valid
-     * datatype.
-     * If invalid a Datatype validation exception is thrown.</P>
-     * <P>The following constrain is checked:
-     * ENTITY values must match an unparsed entity 
-     * name that is declared in the schema.</P> 
+     * Checks that "content" string is valid ID value.
+     * If invalid a Datatype validation exception is thrown.
      * 
-     * @param content A string containing the content to be validated
-     * @param state
-     * @exception throws InvalidDatatypeException if the content is
-     *                   invalid according to the rules for the validators
-     * @exception InvalidDatatypeValueException
+     * @param content       the string value that needs to be validated
+     * @param context       the validation context
+     * @throws InvalidDatatypeException if the content is
+     *         invalid according to the rules for the validators
      * @see InvalidDatatypeValueException
      */
-    public void validate(String content, Object state ) throws InvalidDatatypeValueException{
-        int entityDeclIndex = -1;
-        if (fGrammar == null) {
-            InvalidDatatypeValueException error = 
-            new InvalidDatatypeValueException();//Need Message
-            error.setKeyIntoReporter( "ENTITYFailedInitializeGrammar");
-            throw error;
-        }
+    public void validate(String content, ValidationContext context) throws InvalidDatatypeValueException {
 
-        fEntityDecl.clear();//Reset Entity Decl struct
-
-        entityDeclIndex = fGrammar.getEntityDeclIndex( content );
-
-        if (entityDeclIndex > -1) {
-            fGrammar.getEntityDecl( entityDeclIndex, fEntityDecl );
-            if (fEntityDecl.notation == null) {// not unparsed entity
-                InvalidDatatypeValueException error = 
-                new InvalidDatatypeValueException( content );
-                error.setKeyIntoReporter( "ENTITYNotUnparsed" );
-                throw error;
-            }
-        } else {
-            InvalidDatatypeValueException error = 
-            new InvalidDatatypeValueException( content );
-            error.setKeyIntoReporter( "ENTITYNotValid" );
-            throw error;
-        }
+        if (!context.isEntityUnparsed(content))
+            throw new InvalidDatatypeValueException("ENTITYNotUnparsed", new Object[]{content});
+            
     }
-
-    /**
-     * A no-op method in this Datatype
-     */
-    public void validate(){
-    }
-
-
-
-    /**
-     * <P>Initializes internal Grammar reference
-     * This method is unique to ENTITYDatatypeValidator.</P>
-     * <P>This method should  be called before calling the
-     * validate method</P>
-     * 
-     * @param grammar
-     */
-    public void initialize( Object grammar ) {
-        //System.out.println("ENTITYDatatypeValidator initialized" );
-        fGrammar = (DTDGrammar) grammar;
-        //System.out.println("grammar = " + fGrammar );
-    }
-
-    /**
-     * REVISIT
-     * Compares two Datatype for order
-     * 
-     * @return  0 if value1 and value2 are equal, a value less than 0 if value1 is less than value2, a value greater than 0 if value1 is greater than value2
-     */
-    public int compare( String  content1, String content2) {
-        return -1;
-    }
-
-    public Hashtable getFacets() {
-        return null;
-    }
-
-    // Private methods start here
-
-    /**
-       * Returns a copy of this object.
-       */
-    public Object clone() throws CloneNotSupportedException {
-        throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
-    }
-
-
-   /**
-    * A no-op method in this validator
-    */
-    public Object getInternalStateInformation() {
-    return null;
-    }
-
-    /**
-     * 
-     * @param base   the validator for this type's base type
-     */
-    private void setBasetype(DatatypeValidator base) {
-        fBaseValidator = base;
-    }
-
-
-
+    
 }

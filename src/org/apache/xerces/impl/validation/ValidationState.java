@@ -115,17 +115,21 @@ public class ValidationState implements ValidationContext {
         fSymbolTable = sTable;
     }
 
-    public boolean checkIDRefID () {
+    /**
+     * return null if all IDREF values have a corresponding ID value;
+     * otherwise return the first IDREF value without a matching ID value.
+     */
+    public String checkIDRefID () {
         Enumeration en = fIdRefTable.keys();
 
         String key;
         while (en.hasMoreElements()) {
             key = (String)en.nextElement();
             if (!fIdTable.containsKey(key)) {
-                  return false;
+                  return key;
             }
         }
-        return true;
+        return null;
     }
 
     public void reset () {

@@ -59,6 +59,7 @@ package org.apache.xerces.impl.validation;
 
 import org.apache.xerces.impl.validation.ValidationState;
 import org.apache.xerces.xni.parser.XMLComponent;
+import java.util.Vector;
 
 /**
  * ValidationManager is a coordinator property for validators in the 
@@ -71,14 +72,26 @@ import org.apache.xerces.xni.parser.XMLComponent;
  */
 public class ValidationManager {
 
-    // REVISIT: should validation/state be another property?
-    protected final ValidationState fValidationState= new ValidationState();
+    protected final Vector fVSs = new Vector();
     protected boolean fGrammarFound = false;
 
-    public ValidationState getValidationState (){
-        return fValidationState;
+    /**
+     * Each validator should call this method to add its ValidationState into
+     * the validation manager.
+     */
+    public void addValidationState(ValidationState vs) {
+        fVSs.addElement(vs);
     }
 
+    /**
+     * Set the information required to validate entity values.
+     */
+    public void setEntityState(EntityState state) {
+        for (int i = fVSs.size()-1; i >= 0; i--) {
+            ((ValidationState)fVSs.elementAt(i)).setEntityState(state);
+        }
+    }
+    
     public void setGrammarFound(boolean grammar){
         fGrammarFound = grammar;
     }
@@ -96,9 +109,7 @@ public class ValidationManager {
     // public void setLastValidationComponent( XMLComponent validator){
         
     public void reset (){
-        fValidationState.reset();
+        fVSs.removeAllElements();
         fGrammarFound = false;
     }
 }
-
-

@@ -58,7 +58,7 @@
 package org.apache.xerces.parsers;
 
 import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.impl.dv.dtd.DatatypeValidatorFactory;
+import org.apache.xerces.impl.dv.DTDDVFactory;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 
@@ -73,7 +73,7 @@ public abstract class XMLGrammarParser
     //
 
     /** fDatatypeValidatorFactory */
-    protected DatatypeValidatorFactory fDatatypeValidatorFactory;
+    protected DTDDVFactory fDatatypeValidatorFactory;
 
     //
     // Constructors

@@ -54,18 +54,11 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
+
 package org.apache.xerces.impl.dv.dtd;
 
-import java.util.Hashtable;
-import java.util.Vector;
-import java.util.Enumeration;
-import java.util.Locale;
-import java.text.Collator;
-import java.util.Enumeration;
-import java.util.StringTokenizer;
-import java.util.NoSuchElementException;
-
-
+import org.apache.xerces.impl.validation.ValidationContext;
+import org.apache.xerces.impl.dv.*;
 
 /**
  * <P>StringValidator validates that XML content is a W3C string type.</P>
@@ -81,319 +74,23 @@ import java.util.NoSuchElementException;
  * which is an integer.</P>
  * @version $Id$
  */
-public class StringDatatypeValidator extends AbstractDatatypeValidator {
-private Locale     fLocale          = null;
-   DatatypeValidator  fBaseValidator   = null; // Native datatypes have null
+public class StringDatatypeValidator implements DatatypeValidator {
 
-   private int        fLength           = 0;
-   private int        fMaxLength        = Integer.MAX_VALUE;
-   private int        fMinLength        = 0;
-   private String     fPattern          = null;
-   private Vector     fEnumeration      = null;
-   private short      fWhiteSpace       = DatatypeValidator.WHITESPACE_NONE;
+    // construct a string datatype validator
+    public StringDatatypeValidator() {
+    }
 
-
-   /* per Schema CR
-   private String     fMaxInclusive     = null;
-   private String     fMaxExclusive     = null;
-   private String     fMinInclusive     = null;
-   private String     fMinExclusive     = null;
-   */
-   private int        fFacetsDefined    = 0;
-
-   private boolean    isMaxExclusiveDefined = false;
-   private boolean    isMaxInclusiveDefined = false;
-   private boolean    isMinExclusiveDefined = false;
-   private boolean    isMinInclusiveDefined = false;
-   //private RegularExpression fRegex         = null;
-
-
-
-
-
-   public  StringDatatypeValidator () throws InvalidDatatypeFacetException{
-      this( null, null, false ); // Native, No Facets defined, Restriction
-
-   }
-
-   public StringDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
-                                    boolean derivedByList ) throws InvalidDatatypeFacetException {
-
-      setBasetype( base ); // Set base type 
-
-
-      // Set Facets if any defined
-      //fFacetsDefined = 0;
-      if ( facets != null  ) {
-         for (Enumeration e = facets.keys(); e.hasMoreElements();) {
-            String key = (String) e.nextElement();
-
-            if ( key.equals("length") ) {
-               fFacetsDefined += DatatypeValidator.FACET_LENGTH;
-               String lengthValue = (String)facets.get(key);
-               try {
-                  fLength     = Integer.parseInt( lengthValue );
-               } catch (NumberFormatException nfe) {
-                  throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"' is invalid.");
-               }
-               if ( fLength < 0 )
-                  throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"'  must be a nonNegativeInteger.");
-
-            } else if (key.equals("minlength") ) {
-               fFacetsDefined += DatatypeValidator.FACET_MINLENGTH;
-               String minLengthValue = (String)facets.get(key);
-               try {
-                  fMinLength     = Integer.parseInt( minLengthValue );
-               } catch (NumberFormatException nfe) {
-                  throw new InvalidDatatypeFacetException("minLength value '"+minLengthValue+"' is invalid.");
-               }
-            } else if (key.equals("maxlength") ) {
-               fFacetsDefined += DatatypeValidator.FACET_MAXLENGTH;
-               String maxLengthValue = (String)facets.get(key);
-               try {
-                  fMaxLength     = Integer.parseInt( maxLengthValue );
-               } catch (NumberFormatException nfe) {
-                  throw new InvalidDatatypeFacetException("maxLength value '"+maxLengthValue+"' is invalid.");
-               }
-            } 
-            /***
-            else if (key.equals(SchemaSymbols.ELT_PATTERN)) {
-               fFacetsDefined += DatatypeValidator.FACET_PATTERN;
-               fPattern = (String)facets.get(key);
-               fRegex   = new RegularExpression(fPattern, "X");
-            } 
-            /***/
-            else if (key.equals("enumeration")) {
-               fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
-               fEnumeration = (Vector)facets.get(key);
-               /* Per Schema CR - October 23 spec we don't have this facets in String datatype
-           } else if (key.equals(SchemaSymbols.ELT_MAXINCLUSIVE)) {
-               fFacetsDefined += DatatypeValidator.FACET_MAXINCLUSIVE;
-               fMaxInclusive = (String)facets.get(key);
-           } else if (key.equals(SchemaSymbols.ELT_MAXEXCLUSIVE)) {
-               fFacetsDefined += DatatypeValidator.FACET_MAXEXCLUSIVE;
-               fMaxExclusive = (String)facets.get(key);
-           } else if (key.equals(SchemaSymbols.ELT_MININCLUSIVE)) {
-               fFacetsDefined += DatatypeValidator.FACET_MININCLUSIVE;
-               fMinInclusive = (String)facets.get(key);
-           } else if (key.equals(SchemaSymbols.ELT_MINEXCLUSIVE)) {
-               fFacetsDefined += DatatypeValidator.FACET_MINEXCLUSIVE;
-               fMinExclusive = (String)facets.get(key);
-               */
-            } else if (key.equals("whitespace")) {
-               String         whiteSpaceChoice = (String)facets.get(key); 
-               fFacetsDefined += DatatypeValidator.FACET_WHITESPACE;
-               if ( whiteSpaceChoice.equals("preserve" ) ) {
-                  fWhiteSpace = DatatypeValidator.WHITESPACE_PRESERVE;
-               } else if ( whiteSpaceChoice.equals("replace") ) {
-                  fWhiteSpace = DatatypeValidator.WHITESPACE_REPLACE;
-               } else if ( whiteSpaceChoice.equals("collapse") ) {
-                  fWhiteSpace = DatatypeValidator.WHITESPACE_COLLAPSE;
-               }
-            } else {
-               throw new InvalidDatatypeFacetException("invalid facet tag : " + key);
-            }
-         }
-
-         if (((fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
-            if (((fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
-               throw new InvalidDatatypeFacetException(
-                                                      "It is an error for both length and maxLength to be members of facets." );  
-            } else if (((fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ) {
-               throw new InvalidDatatypeFacetException(
-                                                      "It is an error for both length and minLength to be members of facets." );
-            }
-         }
-
-         if ( ( (fFacetsDefined & ( DatatypeValidator.FACET_MINLENGTH |
-                                    DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
-            if ( fMinLength > fMaxLength ) {
-               throw new InvalidDatatypeFacetException( "Value of minLength = '" + fMinLength +
-                                                        "'must be less than the value of maxLength = '" + fMaxLength + "'.");
-            }
-         }
-
-         isMaxExclusiveDefined = ((fFacetsDefined & 
-                                   DatatypeValidator.FACET_MAXEXCLUSIVE ) != 0 )?true:false;
-         isMaxInclusiveDefined = ((fFacetsDefined & 
-                                   DatatypeValidator.FACET_MAXINCLUSIVE ) != 0 )?true:false;
-         isMinExclusiveDefined = ((fFacetsDefined &
-                                   DatatypeValidator.FACET_MINEXCLUSIVE ) != 0 )?true:false;
-         isMinInclusiveDefined = ((fFacetsDefined &
-                                   DatatypeValidator.FACET_MININCLUSIVE ) != 0 )?true:false;
-
-         if ( isMaxExclusiveDefined && isMaxInclusiveDefined ) {
-            throw new InvalidDatatypeFacetException(
-                                                   "It is an error for both maxInclusive and maxExclusive to be specified for the same datatype." ); 
-         }
-         if ( isMinExclusiveDefined && isMinInclusiveDefined ) {
-            throw new InvalidDatatypeFacetException(
-                                                   "It is an error for both minInclusive and minExclusive to be specified for the same datatype." ); 
-         }
-
-      }// End of Facets Setting
-   }
-
-
-
-
-   /**
-    * validate that a string is a W3C string type
-    * 
-    * @param content A string containing the content to be validated
-    * @param list
-    * @exception throws InvalidDatatypeException if the content is
-    *                   not a W3C string type
-    * @exception InvalidDatatypeValueException
-    */
-   public void validate(String content, Object state)  throws InvalidDatatypeValueException
-   {
-      checkContent( content, state );
-   }
-
-
-   /**
-    * set the locate to be used for error messages
-    */
-   public void setLocale(Locale locale) {
-      fLocale = locale;
-   }
-
-
-   /**
-    * 
-    * @return                          A Hashtable containing the facets
-    *         for this datatype.
-    */
-   public Hashtable getFacets(){
-      return null;
-   }
-
-   private void checkContent( String content, Object state )throws InvalidDatatypeValueException
-   {
-
-      if ( this.fBaseValidator != null ) {//validate against parent type if any
-         this.fBaseValidator.validate( content, state );
-      }
-
-      if ( (fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 ) {
-         if ( content.length() > fMaxLength ) {
-            throw new InvalidDatatypeValueException("Value '"+content+
-                                                    "' with length '"+content.length()+
-                                                    "' exceeds maximum length facet of '"+fMaxLength+"'.");
-         }
-      }
-      if ( (fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) != 0 ) {
-         if ( content.length() < fMinLength ) {
-            throw new InvalidDatatypeValueException("Value '"+content+
-                                                    "' with length '"+content.length()+
-                                                    "' is less than minimum length facet of '"+fMinLength+"'." );
-         }
-      }
-
-      if ( (fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 ) {
-         if ( content.length() != fLength ) {
-            throw new InvalidDatatypeValueException("Value '"+content+
-                                                    "' with length '"+content.length()+
-                                                    "' is not equal to length facet '"+fLength+"'.");
-         }
-      }
-
-
-
-      if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 ) {
-         if ( fEnumeration.contains( content ) == false )
-            throw new InvalidDatatypeValueException("Value '"+content+"' must be one of "+fEnumeration);
-      }
-      /*  Per October 23 CR - facets don't apply to StringValidator
-      if ( isMaxExclusiveDefined == true ) {
-          int comparisonResult;
-          comparisonResult  = compare( content, fMaxExclusive );
-          if ( comparisonResult >= 0 ) {
-              throw new InvalidDatatypeValueException( "MaxExclusive:Value '"+content+ "'  must be " +
-                                                       "lexicographically less than" + fMaxExclusive );
-
-          }
-
-      }
-      if ( isMaxInclusiveDefined == true ) {
-          int comparisonResult;
-          comparisonResult  = compare( content, fMaxInclusive );
-          if ( comparisonResult > 0 )
-              throw new InvalidDatatypeValueException( "MaxInclusive:Value '"+content+ "' must be " +
-                                                       "lexicographically less or equal than" + fMaxInclusive );
-      }
-
-      if ( isMinExclusiveDefined == true ) {
-          int comparisonResult;
-          comparisonResult  = compare( content, fMinExclusive );
-
-          //System.out.println( "exclusive = " + comparisonResult );
-
-          if ( comparisonResult <= 0 )
-              throw new InvalidDatatypeValueException( "MinExclusive:Value '"+content+ "' must be " +
-                                                       "lexicographically greater than" + fMinExclusive );
-      }
-      if ( isMinInclusiveDefined == true ) {
-          int comparisonResult;
-          comparisonResult = compare( content, fMinInclusive );
-          //System.out.println( "inclusive = " + comparisonResult );
-          if ( comparisonResult < 0 )
-              throw new InvalidDatatypeValueException( "MinInclusive:Value '"+content+ "' must be " +
-                                                       "lexicographically greater or equal than '" + fMinInclusive  + "'." );
-      }
-
-        */
-
-      /***
-      if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
-         //RegularExpression regex = new RegularExpression(fPattern );
-         if ( fRegex == null || fRegex.matches( content) == false )
-            throw new InvalidDatatypeValueException("Value '"+content+
-                                                    "' does not match regular expression facet '" + fPattern + "'." );
-      }
-      /***/
-
-   }
-   public int compare( String content, String facetValue ){
-      Locale    loc       = Locale.getDefault();
-      Collator  collator  = Collator.getInstance( loc );
-      return collator.compare( content, facetValue );
-   }
-
-   /**
-  * Returns a copy of this object.
-  */
-   public Object clone() throws CloneNotSupportedException  {
-      StringDatatypeValidator newObj = null;
-      try {
-         newObj = new StringDatatypeValidator();
-
-         newObj.fLocale           =  this.fLocale;
-         newObj.fBaseValidator    =  this.fBaseValidator;
-         newObj.fLength           =  this.fLength;
-         newObj.fMaxLength        =  this.fMaxLength;
-         newObj.fMinLength        =  this.fMinLength;
-         newObj.fPattern          =  this.fPattern;
-         newObj.fEnumeration      =  this.fEnumeration;
-         /* October 23 - per XML Datatype Spec 
-         newObj.fMaxInclusive     =  this.fMaxInclusive;
-         newObj.fMaxExclusive     =  this.fMaxExclusive;
-         newObj.fMinInclusive     =  this.fMinInclusive;
-         newObj.fMinExclusive     =  this.fMinExclusive;
-         */
-         newObj.fFacetsDefined    =  this.fFacetsDefined;
-         newObj.isMaxExclusiveDefined = this.isMaxExclusiveDefined;
-         newObj.isMaxInclusiveDefined = this.isMaxInclusiveDefined;
-         newObj.isMinExclusiveDefined = this.isMinExclusiveDefined;
-         newObj.isMinInclusiveDefined = this.isMinInclusiveDefined;
-      } catch ( InvalidDatatypeFacetException ex) {
-         ex.printStackTrace();
-      }
-      return newObj;
-   }
-
-   private void setBasetype( DatatypeValidator base) {
-      fBaseValidator = base;
-   }
+    /**
+     * Checks that "content" string is valid string value.
+     * If invalid a Datatype validation exception is thrown.
+     * 
+     * @param content       the string value that needs to be validated
+     * @param context       the validation context
+     * @throws InvalidDatatypeException if the content is
+     *         invalid according to the rules for the validators
+     * @see InvalidDatatypeValueException
+     */
+    public void validate(String content, ValidationContext context) throws InvalidDatatypeValueException {
+    }
+    
 }

@@ -49,33 +49,85 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 1999, International
+ * originally based on software copyright (c) 2001, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.impl.dv;
+package org.apache.xerces.impl.dv.dtd;
 
-import org.apache.xerces.impl.validation.ValidationContext;
+import org.apache.xerces.impl.dv.DTDDVFactory;
+import org.apache.xerces.impl.dv.DatatypeValidator;
+import java.util.Hashtable;
 
 /**
- * The interface that a DTD datatype must implement. The implementation of this
- * interface must be thread-safe.
+ * the factory to create/return built-in schema DVs and create user-defined DVs
  *
  * @author Sandy Gao, IBM
  *
  * @version $Id$
  */
-public interface DatatypeValidator {
+public class DTDDVFactoryImpl extends DTDDVFactory {
+
+    static Hashtable fBuiltInTypes = null;
 
     /**
-     * validate a given string against this DV
+     * return a dtd type of the given name
      *
-     * @param content       the string value that needs to be validated
-     * @param context       the validation context
+     * @param name  the name of the datatype
+     * @return      the datatype validator of the given name
      */
-    public void validate(String content, ValidationContext context)
-        throws InvalidDatatypeValueException;
+    public DatatypeValidator getBuiltInDV(String name) {
+        prepareBuiltInTypes();
+        return (DatatypeValidator)fBuiltInTypes.get(name);
+    }
 
-}
+    /**
+     * get all built-in DVs, which are stored in a hashtable keyed by the name
+     *
+     * @return      a hashtable which contains all datatypes
+     */
+    public Hashtable getBuiltInTypes() {
+        prepareBuiltInTypes();
+        return (Hashtable)fBuiltInTypes.clone();
+    }
+
+    // make sure the built-in types are created
+    // the types are supposed to be reused for all factory objects,
+    // so we synchorinize on the class object.
+    void prepareBuiltInTypes() {
+        if (fBuiltInTypes == null) {
+            synchronized (this.getClass()) {
+                // check again, in case I'm waiting for another thread to create
+                // the types.
+                if (fBuiltInTypes == null) {
+                    createBuiltInTypes();
+                }
+            }
+        }
+    }
+
+    // create all built-in types
+    // we are assumeing that fBuiltInTypes == null
+    void createBuiltInTypes() {
+
+        fBuiltInTypes = new Hashtable();
+        DatatypeValidator dvTemp;
+        
+        fBuiltInTypes.put("string", new StringDatatypeValidator());
+        fBuiltInTypes.put("ID", new IDDatatypeValidator());
+        dvTemp = new IDREFDatatypeValidator();
+        fBuiltInTypes.put("IDREF", dvTemp);
+        fBuiltInTypes.put("IDREFS", new ListDatatypeValidator(dvTemp));
+        dvTemp = new ENTITYDatatypeValidator();
+        fBuiltInTypes.put("ENTITY", new ENTITYDatatypeValidator());
+        fBuiltInTypes.put("ENTITIES", new ListDatatypeValidator(dvTemp));
+        fBuiltInTypes.put("NOTATION", new NOTATIONDatatypeValidator());
+        dvTemp = new NMTOKENDatatypeValidator();
+        fBuiltInTypes.put("NMTOKEN", dvTemp);
+        fBuiltInTypes.put("NMTOKENS", new ListDatatypeValidator(dvTemp));
+        
+    }//createBuiltInTypes()
+
+}//SchemaDVFactory

@@ -54,55 +54,41 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
+
 package org.apache.xerces.impl.dv.dtd;
 
-import java.util.Hashtable;
-
+import org.apache.xerces.impl.validation.ValidationContext;
+import org.apache.xerces.impl.dv.*;
 import org.apache.xerces.util.XMLChar;
 
 /**
  * NMTOKEN datatype validator.
  *
+ * @author Jeffrey Rodriguez, IBM
+ * @author Sandy Gao, IBM
+ * 
  * @version $Id$
  */
-public class NMTOKENDatatypeValidator 
-    extends AbstractDatatypeValidator {
+public class NMTOKENDatatypeValidator implements DatatypeValidator {
 
-   public  NMTOKENDatatypeValidator() throws InvalidDatatypeFacetException{
-        // Native, No Facets defined, Restriction
-      this( null, null, false );
+    // construct a NMTOKEN datatype validator
+    public NMTOKENDatatypeValidator() {
+    }
 
-   }
-
-   public NMTOKENDatatypeValidator( DatatypeValidator base, Hashtable facets, 
-                                    boolean derivedByList ) throws InvalidDatatypeFacetException {
-       // ignore everything -- just do NMTOKEN validation
-   }
-
-   /**
-    * validate that a string is a W3C string type
-    * 
-    * @param content A string containing the content to be validated
-    * @param list
-    * @exception throws InvalidDatatypeException if the content is
-    *                   not a W3C string type
-    * @exception InvalidDatatypeValueException
-    */
-   public void validate(String content, Object state)  
-        throws InvalidDatatypeValueException {
-       if (!XMLChar.isValidNmtoken(content)) {
-           throw new InvalidDatatypeValueException(content+" is not a NMTOKEN");
+    /**
+     * Checks that "content" string is valid NMTOKEN value.
+     * If invalid a Datatype validation exception is thrown.
+     * 
+     * @param content       the string value that needs to be validated
+     * @param context       the validation context
+     * @throws InvalidDatatypeException if the content is
+     *         invalid according to the rules for the validators
+     * @see InvalidDatatypeValueException
+     */
+    public void validate(String content, ValidationContext context) throws InvalidDatatypeValueException {
+        if (!XMLChar.isValidNmtoken(content)) {
+           throw new InvalidDatatypeValueException("NMTOKENInvalid", new Object[]{content});
        }
-   }
-
-   public Hashtable getFacets() { return null; }
-
-   public int compare( String content, String facetValue){
-       return content.compareTo(facetValue);
-   }
-
-   public Object clone() throws CloneNotSupportedException  {
-      return this;
    }
 
 } // class NMTOKENDatatypeValidator

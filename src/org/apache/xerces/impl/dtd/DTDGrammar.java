@@ -62,7 +62,7 @@ import java.util.Enumeration;
 
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
-import org.apache.xerces.impl.dv.dtd.DatatypeValidatorFactory;
+import org.apache.xerces.impl.dv.DTDDVFactory;
 import org.apache.xerces.impl.dtd.AbstractDTDGrammar;
 import org.apache.xerces.impl.dtd.models.ContentModelValidator;
 import org.apache.xerces.impl.dtd.XMLElementDecl;
@@ -71,8 +71,7 @@ import org.apache.xerces.impl.dtd.XMLNotationDecl;
 import org.apache.xerces.impl.dtd.XMLEntityDecl;
 import org.apache.xerces.impl.dtd.XMLSimpleType;
 import org.apache.xerces.impl.dtd.XMLContentSpec;
-import org.apache.xerces.impl.dv.dtd.DatatypeValidator;
-import org.apache.xerces.impl.dv.dtd.DatatypeValidatorFactoryImpl;
+import org.apache.xerces.impl.dv.DatatypeValidator;
 import org.apache.xerces.util.SymbolTable;
 
 import org.apache.xerces.xni.Augmentations;
@@ -127,7 +126,7 @@ public class DTDGrammar
     //
 
     /** Datatype validator factory. */
-    protected DatatypeValidatorFactory fDatatypeValidatorFactory;
+    protected DTDDVFactory fDatatypeValidatorFactory;
 
     /** Current element index. */
     protected int fCurrentElementIndex;
@@ -224,7 +223,7 @@ public class DTDGrammar
     //
 
     /** Sets the datatype validator factory. */
-    public void setDatatypeValidatorFactory(DatatypeValidatorFactory factory) {
+    public void setDatatypeValidatorFactory(DTDDVFactory factory) {
         fDatatypeValidatorFactory = factory;
     }
 
@@ -524,8 +523,8 @@ public class DTDGrammar
         //Get Grammar index to grammar array
         int elementIndex       = getElementDeclIndex( elementName, -1 );
         
-	//return, when more than one definition is provided for the same attribute of given element type
-	//only the first declaration is binding and later declarations are ignored
+        //return, when more than one definition is provided for the same attribute of given element type
+        //only the first declaration is binding and later declarations are ignored
         if (getAttributeDeclIndex(elementIndex, attributeName) != -1) {
             return;
         }

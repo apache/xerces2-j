@@ -74,7 +74,7 @@ import org.apache.xerces.impl.dtd.models.DFAContentModel;
 import org.apache.xerces.impl.dtd.models.MixedContentModel;
 import org.apache.xerces.impl.dtd.models.SimpleContentModel;
 import org.apache.xerces.impl.validation.EntityState;
-import org.apache.xerces.impl.dv.dtd.DatatypeValidator;
+import org.apache.xerces.impl.dv.DatatypeValidator;
 import org.apache.xerces.impl.dtd.models.ContentModelValidator;
 import org.apache.xerces.util.SymbolTable;
 
@@ -279,8 +279,8 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
     /** Default constructor. */
     protected AbstractDTDGrammar(SymbolTable symbolTable) {
         fSymbolTable = symbolTable;
-	// are there really situations in which this is a good idea???  - NG
-	fGrammarDescription = new XMLDTDDescription();
+        // are there really situations in which this is a good idea???  - NG
+        fGrammarDescription = new XMLDTDDescription();
     } // <init>(SymbolTable)
 
     // Grammar methods
@@ -633,7 +633,7 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
         notationDecl.setValues(fNotationName[chunk][index], 
                                fNotationPublicId[chunk][index],
                                fNotationSystemId[chunk][index],
-			       fNotationBaseSystemId[chunk][index]);
+                               fNotationBaseSystemId[chunk][index]);
 
         return true;
 
@@ -1439,12 +1439,12 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
                 nodeRet = new CMUniOp( contentSpec.type, buildSyntaxTree(leftNode, contentSpec));
             } 
             else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE
-		       || contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE
-		       || contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE) {
+                       || contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE
+                       || contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE) {
                 nodeRet = new CMUniOp(contentSpec.type, buildSyntaxTree(leftNode, contentSpec));
             } 
             else {
-		        throw new RuntimeException("ImplementationMessages.VAL_CST");
+                        throw new RuntimeException("ImplementationMessages.VAL_CST");
             }
         }
         // And return our new node for this level

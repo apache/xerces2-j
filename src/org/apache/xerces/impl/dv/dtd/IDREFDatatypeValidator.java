@@ -57,12 +57,10 @@
 
 package org.apache.xerces.impl.dv.dtd;
 
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Locale;
-import java.util.StringTokenizer;
+import org.apache.xerces.impl.validation.ValidationContext;
+import org.apache.xerces.impl.dv.*;
 import org.apache.xerces.util.XMLChar;
-import java.util.NoSuchElementException;
+
 /**
  * <P>IDREFDatatypeValidator - represents the IDREFS
  * attribute type from XML 1.0 recommendation. The
@@ -74,235 +72,37 @@ import java.util.NoSuchElementException;
  * production.</P>
  * <P>The Value space of IDREF is scoped to a specific
  * instance document</P>
- * <P>This datatatype checks the following constraint:
- * An IDREF must match the value of an ID in the XML
- * document in which it occurs.
- * </P>
- * The following snippet shows typical use of the
- * the IDDatatype:</P>
- * <CODE>
- * <PRE>
- *       DatatypeValidator idRefData = tstRegistry.getDatatypeValidator("IDREF" );
- *       if( idRefData != null ){
- *          IDREFDatatypeValidator refData = (IDREFDatatypeValidator) idRefData;
- *          refData.initialize( ((IDDatatypeValidator) idData).getTableIds());
- *          try {
- *             refData.validate( "a1", null );
- *             refData.validate( "a2", null );
- *             //refData.validate( "a3", null );//Should throw exception at validate()
- *             refData.validate();
- *          } catch( Exception ex ){
- *             ex.printStackTrace();
- *          }
- *       }
- *       </PRE>
- * </CODE>
  * 
- * @author Jeffrey Rodriguez-
+ * @author Jeffrey Rodriguez, IBM
+ * @author Sandy Gao, IBM
+ * 
  * @version $Id$
- * @see IDDatatypeValidator
- * @see DatatypeValidator
- * @see DatatypeValidator
  */
-public class IDREFDatatypeValidator extends AbstractDatatypeValidator
-implements StatefullDatatypeValidator{
-   private DatatypeValidator fBaseValidator    = null;
-   private Hashtable              fTableOfId   = null; //This is pass to us through the state object
-   private Hashtable              fTableIDRefs = null;
-   private Object                   fNullValue = null;
-   private Locale            fLocale           = null;
-   private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
+public class IDREFDatatypeValidator implements DatatypeValidator {
 
+    // construct an IDREF datatype validator
+    public IDREFDatatypeValidator() {
+    }
 
-   public IDREFDatatypeValidator () throws InvalidDatatypeFacetException {
-      this( null, null, false ); // Native, No Facets defined, Restriction
-   }
-
-   public IDREFDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
-                                   boolean derivedByList ) throws InvalidDatatypeFacetException { 
-
-      setBasetype( base ); // Set base type 
-
-   }
-
-
-   /**
-    * Checks that "content" string is valid 
-    * datatype.
-    * If invalid a Datatype validation exception is thrown.
-    * 
-    * @param content A string containing the content to be validated
-    * @param derivedBylist
-    *                Flag which is true when type
-    *                is derived by list otherwise it
-    *                it is derived by extension.
-    *                
-    * @exception throws InvalidDatatypeException if the content is
-    *                   invalid according to the rules for the validators
-    * @exception InvalidDatatypeValueException
-    * @see         InvalidDatatypeValueException
-    */
-   public void validate(String content, Object state ) throws InvalidDatatypeValueException{
-      //Pass content as a String
-      if (!XMLChar.isValidName(content)) {//Check if is valid key
-         InvalidDatatypeValueException error = new InvalidDatatypeValueException( content );//Need Message
-         error.setKeyIntoReporter( "IDREFInvalid" );
-         throw error;//Need Message
-      }
-      addIdRef( content, state);// We are storing IDs 
-   }
-
-   /**
-    * <P>This method is unique to IDREFDatatypeValidator</P>
-    * <P>Validator should call this method at the EndDocument
-    * call to start IDREF constraint validation. This validation
-    * rule checks IDREF values accumulated in internal
-    * table against read table passed to IDREF validator
-    * at instantiation time.</P>
-    * <P>Caveats -
-    * <LI>
-    * Do not call this validator method until
-    * you are sure that all ID values have been found since
-    * this method contains a live reference to an internal
-    * ID table which the ID validator could still be
-    * updating.</LI>
-    * <LI>Do not call this method before the initialize method
-    * since the initialize method will set the reference
-    * to ID table used by this method to validate the
-    * IDREFs.</LI></P>
-    * 
-    * @exception InvalidDatatypeValueException
-    */
-   public void validate() throws InvalidDatatypeValueException{
-      checkIdRefs();
-   }
-
-
-   /**
-    * <P>This method is unique to IDREFDatatypeValidator</P>
-    * <P>This method initializes the internal reference
-    * to the ID table of ID's and IDREF internal table
-    * of IDREFs.</P>
-    * <P>This method should be called before the valid()
-    * method</P>
-    * 
-    * @param tableOfIDs
-    */
-   public void initialize( Object tableOfIDs ){
-      //System.out.println("IDREF datatype initialized" );
-         
-      if ( this.fTableIDRefs != null) {
-         this.fTableIDRefs.clear();
-      } else {
-        this.fTableIDRefs = new Hashtable();
-      }
-      fTableOfId = (Hashtable) tableOfIDs; //set reference to table of Ids.
-   }
-
-
-
-   /**
-    * REVISIT
-    * Compares two Datatype for order
-    * 
-    * @param o1
-    * @param o2
-    * @return 0 if value1 and value2 are equal, a value less than 0 if value1 is less than value2, a value greater than 0 if value1 is greater than value2
-    */
-   public int compare( String content1, String content2){
-      return -1;
-   }
-
-
-   public Hashtable getFacets(){
-      return null;
-   }
-   /**
-      * Returns a copy of this object.
-      */
-   public Object clone() throws CloneNotSupportedException {
-      throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
-   }
-
-   /**
-     * Name of base type as a string.
-     * A Native datatype has the string "native"  as its
-     * base type.
+    /**
+     * Checks that "content" string is valid IDREF value.
+     * If invalid a Datatype validation exception is thrown.
      * 
-     * @param base   the validator for this type's base type
+     * @param content       the string value that needs to be validated
+     * @param context       the validation context
+     * @throws InvalidDatatypeException if the content is
+     *         invalid according to the rules for the validators
+     * @see InvalidDatatypeValueException
      */
-   private void setBasetype(DatatypeValidator base){
-      fBaseValidator = base;
-   }
+    public void validate(String content, ValidationContext context) throws InvalidDatatypeValueException {
 
-   /** addId. */
-   private void addIdRef(String content, Object state) {
-      if ( fTableOfId != null &&  fTableOfId.containsKey( content ) ) {
-         return;
-      }
-      if ( fTableIDRefs == null ) {
-         fTableIDRefs = new Hashtable();
-      } else if ( fTableIDRefs.containsKey( content ) ) {
-         return;
-      }
-      if ( this.fNullValue == null ) {
-         fNullValue = new Object();
-      }
-      try {
-         this.fTableIDRefs.put( content, fNullValue ); 
-      } catch ( OutOfMemoryError ex ) {
-         System.out.println( "Out of Memory: Hashtable of ID's has " + this.fTableIDRefs.size() + " Elements" );
-         ex.printStackTrace();
-      }
-   } // addId(int):boolean
+        //Check if is valid key-[81] EncName ::= [A-Za-z] ([A-Za-z0-9._] | '-')*
+        if (!XMLChar.isValidName(content)) {
+            throw new InvalidDatatypeValueException("IDREFInvalid", new Object[]{content});
+        }
 
-
-   /**
-    * <P>Private method used to check the IDREF valid
-    * ID constraint</P>
-    * 
-    * @exception InvalidDatatypeValueException
-    */
-   private void checkIdRefs() throws InvalidDatatypeValueException {
-
-      if ( fTableIDRefs == null)
-         return;
-
-      Enumeration en = this.fTableIDRefs.keys();
-
-      while (en.hasMoreElements()) {
-         String key = (String)en.nextElement();
-         if ( this.fTableOfId == null || ! this.fTableOfId.containsKey(key)) {
-
-            InvalidDatatypeValueException error =  new
-                                                   InvalidDatatypeValueException( key );
-            error.setKeyIntoReporter("MSG_ELEMENT_WITH_ID_REQUIRED" );
-            throw error;
-         }
-      }
-
-   } // checkIdRefs()
-
-
-   /**
-   * set the locate to be used for error messages
-   */
-   public void setLocale(Locale locale) {
-      fLocale = locale;
-   }
-
-   /**
-    * A no-op method in this validator
-    */
-   public Object getInternalStateInformation(){
-       return null;
-   }
-
-   private String getErrorString(int major, int minor, Object args[]) {
-      //return fMessageProvider.createMessage(fLocale, major, minor, args);
-      return fMessageProvider.formatMessage( fLocale, null, null);
-   }
-
+        context.addIdRef(content);
+        
+    }
 
 }
-

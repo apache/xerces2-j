@@ -84,7 +84,7 @@ public class EntityDV extends TypeValidator {
     }
 
     public void checkExtraRules(Object value, ValidationContext context) throws InvalidDatatypeValueException {
-        if (!context.isEntityDeclared((String)value)) {
+        if (!context.isEntityUnparsed((String)value)) {
             throw new InvalidDatatypeValueException("UndeclaredEntity", new Object[]{value});
         }
     }

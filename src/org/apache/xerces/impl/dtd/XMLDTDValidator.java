@@ -60,20 +60,14 @@ package org.apache.xerces.impl.dtd;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.validation.ValidationManager;
+import org.apache.xerces.impl.validation.ValidationState;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 
 import org.apache.xerces.impl.validation.EntityState;
 import org.apache.xerces.impl.dtd.models.ContentModelValidator;
-import org.apache.xerces.impl.dv.dtd.DatatypeValidator;
-import org.apache.xerces.impl.dv.dtd.DatatypeValidatorFactory;
-import org.apache.xerces.impl.dv.dtd.DatatypeValidatorFactoryImpl;
-import org.apache.xerces.impl.dv.dtd.ENTITYDatatypeValidator;
-import org.apache.xerces.impl.dv.dtd.IDDatatypeValidator;
-import org.apache.xerces.impl.dv.dtd.IDREFDatatypeValidator;
-import org.apache.xerces.impl.dv.dtd.ListDatatypeValidator;
-import org.apache.xerces.impl.dv.dtd.NOTATIONDatatypeValidator;
-import org.apache.xerces.impl.dv.dtd.InvalidDatatypeFacetException;
-import org.apache.xerces.impl.dv.dtd.InvalidDatatypeValueException;
+import org.apache.xerces.impl.dv.DatatypeValidator;
+import org.apache.xerces.impl.dv.DTDDVFactory;
+import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLChar;
@@ -214,6 +208,9 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
     // updated during reset
     protected ValidationManager fValidationManager = null;
+    
+    // validation state
+    protected ValidationState   fValidationState   = new ValidationState();
 
     // features
 
@@ -232,9 +229,9 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      */
     protected boolean fDynamicValidation;
 
-	/** warn on duplicate attribute definition, this feature works only when validation is true */
-	protected boolean fWarnDuplicateAttdef;
-	
+        /** warn on duplicate attribute definition, this feature works only when validation is true */
+        protected boolean fWarnDuplicateAttdef;
+        
     // properties
 
     /** Symbol table. */
@@ -247,7 +244,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
     protected DTDGrammarBucket fGrammarBucket;
 
     /** Datatype validator factory. */
-    protected DatatypeValidatorFactory fDatatypeValidatorFactory;
+    protected DTDDVFactory fDatatypeValidatorFactory;
 
     // handlers
 
@@ -445,19 +442,19 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
     // attribute validators
 
     /** Datatype validator: ID. */
-    private IDDatatypeValidator fValID;
+    private DatatypeValidator fValID;
 
     /** Datatype validator: IDREF. */
-    private IDREFDatatypeValidator fValIDRef;
+    private DatatypeValidator fValIDRef;
 
     /** Datatype validator: IDREFS. */
-    private ListDatatypeValidator fValIDRefs;
+    private DatatypeValidator fValIDRefs;
 
     /** Datatype validator: ENTITY. */
-    private ENTITYDatatypeValidator fValENTITY;
+    private DatatypeValidator fValENTITY;
 
     /** Datatype validator: ENTITIES. */
-    private ListDatatypeValidator fValENTITIES;
+    private DatatypeValidator fValENTITIES;
 
     /** Datatype validator: NMTOKEN. */
     private DatatypeValidator fValNMTOKEN;
@@ -466,18 +463,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
     private DatatypeValidator fValNMTOKENS;
 
     /** Datatype validator: NOTATION. */
-    private NOTATIONDatatypeValidator fValNOTATION;
-
-    /**
-     * This table has to be own by instance of XMLValidator and shared
-     * among ID, IDREF and IDREFS. 
-     * <p>
-     * <strong>Note:</strong> Only ID has read/write access.
-     * <p>
-     * <strong>Note:</strong> Should revisit and replace with a ligther
-     * structure.
-     */
-    private Hashtable fTableOfIDs; 
+    private DatatypeValidator fValNOTATION;
 
     // to check for duplicate ID or ANNOTATION attribute declare in
     // ATTLIST, and misc VCs
@@ -582,11 +568,13 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
         fValidationManager= (ValidationManager)componentManager.getProperty(VALIDATION_MANAGER);
         fValidationManager.reset();
+        fValidationManager.addValidationState(fValidationState);
+        fValidationState.resetIDTables();
         // get needed components
         fErrorReporter = (XMLErrorReporter)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.ERROR_REPORTER_PROPERTY);
         fSymbolTable = (SymbolTable)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SYMBOL_TABLE_PROPERTY);
         fGrammarBucket = new DTDGrammarBucket();
-        fDatatypeValidatorFactory = (DatatypeValidatorFactory)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX + Constants.DATATYPE_VALIDATOR_FACTORY_PROPERTY);
+        fDatatypeValidatorFactory = (DTDDVFactory)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX + Constants.DATATYPE_VALIDATOR_FACTORY_PROPERTY);
 
         fElementDepth = -1;                      
         init();
@@ -1389,24 +1377,24 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
         if (fValidation) {
         
-        	boolean	duplicateAttributeDef = false ;
+                boolean	duplicateAttributeDef = false ;
                                         
-        	//Get Grammar index to grammar array
-        	int elementIndex       = fDTDGrammar.getElementDeclIndex( elementName, -1 );        	
-        	if (fDTDGrammar.getAttributeDeclIndex(elementIndex, attributeName) != -1) {        
-        		//more than one attribute definition is provided for the same attribute of a given element type.
-        		duplicateAttributeDef = true ;
-                		
-        		//this feature works only when valiation is true.
-        		if(fWarnDuplicateAttdef){
-				fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-							 "MSG_DUPLICATE_ATTRIBUTE_DEFINITION", 
-							 new Object[]{ elementName, attributeName },
-							 XMLErrorReporter.SEVERITY_WARNING );
-			}        		
-        	}
+                //Get Grammar index to grammar array
+                int elementIndex       = fDTDGrammar.getElementDeclIndex( elementName, -1 );        	
+                if (fDTDGrammar.getAttributeDeclIndex(elementIndex, attributeName) != -1) {        
+                        //more than one attribute definition is provided for the same attribute of a given element type.
+                        duplicateAttributeDef = true ;
+                                
+                        //this feature works only when valiation is true.
+                        if(fWarnDuplicateAttdef){
+                                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                         "MSG_DUPLICATE_ATTRIBUTE_DEFINITION", 
+                                                         new Object[]{ elementName, attributeName },
+                                                         XMLErrorReporter.SEVERITY_WARNING );
+                        }
+                }
                 
-        	
+                
             //
             // a) VC: One ID per Element Type, If duplicate ID attribute
             // b) VC: ID attribute Default. if there is a declareared attribute
@@ -1427,25 +1415,25 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                     fTableOfIDAttributeNames.put(elementName, attributeName);
                 }
                 else {
-                	//we should not report an error, when there is duplicate attribute definition for given element type
-                	//according to XML 1.0 spec, When more than one definition is provided for the same attribute of a given
-                	//element type, the first declaration is binding and later declaration are *ignored*. So processor should 
-                	//ignore the second declarations, however an application would be warned of the duplicate attribute defintion 
-                	// if http://apache.org/xml/features/validation/warn-on-duplicate-attdef feature is set to true,
-                	// one typical case where this could be a  problem, when any XML file  
-                	// provide the ID type information through internal subset so that it is available to the parser which read 
-                	//only internal subset. Now that attribute declaration(ID Type) can again be part of external parsed entity 
-                	//referenced. At that time if parser doesn't make this distinction it will throw an error for VC One ID per 
-                	//Element Type, which (second defintion) actually should be ignored. Application behavior may differ on the
-                	//basis of error or warning thrown. - nb.
+                        //we should not report an error, when there is duplicate attribute definition for given element type
+                        //according to XML 1.0 spec, When more than one definition is provided for the same attribute of a given
+                        //element type, the first declaration is binding and later declaration are *ignored*. So processor should 
+                        //ignore the second declarations, however an application would be warned of the duplicate attribute defintion 
+                        // if http://apache.org/xml/features/validation/warn-on-duplicate-attdef feature is set to true,
+                        // one typical case where this could be a  problem, when any XML file  
+                        // provide the ID type information through internal subset so that it is available to the parser which read 
+                        //only internal subset. Now that attribute declaration(ID Type) can again be part of external parsed entity 
+                        //referenced. At that time if parser doesn't make this distinction it will throw an error for VC One ID per 
+                        //Element Type, which (second defintion) actually should be ignored. Application behavior may differ on the
+                        //basis of error or warning thrown. - nb.
 
-                	if(!duplicateAttributeDef){
-                    		String previousIDAttributeName = (String)fTableOfIDAttributeNames.get( elementName );//rule a)
-                    		fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                        if(!duplicateAttributeDef){
+                                String previousIDAttributeName = (String)fTableOfIDAttributeNames.get( elementName );//rule a)
+                                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                "MSG_MORE_THAN_ONE_ID_ATTRIBUTE",
                                                new Object[]{ elementName, previousIDAttributeName, attributeName},
                                                XMLErrorReporter.SEVERITY_ERROR);
-                	}
+                        }
                 }
             }
 
@@ -1464,17 +1452,17 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                     fTableOfNOTATIONAttributeNames.put( elementName, attributeName);
                 }
                 else {
-                	//we should not report an error, when there is duplicate attribute definition for given element type
-                	//according to XML 1.0 spec, When more than one definition is provided for the same attribute of a given
-                	//element type, the first declaration is binding and later declaration are *ignored*. So processor should 
-                	//ignore the second declarations, however an application would be warned of the duplicate attribute defintion 
-                	// if http://apache.org/xml/features/validation/warn-on-duplicate-attdef feature is set to true, Application behavior may differ on the basis of error or 
-                	//warning thrown. - nb.
+                        //we should not report an error, when there is duplicate attribute definition for given element type
+                        //according to XML 1.0 spec, When more than one definition is provided for the same attribute of a given
+                        //element type, the first declaration is binding and later declaration are *ignored*. So processor should 
+                        //ignore the second declarations, however an application would be warned of the duplicate attribute defintion 
+                        // if http://apache.org/xml/features/validation/warn-on-duplicate-attdef feature is set to true, Application behavior may differ on the basis of error or 
+                        //warning thrown. - nb.
 
-                	if(!duplicateAttributeDef){
+                        if(!duplicateAttributeDef){
                 
-                    		String previousNOTATIONAttributeName = (String) fTableOfNOTATIONAttributeNames.get( elementName );
-                    		fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                String previousNOTATIONAttributeName = (String) fTableOfNOTATIONAttributeNames.get( elementName );
+                                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                "MSG_MORE_THAN_ONE_NOTATION_ATTRIBUTE",
                                                new Object[]{ elementName, previousNOTATIONAttributeName, attributeName},
                                                XMLErrorReporter.SEVERITY_ERROR);
@@ -1753,9 +1741,6 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
         // check VC: Notation declared,  in the production of NDataDecl
         if (fValidation) {
-
-            fValENTITY.initialize(fDTDGrammar);//Initialize ENTITY, ENTITIES validators 
-            fValENTITIES.initialize(fDTDGrammar);
 
             // VC : Notation Declared. for external entity declaration [Production 76].
             Enumeration entities = fNDataDeclNotations.keys();
@@ -2279,17 +2264,16 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
                 try {
                     if (isAlistAttribute) {
-                        fValENTITIES.validate(attValue, null);
+                        fValENTITIES.validate(attValue, fValidationState);
                     }
                     else {
-                        fValENTITY.validate(attValue, null);
+                        fValENTITY.validate(attValue, fValidationState);
                     }
                 }
                 catch (InvalidDatatypeValueException ex) {
-                    String  key = ex.getKeyIntoReporter();
                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               key,
-                                               new Object[]{ ex.getMessage()},
+                                               ex.getKey(),
+                                               ex.getArgs(),
                                                XMLErrorReporter.SEVERITY_ERROR );
 
                 }
@@ -2327,13 +2311,12 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
         case XMLSimpleType.TYPE_ID: {
                 try {
-                    fValID.validate(attValue, null);
+                    fValID.validate(attValue, fValidationState);
                 }
                 catch (InvalidDatatypeValueException ex) {
-                    String  key = ex.getKeyIntoReporter();
                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               key,
-                                               new Object[] { ex.getMessage()},
+                                               ex.getKey(),
+                                               ex.getArgs(),
                                                XMLErrorReporter.SEVERITY_ERROR );
                 }
                 break;
@@ -2344,21 +2327,20 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
                 try {
                     if (isAlistAttribute) {
-                        //System.out.println("values = >>" + value + "<<" );
-                        fValIDRefs.validate(attValue, null);
+                        fValIDRefs.validate(attValue, fValidationState);
                     }
                     else {
-                        fValIDRef.validate(attValue, null);
+                        fValIDRef.validate(attValue, fValidationState);
                     }
                 }
                 catch (InvalidDatatypeValueException ex) {
-                    String key = ex.getKeyIntoReporter();
-                    if (key == null) {
+                    String key = ex.getKey();
+                    if (isAlistAttribute) {
                         key = "IDREFSInvalid";
                     }
                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                key,
-                                               new Object[]{ ex.getMessage()},
+                                               ex.getArgs(),
                                                XMLErrorReporter.SEVERITY_ERROR );
 
                 }
@@ -2370,10 +2352,10 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                 //changes fTempAttDef
                 try {
                     if (isAlistAttribute) {
-                        fValNMTOKENS.validate(attValue, null);
+                        fValNMTOKENS.validate(attValue, fValidationState);
                     }
                     else {
-                        fValNMTOKEN.validate(attValue, null);
+                        fValNMTOKEN.validate(attValue, fValidationState);
                     }
                 }
                 catch (InvalidDatatypeValueException ex) {
@@ -2775,15 +2757,14 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
             try {
                 //REVISIT: datatypeRegistry + initialization of datatype 
                 //         why do we cast to ListDatatypeValidator?
-                ((DatatypeValidatorFactoryImpl)fDatatypeValidatorFactory).initializeDTDRegistry();
-                fValID       = (IDDatatypeValidator)((DatatypeValidatorFactoryImpl)fDatatypeValidatorFactory).getDatatypeValidator("ID" );
-                fValIDRef    = (IDREFDatatypeValidator)((DatatypeValidatorFactoryImpl)fDatatypeValidatorFactory).getDatatypeValidator("IDREF" );
-                fValIDRefs   = (ListDatatypeValidator)((DatatypeValidatorFactoryImpl)fDatatypeValidatorFactory).getDatatypeValidator("IDREFS" );
-                fValENTITY   = (ENTITYDatatypeValidator)((DatatypeValidatorFactoryImpl)fDatatypeValidatorFactory).getDatatypeValidator("ENTITY" );
-                fValENTITIES = (ListDatatypeValidator)((DatatypeValidatorFactoryImpl)fDatatypeValidatorFactory).getDatatypeValidator("ENTITIES" );
-                fValNMTOKEN  = ((DatatypeValidatorFactoryImpl)fDatatypeValidatorFactory).getDatatypeValidator("NMTOKEN");
-                fValNMTOKENS = ((DatatypeValidatorFactoryImpl)fDatatypeValidatorFactory).getDatatypeValidator("NMTOKENS");
-                fValNOTATION = (NOTATIONDatatypeValidator)((DatatypeValidatorFactoryImpl)fDatatypeValidatorFactory).getDatatypeValidator("NOTATION" );
+                fValID       = fDatatypeValidatorFactory.getBuiltInDV("ID" );
+                fValIDRef    = fDatatypeValidatorFactory.getBuiltInDV("IDREF" );
+                fValIDRefs   = fDatatypeValidatorFactory.getBuiltInDV("IDREFS" );
+                fValENTITY   = fDatatypeValidatorFactory.getBuiltInDV("ENTITY" );
+                fValENTITIES = fDatatypeValidatorFactory.getBuiltInDV("ENTITIES" );
+                fValNMTOKEN  = fDatatypeValidatorFactory.getBuiltInDV("NMTOKEN");
+                fValNMTOKENS = fDatatypeValidatorFactory.getBuiltInDV("NMTOKENS");
+                fValNOTATION = fDatatypeValidatorFactory.getBuiltInDV("NOTATION" );
 
             }
             catch (Exception e) {
@@ -2791,15 +2772,6 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                 e.printStackTrace(System.err);
             }
 
-            //Initialize ID, IDREF, IDREFS validators
-            if (fTableOfIDs == null) {
-                fTableOfIDs = new Hashtable();//Initialize table of IDs
-            }
-
-            fTableOfIDs.clear();
-            fValID.initialize(fTableOfIDs);
-            fValIDRef.initialize(fTableOfIDs);
-            fValIDRefs.initialize(fTableOfIDs);
             if (fNotationEnumVals == null) {
                 fNotationEnumVals = new Hashtable(); 
             }
@@ -2873,7 +2845,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         // see if the root element's name matches the one in DoctypeDecl 
         if (!fSeenRootElement) {
             fSeenRootElement = true;
-            fValidationManager.getValidationState().setEntityState(fDTDGrammar);
+            fValidationManager.setEntityState(fDTDGrammar);
             fValidationManager.setGrammarFound(fSeenDoctypeDecl);
             rootElementSpecified(element);
         }
@@ -3023,19 +2995,13 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
             //   IDREF and IDREFS attr (V_IDREF0)
             //
             if (fPerformValidation) {
-                try {
-                    fValIDRef.validate();//Do final validation of IDREFS against IDs
-                    fValIDRefs.validate();
-                }
-                catch (InvalidDatatypeValueException ex) {
-                    String  key = ex.getKeyIntoReporter();
-
+                String value = fValidationState.checkIDRefID();
+                if (value != null) {
                     fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
-                                                key,
-                                                new Object[]{ ex.getMessage()},
+                                                "MSG_ELEMENT_WITH_ID_REQUIRED",
+                                                new Object[]{value},
                                                 XMLErrorReporter.SEVERITY_ERROR );
                 }
-                fTableOfIDs.clear();//Clear table of IDs
             }
             return;
         }

@@ -192,8 +192,6 @@ public class XMLSchemaValidator
     protected static final String VALIDATION_MANAGER =
     Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATION_MANAGER_PROPERTY;
 
-    // REVISIT: this is just a temporary solution for entity resolver
-    //          while we are making a decision
     protected static final String ENTITY_MANAGER =
     Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_MANAGER_PROPERTY;
 
@@ -350,7 +348,7 @@ public class XMLSchemaValidator
 
     // updated during reset
     protected ValidationManager fValidationManager = null;
-    protected ValidationState fValidationState = null;
+    protected ValidationState fValidationState = new ValidationState();
     protected XMLGrammarPool fGrammarPool;
 
     // schema location property values
@@ -1142,14 +1140,15 @@ public class XMLSchemaValidator
             fSchemaElementDefault = false;
         }
 
-        // REVISIT: use default entity resolution from ENTITY MANAGER - temporary solution
         fEntityResolver = (XMLEntityResolver)componentManager.getProperty(ENTITY_MANAGER);
 
         // initialize namespace support
         fNamespaceSupport.reset(fSymbolTable);
         fPushForNextBinding = true;
-        fValidationManager= (ValidationManager)componentManager.getProperty(VALIDATION_MANAGER);
-        fValidationManager.reset();
+        fValidationManager = (ValidationManager)componentManager.getProperty(VALIDATION_MANAGER);
+        fValidationManager.addValidationState(fValidationState);
+        fValidationState.setNamespaceSupport(fNamespaceSupport);
+        fValidationState.setSymbolTable(fSymbolTable);
 
         // get schema location properties
         fExternalSchemas = (String)componentManager.getProperty(SCHEMA_LOCATION);
@@ -1575,11 +1574,6 @@ public class XMLSchemaValidator
             // thus we will not validate in the case dynamic feature is on or we found dtd grammar
             fDoValidation = fValidation && !(fValidationManager.isGrammarFound() || fDynamicValidation);
 
-            // REVISIT: why don't we do it in reset()?
-            fValidationState = fValidationManager.getValidationState();
-            fValidationState.setNamespaceSupport(fNamespaceSupport);
-            fValidationState.setSymbolTable(fSymbolTable);
-
             // parse schemas specified via schema location properties
             parseSchemas(fExternalSchemas, fExternalNoNamespaceSchema);
         }
@@ -1935,7 +1929,7 @@ public class XMLSchemaValidator
 
             if (fDoValidation) {
                 // 7 If the element information item is the validation root, it must be valid per Validation Root Valid (ID/IDREF) (3.3.4).
-                if (!fValidationState.checkIDRefID()) {
+                if (fValidationState.checkIDRefID() != null) {
                     reportSchemaError("ValidationRoot", null);
                 }
             }

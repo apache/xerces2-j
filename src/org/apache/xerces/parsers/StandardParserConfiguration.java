@@ -69,8 +69,7 @@ import org.apache.xerces.impl.dtd.XMLDTDValidator;
 import org.apache.xerces.impl.XMLNamespaceBinder;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.ValidationManager;
-import org.apache.xerces.impl.dv.dtd.DatatypeValidatorFactory;
-import org.apache.xerces.impl.dv.dtd.DatatypeValidatorFactoryImpl;
+import org.apache.xerces.impl.dv.DTDDVFactory;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.impl.validation.XMLGrammarPoolImpl;
 
@@ -229,7 +228,7 @@ public class StandardParserConfiguration
     protected XMLGrammarPool fGrammarPool;
 
     /** Datatype validator factory. */
-    protected DatatypeValidatorFactory fDatatypeValidatorFactory;
+    protected DTDDVFactory fDatatypeValidatorFactory;
 
     // components (configurable)
 
@@ -853,8 +852,8 @@ public class StandardParserConfiguration
     } // createNamespaceBinder():XMLNamespaceBinder
 
     /** Create a datatype validator factory. */
-    protected DatatypeValidatorFactory createDatatypeValidatorFactory() {
-        return new DatatypeValidatorFactoryImpl();
+    protected DTDDVFactory createDatatypeValidatorFactory() {
+        return DTDDVFactory.getInstance();
     } // createDatatypeValidatorFactory():DatatypeValidatorFactory
     protected ValidationManager createValidationManager(){
         return new ValidationManager();

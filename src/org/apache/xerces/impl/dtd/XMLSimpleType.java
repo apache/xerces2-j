@@ -56,7 +56,7 @@
  */
 
 package org.apache.xerces.impl.dtd;
-import org.apache.xerces.impl.dv.dtd.DatatypeValidator;
+import org.apache.xerces.impl.dv.DatatypeValidator;
 /**
  * @version $Id$
  */
