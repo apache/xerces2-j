@@ -137,9 +137,6 @@ public class XSModelImpl implements XSModel {
     // store a certain kind of components from one namespace
     private XSNamedMap[][] fNSComponents;
     
-    // temporary array
-    private SymbolHash[] fTables;
-    
    /**
     * Construct an XSModelImpl, by storing some grammars and grammars imported
     * by them to this object.
@@ -207,8 +204,6 @@ public class XSModelImpl implements XSModel {
         fGrammarCount = len;
         fGlobalComponents = new XSNamedMap[MAX_COMP_IDX+1];
         fNSComponents = new XSNamedMap[len][MAX_COMP_IDX+1];
-        
-        fTables = new SymbolHash[fGrammarCount];
     }
     
     /**
@@ -243,6 +238,7 @@ public class XSModelImpl implements XSModel {
             return null;
         }
         
+        SymbolHash[] tables = new SymbolHash[fGrammarCount];
         // get all hashtables from all namespaces for this type of components
         if (fGlobalComponents[objectType] == null) {
             for (int i = 0; i < fGrammarCount; i++) {
@@ -250,22 +246,22 @@ public class XSModelImpl implements XSModel {
                 case XSConstants.TYPE_DEFINITION:
                 case XSTypeDefinition.COMPLEX_TYPE:
                 case XSTypeDefinition.SIMPLE_TYPE:
-                    fTables[i] = fGrammarList[i].fGlobalTypeDecls;
+                    tables[i] = fGrammarList[i].fGlobalTypeDecls;
                     break;
                 case XSConstants.ATTRIBUTE_DECLARATION:
-                    fTables[i] = fGrammarList[i].fGlobalAttrDecls;
+                    tables[i] = fGrammarList[i].fGlobalAttrDecls;
                     break;
                 case XSConstants.ELEMENT_DECLARATION:
-                    fTables[i] = fGrammarList[i].fGlobalElemDecls;
+                    tables[i] = fGrammarList[i].fGlobalElemDecls;
                     break;
                 case XSConstants.ATTRIBUTE_GROUP:
-                    fTables[i] = fGrammarList[i].fGlobalAttrGrpDecls;
+                    tables[i] = fGrammarList[i].fGlobalAttrGrpDecls;
                     break;
                 case XSConstants.MODEL_GROUP_DEFINITION:
-                    fTables[i] = fGrammarList[i].fGlobalGroupDecls;
+                    tables[i] = fGrammarList[i].fGlobalGroupDecls;
                     break;
                 case XSConstants.NOTATION_DECLARATION:
-                    fTables[i] = fGrammarList[i].fGlobalNotationDecls;
+                    tables[i] = fGrammarList[i].fGlobalNotationDecls;
                     break;
                 }
             }
@@ -273,10 +269,10 @@ public class XSModelImpl implements XSModel {
             // which take specific types out of the hash table
             if (objectType == XSTypeDefinition.COMPLEX_TYPE ||
                 objectType == XSTypeDefinition.SIMPLE_TYPE) {
-                fGlobalComponents[objectType] = new XSNamedMap4Types(fNamespaces, fTables, fGrammarCount, objectType);
+                fGlobalComponents[objectType] = new XSNamedMap4Types(fNamespaces, tables, fGrammarCount, objectType);
             }
             else {
-                fGlobalComponents[objectType] = new XSNamedMapImpl(fNamespaces, fTables, fGrammarCount);
+                fGlobalComponents[objectType] = new XSNamedMapImpl(fNamespaces, tables, fGrammarCount);
             }
         }
         
