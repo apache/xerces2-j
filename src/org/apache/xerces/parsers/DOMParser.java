@@ -73,6 +73,7 @@ import org.apache.xerces.utils.StringPool;
 import org.apache.xerces.validators.common.XMLAttributeDecl;
 import org.apache.xerces.validators.common.XMLElementDecl;
 import org.apache.xerces.validators.schema.XUtil;
+import org.apache.xerces.validators.schema.SchemaSymbols;
 
 import org.apache.xerces.dom.DeferredDocumentImpl;
 import org.apache.xerces.dom.DocumentImpl;
@@ -1489,7 +1490,7 @@ public class DOMParser
             if (fGrammarAccess) {
                 Element schema = fDocument.createElement("schema");
                 // REVISIT: What should the namespace be? -Ac
-                schema.setAttribute("xmlns", "http://www.w3.org/1999/XMLSchema");
+                schema.setAttribute("xmlns", SchemaSymbols.URI_SCHEMAFORSCHEMA);
                 ((AttrImpl)schema.getAttributeNode("xmlns")).setSpecified(false);
                 schema.setAttribute("finalDefault", "");
                 ((AttrImpl)schema.getAttributeNode("finalDefault")).setSpecified(false);
@@ -1511,7 +1512,7 @@ public class DOMParser
                 int handle = fAttrList.startAttrList();
                 fAttrList.addAttr(
                     fStringPool.addSymbol("xmlns"),
-                    fStringPool.addString("http://www.w3.org/1999/XMLSchema"),
+                    fStringPool.addString(SchemaSymbols.URI_SCHEMAFORSCHEMA),
                     fStringPool.addSymbol("CDATA"),
                     false,
                     false); // search

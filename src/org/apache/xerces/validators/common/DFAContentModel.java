@@ -60,7 +60,7 @@ package org.apache.xerces.validators.common;
 import org.apache.xerces.framework.XMLContentSpec;
 import org.apache.xerces.utils.ImplementationMessages;
 import org.apache.xerces.utils.QName;
-import org.apache.xerces.validators.schema.EquivClassComparator;
+import org.apache.xerces.validators.schema.SubstitutionGroupComparator;
 //import org.apache.xerces.utils.StringPool;
 
 /**
@@ -102,8 +102,8 @@ public class DFAContentModel
     // Data
     //
 
-    /* this is the EquivClassComparator object */
-    private EquivClassComparator comparator = null;
+    /* this is the SubstitutionGroupComparator object */
+    private SubstitutionGroupComparator comparator = null;
 
     /**
      * This is the map of unique input symbol elements to indices into
@@ -596,7 +596,7 @@ public class DFAContentModel
         return -1;
     }
 
-    public void setEquivClassComparator(EquivClassComparator comparator) {
+    public void setSubstitutionGroupComparator(SubstitutionGroupComparator comparator) {
         this.comparator = comparator;
     }
 

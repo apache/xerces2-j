@@ -59,7 +59,7 @@ package org.apache.xerces.validators.common;
 
 import org.apache.xerces.framework.XMLContentSpec;
 import org.apache.xerces.utils.QName;
-import org.apache.xerces.validators.schema.EquivClassComparator;
+import org.apache.xerces.validators.schema.SubstitutionGroupComparator;
 
 /**
  * MixedContentModel is a derivative of the abstract content model base
@@ -93,8 +93,8 @@ public class MixedContentModel
     /** The type of the children to support ANY. */
     private int fChildrenType[];
 
-    /* this is the EquivClassComparator object */
-    private EquivClassComparator comparator = null;
+    /* this is the SubstitutionGroupComparator object */
+    private SubstitutionGroupComparator comparator = null;
     
     /** 
      * True if mixed content model is ordered. DTD mixed content models
@@ -313,7 +313,7 @@ public class MixedContentModel
             return validateContent(children,offset, length);
     }
 
-    public void setEquivClassComparator(EquivClassComparator comparator) {
+    public void setSubstitutionGroupComparator(SubstitutionGroupComparator comparator) {
         this.comparator = comparator;
     }
 

@@ -58,7 +58,7 @@
 package org.apache.xerces.validators.common;
 
 import org.apache.xerces.utils.QName;
-import org.apache.xerces.validators.schema.EquivClassComparator;
+import org.apache.xerces.validators.schema.SubstitutionGroupComparator;
 
 /**
  * ContentModel is an interface that can be used by your own custom validators
@@ -110,7 +110,7 @@ public interface XMLContentModel {
 
     /**
      * This method is different from "validateContent" in that it will try to use
-     * the EquivClassComparator to match children against the content model.
+     * the SubstitutionGroupComparator to match children against the content model.
      * <p>
      * A value of -1 in the children array indicates a PCDATA node. All other 
      * indexes will be positive and represent child elements. The count can be
@@ -134,13 +134,13 @@ public interface XMLContentModel {
     public int validateContentSpecial(QName children[], int offset, int length) throws Exception;
 
     /**
-     * The setter method to pass in the EquivCLassComparator.
+     * The setter method to pass in the SubstitutionGroupComparator.
      *
-     * @param comparator a EquivClassComparator object.
+     * @param comparator a SubstitutionGroupComparator object.
      * @return 
      * @exception 
      */
-    public void setEquivClassComparator(EquivClassComparator comparator);// should really use a Comparator interface
+    public void setSubstitutionGroupComparator(SubstitutionGroupComparator comparator);// should really use a Comparator interface
 
     /**
      * Returns information about which elements can be placed at a particular point

@@ -68,8 +68,8 @@ package org.apache.xerces.validators.schema;
  * @author jeffrey rodriguez
  */
 public final  class SchemaSymbols {
-    public static final String URI_XSI =  "http://www.w3.org/1999/XMLSchema-instance";
-    public static final String URI_SCHEMAFORSCHEMA =  "http://www.w3.org/1999/XMLSchema";
+    public static final String URI_XSI =  "http://www.w3.org/2000/10/XMLSchema-instance";
+    public static final String URI_SCHEMAFORSCHEMA =  "http://www.w3.org/2000/10/XMLSchema";
     public static final String XSI_SCHEMALOCACTION =  "schemaLocation";
     public static final String XSI_NONAMESPACESCHEMALOCACTION =  "noNamespaceSchemaLocation";
     public static final String XSI_TYPE =  "type";
@@ -127,7 +127,7 @@ public final  class SchemaSymbols {
     public static final String ATT_DEFAULT =  "default";
     public static final String ATT_DERIVEDBY = "derivedBy";
     public static final String ATT_ELEMENTFORMDEFAULT =  "elementFormDefault";
-    public static final String ATT_EQUIVCLASS =  "equivClass";
+    public static final String ATT_SUBSTITUTIONGROUP =  "substitutionGroup";
     public static final String ATT_FINAL =  "final";
     public static final String ATT_FINALDEFAULT =  "finalDefault";
     public static final String ATT_FIXED =  "fixed";
@@ -183,7 +183,7 @@ public final  class SchemaSymbols {
     public static final String ATTVAL_UNQUALIFIED =  "unqualified";
     public static final String ATTVAL_URI =  "uri";
     public static final String ATTVAL_URIREFERENCE =  "uriReference";
-    public static final String ATTVAL_EQUIVCLASS = "equivclass";
+    public static final String ATTVAL_SUBSTITUTIONGROUP = "substitutionGroup";
 
 
     public static final int                     EMPTY_SET = 0;          
@@ -192,7 +192,7 @@ public final  class SchemaSymbols {
     public static final int                     REPRODUCTION = 4;
     public static final int                     LIST = 8;
     public static final int                     ENUMERATION = 16;
-    public static final int                     EQUIVCLASS = 32;
+    public static final int                     SUBSTITUTIONGROUP = 32;
 
     public static final int                     CHOICE = 0;                     // group orders
     public static final int                     SEQUENCE = 1;           // group orders

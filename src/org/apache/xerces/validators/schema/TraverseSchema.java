@@ -118,7 +118,7 @@ import  org.apache.xerces.validators.schema.SchemaSymbols;
      * Chapter 4 of W3C Working Draft.
      * <schema 
      *   attributeFormDefault = qualified | unqualified 
-     *   blockDefault = #all or (possibly empty) subset of {equivClass, extension, restriction} 
+     *   blockDefault = #all or (possibly empty) subset of {substitutionGroup, extension, restriction} 
      *   elementFormDefault = qualified | unqualified 
      *   finalDefault = #all or (possibly empty) subset of {extension, restriction} 
      *   id = ID 
@@ -141,9 +141,9 @@ import  org.apache.xerces.validators.schema.SchemaSymbols;
      * 
      * <element 
      *   abstract = boolean 
-     *   block = #all or (possibly empty) subset of {equivClass, extension, restriction} 
+     *   block = #all or (possibly empty) subset of {substitutionGroup, extension, restriction} 
      *   default = string 
-     *   equivClass = QName 
+     *   substitutionGroup = QName 
      *   final = #all or (possibly empty) subset of {extension, restriction} 
      *   fixed = string 
      *   form = qualified | unqualified 
@@ -419,7 +419,7 @@ public class TraverseSchema implements
     
 	//CR Implementation
 	private static boolean DEBUG_UNION = false;
-	private static boolean CR_IMPL = false;
+	private static boolean CR_IMPL = true;
 	//private data members
 
 
@@ -683,7 +683,7 @@ public class TraverseSchema implements
             } else if (name.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
                 //traverseAttributeGroupDecl(child);
             } else if (name.equals( SchemaSymbols.ELT_ATTRIBUTE ) ) {
-                traverseAttributeDecl( child, null );
+                traverseAttributeDecl( child, null, false );
             } else if (name.equals(SchemaSymbols.ELT_GROUP) && child.getAttribute(SchemaSymbols.ATT_REF).equals("")) {
                 //traverseGroupDecl(child);
             } else if (name.equals(SchemaSymbols.ELT_NOTATION)) {
@@ -965,7 +965,7 @@ public class TraverseSchema implements
             } else if (name.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
                 //traverseAttributeGroupDecl(child);
             } else if (name.equals( SchemaSymbols.ELT_ATTRIBUTE ) ) {
-                traverseAttributeDecl( child, null );
+                traverseAttributeDecl( child, null , false);
             } else if (name.equals(SchemaSymbols.ELT_GROUP) && child.getAttribute(SchemaSymbols.ATT_REF).equals("")) {
                 //traverseGroupDecl(child);
             } else if (name.equals(SchemaSymbols.ELT_NOTATION)) {
@@ -2404,7 +2404,7 @@ public class TraverseSchema implements
                                              "attribute children at all");
                     break;
                 }
-                traverseAttributeDecl(child, typeInfo);
+                traverseAttributeDecl(child, typeInfo, false);
             } 
             else if ( childName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ) { 
                 if ((baseIsComplexSimple||baseIsSimpleSimple) && derivedByRestriction) {
@@ -3401,7 +3401,7 @@ public class TraverseSchema implements
             String childName = child.getLocalName();
 
             if (childName.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
-                traverseAttributeDecl(child, typeInfo);
+                traverseAttributeDecl(child, typeInfo, false);
             } 
             else if ( childName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ) { 
                 traverseAttributeGroupDecl(child,typeInfo,anyAttDecls);
@@ -3737,15 +3737,22 @@ public class TraverseSchema implements
      *         Content: (annotation? , simpleType?)
      *       <attribute/>
      * 
-     * @param attributeDecl
+     * @param attributeDecl: the declaration of the attribute under 
+	 * 		consideration
+	 * @param typeInfo: Contains the index of the element to which 
+	 * 		the attribute declaration is attached.
+	 * @param referredTo:  true iff traverseAttributeDecl was called because 
+	 *		of encountering a ``ref''property (used
+	 *		to suppress error-reporting).
      * @return 
      * @exception Exception
      */
-    private int traverseAttributeDecl( Element attrDecl, ComplexTypeInfo typeInfo ) throws Exception {
+    private int traverseAttributeDecl( Element attrDecl, ComplexTypeInfo typeInfo, boolean referredTo ) throws Exception {
         String attNameStr    = attrDecl.getAttribute(SchemaSymbols.ATT_NAME);
         int attName          = fStringPool.addSymbol(attNameStr);// attribute name
         String isQName       = attrDecl.getAttribute(SchemaSymbols.ATT_FORM);//form attribute
-
+		boolean isAttrTopLevel = isTopLevel(attrDecl);
+		
         DatatypeValidator dv = null;
         // attribute type
         int attType          = -1;
@@ -3756,16 +3763,29 @@ public class TraverseSchema implements
         String datatype  = attrDecl.getAttribute(SchemaSymbols.ATT_TYPE);
 		// various tests if 'ref' is present:
 		if(!ref.equals("")) {
+			if(isAttrTopLevel)
+				// REVISIT:  localize 
+   	    	    reportGenericSchemaError ( "An attribute with \"ref\" present must not have <schema> as its parent");
 			if(!attNameStr.equals(""))
 				// REVISIT:  localize 
    	    	    reportGenericSchemaError ( "Attribute " + attNameStr + " cannot refer to another attribute, but it refers to " + ref);
 			if(!datatype.equals(""))
 				// REVISIT:  localize 
        	        reportGenericSchemaError ( "Attribute with reference " + ref + " cannot also contain a type");
+        	if(!attrDecl.getAttribute(SchemaSymbols.ATT_FORM).equals(""))
+				// REVISIT:  localize 
+       	        reportGenericSchemaError ( "Attribute with reference " + ref + " cannot also contain a \"form\" property");
+        	if(!attrDecl.getAttribute(SchemaSymbols.ATT_VALUE).equals(""))
+				// REVISIT:  localize 
+       	        reportGenericSchemaError ( "Attribute with reference " + ref + " cannot also contain a value");
 		}
 		Element simpleTypeChild = findAttributeSimpleType(attrDecl);
 
         String localpart = null;
+
+        String  use      = attrDecl.getAttribute(SchemaSymbols.ATT_USE);
+        boolean prohibited = use.equals(SchemaSymbols.ATTVAL_PROHIBITED);
+        boolean required = use.equals(SchemaSymbols.ATTVAL_REQUIRED);
 
 		if (!ref.equals("")) {
             String prefix = "";
@@ -3785,7 +3805,33 @@ public class TraverseSchema implements
 
             Element referredAttribute = getTopLevelComponentByName(SchemaSymbols.ELT_ATTRIBUTE,localpart);
             if (referredAttribute != null) {
-                traverseAttributeDecl(referredAttribute, typeInfo);
+                traverseAttributeDecl(referredAttribute, typeInfo, true);
+				// this nasty hack needed to ``override'' the "use" on the 
+				// global attribute with that on the ref'ing attribute.
+				int referredAttName = fStringPool.addSymbol(referredAttribute.getAttribute(SchemaSymbols.ATT_NAME));
+        		int uriIndex = -1;
+        		if ( fTargetNSURIString.length() > 0) 
+            		uriIndex = fTargetNSURI; 
+        		QName referredAttQName = new QName(-1,referredAttName,referredAttName,uriIndex);
+				if (prohibited) {
+	                int tempIndex = fSchemaGrammar.getAttributeDeclIndex(typeInfo.templateElementIndex, referredAttQName);
+					XMLAttributeDecl referredAttrDecl = new XMLAttributeDecl();
+					fSchemaGrammar.getAttributeDecl(tempIndex, referredAttrDecl);
+					referredAttrDecl.defaultType = XMLAttributeDecl.DEFAULT_TYPE_PROHIBITED;
+					fSchemaGrammar.setAttributeDecl(typeInfo.templateElementIndex, tempIndex, referredAttrDecl);
+				}
+				else if (required) {
+   	             	int tempIndex = fSchemaGrammar.getAttributeDeclIndex(typeInfo.templateElementIndex, referredAttQName);
+					XMLAttributeDecl referredAttrDecl = new XMLAttributeDecl();
+					fSchemaGrammar.getAttributeDecl(tempIndex, referredAttrDecl);
+					// now two cases:  if it's othre than fixed, no problem, just overwrite.  
+					// but if it is *it* fixed, specs demand attr be treated as both fixed and required. 
+					if(referredAttrDecl.defaultType == XMLAttributeDecl.DEFAULT_TYPE_FIXED) 
+						referredAttrDecl.defaultType = XMLAttributeDecl.DEFAULT_TYPE_REQUIRED_AND_FIXED;
+					else
+						referredAttrDecl.defaultType = XMLAttributeDecl.DEFAULT_TYPE_REQUIRED;
+					fSchemaGrammar.setAttributeDecl(typeInfo.templateElementIndex, tempIndex, referredAttrDecl);
+				}
             }
             else {
 
@@ -3798,7 +3844,6 @@ public class TraverseSchema implements
             }
             return -1;
         }
-
 
         if (datatype.equals("")) {
             if (simpleTypeChild != null) { 
@@ -3816,7 +3861,7 @@ public class TraverseSchema implements
             dv = fDatatypeRegistry.getDatatypeValidator(localpart);
 
         } else {
-			if(simpleTypeChild != null)
+			if(simpleTypeChild != null && !referredTo)
             	reportGenericSchemaError("Attribute declarations may not contain both a type and a simpleType declaration");
 
             String prefix = "";
@@ -3862,7 +3907,7 @@ public class TraverseSchema implements
                         if (topleveltype != null) {
                             traverseSimpleTypeDecl( topleveltype );
                             dv = getDatatypeValidator(typeURI, localpart);
-                        }else {
+                        }else if (!referredTo) {
                             // REVISIT: Localize
                             reportGenericSchemaError("simpleType not found : " + "("+typeURI+":"+localpart+")");
                         }
@@ -3878,7 +3923,7 @@ public class TraverseSchema implements
                     if (topleveltype != null) {
                         traverseSimpleTypeDecl( topleveltype );
                         dv = getDatatypeValidator(typeURI, localpart);
-                    }else {
+                    }else if (!referredTo) {
                         // REVISIT: Localize
                         reportGenericSchemaError("simpleType not found : " + "("+typeURI+":"+ localpart+")");
                     }
@@ -3894,63 +3939,93 @@ public class TraverseSchema implements
         int attDefaultType = -1;
         int attDefaultValue = -1;
 
-        String  use      = attrDecl.getAttribute(SchemaSymbols.ATT_USE);
-
-        boolean prohibited = use.equals(SchemaSymbols.ATTVAL_PROHIBITED);
-        boolean required = use.equals(SchemaSymbols.ATTVAL_REQUIRED);
-        if (dv == null) {
+        if (dv == null && !referredTo) {
             // REVISIT: Localize
             reportGenericSchemaError("could not resolve the type or get a null validator for datatype : " 
                                      + fStringPool.toString(dataTypeSymbol));
         }
 
-        if (prohibited) 
-            attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_PROHIBITED; 
-        else if (required) {
-            attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_REQUIRED;
-        } else {
-			// perhaps a controversial change:  no "use" in lcoal scope means "fixed"!
-            if (use.equals(SchemaSymbols.ATTVAL_FIXED) || (!isTopLevel(attrDecl) && !use.equals(SchemaSymbols.ATTVAL_DEFAULT))) {
-                String fixed = attrDecl.getAttribute(SchemaSymbols.ATT_VALUE);
-                if (!fixed.equals("")) {
-                    attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_FIXED;
-                    attDefaultValue = fStringPool.addString(fixed);
-                } 
-            }
-            else if (use.equals(SchemaSymbols.ATTVAL_DEFAULT)) {
-                // attribute default value
-                String defaultValue = attrDecl.getAttribute(SchemaSymbols.ATT_VALUE);
-                if (!defaultValue.equals("")) {
-                    attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_DEFAULT;
-                    attDefaultValue = fStringPool.addString(defaultValue);
-                } 
-            }
-            else {
-                attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_IMPLIED;
-            }       // check default value is valid for the datatype.
+        String fixed = attrDecl.getAttribute(SchemaSymbols.ATT_VALUE);
+		if (isAttrTopLevel) {
+            if (!fixed.equals("")) {
+				if((required || prohibited
+						|| use.equals(SchemaSymbols.ATTVAL_OPTIONAL)) && !referredTo) 
+            		// REVISIT: Localize
+            		reportGenericSchemaError("Globally-declared attributes containing values must have \"use\" set to \"FIXED\" or \"DEFAULT\", not " +
+						use);
+				else if (use.equals("") && !referredTo) 
+            		// REVISIT: Localize
+					reportGenericSchemaError("Globally-declared attributes containing values MUST have \"use\" present and set to \"FIXED\" or \"DEFAULT\"");
+            	else if (use.equals(SchemaSymbols.ATTVAL_FIXED))	{
+                   	attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_FIXED;
+                   	attDefaultValue = fStringPool.addString(fixed);
+				} 
+				else {
+                   	attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_DEFAULT;
+                   	attDefaultValue = fStringPool.addString(fixed);
+				}
+			}
+			else { // no value and we're at top level.
+            	if (!use.equals("") && !referredTo)	
+            		// REVISIT: Localize
+					reportGenericSchemaError("Globally-declared attributes containing no value may not have \"use\" present");
+            	else 
+               		attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_IMPLIED;
+			}
+		} 
+		else { // not at top-level...
+			// case where "ref" present taken care of above.
+            if (!fixed.equals("")) {
+				if(required || prohibited
+						|| use.equals(SchemaSymbols.ATTVAL_OPTIONAL)) 
+            		reportGenericSchemaError("Locally-declared attributes containing values must have \"use\" set to \"FIXED\" or \"DEFAULT\", not " +
+						use);
+				else if (use.equals("")) 
+            		// REVISIT: Localize
+					reportGenericSchemaError("Locally-declared attributes containing values MUST have \"use\" present and set to \"FIXED\" or \"DEFAULT\"");
+            	else if (use.equals(SchemaSymbols.ATTVAL_FIXED))	{
+                   	attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_FIXED;
+                   	attDefaultValue = fStringPool.addString(fixed);
+				} 
+				else {
+                   	attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_DEFAULT;
+                   	attDefaultValue = fStringPool.addString(fixed);
+				}
+			}
+			else { // no value and we're not at top level.
+				if(required) 
+                   	attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_REQUIRED;
+				else if (prohibited)  
+                   	attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_PROHIBITED;
+				// no other case is defined by the specs, so treat as implied...
+            	else 
+               		attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_IMPLIED;
+			}
+		}
 
-            if (attType == XMLAttributeDecl.TYPE_SIMPLE && attDefaultValue != -1) {
-                try { 
-                    if (dv != null) 
-                        //REVISIT
-                        dv.validate(fStringPool.toString(attDefaultValue), null);
-                    else
-                        reportSchemaError(SchemaMessageProvider.NoValidatorFor,
-                                          new Object [] { datatype });
-                } catch (InvalidDatatypeValueException idve) {
-                    reportSchemaError(SchemaMessageProvider.IncorrectDefaultType,
-                                      new Object [] { attrDecl.getAttribute(SchemaSymbols.ATT_NAME), idve.getMessage() });
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    System.out.println("Internal error in attribute datatype validation");
-                }
+        // check default value is valid for the datatype.  
+        if (attType == XMLAttributeDecl.TYPE_SIMPLE && attDefaultValue != -1) {
+            try { 
+                if (dv != null) 
+                    //REVISIT
+                    dv.validate(fStringPool.toString(attDefaultValue), null);
+                else if (!referredTo)
+                    reportSchemaError(SchemaMessageProvider.NoValidatorFor,
+                            new Object [] { datatype });
+            } catch (InvalidDatatypeValueException idve) {
+				if (!referredTo) 
+                	reportSchemaError(SchemaMessageProvider.IncorrectDefaultType,
+                        new Object [] { attrDecl.getAttribute(SchemaSymbols.ATT_NAME), idve.getMessage() });
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("Internal error in attribute datatype validation");
             }
         }
 
         int uriIndex = -1;
         if ( fTargetNSURIString.length() > 0 &&
              ( isQName.equals(SchemaSymbols.ATTVAL_QUALIFIED)||
-             fAttributeDefaultQualified || isTopLevel(attrDecl) )
+             fAttributeDefaultQualified || isAttrTopLevel  )
              ) {
             uriIndex = fTargetNSURI;
         }
@@ -3960,7 +4035,7 @@ public class TraverseSchema implements
             System.out.println(" the dataType Validator for " + fStringPool.toString(attName) + " is " + dv);
 
         //put the top-levels in the attribute decl registry.
-        if (isTopLevel(attrDecl)) {
+        if (isAttrTopLevel) {
             fTempAttributeDecl.datatypeValidator = dv;
             fTempAttributeDecl.name.setValues(attQName);
             fTempAttributeDecl.type = attType;
@@ -4076,7 +4151,7 @@ public class TraverseSchema implements
              child != null ; child = XUtil.getNextSiblingElement(child)) {
        
             if ( child.getLocalName().equals(SchemaSymbols.ELT_ATTRIBUTE) ){
-                traverseAttributeDecl(child, typeInfo);
+                traverseAttributeDecl(child, typeInfo, false);
             }
             else if ( child.getLocalName().equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ) {
                 traverseAttributeGroupDecl(child, typeInfo,anyAttDecls);
@@ -4137,7 +4212,7 @@ public class TraverseSchema implements
                     }       
                 }
                 else 
-                    traverseAttributeDecl(child, typeInfo);
+                    traverseAttributeDecl(child, typeInfo, false);
             }
             else if ( child.getLocalName().equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ) {
                 traverseAttributeGroupDecl(child, typeInfo, anyAttDecls);
@@ -4182,9 +4257,9 @@ public class TraverseSchema implements
      * Traverse element declaration:
      *  <element
      *         abstract = boolean
-     *         block = #all or (possibly empty) subset of {equivClass, extension, restriction}
+     *         block = #all or (possibly empty) subset of {substitutionGroup, extension, restriction}
      *         default = string
-     *         equivClass = QName
+     *         substitutionGroup = QName
      *         final = #all or (possibly empty) subset of {extension, restriction}
      *         fixed = string
      *         form = qualified | unqualified
@@ -4254,7 +4329,7 @@ public class TraverseSchema implements
         String maxOccurs = elementDecl.getAttribute(SchemaSymbols.ATT_MAXOCCURS);
         String dflt = elementDecl.getAttribute(SchemaSymbols.ATT_DEFAULT);
         String fixed = elementDecl.getAttribute(SchemaSymbols.ATT_FIXED);
-        String equivClass = elementDecl.getAttribute(SchemaSymbols.ATT_EQUIVCLASS);
+        String substitutionGroup = elementDecl.getAttribute(SchemaSymbols.ATT_SUBSTITUTIONGROUP);
         // form attribute
         String isQName = elementDecl.getAttribute(SchemaSymbols.ATT_FORM);
 
@@ -4335,68 +4410,68 @@ public class TraverseSchema implements
             return eltName;
         }
                 
-        // Handle the equivClass
-        Element equivClassElementDecl = null;
-        int equivClassElementDeclIndex = -1;
+        // Handle the substitutionGroup
+        Element substitutionGroupElementDecl = null;
+        int substitutionGroupElementDeclIndex = -1;
         boolean noErrorSoFar = true;
-        String equivClassUri = null;
-        String equivClassLocalpart = null;
-        String equivClassFullName = null;
-        ComplexTypeInfo equivClassEltTypeInfo = null;
-        DatatypeValidator equivClassEltDV = null;
+        String substitutionGroupUri = null;
+        String substitutionGroupLocalpart = null;
+        String substitutionGroupFullName = null;
+        ComplexTypeInfo substitutionGroupEltTypeInfo = null;
+        DatatypeValidator substitutionGroupEltDV = null;
 
-        if ( equivClass.length() > 0 ) {
-            equivClassUri =  resolvePrefixToURI(getPrefix(equivClass));
-            equivClassLocalpart = getLocalPart(equivClass);
-            equivClassFullName = equivClassUri+","+equivClassLocalpart;
+        if ( substitutionGroup.length() > 0 ) {
+            substitutionGroupUri =  resolvePrefixToURI(getPrefix(substitutionGroup));
+            substitutionGroupLocalpart = getLocalPart(substitutionGroup);
+            substitutionGroupFullName = substitutionGroupUri+","+substitutionGroupLocalpart;
            
-            if ( !equivClassUri.equals(fTargetNSURIString) ) {  
-                equivClassEltTypeInfo = getElementDeclTypeInfoFromNS(equivClassUri, equivClassLocalpart);
-                if (equivClassEltTypeInfo == null) {
-                    equivClassEltDV = getElementDeclTypeValidatorFromNS(equivClassUri, equivClassLocalpart);
-                    if (equivClassEltDV == null) {
+            if ( !substitutionGroupUri.equals(fTargetNSURIString) ) {  
+                substitutionGroupEltTypeInfo = getElementDeclTypeInfoFromNS(substitutionGroupUri, substitutionGroupLocalpart);
+                if (substitutionGroupEltTypeInfo == null) {
+                    substitutionGroupEltDV = getElementDeclTypeValidatorFromNS(substitutionGroupUri, substitutionGroupLocalpart);
+                    if (substitutionGroupEltDV == null) {
                         //TO DO: report error here;
                         noErrorSoFar = false;
-                        reportGenericSchemaError("Could not find type for element '" +equivClassLocalpart 
-                                                 + "' in schema '" + equivClassUri+"'");
+                        reportGenericSchemaError("Could not find type for element '" +substitutionGroupLocalpart 
+                                                 + "' in schema '" + substitutionGroupUri+"'");
                     }
                 }
             }
             else {
-                equivClassElementDecl = getTopLevelComponentByName(SchemaSymbols.ELT_ELEMENT, equivClassLocalpart);
-                if (equivClassElementDecl == null) {
-                    equivClassElementDeclIndex = 
-                        fSchemaGrammar.getElementDeclIndex(fTargetNSURI, getLocalPartIndex(equivClass),TOP_LEVEL_SCOPE);
-                    if ( equivClassElementDeclIndex == -1) {
+                substitutionGroupElementDecl = getTopLevelComponentByName(SchemaSymbols.ELT_ELEMENT, substitutionGroupLocalpart);
+                if (substitutionGroupElementDecl == null) {
+                    substitutionGroupElementDeclIndex = 
+                        fSchemaGrammar.getElementDeclIndex(fTargetNSURI, getLocalPartIndex(substitutionGroup),TOP_LEVEL_SCOPE);
+                    if ( substitutionGroupElementDeclIndex == -1) {
                         noErrorSoFar = false;
                         // REVISIT: Localize
-                        reportGenericSchemaError("Equivclass affiliation element "
-                                                  +equivClass
+                        reportGenericSchemaError("substitutionGroup affiliation element "
+                                                  +substitutionGroup
                                                   +" in element declaration " 
                                                   +name);  
                     }
                 }
                 else {
-                    equivClassElementDeclIndex = 
-                        fSchemaGrammar.getElementDeclIndex(fTargetNSURI, getLocalPartIndex(equivClass),TOP_LEVEL_SCOPE);
+                    substitutionGroupElementDeclIndex = 
+                        fSchemaGrammar.getElementDeclIndex(fTargetNSURI, getLocalPartIndex(substitutionGroup),TOP_LEVEL_SCOPE);
 
-                    if ( equivClassElementDeclIndex == -1) {
-                        traverseElementDecl(equivClassElementDecl);
-                        equivClassElementDeclIndex = 
-                            fSchemaGrammar.getElementDeclIndex(fTargetNSURI, getLocalPartIndex(equivClass),TOP_LEVEL_SCOPE);
+                    if ( substitutionGroupElementDeclIndex == -1) {
+                        traverseElementDecl(substitutionGroupElementDecl);
+                        substitutionGroupElementDeclIndex = 
+                            fSchemaGrammar.getElementDeclIndex(fTargetNSURI, getLocalPartIndex(substitutionGroup),TOP_LEVEL_SCOPE);
                     }
                 }
 
-                if (equivClassElementDeclIndex != -1) {
-                    equivClassEltTypeInfo = fSchemaGrammar.getElementComplexTypeInfo( equivClassElementDeclIndex );
-                    if (equivClassEltTypeInfo == null) {
-                        fSchemaGrammar.getElementDecl(equivClassElementDeclIndex, fTempElementDecl);
-                        equivClassEltDV = fTempElementDecl.datatypeValidator;
-                        if (equivClassEltDV == null) {
+                if (substitutionGroupElementDeclIndex != -1) {
+                    substitutionGroupEltTypeInfo = fSchemaGrammar.getElementComplexTypeInfo( substitutionGroupElementDeclIndex );
+                    if (substitutionGroupEltTypeInfo == null) {
+                        fSchemaGrammar.getElementDecl(substitutionGroupElementDeclIndex, fTempElementDecl);
+                        substitutionGroupEltDV = fTempElementDecl.datatypeValidator;
+                        if (substitutionGroupEltDV == null) {
                             //TO DO: report error here;
                             noErrorSoFar = false;
-                            reportGenericSchemaError("Could not find type for element '" +equivClassLocalpart 
-                                                     + "' in schema '" + equivClassUri+"'");
+                            reportGenericSchemaError("Could not find type for element '" +substitutionGroupLocalpart 
+                                                     + "' in schema '" + substitutionGroupUri+"'");
                         }
                     }
                 }
@@ -4482,8 +4557,8 @@ public class TraverseSchema implements
         }
         // type specified as an attribute and no child is type decl.
         else if (!type.equals("")) { 
-            if (equivClassElementDecl != null) {
-                checkEquivClassOK(elementDecl, equivClassElementDecl); 
+            if (substitutionGroupElementDecl != null) {
+                checkSubstitutionGroupOK(elementDecl, substitutionGroupElementDecl); 
             }
             String prefix = "";
             String localpart = type;
@@ -4565,17 +4640,17 @@ public class TraverseSchema implements
    
         } 
         else if (haveAnonType){
-            if (equivClassElementDecl != null ) {
-                checkEquivClassOK(elementDecl, equivClassElementDecl); 
+            if (substitutionGroupElementDecl != null ) {
+                checkSubstitutionGroupOK(elementDecl, substitutionGroupElementDecl); 
             }
 
         }
-        // this element is ur-type, check its equivClass afficliation.
+        // this element is ur-type, check its substitutionGroup afficliation.
         else {
-            // if there is equivClass affiliation and not type defintion found for this element, 
-            // then grab equivClass affiliation's type and give it to this element
-            if ( typeInfo == null && dv == null ) typeInfo = equivClassEltTypeInfo;
-            if ( typeInfo == null && dv == null ) dv = equivClassEltDV;
+            // if there is substitutionGroup affiliation and not type defition found for this element, 
+            // then grab substitutionGroup affiliation's type and give it to this element
+            if ( typeInfo == null && dv == null ) typeInfo = substitutionGroupEltTypeInfo;
+            if ( typeInfo == null && dv == null ) dv = substitutionGroupEltDV;
         }
 
         if (typeInfo == null && dv==null) {
@@ -4684,8 +4759,8 @@ public class TraverseSchema implements
         fSchemaGrammar.setElementDeclFinalSet(elementIndex, finalSet);
         fSchemaGrammar.setElementDeclMiscFlags(elementIndex, elementMiscFlags);
 
-        // setEquivClassElementFullName
-        fSchemaGrammar.setElementDeclEquivClassElementFullName(elementIndex, equivClassFullName);
+        // setSubstitutionGroupElementFullName
+        fSchemaGrammar.setElementDeclSubstitutionGroupElementFullName(elementIndex, substitutionGroupFullName);
 
         //
         // key/keyref/unique processing\
@@ -4863,7 +4938,7 @@ public class TraverseSchema implements
         return prefix;
     }
     
-    private void checkEquivClassOK(Element elementDecl, Element equivClassElementDecl){
+    private void checkSubstitutionGroupOK(Element elementDecl, Element substitutionGroupElementDecl){
         //TO DO!!
     }
     
@@ -5991,7 +6066,7 @@ public class TraverseSchema implements
     private int parseBlockSet (String finalString)  throws Exception
     {
             if ( finalString.equals ("#all") ) {
-                    return SchemaSymbols.EQUIVCLASS+SchemaSymbols.EXTENSION+SchemaSymbols.LIST+SchemaSymbols.RESTRICTION+SchemaSymbols.REPRODUCTION;
+                    return SchemaSymbols.SUBSTITUTIONGROUP+SchemaSymbols.EXTENSION+SchemaSymbols.LIST+SchemaSymbols.RESTRICTION+SchemaSymbols.REPRODUCTION;
             } else {
                     int extend = 0;
                     int restrict = 0;
@@ -6001,12 +6076,12 @@ public class TraverseSchema implements
                     while (t.hasMoreTokens()) {
                             String token = t.nextToken ();
 
-                            if ( token.equals (SchemaSymbols.ATTVAL_EQUIVCLASS) ) {
+                            if ( token.equals (SchemaSymbols.ATTVAL_SUBSTITUTIONGROUP) ) {
                                     if ( extend == 0 ) {
-                                            extend = SchemaSymbols.EQUIVCLASS;
+                                            extend = SchemaSymbols.SUBSTITUTIONGROUP;
                                     } else {
                                         // REVISIT: Localize
-                                            reportGenericSchemaError ( "'equivClass' already in set" );
+                                            reportGenericSchemaError ( "'substitutionGroup' already in set" );
                                     }
                             } else if ( token.equals (SchemaSymbols.ATTVAL_EXTENSION) ) {
                                     if ( extend == 0 ) {
@@ -6042,7 +6117,7 @@ public class TraverseSchema implements
     private int parseFinalSet (String finalString)  throws Exception
     {
             if ( finalString.equals ("#all") ) {
-                    return SchemaSymbols.EQUIVCLASS+SchemaSymbols.EXTENSION+SchemaSymbols.LIST+SchemaSymbols.RESTRICTION+SchemaSymbols.REPRODUCTION;
+                    return SchemaSymbols.SUBSTITUTIONGROUP+SchemaSymbols.EXTENSION+SchemaSymbols.LIST+SchemaSymbols.RESTRICTION+SchemaSymbols.REPRODUCTION;
             } else {
                     int extend = 0;
                     int restrict = 0;
@@ -6052,12 +6127,12 @@ public class TraverseSchema implements
                     while (t.hasMoreTokens()) {
                             String token = t.nextToken ();
 
-                            if ( token.equals (SchemaSymbols.ATTVAL_EQUIVCLASS) ) {
+                            if ( token.equals (SchemaSymbols.ATTVAL_SUBSTITUTIONGROUP) ) {
                                     if ( extend == 0 ) {
-                                            extend = SchemaSymbols.EQUIVCLASS;
+                                            extend = SchemaSymbols.SUBSTITUTIONGROUP;
                                     } else {
                                         // REVISIT: Localize
-                                            reportGenericSchemaError ( "'equivClass' already in set" );
+                                            reportGenericSchemaError ( "'substitutionGroup' already in set" );
                                     }
                             } else if ( token.equals (SchemaSymbols.ATTVAL_EXTENSION) ) {
                                     if ( extend == 0 ) {

@@ -61,7 +61,7 @@ import org.apache.xerces.framework.XMLContentSpec;
 import org.apache.xerces.utils.ImplementationMessages;
 import org.apache.xerces.utils.QName;
 
-import org.apache.xerces.validators.schema.EquivClassComparator;
+import org.apache.xerces.validators.schema.SubstitutionGroupComparator;
 
 /**
  * SimpleContentModel is a derivative of the abstract content model base
@@ -117,8 +117,8 @@ public class SimpleContentModel
     /** Boolean to allow DTDs to validate even with namespace support. */
     private boolean fDTD;
 
-    /* this is the EquivClassComparator object */
-    private EquivClassComparator comparator = null;
+    /* this is the SubstitutionGroupComparator object */
+    private SubstitutionGroupComparator comparator = null;
     
     //
     // Constructors
@@ -512,7 +512,7 @@ public class SimpleContentModel
         return -1;
     }
 
-    public void setEquivClassComparator(EquivClassComparator comparator) {
+    public void setSubstitutionGroupComparator(SubstitutionGroupComparator comparator) {
         this.comparator = comparator;
     }
 

@@ -94,7 +94,7 @@ import java.util.Vector;
 
 import org.apache.xerces.validators.dtd.DTDGrammar;
 
-import org.apache.xerces.validators.schema.EquivClassComparator;
+import org.apache.xerces.validators.schema.SubstitutionGroupComparator;
 import org.apache.xerces.validators.schema.SchemaGrammar;
 import org.apache.xerces.validators.schema.SchemaMessageProvider;
 import org.apache.xerces.validators.schema.SchemaSymbols;
@@ -1623,10 +1623,11 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
          boolean specified = false;
          boolean required = attDefType == XMLAttributeDecl.DEFAULT_TYPE_REQUIRED;
          boolean prohibited = attDefType == XMLAttributeDecl.DEFAULT_TYPE_PROHIBITED;
+         boolean requiredAndFixed = attDefType == XMLAttributeDecl.DEFAULT_TYPE_REQUIRED_AND_FIXED;
 
          if (firstCheck != -1) {
             boolean cdata = attType == fCDATASymbol;
-            if (!cdata || required || prohibited || attValue != -1) {
+            if (!cdata || required || prohibited || attValue != -1 || requiredAndFixed) {
                int i = attrList.getFirstAttr(firstCheck);
                while (i != -1 && (lastCheck == -1 || i <= lastCheck)) {
 
@@ -1644,7 +1645,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 								args,
 								XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
                		}
-                     if (validationEnabled && attDefType == XMLAttributeDecl.DEFAULT_TYPE_FIXED) {
+                     if (validationEnabled && (attDefType == XMLAttributeDecl.DEFAULT_TYPE_FIXED || requiredAndFixed)) {
                         int alistValue = attrList.getAttValue(i);
                         if (alistValue != attValue &&
                             !fStringPool.toString(alistValue).equals(fStringPool.toString(attValue))) {
@@ -1669,7 +1670,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
          }
 
          if (!specified) {
-            if (required) {
+            if (required || requiredAndFixed) {
                if (validationEnabled) {
                   Object[] args = { fStringPool.toString(elementNameIndex),
                      fStringPool.toString(attName)};
@@ -2319,9 +2320,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
       //
 
       private static final String SYSTEM[] = {
-         "http://www.w3.org/TR/2000/WD-xmlschema-1-20000407/structures.dtd",
-         "http://www.w3.org/TR/2000/WD-xmlschema-1-20000407/datatypes.dtd",
-         "http://www.w3.org/TR/2000/WD-xmlschema-1-20000407/versionInfo.ent",
+         "http://www.w3.org/2000/10/XMLSchema.dtd",
+         "http://www.w3.org/XMLSchema/datatypes.dtd",
+         "http://www.w3.org/XMLSchema/versionInfo.ent",
       };
       private static final String PATH[] = {
          "structures.dtd",
@@ -3380,8 +3381,8 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             int result = cmElem.validateContent(children, childOffset, childCount);
             if (result != -1 && fGrammarIsSchemaGrammar) {
                // REVISIT: not optimized for performance, 
-               EquivClassComparator comparator = new EquivClassComparator(fGrammarResolver, fStringPool);
-               cmElem.setEquivClassComparator(comparator);
+               SubstitutionGroupComparator comparator = new SubstitutionGroupComparator(fGrammarResolver, fStringPool);
+               cmElem.setSubstitutionGroupComparator(comparator);
                result = cmElem.validateContentSpecial(children, childOffset, childCount);
             }
             return result;

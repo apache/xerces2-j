@@ -113,7 +113,7 @@ public class SchemaGrammar extends Grammar{
         new TraverseSchema.ComplexTypeInfo[INITIAL_CHUNK_COUNT][];
     private int fElementDeclDefaultType[][] = new int[INITIAL_CHUNK_COUNT][];
     private String fElementDeclDefaultValue[][] = new String[INITIAL_CHUNK_COUNT][];
-    private String fElementDeclEquivClassFullName[][] = new String[INITIAL_CHUNK_COUNT][];
+    private String fElementDeclSubstitutionGroupFullName[][] = new String[INITIAL_CHUNK_COUNT][];
     private int fElementDeclBlockSet[][] = new int[INITIAL_CHUNK_COUNT][];
     private int fElementDeclFinalSet[][] = new int[INITIAL_CHUNK_COUNT][];
     private int fElementDeclMiscFlags[][] = new int[INITIAL_CHUNK_COUNT][];
@@ -227,14 +227,14 @@ public class SchemaGrammar extends Grammar{
         return fElementDeclDefaultValue[chunk][index];
 
     }
-    public String getElementDeclEquivClassElementFullName( int elementDeclIndex){
+    public String getElementDeclSubstitutionGroupElementFullName( int elementDeclIndex){
         
         if (elementDeclIndex < 0 ) {
             return null;
         }
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex & CHUNK_MASK;
-        return fElementDeclEquivClassFullName[chunk][index];
+        return fElementDeclSubstitutionGroupFullName[chunk][index];
 
     }
 
@@ -367,12 +367,12 @@ public class SchemaGrammar extends Grammar{
         }
     }
 
-    protected void setElementDeclEquivClassElementFullName( int elementDeclIndex, String equivClassFullName){
+    protected void setElementDeclSubstitutionGroupElementFullName( int elementDeclIndex, String substitutionGroupFullName){
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex & CHUNK_MASK;
         ensureElementDeclCapacity(chunk);
         if (elementDeclIndex > -1 ) {
-            fElementDeclEquivClassFullName[chunk][index] = equivClassFullName;
+            fElementDeclSubstitutionGroupFullName[chunk][index] = substitutionGroupFullName;
         }
     }
 
@@ -485,7 +485,7 @@ public class SchemaGrammar extends Grammar{
              fElementDeclBlockSet = resize(fElementDeclBlockSet,fElementDeclBlockSet.length*2);
              fElementDeclFinalSet = resize(fElementDeclFinalSet,fElementDeclFinalSet.length*2);
              fElementDeclMiscFlags = resize(fElementDeclMiscFlags,fElementDeclMiscFlags.length*2);
-             fElementDeclEquivClassFullName = resize(fElementDeclEquivClassFullName,fElementDeclEquivClassFullName.length*2);
+             fElementDeclSubstitutionGroupFullName = resize(fElementDeclSubstitutionGroupFullName,fElementDeclSubstitutionGroupFullName.length*2);
         }
         catch (NullPointerException ex) {
             // ignore
@@ -498,7 +498,7 @@ public class SchemaGrammar extends Grammar{
         fComplexTypeInfo[chunk] = new TraverseSchema.ComplexTypeInfo[CHUNK_SIZE];
         fElementDeclDefaultType[chunk] = new int[CHUNK_SIZE];
         fElementDeclDefaultValue[chunk] = new String[CHUNK_SIZE];
-        fElementDeclEquivClassFullName[chunk] = new String[CHUNK_SIZE];
+        fElementDeclSubstitutionGroupFullName[chunk] = new String[CHUNK_SIZE];
         fElementDeclBlockSet[chunk] = new int[CHUNK_SIZE]; // initialized to 0
         fElementDeclFinalSet[chunk] = new int[CHUNK_SIZE]; // initialized to 0
         fElementDeclMiscFlags[chunk] = new int[CHUNK_SIZE]; // initialized to 0

@@ -95,6 +95,7 @@ public class XMLAttributeDecl {
     public static final int DEFAULT_TYPE_REQUIRED = 2;
     public static final int DEFAULT_TYPE_DEFAULT = 3;
     public static final int DEFAULT_TYPE_PROHIBITED = 7;
+    public static final int DEFAULT_TYPE_REQUIRED_AND_FIXED = 8;	// for when global schema attr has use=fixed and local ref has use=required.
 
     // schema: attribte wildcard processContents property, share the defaultType field
     public static final int PROCESSCONTENTS_STRICT = 4;
