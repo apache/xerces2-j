@@ -65,6 +65,7 @@ import java.io.OutputStream;
 import java.io.Writer;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.Enumeration;
@@ -710,6 +711,16 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                 ser.serialize((Element) node);
             else
                 return false;
+        } catch( UnsupportedEncodingException ue) {
+            if (ser.fDOMErrorHandler != null) {
+                DOMErrorImpl error = new DOMErrorImpl();
+                error.fException = ue;
+				error.fType = "unsupported-encoding";
+                error.fMessage = ue.getMessage();
+				error.fSeverity = DOMError.SEVERITY_FATAL_ERROR;
+                ser.fDOMErrorHandler.handleError(error);
+			}
+			return false;
         } catch (Exception e) {
             if (ser.fDOMErrorHandler != null) {
                 DOMErrorImpl error = new DOMErrorImpl();
@@ -719,7 +730,6 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                 ser.fDOMErrorHandler.handleError(error);
 
             }
-            e.printStackTrace();
             return false;
         }
         return true;
