@@ -65,7 +65,7 @@ package org.apache.xml.serialize;
  *
  * @version
  * @author <a href="mailto:arkin@openxml.org">Assaf Arkin</a>
- * @see BaseSerializer
+ * @see BaseMarkupSerializer
  */
 class ElementState
 {
