@@ -902,6 +902,18 @@ Copyright:
     <replace file="${build.dir}/src/org/apache/xerces/dom/AttrNSImpl.java" 
              token="return ((String)type).getNamespace();" value="return null;"/>
  
+    <!-- now deal with API's:  -->
+    <unzip src="${src.apis.zip}" dest="${build.src}">
+        <patternset
+            includes="org/xml/sax/** 
+                javax/xml/parsers/**
+                org/w3c/dom/*
+                org/w3c/dom/events/**
+                org/w3c/dom/html/**
+                org/w3c/dom/ranges/**
+                org/w3c/dom/traversal/**"
+        />
+    </unzip>
 
 
     <!-- substitute tokens as needed -->
