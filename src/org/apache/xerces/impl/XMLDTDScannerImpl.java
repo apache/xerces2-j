@@ -681,11 +681,12 @@ public class XMLDTDScannerImpl
     protected void startPE(String name, boolean literal) 
         throws IOException, XNIException {
         int depth = fPEDepth;
-        if (fValidation && !fEntityManager.isDeclaredEntity("%"+name)) {
+        String pName = "%"+name;
+        if (fValidation && !fEntityManager.isDeclaredEntity(pName)) {
             fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,"EntityNotDeclared", 
                                         new Object[]{name}, XMLErrorReporter.SEVERITY_ERROR);
         }
-        fEntityManager.startEntity(fSymbolTable.addSymbol("%" + name),
+        fEntityManager.startEntity(fSymbolTable.addSymbol(pName),
                                    literal);
         // if we actually got a new entity and it's external
         // parse text decl if there is any
