@@ -311,26 +311,29 @@ Copyright:
     -->
     <mkdir dir='${build.dir}/docs/javadocs/api'/>
     <javadoc packagenames='javax.xml.parsers,org.w3c.*,org.xml.*'
+      locale='en_US'
       sourcepath='${build.src}' destdir='${build.dir}/docs/javadocs/api'
       author='true' version='true'
       windowtitle='XML Standard API' doctitle='XML Standard API'
       bottom='${copyright}'
-      locale='en_US'/>
+      />
     <mkdir dir='${build.dir}/docs/javadocs/xni'/>
     <javadoc packagenames='org.apache.xerces.xni.*'
+      locale='en_US'
       sourcepath='${build.src}' destdir='${build.dir}/docs/javadocs/xni'
       author='true' version='true'
       windowtitle='Xerces Native Interface' 
       doctitle='Xerces Native Interface'
       bottom='${copyright}'
-      locale='en_US'/>
+      />
     <mkdir dir='${build.dir}/docs/javadocs/dom3-api'/>
     <javadoc packagenames='org.apache.xerces.dom3.*'
+     locale='en_US'
      sourcepath='${build.src}' destdir='${build.dir}/docs/javadocs/dom3-api'
      author='true' version='true'
      windowtitle='DOM Level 3 API' doctitle='DOM Level 3 API'
      bottom='${copyright}'
-     locale='en_US'/>
+     />
     
     <mkdir dir='${build.dir}/docs/javadocs/xerces2'/>
     <javadoc packagenames='org.apache.xerces.dom.*,
@@ -338,21 +341,23 @@ Copyright:
                            org.apache.xerces.jaxp,
                            org.apache.xerces.parsers,
                            org.apache.xerces.util'
+      locale='en_US'
       sourcepath='${build.src}' destdir='${build.dir}/docs/javadocs/xerces2'
       author='true' version='true'
       windowtitle='Xerces2 Implementation' 
       doctitle='Xerces2 Implementation'
       bottom='${copyright}'
-      locale='en_US'/>
+      />
     <mkdir dir='${build.dir}/docs/javadocs/other'/>
     <javadoc packagenames='org.apache.html.*,
                            org.apache.wml.*,
                            org.apache.xml.serialize.*'
+      locale='en_US'
       sourcepath='${build.src}' destdir='${build.dir}/docs/javadocs/other'
       author='true' version='true'
       windowtitle='Other Classes' doctitle='Other Classes'
       bottom='${copyright}'
-      locale='en_US'/>
+      />
   </target>
 
   <!-- =================================================================== -->
