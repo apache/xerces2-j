@@ -276,7 +276,7 @@ public class NodeIteratorImpl implements NodeIterator {
     
     /** Return node, if matches or any parent if matches. */
     Node matchNodeOrParent(Node node) {
-        for (Node n = node; n != fRoot; n = n.getParentNode()) {
+        for (Node n = fCurrentNode; n != fRoot; n = n.getParentNode()) {
             if (node == n) return n;
         }
         return null;
