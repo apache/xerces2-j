@@ -211,6 +211,7 @@ public class TraverseSchema implements
     private String fCurrentSchemaURL = "";
 
     private XMLAttributeDecl fTempAttributeDecl = new XMLAttributeDecl();
+    private XMLAttributeDecl fTemp2AttributeDecl = new XMLAttributeDecl();
     private XMLElementDecl fTempElementDecl = new XMLElementDecl();
 
     private EntityResolver  fEntityResolver = null;
@@ -3343,11 +3344,22 @@ public class TraverseSchema implements
                     continue;
                 }
                 // if found a duplicate, if it is derived by restriction,
-                // then skip the one from the base type
+                // then skip the one from the base type, first, checking constraints 
                 
                 int temp = fSchemaGrammar.getAttributeDeclIndex(typeInfo.templateElementIndex, fTempAttributeDecl.name);
                 if ( temp > -1) {
                     if (typeInfo.derivedBy==SchemaSymbols.RESTRICTION) {
+                        //
+                        // derivation-ok-restriction.  Constraint 2.1.1
+                        // 
+                        fTemp2AttributeDecl.clear();
+                        fSchemaGrammar.getAttributeDecl(temp, fTemp2AttributeDecl);
+                        if (!(checkSimpleTypeDerivationOK(
+                               fTemp2AttributeDecl.datatypeValidator,
+                               fTempAttributeDecl.datatypeValidator))) {
+                           throw new ComplexTypeRecoverableError("derivation-ok-restriction.2.1.1:  Type of attribute '" + fStringPool.toString(fTempAttributeDecl.name.localpart) + "' in derivation must be a restriction of type of attribute in base");
+                        }
+                                    
                         attDefIndex = fSchemaGrammar.getNextAttributeDeclIndex(attDefIndex);
                         continue;
                     }
@@ -3362,14 +3374,6 @@ public class TraverseSchema implements
                                           fTempAttributeDecl.list);
                 attDefIndex = aGrammar.getNextAttributeDeclIndex(attDefIndex);
             }
-        }
-
-        if ((attWildcard != null) && (baseAttWildcard != null) && 
-            (typeInfo.derivedBy==SchemaSymbols.EXTENSION)) {
-              // cos-ct-extends.1.3
-              // REVISIT: check that the base AttWildcard is a subset of the derived one 
-              // as per Wildcard Subset Consraints (3.10.6)
-              //
         }
 
         // att wildcard will inserted after all attributes were processed
@@ -5419,41 +5423,12 @@ int aaaa= 1;
             } 
         } else if (dv != null) { // do simpleType case...
             // first, check for type relation.
-            DatatypeValidator dTemp = dv; 
-            for(; dTemp != null; dTemp = dTemp.getBaseValidator()) {
-                // WARNING!!!  This uses comparison by reference andTemp is thus inherently suspect!
-                if(dTemp == substitutionGroupEltDV) break;
+            if (!(checkSimpleTypeDerivationOK(dv,substitutionGroupEltDV))) {
+               // REVISIT:  localize
+               reportGenericSchemaError("Element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) + " has a type which does not derive from the type of the element at the head of the substitution group");
+               noErrorSoFar = false;
             }
-            if (dTemp == null) {
-                // now if substitutionGroupEltDV is a union, then we can
-                // derive from it if we derive from any of its members' types.  
-                if(substitutionGroupEltDV instanceof UnionDatatypeValidator) {
-                    // dv must derive from one of its members...
-                    Vector subUnionMemberDV = ((UnionDatatypeValidator)substitutionGroupEltDV).getBaseValidators();
-                    int subUnionSize = subUnionMemberDV.size();
-                    boolean found = false;
-                    for (int i=0; i<subUnionSize && !found; i++) {
-                        DatatypeValidator dTempSub = (DatatypeValidator)subUnionMemberDV.elementAt(i); 
-                        DatatypeValidator dTempOrig = dv; 
-                        for(; dTempOrig != null; dTempOrig = dTempOrig.getBaseValidator()) {
-                            // WARNING!!!  This uses comparison by reference andTemp is thus inherently suspect!
-                            if(dTempSub == dTempOrig) {
-                                found = true;
-                                break;
-                            }
-                        }
-                    }
-                    if(!found) {
-                        // REVISIT:  localize
-                        reportGenericSchemaError("Element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) + " has a type which does not derive from the type of the element at the head of the substitution group");
-                        noErrorSoFar = false;
-                    }
-                } else {
-                    // REVISIT:  localize
-                    reportGenericSchemaError("Element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) + " has a type which does not derive from the type of the element at the head of the substitution group");
-                    noErrorSoFar = false;
-                }
-            } else { // now let's see if substitutionGroup element allows this:
+            else { // now let's see if substitutionGroup element allows this:
                 if((SchemaSymbols.RESTRICTION & fSchemaGrammar.getElementDeclFinalSet(substitutionGroupElementDeclIndex)) != 0) {
                     noErrorSoFar = false;
                     // REVISIT:  localize
@@ -5465,6 +5440,46 @@ int aaaa= 1;
         } 
     }
     
+    //
+    // A utility method to check whether a particular datatypevalidator d, was validly 
+    // derived from another datatypevalidator, b
+    // 
+    private boolean checkSimpleTypeDerivationOK(DatatypeValidator d, DatatypeValidator b) {
+       DatatypeValidator dTemp = d; 
+       for(; dTemp != null; dTemp = dTemp.getBaseValidator()) {
+           // WARNING!!!  This uses comparison by reference andTemp is thus inherently suspect!
+           if(dTemp == b) break;
+       }
+       if (dTemp == null) {
+           // now if b is a union, then we can
+           // derive from it if we derive from any of its members' types.  
+           if(b instanceof UnionDatatypeValidator) {
+               // d must derive from one of its members...
+               Vector subUnionMemberDV = ((UnionDatatypeValidator)b).getBaseValidators();
+               int subUnionSize = subUnionMemberDV.size();
+               boolean found = false;
+               for (int i=0; i<subUnionSize && !found; i++) {
+                   DatatypeValidator dTempSub = (DatatypeValidator)subUnionMemberDV.elementAt(i); 
+                   DatatypeValidator dTempOrig = d; 
+                   for(; dTempOrig != null; dTempOrig = dTempOrig.getBaseValidator()) {
+                       // WARNING!!!  This uses comparison by reference andTemp is thus inherently suspect!
+                       if(dTempSub == dTempOrig) {
+                           found = true;
+                           break;
+                       }
+                   }
+               }
+               if(!found) {
+                  return false;
+               }
+           } else {
+               return false;         
+           }
+       } 
+
+    return true;
+    }
+
     // this originally-simple method is much -complicated by the fact that, when we're 
     // redefining something, we've not only got to look at the space of the thing
     // we're redefining but at the original schema too.
