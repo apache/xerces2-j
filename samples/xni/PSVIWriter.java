@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.
+ * Copyright (c) 1999-2003 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,19 +57,43 @@
 
 package xni;
 
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Stack;
+import java.util.Vector;
 
+import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.impl.Constants;
+import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.psvi.StringList;
+import org.apache.xerces.impl.xs.psvi.XSAnnotation;
+import org.apache.xerces.impl.xs.psvi.XSAttributeDeclaration;
+import org.apache.xerces.impl.xs.psvi.XSAttributeGroupDefinition;
+import org.apache.xerces.impl.xs.psvi.XSAttributeUse;
+import org.apache.xerces.impl.xs.psvi.XSComplexTypeDefinition;
+import org.apache.xerces.impl.xs.psvi.XSConstants;
+import org.apache.xerces.impl.xs.psvi.XSElementDeclaration;
+import org.apache.xerces.impl.xs.psvi.XSFacet;
+import org.apache.xerces.impl.xs.psvi.XSIDCDefinition;
+import org.apache.xerces.impl.xs.psvi.XSModel;
+import org.apache.xerces.impl.xs.psvi.XSModelGroup;
+import org.apache.xerces.impl.xs.psvi.XSModelGroupDefinition;
+import org.apache.xerces.impl.xs.psvi.XSMultiValueFacet;
+import org.apache.xerces.impl.xs.psvi.XSNamedMap;
+import org.apache.xerces.impl.xs.psvi.XSNamespaceItem;
+import org.apache.xerces.impl.xs.psvi.XSNamespaceItemList;
 import org.apache.xerces.impl.xs.psvi.XSNotationDeclaration;
+import org.apache.xerces.impl.xs.psvi.XSObject;
+import org.apache.xerces.impl.xs.psvi.XSObjectList;
+import org.apache.xerces.impl.xs.psvi.XSParticle;
 import org.apache.xerces.impl.xs.psvi.XSSimpleTypeDefinition;
 import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
+import org.apache.xerces.impl.xs.psvi.XSWildcard;
+import org.apache.xerces.util.DOMUtil;
+import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLAttributesImpl;
+import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
@@ -87,85 +111,51 @@ import org.apache.xerces.xni.parser.XMLDocumentSource;
 import org.apache.xerces.xni.psvi.AttributePSVI;
 import org.apache.xerces.xni.psvi.ElementPSVI;
 import org.apache.xerces.xni.psvi.ItemPSVI;
-import org.apache.xml.serialize.EncodingInfo;
-import org.apache.xml.serialize.IndentPrinter;
-import org.apache.xml.serialize.LineSeparator;
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.Printer;
-
+import org.w3c.dom.Attr;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
  * This class is a intersepts XNI events and serialized
  * XML infoset and Post Schema Validation Infoset.
  * 
  * @author Arun  Yadav,Sun Miscrosystem.
+ * @author Peter McCracken, IBM
  * @version $Id$
  */
-public class PSVIWriter
-implements XMLComponent, XMLDocumentFilter {
+public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
 
-
-    public static final String XERCES_PSVI_NS = "http://apache.org/xml/2001/PSVInfosetExtension";
-
-    /** Property identifier: Namespace Binder  */
-    protected static final String NAMESPACE_BINDER =
-    Constants.XERCES_PROPERTY_PREFIX + Constants.NAMESPACE_BINDER_PROPERTY;
-
-    /** Property identifier: symbol table. */
-    protected static final String SYMBOL_TABLE =
-    Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
+    public static final String XERCES_PSVI_NS =
+        "http://apache.org/xml/2001/PSVInfosetExtension";
 
     /** Feature id: augment Post-Schema-Validation-Infoset */
     protected static final String PSVINFOSET =
-    Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_AUGMENT_PSVI;
+        Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_AUGMENT_PSVI;
 
     /** Feature id: include ignorable whitespace. */
     protected static final String INCLUDE_IGNORABLE_WHITESPACE =
-    "http://apache.org/xml/features/dom/include-ignorable-whitespace";
-
-    protected static final String PSVI_OUTPUT ="psvi_output.xml";
+        "http://apache.org/xml/features/dom/include-ignorable-whitespace";
 
     /** Include ignorable whitespace. */
     protected boolean fIncludeIgnorableWhitespace;
 
     /** Recognized features. */
-    private static final String[] RECOGNIZED_FEATURES = {
-        NAMESPACE_BINDER,
-        INCLUDE_IGNORABLE_WHITESPACE,
-        PSVINFOSET,
-    };
+    private static final String[] RECOGNIZED_FEATURES =
+        { INCLUDE_IGNORABLE_WHITESPACE, PSVINFOSET, };
 
     /** Feature defaults. */
-    private static final Boolean[] FEATURE_DEFAULTS = {
-        Boolean.TRUE, // ???
-        Boolean.TRUE, // ???
-        null,
-    };
+    private static final Boolean[] FEATURE_DEFAULTS = { null, null, };
 
     /** Recognized properties. */
-    private static final String[] RECOGNIZED_PROPERTIES={
-        SYMBOL_TABLE,
+    private static final String[] RECOGNIZED_PROPERTIES = {
     };
 
     /** Property defaults. */
     private static final Object[] PROPERTY_DEFAULTS = {
-        null,
     };
 
     /** PSVInfoset */
     protected boolean fPSVInfoset;
-
-    /** Symbol: "". */
-    private String fEmptySymbol;
-
-    /** Symbol: "xml". */
-    private String fXmlSymbol;
-
-    /** Symbol: "xmlns". */
-    private String fXmlnsSymbol;
-
-    /** XMLNS namespace: XML-Infoset */
-    public static final String XMLNS_URI ="http://www.w3.org/2000/xmlns/";
 
     /** Document handler. */
     protected XMLDocumentHandler fDocumentHandler;
@@ -173,46 +163,48 @@ implements XMLComponent, XMLDocumentFilter {
     /** Document source */
     protected XMLDocumentSource fDocumentSource;
 
-    /** Symbol table. */
-    protected SymbolTable fSymbolTable;
-
-    /** Namespace Context*/
+    /** The namespace context for the received event stream */
     protected NamespaceContext fNamespaceContext;
 
-    /** Attribute QName. */
-    private QName fAttrQName = new QName();
+    /** The namespace context for the new event stream */
+    protected NamespaceContext fPSVINamespaceContext;
+
+    /** Document Location */
+    protected XMLLocator fDocumentLocation;
 
     /** Attributes and Element Info  is  cached in stack */
-    private Stack  _elementState =new Stack();
+    private Stack _elementState = new Stack();
 
-    /** The output stream. */
-    private OutputStream    _output;
+    /** The number used for anonymous types */
+    protected int fAnonNum;
 
-    /** The underlying writer. */
-    private java.io.Writer _writer;
+    /** The number that stores the indent level */
+    protected int fIndent;
 
-    private EncodingInfo    _encodingInfo;
+    /** The map used to store IDs for types and elements */
+    protected HashMap fIDMap;
 
-    private final StringBuffer fErrorBuffer = new StringBuffer();
+    /** A list of ids for defined XSObjects */
+    protected Vector fDefined;
 
-    /** The printer used for printing text parts. */
-    protected Printer       _printer;
+    private char[] fIndentChars =
+        { '\t', '\t', '\t', '\t', '\t', '\t', '\t', '\t' };
 
+    private XMLString newLine = new XMLString(new char[] { '\n' }, 0, 1);
 
     public PSVIWriter() {
-        System.out.println("Generating Schema Information Set Contribution (PSVI) \n"
-                           + "which follow as a consequence of validation and/or assessment.");
-
+        /*
+        System.out.println(
+            "Generating Schema Information Set Contribution (PSVI) \n"
+                + "which follow as a consequence of validation and/or assessment.");
+        
         System.out.println("NOTE: Requires use of -s and -v");
-        System.out.println("Output: generated in "+PSVI_OUTPUT);
-
+        System.out.println("Output: generated in " + PSVI_OUTPUT);
+        */
     } // <init>()
 
-    //REVISIT
-    // 1. where to output the PSVI info to user( output console or file)?
-    // 2. Is there any other  better way to format the output.
     public void reset(XMLComponentManager componentManager)
-    throws XNIException {
+        throws XNIException {
 
         try {
             fPSVInfoset = componentManager.getFeature(PSVINFOSET);
@@ -220,34 +212,14 @@ implements XMLComponent, XMLDocumentFilter {
         catch (XMLConfigurationException e) {
             fPSVInfoset = false;
         }
-        fSymbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
-        fIncludeIgnorableWhitespace = componentManager.getFeature(INCLUDE_IGNORABLE_WHITESPACE);
+        fIncludeIgnorableWhitespace =
+            componentManager.getFeature(INCLUDE_IGNORABLE_WHITESPACE);
 
-        // save built-in entity names
-        fEmptySymbol = fSymbolTable.addSymbol("");
-        fXmlSymbol = fSymbolTable.addSymbol("xml");
-        fXmlnsSymbol = fSymbolTable.addSymbol("xmlns");
-        fErrorBuffer.setLength(0);
-        try {
-            OutputFormat outputFormat = new OutputFormat();
-            outputFormat.setIndenting(true);
-            outputFormat.setLineSeparator(LineSeparator.Windows);
-            outputFormat.setLineWidth(150);
-            outputFormat.setOmitComments(false);
-            outputFormat.setOmitDocumentType(false);
-            outputFormat.setOmitXMLDeclaration(false);
-
-            FileOutputStream fos = new FileOutputStream(PSVI_OUTPUT);
-            _output = new BufferedOutputStream(fos);
-
-            _encodingInfo = outputFormat.getEncodingInfo();
-            _writer = _encodingInfo.getWriter(_output);
-
-            _printer = new IndentPrinter( _writer, outputFormat );
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
+        fAnonNum = 1000;
+        fIDMap = new HashMap();
+        fDefined = new Vector();
+        fIndent = 0;
+        fPSVINamespaceContext = new NamespaceSupport();
     } // reset(XMLComponentManager)
 
     /**
@@ -275,7 +247,7 @@ implements XMLComponent, XMLDocumentFilter {
      *                                  this exception.
      */
     public void setFeature(String featureId, boolean state)
-    throws XMLConfigurationException {
+        throws XMLConfigurationException {
     } // setFeature(String,boolean)
 
     /**
@@ -303,7 +275,7 @@ implements XMLComponent, XMLDocumentFilter {
      *                                  this exception.
      */
     public void setProperty(String propertyId, Object value)
-    throws XMLConfigurationException {
+        throws XMLConfigurationException {
 
     } // setProperty(String,Object)
 
@@ -357,18 +329,17 @@ implements XMLComponent, XMLDocumentFilter {
         return fDocumentHandler;
     } // setDocumentHandler(XMLDocumentHandler)
 
-
     //
     // XMLDocumentHandler methods
     //
 
     /** Sets the document source */
-    public void setDocumentSource(XMLDocumentSource source){
+    public void setDocumentSource(XMLDocumentSource source) {
         fDocumentSource = source;
     } // setDocumentSource
 
     /** Returns the document source */
-    public XMLDocumentSource getDocumentSource (){
+    public XMLDocumentSource getDocumentSource() {
         return fDocumentSource;
     } // getDocumentSource
 
@@ -395,13 +366,12 @@ implements XMLComponent, XMLDocumentFilter {
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startGeneralEntity(String name,
-                            XMLResourceIdentifier identifier,
-                            String encoding, Augmentations augs)
-    throws XNIException {
-        if (fDocumentHandler != null) {
-            fDocumentHandler.startGeneralEntity(name, identifier, encoding, augs);
-        }
+    public void startGeneralEntity(
+        String name,
+        XMLResourceIdentifier identifier,
+        String encoding,
+        Augmentations augs)
+        throws XNIException {
     } // startEntity(String,String,String,String,String)
 
     /**
@@ -422,29 +392,49 @@ implements XMLComponent, XMLDocumentFilter {
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void textDecl(String version, String encoding, Augmentations augs)
-    throws XNIException {
-        if (fDocumentHandler != null) {
-            fDocumentHandler.textDecl(version, encoding, augs);
-        }
+        throws XNIException {
     } // textDecl(String,String)
 
     /**
      * The start of the document.
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocument(XMLLocator locator, String encoding, 
-                              NamespaceContext namespaceContext, Augmentations augs)
-    throws XNIException {
+    public void startDocument(
+        XMLLocator locator,
+        String encoding,
+        NamespaceContext namespaceContext,
+        Augmentations augs)
+        throws XNIException {
         fNamespaceContext = namespaceContext;
-        if (fPSVInfoset) {
-            printIndentTag("<document"+
-                           " xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'"+
-                           " xmlns:psv='"+ XERCES_PSVI_NS+"'"+
-                           " xmlns='http://www.w3.org/2001/05/XMLInfoset'>");
-        }
+        fDocumentLocation = locator;
+
+        fPSVINamespaceContext.declarePrefix(
+            "xsi",
+            "http://www.w3.org/2001/XMLSchema-instance");
+        fPSVINamespaceContext.declarePrefix("psv", XERCES_PSVI_NS);
+        fPSVINamespaceContext.declarePrefix(
+            "",
+            "http://www.w3.org/2001/05/XMLInfoset");
+
         if (fDocumentHandler != null) {
-            fDocumentHandler.startDocument(locator, encoding, namespaceContext, augs);
+            fDocumentHandler.startDocument(
+                locator,
+                "UTF-8",
+                fPSVINamespaceContext,
+                null);
         }
+
+        Vector attributes = new Vector();
+        attributes.add("xmlns:xsi");
+        attributes.add("http://www.w3.org/2001/XMLSchema-instance");
+        attributes.add(XMLSymbols.fCDATASymbol);
+        attributes.add("xmlns:psv");
+        attributes.add(XERCES_PSVI_NS);
+        attributes.add(XMLSymbols.fCDATASymbol);
+        attributes.add("xmlns");
+        attributes.add("http://www.w3.org/2001/05/XMLInfoset");
+        attributes.add(XMLSymbols.fCDATASymbol);
+        sendIndentedElement("document", attributes);
     } // startDocument(XMLLocator,String)
 
     /**
@@ -460,16 +450,15 @@ implements XMLComponent, XMLDocumentFilter {
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void xmlDecl(String version, String encoding, String standalone, Augmentations augs)
-    throws XNIException {
-        if (fPSVInfoset) {
-            printElement("characterEncodingScheme",encoding);
-            printElement("standalone",standalone);
-            printElement("version",version);
-        }
-        if (fDocumentHandler != null) {
-            fDocumentHandler.xmlDecl(version, encoding, standalone, augs);
-        }
+    public void xmlDecl(
+        String version,
+        String encoding,
+        String standalone,
+        Augmentations augs)
+        throws XNIException {
+        sendElementEvent("characterEncodingScheme", encoding);
+        sendElementEvent("standalone", standalone);
+        sendElementEvent("version", version);
     } // xmlDecl(String,String,String)
 
     /**
@@ -484,21 +473,19 @@ implements XMLComponent, XMLDocumentFilter {
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void doctypeDecl(String rootElement,
-                            String publicId, String systemId, Augmentations augs)
-    throws XNIException {
-        if (fPSVInfoset) {
-            checkForChildren();
-            printIndentTag("<docTypeDeclaration>");
-            if (publicId != null)
-                printElement("publicIdentifier", publicId);
-            if (systemId != null)
-                printElement("systemIdentifier", systemId);
-            printUnIndentTag("</docTypeDeclaration>");
-        }
-        if (fDocumentHandler != null) {
-            fDocumentHandler.doctypeDecl(rootElement, publicId, systemId, augs);
-        }
+    public void doctypeDecl(
+        String rootElement,
+        String publicId,
+        String systemId,
+        Augmentations augs)
+        throws XNIException {
+        checkForChildren();
+        sendIndentedElement("docTypeDeclaration");
+        if (publicId != null)
+            sendElementEvent("publicIdentifier", publicId);
+        if (systemId != null)
+            sendElementEvent("systemIdentifier", systemId);
+        sendUnIndentedElement("docTypeDeclaration");
     } // doctypeDecl(String,String,String)
 
     /**
@@ -509,16 +496,12 @@ implements XMLComponent, XMLDocumentFilter {
      *
      * @throws XNIException Thrown by application to signal an error.
      */
-    public void comment(XMLString text, Augmentations augs) throws XNIException {
-        if (fPSVInfoset) {
-            checkForChildren();
-            printIndentTag("<comment>");
-            printElement("content", text.toString());
-            printUnIndentTag("</comment>");
-        }
-        if (fDocumentHandler != null) {
-            fDocumentHandler.comment(text, augs);
-        }
+    public void comment(XMLString text, Augmentations augs)
+        throws XNIException {
+        checkForChildren();
+        sendIndentedElement("comment");
+        sendElementEvent("content", text);
+        sendUnIndentedElement("comment");
     } // comment(XMLString)
 
     /**
@@ -538,21 +521,17 @@ implements XMLComponent, XMLDocumentFilter {
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void processingInstruction(String target,
-                                      XMLString data, Augmentations augs)
-    throws XNIException {
-        if (fPSVInfoset) {
-            checkForChildren();
-            printIndentTag("<processingInstruction>");
-            printElement("target",target);
-            printElement("content",data.toString());
-            printUnIndentTag("</processingInstruction>");
-        }
-        if (fDocumentHandler != null) {
-            fDocumentHandler.processingInstruction(target, data, augs);
-        }
+    public void processingInstruction(
+        String target,
+        XMLString data,
+        Augmentations augs)
+        throws XNIException {
+        checkForChildren();
+        sendIndentedElement("processingInstruction");
+        sendElementEvent("target", target);
+        sendElementEvent("content", data);
+        sendUnIndentedElement("processingInstruction");
     } // processingInstruction(String,XMLString)
-
 
     /**
      * Binds the namespaces. This method will handle calling the
@@ -569,26 +548,27 @@ implements XMLComponent, XMLDocumentFilter {
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startElement(QName element,
-                             XMLAttributes attributes, Augmentations augs)
-    throws XNIException {
+    public void startElement(
+        QName element,
+        XMLAttributes attributes,
+        Augmentations augs)
+        throws XNIException {
+        if (attributes == null)
+            System.err.println("null attributes!");
+        checkForChildren();
+
+        _elementState.push(new ElementState(true));
+
+        sendIndentedElement("element");
+        sendElementEvent("namespaceName", element.uri);
+        sendElementEvent("localName", element.localpart);
+        sendElementEvent("prefix", element.prefix);
+        processAttributes(attributes);
+        processInScopeNamespaces();
+        sendElementEvent("baseURI", fDocumentLocation.getBaseSystemId());
         if (fPSVInfoset) {
-            checkForChildren();
-
-            _elementState.push(new ElementState(true));
-
-            printIndentTag("<element>");
-            printElement("namespaceName" , element.uri);
-            printElement("localName" , element.localpart);
-            printElement("prefix" , element.prefix);
-            printAttributes(attributes);
-            printInScopeNamespaces();
-            printPSVIStartElement(augs);
+            processPSVIStartElement(augs);
         }
-        if (fDocumentHandler != null) {
-            fDocumentHandler.startElement(element, attributes, augs);
-        }
-
     } // startElement(QName,XMLAttributes)
 
     /**
@@ -600,24 +580,26 @@ implements XMLComponent, XMLDocumentFilter {
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void emptyElement(QName element, XMLAttributes attributes, Augmentations augs)
-    throws XNIException {
+    public void emptyElement(
+        QName element,
+        XMLAttributes attributes,
+        Augmentations augs)
+        throws XNIException {
+        sendIndentedElement("element");
+        sendElementEvent("namespaceName", element.uri);
+        sendElementEvent("localName", element.localpart);
+        sendElementEvent("prefix", element.prefix);
+        processAttributes(attributes);
+        processInScopeNamespaces();
+        sendElementEvent("baseURI", fDocumentLocation.getBaseSystemId());
         if (fPSVInfoset) {
-            printIndentTag("<element>");
-            printElement("namespaceName" , element.uri);
-            printElement("localName" , element.localpart);
-            printElement("prefix" , element.prefix);
-            printAttributes(attributes);
-            printInScopeNamespaces();
-            printTag("<children/>");
-            printPSVIStartElement(augs);
-            printPSVIEndElement(augs);
-            printUnIndentTag("</element>");
+            processPSVIStartElement(augs);
         }
-        if (fDocumentHandler != null) {
-            fDocumentHandler.emptyElement(element, attributes, augs);
+        sendEmptyElementEvent("children");
+        if (fPSVInfoset) {
+            processPSVIEndElement(augs);
         }
-
+        sendUnIndentedElement("element");
     } // emptyElement(QName,XMLAttributes)
 
     /**
@@ -629,24 +611,13 @@ implements XMLComponent, XMLDocumentFilter {
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void characters(XMLString text, Augmentations augs)
-    throws XNIException {
-        if (fPSVInfoset) {
-            checkForChildren();
-            // REVISIT: 2.6. Character Information Items requires character property for   
-            //          each character. However, it also says:   
-            // "Each character is a logically separate information item,   
-            //  but XML applications are free to chunk characters into larger   
-            //  groups as necessary or desirable"   
-            //  XSV outputs each character separately.   
-            printIndentTag("<character>");
-            printElement("characterCode", text.toString());
-            printElement("elementContentWhitespace", "false");
-            printUnIndentTag("</character>");
-
-        }
-        if (fDocumentHandler != null) {
-            fDocumentHandler.characters(text,augs);
-        }
+        throws XNIException {
+        checkForChildren();
+        sendIndentedElement("character");
+        sendElementEvent("textContent", text);
+        // detecting whitespace is not relevant here
+        // this is only useful if characters are output individually
+        sendUnIndentedElement("character");
     } // characters(XMLString)
 
     /**
@@ -663,18 +634,9 @@ implements XMLComponent, XMLDocumentFilter {
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void ignorableWhitespace(XMLString text, Augmentations augs)
-    throws XNIException {
-        if (fPSVInfoset && fIncludeIgnorableWhitespace) {
-            checkForChildren();
-            // REVISIT: see characters()
-            printIndentTag("<character>");
-            printElement("characterCode", text.toString());
-            printElement("elementContentWhitespace", "true");
-            printUnIndentTag("</character>");
-
-        }
-        if (fDocumentHandler != null) {
-            fDocumentHandler.ignorableWhitespace(text, augs);
+        throws XNIException {
+        if (fIncludeIgnorableWhitespace) {
+            this.characters(text, augs);
         }
     } // ignorableWhitespace(XMLString)
 
@@ -687,22 +649,20 @@ implements XMLComponent, XMLDocumentFilter {
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void endElement(QName element, Augmentations augs)
-    throws XNIException {
+        throws XNIException {
+        ElementState fElementState = (ElementState)_elementState.peek();
+        if (fElementState.isEmpty) {
+            sendEmptyElementEvent("children");
+        }
+        else {
+            sendUnIndentedElement("children");
+        }
+        _elementState.pop();
         if (fPSVInfoset) {
-            ElementState fElementState =(ElementState)_elementState.peek();
-            if (fElementState.isEmpty) {
-                printTag("<children/>");
-            }
-            else {
-                printUnIndentTag("</children>");
-            }
-            _elementState.pop();
-            printPSVIEndElement(augs);
-            printUnIndentTag("</element>");
+            processPSVIStartElement(augs);
+            processPSVIEndElement(augs);
         }
-        if (fDocumentHandler != null) {
-            fDocumentHandler.endElement(element, augs);
-        }
+        sendUnIndentedElement("element");
     } // endElement(QName)
 
     /**
@@ -713,9 +673,6 @@ implements XMLComponent, XMLDocumentFilter {
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void startCDATA(Augmentations augs) throws XNIException {
-        if (fDocumentHandler != null) {
-            fDocumentHandler.startCDATA(augs);
-        }
     } // startCDATA()
 
     /**
@@ -725,10 +682,7 @@ implements XMLComponent, XMLDocumentFilter {
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endCDATA( Augmentations augs ) throws XNIException {
-        if (fDocumentHandler != null) {
-            fDocumentHandler.endCDATA(augs);
-        }
+    public void endCDATA(Augmentations augs) throws XNIException {
     } // endCDATA()
 
     /**
@@ -738,30 +692,20 @@ implements XMLComponent, XMLDocumentFilter {
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endDocument( Augmentations augs ) throws XNIException {
-        if (fPSVInfoset) {
-            try {
-                printUnIndentTag("</children>");
-                printElement("documentElement","");
-                //REVISIT : needs to implement the XMLDTDHandler
-                printTag("<notations/>");
-                printTag("<unparsedEntities/>");
+    public void endDocument(Augmentations augs) throws XNIException {
+        sendUnIndentedElement("children");
+        sendElementEvent("documentElement");
+        // these aren't relevent for PSVI
+        sendEmptyElementEvent("notations");
+        sendEmptyElementEvent("unparsedEntities");
 
-                // REVISIT: how can we find out what is the baseURI?
-                printElement("baseURI","");
-                
-                //REVISIT:
-                printElement("allDeclarationsProcessed","true");
-                printUnIndentTag("</document>");
-                _printer.flush();
-            }
-            catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
-        if (fDocumentHandler != null) {
-            fDocumentHandler.endDocument(augs);
-        }
+        sendElementEvent("baseURI", fDocumentLocation.getBaseSystemId());
+
+        // do we ALWAYS process all declarations?  I think so - PJM
+        // this isn't relevant to PSVI
+        sendElementEvent("allDeclarationsProcessed", "true");
+        sendUnIndentedElement("document");
+        fDocumentHandler.endDocument(null);
     } // endDocument()
 
     /**
@@ -776,248 +720,9 @@ implements XMLComponent, XMLDocumentFilter {
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endGeneralEntity(String name, Augmentations augs) throws XNIException {
-        if (fDocumentHandler != null) {
-            fDocumentHandler.endGeneralEntity(name, augs);
-        }
+    public void endGeneralEntity(String name, Augmentations augs)
+        throws XNIException {
     } // endEntity(String)
-
-    
-    /* The following information will be available at the startElement call:
-    * name, namespace, type, notation, validation context
-    *
-    * The following information will be available at the endElement call:
-    * nil, specified, normalized value, member type, validity, error codes,
-    * default
-    */
-    public void printPSVIStartElement(Augmentations augs) {
-        ElementPSVI elemPSVI =(ElementPSVI)augs.getItem(Constants.ELEMENT_PSVI);
-        if (elemPSVI != null) {
-
-            // REVISIT: Should we store the values till end element call?
-        }
-    }
-
-    /* The following information will be available at the startElement call:
-    * name, namespace, type, notation, validation context
-    *
-    * The following information will be available at the endElement call:
-    * nil, specified, normalized value, member type, validity, error codes,
-    * default
-    */
-    public void printPSVIEndElement(Augmentations augs) {
-        ElementPSVI elemPSVI = (ElementPSVI)augs.getItem(Constants.ELEMENT_PSVI);
-        if (elemPSVI != null) {
-
-            printElement("psv:validationContext",elemPSVI.getValidationContext());
-
-            short validity = elemPSVI.getValidity();
-            if (validity == ItemPSVI.VALIDITY_NOTKNOWN) {
-                printElement("psv:validity","unknown");
-            }
-            else if (validity == ItemPSVI.VALIDITY_VALID) {
-                printElement("psv:validity","valid");
-            }
-            else if (validity == ItemPSVI.VALIDITY_INVALID) {
-                printElement("psv:validity","invalid");
-            }
-
-            short validation = elemPSVI.getValidationAttempted();
-            if (validation == ItemPSVI.VALIDATION_NONE) {
-                printElement("psv:validationAttempted","none");
-                return;
-            }
-            else if (validation == ItemPSVI.VALIDATION_PARTIAL) {
-                printElement("psv:validationAttempted","partial");
-            }
-            else if (validation == ItemPSVI.VALIDATION_FULL) {
-                printElement("psv:validationAttempted","full");
-            }
-
-            XSTypeDefinition type = elemPSVI.getTypeDefinition();
-            short definationType = type.getTypeCategory();
-            if (definationType == XSTypeDefinition.SIMPLE_TYPE) {
-                printElement("psv:typeDefinitionType","simple");
-            }
-            else if (definationType == XSTypeDefinition.COMPLEX_TYPE) {
-                printElement("psv:typeDefinitionType","complex");
-            }
-            printElement("psv:typeDefinitionNamespace ",type.getNamespace());
-            printElement("psv:typeDefinitionAnonymous",String.valueOf(type.getAnonymous()));
-            printElement("psv:typeDefinitionName",type.getName());
-
-            XSSimpleTypeDefinition memtype = elemPSVI.getMemberTypeDefinition();
-            if (memtype != null) {
-                printElement("psv:memberTypeDefinitionAnonymous",String.valueOf(memtype.getAnonymous()));
-                printElement("psv:memberTypeDefinitionName",memtype.getName());
-                printElement("psv:memberTypeDefinitionNamespace",memtype.getNamespace());
-            }
-
-            XSNotationDeclaration notation = elemPSVI.getNotation();
-            if (notation != null) {
-                printElement("psv:notationSystem",notation.getSystemId());
-                printElement("psv:notationPublic",notation.getPublicId());
-            }
-
-            //revisit
-            StringList errorCode = elemPSVI.getErrorCodes();
-            if (errorCode != null) {
-                for (int i=0;i<errorCode.getLength();i++) {
-                    fErrorBuffer.append(errorCode.item(i));
-                }
-                printElement("psv:schemaErrorCode",fErrorBuffer.toString());
-                fErrorBuffer.setLength(0);
-            }
-            else {
-                printElement("psv:schemaErrorCode","");
-            }
-            //printElement("psv:nil", String.valueOf(elemPSVI.getIsNil()));
-            printElement("psv:schemaNormalizedValue",elemPSVI.getSchemaNormalizedValue());
-            String specified = elemPSVI.getIsSchemaSpecified()?"schema":"infoset";
-            printElement("psv:schemaSpecified",specified);
-
-        }
-    }
-
-    public void printPSVIAttribute(Augmentations augs) {
-        AttributePSVI attrPSVI =(AttributePSVI)augs.getItem(Constants.ATTRIBUTE_PSVI);
-        if (attrPSVI !=null) {
-
-            printElement("psv:validationContext",attrPSVI.getValidationContext());
-
-            short validity = attrPSVI.getValidity();
-            if (validity == ItemPSVI.VALIDITY_NOTKNOWN) {
-                printElement("psv:validity","unknown");
-            }
-            else if (validity == ItemPSVI.VALIDITY_VALID) {
-                printElement("psv:validity","valid");
-            }
-            else if (validity == ItemPSVI.VALIDITY_INVALID) {
-                printElement("psv:validity","invalid");
-            }
-
-            short validation = attrPSVI.getValidationAttempted();
-            if (validation == ItemPSVI.VALIDATION_NONE) {
-                printElement("psv:validationAttempted","none");
-                return;
-            }
-            else if (validation == ItemPSVI.VALIDATION_FULL) {
-                printElement("psv:validationAttempted","full");
-            }
-
-            StringList errorCode = attrPSVI.getErrorCodes();
-            if (errorCode == null) {
-                printElement("psv:schemaErrorCode","");
-            }
-            else {
-                for (int i=0;i<errorCode.getLength();i++) {
-                    fErrorBuffer.append(errorCode.item(i));
-                }                
-                printElement("psv:schemaErrorCode",fErrorBuffer.toString());
-                fErrorBuffer.setLength(0);
-
-            }
-
-            printElement("psv:schemaNormalizedValue",attrPSVI.getSchemaNormalizedValue());
-            printElement("psv:schemaSpecified", (attrPSVI.getIsSchemaSpecified())?"schema":"infoset");
-
-            XSTypeDefinition type = attrPSVI.getTypeDefinition();
-            XSSimpleTypeDefinition memtype = attrPSVI.getMemberTypeDefinition();
-            short definationType = type.getTypeCategory();
-            if (definationType == XSTypeDefinition.SIMPLE_TYPE) {
-                printElement("psv:typeDefinitionType","simple");
-            }
-
-            printElement("psv:typeDefinitionNamespace",type.getNamespace());
-            printElement("psv:typeDefinitionAnonymous",String.valueOf(type.getAnonymous()));
-            printElement("psv:typeDefinitionName",type.getName());
-            
-            if (memtype != null) {
-                printElement("psv:memberTypeDefinitionAnonymous",String.valueOf(memtype.getAnonymous()));
-                printElement("psv:memberTypeDefinitionName",memtype.getName());
-                printElement("psv:memberTypeDefinitionNamespace",memtype.getNamespace());
-            }
-        }
-    }
-    /**
-     * This method write the element at the currrnt indent  level.
-     *
-     * @param tagname The name of the Element.
-     *
-     * @throws IOEXception
-     */
-    private void printTag(String tagname) {
-        try {
-            _printer.printText(tagname);
-            _printer.breakLine();
-        }
-        catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }//printTag
-    /**
-     * This method write the element at the current indent level and increase
-     * the one level of indentation.
-     *
-     * @param The name of the Element.
-     *
-     * @throws IOException
-     */
-    private void printIndentTag(String tagname) {
-        try {
-            _printer.indent();
-            _printer.printText(tagname);
-            _printer.breakLine();
-        }
-        catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }//printIndentTag
-    /**
-     * This method write the element at the current indent level and decrease
-     * one level of indentation.
-     *
-     * @param the name of the Element.
-     *
-     */
-    private void printUnIndentTag(String tagName) {
-        try {
-            _printer.unindent();
-            _printer.printText(tagName);
-            _printer.breakLine();
-        }
-        catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }//printUnIndentTag
-
-    /**
-     * Write the Element Information Item for each element appearing in the XML
-     * document. One of the element information items is the value of the
-     * [document element] property of the document information item, corresponding
-     * to the root of the element tree, and all other element information items
-     * are accessible by recursively following its [children] property.
-     *
-     * @elementName  Name of the elment.
-     * @elemmentValue  Value of the element
-     */
-    private void printElement(String elementName, String elementValue) {
-        try {
-
-            if (elementValue == null || elementValue == "") {
-                _printer.printText("<"+elementName+" xsi:nil='true'/>");
-                _printer.breakLine();
-                return;
-            }
-            _printer.printText("<"+elementName+">");
-            _printer.printText(elementValue);
-            _printer.printText("</"+elementName+">");
-            _printer.breakLine();
-        }
-        catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }//printElement
 
     /**
      * Write an unordered set of attribute information items, one for each of
@@ -1025,108 +730,104 @@ implements XMLComponent, XMLDocumentFilter {
      * Namespace declarations do not appear in this set. If the element has no
      * attributes, this set has no members.
      */
-    private void printAttributes(XMLAttributes attributes) {
+    private void processAttributes(XMLAttributes attributes) {
         boolean namespaceAttribute = false;
         boolean attrElement = false;
 
-        int attrCount = attributes.getLength();
+        int attrCount = attributes == null ? 0 : attributes.getLength();
 
         if (attrCount == 0) {
-            printTag("<attributes/>");
-            printTag("<namespaceAttributes/>");
+            sendEmptyElementEvent("attributes");
+            sendEmptyElementEvent("namespaceAttributes");
             return;
         }
 
         for (int i = 0; i < attrCount; i++) {
             String localpart = attributes.getLocalName(i);
             String prefix = attributes.getPrefix(i);
-            if (prefix == fXmlnsSymbol || localpart == fXmlnsSymbol) {
-                namespaceAttribute=true;
+            if (prefix == XMLSymbols.PREFIX_XMLNS
+                || localpart == XMLSymbols.PREFIX_XMLNS) {
+                namespaceAttribute = true;
                 continue;
             }
             if (!attrElement)
-                printIndentTag("<attributes>");
-            
-            boolean psviAvailable =  (attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI)!=null);
+                sendIndentedElement("attributes");
 
-            // REVISIT: in XSV attributes that are defaulted from XML Schema 
-            // still appear as an item from XML Infoset and has the same properties
-            // It looks  wrong.
-            //
-            printIndentTag("<attribute>");
-            printElement("namespaceName",attributes.getURI(i));
-            printElement("localName",attributes.getLocalName(i));
-            printElement("prefix",attributes.getPrefix(i));
-            printElement("normalizedValue",attributes.getValue(i));
-            if (!psviAvailable) {
-                // REVISIT: this attribute was defaulted from XML Schema
-                // The following properties become unavailable/ not specified.
-                printElement("specified",String.valueOf(attributes.isSpecified(i)));
-                printElement("attributeType", attributes.getType(i));
-            }  else{
-                printElement("attributeType", null);
+            sendIndentedElement("attribute");
+            sendElementEvent("namespaceName", attributes.getURI(i));
+            sendElementEvent("localName", attributes.getLocalName(i));
+            sendElementEvent("prefix", attributes.getPrefix(i));
+            sendElementEvent("normalizedValue", attributes.getValue(i));
+            sendElementEvent(
+                "specified",
+                String.valueOf(attributes.isSpecified(i)));
+            sendElementEvent("attributeType", attributes.getType(i));
+
+            // this property isn't relevent to PSVI
+            sendElementEvent("references");
+
+            if (fPSVInfoset) {
+                processPSVIAttribute(attributes.getAugmentations(i));
             }
-            
-            // REVISIT: how do we populate this property?
-            printElement("references","");
-            
-            printPSVIAttribute(attributes.getAugmentations(i));
-            printUnIndentTag("</attribute>");
+            sendUnIndentedElement("attribute");
             attrElement = true;
         }
         if (attrElement) {
-            printUnIndentTag("</attributes>");
+            sendUnIndentedElement("attributes");
         }
         else {
-            printTag("<attributes/>");
+            sendEmptyElementEvent("attributes");
         }
 
         if (namespaceAttribute) {
-            printNamespaceAttributes(attributes);
+            processNamespaceAttributes(attributes);
         }
         else {
-            printTag("<namespaceAttributes/>");
+            sendEmptyElementEvent("namespaceAttributes");
         }
-    }//printAttributes
+    } //printAttributes
 
+    /**
+    * Write an unordered set of attribute information items, one for each of
+    * the namespace declarations (specified or defaulted from the DTD) of this
+    * element. A declaration of the form xmlns="", which undeclares the default
+    * namespace, counts as a namespace declaration. By definition, all
+    * namespace attributes (including those named xmlns, whose [prefix]
+    * property has no value) have a namespace URI of
+    * http://www.w3.org/2000/xmlns/. If the element has no namespace
+    * declarations, this set has no members
+    */
+    private void processNamespaceAttributes(XMLAttributes attributes) {
 
-        /**
-     * Write an unordered set of attribute information items, one for each of
-     * the namespace declarations (specified or defaulted from the DTD) of this
-     * element. A declaration of the form xmlns="", which undeclares the default
-     * namespace, counts as a namespace declaration. By definition, all
-     * namespace attributes (including those named xmlns, whose [prefix]
-     * property has no value) have a namespace URI of
-     * http://www.w3.org/2000/xmlns/. If the element has no namespace
-     * declarations, this set has no members
-     */
-    private void printNamespaceAttributes(XMLAttributes attributes) {
-        
+        // we don't need to check for null, since that was checked for in processAttributes()
         int attrCount = attributes.getLength();
 
-        printIndentTag("<namespaceAttributes>");
+        sendIndentedElement("namespaceAttributes");
         for (int i = 0; i < attrCount; i++) {
             String localpart = attributes.getLocalName(i);
             String prefix = attributes.getPrefix(i);
-            if (!(prefix == fXmlnsSymbol || localpart == fXmlnsSymbol))
+            if (!(prefix == XMLSymbols.PREFIX_XMLNS
+                || localpart == XMLSymbols.PREFIX_XMLNS))
                 continue;
-            printIndentTag("<attribute>");
-            printElement("namespaceName",XMLNS_URI);
-            printElement("localName",localpart);
-            printElement("prefix",prefix);
-            printElement("normalizedValue",attributes.getValue(i));
-            printElement("specified",String.valueOf(attributes.isSpecified(i)));
-            printElement("attributeType",attributes.getType(i));
-            // REVISIT: how do we populate this property?
-            printElement("references","");
-            printPSVIAttribute(attributes.getAugmentations(i));
-            printUnIndentTag("</attribute>");
+            sendIndentedElement("attribute");
+            sendElementEvent("namespaceName", NamespaceContext.XMLNS_URI);
+            sendElementEvent("localName", localpart);
+            sendElementEvent("prefix", prefix);
+            sendElementEvent("normalizedValue", attributes.getValue(i));
+            sendElementEvent(
+                "specified",
+                String.valueOf(attributes.isSpecified(i)));
+            sendElementEvent("attributeType", attributes.getType(i));
+            // this property isn't relevent to PSVI
+            sendElementEvent("references");
+            if (fPSVInfoset) {
+                processPSVIAttribute(attributes.getAugmentations(i));
+            }
+            sendUnIndentedElement("attribute");
         }
-        printUnIndentTag("</namespaceAttributes>");
-        
-         
-    }//printNamespacesAttributes()
+        sendUnIndentedElement("namespaceAttributes");
 
+    } //printNamespacesAttributes()
 
     /**
      * Write an unordered set of namespace information items, one for each of the
@@ -1140,58 +841,1393 @@ implements XMLComponent, XMLDocumentFilter {
      * form xmlns="", which does not declare a namespace but rather undeclares
      * the default namespace
      */
-	private void printInScopeNamespaces() {
-		printIndentTag("<inScopeNamespaces>");
-		printIndentTag("<namespace>");
-		// print 'xml' binding
-		printElement("prefix", "xml");
-		printElement("namespaceName", NamespaceContext.XML_URI);
-        printUnIndentTag("</namespace>");
-		Enumeration enum = fNamespaceContext.getAllPrefixes();
-		while (enum.hasMoreElements()) {
-            printIndentTag("<namespace>");
+    private void processInScopeNamespaces() {
+        sendIndentedElement("inScopeNamespaces");
+        sendIndentedElement("namespace");
+        // print 'xml' binding
+        sendElementEvent("prefix", "xml");
+        sendElementEvent("namespaceName", NamespaceContext.XML_URI);
+        sendUnIndentedElement("namespace");
+        Enumeration enum = fNamespaceContext.getAllPrefixes();
+        while (enum.hasMoreElements()) {
+            sendIndentedElement("namespace");
 
-			String prefix = (String) enum.nextElement();
-			String uri = fNamespaceContext.getURI(prefix);
-			printElement("prefix", prefix);
-			printElement("namespaceName", uri);
-			printUnIndentTag("</namespace>");
+            String prefix = (String)enum.nextElement();
+            String uri = fNamespaceContext.getURI(prefix);
+            sendElementEvent("prefix", prefix);
+            sendElementEvent("namespaceName", uri);
+            sendUnIndentedElement("namespace");
 
-		}
-		printUnIndentTag("</inScopeNamespaces>");
-	} //printinScopeNamespaces()
+        }
+        sendUnIndentedElement("inScopeNamespaces");
+    } //printinScopeNamespaces()
+
+    /* The following information will be available at the startElement call:
+    * name, namespace, type, notation, validation context
+    *
+    * The following information will be available at the endElement call:
+    * nil, specified, normalized value, member type, validity, error codes,
+    * default
+    */
+    private void processPSVIStartElement(Augmentations augs) {
+        if (augs == null)
+            return;
+        ElementPSVI elemPSVI =
+            (ElementPSVI)augs.getItem(Constants.ELEMENT_PSVI);
+        if (elemPSVI != null) {
+            // Should we store the values till end element call? -- AY
+            // I don't think so -- PJM
+        }
+    }
+
+    /* The following information will be available at the startElement call:
+    * name, namespace, type, notation, validation context
+    *
+    * The following information will be available at the endElement call:
+    * nil, specified, normalized value, member type, validity, error codes,
+    * default
+    */
+    private void processPSVIEndElement(Augmentations augs) {
+        if (augs == null)
+            return;
+        ElementPSVI elemPSVI =
+            (ElementPSVI)augs.getItem(Constants.ELEMENT_PSVI);
+        if (elemPSVI != null) {
+
+            processPSVISchemaInformation(elemPSVI);
+            sendElementEvent(
+                "psv:validationAttempted",
+                this.translateValidationAttempted(
+                    elemPSVI.getValidationAttempted()));
+            // Would rather getValidationContext() return element info item.
+            // This is non the same as XSV.
+            sendElementEvent(
+                "psv:validationContext",
+                elemPSVI.getValidationContext());
+
+            sendElementEvent(
+                "psv:validity",
+                this.translateValidity(elemPSVI.getValidity()));
+
+            processPSVISchemaErrorCode(elemPSVI.getErrorCodes());
+            sendElementEvent(
+                "psv:schemaNormalizedValue",
+                elemPSVI.getSchemaNormalizedValue());
+            sendElementEvent(
+                "psv:schemaSpecified",
+                elemPSVI.getIsSchemaSpecified() ? "schema" : "infoset");
+            sendElementEvent("psv:schemaDefault", elemPSVI.getSchemaDefault());
+
+            processPSVITypeDefinitionRef(
+                "psv:typeDefinition",
+                elemPSVI.getTypeDefinition());
+            processPSVITypeDefinitionRef(
+                "psv:memberTypeDefinition",
+                elemPSVI.getMemberTypeDefinition());
+            // A value for nil is not necessary, since we output declaration, instead.
+            // See http://www.w3.org/TR/xmlschema-1/#section-Element-Declaration-Validation-Rules.
+            sendElementEvent("psv:nil");
+
+            sendIndentedElement("psv:declaration");
+            processPSVIElementRef(
+                "psv:elementDeclaration",
+                elemPSVI.getElementDeclaration());
+            sendUnIndentedElement("psv:declaration");
+            processPSVIElementRef("psv:notation", elemPSVI.getNotation());
+            // idref table does not have to be exposed, and is not exposed
+            sendElementEvent("psv:idIdrefTable");
+            // identity constraint table does not have to be exposed, and is not exposed
+            sendElementEvent("psv:identityConstraintTable");
+        }
+    }
+
+    private void processPSVIAttribute(Augmentations augs) {
+        if (augs == null)
+            return;
+        AttributePSVI attrPSVI =
+            (AttributePSVI)augs.getItem(Constants.ATTRIBUTE_PSVI);
+        if (attrPSVI != null) {
+            sendElementEvent(
+                "psv:validationAttempted",
+                this.translateValidationAttempted(
+                    attrPSVI.getValidationAttempted()));
+            // Would rather getValidationContext() return element info item.
+            // This is not the same as XSV.
+            sendElementEvent(
+                "psv:validationContext",
+                attrPSVI.getValidationContext());
+
+            sendElementEvent(
+                "psv:validity",
+                this.translateValidity(attrPSVI.getValidity()));
+
+            processPSVISchemaErrorCode(attrPSVI.getErrorCodes());
+            sendElementEvent(
+                "psv:schemaNormalizedValue",
+                attrPSVI.getSchemaNormalizedValue());
+            sendElementEvent(
+                "psv:schemaSpecified",
+                attrPSVI.getIsSchemaSpecified() ? "schema" : "infoset");
+            sendElementEvent("psv:schemaDefault", attrPSVI.getSchemaDefault());
+
+            processPSVITypeDefinitionRef(
+                "psv:typeDefinition",
+                attrPSVI.getTypeDefinition());
+            processPSVITypeDefinitionRef(
+                "psv:memberTypeDefinition",
+                attrPSVI.getMemberTypeDefinition());
+
+            if (attrPSVI.getAttributeDeclaration() == null) {
+                sendElementEvent("psv:declaration");
+            }
+            else {
+                sendIndentedElement("psv:declaration");
+                processPSVIAttributeDeclarationRef(
+                    attrPSVI.getAttributeDeclaration());
+                sendUnIndentedElement("psv:declaration");
+            }
+        }
+    }
+
+    private void processPSVISchemaErrorCode(StringList errorCodes) {
+        StringBuffer errorBuffer = new StringBuffer();
+        if (errorCodes != null && errorCodes.getLength() > 0) {
+            for (int i = 0; i < errorCodes.getLength() - 1; i++) {
+                errorBuffer.append(errorCodes.item(i));
+                errorBuffer.append(" ");
+            }
+            errorBuffer.append(errorCodes.item(errorCodes.getLength() - 1));
+        }
+        sendElementEvent("psv:schemaErrorCode", errorBuffer.toString());
+    }
+
+    private void processPSVISchemaInformation(ElementPSVI elemPSVI) {
+        if (elemPSVI == null)
+            return;
+        XSModel schemaInfo = elemPSVI.getSchemaInformation();
+        XSNamespaceItemList schemaNamespaces =
+            schemaInfo == null ? null : schemaInfo.getNamespaceItems();
+        if (schemaNamespaces == null || schemaNamespaces.getLength() == 0) {
+            sendElementEvent("psv:schemaInformation");
+        }
+        else {
+            sendIndentedElement("psv:schemaInformation");
+            for (int i = 0; i < schemaNamespaces.getLength(); i++) {
+                processPSVINamespaceItem(schemaNamespaces.item(i));
+            }
+            sendUnIndentedElement("psv:schemaInformation");
+        }
+    }
+
+    private void processPSVINamespaceItem(XSNamespaceItem item) {
+        if (item == null)
+            return;
+
+        String namespace = item.getSchemaNamespace();
+        if (namespace != null && namespace.equals(Constants.NS_XMLSCHEMA)) {
+            // we don't want to output information for schema for schemas
+            return;
+        }
+
+        sendIndentedElement("psv:namespaceSchemaInformation");
+        sendElementEvent("psv:schemaNamespace", namespace);
+
+        // print out schema components
+        processPSVISchemaComponents(item);
+
+        // print out schema document information
+        processPSVISchemaDocuments(item);
+
+        // print out schema annotations
+        processPSVISchemaAnnotations(item.getAnnotations());
+        sendUnIndentedElement("psv:namespaceSchemaInformation");
+    }
+
+    private void processPSVISchemaDocuments(XSNamespaceItem item) {
+        StringList locations =
+            item == null ? null : item.getDocumentLocations();
+        if (locations == null || locations.getLength() == 0) {
+            sendEmptyElementEvent("psv:schemaDocuments");
+            return;
+        }
+        sendIndentedElement("psv:schemaDocuments");
+        for (int i = 0; i < locations.getLength(); i++) {
+            sendIndentedElement("psv:schemaDocument");
+            sendElementEvent("psv:documentLocation", locations.item(i));
+            // It's supposed to point to a <document> element, and we're not really
+            // dealing with those (except for the one at the root)
+            sendElementEvent("psv:document");
+            sendUnIndentedElement("psv:schemaDocument");
+        }
+        sendUnIndentedElement("psv:schemaDocuments");
+    }
+
+    private void processPSVISchemaComponents(XSNamespaceItem item) {
+        // typeDefinitions
+        XSNamedMap components =
+            item == null
+                ? null
+                : item.getComponents(XSConstants.TYPE_DEFINITION);
+
+        if (components == null || components.getLength() == 0) {
+            sendEmptyElementEvent("psv:schemaComponents");
+            return;
+
+        }
+        sendIndentedElement("psv:schemaComponents");
+        for (int i = 0; i < components.getLength(); i++) {
+            processPSVITypeDefinition((XSTypeDefinition)components.item(i));
+        }
+        // elementDeclarations
+        components = item.getComponents(XSConstants.ELEMENT_DECLARATION);
+        for (int i = 0; i < components.getLength(); i++) {
+            processPSVIElementDeclaration(
+                (XSElementDeclaration)components.item(i));
+        }
+        // attributeDeclarations
+        components = item.getComponents(XSConstants.ATTRIBUTE_DECLARATION);
+        for (int i = 0; i < components.getLength(); i++) {
+            processPSVIAttributeDeclaration(
+                (XSAttributeDeclaration)components.item(i));
+        }
+        // modelGroupDefinitions
+        components = item.getComponents(XSConstants.MODEL_GROUP_DEFINITION);
+        for (int i = 0; i < components.getLength(); i++) {
+            processPSVIModelGroupDefinition(
+                (XSModelGroupDefinition)components.item(i));
+        }
+        // attributeGroupDefinitions
+        components = item.getComponents(XSConstants.ATTRIBUTE_GROUP);
+        for (int i = 0; i < components.getLength(); i++) {
+            processPSVIAttributeGroupDefinition(
+                (XSAttributeGroupDefinition)components.item(i));
+        }
+        // notationDeclarations
+        components = item.getComponents(XSConstants.NOTATION_DECLARATION);
+        for (int i = 0; i < components.getLength(); i++) {
+            processPSVINotationDeclaration(
+                (XSNotationDeclaration)components.item(i));
+        }
+        sendUnIndentedElement("psv:schemaComponents");
+    }
+
+    private void processPSVITypeDefinition(XSTypeDefinition type) {
+        if (type == null)
+            return;
+        if (type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
+            processPSVIComplexTypeDefinition((XSComplexTypeDefinition)type);
+        }
+        else if (type.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
+            processPSVISimpleTypeDefinition((XSSimpleTypeDefinition)type);
+        }
+        else {
+            throw new IllegalArgumentException(
+                "Unknown type definition value: " + type.getType());
+        }
+    }
+
+    private void processPSVIComplexTypeDefinition(XSComplexTypeDefinition type) {
+        if (type == null)
+            return;
+        sendIndentedElementWithID("psv:complexTypeDefinition", type);
+        sendElementEvent("psv:name", type.getName());
+        sendElementEvent("psv:targetNamespace", type.getNamespace());
+        processPSVITypeDefinitionOrRef(
+            "psv:baseTypeDefinition",
+            type.getBaseType());
+        sendElementEvent(
+            "psv:derivationMethod",
+            this.translateDerivation(type.getDerivationMethod()));
+        sendElementEvent("psv:final", this.translateFinal(type.getFinal()));
+        sendElementEvent("psv:abstract", String.valueOf(type.getAbstract()));
+        processPSVIAttributeUses(type.getAttributeUses());
+        processPSVIAttributeWildcard(type.getAttributeWildcard());
+        sendIndentedElement("psv:contentType");
+        sendElementEvent(
+            "psv:variety",
+            this.translateContentType(type.getContentType()));
+        processPSVISimpleTypeDefinition(type.getSimpleType());
+        processPSVIParticle(type.getParticle());
+        sendUnIndentedElement("psv:contentType");
+        sendElementEvent(
+            "psv:final",
+            this.translateFinal(type.getProhibitedSubstitutions()));
+        processPSVIAnnotations(type.getAnnotations());
+        sendUnIndentedElement("psv:complexTypeDefinition");
+    }
+
+    private void processPSVISimpleTypeDefinition(XSSimpleTypeDefinition type) {
+        if (type == null)
+            return;
+        sendIndentedElementWithID("psv:simpleTypeDefinition", type);
+        sendElementEvent("psv:name", type.getName());
+        sendElementEvent("psv:targetNamespace", type.getNamespace());
+        processPSVITypeDefinitionOrRef(
+            "psv:baseTypeDefinition",
+            type.getBaseType());
+        processPSVITypeDefinitionOrRef(
+            "psv:primitiveTypeDefinition",
+            type.getPrimitiveType());
+        processPSVIFacets(type);
+
+        sendIndentedElement("psv:fundamentalFacets");
+        sendIndentedElement("psv:ordered");
+        sendElementEvent("psv:value", this.translateOrdered(type.getOrdered()));
+        sendUnIndentedElement("psv:ordered");
+        sendIndentedElement("psv:bounded");
+        sendElementEvent("psv:value", String.valueOf(type.getBounded()));
+        sendUnIndentedElement("psv:bounded");
+        sendIndentedElement("psv:cardinality");
+        sendElementEvent("psv:value", String.valueOf(type.getFinite()));
+        sendUnIndentedElement("psv:cardinality");
+        sendIndentedElement("psv:numeric");
+        sendElementEvent("psv:value", String.valueOf(type.getNumeric()));
+        sendUnIndentedElement("psv:numeric");
+        sendUnIndentedElement("psv:fundamentalFacets");
+
+        sendElementEvent("psv:final", this.translateFinal(type.getFinal()));
+        sendElementEvent(
+            "psv:variety",
+            this.translateVariety(type.getVariety()));
+        processPSVITypeDefinitionOrRef(
+            "psv:itemTypeDefinition",
+            type.getItemType());
+        processPSVIMemberTypeDefinitions(type.getMemberTypes());
+        processPSVIAnnotations(type.getAnnotations());
+        sendUnIndentedElement("psv:simpleTypeDefinition");
+    }
+
+    private void processPSVIFacets(XSSimpleTypeDefinition type) {
+        if (type == null)
+            return;
+        XSObjectList facets = type.getFacets();
+        XSObjectList multiValueFacets = type.getMultiValueFacets();
+        if ((facets == null || facets.getLength() == 0) &&
+        (multiValueFacets == null || multiValueFacets.getLength() == 0)) {
+            sendElementEvent("psv:facets");
+        }
+        else {
+            sendIndentedElement("psv:facets");
+            if (facets != null) {
+                for (int i = 0; i < facets.getLength(); i++) {
+                    XSFacet facet = (XSFacet)facets.item(i);
+                    String name = this.translateFacetKind(facet.getFacetKind());
+                    sendIndentedElement("psv:" + name);
+                    sendElementEvent("psv:value", facet.getLexicalFacetValue());
+                    sendElementEvent("psv:fixed", String.valueOf(facet.isFixed()));
+                    processPSVIAnnotation(facet.getAnnotation());
+                    sendUnIndentedElement("psv:" + name);
+                }
+            }
+            if (multiValueFacets != null) {
+                for (int i = 0; i < multiValueFacets.getLength(); i++) {
+                    XSMultiValueFacet facet = (XSMultiValueFacet)multiValueFacets.item(i);
+                    String name = this.translateFacetKind(facet.getFacetKind());
+                    sendIndentedElement("psv:" + name);
+                    StringList values = facet.getLexicalFacetValues();
+                    for (int j = 0; j < values.getLength(); j++) {
+                        sendElementEvent("psv:value", values.item(j));
+                    }
+                    sendElementEvent("psv:fixed", "false");
+                    processPSVIAnnotations(facet.getAnnotations());
+                    sendUnIndentedElement("psv:" + name);
+                }
+            }
+            sendUnIndentedElement("psv:facets");
+        }
+    }
+
+    private void processPSVIMemberTypeDefinitions(XSObjectList memTypes) {
+        if (memTypes == null || memTypes.getLength() == 0) {
+            sendElementEvent("psv:memberTypeDefinitions");
+        }
+        else {
+            sendIndentedElement("psv:memberTypeDefinitions");
+            for (int i = 0; i < memTypes.getLength(); i++) {
+                processPSVITypeDefinitionOrRef(
+                    "psv:memberTypeDefinition",
+                    (XSTypeDefinition)memTypes.item(i));
+            }
+            sendUnIndentedElement("psv:memberTypeDefinitions");
+        }
+    }
+
+    /* It's possible that this method will send events for null annotations, i.e.
+     * <psv:annotations>
+     *     <psv:annotation xsi:nil="true"/>
+     *     <psv:annotation>...</psv:annotation>
+     * </psv:annotations>
+     * 
+     * This is because of the way multi-value facet is implemented.  It represents
+     * the annotation on each value of the facet, and if a value doesn't have one,
+     * it's corresponding annotation is null.  Thus, it's possible for the first
+     * annotation to be null, but the second one to be exist.
+     * 
+     * An exception to this is if all of the annotations are null; then I output
+     * <psv:annotations xsi:nil="true"/>
+     */
+    private void processPSVIAnnotations(XSObjectList annotations) {
+        boolean empty = true;
+        if (annotations != null && annotations.getLength() > 0) {
+            for (int i = 0; i < annotations.getLength(); i++) {
+                if (annotations.item(i) != null) {
+                    empty = false;
+                    break;
+                }
+            }
+        }
+        
+        if (empty) {
+            sendElementEvent("psv:annotations");
+        }
+        else {
+            sendIndentedElement("psv:annotations");
+            for (int i = 0; i < annotations.getLength(); i++) {
+                processPSVIAnnotation((XSAnnotation)annotations.item(i));
+            }
+            sendUnIndentedElement("psv:annotations");
+        }
+    }
+
+    private void processPSVISchemaAnnotations(XSObjectList annotations) {
+        if (annotations == null || annotations.getLength() == 0) {
+            sendElementEvent("psv:schemaAnnotations");
+        }
+        else {
+            sendIndentedElement("psv:schemaAnnotations");
+            for (int i = 0; i < annotations.getLength(); i++) {
+                processPSVIAnnotation((XSAnnotation)annotations.item(i));
+            }
+            sendUnIndentedElement("psv:schemaAnnotations");
+        }
+    }
+
+    private void processPSVIAttributeUses(XSObjectList uses) {
+        if (uses == null || uses.getLength() == 0) {
+            sendElementEvent("psv:attributeUses");
+        }
+        else {
+            sendIndentedElement("psv:attributeUses");
+            for (int i = 0; i < uses.getLength(); i++) {
+                XSAttributeUse use = (XSAttributeUse)uses.item(i);
+                sendIndentedElement("psv:attributeUse");
+                sendElementEvent(
+                    "psv:required",
+                    String.valueOf(use.getRequired()));
+                processPSVIAttributeDeclarationOrRef(use.getAttrDeclaration());
+                sendElementEvent(
+                    "psv:valueConstraint",
+                    use.getConstraintValue());
+                sendUnIndentedElement("psv:attributeUse");
+            }
+            sendUnIndentedElement("psv:attributeUses");
+        }
+    }
+
+    private void processPSVIAttributeWildcard(XSWildcard wildcard) {
+        if (wildcard == null) {
+            sendElementEvent("psv:attributeWildcard");
+        }
+        else {
+            sendIndentedElement("psv:attributeWildcard");
+            processPSVIWildcard(wildcard);
+            sendUnIndentedElement("psv:attributeWildcard");
+        }
+    }
+
+    private void processPSVIWildcard(XSWildcard wildcard) {
+        if (wildcard == null)
+            return;
+        sendIndentedElement("psv:wildcard");
+        sendIndentedElement("psv:namespaceConstraint");
+        sendElementEvent(
+            "psv:variety",
+            this.translateConstraintType(wildcard.getConstraintType()));
+
+        StringBuffer constraintBuffer = new StringBuffer();
+        StringList constraints = wildcard.getNsConstraintList();
+        if (constraints != null && constraints.getLength() > 0) {
+            for (int i = 0; i < constraints.getLength() - 1; i++) {
+                constraintBuffer.append(constraints.item(i));
+                constraintBuffer.append(" ");
+            }
+            constraintBuffer.append(
+                constraints.item(constraints.getLength() - 1));
+        }
+        sendElementEvent("psv:namespaces", constraintBuffer.toString());
+
+        sendUnIndentedElement("psv:namespaceConstraint");
+        sendElementEvent(
+            "psv:processContents",
+            this.translateProcessContents(wildcard.getProcessContents()));
+        processPSVIAnnotation(wildcard.getAnnotation());
+        sendUnIndentedElement("psv:wildcard");
+    }
+
+    private void processPSVIAnnotation(XSAnnotation ann) {
+        if (ann == null) {
+            sendElementEvent("psv:annotation");
+        }
+        else {
+            sendIndentedElement("psv:annotation");
+            // We can't get all the information from DOM, but I've outputed what
+            // we can get -- PJM
+            Node dom = new DocumentImpl();
+            ann.writeAnnotation(dom, XSAnnotation.W3C_DOM_DOCUMENT);
+
+            // this child will be the annotation element
+            Element annot = DOMUtil.getFirstChildElement(dom);
+
+            processDOMElement(
+                annot,
+                SchemaSymbols.ELT_APPINFO,
+                "psv:applicationInformation");
+            processDOMElement(
+                annot,
+                SchemaSymbols.ELT_DOCUMENTATION,
+                "psv:userInformation");
+            processDOMAttributes(annot, "attributes");
+            sendUnIndentedElement("psv:annotation");
+        }
+    }
+
+    private void processDOMElement(
+        Node node,
+        String elementName,
+        String tagName) {
+        if (node == null)
+            return;
+        boolean foundElem = false;
+        for (Element child = DOMUtil.getFirstChildElement(node);
+            child != null;
+            child = DOMUtil.getNextSiblingElement(child)) {
+            if (DOMUtil.getLocalName(child).equals(elementName)) {
+                if (!foundElem) {
+                    sendIndentedElement(tagName);
+                    foundElem = true;
+                }
+                sendIndentedElement("element");
+                sendElementEvent(
+                    "namespaceName",
+                    DOMUtil.getNamespaceURI(child));
+                sendElementEvent("localName", DOMUtil.getLocalName(child));
+                sendElementEvent("prefix", child.getPrefix());
+                sendIndentedElement("children");
+                sendIndentedElement("character");
+                sendElementEvent("textContent", DOMUtil.getChildText(child));
+                sendUnIndentedElement("character");
+                sendUnIndentedElement("children");
+                processDOMAttributes(child, "attributes");
+                sendUnIndentedElement("element");
+            }
+        }
+        if (foundElem) {
+            sendUnIndentedElement(tagName);
+        }
+        else {
+            sendEmptyElementEvent(tagName);
+        }
+    }
+
+    private void processDOMAttributes(Element elem, String tagName) {
+        Attr[] atts = elem == null ? null : DOMUtil.getAttrs(elem);
+        if (atts == null || atts.length == 0) {
+            sendEmptyElementEvent(tagName);
+        }
+        else {
+            sendIndentedElement(tagName);
+            for (int i = 0; i < atts.length; i++) {
+                Attr att = (Attr)atts[i];
+                sendIndentedElement("attribute");
+                sendElementEvent("namespaceName", DOMUtil.getNamespaceURI(att));
+                sendElementEvent("localName", DOMUtil.getLocalName(att));
+                sendElementEvent("prefix", att.getPrefix());
+                sendElementEvent("normalizedValue", att.getValue());
+                sendElementEvent(
+                    "specified",
+                    String.valueOf(att.getSpecified()));
+                sendElementEvent("attributeType");
+
+                // this property isn't relevent to PSVI
+                sendElementEvent("references");
+
+                sendUnIndentedElement("attribute");
+            }
+            sendUnIndentedElement(tagName);
+        }
+    }
+
+    private void processPSVIElementDeclaration(XSElementDeclaration elem) {
+        if (elem == null)
+            return;
+        sendIndentedElementWithID("psv:elementDeclaration", elem);
+        sendElementEvent("psv:name", elem.getName());
+        sendElementEvent("psv:targetNamespace", elem.getNamespace());
+        processPSVITypeDefinitionOrRef(
+            "psv:typeDefinition",
+            elem.getTypeDefinition());
+        sendElementEvent("psv:scope", this.translateScope(elem.getScope()));
+        sendElementEvent("psv:valueConstraint", elem.getConstraintValue());
+        sendElementEvent("psv:nillable", String.valueOf(elem.getNillable()));
+        processPSVIIdentityConstraintDefinitions(elem.getIdentityConstraints());
+        processPSVIElementRef(
+            "psv:substitutionGroupAffiliation",
+            elem.getSubstitutionGroupAffiliation());
+        // We can use translateFinal() for these, because substitution group exclusions
+        // is a subset of final values.
+        sendElementEvent(
+            "psv:substitutionGroupExclusions",
+            this.translateFinal(elem.getSubstitutionGroupExclusions()));
+        sendElementEvent(
+            "psv:disallowedSubstitutions",
+            this.translateFinal(elem.getDisallowedSubstitutions()));
+        sendElementEvent("psv:abstract", String.valueOf(elem.getAbstract()));
+        processPSVIAnnotation(elem.getAnnotation());
+        sendUnIndentedElement("psv:elementDeclaration");
+    }
+
+    private void processPSVIAttributeDeclaration(XSAttributeDeclaration attr) {
+        if (attr == null)
+            return;
+        sendIndentedElementWithID("psv:attributeDeclaration", attr);
+        sendElementEvent("psv:name", attr.getName());
+        sendElementEvent("psv:targetNamespace", attr.getNamespace());
+        processPSVITypeDefinitionOrRef(
+            "psv:typeDefinition",
+            attr.getTypeDefinition());
+        sendElementEvent("psv:scope", this.translateScope(attr.getScope()));
+        sendElementEvent("psv:valueConstraint", attr.getConstraintValue());
+        processPSVIAnnotation(attr.getAnnotation());
+        sendUnIndentedElement("psv:attributeDeclaration");
+    }
+
+    private void processPSVIAttributeGroupDefinition(XSAttributeGroupDefinition ag) {
+        if (ag == null)
+            return;
+        sendIndentedElementWithID("psv:attributeGroupDefinition", ag);
+        sendElementEvent("psv:name", ag.getName());
+        sendElementEvent("psv:targetNamespace", ag.getNamespace());
+        processPSVIAttributeUses(ag.getAttributeUses());
+        processPSVIAttributeWildcard(ag.getAttributeWildcard());
+        processPSVIAnnotation(ag.getAnnotation());
+        sendUnIndentedElement("psv:attributeGroupDefinition");
+    }
+
+    private void processPSVIModelGroupDefinition(XSModelGroupDefinition mgd) {
+        if (mgd == null) {
+            sendElementEvent("psv:modelGroupDefinition");
+        }
+        else {
+            sendIndentedElementWithID("psv:modelGroupDefinition", mgd);
+            sendElementEvent("psv:name", mgd.getName());
+            sendElementEvent("psv:targetNamespace", mgd.getNamespace());
+            processPSVIModelGroup(mgd.getModelGroup());
+            processPSVIAnnotation(mgd.getAnnotation());
+            sendUnIndentedElement("psv:modelGroupDefinition");
+        }
+    }
+
+    private void processPSVIModelGroup(XSModelGroup mg) {
+        if (mg == null) {
+            sendElementEvent("psv:modelGroup");
+        }
+        else {
+            sendIndentedElement("psv:modelGroup");
+            sendElementEvent(
+                "psv:compositor",
+                this.translateCompositor(mg.getCompositor()));
+            processPSVIParticles(mg.getParticles());
+            processPSVIAnnotation(mg.getAnnotation());
+            sendUnIndentedElement("psv:modelGroup");
+        }
+    }
+
+    private void processPSVINotationDeclaration(XSNotationDeclaration not) {
+        if (not == null) {
+            sendElementEvent("psv:notationDeclaration");
+        }
+        else {
+            sendIndentedElementWithID("psv:notationDeclaration", not);
+            sendElementEvent("psv:name", not.getName());
+            sendElementEvent("psv:targetNamespace", not.getNamespace());
+            sendElementEvent("systemIdentifier", not.getSystemId());
+            sendElementEvent("publicIdentifier", not.getPublicId());
+            processPSVIAnnotation(not.getAnnotation());
+            sendUnIndentedElement("psv:notationDeclaration");
+        }
+    }
+
+    private void processPSVIIdentityConstraintDefinitions(XSNamedMap constraints) {
+        if (constraints == null || constraints.getLength() == 0) {
+            sendElementEvent("psv:identityContraintDefinitions");
+        }
+        else {
+            sendIndentedElement("psv:identityContraintDefinitions");
+            for (int i = 0; i < constraints.getLength(); i++) {
+                XSIDCDefinition constraint =
+                    (XSIDCDefinition)constraints.item(i);
+                sendIndentedElementWithID(
+                    "psv:identityContraintDefinition",
+                    constraint);
+                sendElementEvent("psv:name", constraint.getName());
+                sendElementEvent(
+                    "psv:targetNamespace",
+                    constraint.getNamespace());
+                sendElementEvent(
+                    "psv:identityConstraintCategory",
+                    this.translateCategory(constraint.getCategory()));
+                sendIndentedElement("psv:selector");
+                processPSVIXPath(constraint.getSelectorStr());
+                sendUnIndentedElement("psv:selector");
+                processPSVIFields(constraint.getFieldStrs());
+                processPSVIElementRef(
+                    "psv:referencedKey",
+                    constraint.getRefKey());
+                processPSVIAnnotations(constraint.getAnnotations());
+                sendUnIndentedElement("psv:identityContraintDefinition");
+            }
+            sendUnIndentedElement("psv:identityContraintDefinitions");
+        }
+    }
+
+    private void processPSVIFields(StringList fields) {
+        if (fields == null || fields.getLength() == 0) {
+            sendElementEvent("psv:fields");
+        }
+        else {
+            sendIndentedElement("psv:fields");
+            for (int i = 0; i < fields.getLength(); i++) {
+                processPSVIXPath(fields.item(i));
+            }
+            sendUnIndentedElement("psv:fields");
+        }
+    }
+
+    private void processPSVIXPath(String path) {
+        sendIndentedElement("psv:xpath");
+        sendElementEvent("psv:xpath", path);
+        sendUnIndentedElement("psv:xpath");
+    }
+
+    private void processPSVIParticles(XSObjectList particles) {
+        if (particles == null || particles.getLength() == 0) {
+            sendElementEvent("psv:particles");
+        }
+        else {
+            sendIndentedElement("psv:particles");
+            for (int i = 0; i < particles.getLength(); i++) {
+                processPSVIParticle((XSParticle)particles.item(i));
+            }
+            sendUnIndentedElement("psv:particles");
+        }
+    }
+
+    private void processPSVIParticle(XSParticle part) {
+        if (part == null) {
+            sendElementEvent("psv:particle");
+        }
+        else {
+            sendIndentedElement("psv:particle");
+            sendElementEvent(
+                "psv:minOccurs",
+                String.valueOf(part.getMinOccurs()));
+            sendElementEvent(
+                "psv:maxOccurs",
+                String.valueOf(part.getMaxOccurs()));
+            sendIndentedElement("psv:term");
+            switch (part.getTerm().getType()) {
+                case XSConstants.ELEMENT_DECLARATION :
+                    processPSVIElementDeclaration(
+                        (XSElementDeclaration)part.getTerm());
+                    break;
+                case XSConstants.MODEL_GROUP :
+                    processPSVIModelGroup((XSModelGroup)part.getTerm());
+                    break;
+                case XSConstants.WILDCARD :
+                    processPSVIWildcard((XSWildcard)part.getTerm());
+                    break;
+            }
+            sendUnIndentedElement("psv:term");
+            sendUnIndentedElement("psv:particle");
+        }
+    }
+
+    private void processPSVIElementRef(String elementName, XSObject obj) {
+        this.processPSVIElementRef(elementName, null, obj);
+    }
+
+    private void processPSVIElementRef(
+        String elementName,
+        Vector attributes,
+        XSObject obj) {
+        if (attributes == null) {
+            attributes = new Vector();
+        }
+        String ref = this.getID(obj);
+        if (ref != null) {
+            attributes.add("ref");
+            attributes.add(ref);
+            attributes.add(XMLSymbols.fIDREFSymbol);
+        }
+        sendElementEvent(elementName, attributes, (XMLString) null);
+    }
+
+    private void processPSVIAttributeDeclarationOrRef(XSAttributeDeclaration att) {
+        if (att == null)
+            return;
+        // for global attributes, and attributes that have already been printed,
+        // we always want to print references
+        if (att.getScope() == XSConstants.SCOPE_GLOBAL
+            || fDefined.contains(this.getID(att))) {
+            processPSVIAttributeDeclarationRef(att);
+        }
+        else {
+            processPSVIAttributeDeclaration(att);
+        }
+    }
+
+    private void processPSVIAttributeDeclarationRef(XSAttributeDeclaration att) {
+        if (att == null)
+            return;
+        Vector attributes = new Vector();
+        attributes.add("name");
+        attributes.add(att.getName());
+        attributes.add(XMLSymbols.fCDATASymbol);
+        if (att.getNamespace() != null) {
+            attributes.add("tns");
+            attributes.add(att.getNamespace());
+            attributes.add(XMLSymbols.fCDATASymbol);
+        }
+        processPSVIElementRef("psv:attributeDeclaration", attributes, att);
+    }
+
+    // always prints a reference
+    private void processPSVITypeDefinitionRef(
+        String enclose,
+        XSTypeDefinition type) {
+        if (type == null)
+            return;
+
+        sendIndentedElement(enclose);
+        if (type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
+            processPSVIElementRef("psv:complexTypeDefinition", type);
+        }
+        else if (type.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
+            processPSVIElementRef("psv:simpleTypeDefinition", type);
+        }
+        else {
+            throw new IllegalArgumentException(
+                "Unknown type definition value: " + type.getTypeCategory());
+        }
+        sendUnIndentedElement(enclose);
+    }
+
+    // prints a reference if the type is anonymous and hasn't already been defined,
+    // otherwise prints a definition
+    private void processPSVITypeDefinitionOrRef(
+        String enclose,
+        XSTypeDefinition type) {
+        if (type == null)
+            return;
+
+        // we'll check for anonymous types here, since they only occur in places where
+        // a reference would be appropriate
+        if (type.getAnonymous() && !fDefined.contains(this.getID(type))) {
+            sendIndentedElement(enclose);
+            processPSVITypeDefinition(type);
+            sendUnIndentedElement(enclose);
+        }
+        else {
+            processPSVITypeDefinitionRef(enclose, type);
+        }
+    }
+
+    /**
+     * This method writes an empty element at the current indent level.
+     *
+     * @param tagname The name of the Element.
+     *
+     * @throws IOEXception
+     */
+    private void sendEmptyElementEvent(String tagname) {
+        this.sendEmptyElementEvent(tagname, null);
+    } //sendEmptyElementEvent
+
+    private void sendEmptyElementEvent(String tagname, Vector attributes) {
+        this.sendIndent();
+        fDocumentHandler.emptyElement(
+            createQName(tagname),
+            createAttributes(attributes),
+            null);
+        this.sendNewLine();
+    } //sendEmptyElementEvent
+
+    /**
+     * This method writes an empty element at the current indent level.
+     *
+     * @param tagname The name of the Element.
+     *
+     * @throws IOEXception
+     */
+    private void sendStartElementEvent(String tagname, Vector attributes) {
+        fDocumentHandler.startElement(
+            createQName(tagname),
+            createAttributes(attributes),
+            null);
+    } //sendStartElementEvent
+
+    /**
+     * This method writes a closing tag at the current indent level.
+     *
+     * @param tagname The name of the Element.
+     *
+     * @throws IOEXception
+     */
+    private void sendEndElementEvent(String tagname) {
+        fDocumentHandler.endElement(this.createQName(tagname), null);
+    } //sendEndElementEvent
+
+    /**
+     * This method write the element at the current indent level and increase
+     * the one level of indentation.
+     *
+     * @param The name of the Element.
+     *
+     * @throws IOException
+     */
+    private void sendIndentedElement(String tagName) {
+        this.sendIndentedElement(tagName, null);
+    } //sendIndentedElement
+
+    private void sendIndentedElement(String tagName, Vector attributes) {
+        this.sendIndent();
+        this.sendStartElementEvent(tagName, attributes);
+        this.sendNewLine();
+        fIndent++;
+    } //sendIndentedElement
+
+    /**
+     * This method write the element at the current indent level and decrease
+     * one level of indentation.
+     *
+     * @param the name of the Element.
+     *
+     */
+    private void sendUnIndentedElement(String tagName) {
+        fIndent--;
+        this.sendIndent();
+        this.sendEndElementEvent(tagName);
+        this.sendNewLine();
+    } //sendUnIndentedElement
+
+    /**
+     * Write the Element Information Item for each element appearing in the XML
+     * document. One of the element information items is the value of the
+     * [document element] property of the document information item, corresponding
+     * to the root of the element tree, and all other element information items
+     * are accessible by recursively following its [children] property.
+     *
+     * @elementName  Name of the elment.
+     * @elemmentValue  Value of the element
+     */
+    private void sendElementEvent(String elementName) {
+        this.sendElementEvent(elementName, null, (XMLString) null);
+    } //sendElementEvents
+
+    private void sendElementEvent(String elementName, String elementValue) {
+        this.sendElementEvent(elementName, null, elementValue);
+    } //sendElementEvents
+
+    private void sendElementEvent(String elementName, XMLString elementValue) {
+        this.sendElementEvent(elementName, null, elementValue);
+    } //sendElementEvents
+
+    private void sendElementEvent(
+        String elementName,
+        Vector attributes,
+        String elementValue) {
+        XMLString text =
+            elementValue == null
+                ? null
+                : new XMLString(
+                    elementValue.toCharArray(),
+                    0,
+                    elementValue.length());
+        this.sendElementEvent(elementName, attributes, text);
+    }
+
+    private void sendElementEvent(
+        String elementName,
+        Vector attributes,
+        XMLString elementValue) {
+        if (elementValue == null || elementValue.equals("")) {
+            if (attributes == null) {
+                attributes = new Vector();
+            }
+            attributes.add("xsi:nil");
+            attributes.add("true");
+            attributes.add(XMLSymbols.fCDATASymbol);
+            this.sendEmptyElementEvent(elementName, attributes);
+        }
+        else {
+            this.sendIndent();
+            this.sendStartElementEvent(elementName, attributes);
+            fDocumentHandler.characters(elementValue, null);
+            this.sendEndElementEvent(elementName);
+            this.sendNewLine();
+        }
+    } //sendElementEvents
+
+    private void sendIndentedElementWithID(String elementName, XSObject obj) {
+        String id = this.getID(obj);
+        // since this method is called everytime we define something with an ID,
+        // may as well mark the ID as defined here
+        fDefined.add(id);
+        Vector attributes = new Vector();
+        attributes.add("id");
+        attributes.add(id);
+        attributes.add(XMLSymbols.fIDSymbol);
+        sendIndentedElement(elementName, attributes);
+    }
+
+    private void sendIndent() {
+        if (fIndent > fIndentChars.length) {
+            fIndentChars = new char[fIndentChars.length * 2];
+            for (int i = 0; i < fIndentChars.length; i++) {
+                fIndentChars[i] = '\t';
+            }
+        }
+        XMLString text = new XMLString(fIndentChars, 0, fIndent);
+        fDocumentHandler.characters(text, null);
+    }
+
+    private void sendNewLine() {
+        fDocumentHandler.characters(newLine, null);
+    }
+
+    private QName createQName(String rawname) {
+        int index = rawname.indexOf(':');
+        String prefix, localpart;
+        if (index == -1) {
+            prefix = "";
+            localpart = rawname;
+        }
+        else {
+            prefix = rawname.substring(0, index);
+            localpart = rawname.substring(index + 1);
+        }
+        String uri = fPSVINamespaceContext.getURI(prefix);
+        return new QName(prefix, localpart, rawname, uri);
+    }
+
+    private XMLAttributes createAttributes(Vector atts) {
+        XMLAttributes attributes = new XMLAttributesImpl();
+        if (atts != null) {
+            for (int i = 0; i < atts.size(); i += 3) {
+                String rawname = (String)atts.elementAt(i);
+                String value = (String)atts.elementAt(i + 1);
+                String type = (String)atts.elementAt(i + 2);
+                attributes.addAttribute(createQName(rawname), type, value);
+            }
+        }
+        return attributes;
+    }
+
+    private String createID(XSObject obj) {
+        String namespace = obj.getNamespace();
+        String prefix = fNamespaceContext.getPrefix(obj.getNamespace());
+        String name = obj.getName();
+        String type = this.translateType(obj.getType());
+
+        // must be anonymous
+        if (name == null) {
+            name = "anon_" + fAnonNum++;
+        }
+        // no namespace
+        else if (namespace == null || namespace == XMLSymbols.EMPTY_STRING) {
+            name = name + "." + fAnonNum++;
+        }
+
+        if (namespace == Constants.NS_XMLSCHEMA) {
+            return name;
+        }
+        else {
+            return (prefix == null ? "" : prefix + ".") + type + "." + name;
+        }
+    }
+
+    private String getID(XSObject obj) {
+        if (obj == null)
+            return null;
+        String id = (String)fIDMap.get(obj);
+        if (id == null) {
+            id = createID(obj);
+            fIDMap.put(obj, id);
+        }
+        return id;
+    }
+
+    private String translateType(short type) {
+        switch (type) {
+            case XSConstants.TYPE_DEFINITION :
+                return "type";
+            case XSConstants.ANNOTATION :
+                return "annot";
+            case XSConstants.ATTRIBUTE_DECLARATION :
+                return "attr";
+            case XSConstants.ATTRIBUTE_GROUP :
+                return "ag";
+            case XSConstants.ATTRIBUTE_USE :
+                return "au";
+            case XSConstants.ELEMENT_DECLARATION :
+                return "elt";
+            case XSConstants.MODEL_GROUP_DEFINITION :
+                return "mg";
+            case XSConstants.NOTATION_DECLARATION :
+                return "not";
+            case XSConstants.IDENTITY_CONSTRAINT :
+                return "idc";
+            default :
+                return "unknown";
+        }
+    }
+
+    private String translateFacetKind(short kind) {
+        switch (kind) {
+            case XSSimpleTypeDefinition.FACET_WHITESPACE :
+                return SchemaSymbols.ELT_WHITESPACE;
+            case XSSimpleTypeDefinition.FACET_LENGTH :
+                return SchemaSymbols.ELT_LENGTH;
+            case XSSimpleTypeDefinition.FACET_MINLENGTH :
+                return SchemaSymbols.ELT_MINLENGTH;
+            case XSSimpleTypeDefinition.FACET_MAXLENGTH :
+                return SchemaSymbols.ELT_MAXLENGTH;
+            case XSSimpleTypeDefinition.FACET_TOTALDIGITS :
+                return SchemaSymbols.ELT_TOTALDIGITS;
+            case XSSimpleTypeDefinition.FACET_FRACTIONDIGITS :
+                return SchemaSymbols.ELT_FRACTIONDIGITS;
+            case XSSimpleTypeDefinition.FACET_PATTERN :
+                return SchemaSymbols.ELT_PATTERN;
+            case XSSimpleTypeDefinition.FACET_ENUMERATION :
+                return SchemaSymbols.ELT_ENUMERATION;
+            case XSSimpleTypeDefinition.FACET_MAXINCLUSIVE :
+                return SchemaSymbols.ELT_MAXINCLUSIVE;
+            case XSSimpleTypeDefinition.FACET_MAXEXCLUSIVE :
+                return SchemaSymbols.ELT_MAXEXCLUSIVE;
+            case XSSimpleTypeDefinition.FACET_MINEXCLUSIVE :
+                return SchemaSymbols.ELT_MINEXCLUSIVE;
+            case XSSimpleTypeDefinition.FACET_MININCLUSIVE :
+                return SchemaSymbols.ELT_MININCLUSIVE;
+            default :
+                return "unknown";
+        }
+    }
+
+    private String translateVariety(short var) {
+        switch (var) {
+            case XSSimpleTypeDefinition.VARIETY_LIST :
+                return "list";
+            case XSSimpleTypeDefinition.VARIETY_UNION :
+                return "union";
+            case XSSimpleTypeDefinition.VARIETY_ATOMIC :
+                return "atomic";
+            case XSSimpleTypeDefinition.VARIETY_ABSENT :
+                return null;
+            default :
+                return "unknown";
+        }
+    }
+
+    private String translateConstraintType(short type) {
+        switch (type) {
+            case XSWildcard.NSCONSTRAINT_ANY :
+                return "any";
+                // the spec says that when it's a list, the "type" shouldn't be there
+            case XSWildcard.NSCONSTRAINT_LIST :
+                return null;
+            case XSWildcard.NSCONSTRAINT_NOT :
+                return "not";
+            default :
+                return "unknown";
+        }
+    }
+
+    private String translateFinal(short finalVal) {
+        String ret = "";
+        if ((finalVal & XSConstants.DERIVATION_EXTENSION) != 0) {
+            ret += SchemaSymbols.ELT_EXTENSION;
+        }
+        if ((finalVal & XSConstants.DERIVATION_LIST) != 0) {
+            if (ret.length() != 0)
+                ret += " ";
+            ret += SchemaSymbols.ELT_LIST;
+        }
+        if ((finalVal & XSConstants.DERIVATION_RESTRICTION) != 0) {
+            if (ret.length() != 0)
+                ret += " ";
+            ret += SchemaSymbols.ELT_RESTRICTION + " ";
+        }
+        if ((finalVal & XSConstants.DERIVATION_UNION) != 0) {
+            if (ret.length() != 0)
+                ret += " ";
+            ret += SchemaSymbols.ELT_UNION + " ";
+        }
+        return ret;
+    }
+
+    private String translateScope(short scope) {
+        switch (scope) {
+            case XSConstants.SCOPE_ABSENT :
+                return null;
+            case XSConstants.SCOPE_GLOBAL :
+                return "global";
+            case XSConstants.SCOPE_LOCAL :
+                return "local";
+            default :
+                return "unknown";
+        }
+    }
+
+    private String translateCompositor(short comp) {
+        switch (comp) {
+            case XSModelGroup.COMPOSITOR_SEQUENCE :
+                return SchemaSymbols.ELT_SEQUENCE;
+            case XSModelGroup.COMPOSITOR_CHOICE :
+                return SchemaSymbols.ELT_CHOICE;
+            case XSModelGroup.COMPOSITOR_ALL :
+                return SchemaSymbols.ELT_ALL;
+            default :
+                return "unknown";
+        }
+    }
+
+    private String translateContentType(short contentType) {
+        switch (contentType) {
+            case XSComplexTypeDefinition.CONTENTTYPE_ELEMENT :
+                return "elementOnly";
+            case XSComplexTypeDefinition.CONTENTTYPE_EMPTY :
+                return "empty";
+            case XSComplexTypeDefinition.CONTENTTYPE_MIXED :
+                return "mixed";
+            case XSComplexTypeDefinition.CONTENTTYPE_SIMPLE :
+                return "simple";
+            default :
+                return "unknown";
+        }
+    }
+
+    private String translateProcessContents(short process) {
+        switch (process) {
+            case XSWildcard.PC_LAX :
+                return SchemaSymbols.ATTVAL_LAX;
+            case XSWildcard.PC_SKIP :
+                return SchemaSymbols.ATTVAL_SKIP;
+            case XSWildcard.PC_STRICT :
+                return SchemaSymbols.ATTVAL_STRICT;
+            default :
+                return "unknown";
+        }
+    }
+
+    private String translateDerivation(short deriv) {
+        switch (deriv) {
+            case XSConstants.DERIVATION_EXTENSION :
+                return SchemaSymbols.ELT_EXTENSION;
+            case XSConstants.DERIVATION_LIST :
+                return SchemaSymbols.ELT_LIST;
+            case XSConstants.DERIVATION_RESTRICTION :
+                return SchemaSymbols.ELT_RESTRICTION;
+            case XSConstants.DERIVATION_SUBSTITUTION :
+                return SchemaSymbols.ATTVAL_SUBSTITUTION;
+            case XSConstants.DERIVATION_UNION :
+                return SchemaSymbols.ELT_UNION;
+            case XSConstants.DERIVATION_NONE :
+                return null;
+            default :
+                return "unknown";
+        }
+    }
+
+    private String translateCategory(short cat) {
+        switch (cat) {
+            case XSIDCDefinition.IC_KEY :
+                return SchemaSymbols.ELT_KEY;
+            case XSIDCDefinition.IC_KEYREF :
+                return SchemaSymbols.ELT_KEYREF;
+            case XSIDCDefinition.IC_UNIQUE :
+                return SchemaSymbols.ELT_UNIQUE;
+            default :
+                return "unknown";
+        }
+    }
+
+    private String translateOrdered(short ordered) {
+        switch (ordered) {
+            case XSSimpleTypeDefinition.ORDERED_FALSE :
+                return "false";
+            case XSSimpleTypeDefinition.ORDERED_PARTIAL :
+                return "partial";
+            case XSSimpleTypeDefinition.ORDERED_TOTAL :
+                return "total";
+            default :
+                return "unknown";
+        }
+    }
+
+    private String translateValidationAttempted(short val) {
+        switch (val) {
+            case ItemPSVI.VALIDATION_NONE :
+                return "none";
+            case ItemPSVI.VALIDATION_PARTIAL :
+                return "partial";
+            case ItemPSVI.VALIDATION_FULL :
+                return "full";
+            default :
+                return "unknown";
+        }
+    }
+
+    private String translateValidity(short val) {
+        switch (val) {
+            case ItemPSVI.VALIDITY_NOTKNOWN :
+                return "notKnown";
+            case ItemPSVI.VALIDITY_VALID :
+                return "valid";
+            case ItemPSVI.VALIDITY_INVALID :
+                return "invalid";
+            default :
+                return "unknown";
+        }
+    }
 
     /**
      *  Check whether the calling event is  first in children list ,
      * if yes print the <children>.
      */
-    private  void checkForChildren() {
+    private void checkForChildren() {
         if (!_elementState.empty()) {
-            ElementState fElementState =(ElementState) _elementState.peek();
+            ElementState fElementState = (ElementState)_elementState.peek();
             if (fElementState.isEmpty == true) {
-                printIndentTag("<children>");
+                sendIndentedElement("children");
                 fElementState.isEmpty = false;
             }
         }
         else {
-            printIndentTag("<children>");
+            sendIndentedElement("children");
             _elementState.push(new ElementState(false));
         }
-    }//checkForChildren
-
-
+    } //checkForChildren
 
     class ElementState {
-
         public boolean isEmpty;
         XMLAttributes fAttributes;
 
         public ElementState(XMLAttributes attributes) {
             fAttributes = attributes;
-            isEmpty=true;
+            isEmpty = true;
         }
         public ElementState(boolean value) {
-            isEmpty=value;
+            isEmpty = value;
         }
         public XMLAttributes getAttributes() {
             return fAttributes;
@@ -1199,7 +2235,5 @@ implements XMLComponent, XMLDocumentFilter {
         public void isEmpty(boolean value) {
             isEmpty = value;
         }
-    }//class ElementState
-
-
+    } //class ElementState
 } // class PSVIWriter
