@@ -64,16 +64,18 @@ import java.util.Properties;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
+
 /**
- * This class is duplicated for each JAXP subpackage so keep it in
- * sync.  It is package private.
+ * This class is duplicated for each JAXP subpackage so keep it in sync.
+ * It is package private and therefore is not exposed as part of the JAXP
+ * API.
  *
  * This code is designed to implement the JAXP 1.1 spec pluggability
- * feature and is designed to run on JDK version 1.1 and later including
- * JVMs that perform early linking like the Microsoft JVM in IE 5.  Note
- * however that it must be compiled on a JDK version 1.2 or later system
- * since it calls Thread#getContextClassLoader().  The code also runs both
- * as part of an unbundled jar file and when bundled as part of the JDK.
+ * feature and is designed to both compile and run on JDK version 1.1 and
+ * later.  The code also runs both as part of an unbundled jar file and
+ * when bundled as part of the JDK.
  */
 class FactoryFinder {
     /** Temp debug code - this will be removed after we test everything
@@ -94,35 +96,37 @@ class FactoryFinder {
     }
 
     /**
-     * Figure out which ClassLoader to use.  For JDK 1.2 and later use the
-     * context ClassLoader if possible.  Note: we defer linking the class
-     * that calls an API only in JDK 1.2 until runtime so that we can catch
-     * LinkageError so that this code will run in older non-Sun JVMs such
-     * as the Microsoft JVM in IE.
-     */
+     * Figure out which ClassLoader to use.  For JDK 1.2 and later use
+     * the context ClassLoader.
+     */           
     private static ClassLoader findClassLoader()
         throws ConfigurationError
     {
         ClassLoader classLoader;
+        Method m = null;
+
         try {
-            // Construct the name of the concrete class to instantiate
-            Class clazz = Class.forName(FactoryFinder.class.getName()
-                                        + "$ClassLoaderFinderConcrete");
-            ClassLoaderFinder clf = (ClassLoaderFinder) clazz.newInstance();
-            classLoader = clf.getContextClassLoader();
-        } catch (LinkageError le) {
+            m = Thread.class.getMethod("getContextClassLoader", null);
+        } catch (NoSuchMethodException e) {
             // Assume that we are running JDK 1.1, use the current ClassLoader
+            if (debug) {
+                debugPrintln("assuming JDK 1.1");
+            }
             classLoader = FactoryFinder.class.getClassLoader();
-        } catch (ClassNotFoundException x) {
-            // This case should not normally happen.  MS IE can throw this
-            // instead of a LinkageError the second time Class.forName() is
-            // called so assume that we are running JDK 1.1 and use the
-            // current ClassLoader
-            classLoader = FactoryFinder.class.getClassLoader();
-        } catch (Exception x) {
-            // Something abnormal happened so throw an error
-            throw new ConfigurationError(x.toString(), x);
         }
+
+        try {
+            classLoader = (ClassLoader) m.invoke(Thread.currentThread(), null);
+        } catch (IllegalAccessException e) {
+            // assert(false)
+            throw new ConfigurationError("Unexpected IllegalAccessException",
+                                         e);
+        } catch (InvocationTargetException e) {
+            // assert(e.getTargetException() instanceof SecurityException)
+            throw new ConfigurationError("Unexpected InvocationTargetException",
+                                         e);
+        }
+
         return classLoader;
     }
 
@@ -161,6 +165,8 @@ class FactoryFinder {
      * @param fallbackClassName     Implementation class name, if nothing else
      *                              is found.  Use null to mean no fallback.
      *
+     * @exception FactoryFinder.ConfigurationError
+     *
      * Package private so this code can be shared.
      */
     static Object find(String factoryId, String fallbackClassName)
@@ -173,7 +179,7 @@ class FactoryFinder {
             String systemProp =
                 System.getProperty( factoryId );
             if( systemProp!=null) {
-                debugPrintln("found system property" + systemProp);
+                debugPrintln("found system property " + systemProp);
                 return newInstance(systemProp, classLoader);
             }
         } catch (SecurityException se) {
@@ -247,21 +253,6 @@ class FactoryFinder {
 
         Exception getException() {
             return exception;
-        }
-    }
-
-    /*
-     * The following nested classes allow getContextClassLoader() to be
-     * called only on JDK 1.2 and yet run in older JDK 1.1 JVMs
-     */
-
-    private static abstract class ClassLoaderFinder {
-        abstract ClassLoader getContextClassLoader();
-    }
-
-    static class ClassLoaderFinderConcrete extends ClassLoaderFinder {
-        ClassLoader getContextClassLoader() {
-            return Thread.currentThread().getContextClassLoader();
         }
     }
 }
