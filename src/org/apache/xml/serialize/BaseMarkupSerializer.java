@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -116,7 +116,7 @@ import org.xml.sax.ext.DeclHandler;
  * lines. An element is serialized indented when it is the first or
  * last child of an element, or immediate following or preceding
  * another element.
- * 
+ *
  *
  * @version $Revision$ $Date$
  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
@@ -244,7 +244,7 @@ public abstract class BaseMarkupSerializer
     protected BaseMarkupSerializer( OutputFormat format )
     {
         int i;
-        
+
         _elementStates = new ElementState[ 10 ];
         for ( i = 0 ; i < _elementStates.length ; ++i )
             _elementStates[ i ] = new ElementState();
@@ -279,7 +279,7 @@ public abstract class BaseMarkupSerializer
     public void setOutputByteStream( OutputStream output )
     {
         String encoding;
-        
+
         if ( output == null )
             throw new NullPointerException( "SER001 Argument 'output' is null." );
         _output = output;
@@ -296,8 +296,8 @@ public abstract class BaseMarkupSerializer
         _output = null;
         reset();
     }
-    
-    
+
+
     public void setOutputFormat( OutputFormat format )
     {
         if ( format == null )
@@ -305,8 +305,8 @@ public abstract class BaseMarkupSerializer
         _format = format;
         reset();
     }
-    
-    
+
+
     public boolean reset()
     {
         if ( _elementStateCount > 1 )
@@ -421,7 +421,7 @@ public abstract class BaseMarkupSerializer
         if ( _printer.getException() != null )
             throw _printer.getException();
     }
-    
+
 
     /**
      * Serializes the DOM document using the previously specified
@@ -447,7 +447,7 @@ public abstract class BaseMarkupSerializer
         if ( _printer.getException() != null )
             throw _printer.getException();
     }
-    
+
 
     //------------------------------------------//
     // SAX document handler serializing methods //
@@ -457,15 +457,15 @@ public abstract class BaseMarkupSerializer
     public void characters( char[] chars, int start, int length )
     {
         ElementState state;
-        
+
         state = content();
         // Check if text should be print as CDATA section or unescaped
         // based on elements listed in the output format (the element
         // state) or whether we are inside a CDATA section or entity.
-        
+
         if ( state.inCData || state.doCData ) {
             int          saveIndent;
-            
+
             // Print a CDATA section. The text is not escaped, but ']]>'
             // appearing in the code must be identified and dealt with.
             // The contents of a text node is considered space preserving.
@@ -476,9 +476,9 @@ public abstract class BaseMarkupSerializer
             saveIndent = _printer.getNextIndent();
             _printer.setNextIndent( 0 );
             for ( int index = 0 ; index < length ; ++index ) {
-                if ( index + 2 < length && chars[ index ] == ']' && 
+                if ( index + 2 < length && chars[ index ] == ']' &&
                      chars[ index + 1 ] == ']' && chars[ index + 2 ] == '>' ) {
-                    
+
                     printText( chars, start, index + 2, true, true );
                     _printer.printText( "]]><![CDATA[" );
                     start += index + 2;
@@ -489,11 +489,11 @@ public abstract class BaseMarkupSerializer
             if ( length > 0 )
                 printText( chars, start, length, true, true );
             _printer.setNextIndent( saveIndent );
-            
+
         } else {
-            
+
             int saveIndent;
-            
+
             if ( state.preserveSpace ) {
                 // If preserving space then hold of indentation so no
                 // excessive spaces are printed at line breaks, escape
@@ -508,14 +508,14 @@ public abstract class BaseMarkupSerializer
             }
         }
     }
-    
+
 
     public void ignorableWhitespace( char[] chars, int start, int length )
     {
         int i;
-        
+
         content();
-        
+
         // Print ignorable whitespaces only when indenting, after
         // all they are indentation. Cancel the indentation to
         // not indent twice.
@@ -529,14 +529,14 @@ public abstract class BaseMarkupSerializer
             }
         }
     }
-    
-    
+
+
     public void processingInstruction( String target, String code )
     {
         int          index;
         StringBuffer buffer;
         ElementState state;
-        
+
         state = content();
         buffer = new StringBuffer( 40 );
 
@@ -556,7 +556,7 @@ public abstract class BaseMarkupSerializer
                 buffer.append( code );
         }
         buffer.append( "?>" );
-        
+
         // If before the root element (or after it), do not print
         // the PI directly but place it in the pre-root vector.
         if ( isDocumentState() ) {
@@ -569,8 +569,8 @@ public abstract class BaseMarkupSerializer
             _printer.unindent();
         }
     }
-    
-    
+
+
     public void comment( char[] chars, int start, int length )
     {
         comment( new String( chars, start, length ) );
@@ -582,7 +582,9 @@ public abstract class BaseMarkupSerializer
         StringBuffer buffer;
         int          index;
         ElementState state;
-        
+
+        if (_format.getStripComments()) return;
+
         state  = content();
         buffer = new StringBuffer( 40 );
         // Create the processing comment textual representation.
@@ -592,7 +594,7 @@ public abstract class BaseMarkupSerializer
             buffer.append( "<!--" ).append( text.substring( 0, index ) ).append( "-->" );
         else
             buffer.append( "<!--" ).append( text ).append( "-->" );
-        
+
         // If before the root element (or after it), do not print
         // the comment directly but place it in the pre-root vector.
         if ( isDocumentState() ) {
@@ -610,16 +612,16 @@ public abstract class BaseMarkupSerializer
     public void startCDATA()
     {
         ElementState state;
-        
+
         state = getElementState();
         state.doCData = true;
     }
-    
-    
+
+
     public void endCDATA()
     {
         ElementState state;
-        
+
         state = getElementState();
         state.doCData = false;
     }
@@ -628,7 +630,7 @@ public abstract class BaseMarkupSerializer
     public void startNonEscaping()
     {
         ElementState state;
-        
+
         state = getElementState();
         state.unescaped = true;
     }
@@ -637,7 +639,7 @@ public abstract class BaseMarkupSerializer
     public void endNonEscaping()
     {
         ElementState state;
-        
+
         state = getElementState();
         state.unescaped = false;
     }
@@ -646,7 +648,7 @@ public abstract class BaseMarkupSerializer
     public void startPreserving()
     {
         ElementState state;
-        
+
         state = getElementState();
         state.preserveSpace = true;
     }
@@ -655,7 +657,7 @@ public abstract class BaseMarkupSerializer
     public void endPreserving()
     {
         ElementState state;
-        
+
         state = getElementState();
         state.preserveSpace = false;
     }
@@ -716,8 +718,8 @@ public abstract class BaseMarkupSerializer
         _printer.printText( name );
         _printer.printText( ';' );
     }
-    
-    
+
+
     public void startPrefixMapping( String prefix, String uri )
         throws SAXException
     {
@@ -725,13 +727,13 @@ public abstract class BaseMarkupSerializer
             _prefixes = new Hashtable();
         _prefixes.put( uri, prefix == null ? "" : prefix );
     }
-    
-    
+
+
     public void endPrefixMapping( String prefix )
         throws SAXException
     {
     }
-    
+
 
     //------------------------------------------//
     // SAX DTD/Decl handler serializing methods //
@@ -744,14 +746,14 @@ public abstract class BaseMarkupSerializer
         _docTypePublicId = publicId;
         _docTypeSystemId = systemId;
     }
-    
-    
+
+
     public void endDTD()
     {
         // Nothing to do here, all the magic occurs in startDocument(String).
     }
-    
-    
+
+
     public void elementDecl( String name, String model )
     {
         _printer.enterDTD();
@@ -763,8 +765,8 @@ public abstract class BaseMarkupSerializer
         if ( _indenting )
             _printer.breakLine();
     }
-    
-    
+
+
     public void attributeDecl( String eName, String aName, String type,
                                String valueDefault, String value )
     {
@@ -782,14 +784,14 @@ public abstract class BaseMarkupSerializer
         if ( value != null ) {
             _printer.printText( " \"" );
             printEscaped( value );
-            _printer.printText( '"' ); 
+            _printer.printText( '"' );
         }
         _printer.printText( '>' );
         if ( _indenting )
             _printer.breakLine();
     }
-    
-    
+
+
     public void internalEntityDecl( String name, String value )
     {
         _printer.enterDTD();
@@ -801,15 +803,15 @@ public abstract class BaseMarkupSerializer
         if ( _indenting )
             _printer.breakLine();
     }
-    
-    
+
+
     public void externalEntityDecl( String name, String publicId, String systemId )
     {
         _printer.enterDTD();
         unparsedEntityDecl( name, publicId, systemId, null );
     }
-    
-    
+
+
     public void unparsedEntityDecl( String name, String publicId,
                                     String systemId, String notationName )
     {
@@ -835,8 +837,8 @@ public abstract class BaseMarkupSerializer
         if ( _indenting )
             _printer.breakLine();
     }
-    
-    
+
+
     public void notationDecl( String name, String publicId, String systemId )
     {
         _printer.enterDTD();
@@ -859,8 +861,8 @@ public abstract class BaseMarkupSerializer
         if ( _indenting )
             _printer.breakLine();
     }
-    
-    
+
+
     //------------------------------------------//
     // Generic node serializing methods methods //
     //------------------------------------------//
@@ -882,16 +884,16 @@ public abstract class BaseMarkupSerializer
         switch ( node.getNodeType() ) {
         case Node.TEXT_NODE : {
             String text;
-            
+
             text = node.getNodeValue();
             if ( text != null )
                 characters( node.getNodeValue() );
             break;
         }
-            
+
         case Node.CDATA_SECTION_NODE : {
             String text;
-            
+
             text = node.getNodeValue();
             if ( text != null ) {
                 startCDATA();
@@ -900,16 +902,16 @@ public abstract class BaseMarkupSerializer
             }
             break;
         }
-            
+
         case Node.COMMENT_NODE : {
             String text;
-            
+
             text = node.getNodeValue();
             if ( text != null )
                 comment( node.getNodeValue() );
             break;
         }
-            
+
         case Node.ENTITY_REFERENCE_NODE : {
             Node         child;
 
@@ -922,15 +924,15 @@ public abstract class BaseMarkupSerializer
             }
             break;
         }
-        
+
         case Node.PROCESSING_INSTRUCTION_NODE :
             processingInstruction( node.getNodeName(), node.getNodeValue() );
             break;
-            
+
         case Node.ELEMENT_NODE :
             serializeElement( (Element) node );
             break;
-            
+
         case Node.DOCUMENT_NODE : {
             DocumentType      docType;
             DOMImplementation domImpl;
@@ -938,7 +940,7 @@ public abstract class BaseMarkupSerializer
             Entity            entity;
             Notation          notation;
             int               i;
-            
+
             // If there is a document type, use the SAX events to
             // serialize it.
             docType = ( (Document) node ).getDoctype();
@@ -986,7 +988,7 @@ public abstract class BaseMarkupSerializer
         }
         case Node.DOCUMENT_FRAGMENT_NODE : {
             Node         child;
-            
+
             // By definition this will happen if the node is a document,
             // document fragment, etc. Just serialize its contents. It will
             // work well for other nodes that we do not know how to serialize.
@@ -997,13 +999,13 @@ public abstract class BaseMarkupSerializer
             }
             break;
         }
-        
+
         default:
             break;
         }
     }
-    
-    
+
+
     /**
      * Must be called by a method about to print any type of content.
      * If the element was just opened, the opening tag is closed and
@@ -1011,11 +1013,11 @@ public abstract class BaseMarkupSerializer
      * state with <tt>empty</tt> and <tt>afterElement</tt> set to false.
      *
      * @return The current element state
-     */    
+     */
     protected ElementState content()
     {
         ElementState state;
-        
+
         state = getElementState();
         if ( ! isDocumentState() ) {
             // Need to close CData section first
@@ -1052,17 +1054,17 @@ public abstract class BaseMarkupSerializer
     protected void characters( String text )
     {
         ElementState state;
-        
+
         state = content();
         // Check if text should be print as CDATA section or unescaped
         // based on elements listed in the output format (the element
         // state) or whether we are inside a CDATA section or entity.
-        
+
         if ( state.inCData || state.doCData ) {
             StringBuffer buffer;
             int          index;
             int          saveIndent;
-            
+
             // Print a CDATA section. The text is not escaped, but ']]>'
             // appearing in the code must be identified and dealt with.
             // The contents of a text node is considered space preserving.
@@ -1082,11 +1084,11 @@ public abstract class BaseMarkupSerializer
             _printer.setNextIndent( 0 );
             printText( buffer.toString(), true, true );
             _printer.setNextIndent( saveIndent );
-            
+
         } else {
-            
+
             int saveIndent;
-            
+
             if ( state.preserveSpace ) {
                 // If preserving space then hold of indentation so no
                 // excessive spaces are printed at line breaks, escape
@@ -1112,7 +1114,7 @@ public abstract class BaseMarkupSerializer
      * @return Character entity name, or null
      */
     protected abstract String getEntityRef( char ch );
-    
+
 
     /**
      * Called to serializee the DOM element. The element is serialized based on
@@ -1134,7 +1136,7 @@ public abstract class BaseMarkupSerializer
     protected void serializePreRoot()
     {
         int i;
-        
+
         if ( _preRoot != null ) {
             for ( i = 0 ; i < _preRoot.size() ; ++i ) {
                 printText( (String) _preRoot.elementAt( i ), true, true );
@@ -1168,7 +1170,7 @@ public abstract class BaseMarkupSerializer
     {
         int index;
         char ch;
-        
+
         if ( preserveSpace ) {
             // Preserving spaces: the text must print exactly as it is,
             // without breaking when spaces appear in the text and without
@@ -1208,7 +1210,7 @@ public abstract class BaseMarkupSerializer
     {
         int index;
         char ch;
-        
+
         if ( preserveSpace ) {
             // Preserving spaces: the text must print exactly as it is,
             // without breaking when spaces appear in the text and without
@@ -1252,7 +1254,7 @@ public abstract class BaseMarkupSerializer
     protected void printDoctypeURL( String url )
     {
         int                i;
-        
+
         _printer.printText( '"' );
         for( i = 0 ; i < url.length() ; ++i ) {
             if ( url.charAt( i ) == '"' ||  url.charAt( i ) < 0x20 || url.charAt( i ) > 0x7F ) {
@@ -1268,7 +1270,7 @@ public abstract class BaseMarkupSerializer
     protected void printEscaped( char ch )
     {
         String charRef;
-        
+
         // If there is a suitable entity reference for this
         // character, print it. The list of available entity
         // references is almost but not identical between
@@ -1334,10 +1336,10 @@ public abstract class BaseMarkupSerializer
                                               String rawName, boolean preserveSpace )
     {
         ElementState state;
-        
+
         if ( _elementStateCount + 1 == _elementStates.length ) {
             ElementState[] newStates;
-            
+
             // Need to create a larger array of states. This does not happen
             // often, unless the document is really deep.
             newStates = new ElementState[ _elementStates.length + 10 ];
@@ -1362,8 +1364,8 @@ public abstract class BaseMarkupSerializer
         _prefixes = null;
         return state;
     }
-    
-    
+
+
     /**
      * Leave the current element state and return to the
      * state of the parent element. If this was the root
@@ -1393,8 +1395,8 @@ public abstract class BaseMarkupSerializer
     {
         return _elementStateCount == 0;
     }
-    
-    
+
+
     /**
      * Returns the namespace prefix for the specified URI.
      * If the URI has been mapped to a prefix, returns the
@@ -1406,7 +1408,7 @@ public abstract class BaseMarkupSerializer
     protected String getPrefix( String namespaceURI )
     {
         String    prefix;
-        
+
         if ( _prefixes != null ) {
             prefix = (String) _prefixes.get( namespaceURI );
             if ( prefix != null )
