@@ -602,9 +602,19 @@ public class XMLDTDScanner
         String contentModel = null;
         if (fEntityScanner.skipString("EMPTY")) {
             contentModel = "EMPTY";
+            // call handler
+            if (fDTDContentModelHandler != null) {
+                fDTDContentModelHandler.startContentModel(name,
+                                         XMLDTDContentModelHandler.TYPE_EMPTY);
+            }
         }
         else if (fEntityScanner.skipString("ANY")) {
             contentModel = "ANY";
+            // call handler
+            if (fDTDContentModelHandler != null) {
+                fDTDContentModelHandler.startContentModel(name,
+                                         XMLDTDContentModelHandler.TYPE_ANY);
+            }
         }
         else {
             if (!fEntityScanner.skipChar('(')) {
@@ -618,13 +628,29 @@ public class XMLDTDScanner
 
             // Mixed content model
             if (fEntityScanner.skipString("#PCDATA")) {
+                // call handler
+                if (fDTDContentModelHandler != null) {
+                    fDTDContentModelHandler.startContentModel(name,
+                                         XMLDTDContentModelHandler.TYPE_MIXED);
+                }
                 scanMixed();
             }
             else {              // children content
+                // call handler
+                if (fDTDContentModelHandler != null) {
+                    fDTDContentModelHandler.startContentModel(name,
+                                      XMLDTDContentModelHandler.TYPE_CHILDREN);
+                }
                 scanChildren();
             }
             contentModel = fStringBuffer.toString();
         }
+
+        // call handler
+        if (fDTDContentModelHandler != null) {
+            fDTDContentModelHandler.endContentModel();
+        }
+
         fEntityScanner.skipSpaces();
         // end
         if (!fEntityScanner.skipChar('>')) {
@@ -666,6 +692,10 @@ public class XMLDTDScanner
                                            null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
             }
             fStringBuffer.append(childName);
+            // call handler
+            if (fDTDContentModelHandler != null) {
+                fDTDContentModelHandler.mixedElement(childName);
+            }
             fEntityScanner.skipSpaces();
         }
         if (!fEntityScanner.skipChar(')')) {
@@ -692,12 +722,20 @@ public class XMLDTDScanner
      * </pre>
      */
     private final void scanChildren() throws IOException, SAXException {
+        // call handler
+        if (fDTDContentModelHandler != null) {
+            fDTDContentModelHandler.childrenStartGroup();
+        }
         fDepth = 0;
         int currentOp = 0;
         int c;
         do {
             c = fEntityScanner.peekChar();
             if (c == '(') {
+                // call handler
+                if (fDTDContentModelHandler != null) {
+                    fDTDContentModelHandler.childrenStartGroup();
+                }
                 fEntityScanner.scanChar();
                 fStringBuffer.append('(');
                 // push current op on stack and reset it
@@ -706,6 +744,10 @@ public class XMLDTDScanner
                 fDepth++;
             }
             else if (c == ')') {
+                // call handler
+                if (fDTDContentModelHandler != null) {
+                    fDTDContentModelHandler.childrenEndGroup();
+                }
                 fEntityScanner.scanChar();
                 fStringBuffer.append(')');
                 // restore previous op
@@ -721,6 +763,11 @@ public class XMLDTDScanner
                                                "MSG_UNTERMINATED_CHOICE",
                                                null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 }
+                // call handler
+                if (fDTDContentModelHandler != null) {
+                    fDTDContentModelHandler.childrenSeparator(
+                                 XMLDTDContentModelHandler.SEPARATOR_SEQUENCE);
+                }
                 fEntityScanner.scanChar();
                 fStringBuffer.append(',');
             }
@@ -733,10 +780,29 @@ public class XMLDTDScanner
                                                "MSG_UNTERMINATED_SEQ",
                                                null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 }
+                // call handler
+                if (fDTDContentModelHandler != null) {
+                    fDTDContentModelHandler.childrenSeparator(
+                                 XMLDTDContentModelHandler.SEPARATOR_CHOICE);
+                }
                 fEntityScanner.scanChar();
                 fStringBuffer.append('|');
             }
             else if (c == '?' || c == '*' || c == '+') {
+                // call handler
+                if (fDTDContentModelHandler != null) {
+                    short oc;
+                    if (c == '?') {
+                        oc = XMLDTDContentModelHandler.OCCURS_ZERO_OR_ONE;
+                    }
+                    else if (c == '*') {
+                        oc = XMLDTDContentModelHandler.OCCURS_ZERO_OR_MORE;
+                    }
+                    else {
+                        oc = XMLDTDContentModelHandler.OCCURS_ONE_OR_MORE;
+                    }
+                    fDTDContentModelHandler.childrenOccurrence(oc);
+                }
                 fEntityScanner.scanChar();
                 fStringBuffer.append((char)c);
             }
@@ -746,6 +812,10 @@ public class XMLDTDScanner
                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                "MSG_ELEMENT_NAME_REQUIRED",
                                                null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                }
+                // call handler
+                if (fDTDContentModelHandler != null) {
+                    fDTDContentModelHandler.childrenElement(childName);
                 }
                 fStringBuffer.append(childName);
             }
@@ -786,6 +856,11 @@ public class XMLDTDScanner
             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                        "MSG_ELEMENT_NAME_REQUIRED",
                                        null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+        }
+
+        // call handler
+        if (fDTDHandler != null) {
+            fDTDHandler.startAttlist(elName);
         }
 
         // spaces
@@ -836,6 +911,10 @@ public class XMLDTDScanner
             fEntityScanner.skipSpaces();
             // is it the end?
             if (fEntityScanner.skipChar('>')) {
+                // call handler
+                if (fDTDHandler != null) {
+                    fDTDHandler.endAttlist();
+                }
                 return;
             }
 
