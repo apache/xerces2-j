@@ -123,7 +123,7 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
                             value = ((String) facets.get(key ));
                             fFacetsDefined += DatatypeValidator.FACET_PATTERN;
                             fPattern        = value;
-                            if( fPattern != null )
+                            if ( fPattern != null )
                                 fRegex = new RegularExpression(fPattern, "X" );
                         } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
                             fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
@@ -177,29 +177,67 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
 
                 if ( isMaxExclusiveDefined && isMaxInclusiveDefined ) {
                     throw new InvalidDatatypeFacetException(
-                                                "It is an error for both maxInclusive and maxExclusive to be specified for the same datatype." ); 
+                                                           "It is an error for both maxInclusive and maxExclusive to be specified for the same datatype." ); 
                 }
                 if ( isMinExclusiveDefined && isMinInclusiveDefined ) {
                     throw new InvalidDatatypeFacetException(
-                                                "It is an error for both minInclusive and minExclusive to be specified for the same datatype." ); 
+                                                           "It is an error for both minInclusive and minExclusive to be specified for the same datatype." ); 
                 }
+
+                if ( isMaxExclusiveDefined && isMinExclusiveDefined ){
+                    int compareTo = this.fMaxExclusive.compareTo( this.fMinExclusive );
+                    if ( compareTo != 1)
+                        throw new InvalidDatatypeFacetException(
+                                                               "maxExclusive value ='" + this.fMaxExclusive + "'must be > than minExclusive value ='" + 
+                                                               this.fMinExclusive + "'. " );
+
+                }
+                if ( isMaxInclusiveDefined && isMinInclusiveDefined ){
+                    int compareTo = this.fMaxInclusive.compareTo( this.fMinInclusive );
+                    
+                    if ( compareTo == -1  )
+                        throw new InvalidDatatypeFacetException(
+                                                               "maxInclusive value ='" + this.fMaxInclusive + "'must be >= than minInclusive value ='" + 
+                                                               this.fMinInclusive + "'. " );
+                }
+
+
+                if ( isMaxExclusiveDefined && isMinInclusiveDefined ){
+                    int compareTo = this.fMaxExclusive.compareTo( this.fMinInclusive );
+                    if ( compareTo != 1)
+                        throw new InvalidDatatypeFacetException(
+                                                               "maxExclusive value ='" + this.fMaxExclusive + "'must be > than minInclusive value ='" + 
+                                                               this.fMinInclusive + "'. " );
+
+                }
+                if ( isMaxInclusiveDefined && isMinExclusiveDefined ){
+                    int compareTo = this.fMaxInclusive.compareTo( this.fMinExclusive );
+                    if ( compareTo != 1)
+                        throw new InvalidDatatypeFacetException(
+                                                               "maxInclusive value ='" + this.fMaxInclusive + "'must be > than minExclusive value ='" + 
+                                                               this.fMinExclusive + "'. " );
+                }
+
+
+
+
 
                 if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION ) != 0 ) {
                     if (enumeration != null) {
                         fEnumDecimal = new BigDecimal[enumeration.size()];
                         int i = 0;
-                            try {
-                                for ( ; i < enumeration.size(); i++) {
-                                    fEnumDecimal[i] = 
-                                          new BigDecimal( ((String) enumeration.elementAt(i)));
-                                    boundsCheck(fEnumDecimal[i]); // Check against max,min Inclusive, Exclusives
-                                }
-                            } catch( Exception idve ){
-                                throw new InvalidDatatypeFacetException(
-                                      getErrorString(DatatypeMessageProvider.InvalidEnumValue,
-                                               DatatypeMessageProvider.MSG_NONE,
-                                                       new Object [] { enumeration.elementAt(i)}));
+                        try {
+                            for ( ; i < enumeration.size(); i++) {
+                                fEnumDecimal[i] = 
+                                new BigDecimal( ((String) enumeration.elementAt(i)));
+                                boundsCheck(fEnumDecimal[i]); // Check against max,min Inclusive, Exclusives
                             }
+                        } catch ( Exception idve ){
+                            throw new InvalidDatatypeFacetException(
+                                                                   getErrorString(DatatypeMessageProvider.InvalidEnumValue,
+                                                                                  DatatypeMessageProvider.MSG_NONE,
+                                                                                  new Object [] { enumeration.elementAt(i)}));
+                        }
                     }
                 }
             } else { // Derivation by List
@@ -225,56 +263,59 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
 
         if ( fDerivedByList == false ) { //derived by restriction
 
+            if ( this.fBaseValidator != null ) {//validate against parent type if any
+                    this.fBaseValidator.validate( content, state );
+                }
+
             if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
-              if ( fRegex == null || fRegex.matches( content) == false )
-                  throw new InvalidDatatypeValueException("Value'"+content+
-                                                      "does not match regular expression facet" + fPattern );
+                if ( fRegex == null || fRegex.matches( content) == false )
+                    throw new InvalidDatatypeValueException("Value'"+content+
+                                                            "does not match regular expression facet" + fPattern );
             }
 
             BigDecimal d = null; // Is content a Decimal 
             try {
                 d = new BigDecimal(content);
-            } 
-            catch (Exception nfe) {
+            } catch (Exception nfe) {
                 throw new InvalidDatatypeValueException(
-                   getErrorString(DatatypeMessageProvider.NotDecimal,
-                  DatatypeMessageProvider.MSG_NONE,
-                                      new Object[] { "'" + content +"'"}));
+                                                       getErrorString(DatatypeMessageProvider.NotDecimal,
+                                                                      DatatypeMessageProvider.MSG_NONE,
+                                                                      new Object[] { "'" + content +"'"}));
             }
             //} 
             //catch (IOException ex ) {
-              //  throw new InvalidDatatypeValueException(
-                //  getErrorString(DatatypeMessageProvider.NotDecimal,
-                // DatatypeMessageProvider.MSG_NONE,
-              //                       new Object[] { "'" + content +"'"}));
+            //  throw new InvalidDatatypeValueException(
+            //  getErrorString(DatatypeMessageProvider.NotDecimal,
+            // DatatypeMessageProvider.MSG_NONE,
+            //                       new Object[] { "'" + content +"'"}));
             //}
 
 
-            if( isScaleDefined == true ) {
-                 if (d.scale() > fScale)
-                      throw new InvalidDatatypeValueException(
-                                                  getErrorString(DatatypeMessageProvider.ScaleExceeded,
-                                                          DatatypeMessageProvider.MSG_NONE,
-                                                          new Object[] { content}));
+            if ( isScaleDefined == true ) {
+                if (d.scale() > fScale)
+                    throw new InvalidDatatypeValueException(
+                                                           getErrorString(DatatypeMessageProvider.ScaleExceeded,
+                                                                          DatatypeMessageProvider.MSG_NONE,
+                                                                          new Object[] { content}));
             }
-            if( isPrecisionDefined == true ) {
-                 int precision = d.movePointRight(d.scale()).toString().length() - 
-                            ((d.signum() < 0) ? 1 : 0); // account for minus sign
-                 if (precision > fPrecision)
-                      throw new InvalidDatatypeValueException(
-                              getErrorString(DatatypeMessageProvider.PrecisionExceeded,
-                                               DatatypeMessageProvider.MSG_NONE,
-                                                    new Object[] {content} ));
+            if ( isPrecisionDefined == true ) {
+                int precision = d.movePointRight(d.scale()).toString().length() - 
+                                ((d.signum() < 0) ? 1 : 0); // account for minus sign
+                if (precision > fPrecision)
+                    throw new InvalidDatatypeValueException(
+                                                           getErrorString(DatatypeMessageProvider.PrecisionExceeded,
+                                                                          DatatypeMessageProvider.MSG_NONE,
+                                                                          new Object[] {content} ));
             }
             boundsCheck(d);
             if (  fEnumDecimal != null )
-                 enumCheck(d);
+                enumCheck(d);
 
 
-        } else { //derivation by list
+        } else { //derivation by list Revisit
 
         }
-    return null;
+        return null;
     }
 
     /*
@@ -291,7 +332,7 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
         else
             maxOk = (!isMaxInclusiveDefined && ! isMaxExclusiveDefined);
 
-        
+
 
         if ( isMinInclusiveDefined)
             minOk = (d.compareTo(fMinInclusive) >= 0);
@@ -301,9 +342,9 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
             minOk = (!isMinInclusiveDefined && !isMinExclusiveDefined);
         if (!(minOk && maxOk))
             throw new InvalidDatatypeValueException(
-                   getErrorString(DatatypeMessageProvider.OutOfBounds,
-                   DatatypeMessageProvider.MSG_NONE,
-                                           new Object [] { d}));
+                                                   getErrorString(DatatypeMessageProvider.OutOfBounds,
+                                                                  DatatypeMessageProvider.MSG_NONE,
+                                                                  new Object [] { d}));
 
     }
 
@@ -316,9 +357,9 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
 
         }
         throw new InvalidDatatypeValueException(
-                    getErrorString(DatatypeMessageProvider.NotAnEnumValue,
-                    DatatypeMessageProvider.MSG_NONE,
-                                           new Object [] { v}));
+                                               getErrorString(DatatypeMessageProvider.NotAnEnumValue,
+                                                              DatatypeMessageProvider.MSG_NONE,
+                                                              new Object [] { v}));
 
     }
 
@@ -340,9 +381,9 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
             return "Illegal Errorcode "+minor;
         }
     }
-  /**
-     * Returns a copy of this object.
-     */
+    /**
+       * Returns a copy of this object.
+       */
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
     }

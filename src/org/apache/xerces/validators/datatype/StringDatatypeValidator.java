@@ -280,7 +280,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
     {
         if ( fDerivedByList == false  ) {
             if (fFacetsDefined != 0 )//Any facets to validate
-                checkContent( content );
+                checkContent( content, state );
         } else { //derived by list 
             checkContentList( content, state );
         }
@@ -305,8 +305,13 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
         return null;
     }
 
-    private void checkContent( String content )throws InvalidDatatypeValueException
+    private void checkContent( String content, Object state )throws InvalidDatatypeValueException
     {
+
+        if ( this.fBaseValidator != null ) {//validate against parent type if any
+            this.fBaseValidator.validate( content, state );
+        }
+
         if ( (fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 ) {
             if ( content.length() > fMaxLength ) {
                 throw new InvalidDatatypeValueException("Value '"+content+
