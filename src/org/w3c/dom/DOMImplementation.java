@@ -44,15 +44,13 @@ public interface DOMImplementation {
      *   created. 
      * @param publicId The external subset public identifier.
      * @param systemId The external subset system identifier.
-     * @param internalSubset The internal subset as a string. This should be 
      *   valid.
      * @return A new <code>DocumentType</code> node with 
      *   <code>Node.ownerDocument</code> set to <code>null</code>.
      */
     public DocumentType createDocumentType(String qualifiedName, 
                                            String publicId, 
-                                           String systemId, 
-                                           String internalSubset);
+                                           String systemId);
     /**
      * Creates an XML <code>Document</code> object of the specified type with 
      * its document element. HTML-only DOM implementations do not need to 
