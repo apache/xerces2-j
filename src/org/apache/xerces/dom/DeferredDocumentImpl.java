@@ -831,7 +831,7 @@ public class DeferredDocumentImpl
 
                         // continue if there are more IDs for
                         // this element
-                        if (idIndex < fIdCount &&
+                        if (idIndex + 1 < fIdCount &&
                             fIdElement[idIndex + 1] == nodeIndex) {
                             idIndex++;
                         }
