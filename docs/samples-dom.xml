@@ -18,6 +18,7 @@
    -->
    <li><link anchor='GetElementsByTagName'>dom.GetElementsByTagName</link></li>
    <li><link anchor='Writer'>dom.Writer</link></li>
+   <li><link anchor='ASBuilder'>dom.ASBuilder</link></li>
   </ul>
   <!--
     - These samples should be redone.
@@ -171,6 +172,24 @@
      </td>
     </tr>
     <tr><td>-h</td><td>Display help screen.</td></tr>
+   </table>
+  </s3>
+ </s2>
+ <anchor name='ASBuilder'/>
+ <s2 title='Sample dom.ASBuilder'>
+  <p>
+   This sample program illustrates how to preparse xml schema
+   documents and how to validate instance documents against
+   preparsed schema grammars.
+  </p>
+  <s3 title='usage'>
+   <source>java dom.ASBuilder [-f|-F] -a uri ... [-i uri ...]</source>
+  </s3>
+  <s3 title='options'>
+   <table>
+    <tr><td>-f | -F</td><td>Turn on/off schema full checking.</td></tr>
+    <tr><td>-a uri ...</td><td>Provide a list of schema documents.</td></tr>
+    <tr><td>-i uri ...</td><td>Provide a list of instance documents to validate.</td></tr>
    </table>
   </s3>
  </s2>
