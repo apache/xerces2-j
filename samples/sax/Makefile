@@ -5,7 +5,8 @@ TARGETS=\
 	SAXCount.class\
 	SAX2Count.class\
 	SAXWriter.class\
-	SAX2Writer.class
+	SAX2Writer.class\
+	DocumentTracer.class
 
 DIRS = helpers
 
