@@ -1165,6 +1165,14 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                 }
             }
 
+            // check 4.3.12.c1 must: fractionDigits <= base.totalDigits
+            if ((fFacetsDefined & FACET_FRACTIONDIGITS) != 0) {
+                if ((fBase.fFacetsDefined & FACET_TOTALDIGITS) != 0) {
+                    if (fFractionDigits > fBase.fTotalDigits)
+                        reportError( "fractionDigits-totalDigits", new Object[]{Integer.toString(fFractionDigits), Integer.toString(fTotalDigits)});
+                }
+            }
+
             // check fixed value for fractionDigits
             if (((fFacetsDefined & FACET_FRACTIONDIGITS) != 0)) {
                 if ((( fBase.fFacetsDefined & FACET_FRACTIONDIGITS) != 0)) {
