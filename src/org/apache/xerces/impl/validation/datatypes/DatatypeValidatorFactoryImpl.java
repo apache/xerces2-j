@@ -95,15 +95,21 @@ import org.apache.xerces.impl.validation.Grammar;
  */
 public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
     private static final boolean   fDebug = false;
-    private Hashtable fBaseTypes = new Hashtable();
-    private boolean   fRegistryExpanded = false;
+    //private Hashtable fgBaseTypes = new Hashtable();
+    //private boolean   fRegistryExpanded = false;
 
+    protected static final Hashtable fgBaseTypes = new Hashtable();
+    protected static boolean fgRegistryExpanded = false;
 
+    protected Hashtable fUserDefinedTypes = new Hashtable();
+
+    /***
     private static DatatypeValidatorFactoryImpl    fRegistryOfDatatypes = 
     new DatatypeValidatorFactoryImpl();//comment this in when switching to no Singleton
 
-    private DatatypeValidatorFactoryImpl() {//this need method to change to public or deleted when change to no singleton
+    public DatatypeValidatorFactoryImpl() {
     }
+    /***/
 
     /* comment this out when change to no singleton.
     public  DatatypeValidatorFactoryImpl() {
@@ -115,28 +121,25 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
 
     public void expandRegistryToFullSchemaSet() {
 
-        if (fBaseTypes == null) {
-            fBaseTypes = new Hashtable(); // if it is null
-            fRegistryExpanded = false;
-        }
         //Register Primitive Datatypes 
-        if (fRegistryExpanded == false) {
+        if (fgRegistryExpanded == false) {
+            fgRegistryExpanded = true;
             DatatypeValidator v;
             try {
-                fBaseTypes.put("string",            new StringDatatypeValidator() );
-                fBaseTypes.put("boolean",           new BooleanDatatypeValidator()  );
-                fBaseTypes.put("float",             new FloatDatatypeValidator());
-                fBaseTypes.put("double",            new DoubleDatatypeValidator());
-                fBaseTypes.put("decimal",           new DecimalDatatypeValidator());
-                fBaseTypes.put("timeDuration",      new TimeDurationDatatypeValidator());
-                fBaseTypes.put("recurringDuration", new RecurringDurationDatatypeValidator());
-                fBaseTypes.put("binary",            new BinaryDatatypeValidator());
-                fBaseTypes.put("uriReference",      new URIReferenceDatatypeValidator());
-                fBaseTypes.put("ID",                new IDDatatypeValidator());
-                fBaseTypes.put("IDREF",             new IDREFDatatypeValidator());
-                fBaseTypes.put("ENTITY",            new ENTITYDatatypeValidator());
-                fBaseTypes.put("NOTATION",          new NOTATIONDatatypeValidator());
-                fBaseTypes.put("QName",             new QNameDatatypeValidator()); 
+                fgBaseTypes.put("string",            new StringDatatypeValidator() );
+                fgBaseTypes.put("boolean",           new BooleanDatatypeValidator()  );
+                fgBaseTypes.put("float",             new FloatDatatypeValidator());
+                fgBaseTypes.put("double",            new DoubleDatatypeValidator());
+                fgBaseTypes.put("decimal",           new DecimalDatatypeValidator());
+                fgBaseTypes.put("timeDuration",      new TimeDurationDatatypeValidator());
+                fgBaseTypes.put("recurringDuration", new RecurringDurationDatatypeValidator());
+                fgBaseTypes.put("binary",            new BinaryDatatypeValidator());
+                fgBaseTypes.put("uriReference",      new URIReferenceDatatypeValidator());
+                fgBaseTypes.put("ID",                new IDDatatypeValidator());
+                fgBaseTypes.put("IDREF",             new IDREFDatatypeValidator());
+                fgBaseTypes.put("ENTITY",            new ENTITYDatatypeValidator());
+                fgBaseTypes.put("NOTATION",          new NOTATIONDatatypeValidator());
+                fgBaseTypes.put("QName",             new QNameDatatypeValidator()); 
 
 
                 Hashtable facets = new Hashtable();
@@ -311,21 +314,14 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
      */
     public void initializeDTDRegistry() {
 
-        if (fBaseTypes == null) {
-            fBaseTypes = new Hashtable();
-            fRegistryExpanded = false;
-        }
-
-        //Register Primitive Datatypes
-
-        if (fRegistryExpanded == false) { //Core datatypes shared by DTD attributes and Schema
+        if (fgRegistryExpanded == false) { //Core datatypes shared by DTD attributes and Schema
 
             try {
-                fBaseTypes.put("string",            new StringDatatypeValidator() );
-                fBaseTypes.put("ID",                new IDDatatypeValidator());
-                fBaseTypes.put("IDREF",             new IDREFDatatypeValidator());
-                fBaseTypes.put("ENTITY",            new ENTITYDatatypeValidator());
-                fBaseTypes.put("NOTATION",          new NOTATIONDatatypeValidator());
+                fgBaseTypes.put("string",            new StringDatatypeValidator() );
+                fgBaseTypes.put("ID",                new IDDatatypeValidator());
+                fgBaseTypes.put("IDREF",             new IDREFDatatypeValidator());
+                fgBaseTypes.put("ENTITY",            new ENTITYDatatypeValidator());
+                fgBaseTypes.put("NOTATION",          new NOTATIONDatatypeValidator());
 
                 createDatatypeValidator( "IDREFS", new IDREFDatatypeValidator(), null , true );
 
@@ -347,9 +343,9 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
 
 
     public void resetRegistry() {
-        if (fBaseTypes != null) {
-            fBaseTypes.clear();
-            fRegistryExpanded = false;
+        if (fgBaseTypes != null) {
+            fgBaseTypes.clear();
+            fgRegistryExpanded = false;
             //initializeDTDRegistry();
         }
     }
@@ -363,6 +359,23 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
             System.out.println("type name = " + name );
         }
 
+        if (base == null) {
+            synchronized (DatatypeValidatorFactoryImpl.class) {
+                if (!fgBaseTypes.containsKey(name)) {
+                    // lazily construct DTD base types
+                    if (!fgBaseTypes.containsKey("NMTOKEN")) {
+                        initializeDTDRegistry();
+                    }
+                    if (!fgBaseTypes.containsKey(name)) {
+                        // lazily construct Schema base types
+                        if (!fgBaseTypes.containsKey("boolean")) {
+                            expandRegistryToFullSchemaSet();
+                        }
+                    }
+                }
+            }
+            base = getDatatypeValidator(name);
+        }
         if (base != null) {
             if (list) {
                 simpleType = new ListDatatypeValidator(base, facets, list);    
@@ -446,23 +459,18 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
 
 
     public DatatypeValidator getDatatypeValidator(String type) {
-        AbstractDatatypeValidator simpleType = null;
-        if (fDebug) {
-            System.out.println( "type = >" + type +"<");
-            System.out.println( "fBaseTypes = >" + fBaseTypes +"<" );
-            simpleType = (AbstractDatatypeValidator) fBaseTypes.get(type);
+        DatatypeValidator validator = (DatatypeValidator)fUserDefinedTypes.get(type);
+        if (validator == null) {
+            validator = (DatatypeValidator)fgBaseTypes.get(type);
         }
-        if (type != null && fBaseTypes != null
-            && fBaseTypes.containsKey( type ) == true) {
-            simpleType = (AbstractDatatypeValidator) fBaseTypes.get(type);
-        }
-        return(DatatypeValidator) simpleType;
+        return validator;
     }
 
     private void addValidator(String name, DatatypeValidator v) {
-        fBaseTypes.put(name,v);
+        fUserDefinedTypes.put(name,v);
     }
 
+    /***
     static public DatatypeValidatorFactoryImpl getDatatypeRegistry() {
 
         return fRegistryOfDatatypes;
@@ -470,9 +478,8 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
 
     static public void main( String argv[] ) {
         DatatypeValidatorFactoryImpl  tstRegistry = DatatypeValidatorFactoryImpl.getDatatypeRegistry();//this needs to ne commented out or deleted once we go to no singleton
-        /* This needs to be commented out
-        DatatypeValidatorFactoryImpl  tstRegistry = new DatatypeValidatorFactoryImpl();
-        */
+        // This needs to be commented out
+        //DatatypeValidatorFactoryImpl  tstRegistry = new DatatypeValidatorFactoryImpl();
 
         System.out.println("tstRegistry = " + tstRegistry );
 
@@ -522,13 +529,11 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
             if (tst != null) {
                 System.out.println("Table of ID = " + tst.toString());
             }
-            /*
-            try {
-               idData.validate( "a1", null );
-            } catch ( Exception ex ) {
-               ex.printStackTrace();// Should throw a unique exception
-            }
-            */
+            //try {
+            //   idData.validate( "a1", null );
+            //} catch ( Exception ex ) {
+            //   ex.printStackTrace();// Should throw a unique exception
+            //}
 
         }
 
@@ -558,6 +563,7 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
         }
 
     }
+    /***/
 
 }
 

@@ -294,7 +294,9 @@ public class Grammar {
      * @return 
      */
     public int getElementDeclIndex(String elementDeclName, int scope) {
-        return fScopeMapping.get(scope, elementDeclName, null);
+        int mapping = fScopeMapping.get(scope, elementDeclName, null);
+        //System.out.println("getElementDeclIndex("+elementDeclName+','+scope+") -> "+mapping);
+        return mapping;
     } // getElementDeclIndex(String,int):int
    
     /**
@@ -306,7 +308,9 @@ public class Grammar {
      * @return 
      */
     public int getElementDeclIndex(QName elementDeclQName, int scope) {
-        return fScopeMapping.get(scope, elementDeclQName.localpart, elementDeclQName.uri);
+        int mapping = fScopeMapping.get(scope, elementDeclQName.localpart, elementDeclQName.uri);
+        //System.out.println("getElementDeclIndex("+elementDeclQName+','+scope+") -> "+mapping);
+        return mapping;
     } // getElementDeclIndex(QName,int):int
 
     /**
@@ -1733,6 +1737,8 @@ public class Grammar {
                 }
 
             }
+            //System.out.println("put("+key1+','+key2+','+key3+" -> "+value+')');
+            //System.out.println("get("+key1+','+key2+','+key3+") -> "+get(key1,key2,key3));
 
         } // put(int,String,String,int)
 

@@ -62,6 +62,7 @@ import java.util.Enumeration;
 
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
+import org.apache.xerces.impl.validation.DatatypeValidatorFactory;
 import org.apache.xerces.impl.validation.Grammar;
 import org.apache.xerces.impl.validation.ContentModelValidator;
 import org.apache.xerces.impl.validation.XMLElementDecl;
@@ -119,6 +120,9 @@ public class DTDGrammar
     //
     // Data
     //
+
+    /** Datatype validator factory. */
+    protected DatatypeValidatorFactory fDatatypeValidatorFactory;
 
     /** Current element index. */
     protected int fCurrentElementIndex;
@@ -209,6 +213,11 @@ public class DTDGrammar
     //
     // Public methods
     //
+
+    /** Sets the datatype validator factory. */
+    public void setDatatypeValidatorFactory(DatatypeValidatorFactory factory) {
+        fDatatypeValidatorFactory = factory;
+    }
 
     /**
      * Returns true if the specified element declaration is external.
@@ -484,7 +493,7 @@ public class DTDGrammar
         }
         fSimpleType.defaultValue      = defaultValue.length >= 0 ?  defaultValue.toString() : null;
         fSimpleType.enumeration       = enumeration;
-        fSimpleType.datatypeValidator = DatatypeValidatorFactoryImpl.getDatatypeRegistry().getDatatypeValidator(type);
+        fSimpleType.datatypeValidator = fDatatypeValidatorFactory.createDatatypeValidator(type, null, null, false);
 
         if (type.equals("CDATA")) {
             fSimpleType.type = XMLSimpleType.TYPE_CDATA;

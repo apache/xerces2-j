@@ -60,6 +60,7 @@ package org.apache.xerces.impl;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.ContentModelValidator;
+import org.apache.xerces.impl.validation.DatatypeValidatorFactory;
 import org.apache.xerces.impl.validation.Grammar;
 import org.apache.xerces.impl.validation.GrammarPool;
 import org.apache.xerces.impl.validation.XMLAttributeDecl;
@@ -129,6 +130,9 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
     /** fNamespaceBinder */
     protected XMLNamespaceBinder fNamespaceBinder;
+
+    /** Datatype validator factory. */
+    protected DatatypeValidatorFactory fDatatypeValidatorFactory;
 
     // features
 
@@ -239,7 +243,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
     /** Datatype Registry and attribute validators */
 
-    private DatatypeValidatorFactoryImpl fDataTypeReg;
+    //private DatatypeValidatorFactoryImpl fDataTypeReg;
     private IDDatatypeValidator          fValID;
     private IDREFDatatypeValidator       fValIDRef;
     private ListDatatypeValidator        fValIDRefs;
@@ -327,6 +331,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         fErrorReporter = (XMLErrorReporter)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.ERROR_REPORTER_PROPERTY);
         fSymbolTable = (SymbolTable)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SYMBOL_TABLE_PROPERTY);
         fGrammarPool = (GrammarPool)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.GRAMMAR_POOL_PROPERTY);
+        fDatatypeValidatorFactory = (DatatypeValidatorFactory)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX + Constants.DATATYPE_VALIDATOR_FACTORY_PROPERTY);
 
         for (int i = 0; i < fElementQNamePartsStack.length; i++) {
             fElementQNamePartsStack[i] = new QName();
@@ -1080,7 +1085,8 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         fDTDElementDecls.removeAllElements();
 
         // create DTD grammar
-        fDTDGrammar = new DTDGrammar();
+        fDTDGrammar = createDTDGrammar();
+        fDTDGrammar.setDatatypeValidatorFactory(fDatatypeValidatorFactory);
         // REVISIT: should we use the systemId as the key instead?
         fGrammarPool.putGrammar("", fDTDGrammar);
 
@@ -1472,7 +1478,6 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         // save grammar
         fDTDGrammar.endDTD();
         fCurrentGrammar = fDTDGrammar;
-        fDTDGrammar = null;
         // REVESIT: if schema validation is turned on, we shouldn't be doing this.
         fCurrentGrammarIsDTD = true;
         fCurrentGrammarIsSchema = false;
@@ -2317,7 +2322,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
     /** Root element specified. */
     private void rootElementSpecified(QName rootElement) throws SAXException {
-        if (fValidation) {
+        if (fValidation && fCurrentGrammarIsDTD) {
             String root1 = fRootElement.rawname;
             String root2 = rootElement.rawname;
             if (root1 == null || !root1.equals(root2)) {
@@ -2534,9 +2539,10 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
             fDataTypeReg = new DatatypeValidatorFactoryImpl();
             */
 
+            /***
             fDataTypeReg = DatatypeValidatorFactoryImpl.getDatatypeRegistry();//To be commented or deleted  when no Singleton
             fDataTypeReg.initializeDTDRegistry();
-
+            
             fValID       = (IDDatatypeValidator) fDataTypeReg.getDatatypeValidator("ID" );
             fValIDRef    = (IDREFDatatypeValidator) fDataTypeReg.getDatatypeValidator("IDREF" );
             fValIDRefs   = (ListDatatypeValidator) fDataTypeReg.getDatatypeValidator("IDREFS" );
@@ -2545,7 +2551,22 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
             fValNMTOKEN  = fDataTypeReg.getDatatypeValidator("NMTOKEN");
             fValNMTOKENS = fDataTypeReg.getDatatypeValidator("NMTOKENS");
             fValNOTATION = (NOTATIONDatatypeValidator) fDataTypeReg.getDatatypeValidator("NOTATION" );
-
+            /***/
+            try {
+                fValID       = (IDDatatypeValidator)fDatatypeValidatorFactory.createDatatypeValidator("ID", null, null, false);
+                fValIDRef    = (IDREFDatatypeValidator) fDatatypeValidatorFactory.createDatatypeValidator("IDREF", null, null, false);
+                fValIDRefs   = (ListDatatypeValidator) fDatatypeValidatorFactory.createDatatypeValidator("IDREFS", null, null, false);
+                fValENTITY   = (ENTITYDatatypeValidator) fDatatypeValidatorFactory.createDatatypeValidator("ENTITY", null, null, false);
+                fValENTITIES = (ListDatatypeValidator) fDatatypeValidatorFactory.createDatatypeValidator("ENTITIES", null, null, false);
+                fValNMTOKEN  = fDatatypeValidatorFactory.createDatatypeValidator("NMTOKEN", null, null, false);
+                fValNMTOKENS = fDatatypeValidatorFactory.createDatatypeValidator("NMTOKENS", null, null, false);
+                fValNOTATION = (NOTATIONDatatypeValidator) fDatatypeValidatorFactory.createDatatypeValidator("NOTATION", null, null, false);
+            }
+            catch (Exception e) {
+                // should never happen
+                e.printStackTrace(System.err);
+            }
+            /***/
 
             //Initialize ID, IDREF, IDREFS validators
             if (fTableOfIDs == null) {
@@ -2593,5 +2614,14 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         }
     } // ensureStackCapacity
 
+
+    //
+    // Protected methods
+    //
+
+    /** Factory method for creating a DTD grammar. */
+    protected DTDGrammar createDTDGrammar() {
+        return new DTDGrammar();
+    } // createDTDGrammar():DTDGrammar
 
 } // class XMLValidator

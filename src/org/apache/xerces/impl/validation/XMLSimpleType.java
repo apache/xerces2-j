@@ -111,7 +111,7 @@ public class XMLSimpleType {
     public short type;
 
     /** name */
-    protected String name;
+    public String name;
 
     /** enumeration */
     public String[] enumeration;

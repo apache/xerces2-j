@@ -67,7 +67,8 @@ import org.apache.xerces.impl.XMLInputSource;
 import org.apache.xerces.impl.XMLValidator;
 import org.apache.xerces.impl.validation.DatatypeValidatorFactory;
 import org.apache.xerces.impl.validation.GrammarPool;
-import org.apache.xerces.impl.validation.validators.XMLDTDValidator;
+import org.apache.xerces.impl.validation.datatypes.DatatypeValidatorFactoryImpl;
+//import org.apache.xerces.impl.validation.validators.XMLDTDValidator;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
@@ -187,10 +188,14 @@ public abstract class XMLDocumentParser
         final String DTD_SCANNER = Constants.XERCES_PROPERTY_PREFIX + Constants.DTD_SCANNER_PROPERTY;
         fProperties.put(DTD_SCANNER, fDTDScanner);
 
-        fValidator = new XMLValidator();
+        fValidator = createValidator();
         final String VALIDATOR = Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATOR_PROPERTY;
         fProperties.put(VALIDATOR, fValidator);
         
+        fDatatypeValidatorFactory = createDatatypeValidatorFactory();
+        final String DATATYPE_VALIDATOR_FACTORY = Constants.XERCES_PROPERTY_PREFIX + Constants.DATATYPE_VALIDATOR_FACTORY_PROPERTY;
+        fProperties.put(DATATYPE_VALIDATOR_FACTORY, fDatatypeValidatorFactory);
+
         /***
         fDatatypeValidatorFactory = new DatatypeValidatorFactory();
         final String DATATYE_VALIDATOR_FACTORY = Constants.XERCES_PROPERTY_PREFIX + Constants.DATATYE_VALIDATOR_FACTORY_PROPERTY;
@@ -990,5 +995,19 @@ public abstract class XMLDocumentParser
         super.checkProperty(propertyId);
 
     } // checkProperty(String)
+
+    //
+    // Protected methods
+    //
+
+    /** Create a validator. */
+    protected XMLValidator createValidator() {
+        return new XMLValidator();
+    } // createValidator():XMLValidator
+
+    /** Create a datatype validator factory. */
+    protected DatatypeValidatorFactory createDatatypeValidatorFactory() {
+        return new DatatypeValidatorFactoryImpl();
+    } // createDatatypeValidatorFactory():DatatypeValidatorFactory
 
 } // class XMLDocumentParser
