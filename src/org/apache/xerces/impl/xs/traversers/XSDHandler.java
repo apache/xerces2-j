@@ -966,6 +966,9 @@ public class XSDHandler {
             keyrefSchemaDoc.fNamespaceSupport.makeGlobal();
             keyrefSchemaDoc.fNamespaceSupport.setEffectiveContext( fKeyrefNamespaceContext[i] );
             SchemaGrammar keyrefGrammar = fGrammarResolver.getGrammar(keyrefSchemaDoc.fTargetNamespace);
+            // need to set <keyref> to hidden before traversing it,
+            // because it has global scope
+            DOMUtil.setHidden(fKeyrefs[i]);
             fKeyrefTraverser.traverse(fKeyrefs[i], fKeyrefElems[i], keyrefSchemaDoc, keyrefGrammar);
         }
     } // end resolveKeyRefs
