@@ -58,9 +58,9 @@
 package org.apache.xerces.parsers;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Locale;
-import java.util.Vector;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.ParserConfigurationSettings;
@@ -190,7 +190,7 @@ public abstract class BasicParserConfiguration
     protected Locale fLocale;
 
     /** Components. */
-    protected Vector fComponents;
+    protected ArrayList fComponents;
 
     // handlers
 
@@ -236,11 +236,11 @@ public abstract class BasicParserConfiguration
         super(parentSettings);
 
         // create a vector to hold all the components in use
-        fComponents = new Vector();
+        fComponents = new ArrayList();
 
         // create storage for recognized features and properties
-        fRecognizedFeatures = new Vector();
-        fRecognizedProperties = new Vector();
+        fRecognizedFeatures = new ArrayList();
+        fRecognizedProperties = new ArrayList();
 
         // create table for features and properties
         fFeatures = new Hashtable();
@@ -292,7 +292,7 @@ public abstract class BasicParserConfiguration
         if (fComponents.contains(component)) {
             return;
         }
-        fComponents.addElement(component);
+        fComponents.add(component);
 
         // register component's recognized features
         String[] recognizedFeatures = component.getRecognizedFeatures();
@@ -482,7 +482,7 @@ public abstract class BasicParserConfiguration
         // forward to every component
         int count = fComponents.size();
         for (int i = 0; i < count; i++) {
-            XMLComponent c = (XMLComponent) fComponents.elementAt(i);
+            XMLComponent c = (XMLComponent) fComponents.get(i);
             c.setFeature(featureId, state);
         }
         // save state if noone "objects"
@@ -502,7 +502,7 @@ public abstract class BasicParserConfiguration
         // forward to every component
         int count = fComponents.size();
         for (int i = 0; i < count; i++) {
-            XMLComponent c = (XMLComponent) fComponents.elementAt(i);
+            XMLComponent c = (XMLComponent) fComponents.get(i);
             c.setProperty(propertyId, value);
         }
 
@@ -540,7 +540,7 @@ public abstract class BasicParserConfiguration
         // reset every component
         int count = fComponents.size();
         for (int i = 0; i < count; i++) {
-            XMLComponent c = (XMLComponent) fComponents.elementAt(i);
+            XMLComponent c = (XMLComponent) fComponents.get(i);
             c.reset(this);
         }
 

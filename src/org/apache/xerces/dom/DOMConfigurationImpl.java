@@ -58,6 +58,7 @@
 package org.apache.xerces.dom;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Locale;
 import java.util.Vector;
@@ -200,7 +201,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
     protected SymbolTable fSymbolTable;
 
     /** Components. */
-    protected Vector fComponents;
+    protected ArrayList fComponents;
 
     protected ValidationManager fValidationManager;
 
@@ -248,8 +249,8 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
         super(parentSettings);
 
         // create storage for recognized features and properties
-        fRecognizedFeatures = new Vector();
-        fRecognizedProperties = new Vector();
+        fRecognizedFeatures = new ArrayList();
+        fRecognizedProperties = new ArrayList();
 
         // create table for features and properties
         fFeatures = new Hashtable();
@@ -302,7 +303,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
         }
         fSymbolTable = symbolTable;
 
-        fComponents = new Vector();
+        fComponents = new ArrayList();
 
         setProperty(SYMBOL_TABLE, fSymbolTable);
         fErrorReporter = new XMLErrorReporter();
@@ -1027,7 +1028,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 
         int count = fComponents.size();
         for (int i = 0; i < count; i++) {
-            XMLComponent c = (XMLComponent) fComponents.elementAt(i);
+            XMLComponent c = (XMLComponent) fComponents.get(i);
             c.reset(this);
         }
 
@@ -1081,7 +1082,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
         if (fComponents.contains(component)) {
             return;
         }
-        fComponents.addElement(component);
+        fComponents.add(component);
 
         // register component's recognized features
         String[] recognizedFeatures = component.getRecognizedFeatures();

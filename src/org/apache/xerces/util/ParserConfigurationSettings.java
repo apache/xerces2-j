@@ -57,6 +57,7 @@
 
 package org.apache.xerces.util;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -92,13 +93,13 @@ public class ParserConfigurationSettings
     // data
 
     /** Recognized properties. */
-    protected Vector fRecognizedProperties;
+    protected ArrayList fRecognizedProperties;
 
     /** Properties. */
     protected Hashtable fProperties;
 
     /** Recognized features. */
-    protected Vector fRecognizedFeatures;
+    protected ArrayList fRecognizedFeatures;
 
     /** Features. */
     protected Hashtable fFeatures;
@@ -122,8 +123,8 @@ public class ParserConfigurationSettings
     public ParserConfigurationSettings(XMLComponentManager parent) {
 
         // create storage for recognized features and properties
-        fRecognizedFeatures = new Vector();
-        fRecognizedProperties = new Vector();
+        fRecognizedFeatures = new ArrayList();
+        fRecognizedProperties = new ArrayList();
 
         // create table for features and properties
         fFeatures = new Hashtable();
@@ -152,7 +153,7 @@ public class ParserConfigurationSettings
         for (int i = 0; i < featureIdsCount; i++) {
             String featureId = featureIds[i];
             if (!fRecognizedFeatures.contains(featureId)) {
-                fRecognizedFeatures.addElement(featureId);
+                fRecognizedFeatures.add(featureId);
             }
         }
 
@@ -194,7 +195,7 @@ public class ParserConfigurationSettings
         for (int i = 0; i < propertyIdsCount; i++) {
             String propertyId = propertyIds[i];
             if (!fRecognizedProperties.contains(propertyId)) {
-                fRecognizedProperties.addElement(propertyId);
+                fRecognizedProperties.add(propertyId);
             }
         }
 
