@@ -708,19 +708,30 @@ public class XMLDocumentScannerImpl
                                 reportFatalError("AlreadySeenDoctype", null);
                             }
                             fSeenDoctypeDecl = true;
+
+                            // scanDoctypeDecl() sends XNI doctypeDecl event that 
+                            // in SAX is converted to startDTD() event.
                             if (scanDoctypeDecl()) {
                                 setScannerState(SCANNER_STATE_DTD_INTERNAL_DECLS);
                                 setDispatcher(fDTDDispatcher);
                                 return true;
                             }
-                            if (fDoctypeSystemId == null) {
-                                fDTDScanner.setInputSource(null);
-                            }
+
                             if (fDoctypeSystemId != null && ((fValidation || fLoadExternalDTD) 
                                     && (fValidationManager == null || !fValidationManager.isCachedDTD()))) {
                                 setScannerState(SCANNER_STATE_DTD_EXTERNAL);
                                 setDispatcher(fDTDDispatcher);
                                 return true;
+                            } 
+                            else {
+                                // Send endDTD() call if: 
+                                // a) systemId is null
+                                // b) "load-external-dtd" and validation are false
+                                // c) DTD grammar is cached
+                                
+                                // in XNI this results in 3 events:  doctypeDecl, startDTD, endDTD
+                                // in SAX this results in 2 events: startDTD, endDTD
+                                fDTDScanner.setInputSource(null);
                             }
                             setScannerState(SCANNER_STATE_PROLOG);
                             break;
@@ -793,6 +804,7 @@ public class XMLDocumentScannerImpl
                             // REVISIT: Should there be a feature for
                             //          the "complete" parameter?
                             boolean completeDTD = true;
+
                             boolean moreToScan = fDTDScanner.scanDTDInternalSubset(completeDTD, fStandalone, fHasExternalDTD && fLoadExternalDTD);
                             if (!moreToScan) {
                                 // end doctype declaration
