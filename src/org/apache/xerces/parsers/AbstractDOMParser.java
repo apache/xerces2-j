@@ -161,8 +161,8 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
 
     // debugging
 
-    private static final boolean DEBUG_EVENTS = true;
-    private static final boolean DEBUG_BASEURI = true;
+    private static final boolean DEBUG_EVENTS = false;
+    private static final boolean DEBUG_BASEURI = false;
 
     //
     // Data
