@@ -289,6 +289,7 @@ public class SchemaGrammar extends Grammar{
           return expandContentModel(contentSpecIndex,minOccurs,maxOccurs);
         }
         else if (fTempContentSpecNode.type == XMLContentSpec.CONTENTSPECNODE_CHOICE ||
+                 fTempContentSpecNode.type == XMLContentSpec.CONTENTSPECNODE_ALL ||
                  fTempContentSpecNode.type == XMLContentSpec.CONTENTSPECNODE_SEQ) {
 
           int left = fTempContentSpecNode.value;

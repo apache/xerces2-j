@@ -162,7 +162,7 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         AnnotationError = 26,
         ListUnionRestrictionError = 27,
         ProhibitedAttributePresent = 28,
-        // identity constaints
+        // identity constraints
         UniqueNotEnoughValues = 29,
         KeyNotEnoughValues = 30,
         KeyRefNotEnoughValues = 31,
@@ -179,9 +179,15 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         KeyRefOutOfScope = 41,
         AbsentKeyValue = 42, 
         KeyMatchesNillable = 43,
+        BadMinMaxForAll = 44,
+        BadMinMaxForGroupWithAll = 45,
+        SeqChoiceContentRestricted = 46,
+        AllContentRestricted = 47,
+        AllContentLimited = 48,
+        MinMaxOnGroupChild = 49,
         // ...
-        
-        MSG_MAX_CODE = 44;
+
+        MSG_MAX_CODE = 50;
     //
     // Minor Codes
     //
@@ -234,6 +240,12 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         "KeyRefOutOfScope",
         "AbsentKeyValue", 
         "KeyMatchesNillable", 
+        "BadMinMaxForAll",
+        "BadMinMaxForGroupWithAll",
+        "SeqChoiceContentRestricted",
+        "AllContentRestricted",
+        "AllContentLimited",
+        "MinMaxOnGroupChild",
         // END
     };
 }

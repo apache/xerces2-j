@@ -145,7 +145,18 @@ public class TraverseSchema implements
     };
     private static final String redefIdentifier = "_redefined";
 
-    //debuggin
+    // Flags for handleOccurrences to indicate any special
+    // restrictions on minOccurs and maxOccurs relating to "all".
+    //    NOT_ALL_CONTEXT    - not processing an <all>
+    //    PROCESSING_ALL     - processing an <element> in an <all>
+    //    GROUP_REF_WITH_ALL - processing <group> reference that contained <all>
+    //    CHILD_OF_GROUP     - processing a child of a model group definition
+    private static final int NOT_ALL_CONTEXT    = 0;
+    private static final int PROCESSING_ALL     = 1;
+    private static final int GROUP_REF_WITH_ALL = 2;
+    private static final int CHILD_OF_GROUP     = 4;
+
+    //debugging
     private static final boolean DEBUGGING = false;
 
     /** Compile to true to debug identity constraints. */
@@ -851,7 +862,7 @@ public class TraverseSchema implements
         Hashtable attrValues = fGeneralAttrCheck.checkAttributes(includeDecl, scope);
 
         Attr locationAttr = includeDecl.getAttributeNode(SchemaSymbols.ATT_SCHEMALOCATION);
-	    if (locationAttr == null) {
+        if (locationAttr == null) {
             // REVISIT: Localize
             reportGenericSchemaError("a schemaLocation attribute must be specified on an <include> element");
             return;
@@ -1127,7 +1138,7 @@ public class TraverseSchema implements
         Hashtable attrValues = fGeneralAttrCheck.checkAttributes(redefineDecl, scope);
 
         Attr locationAttr = redefineDecl.getAttributeNode(SchemaSymbols.ATT_SCHEMALOCATION);
-	    if (locationAttr == null) {
+        if (locationAttr == null) {
             // REVISIT: Localize
             fRedefineSucceeded = false;
             reportGenericSchemaError("a schemaLocation attribute must be specified on a <redefine> element");
@@ -1147,7 +1158,7 @@ public class TraverseSchema implements
         }
         else {
             // Make sure we don't redefine the same schema twice; it's allowed 
-			// but the specs encourage us to avoid it.  
+            // but the specs encourage us to avoid it.  
             if (source.getPublicId () != null)
                 location = source.getPublicId ();
 
@@ -1188,29 +1199,29 @@ public class TraverseSchema implements
             root = document.getDocumentElement();
         }
 
-		if (root == null) { // nothing to be redefined, so just continue; specs disallow an error here. 
+        if (root == null) { // nothing to be redefined, so just continue; specs disallow an error here. 
             fRedefineSucceeded = false;
             return; 
         }
 
-		// now if root isn't null, it'll contain the root of the schema we need to redefine.  
-		// We do this in two phases:  first, we look through the children of
-		// redefineDecl.  Each one will correspond to an element of the
-		// redefined schema that we need to redefine.  To do this, we rename the
-		// element of the redefined schema, and rework the base or ref tag of
-		// the kid we're working on to refer to the renamed group or derive the
-		// renamed type.  Once we've done this, we actually go through the
-		// schema being redefined and convert it to a grammar.  Only then do we
-		// run through redefineDecl's kids and put them in the grammar.  
-		//
-		// This approach is kosher with the specs.  It does raise interesting
-		// questions about error reporting, and perhaps also about grammar
-		// access, but it is comparatively efficient (we need make at most
-		// only 2 traversals of any given information item) and moreover 
-		// we can use existing code to build the grammar structures once the
-		// first pass is out of the way, so this should be quite robust.  
+        // now if root isn't null, it'll contain the root of the schema we need to redefine.  
+        // We do this in two phases:  first, we look through the children of
+        // redefineDecl.  Each one will correspond to an element of the
+        // redefined schema that we need to redefine.  To do this, we rename the
+        // element of the redefined schema, and rework the base or ref tag of
+        // the kid we're working on to refer to the renamed group or derive the
+        // renamed type.  Once we've done this, we actually go through the
+        // schema being redefined and convert it to a grammar.  Only then do we
+        // run through redefineDecl's kids and put them in the grammar.  
+        //
+        // This approach is kosher with the specs.  It does raise interesting
+        // questions about error reporting, and perhaps also about grammar
+        // access, but it is comparatively efficient (we need make at most
+        // only 2 traversals of any given information item) and moreover 
+        // we can use existing code to build the grammar structures once the
+        // first pass is out of the way, so this should be quite robust.  
 
-		// check to see if the targetNameSpace is right
+        // check to see if the targetNameSpace is right
         String redefinedTargetNSURIString = root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE);
         if (redefinedTargetNSURIString.length() > 0 && !redefinedTargetNSURIString.equals(fTargetNSURIString) ) {
             // REVISIT: Localize
@@ -1219,9 +1230,9 @@ public class TraverseSchema implements
                                      +redefinedTargetNSURIString+"' from the original schema");
         }
         else {
-			// targetNamespace is right, so let's do the renaming...
-			// and let's keep in mind that the targetNamespace of the redefined
-			// elements is that of the redefined schema!  
+            // targetNamespace is right, so let's do the renaming...
+            // and let's keep in mind that the targetNamespace of the redefined
+            // elements is that of the redefined schema!  
             fSchemaRootElement = root;
             fCurrentSchemaURL = location;
             // get default form xmlns bindings et al. 
@@ -1236,14 +1247,14 @@ public class TraverseSchema implements
         } // end if
     } // end openRedefinedSchema
 
-	/****
-	 * <redefine
-  	 *		schemaLocation = uriReference 
-  	 *		{any attributes with non-schema namespace . . .}>
-  	 *		Content: (annotation | (
-	 *			attributeGroup | complexType | group | simpleType))* 
-	 *	</redefine> 
-	 */
+    /****
+     * <redefine
+       *        schemaLocation = uriReference 
+       *        {any attributes with non-schema namespace . . .}>
+       *        Content: (annotation | (
+     *            attributeGroup | complexType | group | simpleType))* 
+     *    </redefine> 
+     */
     private void traverseRedefine(Element redefineDecl) throws Exception {
 
         // initialize storage areas...
@@ -2139,7 +2150,14 @@ public class TraverseSchema implements
                 if (union) {
                     dTValidators.addElement((DatatypeValidator)baseValidator); //add validator to structure
                 }
-                
+                //REVISIT: Should we raise exception here?
+                // if baseValidator.isInstanceOf(LIST) and UNION
+                if ( list && (baseValidator instanceof UnionDatatypeValidator)) {
+                    reportSchemaError(SchemaMessageProvider.UnknownBaseDatatype,
+                                      new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_BASE ),
+                                          simpleTypeDecl.getAttribute(SchemaSymbols.ATT_NAME)});
+                    return -1;
+                }
             }
         } //end - base is available
         
@@ -3759,8 +3777,12 @@ public class TraverseSchema implements
           String childName = complexContentChild.getLocalName();
 
           if (childName.equals(SchemaSymbols.ELT_GROUP)) {
-               index = handleOccurrences(traverseGroupDecl(complexContentChild), 
-                                          complexContentChild);
+               int groupIndex = traverseGroupDecl(complexContentChild); 
+
+               index = handleOccurrences(groupIndex,
+                                complexContentChild,
+                                hasAllContent(groupIndex) ? GROUP_REF_WITH_ALL :
+                                                            NOT_ALL_CONTEXT);
                attrNode = XUtil.getNextSiblingElement(complexContentChild);
            }
            else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
@@ -3775,10 +3797,8 @@ public class TraverseSchema implements
            }
            else if (childName.equals(SchemaSymbols.ELT_ALL)) {
                index = handleOccurrences(traverseAll(complexContentChild), 
-                                      complexContentChild);
+                                         complexContentChild, PROCESSING_ALL);
                attrNode = XUtil.getNextSiblingElement(complexContentChild);
-               //TO DO: REVISIT 
-               //check that minOccurs = 1 and maxOccurs = 1  
            }
            else if (isAttrOrAttrGroup(complexContentChild)) {
                // reset the contentType
@@ -3870,6 +3890,12 @@ public class TraverseSchema implements
                    typeInfo.contentSpecHandle = baseContentSpecHandle;
                }
                else if (baseContentSpecHandle > -1) {
+                   if (typeInfo.contentSpecHandle > -1 &&
+                       (hasAllContent(typeInfo.contentSpecHandle) ||
+                        hasAllContent(baseContentSpecHandle))) {
+                       throw new ComplexTypeRecoverableError("cos-all-limited:  An \"all\" model group that is part of a complex type definition must constitute the entire {content type} of the definition.");
+                   }
+
                    typeInfo.contentSpecHandle = 
                    fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ, 
                                                      baseContentSpecHandle,
@@ -5058,30 +5084,72 @@ throws Exception {
         
         }
     }
-    
+
+    private int handleOccurrences(int index,
+                                  Element particle) throws Exception {
+        // Pass through, indicating we're not processing an <all>
+        return handleOccurrences(index, particle, NOT_ALL_CONTEXT);
+    }
+
     // Checks constraints for minOccurs, maxOccurs and expands content model 
     // accordingly
-    private int handleOccurrences ( int index, Element particle) throws Exception {
+    private int handleOccurrences(int index, Element particle,
+                                  int allContextFlags) throws Exception {
         
         // if index is invalid, return
         if (index < 0) 
           return index;
         
-        String minOccurs = particle.getAttribute(SchemaSymbols.ATT_MINOCCURS).trim();
-        String maxOccurs = particle.getAttribute(SchemaSymbols.ATT_MAXOCCURS).trim();    
+        String minOccurs =
+                    particle.getAttribute(SchemaSymbols.ATT_MINOCCURS).trim();
+        String maxOccurs =
+                    particle.getAttribute(SchemaSymbols.ATT_MAXOCCURS).trim();    
+        boolean processingAll   = ((allContextFlags & PROCESSING_ALL) != 0);
+        boolean groupRefWithAll = ((allContextFlags & GROUP_REF_WITH_ALL) != 0);
+        boolean isGroupChild    = ((allContextFlags & CHILD_OF_GROUP) != 0);
 
-        int min=1, max=1;
+        // Neither minOccurs nor maxOccurs may be specified
+        // for the child of a model group definition.
+        if (isGroupChild && (!minOccurs.equals("") || !maxOccurs.equals(""))) {
+            reportSchemaError(SchemaMessageProvider.MinMaxOnGroupChild, null);
+            minOccurs = (maxOccurs = "1");
+        }
 
         // If minOccurs=maxOccurs=0, no component is specified
         if(minOccurs.equals("0") && maxOccurs.equals("0")){
             return -2;
         }
 
+        int min=1, max=1;
+
         if (minOccurs.equals("")) {
             minOccurs = "1";
         }
         if (maxOccurs.equals("")) {
+            maxOccurs = "1";
+        }
+
+        // For the elements referenced in an <all>, minOccurs attribute 
+        // must be zero or one, and maxOccurs attribute must be one.
+        if (processingAll || groupRefWithAll) {
+            if ((groupRefWithAll || !minOccurs.equals("0")) &&
+                 !minOccurs.equals("1")) {
+                int minMsg = processingAll ?
+                             SchemaMessageProvider.BadMinMaxForAll :
+                             SchemaMessageProvider.BadMinMaxForGroupWithAll;
+                reportSchemaError(minMsg, new Object [] { "minOccurs",
+                                                          minOccurs });
+                minOccurs = "1";
+            }
+
+            if (!maxOccurs.equals("1")) {
+                int maxMsg = processingAll ?
+                             SchemaMessageProvider.BadMinMaxForAll :
+                             SchemaMessageProvider.BadMinMaxForGroupWithAll;
+                reportSchemaError(maxMsg, new Object [] { "maxOccurs",
+                                                          maxOccurs });
                 maxOccurs = "1";
+            }
         }
 
         try {
@@ -7324,12 +7392,12 @@ throws Exception {
 		Element child = checkContent( groupDecl, XUtil.getFirstChildElement(groupDecl), true );
 
         if (!ref.equals("")) {
-			if(isTopLevel(groupDecl)) 
-				// REVISIT:  localize 
-   	    	    reportGenericSchemaError ( "A group with \"ref\" present must not have <schema> or <redefine> as its parent");
-			if(!groupName.equals(""))
-				// REVISIT:  localize 
-   	    	    reportGenericSchemaError ( "group " + groupName + " cannot refer to another group, but it refers to " + ref);
+            if (isTopLevel(groupDecl)) 
+                // REVISIT:  localize 
+                reportGenericSchemaError ( "A group with \"ref\" present must not have <schema> or <redefine> as its parent");
+                if (!groupName.equals(""))
+                // REVISIT:  localize 
+                    reportGenericSchemaError ( "group " + groupName + " cannot refer to another group, but it refers to " + ref);
             String prefix = "";
             String localpart = ref;
             int colonptr = ref.indexOf(":");
@@ -7404,6 +7472,7 @@ throws Exception {
         boolean illegalChild = false;
 		String childName = 
         	(child != null) ? child.getLocalName() : "";
+
         if (childName.equals(SchemaSymbols.ELT_ALL)) {
             index = traverseAll(child);
         } 
@@ -7424,7 +7493,7 @@ throws Exception {
                               new Object [] { "group", childName });
         }
         if ( ! illegalChild && child != null) {
-            index = handleOccurrences( index, child);
+            index = handleOccurrences(index, child, CHILD_OF_GROUP);
         }
 
 	contentSpecHolder = new Integer(index);
@@ -7528,11 +7597,7 @@ throws Exception {
             
         Element child = checkContent(sequenceDecl, XUtil.getFirstChildElement(sequenceDecl), true);
 
-        int contentSpecType = 0;
-        int csnType = 0;
-
-        csnType = XMLContentSpec.CONTENTSPECNODE_SEQ;
-        contentSpecType = XMLElementDecl.TYPE_CHILDREN;
+        int csnType = XMLContentSpec.CONTENTSPECNODE_SEQ;
 
         int left = -2;
         int right = -2;
@@ -7542,7 +7607,6 @@ throws Exception {
              child != null;
              child = XUtil.getNextSiblingElement(child)) {
             int index = -2;
-            hadContent = true;
 
             boolean seeParticle = false;
             String childName = child.getLocalName();
@@ -7557,8 +7621,15 @@ throws Exception {
             } 
             else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
                 index = traverseGroupDecl(child);
-                if (index == -1) 
+
+                // A content type of all can only appear
+                // as the content type of a complex type definition.
+                if (hasAllContent(index)) {
+                    reportSchemaError(SchemaMessageProvider.AllContentLimited,
+                                      new Object [] { "sequence" });
                     continue;
+                }
+
                 seeParticle = true;
 
             } 
@@ -7577,9 +7648,14 @@ throws Exception {
                 seeParticle = true;
             } 
             else {
-                reportSchemaError(SchemaMessageProvider.GroupContentRestricted,
-                                  new Object [] { "group", childName });
+                reportSchemaError(
+                             SchemaMessageProvider.SeqChoiceContentRestricted,
+                             new Object [] { "sequence", childName });
+                continue;
             }
+
+            if (index != -2)
+                hadContent = true;
 
             if (seeParticle) {
                 index = handleOccurrences( index, child);
@@ -7595,10 +7671,9 @@ throws Exception {
         }
 
         if (hadContent) {
-          if (right != -2) 
-              left = fSchemaGrammar.addContentSpecNode(csnType, left, right, false);
-          else if (fSchemaGrammar.getDeferContentSpecExpansion())
-              left = fSchemaGrammar.addContentSpecNode(csnType, left, -2, false);
+            if (right != -2 || fSchemaGrammar.getDeferContentSpecExpansion())
+                left = fSchemaGrammar.addContentSpecNode(csnType, left, right,
+                                                         false);
         }
 
         return left;
@@ -7624,11 +7699,7 @@ throws Exception {
         // REVISIT: traverseChoice, traverseSequence can be combined
         Element child = checkContent(choiceDecl, XUtil.getFirstChildElement(choiceDecl), true);
 
-        int contentSpecType = 0;
-        int csnType = 0;
-
-        csnType = XMLContentSpec.CONTENTSPECNODE_CHOICE;
-        contentSpecType = XMLElementDecl.TYPE_CHILDREN;
+        int csnType = XMLContentSpec.CONTENTSPECNODE_CHOICE;
 
         int left = -2;
         int right = -2;
@@ -7638,7 +7709,6 @@ throws Exception {
              child != null;
              child = XUtil.getNextSiblingElement(child)) {
             int index = -2;
-            hadContent = true;
 
             boolean seeParticle = false;
             String childName = child.getLocalName();
@@ -7653,8 +7723,15 @@ throws Exception {
             } 
             else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
                 index = traverseGroupDecl(child);
-                if (index == -1) 
+
+                // A model group whose {compositor} is "all" can only appear
+                // as the {content type} of a complex type definition.
+                if (hasAllContent(index)) {
+                    reportSchemaError(SchemaMessageProvider.AllContentLimited,
+                                      new Object [] { "choice" });
                     continue;
+                }
+
                 seeParticle = true;
 
             } 
@@ -7673,13 +7750,19 @@ throws Exception {
                 seeParticle = true;
             } 
             else {
-                reportSchemaError(SchemaMessageProvider.GroupContentRestricted,
-                                  new Object [] { "group", childName });
+                reportSchemaError(
+                              SchemaMessageProvider.SeqChoiceContentRestricted,
+                              new Object [] { "choice", childName });
+                continue;
             }
+
+            if (index != -2)
+                hadContent = true;
 
             if (seeParticle) {
                 index = handleOccurrences( index, child);
             }
+
             if (left == -2) {
                 left = index;
             } else if (right == -2) {
@@ -7692,264 +7775,105 @@ throws Exception {
 
 
         if (hadContent) {
-          if (right != -2) 
-              left = fSchemaGrammar.addContentSpecNode(csnType, left, right, false);
-          else if (fSchemaGrammar.getDeferContentSpecExpansion())
-              left = fSchemaGrammar.addContentSpecNode(csnType, left, -2, false);
+            if (right != -2 || fSchemaGrammar.getDeferContentSpecExpansion())
+                left = fSchemaGrammar.addContentSpecNode(csnType, left, right,
+                                                         false);
         }
         return left;
     }
     
 
    /**
-    * 
+    *
     * Traverse the "All" declaration
     *
-    * <all 
-    *   id = ID 
-    *   maxOccurs = string 
-    *   minOccurs = nonNegativeInteger>
-    *   Content: (annotation? , (element | group | choice | sequence | any)*)
+    * <all
+    *   id = ID
+    *   maxOccurs = 1 : 1
+    *   minOccurs = (0 | 1) : 1>
+    *   Content: (annotation? , element*)
     * </all>
-    *   
     **/
 
-    int traverseAll( Element allDecl) throws Exception {
+    int traverseAll(Element allDecl) throws Exception {
         // General Attribute Checking
         int scope = GeneralAttrCheck.ELE_CONTEXT_LOCAL;
         Hashtable attrValues = fGeneralAttrCheck.checkAttributes(allDecl, scope);
 
-        Element child = checkContent(allDecl, XUtil.getFirstChildElement(allDecl), true);
-		if (child == null) return -2;
+        Element child = checkContent(allDecl,
+                                     XUtil.getFirstChildElement(allDecl), true);
 
-        int allChildren[] = null;
-        int allChildCount = 0;
+        int csnType = XMLContentSpec.CONTENTSPECNODE_ALL;
 
         int left = -2;
+        int right = -2;
+        boolean hadContent = false;
 
         for (;
              child != null;
              child = XUtil.getNextSiblingElement(child)) {
-
             int index = -2;
-            boolean seeParticle = false;
 
             String childName = child.getLocalName();
 
+            // Only elements are allowed in <all>
             if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
                 QName eltQName = traverseElementDecl(child);
-                index = fSchemaGrammar.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_LEAF,
-                                                       eltQName.localpart,
-                                                       eltQName.uri, 
-                                                       false);
-                seeParticle = true;
+                index = fSchemaGrammar.addContentSpecNode(
+                                           XMLContentSpec.CONTENTSPECNODE_LEAF,
+                                           eltQName.localpart,
+                                           eltQName.uri, 
+                                           false);
 
+                index = handleOccurrences(index, child, PROCESSING_ALL);
             } 
             else {
-                reportGenericSchemaError("Content of all group is restricted to elements only.  '" +  
-               
-                childName + "' was seen and is being ignored");
-                break;
+                reportSchemaError(SchemaMessageProvider.AllContentRestricted,
+                                  new Object [] { childName });
+                continue;
             }
 
-            if (seeParticle) {
-                index = handleOccurrences( index, child);
+            hadContent = true;
+
+            if (left == -2) { 
+                left = index;
+            } else if (right == -2) {
+                right = index;
+            } else {
+                left = fSchemaGrammar.addContentSpecNode(csnType, left, right,
+                                                         false);
+                right = index;
             }
-			if (index != -2)  {
-	            try {
-	                allChildren[allChildCount] = index;
-	            }
-	            catch (NullPointerException ne) {
-	                allChildren = new int[32];
-	                allChildren[allChildCount] = index;
-	            }
-	            catch (ArrayIndexOutOfBoundsException ae) {
-	                int[] newArray = new int[allChildren.length*2];
-	                System.arraycopy(allChildren, 0, newArray, 0, allChildren.length);
-	                allChildren[allChildCount] = index;
-	            }
-            	allChildCount++;
-			}
         }
 
-        // if there were no children, or only invalid children, return...
-        if (allChildCount==0) 
-          return left;
-
-        try {
-           left = allCalcWrapper(allChildren, allChildCount);
-        } catch (java.lang.OutOfMemoryError e) {
-            reportGenericSchemaError("The size of the <all>"
-                + " declaration in your schema is too large for this parser"
-                + " and elements using it will not validate correctly.");
+        if (hadContent) {
+            if (right != -2 || fSchemaGrammar.getDeferContentSpecExpansion())
+                left = fSchemaGrammar.addContentSpecNode(csnType, left, right,
+                                                         false);
         }
+
         return left;
     }
-    
-    // allCalcWrapper initiates the recursive calculation of the purmutations
-    // of targetArray. 
-    // @param initialArray:  the wrray we're passed, whose size may
-    // not reflect the real number of elements to be permuted.
-    // @param size:  te true size of this array.
-    private int allCalcWrapper (int[] initialArray, int size)
-            throws Exception {
-        int permSize = size/2;
-        int[] targetArray = new int[size];
-        System.arraycopy(initialArray, 0, targetArray, 0, size);
-        
-        if(targetArray.length == 1) {
-          if (fSchemaGrammar.getDeferContentSpecExpansion())
-            return fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE,
-              targetArray[0], -2, false);
-          else
-            return targetArray[0];
-        } else if (targetArray.length < 1) {
-            return -2;
-        } else if (permSize > targetArray.length) {
-            reportGenericSchemaError("The size of the permutations " 
-                + permSize + 
-                " cannot be greater than the length of the array to be permuted; error in processing of <all>!");
-            return -2;
-        } else if (targetArray.length <= 3) {
-            return allCombo(targetArray);
-        } else {
-            return allCalc (targetArray, 0, permSize, 0, new
-                int[targetArray.length-permSize], -2);
-        }
-    } // allCalcWrapper
 
-    // allCombo generates all combinations of the given array.  It
-    // assumes the array has either 2 or 3 elements, and is hardcoded
-    // for speed.  
-    private int allCombo(int[] targetArray) 
-            throws Exception {
-        if(targetArray.length == 2) {
-            int left, right;  
-            int[] lA = {targetArray[0], targetArray[1]};
-            int[] rA = {targetArray[1], targetArray[0]};
-            left = createSeq(lA);
-            right = createSeq(rA);
-            return fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE, left, right, false);
-        } else if (targetArray.length == 3) {
-            int tempChoice;
-            int[] a1 = {targetArray[0], targetArray[1], targetArray[2]}; 
-            int[] a2 = {targetArray[0], targetArray[2], targetArray[1]};
-            int[] a3 = {targetArray[1], targetArray[0], targetArray[2]};
-            int[] a4 = {targetArray[1], targetArray[2], targetArray[0]};
-            int[] a5 = {targetArray[2], targetArray[1], targetArray[0]};
-            int[] a6 = {targetArray[2], targetArray[0], targetArray[1]};
-            int s1 = createSeq(a1);
-            int s2 = createSeq(a2);
-            int s3 = createSeq(a3);
-            int s4 = createSeq(a4);
-            int s5 = createSeq(a5);
-            int s6 = createSeq(a6);
-            tempChoice = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE,
-                    s1, s2, false);
-            tempChoice = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE,
-                    tempChoice, s3, false);
-            tempChoice = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE,
-                    tempChoice, s4, false);
-            tempChoice = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE,
-                    tempChoice, s5, false);
-            return fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE,
-                    tempChoice, s6, false);
-        } else {
-            return -2;
-        }
-    } // end allCombo
-    
-    // The purpose of allCalc is to produce all permutations of
-    // permSize elements that can be derived from targetArray.
-    // @param targetArray:  the array from which permutations
-    // must be extracted;
-    // @param targetPosition:  position in the target array of the
-    // last element in targetArray that was completely processed;
-    // @param permSize:  the size of the permutation set
-    // @param progressIndicator:  indication of the number of meaningful
-    // elements in complementArray;
-    // @param complementArray:  contains the set of elements that were
-    // contained in the global targetArray array and are not
-    // present in this invocation's targetArray.
-    // @param choiceHead:  index of the head of curretn <choice>
-    // linked list.
-    private int allCalc(int[] targetArray, int targetPosition, int 
-            permSize, int progressIndicator, int[] 
-            complementArray, int choiceHead) 
-                    throws Exception {
-        if (targetArray.length-permSize-targetPosition == 1) { //base case
-            int[] newTargetArray = new int[permSize+targetPosition];
-            int allSeq;     // pointer to sequence of <all>'s
-            for (int i=targetPosition; i<targetArray.length; i++){
-                arrayProducer(targetArray, i,
-                    newTargetArray, complementArray,
-                    progressIndicator);
-                // newTargetArray and complementArray must be recursed
-                // upon...
-                int c1 = allCalcWrapper(newTargetArray, newTargetArray.length);
-                int c2 = allCalcWrapper(complementArray, complementArray.length);
-                allSeq = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ,
-                    c1, c2, false);
-                if (choiceHead != -2) { 
-                    choiceHead =
-                        fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE,
-                        choiceHead, allSeq, false);
-                } else {
-                    choiceHead = allSeq;
-                } 
+    // Determines whether a content spec tree represents an "all" content model
+    private boolean hasAllContent(int contentSpecIndex) {
+        // If the content is not empty, is the top node ALL?
+        if (contentSpecIndex > -1) {
+            XMLContentSpec content = new XMLContentSpec();
+            fSchemaGrammar.getContentSpec(contentSpecIndex, content);
+
+            // An ALL node could be optional, so we have to be prepared
+            // to look one level below a ZERO_OR_ONE node for an ALL.
+            if (content.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE) {
+                fSchemaGrammar.getContentSpec(content.value, content);
             }
-            return choiceHead;
-        } else { // recursive case
-            for (int i=targetPosition; i<targetArray.length; i++){
-                int[] newTargetArray = new
-                    int[targetArray.length-1];
-                arrayProducer(targetArray, i, 
-                    newTargetArray, complementArray,
-                    progressIndicator);
-                choiceHead = allCalc(newTargetArray, targetPosition, permSize,
-                    progressIndicator+1, complementArray, choiceHead);
-                targetPosition++;
-                permSize--;
-            }
-            return choiceHead;
-        } // end else...if 
-    }// allCalc 
 
-    // The purpose of arrayProducer is to create two arrays out of
-    // targetArray:  the first, newTargetArray, will contain all the
-    // elements of targetArray except the tPos-th; complementArray
-    // will have its cPos-th element set to targetArray[tPos].  
-    // It is assumed that tPos, cPos and targetArray have meaningful
-    // values; complementArray should already have been allocated and
-    // newTargetArray should also have been allocated previously.
-    private void arrayProducer(int [] targetArray, int tPos, 
-            int[] newTargetArray, int[] complementArray, 
-            int cPos) {
-        complementArray[cPos] = targetArray[tPos];
-        if (tPos > 0) 
-            System.arraycopy(targetArray, 0, newTargetArray, 0, tPos);
-        if (tPos < targetArray.length-1) 
-            System.arraycopy(targetArray, tPos+1, newTargetArray, tPos, targetArray.length-tPos-1);
-    } // end arrayProducer
-
-        
-        
-    /** Creates a sequence. */
-    private int createSeq(int src[]) throws Exception {
-
-        int left = src[0];
-        int right = src[1];
-
-        for (int i = 2; i < src.length; i++) {
-            left = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ,
-                                                       left, right, false);
-            right = src[i];
+            return (content.type == XMLContentSpec.CONTENTSPECNODE_ALL);
         }
 
-        return fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ,
-                                                   left, right, false);
+        return false;
+     }
 
-    }     
 
     // utilities from Tom Watson's SchemaParser class
     // TO DO: Need to make this more conformant with Schema int type parsing

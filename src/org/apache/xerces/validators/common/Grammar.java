@@ -309,9 +309,9 @@ implements XMLContentSpec.Provider {
 
         else if (contentType == XMLElementDecl.TYPE_CHILDREN) {
             //  This method will create an optimal model for the complexity
-            //  of the element's defined model. If its simple, it will create
-            //  a SimpleContentModel object. If its a simple list, it will
-            //  create a SimpleListContentModel object. If its complex, it
+            //  of the element's defined model. If it's simple, it will create
+            //  a SimpleContentModel object. If it's a simple list, it will
+            //  create a SimpleListContentModel object. If it's complex, it
             //  will create a DFAContentModel object.
             //
             try {
@@ -619,7 +619,31 @@ implements XMLContentSpec.Provider {
             // let fall through to build a DFAContentModel
         }
         else if (isMixed) {
-            // let fall through to build a DFAContentModel
+            if ((contentSpec.type & 0x0f)==XMLContentSpec.CONTENTSPECNODE_ALL) {
+                // All the nodes under an ALL must be additional ALL nodes and
+                // ELEMENTs (or ELEMENTs under ZERO_OR_ONE nodes.)
+                // We collapse the ELEMENTs into a single vector.
+                AllContentModel allContent = new AllContentModel(false, true);
+                gatherAllLeaves(contentSpecIndex, contentSpec, allContent);
+
+                return allContent;
+            }
+            else if ((contentSpec.type & 0x0f) ==
+                     XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE) {
+                int zeroOrOneChildIndex = contentSpec.value;
+                getContentSpec(zeroOrOneChildIndex, contentSpec);
+
+                // An ALL node can appear under a ZERO_OR_ONE node.
+                if ((contentSpec.type & 0x0f) ==
+                    XMLContentSpec.CONTENTSPECNODE_ALL) {
+                    AllContentModel allContent = new AllContentModel(true,true);
+                    gatherAllLeaves(zeroOrOneChildIndex, contentSpec,
+                                    allContent);
+
+                    return new AllContentModel(true);
+                }
+            }
+            // otherwise, let fall through to build a DFAContentModel
         }
 
         else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
@@ -631,7 +655,7 @@ implements XMLContentSpec.Provider {
                 throw new CMException(ImplementationMessages.VAL_NPCD);
 
             //
-            //  Its a single leaf, so its an 'a' type of content model, i.e.
+            //  It's a single leaf, so it's an 'a' type of content model, i.e.
             //  just one instance of one element. That one is definitely a
             //  simple content model.
             //
@@ -642,7 +666,7 @@ implements XMLContentSpec.Provider {
         else if ((contentSpec.type == XMLContentSpec.CONTENTSPECNODE_CHOICE)
                    ||  (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_SEQ)) {
             //
-            //  Lets see if both of the children are leafs. If so, then it
+            //  Lets see if both of the children are leafs. If so, then
             //  it has to be a simple content model
             //
             XMLContentSpec contentSpecLeft  = new XMLContentSpec();
@@ -654,7 +678,7 @@ implements XMLContentSpec.Provider {
             if ((contentSpecLeft.type == XMLContentSpec.CONTENTSPECNODE_LEAF)
                 &&  (contentSpecRight.type == XMLContentSpec.CONTENTSPECNODE_LEAF)) {
                 //
-                //  Its a simple choice or sequence, so we can do a simple
+                //  It's a simple choice or sequence, so we can do a simple
                 //  content model for it.
                 //
                 fQName1.setValues(-1, contentSpecLeft.value, contentSpecLeft.value, contentSpecLeft.otherValue);
@@ -666,8 +690,8 @@ implements XMLContentSpec.Provider {
                    ||  (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE)
                    ||  (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE)) {
             //
-            //  Its a repetition, so see if its one child is a leaf. If so
-            //  its a repetition of a single element, so we can do a simple
+            //  It's a repetition, so see if its one child is a leaf. If so
+            //  it's a repetition of a single element, so we can do a simple
             //  content model for that.
             //
             XMLContentSpec contentSpecLeft = new XMLContentSpec();
@@ -682,13 +706,35 @@ implements XMLContentSpec.Provider {
                 fQName1.setValues(-1, contentSpecLeft.value, contentSpecLeft.value, contentSpecLeft.otherValue);
                 return new SimpleContentModel(fQName1, null, contentSpec.type, isDTD());
             }
+            else if (contentSpecLeft.type==XMLContentSpec.CONTENTSPECNODE_ALL) {
+                // An ALL can be optional.  We must use the special
+                // AllContentModel for such an animal.  Indicate the
+                // entire content is optional on the constructor.
+                AllContentModel allContent = new AllContentModel(true);
+
+                // All of the nodes under an ALL must be additional ALL nodes
+                // and ELEMENTs (or ELEMENTs under ZERO_OR_ONE nodes.)
+                // We collapse the ELEMENTs into a single vector.
+                gatherAllLeaves(contentSpec.value, contentSpecLeft, allContent);
+
+                return allContent;
+            }
         } 
+        else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ALL) {
+            // All of the nodes under an ALL must be additional ALL nodes and
+            // ELEMENTs (or ELEMENTs under ZERO_OR_ONE nodes.)
+            // We collapse the ELEMENTs into a single vector.
+            AllContentModel allContent = new AllContentModel(false);
+            gatherAllLeaves(contentSpecIndex, contentSpec, allContent);
+
+            return allContent;
+        }
         else {
             throw new CMException(ImplementationMessages.VAL_CST);
         }
 
         //
-        //  Its not a simple content model, so here we have to create a DFA
+        //  It's not a simple content model, so here we have to create a DFA
         //  for this element. So we create a DFAContentModel object. He
         //  encapsulates all of the work to create the DFA.
         //
@@ -767,7 +813,7 @@ implements XMLContentSpec.Provider {
             nodeRet = new CMAny(contentSpec.type, 0, fLeafCount++);
         }
         //
-        //  If this node is a leaf, then its an easy one. We just add it
+        //  If this node is a leaf, then it's an easy one. We just add it
         //  to the tree.
         //
         else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
@@ -782,7 +828,7 @@ implements XMLContentSpec.Provider {
         } 
         else {
             //
-            //  Its not a leaf, so we have to recurse its left and maybe right
+            //  It's not a leaf, so we have to recurse its left and maybe right
             //  nodes. Save both values before we recurse and trash the node.
             //
             final int leftNode = contentSpec.value;
@@ -815,6 +861,64 @@ implements XMLContentSpec.Provider {
         }
         // And return our new node for this level
         return nodeRet;
+    }
+
+    /**
+     *  Recursively build an AllContentModel based on a content spec tree
+     *  rooted at an ALL node.
+     *
+     *  @param contentSpecIndex
+     *              A content spec tree containing only ALL, LEAF and
+     *              ZERO_OR_ONE nodes.  Any ZERO_OR_ONE nodes must be parents
+     *              of LEAF nodes.
+     *  @param contentSpec
+     *              A temporary XMLContentSpec object used to record info.
+     *              about the current node in the tree.  Used as a scratch
+     *              pad by each recursive invocation of this method.
+     *  @param allContent
+     *              The AllContentModel that's being built for this tree
+     * @exception CMException
+     */
+    private final void gatherAllLeaves(int contentSpecIndex,
+                                       XMLContentSpec contentSpec,
+                                       AllContentModel allContent)
+                         throws CMException {
+
+      if (contentSpecIndex <= -1) return;
+
+      getContentSpec(contentSpecIndex, contentSpec);
+
+      int value = contentSpec.value;
+      int otherValue = contentSpec.otherValue;
+      int type = contentSpec.type;
+
+      if (type == XMLContentSpec.CONTENTSPECNODE_ALL) {
+          // At an all node, visit left and right subtrees
+          gatherAllLeaves(value, contentSpec, allContent);
+          gatherAllLeaves(otherValue, contentSpec, allContent);
+      }
+      else if (type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+          // At leaf, add the element to list of elements permitted in the all
+          allContent.addElement(new QName(-1, value, value, otherValue), false);
+      }
+      else if (type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE) {
+          // At ZERO_OR_ONE node, subtree must be an element
+          // that was specified with minOccurs=0, maxOccurs=1
+          getContentSpec(value, contentSpec);
+
+          value = contentSpec.value;
+          otherValue = contentSpec.otherValue;
+          type = contentSpec.type;
+
+          if (type != XMLContentSpec.CONTENTSPECNODE_LEAF)
+              throw new CMException(ImplementationMessages.VAL_CST);
+
+          // Add the optional element to list of elements permitted in the all
+          allContent.addElement(new QName(-1, value, value, otherValue), true);
+      }
+      else {
+          throw new CMException(ImplementationMessages.VAL_CST);
+      }
     }
 
     /**
@@ -856,7 +960,7 @@ implements XMLContentSpec.Provider {
         }
 
         //
-        //  Its not a leaf, so we have to recurse its left and maybe right
+        //  It's not a leaf, so we have to recurse its left and maybe right
         //  nodes. Save both values before we recurse and trash the node.
         //
         final int leftNode  = contentSpec.value;
