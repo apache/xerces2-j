@@ -100,12 +100,25 @@ public class XMLEntityDecl {
      * @param isPE 
      */
     public void setValues(String name, String publicId, String systemId, String baseSystemId, String notation, boolean isPE) {
+        this.name         = name;
+        this.publicId     = publicId;
+        this.systemId     = systemId;
+        this.baseSystemId = baseSystemId;
+        this.notation     = notation;
+        this.isPE         = isPE;
     } // setValues
 
     /**
      * clear
      */
     public void clear() {
+       this.name         = null;
+       this.publicId     = null;
+       this.systemId     = null;
+       this.baseSystemId = null;
+       this.notation     = null;
+       this.isPE         = false;
+
     } // clear
 
 } // class XMLEntityDecl

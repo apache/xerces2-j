@@ -88,12 +88,18 @@ public class XMLNotationDecl {
      * @param systemId 
      */
     public void setValues(String name, String publicId, String systemId) {
+        this.name     =   name;
+        this.publicId = publicId;
+        this.systemId = systemId;
     } // setValues
 
     /**
      * clear
      */
     public void clear() {
+        this.name     = null;
+        this.publicId = null;
+        this.systemId = null;
     } // clear
 
 } // class XMLNotationDecl

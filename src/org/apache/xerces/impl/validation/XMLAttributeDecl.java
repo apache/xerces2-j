@@ -90,12 +90,18 @@ public class XMLAttributeDecl {
      * @param optional 
      */
     public void setValues(QName name, XMLSimpleType simpleType, boolean optional) {
+        this.name       = name;
+        this.simpleType = simpleType;
+        this.optional   = optional;
     } // setValues
 
     /**
      * clear
      */
     public void clear() {
+        this.name       = null;
+        this.simpleType = null;
+        this.optional   = false;
     } // clear
 
 } // class XMLAttributeDecl

@@ -378,4 +378,229 @@ public class Grammar {
         throw new RuntimeException("implement Grammar#getNotationDecl(int,XMLNotationDecl):boolean");
     } // getNotationDecl
 
+
+     //
+    // Protected methods
+    //
+    
+
+    protected int createElementDecl() {
+       int chunk = fElementDeclCount >> CHUNK_SHIFT;
+       int index = fElementDeclCount & CHUNK_MASK;
+       ensureElementDeclCapacity(chunk);
+       fElementDeclName[chunk][index]               = null; 
+       fElementDeclType[chunk][index]                    = -1;  
+       fElementDeclDatatypeValidator[chunk][index]       = null;
+       fElementDeclContentModelValidator[chunk][index]   = null;
+       fElementDeclFirstAttributeDeclIndex[chunk][index] = -1;
+       fElementDeclLastAttributeDeclIndex[chunk][index]  = -1;
+       fElementDeclDefaultValue[chunk][index]            = null;
+       fElementDeclDefaultType[chunk][index]             = -1;
+       return fElementDeclCount++;
+    }
+
+    protected void setElementDecl(int elementDeclIndex, XMLElementDecl elementDecl) {
+
+    }
+
+    protected void putElementNameMapping(QName name, int scope,
+                                         int elementDeclIndex) {
+    }
+
+    protected void setFirstAttributeDeclIndex(int elementDeclIndex, int newFirstAttrIndex){
+        
+        if (elementDeclIndex < 0 || elementDeclIndex >= fElementDeclCount) {
+            return;
+        }
+    
+        int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        int index = elementDeclIndex &  CHUNK_MASK;
+
+        fElementDeclFirstAttributeDeclIndex[chunk][index] = newFirstAttrIndex;
+    }
+
+
+    protected int createAttributeDecl() {
+        int chunk = fAttributeDeclCount >> CHUNK_SHIFT;
+        int index = fAttributeDeclCount & CHUNK_MASK;
+
+        ensureAttributeDeclCapacity(chunk);
+        fAttributeDeclName[chunk][index]                    = new QName();
+        fAttributeDeclType[chunk][index]                    = -1;
+        fAttributeDeclDatatypeValidator[chunk][index]       = null;
+        fAttributeDeclEnumeration[chunk][index] = null;
+        fAttributeDeclDefaultType[chunk][index] = XMLSimpleType.DEFAULT_TYPE_IMPLIED;
+        fAttributeDeclDefaultValue[chunk][index]            = null;
+        fAttributeDeclNextAttributeDeclIndex[chunk][index]  = -1;
+        return fAttributeDeclCount++;
+    }
+
+
+    //protected void setAttributeDecl(int elementDeclIndex, int attributeDeclIndex, XMLAttributeDecl attributeDecl) {
+    //}
+
+    protected boolean isDTD() {
+        return false;
+    }
+
+    // debugging
+
+    public void printElements(  ) {
+        int elementDeclIndex = 0;
+        XMLElementDecl elementDecl = new XMLElementDecl();
+        while (getElementDecl(elementDeclIndex++, elementDecl)) {
+            System.out.println("element decl: "+elementDecl.name+
+                               ", "+ elementDecl.name.rawname+
+                               ", "+ elementDecl.contentModelValidator.toString());
+            
+        }
+    }
+
+    public void printAttributes(int elementDeclIndex) {
+        int attributeDeclIndex = getFirstAttributeDeclIndex(elementDeclIndex);
+        System.out.print(elementDeclIndex);
+        System.out.print(" [");
+        while (attributeDeclIndex != -1) {
+            System.out.print(' ');
+            System.out.print(attributeDeclIndex);
+            printAttribute(attributeDeclIndex);
+            attributeDeclIndex = getNextAttributeDeclIndex(attributeDeclIndex);
+            if (attributeDeclIndex != -1) {
+                System.out.print(",");
+            }
+        }
+        System.out.println(" ]");
+    }
+
+
+     //
+    // Private methods
+    //
+
+    // debugging
+
+    private void printAttribute(int attributeDeclIndex) {
+        XMLAttributeDecl attributeDecl = new XMLAttributeDecl();
+        if (getAttributeDecl(attributeDeclIndex, attributeDecl)) {
+            System.out.print(" { ");
+            System.out.print(attributeDecl.name.localpart);
+            System.out.print(" }");
+        }
+    }
+
+    // content models
+    //
+
+    //private void printSyntaxTree(CMNode cmn){
+    //}
+
+    
+   // private int countLeaves(int contentSpecIndex) {
+   //     return countLeaves(contentSpecIndex, new XMLContentSpec());
+    //}
+    
+    //private int countLeaves(int contentSpecIndex, XMLContentSpec contentSpec) {
+    //}
+    // ensure capacity
+
+
+    private boolean ensureElementDeclCapacity(int chunk) {
+        try {
+            return fElementDeclName[chunk][0] == null;
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            fElementDeclName = resize(fElementDeclName, fElementDeclName.length * 2);
+            fElementDeclType = resize(fElementDeclType, fElementDeclType.length * 2);
+            fElementDeclDatatypeValidator = resize(fElementDeclDatatypeValidator, fElementDeclDatatypeValidator.length * 2);
+            fElementDeclContentModelValidator = resize(fElementDeclContentModelValidator, fElementDeclContentModelValidator.length * 2);
+            fElementDeclFirstAttributeDeclIndex = resize(fElementDeclFirstAttributeDeclIndex, fElementDeclFirstAttributeDeclIndex.length * 2);
+            fElementDeclLastAttributeDeclIndex = resize(fElementDeclLastAttributeDeclIndex, fElementDeclLastAttributeDeclIndex.length * 2);
+            fElementDeclDefaultValue = resize( fElementDeclDefaultValue, fElementDeclDefaultValue.length * 2 ); 
+            fElementDeclDefaultType  = resize( fElementDeclDefaultType, fElementDeclDefaultType.length *2 );
+        } catch (NullPointerException ex) {
+            // ignore
+        }
+        fElementDeclName[chunk] = new String[CHUNK_SIZE];
+        fElementDeclType[chunk] = new short[CHUNK_SIZE];
+        fElementDeclDatatypeValidator[chunk] = new DatatypeValidator[CHUNK_SIZE];
+        fElementDeclContentModelValidator[chunk] = new ContentModelValidator[CHUNK_SIZE];
+        fElementDeclFirstAttributeDeclIndex[chunk] = new int[CHUNK_SIZE];
+        fElementDeclLastAttributeDeclIndex[chunk] = new int[CHUNK_SIZE];
+        fElementDeclDefaultValue[chunk] = new String[CHUNK_SIZE]; 
+        fElementDeclDefaultType[chunk]  = new short[CHUNK_SIZE]; 
+        return true;
+    }
+
+
+
+    private boolean ensureAttributeDeclCapacity(int chunk) {
+        try {
+            return fAttributeDeclName[chunk][0] == null;
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            fAttributeDeclName = resize(fAttributeDeclName, fAttributeDeclName.length * 2);
+            fAttributeDeclType = resize(fAttributeDeclType, fAttributeDeclType.length * 2);
+            fAttributeDeclEnumeration = resize(fAttributeDeclEnumeration, fAttributeDeclEnumeration.length * 2);
+            fAttributeDeclDefaultType = resize(fAttributeDeclDefaultType, fAttributeDeclDefaultType.length * 2);
+            fAttributeDeclDatatypeValidator = resize(fAttributeDeclDatatypeValidator, fAttributeDeclDatatypeValidator.length * 2);
+            fAttributeDeclDefaultValue = resize(fAttributeDeclDefaultValue, fAttributeDeclDefaultValue.length * 2);
+            fAttributeDeclNextAttributeDeclIndex = resize(fAttributeDeclNextAttributeDeclIndex, fAttributeDeclNextAttributeDeclIndex.length * 2);
+        } catch (NullPointerException ex) {
+            // ignore
+        }
+        fAttributeDeclName[chunk] = new QName[CHUNK_SIZE];
+        fAttributeDeclType[chunk] = new short[CHUNK_SIZE];
+        fAttributeDeclEnumeration[chunk] = new String[CHUNK_SIZE][];
+        fAttributeDeclDefaultType[chunk] = new short[CHUNK_SIZE];
+        fAttributeDeclDatatypeValidator[chunk] = new DatatypeValidator[CHUNK_SIZE];
+        fAttributeDeclDefaultValue[chunk] = new String[CHUNK_SIZE];
+        fAttributeDeclNextAttributeDeclIndex[chunk] = new int[CHUNK_SIZE];
+        return true;
+    }
+
+    // resize initial chunk
+
+    private short[][] resize(short array[][], int newsize) {
+       short newarray[][] = new short[newsize][];
+       System.arraycopy(array, 0, newarray, 0, array.length);
+       return newarray;
+   }
+
+
+    private int[][] resize(int array[][], int newsize) {
+        int newarray[][] = new int[newsize][];
+        System.arraycopy(array, 0, newarray, 0, array.length);
+        return newarray;
+    }
+
+    private DatatypeValidator[][] resize(DatatypeValidator array[][], int newsize) {
+        DatatypeValidator newarray[][] = new DatatypeValidator[newsize][];
+        System.arraycopy(array, 0, newarray, 0, array.length);
+        return newarray;
+    }
+
+    private ContentModelValidator[][] resize(ContentModelValidator array[][], int newsize) {
+       ContentModelValidator newarray[][] = new ContentModelValidator[newsize][];
+       System.arraycopy(array, 0, newarray, 0, array.length);
+       return newarray;
+    }
+
+
+    private QName[][] resize(QName array[][], int newsize) {
+        QName newarray[][] = new QName[newsize][];
+        System.arraycopy(array, 0, newarray, 0, array.length);
+        return newarray;
+    }
+
+    private String[][] resize(String array[][], int newsize) {
+        String newarray[][] = new String[newsize][];
+        System.arraycopy(array, 0, newarray, 0, array.length);
+        return newarray;
+    }
+      
+    private String[][][] resize(String array[][][], int newsize) {
+      String newarray[][][] = new String[newsize] [][];
+      System.arraycopy(array, 0, newarray, 0, array.length);
+      return newarray;
+  }
+
+
 } // class Grammar

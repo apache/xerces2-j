@@ -68,28 +68,28 @@ public class XMLSimpleType {
     //
 
     /** TYPE_CDATA */
-    public static final short TYPE_CDATA = -1;
+    public static final short TYPE_CDATA = 1;
 
     /** TYPE_ENTITY */
-    public static final short TYPE_ENTITY = -1;
+    public static final short TYPE_ENTITY = 2;
 
     /** TYPE_ENUMERATION */
-    public static final short TYPE_ENUMERATION = -1;
+    public static final short TYPE_ENUMERATION = 3;
 
     /** TYPE_ID */
-    public static final short TYPE_ID = -1;
+    public static final short TYPE_ID = 4;
 
     /** TYPE_IDREF */
-    public static final short TYPE_IDREF = -1;
+    public static final short TYPE_IDREF = 5;
 
     /** TYPE_NMTOKEN */
-    public static final short TYPE_NMTOKEN = -1;
+    public static final short TYPE_NMTOKEN = 6;
 
     /** TYPE_NOTATION */
-    public static final short TYPE_NOTATION = -1;
+    public static final short TYPE_NOTATION = 7;
 
     /** TYPE_NAMED */
-    public static final short TYPE_NAMED = -1;
+    public static final short TYPE_NAMED = 8;
 
     /** DEFAULT_TYPE_DEFAULT */
     public static final short DEFAULT_TYPE_DEFAULT = -1;
@@ -144,12 +144,18 @@ public class XMLSimpleType {
      * @param datatypeValidator 
      */
     public void setValues(short type, String name, String[] enumeration, boolean list, short defaultType, String defaultValue, DatatypeValidator datatypeValidator) {
+        this.type = type;
+        this.name = name;
+        this.enumeration = enumeration;
     } // setValues
 
     /**
      * clear
      */
     public void clear() {
+        this.type = -1;
+        this.name = null;
+        this.enumeration = null;
     } // clear
 
 } // class XMLSimpleType
