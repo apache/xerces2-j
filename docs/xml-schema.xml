@@ -34,49 +34,26 @@
             <li> Length, minLength, and maxLength facets are limited to the value 
             2147483647. Items larger than this limit will not be validated 
             correctly.</li>
-            <li> Year and seconds values in date/time datatypes are limited to the 
-            value 2147483647. Items larger than this limit will not be validated 
-            correctly. </li>
+            <li> The values of minOccurs and maxOccurs attributes are limited to
+            the value 2147483647. Items larger than this limit will not be
+            validated correctly.</li>
+            <li> The values of minimum and maximum quantifiers in the pattern
+            regular expressions are limited to the value 2147483647.
+            Items larger than this limit will not be validated correctly.</li>
+            <li> The absolute values of the fraction portion of the second values
+            in date/time datatypes are limited to the value 2147483647.
+            Items larger than this limit will not be validated correctly.
+            i.e. 11.2147483648 is not supported as a second value. </li>
         </ul>
     </s2>
     <s2 title='Problem Areas/Known Bugs'>
         <ul>
-            <li> Due to changes in the specification for Decimals in
-            JDK1.3, not all decimals that should be invalid according
-            to the Schema specs may be found by the parser;</li>
             <li> For larger values of maxOccurs, a StackOverflowError may occur.
       	    The workaround for this problem, if your application permits it, 
       	    is to change the maxOccurs value to unbounded.</li>
-
-        </ul>
-    </s2>
-    <s2 title='Interpretation of Areas that are Unclear or
-            Implementation-Dependent'>
-        <ul>
-            <li> QName: the specification does not define the unit of length. We 
-            chose to implement the length facet as being in units of XML characters 
-            in the value space ( # of chars in namespace URI + ":" +
-            local part );</li>
-            <li> We have interpreted the specs as requiring
-            &lt;keyref&gt; Identity Constraints to refer to
-            &lt;key&gt; or &lt;unique&gt; identity constraints within
-            the scope of the elements to which the &lt;keyref&gt; is
-            attached.  This interpretation is at variance with the
-            Schema Primer, which contains an example with a
-            &lt;keyref&gt; declared on an element used inside the
-            element of its corresponding &lt;key&gt;;</li>
         </ul>
     </s2>
 	<s2 title="Other Notes">
-        <p> The parsers contained in this package are able to read and
-        validate XML documents with the grammar specified in either
-        DTD or XML Schema format.  
-		The schema is specified by the xsi:schemaLocation or
-		xsi:noNamespaceSchemaLocation attribute on the root 
-		element of the document. The xsi prefix must be bound to the 
-		Schema document instance namespace, as specified by the
-		Recommendation. See the sample provided in the
-		Usage section.</p>
         <p> As of version 2.2.1, it is hoped that Xerces-J will always 
         be able to parse the Schema for Schemas current at the time of the product's release.  As of version
         2.2.1, this implies inserting special logic to permit the presence of
