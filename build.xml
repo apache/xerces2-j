@@ -46,7 +46,8 @@ Copyright:
 
     <property name="doc.generator" value="org.apache.stylebook.StyleBook"/>
     <property name="doc.generator.package" value="${tools.dir}/stylebook-1.0-b2.jar"/>
-    <property name="doc.style" value="${docs.dir}/style"/>
+    <property name="doc.style" value="${docs.dir}/style-apachexml"/>
+    <property name="doc.style.jar" value="${tools.dir}/style-apachexml.jar"/>
 
     <property name="build.dir" value="./build"/>
     <property name="build.src" value="${build.dir}/src"/>
@@ -217,7 +218,7 @@ Copyright:
   <!-- =================================================================== -->
   <!-- Prepares the docs                                                   -->
   <!-- =================================================================== -->
-  <target name="prepare-docs" depends="init">
+  <target name="prepare-docs" depends="init"> 
     <mkdir dir="${build.docs}"/>
   </target>
 
@@ -225,11 +226,14 @@ Copyright:
   <!-- Generate HTML docs                                                  -->
   <!-- =================================================================== -->
   <target name="docs" depends="prepare, prepare-docs">
+     <unjar src="${doc.style.jar}"
+         dest="${doc.style}"/>
     <echo message="Building docs for ${Name} ${version} ..." />
     <java fork="yes"
           classpath="${java.class.path}:${doc.generator.package}:./tools/xalan.jar"
           classname="${doc.generator}"
           args="targetDirectory=${build.docs} ${docs.book} ${doc.style}"/>
+    <delete dir="${doc.style}"/>
   </target>
 
   <!-- =================================================================== -->
