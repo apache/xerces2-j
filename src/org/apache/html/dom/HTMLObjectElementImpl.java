@@ -281,11 +281,6 @@ public class HTMLObjectElementImpl
         setAttribute( "width", width );
     }
 
-    //fix to compile with JDK 1.4.x..
-    public Document getContentDocument()
-    {
-        throw new java.lang.UnsupportedOperationException() ;
-    }
     
     
     /**
