@@ -103,9 +103,9 @@ import org.apache.xerces.util.NamespaceSupport;
  * The serializer supports both DOM and SAX. SAX serializing is done by firing
  * SAX events and using the serializer as a document handler. DOM serializing is done
  * by calling {@link #serialize(Document)} or by using DOM Level 3  
- * {@link org.apache.xerces.dom3.ls.DOMWriter} and
- * serializing with {@link org.apache.xerces.dom3.ls.DOMWriter#writeNode}, 
- * {@link org.apache.xerces.dom3.ls.DOMWriter#writeToString}.
+ * {@link org.w3c.dom.ls.DOMWriter} and
+ * serializing with {@link org.w3c.dom.ls.DOMWriter#writeNode}, 
+ * {@link org.w3c.dom.ls.DOMWriter#writeToString}.
  * <p>
  * If an I/O exception occurs while serializing, the serializer
  * will not throw an exception directly, but only throw it
@@ -173,7 +173,7 @@ extends BaseMarkupSerializer{
 
     /**
      * Constructs a new serializer. The serializer cannot be used without
-     * calling {@link #setOutFputCharStream} or {@link #setOutputByteStream}
+     * calling {@link #setOutputCharStream} or {@link #setOutputByteStream}
      * first.
      */
     public XMLSerializer() {
