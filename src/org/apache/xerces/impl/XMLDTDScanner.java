@@ -1301,8 +1301,14 @@ public class XMLDTDScanner
 
         String notation = null;
         // NDATA
-        if (skipSeparator(false, !scanningInternalSubset())
-            && !isPEDecl && fEntityScanner.skipString("NDATA")) {
+        boolean sawSpace = skipSeparator(true, !scanningInternalSubset());
+        if (!isPEDecl && fEntityScanner.skipString("NDATA")) {
+            // check whether there was space before NDATA
+            if (!sawSpace) {
+                reportFatalError("MSG_SPACE_REQUIRED_BEFORE_NDATA_IN_UNPARSED_ENTITYDECL",
+                                 new Object[]{name});
+            }
+
             // spaces
             if (!skipSeparator(true, !scanningInternalSubset())) {
                 reportFatalError("MSG_SPACE_REQUIRED_BEFORE_NOTATION_NAME_IN_UNPARSED_ENTITYDECL",
