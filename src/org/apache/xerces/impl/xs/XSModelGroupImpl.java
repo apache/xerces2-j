@@ -1,12 +1,12 @@
 /*
  * Copyright 2002,2003-2004 The Apache Software Foundation.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -38,7 +38,7 @@ public class XSModelGroupImpl implements XSModelGroup {
 
     // compositor of the model group
     public short fCompositor;
-    
+
     // particles
     public XSParticleDecl[] fParticles = null;
     public int fParticleCount = 0;
@@ -80,9 +80,9 @@ public class XSModelGroupImpl implements XSModelGroup {
     // return the min of all min values of the particles
     private int minEffectiveTotalRangeChoice() {
         int min = 0, one;
-        if (fParticles.length > 0)
+        if (fParticleCount > 0)
             min = fParticles[0].minEffectiveTotalRange();
-        
+
         for (int i = 1; i < fParticleCount; i++) {
             one = fParticles[i].minEffectiveTotalRange();
             if (one < min)
@@ -116,7 +116,7 @@ public class XSModelGroupImpl implements XSModelGroup {
     // otherwise return the max of all max values
     private int maxEffectiveTotalRangeChoice() {
         int max = 0, one;
-        if (fParticles.length > 0) {
+        if (fParticleCount > 0) {
             max = fParticles[0].minEffectiveTotalRange();
             if (max == SchemaSymbols.OCCURRENCE_UNBOUNDED)
                 return SchemaSymbols.OCCURRENCE_UNBOUNDED;
@@ -165,7 +165,7 @@ public class XSModelGroupImpl implements XSModelGroup {
         fDescription = null;
         fAnnotation = null;
     }
-    
+
     /**
      * Get the type of the object, i.e ELEMENT_DECLARATION.
      */
@@ -217,11 +217,11 @@ public class XSModelGroupImpl implements XSModelGroup {
         return fAnnotation;
     }
 
-	/**
-	 * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
-	 */
-	public XSNamespaceItem getNamespaceItem() {
-		return null;
-	}
+    /**
+     * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
+     */
+    public XSNamespaceItem getNamespaceItem() {
+        return null;
+    }
 
 } // class XSModelGroupImpl
