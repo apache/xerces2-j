@@ -155,7 +155,7 @@ public class DocumentImpl
     /** Experimental constructor. */
     public DocumentImpl(boolean grammarAccess) {
         super(null,null,null);
-        ownerDocument = null;
+        ownerDocument = this;
         allowGrammarAccess = grammarAccess;
     }
 
@@ -182,6 +182,12 @@ public class DocumentImpl
     //
     // Node methods
     //
+
+    // even though ownerDocument refers to this in this implementation
+    // the DOM Level 2 spec says it must be null, so make it appear so
+    final public Document getOwnerDocument() {
+        return null;
+    }
 
     /** Returns the node type. */
     public short getNodeType() {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 World Wide Web Consortium,
+ * Copyright (c) 2000 World Wide Web Consortium,
  * (Massachusetts Institute of Technology, Institut National de
  * Recherche en Informatique et en Automatique, Keio University). All
  * Rights Reserved. This program is distributed under the W3C's Software
@@ -24,12 +24,13 @@ package org.w3c.dom.events;
 public interface EventListener {
     /**
      *  This method is called whenever an event occurs of the type for which 
-     * the <code> EventListener</code> interface was registered. 
+     * the <code>EventListener</code> interface was registered. 
      * @param evt  The <code>Event</code> contains contextual information 
      *   about the event. It also contains the <code>stopPropagation</code> 
      *   and  <code>preventDefault</code> methods which are used in 
      *   determining the event's flow and default action. 
      */
-    public void         handleEvent(Event evt);
+    public void handleEvent(Event evt);
+
 }
 

@@ -134,6 +134,10 @@ public class NodeIteratorImpl implements NodeIterator {
         fEntityReferenceExpansion = entityReferenceExpansion;
     }
     
+    public Node getRoot() {
+	return fRoot;
+    }
+
     // Implementation Note: Note that the iterator looks at whatToShow
     // and filter values at each call, and therefore one _could_ add
     // setters for these values and alter them while iterating!

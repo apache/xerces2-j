@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 World Wide Web Consortium,
+ * Copyright (c) 2000 World Wide Web Consortium,
  * (Massachusetts Institute of Technology, Institut National de
  * Recherche en Informatique et en Automatique, Keio University). All
  * Rights Reserved. This program is distributed under the W3C's Software
@@ -13,22 +13,24 @@
 package org.w3c.dom;
 
 /**
- * Each <code>Document</code> has a <code>doctype</code> attribute whose value 
- * is either <code>null</code> or a <code>DocumentType</code> object. The 
- * <code>DocumentType</code> interface in the DOM Core provides an interface 
- * to the list of entities that are defined for the document, and little else 
- * because the effect of namespaces and the various XML schema efforts on DTD 
- * representation are not clearly understood as of this writing.
- * <p>The DOM Level 2 doesn't support editing <code>DocumentType</code> nodes.
+ *  Each <code>Document</code> has a <code>doctype</code> attribute whose 
+ * value is either <code>null</code> or a <code>DocumentType</code> object. 
+ * The <code>DocumentType</code> interface in the DOM Core provides an 
+ * interface to the list of entities that are defined for the document, and 
+ * little else because the effect of namespaces and the various XML schema 
+ * efforts on DTD representation are not clearly understood as of this 
+ * writing.
+ * <p> The DOM Level 2 doesn't support editing <code>DocumentType</code> nodes.
  */
 public interface DocumentType extends Node {
     /**
-     * The name of DTD; i.e., the name immediately following the 
+     *  The name of DTD; i.e., the name immediately following the 
      * <code>DOCTYPE</code> keyword.
      */
-    public String       getName();
+    public String getName();
+
     /**
-     * A <code>NamedNodeMap</code> containing the general entities, both 
+     *  A <code>NamedNodeMap</code> containing the general entities, both 
      * external and internal, declared in the DTD. Parameter entities are not 
      *  contained. Duplicates are discarded. For example in:
      * <pre>
@@ -42,34 +44,39 @@ public interface DocumentType extends Node {
      *   the interface 
      * provides access to <code>foo</code> and the first declaration of 
      * <code>bar</code> but not the second declaration of  <code>bar</code> 
-     * or <code>baz</code>. Every node in this map also implements the 
+     * or <code>baz</code> . Every node in this map also implements the 
      * <code>Entity</code> interface.
-     * <br>The DOM Level 2 does not support editing entities, therefore 
+     * <br> The DOM Level 2 does not support editing entities, therefore 
      * <code>entities</code> cannot be altered in any way.
      */
     public NamedNodeMap getEntities();
+
     /**
-     * A <code>NamedNodeMap</code> containing  the notations declared in the 
+     *  A <code>NamedNodeMap</code> containing  the notations declared in the 
      * DTD. Duplicates are discarded. Every node in this map also implements 
      * the <code>Notation</code> interface.
-     * <br>The DOM Level 2 does not support editing notations, therefore 
+     * <br> The DOM Level 2 does not support editing notations, therefore 
      * <code>notations</code> cannot be altered in any way.
      */
     public NamedNodeMap getNotations();
+
     /**
-     * The public identifier of the external subset.
+     *  The public identifier of the external subset.
      * @since DOM Level 2
      */
-    public String       getPublicId();
+    public String getPublicId();
+
     /**
-     * The system identifier of the external subset.
+     *  The system identifier of the external subset.
      * @since DOM Level 2
      */
-    public String       getSystemId();
+    public String getSystemId();
+
     /**
-     * The internal subset as a string.
+     *  The internal subset as a string.
      * @since DOM Level 2
      */
-    public String       getInternalSubset();
+    public String getInternalSubset();
+
 }
 

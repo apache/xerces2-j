@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 World Wide Web Consortium,
+ * Copyright (c) 2000 World Wide Web Consortium,
  * (Massachusetts Institute of Technology, Institut National de
  * Recherche en Informatique et en Automatique, Keio University). All
  * Rights Reserved. This program is distributed under the W3C's Software
@@ -23,14 +23,14 @@ package org.w3c.dom;
  * model, instead of providing <code>EntityReference</code> objects. If it 
  * does provide such objects, then for a given <code>EntityReference</code> 
  * node, it may be that there is no <code>Entity</code> node representing the 
- * referenced entity; but if such an <code>Entity</code> exists, then the 
- * child list of the <code>EntityReference</code> node is in general the same 
- * as that of the <code>Entity</code> node. They may differ when an entity 
- * contains an unbound namespace prefix. In such a case, because the 
+ * referenced entity. If such an <code>Entity</code> exists, then the child 
+ * list of the <code>EntityReference</code> node is in general the same as 
+ * that of the <code>Entity</code> node. They may differ when an entity 
+ * contains an unbound  namespace prefix . In such a case, because the 
  * namespace prefix resolution depends on where the entity reference is, the 
  * descendants of the <code>EntityReference</code> node may be bound to 
- * different namespace URIs.
- * <p>As with the <code>Entity</code> node, all descendants of the 
+ * different  namespace URIs .
+ * <p> As with the <code>Entity</code> node, all descendants of the 
  * <code>EntityReference</code> are readonly.
  */
 public interface EntityReference extends Node {

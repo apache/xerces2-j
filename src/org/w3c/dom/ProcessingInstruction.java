@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 World Wide Web Consortium,
+ * Copyright (c) 2000 World Wide Web Consortium,
  * (Massachusetts Institute of Technology, Institut National de
  * Recherche en Informatique et en Automatique, Keio University). All
  * Rights Reserved. This program is distributed under the W3C's Software
@@ -13,26 +13,28 @@
 package org.w3c.dom;
 
 /**
- * The <code>ProcessingInstruction</code> interface represents a  "processing 
+ *  The <code>ProcessingInstruction</code> interface represents a  "processing 
  * instruction", used in XML as a way to keep processor-specific information 
  * in the text of the document.
  */
 public interface ProcessingInstruction extends Node {
     /**
-     * The target of this processing instruction. XML defines this as being 
+     *  The target of this processing instruction. XML defines this as being 
      * the first token following the markup that begins the processing 
      * instruction.
      */
-    public String       getTarget();
+    public String getTarget();
+
     /**
-     * The content of this processing instruction. This is from the first non 
+     *  The content of this processing instruction. This is from the first non 
      * white space character after the target to the character immediately 
-     * preceding the <code>?&gt;</code>.
+     * preceding the <code>?&gt;</code> .
      * @exception DOMException
-     *   NO_MODIFICATION_ALLOWED_ERR: Raised when the node is readonly.
+     *    NO_MODIFICATION_ALLOWED_ERR: Raised when the node is readonly.
      */
-    public String       getData();
-    public void         setData(String data)
-                                  throws DOMException;
+    public String getData();
+    public void setData(String data)
+                          throws DOMException;
+
 }
 

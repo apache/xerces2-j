@@ -101,6 +101,10 @@ public class TreeWalkerImpl implements TreeWalker {
         fEntityReferenceExpansion = entityReferenceExpansion;
     }
     
+    public Node getRoot() {
+	return fRoot;
+    }
+
     /** Return the whatToShow value */
     public int                getWhatToShow() {
         return fWhatToShow;

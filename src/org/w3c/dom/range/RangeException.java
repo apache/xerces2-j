@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 World Wide Web Consortium,
+ * Copyright (c) 2000 World Wide Web Consortium,
  * (Massachusetts Institute of Technology, Institut National de
  * Recherche en Informatique et en Automatique, Keio University). All
  * Rights Reserved. This program is distributed under the W3C's Software
@@ -13,18 +13,18 @@
 package org.w3c.dom.range;
 
 /**
- * Range operations may throw a <code>RangeException</code> as specified in 
+ *  Range operations may throw a <code>RangeException</code> as specified in 
  * their method descriptions.
  */
-public abstract class RangeException extends RuntimeException {
+public class RangeException extends RuntimeException {
     public RangeException(short code, String message) {
        super(message);
        this.code = code;
     }
     public short   code;
     // RangeExceptionCode
-    public static final short   BAD_BOUNDARYPOINTS_ERR    = 1;
-    public static final short   INVALID_NODE_TYPE_ERR     = 2;
+    public static final short BAD_BOUNDARYPOINTS_ERR    = 1;
+    public static final short INVALID_NODE_TYPE_ERR     = 2;
 
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 World Wide Web Consortium,
+ * Copyright (c) 2000 World Wide Web Consortium,
  * (Massachusetts Institute of Technology, Institut National de
  * Recherche en Informatique et en Automatique, Keio University). All
  * Rights Reserved. This program is distributed under the W3C's Software
@@ -24,11 +24,11 @@ package org.w3c.dom;
  * heavyweight object, depending on the underlying implementation. What is 
  * really needed for this is a very lightweight object. 
  * <code>DocumentFragment</code> is such an object.
- * <p>Furthermore, various operations -- such as inserting nodes as children 
+ * <p> Furthermore, various operations -- such as inserting nodes as children 
  * of another <code>Node</code> -- may take <code>DocumentFragment</code> 
  * objects as arguments;  this results in all the child nodes of the 
  * <code>DocumentFragment</code> being moved to the child list of this node.
- * <p>The children of a <code>DocumentFragment</code> node are zero or more 
+ * <p> The children of a <code>DocumentFragment</code> node are zero or more 
  * nodes representing the tops of any sub-trees defining the structure of the 
  * document. <code>DocumentFragment</code> nodes do not need to be 
  * well-formed XML documents (although they do need to follow the rules 
@@ -37,15 +37,15 @@ package org.w3c.dom;
  * child and that child node could be a <code>Text</code> node. Such a 
  * structure model represents neither an HTML document nor a well-formed XML 
  * document.
- * <p>When a <code>DocumentFragment</code> is inserted into a 
+ * <p> When a <code>DocumentFragment</code> is inserted into a 
  * <code>Document</code> (or indeed any other <code>Node</code> that may take 
  * children) the children of the <code>DocumentFragment</code> and not the 
  * <code>DocumentFragment</code> itself are inserted into the 
- * <code>Node</code>. This makes the <code>DocumentFragment</code> very 
+ * <code>Node</code> . This makes the <code>DocumentFragment</code> very 
  * useful when the user wishes to create nodes that are siblings; the 
  * <code>DocumentFragment</code> acts as the parent of these nodes so that 
  * the user can use the standard methods from the <code>Node</code> 
- * interface, such as <code>insertBefore</code> and <code>appendChild</code>.
+ * interface, such as <code>insertBefore</code> and <code>appendChild</code> .
  */
 public interface DocumentFragment extends Node {
 }

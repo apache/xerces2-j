@@ -75,6 +75,8 @@ public class EventImpl implements Event
     public boolean initialized=false, bubbles=true, cancelable=false;
     public boolean stopPropagation=false, preventDefault=false;
      
+    protected long timeStamp = System.currentTimeMillis();
+
     /** The DOM doesn't deal with constructors, so instead we have an
         initializer call to set most of the read-only fields. The
         others are set, and reset, by the event subsystem during dispatch.
@@ -140,6 +142,10 @@ public class EventImpl implements Event
     public String getType()
     {
         return type;
+    }
+
+    public long getTimeStamp() {
+	return timeStamp;
     }
 
     /** Causes exit from in-progress event dispatch before the next

@@ -126,7 +126,7 @@ public class RangeImpl  implements Range {
         return fEndOffset;
     }
     
-    public boolean getIsCollapsed() {
+    public boolean getCollapsed() {
         return (fStartContainer == fEndContainer 
              && fStartOffset == fEndOffset);
     }
@@ -354,13 +354,7 @@ public class RangeImpl  implements Range {
         
     }
 
-    public static final int StartToStart = 1;
-    public static final int StartToEnd   = 2;
-    public static final int EndToEnd     = 3;
-    public static final int EndToStart   = 4;
-
-
-    public short compareBoundaryPoints(int how, Range sourceRange)
+    public short compareBoundaryPoints(short how, Range sourceRange)
         throws DOMException
     {
     	if( fDetach) {
@@ -374,19 +368,19 @@ public class RangeImpl  implements Range {
         int offsetA;
         int offsetB;
         
-        if (how == StartToStart) {
+        if (how == START_TO_START) {
             endPointA = sourceRange.getStartContainer();
             endPointB = fStartContainer;
             offsetA = sourceRange.getStartOffset();
             offsetB = fStartOffset;
         } else 
-        if (how == StartToEnd) {
+        if (how == START_TO_END) {
             endPointA = sourceRange.getStartContainer();
             endPointB = fEndContainer;
             offsetA = sourceRange.getStartOffset();
             offsetB = fEndOffset;
         } else 
-        if (how == EndToStart) {
+        if (how == END_TO_START) {
             endPointA = sourceRange.getEndContainer();
             endPointB = fStartContainer;
             offsetA = sourceRange.getEndOffset();
