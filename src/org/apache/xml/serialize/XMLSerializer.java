@@ -227,7 +227,17 @@ extends BaseMarkupSerializer {
     }
 
 
-
+    /**
+     * This methods turns on namespace fixup algorithm during
+     * DOM serialization.
+     * @deprecated -- functionality could be removed
+     * @see org.w3c.dom.ls.DOMWriter     
+     * 
+     * @param namespaces
+     */
+    public void setNamespaces (boolean namespaces){
+        fNamespaces = namespaces;
+    }
 
     //-----------------------------------------//
     // SAX content handler serializing methods //
@@ -1051,7 +1061,7 @@ extends BaseMarkupSerializer {
 
                     // data
                     int colon = name.indexOf(':');
-                    if (colon < 0) {
+                    if (colon > -1 ) {
                         if (fDOMErrorHandler != null) {
                             modifyDOMError("DOM Level 1 Node: "+name, 
                                            DOMError.SEVERITY_ERROR, attr);
@@ -1060,8 +1070,8 @@ extends BaseMarkupSerializer {
                                 // stop the namespace fixup and validation
                                 throw new RuntimeException("Stopped at user request");
                             }
-                            printAttribute (name, value, attr.getSpecified());
                         }
+                        printAttribute (name, value, attr.getSpecified());
                     } else { // uri=null and no colon
 
                         // no fix up is needed: default namespace decl does not 
