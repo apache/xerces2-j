@@ -120,10 +120,10 @@ public class CoreDocumentImpl
     //
     // Constants
     //
-    
+
     /** Serialization version. */
     static final long serialVersionUID = 0;
-    
+
     //
     // Data
     //
@@ -147,7 +147,7 @@ public class CoreDocumentImpl
 
     /**Experimental DOM Level 3 feature: Document version */
     protected String version;
-                                                                           
+
     /**Experimental DOM Level 3 feature: Document standalone */
     protected boolean standalone;
 
@@ -159,13 +159,13 @@ public class CoreDocumentImpl
 
     /** Identifiers. */
     protected Hashtable identifiers;
-    
+
     // DOM Level 3: normalizeDocument
     transient DOMNormalizer domNormalizer = null;
     transient DOMConfigurationImpl fConfiguration= null;
 
     // support of XPath API
-    transient Object fXPathEvaluator = null;   
+    transient Object fXPathEvaluator = null;
 
     /** Table for quick check of child insertion. */
     private final static int[] kidOK;
@@ -214,14 +214,14 @@ public class CoreDocumentImpl
     /** Bypass error checking. */
     protected boolean errorChecking = true;
 
-    /** The following are required for compareDocumentPosition 
+    /** The following are required for compareDocumentPosition
     */
     // Document number.   Documents are ordered across the implementation using
-    // positive integer values.  Documents are assigned numbers on demand. 
+    // positive integer values.  Documents are assigned numbers on demand.
     private int documentNumber=0;
-    // Node counter and table.  Used to assign numbers to nodes for this 
-    // document.  Node number values are negative integers.  Nodes are 
-    // assigned numbers on demand. 
+    // Node counter and table.  Used to assign numbers to nodes for this
+    // document.  Node number values are negative integers.  Nodes are
+    // assigned numbers on demand.
     private int nodeCounter = 0;
     private Hashtable nodeTable;
 
@@ -268,14 +268,14 @@ public class CoreDocumentImpl
      * since it has to operate in terms of a particular implementation.
      */
     public CoreDocumentImpl() {
-        this(false);		
+        this(false);
     }
 
     /** Constructor. */
     public CoreDocumentImpl(boolean grammarAccess) {
         super(null);
         ownerDocument = this;
-        allowGrammarAccess = grammarAccess;       
+        allowGrammarAccess = grammarAccess;
     }
 
     /**
@@ -477,7 +477,7 @@ public class CoreDocumentImpl
         return oldChild;
     }   // replaceChild(Node,Node):Node
 
-    /* 
+    /*
      * Get Node text content
      * @since DOM Level 3
      */
@@ -493,12 +493,12 @@ public class CoreDocumentImpl
         throws DOMException {
         // no-op
     }
-    
+
 	/**
 	 * @since DOM Level 3
 	 */
 	public Object getFeature(String feature, String version) {
-        if ((feature.equalsIgnoreCase("XPath") 
+        if ((feature.equalsIgnoreCase("XPath")
              || feature.equalsIgnoreCase("+XPath"))&& version.equals("3.0")){
 			try{
 				Class xpathClass = ObjectFactory.findProviderClass(
@@ -841,8 +841,8 @@ public class CoreDocumentImpl
     /**
      * DOM Level 3 WD - Experimental.
      * The location of the document or <code>null</code> if undefined.
-     * <br>Beware that when the <code>Document</code> supports the feature 
-     * "HTML" , the href attribute of the HTML BASE element takes precedence 
+     * <br>Beware that when the <code>Document</code> supports the feature
+     * "HTML" , the href attribute of the HTML BASE element takes precedence
      * over this attribute.
      * @since DOM Level 3
      */
@@ -855,8 +855,8 @@ public class CoreDocumentImpl
      * DOM Level 3 WD - Experimental.
      * Renaming node
      */
-    public Node renameNode(Node n, 
-                           String namespaceURI, 
+    public Node renameNode(Node n,
+                           String namespaceURI,
                            String name)
                            throws DOMException{
 
@@ -900,7 +900,7 @@ public class CoreDocumentImpl
 			}
 			// move specified attributes to new node
 			nel.moveSpecifiedAttributes(el);
-		    
+
 			// attach user data to new node
 			setUserDataTable(nel, data);
 
@@ -960,7 +960,7 @@ public class CoreDocumentImpl
 			    nat.appendChild(child);
 			    child = at.getFirstChild();
 			}
-		    
+
 			// attach user data to new node
 			setUserDataTable(nat, data);
 
@@ -977,10 +977,10 @@ public class CoreDocumentImpl
 		}
 		// fire AttributeNameChanged event
 		renamedAttrNode((Attr) n, at);
-		
+
 		return at;
 	    }
-	    default: { 
+	    default: {
                 String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
                 throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
 	    }
@@ -1001,7 +1001,7 @@ public class CoreDocumentImpl
         if (needsSyncChildren()) {
             synchronizeChildren();
         }
-        
+
         if (domNormalizer == null) {
             domNormalizer = new DOMNormalizer();
         }
@@ -1019,8 +1019,8 @@ public class CoreDocumentImpl
 
 
     /**
-     *  The configuration used when <code>Document.normalizeDocument</code> is 
-     * invoked. 
+     *  The configuration used when <code>Document.normalizeDocument</code> is
+     * invoked.
      * @since DOM Level 3
      */
     public DOMConfiguration getConfig(){
@@ -1030,13 +1030,13 @@ public class CoreDocumentImpl
         return fConfiguration;
     }
 
-    
+
     /**
      * DOM Level 3 WD - Experimental.
      * Retrieve baseURI
      */
     public String getBaseURI() {
-        return fDocumentURI;            
+        return fDocumentURI;
     }
 
     /**
@@ -1052,35 +1052,35 @@ public class CoreDocumentImpl
     //
     /**
      * DOM Level 3 WD - Experimental.
-     * Indicates whether the method load should be synchronous or 
-     * asynchronous. When the async attribute is set to <code>true</code> 
-     * the load method returns control to the caller before the document has 
-     * completed loading. The default value of this property is 
+     * Indicates whether the method load should be synchronous or
+     * asynchronous. When the async attribute is set to <code>true</code>
+     * the load method returns control to the caller before the document has
+     * completed loading. The default value of this property is
      * <code>false</code>.
-     * <br>Setting the value of this attribute might throw NOT_SUPPORTED_ERR 
-     * if the implementation doesn't support the mode the attribute is being 
-     * set to. Should the DOM spec define the default value of this 
-     * property? What if implementing both async and sync IO is impractical 
-     * in some systems?  2001-09-14. default is <code>false</code> but we 
-     * need to check with Mozilla and IE. 
+     * <br>Setting the value of this attribute might throw NOT_SUPPORTED_ERR
+     * if the implementation doesn't support the mode the attribute is being
+     * set to. Should the DOM spec define the default value of this
+     * property? What if implementing both async and sync IO is impractical
+     * in some systems?  2001-09-14. default is <code>false</code> but we
+     * need to check with Mozilla and IE.
      */
     public boolean getAsync() {
         return false;
     }
-    
+
     /**
      * DOM Level 3 WD - Experimental.
-     * Indicates whether the method load should be synchronous or 
-     * asynchronous. When the async attribute is set to <code>true</code> 
-     * the load method returns control to the caller before the document has 
-     * completed loading. The default value of this property is 
+     * Indicates whether the method load should be synchronous or
+     * asynchronous. When the async attribute is set to <code>true</code>
+     * the load method returns control to the caller before the document has
+     * completed loading. The default value of this property is
      * <code>false</code>.
-     * <br>Setting the value of this attribute might throw NOT_SUPPORTED_ERR 
-     * if the implementation doesn't support the mode the attribute is being 
-     * set to. Should the DOM spec define the default value of this 
-     * property? What if implementing both async and sync IO is impractical 
-     * in some systems?  2001-09-14. default is <code>false</code> but we 
-     * need to check with Mozilla and IE. 
+     * <br>Setting the value of this attribute might throw NOT_SUPPORTED_ERR
+     * if the implementation doesn't support the mode the attribute is being
+     * set to. Should the DOM spec define the default value of this
+     * property? What if implementing both async and sync IO is impractical
+     * in some systems?  2001-09-14. default is <code>false</code> but we
+     * need to check with Mozilla and IE.
      */
     public void setAsync(boolean async) {
         if (async) {
@@ -1090,9 +1090,9 @@ public class CoreDocumentImpl
     }
     /**
      * DOM Level 3 WD - Experimental.
-     * If the document is currently being loaded as a result of the method 
-     * <code>load</code> being invoked the loading and parsing is 
-     * immediately aborted. The possibly partial result of parsing the 
+     * If the document is currently being loaded as a result of the method
+     * <code>load</code> being invoked the loading and parsing is
+     * immediately aborted. The possibly partial result of parsing the
      * document is discarded and the document is cleared.
      */
     public void abort() {
@@ -1101,9 +1101,9 @@ public class CoreDocumentImpl
     /**
      * DOM Level 3 WD - Experimental.
      *
-     * Replaces the content of the document with the result of parsing the 
-     * given URI. Invoking this method will either block the caller or 
-     * return to the caller immediately depending on the value of the async 
+     * Replaces the content of the document with the result of parsing the
+     * given URI. Invoking this method will either block the caller or
+     * return to the caller immediately depending on the value of the async
      * attribute. Once the document is fully loaded a "load" event (as
      * defined in [<a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-Events-20030331'>DOM Level 3 Events</a>]
      * , except that the <code>Event.targetNode</code> will be the document,
@@ -1122,15 +1122,15 @@ public class CoreDocumentImpl
      * call to <code>DOMParser.parseWithContext</code> with an input stream
      * referencing the URI that was passed to this call, the document as the
      * context node, and the action <code>ACTION_REPLACE_CHILDREN</code>.
-     * @param uri The URI reference for the XML file to be loaded. If this is 
+     * @param uri The URI reference for the XML file to be loaded. If this is
      *  a relative URI, the base URI used by the implementation is
      *  implementation dependent.
-     * @return If async is set to <code>true</code> <code>load</code> returns 
-     *   <code>true</code> if the document load was successfully initiated. 
+     * @return If async is set to <code>true</code> <code>load</code> returns
+     *   <code>true</code> if the document load was successfully initiated.
      *   If an error occurred when initiating the document load,
-     *   <code>load</code> returns <code>false</code>.If async is set to 
-     *   <code>false</code> <code>load</code> returns <code>true</code> if 
-     *   the document was successfully loaded and parsed. If an error 
+     *   <code>load</code> returns <code>false</code>.If async is set to
+     *   <code>false</code> <code>load</code> returns <code>true</code> if
+     *   the document was successfully loaded and parsed. If an error
      *   occurred when either loading or parsing the URI, <code>load</code>
      *   returns <code>false</code>.
      */
@@ -1140,16 +1140,16 @@ public class CoreDocumentImpl
 
     /**
      * DOM Level 3 WD - Experimental.
-     * Replace the content of the document with the result of parsing the 
+     * Replace the content of the document with the result of parsing the
      * input string, this method is always synchronous.
      * @param source A string containing an XML document.
-     * @return <code>true</code> if parsing the input string succeeded 
+     * @return <code>true</code> if parsing the input string succeeded
      *   without errors, otherwise <code>false</code>.
      */
     public boolean loadXML(String source) {
         return false;
     }
-    
+
     /**
      * DOM Level 3 WD - Experimental.
      * Save the document or the given node and all its descendants to a string
@@ -1160,12 +1160,12 @@ public class CoreDocumentImpl
      * call to <code>DOMSerializer.writeToString</code> with the document as
      * the node to write.
      * @param node Specifies what to serialize, if this parameter is
-     *   <code>null</code> the whole document is serialized, if it's 
+     *   <code>null</code> the whole document is serialized, if it's
      *   non-null the given node is serialized.
      * @return The serialized document or <code>null</code> in case an error
      *   occurred.
      * @exception DOMException
-     *   WRONG_DOCUMENT_ERR: Raised if the node passed in as the node 
+     *   WRONG_DOCUMENT_ERR: Raised if the node passed in as the node
      *   parameter is from an other document.
      */
     public String saveXML(Node node)
@@ -1291,34 +1291,34 @@ public class CoreDocumentImpl
 
     // other non-DOM methods
 
-    /** NON-DOM:  Get the number associated with this document.   Used to 
-        order documents in the implementation.    
+    /** NON-DOM:  Get the number associated with this document.   Used to
+        order documents in the implementation.
     */
     protected int getNodeNumber() {
          if (documentNumber==0) {
-          
+
             CoreDOMImplementationImpl cd = (CoreDOMImplementationImpl)CoreDOMImplementationImpl.getDOMImplementation();
-            documentNumber = cd.assignDocumentNumber();   
+            documentNumber = cd.assignDocumentNumber();
          }
          return documentNumber;
     }
-           
-        
-    /** NON-DOM:  Get a number associated with a node created with respect 
-        to this document.   Needed for compareDocumentPosition when nodes 
-        are disconnected.  This is only used on demand. 
-    */ 
+
+
+    /** NON-DOM:  Get a number associated with a node created with respect
+        to this document.   Needed for compareDocumentPosition when nodes
+        are disconnected.  This is only used on demand.
+    */
     protected int getNodeNumber(Node node) {
 
-         // Check if the node is already in the hash 
-         // If so, retrieve the node number  
-         // If not, assign a number to the node 
+         // Check if the node is already in the hash
+         // If so, retrieve the node number
+         // If not, assign a number to the node
          // Node numbers are negative, from -1 to -n
          int num;
          if (nodeTable == null) {
              nodeTable = new Hashtable();
              num = --nodeCounter;
-             nodeTable.put(node, new Integer(num));   
+             nodeTable.put(node, new Integer(num));
          }
          else {
              Integer n = (Integer)nodeTable.get(node);
@@ -1374,7 +1374,7 @@ public class CoreDocumentImpl
         //  newnode.ownerDocument=this;
         // }
         // else
-        
+
         int type = source.getNodeType();
         switch (type) {
             case ELEMENT_NODE: {
@@ -1395,7 +1395,7 @@ public class CoreDocumentImpl
                         Attr attr = (Attr)sourceAttrs.item(index);
 
                         // NOTE: this methods is used for both importingNode
-                        // and cloning the document node. In case of the 
+                        // and cloning the document node. In case of the
                         // clonning default attributes should be copied.
                         // But for importNode defaults should be ignored.
                         if (attr.getSpecified() || cloningDoc) {
@@ -1513,7 +1513,7 @@ public class CoreDocumentImpl
                 newnode = createComment(source.getNodeValue());
                 break;
             }
-            
+
             case DOCUMENT_TYPE_NODE: {
                 // unless this is used as part of cloning a Document
                 // forbid it for the sake of being compliant to the DOM spec
@@ -1543,7 +1543,7 @@ public class CoreDocumentImpl
                                                      reversedIdentifiers));
                     }
                 }
-                
+
                 // NOTE: At this time, the DOM definition of DocumentType
                 // doesn't cover Elements and their Attributes. domimpl's
                 // extentions in that area will not be preserved, even if
@@ -1835,9 +1835,9 @@ public class CoreDocumentImpl
     }
 
     /**
-     * NON-DOM: a factory method used by the Xerces DOM parser 
+     * NON-DOM: a factory method used by the Xerces DOM parser
      * to create an element.
-     * 
+     *
      * @param namespaceURI The namespace URI of the element to
      *                     create.
      * @param qualifiedName The qualified name of the element type to
@@ -1854,7 +1854,7 @@ public class CoreDocumentImpl
     {
         return new ElementNSImpl(this, namespaceURI, qualifiedName, localpart);
     }
-    
+
     /**
      * Introduced in DOM Level 2. <p>
      * Creates an attribute of the given qualified name and namespace URI.
@@ -1880,7 +1880,7 @@ public class CoreDocumentImpl
     }
 
     /**
-     * NON-DOM: a factory method used by the Xerces DOM parser 
+     * NON-DOM: a factory method used by the Xerces DOM parser
      * to create an element.
      *
      * @param namespaceURI  The namespace URI of the attribute to
@@ -1953,7 +1953,7 @@ public class CoreDocumentImpl
 
     } // isXMLName(String):boolean
 
-   
+
     //
     // Protected methods
     //
@@ -2030,22 +2030,22 @@ public class CoreDocumentImpl
     }
 
     /**
-     * Associate an object to a key on this node. The object can later be 
-     * retrieved from this node by calling <code>getUserData</code> with the 
+     * Associate an object to a key on this node. The object can later be
+     * retrieved from this node by calling <code>getUserData</code> with the
      * same key.
      * @param n The node to associate the object to.
      * @param key The key to associate the object to.
-     * @param data The object to associate to the given key, or 
+     * @param data The object to associate to the given key, or
      *   <code>null</code> to remove any existing association to that key.
-     * @param handler The handler to associate to that key, or 
+     * @param handler The handler to associate to that key, or
      *   <code>null</code>.
-     * @return Returns the <code>DOMObject</code> previously associated to 
+     * @return Returns the <code>DOMObject</code> previously associated to
      *   the given key on this node, or <code>null</code> if there was none.
      * @since DOM Level 3
      *
      * REVISIT: we could use a free list of UserDataRecord here
      */
-    public Object setUserData(Node n, String key, 
+    public Object setUserData(Node n, String key,
                               Object data, UserDataHandler handler) {
         if (data == null) {
             if (userData != null) {
@@ -2084,12 +2084,12 @@ public class CoreDocumentImpl
     }
 
     /**
-     * Retrieves the object associated to a key on a this node. The object 
-     * must first have been set to this node by calling 
+     * Retrieves the object associated to a key on a this node. The object
+     * must first have been set to this node by calling
      * <code>setUserData</code> with the same key.
      * @param n The node the object is associated to.
      * @param key The key the object is associated to.
-     * @return Returns the <code>DOMObject</code> associated to the given key 
+     * @return Returns the <code>DOMObject</code> associated to the given key
      *   on this node, or <code>null</code> if there was none.
      * @since DOM Level 3
      */
@@ -2191,15 +2191,16 @@ public class CoreDocumentImpl
             }
         }
     }*/
-    
+
     protected final void checkNamespaceWF( String qname, int colon1,
 		                                             int colon2) {
-                                                        
+
 		if (!errorChecking) {
 			return;
 		}
 		// it is an error for NCName to have more than one ':'
 		// check if it is valid QName [Namespace in XML production 6]
+        // :camera , nikon:camera:minolta, camera:
 		if (colon1 == 0 || colon1 == qname.length() - 1 || colon2 != colon1) {
 			String msg =
 				DOMMessageFormatter.formatMessage(
@@ -2248,7 +2249,7 @@ public class CoreDocumentImpl
      * @param n
      * @param data
      */
-     protected final void checkQName(String prefix, 
+     protected final void checkQName(String prefix,
                                        String local){
         if (!errorChecking) {
             return;
@@ -2276,11 +2277,11 @@ public class CoreDocumentImpl
                         DOMException.INVALID_CHARACTER_ERR,
                         msg);
                 }
-            }            
+            }
 
-		} 
+		}
         length = local.length();
-        // check local part 
+        // check local part
         if (!XMLChar.isNCNameStart(local.charAt(0))) {
             // REVISIT: add qname parameter to the message
             String msg =
@@ -2299,15 +2300,15 @@ public class CoreDocumentImpl
                         null);
                 throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
             }
-        }           
+        }
     }
 
-    boolean isNormalizeDocRequired (){        
-        // REVISIT: Implement to optimize when normalization 
-        // is required 
+    boolean isNormalizeDocRequired (){
+        // REVISIT: Implement to optimize when normalization
+        // is required
         return true;
     }
-    
+
     /**
      * NON-DOM: kept for backward compatibility
      * Store user data related to a given node

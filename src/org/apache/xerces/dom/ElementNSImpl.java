@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -66,7 +66,7 @@ import org.w3c.dom.DOMException;
 
 
 /**
- * ElementNSImpl inherits from ElementImpl and adds namespace support. 
+ * ElementNSImpl inherits from ElementImpl and adds namespace support.
  * <P>
  * The qualified name is the node name, and we store localName which is also
  * used in all queries. On the other hand we recompute the prefix when
@@ -91,10 +91,10 @@ public class ElementNSImpl
 
     /** DOM2: Namespace URI. */
     protected String namespaceURI;
-  
+
     /** DOM2: localName. */
     protected String localName;
-    
+
     /** DOM3: type information */
     // REVISIT: we are losing the type information in DOM during serialization
     transient XSTypeDefinition type;
@@ -105,9 +105,9 @@ public class ElementNSImpl
     /**
      * DOM2: Constructor for Namespace implementation.
      */
-    protected ElementNSImpl(CoreDocumentImpl ownerDocument, 
+    protected ElementNSImpl(CoreDocumentImpl ownerDocument,
                             String namespaceURI,
-                            String qualifiedName) 
+                            String qualifiedName)
         throws DOMException
     {
         super(ownerDocument, qualifiedName);
@@ -115,15 +115,34 @@ public class ElementNSImpl
     }
 
 	private void setName(String namespaceURI, String qname) {
+
 		String prefix;
 		// DOM Level 3: namespace URI is never empty string.
 		this.namespaceURI = namespaceURI;
 		if (namespaceURI != null) {
-			this.namespaceURI =
-				(namespaceURI.length() == 0) ? null : namespaceURI;
+            //convert the empty string to 'null'
+			this.namespaceURI =	(namespaceURI.length() == 0) ? null : namespaceURI;
 		}
-		int colon1 = qname.indexOf(':');
-		int colon2 = qname.lastIndexOf(':');
+
+        int colon1, colon2 ;
+
+        //NAMESPACE_ERR:
+        //1. if the qualified name is 'null' it is malformed.
+        //2. or if the qualifiedName is null and the namespaceURI is different from null,
+        // We dont need to check for namespaceURI != null, if qualified name is null throw DOMException.
+        if(qname == null){
+				String msg =
+					DOMMessageFormatter.formatMessage(
+						DOMMessageFormatter.DOM_DOMAIN,
+						"NAMESPACE_ERR",
+						null);
+				throw new DOMException(DOMException.NAMESPACE_ERR, msg);
+        }
+        else{
+		    colon1 = qname.indexOf(':');
+		    colon2 = qname.lastIndexOf(':');
+        }
+
 		ownerDocument().checkNamespaceWF(qname, colon1, colon2);
 		if (colon1 < 0) {
 			// there is no prefix
@@ -141,9 +160,25 @@ public class ElementNSImpl
 						null);
 				throw new DOMException(DOMException.NAMESPACE_ERR, msg);
 			}
-		}
+		}//there is a prefix
 		else {
-			prefix = qname.substring(0, colon1);
+            prefix = qname.substring(0, colon1);
+
+            //NAMESPACE_ERR:
+            //1. if the qualifiedName has a prefix and the namespaceURI is null,
+
+            //2. or if the qualifiedName has a prefix that is "xml" and the namespaceURI
+            //is different from " http://www.w3.org/XML/1998/namespace"
+
+            if( namespaceURI == null || ( prefix.equals("xml") && !namespaceURI.equals(NamespaceContext.XML_URI) )){
+				String msg =
+					DOMMessageFormatter.formatMessage(
+						DOMMessageFormatter.DOM_DOMAIN,
+						"NAMESPACE_ERR",
+						null);
+				throw new DOMException(DOMException.NAMESPACE_ERR, msg);
+            }
+
 			localName = qname.substring(colon2 + 1);
 			ownerDocument().checkQName(prefix, localName);
 			ownerDocument().checkDOMNSErr(prefix, namespaceURI);
@@ -151,7 +186,7 @@ public class ElementNSImpl
 	}
 
     // when local name is known
-    protected ElementNSImpl(CoreDocumentImpl ownerDocument, 
+    protected ElementNSImpl(CoreDocumentImpl ownerDocument,
                             String namespaceURI, String qualifiedName,
                             String localName)
         throws DOMException
@@ -163,7 +198,7 @@ public class ElementNSImpl
     }
 
     // for DeferredElementImpl
-    protected ElementNSImpl(CoreDocumentImpl ownerDocument, 
+    protected ElementNSImpl(CoreDocumentImpl ownerDocument,
                             String value) {
         super(ownerDocument, value);
     }
@@ -183,29 +218,29 @@ public class ElementNSImpl
 
     /**
      * NON-DOM: resets this node and sets specified values for the node
-     * 
+     *
      * @param ownerDocument
      * @param namespaceURI
      * @param qualifiedName
      * @param localName
      */
-    protected void setValues (CoreDocumentImpl ownerDocument, 
+    protected void setValues (CoreDocumentImpl ownerDocument,
                             String namespaceURI, String qualifiedName,
                             String localName){
-        
+
         // remove children first
         firstChild = null;
         previousSibling = null;
         nextSibling = null;
         fNodeListCache = null;
-        
+
         // set owner document
         attributes = null;
         super.flags = 0;
         setOwnerDocument(ownerDocument);
 
         // synchronizeData will initialize attributes
-        needsSyncData(true);    
+        needsSyncData(true);
         super.name = qualifiedName;
         this.localName = localName;
         this.namespaceURI = namespaceURI;
@@ -217,12 +252,12 @@ public class ElementNSImpl
     //
 
 
-    
+
     //
     //DOM2: Namespace methods.
     //
-    
-    /** 
+
+    /**
      * Introduced in DOM Level 2. <p>
      *
      * The namespace URI of this node, or null if it is unspecified.<p>
@@ -232,7 +267,7 @@ public class ElementNSImpl
      * namespace URI given at creation time.<p>
      *
      * For nodes created with a DOM Level 1 method, such as createElement
-     * from the Document interface, this is null.     
+     * from the Document interface, this is null.
      * @since WD-DOM-Level-2-19990923
      */
     public String getNamespaceURI()
@@ -242,8 +277,8 @@ public class ElementNSImpl
         }
         return namespaceURI;
     }
-    
-    /** 
+
+    /**
      * Introduced in DOM Level 2. <p>
      *
      * The namespace prefix of this node, or null if it is unspecified. <p>
@@ -255,21 +290,21 @@ public class ElementNSImpl
      */
     public String getPrefix()
     {
-        
+
         if (needsSyncData()) {
             synchronizeData();
         }
         int index = name.indexOf(':');
-        return index < 0 ? null : name.substring(0, index); 
+        return index < 0 ? null : name.substring(0, index);
     }
-    
+
     /**
      * Introduced in DOM Level 2. <p>
-     * 
+     *
      * Note that setting this attribute changes the nodeName attribute, which holds the
      * qualified name, as well as the tagName and name attributes of the Element
      * and Attr interfaces, when applicable.<p>
-     * 
+     *
      * @param prefix The namespace prefix of this node, or null(empty string) if it is unspecified.
      *
      * @exception INVALID_CHARACTER_ERR
@@ -288,7 +323,7 @@ public class ElementNSImpl
             if (isReadOnly()) {
                 String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
                 throw new DOMException(
-                                     DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                     DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                      msg);
             }
             if (prefix != null && prefix.length() != 0) {
@@ -315,8 +350,8 @@ public class ElementNSImpl
             name = localName;
         }
     }
-                                        
-    /** 
+
+    /**
      * Introduced in DOM Level 2. <p>
      *
      * Returns the local part of the qualified name of this node.
@@ -349,8 +384,8 @@ public class ElementNSImpl
                 String uri =  attrNode.getNodeValue();
                 if (uri.length() != 0 ) {// attribute value is always empty string
                     try {
-                       uri = new URI(new URI(baseURI), uri).toString();  
-                    } 
+                       uri = new URI(new URI(baseURI), uri).toString();
+                    }
                     catch (org.apache.xerces.util.URI.MalformedURIException e){
                         // REVISIT: what should happen in this case?
                         return null;
@@ -361,12 +396,12 @@ public class ElementNSImpl
         }
         return baseURI;
     }
-    
-        
+
+
     /**
      * @see org.apache.xerces.dom3.TypeInfo#getTypeName()
      */
-    public String getTypeName() {        
+    public String getTypeName() {
         if (type !=null){
             return type.getName();
         }
@@ -382,13 +417,13 @@ public class ElementNSImpl
         }
         return null;
     }
-    
-    
+
+
     /**
      * NON-DOM: setting type used by the DOM parser
      * @see NodeImpl#setReadOnly
      */
     public void setType(XSTypeDefinition type) {
         this.type = type;
-    }    
+    }
 }
