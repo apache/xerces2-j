@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE book SYSTEM 'dtd/book.dtd'>
 <book title='&ParserName; Documentation' 
-      copyright='1999-2001 The Apache Software Foundation'>
+      copyright='1999-2002 The Apache Software Foundation'>
  <external label='Home' href='http://xml.apache.org/'/>
  <separator/>
  <document label='Readme' title='&ParserNameLong; Readme'
@@ -45,6 +45,7 @@
        id='faq-write' source='faq-write.xml'/>
   <faq title='Performance FAQs' 
        id='faq-performance' source='faq-performance.xml'/>
+  <faq title='FAQs for Developers and Prospective Contributors' id='faq-contributing' source='faq-contributing.xml'/>
  </faqs>
  <separator/>
  <settings title='Parser Features' label='Features' 
