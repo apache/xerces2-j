@@ -294,22 +294,27 @@ public class DocumentImpl
         // then the children by importing them
 
         if (needsSyncChildren()) {
-                synchronizeChildren();
-             }
-
-        if (deep) {
-            for (ChildNode n = firstChild; n != null; n = n.nextSibling) {
-                newdoc.appendChild(newdoc.importNode(n, true));
-            }
+            synchronizeChildren();
         }
 
-        // REVISIT: What to do about identifiers that are cloned? -Ac
-        //newdoc.identifiers = (Hashtable)identifiers.clone(); // WRONG!
-        newdoc.identifiers = null;
-        newdoc.iterators = null;
-        newdoc.ranges = null;
-        newdoc.userData = null;
-        newdoc.eventListeners = null;
+        if (deep) {
+            Hashtable reversedIdentifiers = null;
+
+            if (identifiers != null) {
+                // Build a reverse mapping from element to identifier.
+                reversedIdentifiers = new Hashtable();
+                Enumeration elementIds = identifiers.keys();
+                while (elementIds.hasMoreElements()) {
+                    Object elementId = elementIds.nextElement();
+                    reversedIdentifiers.put(identifiers.get(elementId), elementId);
+                }
+            }
+
+            // Copy children into new document.
+            for (ChildNode kid = firstChild; kid != null; kid = kid.nextSibling) {
+                newdoc.appendChild(newdoc.importNode(kid, true, reversedIdentifiers));
+            }
+        }
 
         // experimental
         newdoc.allowGrammarAccess = allowGrammarAccess;
@@ -755,40 +760,46 @@ public class DocumentImpl
     // other non-DOM methods
 
     /**
-     * Copies data from the source node. Unlike cloneNode, this
-     * _can_ copy data from another document. If the source document is also
-     * based on org.apache.xerces.dom, we will attempt to preserve the domimpl-
-     * internal data by doing a clone-and-reparent. If not, we will use
-     * the source's public methods, and this document's Factory methods,
-     * to copy data defined by the DOM interfaces.
-     *
+     * Copies a node from another document to this document. The new nodes are
+     * created using this document's factory methods and are populated with the
+     * data from the source's accessor methods defined by the DOM interfaces.
      * Its behavior is otherwise similar to that of cloneNode.
-     *
-     * Attempting to import a Document into another Document is meaningless --
-     * a new Document would not improve matters much, and a DocumentFragment
-     * couldn't carry the DocumentType child (if any). Best thing we can do
-     * is throw a HIERARCHY_REQUEST_ERR.
-     *
-     * ????? Should we push some of this down to copy-ctors, so
-     * subclassed DOMs have the option of special-casing each other
-     * (as we do for ourself)?
+     * <p>
+     * According to the DOM specifications, document nodes cannot be imported
+     * and a NOT_SUPPORTED_ERR exception is thrown if attempted.
      */
     public Node importNode(Node source, boolean deep)
-        throws DOMException {
+	throws DOMException {
+        return importNode(source, deep, null);
+    } // importNode(Node,boolean):Node
 
-    	Node newnode=null;
+    /**
+     * Overloaded implementation of DOM's importNode method. This method
+     * provides the core functionality for the public importNode and cloneNode
+     * methods.
+     *
+     * The reversedIdentifiers parameter is provided for cloneNode to
+     * preserve the document's identifiers. The Hashtable has Elements as the
+     * keys and their identifiers as the values. When an element is being
+     * imported, a check is done for an associated identifier. If one exists,
+     * the identifier is registered with the new, imported element. If
+     * reversedIdentifiers is null, the parameter is not applied.
+     */
+    private Node importNode(Node source, boolean deep, Hashtable reversedIdentifiers)
+	throws DOMException {
+        Node newnode=null;
 
-    	// Sigh. This doesn't work; too many nodes have private data that
-    	// would have to be manually tweaked. May be able to add local
-    	// shortcuts to each nodetype. Consider ?????
-    	// if(source instanceof NodeImpl &&
-    	//	!(source instanceof DocumentImpl))
-    	// {
-    	//  // Can't clone DocumentImpl since it invokes us...
-    	//	newnode=(NodeImpl)source.cloneNode(false);
-    	//	newnode.ownerDocument=this;
-    	//}
-    	//else
+        // Sigh. This doesn't work; too many nodes have private data that
+        // would have to be manually tweaked. May be able to add local
+        // shortcuts to each nodetype. Consider ?????
+        // if(source instanceof NodeImpl &&
+        //  !(source instanceof DocumentImpl))
+        // {
+        //  // Can't clone DocumentImpl since it invokes us...
+        //  newnode=(NodeImpl)source.cloneNode(false);
+        //  newnode.ownerDocument=this;
+        // }
+        // else
 
         DOMImplementation  domImplementation     = 
                   source.getOwnerDocument().getImplementation(); // get source implementation
@@ -798,42 +809,50 @@ public class DocumentImpl
 
         int type                                 = source.getNodeType();
 
-    	switch (type) {
-    		
+        switch (type) {
             case ELEMENT_NODE: {
-		Element newelement;
-               
-                if( domLevel20 == true ){
-                    if( source.getLocalName() == null ){
-                         newelement = createElement(source.getNodeName());
-                    } else {
-                         newelement = createElementNS(source.getNamespaceURI(),
-						 source.getNodeName());
-                    }
-                } else {
-                    newelement = createElement( source.getNodeName() );
+                Element newElement;
 
-                }
+                // Create element according to namespace support/qualification.
+                if(domLevel20 == false || source.getLocalName() == null)
+                    newElement = createElement(source.getNodeName());
+                else
+                    newElement = createElementNS(source.getNamespaceURI(), source.getNodeName());
 
-		NamedNodeMap srcattr = source.getAttributes();
-		if (srcattr != null) {
-                    for(int i = 0; i < srcattr.getLength(); i++) {
-                        Attr attr = (Attr) srcattr.item(i);
-                        if (attr.getSpecified()) { // not a default attribute
-                            Attr nattr = (Attr) importNode(attr, true);
-                            if( domLevel20 == true ) {
-                                 if (attr.getLocalName() == null)
-                                     newelement.setAttributeNode(nattr);
-                                 else
-                                     newelement.setAttributeNodeNS(nattr);
-                            } else {
-                            newelement.setAttributeNode(nattr);
-                            }
+                // Copy element's attributes, if any.
+                NamedNodeMap sourceAttrs = source.getAttributes();
+                if (sourceAttrs != null) {
+                    int length = sourceAttrs.getLength();
+                    for (int index = 0; index < length; index++) {
+                        Attr attr = (Attr)sourceAttrs.item(index);
+
+                        // Copy the attribute only if it is not a default.
+                        if (attr.getSpecified()) {
+                            Attr newAttr = (Attr)importNode(attr, true, reversedIdentifiers);
+
+                            // Attach attribute according to namespace support/qualification.
+                            if(domLevel20 == false || attr.getLocalName() == null)
+                                newElement.setAttributeNode(newAttr);
+                            else
+                                newElement.setAttributeNodeNS(newAttr);
                         }
                     }
                 }
-		newnode = newelement;
-		break;
+
+                // Register element identifier.
+                if (reversedIdentifiers != null) {
+                    // Does element have an associated identifier?
+                    Object elementId = reversedIdentifiers.get(source);
+                    if (elementId != null) {
+                        if (identifiers == null)
+                            identifiers = new Hashtable();
+
+                        identifiers.put(elementId, newElement);
+                    }
+                }
+
+                newnode = newElement;
+                break;
             }
 
             case ATTRIBUTE_NODE: {
@@ -910,6 +929,8 @@ public class DocumentImpl
 		break;
             }
 
+            // REVISIT: The DOM specifications say that DocumentType nodes cannot be
+            // imported. Is this OK?
     	    case DOCUMENT_TYPE_NODE: {
 		DocumentType srcdoctype = (DocumentType)source;
 		DocumentTypeImpl newdoctype = (DocumentTypeImpl)
@@ -921,14 +942,14 @@ public class DocumentImpl
 		NamedNodeMap tmap = newdoctype.getEntities();
 		if(smap != null) {
 		    for(int i = 0; i < smap.getLength(); i++) {
-			tmap.setNamedItem(importNode(smap.item(i), true));
+			tmap.setNamedItem(importNode(smap.item(i), true, reversedIdentifiers));
                     }
                 }
 		smap = srcdoctype.getNotations();
 		tmap = newdoctype.getNotations();
 		if (smap != null) {
 		    for(int i = 0; i < smap.getLength(); i++) {
-			tmap.setNamedItem(importNode(smap.item(i), true));
+			tmap.setNamedItem(importNode(smap.item(i), true, reversedIdentifiers));
                     }
                 }
 		// NOTE: At this time, the DOM definition of DocumentType
@@ -958,10 +979,11 @@ public class DocumentImpl
 		break;
             }
 
-    	    case DOCUMENT_NODE : // Document can't be child of Document
-    	    default: {		// Unknown node type
-		throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
-					   "DOM006 Hierarchy request error");
+            case DOCUMENT_NODE : // Can't import document nodes
+            default: {           // Unknown node type
+                throw new DOMException(
+                                       DOMException.NOT_SUPPORTED_ERR,
+                                       "Node type being imported is not supported");
             }
         }
 
@@ -970,7 +992,7 @@ public class DocumentImpl
 	    for (Node srckid = source.getFirstChild();
                  srckid != null;
                  srckid = srckid.getNextSibling()) {
-		newnode.appendChild(importNode(srckid, true));
+		newnode.appendChild(importNode(srckid, true, reversedIdentifiers));
 	    }
         }
         if (newnode.getNodeType() == Node.ENTITY_REFERENCE_NODE
@@ -979,7 +1001,7 @@ public class DocumentImpl
         }
     	return newnode;
 
-    } // importNode(Node,boolean):Node
+    } // importNode(Node,boolean,Hashtable):Node
 
     /**
      * NON-DOM:
