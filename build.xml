@@ -231,7 +231,7 @@ Copyright:
   <!-- =================================================================== -->
   <target name="docs" depends="prepare, prepare-docs">
 	<echo message="Building docs for ${Name} ${version} ..." />
-    <java fork="yes"
+    <java fork="no"
           classpath="${java.class.path}:${doc.generator.package}"
           classname="${doc.generator}"
           args="targetDirectory=${build.docs} ${docs.book} ${doc.style}"/>
