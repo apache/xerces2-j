@@ -3,10 +3,12 @@
 
 <s1 title="&javaparsernamelong; Readme">
 	<s2 title="&javaparsernamelong; &javaparserversion; Release">
-		<p>The &javaparsernamelong; &javaparserversion; supports 
+		<p>The &javaparsernamelong; &javaparserversion; supports the
 		<jump href="http://www.w3.org/TR/1998/REC-xml-19980210">XML 1.0</jump> 
 		recommendation and contains advanced parser functionality, such as 
-		<jump href="http://www.w3.org/XML/Group/Schemas.html">XML Schema</jump>, 
+        support for the W3C&apos;s 
+		<jump href="http://www.w3.org/XML/Schema.html">XML 
+        Schema recommendation version 1.0</jump>, 
 		<jump href="http://www.w3.org/TR/DOM-Level-2/">DOM Level 2 version 1.0</jump>, and 
 		<jump href="http://www.megginson.com/SAX/">SAX Version 2</jump>, 
 		in addition to supporting the industry-standard 
