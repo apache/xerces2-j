@@ -1545,7 +1545,11 @@ public class DOMNormalizer implements XMLDocumentHandler {
 					//       flag to "true" which may overwrite a "false"
 					//       value from the attribute list.
 					boolean specified = attr.getSpecified();
-					attr.setValue(attrPSVI.getSchemaNormalizedValue());
+					//For now .
+					// namespace attributes xmlns:ve are not validated.
+					String value = attrPSVI.getSchemaNormalizedValue();
+					if(value != null)
+						attr.setValue(value);
 					if (!specified) {
 						((AttrImpl) attr).setSpecified(specified);
 					}
