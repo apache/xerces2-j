@@ -117,14 +117,8 @@ public abstract class ParentNode
 
     // transients
 
-    /** Cached node list length. */
-    protected transient int fCachedLength = -1;
-
-    /** Last requested node. */
-    protected transient ChildNode fCachedChild;
-
-    /** Last requested node index. */
-    protected transient int fCachedChildIndex = -1;
+    /** NodeList cache */
+    protected transient CoreDocumentImpl.NodeListCache fNodeListCache = null;
 
     //
     // Constructors
@@ -178,8 +172,7 @@ public abstract class ParentNode
     	newnode.firstChild      = null;
 
         // invalidate cache for children NodeList
-        newnode.fCachedChildIndex = -1;
-        newnode.fCachedLength = -1;
+        newnode.fNodeListCache = null;
 
         // Then, if deep, clone the kids too.
     	if (deep) {
@@ -477,17 +470,19 @@ public abstract class ParentNode
         changed();
 
         // update cached length if we have any
-        if (fCachedLength != -1) {
-            fCachedLength++;
-        }
-        if (fCachedChildIndex != -1) {
-            // if we happen to insert just before the cached node, update
-            // the cache to the new node to match the cached index
-            if (fCachedChild == refInternal) {
-                fCachedChild = newInternal;
-            } else {
-                // otherwise just invalidate the cache
-                fCachedChildIndex = -1;
+        if (fNodeListCache != null) {
+            if (fNodeListCache.fLength != -1) {
+                fNodeListCache.fLength++;
+            }
+            if (fNodeListCache.fChildIndex != -1) {
+                // if we happen to insert just before the cached node, update
+                // the cache to the new node to match the cached index
+                if (fNodeListCache.fChild == refInternal) {
+                    fNodeListCache.fChild = newInternal;
+                } else {
+                    // otherwise just invalidate the cache
+                    fNodeListCache.fChildIndex = -1;
+                }
             }
         }
 
@@ -545,18 +540,20 @@ public abstract class ParentNode
         ownerDocument.removingNode(this, oldInternal, replace);
 
         // update cached length if we have any
-        if (fCachedLength != -1) {
-            fCachedLength--;
-        }
-        if (fCachedChildIndex != -1) {
-            // if the removed node is the cached node
-            // move the cache to its (soon former) previous sibling
-            if (fCachedChild == oldInternal) {
-                fCachedChildIndex--;
-                fCachedChild = oldInternal.previousSibling();
-            } else {
-                // otherwise just invalidate the cache
-                fCachedChildIndex = -1;
+        if (fNodeListCache != null) {
+            if (fNodeListCache.fLength != -1) {
+                fNodeListCache.fLength--;
+            }
+            if (fNodeListCache.fChildIndex != -1) {
+                // if the removed node is the cached node
+                // move the cache to its (soon former) previous sibling
+                if (fNodeListCache.fChild == oldInternal) {
+                    fNodeListCache.fChildIndex--;
+                    fNodeListCache.fChild = oldInternal.previousSibling();
+                } else {
+                    // otherwise just invalidate the cache
+                    fNodeListCache.fChildIndex = -1;
+                }
             }
         }
 
@@ -657,22 +654,37 @@ public abstract class ParentNode
      */
     private int nodeListGetLength() {
 
-        if (fCachedLength == -1) { // is the cached length invalid ?
-            ChildNode node;
+        if (fNodeListCache == null) {
+            // get rid of trivial cases
+            if (firstChild == null) {
+                return 0;
+            }
+            if (firstChild == lastChild()) {
+                return 1;
+            }
+            // otherwise request a cache object
+            fNodeListCache = ownerDocument.getNodeListCache(this);
+        }
+        if (fNodeListCache.fLength == -1) { // is the cached length invalid ?
+            int l;
+            ChildNode n;
             // start from the cached node if we have one
-            if (fCachedChildIndex != -1 && fCachedChild != null) {
-                fCachedLength = fCachedChildIndex;
-                node = fCachedChild;
+            if (fNodeListCache.fChildIndex != -1 &&
+                fNodeListCache.fChild != null) {
+                l = fNodeListCache.fChildIndex;
+                n = fNodeListCache.fChild;
             } else {
-                node = firstChild;
-                fCachedLength = 0;
+                n = firstChild;
+                l = 0;
             }
-            for (; node != null; node = node.nextSibling) {
-                fCachedLength++;
+            while (n != null) {
+                l++;
+                n = n.nextSibling;
             }
+            fNodeListCache.fLength = l;
         }
 
-        return fCachedLength;
+        return fNodeListCache.fLength;
 
     } // nodeListGetLength():int
 
@@ -690,31 +702,58 @@ public abstract class ParentNode
      * @param index int
      */
     private Node nodeListItem(int index) {
+
+        if (fNodeListCache == null) {
+            // get rid of trivial case
+            if (firstChild == lastChild()) {
+                return index == 0 ? firstChild : null;
+            }
+            // otherwise request a cache object
+            fNodeListCache = ownerDocument.getNodeListCache(this);
+        }
+        int i = fNodeListCache.fChildIndex;
+        ChildNode n = fNodeListCache.fChild;
+        boolean firstAccess = true;
         // short way
-        if (fCachedChildIndex != -1 && fCachedChild != null) {
-            if (fCachedChildIndex < index) {
-                while (fCachedChildIndex < index && fCachedChild != null) {
-                    fCachedChildIndex++;
-                    fCachedChild = fCachedChild.nextSibling;
+        if (i != -1 && n != null) {
+            firstAccess = false;
+            if (i < index) {
+                while (i < index && n != null) {
+                    i++;
+                    n = n.nextSibling;
                 }
             }
-            else if (fCachedChildIndex > index) {
-                while (fCachedChildIndex > index && fCachedChild != null) {
-                    fCachedChildIndex--;
-                    fCachedChild = fCachedChild.previousSibling();
+            else if (i > index) {
+                while (i > index && n != null) {
+                    i--;
+                    n = n.previousSibling();
                 }
             }
-            return fCachedChild;
+        }
+        else {
+            // long way
+            n = firstChild;
+            for (i = 0; i < index && n != null; i++) {
+                n = n.nextSibling;
+            }
         }
 
-        // long way
-        fCachedChild = firstChild;
-        for (fCachedChildIndex = 0; 
-             fCachedChildIndex < index && fCachedChild != null; 
-             fCachedChildIndex++) {
-            fCachedChild = fCachedChild.nextSibling;
+        // release cache if reaching last child or first child
+        if (!firstAccess && (n == firstChild || n == lastChild())) {
+            fNodeListCache.fChildIndex = -1;
+            fNodeListCache.fChild = null;
+            ownerDocument.freeNodeListCache(fNodeListCache);
+            // we can keep using the cache until it is actually reused
+            // fNodeListCache will be nulled by the pool (document) if that
+            // happens.
+            // fNodeListCache = null;
         }
-        return fCachedChild;
+        else {
+            // otherwise update it
+            fNodeListCache.fChildIndex = i;
+            fNodeListCache.fChild = n;
+        }
+        return n;
 
     } // nodeListItem(int):Node
 
@@ -922,8 +961,8 @@ public abstract class ParentNode
         needsSyncChildren(false);
 
         // initialize transients
-        fCachedLength = -1;
-        fCachedChildIndex = -1;
+        fNodeListCache.fLength = -1;
+        fNodeListCache.fChildIndex = -1;
 
     } // readObject(ObjectInputStream)
 

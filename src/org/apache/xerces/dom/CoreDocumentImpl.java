@@ -132,6 +132,8 @@ public class CoreDocumentImpl
     /** Document element. */
     protected ElementImpl docElement;
 
+    /** NodeListCache free list */
+    NodeListCache fFreeNLCache;
 
     /**Experimental DOM Level 3 feature: Document encoding */
     protected String encoding;
@@ -1436,6 +1438,63 @@ public class CoreDocumentImpl
     protected int changes() {
         return changes;
     }
+
+
+    //  NodeListCache pool
+
+    class NodeListCache {
+        /** Cached node list length. */
+        protected int fLength = -1;
+
+        /** Last requested node index. */
+        protected int fChildIndex = -1;
+
+        /** Last requested node. */
+        protected ChildNode fChild;
+
+        /** Owner of this cache */
+        protected ParentNode fOwner;
+
+        /** Pointer to the next object on the list,
+            only meaningful when actully stored in the free list. */
+        NodeListCache next;
+
+        NodeListCache(ParentNode owner) {
+            fOwner = owner;
+        }
+
+    }
+
+    /**
+     * Returns a NodeListCache for the given node.
+     */
+    NodeListCache getNodeListCache(ParentNode owner) {
+        if (fFreeNLCache == null) {
+            return new NodeListCache(owner);
+        }
+        NodeListCache c = fFreeNLCache;
+        fFreeNLCache = fFreeNLCache.next;
+        c.fChild = null;
+        c.fChildIndex = -1;
+        c.fLength = -1;
+        // revoke previous ownership
+        if (c.fOwner != null) {
+            c.fOwner.fNodeListCache = null;
+        }
+        c.fOwner = owner;
+        // c.next = null; not necessary, except for confused people...
+        return c;
+    }
+
+    /**
+     * Puts the given NodeListCache in the free list.
+     * Note: The owner node can keep using it until we reuse it
+     */
+    void freeNodeListCache(NodeListCache c) {
+        c.next = fFreeNLCache;
+        fFreeNLCache = c;
+    }
+
 
     /**
      * Store user data related to a given node
