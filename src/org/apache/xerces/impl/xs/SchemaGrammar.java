@@ -567,7 +567,7 @@ public class SchemaGrammar implements Grammar, XSNamespaceItem {
 
         public XSAttributeGroupDecl getAttrGrp() {
             XSWildcardDecl wildcard = new XSWildcardDecl();
-            wildcard.fProcessContents = XSWildcardDecl.PC_LAX;
+            wildcard.fProcessContents = XSWildcardDecl.PC_SKIP;
             XSAttributeGroupDecl attrGrp = new XSAttributeGroupDecl();
             attrGrp.fAttributeWC = wildcard;
             return attrGrp;
@@ -575,15 +575,15 @@ public class SchemaGrammar implements Grammar, XSNamespaceItem {
 
         public XSWildcard getAttributeWildcard() {
             XSWildcardDecl wildcard = new XSWildcardDecl();
-            wildcard.fProcessContents = XSWildcardDecl.PC_LAX;
+            wildcard.fProcessContents = XSWildcardDecl.PC_SKIP;
             return wildcard;
         }
 
         public XSParticle getParticle() {
             // the wildcard used in anyType (content and attribute)
-            // the spec will change strict to lax for anyType
+            // the spec will change strict to skip for anyType
             XSWildcardDecl wildcard = new XSWildcardDecl();
-            wildcard.fProcessContents = XSWildcardDecl.PC_LAX;
+            wildcard.fProcessContents = XSWildcardDecl.PC_SKIP;
             // the particle for the content wildcard
             XSParticleDecl particleW = new XSParticleDecl();
             particleW.fMinOccurs = 0;
