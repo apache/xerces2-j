@@ -70,14 +70,14 @@ import org.apache.xerces.impl.xs.XSParticleDecl;
  *
  * @author Elena Litani, IBM
  * @author Sandy Gao, IBM
- * 
+ *
  * @version $Id$
  */
 public class CMBuilder {
 
     // REVISIT: should update the decl pool to cache XSCM objects too
     private XSDeclarationPool fDeclPool = null;
-    
+
     // It never changes, so a static member is good enough
     private static XSEmptyCM fEmptyCM = new XSEmptyCM();
 
@@ -100,11 +100,11 @@ public class CMBuilder {
     /**
      * Get content model for the a given type
      *
-     * @param typeDecl  get content model for which complex type 
+     * @param typeDecl  get content model for which complex type
      * @return          a content model validator
      */
     public XSCMValidator getContentModel(XSComplexTypeDecl typeDecl) {
-        
+
         // for complex type with empty or simple content,
         // there is no content model validator
         short contentType = typeDecl.getContentType();
@@ -119,7 +119,7 @@ public class CMBuilder {
         // is defined, return the empty content model
         if (particle == null)
             return fEmptyCM;
-        
+
         // if the content model contains "all" model group,
         // we create an "all" content model, otherwise a DFA content model
         XSCMValidator cmValidator = null;
@@ -132,14 +132,14 @@ public class CMBuilder {
         }
 
         //now we are throught building content model and have passed sucessfully of the nodecount check
-        //if set by the application        
+        //if set by the application
         fNodeFactory.resetNodeCount() ;
-        
+
         // if the validator returned is null, it means there is nothing in
         // the content model, so we return the empty content model.
         if (cmValidator == null)
             cmValidator = fEmptyCM;
-            
+
         return cmValidator;
     }
 
@@ -150,7 +150,7 @@ public class CMBuilder {
         // get the model group, and add all children of it to the content model
         XSModelGroupImpl group = (XSModelGroupImpl)particle.fValue;
         // create an all content model. the parameter indicates whether
-        // the <all> itself is optional        
+        // the <all> itself is optional
         XSAllCM allContent = new XSAllCM(particle.fMinOccurs == 0, group.fParticleCount);
         for (int i = 0; i < group.fParticleCount; i++) {
             // for all non-empty particles
@@ -162,7 +162,7 @@ public class CMBuilder {
         }
         return allContent;
     }
-    
+
     XSCMValidator createDFACM(XSParticleDecl particle) {
         fLeafCount = 0;
         fParticleCount = 0;
@@ -186,7 +186,7 @@ public class CMBuilder {
         int minOccurs = particle.fMinOccurs;
         short type = particle.fType;
         CMNode nodeRet = null;
-        
+
         if ((type == XSParticleDecl.PARTICLE_WILDCARD) ||
             (type == XSParticleDecl.PARTICLE_ELEMENT)) {
             // (task 1) element and wildcard particles should be converted to
@@ -303,7 +303,7 @@ public class CMBuilder {
 
         return nodeRet;
     }
-    
+
     private CMNode multiNodes(CMNode node, int num, boolean copyFirst) {
         if (num == 0) {
             return null;
@@ -314,9 +314,9 @@ public class CMBuilder {
         int num1 = num/2;
         return fNodeFactory.getCMBinOpNode(XSModelGroupImpl.MODELGROUP_SEQUENCE,
                                            multiNodes(node, num1, copyFirst),
-                                           multiNodes(node, num-num1, false));
+                                           multiNodes(node, num-num1, true));
     }
-    
+
     // 4. make sure each leaf node (XSCMLeaf) has a distinct position
     private CMNode copyNode(CMNode node) {
         int type = node.type();
@@ -341,7 +341,7 @@ public class CMBuilder {
             XSCMLeaf leaf = (XSCMLeaf)node;
             node = fNodeFactory.getCMLeafNode(leaf.type(), leaf.getLeaf(), leaf.getParticleId(), fLeafCount++);
         }
-        
+
         return node;
     }
 }
