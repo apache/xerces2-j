@@ -224,6 +224,7 @@ public class TraverseSchema implements
     private int fCurrentScope=TOP_LEVEL_SCOPE;
     private int fSimpleTypeAnonCount = 0;
     private Stack fCurrentTypeNameStack = new Stack();
+    private Stack fBaseTypeNameStack = new Stack();
     private Stack fCurrentGroupNameStack = new Stack();
     private Vector fElementRecurseComplex = new Vector();
     private Vector fTopLevelElementsRefdFromGroup = new Vector();
@@ -4053,14 +4054,15 @@ public class TraverseSchema implements
                         // Before traversing the base, make sure we're not already
                         // doing so..
                         // ct-props-correct 3
-                        if (fCurrentTypeNameStack.search((Object)localpart) > - 1) {
+                        if (fBaseTypeNameStack.search((Object)fullBaseName) > - 1) {
                             throw new ComplexTypeRecoverableError(
                                  "ct-props-correct.3:  Recursive type definition");
                         }
-
+                        fBaseTypeNameStack.push(fullBaseName);
                         baseTypeSymbol = traverseComplexTypeDecl( baseTypeNode, true );
+	                fBaseTypeNameStack.pop();
                         baseComplexTypeInfo = (ComplexTypeInfo)
-                        fComplexTypeRegistry.get(fStringPool.toString(baseTypeSymbol));
+                          fComplexTypeRegistry.get(fStringPool.toString(baseTypeSymbol));
                         //REVISIT: should it be fullBaseName;
                     }
                     else {
@@ -4243,9 +4245,9 @@ public class TraverseSchema implements
                // cos-ct-extends.1.4.2.1
                // LM - commented out until I get a clarification from HT
                //
-               if (typeInfo.contentSpecHandle <0) {
-                    throw new ComplexTypeRecoverableError("cos-ct-extends.1.4.2.1: The content of a type derived by EXTENSION must contain a particle");
-               }
+               //if (typeInfo.contentSpecHandle <0) {
+               //     throw new ComplexTypeRecoverableError("cos-ct-extends.1.4.2.1: The content of a type derived by EXTENSION must contain a particle");
+               //}
            }
        }
        else {
@@ -6714,7 +6716,15 @@ throws Exception {
                                 return tempQName;
                             }
                             else {
+                                // Squirrel away the baseTypeNameStack. 
+                                Stack savedbaseNameStack = null;
+                                if (!fBaseTypeNameStack.isEmpty()) {
+                                  savedbaseNameStack = fBaseTypeNameStack; 
+                                  fBaseTypeNameStack = new Stack();
+                                }
                                 typeNameIndex = traverseComplexTypeDecl( topleveltype, true );
+                                if (savedbaseNameStack != null)
+                                    fBaseTypeNameStack  = savedbaseNameStack; 
                                 typeInfo = (ComplexTypeInfo)
                                     fComplexTypeRegistry.get(fStringPool.toString(typeNameIndex));
                             }
