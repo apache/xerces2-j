@@ -2829,34 +2829,45 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         else if (contentType == XMLElementDecl.TYPE_SIMPLE ) {
 
             XMLContentModel cmElem = null;
-            try {
-                fGrammar.getElementDecl(elementIndex, fTempElementDecl);
-
-                DatatypeValidator dv = fTempElementDecl.datatypeValidator;
-
-                // If there is xsi:type validator, substitute it.
-                if ( fXsiTypeValidator != null ) {
-                    dv = fXsiTypeValidator;
-                    fXsiTypeValidator = null;
-                }
-
-                if (dv == null) {
-                    System.out.println("Internal Error: this element have a simpletype "+
-                                       "but no datatypevalidator was found, element "+fTempElementDecl.name
-                                       +",locapart: "+fStringPool.toString(fTempElementDecl.name.localpart));
-                }
-                else {
-                    dv.validate(fDatatypeBuffer.toString(), null);
-                }
-
-            } 
-            catch (InvalidDatatypeValueException idve) {
+            if (childCount > 0) {
                 fErrorReporter.reportError(fErrorReporter.getLocator(),
                                            SchemaMessageProvider.SCHEMA_DOMAIN,
                                            SchemaMessageProvider.DatatypeError,
                                            SchemaMessageProvider.MSG_NONE,
-                                           new Object [] { idve.getMessage() },
+                                           new Object [] { "Can not have element children within a simple type content" },
                                            XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+            }
+            else {
+                try {
+
+                    fGrammar.getElementDecl(elementIndex, fTempElementDecl);
+
+                    DatatypeValidator dv = fTempElementDecl.datatypeValidator;
+
+                    // If there is xsi:type validator, substitute it.
+                    if ( fXsiTypeValidator != null ) {
+                        dv = fXsiTypeValidator;
+                        fXsiTypeValidator = null;
+                    }
+
+                    if (dv == null) {
+                        System.out.println("Internal Error: this element have a simpletype "+
+                                           "but no datatypevalidator was found, element "+fTempElementDecl.name
+                                           +",locapart: "+fStringPool.toString(fTempElementDecl.name.localpart));
+                    }
+                    else {
+                        dv.validate(fDatatypeBuffer.toString(), null);
+                    }
+
+                } 
+                catch (InvalidDatatypeValueException idve) {
+                    fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                               SchemaMessageProvider.SCHEMA_DOMAIN,
+                                               SchemaMessageProvider.DatatypeError,
+                                               SchemaMessageProvider.MSG_NONE,
+                                               new Object [] { idve.getMessage() },
+                                               XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+                }
             }
         }
         else {
