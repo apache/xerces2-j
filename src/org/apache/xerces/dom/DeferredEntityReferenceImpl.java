@@ -211,7 +211,7 @@ public class DeferredEntityReferenceImpl
                 }
             }
             // set mutation events flag back to its original value
-            ownerDocument().mutationEvents = orig;
+            ownerDocument.mutationEvents = orig;
         }
 
         // if not found, create entity at this reference

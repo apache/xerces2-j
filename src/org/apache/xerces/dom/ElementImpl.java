@@ -784,8 +784,15 @@ public class ElementImpl
         // no need to sync in the future
         needsSyncData(false);
 
+        // we don't want to generate any event for this so turn them off
+        boolean orig = ownerDocument.mutationEvents;
+        ownerDocument.mutationEvents = false;
+
         // attributes
         setupDefaultAttributes();
+
+        // set mutation events flag back to its original value
+        ownerDocument.mutationEvents = orig;
 
     } // synchronizeData()
 
