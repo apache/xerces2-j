@@ -92,6 +92,7 @@ import java.util.Hashtable;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import org.apache.xerces.validators.dtd.DTDGrammar;
 
 import org.apache.xerces.validators.schema.SchemaGrammar;
 import org.apache.xerces.validators.schema.SchemaMessageProvider;
@@ -712,6 +713,13 @@ public final class XMLValidator
     public void callXMLDecl(int version, int encoding, int standalone) throws Exception {
         fDocumentHandler.xmlDecl(version, encoding, standalone);
     }
+    public void callStandaloneIsYes() throws Exception {
+        // standalone = "yes". said XMLDocumentScanner.
+        fStandaloneReader = fEntityHandler.getReaderId() ;
+        
+    }
+    
+
 
     /** Call text declaration. */
     public void callTextDecl(int version, int encoding) throws Exception {
@@ -1336,9 +1344,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         int index = elementIndex & CHUNK_MASK;
         return (fElementDeclIsExternal[chunk][index] != 0);
         */
-        //REVISIT, DTDGrammar should have such information
-        if (!fGrammar.getElementDecl(elementIndex, fTempElementDecl)) {
-            return false;
+
+        if (fGrammar instanceof DTDGrammar ) {
+            return ((DTDGrammar) fGrammar).getElementDeclIsExternal(elementIndex);
         }
         return false;
     }
@@ -1904,9 +1912,10 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     /** Protected for use by AttributeValidator classes. */
     protected boolean getAttDefIsExternal(QName element, QName attribute) {
         int attDefIndex = getAttDef(element, attribute);
-        int chunk = attDefIndex >> CHUNK_SHIFT;
-        int index = attDefIndex & CHUNK_MASK;
-        return false;// REVISIT : we don't have this anymore: (fAttDefIsExternal[chunk][index] != 0);
+        if (fGrammar instanceof DTDGrammar ) {
+            return ((DTDGrammar) fGrammar).getAttributeDeclIsExternal(attDefIndex);
+        }
+        return false;
     }
 
     /** addId. */
@@ -3578,7 +3587,8 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                     // break;
                 }
                 // here, we validate every "user-defined" attributes
-                if (attrNameIndex != fNamespacesPrefix && attrList.getAttrPrefix(index) != fNamespacesPrefix) 
+		int _xmlns = fStringPool.addSymbol("xmlns");
+                if (attrNameIndex != _xmlns && attrList.getAttrPrefix(index) != _xmlns) 
                 if (fValidating) {
                     fAttrNameLocator = getLocatorImpl(fAttrNameLocator);
                     fTempQName.setValues(attrList.getAttrPrefix(index), 
