@@ -70,7 +70,7 @@ public class XMLAttributeDecl {
     //
 
     /** name */
-    public QName name;
+    public QName name = new QName();
 
     /** simpleType */
     public XMLSimpleType simpleType;
