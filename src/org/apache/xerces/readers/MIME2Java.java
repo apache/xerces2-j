@@ -578,6 +578,8 @@ public class MIME2Java {
         s_enchash.put("EBCDIC-CP-IS",    "CP871");
         s_enchash.put("EBCDIC-CP-AR2",   "CP918");
 
+	// Add support for Cp1252
+        s_enchash.put("CP1252",   "Cp1252");
                                                 // j:CNS11643 -> EUC-TW?
                                                 // ISO-2022-CN? ISO-2022-CN-EXT?
                                                 
@@ -622,6 +624,11 @@ public class MIME2Java {
         s_revhash.put("CP870", "EBCDIC-CP-YU");
         s_revhash.put("CP871", "EBCDIC-CP-IS");
         s_revhash.put("CP918", "EBCDIC-CP-AR2");
+
+	// Add support for Cp1252
+	// Since this code page should be written out in mixed case,
+	// there is no need to reverse the function.
+        s_revhash.put("Cp1252", "Cp1252");
     }
 
     private MIME2Java() {
