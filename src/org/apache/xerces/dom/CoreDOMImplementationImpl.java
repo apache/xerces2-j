@@ -91,8 +91,13 @@ public class CoreDOMImplementationImpl
 	//
 	// Data
 	//
-	RevalidationHandler fDOMRevalidator = null;
-	boolean free = true;
+    
+    // validators pool
+    private static final int SIZE = 2;
+    private RevalidationHandler validators[] = new RevalidationHandler[SIZE];
+    private int freeValidatorIndex = -1;
+    private int currentSize = SIZE;
+
 	// static
 	/** Dom implementation singleton. */
 	static CoreDOMImplementationImpl singleton =
@@ -322,53 +327,39 @@ public class CoreDOMImplementationImpl
 	//
 	// Protected methods
 	//
-	/** NON-DOM */
+	/** NON-DOM: retrieve validator. */
 	synchronized RevalidationHandler getValidator(String schemaType) {
-		// REVISIT: implement a pool of validators to avoid long
-		//          waiting for several threads
-		//          implement retrieving grammar based on schemaType
-		if (fDOMRevalidator == null) {
-			try {
-				// use context class loader.  If it returns
-				// null, class.forName gets used.
-				fDOMRevalidator =
-					(RevalidationHandler) (ObjectFactory
-						.newInstance(
-							"org.apache.xerces.impl.xs.XMLSchemaValidator",
-							ObjectFactory.findClassLoader(),
-							true));
-			}
-			catch (Exception e) {}
-		}
-		while (!isFree()) {
-			try {
-				wait();
-			}
-			catch (InterruptedException e) {
-				try {
-					return (RevalidationHandler)
-						(ObjectFactory
-							.newInstance(
-								"org.apache.xerces.impl.xs.XMLSchemaValidator",
-								ObjectFactory.findClassLoader(),
-								true));
-				}
-				catch (Exception exception) {
-					return null;
-				}
-			}
-		}
-		free = false;
-		return fDOMRevalidator;
+		// REVISIT: implement retrieving DTD validator 
+        if (freeValidatorIndex < 0) {
+            // create new validator - we should not attempt
+            // to restrict the number of validation handlers being 
+            // requested
+            return (RevalidationHandler) (ObjectFactory
+                        .newInstance(
+                            "org.apache.xerces.impl.xs.XMLSchemaValidator",
+                            ObjectFactory.findClassLoader(),
+                            true));
+
+        }
+        // return first available validator            
+        RevalidationHandler val = validators[freeValidatorIndex];
+        validators[freeValidatorIndex--] = null;
+        return val;
 	}
-	/** NON-DOM */
-	synchronized void releaseValidator(String schemaType) {
-		// REVISIT: implement releasing grammar base on the schema type
-		notifyAll();
-		free = true;
+    
+	/** NON-DOM: release validator */
+	synchronized void releaseValidator(String schemaType, 
+                                         RevalidationHandler validator) {
+       // REVISIT: implement support for DTD validators as well
+       ++freeValidatorIndex;
+       if (validators.length == freeValidatorIndex ){
+            // resize size of the validators
+            currentSize+=SIZE;
+            RevalidationHandler newarray[] =  new RevalidationHandler[currentSize];
+            System.arraycopy(validators, 0, newarray, 0, validators.length);
+            validators = newarray;
+       }
+       validators[freeValidatorIndex]=validator;
 	}
-	/** NON-DOM */
-	final synchronized boolean isFree() {
-		return free;
-	}
+    
 } // class DOMImplementationImpl

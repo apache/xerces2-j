@@ -250,7 +250,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
 				fValidationHandler.endDocument(null);
 				// REVISIT: only validation against XML Schema occurs
 				CoreDOMImplementationImpl.singleton.releaseValidator(
-					XMLGrammarDescription.XML_SCHEMA);
+					XMLGrammarDescription.XML_SCHEMA, fValidationHandler);
 				fValidationHandler = null;
 			}
 		}
