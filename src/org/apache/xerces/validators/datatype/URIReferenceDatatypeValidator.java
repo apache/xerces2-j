@@ -186,16 +186,37 @@ public class URIReferenceDatatypeValidator extends AbstractDatatypeValidator {
     {
         StringTokenizer parsedList = null;
         URI             uriContent = null;
-
+        int length=content.length();
         if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
             if ( fRegex == null || fRegex.matches( content) == false )
                 throw new InvalidDatatypeValueException("Value '"+content+
                                                         "' does not match regular expression facet" + fPattern );
         }
+        if ( (fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 ) {
+            if ( length > fMaxLength ) {
+                throw new InvalidDatatypeValueException("Value '"+content+
+                                                        "' with length '"+content.length()+
+                                                        "' exceeds maximum length facet of '"+fMaxLength+"'.");
+            }
+        }
+        if ( (fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) != 0 ) {
+            if ( length < fMinLength ) {
+                throw new InvalidDatatypeValueException("Value '"+content+
+                                                        "' with length '"+content.length()+
+                                                        "' is less than minimum length facet of '"+fMinLength+"'." );
+            }
+        }
 
+        if ( (fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 ) {
+            if ( length != fLength ) {
+                throw new InvalidDatatypeValueException("Value '"+content+
+                                                        "' with length '"+content.length()+
+                                                        "' is not equal to length facet '"+fLength+"'.");
+            }
+        }
            
         try {
-            if( content.trim().length() != 0 ) //Validate non null URI 
+            if( length != 0 ) //Validate non null URI
                 uriContent = new URI( content );
             //else it is valid anyway
         } catch (  URI.MalformedURIException ex ) {
