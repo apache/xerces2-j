@@ -2,7 +2,7 @@
 // Written by David Megginson, sax@megginson.com
 // This class is in the Public Domain.  NO WARRANTY!
 
-// $Id: NamespaceSupport.java,v 1.3 2000/01/22 16:18:08 david Exp $
+// $Id: NamespaceSupport.java,v 1.1 2000/02/07 21:32:23 andyc Exp $
 
 package org.xml.sax.helpers;
 
@@ -522,7 +522,7 @@ public class NamespaceSupport
 	private void copyTables ()
 	{
 	    if (prefixTable != null) {
-		prefixTable = new Hashtable(prefixTable);
+		prefixTable = (Hashtable)prefixTable.clone();
 	    } else {
 		prefixTable = new Hashtable();
 	    }
