@@ -72,6 +72,7 @@ import org.apache.xerces.validators.schema.SchemaSymbols;
  * TimeDurationValidator validates that XML content is a W3C timeDuration.
  *
  * @author Ted Leung, George Joseph
+ * @author Mark Swinkles - List Validation refactoring
  * @version $Id$
  */
 
@@ -95,9 +96,6 @@ public class TimeDurationDatatypeValidator extends AbstractDatatypeValidator {
 
    private int               fFacetsDefined        = 0;
 
-   private boolean           fDerivedByList        = false;
-
-
    private long[]            fEnumTimeDuration = null; // Time duration is represented internally as longs
 
    private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
@@ -112,127 +110,121 @@ public class TimeDurationDatatypeValidator extends AbstractDatatypeValidator {
         if ( base != null )
             setBasetype( base ); // Set base type 
 
-
-        fDerivedByList = derivedByList;
         // Set Facets if any defined
 
         if ( facets != null  )  {
-            if ( fDerivedByList == false ) { // Restriction
-                if (fBaseValidator != null)
-                    //if (!fBaseValidator.ensureFacetsAreConsistent(facets))
-                      //  throw new InvalidDatatypeFacetException(
-                        //                                       getErrorString( DatatypeMessageProvider.FacetsInconsistent,
-                          //                                                     DatatypeMessageProvider.MSG_NONE, null));
+            if (fBaseValidator != null)
+                //if (!fBaseValidator.ensureFacetsAreConsistent(facets))
+                    //  throw new InvalidDatatypeFacetException(
+                    //                                       getErrorString( DatatypeMessageProvider.FacetsInconsistent,
+                        //                                                     DatatypeMessageProvider.MSG_NONE, null));
 
-                for (Enumeration e = facets.keys(); e.hasMoreElements();) {
+            for (Enumeration e = facets.keys(); e.hasMoreElements();) {
 
-                    String key = (String) e.nextElement();
+                String key = (String) e.nextElement();
 
-                    if (key.equals(SchemaSymbols.ELT_PATTERN)) {
-                        fFacetsDefined += DatatypeValidator.FACET_PATTERN;
-                        fPattern = (String)facets.get(key);
-                    } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
-                        fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
-                        continue; //Treat the enumeration after this for loop
-                    } else if (key.equals(SchemaSymbols.ELT_MAXINCLUSIVE)) {
-                        fFacetsDefined += DatatypeValidator.FACET_MAXINCLUSIVE;
-                        String value = null;
-                        try {
-                            value         = ((String)facets.get(key));
-                            fMaxInclusive = normalizeDuration( value.toCharArray(), 0 ); 
-                        } catch ( InvalidDatatypeValueException nfe ){
-                            throw new InvalidDatatypeFacetException( getErrorString(
-                                                                                   DatatypeMessageProvider.IllegalFacetValue,
-                                                                                   DatatypeMessageProvider.MSG_NONE,
-                                                                                   new Object [] { value, key}));
-                        }
-                    } else if (key.equals(SchemaSymbols.ELT_MAXEXCLUSIVE)) {
-                        fFacetsDefined += DatatypeValidator.FACET_MAXEXCLUSIVE;
-                        String value = null;
-                        try {
-                            value         = ((String)facets.get(key));
-                            fMaxExclusive = normalizeDuration( value.toCharArray(), 0 );
-                        } catch ( InvalidDatatypeValueException nfe ){
-                            throw new InvalidDatatypeFacetException( getErrorString(
-                                                                                   DatatypeMessageProvider.IllegalFacetValue,
-                                                                                   DatatypeMessageProvider.MSG_NONE,
-                                                                                   new Object [] { value, key}));
-                        }
-                    } else if (key.equals(SchemaSymbols.ELT_MININCLUSIVE)) {
-                        fFacetsDefined += DatatypeValidator.FACET_MININCLUSIVE;
-                        String value = null;
-                        try {
-                            value         = ((String)facets.get(key));
-                            fMinInclusive = normalizeDuration( value.toCharArray(), 0 );
-                        } catch ( InvalidDatatypeValueException nfe ){
-                            throw new InvalidDatatypeFacetException( getErrorString(
-                                                                                   DatatypeMessageProvider.IllegalFacetValue,
-                                                                                   DatatypeMessageProvider.MSG_NONE,
-                                                                                   new Object [] { value, key}));
-                        }
-                    } else if (key.equals(SchemaSymbols.ELT_MINEXCLUSIVE)) {
-                        fFacetsDefined += DatatypeValidator.FACET_MININCLUSIVE;
-                        String value = null;
-                        try {
-                            value         = ((String)facets.get(key));
-                            fMinExclusive = normalizeDuration( value.toCharArray(), 0 ); 
+                if (key.equals(SchemaSymbols.ELT_PATTERN)) {
+                    fFacetsDefined += DatatypeValidator.FACET_PATTERN;
+                    fPattern = (String)facets.get(key);
+                } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
+                    fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
+                    continue; //Treat the enumeration after this for loop
+                } else if (key.equals(SchemaSymbols.ELT_MAXINCLUSIVE)) {
+                    fFacetsDefined += DatatypeValidator.FACET_MAXINCLUSIVE;
+                    String value = null;
+                    try {
+                        value         = ((String)facets.get(key));
+                        fMaxInclusive = normalizeDuration( value.toCharArray(), 0 ); 
+                    } catch ( InvalidDatatypeValueException nfe ){
+                        throw new InvalidDatatypeFacetException( getErrorString(
+                                                                                DatatypeMessageProvider.IllegalFacetValue,
+                                                                                DatatypeMessageProvider.MSG_NONE,
+                                                                                new Object [] { value, key}));
+                    }
+                } else if (key.equals(SchemaSymbols.ELT_MAXEXCLUSIVE)) {
+                    fFacetsDefined += DatatypeValidator.FACET_MAXEXCLUSIVE;
+                    String value = null;
+                    try {
+                        value         = ((String)facets.get(key));
+                        fMaxExclusive = normalizeDuration( value.toCharArray(), 0 );
+                    } catch ( InvalidDatatypeValueException nfe ){
+                        throw new InvalidDatatypeFacetException( getErrorString(
+                                                                                DatatypeMessageProvider.IllegalFacetValue,
+                                                                                DatatypeMessageProvider.MSG_NONE,
+                                                                                new Object [] { value, key}));
+                    }
+                } else if (key.equals(SchemaSymbols.ELT_MININCLUSIVE)) {
+                    fFacetsDefined += DatatypeValidator.FACET_MININCLUSIVE;
+                    String value = null;
+                    try {
+                        value         = ((String)facets.get(key));
+                        fMinInclusive = normalizeDuration( value.toCharArray(), 0 );
+                    } catch ( InvalidDatatypeValueException nfe ){
+                        throw new InvalidDatatypeFacetException( getErrorString(
+                                                                                DatatypeMessageProvider.IllegalFacetValue,
+                                                                                DatatypeMessageProvider.MSG_NONE,
+                                                                                new Object [] { value, key}));
+                    }
+                } else if (key.equals(SchemaSymbols.ELT_MINEXCLUSIVE)) {
+                    fFacetsDefined += DatatypeValidator.FACET_MININCLUSIVE;
+                    String value = null;
+                    try {
+                        value         = ((String)facets.get(key));
+                        fMinExclusive = normalizeDuration( value.toCharArray(), 0 ); 
 
-                        } catch ( InvalidDatatypeValueException nfe ) {
-                            throw new InvalidDatatypeFacetException( getErrorString(
-                                                                                   DatatypeMessageProvider.IllegalFacetValue,
-                                                                                   DatatypeMessageProvider.MSG_NONE,
-                                                                                   new Object [] { value, key}));
+                    } catch ( InvalidDatatypeValueException nfe ) {
+                        throw new InvalidDatatypeFacetException( getErrorString(
+                                                                                DatatypeMessageProvider.IllegalFacetValue,
+                                                                                DatatypeMessageProvider.MSG_NONE,
+                                                                                new Object [] { value, key}));
+                    }
+                } else {
+                    throw new InvalidDatatypeFacetException( getErrorString(  DatatypeMessageProvider.MSG_FORMAT_FAILURE,
+                                                                                DatatypeMessageProvider.MSG_NONE,
+                                                                                null));
+                }
+            }
+
+            isMaxExclusiveDefined = ((fFacetsDefined & 
+                                        DatatypeValidator.FACET_MAXEXCLUSIVE ) != 0 )?true:false;
+            isMaxInclusiveDefined = ((fFacetsDefined & 
+                                        DatatypeValidator.FACET_MAXINCLUSIVE ) != 0 )?true:false;
+            isMinExclusiveDefined = ((fFacetsDefined &
+                                        DatatypeValidator.FACET_MINEXCLUSIVE ) != 0 )?true:false;
+            isMinInclusiveDefined = ((fFacetsDefined &
+                                        DatatypeValidator.FACET_MININCLUSIVE ) != 0 )?true:false;
+
+
+            if ( isMaxExclusiveDefined && isMaxInclusiveDefined ) {
+                throw new InvalidDatatypeFacetException(
+                                            "It is an error for both maxInclusive and maxExclusive to be specified for the same datatype." ); 
+            }
+            if ( isMinExclusiveDefined && isMinInclusiveDefined ) {
+                throw new InvalidDatatypeFacetException(
+                                            "It is an error for both minInclusive and minExclusive to be specified for the same datatype." ); 
+            }
+
+
+            if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION ) != 0 ) {
+                Vector v = (Vector) facets.get(SchemaSymbols.ELT_ENUMERATION);    
+                if (v != null) {
+                    fEnumTimeDuration = new long[v.size()];
+                    int     i     = 0;
+                    String  value = null;
+                    try {
+                        for (; i < v.size(); i++){
+                            value = (String)v.elementAt(i);
+                            fEnumTimeDuration[i] = 
+                            normalizeDuration( value.toCharArray(),0 );
+                            boundsCheck(fEnumTimeDuration[i]); // Check against max,min Inclusive, Exclusives
                         }
-                    } else {
-                        throw new InvalidDatatypeFacetException( getErrorString(  DatatypeMessageProvider.MSG_FORMAT_FAILURE,
-                                                                                  DatatypeMessageProvider.MSG_NONE,
-                                                                                  null));
+                    } catch (InvalidDatatypeValueException idve) {
+                        throw new InvalidDatatypeFacetException(
+                                                                getErrorString(DatatypeMessageProvider.InvalidEnumValue,
+                                                                                DatatypeMessageProvider.MSG_NONE,
+                                                                                new Object [] { v.elementAt(i)}));
                     }
                 }
-
-                isMaxExclusiveDefined = ((fFacetsDefined & 
-                                          DatatypeValidator.FACET_MAXEXCLUSIVE ) != 0 )?true:false;
-                isMaxInclusiveDefined = ((fFacetsDefined & 
-                                          DatatypeValidator.FACET_MAXINCLUSIVE ) != 0 )?true:false;
-                isMinExclusiveDefined = ((fFacetsDefined &
-                                          DatatypeValidator.FACET_MINEXCLUSIVE ) != 0 )?true:false;
-                isMinInclusiveDefined = ((fFacetsDefined &
-                                          DatatypeValidator.FACET_MININCLUSIVE ) != 0 )?true:false;
-
-
-                if ( isMaxExclusiveDefined && isMaxInclusiveDefined ) {
-                    throw new InvalidDatatypeFacetException(
-                                                "It is an error for both maxInclusive and maxExclusive to be specified for the same datatype." ); 
-                }
-                if ( isMinExclusiveDefined && isMinInclusiveDefined ) {
-                    throw new InvalidDatatypeFacetException(
-                                                "It is an error for both minInclusive and minExclusive to be specified for the same datatype." ); 
-                }
-
-
-                if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION ) != 0 ) {
-                    Vector v = (Vector) facets.get(SchemaSymbols.ELT_ENUMERATION);    
-                    if (v != null) {
-                        fEnumTimeDuration = new long[v.size()];
-                        int     i     = 0;
-                        String  value = null;
-                        try {
-                            for (; i < v.size(); i++){
-                                value = (String)v.elementAt(i);
-                                fEnumTimeDuration[i] = 
-                                normalizeDuration( value.toCharArray(),0 );
-                                boundsCheck(fEnumTimeDuration[i]); // Check against max,min Inclusive, Exclusives
-                            }
-                        } catch (InvalidDatatypeValueException idve) {
-                            throw new InvalidDatatypeFacetException(
-                                                                   getErrorString(DatatypeMessageProvider.InvalidEnumValue,
-                                                                                  DatatypeMessageProvider.MSG_NONE,
-                                                                                  new Object [] { v.elementAt(i)}));
-                        }
-                    }
-                }
-            } else { //Derived by List TODO 
-
             }
         }// End Facet definition
     }
@@ -253,26 +245,23 @@ public class TimeDurationDatatypeValidator extends AbstractDatatypeValidator {
                                        throws InvalidDatatypeValueException{
         long normalizedValue;
 
-        if ( fDerivedByList == false  ) { //derived by constraint
-             if ( fPattern != null ) {
-                 RegularExpression regex = new RegularExpression(fPattern, "X" );
-                 if ( regex.matches( content) == false )
-                     throw new InvalidDatatypeValueException("Value'"+content+
-                                  "does not match regular expression facet" + fPattern );
-             }
-
-             normalizedValue = normalizeDuration(content.toCharArray(), 0 ); 
-             try {
-                 boundsCheck( normalizedValue );
-             } catch( InvalidDatatypeFacetException ex ){
-                 throw new InvalidDatatypeValueException( "Boundary Exception" );
-             }
-
-             if( fEnumTimeDuration != null )
-                 enumCheck( normalizedValue );
-
-        } else { //derived by list 
+        if ( fPattern != null ) {
+            RegularExpression regex = new RegularExpression(fPattern, "X" );
+            if ( regex.matches( content) == false )
+                throw new InvalidDatatypeValueException("Value'"+content+
+                            "does not match regular expression facet" + fPattern );
         }
+
+        normalizedValue = normalizeDuration(content.toCharArray(), 0 ); 
+        try {
+            boundsCheck( normalizedValue );
+        } catch( InvalidDatatypeFacetException ex ){
+            throw new InvalidDatatypeValueException( "Boundary Exception" );
+        }
+
+        if( fEnumTimeDuration != null )
+            enumCheck( normalizedValue );
+
         return null;
     }
 

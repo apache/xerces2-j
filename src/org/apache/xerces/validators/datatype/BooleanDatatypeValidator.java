@@ -70,6 +70,7 @@ import org.apache.xerces.validators.datatype.InvalidDatatypeFacetException;
  *
  * @author Ted Leung 
  * @author Jeffrey Rodriguez
+ * @author Mark Swinkles - List Validation refactoring
  * @version  $Id$
  */
 
@@ -80,7 +81,6 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
     private int                     fFacetsDefined   = 0;
     private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
     private static  final String    fValueSpace[]    = { "false", "true", "0", "1"};
-    private boolean                 fDerivedByList   = false;
     private RegularExpression       fRegex           = null;
 
     public BooleanDatatypeValidator () throws InvalidDatatypeFacetException {
@@ -90,8 +90,6 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
     public BooleanDatatypeValidator ( DatatypeValidator base, Hashtable facets,
                  boolean derivedByList ) throws InvalidDatatypeFacetException {
         setBasetype( base ); // Set base type 
-
-        fDerivedByList = derivedByList;
 
         // Set Facets if any defined
         if ( facets != null  ) { 
@@ -127,11 +125,7 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
 
     public Object validate(String content, Object state) throws InvalidDatatypeValueException {
 
-        if ( fDerivedByList == true ) {
-            ;// What does it mean?
-        } else {
-            checkContent( content );
-        }
+        checkContent( content );
         return null;
     }
 

@@ -105,6 +105,7 @@ import org.apache.xerces.validators.datatype.StateMessageDatatype;
  * standalone code as well as plugins to the validator architecture.
  * 
  * @author Jeffrey Rodriguez-
+ * @author Mark Swinkles - List Validation refactoring
  * @version $Id$
  * @see org.apache.xerces.validators.datatype.DatatypeValidator
  * @see org.apache.xerces.validators.datatype.DatatypeValidatorFactoryImpl
@@ -113,7 +114,6 @@ import org.apache.xerces.validators.datatype.StateMessageDatatype;
  */
 public class ENTITYDatatypeValidator extends AbstractDatatypeValidator {
     private DatatypeValidator        fBaseValidator    = null;
-    private boolean                  fDerivedByList = false;
     private DefaultEntityHandler     fEntityHandler    = null;
     private StringPool               fStringPool       = null;
 
@@ -128,7 +128,6 @@ public class ENTITYDatatypeValidator extends AbstractDatatypeValidator {
                                      boolean derivedByList  ) throws InvalidDatatypeFacetException {
 
         setBasetype( base ); // Set base type
-        fDerivedByList = derivedByList;
     }
 
 
@@ -180,45 +179,13 @@ public class ENTITYDatatypeValidator extends AbstractDatatypeValidator {
             }
 
 
-            if ( this.fDerivedByList == false ){
-
-                attValueHandle = this.fStringPool.addSymbol( content );
-                if (!this.fEntityHandler.isUnparsedEntity( attValueHandle ) ) {
-                    InvalidDatatypeValueException error = 
-                    new InvalidDatatypeValueException( "ENTITY '"+ content +"' is not valid" );//Need Message
-                    error.setMinorCode(XMLMessages.MSG_ENTITY_INVALID );
-                    error.setMajorCode(XMLMessages.VC_ENTITY_NAME);
-                    throw error;
-                }
-            } else {
-                StringTokenizer listOfEntities = new StringTokenizer(content);
-                StringBuffer sb = new StringBuffer(content.length());
-                boolean ok = true;
-                if (listOfEntities.hasMoreTokens()) {
-                    while (true) {
-                        String nextEntity = listOfEntities.nextToken();
-
-                        // ENTITIES - check that each value is an unparsed entity name (V_TAGa)
-
-                        if ( this.fEntityHandler.isUnparsedEntity(this.fStringPool.addSymbol(nextEntity) ) == false ) {
-                            ok = false;
-                        }
-                        sb.append(nextEntity);
-                        if (!listOfEntities.hasMoreTokens()) {
-                            break;
-                        }
-                        sb.append(' ');
-                    }
-                }
-                String errorContent = sb.toString();
-                if (!ok || errorContent.length() == 0) {
-                    InvalidDatatypeValueException error = 
-                    new InvalidDatatypeValueException( errorContent );
-                    error.setMinorCode(XMLMessages.MSG_ENTITIES_INVALID );
-                    error.setMajorCode(XMLMessages.VC_ENTITY_NAME);
-                    throw error;
-                }
-
+            attValueHandle = this.fStringPool.addSymbol( content );
+            if (!this.fEntityHandler.isUnparsedEntity( attValueHandle ) ) {
+                InvalidDatatypeValueException error = 
+                new InvalidDatatypeValueException( "ENTITY '"+ content +"' is not valid" );//Need Message
+                error.setMinorCode(XMLMessages.MSG_ENTITY_INVALID );
+                error.setMajorCode(XMLMessages.VC_ENTITY_NAME);
+                throw error;
             }
         }
         return null;

@@ -69,6 +69,7 @@ import org.apache.xerces.validators.datatype.InvalidDatatypeFacetException;
 /**
  * @version $Id$
  * @author  Jeffrey Rodriguez
+ * @author Mark Swinkles - List Validation refactoring
  */
 
 public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
@@ -268,39 +269,44 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
         }
 
         if ( base != null ) {
-            try {
-                Class validatorDef = base.getClass();
+            if (list)
+            {
+                simpleType = new ListDatatypeValidator(base, facets, list);    
+            }
+            else
+            {
+                try {
+                    Class validatorDef = base.getClass();
 
-                Class [] validatorArgsClass = new Class[] {  
-                    org.apache.xerces.validators.datatype.DatatypeValidator.class,
-                    java.util.Hashtable.class,
-                    boolean.class};
-
-
-
-                Object [] validatorArgs     = new Object[] {
-                    base, facets, new Boolean( list )};
-
-
-
-
-                Constructor validatorConstructor =
-                validatorDef.getConstructor( validatorArgsClass );
+                    Class [] validatorArgsClass = new Class[] {  
+                        org.apache.xerces.validators.datatype.DatatypeValidator.class,
+                        java.util.Hashtable.class,
+                        boolean.class};
 
 
-                simpleType = 
-                ( DatatypeValidator ) createDatatypeValidator (
-                                                 validatorConstructor, validatorArgs );
 
-                if (simpleType != null) {
-                    addValidator( typeName, simpleType );//register validator
+                    Object [] validatorArgs     = new Object[] {
+                        base, facets, Boolean.FALSE };
+
+
+
+
+                    Constructor validatorConstructor =
+                    validatorDef.getConstructor( validatorArgsClass );
+
+
+                    simpleType = 
+                    ( DatatypeValidator ) createDatatypeValidator (
+                                                    validatorConstructor, validatorArgs );
+                } catch (NoSuchMethodException e) {
+                    e.printStackTrace();
                 }
-
-
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
             }
 
+            if (simpleType != null) {
+                addValidator( typeName, simpleType );//register validator
+            }
+            
         }
         return simpleType;// return it
     }

@@ -74,11 +74,11 @@ import org.apache.xerces.utils.XMLMessages;
  * standalone code as well as plugins to the validator architecture.
  * 
  * @author Jeffrey Rodriguez-
+ * @author Mark Swinkles - List Validation refactoring
  * @version $Id$
  */
 public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
     private DatatypeValidator fBaseValidator    = null;
-    private boolean           fDerivedByList    = false;
     private Hashtable              fTableOfId   = null; //This is pass to us through the state object
     private Hashtable              fTableIDRefs = null;
     private Object                   fNullValue = null;
@@ -98,7 +98,6 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
     public IDREFDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
                                     boolean derivedByList ) throws InvalidDatatypeFacetException { 
 
-        fDerivedByList = derivedByList;
         setBasetype( base ); // Set base type 
 
     }
@@ -128,66 +127,32 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
           //  this.fBaseValidator.validate( content, state );
         //}
         StateMessageDatatype message;
-        if ( this.fDerivedByList == false ){
-            //System.out.println("conten = " + content );
-            if (state!= null){
-                message = (StateMessageDatatype) state;    
-                if (message.getDatatypeState() == IDREFDatatypeValidator.IDREF_CLEAR ){
-                    if ( this.fTableOfId != null ){
-                        fTableOfId.clear(); //This is pass to us through the state object
-                    }
-                    if ( this.fTableIDRefs != null ){
-                        fTableIDRefs.clear(); 
-                    }
-                    return null;
-                } else if ( message.getDatatypeState() == IDREFDatatypeValidator.IDREF_VALIDATE ){
-                    this.checkIdRefs();//Validate that all keyRef is a keyIds
-                } else if ( message.getDatatypeState() == IDREFDatatypeValidator.IDREF_STORE ) {
-                    this.fTableOfId = (Hashtable) message.getDatatypeObject();
-                    if (!XMLCharacterProperties.validName(content)) {//Check if is valid key
-
-                        InvalidDatatypeValueException error = new InvalidDatatypeValueException( "IDREF is not valid" );//Need Message
-
-                        error.setMinorCode(XMLMessages.MSG_IDREF_INVALID );
-                        error.setMajorCode(XMLMessages.VC_IDREF);
-                        throw error;//Need Message
-                    }
-                    //System.out.println("Content REF = " + content );
-                    addIdRef( content, state);// We are storing IDs 
+        //System.out.println("conten = " + content );
+        if (state!= null){
+            message = (StateMessageDatatype) state;    
+            if (message.getDatatypeState() == IDREFDatatypeValidator.IDREF_CLEAR ){
+                if ( this.fTableOfId != null ){
+                    fTableOfId.clear(); //This is pass to us through the state object
                 }
-            }
-         } else {
-            //System.out.println("list = " + content );
-            if (state!= null){
-                message = (StateMessageDatatype) state;    
-                if (message.getDatatypeState() == IDREFDatatypeValidator.IDREF_CLEAR ){
-                    if ( this.fTableOfId != null ){
-                        fTableOfId.clear(); //This is pass to us through the state object
-                    }
-                    if ( this.fTableIDRefs != null ){
-                        fTableIDRefs.clear(); 
-                    }
-                    return null;
-
-                } else if ( message.getDatatypeState() == IDREFDatatypeValidator.IDREF_VALIDATE ){
-                    //System.out.println("Call to Validate IDREFS" );
-                    this.checkIdRefs();//Validate that all keyRef is a keyIds
-                } else if ( message.getDatatypeState() == IDREFDatatypeValidator.IDREF_STORE ) {
-                    //System.out.println("IDREFS = " + content );
-                    StringTokenizer   tokenizer = new StringTokenizer( content );
-                    this.fTableOfId = (Hashtable) message.getDatatypeObject();
-                    while ( tokenizer.hasMoreTokens() ) {
-                        String idName = tokenizer.nextToken(); 
-                        //System.out.println("idName here = " + idName );
-                        if( this.fBaseValidator != null ){
-                               this.fBaseValidator.validate( idName, state );
-                        }
-                        addIdRef( idName, state);// We are storing IDs 
-                    }
+                if ( this.fTableIDRefs != null ){
+                    fTableIDRefs.clear(); 
                 }
+                return null;
+            } else if ( message.getDatatypeState() == IDREFDatatypeValidator.IDREF_VALIDATE ){
+                this.checkIdRefs();//Validate that all keyRef is a keyIds
+            } else if ( message.getDatatypeState() == IDREFDatatypeValidator.IDREF_STORE ) {
+                this.fTableOfId = (Hashtable) message.getDatatypeObject();
+                if (!XMLCharacterProperties.validName(content)) {//Check if is valid key
 
+                    InvalidDatatypeValueException error = new InvalidDatatypeValueException( "IDREF is not valid" );//Need Message
+
+                    error.setMinorCode(XMLMessages.MSG_IDREF_INVALID );
+                    error.setMajorCode(XMLMessages.VC_IDREF);
+                    throw error;//Need Message
+                }
+                //System.out.println("Content REF = " + content );
+                addIdRef( content, state);// We are storing IDs 
             }
-
         }
         return null;
     }

@@ -67,11 +67,11 @@ import org.apache.xerces.utils.XMLMessages;
  * These validators can be supplied by the application writer and may be useful as
  * standalone code as well as plugins to the validator architecture.
  * @author Jeffrey Rodriguez
+ * @author Mark Swinkles - List Validation refactoring
  * @version $Id$
  */
 public class IDDatatypeValidator extends AbstractDatatypeValidator {
     private DatatypeValidator         fBaseValidator = null;
-    private boolean                   fDerivedByList = false;
     private Object                        fNullValue = null;
     private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
     private Hashtable                     fTableOfId;
@@ -87,7 +87,6 @@ public class IDDatatypeValidator extends AbstractDatatypeValidator {
 
     public IDDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
                                  boolean derivedByList ) throws InvalidDatatypeFacetException  {
-        fDerivedByList = derivedByList;
     }
 
 
@@ -109,35 +108,33 @@ public class IDDatatypeValidator extends AbstractDatatypeValidator {
     public Object validate(String content, Object IDStorage ) throws InvalidDatatypeValueException{
 
         StateMessageDatatype message;
-        if ( this.fDerivedByList == false ){
-            if (IDStorage != null ){
-                //System.out.println("We received reset" );
-                message = (StateMessageDatatype) IDStorage;    
-                if (message.getDatatypeState() == IDDatatypeValidator.ID_CLEAR ){
-                    if ( this.fTableOfId  != null ){
-                        this.fTableOfId.clear(); //Clean the ID Hash Table see the XMLValidator pool reset method
-                        this.fTableOfId = null;
-                    }
-                    return null;
+
+        if (IDStorage != null ){
+            //System.out.println("We received reset" );
+            message = (StateMessageDatatype) IDStorage;    
+            if (message.getDatatypeState() == IDDatatypeValidator.ID_CLEAR ){
+                if ( this.fTableOfId  != null ){
+                    this.fTableOfId.clear(); //Clean the ID Hash Table see the XMLValidator pool reset method
+                    this.fTableOfId = null;
                 }
+                return null;
             }
-            if (!XMLCharacterProperties.validName(content)) {//Check if is valid key-[81] EncName ::= [A-Za-z] ([A-Za-z0-9._] | '-')*
-                InvalidDatatypeValueException error =  new
-                                                       InvalidDatatypeValueException( "ID is not valid: " + content );
-                error.setMinorCode(XMLMessages.MSG_ID_INVALID);
-                error.setMajorCode(XMLMessages.VC_ID);
-                throw error;
-            }
+        }
+        
+        if (!XMLCharacterProperties.validName(content)) {//Check if is valid key-[81] EncName ::= [A-Za-z] ([A-Za-z0-9._] | '-')*
+            InvalidDatatypeValueException error =  new
+                                                    InvalidDatatypeValueException( "ID is not valid: " + content );
+            error.setMinorCode(XMLMessages.MSG_ID_INVALID);
+            error.setMajorCode(XMLMessages.VC_ID);
+            throw error;
+        }
 
-            if (!addId( content, IDStorage) ){ //It is OK to pass a null here
-                InvalidDatatypeValueException error = 
-                new InvalidDatatypeValueException( "ID '" + content +"'  has to be unique" );
-                error.setMinorCode(XMLMessages.MSG_ID_NOT_UNIQUE);
-                error.setMajorCode(XMLMessages.VC_ID);
-                throw error;
-            }
-        } else{ //Need to revisit case when derived by list
-
+        if (!addId( content, IDStorage) ){ //It is OK to pass a null here
+            InvalidDatatypeValueException error = 
+            new InvalidDatatypeValueException( "ID '" + content +"'  has to be unique" );
+            error.setMinorCode(XMLMessages.MSG_ID_NOT_UNIQUE);
+            error.setMajorCode(XMLMessages.VC_ID);
+            throw error;
         }
         //System.out.println("IDStorage = " + IDStorage );
         //System.out.println("Bef return = " + fTableOfId );
@@ -169,10 +166,6 @@ public class IDDatatypeValidator extends AbstractDatatypeValidator {
 
 
     /**
-     * Name of base type as a string.
-     * A Native datatype has the string "native"  as its
-     * base type.
-     * 
      * @param base   the validator for this type's base type
      */
     private void setBasetype(DatatypeValidator base){
@@ -218,6 +211,4 @@ public class IDDatatypeValidator extends AbstractDatatypeValidator {
             return "Illegal Errorcode "+minor;
         }
     }
-
-
 }

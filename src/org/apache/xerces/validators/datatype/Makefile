@@ -15,6 +15,7 @@ TARGETS=\
 	IDREFDatatypeValidator.class \
 	InvalidDatatypeFacetException.class\
 	InvalidDatatypeValueException.class\
+	ListDatatypeValidator.class \
 	NOTATIONDatatypeValidator.class \
 	QNameDatatypeValidator.class\
 	StringDatatypeValidator.class\

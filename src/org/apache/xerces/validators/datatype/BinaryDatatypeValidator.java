@@ -73,6 +73,7 @@ import org.apache.xerces.utils.HexBin;
  *
  * @author Ted Leung
  * @author Jeffrey Rodriguez
+ * @author Mark Swinkles - List Validation refactoring
  * @version $Id$
  */
 
@@ -85,7 +86,6 @@ public class BinaryDatatypeValidator extends AbstractDatatypeValidator {
     private Vector             fEnumeration     = null;
     private int                fFacetsDefined   = 0;
     private String             fEncoding        = SchemaSymbols.ATTVAL_BASE64;//default Base64 encoding
-    private boolean            fDerivedByList   = false; // Default is restriction 
 
     public BinaryDatatypeValidator () throws InvalidDatatypeFacetException {
         this( null, null, false ); // Native, No Facets defined, Restriction
@@ -96,74 +96,70 @@ public class BinaryDatatypeValidator extends AbstractDatatypeValidator {
         if ( base != null )
             setBasetype( base ); // Set base type 
 
-        fDerivedByList = derivedByList;
 
         // Set Facets if any defined
 
         if ( facets != null  )  {
-            if ( fDerivedByList == false ) {
-                for (Enumeration e = facets.keys(); e.hasMoreElements();) {
-                    String key = (String) e.nextElement();
-                    if ( key.equals(SchemaSymbols.ELT_LENGTH ) ) {
-                        fFacetsDefined += DatatypeValidator.FACET_LENGTH;
-                        String lengthValue = (String)facets.get(key);
-                        try {
-                            fLength     = Integer.parseInt( lengthValue );
-                        } catch (NumberFormatException nfe) {
-                            throw new InvalidDatatypeFacetException("Length value '"+
-                                                                    lengthValue+"' is invalid.");
-                        }
-                        if ( fLength < 0 )
-                            throw new InvalidDatatypeFacetException("Length value '"+
-                                                                    lengthValue+"'  must be a nonNegativeInteger.");
+            for (Enumeration e = facets.keys(); e.hasMoreElements();) {
+                String key = (String) e.nextElement();
+                if ( key.equals(SchemaSymbols.ELT_LENGTH ) ) {
+                    fFacetsDefined += DatatypeValidator.FACET_LENGTH;
+                    String lengthValue = (String)facets.get(key);
+                    try {
+                        fLength     = Integer.parseInt( lengthValue );
+                    } catch (NumberFormatException nfe) {
+                        throw new InvalidDatatypeFacetException("Length value '"+
+                                                                lengthValue+"' is invalid.");
+                    }
+                    if ( fLength < 0 )
+                        throw new InvalidDatatypeFacetException("Length value '"+
+                                                                lengthValue+"'  must be a nonNegativeInteger.");
 
-                    } else if (key.equals(SchemaSymbols.ELT_MINLENGTH) ) {
-                        fFacetsDefined += DatatypeValidator.FACET_MINLENGTH;
-                        String minLengthValue = (String)facets.get(key);
-                        try {
-                            fMinLength     = Integer.parseInt( minLengthValue );
-                        } catch (NumberFormatException nfe) {
-                            throw new InvalidDatatypeFacetException("maxLength value '"+minLengthValue+"' is invalid.");
-                        }
-                    } else if (key.equals(SchemaSymbols.ELT_MAXLENGTH) ) {
-                        fFacetsDefined += DatatypeValidator.FACET_MAXLENGTH;
-                        String maxLengthValue = (String)facets.get(key);
-                        try {
-                            fMaxLength     = Integer.parseInt( maxLengthValue );
-                        } catch (NumberFormatException nfe) {
-                            throw new InvalidDatatypeFacetException("maxLength value '"+maxLengthValue+"' is invalid.");
-                        }
-                    } else if (key.equals(SchemaSymbols.ELT_PATTERN)) {
-                        fFacetsDefined += DatatypeValidator.FACET_PATTERN;
-                        fPattern = (String)facets.get(key);
-                    } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
-                        fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
-                        fEnumeration = (Vector)facets.get(key);
-                    } else if (key.equals(SchemaSymbols.ELT_ENCODING )) {
-                        fFacetsDefined += DatatypeValidator.FACET_MAXINCLUSIVE;
-                        fEncoding = (String)facets.get(key);
-                    } else {
-                        throw new InvalidDatatypeFacetException();
+                } else if (key.equals(SchemaSymbols.ELT_MINLENGTH) ) {
+                    fFacetsDefined += DatatypeValidator.FACET_MINLENGTH;
+                    String minLengthValue = (String)facets.get(key);
+                    try {
+                        fMinLength     = Integer.parseInt( minLengthValue );
+                    } catch (NumberFormatException nfe) {
+                        throw new InvalidDatatypeFacetException("maxLength value '"+minLengthValue+"' is invalid.");
                     }
-                }
-                if (((fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
-                    if (((fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
-                        throw new InvalidDatatypeFacetException(
-                                                               "It is an error for both length and maxLength to be members of facets." );  
-                    } else if (((fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ) {
-                        throw new InvalidDatatypeFacetException(
-                                                               "It is an error for both length and minLength to be members of facets." );
+                } else if (key.equals(SchemaSymbols.ELT_MAXLENGTH) ) {
+                    fFacetsDefined += DatatypeValidator.FACET_MAXLENGTH;
+                    String maxLengthValue = (String)facets.get(key);
+                    try {
+                        fMaxLength     = Integer.parseInt( maxLengthValue );
+                    } catch (NumberFormatException nfe) {
+                        throw new InvalidDatatypeFacetException("maxLength value '"+maxLengthValue+"' is invalid.");
                     }
+                } else if (key.equals(SchemaSymbols.ELT_PATTERN)) {
+                    fFacetsDefined += DatatypeValidator.FACET_PATTERN;
+                    fPattern = (String)facets.get(key);
+                } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
+                    fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
+                    fEnumeration = (Vector)facets.get(key);
+                } else if (key.equals(SchemaSymbols.ELT_ENCODING )) {
+                    fFacetsDefined += DatatypeValidator.FACET_MAXINCLUSIVE;
+                    fEncoding = (String)facets.get(key);
+                } else {
+                    throw new InvalidDatatypeFacetException();
                 }
+            }
+            if (((fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
+                if (((fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
+                    throw new InvalidDatatypeFacetException(
+                                                            "It is an error for both length and maxLength to be members of facets." );  
+                } else if (((fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ) {
+                    throw new InvalidDatatypeFacetException(
+                                                            "It is an error for both length and minLength to be members of facets." );
+                }
+            }
 
-                if ( ( (fFacetsDefined & ( DatatypeValidator.FACET_MINLENGTH |
-                                           DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
-                    if ( fMinLength > fMaxLength ) {
-                        throw new InvalidDatatypeFacetException( "Value of maxLength = " + fMaxLength +
-                                                                 "must be greater that the value of minLength" + fMinLength );
-                    }
+            if ( ( (fFacetsDefined & ( DatatypeValidator.FACET_MINLENGTH |
+                                        DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
+                if ( fMinLength > fMaxLength ) {
+                    throw new InvalidDatatypeFacetException( "Value of maxLength = " + fMaxLength +
+                                                                "must be greater that the value of minLength" + fMinLength );
                 }
-            } else {  //Derivation by List 
             }
         }// End of Facet setting
     }
@@ -183,25 +179,22 @@ public class BinaryDatatypeValidator extends AbstractDatatypeValidator {
      */
     public Object validate(String content, Object state ) throws InvalidDatatypeValueException {
 
-        if ( fDerivedByList == false) { //derived by restriction
-            if ( this.fBaseValidator != null ) {//validate against parent type if any
-                this.fBaseValidator.validate( content, state );
-            }
+        if ( this.fBaseValidator != null ) {//validate against parent type if any
+            this.fBaseValidator.validate( content, state );
+        }
 
-            if (((fFacetsDefined & DatatypeValidator.FACET_ENCODING) != 0 ) ){ //Encode defined then validate
-                if ( fEncoding.equals( SchemaSymbols.ATTVAL_BASE64)){ //Base64
-                    if ( Base64.isBase64( content ) == false ) {
-                        throw new InvalidDatatypeValueException( "Value '"+
-                                                                 content+ "'  must be" + "is not encoded in Base64" );
-                    }
-                } else { //HexBin
-                    if ( HexBin.isHex( content ) == false ){
-                        throw new InvalidDatatypeValueException( "Value '"+
-                                                                 content+ "'  must be" + "is not encoded in Hex" );
-                    }
+        if (((fFacetsDefined & DatatypeValidator.FACET_ENCODING) != 0 ) ){ //Encode defined then validate
+            if ( fEncoding.equals( SchemaSymbols.ATTVAL_BASE64)){ //Base64
+                if ( Base64.isBase64( content ) == false ) {
+                    throw new InvalidDatatypeValueException( "Value '"+
+                                                                content+ "'  must be" + "is not encoded in Base64" );
+                }
+            } else { //HexBin
+                if ( HexBin.isHex( content ) == false ){
+                    throw new InvalidDatatypeValueException( "Value '"+
+                                                                content+ "'  must be" + "is not encoded in Hex" );
                 }
             }
-        } else{ //derived by list - What does it mean for binary types?
         }
         return null;
     }

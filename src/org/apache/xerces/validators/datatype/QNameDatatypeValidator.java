@@ -78,12 +78,12 @@ import org.apache.xerces.utils.regex.RegularExpression;
  * XML]. 
  * 
  * @author Jeffrey Rodriguez
+ * @author Mark Swinkles - List Validation refactoring
  * @version $Id$
  */
 public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
     private Locale    fLocale          = null;
     private DatatypeValidator    fBaseValidator   = null;
-    private boolean fDerivedByList             = false;
 
     private int       fLength          = 0;
     private int       fMaxLength       = Integer.MAX_VALUE;
@@ -112,157 +112,98 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
 
         setBasetype( base ); // Set base type 
 
-        fDerivedByList = derivedByList;
-
         // Set Facets if any defined
         if ( facets != null  ){
-            if ( fDerivedByList == false) {
-                for (Enumeration e = facets.keys(); e.hasMoreElements();) {
-                    String key = (String) e.nextElement();
+            for (Enumeration e = facets.keys(); e.hasMoreElements();) {
+                String key = (String) e.nextElement();
 
-                    if ( key.equals(SchemaSymbols.ELT_LENGTH) ) {
-                        fFacetsDefined += DatatypeValidator.FACET_LENGTH;
-                        String lengthValue = (String)facets.get(key);
-                        try {
-                            fLength     = Integer.parseInt( lengthValue );
-                        } catch (NumberFormatException nfe) {
-                            throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"' is invalid.");
-                        }
-                        if ( fLength < 0 )
-                            throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"'  must be a nonNegativeInteger.");
-
-                    } else if (key.equals(SchemaSymbols.ELT_MINLENGTH) ) {
-                        fFacetsDefined += DatatypeValidator.FACET_MINLENGTH;
-                        String minLengthValue = (String)facets.get(key);
-                        try {
-                            fMinLength     = Integer.parseInt( minLengthValue );
-                        } catch (NumberFormatException nfe) {
-                            throw new InvalidDatatypeFacetException("maxLength value '"+minLengthValue+"' is invalid.");
-                        }
-                    } else if (key.equals(SchemaSymbols.ELT_MAXLENGTH) ) {
-                        fFacetsDefined += DatatypeValidator.FACET_MAXLENGTH;
-                        String maxLengthValue = (String)facets.get(key);
-                        try {
-                            fMaxLength     = Integer.parseInt( maxLengthValue );
-                        } catch (NumberFormatException nfe) {
-                            throw new InvalidDatatypeFacetException("maxLength value '"+maxLengthValue+"' is invalid.");
-                        }
-                    } else if (key.equals(SchemaSymbols.ELT_PATTERN)) {
-                        fFacetsDefined += DatatypeValidator.FACET_PATTERN;
-                        fPattern = (String)facets.get(key);
-                        fRegex   = new RegularExpression(fPattern, "X");
-                    } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
-                        fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
-                        fEnumeration = (Vector)facets.get(key);
-                    } else if (key.equals(SchemaSymbols.ELT_MAXINCLUSIVE)) {
-                        fFacetsDefined += DatatypeValidator.FACET_MAXINCLUSIVE;
-                        fMaxInclusive = (String)facets.get(key);
-                    } else if (key.equals(SchemaSymbols.ELT_MAXEXCLUSIVE)) {
-                        fFacetsDefined += DatatypeValidator.FACET_MAXEXCLUSIVE;
-                        fMaxExclusive = (String)facets.get(key);
-                    } else if (key.equals(SchemaSymbols.ELT_MININCLUSIVE)) {
-                        fFacetsDefined += DatatypeValidator.FACET_MININCLUSIVE;
-                        fMinInclusive = (String)facets.get(key);
-                    } else if (key.equals(SchemaSymbols.ELT_MINEXCLUSIVE)) {
-                        fFacetsDefined += DatatypeValidator.FACET_MINEXCLUSIVE;
-                        fMinExclusive = (String)facets.get(key);
-                    } else {
-                        throw new InvalidDatatypeFacetException();
+                if ( key.equals(SchemaSymbols.ELT_LENGTH) ) {
+                    fFacetsDefined += DatatypeValidator.FACET_LENGTH;
+                    String lengthValue = (String)facets.get(key);
+                    try {
+                        fLength     = Integer.parseInt( lengthValue );
+                    } catch (NumberFormatException nfe) {
+                        throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"' is invalid.");
                     }
-                }
+                    if ( fLength < 0 )
+                        throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"'  must be a nonNegativeInteger.");
 
-                if (((fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
-                    if (((fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
-                        throw new InvalidDatatypeFacetException(
-                                                               "It is an error for both length and maxLength to be members of facets." );  
-                    } else if (((fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ) {
-                        throw new InvalidDatatypeFacetException(
-                                                               "It is an error for both length and minLength to be members of facets." );
+                } else if (key.equals(SchemaSymbols.ELT_MINLENGTH) ) {
+                    fFacetsDefined += DatatypeValidator.FACET_MINLENGTH;
+                    String minLengthValue = (String)facets.get(key);
+                    try {
+                        fMinLength     = Integer.parseInt( minLengthValue );
+                    } catch (NumberFormatException nfe) {
+                        throw new InvalidDatatypeFacetException("maxLength value '"+minLengthValue+"' is invalid.");
                     }
-                }
-
-                if ( ( (fFacetsDefined & ( DatatypeValidator.FACET_MINLENGTH |
-                                           DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
-                    if ( fMinLength > fMaxLength ) {
-                        throw new InvalidDatatypeFacetException( "Value of maxLength = " + fMaxLength +
-                                                                 "must be greater that the value of minLength" + fMinLength );
+                } else if (key.equals(SchemaSymbols.ELT_MAXLENGTH) ) {
+                    fFacetsDefined += DatatypeValidator.FACET_MAXLENGTH;
+                    String maxLengthValue = (String)facets.get(key);
+                    try {
+                        fMaxLength     = Integer.parseInt( maxLengthValue );
+                    } catch (NumberFormatException nfe) {
+                        throw new InvalidDatatypeFacetException("maxLength value '"+maxLengthValue+"' is invalid.");
                     }
-                }
-
-                isMaxExclusiveDefined = ((fFacetsDefined & 
-                                          DatatypeValidator.FACET_MAXEXCLUSIVE ) != 0 )?true:false;
-                isMaxInclusiveDefined = ((fFacetsDefined & 
-                                          DatatypeValidator.FACET_MAXINCLUSIVE ) != 0 )?true:false;
-                isMinExclusiveDefined = ((fFacetsDefined &
-                                          DatatypeValidator.FACET_MINEXCLUSIVE ) != 0 )?true:false;
-                isMinInclusiveDefined = ((fFacetsDefined &
-                                          DatatypeValidator.FACET_MININCLUSIVE ) != 0 )?true:false;
-
-                if ( isMaxExclusiveDefined && isMaxInclusiveDefined ) {
-                    throw new InvalidDatatypeFacetException(
-                                                           "It is an error for both maxInclusive and maxExclusive to be specified for the same datatype." ); 
-                }
-                if ( isMinExclusiveDefined && isMinInclusiveDefined ) {
-                    throw new InvalidDatatypeFacetException(
-                                                           "It is an error for both minInclusive and minExclusive to be specified for the same datatype." ); 
-                }
-            } else { //derived by list
-                for (Enumeration e = facets.keys(); e.hasMoreElements();) {
-                    String key = (String) e.nextElement();
-                    if ( key.equals(SchemaSymbols.ELT_LENGTH) ) {
-                        fFacetsDefined += DatatypeValidator.FACET_LENGTH;
-                        String lengthValue = (String)facets.get(key);
-                        try {
-                            fLength     = Integer.parseInt( lengthValue );
-                        } catch (NumberFormatException nfe) {
-                            throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"' is invalid.");
-                        }
-                        if ( fLength < 0 )
-                            throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"'  must be a nonNegativeInteger.");
-
-                    } else if (key.equals(SchemaSymbols.ELT_MINLENGTH) ) {
-                        fFacetsDefined += DatatypeValidator.FACET_MINLENGTH;
-                        String minLengthValue = (String)facets.get(key);
-                        try {
-                            fMinLength     = Integer.parseInt( minLengthValue );
-                        } catch (NumberFormatException nfe) {
-                            throw new InvalidDatatypeFacetException("maxLength value '"+minLengthValue+"' is invalid.");
-                        }
-                    } else if (key.equals(SchemaSymbols.ELT_MAXLENGTH) ) {
-                        fFacetsDefined += DatatypeValidator.FACET_MAXLENGTH;
-                        String maxLengthValue = (String)facets.get(key);
-                        try {
-                            fMaxLength     = Integer.parseInt( maxLengthValue );
-                        } catch (NumberFormatException nfe) {
-                            throw new InvalidDatatypeFacetException("maxLength value '"+maxLengthValue+"' is invalid.");
-                        }
-                    } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
-                        fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
-                        fEnumeration    = (Vector)facets.get(key);
-                    } else {
-                        throw new InvalidDatatypeFacetException();
-                    }
-                }
-                if (((fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
-                    if (((fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
-                        throw new InvalidDatatypeFacetException(
-                                                               "It is an error for both length and maxLength to be members of facets." );  
-                    } else if (((fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ) {
-                        throw new InvalidDatatypeFacetException(
-                                                               "It is an error for both length and minLength to be members of facets." );
-                    }
-                }
-
-                if ( ( (fFacetsDefined & ( DatatypeValidator.FACET_MINLENGTH |
-                                           DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
-                    if ( fMinLength < fMaxLength ) {
-                        throw new InvalidDatatypeFacetException( "Value of minLength = " + fMinLength +
-                                                                 "must be greater that the value of maxLength" + fMaxLength );
-                    }
+                } else if (key.equals(SchemaSymbols.ELT_PATTERN)) {
+                    fFacetsDefined += DatatypeValidator.FACET_PATTERN;
+                    fPattern = (String)facets.get(key);
+                    fRegex   = new RegularExpression(fPattern, "X");
+                } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
+                    fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
+                    fEnumeration = (Vector)facets.get(key);
+                } else if (key.equals(SchemaSymbols.ELT_MAXINCLUSIVE)) {
+                    fFacetsDefined += DatatypeValidator.FACET_MAXINCLUSIVE;
+                    fMaxInclusive = (String)facets.get(key);
+                } else if (key.equals(SchemaSymbols.ELT_MAXEXCLUSIVE)) {
+                    fFacetsDefined += DatatypeValidator.FACET_MAXEXCLUSIVE;
+                    fMaxExclusive = (String)facets.get(key);
+                } else if (key.equals(SchemaSymbols.ELT_MININCLUSIVE)) {
+                    fFacetsDefined += DatatypeValidator.FACET_MININCLUSIVE;
+                    fMinInclusive = (String)facets.get(key);
+                } else if (key.equals(SchemaSymbols.ELT_MINEXCLUSIVE)) {
+                    fFacetsDefined += DatatypeValidator.FACET_MINEXCLUSIVE;
+                    fMinExclusive = (String)facets.get(key);
+                } else {
+                    throw new InvalidDatatypeFacetException();
                 }
             }
-        }// End of Facets Setting
 
+            if (((fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
+                if (((fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
+                    throw new InvalidDatatypeFacetException(
+                                                            "It is an error for both length and maxLength to be members of facets." );  
+                } else if (((fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ) {
+                    throw new InvalidDatatypeFacetException(
+                                                            "It is an error for both length and minLength to be members of facets." );
+                }
+            }
+
+            if ( ( (fFacetsDefined & ( DatatypeValidator.FACET_MINLENGTH |
+                                        DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
+                if ( fMinLength > fMaxLength ) {
+                    throw new InvalidDatatypeFacetException( "Value of maxLength = " + fMaxLength +
+                                                                "must be greater that the value of minLength" + fMinLength );
+                }
+            }
+
+            isMaxExclusiveDefined = ((fFacetsDefined & 
+                                        DatatypeValidator.FACET_MAXEXCLUSIVE ) != 0 )?true:false;
+            isMaxInclusiveDefined = ((fFacetsDefined & 
+                                        DatatypeValidator.FACET_MAXINCLUSIVE ) != 0 )?true:false;
+            isMinExclusiveDefined = ((fFacetsDefined &
+                                        DatatypeValidator.FACET_MINEXCLUSIVE ) != 0 )?true:false;
+            isMinInclusiveDefined = ((fFacetsDefined &
+                                        DatatypeValidator.FACET_MININCLUSIVE ) != 0 )?true:false;
+
+            if ( isMaxExclusiveDefined && isMaxInclusiveDefined ) {
+                throw new InvalidDatatypeFacetException(
+                                                        "It is an error for both maxInclusive and maxExclusive to be specified for the same datatype." ); 
+            }
+            if ( isMinExclusiveDefined && isMinInclusiveDefined ) {
+                throw new InvalidDatatypeFacetException(
+                                                        "It is an error for both minInclusive and minExclusive to be specified for the same datatype." ); 
+            }
+        }// End of Facets Setting
 
     }
 
@@ -279,20 +220,7 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
 */
     public Object validate(String content, Object state)  throws InvalidDatatypeValueException
     {
-        StringTokenizer parsedList = null;
-
-        if ( fDerivedByList == true  ) { //derived by list
-            parsedList = new StringTokenizer( content );
-            try {
-                while ( parsedList.hasMoreTokens() ) {
-                    checkContentList( parsedList.nextToken() );
-                }
-            } catch ( NoSuchElementException e ) {
-                e.printStackTrace();
-            }
-        } else { //derived by list
-            checkContent( content );
-        }
+        checkContent( content );
         return null;
     }
 
@@ -388,19 +316,8 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
         throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
     }
 
-
-
-    private void checkContentList( String content )throws InvalidDatatypeValueException
-    {
-//Revisit
-    }
-
-
     private void setBasetype( DatatypeValidator base) {
         fBaseValidator = base;
     }
-
-
-
 }
 
