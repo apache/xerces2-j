@@ -464,9 +464,10 @@ public class AttrImpl
     
     public void normalize() {
 
-        if (hasStringValue()) {
+        // No need to normalize if already normalized or
+        // if value is kept as a String.
+        if (isNormalized() || hasStringValue())
             return;
-        }
 
         Node kid, next;
         ChildNode firstChild = (ChildNode)value;
@@ -496,6 +497,7 @@ public class AttrImpl
             }
         }
 
+        isNormalized(true);
     } // normalize()
 
     //
@@ -847,6 +849,8 @@ public class AttrImpl
                 if( (mutationMask&MUTATION_AGGREGATE) != 0)
                     dispatchAggregateEvents(enclosingAttr);
             }
+
+            checkNormalizationAfterInsert(newInternal);
         }
         return newChild;
 
@@ -988,6 +992,9 @@ public class AttrImpl
             }
         }
 
+        // Save previous sibling for normalization checking.
+        ChildNode oldPreviousSibling = oldInternal.previousSibling();
+
         // Remove oldInternal's references to tree
         oldInternal.ownerNode       = ownerDocument;
         oldInternal.isOwned(false);
@@ -1004,6 +1011,8 @@ public class AttrImpl
             if( (mutationMask&MUTATION_AGGREGATE) != 0)
                 dispatchAggregateEvents(enclosingAttr);
         } // End mutation postprocessing
+
+        checkNormalizationAfterRemove(oldPreviousSibling);
 
         return oldInternal;
 
@@ -1226,6 +1235,68 @@ public class AttrImpl
         ownerDocument.mutationEvents = orig;
 
     } // synchronizeChildren()
+
+    /**
+     * Checks the normalized state of this node after inserting a child.
+     * If the inserted child causes this node to be unnormalized, then this
+     * node is flagged accordingly.
+     * The conditions for changing the normalized state are:
+     * <ul>
+     * <li>The inserted child is a text node and one of its adjacent siblings
+     * is also a text node.
+     * <li>The inserted child is is itself unnormalized.
+     * </ul>
+     *
+     * @param insertedChild the child node that was inserted into this node
+     *
+     * @throws NullPointerException if the inserted child is <code>null</code>
+     */
+    void checkNormalizationAfterInsert(ChildNode insertedChild) {
+        // See if insertion caused this node to be unnormalized.
+        if (insertedChild.getNodeType() == Node.TEXT_NODE) {
+            ChildNode prev = insertedChild.previousSibling();
+            ChildNode next = insertedChild.nextSibling;
+            // If an adjacent sibling of the new child is a text node,
+            // flag this node as unnormalized.
+            if ((prev != null && prev.getNodeType() == Node.TEXT_NODE) ||
+                (next != null && next.getNodeType() == Node.TEXT_NODE)) {
+                isNormalized(false);
+            }
+        }
+        else {
+            // If the new child is not normalized,
+            // then this node is inherently not normalized.
+            if (!insertedChild.isNormalized()) {
+                isNormalized(false);
+            }
+        }
+    } // checkNormalizationAfterInsert(ChildNode)
+
+    /**
+     * Checks the normalized of this node after removing a child.
+     * If the removed child causes this node to be unnormalized, then this
+     * node is flagged accordingly.
+     * The conditions for changing the normalized state are:
+     * <ul>
+     * <li>The removed child had two adjacent siblings that were text nodes.
+     * </ul>
+     *
+     * @param previousSibling the previous sibling of the removed child, or
+     * <code>null</code>
+     */
+    void checkNormalizationAfterRemove(ChildNode previousSibling) {
+        // See if removal caused this node to be unnormalized.
+        // If the adjacent siblings of the removed child were both text nodes,
+        // flag this node as unnormalized.
+        if (previousSibling != null &&
+            previousSibling.getNodeType() == Node.TEXT_NODE) {
+
+            ChildNode next = previousSibling.nextSibling;
+            if (next != null && next.getNodeType() == Node.TEXT_NODE) {
+                isNormalized(false);
+            }
+        }
+    } // checkNormalizationAfterRemove(ChildNode)
 
     //
     // Serialization methods

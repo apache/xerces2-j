@@ -291,9 +291,16 @@ public class ElementImpl
      * normal Text or with other CDATASections.
      */
     public void normalize() {
-    	Node kid, next;
-    	for (kid = getFirstChild(); kid != null; kid = next) {
-    		next = kid.getNextSibling();
+        // No need to normalize if already normalized.
+        if (isNormalized()) {
+            return;
+        }
+        if (needsSyncChildren()) {
+            synchronizeChildren();
+        }
+        ChildNode kid, next;
+        for (kid = firstChild; kid != null; kid = next) {
+            next = kid.nextSibling;
 
             // If kid is a text node, we need to check for one of two
             // conditions:
@@ -317,9 +324,9 @@ public class ElementImpl
                 }
             }
 
-    		// Otherwise it might be an Element, which is handled recursively
-    		else if (kid.getNodeType() ==  Node.ELEMENT_NODE) {
-                ((Element)kid).normalize();
+            // Otherwise it might be an Element, which is handled recursively
+            else if (kid.getNodeType() == Node.ELEMENT_NODE) {
+                kid.normalize();
             }
         }
 
@@ -336,6 +343,7 @@ public class ElementImpl
     	// changed() will have occurred when the removeChild() was done,
     	// so does not have to be reissued.
 
+        isNormalized(true);
     } // normalize()
 
     /**

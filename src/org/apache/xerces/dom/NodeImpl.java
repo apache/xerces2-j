@@ -141,6 +141,7 @@ public abstract class NodeImpl
     protected final static short IGNORABLEWS  = 0x1<<6;
     protected final static short SETVALUE     = 0x1<<7;
     protected final static short HASSTRING    = 0x1<<8;
+    protected final static short UNNORMALIZED = 0x1<<9;
 
     //
     // Constructors
@@ -1376,6 +1377,18 @@ public abstract class NodeImpl
 
     final void hasStringValue(boolean value) {
         flags = (short) (value ? flags | HASSTRING : flags & ~HASSTRING);
+    }
+
+    final boolean isNormalized() {
+        return (flags & UNNORMALIZED) == 0;
+    }
+
+    final void isNormalized(boolean value) {
+        // See if flag should propagate to parent.
+        if (!value && !isNormalized() && ownerNode != null) {
+            ownerNode.isNormalized(false);
+        }
+        flags = (short) (value ? flags & ~UNNORMALIZED : flags | UNNORMALIZED);
     }
 
     //

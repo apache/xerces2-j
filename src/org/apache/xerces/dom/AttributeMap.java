@@ -158,7 +158,13 @@ public class AttributeMap extends NamedNodeMapImpl {
                            MutationEvent.ADDITION : MutationEvent.MODIFICATION
                 );
         }
-    	return previous;
+
+        // If the new attribute is not normalized,
+        // the owning element is inherently not normalized.
+        if (!argn.isNormalized()) {
+            ownerNode.isNormalized(false);
+        }
+        return previous;
 
     } // setNamedItem(Node):Node
 
@@ -236,9 +242,15 @@ public class AttributeMap extends NamedNodeMapImpl {
                            MutationEvent.ADDITION : MutationEvent.MODIFICATION
                 );
         }
-    	return previous;
 
-    } // setNamedItem(Node):Node
+        // If the new attribute is not normalized,
+        // the owning element is inherently not normalized.
+        if (!argn.isNormalized()) {
+            ownerNode.isNormalized(false);
+        }
+        return previous;
+
+    } // setNamedItemNS(Node):Node
    
     /**
      * Removes an attribute specified by name.
