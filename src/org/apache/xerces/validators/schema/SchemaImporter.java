@@ -78,7 +78,7 @@ import org.apache.xerces.dom.DocumentTypeImpl;
 import org.apache.xerces.framework.XMLContentSpec;
 import org.apache.xerces.framework.XMLErrorReporter;
 import org.apache.xerces.msg.SchemaMessages;
-import org.apache.xerces.parsers.DOMParser;
+//import org.apache.xerces.parsers.DOMParser;
 import org.apache.xerces.readers.DefaultEntityHandler;
 import org.apache.xerces.utils.StringPool;
 import org.apache.xerces.validators.common.XMLValidator;
@@ -98,6 +98,8 @@ import org.apache.xerces.validators.datatype.TimeDurationValidator;
 import org.apache.xerces.validators.datatype.TimeInstantValidator;
 import org.apache.xerces.validators.datatype.BinaryValidator;
 import org.apache.xerces.validators.datatype.URIValidator;
+import org.apache.xerces.utils.QName;
+import org.apache.xerces.parsers.DOMParser;
 
 /**
  * SchemaImporter is an <font color="red"><b>experimental</b></font> implementation
@@ -229,7 +231,7 @@ public class SchemaImporter {
     public void loadSchema(InputSource is) {
 
 
-		SchemaParser parser = new SchemaParser (fSchema);
+		DOMParser parser = new DOMParser (); //WORK
 		try {
             parser.setEntityResolver(new Resolver());
             parser.setErrorHandler(new ErrorHandler());
@@ -253,22 +255,22 @@ public class SchemaImporter {
         }
 
         // parser schema file
-        try {
+        //try {
 
-            fSchemaParser.setFeature("http://xml.org/sax/features/validation", true);
-            fSchemaParser.setFeature("http://apache.org/xml/features/dom/defer-node-expansion", false);
-            fSchemaParser.parse(is);
-        }
-        catch (SAXException se) {
-            se.getException().printStackTrace();
-            System.err.println("error parsing schema file");
+          //  fSchemaParser.setFeature("http://xml.org/sax/features/validation", true);
+            //fSchemaParser.setFeature("http://apache.org/xml/features/dom/defer-node-expansion", false);
+           // fSchemaParser.parse(is);
+        //}
+        //catch (SAXException se) {
+         //   se.getException().printStackTrace();
+          //  System.err.println("error parsing schema file");
 //            System.exit(1);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-            System.err.println("error parsing schema file");
+       // }
+        //catch (Exception e) {
+          //  e.printStackTrace();
+           // System.err.println("error parsing schema file");
 //            System.exit(1);
-        }
+        //}
         fSchemaDocument = fSchemaParser.getDocument();
         if (fSchemaDocument == null) {
             System.err.println("error: couldn't load schema file!");
@@ -383,7 +385,7 @@ public class SchemaImporter {
             int ref = ((Integer) referrers.elementAt(i)).intValue();
 //            System.out.println("referrer "+referrers.elementAt(i)+ " csnIndex = "+getContentSpec(getElement(((Integer)referrers.elementAt(i)).intValue())));
 //            System.out.println("copying from "+fStringPool.toString(r)+" to "+fStringPool.toString(ref));
-            fValidator.copyAtts(r, ((Integer) referrers.elementAt(i)).intValue());
+//            fValidator.copyAtts(r, ((Integer) referrers.elementAt(i)).intValue());
 //            try {
 //                fValidator.fixupDeclaredElements(ref, r);
 //            } catch (Exception e) {
@@ -539,8 +541,9 @@ public class SchemaImporter {
         }
 		// stick in ElementDeclPool as a hack
 		int typeNameIndex = fStringPool.addSymbol(typeName); //REVISIT namespace clashes possible
-		int typeIndex = fValidator.addElementDecl(typeNameIndex, contentSpecType, left, false);
+		//int typeIndex = fValidator.addElementDecl(typeNameIndex, contentSpecType, left, false);
 
+               int typeIndex = 0; 
         for (int x = 0; x < uses.size(); x++)
             addUse(typeNameIndex, (Integer)uses.elementAt(x));
 
@@ -563,11 +566,12 @@ public class SchemaImporter {
                     v.addElement(new Integer(typeNameIndex));
     			    fForwardRefs.put(i,v);
                     addUse(typeNameIndex, index);
-    			} else
-        			fValidator.copyAtts(index, typeNameIndex);
-			}
+    			} else          {
+                            ;
+        			//fValidator.copyAtts(index, typeNameIndex);
 		}
-		
+                        }
+                                }
         return typeNameIndex;
 	}
 
@@ -662,7 +666,7 @@ public class SchemaImporter {
 	
 		// stick in ElementDeclPool as a hack
 		int groupNameIndex = fStringPool.addSymbol(groupName); //REVISIT namespace clashes possible
-		int groupIndex = fValidator.addElementDecl(groupNameIndex, contentSpecType, left, false);
+		//int groupIndex = fValidator.addElementDecl(groupNameIndex, contentSpecType, left, false);
 
         return groupNameIndex;
 	}
@@ -729,127 +733,13 @@ public class SchemaImporter {
 			reportSchemaError(SchemaMessageProvider.DatatypeError,
 							  new Object [] { e.getMessage() });
 		}
-        return newTypeName;
+        //return newTypeName;
+                return 1;
 	}
 
 	private int traverseElementDecl(Element elementDecl) throws Exception {
-		int contentSpecType      = -1;
-		int contentSpecNodeIndex = -1;
-        int typeNameIndex = -1;
 
-		String name = elementDecl.getAttribute(ATT_NAME);
-		String ref = elementDecl.getAttribute(ATT_REF);
-		String type = elementDecl.getAttribute(ATT_TYPE);
-		String minOccurs = elementDecl.getAttribute(ATT_MINOCCURS);
-		String maxOccurs = elementDecl.getAttribute(ATT_MAXOCCURS);
-		String dflt = elementDecl.getAttribute(ATT_DEFAULT);
-		String fixed = elementDecl.getAttribute(ATT_FIXED);
-
-        int attrCount = 0;
-		if (!ref.equals("")) attrCount++;
-		if (!type.equals("")) attrCount++;
-		//REVISIT top level check for ref & archref
-		if (attrCount > 1)
-			reportSchemaError(SchemaMessageProvider.OneOfTypeRefArchRef, null);
-		
-		if (!ref.equals("")) {
-		    if (XUtil.getFirstChildElement(elementDecl) != null)
-				reportSchemaError(SchemaMessageProvider.NoContentForRef, null);
-		   	int typeName = fStringPool.addSymbol(ref);
-		   	contentSpecNodeIndex = getContentSpecHandleForElementType(typeName);
-		   	contentSpecType = getContentSpecTypeForElementType(typeName);
-
-		   	int elementNameIndex = fStringPool.addSymbol(name);
-            int elementIndex = -1;
-
-		   	if (contentSpecNodeIndex == -1) {
-		   	    contentSpecType = XMLContentSpec.CONTENTSPECNODE_LEAF;
-            	contentSpecNodeIndex = fValidator.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF,
-	        							                                   elementNameIndex, -1, false);
-                fValidator.addElementDecl(elementNameIndex, contentSpecType, contentSpecNodeIndex, true);
-				reportSchemaError(SchemaMessageProvider.FeatureUnsupported,
-								  new Object [] { "Forward references to archetypes" });
-    			Vector v = null;
-    			Integer i = new Integer(typeName);
-    			if ((v = (Vector) fForwardRefs.get(i)) == null)
-    			     v = new Vector();
-                v.addElement(new Integer(elementNameIndex));
-    			fForwardRefs.put(i,v);
-    			addUse(elementNameIndex, typeName);
-		   	} else {
-                fValidator.addElementDecl(elementNameIndex, contentSpecType, contentSpecNodeIndex, true);
-                // copy up attribute decls from type object
-                fValidator.copyAtts(typeName, elementNameIndex);
-            }
-		    return elementNameIndex;
-		}
-		
-		// element has a single child element, either a datatype or a type, null if primitive
-		Element content = XUtil.getFirstChildElement(elementDecl);
-        while (content != null && content.getNodeName().equals(ELT_ANNOTATION))
-            content = XUtil.getNextSiblingElement(content);
-
-		if (content != null) {
-			String contentName = content.getNodeName();
-			if (contentName.equals(ELT_ARCHETYPEDECL)) {
-				typeNameIndex = traverseTypeDecl(content);
-				contentSpecNodeIndex = getContentSpecHandleForElementType(typeNameIndex);
-				contentSpecType = getContentSpecTypeForElementType(typeNameIndex);
-			} else if (contentName.equals(ELT_DATATYPEDECL)) {
-				reportSchemaError(SchemaMessageProvider.FeatureUnsupported,
-								  new Object [] { "Nesting datatype declarations" });
-				// contentSpecNodeIndex = traverseDatatypeDecl(content);
-				// contentSpecType = fStringPool.addSymbol("DATATYPE");
-			} else if (!type.equals("")) { // datatype
-				contentSpecType = fStringPool.addSymbol("DATATYPE");
-
-				// set content spec node index to leaf
-				contentSpecNodeIndex = fValidator.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF,
-																		   fStringPool.addSymbol(content.getAttribute(ATT_NAME)),
-																		   -1, false);
-				// set occurrance count
-				contentSpecNodeIndex = expandContentModel(contentSpecNodeIndex, content);
-			} else if (type.equals("")) { // "untyped" leaf
-			    // untyped leaf element decl
-	    		contentSpecType = fStringPool.addSymbol("CHILDREN");
-
-    			// add leaf
-				int leftIndex = fValidator.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF,
-																	fStringPool.addSymbol(content.getAttribute(ATT_NAME)),
-																	-1, false);
-
-    			// set occurrence count
-	    		contentSpecNodeIndex = expandContentModel(contentSpecNodeIndex, content);
-			} else {
-				System.out.println("unhandled case in element decl code");
-			}
-		} else if (!type.equals("")) { // type specified in attribute, not content
-			contentSpecType = fStringPool.addSymbol("DATATYPE");
-
-			// set content spec node index to leaf
-			contentSpecNodeIndex = fValidator.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF,
-																	   fStringPool.addSymbol(type),
-																	   -1, false);
-			// set occurrance count
-			contentSpecNodeIndex = expandContentModel(contentSpecNodeIndex, elementDecl);
-		}
-
-		//
-		// Create element decl
-		//
-
-		int elementNameIndex     = fStringPool.addSymbol(elementDecl.getAttribute(ATT_NAME));
-
-		// add element decl to pool
-		int elementIndex = fValidator.addElementDecl(elementNameIndex, contentSpecType, contentSpecNodeIndex, true);
-//        System.out.println("elementIndex:"+elementIndex+" "+elementDecl.getAttribute(ATT_NAME)+" eltType:"+elementName+" contentSpecType:"+contentSpecType+
-//                           " SpecNodeIndex:"+ contentSpecNodeIndex);
-
-        // copy up attribute decls from type object
-        if (typeNameIndex != -1)
-            fValidator.copyAtts(typeNameIndex, elementNameIndex);
-
-        return elementNameIndex;
+            return 0;
 	}
 
     private int traverseElementRef(Element elementRef) {
@@ -966,7 +856,7 @@ public class SchemaImporter {
 		}
 
 		// add attribute to element decl pool
-		fValidator.addAttDef(elementIndex, attName, attType, enumeration, attDefaultType, attDefaultValue, true);
+		//fValidator.addAttDef(elementIndex, attName, attType, enumeration, attDefaultType, attDefaultValue, true);
 	}
 
 	private int traverseAttrGroup(Element attrGroupDecl) throws Exception {
@@ -1004,7 +894,8 @@ public class SchemaImporter {
 	
 		// stick in ElementDeclPool as a hack
 		int attrGroupNameIndex = fStringPool.addSymbol(attrGroupName); //REVISIT namespace clashes possible
-		int attrGroupIndex = fValidator.addElementDecl(attrGroupNameIndex, 0, 0, false);
+                int attrGroupIndex = 0;
+		//int attrGroupIndex = fValidator.addElementDecl(attrGroupNameIndex, 0, 0, false);
 //        System.out.println("elementIndex:"+groupIndex+" "+groupName+" eltType:"+groupNameIndex+" SpecType:"+contentSpecType+
 //                           " SpecNodeIndex:"+ left);
 
@@ -1034,7 +925,7 @@ public class SchemaImporter {
 		
         // copy up attribute decls from nested groups
 		for (int i = 0; i < numGroups; i++) {
-            fValidator.copyAtts(groupIndices[i], attrGroupNameIndex);
+            //fValidator.copyAtts(groupIndices[i], attrGroupNameIndex);
         }
 
         return attrGroupNameIndex;
@@ -1652,7 +1543,7 @@ public class SchemaImporter {
     //
     //
     final class AttValidatorDATATYPE implements XMLValidator.AttributeValidator {
-        public int normalize(int elementType, int attrName, int attValueHandle, int attType, int enumHandle) throws Exception {
+        public int normalize(QName elementType1, QName attrName, int attValueHandle, int attType, int enumHandle) throws Exception {
             //
             // Normalize attribute based upon attribute type...
             //

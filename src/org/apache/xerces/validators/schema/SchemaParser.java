@@ -404,12 +404,17 @@ public class SchemaParser
 	// DTDHandler Methods (NOP)
 	//
 
-	public void startDTD (int rootElementType, int publicId, int systemId) throws Exception {}
+    //public void startDTD (int rootElementType, int publicId, int systemId) throws Exception {}
+
+    public void startDTD (QName qname,  int publicId, int systemId) throws Exception {}
     public void internalSubset(int internalSubset) throws Exception {}
     public void textDecl(int version, int encoding) throws Exception {}
     public void endDTD() throws Exception {}
-    public void elementDecl(int elementType, XMLContentSpec contentSpec) throws Exception {}
-    public void attlistDecl(int elementType,int attrName, int attType, String enumString, int attDefaultType, int attDefaultValue) throws Exception {}
+    public void elementDecl(QName qname, XMLContentSpec contentSpec) throws Exception {}
+    public void attlistDecl(QName qname1,QName qname2, int attType, String enumString, int attDefaultType, int attDefaultValue) throws Exception {}
+
+    //public void elementDecl(int elementType, XMLContentSpec contentSpec) throws Exception {}
+    //public void attlistDecl(int elementType,int attrName, int attType, String enumString, int attDefaultType, int attDefaultValue) throws Exception {}
     public void internalPEDecl(int entityName, int entityValue) throws Exception {}
     public void externalPEDecl(int entityName, int publicId, int systemId) throws Exception {}
     public void internalEntityDecl(int entityName, int entityValue) throws Exception {}
