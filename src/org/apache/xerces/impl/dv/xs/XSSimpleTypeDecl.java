@@ -1235,6 +1235,26 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 
         if (context == null)
             context = fEmptyContext;
+
+        if (validatedInfo == null)
+            validatedInfo = new ValidatedInfo();
+
+        // first normalize string value, and convert it to actual value
+        Object ob = getActualValue(content, context, validatedInfo);
+
+        validate(context, validatedInfo);
+
+        return ob;
+
+    }
+
+    /**
+     * validate a value, and return the compiled form
+     */
+    public Object validate(Object content, ValidationContext context, ValidatedInfo validatedInfo) throws InvalidDatatypeValueException {
+
+        if (context == null)
+            context = fEmptyContext;
             
         if (validatedInfo == null)
             validatedInfo = new ValidatedInfo();
@@ -1415,7 +1435,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }// checkExtraRules()
 
     //we can still return object for internal use.
-    private Object getActualValue(String content, ValidationContext context, ValidatedInfo validatedInfo) throws InvalidDatatypeValueException{
+    private Object getActualValue(Object content, ValidationContext context, ValidatedInfo validatedInfo) throws InvalidDatatypeValueException{
 
         if (fVariety == VARIETY_ATOMIC) {
 
@@ -1423,7 +1443,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             if (context==null ||context.needToNormalize()) {
                 nvalue = normalize(content, fWhiteSpace);
             } else {
-                nvalue = content;
+                nvalue = content.toString();
             }
 
             // update normalized value
@@ -1480,7 +1500,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             if (context==null ||context.needToNormalize()) {
                 nvalue = normalize(content, fWhiteSpace);
             } else {
-                nvalue = content;
+                nvalue = content.toString();
             }
 
             StringTokenizer parsedList = new StringTokenizer(nvalue);
@@ -1611,6 +1631,60 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                     // if it's not a leading or tailing ws, then append a space
                     if (i < len - 1 && !isLeading)
                         sb.append((char)0x20);
+                }
+            }
+        }
+
+        return sb.toString();
+    }
+
+    // normalize the string according to the whiteSpace facet
+    protected static String normalize(Object content, short ws) {
+        if (content == null)
+            return null;
+        
+        if (!(content instanceof StringBuffer)) {
+            String strContent = content.toString();
+            return normalize(strContent, ws);
+        }
+
+        StringBuffer sb = (StringBuffer)content;
+        int len = sb.length();
+        if (len == 0)
+            return "";
+        if (ws == WS_PRESERVE)
+            return sb.toString();
+
+        if (ws == WS_REPLACE) {
+            char ch;
+            // when it's replace, just replace #x9, #xa, #xd by #x20
+            for (int i = 0; i < len; i++) {
+                ch = sb.charAt(i);
+                if (ch == 0x9 || ch == 0xa || ch == 0xd)
+                    sb.setCharAt(i, (char)0x20);
+            }
+        } else {
+            char ch;
+            int i, j = 0;
+            boolean isLeading = true;
+            // when it's collapse
+            for (i = 0; i < len; i++) {
+                ch = sb.charAt(i);
+                // append real characters, so we passed leading ws
+                if (ch != 0x9 && ch != 0xa && ch != 0xd && ch != 0x20) {
+                    sb.setCharAt(j++, ch);
+                    isLeading = false;
+                }
+                else {
+                    // for whitespaces, we skip all following ws
+                    for (; i < len-1; i++) {
+                        ch = sb.charAt(i+1);
+                        if (ch != 0x9 && ch != 0xa && ch != 0xd && ch != 0x20)
+                            break;
+                    }
+                    // if it's not a leading or tailing ws, then append a space
+                    if (i < len - 1 && !isLeading)
+                        sb.setCharAt(j++, (char)0x20);
                 }
             }
         }

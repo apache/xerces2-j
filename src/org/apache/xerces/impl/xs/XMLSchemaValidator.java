@@ -2209,6 +2209,8 @@ public class XMLSchemaValidator
             // Same for append buffer. Simple types and elements with fixed
             // value constraint don't allow sub-elements. -SG
             fAppendBuffer = false;
+            // same here.
+            fUnionType = false;
         }
 
         return augs;
@@ -2806,9 +2808,6 @@ public class XMLSchemaValidator
         }
         // fixed values are handled later, after xsi:type determined.
 
-        String content = XMLSymbols.EMPTY_STRING;
-        if (fAppendBuffer)
-            content = fBuffer.toString();
         fValidatedInfo.normalizedValue = null;
 
         // Element Locally Valid (Element)
@@ -2843,11 +2842,12 @@ public class XMLSchemaValidator
 
             // 5.2 If the declaration has no {value constraint} or the item has either element or character [children] or clause 3.2 has applied, then all of the following must be true:
             // 5.2.1 The element information item must be valid with respect to the actual type definition as defined by Element Locally Valid (Type) (3.3.4).
-            Object actualValue = elementLocallyValidType(element, content);
+            Object actualValue = elementLocallyValidType(element, fBuffer);
             // 5.2.2 If there is a fixed {value constraint} and clause 3.2 has not applied, all of the following must be true:
             if (fCurrentElemDecl != null &&
                 fCurrentElemDecl.getConstraintType() == XSConstants.VC_FIXED &&
                 !fNil) {
+                String content = fBuffer.toString();
                 // 5.2.2.1 The element information item must have no element information item [children].
                 if (fSubElement)
                     reportSchemaError("cvc-elt.5.2.2.1", new Object[]{element.rawname});
@@ -2882,8 +2882,10 @@ public class XMLSchemaValidator
             fDocumentHandler != null && fUnionType) {
             // for union types we need to send data because we delayed sending
             // this data when we received it in the characters() call.
-            if (fValidatedInfo.normalizedValue != null)
-                content = fValidatedInfo.normalizedValue;
+            String content = fValidatedInfo.normalizedValue;
+            if (content == null)
+                content = fBuffer.toString();
+            
             int bufLen = content.length();
             if (fNormalizedStr.ch == null || fNormalizedStr.ch.length < bufLen) {
                 fNormalizedStr.ch = new char[bufLen];
@@ -2895,7 +2897,7 @@ public class XMLSchemaValidator
         }
     } // processElementContent
 
-    Object elementLocallyValidType(QName element, String textContent) {
+    Object elementLocallyValidType(QName element, Object textContent) {
         if (fCurrentType == null)
             return null;
 
@@ -2930,7 +2932,7 @@ public class XMLSchemaValidator
         return retValue;
     } // elementLocallyValidType
 
-    Object elementLocallyValidComplexType(QName element, String textContent) {
+    Object elementLocallyValidComplexType(QName element, Object textContent) {
         Object actualValue = null;
         XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
 

@@ -152,6 +152,20 @@ public interface XSSimpleType extends XSTypeDecl, XSSimpleTypeDefinition {
         throws InvalidDatatypeValueException;
 
     /**
+     * validate a given string value, represented by content.toString().
+     * note that if content is a StringBuffer, for performance reasons,
+     * it's possible that the content of the string buffer is modified.
+     *
+     * @param content       the string value that needs to be validated
+     * @param context       the validation context
+     * @param validatedInfo used to store validation result
+     *
+     * @return              the actual value (QName, Boolean) of the string value
+     */
+    public Object validate(Object content, ValidationContext context, ValidatedInfo validatedInfo)
+        throws InvalidDatatypeValueException;
+
+    /**
      * validate an actual value against this simple type.
      *
      * @param value         the actual value that needs to be validated
