@@ -972,7 +972,11 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         if ( fGrammarNameSpaceIndex != fGrammarNameSpaceIndexStack[fElementDepth] ) {
             fGrammarNameSpaceIndex = fGrammarNameSpaceIndexStack[fElementDepth];
             if ( fValidating && fGrammarIsSchemaGrammar )
-                switchGrammar(fGrammarNameSpaceIndex);
+               if ( !switchGrammar(fGrammarNameSpaceIndex) ){
+                   reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR, 
+                                             "Grammar with uri : " + fStringPool.toString(fGrammarNameSpaceIndex) 
+                                             + " , can not found");
+               }
         }
 
         if (fValidating) {
@@ -1840,16 +1844,14 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
     /** Switchs to correct validating symbol tables when Schema changes.*/
     
-    private void switchGrammar(int newGrammarNameSpaceIndex) throws Exception {
+    private boolean switchGrammar(int newGrammarNameSpaceIndex) throws Exception {
         Grammar tempGrammar = fGrammarResolver.getGrammar(fStringPool.toString(newGrammarNameSpaceIndex));
         if (tempGrammar == null) {
             // This is a case where namespaces is on with a DTD grammar.
             tempGrammar = fGrammarResolver.getGrammar("");
         }
         if (tempGrammar == null) {
-            reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR, 
-                                      "Grammar with uri : " + fStringPool.toString(newGrammarNameSpaceIndex) 
-                                      + " , can not found");
+            return false;
         }
         else {
             fGrammar = tempGrammar;
@@ -1861,6 +1863,8 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 fGrammarIsSchemaGrammar = true;
                 fGrammarIsDTDGrammar = false;
             }
+
+            return true;
         }
     }
 
@@ -2387,369 +2391,392 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
        
             //REVISIT: is this the right place to check on if the Schema has changed?
 
-        if ( fNamespacesEnabled && fValidating && element.uri != fGrammarNameSpaceIndex && element.uri != -1  ) {
-            fGrammarNameSpaceIndex = element.uri;
-            switchGrammar(fGrammarNameSpaceIndex);
-        }
+            if ( fNamespacesEnabled && fValidating && element.uri != fGrammarNameSpaceIndex && element.uri != -1  ) {
+                fGrammarNameSpaceIndex = element.uri;
 
+                boolean success = switchGrammar(fGrammarNameSpaceIndex);
 
-        //REVISIT, is it possible, fValidating is false and fGrammar is no null.???
-        if ( fGrammar != null ){
-            if (DEBUG_SCHEMA_VALIDATION) {
-                System.out.println("*******Lookup element: uri: " + fStringPool.toString(element.uri)+
-                                   "localpart: '" + fStringPool.toString(element.localpart)
-                                   +"' and scope : " + fCurrentScope+"\n");
-            }
-
-            elementIndex = fGrammar.getElementDeclIndex(element,fCurrentScope);
-
-            if (elementIndex == -1 ) {
-                elementIndex = fGrammar.getElementDeclIndex(element, TOP_LEVEL_SCOPE);
-            }
-
-            if (elementIndex == -1) {
-                // if validating based on a Schema, try to resolve the element again by look it up in its ancestor types
-                if (fGrammarIsSchemaGrammar && fCurrentElementIndex != -1) {
-                    TraverseSchema.ComplexTypeInfo baseTypeInfo = null;
-                    baseTypeInfo = ((SchemaGrammar)fGrammar).getElementComplexTypeInfo(fCurrentElementIndex);
-                    //TO DO: 
-                    //      should check if baseTypeInfo is from the same Schema.
-                    while (baseTypeInfo != null) {
-                        elementIndex = fGrammar.getElementDeclIndex(element, baseTypeInfo.scopeDefined);
-                        if (elementIndex > -1 ) {
-                            break;
-                        }
-                        baseTypeInfo = baseTypeInfo.baseComplexTypeInfo;
-                    }
+                if (!success && !laxThisOne) {
+                    reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR, 
+                                              "Grammar with uri : " + fStringPool.toString(fGrammarNameSpaceIndex) 
+                                              + " , can not found");
                 }
-                //if still can't resolve it, try TOP_LEVEL_SCOPE AGAIN
-                /****
-                if ( element.uri == -1 && elementIndex == -1 
-                     && fNamespacesScope != null 
-                     && fNamespacesScope.getNamespaceForPrefix(StringPool.EMPTY_STRING) != -1 ) {
+            }
+
+
+            if ( fGrammar != null ){
+                if (DEBUG_SCHEMA_VALIDATION) {
+                    System.out.println("*******Lookup element: uri: " + fStringPool.toString(element.uri)+
+                                       "localpart: '" + fStringPool.toString(element.localpart)
+                                       +"' and scope : " + fCurrentScope+"\n");
+                }
+
+                elementIndex = fGrammar.getElementDeclIndex(element,fCurrentScope);
+
+                if (elementIndex == -1 ) {
+                    elementIndex = fGrammar.getElementDeclIndex(element, TOP_LEVEL_SCOPE);
+                }
+
+                if (elementIndex == -1) {
+                    // if validating based on a Schema, try to resolve the element again by look it up in its ancestor types
+                    if (fGrammarIsSchemaGrammar && fCurrentElementIndex != -1) {
+                        TraverseSchema.ComplexTypeInfo baseTypeInfo = null;
+                        baseTypeInfo = ((SchemaGrammar)fGrammar).getElementComplexTypeInfo(fCurrentElementIndex);
+                        //TO DO: 
+                        //      should check if baseTypeInfo is from the same Schema.
+                        while (baseTypeInfo != null) {
+                            elementIndex = fGrammar.getElementDeclIndex(element, baseTypeInfo.scopeDefined);
+                            if (elementIndex > -1 ) {
+                                break;
+                            }
+                            baseTypeInfo = baseTypeInfo.baseComplexTypeInfo;
+                        }
+                    }
+                    //if still can't resolve it, try TOP_LEVEL_SCOPE AGAIN
+                    /****
+                    if ( element.uri == -1 && elementIndex == -1 
+                    && fNamespacesScope != null 
+                    && fNamespacesScope.getNamespaceForPrefix(StringPool.EMPTY_STRING) != -1 ) {
                     elementIndex = fGrammar.getElementDeclIndex(element.localpart, TOP_LEVEL_SCOPE);
                     // REVISIT:
                     // this is a hack to handle the situation where namespace prefix "" is bound to nothing, and there
                     // is a "noNamespaceSchemaLocation" specified, and element 
                     element.uri = StringPool.EMPTY_STRING;
-                }
-                /****/
-
-                /****/
-                if (elementIndex == -1) {
-                    if (laxThisOne) {
-                        fNeedValidationOff = true;
                     }
-                    else
-                        if (DEBUG_SCHEMA_VALIDATION)
-                            System.out.println("!!! can not find elementDecl in the grammar, " +
-                                               " the element localpart: " + element.localpart+"["+fStringPool.toString(element.localpart) +"]" +
-                                               " the element uri: " + element.uri+"["+fStringPool.toString(element.uri) +"]" +
-                                               " and the current enclosing scope: " + fCurrentScope );
-                }
-                /****/
-            }
+                    /****/
 
-            if (DEBUG_SCHEMA_VALIDATION) {
-                fGrammar.getElementDecl(elementIndex, fTempElementDecl);
-                System.out.println("elementIndex: " + elementIndex+" \n and itsName : '" 
-                                   + fStringPool.toString(fTempElementDecl.name.localpart)
-                                   +"' \n its ContentType:" + fTempElementDecl.type
-                                   +"\n its ContentSpecIndex : " + fTempElementDecl.contentSpecIndex +"\n"+
-                                   " and the current enclosing scope: " + fCurrentScope);
-            }
-        }
-
-        //       here need to check if we need to switch Grammar by asking SchemaGrammar whether 
-        //       this element actually is of a type in another Schema.
-        if (fGrammarIsSchemaGrammar && elementIndex != -1) {
-
-            // handle "xsi:type" right here
-            if (fXsiTypeAttValue > -1) {
-                String xsiType = fStringPool.toString(fXsiTypeAttValue);
-                int colonP = xsiType.indexOf(":");
-                String prefix = "";
-                String localpart = xsiType;
-                if (colonP > -1) {
-                    prefix = xsiType.substring(0,colonP);
-                    localpart = xsiType.substring(colonP+1);
+                    /****/
+                    if (elementIndex == -1) {
+                        if (laxThisOne) {
+                            fNeedValidationOff = true;
+                        }
+                        else
+                            if (DEBUG_SCHEMA_VALIDATION)
+                                System.out.println("!!! can not find elementDecl in the grammar, " +
+                                                   " the element localpart: " + element.localpart +
+                                                   "["+fStringPool.toString(element.localpart) +"]" +
+                                                   " the element uri: " + element.uri + 
+                                                   "["+fStringPool.toString(element.uri) +"]" +
+                                                   " and the current enclosing scope: " + fCurrentScope );
+                    }
+                    /****/
                 }
 
-                String uri = "";
-                int uriIndex = -1;
-                if (fNamespacesScope != null) {
-                    uriIndex = fNamespacesScope.getNamespaceForPrefix(fStringPool.addSymbol(prefix));
-                    if (uriIndex > -1) {
-                        uri = fStringPool.toString(uriIndex);
-                        if (uriIndex != fGrammarNameSpaceIndex) {
-                            fGrammarNameSpaceIndex = fCurrentSchemaURI = uriIndex;
-                            switchGrammar(fCurrentSchemaURI);
+                if (DEBUG_SCHEMA_VALIDATION) {
+                    fGrammar.getElementDecl(elementIndex, fTempElementDecl);
+                    System.out.println("elementIndex: " + elementIndex+" \n and itsName : '" 
+                                       + fStringPool.toString(fTempElementDecl.name.localpart)
+                                       +"' \n its ContentType:" + fTempElementDecl.type
+                                       +"\n its ContentSpecIndex : " + fTempElementDecl.contentSpecIndex +"\n"+
+                                       " and the current enclosing scope: " + fCurrentScope);
+                }
+            }
+
+            //       here need to check if we need to switch Grammar by asking SchemaGrammar whether 
+            //       this element actually is of a type in another Schema.
+            if (fGrammarIsSchemaGrammar && elementIndex != -1) {
+
+                // handle "xsi:type" right here
+                if (fXsiTypeAttValue > -1) {
+                    String xsiType = fStringPool.toString(fXsiTypeAttValue);
+                    int colonP = xsiType.indexOf(":");
+                    String prefix = "";
+                    String localpart = xsiType;
+                    if (colonP > -1) {
+                        prefix = xsiType.substring(0,colonP);
+                        localpart = xsiType.substring(colonP+1);
+                    }
+
+                    String uri = "";
+                    int uriIndex = -1;
+                    if (fNamespacesScope != null) {
+                        uriIndex = fNamespacesScope.getNamespaceForPrefix(fStringPool.addSymbol(prefix));
+                        if (uriIndex > -1) {
+                            uri = fStringPool.toString(uriIndex);
+                            if (uriIndex != fGrammarNameSpaceIndex) {
+                                fGrammarNameSpaceIndex = fCurrentSchemaURI = uriIndex;
+                                boolean success = switchGrammar(fCurrentSchemaURI);
+                                if (!success && !fNeedValidationOff) {
+                                    reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, 
+                                                              XMLMessages.SCHEMA_GENERIC_ERROR, 
+                                                              "Grammar with uri : " 
+                                                              + fStringPool.toString(fCurrentSchemaURI) 
+                                                              + " , can not found");
+                                }
+                            }
                         }
                     }
-                }
 
 
-                Hashtable complexRegistry = ((SchemaGrammar)fGrammar).getComplexTypeRegistry();
-                DatatypeValidatorFactoryImpl dataTypeReg = ((SchemaGrammar)fGrammar).getDatatypeRegistry();
-                if (complexRegistry==null || dataTypeReg == null) {
-                    reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, 
-                                              XMLMessages.SCHEMA_GENERIC_ERROR, 
-                                              fErrorReporter.getLocator().getSystemId()
-                                       +" line"+fErrorReporter.getLocator().getLineNumber()
-                                       +", canot resolve xsi:type = " + xsiType+"  ---2");
-                }
-                else {
-                    TraverseSchema.ComplexTypeInfo typeInfo = 
-                        (TraverseSchema.ComplexTypeInfo) complexRegistry.get(uri+","+localpart);
-                    //TO DO:
-                    //      here need to check if this substitution is legal based on the current active grammar,
-                    //      this should be easy, cause we already saved final, block and base type information in 
-                    //      the SchemaGrammar.
+                    Hashtable complexRegistry = ((SchemaGrammar)fGrammar).getComplexTypeRegistry();
+                    DatatypeValidatorFactoryImpl dataTypeReg = ((SchemaGrammar)fGrammar).getDatatypeRegistry();
+                    if (complexRegistry==null || dataTypeReg == null) {
+                        reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, 
+                                                  XMLMessages.SCHEMA_GENERIC_ERROR, 
+                                                  fErrorReporter.getLocator().getSystemId()
+                                                  +" line"+fErrorReporter.getLocator().getLineNumber()
+                                                  +", canot resolve xsi:type = " + xsiType+"  ---2");
+                    }
+                    else {
+                        TraverseSchema.ComplexTypeInfo typeInfo = 
+                            (TraverseSchema.ComplexTypeInfo) complexRegistry.get(uri+","+localpart);
+                        //TO DO:
+                        //      here need to check if this substitution is legal based on the current active grammar,
+                        //      this should be easy, cause we already saved final, block and base type information in 
+                        //      the SchemaGrammar.
 
-                    if (typeInfo==null) {
-                        if (uri.length() == 0 || uri.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) ) {
-                            fXsiTypeValidator = dataTypeReg.getDatatypeValidator(localpart);
+                        if (typeInfo==null) {
+                            if (uri.length() == 0 || uri.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) ) {
+                                fXsiTypeValidator = dataTypeReg.getDatatypeValidator(localpart);
+                            }
+                            else 
+                                fXsiTypeValidator = dataTypeReg.getDatatypeValidator(uri+","+localpart);
+                            if( fXsiTypeValidator == null ) 
+                                reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, 
+                                                          XMLMessages.SCHEMA_GENERIC_ERROR, 
+                                                          "unresolved type : "+uri+","+localpart 
+                                                          +" found  in xsi:type handling");
                         }
                         else 
-                            fXsiTypeValidator = dataTypeReg.getDatatypeValidator(uri+","+localpart);
-                        if( fXsiTypeValidator == null ) 
-                            reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, 
-                                                      XMLMessages.SCHEMA_GENERIC_ERROR, 
-                                                      "unresolved type : "+uri+","+localpart+" found  in xsi:type handling");
+                            elementIndex = typeInfo.templateElementIndex;
                     }
-                    else 
-                        elementIndex = typeInfo.templateElementIndex;
+
+                    fXsiTypeAttValue = -1;
                 }
 
-                fXsiTypeAttValue = -1;
+                //Change the current scope to be the one defined by this element.
+                fCurrentScope = ((SchemaGrammar) fGrammar).getElementDefinedScope(elementIndex);
+
+                String anotherSchemaURI = ((SchemaGrammar)fGrammar).getElementFromAnotherSchemaURI(elementIndex);
+                if (anotherSchemaURI != null) {
+                    fGrammarNameSpaceIndex = fCurrentSchemaURI = fStringPool.addSymbol(anotherSchemaURI);
+                    boolean success = switchGrammar(fCurrentSchemaURI);
+                    if (!success && !fNeedValidationOff) {
+                        reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, 
+                                                  XMLMessages.SCHEMA_GENERIC_ERROR, 
+                                                  "Grammar with uri : " 
+                                                  + fStringPool.toString(fCurrentSchemaURI) 
+                                                  + " , can not found");
+                    }
+                }
             }
 
-            //Change the current scope to be the one defined by this element.
-            fCurrentScope = ((SchemaGrammar) fGrammar).getElementDefinedScope(elementIndex);
-
-            String anotherSchemaURI = ((SchemaGrammar)fGrammar).getElementFromAnotherSchemaURI(elementIndex);
-            if (anotherSchemaURI != null) {
-                fGrammarNameSpaceIndex = fCurrentSchemaURI = fStringPool.addSymbol(anotherSchemaURI);
-                switchGrammar(fCurrentSchemaURI);
-            }
-        }
-
-        contentSpecType =  getContentSpecType(elementIndex);
-        if (contentSpecType == -1 && fValidating && !fNeedValidationOff ) {
-            reportRecoverableXMLError(XMLMessages.MSG_ELEMENT_NOT_DECLARED,
+            contentSpecType =  getContentSpecType(elementIndex);
+            if (contentSpecType == -1 && fValidating && !fNeedValidationOff ) {
+                reportRecoverableXMLError(XMLMessages.MSG_ELEMENT_NOT_DECLARED,
                                       XMLMessages.VC_ELEMENT_VALID,
-                                      element.rawname);
-        }
-        if (fGrammar != null && elementIndex != -1) {
-            fAttrListHandle = addDefaultAttributes(elementIndex, attrList, fAttrListHandle, fValidating, fStandaloneReader != -1);
-        }
-        if (fAttrListHandle != -1) {
-            fAttrList.endAttrList();
-        }
-
-        if (DEBUG_PRINT_ATTRIBUTES) {
-            String elementStr = fStringPool.toString(element.rawname);
-            System.out.print("startElement: <" + elementStr);
-            if (fAttrListHandle != -1) {
-                int index = attrList.getFirstAttr(fAttrListHandle);
-                while (index != -1) {
-                    System.out.print(" " + fStringPool.toString(attrList.getAttrName(index)) + "=\"" +
-                            fStringPool.toString(attrList.getAttValue(index)) + "\"");
-                    index = attrList.getNextAttr(index);
-                }
+                                          element.rawname);
             }
-            System.out.println(">");
-        }
-        // REVISIT: Validation. Do we need to recheck for the xml:lang
-        //          attribute? It was already checked above -- perhaps
-        //          this is to check values that are defaulted in? If
-        //          so, this check could move to the attribute decl
-        //          callback so we can check the default value before
-        //          it is used.
-        if (fAttrListHandle != -1 && !fNeedValidationOff ) {
-            int index = fAttrList.getFirstAttr(fAttrListHandle);
-            while (index != -1) {
-                int attrNameIndex = attrList.getAttrName(index);
+            if (fGrammar != null && elementIndex != -1) {
+                fAttrListHandle = addDefaultAttributes(elementIndex, attrList, fAttrListHandle, fValidating, fStandaloneReader != -1);
+            }
+            if (fAttrListHandle != -1) {
+                fAttrList.endAttrList();
+            }
 
-                if (fStringPool.equalNames(attrNameIndex, fXMLLang)) {
-                    fDocumentScanner.checkXMLLangAttributeValue(attrList.getAttValue(index));
-                    // break;
-                }
-                // here, we validate every "user-defined" attributes
-                int _xmlns = fStringPool.addSymbol("xmlns");
-
-                if (attrNameIndex != _xmlns && attrList.getAttrPrefix(index) != _xmlns) 
-                if (fGrammar != null) {
-                    fAttrNameLocator = getLocatorImpl(fAttrNameLocator);
-                    fTempQName.setValues(attrList.getAttrPrefix(index), 
-                                         attrList.getAttrLocalpart(index),
-                                         attrList.getAttrName(index),
-                                         attrList.getAttrURI(index) );
-                    int attDefIndex = getAttDefByElementIndex(elementIndex, fTempQName);
-
-                    if (fTempQName.uri != fXsiURI)
-                    if (attDefIndex == -1 ) {
-                          if (fValidating) {
-                              // REVISIT - cache the elem/attr tuple so that we only give
-                              //  this error once for each unique occurrence
-                              Object[] args = { fStringPool.toString(element.rawname),
-                                                fStringPool.toString(attrList.getAttrName(index)) };
-
-                                  /*****/
-                                  fErrorReporter.reportError(fAttrNameLocator,
-                                                             XMLMessages.XML_DOMAIN,
-                                                             XMLMessages.MSG_ATTRIBUTE_NOT_DECLARED,
-                                                             XMLMessages.VC_ATTRIBUTE_VALUE_TYPE,
-                                                             args,
-                                                             XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
-                                  /******/   
-                          }
+            if (DEBUG_PRINT_ATTRIBUTES) {
+                String elementStr = fStringPool.toString(element.rawname);
+                System.out.print("startElement: <" + elementStr);
+                if (fAttrListHandle != -1) {
+                    int index = attrList.getFirstAttr(fAttrListHandle);
+                    while (index != -1) {
+                        System.out.print(" " + fStringPool.toString(attrList.getAttrName(index)) + "=\"" +
+                                         fStringPool.toString(attrList.getAttValue(index)) + "\"");
+                        index = attrList.getNextAttr(index);
                     }
-                    else  {
+                }
+                System.out.println(">");
+            }
+            // REVISIT: Validation. Do we need to recheck for the xml:lang
+            //          attribute? It was already checked above -- perhaps
+            //          this is to check values that are defaulted in? If
+            //          so, this check could move to the attribute decl
+            //          callback so we can check the default value before
+            //          it is used.
+            if (fAttrListHandle != -1 && !fNeedValidationOff ) {
+                int index = fAttrList.getFirstAttr(fAttrListHandle);
+                while (index != -1) {
+                    int attrNameIndex = attrList.getAttrName(index);
 
-                        fGrammar.getAttributeDecl(attDefIndex, fTempAttDecl); 
+                    if (fStringPool.equalNames(attrNameIndex, fXMLLang)) {
+                        fDocumentScanner.checkXMLLangAttributeValue(attrList.getAttValue(index));
+                        // break;
+                    }
+                    // here, we validate every "user-defined" attributes
+                    int _xmlns = fStringPool.addSymbol("xmlns");
 
-                        int attributeType = attributeTypeName(fTempAttDecl);
-                        attrList.setAttType(index, attributeType);
-                        
-                        if (fValidating) {
-                            if (fGrammarIsDTDGrammar && 
-                                (fTempAttDecl.type == XMLAttributeDecl.TYPE_ENTITY ||
-                                fTempAttDecl.type == XMLAttributeDecl.TYPE_ENUMERATION ||
-                                fTempAttDecl.type == XMLAttributeDecl.TYPE_ID ||
-                                fTempAttDecl.type == XMLAttributeDecl.TYPE_IDREF ||
-                                fTempAttDecl.type == XMLAttributeDecl.TYPE_NMTOKEN ||
-                                fTempAttDecl.type == XMLAttributeDecl.TYPE_NOTATION)
-                                ) {
+                    if (attrNameIndex != _xmlns && attrList.getAttrPrefix(index) != _xmlns) 
+                    if (fGrammar != null) {
+                        fAttrNameLocator = getLocatorImpl(fAttrNameLocator);
+                        fTempQName.setValues(attrList.getAttrPrefix(index), 
+                                             attrList.getAttrLocalpart(index),
+                                             attrList.getAttrName(index),
+                                                 attrList.getAttrURI(index) );
+                        int attDefIndex = getAttDefByElementIndex(elementIndex, fTempQName);
 
-                                validateDTDattribute(element, attrList.getAttValue(index), fTempAttDecl);
-                            }
-                            if (fGrammarIsSchemaGrammar && 
-                                (fTempAttDecl.type == XMLAttributeDecl.TYPE_ID ||
-                                fTempAttDecl.type == XMLAttributeDecl.TYPE_IDREF )
-                                ) {
+                        if (fTempQName.uri != fXsiURI)
+                            if (attDefIndex == -1 ) {
+                                if (fValidating) {
+                                    // REVISIT - cache the elem/attr tuple so that we only give
+                                    //  this error once for each unique occurrence
+                                        Object[] args = { fStringPool.toString(element.rawname),
+                                            fStringPool.toString(attrList.getAttrName(index)) };
 
-                                validateDTDattribute(element, attrList.getAttValue(index), fTempAttDecl);
-                            }
-
-                            // check to see if this attribute matched an attribute wildcard
-                            if ( fGrammarIsSchemaGrammar && 
-                                 (fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_ANY 
-                                ||fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_LIST
-                                ||fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_LOCAL 
-                                ||fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_OTHER) ) {
-
-                                if (fTempAttDecl.defaultType == XMLAttributeDecl.PROCESSCONTENTS_SKIP) {
-                                    // attribute should just be bypassed, 
+                                            /*****/
+                                            fErrorReporter.reportError(fAttrNameLocator,
+                                                                       XMLMessages.XML_DOMAIN,
+                                                                       XMLMessages.MSG_ATTRIBUTE_NOT_DECLARED,
+                                                                       XMLMessages.VC_ATTRIBUTE_VALUE_TYPE,
+                                                                       args,
+                                                                       XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+                                            /******/   
                                 }
-                                else if ( fTempAttDecl.defaultType == XMLAttributeDecl.PROCESSCONTENTS_STRICT
-                                          || fTempAttDecl.defaultType == XMLAttributeDecl.PROCESSCONTENTS_LAX)  {
+                            }
+                            else  {
 
-                                    boolean reportError = false;
-                                    boolean processContentStrict = fTempAttDecl.defaultType == XMLAttributeDecl.PROCESSCONTENTS_STRICT;
+                                fGrammar.getAttributeDecl(attDefIndex, fTempAttDecl); 
 
-                                    if (fTempQName.uri == -1) {
-                                        if (processContentStrict) {
-                                            reportError = true;
-                                        }
+                                int attributeType = attributeTypeName(fTempAttDecl);
+                                attrList.setAttType(index, attributeType);
+
+                                if (fValidating) {
+                                    if (fGrammarIsDTDGrammar && 
+                                        (fTempAttDecl.type == XMLAttributeDecl.TYPE_ENTITY ||
+                                         fTempAttDecl.type == XMLAttributeDecl.TYPE_ENUMERATION ||
+                                         fTempAttDecl.type == XMLAttributeDecl.TYPE_ID ||
+                                         fTempAttDecl.type == XMLAttributeDecl.TYPE_IDREF ||
+                                         fTempAttDecl.type == XMLAttributeDecl.TYPE_NMTOKEN ||
+                                         fTempAttDecl.type == XMLAttributeDecl.TYPE_NOTATION)
+                                        ) {
+
+                                        validateDTDattribute(element, attrList.getAttValue(index), fTempAttDecl);
                                     }
-                                    else {
-                                        Grammar aGrammar = fGrammarResolver.getGrammar(fStringPool.toString(fTempQName.uri));
-                                        if (aGrammar == null || !(aGrammar instanceof SchemaGrammar) ) {
-                                            if (processContentStrict) {
-                                                reportError = true;
-                                            }
+                                    if (fGrammarIsSchemaGrammar && 
+                                        (fTempAttDecl.type == XMLAttributeDecl.TYPE_ID ||
+                                         fTempAttDecl.type == XMLAttributeDecl.TYPE_IDREF )
+                                        ) {
+
+                                        validateDTDattribute(element, attrList.getAttValue(index), fTempAttDecl);
                                         }
-                                        else {
-                                            SchemaGrammar sGrammar = (SchemaGrammar) aGrammar;
-                                            Hashtable attRegistry = sGrammar.getAttirubteDeclRegistry();
-                                            if (attRegistry == null) {
+
+                                    // check to see if this attribute matched an attribute wildcard
+                                    if ( fGrammarIsSchemaGrammar && 
+                                         (fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_ANY 
+                                          ||fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_LIST
+                                          ||fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_LOCAL 
+                                          ||fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_OTHER) ) {
+
+                                        if (fTempAttDecl.defaultType == XMLAttributeDecl.PROCESSCONTENTS_SKIP) {
+                                            // attribute should just be bypassed, 
+                                        }
+                                        else if ( fTempAttDecl.defaultType == XMLAttributeDecl.PROCESSCONTENTS_STRICT
+                                                  || fTempAttDecl.defaultType == XMLAttributeDecl.PROCESSCONTENTS_LAX)  {
+
+                                            boolean reportError = false;
+                                            boolean processContentStrict = fTempAttDecl.defaultType == XMLAttributeDecl.PROCESSCONTENTS_STRICT;
+
+                                            if (fTempQName.uri == -1) {
                                                 if (processContentStrict) {
                                                     reportError = true;
                                                 }
                                             }
                                             else {
-                                                XMLAttributeDecl attDecl = (XMLAttributeDecl) attRegistry.get(fStringPool.toString(fTempQName.localpart));
-                                                if (attDecl == null) {
+                                                Grammar aGrammar = fGrammarResolver.getGrammar(fStringPool.toString(fTempQName.uri));
+                                                if (aGrammar == null || !(aGrammar instanceof SchemaGrammar) ) {
                                                     if (processContentStrict) {
                                                         reportError = true;
                                                     }
                                                 }
                                                 else {
-                                                    DatatypeValidator attDV = attDecl.datatypeValidator;
-                                                    if (attDV == null) {
+                                                    SchemaGrammar sGrammar = (SchemaGrammar) aGrammar;
+                                                    Hashtable attRegistry = sGrammar.getAttirubteDeclRegistry();
+                                                    if (attRegistry == null) {
                                                         if (processContentStrict) {
                                                             reportError = true;
                                                         }
                                                     }
                                                     else {
-                                                        try {
-                                                            attDV.validate(fStringPool.toString(attrList.getAttValue(index)), null );
+                                                        XMLAttributeDecl attDecl = (XMLAttributeDecl) attRegistry.get(fStringPool.toString(fTempQName.localpart));
+                                                        if (attDecl == null) {
+                                                            if (processContentStrict) {
+                                                                reportError = true;
+                                                            }
                                                         }
-                                                        catch (InvalidDatatypeValueException idve) {
-                                                            fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                                                                       SchemaMessageProvider.SCHEMA_DOMAIN,
-                                                                                       SchemaMessageProvider.DatatypeError,
-                                                                                       SchemaMessageProvider.MSG_NONE,
-                                                                                       new Object [] { idve.getMessage() },
-                                                                                       XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+                                                        else {
+                                                            DatatypeValidator attDV = attDecl.datatypeValidator;
+                                                            if (attDV == null) {
+                                                                if (processContentStrict) {
+                                                                    reportError = true;
+                                                                }
+                                                            }
+                                                            else {
+                                                                try {
+                                                                    attDV.validate(fStringPool.toString(attrList.getAttValue(index)), null );
+                                                                }
+                                                                catch (InvalidDatatypeValueException idve) {
+                                                                    fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                                                                               SchemaMessageProvider.SCHEMA_DOMAIN,
+                                                                                               SchemaMessageProvider.DatatypeError,
+                                                                                               SchemaMessageProvider.MSG_NONE,
+                                                                                               new Object [] { idve.getMessage() },
+                                                                                               XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+                                                                }
+                                                            }
                                                         }
                                                     }
                                                 }
                                             }
+                                            if (reportError) {
+                                                Object[] args = { fStringPool.toString(element.rawname),
+                                                    "ANY---"+fStringPool.toString(attrList.getAttrName(index)) };
+
+                                                    fErrorReporter.reportError(fAttrNameLocator,    
+                                                                               XMLMessages.XML_DOMAIN,
+                                                                               XMLMessages.MSG_ATTRIBUTE_NOT_DECLARED,
+                                                                               XMLMessages.VC_ATTRIBUTE_VALUE_TYPE,
+                                                                               args,
+                                                                               XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+
+                                            }
                                         }
                                     }
-                                    if (reportError) {
+                                    else if (fTempAttDecl.datatypeValidator == null) {
                                         Object[] args = { fStringPool.toString(element.rawname),
-                                            "ANY---"+fStringPool.toString(attrList.getAttrName(index)) };
-
-                                        fErrorReporter.reportError(fAttrNameLocator,    
-                                                                   XMLMessages.XML_DOMAIN,
-                                                                   XMLMessages.MSG_ATTRIBUTE_NOT_DECLARED,
-                                                                   XMLMessages.VC_ATTRIBUTE_VALUE_TYPE,
-                                                                   args,
-                                                                   XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
-
+                                            fStringPool.toString(attrList.getAttrName(index)) };
+                                            System.out.println("[Error] Datatypevalidator for attribute " + fStringPool.toString(attrList.getAttrName(index))
+                                                               + " not found in element type " + fStringPool.toString(element.rawname));
+                                            //REVISIT : is this the right message?
+                                            /****/
+                                            fErrorReporter.reportError(fAttrNameLocator,    
+                                                                       XMLMessages.XML_DOMAIN,
+                                                                       XMLMessages.MSG_ATTRIBUTE_NOT_DECLARED,
+                                                                       XMLMessages.VC_ATTRIBUTE_VALUE_TYPE,
+                                                                       args,
+                                                                       XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+                                            /****/   
                                     }
-                                }
-                            }
-                            else if (fTempAttDecl.datatypeValidator == null) {
-                                Object[] args = { fStringPool.toString(element.rawname),
-                                                  fStringPool.toString(attrList.getAttrName(index)) };
-                                System.out.println("[Error] Datatypevalidator for attribute " + fStringPool.toString(attrList.getAttrName(index))
-                                                   + " not found in element type " + fStringPool.toString(element.rawname));
-                                //REVISIT : is this the right message?
-                                  /****/
-                                fErrorReporter.reportError(fAttrNameLocator,    
-                                                       XMLMessages.XML_DOMAIN,
-                                                       XMLMessages.MSG_ATTRIBUTE_NOT_DECLARED,
-                                                       XMLMessages.VC_ATTRIBUTE_VALUE_TYPE,
-                                                       args,
-                                                       XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
-                                 /****/   
-                            }
-                            else{
-                                try {
-                                    fTempAttDecl.datatypeValidator.validate(fStringPool.toString(attrList.getAttValue(index)), null );
-                                }
-                                catch (InvalidDatatypeValueException idve) {
-                                    fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                                               SchemaMessageProvider.SCHEMA_DOMAIN,
-                                                               SchemaMessageProvider.DatatypeError,
-                                                               SchemaMessageProvider.MSG_NONE,
-                                                               new Object [] { idve.getMessage() },
-                                                               XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
-                                }
-                            }
-                        } // end of if (fValidating)
+                                    else{
+                                        try {
+                                            fTempAttDecl.datatypeValidator.validate(fStringPool.toString(attrList.getAttValue(index)), null );
+                                        }
+                                        catch (InvalidDatatypeValueException idve) {
+                                            fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                                                       SchemaMessageProvider.SCHEMA_DOMAIN,
+                                                                       SchemaMessageProvider.DatatypeError,
+                                                                       SchemaMessageProvider.MSG_NONE,
+                                                                       new Object [] { idve.getMessage() },
+                                                                       XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+                                        }
+                                    }
+                                } // end of if (fValidating)
 
 
-                    } // end of if (attDefIndex == -1) else
+                            } // end of if (attDefIndex == -1) else
 
-                }// end of if (fGrammar != null)
-                index = fAttrList.getNextAttr(index);
+                    }// end of if (fGrammar != null)
+                    index = fAttrList.getNextAttr(index);
+                }
             }
-        }
         }
         if (fAttrListHandle != -1) {
             int index = attrList.getFirstAttr(fAttrListHandle);
@@ -2784,13 +2811,13 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             fBufferDatatype = true;
             fDatatypeBuffer.setLength(0);
         }
-        
+
         fInElementContent = (contentSpecType == XMLElementDecl.TYPE_CHILDREN);
 
     } // validateElementAndAttributes(QName,XMLAttrList)
 
 
-    //validate attributes in DTD fashion
+            //validate attributes in DTD fashion
     private void validateDTDattribute(QName element, int attValue, 
                                       XMLAttributeDecl attributeDecl) throws Exception{
         AttributeValidator av = null;
