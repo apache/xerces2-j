@@ -229,4 +229,4 @@ public class MultipleScopeNamespaceSupport extends NamespaceSupport {
         fCurrentContext = fScope[fCurrentScope--];
         popContext();
     }
-} // class NamespaceSupport
+}
