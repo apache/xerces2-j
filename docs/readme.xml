@@ -19,7 +19,7 @@
   </p>
   <p>
    Xerces 2 is a <jump href='http://www.w3.org/TR/xmlschema-1/#key-fullyConforming'>fully conforming</jump> XML Schema processor. 
-   For more information, refer to the <link idref='limitations-schema'>XML Schema Implementation</link> page. 
+   For more information, refer to the <link idref='limitations-schema'>XML Schema Limitations</link> page. 
   </p>
   <p>
    Xerces 2 also provides a partial implementation of Document Object Model Level 3  
