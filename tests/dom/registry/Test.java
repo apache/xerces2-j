@@ -74,9 +74,16 @@ public class Test {
         System.setProperty(DOMImplementationRegistry.PROPERTY,
                           "org.apache.xerces.dom.DOMImplementationSourceImpl");
 
+        DOMImplementationRegistry registry = null;
         try {
-            DOMImplementation i =
-                DOMImplementationRegistry.getDOMImplementation("XML");
+            registry = DOMImplementationRegistry.newInstance();
+            Assertion.assert(registry != null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            DOMImplementation i = registry.getDOMImplementation("XML");
 
             Assertion.assert(i ==
                              CoreDOMImplementationImpl.getDOMImplementation());
@@ -87,7 +94,7 @@ public class Test {
 
         try {
             DOMImplementation i =
-          DOMImplementationRegistry.getDOMImplementation("XML MutationEvents");
+                registry.getDOMImplementation("XML MutationEvents");
 
             Assertion.assert(i ==
                              DOMImplementationImpl.getDOMImplementation());
