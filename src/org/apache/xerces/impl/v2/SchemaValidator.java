@@ -117,7 +117,7 @@ public class SchemaValidator
     //
     // Constants
     //
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
     // feature identifiers
 
     /** Feature identifier: validation. */

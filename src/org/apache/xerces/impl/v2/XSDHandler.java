@@ -282,7 +282,13 @@ class XSDHandler {
             fElementTraverser.reportGenericSchemaError("Could not locate a schema document corresponding to grammar " + schemaNamespace);
             return null;
         }
-        schemaNamespace = fSymbolTable.addSymbol(schemaNamespace);
+        // handle empty string URI as null
+        if (schemaNamespace.length() == 0) {
+            schemaNamespace = null;
+        }
+        else {        
+            schemaNamespace = fSymbolTable.addSymbol(schemaNamespace);
+        }
         fRoot = constructTrees(schemaRoot, schemaNamespace);
         if(fRoot == null) {
             // REVISIT:  something went wrong; print error about no schema found

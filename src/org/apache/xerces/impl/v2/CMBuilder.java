@@ -303,7 +303,6 @@ public class CMBuilder {
             
             XSAllCM allContent = new XSAllCM(false);
 
-            System.out.println("***********"+particle.toString());
             gatherAllLeaves (left, allContent);
             gatherAllLeaves (right, allContent);
             return allContent;
