@@ -107,17 +107,17 @@ public class DOMImplementationImpl
         // Currently, we support only XML Level 1 version 1.0
         return 
             (feature.equalsIgnoreCase("XML") 
-            && (version == null
+            && (version == null || version.length() == 0
 		|| version.equals("1.0")
 		|| version.equals("2.0")))
          || (feature.equalsIgnoreCase("Events") 
-	     && (version == null
+	     && (version == null || version.length() == 0
 		 || version.equals("2.0")))
          || (feature.equalsIgnoreCase("MutationEvents") 
-	     && (version == null
+	     && (version == null || version.length() == 0
 		 || version.equals("2.0")))
          || (feature.equalsIgnoreCase("Traversal") 
-	     && (version == null
+	     && (version == null || version.length() == 0
 		 || version.equals("2.0")))
             ;
 
