@@ -434,7 +434,20 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 
         //validate hours
         if ( data[h]>23 || data[h]<0 ) {
-            throw new RuntimeException("Hour must have values 0-23");
+            if (data[h] == 24 && data[m] == 0 && data[s] == 0 && data[ms] == 0) {
+                data[h] = 0;
+                if (++data[D] > maxDayInMonthFor(data[CY], data[M])) {
+                    data[D] = 1;
+                    if (++data[M] > 12) {
+                        data[M] = 1;
+                        if (++data[CY] == 0)
+                            data[CY] = 1;
+                    }
+                }
+            }
+            else {
+                throw new RuntimeException("Hour must have values 0-23, unless 24:00:00");
+            }
         }
 
         //validate
