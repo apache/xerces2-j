@@ -77,6 +77,8 @@ public class XSDFACM
     //
     // Constants
     //
+    private static final boolean DEBUG = false;
+
     // special strings
 
     /** Epsilon string. */
@@ -559,6 +561,19 @@ public class XSDFACM
 
             int inIndex = 0;
             final Object decl = fLeafList[outIndex].getDecl();
+            // REVISIT: shouldn't we always compare the decls by reference?
+            //          if we ever combine two different element decls with
+            //          the same name and namespace, then this content model
+            //          violates UPA.
+            //          Comparing by name/namespace was inherited from Xerces1,
+            //          where we only store name and uri, and couldn't compare
+            //          whether two decls are the same.
+            //          After we support UPA, change the following big "if"
+            //          to the following 4 lines.
+            //for (; inIndex < fElemMapSize; inIndex++) {
+            //    if (decl == fElemMap[inIndex])
+            //        break;
+            //}
             if (fLeafListType[outIndex] == XSParticleDecl.PARTICLE_WILDCARD) {
                 for (; inIndex < fElemMapSize; inIndex++) {
                     if (decl == fElemMap[inIndex])
@@ -567,9 +582,6 @@ public class XSDFACM
             } else {
                 // Get the current leaf's element
                 final XSElementDecl element = (XSElementDecl)decl;
-                if (element.fName == fEOCString)
-                    continue;
-
                 // See if the current leaf node's element index is in the list
                 for (; inIndex < fElemMapSize; inIndex++) {
                     if (fElemMapType[inIndex] == fLeafListType[outIndex] &&
@@ -586,6 +598,15 @@ public class XSDFACM
                 fElemMapSize++;
             }
         }
+
+        // the last entry in the element map must be the EOC element.
+        // remove it from the map.
+        if (DEBUG) {
+            if (((XSElementDecl)fElemMap[fElemMapSize-1]).fName != fEOCString)
+                System.err.println("interal error in DFA: last element is not EOC.");
+        }
+        fElemMapSize--;
+
         // set up the fLeafNameTypeVector object if there is one.
         /**** but apparently there never will be since this was commented out for some reason...
         if (fLeafNameTypeVector != null) {
@@ -605,6 +626,17 @@ public class XSDFACM
         for (int elemIndex = 0; elemIndex < fElemMapSize; elemIndex++) {
             final Object decl = fElemMap[elemIndex];
             for (int leafIndex = 0; leafIndex < fLeafCount; leafIndex++) {
+                // REVISIT: shouldn't we always compare the decls by reference?
+                //          if we ever combine two different element decls with
+                //          the same name and namespace, then this content model
+                //          violates UPA.
+                //          Comparing by name/namespace was inherited from Xerces1,
+                //          where we only store name and uri, and couldn't compare
+                //          whether two decls are the same.
+                //          After we support UPA, change the following 2 "if"s
+                //          to the following 2 lines.
+                //if (decl == fLeafList[leafIndex].getDecl())
+                //    fLeafSorter[fSortCount++] = leafIndex;
                 if (fElemMapType[elemIndex] != fLeafListType[leafIndex])
                     continue;
 
