@@ -1487,7 +1487,7 @@ public class DeferredDocumentImpl
                 else {
                     firstNode.previousSibling = node;
                 }
-                node.ownerNode = this;
+                node.ownerNode = a;
                 node.isOwned(true);
                 node.nextSibling = firstNode;
                 firstNode = node;
@@ -1537,7 +1537,7 @@ public class DeferredDocumentImpl
             else {
                 firstNode.previousSibling = node;
             }
-            node.ownerNode = this;
+            node.ownerNode = p;
             node.isOwned(true);
             node.nextSibling = firstNode;
             firstNode = node;
