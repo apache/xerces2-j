@@ -1,16 +1,10 @@
-# Makefile for directory ./dom
+# Makefile for directory ./util
 
 TARGETS=\
 	Arguments.class\
 	Features.class\
-	DOMAddLines.class\
-	DOMCount.class\
-	DOMFilter.class\
-	DOMGenerate.class\
-	DOMParserWrapper.class\
-	DOMWriter.class
 
-DIRS = traversal wrappers
+DIRS = 
 
 TOP = ../..
 include $(TOP)/src/Makefile.incl
