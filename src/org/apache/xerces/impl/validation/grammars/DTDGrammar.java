@@ -164,6 +164,10 @@ implements XMLDTDHandler, XMLDTDContentModelHandler{
 
     private int fDepth               = 0;
 
+    /** Entity stack. */
+    private boolean[] fPEntityStack = new boolean[4];
+    private int fPEDepth = 0;
+
     // additional fields(columns) for the element Decl pool in the Grammar
 
     /** flag if the elementDecl is External. */
@@ -228,10 +232,22 @@ implements XMLDTDHandler, XMLDTDContentModelHandler{
    public void startEntity(String name, String publicId, String systemId, 
                            String encoding) throws SAXException {
 
+       if (name.startsWith("%")) {
+           // keep track of this entity before fEntityDepth is increased
+           if (fPEDepth == fPEntityStack.length) {
+               boolean[] entityarray = new boolean[fPEntityStack.length * 2];
+               System.arraycopy(fPEntityStack, 0, entityarray, 0, fPEntityStack.length);
+               fPEntityStack = entityarray;
+           }
+           fPEntityStack[fPEDepth] = fReadingExternalDTD;
+           fPEDepth++;
+       }
+
       if ( name.equals("[dtd]") || 
            (name.startsWith("%") && systemId != null )) {
           fReadingExternalDTD = true;
       }
+
 
    }
 
@@ -703,6 +719,10 @@ implements XMLDTDHandler, XMLDTDContentModelHandler{
    public void endEntity(String name) throws SAXException {
        if (name.equals("[dtd]")) {
            fReadingExternalDTD = false;
+       }
+       if (name.startsWith("%")) {
+           fPEDepth--;
+           fReadingExternalDTD = fPEntityStack[fPEDepth];
        }
    }
 
