@@ -335,8 +335,10 @@ public class SAXParser
     protected void setDeclHandler(DeclHandler handler) 
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (fParseInProgress) {
-            // REVISIT: Localize this message.
-            throw new SAXNotSupportedException("http://xml.org/sax/properties/declaration-handler: parse is in progress");
+            throw new SAXNotSupportedException(
+                "PAR011 Feature: http://xml.org/sax/properties/declaration-handler"
+                +" is not supported during parse."
+                +"\nhttp://xml.org/sax/properties/declaration-handler");
         }
         fDeclHandler = handler;
     }
@@ -367,8 +369,10 @@ public class SAXParser
     protected void setLexicalHandler(LexicalHandler handler)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (fParseInProgress) {
-            // REVISIT: Localize this message.
-            throw new SAXNotSupportedException("http://xml.org/sax/properties/lexical-handler: parse is in progress");
+            throw new SAXNotSupportedException(
+            "PAR011 Feature: http://xml.org/sax/properties/lexical-handler"
+            +" is not supported during parse."
+            +"\nhttp://xml.org/sax/properties/lexical-handler");
         }
         fLexicalHandler = handler;
     }
@@ -606,7 +610,11 @@ public class SAXParser
                     setLexicalHandler((LexicalHandler)value);
                 }
                 catch (ClassCastException e) {
-                    throw new SAXNotSupportedException(propertyId);
+                    throw new SAXNotSupportedException(
+                    "PAR012 For propertyID \""
+                    +propertyId+"\", the value \""
+                    +value+"\" cannot be cast to LexicalHandler."
+                    +'\n'+propertyId+'\t'+value+"\tLexicalHandler");
                 }
                 return;
             }
@@ -621,7 +629,12 @@ public class SAXParser
                     setDeclHandler((DeclHandler)value);
                 }
                 catch (ClassCastException e) {
-                    throw new SAXNotSupportedException(propertyId);
+                    throw new SAXNotSupportedException(
+                    "PAR012 For propertyID \""
+                    +propertyId+"\", the value \""
+                    +value+"\" cannot be cast to DeclHandler."
+                    +'\n'+propertyId+'\t'+value+"\tDeclHandler"
+                    );
                 }
                 return;
             }
@@ -636,7 +649,10 @@ public class SAXParser
             //   parse begins).
             //
             if (property.equals("dom-node")) {
-                throw new SAXNotSupportedException(propertyId); // read-only property
+                throw new SAXNotSupportedException(
+                    "PAR013 Property \""+propertyId+"\" is read only."
+                    +'\n'+propertyId
+                    ); // read-only property
             }
             //
             // Drop through and perform default processing
@@ -715,7 +731,10 @@ public class SAXParser
             //   parse begins).
             //
             if (property.equals("dom-node")) {
-                throw new SAXNotSupportedException(propertyId); // we are not iterating a DOM tree
+                throw new SAXNotSupportedException(
+                "PAR014 Cannot getProperty(\""+propertyId
+                +"\". No DOM Tree exists.\n"+propertyId
+                ); // we are not iterating a DOM tree
             }
             //
             // Drop through and perform default processing
@@ -1229,7 +1248,8 @@ public class SAXParser
                 }
                 break;
             case XMLEntityHandler.ENTITYTYPE_UNPARSED:   // these are mentioned by name, not referenced
-                throw new RuntimeException("startEntityReference(): ENTITYTYPE_UNPARSED");
+                throw new RuntimeException(
+                    "PAR015 startEntityReference(): ENTITYTYPE_UNPARSED");
             case XMLEntityHandler.ENTITYTYPE_DOCUMENT:
                 break;                  // not reported
             case XMLEntityHandler.ENTITYTYPE_EXTERNAL_SUBSET:
@@ -1267,7 +1287,7 @@ public class SAXParser
                 }
                 break;
             case XMLEntityHandler.ENTITYTYPE_UNPARSED:   // these are mentioned by name, not referenced
-                throw new RuntimeException("endEntityReference(): ENTITYTYPE_UNPARSED");
+                throw new RuntimeException("PAR016 endEntityReference(): ENTITYTYPE_UNPARSED");
             case XMLEntityHandler.ENTITYTYPE_DOCUMENT:
                 break;                  // not reported
             case XMLEntityHandler.ENTITYTYPE_EXTERNAL_SUBSET:
@@ -1304,12 +1324,12 @@ public class SAXParser
 
     /** Not called. */
     public void characters(int dataIndex) throws Exception {
-        throw new RuntimeException("cannot happen 5");
+        throw new RuntimeException("PAR017 cannot happen 5\n5");
     }
 
     /** Not called. */
     public void ignorableWhitespace(int dataIndex) throws Exception {
-        throw new RuntimeException("cannot happen 6");
+        throw new RuntimeException("PAR017 cannot happen 6\n6");
     }
 
     /** Processing instruction. */

@@ -234,7 +234,7 @@ public class DOMParser
             setDeferNodeExpansion(true);
             setIncludeIgnorableWhitespace(true);
         } catch (SAXException e) {
-            throw new RuntimeException("fatal error constructing DOMParser");
+            throw new RuntimeException("PAR001 Fatal error constructing DOMParser.");
         }
 
     } // <init>()
@@ -501,13 +501,11 @@ public class DOMParser
             Class _class = Class.forName(documentClassName);
             //if (!_class.isAssignableFrom(Document.class)) {
             if (!Document.class.isAssignableFrom(_class)) {
-                // REVISIT: Localize this message. -Ac
-                throw new IllegalArgumentException("Class, \""+documentClassName+"\", is not of type org.w3c.dom.Document.");
+                throw new IllegalArgumentException("PAR002 Class, \""+documentClassName+"\", is not of type org.w3c.dom.Document."+"\n"+documentClassName);
             }
         }
         catch (ClassNotFoundException e) {
-            // REVISIT: Localize this message. -Ac
-            throw new IllegalArgumentException("Class, \""+documentClassName+"\", not found.");
+            throw new IllegalArgumentException("PAR003 Class, \""+documentClassName+"\", not found."+"\n"+documentClassName);
         }
 
         // set document class name
@@ -597,8 +595,7 @@ public class DOMParser
             //
             if (feature.equals("dom/defer-node-expansion")) {
                 if (fParseInProgress) {
-                    // REVISIT: Localize this message.
-                    throw new SAXNotSupportedException(featureId + ": parse is in progress");
+                    throw new SAXNotSupportedException("PAR004 Cannot setFeature("+featureId + "): parse is in progress."+"\n"+featureId);
                 }
                 setDeferNodeExpansion(state);
                 return;
@@ -799,8 +796,7 @@ public class DOMParser
             //   is set to true.
             //
             if (property.equals("dom/current-element-node")) {
-                // REVISIT: Localize this message. -Ac
-                throw new SAXNotSupportedException("Property, \""+propertyId+"\" is read-only.");
+                throw new SAXNotSupportedException("PAR005 Property, \""+propertyId+"\" is read-only.\n"+propertyId);
             }
             //
             // http://apache.org/xml/properties/dom/document-class-name
@@ -809,8 +805,7 @@ public class DOMParser
             //
             else if (property.equals("dom/document-class-name")) {
                 if (value != null && !(value instanceof String)) {
-                    // REVISIT: Localize this message. -Ac
-                    throw new SAXNotSupportedException("Property value must be of type java.lang.String.");
+                    throw new SAXNotSupportedException("PAR006 Property value must be of type java.lang.String.");
                 }
                 setDocumentClassName((String)value);
                 return;
@@ -868,8 +863,7 @@ public class DOMParser
                     // ignore
                 }
                 if (throwException) {
-                    // REVISIT: Localize this message. -Ac
-                    throw new SAXNotSupportedException("Current element node cannot be queried when node expansion is deferred.");
+                    throw new SAXNotSupportedException("PAR007 Current element node cannot be queried when node expansion is deferred.");
                 }
                 return getCurrentElementNode();
             }
@@ -914,13 +908,13 @@ public class DOMParser
         try {
             documentClassName = getDocumentClassName();
         } catch (SAXException e) {
-            throw new RuntimeException("fatal error getting document factory");
+            throw new RuntimeException("PAR008 Fatal error getting document factory.");
         }
         boolean deferNodeExpansion = true;
         try {
             deferNodeExpansion = getDeferNodeExpansion();
         } catch (SAXException e) {
-            throw new RuntimeException("fatal error reading expansion mode");
+            throw new RuntimeException("PAR009 Fatal error reading expansion mode.");
         }
         if (documentClassName.equals(DEFAULT_DOCUMENT_CLASS_NAME) && deferNodeExpansion) {
             boolean nsEnabled = false;
@@ -1021,8 +1015,6 @@ public class DOMParser
             // Until DOM2 is REC, the DOM2 methods are in XXXImpl
             Element e;
             if (nsEnabled) {
-                //System.out.println("createElementNS:"+
-                //fStringPool.toString(fStringPool.getURIForQName(elementTypeIndex)));
                 e = (ElementImpl)
                     ((DocumentImpl)fDocument).createElementNS(
                         fStringPool.toString(fStringPool.getURIForQName(elementTypeIndex)),
@@ -1034,33 +1026,11 @@ public class DOMParser
             int attrListLength = attrList.getLength();
             for (int i = 0; i < attrListLength; i++) {
                 if (nsEnabled) {
-                    // REVISTNS:
                     int attName = xmlAttrList.getAttrName(i);
-                    /***
-                    // createAttributeNS code below has a bug.
-                    // Should be interchangeable with setAttributeNS
-                    Attr attr =
-                    ((DocumentImpl)fDocument).createAttributeNS(
-                        fStringPool.toString(fStringPool.getURIForQName(attName)),
-                        fStringPool.toString(attName)
-                    );
-                    attr.setNodeValue(attrList.getValue(i));
-                    e.appendChild(attr);
-                    /***/
-                    // setAttributeNS can't set qualified name or prefix.
-                    // Reported to W3C.
                     ((ElementImpl)e).setAttributeNS(
                         fStringPool.toString(fStringPool.getURIForQName(attName)),
                         fStringPool.toString(attName),
                         attrList.getValue(i));
-                    /***/
-                    //DEBUGGING...
-                    //System.out.println("    Attr uri, name, value");
-                    //System.out.println("    "+
-                    //    fStringPool.toString(fStringPool.getURIForQName(attName))+", "+
-                    //    fStringPool.toString(attName)+", "+
-                    //    attrList.getValue(i)
-                    //);
                 } else {
                     String attrName = attrList.getName(i);
                     String attrValue = attrList.getValue(i);
@@ -2686,9 +2656,10 @@ public class DOMParser
                     break;
                 }
                 default: {
-                    throw new IllegalArgumentException("can't copy node type, "+
+                    throw new IllegalArgumentException("PAR010 Can't copy node type, "+
                                                        type+" ("+
-                                                       place.getNodeName()+')');
+                                                       place.getNodeName()+')'
+                                                       +"\n"+type+"\t"+place.getNodeName());
                 }
             }
             fDeferredDocumentImpl.appendChild(destIndex, nodeIndex);
