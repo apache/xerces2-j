@@ -275,42 +275,46 @@ public class CMBuilder {
             // for the first time "node" is used, we don't need to make a copy
             // and for other references to node, we make copies
             nodeRet = fNodeFactory.getCMUniOpNode(XSParticleDecl.PARTICLE_ONE_OR_MORE, node);
-            for (int i=0; i < minOccurs-1; i++) {
-                // (task 4) we need to call copyNode here, so that we append
-                // an entire new copy of the node (a subtree). this is to ensure
-                // all leaf nodes have distinct position
-                nodeRet = fNodeFactory.getCMBinOpNode(XSModelGroupImpl.MODELGROUP_SEQUENCE,
-                                        copyNode(node), nodeRet);
-            }
+            // (task 4) we need to call copyNode here, so that we append
+            // an entire new copy of the node (a subtree). this is to ensure
+            // all leaf nodes have distinct position
+            // we know that minOccurs > 1
+            nodeRet = fNodeFactory.getCMBinOpNode(XSModelGroupImpl.MODELGROUP_SEQUENCE,
+                                                  multiNodes(node, minOccurs-1, true), nodeRet);
         }
         else {
             // {n,m} => a,a,a,...(a),(a),...
             // first n a's, then m-n a?'s.
             // copyNode is called, for the same reason as above
             if (minOccurs > 0) {
-                nodeRet = node;
-                for (int i=0; i<minOccurs-1; i++) {
-                    nodeRet = fNodeFactory.getCMBinOpNode(XSModelGroupImpl.MODELGROUP_SEQUENCE,
-                                            nodeRet, copyNode(node));
-                }
+                nodeRet = multiNodes(node, minOccurs, false);
             }
             if (maxOccurs > minOccurs) {
                 node = fNodeFactory.getCMUniOpNode(XSParticleDecl.PARTICLE_ZERO_OR_ONE, node);
                 if (nodeRet == null) {
-                    nodeRet = node;
+                    nodeRet = multiNodes(node, maxOccurs-minOccurs, false);
                 }
                 else {
                     nodeRet = fNodeFactory.getCMBinOpNode(XSModelGroupImpl.MODELGROUP_SEQUENCE,
-                                            nodeRet, copyNode(node));
-                }
-                for (int i=minOccurs; i<maxOccurs-1; i++) {
-                    nodeRet = fNodeFactory.getCMBinOpNode(XSModelGroupImpl.MODELGROUP_SEQUENCE,
-                                            nodeRet, copyNode(node));
+                                                          nodeRet, multiNodes(node, maxOccurs-minOccurs, true));
                 }
             }
         }
 
         return nodeRet;
+    }
+    
+    private CMNode multiNodes(CMNode node, int num, boolean copyFirst) {
+        if (num == 0) {
+            return null;
+        }
+        if (num == 1) {
+            return copyFirst ? copyNode(node) : node;
+        }
+        int num1 = num/2;
+        return fNodeFactory.getCMBinOpNode(XSModelGroupImpl.MODELGROUP_SEQUENCE,
+                                           multiNodes(node, num1, copyFirst),
+                                           multiNodes(node, num-num1, false));
     }
     
     // 4. make sure each leaf node (XSCMLeaf) has a distinct position
