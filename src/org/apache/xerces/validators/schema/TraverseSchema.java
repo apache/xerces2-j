@@ -141,21 +141,21 @@ public class TraverseSchema implements
     };
 
     //debuggin
-    private static boolean DEBUGGING = false;
+    private static final boolean DEBUGGING = false;
 
     /** Compile to true to debug identity constraints. */
-    private static boolean DEBUG_IDENTITY_CONSTRAINTS = false;
+    private static final boolean DEBUG_IDENTITY_CONSTRAINTS = false;
     
     /** 
      * Compile to true to debug datatype validator lookup for
      * identity constraint support.
      */
-    private static boolean DEBUG_IC_DATATYPES = false;
+    private static final boolean DEBUG_IC_DATATYPES = false;
 
-	//CR Implementation
-	private static boolean DEBUG_UNION = false;
-	private static boolean CR_IMPL = true;
-	//private data members
+    //CR Implementation
+    private static final boolean DEBUG_UNION = false;
+    private static final boolean CR_IMPL = true;
+    //private data members
 
 
     private XMLErrorReporter    fErrorReporter = null;
@@ -178,7 +178,7 @@ public class TraverseSchema implements
     private Hashtable fGroupNameRegistry = new Hashtable();
 
     // stores <notation> decl
-    private static Hashtable fNotationRegistry = new Hashtable();
+    private Hashtable fNotationRegistry = new Hashtable();
 
     private Vector fIncludeLocations = new Vector();
     private Vector fImportLocations = new Vector();
@@ -500,7 +500,9 @@ public class TraverseSchema implements
                 fSchemaGrammar.topLevelAttrDecls.put(compName, child);
             } else if ( name.equals(SchemaSymbols.ELT_GROUP) ) {
                 fSchemaGrammar.topLevelGroupDecls.put(compName, child);
-            } 
+            } else if ( name.equals(SchemaSymbols.ELT_NOTATION) ) {
+                fSchemaGrammar.topLevelNotationDecls.put(compName, child);
+            }
         } // for each child node
     }
 
@@ -1127,51 +1129,52 @@ public class TraverseSchema implements
 		return result;
 	} // changeRedefineGroup
 
-	// This simple function looks for the first occurrence of an eltLocalname
-	// schema information item and appropriately changes the value of
-	// its name or type attribute from oldName to newName.  We
-	// must then traverse this newly-named entity, since our redefine element now depends on it.  
-	// Root contains the root of the schema being operated upon.  
-	private void fixRedefinedSchema(String eltLocalname, String oldName, String newName, Element schemaToRedefine) throws Exception {
+    // This simple function looks for the first occurrence of an eltLocalname
+    // schema information item and appropriately changes the value of
+    // its name or type attribute from oldName to newName.  We
+    // must then traverse this newly-named entity, since our redefine element now depends on it.  
+    // Root contains the root of the schema being operated upon.  
+    private void fixRedefinedSchema(String eltLocalname, String oldName, String newName, Element schemaToRedefine) throws Exception {
 
-		boolean foundIt = false;
-		for (Element child = XUtil.getFirstChildElement(schemaToRedefine);
-				child != null;
-				child = XUtil.getNextSiblingElement(child)) {
+        boolean foundIt = false;
+        for (Element child = XUtil.getFirstChildElement(schemaToRedefine);
+             child != null;
+             child = XUtil.getNextSiblingElement(child)) {
             String name = child.getLocalName();
             if (name.equals(eltLocalname) ) {
-            	if (name.equals(SchemaSymbols.ELT_GROUP) || 
-            			name.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ||
-						name.equals(SchemaSymbols.ELT_SIMPLETYPE) || 
-            			name.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
-            		String infoItemName = child.getAttribute( SchemaSymbols.ATT_NAME );
-					if(!infoItemName.equals(oldName)) 
-						continue;
-					else { // found it!
-						foundIt = true;
-            			child.setAttribute( SchemaSymbols.ATT_NAME, newName );
-						// note that we try and traverse these once again when
-						// we include this schema; howevre, thanks to hashes and 
-						// such, this won't affect anything and won't be dramatically less efficient.
-            			if (name.equals(SchemaSymbols.ELT_GROUP))
-							traverseGroupDecl(child);
-            			else if (name.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP))
-							traverseAttributeGroupDecl(child, null, null);
-						else if (name.equals(SchemaSymbols.ELT_SIMPLETYPE))
-							traverseSimpleTypeDecl(child);
-            			else if (name.equals(SchemaSymbols.ELT_COMPLEXTYPE)) 
-							traverseComplexTypeDecl(child);
-						break;
-					}
-				}
-			}
-		} //for
-		if(!foundIt) {
+                if (name.equals(SchemaSymbols.ELT_GROUP) || 
+                    name.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) || 
+                    name.equals(SchemaSymbols.ELT_SIMPLETYPE) ||
+                    name.equals(SchemaSymbols.ELT_COMPLEXTYPE)) { 
+                    String infoItemName = child.getAttribute( SchemaSymbols.ATT_NAME );
+                    if(!infoItemName.equals(oldName)) 
+                        continue;
+                    else { // found it!
+                        foundIt = true;
+                        child.setAttribute( SchemaSymbols.ATT_NAME, newName );
+                        // note that we try and traverse these once again when
+                        // we include this schema; howevre, thanks to hashes and 
+                        // such, this won't affect anything and won't be dramatically less efficient.
+                        if (name.equals(SchemaSymbols.ELT_GROUP))
+                            traverseGroupDecl(child);
+                        else if (name.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP))
+                            traverseAttributeGroupDecl(child, null, null);
+                        else if (name.equals(SchemaSymbols.ELT_SIMPLETYPE))
+                            traverseSimpleTypeDecl(child);
+                        else if (name.equals(SchemaSymbols.ELT_COMPLEXTYPE)) 
+                            traverseComplexTypeDecl(child);
+                        break;
+                    }
+                }
+            }
+        } //for
+        if(!foundIt) {
             fRedefineSucceeded = false;
-			// REVISIT: localize
-			reportGenericSchemaError("could not find a declaration in the schema to be redefined corresponding to " + oldName);
+            // REVISIT: localize
+            reportGenericSchemaError("could not find a declaration in the schema to be redefined corresponding to " + oldName);
         }
-	} // end fixRedefinedSchema
+    } // end fixRedefinedSchema
+
 
     private void traverseImport(Element importDecl)  throws Exception {
         String location = importDecl.getAttribute(SchemaSymbols.ATT_SCHEMALOCATION);
@@ -1347,12 +1350,19 @@ public class TraverseSchema implements
     private int traverseSimpleTypeDecl( Element simpleTypeDecl ) throws Exception {
         
         //REVISIT: remove all DEBUG_UNION.
-        if (DEBUG_UNION) {
-            System.out.println("----------->CR traverseSimpleType()");
-        }
-
-        //REVISIT: are we checking for attributes and other definitions that should not be there?
+        
         String nameProperty          =  simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME );
+        
+        String qualifiedName = nameProperty;
+        if (fTargetNSURIString.length () != 0) {
+            qualifiedName = fTargetNSURIString+","+nameProperty;
+        }
+        //check if we have already traversed the same simpleType decl
+        if (fDatatypeRegistry.getDatatypeValidator(qualifiedName)!=null) {
+            return fStringPool.addSymbol(qualifiedName);
+        }
+        
+        
         boolean list = false;
         boolean union = false;
         boolean restriction = false;
@@ -1363,6 +1373,8 @@ public class TraverseSchema implements
         }
         else 
             newSimpleTypeName       = fStringPool.addSymbol( nameProperty );
+
+
 
         //annotation?,(list|restriction|union)
         Element content = XUtil.getFirstChildElement(simpleTypeDecl);
@@ -1515,14 +1527,13 @@ public class TraverseSchema implements
                         dTValidators.addElement((DatatypeValidator)baseValidator);
                     }
                 }
-				
                 if ( baseValidator == null || typeNameIndex == -1) {
                      reportSchemaError(SchemaMessageProvider.UnknownBaseDatatype,
                                       new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_BASE ),
                                           simpleTypeDecl.getAttribute(SchemaSymbols.ATT_NAME)});
                     return (-1);
                 }
-				content   = XUtil.getNextSiblingElement( content );
+                content   = XUtil.getNextSiblingElement( content );
             }
         } // end - traverse Union
         
@@ -1552,26 +1563,24 @@ public class TraverseSchema implements
                                         prefix = enumVal.substring(0,colonptr);
                                         localpart = enumVal.substring(colonptr+1);
                                 }
-                                int localpartIndex = fStringPool.addSymbol(localpart);
-                                String uriStr = resolvePrefixToURI(prefix);
-				String fullName=uriStr + "," + localpart;
-                                localName = (String)fNotationRegistry.get(fullName);
-                                if(localName == null ){
-                                    Element notationDecl = getTopLevelComponentByName(SchemaSymbols.ELT_NOTATION,localpart);
-                                    if (notationDecl == null) {
-                                           reportGenericSchemaError("Notation " + localpart + " not found in the Schema");
-                                    }
-                                    else {
-                                           localName=traverseNotationDecl(notationDecl);
-                                    }
+                                String uriStr = (!prefix.equals(""))?resolvePrefixToURI(prefix):fTargetNSURIString;
+                                qualifiedName=uriStr + ":" + localpart;
+                                localName = (String)fNotationRegistry.get(qualifiedName);
+                                if(localName == null){
+                                       localName = traverseNotationFromAnotherSchema( localpart, uriStr);
+                                       if (localName == null) {
+                                            reportGenericSchemaError("Notation '" + localpart + 
+                                                                    "' not found in the grammar "+ uriStr); 
+                                                                    
+                                       }
                                 }
-				//REVISIT: make sure QNAME of notation gets validated correctly 
-				if (DEBUGGING) {
-				    System.out.println("[notation decl] fullName: = " + fullName +"; enum value: =" +enumVal);
-				}
-                                
+                                if (DEBUGGING) {
+                                    System.out.println("[notation decl] fullName: = " + qualifiedName);
+                                    System.out.println("[notation decl] enum value: =" +enumVal);
+                                }
+                                enumVal=qualifiedName;
                             }
-			    enumData.addElement(enumVal);
+                            enumData.addElement(enumVal);
                             checkContent(simpleTypeDecl, XUtil.getFirstChildElement( content ), true);
                         }
                         else if (facet.equals(SchemaSymbols.ELT_ANNOTATION)) {
@@ -1625,26 +1634,27 @@ public class TraverseSchema implements
             }
         }
 
-        // create & register validator for "generated" type if it doesn't exist        
-        String nameOfType = fStringPool.toString( newSimpleTypeName);
+        // create & register validator for "generated" type if it doesn't exist 
+
+        qualifiedName = fStringPool.toString(newSimpleTypeName);
         if (fTargetNSURIString.length () != 0) {
-            nameOfType = fTargetNSURIString+","+nameOfType;
+            qualifiedName = fTargetNSURIString+","+qualifiedName;
         }
         try { 
            DatatypeValidator newValidator =
-                 fDatatypeRegistry.getDatatypeValidator( nameOfType );
+                 fDatatypeRegistry.getDatatypeValidator( qualifiedName );
 
            if( newValidator == null ) { // not previously registered
                if (list) {
-                    fDatatypeRegistry.createDatatypeValidator( nameOfType, baseValidator, 
+                    fDatatypeRegistry.createDatatypeValidator( qualifiedName, baseValidator, 
                                                                facetData,true);
                }
                else if (restriction) {
-                   fDatatypeRegistry.createDatatypeValidator( nameOfType, baseValidator,
+                   fDatatypeRegistry.createDatatypeValidator( qualifiedName, baseValidator,
                                                                facetData,false);
                }
                else { //union
-                   fDatatypeRegistry.createDatatypeValidator( nameOfType, dTValidators);
+                   fDatatypeRegistry.createDatatypeValidator( qualifiedName, dTValidators);
                }
                            
            }
@@ -1652,7 +1662,7 @@ public class TraverseSchema implements
            } catch (Exception e) {
                reportSchemaError(SchemaMessageProvider.DatatypeError,new Object [] { e.getMessage() });
            }
-        return fStringPool.addSymbol(nameOfType);
+        return fStringPool.addSymbol(qualifiedName);
      }
 
 
@@ -4929,13 +4939,20 @@ public class TraverseSchema implements
 
 
     /**
-      * Notation decl
-      */
+     * Traverses notation declaration 
+     * and saves it in a registry.
+     * Notations are stored in registry with the following
+     * key: "uri:localname"
+     * 
+     * @param notation child <notation>
+     * @return  local name of notation
+     * @exception Exception
+     */
     private String traverseNotationDecl( Element notation ) throws Exception {
         String name = notation.getAttribute(SchemaSymbols.ATT_NAME);
         String qualifiedName =name;
         if (fTargetNSURIString.length () != 0) {
-            qualifiedName = fTargetNSURIString+","+name;
+            qualifiedName = fTargetNSURIString+":"+name;
         }
         if (fNotationRegistry.get(qualifiedName)!=null) {
             return name;
@@ -4952,11 +4969,65 @@ public class TraverseSchema implements
 
         }
         
-        fNotationRegistry.put(qualifiedName, name); 
+        fNotationRegistry.put(qualifiedName, name);
+
+        //we don't really care if something inside <notation> is wrong..
+        checkContent( notation, XUtil.getFirstChildElement(notation), true );
+        
         //REVISIT: wait for DOM L3 APIs to pass info to application
         //REVISIT: SAX2 does not support notations. API should be changed.
         return name;
     }
+    
+    /**
+     * This methods will traverse notation from current schema,
+     * as well as from included or imported schemas
+     * 
+     * @param notationName
+     *               localName of notation
+     * @param uriStr uriStr for schema grammar
+     * @return  return local name for Notation (if found), otherwise
+     *         return empty string;
+     * @exception Exception
+     */
+    private String traverseNotationFromAnotherSchema( String notationName , String uriStr ) throws Exception {
+        
+        SchemaGrammar aGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(uriStr);
+        if (uriStr == null || aGrammar==null ||! (aGrammar instanceof SchemaGrammar) ) {
+            // REVISIT: Localize
+            reportGenericSchemaError("!!Schema not found in #traverseNotationDeclFromAnotherSchema, "+
+                                     "schema uri: " + uriStr
+                                     +", groupName: " + notationName);
+            return "";
+        }
+
+
+        String savedNSURIString = fTargetNSURIString;
+        fTargetNSURIString = fStringPool.toString(fStringPool.addSymbol(aGrammar.getTargetNamespaceURI()));
+        if (DEBUGGING) {
+            System.out.println("[traverseFromAnotherSchema]: " + fTargetNSURIString);
+        }
+
+        String qualifiedName = fTargetNSURIString + ":" + notationName;
+        String localName = (String)fNotationRegistry.get(qualifiedName);
+
+        if(localName != null ) 	// we've already traversed this notation
+            return localName;
+
+        //notation decl has not been traversed yet
+        Element notationDecl = (Element) aGrammar.topLevelNotationDecls.get((Object)notationName);
+        if (notationDecl == null) {
+            // REVISIT: Localize
+            reportGenericSchemaError( "no notation named \"" + notationName 
+                                      + "\" was defined in schema : " + uriStr);
+            return "";
+        }
+
+        localName = traverseNotationDecl(notationDecl);
+        fTargetNSURIString = savedNSURIString;
+        return localName;
+
+    } // end of method traverseNotationFromAnotherSchema
 
 
     /**
@@ -5085,19 +5156,18 @@ public class TraverseSchema implements
         fTargetNSURI = fStringPool.addSymbol(aGrammar.getTargetNamespaceURI());
         fNamespacesScope = aGrammar.getNamespacesScope();
 
-		Element child = checkContent( groupDecl, XUtil.getFirstChildElement(groupDecl), true );
+	Element child = checkContent( groupDecl, XUtil.getFirstChildElement(groupDecl), true );
 
-		String qualifiedGroupName = fTargetNSURIString + "," + groupName;
-		Object contentSpecHolder = fGroupNameRegistry.get(qualifiedGroupName);
-		if(contentSpecHolder != null ) 	// we've already traversed this group
-			return ((Integer)contentSpecHolder).intValue();
+	String qualifiedGroupName = fTargetNSURIString + "," + groupName;
+	Object contentSpecHolder = fGroupNameRegistry.get(qualifiedGroupName);
+	if(contentSpecHolder != null ) 	// we've already traversed this group
+		return ((Integer)contentSpecHolder).intValue();
 
 		// if we're here then we're traversing a top-level group that we've never seen before.
         int index = -2;
 
         boolean illegalChild = false;
-		String childName = 
-        	(child != null) ? child.getLocalName() : "";
+	String childName = (child != null) ? child.getLocalName() : "";
         if (childName.equals(SchemaSymbols.ELT_ALL)) {
             index = traverseAll(child);
         } 
@@ -5116,10 +5186,10 @@ public class TraverseSchema implements
             index = expandContentModel( index, child);
         }
 
-		contentSpecHolder = new Integer(index);
-		fGroupNameRegistry.put(qualifiedGroupName, contentSpecHolder);
-		fNamespacesScope = saveNSMapping;
-		fTargetNSURI = saveTargetNSUri;
+	contentSpecHolder = new Integer(index);
+	fGroupNameRegistry.put(qualifiedGroupName, contentSpecHolder);
+	fNamespacesScope = saveNSMapping;
+	fTargetNSURI = saveTargetNSUri;
         return index;
 
 

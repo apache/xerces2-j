@@ -124,6 +124,7 @@ public class SchemaGrammar extends Grammar{
     private DatatypeValidatorFactoryImpl fDatatypeRegistry = null;
 
     Hashtable topLevelGroupDecls = new Hashtable();
+    Hashtable topLevelNotationDecls = new Hashtable();
     Hashtable topLevelAttrDecls  = new Hashtable();
     Hashtable topLevelAttrGrpDecls = new Hashtable();
 

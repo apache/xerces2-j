@@ -117,7 +117,7 @@ import org.apache.xerces.validators.datatype.StateMessageDatatype;
 import org.apache.xerces.validators.datatype.IDREFDatatypeValidator;
 import org.apache.xerces.validators.datatype.IDDatatypeValidator;
 import org.apache.xerces.validators.datatype.ENTITYDatatypeValidator;
-
+import org.apache.xerces.validators.datatype.NOTATIONDatatypeValidator;
 /**
  * This class is the super all-in-one validator used by the parser.
  *
@@ -2720,6 +2720,43 @@ public final class XMLValidator
 
    }
 
+   /*
+    * for <notation> must resolve values "b:myNotation"
+    * 
+    * @param value  string value of element or attribute
+    * @return 
+    * @exception Exception
+    */
+   private String bindNotationURI (String value)  throws Exception{
+       int colonP = value.indexOf(":");
+       String prefix = "";
+       String localpart = value;
+       if (colonP > -1) {
+           prefix = value.substring(0,colonP);
+           localpart = value.substring(colonP+1);
+       }
+
+       String uri = "";
+       int uriIndex = StringPool.EMPTY_STRING;
+       if (fNamespacesScope != null) {
+           //if prefix.equals("") it would bing to xmlns URI
+           uriIndex = fNamespacesScope.getNamespaceForPrefix(fStringPool.addSymbol(prefix));
+           if (uriIndex > 0) {
+               return fStringPool.toString(uriIndex)+":"+localpart;
+           } else if (fGrammarNameSpaceIndex!=-1){
+               // REVISIT: try binding to current namespace
+               // trying to solve the case:
+               //  <v01:root xmlns:xsi ="http://www.w3.org/2000/10/XMLSchema-instance"
+               //           xmlns:my         ="http://www.schemaTest.org/my"
+               // might not work in all cases (need clarification from schema?)
+               return  fStringPool.toString( fGrammarNameSpaceIndex)+":"+localpart;
+           }
+               
+       
+       }
+       return value;
+   }
+
    static class Resolver implements EntityResolver {
 
       //
@@ -3308,6 +3345,10 @@ public final class XMLValidator
                                                               else { // normalize 
                                                                   int normalizedValue = fStringPool.addString(value);
                                                                   attrList.setAttValue(index,normalizedValue );
+                                                                  if (attDV instanceof NOTATIONDatatypeValidator 
+                                                                      && value !=null) {
+                                                                      value=bindNotationURI(value);
+                                                                  }
                                                                   attDV.validate(value, null );
                                                               }
                                                       }
@@ -3372,6 +3413,10 @@ public final class XMLValidator
                                         else { // normalize 
                                             int normalizedValue = fStringPool.addString(value);
                                             attrList.setAttValue(index,normalizedValue );
+                                            if (fTempAttDecl.datatypeValidator instanceof NOTATIONDatatypeValidator 
+                                                && value !=null) {
+                                                value=bindNotationURI(value);
+                                            }
                                             fTempAttDecl.datatypeValidator.validate(value, null );
                                         }
                                     }
@@ -3848,7 +3893,12 @@ public final class XMLValidator
                                      "but no datatypevalidator was found, element "+fTempElementDecl.name
                                      +",locapart: "+fStringPool.toString(fTempElementDecl.name.localpart));
                } else {
-                  fCurrentDV.validate(fDatatypeBuffer.toString(), null);
+                   String value =fDatatypeBuffer.toString();
+                   if (fCurrentDV instanceof NOTATIONDatatypeValidator 
+                      && value !=null) {
+                      value=bindNotationURI(value); 
+                   }
+                   fCurrentDV.validate(value, null);
                }
 
             } catch (InvalidDatatypeValueException idve) {
