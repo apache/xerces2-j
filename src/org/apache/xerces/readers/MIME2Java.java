@@ -580,6 +580,9 @@ public class MIME2Java {
 
 	// Add support for Cp1252
         s_enchash.put("CP1252",   "Cp1252");
+	// Add support for two Thai encodings.
+        s_enchash.put("CP874",   "Cp874");
+        s_enchash.put("TIS620",   "TIS620");
                                                 // j:CNS11643 -> EUC-TW?
                                                 // ISO-2022-CN? ISO-2022-CN-EXT?
                                                 
@@ -629,6 +632,9 @@ public class MIME2Java {
 	// Since this code page should be written out in mixed case,
 	// there is no need to reverse the function.
         s_revhash.put("Cp1252", "Cp1252");
+	// Add support for two Thai encodings.
+        s_revhash.put("Cp874", "Cp874");
+        s_revhash.put("TIS620", "TIS620");
     }
 
     private MIME2Java() {
