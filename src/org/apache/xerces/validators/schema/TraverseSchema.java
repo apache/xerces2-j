@@ -3659,7 +3659,8 @@ public class TraverseSchema implements
             // There may be a simple type definition in the restriction element
             // The data type validator will be based on it, if specified
             // -----------------------------------------------------------------------
-            if (content.getLocalName().equals(SchemaSymbols.ELT_SIMPLETYPE )) {
+            if (content != null &&
+                content.getLocalName().equals(SchemaSymbols.ELT_SIMPLETYPE )) {
                 int simpleTypeNameIndex = traverseSimpleTypeDecl(content);
                 if (simpleTypeNameIndex!=-1) {
                     DatatypeValidator dv=fDatatypeRegistry.getDatatypeValidator(
