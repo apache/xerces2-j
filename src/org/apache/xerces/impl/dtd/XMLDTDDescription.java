@@ -72,7 +72,7 @@ import java.util.Vector;
  */
 
 public class XMLDTDDescription extends XMLResourceIdentifierImpl
-        implements XMLGrammarDescription {
+        implements org.apache.xerces.xni.grammars.XMLDTDDescription {
 
     // Data
 
