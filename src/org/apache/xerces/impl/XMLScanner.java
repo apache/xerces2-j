@@ -404,7 +404,7 @@ public abstract class XMLScanner
         int state = STATE_VERSION;
 
         boolean dataFoundForTarget = false;
-        boolean sawSpace = fEntityScanner.skipSpaces();
+        boolean sawSpace = fEntityScanner.skipDeclSpaces();
         // since pseudoattributes are *not* attributes,
         // their quotes don't need to be preserved in external parameter entities.
         // the XMLEntityScanner#scanLiteral method will continue to
@@ -507,7 +507,7 @@ public abstract class XMLScanner
                     reportFatalError("NoMorePseudoAttributes", null);
                 }
             }
-            sawSpace = fEntityScanner.skipSpaces();
+            sawSpace = fEntityScanner.skipDeclSpaces();
         }
         // restore original literal value
         if(currLiteral) 
@@ -565,17 +565,29 @@ public abstract class XMLScanner
                                       XMLString value) 
         throws IOException, XNIException {
 
+        // REVISIT: This method is used for generic scanning of 
+        // pseudo attributes, but since there are only three such
+        // attributes: version, encoding, and standalone there are
+        // for performant ways of scanning them. Every decl must
+        // have a version, and in TextDecls this version must
+        // be followed by an encoding declaration. Also the
+        // methods we invoke on the scanners allow non-ASCII
+        // characters to be parsed in the decls, but since
+        // we don't even know what the actual encoding of the
+        // document is until we scan the encoding declaration
+        // you cannot reliably read any characters outside
+        // of the ASCII range here. -- mrglavas
         String name = fEntityScanner.scanName();
         XMLEntityManager.print(fEntityManager.getCurrentEntity());
         if (name == null) {
             reportFatalError("PseudoAttrNameExpected", null);
         }
-        fEntityScanner.skipSpaces();
+        fEntityScanner.skipDeclSpaces();
         if (!fEntityScanner.skipChar('=')) {
             reportFatalError(scanningTextDecl ? "EqRequiredInTextDecl"
                              : "EqRequiredInXMLDecl", new Object[]{name});
         }
-        fEntityScanner.skipSpaces();
+        fEntityScanner.skipDeclSpaces();
         int quote = fEntityScanner.peekChar();
         if (quote != '\'' && quote != '"') {
             reportFatalError(scanningTextDecl ? "QuoteRequiredInTextDecl"
@@ -591,6 +603,9 @@ public abstract class XMLScanner
                     if (c == '&' || c == '%' || c == '<' || c == ']') {
                         fStringBuffer2.append((char)fEntityScanner.scanChar());
                     }
+                    // REVISIT: Even if you could reliably read non-ASCII chars
+                    // why bother scanning for surrogates here? Only ASCII chars
+                    // match the productions in XMLDecls and TextDecls. -- mrglavas
                     else if (XMLChar.isHighSurrogate(c)) {
                         scanSurrogates(fStringBuffer2);
                     }

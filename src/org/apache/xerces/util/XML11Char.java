@@ -101,7 +101,7 @@ public class XML11Char {
     /** XML 1.1 control character mask */
     public static final int MASK_XML11_CONTROL = 0x10;
 
-    /** XML 1.1 content (valid - "special" chars) */
+    /** XML 1.1 content for external entities (valid - "special" chars - control chars) */
     public static final int MASK_XML11_CONTENT = 0x20;
 
     /** XML namespaces 1.1 NCNameStart */
@@ -109,6 +109,9 @@ public class XML11Char {
 
     /** XML namespaces 1.1 NCName */
     public static final int MASK_XML11_NCNAME = 0x80;
+    
+    /** XML 1.1 content for internal entities (valid - "special" chars) */
+    public static final int MASK_XML11_CONTENT_INTERNAL = MASK_XML11_CONTROL | MASK_XML11_CONTENT; 
 
     //
     // Static initialization
@@ -120,11 +123,13 @@ public class XML11Char {
          * XML 1.1 initialization.
          */
 
-        // [2]: Char    ::=    #x9 | #xA | #xD | [#x20-#x7E] | #x85 | [#xA0-#xD7FF]
-        //              | [#xE000-#xFFFD] | [#x10000-#x10FFFF] 
+        // [2]: Char ::= [#x1-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
+        // 
+        // NOTE: This range is Char - (RestrictedChar | S | #x85 | #x2028).
         int xml11NonWhitespaceRange  [] = {
                 0x21, 0x7E, 0xA0, 0x2027, 0x2029, 0xD7FF, 0xE000, 0xFFFD, 
         };
+
         // NOTE:  this does *NOT* correspond to the S production
         // from XML 1.0.  Rather, it corresponds to S+chars that are
         // involved in whitespace normalization.  It's handy
@@ -133,23 +138,28 @@ public class XML11Char {
         int xml11WhitespaceChars [] = {
             0x9, 0xA, 0xD, 0x20, 0x85, 0x2028,
         };
+        
+        // [2a]: RestrictedChar ::= [#x1-#x8] | [#xB-#xC] | [#xE-#x1F] | 
+        //                          [#x7F-#x84] | [#x86-#x9F] 
         int xml11ControlCharRange [] = {
             0x1, 0x8, 0xB, 0xC, 0xE, 0x1F, 0x7f, 0x84, 0x86, 0x9f,
         };
-
-        // [4]: NameStartChar := ":" | [A-Z] | "_" | [a-z] |
-        //         [#xC0-#x2FF] | [#x370-#x37D] | [#x37F-#x1FFF] |
-        //         [#x200C-#x200D] | [#x2070-#x218F] | [#x2C00-#x2FEF] |
-        //          [#x3001-#xD7FF] 
-        //           | ([#xF900-#xEFFFF])??? [#xF900-#xFFFD
+        
+        // [4]: NameStartChar ::= ":" | [A-Z] | "_" | [a-z] | 
+        //                        [#xC0-#xD6] | [#xD8-#xF6] | [#xF8-#x2FF] | 
+        //                        [#x370-#x37D] | [#x37F-#x1FFF] | [#x200C-#x200D] | 
+        //                        [#x2070-#x218F] | [#x2C00-#x2FEF] | [#x3001-#xD7FF] | 
+        //                        [#xF900-#xFDCF] | [#xFDF0-#xFFFD] | [#x10000-#xEFFFF]
         int xml11NameStartCharRange [] = {
-            ':', ':', 'A', 'Z', '_', '_',
-            'a', 'z', 0xC0, 0x2FF, 0x370, 0x37D, 0x37F, 0x1FFF,
-            0x200C, 0x200D, 0x2070, 0x218F, 0x2C00, 0x2FEF, 
-            0x3001, 0xD7FF, 0xF900, 0xFFFD,
+            ':', ':', 'A', 'Z', '_', '_', 'a', 'z', 
+            0xC0, 0xD6, 0xD8, 0xF6, 0xF8, 0x2FF,
+            0x370, 0x37D, 0x37F, 0x1FFF, 0x200C, 0x200D,
+            0x2070, 0x218F, 0x2C00, 0x2FEF, 0x3001, 0xD7FF,
+            0xF900, 0xFDCF, 0xFDF0, 0xFFFD,
         };
-        // [4a]:  NameChar := NameStartChar | "-" | "." | [0-9] | #xB7 |
-        //      [#x0300-#x036F] | [#x203F-#x2040] 
+        
+        // [4a]:  NameChar ::= NameStartChar | "-" | "." | [0-9] | #xB7 | 
+        //                     [#x0300-#x036F] | [#x203F-#x2040] 
         int xml11NameCharRange [] = {
             '-', '-', '.', '.', '0', '9', 0xB7, 0xB7, 
             0x0300, 0x036F, 0x203F, 0x2040,
@@ -249,7 +259,8 @@ public class XML11Char {
     } // isXML11ValidLiteral(int):boolean
 
     /**
-     * Returns true if the specified character can be considered content.
+     * Returns true if the specified character can be considered 
+     * content in an external parsed entity.
      *
      * @param c The character to check.
      */
@@ -257,6 +268,17 @@ public class XML11Char {
         return (c < 0x10000 && (XML11CHARS[c] & MASK_XML11_CONTENT) != 0) ||
                (0x10000 <= c && c <= 0x10FFFF);
     } // isXML11Content(int):boolean
+    
+    /**
+     * Returns true if the specified character can be considered 
+     * content in an internal parsed entity.
+     *
+     * @param c The character to check.
+     */
+    public static boolean isXML11InternalEntityContent(int c) {
+        return (c < 0x10000 && (XML11CHARS[c] & MASK_XML11_CONTENT_INTERNAL) != 0) ||
+               (0x10000 <= c && c <= 0x10FFFF);
+    } // isXML11InternalEntityContent(int):boolean
 
     /**
      * Returns true if the specified character is a valid name start

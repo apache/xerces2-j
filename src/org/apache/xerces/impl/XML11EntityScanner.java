@@ -70,6 +70,7 @@ import org.apache.xerces.xni.XMLString;
  * Implements the entity scanner methods in
  * the context of XML 1.1.
  *
+ * @author Michael Glavassevich, IBM
  * @author Neil Graham, IBM
  * @version $Id$
  */
@@ -552,11 +553,23 @@ public class XML11EntityScanner
         }
 
         // inner loop, scanning for content
-        while (fCurrentEntity.position < fCurrentEntity.count) {
-            c = fCurrentEntity.ch[fCurrentEntity.position++];
-            if (!XML11Char.isXML11Content(c) || ((c == 0x85 || c == 0x2028) && external)) {
-                fCurrentEntity.position--;
-                break;
+        if (external) {
+            while (fCurrentEntity.position < fCurrentEntity.count) {
+                c = fCurrentEntity.ch[fCurrentEntity.position++];
+                if (!XML11Char.isXML11Content(c) || c == 0x85 || c == 0x2028) {
+                    fCurrentEntity.position--;
+                    break;
+                }
+            }
+        }
+        else {
+            while (fCurrentEntity.position < fCurrentEntity.count) {
+                c = fCurrentEntity.ch[fCurrentEntity.position++];
+                // In internal entities control characters are allowed to appear unescaped.
+                if (!XML11Char.isXML11InternalEntityContent(c)) {
+                    fCurrentEntity.position--;
+                    break;
+                }
             }
         }
         int length = fCurrentEntity.position - offset;
@@ -677,14 +690,25 @@ public class XML11EntityScanner
         }
 
         // scan literal value
-        while (fCurrentEntity.position < fCurrentEntity.count) {
-            c = fCurrentEntity.ch[fCurrentEntity.position++];
-            if ((c == quote &&
-                 (!fCurrentEntity.literal || external))
-                || c == '%' || !XML11Char.isXML11Content(c) 
-                || ((c == 0x85 || c == 0x2028) && external)) {
-                fCurrentEntity.position--;
-                break;
+        if (external) {
+            while (fCurrentEntity.position < fCurrentEntity.count) {
+                c = fCurrentEntity.ch[fCurrentEntity.position++];
+                if (c == quote || c == '%' || !XML11Char.isXML11Content(c) 
+                    || c == 0x85 || c == 0x2028) {
+                    fCurrentEntity.position--;
+                    break;
+                }
+            }
+        }
+        else {
+            while (fCurrentEntity.position < fCurrentEntity.count) {
+                c = fCurrentEntity.ch[fCurrentEntity.position++];
+                // In internal entities control characters are allowed to appear unescaped.
+                if ((c == quote && !fCurrentEntity.literal)
+                    || c == '%' || !XML11Char.isXML11InternalEntityContent(c)) {
+                    fCurrentEntity.position--;
+                    break;
+                }
             }
         }
         int length = fCurrentEntity.position - offset;
@@ -833,38 +857,78 @@ public class XML11EntityScanner
             }
 
             // iterate over buffer looking for delimiter
-            OUTER: while (fCurrentEntity.position < fCurrentEntity.count) {
-                c = fCurrentEntity.ch[fCurrentEntity.position++];
-                if (c == charAt0) {
-                    // looks like we just hit the delimiter
-                    int delimOffset = fCurrentEntity.position - 1;
-                    for (int i = 1; i < delimLen; i++) {
-                        if (fCurrentEntity.position == fCurrentEntity.count) {
-                            fCurrentEntity.position -= i;
-                            break OUTER;
+            if (external) {
+                OUTER: while (fCurrentEntity.position < fCurrentEntity.count) {
+                    c = fCurrentEntity.ch[fCurrentEntity.position++];
+                    if (c == charAt0) {
+                        // looks like we just hit the delimiter
+                        int delimOffset = fCurrentEntity.position - 1;
+                        for (int i = 1; i < delimLen; i++) {
+                            if (fCurrentEntity.position == fCurrentEntity.count) {
+                                fCurrentEntity.position -= i;
+                                break OUTER;
+                            }
+                            c = fCurrentEntity.ch[fCurrentEntity.position++];
+                            if (delimiter.charAt(i) != c) {
+                                fCurrentEntity.position--;
+                                break;
+                            }
+                         }
+                         if (fCurrentEntity.position == delimOffset + delimLen) {
+                            done = true;
+                            break;
+                         }
+                    }
+                    else if (c == '\n' || c == '\r' || c == 0x85 || c == 0x2028) {
+                        fCurrentEntity.position--;
+                        break;
+                    }
+                    // In external entities control characters cannot appear 
+                    // as literals so do not skip over them.
+                    else if (!XML11Char.isXML11ValidLiteral(c)) {
+                        fCurrentEntity.position--;
+                        int length = fCurrentEntity.position - offset;
+                        fCurrentEntity.columnNumber += length - newlines;
+                        buffer.append(fCurrentEntity.ch, offset, length); 
+                        return true;
+                    }
+                }
+            }
+            else {
+                OUTER: while (fCurrentEntity.position < fCurrentEntity.count) {
+                    c = fCurrentEntity.ch[fCurrentEntity.position++];
+                    if (c == charAt0) {
+                        // looks like we just hit the delimiter
+                        int delimOffset = fCurrentEntity.position - 1;
+                        for (int i = 1; i < delimLen; i++) {
+                            if (fCurrentEntity.position == fCurrentEntity.count) {
+                                fCurrentEntity.position -= i;
+                                break OUTER;
+                            }
+                            c = fCurrentEntity.ch[fCurrentEntity.position++];
+                            if (delimiter.charAt(i) != c) {
+                                fCurrentEntity.position--;
+                                break;
+                            }
                         }
-                        c = fCurrentEntity.ch[fCurrentEntity.position++];
-                        if (delimiter.charAt(i) != c) {
-                            fCurrentEntity.position--;
+                        if (fCurrentEntity.position == delimOffset + delimLen) {
+                            done = true;
                             break;
                         }
                     }
-                    if (fCurrentEntity.position == delimOffset + delimLen) {
-                        done = true;
+                    else if (c == '\n') {
+                        fCurrentEntity.position--;
                         break;
                     }
-                }
-                else if (c == '\n' || (external && (c == '\r' || c == 0x85 || c == 0x2028))) {
-                    fCurrentEntity.position--;
-                    break;
-                }
-                // note that we should not skip over control characters!
-                else if (!XML11Char.isXML11ValidLiteral(c)) {
-                    fCurrentEntity.position--;
-                    int length = fCurrentEntity.position - offset;
-                    fCurrentEntity.columnNumber += length - newlines;
-                    buffer.append(fCurrentEntity.ch, offset, length); 
-                    return true;
+                    // Control characters are allowed to appear as literals
+                    // in internal entities.
+                    else if (!XML11Char.isXML11Valid(c)) {
+                        fCurrentEntity.position--;
+                        int length = fCurrentEntity.position - offset;
+                        fCurrentEntity.columnNumber += length - newlines;
+                        buffer.append(fCurrentEntity.ch, offset, length); 
+                        return true;
+                    }
                 }
             }
             int length = fCurrentEntity.position - offset;

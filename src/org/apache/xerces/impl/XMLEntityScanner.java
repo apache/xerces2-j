@@ -1322,6 +1322,97 @@ public class XMLEntityScanner implements XMLLocator {
     } // skipSpaces():boolean
 
     /**
+     * Skips space characters appearing immediately on the input that would
+     * match non-terminal S (0x09, 0x0A, 0x0D, 0x20) before end of line 
+     * normalization is performed. This is useful when scanning structures 
+     * such as the XMLDecl and TextDecl that can only contain US-ASCII 
+     * characters.
+     * <p>
+     * <strong>Note:</strong> The characters are consumed only if they would
+     * match non-terminal S before end of line normalization is performed.
+     *
+     * @return Returns true if at least one space character was skipped.
+     *
+     * @throws IOException  Thrown if i/o error occurs.
+     * @throws EOFException Thrown on end of file.
+     *
+     * @see org.apache.xerces.util.XMLChar#isSpace
+     */
+    public boolean skipDeclSpaces() throws IOException {
+        if (DEBUG_BUFFER) {
+            System.out.print("(skipDeclSpaces: ");
+            XMLEntityManager.print(fCurrentEntity);
+            System.out.println();
+        }
+
+        // load more characters, if needed
+        if (fCurrentEntity.position == fCurrentEntity.count) {
+            load(0, true);
+        }
+
+        // skip spaces
+        int c = fCurrentEntity.ch[fCurrentEntity.position];
+        if (XMLChar.isSpace(c)) {
+            boolean external = fCurrentEntity.isExternal();
+            do {
+                boolean entityChanged = false;
+                // handle newlines
+                if (c == '\n' || (external && c == '\r')) {
+                    fCurrentEntity.lineNumber++;
+                    fCurrentEntity.columnNumber = 1;
+                    if (fCurrentEntity.position == fCurrentEntity.count - 1) {
+                        fCurrentEntity.ch[0] = (char)c;
+                        entityChanged = load(1, true);
+                        if (!entityChanged)
+                            // the load change the position to be 1,
+                            // need to restore it when entity not changed
+                            fCurrentEntity.position = 0;
+                    }
+                    if (c == '\r' && external) {
+                        // REVISIT: Does this need to be updated to fix the
+                        //          #x0D ^#x0A newline normalization problem? -Ac
+                        if (fCurrentEntity.ch[++fCurrentEntity.position] != '\n') {
+                            fCurrentEntity.position--;
+                        }
+                    }
+                    /*** NEWLINE NORMALIZATION ***
+                    else {
+                        if (fCurrentEntity.ch[fCurrentEntity.position + 1] == '\r'
+                            && external) {
+                            fCurrentEntity.position++;
+                        }
+                    }
+                    /***/
+                }
+                else {
+                    fCurrentEntity.columnNumber++;
+                }
+                // load more characters, if needed
+                if (!entityChanged)
+                    fCurrentEntity.position++;
+                if (fCurrentEntity.position == fCurrentEntity.count) {
+                    load(0, true);
+                }
+            } while (XMLChar.isSpace(c = fCurrentEntity.ch[fCurrentEntity.position]));
+            if (DEBUG_BUFFER) {
+                System.out.print(")skipDeclSpaces: ");
+                XMLEntityManager.print(fCurrentEntity);
+                System.out.println(" -> true");
+            }
+            return true;
+        }
+
+        // no spaces were found
+        if (DEBUG_BUFFER) {
+            System.out.print(")skipDeclSpaces: ");
+            XMLEntityManager.print(fCurrentEntity);
+            System.out.println(" -> false");
+        }
+        return false;
+
+    } // skipDeclSpaces():boolean
+
+    /**
      * Skips the specified string appearing immediately on the input.
      * <p>
      * <strong>Note:</strong> The characters are consumed only if they are

@@ -183,16 +183,16 @@ public class XMLVersionDetector {
     public short determineDocVersion(XMLInputSource inputSource) throws IOException {
         fEncoding = fEntityManager.setupCurrentEntity(fXMLSymbol, inputSource, false, true);
 
-        // must assume 1.1 at this stage so that whitespace
-        // handling is correct in the XML decl...
-        fEntityManager.setScannerVersion(Constants.XML_VERSION_1_1);
+        // Must use XML 1.0 scanner to handle whitespace correctly
+        // in the XML declaration.
+        fEntityManager.setScannerVersion(Constants.XML_VERSION_1_0);
         XMLEntityScanner scanner = fEntityManager.getEntityScanner();
         try {
             if (!scanner.skipString("<?xml")) {
                 // definitely not a well-formed 1.1 doc!
                 return Constants.XML_VERSION_1_0;
             }
-            if (!scanner.skipSpaces()) {
+            if (!scanner.skipDeclSpaces()) {
                 fixupCurrentEntity(fEntityManager, fExpectedVersionString, 5);
                 return Constants.XML_VERSION_1_0;
             }
@@ -200,14 +200,14 @@ public class XMLVersionDetector {
                 fixupCurrentEntity(fEntityManager, fExpectedVersionString, 6);
                 return Constants.XML_VERSION_1_0;
             }
-            scanner.skipSpaces();
+            scanner.skipDeclSpaces();
             // Check if the next character is '='. If it is then consume it.
             if (scanner.peekChar() != '=') {
                 fixupCurrentEntity(fEntityManager, fExpectedVersionString, 13);
                 return Constants.XML_VERSION_1_0;
             }
             scanner.scanChar();
-            scanner.skipSpaces();
+            scanner.skipDeclSpaces();
             int quoteChar = scanner.scanChar();
             fExpectedVersionString[14] = (char) quoteChar;
             for (int versionPos = 0; versionPos < XML11_VERSION.length; versionPos++) {
