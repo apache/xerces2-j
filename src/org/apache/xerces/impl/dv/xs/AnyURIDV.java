@@ -53,11 +53,11 @@ public class AnyURIDV extends TypeValidator {
         try {
             if( content.length() != 0 ) {
                 // encode special characters using XLink 5.4 algorithm
-                content = encode(content);
+                final String encoded = encode(content);
                 // Support for relative URLs
                 // According to Java 1.1: URLs may also be specified with a
                 // String and the URL object that it is related to.
-                new URI(BASE_URI, content );
+                new URI(BASE_URI, encoded );
             }
         } catch (URI.MalformedURIException ex) {
             throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "anyURI"});
