@@ -203,10 +203,14 @@ public class SchemaImporter {
     //
     //
     private int getContentSpecHandleForElementType(int elementType) {
-        return fValidator.getContentSpecHandle(fStringPool.getDeclaration(elementType));
+        // REVISIT: ???
+        //return fValidator.getContentSpecHandle(fStringPool.getDeclaration(elementType));
+        return -1;
     }
     private int getContentSpecTypeForElementType(int elementType) {
-        return fValidator.getContentSpecType(fStringPool.getDeclaration(elementType));
+        // REVISIT: ???
+        //return fValidator.getContentSpecType(fStringPool.getDeclaration(elementType));
+        return -1;
     }
 
     // content spec node types

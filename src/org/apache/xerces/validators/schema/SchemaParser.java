@@ -72,8 +72,8 @@ import org.apache.xerces.framework.XMLDocumentHandler;
 import org.apache.xerces.framework.XMLParser;
 import org.apache.xerces.readers.XMLEntityHandler;
 import org.apache.xerces.framework.XMLErrorReporter;
+import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.StringPool;
-
 
 public class SchemaParser
     extends XMLParser
@@ -165,46 +165,62 @@ public class SchemaParser
 	 *
 	 */
 
-    public void startElement(int elementType, XMLAttrList attrList, int attrListIndex) throws Exception 
+    public void startElement(QName element, 
+                             XMLAttrList attrList, int attrListIndex) throws Exception 
 	{
 		if ( fSchemaDocument == null ) {
-			if ( elementType == fStringPool.addSymbol(Schema.ELT_SCHEMA) ) {
+            // REVISIT: Validation
+			if ( element.localpart == fStringPool.addSymbol(Schema.ELT_SCHEMA) ) {
 				startSchema (attrList, attrListIndex);
 			} else {
 				reportGenericSchemaError ( "Invalid root element" );
 			}
 		} else {
-			if ( elementType == fStringPool.addSymbol(Schema.ELT_ANNOTATION) ) {
+            // REVISIT: Validation
+			if ( element.localpart == fStringPool.addSymbol(Schema.ELT_ANNOTATION) ) {
 				startAnnotation ();
-			} else if ( elementType == fStringPool.addSymbol(Schema.ELT_DOCUMENTATION) ) {
+            // REVISIT: Validation
+			} else if ( element.localpart == fStringPool.addSymbol(Schema.ELT_DOCUMENTATION) ) {
 				startDocumentation ();
-			} else if ( elementType == fStringPool.addSymbol(Schema.ELT_APPINFO) ) {
+            // REVISIT: Validation
+			} else if ( element.localpart == fStringPool.addSymbol(Schema.ELT_APPINFO) ) {
 				startAppInfo ();
 			} else if ( fInSimpleType ) {
-				startFacet (elementType, attrList, attrListIndex);
+                // REVISIT: Validation
+				startFacet (element.localpart, attrList, attrListIndex);
 			} else {
-				if ( elementType == fStringPool.addSymbol(Schema.ELT_SIMPLETYPE) ) {
+                // REVISIT: Validation
+				if ( element.localpart == fStringPool.addSymbol(Schema.ELT_SIMPLETYPE) ) {
 					startSimpleTypeDef (attrList, attrListIndex);
-				} else if ( elementType == fStringPool.addSymbol(Schema.ELT_COMPLEXTYPE) ) {
+                // REVISIT: Validation
+				} else if ( element.localpart == fStringPool.addSymbol(Schema.ELT_COMPLEXTYPE) ) {
 					startComplexTypeDef (attrList, attrListIndex);
-				} else if ( elementType == fStringPool.addSymbol(Schema.ELT_GROUP) ) {
+                // REVISIT: Validation
+				} else if ( element.localpart == fStringPool.addSymbol(Schema.ELT_GROUP) ) {
 					startGroupDef (attrList, attrListIndex);
-				} else if ( elementType == fStringPool.addSymbol(Schema.ELT_CHOICE) ) {
+                // REVISIT: Validation
+				} else if ( element.localpart == fStringPool.addSymbol(Schema.ELT_CHOICE) ) {
 					startChoice (attrList, attrListIndex);
-				} else if ( elementType == fStringPool.addSymbol(Schema.ELT_SEQUENCE) ) {
+                // REVISIT: Validation
+				} else if ( element.localpart == fStringPool.addSymbol(Schema.ELT_SEQUENCE) ) {
 					startSeq (attrList, attrListIndex);
-				} else if ( elementType == fStringPool.addSymbol(Schema.ELT_ALL) ) {
+                // REVISIT: Validation
+				} else if ( element.localpart == fStringPool.addSymbol(Schema.ELT_ALL) ) {
 					startAll (attrList, attrListIndex);
-				} else if ( elementType == fStringPool.addSymbol(Schema.ELT_ATTRGROUP) ) {
+                // REVISIT: Validation
+				} else if ( element.localpart == fStringPool.addSymbol(Schema.ELT_ATTRGROUP) ) {
 					startAttrGroupDef (attrList, attrListIndex);
-				} else if ( elementType == fStringPool.addSymbol(Schema.ELT_ELEMENT) ) {
+                // REVISIT: Validation
+				} else if ( element.localpart == fStringPool.addSymbol(Schema.ELT_ELEMENT) ) {
 					startElementDecl (attrList, attrListIndex);
-				} else if ( elementType == fStringPool.addSymbol(Schema.ELT_ATTRIBUTE) ) { 
+                // REVISIT: Validation
+				} else if ( element.localpart == fStringPool.addSymbol(Schema.ELT_ATTRIBUTE) ) { 
 					startAttributeDecl (attrList, attrListIndex);
-				} else if ( elementType == fStringPool.addSymbol(Schema.ELT_NOTATION) ) {
+                // REVISIT: Validation
+				} else if ( element.localpart == fStringPool.addSymbol(Schema.ELT_NOTATION) ) {
 					startNotationDecl (attrList, attrListIndex);
 				} else {
-					reportGenericSchemaError ( "Invalid element(" + fStringPool.toString (elementType) + ")" );
+					reportGenericSchemaError ( "Invalid element(" + fStringPool.toString (element.rawname) + ")" );
 				} 
 			}
 		}
@@ -228,44 +244,58 @@ public class SchemaParser
 	 *
 	 */ 
 
-    public void endElement(int elementType) throws Exception 
+    public void endElement(QName element) throws Exception 
 	{
 	
-		if ( elementType == fStringPool.addSymbol(Schema.ELT_ANNOTATION) ) {
+        // REVISIT: Validation.
+		if ( element.localpart == fStringPool.addSymbol(Schema.ELT_ANNOTATION) ) {
 			endAnnotation ();
-		} else if ( elementType == fStringPool.addSymbol(Schema.ELT_DOCUMENTATION) ) {
+        // REVISIT: Validation.
+		} else if ( element.localpart == fStringPool.addSymbol(Schema.ELT_DOCUMENTATION) ) {
 			endDocumentation ();
-		} else if ( elementType == fStringPool.addSymbol(Schema.ELT_APPINFO) ) {
+        // REVISIT: Validation.
+		} else if ( element.localpart == fStringPool.addSymbol(Schema.ELT_APPINFO) ) {
 			endAppInfo ();
 		} else if ( fInSimpleType ) {
-			if ( elementType == fStringPool.addSymbol(Schema.ELT_SIMPLETYPE) ) {
+            // REVISIT: Validation.
+			if ( element.localpart == fStringPool.addSymbol(Schema.ELT_SIMPLETYPE) ) {
 				endSimpleTypeDef ();
 			} else {
 				endFacet ();
 			}
 		} else {
-			if ( elementType == fStringPool.addSymbol(Schema.ELT_COMPLEXTYPE) ) {
+            // REVISIT: Validation.
+			if ( element.localpart == fStringPool.addSymbol(Schema.ELT_COMPLEXTYPE) ) {
 				endComplexTypeDef ();
-			} else if ( elementType == fStringPool.addSymbol(Schema.ELT_GROUP) ) {
+            // REVISIT: Validation.
+			} else if ( element.localpart == fStringPool.addSymbol(Schema.ELT_GROUP) ) {
 				endGroupDef ();
-			} else if ( elementType == fStringPool.addSymbol(Schema.ELT_CHOICE) ) {
+            // REVISIT: Validation.
+			} else if ( element.localpart == fStringPool.addSymbol(Schema.ELT_CHOICE) ) {
 				endChoice ();
-			} else if ( elementType == fStringPool.addSymbol(Schema.ELT_SEQUENCE) ) {
+            // REVISIT: Validation.
+			} else if ( element.localpart == fStringPool.addSymbol(Schema.ELT_SEQUENCE) ) {
 				endSeq ();
-			} else if ( elementType == fStringPool.addSymbol(Schema.ELT_ALL) ) {
+            // REVISIT: Validation.
+			} else if ( element.localpart == fStringPool.addSymbol(Schema.ELT_ALL) ) {
 				endAll ();
-			} else if ( elementType == fStringPool.addSymbol(Schema.ELT_ATTRGROUP) ) {
+            // REVISIT: Validation.
+			} else if ( element.localpart == fStringPool.addSymbol(Schema.ELT_ATTRGROUP) ) {
 				endAttrGroupDef ();
-			} else if ( elementType == fStringPool.addSymbol(Schema.ELT_ELEMENT) ) {
+            // REVISIT: Validation.
+			} else if ( element.localpart == fStringPool.addSymbol(Schema.ELT_ELEMENT) ) {
 				endElementDecl ();
-			} else if ( elementType == fStringPool.addSymbol(Schema.ELT_ATTRIBUTE) ) { 
+            // REVISIT: Validation.
+			} else if ( element.localpart == fStringPool.addSymbol(Schema.ELT_ATTRIBUTE) ) { 
 				endAttributeDecl ();
-			} else if ( elementType == fStringPool.addSymbol(Schema.ELT_NOTATION) ) {
+            // REVISIT: Validation.
+			} else if ( element.localpart == fStringPool.addSymbol(Schema.ELT_NOTATION) ) {
 				endNotationDecl ();
-			} else if ( elementType == fStringPool.addSymbol(Schema.ELT_SCHEMA) ) {
+            // REVISIT: Validation.
+			} else if ( element.localpart == fStringPool.addSymbol(Schema.ELT_SCHEMA) ) {
 				endSchema ();
 			} else {	
-				reportGenericSchemaError ( "Invalid element (" + fStringPool.toString (elementType) + ")" );
+				reportGenericSchemaError ( "Invalid element (" + fStringPool.toString (element.rawname) + ")" );
 			}
 		}
     }
