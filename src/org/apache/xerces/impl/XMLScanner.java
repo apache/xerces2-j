@@ -1059,6 +1059,8 @@ public abstract class XMLScanner
          * @param endOffset The entity's ending offset.
          */
         public void popAttrEntity(int endOffset) {
+            if (fSize == 0)
+                return;
             fSize--;
             int entityIndex = fEntityIndexes[fSize];
             int offset = fAttributes.getEntityOffset(fAttributeIndex, entityIndex);
