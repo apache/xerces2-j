@@ -2630,7 +2630,6 @@ public class DTDGrammar
         /** Associates the given value with the specified key tuple. */
         public void put(String key, int value) {
 
-            // REVISIT: Why +2? -Ac
             int hash = (key.hashCode() & 0x7FFFFFFF) % HASHTABLE_SIZE;
             Object[] bucket = fHashTable[hash];
 
