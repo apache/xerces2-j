@@ -83,6 +83,9 @@ import java.io.Serializable;
     }
   }
 
+  /** Serialization version. */
+  static final long serialVersionUID = 1601921774685357214L;
+
   private static final byte [] fgLookupTable = new byte[128];
   
   /**
