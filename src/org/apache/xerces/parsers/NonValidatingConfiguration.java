@@ -70,7 +70,7 @@ import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.ValidationManager;
 import org.apache.xerces.impl.dv.DTDDVFactory;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
-import org.apache.xerces.impl.validation.XMLGrammarPoolImpl;
+import org.apache.xerces.util.XMLGrammarPoolImpl;
 
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.XMLLocator;

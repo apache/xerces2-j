@@ -63,7 +63,7 @@ import org.apache.xerces.impl.Constants;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.Grammar;
-import org.apache.xerces.impl.validation.XMLGrammarPoolImpl;
+import org.apache.xerces.util.XMLGrammarPoolImpl;
 import org.apache.xerces.impl.xs.traversers.XSDHandler;
 import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.SchemaSymbols;
@@ -226,53 +226,26 @@ public class XMLGrammarCachingConfiguration
 
     /*
      * lock the XMLGrammarPoolImpl object so that it does not
-     * accept any more grammars from the validators.  This isn't
-     * a part of the XMLGrammarPool interface, so this method
-     * returns true if the operation succeeded, false otherwise
-     * (i.e., the grammar pool isn't our XMLGrammarPoolImpl)
-     * @return:  true on success, false on failure
+     * accept any more grammars from the validators.  
      */
-    public boolean lockGrammarPool() {
-        if(fGrammarPool instanceof org.apache.xerces.impl.validation.XMLGrammarPoolImpl) {
-            // call appropriate method on class
-            ((org.apache.xerces.impl.validation.XMLGrammarPoolImpl)fGrammarPool).lockPool();
-            return true;
-        }
-        return false;
+    public void lockGrammarPool() {
+        fGrammarPool.lockPool();
     } // lockGrammarPool()
 
     /*
      * clear the XMLGrammarPoolImpl object so that it does not
-     * contain any more grammars.  This isn't
-     * a part of the XMLGrammarPool interface, so this method
-     * returns true if the operation succeeded, false otherwise
-     * (i.e., the grammar pool isn't our XMLGrammarPoolImpl or descended from it)
-     * @return:  true on success, false on failure
+     * contain any more grammars.  
      */
-    public boolean clearGrammarPool() {
-        if(fGrammarPool instanceof org.apache.xerces.impl.validation.XMLGrammarPoolImpl) {
-            // call appropriate method on class
-            ((org.apache.xerces.impl.validation.XMLGrammarPoolImpl)fGrammarPool).clear();
-            return true;
-        }
-        return false;
+    public void clearGrammarPool() {
+        fGrammarPool.clear();
     } // clearGrammarPool()
 
     /*
      * unlock the XMLGrammarPoolImpl object so that it  
-     * accepts more grammars from the validators.  This isn't
-     * a part of the XMLGrammarPool interface, so this method
-     * returns true if the operation succeeded, false otherwise
-     * (i.e., the grammar pool isn't our XMLGrammarPoolImpl)
-     * @return:  true on success, false on failure
+     * accepts more grammars from the validators.  
      */
-    public boolean unlockGrammarPool() {
-        if(fGrammarPool instanceof org.apache.xerces.impl.validation.XMLGrammarPoolImpl) {
-            // call appropriate method on class
-            ((org.apache.xerces.impl.validation.XMLGrammarPoolImpl)fGrammarPool).unlockPool();
-            return true;
-        }
-        return false;
+    public void unlockGrammarPool() {
+        fGrammarPool.unlockPool();
     } // unlockGrammarPool()
 
     /**

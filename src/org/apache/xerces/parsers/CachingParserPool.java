@@ -60,7 +60,7 @@ package org.apache.xerces.parsers;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
-import org.apache.xerces.impl.validation.XMLGrammarPoolImpl;
+import org.apache.xerces.util.XMLGrammarPoolImpl;
 
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.SynchronizedSymbolTable;
@@ -377,6 +377,27 @@ public class CachingParserPool {
                 fGrammarPool.cacheGrammars(grammarType, grammars);
             }
         } // cacheGrammars(String, Grammar[]);
+
+        /** lock the grammar pool */
+        public void lockPool() {
+            synchronized (fGrammarPool) {
+                fGrammarPool.lockPool();
+            }
+        } // lockPool()
+
+        /** clear the grammar pool */
+        public void clear() {
+            synchronized (fGrammarPool) {
+                fGrammarPool.clear();
+            }
+        } // lockPool()
+
+        /** unlock the grammar pool */
+        public void unlockPool() {
+            synchronized (fGrammarPool) {
+                fGrammarPool.unlockPool();
+            }
+        } // unlockPool()
 
         /***
          * Methods corresponding to original (pre Xerces2.0.0final)

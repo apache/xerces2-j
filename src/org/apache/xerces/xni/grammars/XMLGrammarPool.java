@@ -118,5 +118,21 @@ public interface XMLGrammarPool {
     //  no such Grammar is known.
     public Grammar retrieveGrammar(XMLGrammarDescription desc);
 
+    /*
+     * Causes the XMLGrammarPool not to store any grammars when
+     * the cacheGrammars(String, Grammar[[]) method is called.
+     */
+    public void lockPool();
+
+    /*
+     * Allows the XMLGrammarPool to store grammars when its cacheGrammars(String, Grammar[])
+     * method is called.  This is the default state of the object.
+     */
+    public void unlockPool();
+
+    /*
+     * Removes all grammars from the pool.
+     */
+    public void clear();
 } // XMLGrammarPool
 

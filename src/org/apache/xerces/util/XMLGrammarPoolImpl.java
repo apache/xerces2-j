@@ -55,7 +55,7 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.impl.validation;
+package org.apache.xerces.util;
 
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;

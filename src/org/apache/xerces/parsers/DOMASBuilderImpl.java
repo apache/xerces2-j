@@ -74,7 +74,7 @@ import org.apache.xerces.dom.ASModelImpl;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLErrorReporter;
-import org.apache.xerces.impl.validation.XMLGrammarPoolImpl;
+import org.apache.xerces.util.XMLGrammarPoolImpl;
 import org.apache.xerces.impl.xs.traversers.XSDHandler;
 import org.apache.xerces.impl.xs.XSDDescription;
 import org.apache.xerces.impl.xs.XSGrammarBucket;
