@@ -184,7 +184,7 @@
       <reference idref='java-string'/>
      </param>
      <param name='state'>
-      <primitive type='int'/>
+      <primitive type='boolean'/>
      </param>
      <throws>
       <reference idref='sax-not-recognized-exception'/>
@@ -198,7 +198,7 @@
       <reference idref='java-string'/>
      </param>
      <returns>
-      <primitive type='int'/>
+      <primitive type='boolean'/>
      </returns>
      <throws>
       <reference idref='sax-not-recognized-exception'/>
@@ -1486,11 +1486,6 @@
     <reference idref='document-handler'/>
    </field>
    <constructor/>
-   <method name='setDocumentHandler'>
-    <param name='documentHandler'>
-     <reference idref='document-handler'/>
-    </param>
-   </method>
   </class>
 
   <class id='grammar-pool' name='GrammarPool'>
