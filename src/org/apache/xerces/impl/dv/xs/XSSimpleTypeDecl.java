@@ -1483,9 +1483,6 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                 nvalue = content;
             }
 
-            // update normalized value
-            validatedInfo.normalizedValue = nvalue;
-            
             StringTokenizer parsedList = new StringTokenizer(nvalue);
             int countOfTokens = parsedList.countTokens() ;
             Object[] avalue = new Object[countOfTokens];
@@ -1506,8 +1503,10 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             }
 
             validatedInfo.actualValue = avalue;
+            validatedInfo.memberType = null;
             validatedInfo.memberTypes = memberTypes;
-
+            validatedInfo.normalizedValue = nvalue;
+  
             return avalue;
 
         } else { // (fVariety == VARIETY_UNION)
