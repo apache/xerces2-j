@@ -28,7 +28,8 @@
 <jump href="http://www.w3.org/DOM/DOMTR#dom3">Document 
       Object Model Level 3 Core and Load/Save</jump> Candidate Recommendations and provides a 
       <link idref='faq-xinclude'>partial implementation</link> of the <jump href="http://www.w3.org/TR/2003/WD-xinclude-20031110/">XML Inclusions 
-      (XInclude)</jump> W3C Working Draft in Last Call.
+      (XInclude)</jump> W3C Working Draft in Last Call. It also provides <link idref='faq-xcatalogs'>support</link>
+      for <jump href="http://www.oasis-open.org/committees/entity/spec.html">OASIS XML Catalogs</jump>.
     </p>
 
 
@@ -108,15 +109,9 @@
     </p>
     
     <ul>
-       <li>Finalized XML Schema API (see <code>org.apache.xerces.xs</code>) and updated implementation accordingly.</li>
-       
-       <li>Implemented the following specifications:</li>
-         <ul>
-           <li>W3C DOM Level 3 "Core" and "Load and Save" Candidate Recommendations</li>
-           <li>SAX 2.0.1</li>
-           <li>W3C Extensible Markup Language (XML) 1.1 Proposed Recommendation</li>
-           <li>W3C Namespaces in XML 1.1 Proposed Recommendation</li>
-         </ul>
+       <li>Added support for OASIS XML Catalogs.</li>
+       <li>Implemented the XML Inclusions (XInclude) W3C Working Draft in Last Call,
+           not including support for XPointer.</li>
     </ul>
     <p>
       
