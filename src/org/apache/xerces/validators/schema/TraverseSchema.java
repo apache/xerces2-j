@@ -59,6 +59,7 @@ package org.apache.xerces.validators.schema;
 
 import  org.apache.xerces.framework.XMLErrorReporter;
 import  org.apache.xerces.validators.common.GrammarResolver;
+import  org.apache.xerces.validators.common.GrammarResolverImpl;
 import  org.apache.xerces.validators.schema.SchemaSymbols;
 import  org.apache.xerces.validators.schema.XUtil;
 import  org.apache.xerces.validators.datatype.DatatypeValidator;
@@ -447,13 +448,14 @@ public class TraverseSchema implements
         return uriStr;
     }
 
-    public  TraverseSchema(Element root, StringPool stringPool, SchemaGrammar schemaGrammar) throws Exception {
+    public  TraverseSchema(Element root, StringPool stringPool, SchemaGrammar schemaGrammar, GrammarResolver grammarResolver) throws Exception {
 
         fNamespacesScope = new NamespacesScope(this);
         
         fSchemaRootElement = root;
         fStringPool = stringPool;
         fSchemaGrammar = schemaGrammar;
+	fGrammarResolver = grammarResolver;
         
         if (root == null) { 
             // REVISIT: Anything to do?
@@ -471,8 +473,10 @@ public class TraverseSchema implements
         NamedNodeMap schemaEltAttrs = root.getAttributes();
         int i = 0;
         Attr sattr = null;
-        while ((sattr =(Attr) schemaEltAttrs.item(i)) != null) {
+
+        while ((sattr = (Attr)schemaEltAttrs.item(i++)) != null) {
             String attName = sattr.getName();
+System.out.println("attName of schema element : " + attName + " = " + sattr.getValue());
             if (attName.startsWith("xmlns:")) {
                 String attValue = sattr.getValue();
                 String prefix = attName.substring(attName.indexOf(":")+1);
@@ -721,7 +725,7 @@ public class TraverseSchema implements
                                                          complexTypeDecl.getAttribute( SchemaSymbols.ATT_NAME ));
         String typeName = complexTypeDecl.getAttribute(SchemaSymbols.ATT_NAME); 
 
-
+System.out.println("traversing complex Type : " + typeName);
 
         if (typeName.equals("")) { // gensym a unique name
             //typeName = "http://www.apache.org/xml/xerces/internalType"+fTypeCount++;
@@ -1599,7 +1603,9 @@ public class TraverseSchema implements
         DatatypeValidator dv = null;
 
 
+
         String name = elementDecl.getAttribute(SchemaSymbols.ATT_NAME);
+System.out.println("traversing element decl : " + name );
         String ref = elementDecl.getAttribute(SchemaSymbols.ATT_REF);
         String type = elementDecl.getAttribute(SchemaSymbols.ATT_TYPE);
         String minOccurs = elementDecl.getAttribute(SchemaSymbols.ATT_MINOCCURS);
@@ -2697,17 +2703,24 @@ public class TraverseSchema implements
     }
 
     private void reportGenericSchemaError (String error) throws Exception {
-            reportSchemaError (SchemaMessageProvider.GenericError, new Object[] { error });
+	System.err.println("__TraverseSchemaError__ : " + error);	
+            // reportSchemaError (SchemaMessageProvider.GenericError, new Object[] { error });
     }
 
     private void reportSchemaError(int major, Object args[]) {
         try {
-            fErrorReporter.reportError(fErrorReporter.getLocator(),
+            /*fErrorReporter.reportError(fErrorReporter.getLocator(),
                                        SchemaMessageProvider.SCHEMA_DOMAIN,
                                        major,
                                        SchemaMessageProvider.MSG_NONE,
                                        args,
                                        XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+				       */
+	    System.out.println("__TraverseSchemaError__ : " + SchemaMessageProvider.fgMessageKeys[major]);
+	    for (int i=0; i< args.length ; i++) {
+		System.out.println((String)args[i]);	
+	    }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -2787,7 +2800,7 @@ public class TraverseSchema implements
         parser.setErrorHandler(  new ErrorHandler() );
 
         try {
-        parser.setFeature("http://xml.org/sax/features/validation", true);
+        parser.setFeature("http://xml.org/sax/features/validation", false);
         parser.setFeature("http://apache.org/xml/features/dom/defer-node-expansion", false);
         }catch(  org.xml.sax.SAXNotRecognizedException e ) {
             e.printStackTrace();
@@ -2811,10 +2824,12 @@ public class TraverseSchema implements
 
         TraverseSchema tst = null;
         try {
+	    System.out.println("I am geting the Schema Document");
             Element root   = document.getDocumentElement();// This is what we pass to TraverserSchema
             //serial.serialize( root );
             //System.out.println(outWriter.toString());
-            tst = new TraverseSchema( root, new StringPool(), new SchemaGrammar() );
+
+            tst = new TraverseSchema( root, new StringPool(), new SchemaGrammar(), (GrammarResolver) new GrammarResolverImpl() );
             }
             catch (Exception e) {
                 e.printStackTrace(System.err);

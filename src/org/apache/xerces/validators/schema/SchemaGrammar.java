@@ -205,19 +205,32 @@ public class SchemaGrammar extends Grammar{
     }
 
     protected void setElementDefinedScope(int elementDeclIndex, int scopeDefined) {
-        if (elementDeclIndex > -1 ) {
-            int chunk = elementDeclIndex >> CHUNK_SHIFT;
-            int index = elementDeclIndex & CHUNK_MASK;
-            fScopeDefinedByElement[chunk][index] = scopeDefined;
-        }
-        
+        int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        int index = elementDeclIndex & CHUNK_MASK;
+        if ( ensureElementDeclCapacity(chunk) == true ) { // create an ElementDecl
+	    if (elementDeclIndex > -1 ) {
+		fScopeDefinedByElement[chunk][index] = scopeDefined;
+	    }
+	}
     }
 
     protected  void setElementFromAnotherSchemaURI(int elementDeclIndex, String anotherSchemaURI) {
-
+        int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        int index = elementDeclIndex & CHUNK_MASK;
+        if ( ensureElementDeclCapacity(chunk) == true ) { // create an ElementDecl
+	    if (elementDeclIndex > -1 ) {
+		fFromAnotherSchemaURI[chunk][index] = anotherSchemaURI;
+	    }
+	}
     }
     protected void setElementComplexTypeInfo(int elementDeclIndex, TraverseSchema.ComplexTypeInfo typeInfo){
-
+        int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        int index = elementDeclIndex & CHUNK_MASK;
+        if ( ensureElementDeclCapacity(chunk) == true ) { // create an ElementDecl
+	    if (elementDeclIndex > -1 ) {
+		fComplexTypeInfo[chunk][index] = typeInfo;
+	    }
+	}
     }
 
     //add methods for TraverseSchema
@@ -244,6 +257,16 @@ public class SchemaGrammar extends Grammar{
             //note, this is the scope defined by the element, not its enclosing scope
             setElementDefinedScope(elementDeclIndex, scopeDefined);
         }
+
+/***********************************************************************************************************
+*         XMLElementDecl fTempElementDecl = new XMLElementDecl();                                          *
+*         getElementDecl(elementDeclIndex, fTempElementDecl);                                              *
+* System.out.println("elementDeclIndex in addElementDecl : " + elementDeclIndex                            *
+*                    + " \n and itsName : '"                                                               *
+*                                + (fTempElementDecl.name.localpart)                                       *
+*                                +"' \n its ContentType:" + (fTempElementDecl.type)                        *
+*                                +"\n its ContentSpecIndex : " + fTempElementDecl.contentSpecIndex +"\n"); *
+***********************************************************************************************************/
         return elementDeclIndex;
 
     }
@@ -289,7 +312,7 @@ public class SchemaGrammar extends Grammar{
 
     private boolean ensureElementDeclCapacity(int chunk) {
         try {
-            return  fScopeDefinedByElement[chunk][0] == 0;
+            return  fScopeDefinedByElement[chunk][0] == -2;
         } 
         catch (ArrayIndexOutOfBoundsException ex) {
              fScopeDefinedByElement= resize(fScopeDefinedByElement, fScopeDefinedByElement.length * 2);
@@ -300,6 +323,9 @@ public class SchemaGrammar extends Grammar{
             // ignore
         }
         fScopeDefinedByElement[chunk] = new int[CHUNK_SIZE];
+	for (int i=0; i<CHUNK_SIZE; i++) {
+	    fScopeDefinedByElement[chunk][i] = -2;
+	}
         fFromAnotherSchemaURI[chunk] = new String[CHUNK_SIZE];
         fComplexTypeInfo[chunk] = new TraverseSchema.ComplexTypeInfo[CHUNK_SIZE];
         return true;
