@@ -231,8 +231,6 @@ public class TraverseSchema implements
         public int finalSet = 0;
 
         public int miscFlags=0;
-        public static final int CT_IS_ABSTRACT=1;
-        public static final int CT_CONTAINS_ATTR_TYPE_ID=2;
 
         public int scopeDefined = -1;
 
@@ -257,6 +255,8 @@ public class TraverseSchema implements
         }
           
     }
+    private static final int CT_IS_ABSTRACT=1;
+    private static final int CT_CONTAINS_ATTR_TYPE_ID=2;
 
     private class ComplexTypeRecoverableError extends Exception {
         ComplexTypeRecoverableError() {super();}
@@ -3047,6 +3047,7 @@ public class TraverseSchema implements
 
        Element attrNode = null;
        int index=-2;
+       String typeName = fStringPool.toString(typeNameIndex);
 
        if (complexContentChild != null) {
            // -------------------------------------------------------------
@@ -3110,8 +3111,23 @@ public class TraverseSchema implements
            else {
                // check to see if the baseType permits derivation by extension
                if((typeInfo.baseComplexTypeInfo.finalSet & SchemaSymbols.EXTENSION) != 0)
-                    throw new ComplexTypeRecoverableError("Derivation by extension is forbidden by either the base type " + fStringPool.toString(baseName.localpart) + " or the schema");
+                    throw new ComplexTypeRecoverableError("cos-ct-extends.1.1: Derivation by extension is forbidden by either the base type " + fStringPool.toString(baseName.localpart) + " or the schema");
                
+               //
+               // Check if the contentType of the base is consistent with the new type
+               // cos-ct-extends.1.4.2.2 
+               if (typeInfo.baseComplexTypeInfo.contentType != XMLElementDecl.TYPE_EMPTY) {
+                  if (((typeInfo.baseComplexTypeInfo.contentType == XMLElementDecl.TYPE_CHILDREN) && 
+                       isMixed) ||
+                      ((typeInfo.baseComplexTypeInfo.contentType == XMLElementDecl.TYPE_MIXED_COMPLEX) &&
+                      !isMixed)) {
+                    throw new ComplexTypeRecoverableError("cos-ct-extends.1.4.2.2.2.1: The content type of the base type " + 
+                    fStringPool.toString(baseName.localpart) + " and derived type " + 
+                    typeName + " must both be mixed or element-only");
+                  }
+
+               }
+
                //
                // Compose the final content model by concatenating the base and the 
                // current in sequence
@@ -3131,7 +3147,16 @@ public class TraverseSchema implements
                                                      baseContentSpecHandle,
                                                      typeInfo.contentSpecHandle,
                                                      false);
-               }
+               } 
+
+               //
+               // Check that there is a particle in the final content 
+               // cos-ct-extends.1.4.2.1
+               // LM - commented out until I get a clarification from HT
+               //
+               //if (typeInfo.contentSpecHandle <0) {
+               //     throw new ComplexTypeRecoverableError("cos-ct-extends.1.4.2.1: The content of a type derived by EXTENSION must contain a particle");
+               //}
            }
        }
        else {
@@ -3143,17 +3168,14 @@ public class TraverseSchema implements
        // -------------------------------------------------------------
        if (isMixed) {
 
-           // if there are no children, we can use a simple mixed type
+           // if there are no children, detect an error                   
+           // See the definition of content type in Structures 3.4.1
+
            if (typeInfo.contentSpecHandle == -2) {
-             typeInfo.contentType = XMLElementDecl.TYPE_MIXED_SIMPLE;
-                   
-             // add #PCDATA leaf
-             typeInfo.contentSpecHandle = 
-                     fSchemaGrammar.addContentSpecNode(
-                      XMLContentSpec.CONTENTSPECNODE_LEAF,
-                     -1, // -1 means "#PCDATA" is name
-                     -1, false);
+
+             throw new ComplexTypeRecoverableError("Type '" + typeName + "': The content of a mixed complexType must not be empty");
            }
+
            else
              typeInfo.contentType = XMLElementDecl.TYPE_MIXED_COMPLEX;
        }
@@ -3166,7 +3188,6 @@ public class TraverseSchema implements
        // -------------------------------------------------------------
        // add a template element to the grammar element decl pool.
        // -------------------------------------------------------------
-       String typeName = fStringPool.toString(typeNameIndex);
        int templateElementNameIndex = fStringPool.addSymbol("$"+typeName);
 
        typeInfo.templateElementIndex = fSchemaGrammar.addElementDecl(
@@ -3306,6 +3327,14 @@ public class TraverseSchema implements
                                           fTempAttributeDecl.list);
                 attDefIndex = aGrammar.getNextAttributeDeclIndex(attDefIndex);
             }
+        }
+
+        if ((attWildcard != null) && (baseAttWildcard != null) && 
+            (typeInfo.derivedBy==SchemaSymbols.EXTENSION)) {
+              // cos-ct-extends.1.3
+              // REVISIT: check that the base AttWildcard is a subset of the derived one 
+              // as per Wildcard Subset Consraints (3.10.6)
+              //
         }
 
         // att wildcard will inserted after all attributes were processed
