@@ -111,6 +111,9 @@ public abstract class XMLEntityScanner
      */
     public abstract void setEncoding(String encoding) throws IOException;
 
+    /** Returns true if the current entity being scanned is external. */
+    public abstract boolean isExternal();
+
     /**
      * Returns the next character on the input.
      * <p>
