@@ -139,6 +139,58 @@ extends StandardParserConfiguration {
     /** DTD Validator that does not bind namespaces */
     protected XMLDTDValidator fNonNSDTDValidator;
     
+    //
+    // Constructors
+    //
+
+    /** Default constructor. */
+    public IntegratedParserConfiguration() {
+        this(null, null, null);
+    } // <init>()
+
+    /** 
+     * Constructs a parser configuration using the specified symbol table. 
+     *
+     * @param symbolTable The symbol table to use.
+     */
+    public IntegratedParserConfiguration(SymbolTable symbolTable) {
+        this(symbolTable, null, null);
+    } // <init>(SymbolTable)
+
+    /**
+     * Constructs a parser configuration using the specified symbol table and
+     * grammar pool.
+     * <p>
+     * <strong>REVISIT:</strong> 
+     * Grammar pool will be updated when the new validation engine is
+     * implemented.
+     *
+     * @param symbolTable The symbol table to use.
+     * @param grammarPool The grammar pool to use.
+     */
+    public IntegratedParserConfiguration(SymbolTable symbolTable,
+                                         XMLGrammarPool grammarPool) {
+        this(symbolTable, grammarPool, null);
+    } // <init>(SymbolTable,XMLGrammarPool)
+
+    /**
+     * Constructs a parser configuration using the specified symbol table,
+     * grammar pool, and parent settings.
+     * <p>
+     * <strong>REVISIT:</strong> 
+     * Grammar pool will be updated when the new validation engine is
+     * implemented.
+     *
+     * @param symbolTable    The symbol table to use.
+     * @param grammarPool    The grammar pool to use.
+     * @param parentSettings The parent settings.
+     */
+    public IntegratedParserConfiguration(SymbolTable symbolTable,
+                                         XMLGrammarPool grammarPool,
+                                         XMLComponentManager parentSettings) {
+        super(symbolTable, grammarPool, parentSettings);
+    } // <init>(SymbolTable,XMLGrammarPool)
+
     
     /** Configures the pipeline. */
     protected void configurePipeline() {
