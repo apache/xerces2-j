@@ -269,8 +269,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
         fRejectedElement.clear ();
         fFilterReject = false;
         fSchemaType = null;
-        
-        
+     
     } // reset()
     
     //
@@ -732,9 +731,9 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
             throw new DOMException ( DOMException.INVALID_STATE_ERR,msg);
         }
         
-        XMLInputSource source = new XMLInputSource (null, uri, null);
-        fBusy = true;
+        XMLInputSource source = new XMLInputSource (null, uri, null);        
         try {
+			fBusy = true;
             parse (source);
             fBusy = false;
         } catch (Exception e){
@@ -761,9 +760,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
     public Document parse (LSInput is) {
         
         // need to wrap the LSInput with an XMLInputSource
-        XMLInputSource xmlInputSource = dom2xmlInputSource (is);
-        fBusy = true;
-        
+        XMLInputSource xmlInputSource = dom2xmlInputSource (is);       
         if ( fBusy ) {
             String msg = DOMMessageFormatter.formatMessage (
             DOMMessageFormatter.DOM_DOMAIN,
@@ -772,6 +769,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
         }
         
         try {
+			fBusy = true;
             parse (xmlInputSource);
             fBusy = false;
         } catch (Exception e) {
@@ -875,9 +873,8 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
     public void abort () {
         // If parse operation is in progress then reset it
         if ( fBusy ) {
-            //Revisit :: Just reset in not sufficient.
-            reset ();
-            fBusy = false;
+        	fBusy = false;
+            throw new RuntimeException("Stopped at user request");
         }
         return; // If not busy then this is noop
     }
