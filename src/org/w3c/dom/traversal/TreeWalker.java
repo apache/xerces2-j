@@ -58,8 +58,8 @@ public interface TreeWalker {
     /**
      * The value of this flag determines whether the children of entity 
      * reference nodes are visible to the <code>TreeWalker</code>. If false, 
-     * they  and their descendants will be rejected. Note that this 
-     * rejection takes precedence over <code>whatToShow</code> and the 
+     * these children  and their descendants will be rejected. Note that 
+     * this rejection takes precedence over <code>whatToShow</code> and the 
      * filter, if any. 
      * <br> To produce a view of the document that has entity references 
      * expanded and does not expose the entity reference node itself, use 
@@ -88,6 +88,21 @@ public interface TreeWalker {
      *   <code>currentNode</code> to <code>null</code>.
      */
     public Node getCurrentNode();
+    /**
+     * The node at which the <code>TreeWalker</code> is currently positioned.
+     * <br>Alterations to the DOM tree may cause the current node to no longer 
+     * be accepted by the <code>TreeWalker</code>'s associated filter. 
+     * <code>currentNode</code> may also be explicitly set to any node, 
+     * whether or not it is within the subtree specified by the 
+     * <code>root</code> node or would be accepted by the filter and 
+     * <code>whatToShow</code> flags. Further traversal occurs relative to 
+     * <code>currentNode</code> even if it is not part of the current view, 
+     * by applying the filters in the requested direction; if no traversal 
+     * is possible, <code>currentNode</code> is not changed. 
+     * @exception DOMException
+     *   NOT_SUPPORTED_ERR: Raised if an attempt is made to set 
+     *   <code>currentNode</code> to <code>null</code>.
+     */
     public void setCurrentNode(Node currentNode)
                          throws DOMException;
 

@@ -28,114 +28,98 @@ package org.w3c.dom;
  * <code>Element</code> or <code>attributes</code> for a <code>Comment</code>
  * ), this returns <code>null</code>. Note that the specialized interfaces 
  * may contain additional and more convenient mechanisms to get and set the 
- * relevant information.<br><br>
- *
- * The values of <code>nodeName, nodeValue,</code> and <code>attributes</code> 
- * vary according to the node type as follows:<br>
- * 
- *  <table border='1'
- * summary='Layout table: the first cell contains the name of the interface, 
- * the second contains the value of the nodeName attribute for this interface, 
- * the third contains the value of the nodeValue attribute for this interface and 
- * the fourth contains the value of the attributes attribute for this interface'>
+ * relevant information.
+ * <p>The values of <code>nodeName</code>, 
+ * <code>nodeValue</code>, and <code>attributes</code> vary according to the 
+ * node type as follows: 
+ * <table border='1'>
  * <tr>
  * <th>Interface</th>
  * <th>nodeName</th>
  * <th>nodeValue</th>
  * <th>attributes</th>
  * </tr>
- * 
  * <tr>
  * <td valign='top' rowspan='1' colspan='1'>Attr</td>
- * <td valign='top' rowspan='1' colspan='1'>name of attribute</td>
+ * <td valign='top' rowspan='1' colspan='1'>name of 
+ * attribute</td>
  * <td valign='top' rowspan='1' colspan='1'>value of attribute</td>
  * <td valign='top' rowspan='1' colspan='1'>null</td>
  * </tr>
- * 
  * <tr>
  * <td valign='top' rowspan='1' colspan='1'>CDATASection</td>
- * <td valign='top' rowspan='1' colspan='1'>#cdata-section</td>
- * <td valign='top' rowspan='1' colspan='1'>content of the CDATA
- * Section</td>
+ * <td valign='top' rowspan='1' colspan='1'><code>"#cdata-section"</code></td>
+ * <td valign='top' rowspan='1' colspan='1'>
+ * content of the CDATA Section</td>
  * <td valign='top' rowspan='1' colspan='1'>null</td>
  * </tr>
- * 
  * <tr>
  * <td valign='top' rowspan='1' colspan='1'>Comment</td>
- * <td valign='top' rowspan='1' colspan='1'>#comment</td>
- * <td valign='top' rowspan='1' colspan='1'>content of the
- * comment</td>
+ * <td valign='top' rowspan='1' colspan='1'><code>"#comment"</code></td>
+ * <td valign='top' rowspan='1' colspan='1'>content of 
+ * the comment</td>
  * <td valign='top' rowspan='1' colspan='1'>null</td>
  * </tr>
- * 
  * <tr>
  * <td valign='top' rowspan='1' colspan='1'>Document</td>
- * <td valign='top' rowspan='1' colspan='1'>#document</td>
+ * <td valign='top' rowspan='1' colspan='1'><code>"#document"</code></td>
  * <td valign='top' rowspan='1' colspan='1'>null</td>
  * <td valign='top' rowspan='1' colspan='1'>null</td>
  * </tr>
- * 
  * <tr>
  * <td valign='top' rowspan='1' colspan='1'>DocumentFragment</td>
- * <td valign='top' rowspan='1' colspan='1'>#document-fragment</td>
+ * <td valign='top' rowspan='1' colspan='1'>
+ * <code>"#document-fragment"</code></td>
  * <td valign='top' rowspan='1' colspan='1'>null</td>
  * <td valign='top' rowspan='1' colspan='1'>null</td>
  * </tr>
- * 
  * <tr>
  * <td valign='top' rowspan='1' colspan='1'>DocumentType</td>
  * <td valign='top' rowspan='1' colspan='1'>document type name</td>
- * <td valign='top' rowspan='1' colspan='1'>null</td>
+ * <td valign='top' rowspan='1' colspan='1'>
+ * null</td>
  * <td valign='top' rowspan='1' colspan='1'>null</td>
  * </tr>
- * 
  * <tr>
  * <td valign='top' rowspan='1' colspan='1'>Element</td>
  * <td valign='top' rowspan='1' colspan='1'>tag name</td>
  * <td valign='top' rowspan='1' colspan='1'>null</td>
  * <td valign='top' rowspan='1' colspan='1'>NamedNodeMap</td>
  * </tr>
- * 
  * <tr>
  * <td valign='top' rowspan='1' colspan='1'>Entity</td>
  * <td valign='top' rowspan='1' colspan='1'>entity name</td>
  * <td valign='top' rowspan='1' colspan='1'>null</td>
  * <td valign='top' rowspan='1' colspan='1'>null</td>
  * </tr>
- * 
  * <tr>
- * <td valign='top' rowspan='1' colspan='1'>EntityReference</td>
- * <td valign='top' rowspan='1' colspan='1'>name of entity
- * referenced</td>
+ * <td valign='top' rowspan='1' colspan='1'>
+ * EntityReference</td>
+ * <td valign='top' rowspan='1' colspan='1'>name of entity referenced</td>
  * <td valign='top' rowspan='1' colspan='1'>null</td>
  * <td valign='top' rowspan='1' colspan='1'>null</td>
  * </tr>
- * 
  * <tr>
  * <td valign='top' rowspan='1' colspan='1'>Notation</td>
  * <td valign='top' rowspan='1' colspan='1'>notation name</td>
  * <td valign='top' rowspan='1' colspan='1'>null</td>
- * <td valign='top' rowspan='1' colspan='1'>null</td>
+ * <td valign='top' rowspan='1' colspan='1'>
+ * null</td>
  * </tr>
- * 
  * <tr>
  * <td valign='top' rowspan='1' colspan='1'>ProcessingInstruction</td>
  * <td valign='top' rowspan='1' colspan='1'>target</td>
- * <td valign='top' rowspan='1' colspan='1'>entire content excluding
- * the target</td>
+ * <td valign='top' rowspan='1' colspan='1'>entire content excluding the target</td>
  * <td valign='top' rowspan='1' colspan='1'>null</td>
  * </tr>
- * 
  * <tr>
  * <td valign='top' rowspan='1' colspan='1'>Text</td>
- * <td valign='top' rowspan='1' colspan='1'>#text</td>
- * <td valign='top' rowspan='1' colspan='1'>content of the text
- * node</td>
+ * <td valign='top' rowspan='1' colspan='1'>
+ * <code>"#text"</code></td>
+ * <td valign='top' rowspan='1' colspan='1'>content of the text node</td>
  * <td valign='top' rowspan='1' colspan='1'>null</td>
  * </tr>
- * </table>
- * 
- * 
+ * </table> 
  * <p>See also the <a href='http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113'>Document Object Model (DOM) Level 2 Core Specification</a>.
  */
 public interface Node {
@@ -190,14 +174,15 @@ public interface Node {
     public static final short NOTATION_NODE             = 12;
 
     /**
-     * The name of this node, depending on its type; see the table above. 
+     * The name of this node, depending on its type; see the table above.
      */
     public String getNodeName();
 
     /**
-     * Returns the value of this node, depending on its type; see the table above. 
+     * The value of this node, depending on its type; see the table above. 
      * When it is defined to be <code>null</code>, setting it has no effect.
-     *
+     * @exception DOMException
+     *   NO_MODIFICATION_ALLOWED_ERR: Raised when the node is readonly.
      * @exception DOMException
      *   DOMSTRING_SIZE_ERR: Raised when it would return more characters than 
      *   fit in a <code>DOMString</code> variable on the implementation 
@@ -205,13 +190,15 @@ public interface Node {
      */
     public String getNodeValue()
                                  throws DOMException;
-
     /**
-     * Sets the value of this node, depending on its type; see the table above. 
+     * The value of this node, depending on its type; see the table above. 
      * When it is defined to be <code>null</code>, setting it has no effect.
-     *
      * @exception DOMException
      *   NO_MODIFICATION_ALLOWED_ERR: Raised when the node is readonly.
+     * @exception DOMException
+     *   DOMSTRING_SIZE_ERR: Raised when it would return more characters than 
+     *   fit in a <code>DOMString</code> variable on the implementation 
+     *   platform.
      */
     public void setNodeValue(String nodeValue)
                                  throws DOMException;
@@ -264,7 +251,7 @@ public interface Node {
 
     /**
      * A <code>NamedNodeMap</code> containing the attributes of this node (if 
-     * it is an <code>Element</code>) or <code>null</code> otherwise. 
+     * it is an <code>Element</code>) or <code>null</code> otherwise.
      */
     public NamedNodeMap getAttributes();
 
@@ -286,14 +273,15 @@ public interface Node {
      * all of its children are inserted, in the same order, before 
      * <code>refChild</code>. If the <code>newChild</code> is already in the 
      * tree, it is first removed.
-     * @param newChildThe node to insert.
-     * @param refChildThe reference node, i.e., the node before which the new 
-     *   node must be inserted.
+     * @param newChild The node to insert.
+     * @param refChild The reference node, i.e., the node before which the 
+     *   new node must be inserted.
      * @return The node being inserted.
      * @exception DOMException
      *   HIERARCHY_REQUEST_ERR: Raised if this node is of a type that does not 
      *   allow children of the type of the <code>newChild</code> node, or if 
-     *   the node to insert is one of this node's ancestors.
+     *   the node to insert is one of this node's ancestors or this node 
+     *   itself.
      *   <br>WRONG_DOCUMENT_ERR: Raised if <code>newChild</code> was created 
      *   from a different document than the one that created this node.
      *   <br>NO_MODIFICATION_ALLOWED_ERR: Raised if this node is readonly or 
@@ -313,13 +301,14 @@ public interface Node {
      * <code>DocumentFragment</code> children, which are inserted in the 
      * same order. If the <code>newChild</code> is already in the tree, it 
      * is first removed.
-     * @param newChildThe new node to put in the child list.
-     * @param oldChildThe node being replaced in the list.
+     * @param newChild The new node to put in the child list.
+     * @param oldChild The node being replaced in the list.
      * @return The node replaced.
      * @exception DOMException
      *   HIERARCHY_REQUEST_ERR: Raised if this node is of a type that does not 
      *   allow children of the type of the <code>newChild</code> node, or if 
-     *   the node to put in is one of this node's ancestors.
+     *   the node to put in is one of this node's ancestors or this node 
+     *   itself.
      *   <br>WRONG_DOCUMENT_ERR: Raised if <code>newChild</code> was created 
      *   from a different document than the one that created this node.
      *   <br>NO_MODIFICATION_ALLOWED_ERR: Raised if this node or the parent of 
@@ -334,7 +323,7 @@ public interface Node {
     /**
      * Removes the child node indicated by <code>oldChild</code> from the list 
      * of children, and returns it.
-     * @param oldChildThe node being removed.
+     * @param oldChild The node being removed.
      * @return The node removed.
      * @exception DOMException
      *   NO_MODIFICATION_ALLOWED_ERR: Raised if this node is readonly.
@@ -348,24 +337,26 @@ public interface Node {
      * Adds the node <code>newChild</code> to the end of the list of children 
      * of this node. If the <code>newChild</code> is already in the tree, it 
      * is first removed.
-     * @param newChildThe node to add.If it is a <code>DocumentFragment</code>
-     *    object, the entire contents of the document fragment are moved 
-     *   into the child list of this node
+     * @param newChild The node to add.If it is a 
+     *   <code>DocumentFragment</code> object, the entire contents of the 
+     *   document fragment are moved into the child list of this node
      * @return The node added.
      * @exception DOMException
      *   HIERARCHY_REQUEST_ERR: Raised if this node is of a type that does not 
      *   allow children of the type of the <code>newChild</code> node, or if 
-     *   the node to append is one of this node's ancestors.
+     *   the node to append is one of this node's ancestors or this node 
+     *   itself.
      *   <br>WRONG_DOCUMENT_ERR: Raised if <code>newChild</code> was created 
      *   from a different document than the one that created this node.
-     *   <br>NO_MODIFICATION_ALLOWED_ERR: Raised if this node is readonly.
+     *   <br>NO_MODIFICATION_ALLOWED_ERR: Raised if this node is readonly or 
+     *   if the previous parent of the node being inserted is readonly.
      */
     public Node appendChild(Node newChild)
                             throws DOMException;
 
     /**
      * Returns whether this node has any children.
-     * @return  <code>true</code> if this node has any children, 
+     * @return <code>true</code> if this node has any children, 
      *   <code>false</code> otherwise.
      */
     public boolean hasChildNodes();
@@ -389,9 +380,9 @@ public interface Node {
      * specified. And, cloning <code>Document</code>, 
      * <code>DocumentType</code>, <code>Entity</code>, and 
      * <code>Notation</code> nodes is implementation dependent.
-     * @param deepIf <code>true</code>, recursively clone the subtree under 
+     * @param deep If <code>true</code>, recursively clone the subtree under 
      *   the specified node; if <code>false</code>, clone only the node 
-     *   itself (and its attributes, if it is an <code>Element</code>). 
+     *   itself (and its attributes, if it is an <code>Element</code>).
      * @return The duplicate node.
      */
     public Node cloneNode(boolean deep);
@@ -417,10 +408,10 @@ public interface Node {
     /**
      * Tests whether the DOM implementation implements a specific feature and 
      * that feature is supported by this node.
-     * @param featureThe name of the feature to test. This is the same name 
+     * @param feature The name of the feature to test. This is the same name 
      *   which can be passed to the method <code>hasFeature</code> on 
      *   <code>DOMImplementation</code>.
-     * @param versionThis is the version number of the feature to test. In 
+     * @param version This is the version number of the feature to test. In 
      *   Level 2, version 1, this is the string "2.0". If the version is not 
      *   specified, supporting any version of the feature will cause the 
      *   method to return <code>true</code>.
@@ -466,20 +457,51 @@ public interface Node {
      * <code>Document</code> interface, this is always <code>null</code>.
      * @exception DOMException
      *   INVALID_CHARACTER_ERR: Raised if the specified prefix contains an 
-     *   illegal character.
+     *   illegal character, per the XML 1.0 specification .
      *   <br>NO_MODIFICATION_ALLOWED_ERR: Raised if this node is readonly.
      *   <br>NAMESPACE_ERR: Raised if the specified <code>prefix</code> is 
-     *   malformed, if the <code>namespaceURI</code> of this node is 
-     *   <code>null</code>, if the specified prefix is "xml" and the 
-     *   <code>namespaceURI</code> of this node is different from "
-     *   http://www.w3.org/XML/1998/namespace", if this node is an attribute 
-     *   and the specified prefix is "xmlns" and the 
-     *   <code>namespaceURI</code> of this node is different from "
+     *   malformed per the Namespaces in XML specification, if the 
+     *   <code>namespaceURI</code> of this node is <code>null</code>, if the 
+     *   specified prefix is "xml" and the <code>namespaceURI</code> of this 
+     *   node is different from "http://www.w3.org/XML/1998/namespace", if 
+     *   this node is an attribute and the specified prefix is "xmlns" and 
+     *   the <code>namespaceURI</code> of this node is different from "
      *   http://www.w3.org/2000/xmlns/", or if this node is an attribute and 
      *   the <code>qualifiedName</code> of this node is "xmlns" .
      * @since DOM Level 2
      */
     public String getPrefix();
+    /**
+     * The namespace prefix of this node, or <code>null</code> if it is 
+     * unspecified.
+     * <br>Note that setting this attribute, when permitted, changes the 
+     * <code>nodeName</code> attribute, which holds the qualified name, as 
+     * well as the <code>tagName</code> and <code>name</code> attributes of 
+     * the <code>Element</code> and <code>Attr</code> interfaces, when 
+     * applicable.
+     * <br>Note also that changing the prefix of an attribute that is known to 
+     * have a default value, does not make a new attribute with the default 
+     * value and the original prefix appear, since the 
+     * <code>namespaceURI</code> and <code>localName</code> do not change.
+     * <br>For nodes of any type other than <code>ELEMENT_NODE</code> and 
+     * <code>ATTRIBUTE_NODE</code> and nodes created with a DOM Level 1 
+     * method, such as <code>createElement</code> from the 
+     * <code>Document</code> interface, this is always <code>null</code>.
+     * @exception DOMException
+     *   INVALID_CHARACTER_ERR: Raised if the specified prefix contains an 
+     *   illegal character, per the XML 1.0 specification .
+     *   <br>NO_MODIFICATION_ALLOWED_ERR: Raised if this node is readonly.
+     *   <br>NAMESPACE_ERR: Raised if the specified <code>prefix</code> is 
+     *   malformed per the Namespaces in XML specification, if the 
+     *   <code>namespaceURI</code> of this node is <code>null</code>, if the 
+     *   specified prefix is "xml" and the <code>namespaceURI</code> of this 
+     *   node is different from "http://www.w3.org/XML/1998/namespace", if 
+     *   this node is an attribute and the specified prefix is "xmlns" and 
+     *   the <code>namespaceURI</code> of this node is different from "
+     *   http://www.w3.org/2000/xmlns/", or if this node is an attribute and 
+     *   the <code>qualifiedName</code> of this node is "xmlns" .
+     * @since DOM Level 2
+     */
     public void setPrefix(String prefix)
                                throws DOMException;
 

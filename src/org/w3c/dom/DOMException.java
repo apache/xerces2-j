@@ -18,10 +18,10 @@ package org.w3c.dom;
  * because data is lost, or because the implementation has become unstable). 
  * In general, DOM methods return specific error values in ordinary 
  * processing situations, such as out-of-bound errors when using 
- * <code>NodeList</code>. 
+ * <code>NodeList</code>.
  * <p>Implementations should raise other exceptions under other circumstances. 
  * For example, implementations should raise an implementation-dependent 
- * exception if a <code>null</code> argument is passed. 
+ * exception if a <code>null</code> argument is passed.
  * <p>Some languages and object systems do not support the concept of 
  * exceptions. For such systems, error conditions may be indicated using 
  * native error reporting mechanisms. For some bindings, for example, 

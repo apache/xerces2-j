@@ -13,8 +13,8 @@
 package org.w3c.dom.ranges;
 
 import org.w3c.dom.Node;
-import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.DOMException;
+import org.w3c.dom.DocumentFragment;
 
 /**
  * <p>See also the <a href='http://www.w3.org/TR/2000/REC-DOM-Level-2-Traversal-Range-20001113'>Document Object Model (DOM) Level 2 Traversal and Range Specification</a>.
@@ -78,9 +78,9 @@ public interface Range {
 
     /**
      * Sets the attributes describing the start of the Range. 
-     * @param refNodeThe <code>refNode</code> value. This parameter must be 
+     * @param refNode The <code>refNode</code> value. This parameter must be 
      *   different from <code>null</code>.
-     * @param offsetThe <code>startOffset</code> value. 
+     * @param offset The <code>startOffset</code> value. 
      * @exception RangeException
      *   INVALID_NODE_TYPE_ERR: Raised if <code>refNode</code> or an ancestor 
      *   of <code>refNode</code> is an Entity, Notation, or DocumentType 
@@ -93,6 +93,8 @@ public interface Range {
      *   node. Child units are Nodes in all other cases.
      *   <br>INVALID_STATE_ERR: Raised if <code>detach()</code> has already 
      *   been invoked on this object.
+     *   <br>WRONG_DOCUMENT_ERR: Raised if <code>refNode</code> was created 
+     *   from a different document than the one that created this range.
      */
     public void setStart(Node refNode, 
                          int offset)
@@ -100,9 +102,9 @@ public interface Range {
 
     /**
      * Sets the attributes describing the end of a Range.
-     * @param refNodeThe <code>refNode</code> value. This parameter must be 
+     * @param refNode The <code>refNode</code> value. This parameter must be 
      *   different from <code>null</code>.
-     * @param offsetThe <code>endOffset</code> value. 
+     * @param offset The <code>endOffset</code> value. 
      * @exception RangeException
      *   INVALID_NODE_TYPE_ERR: Raised if <code>refNode</code> or an ancestor 
      *   of <code>refNode</code> is an Entity, Notation, or DocumentType 
@@ -115,6 +117,8 @@ public interface Range {
      *   node. Child units are Nodes in all other cases.
      *   <br>INVALID_STATE_ERR: Raised if <code>detach()</code> has already 
      *   been invoked on this object.
+     *   <br>WRONG_DOCUMENT_ERR: Raised if <code>refNode</code> was created 
+     *   from a different document than the one that created this range.
      */
     public void setEnd(Node refNode, 
                        int offset)
@@ -122,7 +126,7 @@ public interface Range {
 
     /**
      * Sets the start position to be before a node
-     * @param refNodeRange starts before <code>refNode</code> 
+     * @param refNode Range starts before <code>refNode</code> 
      * @exception RangeException
      *   INVALID_NODE_TYPE_ERR: Raised if the root container of 
      *   <code>refNode</code> is not an Attr, Document, or DocumentFragment 
@@ -131,13 +135,15 @@ public interface Range {
      * @exception DOMException
      *   INVALID_STATE_ERR: Raised if <code>detach()</code> has already been 
      *   invoked on this object.
+     *   <br>WRONG_DOCUMENT_ERR: Raised if <code>refNode</code> was created 
+     *   from a different document than the one that created this range.
      */
     public void setStartBefore(Node refNode)
                                throws RangeException, DOMException;
 
     /**
      * Sets the start position to be after a node
-     * @param refNodeRange starts after <code>refNode</code> 
+     * @param refNode Range starts after <code>refNode</code> 
      * @exception RangeException
      *   INVALID_NODE_TYPE_ERR: Raised if the root container of 
      *   <code>refNode</code> is not an Attr, Document, or DocumentFragment 
@@ -146,13 +152,15 @@ public interface Range {
      * @exception DOMException
      *   INVALID_STATE_ERR: Raised if <code>detach()</code> has already been 
      *   invoked on this object.
+     *   <br>WRONG_DOCUMENT_ERR: Raised if <code>refNode</code> was created 
+     *   from a different document than the one that created this range.
      */
     public void setStartAfter(Node refNode)
                               throws RangeException, DOMException;
 
     /**
      * Sets the end position to be before a node. 
-     * @param refNodeRange ends before <code>refNode</code> 
+     * @param refNode Range ends before <code>refNode</code> 
      * @exception RangeException
      *   INVALID_NODE_TYPE_ERR: Raised if the root container of 
      *   <code>refNode</code> is not an Attr, Document, or DocumentFragment 
@@ -161,13 +169,15 @@ public interface Range {
      * @exception DOMException
      *   INVALID_STATE_ERR: Raised if <code>detach()</code> has already been 
      *   invoked on this object.
+     *   <br>WRONG_DOCUMENT_ERR: Raised if <code>refNode</code> was created 
+     *   from a different document than the one that created this range.
      */
     public void setEndBefore(Node refNode)
                              throws RangeException, DOMException;
 
     /**
      * Sets the end of a Range to be after a node 
-     * @param refNodeRange ends after <code>refNode</code>. 
+     * @param refNode Range ends after <code>refNode</code>. 
      * @exception RangeException
      *   INVALID_NODE_TYPE_ERR: Raised if the root container of 
      *   <code>refNode</code> is not an Attr, Document or DocumentFragment 
@@ -176,13 +186,15 @@ public interface Range {
      * @exception DOMException
      *   INVALID_STATE_ERR: Raised if <code>detach()</code> has already been 
      *   invoked on this object.
+     *   <br>WRONG_DOCUMENT_ERR: Raised if <code>refNode</code> was created 
+     *   from a different document than the one that created this range.
      */
     public void setEndAfter(Node refNode)
                             throws RangeException, DOMException;
 
     /**
      * Collapse a Range onto one of its boundary-points 
-     * @param toStartIf TRUE, collapses the Range onto its start; if FALSE, 
+     * @param toStart If TRUE, collapses the Range onto its start; if FALSE, 
      *   collapses it onto its end. 
      * @exception DOMException
      *   INVALID_STATE_ERR: Raised if <code>detach()</code> has already been 
@@ -193,7 +205,7 @@ public interface Range {
 
     /**
      * Select a node and its contents 
-     * @param refNodeThe node to select. 
+     * @param refNode The node to select. 
      * @exception RangeException
      *   INVALID_NODE_TYPE_ERR: Raised if an ancestor of <code>refNode</code> 
      *   is an Entity, Notation or DocumentType node or if 
@@ -202,19 +214,23 @@ public interface Range {
      * @exception DOMException
      *   INVALID_STATE_ERR: Raised if <code>detach()</code> has already been 
      *   invoked on this object.
+     *   <br>WRONG_DOCUMENT_ERR: Raised if <code>refNode</code> was created 
+     *   from a different document than the one that created this range.
      */
     public void selectNode(Node refNode)
                            throws RangeException, DOMException;
 
     /**
      * Select the contents within a node 
-     * @param refNodeNode to select from 
+     * @param refNode Node to select from 
      * @exception RangeException
      *   INVALID_NODE_TYPE_ERR: Raised if <code>refNode</code> or an ancestor 
      *   of <code>refNode</code> is an Entity, Notation or DocumentType node.
      * @exception DOMException
      *   INVALID_STATE_ERR: Raised if <code>detach()</code> has already been 
      *   invoked on this object.
+     *   <br>WRONG_DOCUMENT_ERR: Raised if <code>refNode</code> was created 
+     *   from a different document than the one that created this range.
      */
     public void selectNodeContents(Node refNode)
                                    throws RangeException, DOMException;
@@ -247,8 +263,9 @@ public interface Range {
 
     /**
      * Compare the boundary-points of two Ranges in a document.
-     * @param howA code representing the type of comparison, as defined above.
-     * @param sourceRangeThe <code>Range</code> on which this current 
+     * @param how A code representing the type of comparison, as defined 
+     *   above.
+     * @param sourceRange The <code>Range</code> on which this current 
      *   <code>Range</code> is compared to.
      * @return  -1, 0 or 1 depending on whether the corresponding 
      *   boundary-point of the Range is respectively before, equal to, or 
@@ -315,7 +332,7 @@ public interface Range {
      * automatically merged. If the node to be inserted is a 
      * DocumentFragment node, the children will be inserted rather than the 
      * DocumentFragment node itself.
-     * @param newNodeThe node to insert at the start of the Range 
+     * @param newNode The node to insert at the start of the Range 
      * @exception DOMException
      *   NO_MODIFICATION_ALLOWED_ERR: Raised if an ancestor container of the 
      *   start of the Range is read-only.
@@ -338,7 +355,7 @@ public interface Range {
     /**
      * Reparents the contents of the Range to the given node and inserts the 
      * node at the position of the start of the Range. 
-     * @param newParentThe node to surround the contents with. 
+     * @param newParent The node to surround the contents with. 
      * @exception DOMException
      *   NO_MODIFICATION_ALLOWED_ERR: Raised if an ancestor container of 
      *   either boundary-point of the Range is read-only.

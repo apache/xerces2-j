@@ -61,7 +61,7 @@ public interface Entity extends Node {
 
     /**
      * For unparsed entities, the name of the notation for the entity. For 
-     * parsed entities, this is <code>null</code>. 
+     * parsed entities, this is <code>null</code>.
      */
     public String getNotationName();
 

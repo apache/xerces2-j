@@ -25,7 +25,7 @@ public interface NodeList {
      * Returns the <code>index</code>th item in the collection. If 
      * <code>index</code> is greater than or equal to the number of nodes in 
      * the list, this returns <code>null</code>.
-     * @param indexIndex into the collection.
+     * @param index Index into the collection.
      * @return The node at the <code>index</code>th position in the 
      *   <code>NodeList</code>, or <code>null</code> if that is not a valid 
      *   index.
@@ -34,7 +34,7 @@ public interface NodeList {
 
     /**
      * The number of nodes in the list. The range of valid child node indices 
-     * is 0 to <code>length-1</code> inclusive. 
+     * is 0 to <code>length-1</code> inclusive.
      */
     public int getLength();
 

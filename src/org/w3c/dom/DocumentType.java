@@ -68,10 +68,11 @@ public interface DocumentType extends Node {
     public String getSystemId();
 
     /**
-     * The internal subset as a string.The actual content returned depends on 
-     * how much information is available to the implementation. This may 
-     * vary depending on various parameters, including the XML processor 
-     * used to build the document.
+     * The internal subset as a string, or <code>null</code> if there is none. 
+     * This is does not contain the delimiting square brackets.The actual 
+     * content returned depends on how much information is available to the 
+     * implementation. This may vary depending on various parameters, 
+     * including the XML processor used to build the document.
      * @since DOM Level 2
      */
     public String getInternalSubset();

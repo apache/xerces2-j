@@ -39,13 +39,13 @@ public interface Element extends Node {
      * case-preserving in XML, as are all of the operations of the DOM. The 
      * HTML DOM returns the <code>tagName</code> of an HTML element in the 
      * canonical uppercase form, regardless of the case in the source HTML 
-     * document. 
+     * document.
      */
     public String getTagName();
 
     /**
      * Retrieves an attribute value by name.
-     * @param nameThe name of the attribute to retrieve.
+     * @param name The name of the attribute to retrieve.
      * @return The <code>Attr</code> value as a string, or the empty string 
      *   if that attribute does not have a specified or default value.
      */
@@ -65,8 +65,8 @@ public interface Element extends Node {
      * it as the value of an attribute.
      * <br>To set an attribute with a qualified name and namespace URI, use 
      * the <code>setAttributeNS</code> method.
-     * @param nameThe name of the attribute to create or alter.
-     * @param valueValue to set in string form.
+     * @param name The name of the attribute to create or alter.
+     * @param value Value to set in string form.
      * @exception DOMException
      *   INVALID_CHARACTER_ERR: Raised if the specified name contains an 
      *   illegal character.
@@ -83,7 +83,7 @@ public interface Element extends Node {
      * and prefix when applicable.
      * <br>To remove an attribute by local name and namespace URI, use the 
      * <code>removeAttributeNS</code> method.
-     * @param nameThe name of the attribute to remove.
+     * @param name The name of the attribute to remove.
      * @exception DOMException
      *   NO_MODIFICATION_ALLOWED_ERR: Raised if this node is readonly.
      */
@@ -94,7 +94,7 @@ public interface Element extends Node {
      * Retrieves an attribute node by name.
      * <br>To retrieve an attribute node by qualified name and namespace URI, 
      * use the <code>getAttributeNodeNS</code> method.
-     * @param nameThe name (<code>nodeName</code>) of the attribute to 
+     * @param name The name (<code>nodeName</code>) of the attribute to 
      *   retrieve.
      * @return The <code>Attr</code> node with the specified name (
      *   <code>nodeName</code>) or <code>null</code> if there is no such 
@@ -108,7 +108,7 @@ public interface Element extends Node {
      * replaced by the new one.
      * <br>To add a new attribute node with a qualified name and namespace 
      * URI, use the <code>setAttributeNodeNS</code> method.
-     * @param newAttrThe <code>Attr</code> node to add to the attribute list.
+     * @param newAttr The <code>Attr</code> node to add to the attribute list.
      * @return If the <code>newAttr</code> attribute replaces an existing 
      *   attribute, the replaced <code>Attr</code> node is returned, 
      *   otherwise <code>null</code> is returned.
@@ -129,7 +129,7 @@ public interface Element extends Node {
      * has a default value it is immediately replaced. The replacing 
      * attribute has the same namespace URI and local name, as well as the 
      * original prefix, when applicable.
-     * @param oldAttrThe <code>Attr</code> node to remove from the attribute 
+     * @param oldAttr The <code>Attr</code> node to remove from the attribute 
      *   list.
      * @return The <code>Attr</code> node that was removed.
      * @exception DOMException
@@ -144,17 +144,20 @@ public interface Element extends Node {
      * Returns a <code>NodeList</code> of all descendant <code>Elements</code> 
      * with a given tag name, in the order in which they are encountered in 
      * a preorder traversal of this <code>Element</code> tree.
-     * @param nameThe name of the tag to match on. The special value "*" 
+     * @param name The name of the tag to match on. The special value "*" 
      *   matches all tags.
      * @return A list of matching <code>Element</code> nodes.
      */
     public NodeList getElementsByTagName(String name);
 
     /**
-     * Retrieves an attribute value by local name and namespace URI. HTML-only 
-     * DOM implementations do not need to implement this method.
-     * @param namespaceURIThe namespace URI of the attribute to retrieve.
-     * @param localNameThe local name of the attribute to retrieve.
+     * Retrieves an attribute value by local name and namespace URI.
+     * <br>Documents which do not support the "XML" feature will permit only 
+     * the DOM Level 1 calls for creating/setting elements and attributes. 
+     * Hence, if you specify a non-null namespace URI, these DOMs will never 
+     * find a matching node.
+     * @param namespaceURI The namespace URI of the attribute to retrieve.
+     * @param localName The local name of the attribute to retrieve.
      * @return The <code>Attr</code> value as a string, or the empty string 
      *   if that attribute does not have a specified or default value.
      * @since DOM Level 2
@@ -177,25 +180,28 @@ public interface Element extends Node {
      * and use <code>setAttributeNodeNS</code> or 
      * <code>setAttributeNode</code> to assign it as the value of an 
      * attribute.
-     * <br>HTML-only DOM implementations do not need to implement this method.
-     * @param namespaceURIThe namespace URI of the attribute to create or 
+     * @param namespaceURI The namespace URI of the attribute to create or 
      *   alter.
-     * @param qualifiedNameThe qualified name of the attribute to create or 
+     * @param qualifiedName The qualified name of the attribute to create or 
      *   alter.
-     * @param valueThe value to set in string form.
+     * @param value The value to set in string form.
      * @exception DOMException
      *   INVALID_CHARACTER_ERR: Raised if the specified qualified name 
-     *   contains an illegal character.
+     *   contains an illegal character, per the XML 1.0 specification .
      *   <br>NO_MODIFICATION_ALLOWED_ERR: Raised if this node is readonly.
      *   <br>NAMESPACE_ERR: Raised if the <code>qualifiedName</code> is 
-     *   malformed, if the <code>qualifiedName</code> has a prefix and the 
+     *   malformed per the Namespaces in XML specification, if the 
+     *   <code>qualifiedName</code> has a prefix and the 
      *   <code>namespaceURI</code> is <code>null</code>, if the 
      *   <code>qualifiedName</code> has a prefix that is "xml" and the 
      *   <code>namespaceURI</code> is different from "
      *   http://www.w3.org/XML/1998/namespace", or if the 
-     *   <code>qualifiedName</code> is "xmlns" and the 
+     *   <code>qualifiedName</code>, or its prefix, is "xmlns" and the 
      *   <code>namespaceURI</code> is different from "
      *   http://www.w3.org/2000/xmlns/".
+     *   <br>NOT_SUPPORTED_ERR: Always thrown if the current document does not 
+     *   support the <code>"XML"</code> feature, since namespaces were 
+     *   defined by XML.
      * @since DOM Level 2
      */
     public void setAttributeNS(String namespaceURI, 
@@ -208,9 +214,12 @@ public interface Element extends Node {
      * attribute has a default value it is immediately replaced. The 
      * replacing attribute has the same namespace URI and local name, as 
      * well as the original prefix.
-     * <br>HTML-only DOM implementations do not need to implement this method.
-     * @param namespaceURIThe namespace URI of the attribute to remove.
-     * @param localNameThe local name of the attribute to remove.
+     * <br>Documents which do not support the "XML" feature will permit only 
+     * the DOM Level 1 calls for creating/setting elements and attributes. 
+     * Hence, if you specify a non-null namespace URI, these DOMs will never 
+     * find a matching node.
+     * @param namespaceURI The namespace URI of the attribute to remove.
+     * @param localName The local name of the attribute to remove.
      * @exception DOMException
      *   NO_MODIFICATION_ALLOWED_ERR: Raised if this node is readonly.
      * @since DOM Level 2
@@ -220,10 +229,13 @@ public interface Element extends Node {
                                   throws DOMException;
 
     /**
-     * Retrieves an <code>Attr</code> node by local name and namespace URI. 
-     * HTML-only DOM implementations do not need to implement this method.
-     * @param namespaceURIThe namespace URI of the attribute to retrieve.
-     * @param localNameThe local name of the attribute to retrieve.
+     * Retrieves an <code>Attr</code> node by local name and namespace URI.
+     * <br>Documents which do not support the "XML" feature will permit only 
+     * the DOM Level 1 calls for creating/setting elements and attributes. 
+     * Hence, if you specify a non-null namespace URI, these DOMs will never 
+     * find a matching node.
+     * @param namespaceURI The namespace URI of the attribute to retrieve.
+     * @param localName The local name of the attribute to retrieve.
      * @return The <code>Attr</code> node with the specified attribute local 
      *   name and namespace URI or <code>null</code> if there is no such 
      *   attribute.
@@ -236,8 +248,7 @@ public interface Element extends Node {
      * Adds a new attribute. If an attribute with that local name and that 
      * namespace URI is already present in the element, it is replaced by 
      * the new one.
-     * <br>HTML-only DOM implementations do not need to implement this method.
-     * @param newAttrThe <code>Attr</code> node to add to the attribute list.
+     * @param newAttr The <code>Attr</code> node to add to the attribute list.
      * @return If the <code>newAttr</code> attribute replaces an existing 
      *   attribute with the same local name and namespace URI, the replaced 
      *   <code>Attr</code> node is returned, otherwise <code>null</code> is 
@@ -250,6 +261,9 @@ public interface Element extends Node {
      *   attribute of another <code>Element</code> object. The DOM user must 
      *   explicitly clone <code>Attr</code> nodes to re-use them in other 
      *   elements.
+     *   <br>NOT_SUPPORTED_ERR: Always thrown if the current document does not 
+     *   support the <code>"XML"</code> feature, since namespaces were 
+     *   defined by XML.
      * @since DOM Level 2
      */
     public Attr setAttributeNodeNS(Attr newAttr)
@@ -260,10 +274,13 @@ public interface Element extends Node {
      * <code>Elements</code> with a given local name and namespace URI in 
      * the order in which they are encountered in a preorder traversal of 
      * this <code>Element</code> tree.
-     * <br>HTML-only DOM implementations do not need to implement this method.
-     * @param namespaceURIThe namespace URI of the elements to match on. The 
+     * <br>Documents which do not support the "XML" feature will permit only 
+     * the DOM Level 1 calls for creating/setting elements and attributes. 
+     * Hence, if you specify a non-null namespace URI, these DOMs will never 
+     * find a matching node.
+     * @param namespaceURI The namespace URI of the elements to match on. The 
      *   special value "*" matches all namespaces.
-     * @param localNameThe local name of the elements to match on. The 
+     * @param localName The local name of the elements to match on. The 
      *   special value "*" matches all local names.
      * @return A new <code>NodeList</code> object containing all the matched 
      *   <code>Elements</code>.
@@ -276,7 +293,7 @@ public interface Element extends Node {
      * Returns <code>true</code> when an attribute with a given name is 
      * specified on this element or has a default value, <code>false</code> 
      * otherwise.
-     * @param nameThe name of the attribute to look for.
+     * @param name The name of the attribute to look for.
      * @return <code>true</code> if an attribute with the given name is 
      *   specified on this element or has a default value, <code>false</code>
      *    otherwise.
@@ -287,10 +304,13 @@ public interface Element extends Node {
     /**
      * Returns <code>true</code> when an attribute with a given local name and 
      * namespace URI is specified on this element or has a default value, 
-     * <code>false</code> otherwise. HTML-only DOM implementations do not 
-     * need to implement this method.
-     * @param namespaceURIThe namespace URI of the attribute to look for.
-     * @param localNameThe local name of the attribute to look for.
+     * <code>false</code> otherwise.
+     * <br>Documents which do not support the "XML" feature will permit only 
+     * the DOM Level 1 calls for creating/setting elements and attributes. 
+     * Hence, if you specify a non-null namespace URI, these DOMs will never 
+     * find a matching node.
+     * @param namespaceURI The namespace URI of the attribute to look for.
+     * @param localName The local name of the attribute to look for.
      * @return <code>true</code> if an attribute with the given local name 
      *   and namespace URI is specified or has a default value on this 
      *   element, <code>false</code> otherwise.

@@ -42,7 +42,7 @@ public interface Text extends CharacterData {
      * node had a parent node, the new node is inserted as the next sibling 
      * of the original node. When the <code>offset</code> is equal to the 
      * length of this node, the new node has no data.
-     * @param offsetThe 16-bit unit offset at which to split, starting from 
+     * @param offset The 16-bit unit offset at which to split, starting from 
      *   <code>0</code>.
      * @return The new node, of the same type as this node.
      * @exception DOMException

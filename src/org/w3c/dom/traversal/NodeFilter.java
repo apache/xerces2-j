@@ -68,11 +68,11 @@ public interface NodeFilter {
     public static final int SHOW_ELEMENT              = 0x00000001;
     /**
      * Show <code>Attr</code> nodes. This is meaningful only when creating an 
-     * iterator or tree-walker with an attribute node as its 
-     * <code>root</code>; in this case, it means that the attribute node 
-     * will appear in the first position of the iteration or traversal. 
-     * Since attributes are never children of other nodes, they do not 
-     * appear when traversing over the document tree.
+     * <code>NodeIterator</code> or <code>TreeWalker</code> with an 
+     * attribute node as its <code>root</code>; in this case, it means that 
+     * the attribute node will appear in the first position of the iteration 
+     * or traversal. Since attributes are never children of other nodes, 
+     * they do not appear when traversing over the document tree.
      */
     public static final int SHOW_ATTRIBUTE            = 0x00000002;
     /**
@@ -89,11 +89,12 @@ public interface NodeFilter {
     public static final int SHOW_ENTITY_REFERENCE     = 0x00000010;
     /**
      * Show <code>Entity</code> nodes. This is meaningful only when creating 
-     * an iterator or tree-walker with an<code> Entity</code> node as its 
-     * <code>root</code>; in this case, it means that the <code>Entity</code>
-     *  node will appear in the first position of the traversal. Since 
-     * entities are not part of the document tree, they do not appear when 
-     * traversing over the document tree.
+     * an <code>NodeIterator</code> or <code>TreeWalker</code> with an 
+     * <code>Entity</code> node as its <code>root</code>; in this case, it 
+     * means that the <code>Entity</code> node will appear in the first 
+     * position of the traversal. Since entities are not part of the 
+     * document tree, they do not appear when traversing over the document 
+     * tree.
      */
     public static final int SHOW_ENTITY               = 0x00000020;
     /**
@@ -118,11 +119,12 @@ public interface NodeFilter {
     public static final int SHOW_DOCUMENT_FRAGMENT    = 0x00000400;
     /**
      * Show <code>Notation</code> nodes. This is meaningful only when creating 
-     * an iterator or tree-walker with a <code>Notation</code> node as its 
-     * <code>root</code>; in this case, it means that the 
-     * <code>Notation</code> node will appear in the first position of the 
-     * traversal. Since notations are not part of the document tree, they do 
-     * not appear when traversing over the document tree.
+     * an <code>NodeIterator</code> or <code>TreeWalker</code> with a 
+     * <code>Notation</code> node as its <code>root</code>; in this case, it 
+     * means that the <code>Notation</code> node will appear in the first 
+     * position of the traversal. Since notations are not part of the 
+     * document tree, they do not appear when traversing over the document 
+     * tree.
      */
     public static final int SHOW_NOTATION             = 0x00000800;
 
@@ -133,8 +135,8 @@ public interface NodeFilter {
      * <code>NodeIterator</code>; it is not normally called directly from 
      * user code. (Though you could do so if you wanted to use the same 
      * filter to guide your own application logic.)
-     * @param nThe node to check to see if it passes the filter or not.
-     * @return a constant to determine whether the node is accepted, 
+     * @param n The node to check to see if it passes the filter or not.
+     * @return A constant to determine whether the node is accepted, 
      *   rejected, or skipped, as defined above.
      */
     public short acceptNode(Node n);

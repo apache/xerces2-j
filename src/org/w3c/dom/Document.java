@@ -59,10 +59,10 @@ public interface Document extends Node {
      * and attached to the element.
      * <br>To create an element with a qualified name and namespace URI, use 
      * the <code>createElementNS</code> method.
-     * @param tagNameThe name of the element type to instantiate. For XML, 
+     * @param tagName The name of the element type to instantiate. For XML, 
      *   this is case-sensitive. For HTML, the <code>tagName</code> 
      *   parameter may be provided in any case, but it must be mapped to the 
-     *   canonical uppercase form by the DOM implementation. 
+     *   canonical uppercase form by the DOM implementation.
      * @return A new <code>Element</code> object with the 
      *   <code>nodeName</code> attribute set to <code>tagName</code>, and 
      *   <code>localName</code>, <code>prefix</code>, and 
@@ -75,21 +75,21 @@ public interface Document extends Node {
                                  throws DOMException;
 
     /**
-     * Creates an empty <code>DocumentFragment</code> object. 
+     * Creates an empty <code>DocumentFragment</code> object.
      * @return A new <code>DocumentFragment</code>.
      */
     public DocumentFragment createDocumentFragment();
 
     /**
      * Creates a <code>Text</code> node given the specified string.
-     * @param dataThe data for the node.
+     * @param data The data for the node.
      * @return The new <code>Text</code> object.
      */
     public Text createTextNode(String data);
 
     /**
      * Creates a <code>Comment</code> node given the specified string.
-     * @param dataThe data for the node.
+     * @param data The data for the node.
      * @return The new <code>Comment</code> object.
      */
     public Comment createComment(String data);
@@ -97,7 +97,7 @@ public interface Document extends Node {
     /**
      * Creates a <code>CDATASection</code> node whose value is the specified 
      * string.
-     * @param dataThe data for the <code>CDATASection</code> contents.
+     * @param data The data for the <code>CDATASection</code> contents.
      * @return The new <code>CDATASection</code> object.
      * @exception DOMException
      *   NOT_SUPPORTED_ERR: Raised if this document is an HTML document.
@@ -108,8 +108,8 @@ public interface Document extends Node {
     /**
      * Creates a <code>ProcessingInstruction</code> node given the specified 
      * name and data strings.
-     * @param targetThe target part of the processing instruction.
-     * @param dataThe data for the node.
+     * @param target The target part of the processing instruction.
+     * @param data The data for the node.
      * @return The new <code>ProcessingInstruction</code> object.
      * @exception DOMException
      *   INVALID_CHARACTER_ERR: Raised if the specified target contains an 
@@ -126,7 +126,7 @@ public interface Document extends Node {
      * using the <code>setAttributeNode</code> method. 
      * <br>To create an attribute with a qualified name and namespace URI, use 
      * the <code>createAttributeNS</code> method.
-     * @param nameThe name of the attribute.
+     * @param name The name of the attribute.
      * @return A new <code>Attr</code> object with the <code>nodeName</code> 
      *   attribute set to <code>name</code>, and <code>localName</code>, 
      *   <code>prefix</code>, and <code>namespaceURI</code> set to 
@@ -148,7 +148,7 @@ public interface Document extends Node {
      * node is also unbound; (its <code>namespaceURI</code> is 
      * <code>null</code>). The DOM Level 2 does not support any mechanism to 
      * resolve namespace prefixes.
-     * @param nameThe name of the entity to reference. 
+     * @param name The name of the entity to reference.
      * @return The new <code>EntityReference</code> object.
      * @exception DOMException
      *   INVALID_CHARACTER_ERR: Raised if the specified name contains an 
@@ -161,8 +161,8 @@ public interface Document extends Node {
     /**
      * Returns a <code>NodeList</code> of all the <code>Elements</code> with a 
      * given tag name in the order in which they are encountered in a 
-     * preorder traversal of the <code>Document</code> tree. 
-     * @param tagnameThe name of the tag to match on. The special value "*" 
+     * preorder traversal of the <code>Document</code> tree.
+     * @param tagname The name of the tag to match on. The special value "*" 
      *   matches all tags.
      * @return A new <code>NodeList</code> object containing all the matched 
      *   <code>Elements</code>.
@@ -255,9 +255,9 @@ public interface Document extends Node {
      * types of nodes inheriting from <code>CharacterData</code> copy their 
      * <code>data</code> and <code>length</code> attributes from those of 
      * the source node.</dd>
-     *  
-     * @param importedNodeThe node to import.
-     * @param deepIf <code>true</code>, recursively import the subtree under 
+     * </dl> 
+     * @param importedNode The node to import.
+     * @param deep If <code>true</code>, recursively import the subtree under 
      *   the specified node; if <code>false</code>, import only the node 
      *   itself, as explained above. This has no effect on <code>Attr</code>
      *   , <code>EntityReference</code>, and <code>Notation</code> nodes.
@@ -272,28 +272,57 @@ public interface Document extends Node {
                            throws DOMException;
 
     /**
-     * Creates an element of the given qualified name and namespace URI. 
-     * HTML-only DOM implementations do not need to implement this method.
-     * @param namespaceURIThe namespace URI of the element to create.
-     * @param qualifiedNameThe qualified name of the element type to 
+     * Creates an element of the given qualified name and namespace URI.
+     * @param namespaceURI The namespace URI of the element to create.
+     * @param qualifiedName The qualified name of the element type to 
      *   instantiate.
      * @return A new <code>Element</code> object with the following 
-     *   attributes:AttributeValue<code>Node.nodeName</code>
-     *   <code>qualifiedName</code><code>Node.namespaceURI</code>
-     *   <code>namespaceURI</code><code>Node.prefix</code>prefix, extracted 
+     *   attributes:
+     * <table border='1'>
+     * <tr>
+     * <th>Attribute</th>
+     * <th>Value</th>
+     * </tr>
+     * <tr>
+     * <td valign='top' rowspan='1' colspan='1'><code>Node.nodeName</code></td>
+     * <td valign='top' rowspan='1' colspan='1'>
+     *   <code>qualifiedName</code></td>
+     * </tr>
+     * <tr>
+     * <td valign='top' rowspan='1' colspan='1'><code>Node.namespaceURI</code></td>
+     * <td valign='top' rowspan='1' colspan='1'>
+     *   <code>namespaceURI</code></td>
+     * </tr>
+     * <tr>
+     * <td valign='top' rowspan='1' colspan='1'><code>Node.prefix</code></td>
+     * <td valign='top' rowspan='1' colspan='1'>prefix, extracted 
      *   from <code>qualifiedName</code>, or <code>null</code> if there is 
-     *   no prefix<code>Node.localName</code>local name, extracted from 
-     *   <code>qualifiedName</code><code>Element.tagName</code>
-     *   <code>qualifiedName</code>
+     *   no prefix</td>
+     * </tr>
+     * <tr>
+     * <td valign='top' rowspan='1' colspan='1'><code>Node.localName</code></td>
+     * <td valign='top' rowspan='1' colspan='1'>local name, extracted from 
+     *   <code>qualifiedName</code></td>
+     * </tr>
+     * <tr>
+     * <td valign='top' rowspan='1' colspan='1'><code>Element.tagName</code></td>
+     * <td valign='top' rowspan='1' colspan='1'>
+     *   <code>qualifiedName</code></td>
+     * </tr>
+     * </table>
      * @exception DOMException
      *   INVALID_CHARACTER_ERR: Raised if the specified qualified name 
-     *   contains an illegal character.
+     *   contains an illegal character, per the XML 1.0 specification .
      *   <br>NAMESPACE_ERR: Raised if the <code>qualifiedName</code> is 
-     *   malformed, if the <code>qualifiedName</code> has a prefix and the 
+     *   malformed per the Namespaces in XML specification, if the 
+     *   <code>qualifiedName</code> has a prefix and the 
      *   <code>namespaceURI</code> is <code>null</code>, or if the 
      *   <code>qualifiedName</code> has a prefix that is "xml" and the 
      *   <code>namespaceURI</code> is different from "
      *   http://www.w3.org/XML/1998/namespace" .
+     *   <br>NOT_SUPPORTED_ERR: Always thrown if the current document does not 
+     *   support the <code>"XML"</code> feature, since namespaces were 
+     *   defined by XML.
      * @since DOM Level 2
      */
     public Element createElementNS(String namespaceURI, 
@@ -301,31 +330,65 @@ public interface Document extends Node {
                                    throws DOMException;
 
     /**
-     * Creates an attribute of the given qualified name and namespace URI. 
-     * HTML-only DOM implementations do not need to implement this method.
-     * @param namespaceURIThe namespace URI of the attribute to create.
-     * @param qualifiedNameThe qualified name of the attribute to instantiate.
+     * Creates an attribute of the given qualified name and namespace URI.
+     * @param namespaceURI The namespace URI of the attribute to create.
+     * @param qualifiedName The qualified name of the attribute to 
+     *   instantiate.
      * @return A new <code>Attr</code> object with the following attributes:
-     *   AttributeValue<code>Node.nodeName</code>qualifiedName
-     *   <code>Node.namespaceURI</code><code>namespaceURI</code>
-     *   <code>Node.prefix</code>prefix, extracted from 
+     * <table border='1'>
+     * <tr>
+     * <th>
+     *   Attribute</th>
+     * <th>Value</th>
+     * </tr>
+     * <tr>
+     * <td valign='top' rowspan='1' colspan='1'><code>Node.nodeName</code></td>
+     * <td valign='top' rowspan='1' colspan='1'>qualifiedName</td>
+     * </tr>
+     * <tr>
+     * <td valign='top' rowspan='1' colspan='1'>
+     *   <code>Node.namespaceURI</code></td>
+     * <td valign='top' rowspan='1' colspan='1'><code>namespaceURI</code></td>
+     * </tr>
+     * <tr>
+     * <td valign='top' rowspan='1' colspan='1'>
+     *   <code>Node.prefix</code></td>
+     * <td valign='top' rowspan='1' colspan='1'>prefix, extracted from 
      *   <code>qualifiedName</code>, or <code>null</code> if there is no 
-     *   prefix<code>Node.localName</code>local name, extracted from 
-     *   <code>qualifiedName</code><code>Attr.name</code>
-     *   <code>qualifiedName</code><code>Node.nodeValue</code>the empty 
-     *   string
+     *   prefix</td>
+     * </tr>
+     * <tr>
+     * <td valign='top' rowspan='1' colspan='1'><code>Node.localName</code></td>
+     * <td valign='top' rowspan='1' colspan='1'>local name, extracted from 
+     *   <code>qualifiedName</code></td>
+     * </tr>
+     * <tr>
+     * <td valign='top' rowspan='1' colspan='1'><code>Attr.name</code></td>
+     * <td valign='top' rowspan='1' colspan='1'>
+     *   <code>qualifiedName</code></td>
+     * </tr>
+     * <tr>
+     * <td valign='top' rowspan='1' colspan='1'><code>Node.nodeValue</code></td>
+     * <td valign='top' rowspan='1' colspan='1'>the empty 
+     *   string</td>
+     * </tr>
+     * </table>
      * @exception DOMException
      *   INVALID_CHARACTER_ERR: Raised if the specified qualified name 
-     *   contains an illegal character.
+     *   contains an illegal character, per the XML 1.0 specification .
      *   <br>NAMESPACE_ERR: Raised if the <code>qualifiedName</code> is 
-     *   malformed, if the <code>qualifiedName</code> has a prefix and the 
+     *   malformed per the Namespaces in XML specification, if the 
+     *   <code>qualifiedName</code> has a prefix and the 
      *   <code>namespaceURI</code> is <code>null</code>, if the 
      *   <code>qualifiedName</code> has a prefix that is "xml" and the 
      *   <code>namespaceURI</code> is different from "
      *   http://www.w3.org/XML/1998/namespace", or if the 
-     *   <code>qualifiedName</code> is "xmlns" and the 
+     *   <code>qualifiedName</code>, or its prefix, is "xmlns" and the 
      *   <code>namespaceURI</code> is different from "
      *   http://www.w3.org/2000/xmlns/".
+     *   <br>NOT_SUPPORTED_ERR: Always thrown if the current document does not 
+     *   support the <code>"XML"</code> feature, since namespaces were 
+     *   defined by XML.
      * @since DOM Level 2
      */
     public Attr createAttributeNS(String namespaceURI, 
@@ -336,9 +399,9 @@ public interface Document extends Node {
      * Returns a <code>NodeList</code> of all the <code>Elements</code> with a 
      * given local name and namespace URI in the order in which they are 
      * encountered in a preorder traversal of the <code>Document</code> tree.
-     * @param namespaceURIThe namespace URI of the elements to match on. The 
+     * @param namespaceURI The namespace URI of the elements to match on. The 
      *   special value "*" matches all namespaces.
-     * @param localNameThe local name of the elements to match on. The 
+     * @param localName The local name of the elements to match on. The 
      *   special value "*" matches all local names.
      * @return A new <code>NodeList</code> object containing all the matched 
      *   <code>Elements</code>.
@@ -355,8 +418,8 @@ public interface Document extends Node {
      * information that says which attributes are of type ID. Attributes 
      * with the name "ID" are not of type ID unless so defined. 
      * Implementations that do not know whether attributes are of type ID or 
-     * not are expected to return <code>null</code>.
-     * @param elementIdThe unique <code>id</code> value for an element.
+     * not are expected to return <code>null</code>. 
+     * @param elementId The unique <code>id</code> value for an element.
      * @return The matching element.
      * @since DOM Level 2
      */

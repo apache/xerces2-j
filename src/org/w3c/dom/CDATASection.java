@@ -24,8 +24,8 @@ package org.w3c.dom;
  * contain characters that need to be escaped outside of CDATA sections and 
  * that, depending on the character encoding ("charset") chosen for 
  * serialization, it may be impossible to write out some characters as part 
- * of a CDATA section. 
- * <p> The <code>CDATASection</code> interface inherits from the 
+ * of a CDATA section.
+ * <p>The <code>CDATASection</code> interface inherits from the 
  * <code>CharacterData</code> interface through the <code>Text</code> 
  * interface. Adjacent <code>CDATASection</code> nodes are not merged by use 
  * of the <code>normalize</code> method of the <code>Node</code> interface.
