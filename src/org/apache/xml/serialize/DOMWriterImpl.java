@@ -496,7 +496,7 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
 
 
     private void checkAllFeatures() {
-        if (getFeature(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT))
+        if (getParameter(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT) == Boolean.TRUE)
             serializer._format.setPreserveSpace(true);
         else
             serializer._format.setPreserveSpace(false);
