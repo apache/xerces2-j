@@ -77,8 +77,8 @@ package javax.xml.parsers;
  *   http://java.sun.com/aboutJava/communityprocess/jsr/jsr_005_xml.html
  *   </a><br>
  *   THIS IMPLEMENTATION IS CONFORMANT TO THE "JAVA API FOR XML PARSING"
- *   SPECIFICATION VERSION 1.0 PUBLIC RELEASE 1 BY JAMES DUNCAN DAVIDSON
- *   PUBLISHED BY SUN MICROSYSTEMS ON FEB. 18, 2000 AND FOUND AT
+ *   SPECIFICATION VERSION 1.1 PUBLIC REVIEW 1 BY JAMES DUNCAN DAVIDSON
+ *   PUBLISHED BY SUN MICROSYSTEMS ON NOV. 2, 2000 AND FOUND AT
  *   <a href="http://java.sun.com/xml">http://java.sun.com/xml</a>
  * <br>
  * <br>

@@ -87,4 +87,24 @@ public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory{
         return(new DocumentBuilderImpl(this.isNamespaceAware(),
                                        this.isValidating()));
     }
+
+    /**
+     * Allows the user to set specific attributes on the underlying 
+     * implementation.
+     */
+    public void setAttribute(String name, Object value)
+        throws IllegalArgumentException
+    {
+        throw new IllegalArgumentException("No attributes are implemented");
+    }
+
+    /**
+     * Allows the user to retrieve specific attributes on the underlying 
+     * implementation.
+     */
+    public Object getAttribute(String name)
+        throws IllegalArgumentException
+    {
+        throw new IllegalArgumentException("No attributes are implemented");
+    }
 }

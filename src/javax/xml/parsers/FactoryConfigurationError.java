@@ -76,8 +76,8 @@ package javax.xml.parsers;
  *   http://java.sun.com/aboutJava/communityprocess/jsr/jsr_005_xml.html
  *   </a><br>
  *   THIS IMPLEMENTATION IS CONFORMANT TO THE "JAVA API FOR XML PARSING"
- *   SPECIFICATION VERSION 1.0 PUBLIC RELEASE 1 BY JAMES DUNCAN DAVIDSON
- *   PUBLISHED BY SUN MICROSYSTEMS ON FEB. 18, 2000 AND FOUND AT
+ *   SPECIFICATION VERSION 1.1 PUBLIC REVIEW 1 BY JAMES DUNCAN DAVIDSON
+ *   PUBLISHED BY SUN MICROSYSTEMS ON NOV. 2, 2000 AND FOUND AT
  *   <a href="http://java.sun.com/xml">http://java.sun.com/xml</a>
  * <br>
  * <br>
@@ -98,48 +98,87 @@ package javax.xml.parsers;
  */
 public class FactoryConfigurationError extends Error {
 
-    /** The root cause of this <code>FactoryConfigurationError</code>. */
-    private Exception exception=null;
+    private Exception exception;
 
     /**
-     * Constructs a new <code>FactoryConfigurationError</code> with no
-     * detail message.
+     * Create a new <code>FactoryConfigurationError</code> with no
+     * detail mesage.
      */
-    public FactoryConfigurationError() {
-        this(null,null);
-    }
+
+     public FactoryConfigurationError() {
+         super();
+    	 this.exception = null; 
+     }
 
     /**
-     * Constructs a new <code>FactoryConfigurationError</code> with the
-     * given detail message.
+     * Create a new <code>FactoryConfigurationError</code> with
+     * the <code>String </code> specified as an error message.
+     *
+     * @param msg The error message for the exception.
      */
+    
     public FactoryConfigurationError(String msg) {
-        this(null,msg);
+        super(msg);
+        this.exception = null;
     }
 
+
     /**
-     * Constructs a new <code>FactoryConfigurationError</code> with the
-     * given <code>Exception</code> as a root cause.
+     * Create a new <code>FactoryConfigurationError</code> with a
+     * given <code>Exception</code> base cause of the error.
+     *
+     * @param e The exception to be encapsulated in a
+     * FactoryConfigurationError.
      */
+    
     public FactoryConfigurationError(Exception e) {
-        this(e,null);
+        super();
+        this.exception = e;
     }
 
     /**
-     * Constructs a new <code>FactoryConfigurationError</code> with the
-     * given <code>Exception</code> as a root cause and the given detail
-     * message.
+     * Create a new <code>FactoryConfigurationError</code> with the
+     * given <code>Exception</code> base cause and detail message.
+     *
+     * @param e The exception to be encapsulated in a
+     * FactoryConfigurationError
+     * @param msg The detail message.
+     * @param e The exception to be wrapped in a FactoryConfigurationError
      */
+    
     public FactoryConfigurationError(Exception e, String msg) {
         super(msg);
-        this.exception=e;
+        this.exception = e;
     }
 
+
     /**
-     * Returns the root cause of this <code>FactoryConfigurationError</code>
-     * or <b>null</b> if there is none.
+     * Return the message (if any) for this error . If there is no
+     * message for the exception and there is an encapsulated
+     * exception then the message of that exception will be returned.
+     *
+     * @return The error message.
      */
-    public Exception getException() {
-        return(this.exception);
+    
+    public String getMessage () {
+        String message = super.getMessage ();
+  
+        if (message == null && exception != null) {
+            return exception.getMessage();
+        }
+
+        return message;
+    }
+  
+    /**
+     * Return the actual exception (if any) that caused this exception to
+     * be raised.
+     *
+     * @return The encapsulated exception, or null if there is none.
+     */
+    
+    public Exception getException () {
+        return exception;
     }
 }
+

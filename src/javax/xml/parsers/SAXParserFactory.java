@@ -57,7 +57,20 @@
 
 package javax.xml.parsers;
 
+import org.xml.sax.Parser;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
+
+import java.io.InputStream;
+import java.io.IOException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.Locale;
+
+import java.util.Properties;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 /**
  * The <code>SAXParserFactory</code> defines a factory API that enables
@@ -72,8 +85,8 @@ import org.xml.sax.SAXException;
  *   http://java.sun.com/aboutJava/communityprocess/jsr/jsr_005_xml.html
  *   </a><br>
  *   THIS IMPLEMENTATION IS CONFORMANT TO THE "JAVA API FOR XML PARSING"
- *   SPECIFICATION VERSION 1.0 PUBLIC RELEASE 1 BY JAMES DUNCAN DAVIDSON
- *   PUBLISHED BY SUN MICROSYSTEMS ON FEB. 18, 2000 AND FOUND AT
+ *   SPECIFICATION VERSION 1.1 PUBLIC REVIEW 1 BY JAMES DUNCAN DAVIDSON
+ *   PUBLISHED BY SUN MICROSYSTEMS ON NOV. 2, 2000 AND FOUND AT
  *   <a href="http://java.sun.com/xml">http://java.sun.com/xml</a>
  * <br>
  * <br>
@@ -92,137 +105,251 @@ import org.xml.sax.SAXException;
  * @author Copyright &copy; 2000 The Apache Software Foundation.
  * @version 1.0 CVS $Revision$ $Date$
  */
+
 public abstract class SAXParserFactory {
+    /** The default property name according to the JAXP spec */
+    private static final String defaultPropName =
+        "javax.xml.parsers.SAXParserFactory";
 
-    /** Wether the SAXParser to be generated must support namespaces. */
-    private boolean namespaces=false;
-    /** Wether the SAXParser to be generated must support validataion. */
-    private boolean validation=false;
-    /** The system property to check for the SAXParserFactory class name. */
-    private static String property="javax.xml.parsers.SAXParserFactory";
-    /** The default SAXParserFactory implementation class name. */
-    private static String factory="org.apache.xerces.jaxp.SAXParserFactoryImpl";
-
-    /**
-     * Implementors of this abstract class <b>must</b> provide their own
-     * public no-argument constructor in order for the static
-     * <code>newInstance()</code> method to work correctly.
-     * <br>
-     * Application programmers should be able to instantiate an implementation
-     * of this abstract class directly if they want to use a specfic
-     * implementation of this API without using the static newInstance method
-     * to obtain the configured or platform default implementation.
-     */
-    protected SAXParserFactory() {
-        super();
+    private boolean validating = false;
+    private boolean namespaceAware= false;
+    
+    protected SAXParserFactory () {
+    
     }
 
     /**
-     * Returns a new instance of a <code>SAXParserFactory</code>.
-     * <br>
-     * The implementation of the SAX-ParserFactory returned depends on the
-     * setting of the <code>javax.xml.parsers.SAXParserFactory</code>
-     * system property or, if the property is not set, a platform specific
-     * default.
+     * Obtain a new instance of a <code>SAXParserFactory</code>. This
+     * static method creates a new factory instance based on a System
+     * property setting or uses the platform default if no property
+     * has been defined.<p>
      *
-     * @exception FactoryConfigurationError If the class implementing the
-     *                factory cannot be found or instantiated.
-     *                An <code>Error</code> is thrown instead of an exception
-     *                because the application is not expected to handle or
-     *                recover from such events.
+     * The system property that controls which Factory implementation
+     * to create is named
+     * &quot;javax.xml.parsers.SAXParserFactory&quot;. This property
+     * names a class that is a concrete subclass of this abstract
+     * class. If no property is defined, a platform default will be
+     * used.<p>
+     *
+     * Once an application has obtained a reference to a
+     * <code>SAXParserFactory</code> it can use the factory to
+     * configure and obtain parser instances.
+     *
+     * @exception FactoryConfigurationError if the implementation is
+     * not available or cannot be instantiated.
      */
+
     public static SAXParserFactory newInstance() {
-
-        // Retrieve the javax.xml.parsers.SAXParserFactory system property
-        String n=factory;
-        try {
-            n=System.getProperty(property, factory);
-        } catch (SecurityException e) {
-        	// In applets System.getProperty throws a SecurityException.
-        	// Thanks to Aaron Buchanan <abuchanan@inovacorp.com> and to
-        	// James Duncan Davidson <james.davidson@eng.sun.com> for this
-        	n=factory;
+	String factoryImplName = findFactory(defaultPropName,
+					     "org.apache.xerces.jaxp.SAXParserFactoryImpl");
+	// the default can be removed after services are tested well enough
+	
+        if (factoryImplName == null) {
+            throw new FactoryConfigurationError(
+                "No default implementation found");
         }
 
+        SAXParserFactory factoryImpl = null;
         try {
-            // Attempt to load, instantiate and return the factory class
-            return (SAXParserFactory)Class.forName(n).newInstance();
-
-        } catch (ClassNotFoundException e) {
-            // The factory class was not found
-            throw new FactoryConfigurationError("Cannot load class "+
-                "SAXParserFactory class \""+n+"\"");
-
-        } catch (InstantiationException e) {
-            // The factory class wasn't instantiated
-            throw new FactoryConfigurationError("Cannot instantiate the "+
-                "specified SAXParserFactory class \""+n+"\"");
-
-        } catch (IllegalAccessException e) {
-            // The factory class couldn't have been accessed
-            throw new FactoryConfigurationError("Cannot access the specified "+
-                "SAXParserFactory class \""+n+"\"");
-
-        } catch (ClassCastException e) {
-            // The factory class was not a SAXParserFactory
-            throw new FactoryConfigurationError("The specified class \""+n+
-                "\" is not instance of \"javax.xml.parsers.SAXParserFactory\"");
-        }
+            Class clazz = Class.forName(factoryImplName);
+            factoryImpl = (SAXParserFactory)clazz.newInstance();
+        } catch  (ClassNotFoundException cnfe) {
+	    throw new FactoryConfigurationError(cnfe);
+	} catch (IllegalAccessException iae) {
+	    throw new FactoryConfigurationError(iae);
+	} catch (InstantiationException ie) {
+	    throw new FactoryConfigurationError(ie);
+	}
+        return factoryImpl;
     }
-
+    
     /**
-     * Returns a new configured instance of type <code>SAXParser</code>.
+     * Creates a new instance of a SAXParser using the currently
+     * configured factory parameters.
      *
-     * @exception ParserConfigurationException If the <code>SAXParser</code>
-     *                instance cannot be created with the requested
-     *                configuration.
-     * @exception SAXException If the initialization of the underlying parser
-     *                fails.
+     * @exception ParserConfigurationException if a parser cannot
+     * be created which satisfies the requested configuration.
      */
+    
     public abstract SAXParser newSAXParser()
-    throws ParserConfigurationException, SAXException;
+        throws ParserConfigurationException, SAXException;
 
+    
     /**
-     * Configuration method that specifies whether the parsers created by this
-     * factory are required to provide XML namespace support or not.
-     * <br>
-     * <b>NOTE:</b> if a parser cannot be created by this factory that
-     *     satisfies the requested namespace awareness value, a
-     *     <code>ParserConfigurationException</code> will be thrown when the
-     *     program attempts to aquire the parser calling the
-     *     <code>newSaxParser()</code> method.
+     * Specifies that the parser produced by this code will
+     * provide support for XML namespaces.
      */
-    public void setNamespaceAware(boolean aware) {
-        this.namespaces=aware;
+    
+    public void setNamespaceAware(boolean awareness) 
+    {
+        this.namespaceAware = awareness;
     }
 
     /**
-     * Configuration method whether specifies if the parsers created by this
-     * factory are required to validate the XML documents that they parse.
-     * <br>
-     * <b>NOTE:</b> if a parser cannot be created by this factory that
-     *     satisfies the requested validation capacity, a
-     *     <code>ParserConfigurationException</code> will be thrown when
-     *     the application attempts to aquire the parser via the
-     *     <code>newSaxParser()</code> method.
+     * Specifies that the parser produced by this code will
+     * validate documents as they are parsed.
      */
-    public void setValidating(boolean validating) {
-        this.validation=validating;
+    
+    public void setValidating(boolean validating) 
+    {
+        this.validating = validating;
     }
 
     /**
-     * Indicates if this <code>SAXParserFactory</code> is configured to
-     * produce parsers that are namespace aware or not.
+     * Indicates whether or not the factory is configured to produce
+     * parsers which are namespace aware.
      */
+    
     public boolean isNamespaceAware() {
-        return(this.namespaces);
+        return namespaceAware;
     }
 
     /**
-     * Indicates if this <code>SAXParserFactory</code> is configured to
-     * produce parsers that validate XML documents as they are parsed.
+     * Indicates whether or not the factory is configured to produce
+     * parsers which validate the XML content during parse.
      */
+    
     public boolean isValidating() {
-        return(this.validation);
+        return validating;
+    }
+
+    /**
+     *
+     * Sets the particular feature in the underlying implementation of 
+     * org.xml.sax.XMLReader.
+     *
+     * @param name The name of the feature to be set.
+     * @param value The value of the feature to be set.
+     * @exception SAXNotRecognizedException When the underlying XMLReader does 
+     *            not recognize the property name.
+     *
+     * @exception SAXNotSupportedException When the underlying XMLReader 
+     *            recognizes the property name but doesn't support the
+     *            property.
+     *
+     * @see org.xml.sax.XMLReader#setFeature
+     */
+    public abstract void setFeature(String name, boolean value)
+        throws ParserConfigurationException, SAXNotRecognizedException,
+	            SAXNotSupportedException;
+
+    /**
+     *
+     * returns the particular property requested for in the underlying 
+     * implementation of org.xml.sax.XMLReader.
+     *
+     * @param name The name of the property to be retrieved.
+     * @return Value of the requested property.
+     *
+     * @exception SAXNotRecognizedException When the underlying XMLReader does 
+     *            not recognize the property name.
+     *
+     * @exception SAXNotSupportedException When the underlying XMLReader 
+     *            recognizes the property name but doesn't support the
+     *            property.
+     *
+     * @see org.xml.sax.XMLReader#getProperty
+     */
+    public abstract boolean getFeature(String name)
+        throws ParserConfigurationException, SAXNotRecognizedException,
+	            SAXNotSupportedException;
+
+
+    // -------------------- private methods --------------------
+    // This code is duplicated in all factories.
+    // Keep it in sync or move it to a common place 
+    // Because it's small probably it's easier to keep it here
+    /** Avoid reading all the files when the findFactory
+	method is called the second time ( cache the result of
+	finding the default impl )
+    */
+    private static String foundFactory=null;
+
+    /** Temp debug code - this will be removed after we test everything
+     */
+    private static final boolean debug=
+	System.getProperty( "jaxp.debug" ) != null;
+
+    /** Private implementation method - will find the implementation
+	class in the specified order.
+	@param factoryId   Name of the factory interface
+	@param xmlProperties Name of the properties file based on JAVA/lib
+	@param defaultFactory Default implementation, if nothing else is found
+    */
+    private static String findFactory(String factoryId,
+				      String defaultFactory)
+    {
+	// Use the system property first
+	try {
+	    String systemProp =
+                System.getProperty( factoryId );
+	    if( systemProp!=null) {
+		if( debug ) 
+		    System.err.println("JAXP: found system property" +
+				       systemProp );
+		return systemProp;
+	    }
+	    
+	}catch (SecurityException se) {
+	}
+
+	
+	if( foundFactory!=null)
+	    return foundFactory;
+
+	// try to read from $java.home/lib/jaxp.properties
+	try {
+	    String javah=System.getProperty( "java.home" );
+	    String configFile = javah + File.separator +
+		"lib" + File.separator + "jaxp.properties";
+	    File f=new File( configFile );
+	    if( f.exists()) {
+		Properties props=new Properties();
+		props.load( new FileInputStream(f));
+		foundFactory=props.getProperty( factoryId );
+		if( debug )
+		    System.err.println("JAXP: found java.home property " +
+				       foundFactory );
+		if(foundFactory!=null )
+		    return foundFactory;
+	    }
+	} catch(Exception ex ) {
+	    if( debug ) ex.printStackTrace();
+	}
+
+	String serviceId = "META-INF/services/" + factoryId;
+	// try to find services in CLASSPATH
+	try {
+	    ClassLoader cl=SAXParserFactory.class.getClassLoader();
+	    InputStream is=null;
+	    if( cl == null ) {
+		is=ClassLoader.getSystemResourceAsStream( serviceId );
+	    } else {
+		is=cl.getResourceAsStream( serviceId );
+	    }
+	    
+	    if( is!=null ) {
+		if( debug )
+		    System.err.println("JAXP: found  " +
+				       serviceId);
+		BufferedReader rd=new BufferedReader( new
+		    InputStreamReader(is));
+		
+		foundFactory=rd.readLine();
+		rd.close();
+
+		if( debug )
+		    System.err.println("JAXP: loaded from services: " +
+				       foundFactory );
+		if( foundFactory != null &&
+		    !  "".equals( foundFactory) ) {
+		    return foundFactory;
+		}
+	    }
+	} catch( Exception ex ) {
+	    if( debug ) ex.printStackTrace();
+	}
+
+	return defaultFactory;
     }
 }

@@ -65,7 +65,10 @@ import org.apache.xerces.parsers.SAXParser;
 import org.xml.sax.HandlerBase;
 import org.xml.sax.InputSource;
 import org.xml.sax.Parser;
+import org.xml.sax.XMLReader;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 
 /**
  * The <code>SAXParser</code> implementation for the Apache Xerces XML parser.
@@ -121,6 +124,14 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser {
     }
 
     /**
+     * Returns the XMLReader that is encapsulated by the implementation of
+     * this class.
+     */
+    public XMLReader getXMLReader() throws SAXException {
+        return (XMLReader)parser; // xerces implements both parser and reader.
+    }
+
+    /**
      * Returns whether or not this parser supports XML namespaces.
      */
     public boolean isNamespaceAware() {
@@ -133,4 +144,25 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser {
     public boolean isValidating() {
         return(this.validation);
     }
+
+    /**
+     * Sets the particular property in the underlying implementation of 
+     * org.xml.sax.XMLReader.
+     */
+    public void setProperty(String name, Object value)
+        throws SAXNotRecognizedException, SAXNotSupportedException
+    {
+        throw new SAXNotRecognizedException("Feature: " + name);
+    }
+
+    /**
+     * returns the particular property requested for in the underlying 
+     * implementation of org.xml.sax.XMLReader.
+     */
+    public Object getProperty(String name)
+        throws SAXNotRecognizedException, SAXNotSupportedException
+    {
+        throw new SAXNotRecognizedException("Feature: " + name);
+    }
+
 }

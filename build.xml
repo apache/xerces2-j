@@ -152,6 +152,14 @@ Copyright:
     <!-- create directories -->
     <mkdir dir="${build.src}"/>
     <mkdir dir="${build.dest}"/>
+    <mkdir dir="${build.dest}/META-INF"/>
+    <mkdir dir="${build.dest}/META-INF/services"/>
+
+    <copyfile src="src/org/apache/xerces/jaxp/javax.xml.parsers.DocumentBuilderFactory"
+      dest="${build.dest}/META-INF/services/javax.xml.parsers.DocumentBuilderFactory"/>
+
+    <copyfile src="src/org/apache/xerces/jaxp/javax.xml.parsers.SAXParserFactory"
+      dest="${build.dest}/META-INF/services/javax.xml.parsers.SAXParserFactory"/>
 
     <!-- copy src files -->
     <copydir src="${src.dir}" dest="${build.src}" includes="**/Makefile, **/Makefile.incl, javax/**, org/**"
@@ -184,7 +192,7 @@ Copyright:
   <target name="jar" depends="compile">
     <jar jarfile="${build.dir}/${name}.jar"
          basedir="${build.dest}"
-         includes="org/**, javax/**"/>
+         includes="org/**, javax/**,META-INF/**"/>
   </target>
 
   <!-- =================================================================== -->
