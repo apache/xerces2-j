@@ -195,7 +195,7 @@ public abstract class NodeImpl
     protected final static short SPECIFIED    = 0x1<<5;
     protected final static short IGNORABLEWS  = 0x1<<6;
     protected final static short HASSTRING    = 0x1<<7;
-    protected final static short UNNORMALIZED = 0x1<<8;
+    protected final static short NORMALIZED = 0x1<<8;
     protected final static short ID           = 0x1<<9;
 
     //
@@ -2014,7 +2014,7 @@ public abstract class NodeImpl
     }
 
     final boolean isNormalized() {
-        return (flags & UNNORMALIZED) == 0;
+        return (flags & NORMALIZED) != 0;
     }
 
     final void isNormalized(boolean value) {
@@ -2022,7 +2022,7 @@ public abstract class NodeImpl
         if (!value && isNormalized() && ownerNode != null) {
             ownerNode.isNormalized(false);
         }
-        flags = (short) (value ? flags & ~UNNORMALIZED : flags | UNNORMALIZED);
+        flags = (short) (value ?  flags | NORMALIZED : flags & ~NORMALIZED);
     }
 
     final boolean isIdAttribute() {

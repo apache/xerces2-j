@@ -827,11 +827,12 @@ extends ParentNode implements Document, DocumentLS {
         if(value.equals("1.0") || value.equals("1.1")){
             //we need to change the flag value only --
             // when the version set is different than already set.
-            if(!getXmlVersion().equals(version)){
+            if(!getXmlVersion().equals(value)){
                 xmlVersionChanged = true ;
-            }
-            version = value;
-
+                //change the normalization value back to false
+                isNormalized(false);
+                version = value;
+            }            
         }
         else{
             //NOT_SUPPORTED_ERR: Raised if the vesion is set to a value that is not supported by
@@ -841,8 +842,12 @@ extends ParentNode implements Document, DocumentLS {
             throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
             
         }
-        if((getXmlVersion()).equals("1.1"))
+        if((getXmlVersion()).equals("1.1")){
             xml11Version = true;
+        }
+        else{
+            xml11Version = false;
+        }
     }
     
     /**
@@ -1070,6 +1075,9 @@ extends ParentNode implements Document, DocumentLS {
         
         domNormalizer.normalizeDocument(this, fConfiguration);
         isNormalized(true);
+        //set the XMLversion changed value to false -- once we have finished
+        //doing normalization
+        xmlVersionChanged = false ;        
     }
     
     

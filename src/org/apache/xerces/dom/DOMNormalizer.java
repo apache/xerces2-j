@@ -89,12 +89,15 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
+import org.w3c.dom.ProcessingInstruction;
+import org.apache.xerces.util.XML11Char;
+import org.apache.xerces.util.XMLChar;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Entity;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
-
+import org.w3c.dom.Comment;
 /**
  * This class adds implementation for normalizeDocument method.
  * It acts as if the document was going through a save and load cycle, putting
@@ -479,8 +482,61 @@ public class DOMNormalizer implements XMLDocumentHandler {
                             return nextSibling;
                         }
                     }
-                }
-                break;
+                }//if comment node need not be removed
+                else {
+                    //REVISIT: it is possible that bad XML characters
+                    //enter into DOM when created in memory -- so we should
+                    //still be doing these checks.
+                    
+                    //go ahead only if version didn't change.
+                    if(!fDocument.isXMLVersionChanged()){
+                        return null;
+                    }
+                    //check comments for invalid xml chracter as per the version
+                    //of the document
+                    String commentdata = ((Comment)node).getData();
+                    char [] commentarray = null ;
+                    if(commentdata != null && commentdata.length() > 0){
+                        commentarray = commentdata.toCharArray();
+                    }
+                    else{
+                        return null ;
+                    }
+                    if (DEBUG_ND) {
+                    }
+                    
+                    //version of the document is XML 1.1
+                    if(fDocument.isXML11Version()){
+                        
+                        // check  comment data
+                        //we need to check all chracters as per production rules
+                        //of XML11
+                        int i = 0 ;
+                        while(i < commentarray.length){                            
+                            if(XML11Char.isXML11Invalid(commentarray[i++])){
+                                String msg = "Invalid XML Character " + Integer.toString(commentarray[i-1], 16) ;
+                                //REVISIT: As per DOM it is error but as per XML spec. it is fatal error
+                                reportDOMError(msg,
+                                    DOMError.SEVERITY_FATAL_ERROR, node,  "wf-invalid-character");
+                            };
+                        }
+                    }//version of the document is XML 1.0
+                    else{
+                        
+                        // check comment data
+                        //we need to check all chracters as per production rules
+                        //of XML 1.0
+                        int i = 0 ;
+                        while(i < commentarray.length){                            
+                            if( XMLChar.isInvalid(commentarray[i++]) ){                                
+                                String msg = "Invalid XML Character " + Integer.toString(commentarray[i-1], 16) ;
+                                //REVISIT: As per DOM it is error but as per XML spec. it is fatal error                               
+                                reportDOMError(msg, 
+                                    DOMError.SEVERITY_FATAL_ERROR, node,  "wf-invalid-character");
+                            };
+                        }            
+                    }//end-else fDocument.isXMLVersion()
+                }//end-else if comment node is not to be removed.                                                
             }
         case Node.ENTITY_REFERENCE_NODE: { 
                 if (DEBUG_ND) {
@@ -618,10 +674,70 @@ public class DOMNormalizer implements XMLDocumentHandler {
                     }
                 }
                 break;
+            }        
+        case org.w3c.dom.Node.PROCESSING_INSTRUCTION_NODE: {
+            //REVISIT: DOM created in memory may contain invalid            
+            // xml characters which we should be checking -- so 
+            //we should also be checking in the case when document
+            //is created in memory and after that application calls
+            //normalizeDocument()
+            if(!fDocument.isXMLVersionChanged()){
+                break ;
             }
-        }
+            //processing isntruction data may have certain characters
+            //which may not be valid XML character
+            ProcessingInstruction pinode = (ProcessingInstruction)node ;
+            
+            String target = pinode.getTarget();
+            String pidata = pinode.getData() ;
+            char [] pidataarray = pidata.toCharArray() ;
+            if(fDocument.isXML11Version()){
+                //1. check pi targetname 
+                if(!XML11Char.isXML11ValidName(target)){
+                        //REVISIT: As per DOM it is error but as per XML spec. it is fatal error
+                        reportDOMError("Invalid Character in node name",
+                            DOMError.SEVERITY_FATAL_ERROR, node,  "wf-invalid-character-in-node-name");                
+                }
+                //2. check pi data
+                //we need to check all chracters as per production rules
+                //of XML11
+                int i = 0 ;
+                while(i < pidataarray.length){
+                    if(XML11Char.isXML11Invalid(pidataarray[i++])){
+                        //REVISIT: As per DOM it is error but as per XML spec. it is fatal error
+                        reportDOMError("Invalid Character",
+                            DOMError.SEVERITY_FATAL_ERROR, node,  "wf-invalid-character");
+                    };
+                }
+            }
+            else{
+                //1. check pi targetname 
+                if(!XMLChar.isValidName(target)){
+                        //REVISIT: As per DOM it is error but as per XML spec. it is fatal error
+                        reportDOMError("Invalid Character in node name",
+                            DOMError.SEVERITY_FATAL_ERROR, node,  "wf-invalid-character-in-node-name");                
+                }
+                //2. check pi data
+                //we need to check all chracters as per production rules
+                //of XML 1.0
+                
+                //we need to check all chracters as per production rules
+                //of XML1.0
+                int i = 0 ;
+                while(i < pidataarray.length){
+                    if( XMLChar.isValid(pidataarray[i++]) ){
+                        //REVISIT: As per DOM it is error but as per XML spec. it is fatal error
+                        reportDOMError("Invalid Character",
+                            DOMError.SEVERITY_FATAL_ERROR, node,  "wf-invalid-character");
+                    };
+                }            
+            }
+            
+        }//end case Node.PROCESSING_INSTRUCTION_NODE
+        
+        }//end of switch
         return null;
-    }
+    }//normalizeNode
 
     protected final void expandEntityRef (Node node, Node parent, Node reference){
         Node kid, next;
