@@ -202,6 +202,8 @@ public class DOMParser
 
     private boolean fSeenRootElement;
 
+    private boolean fStringPoolInUse;
+
     private XMLAttrList fAttrList;
 
     //
@@ -314,6 +316,11 @@ public class DOMParser
 
     /** Resets the parser. */
     public void reset() throws Exception {
+        if (fStringPoolInUse) {
+            // we can't reuse the string pool, let's create another one
+            fStringPool = new StringPool();
+            fStringPoolInUse = false;
+        }
         super.reset();
         init();
     }
@@ -363,6 +370,7 @@ public class DOMParser
         fQuotIndex = fStringPool.addSymbol("quot");
 
         fSeenRootElement = false;
+        fStringPoolInUse = false;
 
         fAttrList = new XMLAttrList(fStringPool);
 
@@ -900,6 +908,7 @@ public class DOMParser
                 try { nsEnabled = getNamespaces(); }
                 catch (SAXException s) {}
                 fDeferredDocumentImpl = new DeferredDocumentImpl(fStringPool, nsEnabled, fGrammarAccess);
+                fStringPoolInUse = true;
                 fDocument = fDeferredDocumentImpl;
                 fDocumentIndex = fDeferredDocumentImpl.createDocument();
                 fCurrentNodeIndex = fDocumentIndex;
