@@ -4007,10 +4007,6 @@ public final class XMLValidator
                                      +",locapart: "+fStringPool.toString(fTempElementDecl.name.localpart));
                } else {
                    String value =fDatatypeBuffer.toString();
-                   if (fCurrentDV instanceof NOTATIONDatatypeValidator 
-                      && value !=null) {
-                      value=bindNotationURI(value); 
-                   }
                    fCurrentDV.validate(value, null);
                }
 
