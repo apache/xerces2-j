@@ -2861,12 +2861,16 @@ public class TraverseSchema implements
             else {
                 equivClassElementDecl = getTopLevelComponentByName(SchemaSymbols.ELT_ELEMENT, equivClassLocalpart);
                 if (equivClassElementDecl == null) {
-                    noErrorSoFar = false;
-                    // REVISIT: Localize
-                    reportGenericSchemaError("Equivclass affiliation element "
-                                              +equivClass
-                                              +" in element declaration " 
-                                              +name);  
+                    equivClassElementDeclIndex = 
+                        fSchemaGrammar.getElementDeclIndex(fTargetNSURI, getLocalPartIndex(equivClass),TOP_LEVEL_SCOPE);
+                    if ( equivClassElementDeclIndex == -1) {
+                        noErrorSoFar = false;
+                        // REVISIT: Localize
+                        reportGenericSchemaError("Equivclass affiliation element "
+                                                  +equivClass
+                                                  +" in element declaration " 
+                                                  +name);  
+                    }
                 }
                 else {
                     equivClassElementDeclIndex = 
@@ -2878,6 +2882,7 @@ public class TraverseSchema implements
                             fSchemaGrammar.getElementDeclIndex(fTargetNSURI, getLocalPartIndex(equivClass),TOP_LEVEL_SCOPE);
                     }
                 }
+
                 if (equivClassElementDeclIndex != -1) {
                     equivClassEltTypeInfo = fSchemaGrammar.getElementComplexTypeInfo( equivClassElementDeclIndex );
                     if (equivClassEltTypeInfo == null) {
