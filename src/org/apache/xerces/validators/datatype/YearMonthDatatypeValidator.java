@@ -61,8 +61,13 @@ package org.apache.xerces.validators.datatype;
 
 import java.util.Hashtable;
 
+/**
+ * Validator for <gYearMonth> datatype (W3C Schema Datatypes)
+ * 
+ * @author Elena Litani
+ * @version $Id$
+ */
 
-/* $Id$ */
 public class YearMonthDatatypeValidator extends DateTimeValidator {
 
     public  YearMonthDatatypeValidator() throws InvalidDatatypeFacetException{
@@ -91,11 +96,11 @@ public class YearMonthDatatypeValidator extends DateTimeValidator {
         if ( date == null ) {
             date = new int[TOTAL_SIZE];
         }
-        date = resetDateObj(date);
+        resetDateObj(date);
 
         // get date
-        date = getYearMonth(fStart, fEnd, date);
-        date = parseTimeZone (fEnd, date);
+        getYearMonth(fStart, fEnd, date);
+        parseTimeZone (fEnd, date);
 
         //validate and normalize
         if ( !validateDateTime(date) ) {
@@ -104,7 +109,7 @@ public class YearMonthDatatypeValidator extends DateTimeValidator {
             throw new Exception ("Not valid date");
         }
         else if ( date[utc]!=0 && date[utc]!='Z' ) {
-            date=normalize(date);
+            normalize(date);
         }
         return date;
     }
