@@ -411,7 +411,10 @@ public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent,
     public void setProperty(String propertyId,
                 Object state) throws XMLConfigurationException {                   
         fSettingsChanged = true;            
-        fLoaderConfig.setProperty(propertyId, state);    
+        // REVISIT: We cannot set null values on this configuration
+        // because it is backed by a java.util.Hashtable which doesn't
+        // permit null values. -- mrglavas
+        if (state != null) fLoaderConfig.setProperty(propertyId, state);    
         if(propertyId.equals( JAXP_SCHEMA_SOURCE)) {
             fJAXPSource = state;
             fJAXPProcessed = false;
