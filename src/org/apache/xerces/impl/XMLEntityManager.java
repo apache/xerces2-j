@@ -202,22 +202,6 @@ public class XMLEntityManager
     } // setEntityHandler(XMLEntityHandler)
 
     /**
-     * addExternalEntity
-     * 
-     * @param name 
-     * @param publicId 
-     * @param systemId 
-     * @param baseSystemId 
-     * @param notation
-     */
-    public void addExternalEntity(String name, 
-                                  String publicId, String systemId, String baseSystemId,
-                                  String notation) {
-        Entity entity = new ExternalEntity(name, publicId, systemId, baseSystemId, notation);
-        fEntities.put(name, entity);
-    } // addExternalEntity(String,String,String,String)
-
-    /**
      * addInternalEntity
      * 
      * @param name 
@@ -227,6 +211,38 @@ public class XMLEntityManager
         Entity entity = new InternalEntity(name, text);
         fEntities.put(name, entity);
     } // addInternalEntity(String,String)
+
+    /**
+     * addExternalEntity
+     * 
+     * @param name 
+     * @param publicId 
+     * @param systemId 
+     * @param baseSystemId 
+     * @param notation
+     */
+    public void addExternalEntity(String name, 
+                                  String publicId, String systemId, 
+                                  String baseSystemId) {
+        Entity entity = new ExternalEntity(name, publicId, systemId, baseSystemId, null);
+        fEntities.put(name, entity);
+    } // addExternalEntity(String,String,String,String)
+
+    /**
+     * addUnparsedEntity
+     * 
+     * @param name 
+     * @param publicId 
+     * @param systemId 
+     * @param baseSystemId 
+     * @param notation
+     */
+    public void addUnparsedEntity(String name, 
+                                  String publicId, String systemId,
+                                  String notation) {
+        Entity entity = new ExternalEntity(name, publicId, systemId, null, notation);
+        fEntities.put(name, entity);
+    } // addUnparsedEntity(String,String,String,String)
 
     /** Returns the values for an external entity. */
     public boolean getExternalEntity(String name, ExternalEntity externalEntity) {
@@ -398,10 +414,10 @@ public class XMLEntityManager
             addInternalEntity("recursive-entity2", "<bar>&recursive-entity3;</bar>");
             addInternalEntity("recursive-entity3", "<baz>&recursive-entity;</baz>");
 
-            addExternalEntity("external-text", null, "external-text.ent", "test/external-text.xml", null);
-            addExternalEntity("external-balanced-element", null, "external-balanced-element.ent", "test/external-balanced-element.xml", null);
-            addExternalEntity("one", null, "ent/one.ent", "test/external-entity.xml", null);
-            addExternalEntity("two", null, "ent/two.ent", "test/ent/one.xml", null);
+            addExternalEntity("external-text", null, "external-text.ent", "test/external-text.xml");
+            addExternalEntity("external-balanced-element", null, "external-balanced-element.ent", "test/external-balanced-element.xml");
+            addExternalEntity("one", null, "ent/one.ent", "test/external-entity.xml");
+            addExternalEntity("two", null, "ent/two.ent", "test/ent/one.xml");
         }
 
     } // reset(XMLComponentManager)
@@ -520,6 +536,11 @@ public class XMLEntityManager
     protected void endEntity() throws SAXException {
 
         // call handler
+        if (DEBUG_PRINT) {
+            System.out.println("(endEntity: ");
+            print();
+            System.out.println();
+        }
         if (fEntityHandler != null) {
             fEntityHandler.endEntity(fCurrentEntity.name);
         }
@@ -527,6 +548,11 @@ public class XMLEntityManager
         // pop stack
         fCurrentEntity = fEntityStack.size() > 0
                        ? (ScannedEntity)fEntityStack.pop() : null;
+        if (DEBUG_PRINT) {
+            System.out.println(")endEntity: ");
+            print();
+            System.out.println();
+        }
 
     } // endEntity()
 
@@ -735,6 +761,49 @@ public class XMLEntityManager
         return str;
 
     } // fixURI(String):String
+
+    /** Prints the contents of the buffer. */
+    final void print() {
+        if (DEBUG_PRINT) {
+            System.out.print('[');
+            System.out.print(fCurrentEntity.count);
+            if (fCurrentEntity.count > 0) {
+                System.out.print(" \"");
+                for (int i = 0; i < fCurrentEntity.count; i++) {
+                    if (i == fCurrentEntity.position) {
+                        System.out.print('^');
+                    }
+                    char c = fCurrentEntity.ch[i];
+                    switch (c) {
+                        case '\n': {
+                            System.out.print("\\n");
+                            break;
+                        }
+                        case '\r': {
+                            System.out.print("\\r");
+                            break;
+                        }
+                        case '\t': {
+                            System.out.print("\\t");
+                            break;
+                        }
+                        case '\\': {
+                            System.out.print("\\\\");
+                            break;
+                        }
+                        default: {
+                            System.out.print(c);
+                        }
+                    }
+                }
+                if (fCurrentEntity.position == fCurrentEntity.count) {
+                    System.out.print('^');
+                }
+                System.out.print('"');
+            }
+            System.out.print(']');
+        }
+    } // print()
 
     //
     // Classes
@@ -1244,6 +1313,11 @@ public class XMLEntityManager
                 fCurrentEntity.ch[0] = fCurrentEntity.ch[fCurrentEntity.count - 1];
                 load(1);
             }
+            if (DEBUG_PRINT) {
+                System.out.print("(scanContent: ");
+                print();
+                System.out.println();
+            }
 
             // REVISIT: Use AndyH trick for grabbing longest runs of
             //          content characters. -Ac
@@ -1258,11 +1332,17 @@ public class XMLEntityManager
             int length = fCurrentEntity.position - offset;
             content.setValues(fCurrentEntity.ch, offset, length);
     
-            if (fCurrentEntity.position == fCurrentEntity.count) {
-                fCurrentEntity.position--;
-                content.length--;
+            // return next character
+            int c = -1;
+            if (fCurrentEntity.position != fCurrentEntity.count) {
+                c = fCurrentEntity.ch[fCurrentEntity.position];
             }
-            return fCurrentEntity.ch[fCurrentEntity.position];
+            if (DEBUG_PRINT) {
+                System.out.print(")scanContent: ");
+                print();
+                System.out.println(" -> '"+(char)c+"'");
+            }
+            return c;
     
         } // scanContent(XMLString):int
     
@@ -1300,16 +1380,17 @@ public class XMLEntityManager
             int length = fCurrentEntity.position - offset;
             content.setValues(fCurrentEntity.ch, offset, length);
     
-            if (fCurrentEntity.position == fCurrentEntity.count) {
-                fCurrentEntity.position--;
-                content.length--;
+            // return next character
+            int c = -1;
+            if (fCurrentEntity.position != fCurrentEntity.count) {
+                c = fCurrentEntity.ch[fCurrentEntity.position];
             }
             if (DEBUG_PRINT) {
                 System.out.print(")scanAttContent, '"+(char)quote+"': ");
                 print();
-                System.out.println(" -> '"+fCurrentEntity.ch[fCurrentEntity.position]+"'");
+                System.out.println(" -> '"+(char)c+"'");
             }
-            return fCurrentEntity.ch[fCurrentEntity.position];
+            return c;
     
         } // scanAttContent(int,XMLString):int
     
@@ -1580,49 +1661,6 @@ public class XMLEntityManager
             }
         } // load(int)
     
-        /** Prints the contents of the buffer. */
-        private final void print() {
-            if (DEBUG_PRINT) {
-                System.out.print('[');
-                System.out.print(fCurrentEntity.count);
-                if (fCurrentEntity.count > 0) {
-                    System.out.print(" \"");
-                    for (int i = 0; i < fCurrentEntity.count; i++) {
-                        if (i == fCurrentEntity.position) {
-                            System.out.print('^');
-                        }
-                        char c = fCurrentEntity.ch[i];
-                        switch (c) {
-                            case '\n': {
-                                System.out.print("\\n");
-                                break;
-                            }
-                            case '\r': {
-                                System.out.print("\\r");
-                                break;
-                            }
-                            case '\t': {
-                                System.out.print("\\t");
-                                break;
-                            }
-                            case '\\': {
-                                System.out.print("\\\\");
-                                break;
-                            }
-                            default: {
-                                System.out.print(c);
-                            }
-                        }
-                    }
-                    if (fCurrentEntity.position == fCurrentEntity.count) {
-                        System.out.print('^');
-                    }
-                    System.out.print('"');
-                }
-                System.out.print(']');
-            }
-        } // print()
-
     } // class EntityScanner
 
     /**

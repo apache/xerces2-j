@@ -1140,7 +1140,13 @@ public class XMLDocumentScanner
                         return;
                     }
                 }
-                if (fExternalGeneralEntities || !fEntityManager.isEntityExternal(name)) {
+                boolean external = fEntityManager.isEntityExternal(name);
+                boolean unparsed = false;
+                if (external) {
+                    fEntityManager.getExternalEntity(name, fExternalEntity);
+                    unparsed = fExternalEntity.notation != null;
+                }
+                if ((fExternalGeneralEntities && !unparsed) || !external) {
                     fEntityManager.startEntity(name);
                 }
                 else {
@@ -1830,6 +1836,7 @@ public class XMLDocumentScanner
                                     break;
                                 }
                                 else if (c == -1) {
+                                    /***
                                     
                                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, "ETagRequired",
                                                                new Object[] {fCurrentElement.rawname},
@@ -1837,6 +1844,7 @@ public class XMLDocumentScanner
 
                                     setScannerState(SCANNER_STATE_TERMINATED);
                                     return false;
+                                    /***/
                                 }
                                 else if (XMLChar.isInvalid(c)) {
                                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, "InvalidCharInContent",
