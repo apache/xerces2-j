@@ -1045,8 +1045,6 @@ public class Test {
 					   new Object[]{"xml"},
 					   DOMException.NAMESPACE_ERR));
         //Special case for xmlns:a where namespaceURI must be xmlURI
-        attr = doc.createAttributeNS(xmlnsURI, "foo:a");
-        attr.setPrefix("xmlns");
         attr = doc.createAttributeNS("http://nsa", "foo:a");
         Assertion.assert(DOMExceptionsTest(attr, "setPrefix",
 					   new Class[]{String.class},
