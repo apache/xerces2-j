@@ -1499,7 +1499,6 @@ public class CoreDocumentImpl
         // else
         
         int type = source.getNodeType();
-
         switch (type) {
             case ELEMENT_NODE: {
                 Element newElement;
@@ -1518,9 +1517,12 @@ public class CoreDocumentImpl
                     for (int index = 0; index < length; index++) {
                         Attr attr = (Attr)sourceAttrs.item(index);
 
-                        // Copy the attribute only if it is not a default.
-                        if (attr.getSpecified()) {
-                            Attr newAttr = (Attr)importNode(attr, true, false,
+                        // NOTE: this methods is used for both importingNode
+                        // and cloning the document node. In case of the 
+                        // clonning default attributes should be copied.
+                        // But for importNode defaults should be ignored.
+                        if (attr.getSpecified() || cloningDoc) {
+                            Attr newAttr = (Attr)importNode(attr, true, cloningDoc,
                                                           reversedIdentifiers);
 
                             // Attach attribute according to namespace
@@ -1652,7 +1654,7 @@ public class CoreDocumentImpl
                 NamedNodeMap tmap = newdoctype.getEntities();
                 if(smap != null) {
                     for(int i = 0; i < smap.getLength(); i++) {
-                        tmap.setNamedItem(importNode(smap.item(i), true, false,
+                        tmap.setNamedItem(importNode(smap.item(i), true, true,
                                                      reversedIdentifiers));
                     }
                 }
@@ -1660,10 +1662,11 @@ public class CoreDocumentImpl
                 tmap = newdoctype.getNotations();
                 if (smap != null) {
                     for(int i = 0; i < smap.getLength(); i++) {
-                        tmap.setNamedItem(importNode(smap.item(i), true, false,
+                        tmap.setNamedItem(importNode(smap.item(i), true, true,
                                                      reversedIdentifiers));
                     }
                 }
+                
                 // NOTE: At this time, the DOM definition of DocumentType
                 // doesn't cover Elements and their Attributes. domimpl's
                 // extentions in that area will not be preserved, even if
@@ -1704,7 +1707,7 @@ public class CoreDocumentImpl
             for (Node srckid = source.getFirstChild();
                  srckid != null;
                  srckid = srckid.getNextSibling()) {
-                newnode.appendChild(importNode(srckid, true, false,
+                newnode.appendChild(importNode(srckid, true, cloningDoc,
                                                reversedIdentifiers));
             }
         }
