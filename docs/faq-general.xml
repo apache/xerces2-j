@@ -165,7 +165,7 @@ and xni.parser.PSVIConfiguration.
  </faq> 
  
   <faq title='Incomplete character data is received via SAX'>
-  <q>Why SAX parser looses some character data or why the data is split 
+  <q>Why does the SAX parser lose some character data or why is the data split 
   into several chunks?</q>
   <a>
   <p>If you read the <jump href='http://www.saxproject.org/apidoc/org/xml/sax/ContentHandler.html#characters(char[],%20int,%20int)'>SAX</jump> 
@@ -176,6 +176,52 @@ appropriately, e.g. by accumulating text until the next non-characters()
 event.
  </p>
   </a>
+  </faq>
+  <faq title="Encodings and XML Version Via SAX">
+    <q>Is there any way I can determine what encoding an entity was
+    written in, or what XML version the document conformed to, if I'm
+    using SAX?
+    </q>
+    <a>
+        <p>The answer to this question is that, yes there is a way, but it's
+        not particularly beautiful.  There is no way in SAX 2.0.0 or
+        2.0.1 to get hold of these pieces of information; the SAX
+        Locator2 interface from the 1.1 extensions--still in Alpha at
+        the time of writing--does provide methods to accomplish this,
+        but since Xerces is required to support precisely SAX 2.0.0 by
+        Sun TCK rules, we cannot ship this interface.  However, we can
+        still support the appropriate methods on the objects we
+        provide to implement the SAX Locator interface.  Therefore,
+        assuming <code>Locator</code> is an instance of the SAX
+        Locator interface that Xerces has passed back in a
+        <code>setDocumentLocator</code> call, 
+        you can use a method like this to determine the encoding of
+        the entity currently being parsed:
+        </p>
+        <source> 
+    import java.lang.reflect.Method;
+    private String getEncoding(Locator locator) {
+        String encoding = null;
+        Method getEncoding = null;
+        try {
+            getEncoding = locator.getClass().getMethod("getEncoding", new Class[]{});
+            if(getEncoding != null) {
+                encoding = (String)getEncoding.invoke(locator, null);
+            }
+        } catch (Exception e) {
+            // either this locator object doesn't have this
+            // method, or we're on an old JDK
+        }
+        return encoding;
+    } 
+        </source>
+        <p>This code has the advantage that it will compile on JDK
+        1.1.8, though it will only produce non-null results on 1.2.x
+        JDK's and later.  Substituting <code>getXMLVersion</code> for
+        <code>getEncoding</code> will enable you to determine the
+        version of XML to which the instance document conforms.
+        </p>
+    </a>
   </faq>
   
 </faqs>

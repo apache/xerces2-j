@@ -505,7 +505,8 @@
     This interface is used to communicate the document location to
     the various handler interfaces. The application can use the
     methods on this interface to query the public, literal system, and expanded system
-    base system identifier as well as the line and column number.
+    base system identifier as well as the line number, column number 
+    and the encoding of the entity currently being parsed.
    </p>
    <p>
     A locator is passed as a parameter in the first method called
