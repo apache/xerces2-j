@@ -1,3 +1,4 @@
+include ../../../../../src/Makefile.incl
 # Makefile for directory ./org/apache/xerces/parsers
 #
 # This makefile depends on the following environment variables
