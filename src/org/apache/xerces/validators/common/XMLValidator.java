@@ -2977,21 +2977,24 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                         }
                     }
                 }
+
                 try{
-                    fValIDRef.validate( value, this.fStoreIDRef );
+                    if ( attributeDecl.list ){
+                        fValIDRefs.validate( value, this.fStoreIDRef );
+                    } else {
+                        fValIDRef.validate( value, this.fStoreIDRef );
+                    }
                 } catch ( InvalidDatatypeValueException ex ){
-                    if( ex.getMajorCode() != 1 && ex.getMinorCode() != -1 ) {
-                    reportRecoverableXMLError(ex.getMajorCode(),
-                                              ex.getMinorCode(),
-                                              fStringPool.toString( attributeDecl.name.rawname), value );
+                    if ( ex.getMajorCode() != 1 && ex.getMinorCode() != -1 ) {
+                        reportRecoverableXMLError(ex.getMajorCode(),
+                                                  ex.getMinorCode(),
+                                                  fStringPool.toString( attributeDecl.name.rawname), value );
                     } else {
                         System.err.println("Error: " + ex.getLocalizedMessage() );//Should not happen
                     }
                 }
+
             }
-
-
-
             break;
         case XMLAttributeDecl.TYPE_NOTATION:
             av = fAttValidatorNOTATION;
