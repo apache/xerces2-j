@@ -112,7 +112,7 @@ public class Xerces
     } // setFeature(String,boolean)
 
     /** Returns the document information. */
-    public DocumentInfo getDocumentInfo() {
+    public ParserWrapper.DocumentInfo getDocumentInfo() {
         return this;
     } // getDocumentInfo():DocumentInfo
 
