@@ -173,6 +173,7 @@ public class DOMParser
 
     // state
 
+    protected boolean fInDTD;
     protected boolean fWithinElement;
     protected boolean fInCDATA;
 
@@ -348,6 +349,7 @@ public class DOMParser
         fCurrentElementNode = null;
 
         // state
+        fInDTD = false;
         fWithinElement = false;
         fInCDATA = false;
 
@@ -1242,16 +1244,21 @@ public class DOMParser
     /** Comment. */
     public void comment(int dataIndex) throws Exception {
 
-        // deferred node expansion
-        if (fDeferredDocumentImpl != null) {
-            int comment = fDeferredDocumentImpl.createComment(dataIndex);
-            fDeferredDocumentImpl.appendChild(fCurrentNodeIndex, comment);
+        if (fInDTD && !fGrammarAccess) {
+            fStringPool.orphanString(dataIndex);
         }
-
-        // full node expansion
         else {
-            Comment comment = fDocument.createComment(fStringPool.orphanString(dataIndex));
-            fCurrentElementNode.appendChild(comment);
+            // deferred node expansion
+            if (fDeferredDocumentImpl != null) {
+                int comment = fDeferredDocumentImpl.createComment(dataIndex);
+                fDeferredDocumentImpl.appendChild(fCurrentNodeIndex, comment);
+            }
+
+            // full node expansion
+            else {
+                Comment comment = fDocument.createComment(fStringPool.orphanString(dataIndex));
+                fCurrentElementNode.appendChild(comment);
+            }
         }
 
     } // comment(int)
@@ -1442,6 +1449,8 @@ public class DOMParser
     public void startDTD(QName rootElement, int publicId, int systemId)
         throws Exception {
 
+        fInDTD = true;
+
         // full expansion
         if (fDocumentImpl != null) {
             String rootElementName = fStringPool.toString(rootElement.rawname);
@@ -1461,6 +1470,7 @@ public class DOMParser
                 schema.setAttribute("exactDefault", "");
                 ((AttrImpl)schema.getAttributeNode("exactDefault")).setSpecified(false);
                 fDocumentType.appendChild(schema);
+                fCurrentElementNode = schema;
             }
         }
 
@@ -1495,6 +1505,7 @@ public class DOMParser
                 int schemaIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("schema"), fAttrList, handle);
                 // REVISIT: What should the namespace be? -Ac
                 fDeferredDocumentImpl.appendChild(fDocumentTypeIndex, schemaIndex);
+                fCurrentNodeIndex = schemaIndex;
             }
         }
 
@@ -1524,7 +1535,20 @@ public class DOMParser
     /**
      *  This function will be called at the end of the DTD.
      */
-    public void endDTD() throws Exception {}
+    public void endDTD() throws Exception {
+
+        fInDTD = false;
+
+        if (fGrammarAccess) {
+            if (fDocumentImpl != null) {
+                fCurrentElementNode = fDocumentImpl;
+            }
+            else if (fDeferredDocumentImpl != null) {
+                fCurrentNodeIndex = 0;
+            }
+        }
+
+    } // endDTD()
 
     /**
      * &lt;!ELEMENT Name contentspec&gt;
