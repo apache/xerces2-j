@@ -148,7 +148,7 @@ public class DoubleDatatypeValidator extends AbstractDatatypeValidator {
                                                                                 DatatypeMessageProvider.MSG_NONE, new Object [] { value, key}));
                     }
                 } else if (key.equals(SchemaSymbols.ELT_MINEXCLUSIVE)) {
-                    fFacetsDefined += DatatypeValidator.FACET_MININCLUSIVE;
+                    fFacetsDefined += DatatypeValidator.FACET_MINEXCLUSIVE;
                     String value = null;
                     try {
                         value  = ((String)facets.get(key));
@@ -183,6 +183,32 @@ public class DoubleDatatypeValidator extends AbstractDatatypeValidator {
                                                         "It is an error for both minInclusive and minExclusive to be specified for the same datatype." ); 
             }
 
+            if ( isMaxExclusiveDefined && isMinExclusiveDefined ){
+                if ( fMaxExclusive <= fMinExclusive )
+                    throw new InvalidDatatypeFacetException(
+                                                            "maxExclusive value ='" + this.fMaxExclusive + "'must be > than minExclusive value ='" +
+                                                            this.fMinExclusive + "'. " );
+
+            }
+            if ( isMaxInclusiveDefined && isMinInclusiveDefined ){
+                if ( fMaxInclusive < fMinInclusive )
+                    throw new InvalidDatatypeFacetException(
+                                                            "maxInclusive value ='" + this.fMaxInclusive + "'must be >= than minInclusive value ='" +
+                                                            this.fMinInclusive + "'. " );
+            }
+            if ( isMaxExclusiveDefined && isMinInclusiveDefined ){
+                if ( fMaxExclusive <= fMinInclusive )
+                    throw new InvalidDatatypeFacetException(
+                                                            "maxExclusive value ='" + this.fMaxExclusive + "'must be > than minInclusive value ='" +
+                                                            this.fMinInclusive + "'. " );
+
+            }
+            if ( isMaxInclusiveDefined && isMinExclusiveDefined ){
+                if ( fMaxInclusive <= fMinExclusive )
+                    throw new InvalidDatatypeFacetException(
+                                                            "maxInclusive value ='" + this.fMaxInclusive + "'must be > than minExclusive value ='" +
+                                                            this.fMinExclusive + "'. " );
+            }
 
 
             if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION ) != 0 ) {
