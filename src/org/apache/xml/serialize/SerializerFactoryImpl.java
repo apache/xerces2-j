@@ -69,7 +69,7 @@ import java.io.UnsupportedEncodingException;
  * markup serializers (XML, HTML, XHTML ).
  *
  *
- * @version
+ * @version $Revision$ $Date$
  * @author <a href="mailto:Scott_Boag/CAM/Lotus@lotus.com">Scott Boag</a>
  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
  */
@@ -135,7 +135,7 @@ final class SerializerFactoryImpl
         }  else if ( _method.equals( Method.XHTML ) ) {
             return new XHTMLSerializer( format );
         }  else if ( _method.equals( Method.TEXT ) ) {
-            return new TextSerializer( format );
+            return new TextSerializer();
         } else {
             throw new IllegalStateException( "SER005 The method '" + _method + "' is not supported by this factory\n" + _method);
         }

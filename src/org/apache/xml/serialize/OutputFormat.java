@@ -83,7 +83,7 @@ import org.w3c.dom.html.HTMLDocument;
  * </ul>
  * 
  *
- * @version
+ * @version $Revision$ $Date$
  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
  *         <a href="mailto:visco@exoffice.com">Keith Visco</a>
  * @see Serializer

@@ -90,7 +90,7 @@ import org.xml.sax.Attributes;
  * org.xml.sax.DocumentHandler#endDocument}.
  *
  *
- * @version
+ * @version $Revision$ $Date$
  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
  * @see Serializer
  */
@@ -106,61 +106,13 @@ public final class TextSerializer
      */
     public TextSerializer()
     {
-        setOutputFormat( null );
-    }
-
-
-    /**
-     * Constructs a new serializer. The serializer cannot be used without
-     * calling {@link #setOutputCharStream} or {@link #setOutputByteStream}
-     * first.
-     */
-    public TextSerializer( OutputFormat format )
-    {
-        setOutputFormat( format );
-    }
-
-
-    /**
-     * Constructs a new serializer that writes to the specified writer
-     * using the specified output format. If <tt>format</tt> is null,
-     * will use a default output format.
-     *
-     * @param writer The writer to use
-     * @param format The output format to use, null for the default
-     */
-    public TextSerializer( Writer writer, OutputFormat format )
-    {
-        setOutputFormat( format );
-        setOutputCharStream( writer );
-    }
-
-
-    /**
-     * Constructs a new serializer that writes to the specified output
-     * stream using the specified output format. If <tt>format</tt>
-     * is null, will use a default output format.
-     *
-     * @param output The output stream to use
-     * @param format The output format to use, null for the default
-     */
-    public TextSerializer( OutputStream output, OutputFormat format )
-    {
-        setOutputFormat( format );
-        try {
-            setOutputByteStream( output );
-        } catch ( UnsupportedEncodingException except ) {
-            // Should never happend
-        }
+        super( new OutputFormat( Method.TEXT, null, false ) );
     }
 
 
     public void setOutputFormat( OutputFormat format )
     {
-        if ( format == null )
-            super.setOutputFormat( new OutputFormat( Method.TEXT, null, false ) );
-        else
-            super.setOutputFormat( format );
+        super.setOutputFormat( format != null ? format : new OutputFormat( Method.TEXT, null, false ) );
     }
 
 
@@ -200,19 +152,18 @@ public final class TextSerializer
         ElementState state;
         
         state = getElementState();
-        if ( state == null ) {
+        if ( isDocumentState() ) {
             // If this is the root element handle it differently.
             // If the first root element in the document, serialize
             // the document's DOCTYPE. Space preserving defaults
             // to that of the output format.
             if ( ! _started )
                 startDocument( tagName );
-            preserveSpace = _format.getPreserveSpace();
-        } else {
-            // For any other element, if first in parent, then
-            // use the parnet's space preserving.
-            preserveSpace = state.preserveSpace;
         }
+        // For any other element, if first in parent, then
+        // use the parnet's space preserving.
+        preserveSpace = state.preserveSpace;
+
         // Do not change the current element state yet.
         // This only happens in endElement().
         
@@ -237,14 +188,10 @@ public final class TextSerializer
         // Leave the element state and update that of the parent
         // (if we're not root) to not empty and after element.
         state = leaveElementState();
-        if ( state != null ) {
-            state.afterElement = true;
-            state.empty = false;
-        } else {
-            // [keith] If we're done printing the document but don't
-            // get to call endDocument(), the buffer should be flushed.
-            flush();
-        }
+        state.afterElement = true;
+        state.empty = false;
+        if ( isDocumentState() )
+            _printer.flush();
     }
 
 
@@ -265,7 +212,11 @@ public final class TextSerializer
 
     public void characters( char[] chars, int start, int length )
     {
-        characters( new String( chars, start, length ), false );
+        ElementState state;
+        
+        state = content();
+        state.doCData = state.inCData = false;
+        printText( chars, start, length, true, true );
     }
 
 
@@ -274,10 +225,8 @@ public final class TextSerializer
         ElementState state;
         
         state = content();
-        if ( state != null ) {
-            state.doCData = state.inCData = false;
-        }
-        printText( text, true );
+        state.doCData = state.inCData = false;
+        printText( text, true, true );
     }
 
 
@@ -299,7 +248,7 @@ public final class TextSerializer
     {
         // Required to stop processing the DTD, even though the DTD
         // is not printed.
-        leaveDTD();
+        _printer.leaveDTD();
         
         _started = true;
         // Always serialize these, even if not te first root element.
@@ -321,19 +270,18 @@ public final class TextSerializer
         
         tagName = elem.getTagName();
         state = getElementState();
-        if ( state == null ) {
+        if ( isDocumentState() ) {
             // If this is the root element handle it differently.
             // If the first root element in the document, serialize
             // the document's DOCTYPE. Space preserving defaults
             // to that of the output format.
             if ( ! _started )
                 startDocument( tagName );
-            preserveSpace = _format.getPreserveSpace();
-        } else {
-            // For any other element, if first in parent, then
-            // use the parnet's space preserving.
-            preserveSpace = state.preserveSpace;
         }
+        // For any other element, if first in parent, then
+        // use the parnet's space preserving.
+        preserveSpace = state.preserveSpace;
+
         // Do not change the current element state yet.
         // This only happens in endElement().
         
@@ -353,7 +301,7 @@ public final class TextSerializer
             }
             endElement( tagName );
         } else {
-            if ( state != null ) {
+            if ( ! isDocumentState() ) {
                 // After element but parent element is no longer empty.
                 state.afterElement = true;
                 state.empty = false;
@@ -373,13 +321,23 @@ public final class TextSerializer
         // Only comments entities and documents which are not
         // handled by SAX are serialized directly.
         switch ( node.getNodeType() ) {
-        case Node.TEXT_NODE :
-            characters( node.getNodeValue(), true );
+        case Node.TEXT_NODE : {
+            String text;
+
+            text = node.getNodeValue();
+            if ( text != null )
+                characters( node.getNodeValue(), true );
             break;
+        }
             
-        case Node.CDATA_SECTION_NODE :
-            characters( node.getNodeValue(), true );
+        case Node.CDATA_SECTION_NODE : {
+            String text;
+
+            text = node.getNodeValue();
+            if ( text != null )
+                characters( node.getNodeValue(), true );
             break;
+        }
             
         case Node.COMMENT_NODE :
             break;
@@ -396,6 +354,7 @@ public final class TextSerializer
             break;
             
         case Node.DOCUMENT_NODE :
+            // !!! Fall through
         case Node.DOCUMENT_FRAGMENT_NODE : {
             Node         child;
             
@@ -421,12 +380,11 @@ public final class TextSerializer
         ElementState state;
         
         state = getElementState();
-        if ( state != null ) {
+        if ( ! isDocumentState() ) {
             // If this is the first content in the element,
             // change the state to not-empty.
-            if ( state.empty ) {
+            if ( state.empty )
                 state.empty = false;
-            }
             // Except for one content type, all of them
             // are not last element. That one content
             // type will take care of itself.

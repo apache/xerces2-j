@@ -59,7 +59,11 @@
 package org.apache.xml.serialize;
 
 
-import java.io.*;
+import java.io.Writer;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Vector;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
@@ -114,15 +118,14 @@ import org.xml.sax.ext.DeclHandler;
  * another element.
  * 
  *
- * @version
+ * @version $Revision$ $Date$
  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
  * @see Serializer
  * @see DOMSerializer
  */
 public abstract class BaseMarkupSerializer
     implements ContentHandler, DocumentHandler, LexicalHandler,
-               DTDHandler, DeclHandler,
-               DOMSerializer, Serializer
+               DTDHandler, DeclHandler, DOMSerializer, Serializer
 {
 
 
@@ -134,65 +137,6 @@ public abstract class BaseMarkupSerializer
      * not printable will be escaped using character references.
      */
     private int              _lastPrintable = 0x7E;
-
-
-    /**
-     * The output format associated with this serializer. This will never
-     * be a null reference. If no format was passed to the constructor,
-     * the default one for this document type will be used. The format
-     * object is never changed by the serializer.
-     */
-    protected OutputFormat  _format;
-
-
-    /**
-     * The writer to which the document is written.
-     */
-    protected Writer          _writer;
-
-
-    /**
-     * Holds the currently accumulating text line. This buffer will constantly
-     * be reused by deleting its contents instead of reallocating it.
-     */
-    private StringBuffer    _line;
-
-
-    /**
-     * Holds the currently accumulating text that follows {@link #_line}.
-     * When the end of the part is identified by a call to {@link #printSpace}
-     * or {@link #breakLine}, this part is added to the accumulated line.
-     */
-    private StringBuffer    _text;
-
-
-    /**
-     * Counts how many white spaces come between the accumulated line and the
-     * current accumulated text. Multiple spaces at the end of the a line
-     * will not be printed.
-     */
-    private int             _spaces;
-
-
-    /**
-     * Holds the indentation for the current line that is now accumulating in
-     * memory and will be sent for printing shortly.
-     */
-    private int             _thisIndent;
-    
-    
-    /**
-     * Holds the indentation for the next line to be printed. After this line is
-     * printed, {@link #_nextIndent} is assigned to {@link #_thisIndent}.
-     */
-    private int             _nextIndent;
-
-
-    /**
-     * Holds the exception thrown by the serializer.  Exceptions do not cause
-     * the serializer to quit, but are held and one is thrown at the end.
-     */
-    protected IOException   _exception;
 
 
     /**
@@ -227,19 +171,11 @@ public abstract class BaseMarkupSerializer
 
 
     /**
-     * The DTD writer. When we switch to DTD mode, all output is
-     * accumulated in this DTD writer. When we switch out of it,
-     * the output is obtained as a string. Must not be reset to
-     * null until we're done with the document.
+     * True if the serializer has been prepared. This flag is set
+     * to false when the serializer is reset prior to using it,
+     * and to true after it has been prepared for usage.
      */
-    private StringWriter    _dtdWriter;
-
-
-    /**
-     * Holds a reference to the document writer while we are
-     * in DTD mode.
-     */
-    private Writer          _docWriter;
+    private boolean         _prepared;
 
 
     /**
@@ -262,6 +198,39 @@ public abstract class BaseMarkupSerializer
     protected String        _docTypeSystemId;
 
 
+    /**
+     * The output format associated with this serializer. This will never
+     * be a null reference. If no format was passed to the constructor,
+     * the default one for this document type will be used. The format
+     * object is never changed by the serializer.
+     */
+    protected OutputFormat   _format;
+
+
+    /**
+     * The printer used for printing text parts.
+     */
+    protected Printer       _printer;
+
+
+    /**
+     * True if indenting printer.
+     */
+    protected boolean       _indenting;
+
+
+    /**
+     * The underlying writer.
+     */
+    private Writer          _writer;
+
+
+    /**
+     * The output stream.
+     */
+    private OutputStream    _output;
+
+
     //--------------------------------//
     // Constructor and initialization //
     //--------------------------------//
@@ -272,51 +241,59 @@ public abstract class BaseMarkupSerializer
      * Must initialize the serializer before serializing any document,
      * see {@link #init}.
      */
-    protected BaseMarkupSerializer()
+    protected BaseMarkupSerializer( OutputFormat format )
     {
         int i;
         
         _elementStates = new ElementState[ 10 ];
         for ( i = 0 ; i < _elementStates.length ; ++i )
             _elementStates[ i ] = new ElementState();
+        _format = format;
     }
 
 
     public DocumentHandler asDocumentHandler()
+        throws IOException
     {
+        prepare();
         return this;
     }
 
 
     public ContentHandler asContentHandler()
+        throws IOException
     {
+        prepare();
         return this;
     }
 
 
     public DOMSerializer asDOMSerializer()
+        throws IOException
     {
+        prepare();
         return this;
     }
 
 
     public void setOutputByteStream( OutputStream output )
-        throws UnsupportedEncodingException
     {
         String encoding;
         
-        if ( _format.getEncoding() == null ) 
-            setOutputCharStream( new OutputStreamWriter( output ) );
-        else
-            setOutputCharStream( new OutputStreamWriter( output, _format.getEncoding() ) );
+        if ( output == null )
+            throw new NullPointerException( "SER001 Argument 'output' is null." );
+        _output = output;
+        _writer = null;
+        reset();
     }
 
 
-    public void setOutputCharStream( Writer output )
+    public void setOutputCharStream( Writer writer )
     {
-        if ( output == null )
-            throw new NullPointerException( "SER001 Argument 'output' is null." );
-        _writer = output;
+        if ( writer == null )
+            throw new NullPointerException( "SER001 Argument 'writer' is null." );
+        _writer = writer;
+        _output = null;
         reset();
     }
     
@@ -326,31 +303,74 @@ public abstract class BaseMarkupSerializer
         if ( format == null )
             throw new NullPointerException( "SER001 Argument 'format' is null." );
         _format = format;
-        // Determine the last printable character based on the output format
-        _lastPrintable = _format.getLastPrintable();
         reset();
     }
     
     
-    protected void reset()
+    public boolean reset()
     {
-        // Initialize everything for a first/second run.
-        _line = new StringBuffer( 80 );
-        _text = new StringBuffer( 20 );
-        _spaces = 0;
-        _thisIndent = _nextIndent = 0;
-        _exception = null;
-        _elementStateCount = 0;
-        _started = false;
-        _dtdWriter = null;
-        _docTypePublicId = _format.getDoctypePublic();
-        _docTypeSystemId = _format.getDoctypeSystem();
+        if ( _elementStateCount > 1 )
+            throw new IllegalStateException( "Serializer reset in the middle of serialization" );
+        _prepared = false;
+        return true;
     }
 
 
-    //-------------------------------//
+    private void prepare()
+        throws IOException
+    {
+        if ( _prepared )
+            return;
+
+        if ( _writer == null && _output == null )
+            throw new IllegalStateException( "SER002 No writer supplied for serializer" );
+        // If the output stream has been set, use it to construct
+        // the writer. It is possible that the serializer has been
+        // reused with the same output stream and different encoding.
+        if ( _output != null ) {
+            if ( _format.getEncoding() == null )
+                _writer = new OutputStreamWriter( _output );
+            else
+                _writer = Encodings.getWriter( _output, _format.getEncoding() );
+        }
+        // Determine the last printable character.
+        if ( _format.getEncoding() == null )
+            _lastPrintable = Encodings.getLastPrintable();
+        else
+            _lastPrintable = Encodings.getLastPrintable( _format.getEncoding() );
+
+        if ( _format.getIndenting() ) {
+            _indenting = true;
+            _printer = new IndentPrinter( _writer, _format );
+        } else {
+            _indenting = false;
+            _printer = new Printer( _writer, _format );
+        }
+
+        ElementState state;
+
+        _elementStateCount = 0;
+        state = _elementStates[ 0 ];
+        state.namespaceURI = null;
+        state.localName = null;
+        state.rawName = null;
+        state.preserveSpace = _format.getPreserveSpace();
+        state.empty = true;
+        state.afterElement = false;
+        state.doCData = state.inCData = false;
+        state.prefixes = null;
+
+        _docTypePublicId = _format.getDoctypePublic();
+        _docTypeSystemId = _format.getDoctypeSystem();
+        _started = false;
+        _prepared = true;
+    }
+
+
+
+    //----------------------------------//
     // DOM document serializing methods //
-    //-------------------------------//
+    //----------------------------------//
 
 
     /**
@@ -365,15 +385,15 @@ public abstract class BaseMarkupSerializer
     public void serialize( Element elem )
         throws IOException
     {
-        if ( _writer == null )
+        if ( _printer == null )
             throw new IllegalStateException( "SER002 No writer supplied for serializer" );
         try {
             startDocument();
         } catch ( SAXException except ) { }
         serializeNode( elem );
-        flush();
-        if ( _exception != null )
-            throw _exception;
+        _printer.flush();
+        if ( _printer.getException() != null )
+            throw _printer.getException();
     }
 
 
@@ -389,15 +409,15 @@ public abstract class BaseMarkupSerializer
     public void serialize( DocumentFragment frag )
         throws IOException
     {
-        if ( _writer == null )
+        if ( _printer == null )
             throw new IllegalStateException( "SER002 No writer supplied for serializer" );
         try {
             startDocument();
         } catch ( SAXException except ) { }
         serializeNode( frag );
-        flush();
-        if ( _exception != null )
-            throw _exception;
+        _printer.flush();
+        if ( _printer.getException() != null )
+            throw _printer.getException();
     }
     
 
@@ -413,16 +433,16 @@ public abstract class BaseMarkupSerializer
     public void serialize( Document doc )
         throws IOException
     {
-        if ( _writer == null )
+        if ( _printer == null )
             throw new IllegalStateException( "SER002 No writer supplied for serializer" );
         try {
             startDocument();
         } catch ( SAXException except ) { }
         serializeNode( doc );
         serializePreRoot();
-        flush();
-        if ( _exception != null )
-            throw _exception;
+        _printer.flush();
+        if ( _printer.getException() != null )
+            throw _printer.getException();
     }
     
 
@@ -433,7 +453,57 @@ public abstract class BaseMarkupSerializer
 
     public void characters( char[] chars, int start, int length )
     {
-        characters( new String( chars, start, length ), false );
+        ElementState state;
+        
+        state = content();
+        // Check if text should be print as CDATA section or unescaped
+        // based on elements listed in the output format (the element
+        // state) or whether we are inside a CDATA section or entity.
+        
+        if ( state.inCData || state.doCData ) {
+            int          saveIndent;
+            
+            // Print a CDATA section. The text is not escaped, but ']]>'
+            // appearing in the code must be identified and dealt with.
+            // The contents of a text node is considered space preserving.
+            if ( ! state.inCData ) {
+                _printer.printText( "<![CDATA[" );
+                state.inCData = true;
+            }
+            saveIndent = _printer.getNextIndent();
+            _printer.setNextIndent( 0 );
+            for ( int index = 0 ; index < length ; ++index ) {
+                if ( index + 2 < length && chars[ index ] == ']' && 
+                     chars[ index + 1 ] == ']' && chars[ index + 2 ] == '>' ) {
+                    
+                    printText( chars, start, index + 2, true, true );
+                    _printer.printText( "]]><![CDATA[" );
+                    start += index + 2;
+                    length -= index + 2;
+                    index = 0;
+                }
+            }
+            if ( length > 0 )
+                printText( chars, start, length, true, true );
+            _printer.setNextIndent( saveIndent );
+            
+        } else {
+            
+            int saveIndent;
+            
+            if ( state.preserveSpace ) {
+                // If preserving space then hold of indentation so no
+                // excessive spaces are printed at line breaks, escape
+                // the text content without replacing spaces and print
+                // the text breaking only at line breaks.
+                saveIndent = _printer.getNextIndent();
+                _printer.setNextIndent( 0 );
+                printText( chars, start, length, true, state.unescaped );
+                _printer.setNextIndent( saveIndent );
+            } else {
+                printText( chars, start, length, false, state.unescaped );
+            }
+        }
     }
     
 
@@ -446,13 +516,13 @@ public abstract class BaseMarkupSerializer
         // Print ignorable whitespaces only when indenting, after
         // all they are indentation. Cancel the indentation to
         // not indent twice.
-        if ( _format.getIndenting() ) {
-            _thisIndent = 0;
+        if ( _indenting ) {
+            _printer.setThisIndent( 0 );
             for ( i = start ; length-- > 0 ; ++i ) {
                 if ( chars[ i ] == '\n' || chars[ i ] == '\r' )
-                    breakLine( true );
+                    _printer.breakLine( true );
                 else
-                    _text.append( chars[ i ] );
+                    _printer.printText( chars[ i ] );
             }
         }
     }
@@ -486,15 +556,14 @@ public abstract class BaseMarkupSerializer
         
         // If before the root element (or after it), do not print
         // the PI directly but place it in the pre-root vector.
-        if ( state == null ) {
+        if ( isDocumentState() ) {
             if ( _preRoot == null )
                 _preRoot = new Vector();
             _preRoot.addElement( buffer.toString() );
-        }
-        else {
-            indent();
-            printText( buffer, true );
-            unindent();
+        } else {
+            _printer.indent();
+            printText( buffer.toString(), true, false );
+            _printer.unindent();
         }
     }
     
@@ -523,15 +592,14 @@ public abstract class BaseMarkupSerializer
         
         // If before the root element (or after it), do not print
         // the comment directly but place it in the pre-root vector.
-        if ( state == null ) {
+        if ( isDocumentState() ) {
             if ( _preRoot == null )
                 _preRoot = new Vector();
             _preRoot.addElement( buffer.toString() );
-        }
-        else {
-            indent();
-            printText( buffer, false );
-            unindent();
+        } else {
+            _printer.indent();
+            printText( buffer.toString(), false, false );
+            _printer.unindent();
         }
     }
 
@@ -541,8 +609,7 @@ public abstract class BaseMarkupSerializer
         ElementState state;
         
         state = getElementState();
-        if ( state != null )
-            state.doCData = true;
+        state.doCData = true;
     }
     
     
@@ -551,8 +618,43 @@ public abstract class BaseMarkupSerializer
         ElementState state;
         
         state = getElementState();
-        if ( state != null )
-            state.doCData = false;
+        state.doCData = false;
+    }
+
+
+    public void startNonEscaping()
+    {
+        ElementState state;
+        
+        state = getElementState();
+        state.unescaped = true;
+    }
+
+
+    public void endNonEscaping()
+    {
+        ElementState state;
+        
+        state = getElementState();
+        state.unescaped = false;
+    }
+
+
+    public void startPreserving()
+    {
+        ElementState state;
+        
+        state = getElementState();
+        state.preserveSpace = true;
+    }
+
+
+    public void endPreserving()
+    {
+        ElementState state;
+        
+        state = getElementState();
+        state.preserveSpace = false;
     }
 
 
@@ -571,11 +673,11 @@ public abstract class BaseMarkupSerializer
         // the root element.
         serializePreRoot();
         // Flush the output, this is necessary for buffered output.
-        flush();
+        _printer.flush();
         // If an exception was thrown during serializing, this would
         // be the best time to report it.
-        if ( _exception != null )
-            throw new SAXException( _exception );
+        if ( _printer.getException() != null )
+            throw new SAXException( _printer.getException() );
     }
 
 
@@ -607,7 +709,9 @@ public abstract class BaseMarkupSerializer
     {
         endCDATA();
         content();
-        printText( "&" + name + ";" );
+        _printer.printText( '&' );
+        _printer.printText( name );
+        _printer.printText( ';' );
     }
     
     
@@ -626,14 +730,14 @@ public abstract class BaseMarkupSerializer
     }
     
 
-    //---------------------------------------//
+    //------------------------------------------//
     // SAX DTD/Decl handler serializing methods //
-    //---------------------------------------//
+    //------------------------------------------//
 
 
     public void startDTD( String name, String publicId, String systemId )
     {
-        enterDTD();
+        _printer.enterDTD();
         _docTypePublicId = publicId;
         _docTypeSystemId = systemId;
     }
@@ -647,45 +751,58 @@ public abstract class BaseMarkupSerializer
     
     public void elementDecl( String name, String model )
     {
-        enterDTD();
-        printText( "<!ELEMENT " + name + " " + model + ">" );
-        if ( _format.getIndenting() )
-            breakLine();
+        _printer.enterDTD();
+        _printer.printText( "<!ELEMENT " );
+        _printer.printText( name );
+        _printer.printText( ' ' );
+        _printer.printText( model );
+        _printer.printText( '>' );
+        if ( _indenting )
+            _printer.breakLine();
     }
     
     
     public void attributeDecl( String eName, String aName, String type,
                                String valueDefault, String value )
     {
-        StringBuffer buffer;
-        
-        enterDTD();
-        buffer = new StringBuffer( 40 );
-        buffer.append( "<!ATTLIST " ).append( eName ).append( ' ' );
-        buffer.append( aName ).append( ' ' ).append( type );
-        if ( valueDefault != null )
-            buffer.append( ' ' ).append( valueDefault );
-        if ( value != null )
-            buffer.append( " \"" ).append( escape( value ) ).append( '"' );
-        buffer.append( '>' );
-        printText( buffer.toString() );
-        if ( _format.getIndenting() )
-            breakLine();
+        _printer.enterDTD();
+        _printer.printText( "<!ATTLIST " );
+        _printer.printText( eName );
+        _printer.printText( ' ' );
+        _printer.printText( aName );
+        _printer.printText( ' ' );
+        _printer.printText( type );
+        if ( valueDefault != null ) {
+            _printer.printText( ' ' );
+            _printer.printText( valueDefault );
+        }
+        if ( value != null ) {
+            _printer.printText( " \"" );
+            printEscaped( value );
+            _printer.printText( '"' ); 
+        }
+        _printer.printText( '>' );
+        if ( _indenting )
+            _printer.breakLine();
     }
     
     
     public void internalEntityDecl( String name, String value )
     {
-        enterDTD();
-        printText( "<!ENTITY " + name + " \"" + escape( value ) + "\">" );
-        if ( _format.getIndenting() )
-            breakLine();
+        _printer.enterDTD();
+        _printer.printText( "<!ENTITY " );
+        _printer.printText( name );
+        _printer.printText( " \"" );
+        printEscaped( value );
+        _printer.printText( "\">" );
+        if ( _indenting )
+            _printer.breakLine();
     }
     
     
     public void externalEntityDecl( String name, String publicId, String systemId )
     {
-        enterDTD();
+        _printer.enterDTD();
         unparsedEntityDecl( name, publicId, systemId, null );
     }
     
@@ -693,83 +810,51 @@ public abstract class BaseMarkupSerializer
     public void unparsedEntityDecl( String name, String publicId,
                                     String systemId, String notationName )
     {
-        enterDTD();
+        _printer.enterDTD();
         if ( publicId == null ) {
-            printText( "<!ENTITY " + name + " SYSTEM " );
+            _printer.printText( "<!ENTITY " );
+            _printer.printText( name );
+            _printer.printText( " SYSTEM " );
             printDoctypeURL( systemId );
         } else {
-            printText( "<!ENTITY " + name + " PUBLIC " );
+            _printer.printText( "<!ENTITY " );
+            _printer.printText( name );
+            _printer.printText( " PUBLIC " );
             printDoctypeURL( publicId );
-            printText( " " );
+            _printer.printText( ' ' );
             printDoctypeURL( systemId );
         }
-        if ( notationName != null )
-            printText( " NDATA " + notationName );
-        printText( ">" );
-        if ( _format.getIndenting() )
-            breakLine();
+        if ( notationName != null ) {
+            _printer.printText( " NDATA " );
+            _printer.printText( notationName );
+        }
+        _printer.printText( '>' );
+        if ( _indenting )
+            _printer.breakLine();
     }
     
     
     public void notationDecl( String name, String publicId, String systemId )
     {
-        enterDTD();
+        _printer.enterDTD();
         if ( publicId != null ) {
-            printText( "<!NOTATION " + name + " PUBLIC " );
+            _printer.printText( "<!NOTATION " );
+            _printer.printText( name );
+            _printer.printText( " PUBLIC " );
             printDoctypeURL( publicId );
             if ( systemId != null ) {
-                printText( "  " );
+                _printer.printText( ' ' );
                 printDoctypeURL( systemId );
             }
         } else {
-            printText( "<!NOTATION " + name + " SYSTEM " );
+            _printer.printText( "<!NOTATION " );
+            _printer.printText( name );
+            _printer.printText( " SYSTEM " );
             printDoctypeURL( systemId );
         }
-        printText( ">" );
-        if ( _format.getIndenting() )
-            breakLine();
-    }
-    
-    
-    /**
-     * Called by any of the DTD handlers to enter DTD mode.
-     * Once entered, all output will be accumulated in a string
-     * that can be printed as part of the document's DTD.
-     * This method may be called any number of time but will only
-     * have affect the first time it's called. To exist DTD state
-     * and get the accumulated DTD, call {@link #leaveDTD}.
-     */
-    protected void enterDTD()
-    {
-        // Can only enter DTD state once. Once we're out of DTD
-        // state, can no longer re-enter it.
-        if ( _dtdWriter == null ) {
-            _line.append( _text );
-            _text = new StringBuffer( 20 );
-            flushLine( false );
-            _dtdWriter = new StringWriter();
-            _docWriter = _writer;
-            _writer = _dtdWriter;
-        }
-    }
-    
-    
-    /**
-     * Called by the root element to leave DTD mode and if any
-     * DTD parts were printer, will return a string with their
-     * textual content.
-     */
-    protected String leaveDTD()
-    {
-        // Only works if we're going out of DTD mode.
-        if ( _writer == _dtdWriter ) {
-            _line.append( _text );
-            _text = new StringBuffer( 20 );
-            flushLine( false );
-            _writer = _docWriter;
-            return _dtdWriter.toString();
-        } else
-            return null;
+        _printer.printText( '>' );
+        if ( _indenting )
+            _printer.breakLine();
     }
     
     
@@ -792,19 +877,35 @@ public abstract class BaseMarkupSerializer
         // Only comments entities and documents which are not
         // handled by SAX are serialized directly.
         switch ( node.getNodeType() ) {
-        case Node.TEXT_NODE :
-            characters( node.getNodeValue(), false );
-            break;
+        case Node.TEXT_NODE : {
+            String text;
             
-        case Node.CDATA_SECTION_NODE :
-            startCDATA();
-            characters( node.getNodeValue(), false );
-            endCDATA();
+            text = node.getNodeValue();
+            if ( text != null )
+                characters( node.getNodeValue() );
             break;
+        }
             
-        case Node.COMMENT_NODE :
-            comment( node.getNodeValue() );
+        case Node.CDATA_SECTION_NODE : {
+            String text;
+            
+            text = node.getNodeValue();
+            if ( text != null ) {
+                startCDATA();
+                characters( node.getNodeValue() );
+                endCDATA();
+            }
             break;
+        }
+            
+        case Node.COMMENT_NODE : {
+            String text;
+            
+            text = node.getNodeValue();
+            if ( text != null )
+                comment( node.getNodeValue() );
+            break;
+        }
             
         case Node.ENTITY_REFERENCE_NODE : {
             Node         child;
@@ -827,7 +928,7 @@ public abstract class BaseMarkupSerializer
             serializeElement( (Element) node );
             break;
             
-        case Node.DOCUMENT_NODE :
+        case Node.DOCUMENT_NODE : {
             DocumentType      docType;
             DOMImplementation domImpl;
             NamedNodeMap      map;
@@ -879,6 +980,7 @@ public abstract class BaseMarkupSerializer
                 }
             }
             // !! Fall through
+        }
         case Node.DOCUMENT_FRAGMENT_NODE : {
             Node         child;
             
@@ -912,17 +1014,17 @@ public abstract class BaseMarkupSerializer
         ElementState state;
         
         state = getElementState();
-        if ( state != null ) {
+        if ( ! isDocumentState() ) {
             // Need to close CData section first
             if ( state.inCData && ! state.doCData ) {
-                printText( "]]>" );
+                _printer.printText( "]]>" );
                 state.inCData = false;
             }
             // If this is the first content in the element,
             // change the state to not-empty and close the
             // opening element tag.
             if ( state.empty ) {
-                printText( ">" );
+                _printer.printText( '>' );
                 state.empty = false;
             }
             // Except for one content type, all of them
@@ -944,7 +1046,7 @@ public abstract class BaseMarkupSerializer
      * @param text The text to print
      * @param unescaped True is should print unescaped
      */
-    protected void characters( String text, boolean unescaped )
+    protected void characters( String text )
     {
         ElementState state;
         
@@ -952,11 +1054,8 @@ public abstract class BaseMarkupSerializer
         // Check if text should be print as CDATA section or unescaped
         // based on elements listed in the output format (the element
         // state) or whether we are inside a CDATA section or entity.
-        if ( state != null ) {
-            unescaped = unescaped || state.unescaped;
-        }
         
-        if ( state != null && ( state.inCData || state.doCData ) ) {
+        if ( state.inCData || state.doCData ) {
             StringBuffer buffer;
             int          index;
             int          saveIndent;
@@ -976,40 +1075,26 @@ public abstract class BaseMarkupSerializer
                 index = text.indexOf( "]]>" );
             }
             buffer.append( text );
-            saveIndent = _nextIndent;
-            _nextIndent = 0;
-            printText( buffer, true );
-            _nextIndent = saveIndent;
+            saveIndent = _printer.getNextIndent();
+            _printer.setNextIndent( 0 );
+            printText( buffer.toString(), true, true );
+            _printer.setNextIndent( saveIndent );
             
         } else {
             
             int saveIndent;
             
-            if ( unescaped ) {
-                // If the text node of this element should be printed
-                // unescaped, then cancel indentation and print it
-                // directly without escaping.
-                saveIndent = _nextIndent;
-                _nextIndent = 0;
-                printText( text, true );
-                _nextIndent = saveIndent;
-                
-            } else if ( state != null && state.preserveSpace ) {
+            if ( state.preserveSpace ) {
                 // If preserving space then hold of indentation so no
                 // excessive spaces are printed at line breaks, escape
                 // the text content without replacing spaces and print
                 // the text breaking only at line breaks.
-                saveIndent = _nextIndent;
-                _nextIndent = 0;
-                printText( escape( text ), true );
-                _nextIndent = saveIndent;
-                
+                saveIndent = _printer.getNextIndent();
+                _printer.setNextIndent( 0 );
+                printText( text, true, state.unescaped );
+                _printer.setNextIndent( saveIndent );
             } else {
-                // This is the last, but the most common case of
-                // printing without preserving spaces. If indentation was
-                // requested, line will wrap at space boundaries.
-                // All whitespaces will print as space characters.
-                printText( escape( text ), false );
+                printText( text, false, state.unescaped );
             }
         }
     }
@@ -1049,8 +1134,8 @@ public abstract class BaseMarkupSerializer
         
         if ( _preRoot != null ) {
             for ( i = 0 ; i < _preRoot.size() ; ++i ) {
-                printText( (String) _preRoot.elementAt( i ), true );
-                breakLine();
+                printText( (String) _preRoot.elementAt( i ), true, true );
+                _printer.breakLine();
             }
             _preRoot.removeAllElements();
         }
@@ -1063,29 +1148,6 @@ public abstract class BaseMarkupSerializer
 
 
     /**
-     * Called to print additional text. Each time this method is called
-     * it accumulates more text. When a space is printed ({@link
-     * #printSpace}) all the accumulated text becomes one part and is
-     * added to the accumulate line. When a line is long enough, it can
-     * be broken at its text boundary.
-     *
-     * @param text The text to print
-     */
-    protected final void printText( String text )
-    {
-        // Add this text to the accumulated text which will not be
-        // print until the next space break.
-        _text.append( text );
-    }
-    
-    
-    protected final void printText( char[] chars, int start, int end )
-    {
-        _text.append( chars, start, end );
-    }
-    
-
-    /**
      * Called to print additional text with whitespace handling.
      * If spaces are preserved, the text is printed as if by calling
      * {@link #printText(String)} with a call to {@link #breakLine}
@@ -1096,8 +1158,50 @@ public abstract class BaseMarkupSerializer
      *
      * @param text The text to print
      * @param preserveSpace Space preserving flag
+     * @param unescaped Print unescaped
      */
-    protected final void printText( String text, boolean preserveSpace )
+    protected final void printText( char[] chars, int start, int length,
+                                    boolean preserveSpace, boolean unescaped )
+    {
+        int index;
+        char ch;
+        
+        if ( preserveSpace ) {
+            // Preserving spaces: the text must print exactly as it is,
+            // without breaking when spaces appear in the text and without
+            // consolidating spaces. If a line terminator is used, a line
+            // break will occur.
+            while ( length-- > 0 ) {
+                ch = chars[ start ];
+                ++start;
+                if ( ch == '\n' || ch == '\r' )
+                    _printer.breakLine( true );
+                else if ( unescaped )
+                    _printer.printText( ch );
+                else
+                    printEscaped( ch );
+            }
+        } else {
+            // Not preserving spaces: print one part at a time, and
+            // use spaces between parts to break them into different
+            // lines. Spaces at beginning of line will be stripped
+            // by printing mechanism. Line terminator is treated
+            // no different than other text part.
+            while ( length-- > 0 ) {
+                ch = chars[ start ];
+                ++start;
+                if ( ch == ' ' || ch == '\f' || ch == '\t' || ch == '\n' || ch == '\r' )
+                    _printer.printSpace();
+                else if ( unescaped )
+                    _printer.printText( ch );
+                else
+                    printEscaped( ch );
+            }
+        }
+    }
+
+
+    protected final void printText( String text, boolean preserveSpace, boolean unescaped )
     {
         int index;
         char ch;
@@ -1110,244 +1214,28 @@ public abstract class BaseMarkupSerializer
             for ( index = 0 ; index < text.length() ; ++index ) {
                 ch = text.charAt( index );
                 if ( ch == '\n' || ch == '\r' )
-                    breakLine( true );
+                    _printer.breakLine( true );
+                else if ( unescaped )
+                    _printer.printText( ch );
                 else
-                    _text.append( ch );
+                    printEscaped( ch );
             }
-        }
-        else
-            {
-                // Not preserving spaces: print one part at a time, and
-                // use spaces between parts to break them into different
-                // lines. Spaces at beginning of line will be stripped
-                // by printing mechanism. Line terminator is treated
-                // no different than other text part.
-                for ( index = 0 ; index < text.length() ; ++index ) {
-                    ch = text.charAt( index );
-                    if ( ch == ' ' || ch == '\f' || ch == '\t' || ch == '\n' || ch == '\r' )
-                        printSpace();
-                    else
-                        _text.append( ch );
-                }
-            }
-    }
-
-
-    protected final void printText( StringBuffer text, boolean preserveSpace )
-    {
-        int index;
-        char ch;
-        
-        if ( preserveSpace ) {
-            // Preserving spaces: the text must print exactly as it is,
-            // without breaking when spaces appear in the text and without
-            // consolidating spaces. If a line terminator is used, a line
-            // break will occur.
+        } else {
+            // Not preserving spaces: print one part at a time, and
+            // use spaces between parts to break them into different
+            // lines. Spaces at beginning of line will be stripped
+            // by printing mechanism. Line terminator is treated
+            // no different than other text part.
             for ( index = 0 ; index < text.length() ; ++index ) {
                 ch = text.charAt( index );
-                if ( ch == '\n' || ch == '\r' )
-                    breakLine( true );
+                if ( ch == ' ' || ch == '\f' || ch == '\t' || ch == '\n' || ch == '\r' )
+                    _printer.printSpace();
+                else if ( unescaped )
+                    _printer.printText( ch );
                 else
-                    _text.append( ch );
+                    printEscaped( ch );
             }
         }
-        else
-            {
-                // Not preserving spaces: print one part at a time, and
-                // use spaces between parts to break them into different
-                // lines. Spaces at beginning of line will be stripped
-                // by printing mechanism. Line terminator is treated
-                // no different than other text part.
-                for ( index = 0 ; index < text.length() ; ++index ) {
-                    ch = text.charAt( index );
-                    if ( ch == ' ' || ch == '\f' || ch == '\t' || ch == '\n' || ch == '\r' )
-                        printSpace();
-                    else
-                        _text.append( ch );    
-                }
-            }
-    }
-    
-
-    /**
-     * Called to print a single space between text parts that may be
-     * broken into separate lines. Must not be called to print a space
-     * when preserving spaces. The text accumulated so far with {@link
-     * #printText} will be added to the accumulated line, and a space
-     * separator will be counted. If the line accumulated so far is
-     * long enough, it will be printed.
-     */
-    protected final void printSpace()
-    {
-        // The line consists of the text accumulated in _line,
-        // followed by one or more spaces as counted by _spaces,
-        // followed by more space accumulated in _text:
-        // -  Text is printed and accumulated into _text.
-        // -  A space is printed, so _text is added to _line and
-        //    a space is counted.
-        // -  More text is printed and accumulated into _text.
-        // -  A space is printed, the previous spaces are added
-        //    to _line, the _text is added to _line, and a new
-        //    space is counted.
-        
-        // If text was accumulated with printText(), then the space
-        // means we have to move that text into the line and
-        // start accumulating new text with printText().
-        if ( _text.length() > 0 ) {
-            // If the text breaks a line bounary, wrap to the next line.
-            // The printed line size consists of the indentation we're going
-            // to use next, the accumulated line so far, some spaces and the
-            // accumulated text so far.
-            if ( _format.getLineWidth() > 0 &&
-                 _thisIndent + _line.length() + _spaces + _text.length() > _format.getLineWidth() ) {
-                flushLine( false );
-                try {
-                    // Print line and new line, then zero the line contents.
-                    _writer.write( _format.getLineSeparator() );
-                } catch ( IOException except ) {
-                    // We don't throw an exception, but hold it
-                    // until the end of the document.
-                    if ( _exception == null )
-                        _exception = except;
-                }
-            }
-            
-            // Add as many spaces as we accumulaed before.
-            // At the end of this loop, _spaces is zero.
-            while ( _spaces > 0 ) {
-                _line.append( ' ' );
-                --_spaces;
-            }
-            _line.append( _text );
-            _text = new StringBuffer( 20 );
-        }
-        // Starting a new word: accumulate the text between the line
-        // and this new word; not a new word: just add another space.
-        ++_spaces;
-    }
-
-
-    /**
-     * Called to print a line consisting of the text accumulated so
-     * far. This is equivalent to calling {@link #printSpace} but
-     * forcing the line to print and starting a new line ({@link
-     * #printSpace} will only start a new line if the current line
-     * is long enough).
-     */
-    protected final void breakLine()
-    {
-        breakLine( false );
-    }
-
-    protected final void breakLine( boolean preserveSpace )
-    {
-        // Equivalent to calling printSpace and forcing a flushLine.
-        if ( _text.length() > 0 ) {
-            while ( _spaces > 0 ) {
-                _line.append( ' ' );
-                --_spaces;
-            }
-            _line.append( _text );
-            _text = new StringBuffer( 20 );
-        }
-        flushLine( preserveSpace );
-        try {
-            // Print line and new line, then zero the line contents.
-            _writer.write( _format.getLineSeparator() );
-        } catch ( IOException except ) {
-            // We don't throw an exception, but hold it
-            // until the end of the document.
-            if ( _exception == null )
-                _exception = except;
-        }
-    }
-    
-
-    /**
-     * Flushes the line accumulated so far to the writer and get ready
-     * to accumulate the next line. This method is called by {@link
-     * #printText} and {@link #printSpace} when the accumulated line plus
-     * accumulated text are two long to fit on a given line. At the end of
-     * this method {@link #_line} is empty and {@link #_spaces} is zero.
-     */
-    private void flushLine( boolean preserveSpace )
-    {
-        int     indent;
-        
-        if ( _line.length() > 0 ) {
-            try {
-                
-                if ( _format.getIndenting() && ! preserveSpace ) {
-                    // Make sure the indentation does not blow us away.
-                    indent = _thisIndent;
-                    if ( ( 2 * indent ) > _format.getLineWidth() && _format.getLineWidth() > 0 )
-                        indent = _format.getLineWidth() / 2;
-                    // Print the indentation as spaces and set the current
-                    // indentation to the next expected indentation.
-                    while ( indent > 0 ) {
-                        _writer.write( ' ' );
-                        --indent;
-                    }
-                }
-                _thisIndent = _nextIndent;
-                
-                // There is no need to print the spaces at the end of the line,
-                // they are simply stripped and replaced with a single line
-                // separator.
-                _spaces = 0;
-                _writer.write( _line.toString() );
-                
-                _line = new StringBuffer( 40 );
-            } catch ( IOException except ) {
-                // We don't throw an exception, but hold it
-                // until the end of the document.
-                if ( _exception == null )
-                    _exception = except;
-            }
-        }
-    }
-    
-    
-    /**
-     * Flush the output stream. Must be called when done printing
-     * the document, otherwise some text might be buffered.
-     */
-    public void flush()
-    {
-        if ( _line.length() > 0 || _text.length() > 0 )
-            breakLine();
-        try {
-            _writer.flush();
-        } catch ( IOException except ) {
-            // We don't throw an exception, but hold it
-            // until the end of the document.
-            if ( _exception == null )
-                _exception = except;
-        }
-    }
-
-
-    /**
-     * Increment the indentation for the next line.
-     */
-    protected void indent()
-    {
-        _nextIndent += _format.getIndent();
-    }
-
-
-    /**
-     * Decrement the indentation for the next line.
-     */
-    protected void unindent()
-    {
-        _nextIndent -= _format.getIndent();
-        if ( _nextIndent < 0 )
-            _nextIndent = 0;
-        // If there is no current line and we're de-identing then
-        // this indentation level is actually the next level.
-        if ( ( _line.length() + _spaces + _text.length() ) == 0 )
-            _thisIndent = _nextIndent;
     }
 
 
@@ -1362,14 +1250,42 @@ public abstract class BaseMarkupSerializer
     {
         int                i;
         
-        _text.append( '"' );
+        _printer.printText( '"' );
         for( i = 0 ; i < url.length() ; ++i ) {
-            if ( url.charAt( i ) == '"' ||  url.charAt( i ) < 0x20 || url.charAt( i ) > 0x7F )
-                _text.append( "%" ).append( Integer.toHexString( url.charAt( i ) ) );
-            else
-                _text.append( url.charAt( i ) );
+            if ( url.charAt( i ) == '"' ||  url.charAt( i ) < 0x20 || url.charAt( i ) > 0x7F ) {
+                _printer.printText( '%' );
+                _printer.printText( Integer.toHexString( url.charAt( i ) ) );
+            } else
+                _printer.printText( url.charAt( i ) );
         }
-        _text.append( '"' );
+        _printer.printText( '"' );
+    }
+
+
+    protected void printEscaped( char ch )
+    {
+        String charRef;
+        
+        // If there is a suitable entity reference for this
+        // character, print it. The list of available entity
+        // references is almost but not identical between
+        // XML and HTML.
+        charRef = getEntityRef( ch );
+        if ( charRef != null ) {
+            _printer.printText( '&' );
+            _printer.printText( charRef );
+            _printer.printText( ';' );
+        } else if ( ( ch >= ' ' && ch <= _lastPrintable && ch != 0xF7 ) ||
+                    ch == '\n' || ch == '\r' || ch == '\t' ) {
+            // If the character is not printable, print as character reference.
+            // Non printables are below ASCII space but not tab or line
+            // terminator, ASCII delete, or above a certain Unicode threshold.
+            _printer.printText( ch );
+        } else {
+            _printer.printText( "&#" );
+            _printer.printText( Integer.toString( ch ) );
+            _printer.printText( ';' );
+        }
     }
 
 
@@ -1380,37 +1296,11 @@ public abstract class BaseMarkupSerializer
      * is used (e.g. <tt>&amp;lt;</tt>).
      *
      * @param source The string to escape
-     * @return The escaped string
      */
-    protected String escape( String source )
+    protected void printEscaped( String source )
     {
-        StringBuffer    result;
-        int             i;
-        char            ch;
-        String          charRef;
-        
-        result = new StringBuffer( source.length() );
-        for ( i = 0 ; i < source.length() ; ++i )  {
-            ch = source.charAt( i );
-            // If the character is not printable, print as character reference.
-            // Non printables are below ASCII space but not tab or line
-            // terminator, ASCII delete, or above a certain Unicode threshold.
-            if ( ( ch < ' ' && ch != '\t' && ch != '\n' && ch != '\r' ) ||
-                 ch > _lastPrintable || ch == 0xF7 )
-                result.append( "&#" ).append( Integer.toString( ch ) ).append( ';' );
-            else {
-                // If there is a suitable entity reference for this
-                // character, print it. The list of available entity
-                // references is almost but not identical between
-                // XML and HTML.
-                charRef = getEntityRef( ch );
-                if ( charRef == null )
-                    result.append( ch );
-                else
-                    result.append( '&' ).append( charRef ).append( ';' );
-            }
-        }
-        return result.toString();
+        for ( int i = 0 ; i < source.length() ; ++i )
+            printEscaped( source.charAt( i ) );
     }
 
 
@@ -1420,18 +1310,13 @@ public abstract class BaseMarkupSerializer
 
 
     /**
-     * Return the state of the current element, or null
-     * if not within any element (e.g. before entering
-     * root element).
+     * Return the state of the current element.
      *
-     * @return Current element state, or null
+     * @return Current element state
      */
     protected ElementState getElementState()
     {
-        if ( _elementStateCount == 0 )
-            return null;
-        else
-            return _elementStates[ _elementStateCount - 1 ];
+        return _elementStates[ _elementStateCount ];
     }
 
 
@@ -1447,19 +1332,20 @@ public abstract class BaseMarkupSerializer
     {
         ElementState state;
         
-        if ( _elementStateCount == _elementStates.length ) {
+        if ( _elementStateCount + 1 == _elementStates.length ) {
             ElementState[] newStates;
             
-            // Need to create a larger array of states.
-            // This does not happen often, unless the document
-            // is really deep.
-            newStates = new ElementState[ _elementStates.length + 5 ];
+            // Need to create a larger array of states. This does not happen
+            // often, unless the document is really deep.
+            newStates = new ElementState[ _elementStates.length + 10 ];
             for ( int i = 0 ; i < _elementStates.length ; ++i )
                 newStates[ i ] = _elementStates[ i ];
+            for ( int i = _elementStates.length ; i < newStates.length ; ++i )
+                newStates[ i ] = new ElementState();
             _elementStates = newStates;
-            for ( int i = _elementStateCount ; i < _elementStates.length ; ++i )
-                _elementStates[ i ] = new ElementState();
         }
+
+        ++_elementStateCount;
         state = _elementStates[ _elementStateCount ];
         state.namespaceURI = namespaceURI;
         state.localName = localName;
@@ -1469,34 +1355,51 @@ public abstract class BaseMarkupSerializer
         state.afterElement = false;
         state.doCData = state.inCData = false;
         state.prefixes = _prefixes;
+
         _prefixes = null;
-        ++_elementStateCount;
         return state;
     }
     
     
     /**
      * Leave the current element state and return to the
-     * state of the parent element, or no state if this
-     * is the root element.
+     * state of the parent element. If this was the root
+     * element, return to the state of the document.
      *
-     * @return Previous element state, or null
+     * @return Previous element state
      */
     protected ElementState leaveElementState()
     {
-        if ( _elementStateCount > 1 ) {
-            -- _elementStateCount;
+        if ( _elementStateCount > 0 ) {
             _prefixes = _elementStates[ _elementStateCount ].prefixes;
-            return _elementStates[ _elementStateCount - 1 ];
-        } else if ( _elementStateCount == 1 ) {
             -- _elementStateCount;
-            _prefixes = _elementStates[ _elementStateCount ].prefixes;
-            return null;
+            return _elementStates[ _elementStateCount ];
         } else
-            return null;
+            throw new IllegalStateException( "Internal error: element state is zero" );
+    }
+
+
+    /**
+     * Returns true if in the state of the document.
+     * Returns true before entering any element and after
+     * leaving the root element.
+     *
+     * @return True if in the state of the document
+     */
+    protected boolean isDocumentState()
+    {
+        return _elementStateCount == 0;
     }
     
     
+    /**
+     * Returns the namespace prefix for the specified URI.
+     * If the URI has been mapped to a prefix, returns the
+     * prefix, otherwise returns null.
+     *
+     * @param namespaceURI The namespace URI
+     * @return The namespace prefix if known, or null
+     */
     protected String getPrefix( String namespaceURI )
     {
         String    prefix;
@@ -1509,7 +1412,7 @@ public abstract class BaseMarkupSerializer
         if ( _elementStateCount == 0 )
             return null;
         else {
-            for ( int i = _elementStateCount ; i-- > 0 ; ) {
+            for ( int i = _elementStateCount ; i > 0 ; --i ) {
                 if ( _elementStates[ i ].prefixes != null ) {
                     prefix = (String) _elementStates[ i ].prefixes.get( namespaceURI );
                     if ( prefix != null )

@@ -70,7 +70,7 @@ import java.io.UnsupportedEncodingException;
  * Serializer} or {@link BaseMarkupSerializer}.
  *
  *
- * @version
+ * @version $Revision$ $Date$
  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
  * @see Serializer
  */
@@ -86,7 +86,7 @@ public final class XHTMLSerializer
      */
     public XHTMLSerializer()
     {
-        super( true, null );
+        super( true, new OutputFormat( Method.XHTML, null, false ) );
     }
 
 
@@ -97,7 +97,7 @@ public final class XHTMLSerializer
      */
     public XHTMLSerializer( OutputFormat format )
     {
-        super( true, format );
+        super( true, format != null ? format : new OutputFormat( Method.XHTML, null, false ) );
     }
 
 
@@ -111,7 +111,7 @@ public final class XHTMLSerializer
      */
     public XHTMLSerializer( Writer writer, OutputFormat format )
     {
-        super( true, format );
+        super( true, format != null ? format : new OutputFormat( Method.XHTML, null, false ) );
         setOutputCharStream( writer );
     }
 
@@ -126,21 +126,14 @@ public final class XHTMLSerializer
      */
     public XHTMLSerializer( OutputStream output, OutputFormat format )
     {
-        super( true, format );
-        try {
-            setOutputByteStream( output );
-        } catch ( UnsupportedEncodingException except ) {
-            // Should never happend
-        }
+        super( true, format != null ? format : new OutputFormat( Method.XHTML, null, false ) );
+        setOutputByteStream( output );
     }
 
 
     public void setOutputFormat( OutputFormat format )
     {
-        if ( format == null )
-            super.setOutputFormat( new OutputFormat( Method.XHTML, null, false ) );
-        else
-            super.setOutputFormat( format );
+        super.setOutputFormat( format != null ? format : new OutputFormat( Method.XHTML, null, false ) );
     }
 
 

@@ -97,7 +97,7 @@ import org.xml.sax.Attributes;
  * spaces at beginning of line will be stripped.
  *
  *
- * @version
+ * @version $Revision$ $Date$
  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
  * @see Serializer
  */
@@ -113,7 +113,7 @@ public final class XMLSerializer
      */
     public XMLSerializer()
     {
-        setOutputFormat( null );
+        super( new OutputFormat( Method.XML, null, false ) );
     }
 
 
@@ -124,7 +124,8 @@ public final class XMLSerializer
      */
     public XMLSerializer( OutputFormat format )
     {
-        setOutputFormat( format );
+        super( format != null ? format : new OutputFormat( Method.XML, null, false ) );
+        format.setMethod( Method.XML );
     }
 
 
@@ -138,7 +139,8 @@ public final class XMLSerializer
      */
     public XMLSerializer( Writer writer, OutputFormat format )
     {
-        setOutputFormat( format );
+        super( format != null ? format : new OutputFormat( Method.XML, null, false ) );
+        format.setMethod( Method.XML );
         setOutputCharStream( writer );
     }
 
@@ -153,21 +155,15 @@ public final class XMLSerializer
      */
     public XMLSerializer( OutputStream output, OutputFormat format )
     {
-        setOutputFormat( format );
-        try {
-            setOutputByteStream( output );
-        } catch ( UnsupportedEncodingException except ) {
-            // Should never happend
-        }
+        super( format != null ? format : new OutputFormat( Method.XML, null, false ) );
+        format.setMethod( Method.XML );
+        setOutputByteStream( output );
     }
 
 
     public void setOutputFormat( OutputFormat format )
     {
-        if ( format == null )
-            super.setOutputFormat( new OutputFormat( Method.XML, null, false ) );
-        else
-            super.setOutputFormat( format );
+        super.setOutputFormat( format != null ? format : new OutputFormat( Method.XML, null, false ) );
     }
 
 
@@ -186,35 +182,34 @@ public final class XMLSerializer
         String       value;
         boolean      addNSAttr = false;
         
-        if ( _writer == null )
+        if ( _printer == null )
             throw new IllegalStateException( "SER002 No writer supplied for serializer" );
         
         state = getElementState();
-        if ( state == null ) {
+        if ( isDocumentState() ) {
             // If this is the root element handle it differently.
             // If the first root element in the document, serialize
             // the document's DOCTYPE. Space preserving defaults
             // to that of the output format.
             if ( ! _started )
                 startDocument( localName == null ? rawName : localName );
-            preserveSpace = _format.getPreserveSpace();
         } else {
             // For any other element, if first in parent, then
             // close parent's opening tag and use the parnet's
             // space preserving.
             if ( state.empty )
-                printText( ">" );
-            preserveSpace = state.preserveSpace;
+                _printer.printText( '>' );
             // Indent this element on a new line if the first
             // content of the parent element or immediately
             // following an element.
-            if ( _format.getIndenting() && ! state.preserveSpace &&
+            if ( _indenting && ! state.preserveSpace &&
                  ( state.empty || state.afterElement ) )
-                breakLine();
+                _printer.breakLine();
         }
+        preserveSpace = state.preserveSpace;
+
         // Do not change the current element state yet.
         // This only happens in endElement().
-        
         if ( rawName == null ) {
             rawName = localName;
             if ( namespaceURI != null ) {
@@ -226,15 +221,16 @@ public final class XMLSerializer
             addNSAttr = true;
         }
         
-        printText( '<' + rawName );
-        indent();
+        _printer.printText( '<' );
+        _printer.printText( rawName );
+        _printer.indent();
         
         // For each attribute print it's name and value as one part,
         // separated with a space so the element can be broken on
         // multiple lines.
         if ( attrs != null ) {
             for ( i = 0 ; i < attrs.getLength() ; ++i ) {
-                printSpace();
+                _printer.printSpace();
                 
                 name = attrs.getRawName( i );
                 if ( name == null ) {
@@ -254,7 +250,10 @@ public final class XMLSerializer
                 value = attrs.getValue( i );
                 if ( value == null )
                     value = "";
-                printText( name + "=\"" + escape( value ) + '"' );
+                _printer.printText( name );
+                _printer.printText( "=\"" );
+                printEscaped( value );
+                _printer.printText( '"' );
                 
                 // If the attribute xml:space exists, determine whether
                 // to preserve spaces in this and child nodes based on
@@ -273,13 +272,20 @@ public final class XMLSerializer
             
             enum = _prefixes.keys();
             while ( enum.hasMoreElements() ) {
-                printSpace();
+                _printer.printSpace();
                 value = (String) enum.nextElement();
                 name = (String) _prefixes.get( value );
-                if ( name.length() == 0 )
-                    printText( "xmlns=\"" + value + '"' );
-                else
-                    printText( "xmlns:" + name + "=\"" + value + '"' );
+                if ( name.length() == 0 ) {
+                    _printer.printText( "xmlns=\"" );
+                    printEscaped( value );
+                    _printer.printText( '"' );
+                } else {
+                    _printer.printText( "xmlns:" );
+                    _printer.printText( name );
+                    _printer.printText( "=\"" );
+                    printEscaped( value );
+                    _printer.printText( '"' );
+                }
             }
         }
         
@@ -302,32 +308,30 @@ public final class XMLSerializer
         // Works much like content() with additions for closing
         // an element. Note the different checks for the closed
         // element's state and the parent element's state.
-        unindent();
+        _printer.unindent();
         state = getElementState();
         if ( state.empty ) {
-            printText( "/>" );
+            _printer.printText( "/>" );
         } else {
             // Must leave CData section first
             if ( state.inCData )
-                printText( "]]>" );
+                _printer.printText( "]]>" );
             // This element is not empty and that last content was
             // another element, so print a line break before that
             // last element and this element's closing tag.
-            if ( _format.getIndenting() && ! state.preserveSpace && state.afterElement )
-                breakLine();
-            printText( "</" + state.rawName + ">" );
+            if ( _indenting && ! state.preserveSpace && state.afterElement )
+                _printer.breakLine();
+            _printer.printText( "</" );
+            _printer.printText( state.rawName );
+            _printer.printText( '>' );
         }
         // Leave the element state and update that of the parent
         // (if we're not root) to not empty and after element.
         state = leaveElementState();
-        if ( state != null ) {
-            state.afterElement = true;
-            state.empty = false;
-        } else {
-            // [keith] If we're done printing the document but don't
-            // get to call endDocument(), the buffer should be flushed.
-            flush();
-        }
+        state.afterElement = true;
+        state.empty = false;
+        if ( isDocumentState() )
+            _printer.flush();
     }
     
     
@@ -338,7 +342,7 @@ public final class XMLSerializer
     
     public void startDocument()
     {
-        if ( _writer == null )
+        if ( _printer == null )
             throw new IllegalStateException( "SER002 No writer supplied for serializer" );
         // Nothing to do here. All the magic happens in startDocument(String)
     }
@@ -352,49 +356,53 @@ public final class XMLSerializer
         String       name;
         String       value;
         
-        if ( _writer == null )
+        if ( _printer == null )
             throw new IllegalStateException( "SER002 No writer supplied for serializer" );
         
         state = getElementState();
-        if ( state == null ) {
+        if ( isDocumentState() ) {
             // If this is the root element handle it differently.
             // If the first root element in the document, serialize
             // the document's DOCTYPE. Space preserving defaults
             // to that of the output format.
             if ( ! _started )
                 startDocument( tagName );
-            preserveSpace = _format.getPreserveSpace();
         } else {
             // For any other element, if first in parent, then
             // close parent's opening tag and use the parnet's
             // space preserving.
             if ( state.empty )
-                printText( ">" );
-            preserveSpace = state.preserveSpace;
+                _printer.printText( '>' );
             // Indent this element on a new line if the first
             // content of the parent element or immediately
             // following an element.
-            if ( _format.getIndenting() && ! state.preserveSpace &&
+            if ( _indenting && ! state.preserveSpace &&
                  ( state.empty || state.afterElement ) )
-                breakLine();
+                _printer.breakLine();
         }
+        preserveSpace = state.preserveSpace;
+
         // Do not change the current element state yet.
         // This only happens in endElement().
         
-        printText( '<' + tagName );
-        indent();
+        _printer.printText( '<' );
+        _printer.printText( tagName );
+        _printer.indent();
         
         // For each attribute print it's name and value as one part,
         // separated with a space so the element can be broken on
         // multiple lines.
         if ( attrs != null ) {
             for ( i = 0 ; i < attrs.getLength() ; ++i ) {
-                printSpace();
+                _printer.printSpace();
                 name = attrs.getName( i );
                 value = attrs.getValue( i );
-                if ( value == null )
-                    value = "";
-                printText( name + "=\"" + escape( value ) + '"' );
+                if ( value != null ) {
+                    _printer.printText( name );
+                    _printer.printText( "=\"" );
+                    printEscaped( value );
+                    _printer.printText( '"' );
+                }
                 
                 // If the attribute xml:space exists, determine whether
                 // to preserve spaces in this and child nodes based on
@@ -445,7 +453,7 @@ public final class XMLSerializer
         int    i;
         String dtd;
         
-        dtd = leaveDTD();
+        dtd = _printer.leaveDTD();
         if ( ! _started ) {
             
             if ( ! _format.getOmitXMLDeclaration() ) {
@@ -468,49 +476,49 @@ public final class XMLSerializer
                      _docTypePublicId == null )
                     buffer.append( " standalone=\"yes\"" );
                 buffer.append( "?>" );
-                printText( buffer.toString() );
-                breakLine();
+                _printer.printText( buffer );
+                _printer.breakLine();
             }
             
             if ( _docTypeSystemId != null ) {
                 // System identifier must be specified to print DOCTYPE.
                 // If public identifier is specified print 'PUBLIC
                 // <public> <system>', if not, print 'SYSTEM <system>'.
-                printText( "<!DOCTYPE " );
-                printText( rootTagName );
+                _printer.printText( "<!DOCTYPE " );
+                _printer.printText( rootTagName );
                 if ( _docTypePublicId != null ) {
-                    printText( " PUBLIC " );
+                    _printer.printText( " PUBLIC " );
                     printDoctypeURL( _docTypePublicId );
-                    if ( _format.getIndenting() ) {
-                        breakLine();
+                    if ( _indenting ) {
+                        _printer.breakLine();
                         for ( i = 0 ; i < 18 + rootTagName.length() ; ++i )
-                            printText( " " );
+                            _printer.printText( " " );
                     } else
-                        printText( " " );
+                        _printer.printText( " " );
                     printDoctypeURL( _docTypeSystemId );
                 }
                 else {
-                    printText( " SYSTEM " );
+                    _printer.printText( " SYSTEM " );
                     printDoctypeURL( _docTypeSystemId );
                 }
                 
                 // If we accumulated any DTD contents while printing.
                 // this would be the place to print it.
                 if ( dtd != null && dtd.length() > 0 ) {
-                    printText( " [" );
-                    printText( dtd, true );
-                    printText( "]" );
+                    _printer.printText( " [" );
+                    printText( dtd, true, true );
+                    _printer.printText( ']' );
                 }
                 
-                printText( ">" );
-                breakLine();
+                _printer.printText( ">" );
+                _printer.breakLine();
             } else if ( dtd != null && dtd.length() > 0 ) {
-                printText( "<!DOCTYPE " );
-                printText( rootTagName );
-                printText( " [" );
-                printText( dtd, true );
-                printText( "]>" );
-                breakLine();
+                _printer.printText( "<!DOCTYPE " );
+                _printer.printText( rootTagName );
+                _printer.printText( " [" );
+                printText( dtd, true, true );
+                _printer.printText( "]>" );
+                _printer.breakLine();
             }
         }
         _started = true;
@@ -538,33 +546,34 @@ public final class XMLSerializer
         
         tagName = elem.getTagName();
         state = getElementState();
-        if ( state == null ) {
+        if ( isDocumentState() ) {
             // If this is the root element handle it differently.
             // If the first root element in the document, serialize
             // the document's DOCTYPE. Space preserving defaults
             // to that of the output format.
             if ( ! _started )
                 startDocument( tagName );
-            preserveSpace = _format.getPreserveSpace();
         } else {
             // For any other element, if first in parent, then
             // close parent's opening tag and use the parnet's
             // space preserving.
             if ( state.empty )
-                printText( ">" );
-            preserveSpace = state.preserveSpace;
+                _printer.printText( '>' );
             // Indent this element on a new line if the first
             // content of the parent element or immediately
             // following an element.
-            if ( _format.getIndenting() && ! state.preserveSpace &&
+            if ( _indenting && ! state.preserveSpace &&
                  ( state.empty || state.afterElement ) )
-                breakLine();
+                _printer.breakLine();
         }
+        preserveSpace = state.preserveSpace;
+
         // Do not change the current element state yet.
         // This only happens in endElement().
         
-        printText( '<' + tagName );
-        indent();
+        _printer.printText( '<' );
+        _printer.printText( tagName );
+        _printer.indent();
         
         // Lookup the element's attribute, but only print specified
         // attributes. (Unspecified attributes are derived from the DTD.
@@ -580,8 +589,11 @@ public final class XMLSerializer
                 if ( value == null )
                     value = "";
                 if ( attr.getSpecified() ) {
-                    printSpace();
-                    printText( name + "=\"" + escape( value ) + '"' );
+                    _printer.printSpace();
+                    _printer.printText( name );
+                    _printer.printText( "=\"" );
+                    printEscaped( value );
+                    _printer.printText( '"' );
                 }
                 // If the attribute xml:space exists, determine whether
                 // to preserve spaces in this and child nodes based on
@@ -610,13 +622,13 @@ public final class XMLSerializer
             }
             endElement( tagName );
         } else {
-            unindent();
-            printText( "/>" );
-            if ( state != null ) {
-                // After element but parent element is no longer empty.
-                state.afterElement = true;
-                state.empty = false;
-            }
+            _printer.unindent();
+            _printer.printText( "/>" );
+            // After element but parent element is no longer empty.
+            state.afterElement = true;
+            state.empty = false;
+            if ( isDocumentState() )
+                _printer.flush();
         }
     }
     

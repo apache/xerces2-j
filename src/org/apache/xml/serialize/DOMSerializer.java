@@ -70,7 +70,7 @@ import org.w3c.dom.DocumentFragment;
  * Interface for a DOM serializer implementation.
  * 
  *
- * @version
+ * @version $Revision$ $Date$
  * @author <a href="mailto:Scott_Boag/CAM/Lotus@lotus.com">Scott Boag</a>
  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
  */

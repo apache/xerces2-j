@@ -60,7 +60,7 @@ package org.apache.xml.serialize;
 
 
 /**
- * @version
+ * @version $Revision$ $Date$
  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
  * @see OutputFormat
  */

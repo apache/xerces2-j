@@ -76,7 +76,7 @@ import java.util.Hashtable;
  * first time any of these methods is called for fast and efficient access.
  *
  *
- * @version
+ * @version $Revision$ $Date$
  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
  */
 final class HTMLdtd
@@ -506,7 +506,7 @@ final class HTMLdtd
         defineElement( "ISINDEX", EMPTY | ALLOWED_HEAD );
         defineElement( "LI", OPT_CLOSING | ONLY_OPENING | CLOSE_SELF );
         defineElement( "LINK", EMPTY | ALLOWED_HEAD );
-        defineElement( "MAP", EMPTY | ALLOWED_HEAD );
+        defineElement( "MAP", ALLOWED_HEAD );
         defineElement( "META", EMPTY | ALLOWED_HEAD );
         defineElement( "OL", ELEM_CONTENT | CLOSE_P );
         defineElement( "OPTGROUP", ELEM_CONTENT );

@@ -109,7 +109,7 @@ import org.xml.sax.Attributes;
  * </ul>
  *
  *
- * @version
+ * @version $Revision$ $Date$
  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
  * @see Serializer
  */
@@ -138,7 +138,7 @@ public class HTMLSerializer
      */
     protected HTMLSerializer( boolean xhtml, OutputFormat format )
     {
-        this( format );
+        super( format );
         _xhtml = xhtml;
     }
 
@@ -150,7 +150,7 @@ public class HTMLSerializer
      */
     public HTMLSerializer()
     {
-        setOutputFormat( null );
+        this( false, new OutputFormat( Method.HTML, null, false ) );
     }
 
 
@@ -161,7 +161,7 @@ public class HTMLSerializer
      */
     public HTMLSerializer( OutputFormat format )
     {
-        setOutputFormat( format );
+        this( false, format != null ? format : new OutputFormat( Method.HTML, null, false ) );
     }
 
 
@@ -176,7 +176,7 @@ public class HTMLSerializer
      */
     public HTMLSerializer( Writer writer, OutputFormat format )
     {
-        setOutputFormat( format );
+        this( false, format != null ? format : new OutputFormat( Method.HTML, null, false ) );
         setOutputCharStream( writer );
     }
 
@@ -191,21 +191,14 @@ public class HTMLSerializer
      */
     public HTMLSerializer( OutputStream output, OutputFormat format )
     {
-        setOutputFormat( format );
-        try {
-            setOutputByteStream( output );
-        } catch ( UnsupportedEncodingException except ) {
-            // Should never happend
-        }
+        this( false, format != null ? format : new OutputFormat( Method.HTML, null, false ) );
+        setOutputByteStream( output );
     }
     
     
     public void setOutputFormat( OutputFormat format )
     {
-        if ( format == null )
-            super.setOutputFormat( new OutputFormat( Method.HTML, null, false ) );
-        else
-            super.setOutputFormat( format );
+        super.setOutputFormat( format != null ? format : new OutputFormat( Method.HTML, null, false ) );
     }
 
 
@@ -225,32 +218,32 @@ public class HTMLSerializer
         String       htmlName;
         boolean      addNSAttr = false;
         
-        if ( _writer == null )
+        if ( _printer == null )
             throw new IllegalStateException( "SER002 No writer supplied for serializer" );
         
         state = getElementState();
-        if ( state == null ) {
+        if ( isDocumentState() ) {
             // If this is the root element handle it differently.
             // If the first root element in the document, serialize
             // the document's DOCTYPE. Space preserving defaults
             // to that of the output format.
             if ( ! _started )
                 startDocument( localName == null ? rawName : localName );
-            preserveSpace = _format.getPreserveSpace();
         } else {
             // For any other element, if first in parent, then
             // close parent's opening tag and use the parnet's
             // space preserving.
             if ( state.empty )
-                printText( ">" );
-            preserveSpace = state.preserveSpace;
+                _printer.printText( '>' );
             // Indent this element on a new line if the first
             // content of the parent element or immediately
             // following an element.
-            if ( _format.getIndenting() && ! state.preserveSpace &&
+            if ( _indenting && ! state.preserveSpace &&
                  ( state.empty || state.afterElement ) )
-                breakLine();
+                _printer.breakLine();
         }
+        preserveSpace = state.preserveSpace;
+
         // Do not change the current element state yet.
         // This only happens in endElement().
         
@@ -274,37 +267,50 @@ public class HTMLSerializer
         }
         
         // XHTML: element names are lower case, DOM will be different
+        _printer.printText( '<' );
         if ( _xhtml )
-            printText( '<' + rawName.toLowerCase() );
+            _printer.printText( rawName.toLowerCase() );
         else
-            printText( '<' + rawName );
-        indent();
+            _printer.printText( rawName );
+        _printer.indent();
         
         // For each attribute serialize it's name and value as one part,
         // separated with a space so the element can be broken on
         // multiple lines.
         if ( attrs != null ) {
             for ( i = 0 ; i < attrs.getLength() ; ++i ) {
-                printSpace();
+                _printer.printSpace();
                 name = attrs.getRawName( i ).toLowerCase();;
                 value = attrs.getValue( i );
                 if ( _xhtml || namespaceURI != null ) {
                     // XHTML: print empty string for null values.
-                    if ( value == null )
-                        printText( name + "=\"\"" );
-                    else
-                        printText( name + "=\"" + escape( value ) + '"' );
+                    if ( value == null ) {
+                        _printer.printText( name );
+                        _printer.printText( "=\"\"" );
+                    } else {
+                        _printer.printText( name );
+                        _printer.printText( "=\"" );
+                        printEscaped( value );
+                        _printer.printText( '"' );
+                    }
                 } else {
                     // HTML: Empty values print as attribute name, no value.
                     // HTML: URI attributes will print unescaped
                     if ( value == null || value.length() == 0 )
-                        printText( name );
-                    else if ( HTMLdtd.isURI( rawName, name ) )
-                        printText( name + "=\"" + escapeURI( value ) + '"' );
-                    else if ( HTMLdtd.isBoolean( rawName, name ) )
-                        printText( name );
-                    else
-                        printText( name + "=\"" + escape( value ) + '"' );
+                        _printer.printText( name );
+                    else if ( HTMLdtd.isURI( rawName, name ) ) {
+                        _printer.printText( name );
+                        _printer.printText( "=\"" ); 
+                        _printer.printText( escapeURI( value ) );
+                        _printer.printText( '"' );
+                    } else if ( HTMLdtd.isBoolean( rawName, name ) )
+                        _printer.printText( name );
+                    else {
+                        _printer.printText( name );
+                        _printer.printText( "=\"" );
+                        printEscaped( value );
+                        _printer.printText( '"' );
+                    }
                 }
             }
         }
@@ -316,13 +322,20 @@ public class HTMLSerializer
             
             enum = _prefixes.keys();
             while ( enum.hasMoreElements() ) {
-                printSpace();
+                _printer.printSpace();
                 value = (String) enum.nextElement();
                 name = (String) _prefixes.get( value );
-                if ( name.length() == 0 )
-                    printText( "xmlns=\"" + value + '"' );
-                else
-                    printText( "xmlns:" + name + "=\"" + value + '"' );
+                if ( name.length() == 0 ) {
+                    _printer.printText( "xmlns=\"" );
+                    printEscaped( value );
+                    _printer.printText( '"' );
+                } else {
+                    _printer.printText( "xmlns:" );
+                    _printer.printText( name );
+                    _printer.printText( "=\"" );
+                    printEscaped( value );
+                    _printer.printText( '"' );
+                }
             }
         }
         
@@ -336,7 +349,7 @@ public class HTMLSerializer
         if ( htmlName != null && ( htmlName.equalsIgnoreCase( "A" ) ||
                                    htmlName.equalsIgnoreCase( "TD" ) ) ) {
             state.empty = false;
-            printText( ">" );
+            _printer.printText( '>' );
         }
         
         // Handle SCRIPT and STYLE specifically by changing the
@@ -364,7 +377,7 @@ public class HTMLSerializer
         // Works much like content() with additions for closing
         // an element. Note the different checks for the closed
         // element's state and the parent element's state.
-        unindent();
+        _printer.unindent();
         state = getElementState();
         
         if ( state.namespaceURI == null )
@@ -378,46 +391,46 @@ public class HTMLSerializer
         
         if ( _xhtml) {
             if ( state.empty ) {
-                printText( " />" );
+                _printer.printText( " />" );
             } else {
                 // Must leave CData section first
                 if ( state.inCData )
-                    printText( "]]>" );
+                    _printer.printText( "]]>" );
                 // XHTML: element names are lower case, DOM will be different
-                printText( "</" + state.rawName.toLowerCase() + ">" );
+                _printer.printText( "</" );
+                _printer.printText( state.rawName.toLowerCase() );
+                _printer.printText( '>' );
             }
         } else {
             if ( state.empty )
-                printText( ">" );
+                _printer.printText( '>' );
             // This element is not empty and that last content was
             // another element, so print a line break before that
             // last element and this element's closing tag.
             // [keith] Provided this is not an anchor.
             // HTML: some elements do not print closing tag (e.g. LI)
             if ( htmlName == null || ! HTMLdtd.isOnlyOpening( htmlName ) ) {
-                if ( _format.getIndenting() && ! state.preserveSpace && state.afterElement )
-                    breakLine();
+                if ( _indenting && ! state.preserveSpace && state.afterElement )
+                    _printer.breakLine();
                 // Must leave CData section first (Illegal in HTML, but still)
                 if ( state.inCData )
-                    printText( "]]>" );
-                printText( "</" + state.rawName + ">" );
+                    _printer.printText( "]]>" );
+                _printer.printText( "</" );
+                _printer.printText( state.rawName );
+                _printer.printText( '>' );
             }
         }
         // Leave the element state and update that of the parent
         // (if we're not root) to not empty and after element.
         state = leaveElementState();
-        if ( state != null ) {
-            // Temporary hack to prevent line breaks inside A/TD
-            if ( htmlName == null || ( ! htmlName.equalsIgnoreCase( "A" ) &&
-                                       ! htmlName.equalsIgnoreCase( "TD" ) ) )
-                
-                state.afterElement = true;
-            state.empty = false;
-        } else {
-            // [keith] If we're done printing the document but don't
-            // get to call endDocument(), the buffer should be flushed.
-            flush();
-        }
+        // Temporary hack to prevent line breaks inside A/TD
+        if ( htmlName == null || ( ! htmlName.equalsIgnoreCase( "A" ) &&
+                                   ! htmlName.equalsIgnoreCase( "TD" ) ) )
+            
+            state.afterElement = true;
+        state.empty = false;
+        if ( isDocumentState() )
+            _printer.flush();
     }
     
     
@@ -432,8 +445,7 @@ public class HTMLSerializer
         
         // HTML: no CDATA section
         state = content();
-        if ( state != null )
-            state.doCData = false;
+        state.doCData = false;
         super.characters( chars, start, length );
     }
     
@@ -442,7 +454,7 @@ public class HTMLSerializer
     {
         // Do nothing for HTML/XHTML, browser might not respond
         // well to <?xml ...?>
-        if ( _writer == null )
+        if ( _printer == null )
             throw new IllegalStateException( "SER002 No writer supplied for serializer" );
     }
     
@@ -455,67 +467,80 @@ public class HTMLSerializer
         String       name;
         String       value;
         
-        if ( _writer == null )
+        if ( _printer == null )
             throw new IllegalStateException( "SER002 No writer supplied for serializer" );
         
         state = getElementState();
-        if ( state == null ) {
+        if ( isDocumentState() ) {
             // If this is the root element handle it differently.
             // If the first root element in the document, serialize
             // the document's DOCTYPE. Space preserving defaults
             // to that of the output format.
             if ( ! _started )
                 startDocument( tagName );
-            preserveSpace = _format.getPreserveSpace();
         } else {
             // For any other element, if first in parent, then
             // close parent's opening tag and use the parnet's
             // space preserving.
             if ( state.empty )
-                printText( ">" );
-            preserveSpace = state.preserveSpace;
+                _printer.printText( '>' );
             // Indent this element on a new line if the first
             // content of the parent element or immediately
             // following an element.
-            if ( _format.getIndenting() && ! state.preserveSpace &&
+            if ( _indenting && ! state.preserveSpace &&
                  ( state.empty || state.afterElement ) )
-                breakLine();
+                _printer.breakLine();
         }
+        preserveSpace = state.preserveSpace;
+
         // Do not change the current element state yet.
         // This only happens in endElement().
         
         // XHTML: element names are lower case, DOM will be different
+        _printer.printText( '<' );
         if ( _xhtml )
-            printText( '<' + tagName.toLowerCase() );
+            _printer.printText( tagName.toLowerCase() );
         else
-            printText( '<' + tagName );
-        indent();
+            _printer.printText( tagName );
+        _printer.indent();
         
         // For each attribute serialize it's name and value as one part,
         // separated with a space so the element can be broken on
         // multiple lines.
         if ( attrs != null ) {
             for ( i = 0 ; i < attrs.getLength() ; ++i ) {
-                printSpace();
+                _printer.printSpace();
                 name = attrs.getName( i ).toLowerCase();;
                 value = attrs.getValue( i );
                 if ( _xhtml ) {
                     // XHTML: print empty string for null values.
-                    if ( value == null )
-                        printText( name + "=\"\"" );
-                    else
-                        printText( name + "=\"" + escape( value ) + '"' );
+                    if ( value == null ) {
+                        _printer.printText( name );
+                        _printer.printText( "=\"\"" );
+                    } else {
+                        _printer.printText( name );
+                        _printer.printText( "=\"" ); 
+                        printEscaped( value );
+                        _printer.printText( '"' );
+                    }
                 } else {
                     // HTML: Empty values print as attribute name, no value.
                     // HTML: URI attributes will print unescaped
                     if ( value == null || value.length() == 0 )
-                        printText( name );
-                    else if ( HTMLdtd.isURI( tagName, name ) )
-                        printText( name + "=\"" + escapeURI( value ) + '"' );
-                    else if ( HTMLdtd.isBoolean( tagName, name ) )
-                        printText( name );
-                    else
-                        printText( name + "=\"" + escape( value ) + '"' );
+                        _printer.printText( name );
+                    else if ( HTMLdtd.isURI( tagName, name ) ) {
+                        _printer.printText( name );
+                        _printer.printText( "=\"" ); 
+                        _printer.printText( escapeURI( value ) );
+                        _printer.printText( '"' );
+                    } else if ( HTMLdtd.isBoolean( tagName, name ) )
+                        _printer.printText( name );
+                    else {
+                        _printer.printText( name );
+                        _printer.printText( "=\"" ); 
+                        printEscaped( value );
+                        _printer.printText( '"' );
+                    }
                 }
             }
         }
@@ -530,7 +555,7 @@ public class HTMLSerializer
         // Prevents line breaks inside A/TD
         if ( tagName.equalsIgnoreCase( "A" ) || tagName.equalsIgnoreCase( "TD" ) ) {
             state.empty = false;
-            printText( ">" );
+            _printer.printText( '>' );
         }
         
         // Handle SCRIPT and STYLE specifically by changing the
@@ -578,7 +603,7 @@ public class HTMLSerializer
         
         // Not supported in HTML/XHTML, but we still have to switch
         // out of DTD mode.
-        leaveDTD();
+        _printer.leaveDTD();
         if ( ! _started ) {
             // If the public and system identifiers were not specified
             // in the output format, use the appropriate ones for HTML
@@ -598,23 +623,23 @@ public class HTMLSerializer
             // HTML: If public identifier specified, print it with
             //  system identifier, if specified.
             if ( _docTypePublicId != null && ( ! _xhtml || _docTypeSystemId != null )  ) {
-                printText( "<!DOCTYPE HTML PUBLIC " );
+                _printer.printText( "<!DOCTYPE HTML PUBLIC " );
                 printDoctypeURL( _docTypePublicId );
                 if ( _docTypeSystemId != null ) {
-                    if ( _format.getIndenting() ) {
-                        breakLine();
-                        printText( "                      " );
+                    if ( _indenting ) {
+                        _printer.breakLine();
+                        _printer.printText( "                      " );
                     } else
-                        printText( " " );
+                        _printer.printText( ' ' );
                     printDoctypeURL( _docTypeSystemId );
                 }
-                printText( ">" );
-                breakLine();
+                _printer.printText( '>' );
+                _printer.breakLine();
             } else if ( _docTypeSystemId != null ) {
-                printText( "<!DOCTYPE HTML SYSTEM " );
+                _printer.printText( "<!DOCTYPE HTML SYSTEM " );
                 printDoctypeURL( _docTypeSystemId );
-                printText( ">" );
-                breakLine();
+                _printer.printText( '>' );
+                _printer.breakLine();
             }
         }
         
@@ -643,37 +668,38 @@ public class HTMLSerializer
         
         tagName = elem.getTagName();
         state = getElementState();
-        if ( state == null ) {
+        if ( isDocumentState() ) {
             // If this is the root element handle it differently.
             // If the first root element in the document, serialize
             // the document's DOCTYPE. Space preserving defaults
             // to that of the output format.
             if ( ! _started )
                 startDocument( tagName );
-            preserveSpace = _format.getPreserveSpace();
         } else {
             // For any other element, if first in parent, then
             // close parent's opening tag and use the parnet's
             // space preserving.
             if ( state.empty )
-                printText( ">" );
-            preserveSpace = state.preserveSpace;
+                _printer.printText( '>' );
             // Indent this element on a new line if the first
             // content of the parent element or immediately
             // following an element.
-            if ( _format.getIndenting() && ! state.preserveSpace &&
+            if ( _indenting && ! state.preserveSpace &&
                  ( state.empty || state.afterElement ) )
-                breakLine();
+                _printer.breakLine();
         }
+        preserveSpace = state.preserveSpace;
+
         // Do not change the current element state yet.
         // This only happens in endElement().
         
         // XHTML: element names are lower case, DOM will be different
+        _printer.printText( '<' );
         if ( _xhtml )
-            printText( '<' + tagName.toLowerCase() );
+            _printer.printText( tagName.toLowerCase() );
         else
-            printText( '<' + tagName );
-        indent();
+            _printer.printText( tagName );
+        _printer.indent();
         
         // Lookup the element's attribute, but only print specified
         // attributes. (Unspecified attributes are derived from the DTD.
@@ -687,24 +713,36 @@ public class HTMLSerializer
                 name = attr.getName().toLowerCase();
                 value = attr.getValue();
                 if ( attr.getSpecified() ) {
-                    printSpace();
+                    _printer.printSpace();
                     if ( _xhtml ) {
                         // XHTML: print empty string for null values.
-                        if ( value == null )
-                            printText( name + "=\"\"" );
-                        else
-                            printText( name + "=\"" + escape( value ) + '"' );
+                        if ( value == null ) {
+                            _printer.printText( name );
+                            _printer.printText( "=\"\"" );
+                        } else {
+                            _printer.printText( name );
+                            _printer.printText( "=\"" );
+                            printEscaped( value );
+                            _printer.printText( '"' );
+                        }
                     } else {
                         // HTML: Empty values print as attribute name, no value.
                         // HTML: URI attributes will print unescaped
                         if ( value == null || value.length() == 0 )
-                            printText( name );
-                        else if ( HTMLdtd.isURI( tagName, name ) )
-                            printText( name + "=\"" + escapeURI( value ) + '"' );
-                        else if ( HTMLdtd.isBoolean( tagName, name ) )
-                            printText( name );
-                        else
-                            printText( name + "=\"" + escape( value ) + '"' );
+                            _printer.printText( name );
+                        else if ( HTMLdtd.isURI( tagName, name ) ) {
+                            _printer.printText( name );
+                            _printer.printText( "=\"" );
+                            _printer.printText( escapeURI( value ) );
+                            _printer.printText( '"' );
+                        } else if ( HTMLdtd.isBoolean( tagName, name ) )
+                            _printer.printText( name );
+                        else {
+                            _printer.printText( name );
+                            _printer.printText( "=\"" );
+                            printEscaped( value );
+                            _printer.printText( '"' );
+                        }
                     }
                 }
             }
@@ -722,7 +760,7 @@ public class HTMLSerializer
             // Prevents line breaks inside A/TD
             if ( tagName.equalsIgnoreCase( "A" ) || tagName.equalsIgnoreCase( "TD" ) ) {
                 state.empty = false;
-                printText( ">" );
+                _printer.printText( '>' );
             }
             
             // Handle SCRIPT and STYLE specifically by changing the
@@ -745,32 +783,31 @@ public class HTMLSerializer
             }
             endElement( null, null, tagName );
         } else {
-            unindent();
+            _printer.unindent();
             // XHTML: Close empty tag with ' />' so it's XML and HTML compatible.
             // HTML: Empty tags are defined as such in DTD no in document.
             if ( _xhtml )
-                printText( " />" );
+                _printer.printText( " />" );
             else
-                printText( ">" );
-            if ( state != null ) {
-                // After element but parent element is no longer empty.
-                state.afterElement = true;
-                state.empty = false;
-            }
+                _printer.printText( '>' );
+            // After element but parent element is no longer empty.
+            state.afterElement = true;
+            state.empty = false;
+            if ( isDocumentState() )
+                _printer.flush();
         }
     }
 
 
 
-    protected void characters( String text, boolean unescaped )
+    protected void characters( String text )
     {
         ElementState state;
         
         // HTML: no CDATA section
         state = content();
-        if ( state != null )
-            state.doCData = false;
-        super.characters( text, unescaped );
+        state.doCData = false;
+        super.characters( text );
     }
     
     
@@ -795,5 +832,7 @@ public class HTMLSerializer
 
 
 }
+
+
 
 

@@ -98,7 +98,7 @@ import org.xml.sax.ContentHandler;
  * UTF-8 encoding and now indentation.
  * 
  *
- * @version
+ * @version $Revision$ $Date$
  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
  * @author <a href="mailto:Scott_Boag/CAM/Lotus@lotus.com">Scott Boag</a>
  * @see DocumentHandler
@@ -115,8 +115,7 @@ public interface Serializer
      * serialized. This method should not be called while the
      * serializer is in the process of serializing a document.
      */
-    public void setOutputByteStream(OutputStream output)
-        throws UnsupportedEncodingException;
+    public void setOutputByteStream(OutputStream output);
     
 
     /**
@@ -144,7 +143,8 @@ public interface Serializer
      * If the serializer does not support the {@link DocumentHandler}
      * interface, it should return null.
      */
-    public DocumentHandler asDocumentHandler();
+    public DocumentHandler asDocumentHandler()
+        throws IOException;
 
 
     /**
@@ -152,7 +152,8 @@ public interface Serializer
      * If the serializer does not support the {@link ContentHandler}
      * interface, it should return null.
      */
-    public ContentHandler asContentHandler();
+    public ContentHandler asContentHandler()
+        throws IOException;
 
 
     /**
@@ -160,7 +161,8 @@ public interface Serializer
      * If the serializer does not support the {@link DOMSerializer}
      * interface, it should return null.
      */
-    public DOMSerializer asDOMSerializer();
+    public DOMSerializer asDOMSerializer()
+        throws IOException;
 
 
 }

@@ -66,7 +66,7 @@ import java.util.Hashtable;
  * Holds the state of the currently serialized element.
  *
  *
- * @version
+ * @version $Revision$ $Date$
  * @author <a href="mailto:arkin@openxml.org">Assaf Arkin</a>
  * @see BaseMarkupSerializer
  */
@@ -135,7 +135,6 @@ class ElementState
      * Association between namespace URIs (keys) and prefixes (values).
      */
     Hashtable prefixes;
-
 
 
 }
