@@ -39,8 +39,8 @@ docs:: ./src/classfiles_updated
 	$(RM) -r ./tools/style-apachexml
 
 apidocs::
-	@echo Building apiDocs in docs directory.
-	${MKDIR} docs/apiDocs
+	@echo Building apiDocs in docs/html directory.
+	${MKDIR} docs/html/apiDocs
 	${MAKE} -C src apidocs
 
 package_bin:: jars apidocs ${BINZIPFILE}
@@ -140,5 +140,5 @@ ${SRCTARFILE}: ./src/classfiles_updated
 clean::
 	${MAKE} -C src clean
 	${MAKE} -C samples clean
-	${RM} -rf bin class source docs/apiDocs docs/html 
+	${RM} -rf bin class source docs/html/apiDocs docs/html 
 	${RM} ${BINZIPFILE} ${SRCZIPFILE} ${BINGZFILE} ${SRCGZFILE}

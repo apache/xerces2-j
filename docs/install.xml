@@ -22,7 +22,7 @@
 			<tr><td>xercesSamples.jar</td><td>Jar file containing all sample class files</td></tr>
 			<tr><td>data/</td><td>Directory containing sample XML data files</td></tr>
 			<tr><td>docs/html/</td><td>Directory containing documentation</td></tr>
-			<tr><td>docs/apiDocs/</td><td>Directory containing Javadoc API for parser framework</td></tr>
+			<tr><td>docs/html/apiDocs/</td><td>Directory containing Javadoc API for parser framework</td></tr>
 		</table>
 		<note>To use &javaparsername; you do not need the source files. 
 		</note>

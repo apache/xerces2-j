@@ -96,7 +96,7 @@ Copyright:
     <property name="build.samples" value="${build.dir}/samples"/>
     <property name="build.tests" value="${build.dir}/tests"/>
     <property name="build.data" value="${build.dir}/data"/>
-    <property name="build.javadocs" value="${build.dir}/docs/apiDocs"/>
+    <property name="build.javadocs" value="${build.dir}/docs/html/apiDocs"/>
     <property name="compilation.classpath" value="${build.dest}"/>
 
     <property name="distsrc.dir" value="${build.dir}/${name}-${appendit}"/>
@@ -362,7 +362,7 @@ Copyright:
     <mkdir dir="${distbin.dir}/data"/>
     <mkdir dir="${distbin.dir}/docs"/>
     <mkdir dir="${distbin.dir}/docs/html"/>
-    <mkdir dir="${distbin.dir}/docs/apiDocs"/>
+    <mkdir dir="${distbin.dir}/docs/html/apiDocs"/>
     <mkdir dir="${distsrc.dir}/samples"/>
 
 
@@ -377,7 +377,7 @@ Copyright:
         <fileset dir="${build.docs}" />
     </copy>
 
-    <copy todir="${distbin.dir}/docs/apiDocs" >
+    <copy todir="${distbin.dir}/docs/html/apiDocs" >
         <fileset dir="${build.javadocs}" />
     </copy>
 

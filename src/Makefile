@@ -6,14 +6,14 @@ DIRS = org javax
 TOP = ..
 include $(TOP)/src/Makefile.incl
 
-apidocs: ../docs/apiDocs/index.html
-../docs/apiDocs/index.html: classfiles_updated
+apidocs: ../docs/html/apiDocs/index.html
+../docs/html/apiDocs/index.html: classfiles_updated
 
 	$(JAVADOC12) -classpath "$(CLPATH)" \
 		-windowtitle "Xerces ${PRODUCTVERSION_DOT} API" \
 		-splitindex -header "Xerces ${PRODUCTVERSION_DOT}" \
 		-version  \
-		-d ../docs/apiDocs ${PACKAGES}
+		-d ../docs/html/apiDocs ${PACKAGES}
 
 jars: source samples
 
