@@ -18,14 +18,16 @@ package org.apache.xerces.dom.events;
 import org.w3c.dom.events.Event;
 import org.w3c.dom.events.EventTarget;
 
-/** EventImpl is an implementation of the basic "generic" DOM Level 2 Event
-    object. It may be subclassed by more specialized event sets.
-    Note that in our implementation, events are re-dispatchable (dispatch
-    clears the stopPropagation and preventDefault flags before it starts);
-    I believe that is the DOM's intent but I don't see an explicit statement
-    to this effect.
-*/
-/**
+/**  
+ * EventImpl is an implementation of the basic "generic" DOM Level 2 Event
+ * object. It may be subclassed by more specialized event sets.
+ * Note that in our implementation, events are re-dispatchable (dispatch
+ * clears the stopPropagation and preventDefault flags before it starts);
+ * I believe that is the DOM's intent but I don't see an explicit statement
+ * to this effect.
+ *   
+ * @xerces.internal 
+ *
  * @version $Id$
  */
 public class EventImpl implements Event
