@@ -73,7 +73,6 @@ import org.apache.xerces.dom3.as.DOMASException;
 import org.apache.xerces.dom.ASModelImpl;
 import org.apache.xerces.dom.DOMInputSourceImpl;
 import org.apache.xerces.util.DOMEntityResolverWrapper;
-import org.apache.xerces.util.DOMErrorHandlerWrapper;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLInputSource;
@@ -216,6 +215,13 @@ public class DOMASBuilderImpl
         // make sure the GrammarPool is properly initialized.
         if (fGrammarPool == null) {
             fGrammarPool = (XMLGrammarPool)fConfiguration.getProperty(StandardParserConfiguration.XMLGRAMMAR_POOL);
+        }
+        // if there is no grammar pool, create one
+        // REVISIT: ASBuilder should always create one.
+        if (fGrammarPool == null) {
+            fGrammarPool = new XMLGrammarPoolImpl();
+            fConfiguration.setProperty(StandardParserConfiguration.XMLGRAMMAR_POOL,
+                                       fGrammarPool);
         }
         if (fAbstractSchema != null) {
             initGrammarPool(fAbstractSchema);
@@ -394,11 +400,11 @@ public class DOMASBuilderImpl
         if (fGrammarPool != null) {
             Grammar[] grammars = new Grammar[1];
             if ((grammars[0] = (Grammar)currModel.getGrammar()) != null) {
-            	fGrammarPool.cacheGrammars(grammars[0].getGrammarDescription().getGrammarType(), grammars);
+                fGrammarPool.cacheGrammars(grammars[0].getGrammarDescription().getGrammarType(), grammars);
             }
             Vector modelStore = currModel.getInternalASModels();
             for (int i = 0; i < modelStore.size(); i++) {
-            	initGrammarPool((ASModelImpl)modelStore.elementAt(i));
+                initGrammarPool((ASModelImpl)modelStore.elementAt(i));
             }
         }
     }
