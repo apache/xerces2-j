@@ -244,6 +244,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     private int fTotalDigits = -1;
     private int fFractionDigits = -1;
     private Vector fPattern;
+    private Vector fPatternStr;
     private Vector fEnumeration;
     private Object fMaxInclusive;
     private Object fMaxExclusive;
@@ -311,6 +312,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         fMinLength = fBase.fMinLength;
         fMaxLength = fBase.fMaxLength;
         fPattern = fBase.fPattern;
+        fPatternStr = fBase.fPatternStr;
         fEnumeration = fBase.fEnumeration;
         fWhiteSpace = fBase.fWhiteSpace;
         fMaxExclusive = fBase.fMaxExclusive;
@@ -399,6 +401,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         fMinLength = fBase.fMinLength;
         fMaxLength = fBase.fMaxLength;
         fPattern = fBase.fPattern;
+        fPatternStr = fBase.fPatternStr;
         fEnumeration = fBase.fEnumeration;
         fWhiteSpace = fBase.fWhiteSpace;
         fMaxExclusive = fBase.fMaxExclusive;
@@ -679,6 +682,8 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                 if (regex != null) {
                     fPattern = new Vector();
                     fPattern.addElement(regex);
+                    fPatternStr = new Vector();
+                    fPatternStr.addElement(facets.pattern);
                     fFacetsDefined |= FACET_PATTERN;
                     if ((fixedFacet & FACET_PATTERN) != 0)
                         fFixedFacet |= FACET_PATTERN;
@@ -1201,11 +1206,16 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         // inherit pattern
         if ( (fBase.fFacetsDefined & FACET_PATTERN) != 0 ) {
             if ((fFacetsDefined & FACET_PATTERN) == 0) {
-                fPattern = new Vector();
+                fPattern = fBase.fPattern;
+                fPatternStr = fBase.fPatternStr;
                 fFacetsDefined |= FACET_PATTERN;
             }
-            for (int i = fBase.fPattern.size()-1; i >= 0; i--)
-                fPattern.addElement(fBase.fPattern.elementAt(i));
+            else {
+                for (int i = fBase.fPattern.size()-1; i >= 0; i--) {
+                    fPattern.addElement(fBase.fPattern.elementAt(i));
+                    fPatternStr.addElement(fBase.fPatternStr.elementAt(i));
+                }
+            }
         }
         // inherit whiteSpace
         if ( (fFacetsDefined & FACET_WHITESPACE) == 0 &&  (fBase.fFacetsDefined & FACET_WHITESPACE) != 0 ) {
@@ -1493,7 +1503,8 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                 regex = (RegularExpression)fPattern.elementAt(idx);
                 if (!regex.matches(nvalue)){
                     throw new InvalidDatatypeValueException("cvc-pattern-valid",
-                                                            new Object[]{content, regex});
+                                                            new Object[]{content,
+                                                            fPatternStr.elementAt(idx)});
                 }
             }
         }
@@ -1639,13 +1650,18 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     protected String normalize(Object content, short ws) {
         if (content == null)
             return null;
-        
-        short norm_type = fDVNormalizeType[fValidationDV];
-        if (norm_type == NORMALIZE_NONE) {
-            return content.toString();
-        }
-        else if (norm_type == NORMALIZE_TRIM) {
-            return content.toString().trim();
+
+        // If pattern is not defined, we can skip some of the normalization.
+        // Otherwise we have to normalize the data for correct result of
+        // pattern validation.
+        if ( (fFacetsDefined & FACET_PATTERN ) == 0 ) {
+            short norm_type = fDVNormalizeType[fValidationDV];
+            if (norm_type == NORMALIZE_NONE) {
+                return content.toString();
+            }
+            else if (norm_type == NORMALIZE_TRIM) {
+                return content.toString().trim();
+            }
         }
 
         if (!(content instanceof StringBuffer)) {
@@ -1777,14 +1793,14 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }
 
     public StringList getLexicalPatterns() {
-        if (fPattern == null)
+        if (fPatternStr == null)
             return null;
 
         // REVISIT: fPattern should be of type StringListImpl
-        int size = fPattern.size();
+        int size = fPatternStr.size();
         String[] strs = new String[size];
         for (int i = 0; i < size; i++)
-            strs[i] = ((RegularExpression)fPattern.elementAt(i)).toString();
+            strs[i] = (String)fPatternStr.elementAt(i);
         return new StringListImpl(strs, size);
     }
 
@@ -2145,6 +2161,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         fTotalDigits = -1;
         fFractionDigits = -1;
         fPattern = null;
+        fPatternStr = null;
         fEnumeration = null;
         fMaxInclusive = null;
         fMaxExclusive = null;
