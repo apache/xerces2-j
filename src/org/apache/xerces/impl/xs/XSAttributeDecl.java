@@ -23,6 +23,8 @@ import org.apache.xerces.impl.dv.ValidatedInfo;
 /**
  * The XML representation for an attribute declaration
  * schema component is an <attribute> element information item
+ * 
+ * @xerces.internal 
  *
  * @author Elena Litani, IBM
  * @author Sandy Gao, IBM

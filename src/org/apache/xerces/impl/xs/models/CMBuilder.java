@@ -27,6 +27,8 @@ import org.apache.xerces.impl.xs.XSParticleDecl;
 /**
  * This class constructs content models for a given grammar.
  *
+ * @xerces.internal 
+ *
  * @author Elena Litani, IBM
  * @author Sandy Gao, IBM
  *

@@ -30,6 +30,8 @@ import java.util.Vector;
 import java.util.Enumeration;
 
 /**
+ * @xerces.internal  
+ * 
  * @author Rahul Srivastava, Sun Microsystems Inc.
  * @author Sandy Gao, IBM
  *

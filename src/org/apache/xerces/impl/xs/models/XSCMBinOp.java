@@ -23,6 +23,8 @@ import org.apache.xerces.impl.xs.XSModelGroupImpl;
 /**
  *
  * Content model Bin-Op node.
+ * 
+ * @xerces.internal  
  *
  * @author Neil Graham, IBM
  * @version $$

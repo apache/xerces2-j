@@ -22,6 +22,8 @@ import org.apache.xerces.impl.dtd.models.CMStateSet;
 /**
  * Content model leaf node.
  *
+ * @xerces.internal 
+ *
  * @author Neil Graham, IBM
  * @version $$
  */

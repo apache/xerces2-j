@@ -25,6 +25,8 @@ import org.apache.xerces.xni.grammars.XMLSchemaDescription;
 /*
  * All information specific to XML Schema grammars.
  *
+ * @xerces.internal 
+ *
  * @author Neil Graham, IBM
  * @author Neeraj Bajaj, SUN Microsystems.
  *

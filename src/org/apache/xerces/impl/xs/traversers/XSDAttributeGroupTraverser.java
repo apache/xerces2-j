@@ -35,6 +35,8 @@ import org.w3c.dom.Element;
  *   Content: (annotation?, ((attribute | attributeGroup)*, anyAttribute?))
  * </attributeGroup>
  *
+ * @xerces.internal 
+ *
  * @author Rahul Srivastava, Sun Microsystems Inc.
  * @author Sandy Gao, IBM
  *

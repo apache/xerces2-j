@@ -22,6 +22,8 @@ package org.apache.xerces.impl.xs.identity;
  * the creation of a separate Vector object for any element that 
  * has both.  A short int is used to distinguish which this object is.
  *
+ * @xerces.internal 
+ *
  * @author Andy Clark, IBM
  * @version $Id$
  */

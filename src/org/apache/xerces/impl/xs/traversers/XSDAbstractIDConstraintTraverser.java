@@ -28,6 +28,8 @@ import org.apache.xerces.impl.xpath.*;
  * traversers (the XSDUniqueTraverser, XSDKeyTraverser and
  * XSDKeyrefTraverser) rely upon.
  *
+ * @xerces.internal 
+ *
  * @version $Id$
  */
 class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {

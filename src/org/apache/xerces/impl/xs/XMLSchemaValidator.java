@@ -88,6 +88,8 @@ import org.apache.xerces.xs.ElementPSVI;
  *  <li>http://apache.org/xml/properties/internal/error-reporter</li>
  *  <li>http://apache.org/xml/properties/internal/entity-resolver</li>
  * </ul>
+ * 
+ * @xerces.internal 
  *
  * @author Sandy Gao IBM
  * @author Elena Litani IBM

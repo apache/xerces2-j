@@ -27,6 +27,8 @@ import org.apache.xerces.impl.xs.util.StringListImpl;
  * The XML representation for a wildcard declaration
  * schema component is an <any> or <anyAttribute> element information item
  *
+ * @xerces.internal 
+ *
  * @author Sandy Gao, IBM
  * @author Rahul Srivastava, Sun Microsystems Inc.
  *

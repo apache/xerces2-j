@@ -22,6 +22,8 @@ import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 /**
  * Store schema model group declaration.
  *
+ * @xerces.internal 
+ *
  * @author Sandy Gao, IBM
  *
  * @version $Id$

@@ -44,6 +44,8 @@ import org.w3c.dom.DOMException;
  * <p>See also the <a href='http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113'>Document Object Model (DOM) Level 2 Core Specification</a>.
  *
  * This is an empty implementation.
+ * 
+ * @xerces.internal 
  */
 public class DefaultText extends NodeImpl implements Text {
 

@@ -31,6 +31,8 @@ import org.w3c.dom.DOMImplementation;
  * This interface should be implemented on the same object that implements 
  * DOMImplementation.
  *
+ * @xerces.internal 
+ *
  * @author Elena Litani, IBM
  * @version $Id$
  */

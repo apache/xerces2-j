@@ -59,6 +59,8 @@ import org.w3c.dom.Element;
  * - Should have the datatype validators return compiled value
  * - use symbol table instead of many hashtables
  *
+ * @xerces.internal 
+ *
  * @author Sandy Gao, IBM
  * @version $Id$
  */

@@ -44,6 +44,8 @@ import org.w3c.dom.Document;
 
 
 /**
+ * @xerces.internal  
+ * 
  * @author Rahul Srivastava, Sun Microsystems Inc.
  *
  * @version $Id$

@@ -21,6 +21,8 @@ import org.apache.xerces.xs.XSIDCDefinition;
 /**
  * Schema key reference identity constraint.
  *
+ * @xerces.internal 
+ *
  * @author Andy Clark, IBM
  * @version $Id$
  */

@@ -33,6 +33,8 @@ import org.apache.xerces.xni.parser.XMLParserConfiguration;
 import org.w3c.dom.Document;
 
 /**
+ * @xerces.internal  
+ * 
  * @author Rahul Srivastava, Sun Microsystems Inc.
  * @author Sandy Gao, IBM
  *

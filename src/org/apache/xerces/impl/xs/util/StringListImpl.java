@@ -21,6 +21,8 @@ import java.util.Vector;
 /**
  * Containts a list of Object's.
  *
+ * @xerces.internal 
+ *
  * @author Sandy Gao, IBM
  *
  * @version $Id$

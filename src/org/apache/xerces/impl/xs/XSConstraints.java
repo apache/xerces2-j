@@ -33,6 +33,8 @@ import java.util.Vector;
 /**
  * Constaints shared by traversers and validator
  *
+ * @xerces.internal 
+ *
  * @author Sandy Gao, IBM
  *
  * @version $Id$

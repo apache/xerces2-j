@@ -27,6 +27,8 @@ import org.apache.xerces.util.MessageFormatter;
  * SchemaMessageProvider implements an XMLMessageProvider that
  * provides localizable error messages for the W3C XML Schema Language
  * 
+ * @xerces.internal  
+ * 
  * @author Elena Litani, IBM
  * @version $Id$
  */

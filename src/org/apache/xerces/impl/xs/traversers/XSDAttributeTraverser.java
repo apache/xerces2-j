@@ -49,6 +49,8 @@ import org.w3c.dom.Element;
  *   Content: (annotation?, (simpleType?))
  * </attribute>
  *
+ * @xerces.internal 
+ *
  * @author Sandy Gao, IBM
  * @author Neeraj Bajaj, Sun Microsystems, inc.
  * @version $Id$

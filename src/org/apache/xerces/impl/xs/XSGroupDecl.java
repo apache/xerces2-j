@@ -22,6 +22,8 @@ import org.apache.xerces.xs.*;
  * The XML representation for a group declaration
  * schema component is a global <group> element information item
  *
+ * @xerces.internal 
+ *
  * @author Sandy Gao, IBM
  * @version $Id$
  */

@@ -42,6 +42,8 @@ import org.apache.xerces.util.XMLSymbols;
  * Implements XSModel:  a read-only interface that represents an XML Schema,
  * which could be components from different namespaces.
  *
+ * @xerces.internal 
+ *
  * @author Sandy Gao, IBM
  *
  * @version $Id$

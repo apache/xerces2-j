@@ -25,6 +25,8 @@ import org.apache.xerces.xs.XSNotationDeclaration;
  * The XML representation for a NOTATION declaration
  * schema component is a global <notation> element information item
  *
+ * @xerces.internal 
+ *
  * @author Rahul Srivastava, Sun Microsystems Inc.
  * @version $Id$
  */

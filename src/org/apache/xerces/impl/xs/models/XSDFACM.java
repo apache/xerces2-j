@@ -35,6 +35,8 @@ import java.util.Vector;
  * the conversion from the regular expression to the DFA that
  * it then uses in its validation algorithm.
  *
+ * @xerces.internal 
+ *
  * @author Neil Graham, IBM
  * @version $Id$
  */

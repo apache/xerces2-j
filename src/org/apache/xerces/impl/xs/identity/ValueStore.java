@@ -31,6 +31,8 @@ package org.apache.xerces.impl.xs.identity;
  * for performing the necessary checks required by each type of identity
  * constraint.
  *
+ * @xerces.internal 
+ *
  * @author Andy Clark, IBM
  *
  * @version $Id$

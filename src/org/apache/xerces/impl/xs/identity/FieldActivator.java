@@ -22,6 +22,8 @@ package org.apache.xerces.impl.xs.identity;
  * for activating fields within a specific scope; the caller merely
  * requests the fields to be activated.
  *
+ * @xerces.internal 
+ *
  * @author Andy Clark, IBM
  *
  * @version $Id$

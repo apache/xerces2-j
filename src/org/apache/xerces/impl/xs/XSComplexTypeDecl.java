@@ -27,6 +27,8 @@ import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
  * The XML representation for a complexType
  * schema component is a <complexType> element information item
  *
+ * @xerces.internal 
+ *
  * @author Elena Litani, IBM
  * @author Sandy Gao, IBM
  * @version $Id$

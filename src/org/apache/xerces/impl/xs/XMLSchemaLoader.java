@@ -82,6 +82,8 @@ import org.xml.sax.InputSource;
  * The caller must ensure that all its properties (schemaLocation, JAXPSchemaSource
  * etc.) have been properly set.
  *
+ * @xerces.internal 
+ *
  * @author Neil Graham, IBM
  * @version $Id$
  */

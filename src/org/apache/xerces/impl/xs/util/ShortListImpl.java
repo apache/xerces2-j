@@ -22,6 +22,8 @@ import org.apache.xerces.xs.XSException;
 /**
  * Containts a list of Object's.
  *
+ * @xerces.internal 
+ *
  * @author Sandy Gao, IBM
  *
  * @version $Id$

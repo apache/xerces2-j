@@ -60,6 +60,8 @@ import org.apache.xerces.xs.XSWildcard;
  * useful to distinguish grammar objects from other kinds of object
  * when they exist in pools or caches.
  *
+ * @xerces.internal 
+ *
  * @author Sandy Gao, IBM
  * @author Elena Litani, IBM
  *

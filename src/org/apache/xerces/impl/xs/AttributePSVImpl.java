@@ -28,6 +28,8 @@ import org.apache.xerces.xs.XSConstants;
 /**
  * Attribute PSV infoset augmentations implementation.
  * The PSVI information for attributes will be available at the startElement call.
+ * 
+ * @xerces.internal 
  *
  * @author Elena Litani IBM
  * @version $Id$

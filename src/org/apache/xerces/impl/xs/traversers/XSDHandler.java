@@ -65,6 +65,8 @@ import org.w3c.dom.Element;
  * <redefined> information items).  If any of the schemas imports a
  * schema, other grammars may be constructed as a side-effect.
  *
+ * @xerces.internal 
+ *
  * @author Neil Graham, IBM
  * @author Pavani Mukthipudi, Sun Microsystems
  * @version $Id$

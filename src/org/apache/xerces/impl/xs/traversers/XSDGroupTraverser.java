@@ -35,6 +35,8 @@ import org.w3c.dom.Element;
  *   Content: (annotation?, (all | choice | sequence))
  * </group>
  *
+ * @xerces.internal 
+ *
  * @author Rahul Srivastava, Sun Microsystems Inc.
  * @author Elena Litani, IBM
  * @author Lisa Martin,  IBM

@@ -27,6 +27,8 @@ import org.apache.xerces.xs.XSObject;
 import org.w3c.dom.Element;
 
 /**
+ * @xerces.internal  
+ * 
  * @author Elena Litani, IBM
  * @author Sandy Gao, IBM
  * @version $Id$

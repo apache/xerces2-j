@@ -26,6 +26,8 @@ import org.apache.xerces.xni.XMLAttributes;
 /**
  * Schema identity constraint selector.
  *
+ * @xerces.internal 
+ *
  * @author Andy Clark, IBM
  * @version $Id$
  */

@@ -29,6 +29,8 @@ import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 /**
  * The XML representation for an attribute group declaration
  * schema component is a global <attributeGroup> element information item
+ * 
+ * @xerces.internal 
  *
  * @author Sandy Gao, IBM
  * @author Rahul Srivastava, Sun Microsystems Inc.

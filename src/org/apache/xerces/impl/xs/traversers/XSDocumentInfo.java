@@ -29,11 +29,13 @@ import org.apache.xerces.util.SymbolTable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-/*
+/**
  * Objects of this class hold all information pecular to a
  * particular XML Schema document.  This is needed because
  * namespace bindings and other settings on the <schema/> element
  * affect the contents of that schema document alone.
+ *
+ * @xerces.internal 
  *
  * @author Neil Graham, IBM
  * @version $Id$

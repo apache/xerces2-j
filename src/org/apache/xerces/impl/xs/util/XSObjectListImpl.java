@@ -22,6 +22,8 @@ import org.apache.xerces.xs.XSObjectList;
 /**
  * Containts a list of XSObject's.
  *
+ * @xerces.internal 
+ *
  * @author Sandy Gao, IBM
  *
  * @version $Id$

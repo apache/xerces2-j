@@ -28,6 +28,8 @@ import org.apache.xerces.impl.xs.XSAnnotationImpl;
 /**
  * Base class of Schema identity constraint.
  *
+ * @xerces.internal 
+ *
  * @author Andy Clark, IBM
  * @version $Id$
  */

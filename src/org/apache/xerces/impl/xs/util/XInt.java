@@ -17,6 +17,8 @@
 package org.apache.xerces.impl.xs.util;
 
 /**
+ * @xerces.internal  
+ * 
  * @author Henry Zongaro, IBM
  * @version $Id$
  */

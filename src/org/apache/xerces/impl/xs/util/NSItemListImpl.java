@@ -23,6 +23,8 @@ import org.apache.xerces.xs.XSNamespaceItemList;
 /**
  * Containts a list of Object's.
  *
+ * @xerces.internal 
+ *
  * @author Sandy Gao, IBM
  *
  * @version $Id$

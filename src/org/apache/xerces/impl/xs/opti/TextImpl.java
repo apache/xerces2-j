@@ -19,7 +19,9 @@ package org.apache.xerces.impl.xs.opti;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 
-/*
+/**
+ * @xerces.internal  
+ * 
  * @author Neil Graham, IBM
  * @version $Id$
  */

@@ -23,6 +23,8 @@ import org.apache.xerces.util.SymbolHash;
 /**
  * Containts the map between qnames and XSObject's.
  *
+ * @xerces.internal 
+ *
  * @author Sandy Gao, IBM
  *
  * @version $Id$

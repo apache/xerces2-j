@@ -25,7 +25,10 @@ import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 
 /**
  * Add a method that return an <code>XSModel</code> that represents components in
- * the schema grammars in this pool implementation.*
+ * the schema grammars in this pool implementation.
+ * 
+ * @xerces.internal  
+ * 
  * @version $Id$
  */
 public class XSGrammarPool extends XMLGrammarPoolImpl {

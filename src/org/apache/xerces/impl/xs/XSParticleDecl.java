@@ -24,6 +24,8 @@ import org.apache.xerces.xs.XSTerm;
 /**
  * Store schema particle declaration.
  *
+ * @xerces.internal 
+ *
  * @author Sandy Gao, IBM
  *
  * @version $Id$

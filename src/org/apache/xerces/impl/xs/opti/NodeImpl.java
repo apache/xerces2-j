@@ -17,6 +17,8 @@
 package org.apache.xerces.impl.xs.opti;
 
 /**
+ * @xerces.internal  
+ * 
  * @author Rahul Srivastava, Sun Microsystems Inc.
  *
  * @version $Id$

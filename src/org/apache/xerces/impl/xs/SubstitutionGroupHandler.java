@@ -25,6 +25,8 @@ import java.util.Vector;
 /**
  * To store and validate information about substitutionGroup
  *
+ * @xerces.internal 
+ *
  * @author Sandy Gao, IBM
  *
  * @version $Id$

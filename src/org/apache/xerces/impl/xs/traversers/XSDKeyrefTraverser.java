@@ -28,6 +28,8 @@ import org.w3c.dom.Element;
 /**
  * This class contains code that is used to traverse <keyref>s.
  *
+ * @xerces.internal 
+ *
  * @author Neil Graham, IBM
  * @version $Id$
  */

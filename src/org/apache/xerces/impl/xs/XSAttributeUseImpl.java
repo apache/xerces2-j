@@ -27,6 +27,8 @@ import org.apache.xerces.xs.XSNamespaceItem;
  * The XML representation for an attribute use
  * schema component is a local <attribute> element information item
  *
+ * @xerces.internal 
+ *
  * @author Sandy Gao, IBM
  * @version $Id$
  */

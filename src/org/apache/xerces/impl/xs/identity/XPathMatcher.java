@@ -28,6 +28,8 @@ import org.apache.xerces.xs.AttributePSVI;
 /**
  * XPath matcher.
  *
+ * @xerces.internal 
+ *
  * @author Andy Clark, IBM
  *
  * @version $Id$

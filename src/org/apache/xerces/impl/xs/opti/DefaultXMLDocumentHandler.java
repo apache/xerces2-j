@@ -33,6 +33,8 @@ import org.apache.xerces.xni.parser.XMLDTDContentModelSource;
 import org.apache.xerces.xni.XNIException;
 
 /**
+ * @xerces.internal 
+ * 
  * @author Rahul Srivastava, Sun Microsystems Inc.
  * @author Sandy Gao, IBM
  *

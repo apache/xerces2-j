@@ -24,6 +24,8 @@ import org.w3c.dom.DOMException;
 
 
 /**
+ * @xerces.internal  
+ * 
  * @author Rahul Srivastava, Sun Microsystems Inc.
  *
  * @version $Id$

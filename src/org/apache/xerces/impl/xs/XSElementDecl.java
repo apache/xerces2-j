@@ -32,6 +32,8 @@ import org.apache.xerces.impl.xs.util.XSNamedMapImpl;
  * The XML representation for an element declaration
  * schema component is an <element> element information item
  *
+ * @xerces.internal 
+ *
  * @author Elena Litani, IBM
  * @author Sandy Gao, IBM
  * @version $Id$

@@ -24,6 +24,8 @@ import org.apache.xerces.impl.xs.XSParticleDecl;
  *
  * Content model Uni-Op node.
  *
+ * @xerces.internal 
+ *
  * @author Neil Graham, IBM
  * @version $$
  */

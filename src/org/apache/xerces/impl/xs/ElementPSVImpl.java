@@ -36,6 +36,8 @@ import org.apache.xerces.xs.XSConstants;
  * nil, specified, normalized value, member type, validity, error codes,
  * default
  *
+ * @xerces.internal 
+ *
  * @author Elena Litani IBM
  * @version $Id$
  */

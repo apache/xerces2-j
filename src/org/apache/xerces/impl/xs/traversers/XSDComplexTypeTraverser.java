@@ -54,6 +54,9 @@ import org.w3c.dom.Element;
  *            ((group | all | choice | sequence)?,
  *            ((attribute | attributeGroup)*, anyAttribute?))))
  * </complexType>
+ * 
+ * @xerces.internal  
+ * 
  * @version $Id$
  */
 

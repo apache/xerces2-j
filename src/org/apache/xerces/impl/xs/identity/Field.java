@@ -25,6 +25,8 @@ import org.apache.xerces.xni.NamespaceContext;
 /**
  * Schema identity constraint field.
  *
+ * @xerces.internal 
+ *
  * @author Andy Clark, IBM
  * @version $Id$
  */

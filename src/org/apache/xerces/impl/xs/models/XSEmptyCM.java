@@ -28,6 +28,8 @@ import java.util.Vector;
  *
  * This model validated on the way in.
  *
+ * @xerces.internal 
+ *
  * @author Elena Litani, Lisa Martin
  * @author IBM
  * @version $Id$

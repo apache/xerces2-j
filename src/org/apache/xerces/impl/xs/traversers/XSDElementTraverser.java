@@ -56,6 +56,8 @@ import org.w3c.dom.Attr;
  *   Content: (annotation?, ((simpleType | complexType)?, (unique | key | keyref)*))
  * </element>
  *
+ * @xerces.internal 
+ *
  * @author Sandy Gao, IBM
  *
  * @version $Id$

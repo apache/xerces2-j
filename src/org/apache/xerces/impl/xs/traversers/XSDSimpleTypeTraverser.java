@@ -66,6 +66,8 @@ import org.w3c.dom.Element;
  *   Content: (annotation?, (simpleType*))
  * </union>
  *
+ * @xerces.internal 
+ *
  * @author Elena Litani, IBM
  * @author Neeraj Bajaj, Sun Microsystems, Inc.
  * @author Sandy Gao, IBM

@@ -24,6 +24,8 @@ import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
  * the implementation will add all XML Schema component
  * declarations to the pool.
  * Note: The cashing mechanism is not implemented yet.
+ *
+ * @xerces.internal 
  * 
  * @author Elena Litani, IBM
  * @version $Id$

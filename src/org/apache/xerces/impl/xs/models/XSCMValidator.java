@@ -25,6 +25,8 @@ import java.util.Vector;
 /**
  * Note: State of the content model is stored in the validator
  *
+ * @xerces.internal 
+ *
  * @author Sandy Gao, IBM
  * @author Elena Litani, IBM
  * @version $Id$

@@ -27,6 +27,8 @@ import java.util.Vector;
 /**
  * XSAllCM implements XSCMValidator and handles <all>
  *
+ * @xerces.internal 
+ *
  * @author Pavani Mukthipudi, Sun Microsystems Inc.
  * @version $Id$
  */

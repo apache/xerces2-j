@@ -28,6 +28,8 @@ import org.w3c.dom.Element;
  * This class contains code that is used to traverse both <key>s and
  * <unique>s.
  *
+ * @xerces.internal 
+ *
  * @author Neil Graham, IBM
  * @version $Id$
  */

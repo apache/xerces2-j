@@ -23,6 +23,8 @@ import org.apache.xerces.util.NamespaceSupport;
  * class in order to easily implement some features that we need for
  * efficient schema handling.  It will not be generally useful.  
  *
+ * @xerces.internal 
+ *
  * @author Neil Graham, IBM
  *
  * @version $Id$
