@@ -75,6 +75,7 @@ import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLDocumentSource;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
@@ -203,6 +204,9 @@ public abstract class BasicParserConfiguration
 
     /** The DTD content model handler. */
     protected XMLDTDContentModelHandler fDTDContentModelHandler;
+
+    /** Last component in the document pipeline */     
+    protected XMLDocumentSource fLastComponent;
 
     //
     // Constructors
@@ -333,12 +337,16 @@ public abstract class BasicParserConfiguration
         throws XNIException, IOException;
 
     /**
-     * Sets the document handler to receive information about the document.
+     * Sets the document handler on the last component in the pipeline
+     * to receive information about the document.
      * 
-     * @param documentHandler The document handler.
+     * @param documentHandler   The document handler.
      */
     public void setDocumentHandler(XMLDocumentHandler documentHandler) {
         fDocumentHandler = documentHandler;
+        if (fLastComponent != null) {
+            fLastComponent.setDocumentHandler(fDocumentHandler);
+        }
     } // setDocumentHandler(XMLDocumentHandler)
 
     /** Returns the registered document handler. */

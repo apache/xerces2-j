@@ -617,6 +617,8 @@ public class StandardParserConfiguration
             fNamespaceBinder.setDocumentHandler(fDocumentHandler);
         }
 
+        fLastComponent = fNamespaceBinder;
+
         // setup dtd pipeline
         if (fDTDScanner != null) {
             if (fDTDValidator != null) {
@@ -647,16 +649,9 @@ public class StandardParserConfiguration
                 }
 
             }
+            fLastComponent = fSchemaValidator;
             fNamespaceBinder.setDocumentHandler(fSchemaValidator);
-            fSchemaValidator.setDocumentHandler(fDocumentHandler);
-            
-
-            // REVISIT: we probably should not remove schema validator from the pipeline
-            // if schema feature is off, since user might want to have some PSVI 
-            // of the document.
-            // On the other hand, if user constructed a parser with the default config,
-            // turned schema on before first parse(), and then turned it off, is it possible
-            // that user would assume that we will remove XML Schema validator?
+            fSchemaValidator.setDocumentHandler(fDocumentHandler);            
         } 
 
 
