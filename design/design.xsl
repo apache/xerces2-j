@@ -5,7 +5,7 @@
  <xsl:template match='design'>
   <HTML>
    <HEAD>
-    <TITLE>Design</TITLE>
+    <TITLE>Xerces 2 | Design</TITLE>
     <LINK rel='stylesheet' type='text/css' href='index.css'/>
     <LINK rel='stylesheet' type='text/css' href='design.css'/>
    </HEAD>

@@ -1382,7 +1382,7 @@
    <field name='fInputSource'>
     <reference idref='sax-input-source'/>
    </field>
-   <field name='fRowNumber'>
+   <field name='fLineNumber'>
     <primitive type='int'/>
    </field>
    <field name='fColumnNumber'>
