@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000, 2001 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,15 +57,35 @@
 
 package org.apache.xerces.impl.dv.xs;
 
+import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
+import org.apache.xerces.util.XMLChar;
+import org.apache.xerces.impl.validation.ValidationContext;
+
 /**
+ * Represent the schema type "ID"
+ *
+ * @author Neeraj Bajaj, Sun Microsystems, inc.
+ * @author Sandy Gao, IBM
+ *
  * @version $Id$
  */
-public class SchemaDateTimeException extends RuntimeException {
-    public SchemaDateTimeException () {
-        super();
+public class IDDV extends TypeValidator{
+
+    public short getAllowedFacets(){
+        return (XSSimpleTypeDecl.FACET_LENGTH | XSSimpleTypeDecl.FACET_MINLENGTH | XSSimpleTypeDecl.FACET_MAXLENGTH | XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_ENUMERATION | XSSimpleTypeDecl.FACET_WHITESPACE );
     }
 
-    public SchemaDateTimeException (String s) {
-        super (s);
+    public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
+        if (!XMLChar.isValidNCName(content)) {
+            throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "NCName"});
+        }
+        return content;
     }
-}
+
+    public void checkExtraRules(Object value, ValidationContext context) throws InvalidDatatypeValueException {
+        String content = (String)value;
+        if (context.isIdDeclared(content))
+            throw new InvalidDatatypeValueException("cvc-id.2", new Object[]{content});
+        context.addId(content);
+    }
+} // class IDDV

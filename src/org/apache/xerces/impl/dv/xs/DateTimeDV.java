@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000, 2001 The Apache Software Foundation.  All rights
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,15 +57,61 @@
 
 package org.apache.xerces.impl.dv.xs;
 
+import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
+import org.apache.xerces.impl.validation.ValidationContext;
+
 /**
+ * Validator for <dateTime> datatype (W3C Schema Datatypes)
+ *
+ * @author Elena Litani
+ * @author Gopal Sharma, SUN Microsystem Inc.
+ *
  * @version $Id$
  */
-public class SchemaDateTimeException extends RuntimeException {
-    public SchemaDateTimeException () {
-        super();
+public class DateTimeDV extends AbstractDateTimeDV {
+
+    public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
+        try{
+            return parse(content, null);
+        } catch(Exception ex){
+            throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "dateTime"});
+        }
     }
 
-    public SchemaDateTimeException (String s) {
-        super (s);
+    /**
+     * Parses, validates and computes normalized version of dateTime object
+     *
+     * @param str    The lexical representation of dateTime object CCYY-MM-DDThh:mm:ss.sss
+     *               with possible time zone Z or (-),(+)hh:mm
+     * @param date   uninitialized date object
+     * @return normalized dateTime representation
+     * @exception Exception Invalid lexical representation
+     */
+    protected int[] parse(String str, int[] date) throws SchemaDateTimeException {
+        resetBuffer(str);
+
+        //create structure to hold an object
+        if ( date == null ) {
+            date = new int[TOTAL_SIZE];
+        }
+        resetDateObj(date);
+        int end = indexOf (fStart, fEnd, 'T');
+
+        // both time and date
+        getDate(fStart, end, date);
+        getTime(end+1, fEnd, date);
+
+        //validate and normalize
+
+        //REVISIT: do we need SchemaDateTimeException?
+        validateDateTime(date);
+
+        if ( date[utc]!=0 && date[utc]!='Z') {
+            normalize(date);
+        }
+        return date;
     }
+
 }
+
+

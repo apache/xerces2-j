@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000, 2001 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,15 +57,62 @@
 
 package org.apache.xerces.impl.dv.xs;
 
+import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
+import org.apache.xerces.util.XMLChar;
+import org.apache.xerces.xni.QName;
+import org.apache.xerces.impl.validation.ValidationContext;
+
 /**
+ * Represent the schema type "QName" and "NOTATION"
+ *
+ * @author Neeraj Bajaj, Sun Microsystems, inc.
+ * @author Sandy Gao, IBM
+ *
  * @version $Id$
  */
-public class SchemaDateTimeException extends RuntimeException {
-    public SchemaDateTimeException () {
-        super();
+public class QNameDV extends TypeValidator {
+
+    private static final String EMPTY_STRING = "";
+
+    public short getAllowedFacets() {
+        return (XSSimpleTypeDecl.FACET_LENGTH | XSSimpleTypeDecl.FACET_MINLENGTH | XSSimpleTypeDecl.FACET_MAXLENGTH | XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_ENUMERATION | XSSimpleTypeDecl.FACET_WHITESPACE);
     }
 
-    public SchemaDateTimeException (String s) {
-        super (s);
+    public Object getActualValue(String content, ValidationContext context)
+        throws InvalidDatatypeValueException {
+
+        // "prefix:localpart" or "localpart"
+        // get prefix and local part out of content
+        String prefix, localpart;
+        int colonptr = content.indexOf(":");
+        if (colonptr > 0) {
+            prefix = context.getSymbol(content.substring(0,colonptr));
+            localpart = content.substring(colonptr+1);
+        } else {
+            prefix = context.getSymbol(EMPTY_STRING);
+            localpart = content;
+        }
+
+        // both prefix (if any) and localpart must be valid NCName
+        if (prefix.length() > 0 && !XMLChar.isValidNCName(prefix))
+            throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "QName"});
+
+        if(!XMLChar.isValidNCName(localpart))
+            throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "QName"});
+
+        // resove prefix to a uri, report an error if failed
+        String uri = context.getURI(prefix);
+        if (prefix.length() > 0 && uri == null)
+            throw new InvalidDatatypeValueException("UndeclaredPrefix", new Object[]{content, prefix});
+
+        return new QName(prefix, context.getSymbol(localpart), context.getSymbol(content), uri);
+
     }
-}
+
+    // REVISIT: qname and notation shouldn't support length facets.
+    //          now we just return the length of the rawname
+    public int getDataLength(Object value) {
+        return ((QName)value).rawname.length();
+    }
+
+} // class QNameDVDV

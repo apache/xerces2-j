@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000, 2001 The Apache Software Foundation.  All rights
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,15 +57,89 @@
 
 package org.apache.xerces.impl.dv.xs;
 
+import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
+import org.apache.xerces.impl.validation.ValidationContext;
+
 /**
+ * Validator for <time> datatype (W3C Schema Datatypes)
+ *
+ * @author Elena Litani
+ * @author Gopal Sharma, SUN Microsystem Inc.
+ *
  * @version $Id$
  */
-public class SchemaDateTimeException extends RuntimeException {
-    public SchemaDateTimeException () {
-        super();
+public class TimeDV extends AbstractDateTimeDV {
+
+    /**
+     * Convert a string to a compiled form
+     *
+     * @param  content The lexical representation of time
+     * @return a valid and normalized time object
+     */
+    public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException{
+        try{
+            return parse(content, null);
+        } catch(Exception ex){
+            throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "time"});
+        }
     }
 
-    public SchemaDateTimeException (String s) {
-        super (s);
+    /**
+     * Parses, validates and computes normalized version of time object
+     *
+     * @param str    The lexical representation of time object hh:mm:ss.sss
+     *               with possible time zone Z or (-),(+)hh:mm
+     *               Pattern: "(\\d\\d):(\\d\\d):(\\d\\d)(\\.(\\d)*)?(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?")
+     * @param date   uninitialized date object
+     * @return normalized time representation
+     * @exception Exception Invalid lexical representation
+     */
+    protected int[] parse(String str, int[] date) throws SchemaDateTimeException{
+
+        resetBuffer(str);
+
+        //create structure to hold an object
+        if ( date == null ) {
+            date = new int[TOTAL_SIZE];
+        }
+        resetDateObj(date);
+
+        // time
+        // initialize to default values
+        date[CY]=YEAR;
+        date[M]=MONTH;
+        date[D]=DAY;
+        getTime(fStart, fEnd, date);
+
+        //validate and normalize
+
+        validateDateTime(date);
+
+        if ( date[utc]!=0 ) {
+            normalize(date);
+        }
+                return date;
     }
+
+    /**
+     * Converts time object representation to String
+     *
+     * @param date   time object
+     * @return lexical representation of time: hh:mm:ss.sss with an optional time zone sign
+     */
+    protected String dateToString(int[] date) {
+        message.setLength(0);
+        message.append(date[h]);
+        message.append(':');
+        message.append(date[m]);
+        message.append(':');
+        message.append(date[s]);
+        message.append('.');
+        message.append(date[ms]);
+        message.append((char)date[utc]);
+        return message.toString();
+    }
+
 }
+
+

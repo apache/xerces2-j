@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000, 2001 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,15 +57,26 @@
 
 package org.apache.xerces.impl.dv.xs;
 
+import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
+import org.apache.xerces.impl.validation.ValidationContext;
+
 /**
+ * Represent the schema type "anySimpleType"
+ *
+ * @author Neeraj Bajaj, Sun Microsystems, inc.
+ * @author Sandy Gao, IBM
+ *
  * @version $Id$
  */
-public class SchemaDateTimeException extends RuntimeException {
-    public SchemaDateTimeException () {
-        super();
+public class AnySimpleDV extends TypeValidator {
+
+    public short getAllowedFacets() {
+        // anySimpleType doesn't allow any facet, not even whiteSpace
+        return 0;
     }
 
-    public SchemaDateTimeException (String s) {
-        super (s);
+    public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
+        return content;
     }
-}
+
+} // class AnySimpleDV

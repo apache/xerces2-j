@@ -77,7 +77,7 @@ import java.util.Hashtable;
  */
 public abstract class SchemaDVFactory {
 
-    private static final String DEFAULT_FACTORY_CLASS = "org.apache.xerces.impl.dv.xs_new.SchemaDVFactoryImpl";
+    private static final String DEFAULT_FACTORY_CLASS = "org.apache.xerces.impl.dv.xs.SchemaDVFactoryImpl";
 
     private static String          fFactoryClass    = null;
     private static SchemaDVFactory fFactoryInstance = null;

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000, 2001 The Apache Software Foundation.  All rights
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,15 +57,93 @@
 
 package org.apache.xerces.impl.dv.xs;
 
+import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
+import org.apache.xerces.impl.validation.ValidationContext;
+
 /**
+ * Validator for <gYear> datatype (W3C Schema Datatypes)
+ *
+ * @author Elena Litani
+ * @author Gopal Sharma, SUN Microsystem Inc.
+ *
  * @version $Id$
  */
-public class SchemaDateTimeException extends RuntimeException {
-    public SchemaDateTimeException () {
-        super();
+
+public class YearDV extends AbstractDateTimeDV {
+
+    /**
+     * Convert a string to a compiled form
+     *
+     * @param  content The lexical representation of time
+     * @return a valid and normalized time object
+     */
+    public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException{
+        try{
+            return parse(content, null);
+        } catch(Exception ex){
+            throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "gYear"});
+        }
     }
 
-    public SchemaDateTimeException (String s) {
-        super (s);
+    /**
+     * Parses, validates and computes normalized version of gYear object
+     *
+     * @param str    The lexical representation of year object CCYY
+     *               with possible time zone Z or (-),(+)hh:mm
+     * @param date   uninitialized date object
+     * @return normalized date representation
+     * @exception Exception Invalid lexical representation
+     */
+    protected int[] parse(String str, int[] date) throws SchemaDateTimeException{
+        resetBuffer(str);
+
+        //create structure to hold an object
+        if ( date == null ) {
+            date = new int[TOTAL_SIZE];
+        }
+        resetDateObj(date);
+
+        // check for preceding '-' sign
+        int start = 0;
+        if (fBuffer.charAt(0)=='-') {
+            start = 1;
+        }
+        int sign = findUTCSign(start, fEnd);
+        if (sign == -1) {
+            date[CY]=parseIntYear(fEnd);
+        }
+        else {
+            date[CY]=parseIntYear(sign);
+            getTimeZone (date, sign);
+        }
+
+        //initialize values
+        date[M]=MONTH;
+        date[D]=1;
+
+        //validate and normalize
+        validateDateTime(date);
+
+        if ( date[utc]!=0 && date[utc]!='Z' ) {
+            normalize(date);
+        }
+        return date;
     }
+
+    /**
+     * Converts year object representation to String
+     *
+     * @param date   year object
+     * @return lexical representation of month: CCYY with optional time zone sign
+     */
+    protected String dateToString(int[] date) {
+
+        message.setLength(0);
+        message.append(date[CY]);
+        message.append((char)date[utc]);
+        return message.toString();
+    }
+
 }
+
+

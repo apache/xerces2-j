@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000, 2001 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,15 +57,27 @@
 
 package org.apache.xerces.impl.dv.xs;
 
+import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
+import org.apache.xerces.impl.validation.ValidationContext;
+
 /**
+ * Represent the schema union types
+ *
+ * @author Neeraj Bajaj, Sun Microsystems, inc.
+ * @author Sandy Gao, IBM
+ *
  * @version $Id$
  */
-public class SchemaDateTimeException extends RuntimeException {
-    public SchemaDateTimeException () {
-        super();
+public class UnionDV extends TypeValidator{
+
+    public short getAllowedFacets(){
+          return (XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_ENUMERATION );
     }
 
-    public SchemaDateTimeException (String s) {
-        super (s);
+    // this method should never be called: XSSimpleTypeDecl is responsible for
+    // calling the member types for the convertion
+    public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException{
+        return content;
     }
-}
+
+} // class UnionDV

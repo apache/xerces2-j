@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000, 2001 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,15 +57,73 @@
 
 package org.apache.xerces.impl.dv.xs;
 
+import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
+import org.apache.xerces.impl.validation.ValidationContext;
+import java.math.BigDecimal;
+
 /**
+ * Represent the schema type "decimal"
+ *
+ * @author Neeraj Bajaj, Sun Microsystems, inc.
+ * @author Sandy Gao, IBM
+ *
  * @version $Id$
  */
-public class SchemaDateTimeException extends RuntimeException {
-    public SchemaDateTimeException () {
-        super();
+public class DecimalDV extends TypeValidator {
+
+    public short getAllowedFacets(){
+        return ( XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_WHITESPACE | XSSimpleTypeDecl.FACET_ENUMERATION |XSSimpleTypeDecl.FACET_MAXINCLUSIVE |XSSimpleTypeDecl.FACET_MININCLUSIVE | XSSimpleTypeDecl.FACET_MAXEXCLUSIVE  | XSSimpleTypeDecl.FACET_MINEXCLUSIVE | XSSimpleTypeDecl.FACET_TOTALDIGITS | XSSimpleTypeDecl.FACET_FRACTIONDIGITS);
     }
 
-    public SchemaDateTimeException (String s) {
-        super (s);
+    public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
+        try {
+            return new BigDecimal( stripPlusIfPresent( content));
+        } catch (Exception nfe) {
+            throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "decimal"});
+        }
+    } //getActualValue()
+
+    public boolean isEqual(Object value1, Object value2) {
+        if (!(value1 instanceof BigDecimal) || !(value2 instanceof BigDecimal))
+            return false;
+        return ((BigDecimal)value1).compareTo((BigDecimal)value2) == 0;
     }
-}
+
+    public int compare(Object value1, Object value2){
+        return ((BigDecimal)value1).compareTo((BigDecimal)value2);
+    }
+
+    public int getTotalDigits(Object value){
+        return ((BigDecimal)value).movePointRight(((BigDecimal)value).scale()).toString().length() -
+                ((((BigDecimal)value).signum() < 0) ? 1 : 0); // account for minus sign
+    }
+
+    public int getFractionDigits(Object value){
+        return ((BigDecimal)value).scale();
+    }
+
+    /**
+     * This class deals with a bug in BigDecimal class
+     * present up to version 1.1.2. 1.1.3 knows how
+     * to deal with the + sign.
+     *
+     * This method strips the first '+' if it found
+     * alone such as.
+     * +33434.344
+     *
+     * If we find +- then nothing happens we just
+     * return the string passed
+     *
+     * @param value
+     * @return
+     */
+    static private String stripPlusIfPresent(String value) {
+        String strippedPlus = value;
+
+        if (value.length() >= 2 && value.charAt(0) == '+' && value.charAt(1) != '-') {
+            strippedPlus = value.substring(1);
+        }
+        return strippedPlus;
+    }//getStripPlusIfPresent()
+
+} // class DecimalDV

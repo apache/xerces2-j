@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000, 2001 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,15 +57,35 @@
 
 package org.apache.xerces.impl.dv.xs;
 
+import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
+import org.apache.xerces.impl.validation.ValidationContext;
+
 /**
+ * Represent the schema type "boolean"
+ *
+ * @author Neeraj Bajaj, Sun Microsystems, inc.
+ * @author Sandy Gao, IBM
+ *
  * @version $Id$
  */
-public class SchemaDateTimeException extends RuntimeException {
-    public SchemaDateTimeException () {
-        super();
+public class BooleanDV extends TypeValidator{
+
+    private static final String fValueSpace[] = {"false", "true", "0", "1"};
+
+    public short getAllowedFacets(){
+        return (XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_WHITESPACE);
     }
 
-    public SchemaDateTimeException (String s) {
-        super (s);
+    public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
+        Boolean ret = null;
+
+        if (content.equals(fValueSpace[0]) || content.equals(fValueSpace[2]))
+            ret = Boolean.FALSE;
+        else if (content.equals(fValueSpace[1]) || content.equals(fValueSpace[3]))
+            ret = Boolean.TRUE;
+        else
+            throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "boolean"});
+        return ret;
     }
-}
+
+} // class BooleanDV
