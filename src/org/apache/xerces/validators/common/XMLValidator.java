@@ -442,13 +442,6 @@ public final class XMLValidator
 
    public void setGrammarResolver(GrammarResolver grammarResolver){
       fGrammarResolver = grammarResolver;
-
-      fSGComparator = new SubstitutionGroupComparator(fGrammarResolver, fStringPool, fErrorReporter);
-
-        if (fValidating) { //optimization -el
-      initDataTypeValidators();
-   }
-
     }
 
    //
@@ -507,11 +500,9 @@ public final class XMLValidator
          fDynamicDisabledByValidation = true;
       }
       fValidating = fValidationEnabled;
-        //optimization:  don't create unnecessary DatatypeValidators. - el
-        if (fValidating) {
-            initDataTypeValidators();
-        }
-
+      if (fValidating) {      
+        initDataTypeValidators();
+      }
     }
 
    /** Returns true if validation is enabled. */
@@ -570,10 +561,9 @@ public final class XMLValidator
          fValidationEnabledByDynamic = true;
       }
       fValidating = fValidationEnabled;
-        //optimization:  don't create unnecessary DatatypeValidators. - el
-        if (fValidating) {
-            initDataTypeValidators();
-        }
+      if (fValidating) {      
+        initDataTypeValidators();
+      }
     }
 
    /** Returns true if validation is dynamic. */
@@ -880,7 +870,7 @@ public final class XMLValidator
         }
         if (fBufferDatatype) {
             fGrammar.getElementDecl(fCurrentElementIndex, fTempElementDecl);
-                //REVISIT: add normalization according to datatypes
+            //REVISIT: add normalization according to datatypes
             fCurrentDV = fTempElementDecl.datatypeValidator;
             if (fCurrentDV !=null) {
                 fWhiteSpace = fCurrentDV.getWSFacet();
@@ -1971,7 +1961,7 @@ public final class XMLValidator
       fGrammarNameSpaceIndex = StringPool.EMPTY_STRING;
 
       // we reset fGrammarResolver in XMLParser before passing it to Validator
-
+      fSGComparator = null;
       fGrammarIsDTDGrammar = false;
       fGrammarIsSchemaGrammar = false;
 
@@ -2034,14 +2024,12 @@ public final class XMLValidator
     * registry table of fDataTypeReg.
     */
    private void initDataTypeValidators() {
-       //Initialize Validators
-       //Datatype Registry
+       
        if ( fGrammarResolver != null ) {
            fDataTypeReg = (DatatypeValidatorFactoryImpl) fGrammarResolver.getDatatypeRegistry();
            fDataTypeReg.initializeDTDRegistry();
         }
        if ( fDataTypeReg != null ) {
-
             fValID       = fDataTypeReg.getDatatypeValidator("ID" );
             fValIDRef    = fDataTypeReg.getDatatypeValidator("IDREF" );
             fValIDRefs   = fDataTypeReg.getDatatypeValidator("IDREFS" );
@@ -2327,6 +2315,9 @@ public final class XMLValidator
       XMLContentModel contentModel = null;
       if ( elementIndex > -1) {
          if ( fGrammar.getElementDecl(elementIndex,fTempElementDecl) ) {
+             if (fSGComparator == null) {
+                 fSGComparator = new SubstitutionGroupComparator(fGrammarResolver, fStringPool, fErrorReporter);
+             }
             contentModel = fGrammar.getElementContentModel(elementIndex, fSGComparator);
          }
       }
@@ -2816,6 +2807,9 @@ public final class XMLValidator
                      Enumeration enum = complexTypeRegistry.elements();
 
                      TraverseSchema.ComplexTypeInfo typeInfo;
+                     if (fSGComparator == null) {
+                         fSGComparator = new SubstitutionGroupComparator(fGrammarResolver, fStringPool, fErrorReporter);
+                     }
                      while (enum.hasMoreElements ()) {
                          typeInfo = (TraverseSchema.ComplexTypeInfo)enum.nextElement();
                          // for each type, we construct a corresponding content model
@@ -3541,7 +3535,7 @@ public final class XMLValidator
                }
             }
          }
-
+          
          if (DEBUG_PRINT_ATTRIBUTES) {
             String elementStr = fStringPool.toString(element.rawname);
             System.out.print("startElement: <" + elementStr);
@@ -3607,15 +3601,17 @@ public final class XMLValidator
                            int attributeType = attributeTypeName(fTempAttDecl);
                            attrList.setAttType(index, attributeType);
 
-                           if (fValidating) {
-
-                              if (fGrammarIsDTDGrammar) {
+                           
+                            if (fGrammarIsDTDGrammar) {
                                   int normalizedValue = validateDTDattribute(element, attrList.getAttValue(index), fTempAttDecl);
                                   attrList.setAttValue(index, normalizedValue);
 
-                              }
-
+                            }
+                            if (fValidating) {
                               // check to see if this attribute matched an attribute wildcard
+                              if (fGrammarIsDTDGrammar) {
+                                  //do nothing
+                              }
                               else if ( fGrammarIsSchemaGrammar &&
                                         (fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_ANY
                                          ||fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_LIST
@@ -3810,6 +3806,8 @@ public final class XMLValidator
 
    /**
     * Validate attributes in DTD fashion.
+    * Validation is separated from attribute value normalization (which is required
+    * for non-validating parsers)
     * @return normalized attribute value
     */
    private int validateDTDattribute(QName element, int attValue,
@@ -3821,43 +3819,35 @@ public final class XMLValidator
             boolean isAlistAttribute = attributeDecl.list;//Caveat - Save this information because invalidStandaloneAttDef
             String  unTrimValue      = fStringPool.toString(attValue);
             String  value            = unTrimValue.trim();
-            //System.out.println("value = " + value );
-            //changes fTempAttDef
-            if (fValidationEnabled) {
-               if (value != unTrimValue) {
-                  if (invalidStandaloneAttDef(element, attributeDecl.name)) {
-                     reportRecoverableXMLError(XMLMessages.MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE,
-                                               XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION,
-                                               fStringPool.toString(attributeDecl.name.rawname), unTrimValue, value);
-                  }
-               }
+            if ( fValidationEnabled ) {
+                if ( value != unTrimValue ) {
+                    if ( invalidStandaloneAttDef(element, attributeDecl.name) ) {
+                        reportRecoverableXMLError(XMLMessages.MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE,
+                                                  XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION,
+                                                  fStringPool.toString(attributeDecl.name.rawname), unTrimValue, value);
+                    }
+                }
+                try {
+                    if ( isAlistAttribute ) {
+                        fValENTITIES.validate( value, fValidateEntity );
+                    }
+                    else {
+                        fValENTITY.validate( value, fValidateEntity );
+                    }
+                }
+                catch ( InvalidDatatypeValueException ex ) {
+                    if ( ex.getMajorCode() != 1 && ex.getMinorCode() != -1 ) {
+                        reportRecoverableXMLError(ex.getMajorCode(),
+                                                  ex.getMinorCode(),
+                                                  fStringPool.toString( attributeDecl.name.rawname), value );
+                    }
+                    else {
+                        reportRecoverableXMLError(XMLMessages.MSG_ENTITY_INVALID,
+                                                  XMLMessages.VC_ENTITY_NAME,
+                                                  fStringPool.toString( attributeDecl.name.rawname), value );
+                    }
+                }
             }
-
-            try {
-               if ( isAlistAttribute ) {
-                  fValENTITIES.validate( value, fValidateEntity );
-               } else {
-                  fValENTITY.validate( value, fValidateEntity );
-               }
-            } catch ( InvalidDatatypeValueException ex ) {
-               if ( ex.getMajorCode() != 1 && ex.getMinorCode() != -1 ) {
-                  reportRecoverableXMLError(ex.getMajorCode(),
-                                            ex.getMinorCode(),
-                                            fStringPool.toString( attributeDecl.name.rawname), value );
-               } else {
-                  reportRecoverableXMLError(XMLMessages.MSG_ENTITY_INVALID,
-                                            XMLMessages.VC_ENTITY_NAME,
-                                            fStringPool.toString( attributeDecl.name.rawname), value );
-               }
-            }
-
-            /*if (attributeDecl.list) {
-                av = fAttValidatorENTITIES;
-            }
-            else {
-                av = fAttValidatorENTITY;
-            }*/
-
             if (fNormalizeAttributeValues) {
                 if (attributeDecl.list) {
                     attValue = normalizeListAttribute(value, attValue, unTrimValue);
@@ -3876,27 +3866,29 @@ public final class XMLValidator
          {
             String  unTrimValue = fStringPool.toString(attValue);
             String  value       = unTrimValue.trim();
-            if (fValidationEnabled) {
-               if (value != unTrimValue) {
-                  if (invalidStandaloneAttDef(element, attributeDecl.name)) {
-                     reportRecoverableXMLError(XMLMessages.MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE,
-                                               XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION,
-                                               fStringPool.toString(attributeDecl.name.rawname), unTrimValue, value);
-                  }
-               }
-            }
-            try {
-               fValID.validate( value, fIdDefs );
-               fValIDRef.validate( value, this.fValidateIDRef ); //just in case we called id after IDREF
-            } catch ( InvalidDatatypeValueException ex ) {
-               int major = ex.getMajorCode(), minor = ex.getMinorCode();
-               if (major == -1) {
-                   major = XMLMessages.MSG_ID_INVALID;
-                   minor = XMLMessages.VC_ID;
-               }
-               reportRecoverableXMLError(major, minor,
-                                         fStringPool.toString( attributeDecl.name.rawname),
-                                         value );
+            if ( fValidationEnabled ) {
+                if ( value != unTrimValue ) {
+                    if ( invalidStandaloneAttDef(element, attributeDecl.name) ) {
+                        reportRecoverableXMLError(XMLMessages.MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE,
+                                                  XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION,
+                                                  fStringPool.toString(attributeDecl.name.rawname), unTrimValue, value);
+                    }
+                }
+
+                try {
+                    fValID.validate( value, fIdDefs );
+                    fValIDRef.validate( value, this.fValidateIDRef ); //just in case we called id after IDREF
+                }
+                catch ( InvalidDatatypeValueException ex ) {
+                    int major = ex.getMajorCode(), minor = ex.getMinorCode();
+                    if ( major == -1 ) {
+                        major = XMLMessages.MSG_ID_INVALID;
+                        minor = XMLMessages.VC_ID;
+                    }
+                    reportRecoverableXMLError(major, minor,
+                                              fStringPool.toString( attributeDecl.name.rawname),
+                                              value );
+                }
             }
 
             if (fNormalizeAttributeValues && value != unTrimValue) {
@@ -3910,38 +3902,41 @@ public final class XMLValidator
             String  value       = unTrimValue.trim();
             boolean isAlistAttribute = attributeDecl.list;//Caveat - Save this information because invalidStandaloneAttDef
                                                           //changes fTempAttDef
-            if (fValidationEnabled) {
-               if (value != unTrimValue) {
-                  if (invalidStandaloneAttDef(element, attributeDecl.name)) {
-                     reportRecoverableXMLError(XMLMessages.MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE,
-                                               XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION,
-                                               fStringPool.toString(attributeDecl.name.rawname), unTrimValue, value);
-                  }
-               }
+            if ( fValidationEnabled ) {
+                if ( value != unTrimValue ) {
+                    if ( invalidStandaloneAttDef(element, attributeDecl.name) ) {
+                        reportRecoverableXMLError(XMLMessages.MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE,
+                                                  XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION,
+                                                  fStringPool.toString(attributeDecl.name.rawname), unTrimValue, value);
+                    }
+                }
 
-               if (attributeDecl.list && value.length() == 0 ) {
-                   reportRecoverableXMLError(XMLMessages.MSG_IDREFS_INVALID, XMLMessages.VC_IDREF,
-                                             fStringPool.toString(attributeDecl.name.rawname) ) ;
-               }
-            }
-            try {
-               if ( isAlistAttribute ) {
-                  fValIDRefs.validate( value, this.fValidateIDRef );
-               } else {
-                  fValIDRef.validate( value, this.fValidateIDRef );
-               }
-            } catch ( InvalidDatatypeValueException ex ) {
-               if ( ex.getMajorCode() != 1 && ex.getMinorCode() != -1 ) {
-                  reportRecoverableXMLError(ex.getMajorCode(),
-                                            ex.getMinorCode(),
-                                            fStringPool.toString( attributeDecl.name.rawname), value );
-               } else {
-                  reportRecoverableXMLError(XMLMessages.MSG_IDREFS_INVALID,
-                                            XMLMessages.VC_IDREF,
-                                            fStringPool.toString( attributeDecl.name.rawname), value );
-               }
-            }
+                if ( attributeDecl.list && value.length() == 0 ) {
+                    reportRecoverableXMLError(XMLMessages.MSG_IDREFS_INVALID, XMLMessages.VC_IDREF,
+                                              fStringPool.toString(attributeDecl.name.rawname) ) ;
+                }
 
+                try {
+                    if ( isAlistAttribute ) {
+                        fValIDRefs.validate( value, this.fValidateIDRef );
+                    }
+                    else {
+                        fValIDRef.validate( value, this.fValidateIDRef );
+                    }
+                }
+                catch ( InvalidDatatypeValueException ex ) {
+                    if ( ex.getMajorCode() != 1 && ex.getMinorCode() != -1 ) {
+                        reportRecoverableXMLError(ex.getMajorCode(),
+                                                  ex.getMinorCode(),
+                                                  fStringPool.toString( attributeDecl.name.rawname), value );
+                    }
+                    else {
+                        reportRecoverableXMLError(XMLMessages.MSG_IDREFS_INVALID,
+                                                  XMLMessages.VC_IDREF,
+                                                  fStringPool.toString( attributeDecl.name.rawname), value );
+                    }
+                }
+            }
             if (fNormalizeAttributeValues) {
                 if (attributeDecl.list) {
                     attValue = normalizeListAttribute(value, attValue, unTrimValue);
@@ -3978,31 +3973,33 @@ public final class XMLValidator
             String  value       = unTrimValue.trim();
             boolean isAlistAttribute = attributeDecl.list;//Caveat - Save this information because invalidStandaloneAttDef
             //changes fTempAttDef
-            if (fValidationEnabled) {
-               if (value != unTrimValue) {
-                  if (invalidStandaloneAttDef(element, attributeDecl.name)) {
-                     reportRecoverableXMLError(XMLMessages.MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE,
-                                               XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION,
-                                               fStringPool.toString(attributeDecl.name.rawname), unTrimValue, value);
-                  }
-               }
-               if (attributeDecl.list && value.length() == 0 ) {
-                   reportRecoverableXMLError(XMLMessages.MSG_NMTOKENS_INVALID, XMLMessages.VC_NAME_TOKEN,
-                                             fStringPool.toString(attributeDecl.name.rawname) ) ;
-               }
-            }
-            try {
-               if ( isAlistAttribute ) {
-                  fValNMTOKENS.validate( value, null );
-               } else {
-                  fValNMTOKEN.validate( value, null );
-               }
-            } catch ( InvalidDatatypeValueException ex ) {
-               reportRecoverableXMLError(XMLMessages.MSG_NMTOKEN_INVALID,
-                                         XMLMessages.VC_NAME_TOKEN,
-                                         fStringPool.toString(attributeDecl.name.rawname), value);//TODO NMTOKENS messge
-            }
+            if ( fValidationEnabled ) {
+                if ( value != unTrimValue ) {
+                    if ( invalidStandaloneAttDef(element, attributeDecl.name) ) {
+                        reportRecoverableXMLError(XMLMessages.MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE,
+                                                  XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION,
+                                                  fStringPool.toString(attributeDecl.name.rawname), unTrimValue, value);
+                    }
+                }
+                if ( attributeDecl.list && value.length() == 0 ) {
+                    reportRecoverableXMLError(XMLMessages.MSG_NMTOKENS_INVALID, XMLMessages.VC_NAME_TOKEN,
+                                              fStringPool.toString(attributeDecl.name.rawname) ) ;
+                }
 
+                try {
+                    if ( isAlistAttribute ) {
+                        fValNMTOKENS.validate( value, null );
+                    }
+                    else {
+                        fValNMTOKEN.validate( value, null );
+                    }
+                }
+                catch ( InvalidDatatypeValueException ex ) {
+                    reportRecoverableXMLError(XMLMessages.MSG_NMTOKEN_INVALID,
+                                              XMLMessages.VC_NAME_TOKEN,
+                                              fStringPool.toString(attributeDecl.name.rawname), value);//TODO NMTOKENS messge
+                }
+            }
             if (fNormalizeAttributeValues) {
                 if (attributeDecl.list) {
                     attValue = normalizeListAttribute(value, attValue, unTrimValue);
@@ -4027,32 +4024,32 @@ public final class XMLValidator
    /**
     * @param value This is already trimmed.
     */
-   private int normalizeListAttribute(String value, int origIndex, String origValue) {
+   private int normalizeListAttribute(String value, int origIndex, String unTrimValue) {
+       
+       //REVISIT: some code might be shared: see normalizeWhitespace()
+       //
+       fStringBuffer.setLength(0);
        int length = value.length();
-       StringBuffer buffer = null;
-       int state = 0;           // 0:non-S, 1: 1st S, 2: non-1st S
-       int copyStart = 0;
-       for (int i = 0;  i < length;  i++) {
-           int ch = value.charAt(i);
-           if (ch == ' ') {
-               if (state == 0) {
-                   state = 1;
-               } else if (state == 1) {
-                   state = 2;
-                   if (buffer == null)
-                       buffer = new StringBuffer(length);
-                   buffer.append(value.substring(copyStart, i));
-               }
-           } else {
-               if (state == 2)
-                   copyStart = i;
-               state = 0;
-           }
+       boolean skipSpace = true;
+       char c= 0;
+
+       for (int i = 0; i < length; i++) {
+            c = value.charAt(i);
+            if (c == 0x20 || c == 0x0D || c == 0x0A || c == 0x09) {
+                if (!skipSpace) {
+                    // take the first whitespace as a space and skip the others
+                    fStringBuffer.append(' ');
+                    skipSpace = true;
+                }
+            }
+            else {
+                fStringBuffer.append((char)c);
+                skipSpace = false;
+            }
        }
-       if (buffer == null)
-           return value == origValue ? origIndex : fStringPool.addSymbol(value);
-       buffer.append(value.substring(copyStart));
-       return fStringPool.addSymbol(new String(buffer));
+       if (fStringBuffer.length() == unTrimValue.length())
+           return origIndex;
+       return fStringPool.addSymbol(fStringBuffer.toString());
    }
 
    /** Character data in content. */
@@ -4448,6 +4445,9 @@ public final class XMLValidator
    final class AttValidatorNOTATION
    implements AttributeValidator {
 
+       //REVISIT: it looks like a redundant class
+       //         
+
       //
       // AttributeValidator methods
       //
@@ -4513,7 +4513,9 @@ public final class XMLValidator
     */
    final class AttValidatorENUMERATION
    implements AttributeValidator {
-
+      
+       //REVISIT: it looks like a redundant class.
+       //         could be just a method. See also AttValidatorNOTATION
       //
       // AttributeValidator methods
       //
