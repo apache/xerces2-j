@@ -59,9 +59,6 @@ package simpletype;
 
 import org.apache.xerces.impl.dv.SchemaDVFactory;
 import org.apache.xerces.impl.dv.XSSimpleType;
-import org.apache.xerces.impl.dv.XSAtomicSimpleType;
-import org.apache.xerces.impl.dv.XSListSimpleType;
-import org.apache.xerces.impl.dv.XSUnionSimpleType;
 import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.dv.InvalidDatatypeFacetException;
@@ -70,6 +67,7 @@ import org.apache.xerces.impl.xs.XSTypeDecl;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.validation.ValidationContext;
 import org.apache.xerces.impl.validation.ValidationState;
+import org.apache.xerces.impl.xs.psvi.*;
 
 import java.util.Vector;
 
@@ -100,17 +98,17 @@ short fFinalSet ;
 
 public SimpleTypeUsage(){
 
-	//Any application willing to switch to different implementation should
-	//call SchemaDVFactory#setFactoryClass() as the first step before calling
-	//SchemaDVFactory#getInstance().
-	//Suppose application wants to use class 'MySchemaDVFactoryImpl' as SchemaDVFactory
+        //Any application willing to switch to different implementation should
+        //call SchemaDVFactory#setFactoryClass() as the first step before calling
+        //SchemaDVFactory#getInstance().
+        //Suppose application wants to use class 'MySchemaDVFactoryImpl' as SchemaDVFactory
         // implementation which resides in say 'myApp.simpleType' package.
     
-	//SchemaDVFactory.setFactoryClass("myApp.simpleType.MySchemaDVFactoryImpl.class");
+        //SchemaDVFactory.setFactoryClass("myApp.simpleType.MySchemaDVFactoryImpl.class");
 
-	//this will give the instance of default implementation (SchemaDVFactoryImpl)
+        //this will give the instance of default implementation (SchemaDVFactoryImpl)
         // in 'org.apache.xerces.impl.dv.xs_new' package.
-	factory = SchemaDVFactory.getInstance();
+        factory = SchemaDVFactory.getInstance();
 
 } //SimpleTypeUsage()
 
@@ -124,31 +122,31 @@ public SimpleTypeUsage(){
 
 private ValidationContext getValidationContext(){
 
-	ValidationState validationState = null;
-	
+        ValidationState validationState = null;
+        
     // create an instance of 'ValidationState' providing the information required for the
     // validation of datatypes id, idref, entity, notation, qname.
     //	application can also provide its own implementation of ValidationContext if required, 
     // an implementation of 'ValidationContext' is in 'org.apache.xerces.impl.validation' package.
     validationState = new ValidationState();
     
-	// application need to pass validation context while validating string, object or creating simple type (applyFacets)
-	// derived by restriction, should set the following information accordingly 
-	    
+        // application need to pass validation context while validating string, object or creating simple type (applyFacets)
+        // derived by restriction, should set the following information accordingly 
+            
     //application should provide the namespace support by calling
     //validationState.setNamespaceSupport(...);
 
     //application can also provide 'SymbolTable' (org.apache.xerces.util.SymbolTable) like    
     //validationState.setSymbolTable(....);
 
-	//set proper value (true/false) for the given validation context 
-	//validationState.setFacetChecking(true);
-	
-	//set proper value (true/false) for the given validation context	
-	//validationState.setExtraChecking(false);	
-		
-	return validationState;
-	
+        //set proper value (true/false) for the given validation context 
+        //validationState.setFacetChecking(true);
+        
+        //set proper value (true/false) for the given validation context	
+        //validationState.setExtraChecking(false);	
+                
+        return validationState;
+        
 }
 
 /**
@@ -165,9 +163,9 @@ public ValidatedInfo validateString(String content, XSSimpleType simpleType){
     //normalizedValue etc..)after content is validated.
     ValidatedInfo validatedInfo = new ValidatedInfo();
 
-	//get proper validation context , this is very important we need to get appropriate validation context while validating content
-	//validation context passed is generally different while validating content and  creating simple type (applyFacets)
-	ValidationContext validationState = getValidationContext();
+        //get proper validation context , this is very important we need to get appropriate validation context while validating content
+        //validation context passed is generally different while validating content and  creating simple type (applyFacets)
+        ValidationContext validationState = getValidationContext();
 
     try{
         simpleType.validate(content, validationState, validatedInfo);
@@ -209,14 +207,14 @@ public void querySimpleType(XSSimpleType simpleType){
     System.err.println( "Properties information of 'Simple Type' definiton schema component" );
     System.err.println();
     // 'name' property
-    if( simpleType.isAnonymous() )
+    if( simpleType.getIsAnonymous() )
         System.err.println( "Anonymous Simple Type" );
     else{
-        System.err.println("'name' \t\t\t\t: " + simpleType.getTypeName()  );
+        System.err.println("'name' \t\t\t\t: " + simpleType.getName()  );
     }
 
     //'target namespace' property
-    String targetNameSpace = simpleType.getTargetNamespace() ;
+    String targetNameSpace = simpleType.getNamespace() ;
     System.err.println("'target namespace' \t\t: " + targetNameSpace  );
 
     // 'variety' property
@@ -224,12 +222,12 @@ public void querySimpleType(XSSimpleType simpleType){
     printVariety(variety);
 
     //'base type definition' property
-    XSTypeDecl baseType = simpleType.getBaseType() ;
-    System.err.println("'base type definition' name \t: " + ( baseType != null ? baseType.getTypeName() : "null" )   );
-    System.err.println("'base type definition' target namespace : " + ( baseType != null ? baseType.getTypeName() : "null" )   );
+    XSTypeDecl baseType = (XSTypeDecl)simpleType.getBaseType() ;
+    System.err.println("'base type definition' name \t: " + ( baseType != null ? baseType.getName() : "null" )   );
+    System.err.println("'base type definition' target namespace : " + ( baseType != null ? baseType.getNamespace() : "null" )   );
 
     //check if base type is simple or complex
-    if(baseType != null && (baseType.getXSType() == XSTypeDecl.SIMPLE_TYPE) ){
+    if(baseType != null && (baseType.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE) ){
         //now we can get all the details of base type
         XSSimpleType simpleTypeDecl = (XSSimpleType)baseType;
     }
@@ -243,26 +241,26 @@ public void querySimpleType(XSSimpleType simpleType){
     //the explicit values of this property extension, restriction, list and union prevent further
     //derivations by extension (to yield a complex type) and restriction (to yield a simple type)
     //and use in constructing lists and unions respectively.
-    short finalSet = simpleType.getFinalSet() ;
+    short finalSet = simpleType.getFinal() ;
     printFinal(finalSet);
 
     //if variety is 'list'
     if( variety == XSSimpleType.VARIETY_LIST ){
         // 'Item Type definition' property of List Simple Type Definition Schema Component.
-        XSSimpleType listDecl = ((XSListSimpleType)simpleType).getItemType() ;
+        XSSimpleType listDecl = (XSSimpleType)simpleType.getItemType();
     }else if(variety == XSSimpleType.VARIETY_UNION ){
         // 'Member Type definitions' property of Union Simple Type Definition Schema Component.
-        XSSimpleType [] memberTypes = ((XSUnionSimpleType)simpleType).getMemberTypes() ;
+        XSObjectList memberTypes = simpleType.getMemberTypes();
     }
     
     //fundamental facet information
     
     //ordered schema component
-    short ordered = simpleType.getOrderedFacet();
+    short ordered = simpleType.getOrdered();
     printOrdered(ordered);
 
     //bounded schema component
-    boolean bounded = simpleType.isBounded();    
+    boolean bounded = simpleType.getIsBounded();    
     if(bounded){
         System.err.println("'bounded' \t\t\t\t: true"  );
     }
@@ -271,11 +269,11 @@ public void querySimpleType(XSSimpleType simpleType){
     }
     
     //cardinality schema component
-    short cardinality = simpleType.getCardinalityFacet();
-    printCardinality(cardinality);
+    boolean isFinite = simpleType.getIsFinite();
+    printCardinality(isFinite);
     
     //numeric schema component
-    boolean numeric = simpleType.isNumeric();
+    boolean numeric = simpleType.getIsNumeric();
     if(numeric){
         System.err.println("'numeric' \t\t\t\t: true"  );
     }
@@ -306,12 +304,12 @@ void printOrdered (short ordered){
     }
 }//printOrdered()
 
-void printCardinality (short cardinality){
+void printCardinality (boolean isFinite){
     
-if(cardinality == XSSimpleType.CARDINALITY_COUNTABLY_INFINITE){
-    System.err.println("'cardinality' \t\t\t\t: countably infinite"  );
-}else if(cardinality == XSSimpleType.CARDINALITY_FINITE)
-    System.err.println("'cardinality' \t\t\t\t: finite"  );
+    if(!isFinite)
+        System.err.println("'cardinality' \t\t\t\t: countably infinite"  );
+    else
+        System.err.println("'cardinality' \t\t\t\t: finite"  );
 
 }//printCardinality()
 
@@ -362,19 +360,19 @@ void printFinal(short finalSet){
 
     System.err.println("'final' values \t\t\t: " );
 
-    if ((finalSet & SchemaSymbols.EXTENSION ) != 0){
+    if ((finalSet & XSConstants.DERIVATION_EXTENSION ) != 0){
         System.err.println("\t\t\t\t Extension");
     }
-    if ((finalSet & SchemaSymbols.RESTRICTION) != 0){
+    if ((finalSet & XSConstants.DERIVATION_RESTRICTION) != 0){
         System.err.println("\t\t\t\t Restriction");
     }
-    if((finalSet & SchemaSymbols.LIST ) != 0){
+    if((finalSet & XSConstants.DERIVATION_LIST ) != 0){
         System.err.println("\t\t\t\t List");
     }
-    if((finalSet & SchemaSymbols.UNION ) != 0){
+    if((finalSet & XSConstants.DERIVATION_UNION ) != 0){
         System.err.println("\t\t\t\t Union");
     }
-    if((finalSet & SchemaSymbols.EMPTY_SET ) != 0){
+    if((finalSet & XSConstants.DERIVATION_NONE ) != 0){
         System.err.println("\t\t\t\t EMPTY");
     }
 
