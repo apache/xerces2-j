@@ -12,7 +12,7 @@ import java.io.IOException;
 
   ...
 
-String xmlFile = &quot;file:///Xerces-J/data/personal.xml&quot;; 
+String xmlFile = &quot;file:///&javaparserdirectory;/data/personal.xml&quot;; 
 
 DOMParser parser = new DOMParser();
 
@@ -23,26 +23,26 @@ try {
     se.printStackTrace();
 } catch (IOException ioe) {
     ioe.printStackTrace();
-}</source>
+}
+
+Document document = parser.getDocument();</source>
 		</a>
 	</faq>
 	
 	<faq title="Creating a SAX Parser">
 		<q>How do I create a SAX parser?</q>
 		<a>
-<source>import org.xml.sax.Parser;
-import org.xml.sax.helpers.ParserFactory; 
-import org.apache.xerces.parsers.DOMParser;
-import org.w3c.dom.Document;
+<source>import org.apache.xerces.parsers.SAXParser;
+import org.xml.sax.Parser;
+import org.xml.sax.ParserFactory;
 import org.xml.sax.SAXException;
 import java.io.IOException; 
 
   ...
 
-String parserClass = &quot;org.apache.xerces.parsers.DOMParser&quot;;
+String xmlFile = &quot;file:///&javaparserdirectory;/data/personal.xml&quot;; 
 
-String xmlFile = &quot;file:///Xerces-J/data/personal.xml&quot;; 
-
+String parserClass = &quot;org.apache.xerces.parsers.SAXParser&quot;;
 Parser parser = ParserFactory.makeParser(parserClass);
 
 try {

@@ -3,7 +3,7 @@
 <!ENTITY javaparsernamelong "Xerces Java Parser">
 <!ENTITY javaparsername "Xerces-J">
 <!ENTITY javaparserversion "1.0.2">
-<!ENTITY javaparserdirectory "xerces">
+<!ENTITY javaparserdirectory "xerces-1_0_2">
 <!ENTITY javaparserdistname "Xerces-J-bin"> <!-- name of binaries -->
 
 
