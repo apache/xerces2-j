@@ -163,13 +163,13 @@ public class RangeImpl  implements Range {
     {
     	if( fDetach) {
     		throw new DOMException(
-    			DOMException.INVALID_STATE_ERR, 
-			"DOM011 Invalid state");
+    		DOMException.INVALID_STATE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_STATE_ERR", null));
         }
         if ( !isLegalContainer(refNode)) {
     		throw new RangeExceptionImpl(
-    			RangeException.INVALID_NODE_TYPE_ERR, 
-			"DOM012 Invalid node type");
+    		RangeException.INVALID_NODE_TYPE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_NODE_TYPE_ERR", null));
         }
         
         checkIndex(refNode, offset);
@@ -183,13 +183,13 @@ public class RangeImpl  implements Range {
     {
     	if( fDetach) {
     		throw new DOMException(
-    			DOMException.INVALID_STATE_ERR, 
-			"DOM011 Invalid state");
+    		DOMException.INVALID_STATE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_STATE_ERR", null));
         }
         if ( !isLegalContainer(refNode)) {
     		throw new RangeExceptionImpl(
-    			RangeException.INVALID_NODE_TYPE_ERR, 
-			"DOM012 Invalid node type");
+    		RangeException.INVALID_NODE_TYPE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_NODE_TYPE_ERR", null));
         }
         
         checkIndex(refNode, offset);
@@ -202,15 +202,15 @@ public class RangeImpl  implements Range {
     {
     	if( fDetach) {
     		throw new DOMException(
-    			DOMException.INVALID_STATE_ERR, 
-			"DOM011 Invalid state");
+    		DOMException.INVALID_STATE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_STATE_ERR", null));
         }
 		if ( !hasLegalRootContainer(refNode) ||
 			 !isLegalContainedNode(refNode) )
 		{
     		throw new RangeExceptionImpl(
-    			RangeException.INVALID_NODE_TYPE_ERR, 
-			"DOM012 Invalid node type");
+    		RangeException.INVALID_NODE_TYPE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_NODE_TYPE_ERR", null));
         }
         fStartContainer = refNode.getParentNode();
         int i = 0;
@@ -224,14 +224,14 @@ public class RangeImpl  implements Range {
     {
     	if( fDetach) {
     		throw new DOMException(
-    			DOMException.INVALID_STATE_ERR, 
-			"DOM011 Invalid state");
+    		DOMException.INVALID_STATE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_STATE_ERR", null));
         }
         if ( !hasLegalRootContainer(refNode) || 
 			 !isLegalContainedNode(refNode)) {
     		throw new RangeExceptionImpl(
-    			RangeException.INVALID_NODE_TYPE_ERR, 
-			"DOM012 Invalid node type");
+    		RangeException.INVALID_NODE_TYPE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_NODE_TYPE_ERR", null));
         }
         fStartContainer = refNode.getParentNode();
         int i = 0;
@@ -245,14 +245,14 @@ public class RangeImpl  implements Range {
     {
     	if( fDetach) {
     		throw new DOMException(
-    			DOMException.INVALID_STATE_ERR, 
-			"DOM011 Invalid state");
+    		DOMException.INVALID_STATE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_STATE_ERR", null));
         }
         if ( !hasLegalRootContainer(refNode) ||
 			 !isLegalContainedNode(refNode)) {
     		throw new RangeExceptionImpl(
-    			RangeException.INVALID_NODE_TYPE_ERR, 
-			"DOM012 Invalid node type");
+    		RangeException.INVALID_NODE_TYPE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_NODE_TYPE_ERR", null));
         }
         fEndContainer = refNode.getParentNode();
         int i = 0;
@@ -267,14 +267,14 @@ public class RangeImpl  implements Range {
     {
     	if( fDetach) {
     		throw new DOMException(
-    			DOMException.INVALID_STATE_ERR, 
-			"DOM011 Invalid state");
+    		DOMException.INVALID_STATE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_STATE_ERR", null));
         }
         if ( !hasLegalRootContainer(refNode) ||
 			 !isLegalContainedNode(refNode)) {
     		throw new RangeExceptionImpl(
-    			RangeException.INVALID_NODE_TYPE_ERR, 
-			"DOM012 Invalid node type");
+    		RangeException.INVALID_NODE_TYPE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_NODE_TYPE_ERR", null));
         }
         fEndContainer = refNode.getParentNode();
         int i = 0;
@@ -287,8 +287,8 @@ public class RangeImpl  implements Range {
         
     	if( fDetach) {
     		throw new DOMException(
-    			DOMException.INVALID_STATE_ERR, 
-			"DOM011 Invalid state");
+    		DOMException.INVALID_STATE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_STATE_ERR", null));
         }
         
         if (toStart) {
@@ -305,14 +305,14 @@ public class RangeImpl  implements Range {
     {
     	if( fDetach) {
     		throw new DOMException(
-    			DOMException.INVALID_STATE_ERR, 
-			"DOM011 Invalid state");
+    		DOMException.INVALID_STATE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_STATE_ERR", null));
         }
         if ( !isLegalContainer( refNode.getParentNode() ) ||
 			 !isLegalContainedNode( refNode ) ) {
     		throw new RangeExceptionImpl(
-    			RangeException.INVALID_NODE_TYPE_ERR, 
-			"DOM012 Invalid node type");
+    		RangeException.INVALID_NODE_TYPE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_NODE_TYPE_ERR", null));
         }
         Node parent = refNode.getParentNode();
         if (parent != null ) // REVIST: what to do if it IS null?
@@ -333,13 +333,13 @@ public class RangeImpl  implements Range {
     {
     	if( fDetach) {
     		throw new DOMException(
-    			DOMException.INVALID_STATE_ERR, 
-			"DOM011 Invalid state");
+    		DOMException.INVALID_STATE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_STATE_ERR", null));
         }
         if ( !isLegalContainer(refNode)) {
     		throw new RangeExceptionImpl(
-    			RangeException.INVALID_NODE_TYPE_ERR, 
-			"DOM012 Invalid node type");
+    		RangeException.INVALID_NODE_TYPE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_NODE_TYPE_ERR", null));
         }
         fStartContainer = refNode;
         fEndContainer = refNode;
@@ -362,8 +362,8 @@ public class RangeImpl  implements Range {
     {
     	if( fDetach) {
     		throw new DOMException(
-    			DOMException.INVALID_STATE_ERR, 
-			"DOM011 Invalid state");
+    		DOMException.INVALID_STATE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_STATE_ERR", null));
     	}
        
         Node endPointA;
@@ -495,11 +495,12 @@ public class RangeImpl  implements Range {
         
         if( fDetach) {
     		throw new DOMException(
-    			DOMException.INVALID_STATE_ERR, 
-			"DOM011 Invalid state");
+    		DOMException.INVALID_STATE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_STATE_ERR", null));
     	}
         if ( fDocument != newNode.getOwnerDocument() ) {
-            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR,"DOM004 Wrong document");
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR,
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null));
         }
        
         int type = newNode.getNodeType();
@@ -509,8 +510,8 @@ public class RangeImpl  implements Range {
             || type == Node.DOCUMENT_NODE)
         {
     		throw new RangeExceptionImpl(
-    			RangeException.INVALID_NODE_TYPE_ERR, 
-			"DOM012 Invalid node type");
+    		RangeException.INVALID_NODE_TYPE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_NODE_TYPE_ERR", null));
         }
         Node cloneCurrent;
         Node current;
@@ -583,8 +584,8 @@ public class RangeImpl  implements Range {
         
     	if( fDetach) {
     		throw new DOMException(
-    			DOMException.INVALID_STATE_ERR, 
-			"DOM011 Invalid state");
+    		DOMException.INVALID_STATE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_STATE_ERR", null));
     	}
         int type = newParent.getNodeType();
         if (type == Node.ATTRIBUTE_NODE
@@ -595,8 +596,8 @@ public class RangeImpl  implements Range {
             || type == Node.DOCUMENT_FRAGMENT_NODE)
         {
     		throw new RangeExceptionImpl(
-    			RangeException.INVALID_NODE_TYPE_ERR, 
-			"DOM012 Invalid node type");
+    		RangeException.INVALID_NODE_TYPE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_NODE_TYPE_ERR", null));
         }
         
         Node root = getCommonAncestorContainer();
@@ -613,7 +614,7 @@ public class RangeImpl  implements Range {
         if (realStart != realEnd) {
            	throw new RangeExceptionImpl(
     		RangeException.BAD_BOUNDARYPOINTS_ERR, 
-    		"DOM013 Bad boundary points");
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "BAD_BOUNDARYPOINTS_ERR", null));
         }
 
     	DocumentFragment frag = extractContents();
@@ -625,8 +626,8 @@ public class RangeImpl  implements Range {
     public Range cloneRange(){
     	if( fDetach) {
     		throw new DOMException(
-    			DOMException.INVALID_STATE_ERR, 
-			"DOM011 Invalid state");
+    		DOMException.INVALID_STATE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_STATE_ERR", null));
     	}
         
         Range range = fDocument.createRange();
@@ -638,8 +639,8 @@ public class RangeImpl  implements Range {
     public String toString(){
     	if( fDetach) {
     		throw new DOMException(
-    			DOMException.INVALID_STATE_ERR, 
-			"DOM011 Invalid state");
+    		DOMException.INVALID_STATE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_STATE_ERR", null));
     	}
     	
     	Node node = fStartContainer;
@@ -957,7 +958,7 @@ public class RangeImpl  implements Range {
         if( fDetach) {
             throw new DOMException(
                 DOMException.INVALID_STATE_ERR, 
-            "DOM011 Invalid state");
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_STATE_ERR", null));
         }
 
         /*
@@ -1627,8 +1628,8 @@ public class RangeImpl  implements Range {
             {
                 // TBD: This should be a HIERARCHY_REQUEST_ERR
                 throw new RangeExceptionImpl(
-                    RangeException.INVALID_NODE_TYPE_ERR, 
-                "DOM012 Invalid node type");
+    		RangeException.INVALID_NODE_TYPE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_NODE_TYPE_ERR", null));
             }
             return n;
         case DELETE_CONTENTS:
@@ -1743,8 +1744,8 @@ public class RangeImpl  implements Range {
     {
         if (offset < 0) {
             throw new DOMException(
-                                   DOMException.INDEX_SIZE_ERR, 
-                                   "DOM004 Index out of bounds");
+                DOMException.INDEX_SIZE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INDEX_SIZE_ERR", null));
     	}
 
         int type = refNode.getNodeType();
@@ -1757,7 +1758,7 @@ public class RangeImpl  implements Range {
             || type == Node.PROCESSING_INSTRUCTION_NODE) {
             if (offset > refNode.getNodeValue().length()) {
                 throw new DOMException(DOMException.INDEX_SIZE_ERR, 
-                                       "DOM004 Index out of bounds");
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INDEX_SIZE_ERR", null));
             }
         }
         else {
@@ -1765,7 +1766,7 @@ public class RangeImpl  implements Range {
             // is valid with respect to the number of child nodes
             if (offset > refNode.getChildNodes().getLength()) {
     		throw new DOMException(DOMException.INDEX_SIZE_ERR, 
-                                       "DOM004 Index out of bounds");
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INDEX_SIZE_ERR", null));
             }
         }
     }

@@ -225,7 +225,7 @@ public class TextImpl
         // make sure we can make the replacement
         if (!canModify(nextSibling)) {
             throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-                           "No modification is allowed");
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null));
         }
 
         Node parent = this.getParentNode();
@@ -325,8 +325,8 @@ public class TextImpl
 
     	if (isReadOnly()) {
             throw new DOMException(
-    			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    			"DOM001 Modification not allowed");
+    		DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null));
         }
 
         if (needsSyncData()) {
@@ -334,7 +334,7 @@ public class TextImpl
         }
     	if (offset < 0 || offset > data.length() ) {
             throw new DOMException(DOMException.INDEX_SIZE_ERR, 
-                                       "DOM004 Index out of bounds");
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INDEX_SIZE_ERR", null));
         }
     		
         // split text into two separate nodes
