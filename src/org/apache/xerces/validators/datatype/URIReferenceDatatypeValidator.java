@@ -65,6 +65,8 @@ import java.util.StringTokenizer;
 import java.util.NoSuchElementException;
 import org.apache.xerces.utils.URI;
 import org.apache.xerces.validators.schema.SchemaSymbols;
+import org.apache.xerces.utils.regex.RegularExpression;
+
 
 
 /**
@@ -240,7 +242,7 @@ public class URIReferenceDatatypeValidator extends AbstractDatatypeValidator {
     throws InvalidDatatypeValueException
     {
         StringTokenizer parsedList = null;
-        URI             uriContent = null
+        URI             uriContent = null;
 
         if ( fDerivedByList == true  ) { //derived by list
 
