@@ -125,12 +125,18 @@ public class XMLNamespaceBinder
 
     /** Recognized properties. */
     protected static final String[] RECOGNIZED_PROPERTIES = {
-        SYMBOL_TABLE,       ERROR_REPORTER,
+        SYMBOL_TABLE,       
+        ERROR_REPORTER,
     };
 
     //
     // Data
     //
+
+    // features
+
+    /** Namespaces. */
+    protected boolean fNamespaces;
 
     // properties
 
@@ -220,10 +226,16 @@ public class XMLNamespaceBinder
     public void reset(XMLComponentManager componentManager)
         throws XNIException {
 
+        // features
+        try {
+            fNamespaces = componentManager.getFeature(NAMESPACES);
+        }
+        catch (XMLConfigurationException e) {
+            fNamespaces = true;
+        }
+
         // Xerces properties
-        final String SYMBOL_TABLE = Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
         fSymbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
-        final String ERROR_REPORTER = Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
         fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
 
         // initialize vars
@@ -493,7 +505,14 @@ public class XMLNamespaceBinder
      */
     public void startElement(QName element, XMLAttributes attributes)
         throws XNIException {
-        handleStartElement(element, attributes, false);
+
+        if (fNamespaces) {
+            handleStartElement(element, attributes, false);
+        }
+        else if (fDocumentHandler != null) {
+            fDocumentHandler.startElement(element, attributes);
+        }
+
     } // startElement(QName,XMLAttributes)
 
     /**
@@ -506,8 +525,15 @@ public class XMLNamespaceBinder
      */
     public void emptyElement(QName element, XMLAttributes attributes)
         throws XNIException {
-        handleStartElement(element, attributes, true);
-        handleEndElement(element, true);
+
+        if (fNamespaces) {
+            handleStartElement(element, attributes, true);
+            handleEndElement(element, true);
+        }
+        else if (fDocumentHandler != null) {
+            fDocumentHandler.emptyElement(element, attributes);
+        }
+
     } // emptyElement(QName,XMLAttributes)
 
     /**
@@ -549,7 +575,14 @@ public class XMLNamespaceBinder
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void endElement(QName element) throws XNIException {
-        handleEndElement(element, false);
+
+        if (fNamespaces) {
+            handleEndElement(element, false);
+        }
+        else if (fDocumentHandler != null) {
+            fDocumentHandler.endElement(element);
+        }
+
     } // endElement(QName)
 
     /**
