@@ -114,7 +114,7 @@ public class ExceptionMessages extends ListResourceBundle {
 	{ "DOM010", "Unspecified event type" },
 	{ "DOM011", "Invalid state" },
 	{ "DOM012", "Invalid node type" },
-	{ "DOM013", "Bad boundary points" }
+	{ "DOM013", "Bad boundary points" },
 
         // org.apache.xerces.readers
 
@@ -123,7 +123,7 @@ public class ExceptionMessages extends ListResourceBundle {
         { "RDR003", "cannot happen 8" },
         { "RDR004", "cannot happen 9" }
             
-        //org.apache.xerces
+        //org.apache.xerces.
         
     };
     /** Returns the list resource bundle contents. */
