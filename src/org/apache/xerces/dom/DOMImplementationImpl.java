@@ -160,7 +160,9 @@ public class DOMImplementationImpl
     		                           "DOM002 Illegal character");
         }
         int index = qualifiedName.indexOf(':');
-        if (index == 0 || index == qualifiedName.length() - 1) {
+        int lastIndex = qualifiedName.lastIndexOf(':');
+        // it is an error for NCName to have more than one ':'
+        if (index == 0 || index == qualifiedName.length() - 1 || lastIndex!=index) {
 	    throw new DOMException(DOMException.NAMESPACE_ERR, 
 				       "DOM003 Namespace error");
 	}
