@@ -789,7 +789,7 @@ public final class XMLDTDScanner {
         moreToFollow = fReaderId != fExternalSubsetReader;
         switch (fScannerState) {
         case SCANNER_STATE_INVALID:
-            throw new RuntimeException("cannot happen 2");
+            throw new RuntimeException("FWK004 XMLDTDScanner.endOfInput: cannot happen: 2"+"\n2");
         case SCANNER_STATE_END_OF_INPUT:
             break;
         case SCANNER_STATE_MARKUP_DECL:
@@ -799,7 +799,7 @@ public final class XMLDTDScanner {
             }
             break;
         case SCANNER_STATE_DOCTYPEDECL:
-            throw new RuntimeException("cannot happen 2.5");
+            throw new RuntimeException("FWK004 XMLDTDScanner.endOfInput: cannot happen: 2.5"+"\n2.5");
 //            break;
         case SCANNER_STATE_TEXTDECL:
 // REVISIT            reportFatalXMLError(XMLMessages.MSG_ATTVAL0);
@@ -864,7 +864,7 @@ public final class XMLDTDScanner {
             }
             break;
         default:
-            throw new RuntimeException("cannot happen 3");
+            throw new RuntimeException("FWK004 XMLDTDScanner.endOfInput: cannot happen: 3"+"\n3");
         }
         if (!moreToFollow) {
             setScannerState(SCANNER_STATE_END_OF_INPUT);

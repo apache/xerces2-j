@@ -829,7 +829,7 @@ public final class XMLDocumentScanner {
                 }
                 break;
             default:
-                throw new RuntimeException("1]ScannerState " + fScannerState);
+                throw new RuntimeException("FWK001 1] ScannerState="+fScannerState+"\n" + "1\t"+fScannerState);
             }
             if (!moreToFollow) {
                 reportFatalXMLError(XMLMessages.MSG_ROOT_ELEMENT_REQUIRED,
@@ -931,7 +931,7 @@ public final class XMLDocumentScanner {
                 }
                 break;
             default:
-                throw new RuntimeException("2]ScannerState " + fScannerState);
+                throw new RuntimeException("FWK001 2] ScannerState="+fScannerState+"\n" + "2\t"+fScannerState);
             }
             if (!moreToFollow) {
                 reportFatalXMLError(XMLMessages.MSG_ROOT_ELEMENT_REQUIRED,
@@ -949,7 +949,7 @@ public final class XMLDocumentScanner {
 
         void popElementType() {
             if (fElementDepth-- == 0) {
-                throw new RuntimeException("popElementType");
+                throw new RuntimeException("FWK002 popElementType: fElementDepth-- == 0.");
             }
             if (fElementDepth == 0) {
                 fCurrentElementType = - 1;
@@ -1080,7 +1080,7 @@ public final class XMLDocumentScanner {
                                     return true;
                                 }
                                 if (fElementDepth-- == 0) {
-                                    throw new RuntimeException("popElementType");
+                                    throw new RuntimeException("FWK002 popElementType: fElementDepth-- == 0.");
                                 }
                                 if (fElementDepth == 0) {
                                     fCurrentElementType = - 1;
@@ -1192,7 +1192,7 @@ public final class XMLDocumentScanner {
                                 return true;
                             }
                             if (fElementDepth-- == 0) {
-                                throw new RuntimeException("popElementType");
+                                throw new RuntimeException("FWK002 popElementType: fElementDepth-- == 0.");
                             }
                             if (fElementDepth == 0) {
                                 fCurrentElementType = - 1;
@@ -1250,7 +1250,7 @@ public final class XMLDocumentScanner {
                             return true;
                         }
                         if (fElementDepth-- == 0) {
-                            throw new RuntimeException("popElementType");
+                            throw new RuntimeException("FWK002 popElementType: fElementDepth-- == 0.");
                         }
                         if (fElementDepth == 0) {
                             fCurrentElementType = - 1;
@@ -1367,11 +1367,11 @@ public final class XMLDocumentScanner {
                         fScannerState = SCANNER_STATE_START_OF_MARKUP;
                         break;
                     default:
-                        throw new RuntimeException("3]ScannerState " + fScannerState); // should not happen
+                        throw new RuntimeException("FWK001 3] ScannerState="+fScannerState+"\n" + "3\t"+fScannerState); // should not happen
                     }
                     break;
                 default:
-                    throw new RuntimeException("4]ScannerState " + fScannerState);
+                    throw new RuntimeException("FWK001 4] ScannerState="+fScannerState+"\n" + "4\t"+fScannerState);
                 }
             } while (fScannerState != SCANNER_STATE_END_OF_INPUT && keepgoing);
             return true;
@@ -1441,7 +1441,7 @@ public final class XMLDocumentScanner {
                 }
                 break;
             default:
-                throw new RuntimeException("5]ScannerState " + fScannerState);
+                throw new RuntimeException("FWK001 5] ScannerState="+fScannerState+"\n" + "5\t"+fScannerState);
             }
             if (!moreToFollow) {
                 if (fElementDepth > 0)
@@ -1510,7 +1510,7 @@ public final class XMLDocumentScanner {
         }
         public void endOfInput(int entityName, boolean moreToFollow) throws Exception {
             if (moreToFollow)
-                throw new RuntimeException("TrailingMiscDispatcher.endOfInput moreToFollow");
+                throw new RuntimeException("FWK003 TrailingMiscDispatcher.endOfInput moreToFollow");
             switch (fScannerState) {
             case SCANNER_STATE_TRAILING_MISC:
             case SCANNER_STATE_START_OF_MARKUP:
@@ -1524,7 +1524,7 @@ public final class XMLDocumentScanner {
                                     XMLMessages.P16_UNTERMINATED);
                 break;
             default:
-                throw new RuntimeException("6]ScannerState " + fScannerState);
+                throw new RuntimeException("FWK001 6] ScannerState="+fScannerState+"\n" + "6\t"+fScannerState);
             }
             fDispatcher = new EndOfInputDispatcher();
             setScannerState(SCANNER_STATE_END_OF_INPUT);
@@ -1538,7 +1538,7 @@ public final class XMLDocumentScanner {
             return false;
         }
         public void endOfInput(int entityName, boolean moreToFollow) throws Exception {
-            throw new RuntimeException("7]ScannerState " + fScannerState);
+            throw new RuntimeException("FWK001 7] ScannerState="+fScannerState+"\n" + "7\t"+fScannerState);
         }
     }
     //

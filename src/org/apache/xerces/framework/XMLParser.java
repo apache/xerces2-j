@@ -1178,8 +1178,7 @@ public abstract class XMLParser
         throws SAXException, IOException {
 
         if (fParseInProgress) {
-            // REVISIT: Localize this message. -Ac
-            throw new org.xml.sax.SAXException("parse may not be called while parsing"); // REVISIT - need to add new error message
+            throw new org.xml.sax.SAXException("FWK005 parse may not be called while parsing."); // REVISIT - need to add new error message
         }
 
         try {
@@ -1257,8 +1256,7 @@ public abstract class XMLParser
     public void setLocale(Locale locale) throws SAXException {
 
         if (fParseInProgress) {
-            // REVISIT: Localize this message. -Ac
-            throw new org.xml.sax.SAXException("setLocale may not be called while parsing"); // REVISIT - need to add new error message
+            throw new org.xml.sax.SAXException("FWK006 setLocale may not be called while parsing"); // REVISIT - need to add new error message
         }
 
         fLocale = locale;
@@ -1307,8 +1305,7 @@ public abstract class XMLParser
         } else if (errorDomain.equals(DatatypeMessageProvider.DATATYPE_DOMAIN)) {
             spe = new SAXParseException(fgDatatypeMessages.createMessage(fLocale, majorCode, minorCode, args), locator);
         } else {
-            // REVISIT: Localize this message. -Ac
-            throw new RuntimeException("Unknown error domain \"" + errorDomain + "\".");
+            throw new RuntimeException("FWK007 Unknown error domain \"" + errorDomain + "\"."+"\n"+errorDomain);
         }
 
         // default error handling
@@ -1922,8 +1919,7 @@ public abstract class XMLParser
         endElement(elementType);
         fInElementContent = fValidator.endElement(elementType);
         if (fElementDepth-- == 0) {
-            // REVISIT: Localize this message. -Ac
-            throw new RuntimeException("Element stack underflow");
+            throw new RuntimeException("FWK008 Element stack underflow");
         }
         if (fElementDepth == 0) {
             fCurrentElementType = - 1;
@@ -2452,7 +2448,7 @@ public abstract class XMLParser
      */
     public void stopReadingFromExternalSubset() throws Exception {
         if (!(fReader instanceof NullReader))
-            throw new RuntimeException("cannot happen 18");
+            throw new RuntimeException("FWK004 cannot happen 18"+"\n18");
         popReader();
         sendReaderChangeNotifications();
     }
@@ -2732,7 +2728,7 @@ public abstract class XMLParser
     }
     private void popReader() {
         if (fReaderStack.empty())
-            throw new RuntimeException("cannot happen 19");
+            throw new RuntimeException("FWK004 cannot happen 19"+"\n19");
         ReaderState rs = (ReaderState) fReaderStack.pop();
         fReader = rs.reader;
         fSource = rs.source;
