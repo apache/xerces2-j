@@ -284,7 +284,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
     // DOMParser methods
     //
     
-    public DOMConfiguration getConfig (){
+    public DOMConfiguration getDomConfig (){
         return this;
     }
     

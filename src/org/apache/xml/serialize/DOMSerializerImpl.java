@@ -135,7 +135,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
     // LSSerializer methods
     //
 
-    public DOMConfiguration getConfig(){
+    public DOMConfiguration getDomConfig(){
         return this;
     }
 
