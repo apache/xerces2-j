@@ -1365,6 +1365,9 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                 nvalue = content;
             }
 
+            // update normalized value
+            validatedInfo.normalizedValue = nvalue;
+
             // validate special kinds of token, in place of old pattern matching
             if (fPatternType != SPECIAL_PATTERN_NONE) {
 
@@ -1407,7 +1410,6 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             Object avalue = fDVs[fValidationDV].getActualValue(nvalue, context);
 
             validatedInfo.actualValue = avalue;
-            validatedInfo.normalizedValue = nvalue;
 
             return avalue;
 
@@ -1419,6 +1421,10 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             } else {
                 nvalue = content;
             }
+
+            // update normalized value
+            validatedInfo.normalizedValue = nvalue;
+            
             StringTokenizer parsedList = new StringTokenizer(nvalue);
             int countOfTokens = parsedList.countTokens() ;
             Object[] avalue = new Object[countOfTokens];
@@ -1439,7 +1445,6 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             }
 
             validatedInfo.actualValue = avalue;
-            validatedInfo.normalizedValue = nvalue;
             validatedInfo.memberTypes = memberTypes;
 
             return avalue;

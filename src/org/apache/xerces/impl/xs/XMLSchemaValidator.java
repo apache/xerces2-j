@@ -2947,9 +2947,6 @@ public class XMLSchemaValidator
                     }
                     actualValue = dv.validate(textContent, fValidationState, fValidatedInfo);
 
-                    // PSVI: schema normalized value
-                    //
-                    fCurrentPSVI.fNormalizedValue = fValidatedInfo.normalizedValue;
                     // PSVI: memberType
                     fCurrentPSVI.fMemberType = fValidatedInfo.memberType;
 
@@ -2968,6 +2965,10 @@ public class XMLSchemaValidator
                 }
                 // REVISIT: eventually, this method should return the same actualValue as elementLocallyValidType...
                 // obviously it'll return null when the content is complex.
+
+                // PSVI: schema normalized value
+                //
+                fCurrentPSVI.fNormalizedValue = fValidatedInfo.normalizedValue;
             }
             // 2.3 If the {content type} is element-only, then the element information item has no character information item [children] other than those whose [character code] is defined as a white space in [XML 1.0 (Second Edition)].
             else if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_ELEMENT) {
