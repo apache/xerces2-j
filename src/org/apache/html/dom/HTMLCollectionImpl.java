@@ -275,7 +275,7 @@ final class HTMLCollectionImpl
                 {
                     if ( collectionMatch( (Element) node, null ) )
                         ++ length;
-                    if ( recurse() )
+                    else if ( recurse() )
                         length += getLength( (Element) node );
                 }
                 node = node.getNextSibling(); 
@@ -325,8 +325,7 @@ final class HTMLCollectionImpl
                         if ( index.isZero() )
                             return node;
                         index.decrement();
-                    }
-                    if ( recurse() )
+                    } else if ( recurse() )
                     {
                         result = item( (Element) node, index );
                         if ( result != null )
@@ -368,7 +367,7 @@ final class HTMLCollectionImpl
                 {
                     if ( collectionMatch( (Element) node, name ) )
                         return node;
-                    if ( recurse() )
+                    else if ( recurse() )
                     {
                         result = namedItem( (Element) node, name );
                         if ( result != null )
