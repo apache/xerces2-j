@@ -184,14 +184,13 @@ public class UTF8Reader
             // UTF-8:   [0xxx xxxx]
             // Unicode: [0000 0000] [0xxx xxxx]
             if (b0 < 0x80) {
-                ch[offset + in] = (char)b0;
+                ch[out++] = (char)b0;
                 continue;
             }
 
             // UTF-8:   [110y yyyy] [10xx xxxx]
             // Unicode: [0000 0yyy] [yyxx xxxx]
-            int mask = b0 & 0xF8;
-            if (mask == 0xC0) {
+            if ((b0 & 0xE0) == 0xC0) {
                 if (++in == total) {
                     fBuffer[0] = (byte)b0;
                     fOffset = 1;
@@ -209,7 +208,7 @@ public class UTF8Reader
 
             // UTF-8:   [1110 zzzz] [10yy yyyy] [10xx xxxx]
             // Unicode: [zzzz yyyy] [yyxx xxxx]
-            if (mask == 0xE0) {
+            if ((b0 & 0xF0) == 0xE0) {
                 if (++in == total) {
                     fBuffer[0] = (byte)b0;
                     fOffset = 1;
@@ -241,7 +240,7 @@ public class UTF8Reader
             // Unicode: [1101 10ww] [wwzz zzyy] (high surrogate)
             //          [1101 11yy] [yyxx xxxx] (low surrogate)
             //          * uuuuu = wwww + 1
-            if (mask == 0xF0) {
+            if ((b0 & 0xF8) == 0xF0) {
                 if (++in == total) {
                     fBuffer[0] = (byte)b0;
                     fOffset = 1;
@@ -275,14 +274,23 @@ public class UTF8Reader
                 if ((b3 & 0xC0) != 0x80) {
                     invalidByte(4, 4, b3);
                 }
+                if (out + 2 >= offset + length) {
+                    fBuffer[0] = (byte)b0;
+                    fBuffer[1] = (byte)b1;
+                    fBuffer[2] = (byte)b2;
+                    fBuffer[3] = (byte)b3;
+                    fOffset = 4;
+                    count -= fOffset;
+                    break;
+                }
                 int uuuuu = ((b0 << 5) & 0xE0) | ((b1 >> 4) & 0x0F);
                 int wwww = uuuuu - 1;
                 int hs = 0xD800 | 
                          ((wwww & 0x0C) << 8) | ((wwww & 0x03) << 6) |
                          ((b1 << 2) & 0x3C) | ((b2 >> 4) & 0x03);
-                ch[out++] = (char)hs;
                 int ls = 0xDC00 | ((b2 & 0x0F) << 6) | (b3 & 0x3F);
-                fSurrogate = ls;
+                ch[out++] = (char)hs;
+                ch[out++] = (char)ls;
                 continue;
             }
 
