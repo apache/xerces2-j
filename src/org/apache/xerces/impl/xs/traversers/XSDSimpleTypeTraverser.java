@@ -115,15 +115,13 @@ import java.util.StringTokenizer;
  *
  * @author Elena Litani, IBM
  * @author Neeraj Bajaj, Sun Microsystems, Inc.
+ * @author Sandy Gao, IBM
+ * 
  * @version $Id$
  */
 class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
 
-    //private data
-    private String fListName = "";
-
-    private int fSimpleTypeAnonCount = 0;
-    private final QName fQName = new QName();
+    // the factory used to query/create simple types
     private final SchemaDVFactory schemaFactory = SchemaDVFactory.getInstance();
 
     XSDSimpleTypeTraverser (XSDHandler handler,
@@ -133,369 +131,249 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
 
     //return qualified name of simpleType or empty string if error occured
     XSSimpleType traverseGlobal(Element elmNode,
-                                     XSDocumentInfo schemaDoc,
-                                     SchemaGrammar grammar) {
+                                XSDocumentInfo schemaDoc,
+                                SchemaGrammar grammar) {
+
         // General Attribute Checking
         Object[] attrValues = fAttrChecker.checkAttributes(elmNode, true, schemaDoc);
         String nameAtt = (String)attrValues[XSAttributeChecker.ATTIDX_NAME];
-        XSSimpleType type = traverseSimpleTypeDecl(elmNode, attrValues, schemaDoc, grammar, true);
+        XSSimpleType type = traverseSimpleTypeDecl(elmNode, attrValues, schemaDoc, grammar);
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
-        if (nameAtt == null)
+        // if it's a global type without a name, return null
+        if (nameAtt == null) {
             reportSchemaError("s4s-att-must-appear", new Object[]{SchemaSymbols.ELT_SIMPLETYPE, SchemaSymbols.ATT_NAME}, elmNode);
+            type = null;
+        }
+
+        // don't add global components without name to the grammar
+        if (type != null) {
+            grammar.addGlobalTypeDecl(type);
+        }
 
         return type;
     }
 
     XSSimpleType traverseLocal(Element elmNode,
-                                    XSDocumentInfo schemaDoc,
-                                    SchemaGrammar grammar) {
+                               XSDocumentInfo schemaDoc,
+                               SchemaGrammar grammar) {
 
+        // General Attribute Checking
         Object[] attrValues = fAttrChecker.checkAttributes(elmNode, false, schemaDoc);
-        XSSimpleType type = traverseSimpleTypeDecl (elmNode, attrValues, schemaDoc, grammar, false);
+        XSSimpleType type = traverseSimpleTypeDecl (elmNode, attrValues, schemaDoc, grammar);
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
         return type;
     }
 
-    private XSSimpleType traverseSimpleTypeDecl(Element simpleTypeDecl, Object[] attrValues,
+    private XSSimpleType traverseSimpleTypeDecl(Element simpleTypeDecl,
+                                                Object[] attrValues,
                                                 XSDocumentInfo schemaDoc,
-                                                SchemaGrammar grammar, boolean isGlobal) {
+                                                SchemaGrammar grammar) {
 
-        String nameProperty  = (String)attrValues[XSAttributeChecker.ATTIDX_NAME];
-        String qualifiedName = nameProperty;
-
-        //---------------------------------------------------
-        // set qualified name
-        //---------------------------------------------------
-        if (nameProperty == null) { // anonymous simpleType
-            qualifiedName = schemaDoc.fTargetNamespace == null?
-                ",#s#"+(fSimpleTypeAnonCount++):
-                schemaDoc.fTargetNamespace+",#S#"+(fSimpleTypeAnonCount++);
-        }
-        else {
-            qualifiedName = schemaDoc.fTargetNamespace == null?
-                ","+nameProperty:
-                schemaDoc.fTargetNamespace+","+nameProperty;
-        }
-
+        // get name and final values
+        String name = (String)attrValues[XSAttributeChecker.ATTIDX_NAME];
         XInt finalAttr = (XInt)attrValues[XSAttributeChecker.ATTIDX_FINAL];
         int finalProperty = finalAttr == null ? schemaDoc.fFinalDefault : finalAttr.intValue();
 
-        //----------------------------------------------------------
-        //annotation?,(list|restriction|union)
-        //----------------------------------------------------------
-        Element content = DOMUtil.getFirstChildElement(simpleTypeDecl);
+        // annotation?,(list|restriction|union)
+        Element child = DOMUtil.getFirstChildElement(simpleTypeDecl);
+        if (child != null) {
+            // traverse annotation if any
+            if (DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                traverseAnnotationDecl(child, attrValues, false, schemaDoc);
+                child = DOMUtil.getNextSiblingElement(child);
+            }
+        }
+
+        // (list|restriction|union)
+        if (child == null) {
+            reportSchemaError("s4s-elt-must-match", new Object[]{SchemaSymbols.ELT_SIMPLETYPE, "(annotation?, (restriction | list | union))"}, simpleTypeDecl);
+            return errorType(name, schemaDoc.fTargetNamespace, SchemaSymbols.RESTRICTION);
+        }
+
+        // derivation type: restriction/list/union
+        String varietyProperty = DOMUtil.getLocalName(child);
+        short refType = SchemaSymbols.RESTRICTION;
+        boolean restriction = false, list = false, union = false;
+        if (varietyProperty.equals(SchemaSymbols.ELT_RESTRICTION)) {
+            refType = SchemaSymbols.RESTRICTION;
+            restriction = true;
+        }
+        else if (varietyProperty.equals(SchemaSymbols.ELT_LIST)) {
+            refType = SchemaSymbols.LIST;
+            list = true;
+        }
+        else if (varietyProperty.equals(SchemaSymbols.ELT_UNION)) {
+            refType = SchemaSymbols.UNION;
+            union = true;
+        }
+        else {
+            reportSchemaError("s4s-elt-must-match", new Object[]{SchemaSymbols.ELT_SIMPLETYPE, "(annotation?, (restriction | list | union))"}, simpleTypeDecl);
+            return errorType(name, schemaDoc.fTargetNamespace, SchemaSymbols.RESTRICTION);
+        }
+
+        // nothing should follow this element
+        Element nextChild = DOMUtil.getNextSiblingElement(child);
+        if (nextChild != null) {
+            reportSchemaError("s4s-elt-must-match", new Object[]{SchemaSymbols.ELT_SIMPLETYPE, "(annotation?, (restriction | list | union))"}, nextChild);
+        }
+        
+        // General Attribute Checking: get base/item/member types
+        Object[] contentAttrs = fAttrChecker.checkAttributes(child, false, schemaDoc);
+        QName baseTypeName = (QName)contentAttrs[restriction ?
+                                                 XSAttributeChecker.ATTIDX_BASE :
+                                                 XSAttributeChecker.ATTIDX_ITEMTYPE];
+        Vector memberTypes = (Vector)contentAttrs[XSAttributeChecker.ATTIDX_MEMBERTYPES];
+
+        //content = {annotation?,simpleType?...}
+        Element content = DOMUtil.getFirstChildElement(child);
+
+        //check content (annotation?, ...)
         if (content != null) {
             // traverse annotation if any
             if (DOMUtil.getLocalName(content).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                traverseAnnotationDecl(content, attrValues, false, schemaDoc);
+                traverseAnnotationDecl(content, contentAttrs, false, schemaDoc);
                 content = DOMUtil.getNextSiblingElement(content);
             }
         }
-
-        if (content == null) {
-            reportSchemaError("dt-simpleType", new Object[]{SchemaSymbols.ELT_SIMPLETYPE, nameProperty, "(annotation?, (restriction | list | union))"}, simpleTypeDecl);
-            return null;
-        }
-
-        // General Attribute Checking
-        Object[] contentAttrs = fAttrChecker.checkAttributes(content, false, schemaDoc);
-
-        //----------------------------------------------------------------------
-        //use content.getLocalName for the cases there "xsd:" is a prefix, ei. "xsd:list"
-        //----------------------------------------------------------------------
-        String varietyProperty =  DOMUtil.getLocalName(content);
-        QName baseTypeName = null;
-        Vector memberTypes = null;
-        Vector dTValidators = null;
-        int size = 0;
-        boolean list = false;
-        boolean union = false;
-        boolean restriction = false;
-        int numOfTypes = 0; //list/restriction = 1, union = "+"
-
-        if (varietyProperty.equals(SchemaSymbols.ELT_LIST)) { //traverse List
-            baseTypeName = (QName)contentAttrs[XSAttributeChecker.ATTIDX_ITEMTYPE];
-            list = true;
-            if (fListName.length() != 0) { // parent is <list> datatype
-                reportCosListOfAtomic(qualifiedName, simpleTypeDecl);
-                return null;
-            }
-            else {
-                fListName = qualifiedName;
-            }
-        }
-        else if (varietyProperty.equals(SchemaSymbols.ELT_RESTRICTION)) { //traverse Restriction
-            baseTypeName = (QName)contentAttrs[XSAttributeChecker.ATTIDX_BASE];
-            //content.getAttribute( SchemaSymbols.ATT_BASE );
-            restriction= true;
-        }
-        else if (varietyProperty.equals(SchemaSymbols.ELT_UNION)) { //traverse union
-            union = true;
-            memberTypes = (Vector)contentAttrs[XSAttributeChecker.ATTIDX_MEMBERTYPES];
-            //content.getAttribute( SchemaSymbols.ATT_MEMBERTYPES);
-            if (memberTypes != null) {
-                size = memberTypes.size();
-            }
-            else {
-                size = 1; //at least one must be seen as <simpleType> decl
-            }
-            dTValidators = new Vector (size, 2);
-        }
-        else {
-            Object[] args = { varietyProperty};
-            reportSchemaError("dt-unsupported-derivation", args, content);
-        }
         fAttrChecker.returnAttrArray(contentAttrs, schemaDoc);
 
-        if (DOMUtil.getNextSiblingElement(content) != null) {
-            reportSchemaError("dt-simpleType", new Object[]{SchemaSymbols.ELT_SIMPLETYPE, nameProperty, "(annotation?, (restriction | list | union))"}, content);
-        }
-
+        // get base type from "base" attribute
         XSSimpleType baseValidator = null;
-        if (baseTypeName == null && memberTypes == null) {
-            //---------------------------
-            //must 'see' <simpleType>
-            //---------------------------
+        if ((restriction || list) && baseTypeName != null) {
+            baseValidator = findDTValidator(child, baseTypeName, refType, schemaDoc);
+        }
 
-            //content = {annotation?,simpleType?...}
-            Element contentTmp = DOMUtil.getFirstChildElement(content);
-
-            //check content (annotation?, ...)
-            if (contentTmp != null) {
-                // traverse annotation if any
-                if (DOMUtil.getLocalName(contentTmp).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                    traverseAnnotationDecl(contentTmp, attrValues, false, schemaDoc);
-                    contentTmp = DOMUtil.getNextSiblingElement(contentTmp);
+        // get types from "memberTypes" attribute
+        Vector dTValidators = null;
+        XSSimpleType dv = null, dvs[];
+        if (union && memberTypes != null && memberTypes.size() > 0) {
+            int size = memberTypes.size();
+            dTValidators = new Vector(size, 2);
+            // for each qname in the list
+            for (int i = 0; i < size; i++) {
+                // get the type decl
+                dv = findDTValidator(child, (QName)memberTypes.elementAt(i),
+                                     SchemaSymbols.UNION, schemaDoc);
+                if (dv != null) {
+                    // if it's a union, expand it
+                    if (dv.getVariety() == XSSimpleType.VARIETY_UNION) {
+                        dvs = ((XSUnionSimpleType)dv).getMemberTypes();
+                        for (int j = 0; j < dvs.length; j++)
+                            dTValidators.addElement(dvs[j]);
+                    } else {
+                        dTValidators.addElement(dv);
+                    }
                 }
             }
-            if (contentTmp == null) {
-                reportSchemaError("dt-simpleType", new Object[]{SchemaSymbols.ELT_SIMPLETYPE, nameProperty, "(annotation?, (restriction | list | union))"}, content);
-                return null;
-            }
-            content = contentTmp;
-            if (DOMUtil.getLocalName(content).equals( SchemaSymbols.ELT_SIMPLETYPE )) {
+        }
+
+        // check if there is a child "simpleType"
+        if (content != null && DOMUtil.getLocalName(content).equals(SchemaSymbols.ELT_SIMPLETYPE)) {
+            if (restriction || list) {
+                // it's an error for both "base" and "simpleType" to appear
+                if (baseTypeName != null) {
+                    reportSchemaError(list ? "src-simple-type.3" : "src-simple-type.2", null, content);
+                    return errorType(name, schemaDoc.fTargetNamespace, refType);
+                }
+                // traver this child to get the base type
                 baseValidator = traverseLocal(content, schemaDoc, grammar);
-                if (baseValidator != null && union) {
-                    if (baseValidator.getVariety() == XSSimpleType.VARIETY_UNION) {
-                        XSSimpleType[] types = ((XSUnionSimpleType)baseValidator).getMemberTypes();
-                        for (int i = 0; i < types.length; i++)
-                            dTValidators.addElement(types[i]);
-                    } else {
-                        dTValidators.addElement(baseValidator);
-                    }
-                }
-                if (baseValidator == null) {
-                    Object[] args = {content.getAttribute( SchemaSymbols.ATT_BASE )};
-                    reportSchemaError("dt-unknown-basetype", args, content);
-                    return SchemaGrammar.fAnySimpleType;
-                }
+                // get the next element
+                content = DOMUtil.getNextSiblingElement(content);
             }
-            else {
-                Object[] args = { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )};
-                reportSchemaError("dt-simpleType",new Object[]{SchemaSymbols.ELT_SIMPLETYPE, nameProperty, "(annotation?, (restriction | list | union))"}, content);
-                return SchemaGrammar.fAnySimpleType;
-            }
-        }
-        else {
-            //-----------------------------
-            //base was provided - get proper validator.
-            //-----------------------------
-            numOfTypes = 1;
-            if (union) {
-                numOfTypes= size;
-            }
-            //--------------------------------------------------------------------
-            // this loop is also where we need to find out whether the type being used as
-            // a base (or itemType or whatever) allows such things.
-            //--------------------------------------------------------------------
-            short baseRefContext = restriction ? SchemaSymbols.RESTRICTION :
-                                   (union ? SchemaSymbols.UNION : SchemaSymbols.LIST);
-            for (int i=0; i<numOfTypes; i++) {  //find all validators
-                if (union) {
-                    baseTypeName = (QName)memberTypes.elementAt(i);
+            else if (union) {
+                if (dTValidators == null) {
+                    dTValidators = new Vector(2, 2);
                 }
-                baseValidator = findDTValidator ( simpleTypeDecl, baseTypeName, baseRefContext, schemaDoc);
-                if (baseValidator == null) {
-                    Object[] args = { content.getAttribute( SchemaSymbols.ATT_BASE ), nameProperty};
-                    reportSchemaError("dt-unknown-basetype", args, simpleTypeDecl);
-                    baseValidator = SchemaGrammar.fAnySimpleType;
-                }
-                // ------------------------------
-                // (variety is list)cos-list-of-atomic
-                // ------------------------------
-                if (fListName.length() != 0) {
-                    if (baseValidator.getVariety() == XSSimpleType.VARIETY_LIST) {
-                        reportCosListOfAtomic(qualifiedName, simpleTypeDecl);
-                        return null;
+                do {
+                    // traver this child to get the member type
+                    dv = traverseLocal(content, schemaDoc, grammar);
+                    if (dv != null) {
+                        // if it's a union, expand it
+                        if (dv.getVariety() == XSSimpleType.VARIETY_UNION) {
+                            dvs = ((XSUnionSimpleType)dv).getMemberTypes();
+                            for (int j = 0; j < dvs.length; j++)
+                                dTValidators.addElement(dvs[j]);
+                        } else {
+                            dTValidators.addElement(dv);
+                        }
                     }
-                    //-----------------------------------------------------
-                    // if baseValidator is of type (union) need to look
-                    // at Union validators to make sure that List is not one of them
-                    //-----------------------------------------------------
-                    if (isListDatatype(baseValidator)) {
-                        reportCosListOfAtomic(qualifiedName, simpleTypeDecl);
-                        return null;
-
-                    }
-
-                }
-                if (union) {
-                    if (baseValidator.getVariety() == XSSimpleType.VARIETY_UNION) {
-                        XSSimpleType[] types = ((XSUnionSimpleType)baseValidator).getMemberTypes();
-                        for (int j = 0; j < types.length; j++)
-                            dTValidators.addElement(types[j]);
-                    } else {
-                        dTValidators.addElement(baseValidator);
-                    }
-                }
-            }
-        } //end - base is available
-
-        // ------------------------------------------
-        // move to next child
-        // <base==empty)->[simpleType]->[facets]  OR
-        // <base!=empty)->[facets]
-        // ------------------------------------------
-        if (baseTypeName == null) {
-            content = DOMUtil.getNextSiblingElement( content );
-        }
-        else {
-            content = DOMUtil.getFirstChildElement(content);
-            if (content != null) {
-                // traverse annotation if any
-                if (DOMUtil.getLocalName(content).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                    traverseAnnotationDecl(content, attrValues, false, schemaDoc);
+                    // get the next element
                     content = DOMUtil.getNextSiblingElement(content);
-                }
+                } while (content != null && DOMUtil.getLocalName(content).equals(SchemaSymbols.ELT_SIMPLETYPE));
             }
         }
-
-        // ------------------------------------------
-        //get more types for union if any
-        // ------------------------------------------
-        if (union) {
-            if (memberTypes != null) {
-                if (content != null) {
-                    // traverse annotation if any
-                    if (DOMUtil.getLocalName(content).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                        traverseAnnotationDecl(content, attrValues, false, schemaDoc);
-                        content = DOMUtil.getNextSiblingElement(content);
-                    }
-                }
-                if (content !=null) {
-                    if (DOMUtil.getLocalName(content).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                        Object[] args = {nameProperty};
-                        reportSchemaError("dt-union-memberType", args, content);
-                    }
-                }
-            }
-            while (content!=null) {
-                baseValidator = traverseLocal(content, schemaDoc, grammar);
-                if (baseValidator != null) {
-                    if (fListName.length() != 0 && baseValidator.getVariety() == XSSimpleType.VARIETY_LIST) {
-                        reportCosListOfAtomic(qualifiedName, content);
-                        return null;
-                    }
-                    if (baseValidator.getVariety() == XSSimpleType.VARIETY_UNION) {
-                        XSSimpleType[] types = ((XSUnionSimpleType)baseValidator).getMemberTypes();
-                        for (int i = 0; i < types.length; i++)
-                            dTValidators.addElement(types[i]);
-                    } else {
-                        dTValidators.addElement(baseValidator);
-                    }
-                }
-                if (baseValidator == null) {
-                    Object[] args = { content.getAttribute( SchemaSymbols.ATT_BASE ), nameProperty};
-                    reportSchemaError("dt-unknown-basetype", args, content);
-                    baseValidator = SchemaGrammar.fAnySimpleType;
-                }
-                content   = DOMUtil.getNextSiblingElement( content );
-            }
-        } // end - traverse Union
-
-        if (fListName.length() != 0) {
-            // reset fListName, meaning that we are done with
-            // traversing <list> and its itemType resolves to atomic value
-            if (fListName.equals(qualifiedName)) {
-                fListName = SchemaSymbols.EMPTY_STRING;
-            }
+        else if ((restriction || list) && baseTypeName == null) {
+            // it's an error if neither "base" nor "simpleType" appears
+            reportSchemaError("src-simple-type.2", null, child);
+            return errorType(name, schemaDoc.fTargetNamespace, refType);
+        }
+        else if (union && (memberTypes == null || memberTypes.size() == 0)) {
+            // it's an error if "memberTypes" is empty and no "simpleType" appears
+            reportSchemaError("src-union-memberTypes-or-simpleTypes", null, child);
+            return errorType(name, schemaDoc.fTargetNamespace, SchemaSymbols.UNION);
         }
 
-        XSFacets facetData = null;
-        short presentFacets = 0;
-        short fixedFacets = 0 ;
-
-        if (restriction && content != null) { //we are on the facets now..
-            FacetInfo fi = traverseFacets(content, contentAttrs,nameProperty, baseValidator, schemaDoc, grammar);
-            content = fi.nodeAfterFacets;
-            if (content != null) {
-                reportSchemaError("s4s-elt-must-match", new Object[]{SchemaSymbols.ELT_RESTRICTION, "(annotation?, (simpleType?, (minExclusive | minInclusive | maxExclusive | maxInclusive | totalDigits | fractionDigits | length | minLength | maxLength | enumeration | whiteSpace | pattern)*))"}, content);
-                content = null;
-            }
-            facetData = fi.facetdata ;
-            presentFacets = fi.fPresentFacets;
-            fixedFacets = fi.fFixedFacets;
+        // error finding "base" or error traversing "simpleType".
+        // don't need to report an error, since some error has been reported.
+        if ((restriction || list) && baseValidator == null) {
+            return errorType(name, schemaDoc.fTargetNamespace, refType);
         }
-        else if (list && content!=null) {
-            // report error - must not have any children!
-            if (baseTypeName !=null) {
-                // traverse annotation if any
-                if (DOMUtil.getLocalName(content).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                    traverseAnnotationDecl(content, attrValues, false, schemaDoc);
-                    content = DOMUtil.getNextSiblingElement(content);
-                }
-                if (content !=null) {
-                    Object[] args = {nameProperty};
-                    reportSchemaError("dt-list-itemType", args, content);
-                }
-            }
-            else {
-                reportSchemaError("s4s-elt-must-match", new Object[]{SchemaSymbols.ELT_LIST, "(annotation?, (simpleType?))"}, content);
-            }
-        }
-        else if (union && content!=null) {
-            //report error - must not have any children!
-            reportSchemaError("s4s-elt-must-match", new Object[]{SchemaSymbols.ELT_UNION, "(annotation?, (simpleType?))"}, content);
+        // error finding "memberTypes" or error traversing "simpleType".
+        // don't need to report an error, since some error has been reported.
+        if (union && (dTValidators == null || dTValidators.size() == 0)) {
+            return errorType(name, schemaDoc.fTargetNamespace, SchemaSymbols.UNION);
         }
 
+        // item type of list types can't have list content
+        if (list && isListDatatype(baseValidator)) {
+            reportSchemaError("cos-list-of-atomic", new Object[]{name}, child);
+        }
+        
+        // create the simple type based on the "base" type
         XSSimpleType newDecl = null;
-        if (list) {
-            newDecl = schemaFactory.createTypeList(nameProperty, schemaDoc.fTargetNamespace, (short)finalProperty, baseValidator);
+        if (restriction) {
+            newDecl = schemaFactory.createTypeRestriction(name, schemaDoc.fTargetNamespace, (short)finalProperty, baseValidator);
         }
-        else if (restriction) {
-            newDecl = schemaFactory.createTypeRestriction(nameProperty, schemaDoc.fTargetNamespace, (short)finalProperty, baseValidator);
-            try {
-                fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
-                newDecl.applyFacets(facetData , presentFacets , fixedFacets, fValidationState);
-            } catch (InvalidDatatypeFacetException ex) {
-                reportSchemaError(ex.getKey(), ex.getArgs(), simpleTypeDecl);
-            }
+        else if (list) {
+            newDecl = schemaFactory.createTypeList(name, schemaDoc.fTargetNamespace, (short)finalProperty, baseValidator);
         }
-        else { //union
+        else if (union) {
             XSSimpleType[] memberDecls = new XSSimpleType[dTValidators.size()];
             for (int i = 0; i < dTValidators.size(); i++)
                 memberDecls[i] = (XSSimpleType)dTValidators.elementAt(i);
-            newDecl = schemaFactory.createTypeUnion(nameProperty, schemaDoc.fTargetNamespace, (short)finalProperty, memberDecls);
+            newDecl = schemaFactory.createTypeUnion(name, schemaDoc.fTargetNamespace, (short)finalProperty, memberDecls);
         }
 
-        // if it's a global type without a name, return null
-        if (nameProperty == null && isGlobal) {
-            return null;
+        // now traverse facets, if it's derived by restriction
+        if (restriction && content != null) {
+            FacetInfo fi = traverseFacets(content, baseValidator, schemaDoc);
+            content = fi.nodeAfterFacets;
+
+            try {
+                fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
+                newDecl.applyFacets(fi.facetdata, fi.fPresentFacets, fi.fFixedFacets, fValidationState);
+            } catch (InvalidDatatypeFacetException ex) {
+                reportSchemaError(ex.getKey(), ex.getArgs(), child);
+            }
         }
 
-        // don't add global components without name to the grammar
-        if (newDecl != null && isGlobal) {
-            grammar.addGlobalTypeDecl(newDecl);
+        // now element should appear after this point
+        if (content != null) {
+            if (restriction) {
+                reportSchemaError("s4s-elt-must-match", new Object[]{SchemaSymbols.ELT_RESTRICTION, "(annotation?, (simpleType?, (minExclusive | minInclusive | maxExclusive | maxInclusive | totalDigits | fractionDigits | length | minLength | maxLength | enumeration | whiteSpace | pattern)*))"}, content);
+            }
+            else if (list) {
+                reportSchemaError("s4s-elt-must-match", new Object[]{SchemaSymbols.ELT_LIST, "(annotation?, (simpleType?))"}, content);
+            }
+            else if (union) {
+                reportSchemaError("s4s-elt-must-match", new Object[]{SchemaSymbols.ELT_LIST, "(annotation?, (simpleType*))"}, content);
+            }
         }
-
+        
+        // return the new type
         return newDecl;
-    }
-
-    private void reportCosListOfAtomic (String qualifiedName, Element elem) {
-        fListName = "";
-        reportSchemaError("cos-list-of-atomic", new Object[]{qualifiedName}, elem);
     }
 
     //@param: elm - top element
@@ -504,34 +382,36 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
     //return XSSimpleType available for the baseTypeStr, null if not found or disallowed.
     // also throws an error if the base type won't allow itself to be used in this context.
     // REVISIT: can this code be re-used?
-    private XSSimpleType findDTValidator (Element elm, QName baseTypeStr, short baseRefContext, XSDocumentInfo schemaDoc) {
-        if(baseTypeStr == null)
+    private XSSimpleType findDTValidator(Element elm, QName baseTypeStr, short baseRefContext, XSDocumentInfo schemaDoc) {
+        if (baseTypeStr == null)
             return null;
-
-        if (baseTypeStr.uri != null && baseTypeStr.uri.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) &&
-            (baseTypeStr.localpart.equals(SchemaSymbols.ATTVAL_ANYSIMPLETYPE) ||
-             baseTypeStr.localpart.equals(SchemaSymbols.ATTVAL_ANYTYPE)) &&
-            baseRefContext == SchemaSymbols.RESTRICTION) {
-            reportSchemaError("dt-unknown-basetype", new Object[] {baseTypeStr.rawname,
-                              DOMUtil.getAttrValue(elm, SchemaSymbols.ATT_NAME)}, elm);
-            return SchemaGrammar.fAnySimpleType;
-        }
 
         XSTypeDecl baseType = (XSTypeDecl)fSchemaHandler.getGlobalDecl(schemaDoc, fSchemaHandler.TYPEDECL_TYPE, baseTypeStr, elm);
         if (baseType != null) {
-            if (baseType.getXSType() != XSTypeDecl.SIMPLE_TYPE) {
-                reportSchemaError("st-props-correct.4.1", new Object[] { baseTypeStr.rawname}, elm);
+            // if it's a complex type, or if its restriction of anySimpleType
+            if (baseType.getXSType() != XSTypeDecl.SIMPLE_TYPE ||
+                baseType == SchemaGrammar.fAnySimpleType &&
+                baseRefContext == SchemaSymbols.RESTRICTION) {
+                reportSchemaError("st-props-correct.4.1", new Object[]{baseTypeStr.rawname}, elm);
                 return SchemaGrammar.fAnySimpleType;
             }
             if ((baseType.getFinalSet() & baseRefContext) != 0) {
-                reportSchemaError("dt-restiction-final", new Object[] { baseTypeStr.rawname}, elm);
+                if (baseRefContext == SchemaSymbols.RESTRICTION) {
+                    reportSchemaError("st-props-correct.3", new Object[]{baseTypeStr.rawname}, elm);
+                }
+                else if (baseRefContext == SchemaSymbols.LIST) {
+                    reportSchemaError("st-props-correct.4.2.1", new Object[]{baseTypeStr.rawname}, elm);
+                }
+                else if (baseRefContext == SchemaSymbols.UNION) {
+                    reportSchemaError("st-props-correct.4.2.2", new Object[]{baseTypeStr.rawname}, elm);
+                }
             }
         }
 
         return (XSSimpleType)baseType;
     }
 
-    // find if union datatype validator has list datatype member.
+    // find if a datatype validator is a list or has list datatype member.
     private boolean isListDatatype(XSSimpleType validator) {
         if (validator.getVariety() == XSSimpleType.VARIETY_LIST)
             return true;
@@ -548,4 +428,20 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         return false;
     }//isListDatatype(XSSimpleTypeDecl):boolean
 
+    private XSSimpleType errorType(String name, String namespace, short refType) {
+        switch (refType) {
+        case SchemaSymbols.RESTRICTION:
+            return schemaFactory.createTypeRestriction(name, namespace, (short)0,
+                                                       SchemaGrammar.fAnySimpleType);
+        case SchemaSymbols.LIST:
+            return schemaFactory.createTypeList(name, namespace, (short)0,
+                                                SchemaGrammar.fAnySimpleType);
+        case SchemaSymbols.UNION:
+            return schemaFactory.createTypeUnion(name, namespace, (short)0,
+                                                 new XSSimpleType[]{SchemaGrammar.fAnySimpleType});
+        }
+        
+        return null;
+    }
+    
 }//class XSDSimpleTypeTraverser

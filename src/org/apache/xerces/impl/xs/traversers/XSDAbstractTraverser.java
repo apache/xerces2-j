@@ -178,9 +178,9 @@ abstract class XSDAbstractTraverser {
         short fFixedFacets;
     }
 
-    FacetInfo traverseFacets(Element content, Object[] contentAttrs, String simpleTypeName,
-                             XSSimpleType baseValidator, XSDocumentInfo schemaDoc,
-                             SchemaGrammar grammar) {
+    FacetInfo traverseFacets(Element content,
+                             XSSimpleType baseValidator,
+                             XSDocumentInfo schemaDoc) {
 
         short facetsPresent = 0 ;
         short facetsFixed = 0; // facets that have fixed="true"
@@ -502,7 +502,7 @@ abstract class XSDAbstractTraverser {
             ((XSSimpleType)typeDecl).getVariety() == XSSimpleType.VARIETY_ATOMIC &&
             ((XSAtomicSimpleType)typeDecl).getPrimitiveKind() == XSAtomicSimpleType.PRIMITIVE_NOTATION) {
             if ((((XSSimpleType)typeDecl).getDefinedFacets() & XSSimpleType.FACET_ENUMERATION) == 0) {
-                reportSchemaError("dt-enumeration-notation", new Object[]{refName}, elem);
+                reportSchemaError("enumeration-required-notation", new Object[]{refName}, elem);
             }
         }
     }

@@ -460,8 +460,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             short fixedFacets = 0 ;
 
             if (simpleContent!=null) {
-                FacetInfo fi = traverseFacets(simpleContent, null, typeName, baseValidator,
-                                              schemaDoc, grammar);
+                FacetInfo fi = traverseFacets(simpleContent, baseValidator, schemaDoc);
                 attrNode = fi.nodeAfterFacets;
                 facetData = fi.facetdata;
                 presentFacets = fi.fPresentFacets;
@@ -947,7 +946,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 
     }
 
-    private static XSParticleDecl getErrorContent() {
+    private static synchronized XSParticleDecl getErrorContent() {
         if (fErrorContent==null) {
             fErrorContent = new XSParticleDecl();
             fErrorContent.fType = XSParticleDecl.PARTICLE_SEQUENCE;
@@ -961,6 +960,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             fErrorContent.fValue = particle;
             fErrorContent.fOtherValue = null;
         }
+
         return fErrorContent;
     }
 }
