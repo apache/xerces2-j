@@ -75,7 +75,7 @@ import java.util.Vector;
  * which associates them with the Document within whose context they
  * were created.
  *
- * @version
+ * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */
 public class DeferredDocumentImpl
@@ -167,8 +167,8 @@ public class DeferredDocumentImpl
     //
     // private data
     //
-    private final StringBuffer fBufferStr = new StringBuffer();
-    private final Vector fStrChunks = new Vector();
+    private transient final StringBuffer fBufferStr = new StringBuffer();
+    private transient final Vector fStrChunks = new Vector();
 
     //
     // Constructors
@@ -1038,14 +1038,15 @@ public class DeferredDocumentImpl
                     }
                 } while (getNodeType(prevSib, false) == Node.TEXT_NODE);
                 
-                for (int i=fStrChunks.size()-1; i>=0; i--) {                                                               
-                     fBufferStr.append((String)fStrChunks.elementAt(i));
-                 }
-                                                         
-                 value = fBufferStr.toString();
-                 fStrChunks.setSize(0);
-                 fBufferStr.setLength(0);
-                 return value;
+                int chunkCount = fStrChunks.size();
+                for (int i = chunkCount - 1; i >= 0; i--) {                                                               
+                    fBufferStr.append((String)fStrChunks.elementAt(i));
+                }
+                
+                value = fBufferStr.toString();
+                fStrChunks.removeAllElements();
+                fBufferStr.setLength(0);
+                return value;
             }
         }
         else if (type == Node.CDATA_SECTION_NODE) {
