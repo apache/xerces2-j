@@ -4,19 +4,26 @@
 
 <s2 title='???, 2001 (version 1.4.4)'>
 <ul>
-<!--
     <li>
-        Added new "normalize-element-contents" feature for enabling/disabling element content normalization.
+        Fixed parser behavior: by default Xerces now exposes element and attribute values as defined
+        by the Infoset.
         [Tamura Kent, Elena Litani]
     </li>
--->
     <li>
         By default bind "xml" prefix to "http://www.w3.org/XML/1998/namespace" per 
         Namespace Constraint: Prefix Declared (Namespaces in XML REC)
         [Elena Litani]
     </li>
     <li>
-        General bug fixes [Elena Litani, Pavani Mukthipudi]
+       Fixed date/time datatype bugs.
+       [Henry Zongaro]
+    </li>
+    <li>
+       Fixed several DOM Level 2 conformance bugs.
+       [Elena Litani]
+    </li>
+    <li>
+        General bug fixes [Elena Litani, Pavani Mukthipudi, Sandy Gao]
     </li>
 </ul>
 </s2>

@@ -205,28 +205,7 @@ http://apache.org/xml/features/validation/schema-full-checking
         <td>false</td>
     </tr>
 </table>
-<!-- REVISIT: how do we want to name this feature?
 
-<anchor name="normalize-element-contents"/>
-<p>
-http://apache.org/xml/features/validation/normalize-element-contents
-</p>
-<table>
-    <tr>
-        <th>True:</th>
-        <td>XML Schema normalization enabled for element contents.</td>
-    </tr>
-    <tr>
-        <th>False:</th>
-        <td>Disable element content normalization.</td>
-    </tr>
-    <tr>
-        <th>Default:</th>
-        <td>false</td>
-    </tr>
-
-</table>
--->
 
 <anchor name="dynamic"/>
 <p>

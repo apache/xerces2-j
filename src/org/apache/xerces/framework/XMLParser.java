@@ -124,7 +124,7 @@ public abstract class XMLParser
         "http://xml.org/sax/features/namespaces",
         // Xerces
         "http://apache.org/xml/features/validation/schema",
-        "http://apache.org/xml/features/schema/expose-normalized-values",
+        // "http://apache.org/xml/features/schema/expose-normalized-values",
         "http://apache.org/xml/features/validation/schema-full-checking",
         "http://apache.org/xml/features/validation/dynamic",
         "http://apache.org/xml/features/validation/default-attribute-values",
