@@ -4648,7 +4648,7 @@ public class TraverseSchema implements
                    fSchemaGrammar.setFirstAttributeDeclIndex(elementIndex,
                         typeInfo.attlistHead);
                    fSchemaGrammar.setElementComplexTypeInfo(elementIndex,typeInfo);
-
+                   fSchemaGrammar.setElementDefinedScope(elementIndex,typeInfo.scopeDefined);
                  }
                }
                fElementRecurseComplex.removeAllElements();
