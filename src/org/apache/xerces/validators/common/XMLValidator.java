@@ -750,11 +750,6 @@ public final class XMLValidator
         fElementIndexStack[fElementDepth] = fCurrentElementIndex;
         fContentSpecTypeStack[fElementDepth] = fCurrentContentSpecType;
 
-        //REVISIT: Validation
-        if ( fCurrentElementIndex > -1 && fGrammarIsSchemaGrammar  && fValidating) {
-            fCurrentScope = ((SchemaGrammar) fGrammar).getElementDefinedScope(fCurrentElementIndex);
-        }
-
         fScopeStack[fElementDepth] = fCurrentScope;
         fGrammarNameSpaceIndexStack[fElementDepth] = fGrammarNameSpaceIndex;
 
@@ -2331,6 +2326,10 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         //       here need to check if we need to switch Grammar by asking SchemaGrammar whether 
         //       this element actually is of a type in another Schema.
         if (fGrammarIsSchemaGrammar && elementIndex != -1) {
+
+            //Change the current scope to be the one defined by this element.
+            fCurrentScope = ((SchemaGrammar) fGrammar).getElementDefinedScope(elementIndex);
+
             String anotherSchemaURI = ((SchemaGrammar)fGrammar).getElementFromAnotherSchemaURI(elementIndex);
             if (anotherSchemaURI != null) {
                 fGrammarNameSpaceIndex = fCurrentSchemaURI = fStringPool.addSymbol(anotherSchemaURI);
