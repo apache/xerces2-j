@@ -513,14 +513,23 @@ public class XMLEntityManager
         String expandedSystemId = resourceIdentifier.getExpandedSystemId();
         // if no base systemId given, assume that it's relative
         // to the systemId of the current scanned entity
+        // Sometimes the system id is not (properly) expanded.
+        // We need to expand the system id if:
+        // a. the expanded one was null; or
+        // b. the base system id was null, but becomes non-null from the current entity.
+        boolean needExpand = (expandedSystemId == null);
         // REVISIT:  why would the baseSystemId ever be null?  if we
         // didn't have to make this check we wouldn't have to reuse the
         // fXMLResourceIdentifier object...
         if (baseSystemId == null && fCurrentEntity != null && fCurrentEntity.entityLocation != null) {
             baseSystemId = fCurrentEntity.entityLocation.getExpandedSystemId();
-        }
-
-        // give the entity resolver a chance
+            if (baseSystemId != null)
+                needExpand = true;
+         }
+         if (needExpand)
+            expandedSystemId = expandSystemId(literalSystemId, baseSystemId);
+ 
+       // give the entity resolver a chance
         XMLInputSource xmlInputSource = null;
         if (fEntityResolver != null) {
              fResourceIdentifier.clear();
