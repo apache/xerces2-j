@@ -816,7 +816,7 @@ public class CoreDocumentImpl
      * The version of this document (part of XML Declaration)
      */
     public String getXmlVersion() {
-        return version;
+        return (version == null)?"1.0":version;
     }
 
     /**
