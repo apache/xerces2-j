@@ -123,7 +123,7 @@
 		 Therefore, the values "1" and "1.0" are NOT equal for a 
 		 field of type "decimal" (even though they should be).</li>
 		 </ul>
-		 <p>Finally, note that in all model groups fewer than 8 elements must
+		 <p>Finally, note that in &lt;all&gt; model groups fewer than 8 elements must
 		 be used.</p>
 	</s2>
 	<s2 title="Usage">
