@@ -1,12 +1,12 @@
 /*
  * Copyright 1999-2002,2004 The Apache Software Foundation.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -38,7 +38,7 @@ public class MonthDV extends AbstractDateTimeDV {
      */
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException{
         try{
-            return new DateTimeData(parse(content), this);
+            return parse(content);
         } catch(Exception ex){
             throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "gMonth"});
         }
@@ -53,19 +53,19 @@ public class MonthDV extends AbstractDateTimeDV {
      * @return normalized date representation
      * @exception SchemaDateTimeException Invalid lexical representation
      */
-    protected int[] parse(String str) throws SchemaDateTimeException{
+    protected DateTimeData parse(String str) throws SchemaDateTimeException{
+        DateTimeData date = new DateTimeData(this);
         int len = str.length();
-        int[] date=new int[TOTAL_SIZE];
         int[] timeZone = new int[2];
 
         //set constants
-        date[CY]=YEAR;
-        date[D]=DAY;
+        date.year=YEAR;
+        date.day=DAY;
         if (str.charAt(0)!='-' || str.charAt(1)!='-') {
             throw new SchemaDateTimeException("Invalid format for gMonth: "+str);
         }
         int stop = 4;
-        date[M]=parseInt(str,2,stop);
+        date.month=parseInt(str,2,stop);
 
         // REVISIT: allow both --MM and --MM-- now.
         // need to remove the following 4 lines to disallow --MM--
@@ -86,7 +86,7 @@ public class MonthDV extends AbstractDateTimeDV {
         //validate and normalize
         validateDateTime(date, timeZone);
 
-        if ( date[utc]!=0 && date[utc]!='Z' ) {
+        if ( date.utc!=0 && date.utc!='Z' ) {
             normalize(date, timeZone);
         }
         return date;
@@ -104,19 +104,19 @@ public class MonthDV extends AbstractDateTimeDV {
      * @param date2
      * @return less, greater, equal, indeterminate
      */
-    protected  short compareDates(int[] date1, int[] date2) {
+    protected  short compareDates(DateTimeData date1, DateTimeData date2) {
 
-        if ( date1[utc]==date2[utc] ) {
-            return (short)((date1[M]>=date2[M])?(date1[M]>date2[M])?1:0:-1);
+        if ( date1.utc==date2.utc ) {
+            return (short)((date1.month>=date2.month)?(date1.month>date2.month)?1:0:-1);
         }
 
-        if ( date1[utc]=='Z' || date2[utc]=='Z' ) {
+        if ( date1.utc=='Z' || date2.utc=='Z' ) {
 
-            if ( date1[M]==date2[M] ) {
+            if ( date1.month==date2.month ) {
                 //--05--Z and --05--
                 return INDETERMINATE;
             }
-            if ( (date1[M]+1 == date2[M] || date1[M]-1 == date2[M]) ) {
+            if ( (date1.month+1 == date2.month || date1.month-1 == date2.month) ) {
                 //--05--Z and (--04-- or --05--)
                 //REVISIT: should this case be less than or equal?
                 //         maxExclusive should fail but what about maxInclusive
@@ -125,7 +125,7 @@ public class MonthDV extends AbstractDateTimeDV {
             }
         }
 
-        if ( date1[M]<date2[M] ) {
+        if ( date1.month<date2.month ) {
             return -1;
         }
         else {
@@ -140,12 +140,12 @@ public class MonthDV extends AbstractDateTimeDV {
      * @param date   month object
      * @return lexical representation of month: --MM with an optional time zone sign
      */
-    protected String dateToString(int[] date) {
+    protected String dateToString(DateTimeData date) {
         StringBuffer message = new StringBuffer(5);
         message.append('-');
         message.append('-');
-        append(message, date[M], 2);
-        append(message, (char)date[utc], 0);
+        append(message, date.month, 2);
+        append(message, (char)date.utc, 0);
         return message.toString();
     }
 

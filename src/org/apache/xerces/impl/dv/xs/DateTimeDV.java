@@ -1,12 +1,12 @@
 /*
  * Copyright 1999-2002,2004 The Apache Software Foundation.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,7 +31,7 @@ public class DateTimeDV extends AbstractDateTimeDV {
 
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
         try{
-            return new DateTimeData(parse(content), this);
+            return parse(content);
         } catch(Exception ex){
             throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "dateTime"});
         }
@@ -46,9 +46,9 @@ public class DateTimeDV extends AbstractDateTimeDV {
      * @return normalized dateTime representation
      * @exception SchemaDateTimeException Invalid lexical representation
      */
-    protected int[] parse(String str) throws SchemaDateTimeException {
+    protected DateTimeData parse(String str) throws SchemaDateTimeException {
+        DateTimeData date = new DateTimeData(this);
         int len = str.length();
-        int[] date = new int[TOTAL_SIZE];
         int[] timeZone = new int[2];
 
         int end = indexOf (str, 0, len, 'T');
@@ -63,13 +63,13 @@ public class DateTimeDV extends AbstractDateTimeDV {
                     + " is an invalid dateTime dataype value. "
                     + "Invalid character(s) seprating date and time values.");
         }
-        
+
         //validate and normalize
 
         //REVISIT: do we need SchemaDateTimeException?
         validateDateTime(date, timeZone);
 
-        if ( date[utc]!=0 && date[utc]!='Z') {
+        if (date.utc!=0 && date.utc!='Z') {
             normalize(date, timeZone);
         }
         return date;

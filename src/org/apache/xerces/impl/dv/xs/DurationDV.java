@@ -1,12 +1,12 @@
 /*
  * Copyright 1999-2002,2004 The Apache Software Foundation.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,15 +34,15 @@ public class DurationDV extends AbstractDateTimeDV {
     // see 3.2.6 duration W3C schema datatype specs
     //
     // the dates are in format: {CCYY,MM,DD, H, S, M, MS, timezone}
-    private final static int[][] DATETIMES= {
-        {1696, 9, 1, 0, 0, 0, 0, 'Z'},
-        {1697, 2, 1, 0, 0, 0, 0, 'Z'},
-        {1903, 3, 1, 0, 0, 0, 0, 'Z'},
-        {1903, 7, 1, 0, 0, 0, 0, 'Z'}};
+    private final static DateTimeData[] DATETIMES= {
+        new DateTimeData(1696, 9, 1, 0, 0, 0, 'Z', null),
+        new DateTimeData(1697, 2, 1, 0, 0, 0, 'Z', null),
+        new DateTimeData(1903, 3, 1, 0, 0, 0, 'Z', null),
+        new DateTimeData(1903, 7, 1, 0, 0, 0, 'Z', null)};
 
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException{
         try{
-            return new DateTimeData(parse(content), this);
+            return parse(content);
         } catch (Exception ex) {
             throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "duration"});
         }
@@ -56,9 +56,9 @@ public class DurationDV extends AbstractDateTimeDV {
      * @return normalized date representation
      * @exception SchemaDateTimeException Invalid lexical representation
      */
-    protected int[] parse(String str) throws SchemaDateTimeException{
+    protected DateTimeData parse(String str) throws SchemaDateTimeException{
         int len = str.length();
-        int[] date=new int[TOTAL_SIZE];
+        DateTimeData date= new DateTimeData(this);
 
         int start = 0;
         char c=str.charAt(start++);
@@ -66,7 +66,7 @@ public class DurationDV extends AbstractDateTimeDV {
             throw new SchemaDateTimeException();
         }
         else {
-            date[utc]=(c=='-')?'-':0;
+            date.utc=(c=='-')?'-':0;
             if ( c=='-' && str.charAt(start++)!='P' ) {
                 throw new SchemaDateTimeException();
             }
@@ -74,7 +74,7 @@ public class DurationDV extends AbstractDateTimeDV {
 
         int negate = 1;
         //negative duration
-        if ( date[utc]=='-' ) {
+        if ( date.utc=='-' ) {
             negate = -1;
 
         }
@@ -89,7 +89,7 @@ public class DurationDV extends AbstractDateTimeDV {
         int end = indexOf (str, start, endDate, 'Y');
         if ( end!=-1 ) {
             //scan year
-            date[CY]=negate * parseInt(str,start,end);
+            date.year=negate * parseInt(str,start,end);
             start = end+1;
             designator = true;
         }
@@ -97,7 +97,7 @@ public class DurationDV extends AbstractDateTimeDV {
         end = indexOf (str, start, endDate, 'M');
         if ( end!=-1 ) {
             //scan month
-            date[M]=negate * parseInt(str,start,end);
+            date.month=negate * parseInt(str,start,end);
             start = end+1;
             designator = true;
         }
@@ -105,7 +105,7 @@ public class DurationDV extends AbstractDateTimeDV {
         end = indexOf (str, start, endDate, 'D');
         if ( end!=-1 ) {
             //scan day
-            date[D]=negate * parseInt(str,start,end);
+            date.day=negate * parseInt(str,start,end);
             start = end+1;
             designator = true;
         }
@@ -122,7 +122,7 @@ public class DurationDV extends AbstractDateTimeDV {
             end = indexOf (str, ++start, len, 'H');
             if ( end!=-1 ) {
                 //scan hours
-                date[h]=negate * parseInt(str,start,end);
+                date.hour=negate * parseInt(str,start,end);
                 start=end+1;
                 designator = true;
             }
@@ -130,7 +130,7 @@ public class DurationDV extends AbstractDateTimeDV {
             end = indexOf (str, start, len, 'M');
             if ( end!=-1 ) {
                 //scan min
-                date[m]=negate * parseInt(str,start,end);
+                date.minute=negate * parseInt(str,start,end);
                 start=end+1;
                 designator = true;
             }
@@ -138,14 +138,7 @@ public class DurationDV extends AbstractDateTimeDV {
             end = indexOf (str, start, len, 'S');
             if ( end!=-1 ) {
                 //scan seconds
-                int mlsec = indexOf (str, start, end, '.');
-                if ( mlsec >0 ) {
-                    date[s]  = negate * parseInt (str, start, mlsec);
-                    date[ms] = negate * parseInt (str, mlsec+1, end);
-                }
-                else {
-                    date[s]=negate * parseInt(str, start,end);
-                }
+                date.second = negate * parseSecond(str, start, end);
                 start=end+1;
                 designator = true;
             }
@@ -170,14 +163,14 @@ public class DurationDV extends AbstractDateTimeDV {
      * @param date2  Unnormalized duration
      * @param strict (min/max)Exclusive strict == true ( LESS_THAN ) or ( GREATER_THAN )
      *               (min/max)Inclusive strict == false (LESS_EQUAL) or (GREATER_EQUAL)
-     * @return INDETERMINATE if the order relationship between date1 and date2 is indeterminate. 
-     * EQUAL if the order relation between date1 and date2 is EQUAL.  
+     * @return INDETERMINATE if the order relationship between date1 and date2 is indeterminate.
+     * EQUAL if the order relation between date1 and date2 is EQUAL.
      * If the strict parameter is true, return LESS_THAN if date1 is less than date2 and
-     * return GREATER_THAN if date1 is greater than date2. 
+     * return GREATER_THAN if date1 is greater than date2.
      * If the strict parameter is false, return LESS_THAN if date1 is less than OR equal to date2 and
-     * return GREATER_THAN if date1 is greater than OR equal to date2 
+     * return GREATER_THAN if date1 is greater than OR equal to date2
      */
-    protected  short compareDates(int[] date1, int[] date2, boolean strict) {
+    protected  short compareDates(DateTimeData date1, DateTimeData date2, boolean strict) {
 
         //REVISIT: this is unoptimazed vs of comparing 2 durations
         //         Algorithm is described in 3.2.6.2 W3C Schema Datatype specs
@@ -192,11 +185,13 @@ public class DurationDV extends AbstractDateTimeDV {
             return 0;
         }
 
-        int[][] result = new int[2][TOTAL_SIZE];
+        DateTimeData[] result = new DateTimeData[2];
+        result[0] = new DateTimeData(this);
+        result[1] = new DateTimeData(this);
 
         //long comparison algorithm is required
-        int[] tempA = addDuration (date1, DATETIMES[0], result[0]);
-        int[] tempB = addDuration (date2, DATETIMES[0], result[1]);
+        DateTimeData tempA = addDuration (date1, DATETIMES[0], result[0]);
+        DateTimeData tempB = addDuration (date2, DATETIMES[0], result[1]);
         resultA =  compareOrder(tempA, tempB);
         if ( resultA == INDETERMINATE ) {
             return INDETERMINATE;
@@ -245,7 +240,7 @@ public class DurationDV extends AbstractDateTimeDV {
         return resultA;
     }
 
-    private int[] addDuration(int[] date, int[] addto, int[] duration) {
+    private DateTimeData addDuration(DateTimeData date, DateTimeData addto, DateTimeData duration) {
 
         //REVISIT: some code could be shared between normalize() and this method,
         //         however is it worth moving it? The structures are different...
@@ -253,76 +248,90 @@ public class DurationDV extends AbstractDateTimeDV {
 
         resetDateObj(duration);
         //add months (may be modified additionaly below)
-        int temp = addto[M] + date[M];
-        duration[M] = modulo (temp, 1, 13);
+        int temp = addto.month + date.month;
+        duration.month = modulo (temp, 1, 13);
         int carry = fQuotient (temp, 1, 13);
 
         //add years (may be modified additionaly below)
-        duration[CY]=addto[CY] + date[CY] + carry;
-        
+        duration.year=addto.year + date.year + carry;
+
         //add seconds
-        temp = addto[s] + date[s];
-        carry = fQuotient (temp, 60);
-        duration[s] =  mod(temp, 60, carry);
+        double dtemp = addto.second + date.second;
+        carry = (int)Math.floor(dtemp/60);
+        duration.second = dtemp - carry*60;
 
         //add minutes
-        temp = addto[m] +date[m] + carry;
+        temp = addto.minute +date.minute + carry;
         carry = fQuotient (temp, 60);
-        duration[m]= mod(temp, 60, carry);
+        duration.minute= mod(temp, 60, carry);
 
         //add hours
-        temp = addto[h] + date[h] + carry;
+        temp = addto.hour + date.hour + carry;
         carry = fQuotient(temp, 24);
-        duration[h] = mod(temp, 24, carry);
+        duration.hour = mod(temp, 24, carry);
 
 
-        duration[D]=addto[D] + date[D] + carry;
+        duration.day=addto.day + date.day + carry;
 
         while ( true ) {
 
-            temp=maxDayInMonthFor(duration[CY], duration[M]);
-            if ( duration[D] < 1 ) { //original duration was negative
-                duration[D] = duration[D] + maxDayInMonthFor(duration[CY], duration[M]-1);
+            temp=maxDayInMonthFor(duration.year, duration.month);
+            if ( duration.day < 1 ) { //original duration was negative
+                duration.day = duration.day + maxDayInMonthFor(duration.year, duration.month-1);
                 carry=-1;
             }
-            else if ( duration[D] > temp ) {
-                duration[D] = duration[D] - temp;
+            else if ( duration.day > temp ) {
+                duration.day = duration.day - temp;
                 carry=1;
             }
             else {
                 break;
             }
-            temp = duration[M]+carry;
-            duration[M] = modulo(temp, 1, 13);
-            duration[CY] = duration[CY]+fQuotient(temp, 1, 13);
+            temp = duration.month+carry;
+            duration.month = modulo(temp, 1, 13);
+            duration.year = duration.year+fQuotient(temp, 1, 13);
         }
 
-        duration[utc]='Z';
+        duration.utc='Z';
         return duration;
     }
 
-    protected String dateToString(int[] date) {
+    protected double parseSecond(String buffer, int start, int end)
+        throws NumberFormatException {
+        int dot = -1;
+        for (int i = start; i < end; i++) {
+            char ch = buffer.charAt(i);
+            if (ch == '.')
+                dot = i;
+            else if (ch > '9' || ch < '0')
+                throw new NumberFormatException("'"+buffer.toString()+"' has wrong format");
+        }
+        if (dot+1 == end) {
+            throw new NumberFormatException("'"+buffer.toString()+"' has wrong format");
+        }
+        return Double.parseDouble(buffer.substring(start, end));
+    }
+
+    protected String dateToString(DateTimeData date) {
         StringBuffer message = new StringBuffer(30);
         int negate = 1;
-        if ( date[CY]<0 ) {
+        if ( date.year<0 ) {
             message.append('-');
             negate=-1;
         }
         message.append('P');
-        message.append(negate * date[CY]);
+        message.append(negate * date.year);
         message.append('Y');
-        message.append(negate * date[M]);
+        message.append(negate * date.month);
         message.append('M');
-        message.append(negate * date[D]);
+        message.append(negate * date.day);
         message.append('D');
         message.append('T');
-        message.append(negate * date[h]);
+        message.append(negate * date.hour);
         message.append('H');
-        message.append(negate * date[m]);
+        message.append(negate * date.minute);
         message.append('M');
-        message.append(negate * date[s]);
-        message.append('.');
-        message.append(negate * date[ms]);
+        message.append(negate * date.second);
         message.append('S');
 
         return message.toString();

@@ -1,12 +1,12 @@
 /*
  * Copyright 1999-2002,2004 The Apache Software Foundation.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,7 +30,7 @@ public class DateDV extends DateTimeDV {
 
     public Object getActualValue(String content) throws InvalidDatatypeValueException {
         try{
-            return new DateTimeData(parse(content), this);
+            return parse(content);
         } catch(Exception ex){
             throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "date"});
         }
@@ -45,9 +45,9 @@ public class DateDV extends DateTimeDV {
      * @return normalized dateTime representation
      * @exception SchemaDateTimeException Invalid lexical representation
      */
-    protected int[] parse(String str) throws SchemaDateTimeException{
+    protected DateTimeData parse(String str) throws SchemaDateTimeException{
+        DateTimeData date = new DateTimeData(this);
         int len = str.length();
-        int[] date = new int[TOTAL_SIZE];
         int[] timeZone = new int[2];
 
         int end = getDate(str, 0, len, date);
@@ -57,20 +57,20 @@ public class DateDV extends DateTimeDV {
         //REVISIT: do we need SchemaDateTimeException?
         validateDateTime(date, timeZone);
 
-        if ( date[utc]!=0 && date[utc]!='Z' ) {
+        if (date.utc!=0 && date.utc!='Z') {
             normalize(date, timeZone);
         }
         return date;
     }
 
-    protected String dateToString(int[] date) {
+    protected String dateToString(DateTimeData date) {
         StringBuffer message = new StringBuffer(25);
-        append(message, date[CY], 4);
+        append(message, date.year, 4);
         message.append('-');
-        append(message, date[M], 2);
+        append(message, date.month, 2);
         message.append('-');
-        append(message, date[D], 2);
-        append(message, (char)date[utc], 0);
+        append(message, date.day, 2);
+        append(message, (char)date.utc, 0);
         return message.toString();
     }
 
