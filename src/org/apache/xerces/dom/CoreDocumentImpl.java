@@ -1831,10 +1831,6 @@ public class CoreDocumentImpl
     public Element createElementNS(String namespaceURI, String qualifiedName)
         throws DOMException
     {
-        if (errorChecking && !isXMLName(qualifiedName)) {
-            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_CHARACTER_ERR", null);
-            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
-        }
         return new ElementNSImpl(this, namespaceURI, qualifiedName);
     }
 
