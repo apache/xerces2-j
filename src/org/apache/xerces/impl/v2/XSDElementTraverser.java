@@ -62,6 +62,7 @@ import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.XInt;
 import org.apache.xerces.util.XIntPool;
+import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.QName;
 import  org.w3c.dom.Element;
 
@@ -497,7 +498,8 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         return ret;
     }
 
-    void reset() {
+    void reset(XMLErrorReporter reporter, SymbolTable symbolTable) {
+        super.reset(reporter, symbolTable);
         fDeferTraversingLocalElements = true;
     } // reset()
 

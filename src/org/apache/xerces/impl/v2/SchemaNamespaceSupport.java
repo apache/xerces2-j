@@ -118,14 +118,14 @@ public class SchemaNamespaceSupport
     String [] getEffectiveLocalContext() {
         // the trick here is to recognize that all local contexts
         // happen to start at fContext[2].
-        int topLocalContext = (fCurrentContext >= 2) ? fContext[2]:-1;
-        if (topLocalContext == -1) {
+        int bottomLocalContext = (fCurrentContext >= 2) ? fContext[2]:-1;
+        if (bottomLocalContext == -1) {
             // no local decls!
             return null;
         }
-        String [] returnVal = new String[fNamespaceSize-topLocalContext+1];
-        System.arraycopy(fNamespace, 0, returnVal, 0,
-                topLocalContext);
+        String [] returnVal = new String[fNamespaceSize-bottomLocalContext];
+        System.arraycopy(fNamespace, bottomLocalContext, returnVal, 0,
+                fNamespaceSize-bottomLocalContext);
         return returnVal;
     } // getEffectiveLocalContext():String
 
