@@ -956,10 +956,10 @@ extends ParentNode implements Document  {
      */
     public Node renameNode(Node n,String namespaceURI,String name)
     throws DOMException{
-
-        if (n.getOwnerDocument() != this && n != this) {
+        
+        if (errorChecking && n.getOwnerDocument() != this && n != this) {
             String msg = DOMMessageFormatter.formatMessage(
-            DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null);
+                    DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null);
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);
         }
         switch (n.getNodeType()) {
@@ -969,44 +969,45 @@ extends ParentNode implements Document  {
                     ((ElementNSImpl) el).rename(namespaceURI, name);
                     
                     // fire user data NODE_RENAMED event
-                    callUserDataHandlers(el, null,
-                    UserDataHandler.NODE_RENAMED);
+                    callUserDataHandlers(el, null, UserDataHandler.NODE_RENAMED);
                 }
                 else {
                     if (namespaceURI == null) {
-                        int colon1 = name.indexOf(':');
-                        if(colon1 != -1){
-                            String msg =
-                            DOMMessageFormatter.formatMessage(
-                            DOMMessageFormatter.DOM_DOMAIN,
-                            "NAMESPACE_ERR",
-                            null);
-                            throw new DOMException(DOMException.NAMESPACE_ERR, msg);
-                        }
-                        if (errorChecking && !isXMLName(name,xml11Version)) {
-                            String msg = DOMMessageFormatter.formatMessage(
-                            DOMMessageFormatter.DOM_DOMAIN,
-                            "INVALID_CHARACTER_ERR", null);
-                            throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
-                            msg);
+                        if (errorChecking) {
+                            int colon1 = name.indexOf(':');
+                            if(colon1 != -1){
+                                String msg =
+                                    DOMMessageFormatter.formatMessage(
+                                            DOMMessageFormatter.DOM_DOMAIN,
+                                            "NAMESPACE_ERR",
+                                            null);
+                                throw new DOMException(DOMException.NAMESPACE_ERR, msg);
+                            }
+                            if (!isXMLName(name,xml11Version)) {
+                                String msg = DOMMessageFormatter.formatMessage(
+                                        DOMMessageFormatter.DOM_DOMAIN,
+                                        "INVALID_CHARACTER_ERR", null);
+                                throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
+                                        msg);
+                            }
                         }
                         el.rename(name);
                         
                         // fire user data NODE_RENAMED event
                         callUserDataHandlers(el, null,
-                        UserDataHandler.NODE_RENAMED);
+                                UserDataHandler.NODE_RENAMED);
                     }
                     else {
                         // we need to create a new object
                         ElementNSImpl nel =
-                        new ElementNSImpl(this, namespaceURI, name);
-
+                            new ElementNSImpl(this, namespaceURI, name);
+                        
                         // register event listeners on new node
                         copyEventListeners(el, nel);
-
+                        
                         // remove user data from old node
                         Hashtable data = removeUserDataTable(el);
-
+                        
                         // remove old node from parent if any
                         Node parent = el.getParentNode();
                         Node nextSib = el.getNextSibling();
@@ -1022,14 +1023,14 @@ extends ParentNode implements Document  {
                         }
                         // move specified attributes to new node
                         nel.moveSpecifiedAttributes(el);
-
+                        
                         // attach user data to new node
                         setUserDataTable(nel, data);
-
+                        
                         // and fire user data NODE_RENAMED event
                         callUserDataHandlers(el, nel,
-                        UserDataHandler.NODE_RENAMED);
-
+                                UserDataHandler.NODE_RENAMED);
+                        
                         // insert new node where old one was
                         if (parent != null) {
                             parent.insertBefore(nel, nextSib);
@@ -1043,7 +1044,7 @@ extends ParentNode implements Document  {
             }
             case ATTRIBUTE_NODE: {
                 AttrImpl at = (AttrImpl) n;
-
+                
                 // dettach attr from element
                 Element el = at.getOwnerElement();
                 if (el != null) {
@@ -1057,8 +1058,7 @@ extends ParentNode implements Document  {
                     }
                     
                     // fire user data NODE_RENAMED event
-                    callUserDataHandlers(at, null,
-                    UserDataHandler.NODE_RENAMED);
+                    callUserDataHandlers(at, null, UserDataHandler.NODE_RENAMED);
                 }
                 else {
                     if (namespaceURI == null) {
@@ -1069,20 +1069,18 @@ extends ParentNode implements Document  {
                         }
                         
                         // fire user data NODE_RENAMED event
-                        callUserDataHandlers(at, null,
-                        UserDataHandler.NODE_RENAMED);
+                        callUserDataHandlers(at, null, UserDataHandler.NODE_RENAMED);
                     }
                     else {
                         // we need to create a new object
-                        AttrNSImpl nat =
-                        new AttrNSImpl(this, namespaceURI, name);
-
+                        AttrNSImpl nat = new AttrNSImpl(this, namespaceURI, name);
+                        
                         // register event listeners on new node
                         copyEventListeners(at, nat);
-
+                        
                         // remove user data from old node
                         Hashtable data = removeUserDataTable(at);
-
+                        
                         // move children to new node
                         Node child = at.getFirstChild();
                         while (child != null) {
@@ -1090,14 +1088,13 @@ extends ParentNode implements Document  {
                             nat.appendChild(child);
                             child = at.getFirstChild();
                         }
-
+                        
                         // attach user data to new node
                         setUserDataTable(nat, data);
-
+                        
                         // and fire user data NODE_RENAMED event
-                        callUserDataHandlers(at, nat,
-                        UserDataHandler.NODE_RENAMED);
-
+                        callUserDataHandlers(at, nat, UserDataHandler.NODE_RENAMED);
+                        
                         // reattach attr to element
                         if (el != null) {
                             el.setAttributeNode(nat);
@@ -1107,7 +1104,7 @@ extends ParentNode implements Document  {
                 }
                 // fire AttributeNameChanged event
                 renamedAttrNode((Attr) n, at);
-
+                
                 return at;
             }
             default: {
@@ -1115,7 +1112,7 @@ extends ParentNode implements Document  {
                 throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
             }
         }
-
+        
     }
 
 
@@ -1318,8 +1315,8 @@ extends ParentNode implements Document  {
      */
     public String saveXML(Node node)
     throws DOMException {
-        if ( node != null &&
-        this != node.getOwnerDocument() ) {
+        if ( errorChecking && node != null &&
+            this != node.getOwnerDocument() ) {
             String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null);
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);
         }
@@ -1330,7 +1327,6 @@ extends ParentNode implements Document  {
         }
         return xmlWriter.writeToString(node);
     }
-
 
     /**
      * Sets whether the DOM implementation generates mutation events
