@@ -383,7 +383,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                 reportSchemaError("s4s-elt-must-match", new Object[]{SchemaSymbols.ELT_LIST, "(annotation?, (simpleType?))"}, content);
             }
             else if (union) {
-                reportSchemaError("s4s-elt-must-match", new Object[]{SchemaSymbols.ELT_LIST, "(annotation?, (simpleType*))"}, content);
+                reportSchemaError("s4s-elt-must-match", new Object[]{SchemaSymbols.ELT_UNION, "(annotation?, (simpleType*))"}, content);
             }
         }
         
