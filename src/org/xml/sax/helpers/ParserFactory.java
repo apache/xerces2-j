@@ -1,6 +1,7 @@
 // SAX parser factory.
+// http://www.saxproject.org
 // No warranty; no copyright -- use this as you will.
-// $Id: ParserFactory.java,v 1.4 2000/05/05 17:50:13 david Exp $
+// $Id: ParserFactory.java,v 1.6 2001/11/21 01:02:50 dbrownell Exp $
 
 package org.xml.sax.helpers;
 
@@ -19,6 +20,8 @@ import org.xml.sax.Parser;
  * <blockquote>
  * <em>This module, both source code and documentation, is in the
  * Public Domain, and comes with <strong>NO WARRANTY</strong>.</em>
+ * See <a href='http://www.saxproject.org'>http://www.saxproject.org</a>
+ * for further information.
  * </blockquote>
  *
  * <p><strong>Note:</strong> This class is designed to work with the now-deprecated
@@ -40,11 +43,8 @@ import org.xml.sax.Parser;
  *             {@link org.xml.sax.Parser Parser}
  *             interface.
  * @since SAX 1.0
- * @author David Megginson, 
- *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
- * @version 2.0
- * @see org.xml.sax.Parser
- * @see java.lang.Class
+ * @author David Megginson
+ * @version 2.0r2pre3
  */
 public class ParserFactory {
     
@@ -121,9 +121,9 @@ public class ParserFactory {
 	InstantiationException,
 	ClassCastException
     {
-	return (Parser)(Class.forName(className).newInstance());
+	return (Parser) NewInstance.newInstance (
+		NewInstance.getClassLoader (), className);
     }
     
 }
 
-// end of ParserFactory.java
