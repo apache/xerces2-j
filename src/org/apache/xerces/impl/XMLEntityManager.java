@@ -125,7 +125,7 @@ public class XMLEntityManager
     //
 
     /** Default buffer size (2048). */
-    public static final int DEFAULT_BUFFER_SIZE = 64;
+    public static final int DEFAULT_BUFFER_SIZE = 2048;
 
     // debugging
 
