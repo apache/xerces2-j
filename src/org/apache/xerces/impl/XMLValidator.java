@@ -593,12 +593,6 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
             qname.setValues(element);
             fElementChildrenLength++;
 
-            /***
-            if (DEBUG_ELEMENT_CHILDREN) {
-                printChildren();
-                printStack();
-            }
-            /***/
         }
 
 
@@ -1808,10 +1802,10 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         }
 
         // now iterate through the expanded attributes for
-        // 0. if every attribute seen is declared in the DTD
-        // 1. normalize the attributeValue;
+        // 1. if every attribute seen is declared in the DTD
         // 2. check if the VC: default_fixed holds
         // 3. validate every attribute.
+        if (fValidation)
         for (int i = 0; i< attributes.getLength(); i++) {
             String attrRawName = attributes.getName(i);
             boolean declared = false;
@@ -1820,7 +1814,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                 // check VC: Standalone Document Declartion, entities references appear in the document.
                 // REVISIT: this can be combined to a single check in startEntity 
                 // if we add one more argument in startEnity, inAttrValue
-                if (fValidation && fStandaloneIsYes) {
+                if (fStandaloneIsYes) {
                     for (int j=0;  j<attributes.getEntityCount(i); j++) {
                         String entityName= attributes.getEntityName(i, j);
                         int entIndex = fCurrentGrammar.getEntityDeclIndex(entityName);
@@ -1850,16 +1844,14 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                     position = fCurrentGrammar.getNextAttributeDeclIndex(position);
                 }
                 if (attDefIndex == -1) {
-                    if (fValidation) {
-                        // REVISIT - cache the elem/attr tuple so that we only give
-                        //  this error once for each unique occurrence
-                        Object[] args = { element.localpart,
-                            attrRawName};
+                    // REVISIT - cache the elem/attr tuple so that we only give
+                    //  this error once for each unique occurrence
+                    Object[] args = { element.localpart,
+                        attrRawName};
 
-                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                   "MSG_ATTRIBUTE_NOT_DECLARED",
-                                                   args,XMLErrorReporter.SEVERITY_ERROR);   
-                    }
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "MSG_ATTRIBUTE_NOT_DECLARED",
+                                               args,XMLErrorReporter.SEVERITY_ERROR);   
                 } else {
 
                     // fTempAttDecl should have the right value set now, so the following is not needed
@@ -1873,7 +1865,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
             // REVISIT: this is done in XMLScanner, Just that entity ref positions not being moved accordingly
             //normalizeAttrValue(attributes, i);
 
-            if (declared && fValidation) {
+            if (declared) {
                 String attrValue = attributes.getValue(i);
                 if (fTempAttDecl.simpleType.defaultType == XMLSimpleType.DEFAULT_TYPE_FIXED) {
                     String defaultValue = fTempAttDecl.simpleType.defaultValue;
