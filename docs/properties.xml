@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--
- * Copyright 1999-2004 The Apache Software Foundation.
+ * Copyright 1999-2005 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@
   <p>
    The DocumentBuilderFactory interface contains a 
    <code>setAttribute(String,Object)</code> method which <em>may</em>
-   provide a means to set properties on the underyling parser. When 
+   provide a means to set properties on the underlying parser. When 
    using Xerces, you can set the value of a property with this method.
    For example:
   </p>

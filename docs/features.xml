@@ -26,7 +26,7 @@
   <p>
    The DocumentBuilderFactory interface contains a 
    <code>setAttribute(String,Object)</code> method which <em>may</em>
-   provide a means to set features on the underyling parser. When using
+   provide a means to set features on the underlying parser. When using
    Xerces, to set a feature you specify an instance of
    <code>java.lang.Boolean</code> as the value of the attribute.
    For example:
