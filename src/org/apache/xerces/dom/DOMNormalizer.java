@@ -1486,8 +1486,8 @@ public class DOMNormalizer implements XMLDocumentHandler {
 				String text = elementNode.getTextContent();
 				if (text.length() == 0) {
 					// default content could be provided
-					// REVISIT: should setTextConent(null) be allowed?
-					elementNode.setTextContent(normalizedValue);
+                    if (normalizedValue !=null)
+                        elementNode.setTextContent(normalizedValue);
 				}
 			}
 		}
