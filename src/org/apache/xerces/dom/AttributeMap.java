@@ -274,6 +274,21 @@ public class AttributeMap extends NamedNodeMapImpl {
             }
         }
 
+        LCount lc=null;
+        String oldvalue="";
+        AttrImpl enclosingAttribute=null;
+        if (NodeImpl.MUTATIONEVENTS
+            && ownerNode.ownerDocument().mutationEvents)
+        {
+            // MUTATION PREPROCESSING AND PRE-EVENTS:
+            lc=LCount.lookup(MutationEventImpl.DOM_ATTR_MODIFIED);
+            if(lc.captures+lc.bubbles+lc.defaults>0)
+            {
+               enclosingAttribute=(AttrImpl)(nodes.elementAt(i));
+               oldvalue=enclosingAttribute.getNodeValue();
+            }
+        } // End mutation preprocessing
+
         NodeImpl n = (NodeImpl)nodes.elementAt(i);
         // If there's a default, add it instead
         if (hasDefaults()) {
@@ -302,6 +317,30 @@ public class AttributeMap extends NamedNodeMapImpl {
         n.isOwned(false);
         // make sure it won't be mistaken with defaults in case it's reused
         n.isSpecified(true);
+
+        // We can't use the standard dispatchAggregate, since it assumes
+        // that the Attr is still attached to an owner. This code is
+        // similar but dispatches to the previous owner, "element".
+        if(NodeImpl.MUTATIONEVENTS && ownerNode.ownerDocument().mutationEvents)
+        {
+    	    // If we have to send DOMAttrModified (determined earlier),
+            // do so.
+            if(lc.captures+lc.bubbles+lc.defaults>0) {
+                MutationEvent me= new MutationEventImpl();
+                //?????ownerDocument.createEvent("MutationEvents");
+                me.initMutationEvent(MutationEventImpl.DOM_ATTR_MODIFIED,
+                                     true, false,
+                                     null, n.getNodeValue(),
+				     null, name);
+                ownerNode.dispatchEvent(me);
+            }
+
+            // We can hand off to process DOMSubtreeModified, though.
+            // Note that only the Element needs to be informed; the
+            // Attr's subtree has not been changed by this operation.
+            ownerNode.dispatchAggregateEvents(null,null);
+        }
+
         return n;
 
     } // removeNamedItem(String):Node
@@ -422,7 +461,7 @@ public class AttributeMap extends NamedNodeMapImpl {
                 me.initMutationEvent(MutationEventImpl.DOM_ATTR_MODIFIED,
                                      true, false,
                                      null, n.getNodeValue(),
-                             ((ElementImpl)ownerNode).getAttribute(name),name);
+				     null, name);
                 ownerNode.dispatchEvent(me);
             }
 

@@ -427,9 +427,13 @@ public class ElementImpl
             if (attributes == null) {
                 attributes = new AttributeMap(this, null);
             }
+
+	    newAttr.setNodeValue(value);
             attributes.setNamedItem(newAttr);
         }
-    	newAttr.setNodeValue(value);
+	else {
+	    newAttr.setNodeValue(value);
+	}
 
     } // setAttribute(String,String)
  
@@ -567,9 +571,12 @@ public class ElementImpl
             if (attributes == null) {
                 attributes = new AttributeMap(this, null);
             }
+	    newAttr.setNodeValue(value);
             attributes.setNamedItemNS(newAttr);
     	}
-    	newAttr.setNodeValue(value);
+	else {
+	    newAttr.setNodeValue(value);
+	}
 
     } // setAttributeNS(String,String,String)
     

@@ -1141,12 +1141,7 @@ public abstract class NodeImpl
 	{
       if(MUTATIONEVENTS && ownerDocument().mutationEvents)
       {
-          Vector nodeListeners = ownerDocument().getEventListeners(this);
-	    if(nodeListeners==null)
-            return;
-
-	    // If we have to send DOMAttrModified (determined earlier),
-	    // do so.
+	    // We have to send DOMAttrModified.
 	    NodeImpl owner=null;
 	    if(enclosingAttr!=null)
 	    {
