@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -182,7 +182,7 @@ public class SchemaGrammar implements Grammar, XSGrammar, XSNamespaceItem {
                 // grammar description
                 fGrammarDescription = new XSDDescription();
                 fGrammarDescription.fContextType = XSDDescription.CONTEXT_PREPARSE;
-                fGrammarDescription.fTargetNamespace = SchemaSymbols.URI_SCHEMAFORSCHEMA;
+                fGrammarDescription.setNamespace(SchemaSymbols.URI_SCHEMAFORSCHEMA);
         
                 // no global decls other than types
                 fGlobalAttrDecls  = new SymbolHash(1);
@@ -203,7 +203,7 @@ public class SchemaGrammar implements Grammar, XSGrammar, XSNamespaceItem {
                 // grammar description
                 fGrammarDescription = new XSDDescription();
                 fGrammarDescription.fContextType = XSDDescription.CONTEXT_PREPARSE;
-                fGrammarDescription.fTargetNamespace = SchemaSymbols.URI_XSI;
+                fGrammarDescription.setNamespace(SchemaSymbols.URI_XSI);
         
                 // no global decls other than attributes
                 fGlobalAttrGrpDecls = new SymbolHash(1);
@@ -218,7 +218,6 @@ public class SchemaGrammar implements Grammar, XSGrammar, XSNamespaceItem {
                 String name = null;
                 String tns = null;
                 XSSimpleType type = null;
-                short constraint = XSConstants.VC_NONE;
                 short scope = XSConstants.SCOPE_GLOBAL;
                 
                 // xsi:type

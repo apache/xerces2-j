@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.  
+ * Copyright (c) 2002, 2003 The Apache Software Foundation.  
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,11 +57,11 @@
 
 package org.apache.xerces.impl.xs;
 
-import org.apache.xerces.xni.grammars.XMLSchemaDescription;
-import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.util.XMLResourceIdentifierImpl;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
+import org.apache.xerces.xni.grammars.XMLGrammarDescription;
+import org.apache.xerces.xni.grammars.XMLSchemaDescription;
 
 /*
  * All information specific to XML Schema grammars.
@@ -131,7 +131,6 @@ public class XSDDescription extends XMLResourceIdentifierImpl
 
     // REVISIT: write description of these fields	
     protected short fContextType;
-    protected String fTargetNamespace;
     protected String [] fLocationHints ;
     protected QName fTriggeringComponent;
     protected QName fEnclosedElementName;
@@ -164,7 +163,7 @@ public class XSDDescription extends XMLResourceIdentifierImpl
      * @return  the expected/enclosing target namespace
      */
     public String getTargetNamespace() {
-        return fTargetNamespace ;
+        return fNamespace;
     }
 
     /**
@@ -227,9 +226,9 @@ public class XSDDescription extends XMLResourceIdentifierImpl
     public boolean equals(Object descObj) {
         if(!(descObj instanceof XMLSchemaDescription)) return false;
         XMLSchemaDescription desc = (XMLSchemaDescription)descObj;
-        if (fTargetNamespace != null)
-            return fTargetNamespace.equals(desc.getTargetNamespace());
-        else // fTargetNamespace == null
+        if (fNamespace != null)
+            return fNamespace.equals(desc.getTargetNamespace());
+        else // fNamespace == null
             return desc.getTargetNamespace() == null;
     }
     
@@ -239,7 +238,7 @@ public class XSDDescription extends XMLResourceIdentifierImpl
      * @return The hash code
      */
     public int hashCode() {
-         return (fTargetNamespace == null) ? 0 : fTargetNamespace.hashCode();
+         return (fNamespace == null) ? 0 : fNamespace.hashCode();
     }
     
     public void setContextType(short contextType){
@@ -247,7 +246,7 @@ public class XSDDescription extends XMLResourceIdentifierImpl
     }
 
     public void setTargetNamespace(String targetNamespace){
-        fTargetNamespace = targetNamespace ;
+        fNamespace = targetNamespace ;
     }
 
     public void setLocationHints(String [] locationHints){
@@ -273,8 +272,8 @@ public class XSDDescription extends XMLResourceIdentifierImpl
      *  resets all the fields
      */
     public void reset(){
+        super.clear();
         fContextType = CONTEXT_INITIALIZE;
-        fTargetNamespace = null ;
         fLocationHints  = null ;
         fTriggeringComponent = null ;
         fEnclosedElementName = null ;
@@ -291,7 +290,7 @@ public class XSDDescription extends XMLResourceIdentifierImpl
         desc.fLiteralSystemId = this.fLiteralSystemId;
         desc.fLocationHints = this.fLocationHints;
         desc.fPublicId = this.fPublicId;
-        desc.fTargetNamespace = this.fTargetNamespace;
+        desc.fNamespace = this.fNamespace;
         desc.fTriggeringComponent = this.fTriggeringComponent;
         return desc;
     }

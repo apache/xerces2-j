@@ -57,68 +57,63 @@
 
 package org.apache.xerces.impl.xs;
 
-import org.apache.xerces.impl.RevalidationHandler;
-import org.apache.xerces.impl.dv.XSSimpleType;
-import org.apache.xerces.impl.dv.ValidatedInfo;
-import org.apache.xerces.impl.dv.DatatypeException;
-import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
-import org.apache.xerces.impl.xs.identity.*;
-import org.apache.xerces.impl.Constants;
-import org.apache.xerces.impl.validation.ValidationManager;
-import org.apache.xerces.util.XMLGrammarPoolImpl;
-import org.apache.xerces.impl.XMLErrorReporter;
-import org.apache.xerces.impl.xs.traversers.XSAttributeChecker;
-import org.apache.xerces.impl.xs.models.CMBuilder;
-import org.apache.xerces.impl.xs.models.XSCMValidator;
-import org.apache.xerces.impl.xs.psvi.XSConstants;
-import org.apache.xerces.impl.xs.psvi.XSObjectList;
-import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
-import org.apache.xerces.impl.msg.XMLMessageFormatter;
-import org.apache.xerces.impl.validation.ValidationState;
-import org.apache.xerces.impl.XMLEntityManager;
-
-
-import org.apache.xerces.util.AugmentationsImpl;
-import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.util.XMLSymbols;
-import org.apache.xerces.util.XMLChar;
-import org.apache.xerces.util.IntStack;
-import org.apache.xerces.util.XMLResourceIdentifierImpl;
-import org.apache.xerces.util.XMLAttributesImpl;
-
-import org.apache.xerces.xni.Augmentations;
-import org.apache.xerces.xni.NamespaceContext;
-import org.apache.xerces.xni.QName;
-import org.apache.xerces.xni.XMLString;
-import org.apache.xerces.xni.XMLAttributes;
-import org.apache.xerces.xni.XMLDocumentHandler;
-import org.apache.xerces.xni.parser.XMLDocumentFilter;
-import org.apache.xerces.xni.XMLLocator;
-import org.apache.xerces.xni.XMLResourceIdentifier;
-import org.apache.xerces.xni.XNIException;
-import org.apache.xerces.xni.parser.XMLComponent;
-import org.apache.xerces.xni.parser.XMLComponentManager;
-import org.apache.xerces.xni.parser.XMLConfigurationException;
-import org.apache.xerces.xni.parser.XMLDocumentSource;
-import org.apache.xerces.xni.parser.XMLEntityResolver;
-import org.apache.xerces.xni.parser.XMLInputSource;
-
-import org.apache.xerces.xni.grammars.XMLGrammarPool;
-import org.apache.xerces.xni.grammars.Grammar;
-import org.apache.xerces.xni.grammars.XMLGrammarDescription;
-
-
-import org.apache.xerces.xni.psvi.ElementPSVI;
-import org.apache.xerces.xni.psvi.AttributePSVI;
-
-import org.xml.sax.InputSource ;
-
+import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Stack;
 import java.util.Vector;
-import java.io.IOException;
+
+import org.apache.xerces.impl.Constants;
+import org.apache.xerces.impl.RevalidationHandler;
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.dv.DatatypeException;
+import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
+import org.apache.xerces.impl.dv.ValidatedInfo;
+import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.validation.ValidationManager;
+import org.apache.xerces.impl.validation.ValidationState;
+import org.apache.xerces.impl.xs.identity.Field;
+import org.apache.xerces.impl.xs.identity.FieldActivator;
+import org.apache.xerces.impl.xs.identity.IDValue;
+import org.apache.xerces.impl.xs.identity.IdentityConstraint;
+import org.apache.xerces.impl.xs.identity.KeyRef;
+import org.apache.xerces.impl.xs.identity.Selector;
+import org.apache.xerces.impl.xs.identity.UniqueOrKey;
+import org.apache.xerces.impl.xs.identity.ValueStore;
+import org.apache.xerces.impl.xs.identity.XPathMatcher;
+import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.models.CMNodeFactory;
+import org.apache.xerces.impl.xs.models.XSCMValidator;
+import org.apache.xerces.impl.xs.psvi.XSConstants;
+import org.apache.xerces.impl.xs.psvi.XSObjectList;
+import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
+import org.apache.xerces.util.AugmentationsImpl;
+import org.apache.xerces.util.IntStack;
+import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLAttributesImpl;
+import org.apache.xerces.util.XMLChar;
+import org.apache.xerces.util.XMLResourceIdentifierImpl;
+import org.apache.xerces.util.XMLSymbols;
+import org.apache.xerces.xni.Augmentations;
+import org.apache.xerces.xni.NamespaceContext;
+import org.apache.xerces.xni.QName;
+import org.apache.xerces.xni.XMLAttributes;
+import org.apache.xerces.xni.XMLDocumentHandler;
+import org.apache.xerces.xni.XMLLocator;
+import org.apache.xerces.xni.XMLResourceIdentifier;
+import org.apache.xerces.xni.XMLString;
+import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.grammars.XMLGrammarDescription;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
+import org.apache.xerces.xni.parser.XMLComponent;
+import org.apache.xerces.xni.parser.XMLComponentManager;
+import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLDocumentFilter;
+import org.apache.xerces.xni.parser.XMLDocumentSource;
+import org.apache.xerces.xni.parser.XMLEntityResolver;
+import org.apache.xerces.xni.parser.XMLInputSource;
+import org.apache.xerces.xni.psvi.AttributePSVI;
+import org.apache.xerces.xni.psvi.ElementPSVI;
 
 /**
  * The XML Schema validator. The validator implements a document
@@ -2327,7 +2322,7 @@ public class XMLSchemaValidator
         if (grammar == null){
             fXSDDescription.reset();
             fXSDDescription.fContextType = contextType ;
-            fXSDDescription.fTargetNamespace = namespace ;
+            fXSDDescription.setNamespace(namespace);
             fXSDDescription.fEnclosedElementName = enclosingElement ;
             fXSDDescription.fTriggeringComponent = triggeringComponet ;
             fXSDDescription.fAttributes = attributes ;
@@ -2872,7 +2867,6 @@ public class XMLSchemaValidator
                     }
                 }
                 else if (fCurrentType.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
-                    XSSimpleType sType = (XSSimpleType)fCurrentType;
                     if (actualValue != null &&
                         !actualValue.equals(fCurrentElemDecl.fDefault.actualValue))
                         // REVISIT: the spec didn't mention this case: fixed

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000-2002 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000-2003 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -92,4 +92,11 @@ public interface XMLResourceIdentifier {
     /** <p> Returns the base URI against which the literal SystemId is to be 
         resolved. </p> */
     public String getBaseSystemId();
+
+    /** Sets the namespace of the resource. */
+    public void setNamespace(String namespace);
+     
+    /** Returns the namespace of the resource. */
+    public String getNamespace();
+    
 } // XMLResourceIdentifier
