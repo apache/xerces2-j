@@ -11,6 +11,7 @@
            <li>Fixed StringReader index out of bounds exception bug [andyc]</li>
            <li>Turned on namespace support in all parsers, by default [andyc]</li>
            <li>Added feature to allow Schema support to be turned off [andyc]</li>
+           <li>Fixed SAX2 DeclHandler, LexicalHandler callbacks [andyc]</li>
            <li>Fixed DOM serialization [jeffreyr]</li>
            <li>Fixed datatype enumeration bugs [jeffreyr]</li>
            <li>Fixed datatype pattern bugs [jeffreyr]</li>

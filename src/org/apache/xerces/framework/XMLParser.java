@@ -92,7 +92,8 @@ import org.xml.sax.SAXParseException;
  *
  * @version $Id$
  */
-public class XMLParser implements XMLErrorReporter {
+public abstract class XMLParser 
+    implements XMLErrorReporter, XMLDocumentHandler.DTDHandler {
 
     //
     // Constants
@@ -219,6 +220,7 @@ public class XMLParser implements XMLErrorReporter {
                                 XMLDocumentHandler.DTDHandler dtdHandler)
     {
         fValidator.initHandlers(sendCharDataAsCharArray, docHandler, dtdHandler);
+        fScanner.setDTDHandler(this);
     }
 
     //

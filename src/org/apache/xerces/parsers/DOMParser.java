@@ -112,7 +112,7 @@ import org.xml.sax.SAXNotSupportedException;
  */
 public class DOMParser
     extends XMLParser
-    implements XMLDocumentHandler, XMLDocumentHandler.DTDHandler
+    implements XMLDocumentHandler
     {
 
     //
@@ -209,7 +209,6 @@ public class DOMParser
     public DOMParser() {
 
         initHandlers(false, this, this);
-        fScanner.setDTDHandler(this);
 
         // setup parser state
         init();
