@@ -139,13 +139,14 @@ public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, X
         new UnionDV()
     };
 
-    static final short SPECIAL_TOKEN_NONE        = 0;
-    static final short SPECIAL_TOKEN_NMTOKEN     = 1;
-    static final short SPECIAL_TOKEN_NAME        = 2;
-    static final short SPECIAL_TOKEN_NCNAME      = 3;
+    static final short SPECIAL_PATTERN_NONE     = 0;
+    static final short SPECIAL_PATTERN_NMTOKEN  = 1;
+    static final short SPECIAL_PATTERN_NAME     = 2;
+    static final short SPECIAL_PATTERN_NCNAME   = 3;
+    static final short SPECIAL_PATTERN_INTEGER  = 4;
 
-    static final String[] SPECIAL_TOKEN_STRING   = {
-        "NONE", "NMTOKEN", "Name", "NCName",
+    static final String[] SPECIAL_PATTERN_STRING   = {
+        "NONE", "NMTOKEN", "Name", "NCName", "integer"
     };
 
     static final String[] WS_FACET_STRING = {
@@ -179,7 +180,7 @@ public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, X
     private Object fMinExclusive;
     private Object fMinInclusive;
 
-    private short fTokenType = SPECIAL_TOKEN_NONE;
+    private short fPatternType = SPECIAL_PATTERN_NONE;
 
     // for fundamental facets
     private short fOrdered;
@@ -243,7 +244,7 @@ public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, X
         fMinInclusive = fBase.fMinInclusive;
         fTotalDigits = fBase.fTotalDigits;
         fFractionDigits = fBase.fFractionDigits;
-        fTokenType = fBase.fTokenType;
+        fPatternType = fBase.fPatternType;
         fFixedFacet = fBase.fFixedFacet;
         fFacetsDefined = fBase.fFacetsDefined;
 
@@ -324,7 +325,7 @@ public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, X
         fMinInclusive = fBase.fMinInclusive;
         fTotalDigits = fBase.fTotalDigits;
         fFractionDigits = fBase.fFractionDigits;
-        fTokenType = fBase.fTokenType;
+        fPatternType = fBase.fPatternType;
         fFixedFacet = fBase.fFixedFacet;
         fFacetsDefined = fBase.fFacetsDefined;
 
@@ -471,7 +472,7 @@ public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, X
      */
     public void applyFacets(XSFacets facets, short presentFacet, short fixedFacet, ValidationContext context)
         throws InvalidDatatypeFacetException {
-        applyFacets(facets, presentFacet, fixedFacet, (short)0, context);
+        applyFacets(facets, presentFacet, fixedFacet, SPECIAL_PATTERN_NONE, context);
     }
 
     /**
@@ -480,7 +481,7 @@ public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, X
     void applyFacets1(XSFacets facets, short presentFacet, short fixedFacet) {
 
         try {
-            applyFacets(facets, presentFacet, fixedFacet, (short)0, fDummyContext);
+            applyFacets(facets, presentFacet, fixedFacet, SPECIAL_PATTERN_NONE, fDummyContext);
         } catch (InvalidDatatypeFacetException e) {
             // should never gets here, internel error
             throw new RuntimeException("internal error");
@@ -490,10 +491,10 @@ public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, X
     /**
      * built-in derived types by restriction
      */
-    void applyFacets1(XSFacets facets, short presentFacet, short fixedFacet, short tokenType) {
+    void applyFacets1(XSFacets facets, short presentFacet, short fixedFacet, short patternType) {
 
         try {
-            applyFacets(facets, presentFacet, fixedFacet, tokenType, fDummyContext);
+            applyFacets(facets, presentFacet, fixedFacet, patternType, fDummyContext);
         } catch (InvalidDatatypeFacetException e) {
             // should never gets here, internel error
             throw new RuntimeException("internal error");
@@ -503,7 +504,7 @@ public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, X
     /**
      * If <restriction> is chosen, or built-in derived types by restriction
      */
-    void applyFacets(XSFacets facets, short presentFacet, short fixedFacet, short tokenType, ValidationContext context)
+    void applyFacets(XSFacets facets, short presentFacet, short fixedFacet, short patternType, ValidationContext context)
         throws InvalidDatatypeFacetException {
 
         ValidatedInfo tempInfo = new ValidatedInfo();
@@ -772,8 +773,8 @@ public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, X
         }
 
         // token type: internal use, so do less checking
-        if (tokenType != SPECIAL_TOKEN_NONE) {
-            fTokenType = tokenType;
+        if (patternType != SPECIAL_PATTERN_NONE) {
+            fPatternType = patternType;
         }
 
         // step 2: check facets against each other: length, bounds
@@ -1086,7 +1087,7 @@ public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, X
             fFacetsDefined |= FACET_MAXLENGTH;
             fMaxLength = fBase.fMaxLength;
         }
-        // inherit pattern //???
+        // inherit pattern
         if ( (fBase.fFacetsDefined & FACET_PATTERN) != 0 ) {
             if ((fFacetsDefined & FACET_PATTERN) == 0) {
                 fPattern = new Vector();
@@ -1094,7 +1095,6 @@ public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, X
             }
             for (int i = fBase.fPattern.size()-1; i >= 0; i--)
                 fPattern.addElement(fBase.fPattern.elementAt(i));
-
         }
         // inherit whiteSpace
         if ( (fFacetsDefined & FACET_WHITESPACE) == 0 &&  (fBase.fFacetsDefined & FACET_WHITESPACE) != 0 ) {
@@ -1143,8 +1143,8 @@ public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, X
             fFractionDigits = fBase.fFractionDigits;
         }
         //inherit tokeytype
-        if ((fTokenType == SPECIAL_TOKEN_NONE ) && (fBase.fTokenType != SPECIAL_TOKEN_NONE)) {
-            fTokenType = fBase.fTokenType ;
+        if ((fPatternType == SPECIAL_PATTERN_NONE ) && (fBase.fPatternType != SPECIAL_PATTERN_NONE)) {
+            fPatternType = fBase.fPatternType ;
         }
 
         // step 5: mark fixed values
@@ -1348,25 +1348,30 @@ public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, X
             }
 
             // validate special kinds of token, in place of old pattern matching
-            if (fTokenType != SPECIAL_TOKEN_NONE) {
+            if (fPatternType != SPECIAL_PATTERN_NONE) {
 
                 boolean seenErr = false;
-                if (fTokenType == SPECIAL_TOKEN_NMTOKEN) {
+                if (fPatternType == SPECIAL_PATTERN_NMTOKEN) {
                     // PATTERN "\\c+"
                     seenErr = !XMLChar.isValidNmtoken(nvalue);
                 }
-                else if (fTokenType == SPECIAL_TOKEN_NAME) {
+                else if (fPatternType == SPECIAL_PATTERN_NAME) {
                     // PATTERN "\\i\\c*"
                     seenErr = !XMLChar.isValidName(nvalue);
                 }
-                else if (fTokenType == SPECIAL_TOKEN_NCNAME) {
+                else if (fPatternType == SPECIAL_PATTERN_NCNAME) {
                     // PATTERN "[\\i-[:]][\\c-[:]]*"
-                    // REVISIT: !!!NOT IMPLEMENTED in XMLChar
                     seenErr = !XMLChar.isValidNCName(nvalue);
+                }
+                else if (fPatternType == SPECIAL_PATTERN_INTEGER) {
+                    // REVISIT: the pattern is not published yet
+                    // we only need to worry about the period '.'
+                    // other parts are taken care of by the DecimalDV
+                    seenErr = nvalue.indexOf('.') >= 0;
                 }
                 if (seenErr) {
                     throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1",
-                                                            new Object[]{nvalue, SPECIAL_TOKEN_STRING[fTokenType]});
+                                                            new Object[]{nvalue, SPECIAL_PATTERN_STRING[fPatternType]});
                 }
             }
 
@@ -1919,7 +1924,7 @@ public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, X
         fMinExclusive = null;
         fMinInclusive = null;
 
-        fTokenType = SPECIAL_TOKEN_NONE;
+        fPatternType = SPECIAL_PATTERN_NONE;
 
         // REVISIT: reset for fundamental facets
     }

@@ -263,7 +263,7 @@ public class SchemaDVFactoryImpl extends SchemaDVFactory {
 
         facets.fractionDigits = 0;
         XSSimpleTypeDecl integerDV = new XSSimpleTypeDecl(decimalDV, INTEGER, URI_SCHEMAFORSCHEMA, (short)0);
-        integerDV.applyFacets1(facets , XSSimpleType.FACET_FRACTIONDIGITS, (short)0);
+        integerDV.applyFacets1(facets , XSSimpleType.FACET_FRACTIONDIGITS, (short)0, XSSimpleTypeDecl.SPECIAL_PATTERN_INTEGER);
         types.put(INTEGER, integerDV);
 
         facets.maxInclusive = "0";
@@ -357,12 +357,12 @@ public class SchemaDVFactoryImpl extends SchemaDVFactory {
 
         facets.whiteSpace =  XSSimpleType.WS_COLLAPSE;
         XSSimpleTypeDecl nameDV = new XSSimpleTypeDecl(tokenDV, NAME , URI_SCHEMAFORSCHEMA, (short)0);
-        nameDV.applyFacets1(facets, XSSimpleType.FACET_WHITESPACE, (short)0, XSSimpleTypeDecl.SPECIAL_TOKEN_NAME);
+        nameDV.applyFacets1(facets, XSSimpleType.FACET_WHITESPACE, (short)0, XSSimpleTypeDecl.SPECIAL_PATTERN_NAME);
         types.put(NAME, nameDV);
 
         facets.whiteSpace = XSSimpleType.WS_COLLAPSE;
         XSSimpleTypeDecl ncnameDV = new XSSimpleTypeDecl(nameDV, NCNAME , URI_SCHEMAFORSCHEMA, (short)0) ;
-        ncnameDV.applyFacets1(facets, XSSimpleType.FACET_WHITESPACE, (short)0, XSSimpleTypeDecl.SPECIAL_TOKEN_NCNAME);
+        ncnameDV.applyFacets1(facets, XSSimpleType.FACET_WHITESPACE, (short)0, XSSimpleTypeDecl.SPECIAL_PATTERN_NCNAME);
         types.put(NCNAME, ncnameDV);
 
         types.put(QNAME, new XSSimpleTypeDecl(anySimpleType, QNAME, XSSimpleTypeDecl.DV_QNAME, XSSimpleType.ORDERED_FALSE, false, XSSimpleType.CARDINALITY_COUNTABLY_INFINITE, false));
@@ -389,7 +389,7 @@ public class SchemaDVFactoryImpl extends SchemaDVFactory {
 
         facets.whiteSpace  = XSSimpleType.WS_COLLAPSE;
         XSSimpleTypeDecl nmtokenDV = new XSSimpleTypeDecl(tokenDV, NMTOKEN, URI_SCHEMAFORSCHEMA, (short)0);
-        nmtokenDV.applyFacets1(facets, XSSimpleType.FACET_WHITESPACE, (short)0, XSSimpleTypeDecl.SPECIAL_TOKEN_NMTOKEN);
+        nmtokenDV.applyFacets1(facets, XSSimpleType.FACET_WHITESPACE, (short)0, XSSimpleTypeDecl.SPECIAL_PATTERN_NMTOKEN);
         types.put(NMTOKEN, nmtokenDV);
 
         facets.minLength = 1;
