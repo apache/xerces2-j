@@ -4222,7 +4222,7 @@ public final class XMLValidator
         protected IdentityConstraint fIdentityConstraint;
 
         /** Current data values. */
-        protected final Hashtable fValues = new Hashtable();
+        protected final OrderedHashtable fValues = new OrderedHashtable();
 
         /** Current data value count. */
         protected int fValuesCount;
@@ -4269,6 +4269,7 @@ public final class XMLValidator
             //          However, this doesn't help us catch the problem
             //          when we expect a field value but never see it. A
             //          better solution has to be found. -Ac
+            // REVISIT: Is this a problem? -Ac
             if (fValuesCount == 0) {
                 return;
             }
@@ -4303,14 +4304,12 @@ public final class XMLValidator
             }
             
             // is this value as a group duplicated?
-//System.out.println("+++ "+toString()+" checking for duplications");
             if (contains(fValues)) {
                 duplicateValue(fValues);
             }
 
             // store values
-            Hashtable values = (Hashtable)fValues.clone();
-//System.out.println("+++ "+toString()+" adding values "+values);
+            OrderedHashtable values = (OrderedHashtable)fValues.clone();
             fValueTuples.addElement(values);
 
         } // endValueScope()
@@ -4347,14 +4346,15 @@ public final class XMLValidator
             }
 
             // do we even know this field?
-            if (!fValues.containsKey(field)) {
+            int index = fValues.indexOf(field);
+            if (index == -1) {
                 int code = SchemaMessageProvider.UnknownField;
                 reportSchemaError(code, new Object[]{field.toString()});
                 return;
             }    
 
             // duplicate value?
-            Object storedValue = fValues.get(field);
+            String storedValue = fValues.valueAt(index);
             if (!storedValue.equals(NOT_A_VALUE)) {
                 int code = SchemaMessageProvider.DuplicateField;
                 reportSchemaError(code, new Object[]{field.toString()});
@@ -4362,7 +4362,6 @@ public final class XMLValidator
             }
 
             // store value
-//System.out.println("+++ "+toString()+".addValue("+value+')');
             fValuesCount++;
             fValues.put(field, value);
 
@@ -4372,7 +4371,7 @@ public final class XMLValidator
          * Returns true if this value store contains the specified
          * values tuple. 
          */
-        public boolean contains(Hashtable tuple) {
+        public boolean contains(OrderedHashtable tuple) {
             if (DEBUG_VALUE_STORES) {
                 System.out.println("<VS>: "+this.toString()+"#contains("+toString(tuple)+")");
             }
@@ -4387,21 +4386,30 @@ public final class XMLValidator
             // iterate over tuples to find it
             int count = fValueTuples.size();
             LOOP: for (int i = 0; i < count; i++) {
-                Hashtable valueTuple = (Hashtable)fValueTuples.elementAt(i);
-                Enumeration values = tuple.elements();
-                while (values.hasMoreElements()) {
-                    String value = (String)values.nextElement();
-                    // REVISIT: This isn't right! The values need to be
-                    //          compared in order that they are declared.
-                    //          However, at the moment, we don't store the
-                    //          order because we just take advantage of
-                    //          a java.util.Hashtable to keep the mapping
-                    //          between fields and their values. -Ac
-                    // REVISIT: Compare according to the datatype. -Ac
-                    if (!valueTuple.contains(value)) {
+                OrderedHashtable vtuple = (OrderedHashtable)fValueTuples.elementAt(i);
+                // compare values
+                for (int j = 0; j < vcount; j++) {
+                    String value1 = vtuple.valueAt(j);
+                    String value2 = tuple.valueAt(j);
+                    Field field = fValues.keyAt(j);
+                    DatatypeValidator validator = field.getDatatypeValidator();
+                    // REVISIT: THIS DOESN'T WORK RIGHT BECAUSE THE
+                    //          COMPARE METHOD OF ALL OF THE DATATYPE
+                    //          VALIDATORS WERE NEVER IMPLEMENTED!
+                    //          Once those methods are implemented,
+                    //          then this code can be swapped out. -Ac
+                    /***
+                    if (validator.compare(value1, value2) != 0) {
+                        return false;
+                    }
+                    /***/
+                    if (!value1.equals(value2)) {
                         continue LOOP;
                     }
+                    /***/
                 }
+
+                // found it
                 return true;
             }
 
@@ -4420,24 +4428,31 @@ public final class XMLValidator
          *
          * @param tuple The duplicate value tuple.
          */
-        protected void duplicateValue(Hashtable tuple) throws Exception {
+        protected void duplicateValue(OrderedHashtable tuple) 
+            throws Exception {
             // no-op
         } // duplicateValue(Hashtable)
 
         /** Returns a string of the specified values. */
-        protected String toString(Hashtable tuple) {
+        protected String toString(OrderedHashtable tuple) {
+
+            // no values
+            int size = tuple.size();
+            if (size == 0) {
+                return "";
+            }
+
+            // construct value string
             StringBuffer str = new StringBuffer();
-            Enumeration fields = tuple.keys();
-            while (fields.hasMoreElements()) {
-                Field field = (Field)fields.nextElement();
-                String value = (String)tuple.get(field);
-                str.append(value);
-                if (fields.hasMoreElements()) {
+            for (int i = 0; i < size; i++) {
+                if (i > 0) {
                     str.append(',');
                 }
+                str.append(tuple.valueAt(i));
             }
             return str.toString();
-        } // toString(Hashtable):String
+
+        } // toString(OrderedHashtable):String
 
         //
         // Object methods
@@ -4485,7 +4500,8 @@ public final class XMLValidator
          *
          * @param tuple The duplicate value tuple.
          */
-        protected void duplicateValue(Hashtable tuple) throws Exception {
+        protected void duplicateValue(OrderedHashtable tuple) 
+            throws Exception {
             int code = SchemaMessageProvider.DuplicateUnique;
             String value = toString(tuple);
             String ename = fIdentityConstraint.getElementName();
@@ -4522,7 +4538,8 @@ public final class XMLValidator
          *
          * @param tuple The duplicate value tuple.
          */
-        protected void duplicateValue(Hashtable tuple) throws Exception {
+        protected void duplicateValue(OrderedHashtable tuple) 
+            throws Exception {
             int code = SchemaMessageProvider.DuplicateKey;
             String value = toString(tuple);
             String ename = fIdentityConstraint.getElementName();
@@ -4567,9 +4584,7 @@ public final class XMLValidator
             // verify references
             int count = fValueTuples.size();
             for (int i = 0; i < count; i++) {
-                Hashtable values = (Hashtable)fValueTuples.elementAt(i);
-                System.out.println(">>> fKeyValueStore: "+fKeyValueStore);
-                System.out.println(">>> values: "+values);
+                OrderedHashtable values = (OrderedHashtable)fValueTuples.elementAt(i);
                 if (!fKeyValueStore.contains(values)) {
                     int code = SchemaMessageProvider.KeyNotFound;
                     String value = toString(values);
@@ -4753,5 +4768,156 @@ public final class XMLValidator
         } // toString():String
 
     } // class ValueStoreCache
+
+    // utility classes
+
+    /**
+     * Ordered hashtable. This class acts as a hashtable with 
+     * <code>put()</code> and <code>get()</code> operations but also
+     * allows values to be queried via the order that they were
+     * added to the hashtable.
+     * <p>
+     * <strong>Note:</strong> This class does not perform any error
+     * checking.
+     * <p>
+     * <strong>Note:</strong> This class is <em>not</em> efficient but
+     * is assumed to be used for a very small set of values.
+     *
+     * @author Andy Clark, IBM
+     */
+    static final class OrderedHashtable 
+        implements Cloneable {
+
+        //
+        // Data
+        //
+
+        /** Size. */
+        private int fSize;
+
+        /** Hashtable entries. */
+        private Entry[] fEntries = null;
+
+        //
+        // Public methods
+        //
+
+        /** Returns the number of entries in the hashtable. */
+        public int size() {
+            return fSize;
+        } // size():int
+
+        /** Puts an entry into the hashtable. */
+        public void put(Field key, String value) {
+            int index = indexOf(key);
+            if (index == -1) {
+                ensureCapacity(fSize);
+                index = fSize++;
+                fEntries[index].key = key;
+            }
+            fEntries[index].value = value;
+        } // put(Field,String)
+
+        /** Returns the value associated to the specified key. */
+        public String get(Field key) {
+            return fEntries[indexOf(key)].value;
+        } // get(Field):String
+
+        /** Returns the index of the entry with the specified key. */
+        public int indexOf(Field key) {
+            for (int i = 0; i < fSize; i++) {
+                if (fEntries[i].key.equals(key)) {
+                    return i;
+                }
+            }
+            return -1;
+        } // indexOf(Field):int
+
+        /** Returns the key at the specified index. */
+        public Field keyAt(int index) {
+            return fEntries[index].key;
+        } // keyAt(int):Field
+
+        /** Returns the value at the specified index. */
+        public String valueAt(int index) {
+            return fEntries[index].value;
+        } // valueAt(int):String
+
+        /** Removes all of the entries from the hashtable. */
+        public void clear() {
+            fSize = 0;
+        } // clear()
+
+        //
+        // Private methods
+        //
+
+        /** Ensures the capacity of the entries array. */
+        private void ensureCapacity(int size) {
+
+            // sizes
+            int osize = -1;
+            int nsize = -1;
+
+            // create array
+            if (fEntries == null) {
+                osize = 0;
+                nsize = 2;
+                fEntries = new Entry[nsize];
+            }
+
+            // resize array
+            else if (fEntries.length <= size) {
+                osize = fEntries.length;
+                nsize = 2 * osize;
+                Entry[] array = new Entry[nsize];
+                System.arraycopy(fEntries, 0, array, 0, osize);
+                fEntries = array;
+            }
+
+            // create new entries
+            for (int i = osize; i < nsize; i++) {
+                fEntries[i] = new Entry();
+            }
+
+        } // ensureCapacity(int)
+
+        //
+        // Cloneable methods
+        //
+
+        /** Clones this object. */
+        public Object clone() {
+
+            OrderedHashtable hashtable = new OrderedHashtable();
+            for (int i = 0; i < fSize; i++) {
+                hashtable.put(fEntries[i].key, fEntries[i].value);
+            }
+            return hashtable;
+
+        } // clone():Object
+
+        //
+        // Classes
+        //
+
+        /**
+         * Hashtable entry.
+         */
+        public static final class Entry {
+
+            //
+            // Data
+            //
+
+            /** Key. */
+            public Field key;
+
+            /** Value. */
+            public String value;
+
+        } // class Entry
+
+    } // class OrderedHashtable
 
 } // class XMLValidator
