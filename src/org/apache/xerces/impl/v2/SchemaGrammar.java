@@ -59,12 +59,13 @@ package org.apache.xerces.impl.v2;
 
 import org.apache.xerces.impl.v2.datatypes.*;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.SymbolHash;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.impl.validation.ContentModelValidator;
 
 import java.lang.Integer;
-import java.util.Hashtable;
 import java.util.Vector;
+import java.util.Hashtable;
 /**
  * @version $Id$
  */
@@ -139,12 +140,12 @@ public class SchemaGrammar {
     // other information
 
     // global decls
-    Hashtable topLevelGroupDecls = new Hashtable();
-    Hashtable topLevelNotationDecls = new Hashtable();
-    Hashtable topLevelAttrDecls  = new Hashtable();
-    Hashtable topLevelAttrGrpDecls = new Hashtable();
-    Hashtable topLevelElemDecls = new Hashtable();
-    Hashtable topLevelTypeDecls = new Hashtable();
+    SymbolHash topLevelGroupDecls;
+    SymbolHash topLevelNotationDecls;
+    SymbolHash topLevelAttrDecls;
+    SymbolHash topLevelAttrGrpDecls;
+    SymbolHash topLevelElemDecls;
+    SymbolHash topLevelTypeDecls;
 
     // REVISIT: do we need the option?
     // Set if we check Unique Particle Attribution
@@ -200,6 +201,12 @@ public class SchemaGrammar {
         fTypeDeclQName = new QName[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
         fTypeDeclType = new XSType[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
 
+        topLevelGroupDecls = new SymbolHash();
+        topLevelNotationDecls = new SymbolHash();
+        topLevelAttrDecls  = new SymbolHash();
+        topLevelAttrGrpDecls = new SymbolHash();
+        topLevelElemDecls = new SymbolHash();
+        topLevelTypeDecls = new SymbolHash();
     } // <init>(SymbolTable)
 
     private static final int BASICSET_COUNT = 29;
@@ -211,183 +218,183 @@ public class SchemaGrammar {
 
         fXSTypeCount = fullSet?FULLSET_COUNT:BASICSET_COUNT;
         fTypeDeclType = new XSType[1][fXSTypeCount];
-        topLevelTypeDecls = new Hashtable();
+        topLevelTypeDecls = new SymbolHash();
 
         try {
             int typeIndex = 0;
             XSComplexTypeDecl anyType = new XSComplexTypeDecl();
             fTypeDeclType[0][typeIndex] = anyType;
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_ANYTYPE, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_ANYTYPE, typeIndex++);
             //REVISIT: make anyType the base of anySimpleType
             //DatatypeValidator anySimpleType = new AnySimpleType(anyType, null, false);
             DatatypeValidator anySimpleType = new AnySimpleType(null, null, false);
             fTypeDeclType[0][typeIndex] = anySimpleType;
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_ANYSIMPLETYPE, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_ANYSIMPLETYPE, typeIndex++);
             DatatypeValidator stringDV = new StringDatatypeValidator(anySimpleType, null, false);
             fTypeDeclType[0][typeIndex] = stringDV;
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_STRING, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_STRING, typeIndex++);
             fTypeDeclType[0][typeIndex] = new BooleanDatatypeValidator(anySimpleType, null, false);
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_BOOLEAN, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_BOOLEAN, typeIndex++);
             DatatypeValidator decimalDV = new DecimalDatatypeValidator(anySimpleType, null, false);
             fTypeDeclType[0][typeIndex] = decimalDV;
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_DECIMAL, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_DECIMAL, typeIndex++);
             fTypeDeclType[0][typeIndex] = new AnyURIDatatypeValidator(anySimpleType, null, false);
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_ANYURI, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_ANYURI, typeIndex++);
             fTypeDeclType[0][typeIndex] = new Base64BinaryDatatypeValidator(anySimpleType, null, false);
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_BASE64BINARY, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_BASE64BINARY, typeIndex++);
             fTypeDeclType[0][typeIndex] = new DurationDatatypeValidator(anySimpleType, null, false);
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_DURATION, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_DURATION, typeIndex++);
             fTypeDeclType[0][typeIndex] = new DateTimeDatatypeValidator(anySimpleType, null, false);
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_DATETIME, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_DATETIME, typeIndex++);
             fTypeDeclType[0][typeIndex] = new TimeDatatypeValidator(anySimpleType, null, false);
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_TIME, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_TIME, typeIndex++);
             fTypeDeclType[0][typeIndex] = new DateDatatypeValidator(anySimpleType, null, false);
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_DATE, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_DATE, typeIndex++);
             fTypeDeclType[0][typeIndex] = new YearMonthDatatypeValidator(anySimpleType, null, false);
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_YEARMONTH, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_YEARMONTH, typeIndex++);
             fTypeDeclType[0][typeIndex] = new YearDatatypeValidator(anySimpleType, null, false);
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_YEAR, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_YEAR, typeIndex++);
             fTypeDeclType[0][typeIndex] = new MonthDayDatatypeValidator(anySimpleType, null, false);
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_MONTHDAY, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_MONTHDAY, typeIndex++);
             fTypeDeclType[0][typeIndex] = new DayDatatypeValidator(anySimpleType, null, false);
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_DAY, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_DAY, typeIndex++);
             fTypeDeclType[0][typeIndex] = new MonthDatatypeValidator(anySimpleType, null, false);
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_MONTH, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_MONTH, typeIndex++);
     
             Hashtable facets = new Hashtable(2);
             facets.put(SchemaSymbols.ELT_FRACTIONDIGITS, "0");
             DatatypeValidator integerDV = new DecimalDatatypeValidator(decimalDV, facets, false);
             fTypeDeclType[0][typeIndex] = integerDV;
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_INTEGER, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_INTEGER, typeIndex++);
             facets.clear();
             facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "0" );
             DatatypeValidator nonPositiveDV = new DecimalDatatypeValidator(integerDV, facets, false);
             fTypeDeclType[0][typeIndex] = nonPositiveDV;
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_NONPOSITIVEINTEGER, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_NONPOSITIVEINTEGER, typeIndex++);
             facets.clear();
             facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "-1" );
             fTypeDeclType[0][typeIndex] = new DecimalDatatypeValidator(nonPositiveDV, facets, false);
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_NEGATIVEINTEGER, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_NEGATIVEINTEGER, typeIndex++);
             facets.clear();
             facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "9223372036854775807");
             facets.put(SchemaSymbols.ELT_MININCLUSIVE,  "-9223372036854775808");
             DatatypeValidator longDV = new DecimalDatatypeValidator(integerDV, facets, false);
             fTypeDeclType[0][typeIndex] = longDV;
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_LONG, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_LONG, typeIndex++);
             facets.clear();
             facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "2147483647");
             facets.put(SchemaSymbols.ELT_MININCLUSIVE,  "-2147483648");
             DatatypeValidator intDV = new DecimalDatatypeValidator(longDV, facets, false);
             fTypeDeclType[0][typeIndex] = intDV;
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_INT, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_INT, typeIndex++);
             facets.clear();
             facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "32767");
             facets.put(SchemaSymbols.ELT_MININCLUSIVE,  "-32768");
             DatatypeValidator shortDV = new DecimalDatatypeValidator(intDV, facets, false);
             fTypeDeclType[0][typeIndex] = shortDV;
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_SHORT, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_SHORT, typeIndex++);
             facets.clear();
             facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "127");
             facets.put(SchemaSymbols.ELT_MININCLUSIVE,  "-128");
             fTypeDeclType[0][typeIndex] = new DecimalDatatypeValidator(shortDV, facets, false);
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_BYTE, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_BYTE, typeIndex++);
             facets.clear();
             facets.put(SchemaSymbols.ELT_MININCLUSIVE, "0" );
             DatatypeValidator nonNegativeDV = new DecimalDatatypeValidator(integerDV, facets, false);
             fTypeDeclType[0][typeIndex] = nonNegativeDV;
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_NONNEGATIVEINTEGER, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_NONNEGATIVEINTEGER, typeIndex++);
             facets.clear();
             facets.put(SchemaSymbols.ELT_MAXINCLUSIVE, "18446744073709551615" );
             DatatypeValidator unsignedLongDV = new DecimalDatatypeValidator(nonNegativeDV, facets, false);
             fTypeDeclType[0][typeIndex] = unsignedLongDV;
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_UNSIGNEDLONG, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_UNSIGNEDLONG, typeIndex++);
             facets.clear();
             facets.put(SchemaSymbols.ELT_MAXINCLUSIVE, "4294967295" );
             DatatypeValidator unsignedIntDV = new DecimalDatatypeValidator(unsignedLongDV, facets, false);
             fTypeDeclType[0][typeIndex] = unsignedIntDV;
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_UNSIGNEDINT, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_UNSIGNEDINT, typeIndex++);
             facets.clear();
             facets.put(SchemaSymbols.ELT_MAXINCLUSIVE, "65535" );
             DatatypeValidator unsignedShortDV = new DecimalDatatypeValidator(unsignedIntDV, facets, false);
             fTypeDeclType[0][typeIndex] = unsignedShortDV;
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_UNSIGNEDSHORT, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_UNSIGNEDSHORT, typeIndex++);
             facets.clear();
             facets.put(SchemaSymbols.ELT_MAXINCLUSIVE, "255" );
             fTypeDeclType[0][typeIndex] = new DecimalDatatypeValidator(unsignedShortDV, facets, false);
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_UNSIGNEDBYTE, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_UNSIGNEDBYTE, typeIndex++);
             facets.clear();
             facets.put(SchemaSymbols.ELT_MININCLUSIVE, "1" );
             fTypeDeclType[0][typeIndex] = new DecimalDatatypeValidator(nonNegativeDV, facets, false);
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_POSITIVEINTEGER, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_POSITIVEINTEGER, typeIndex++);
     
             if (!fullSet)
                 return;
     
             fTypeDeclType[0][typeIndex] = new FloatDatatypeValidator(anySimpleType, null, false);
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_FLOAT, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_FLOAT, typeIndex++);
             fTypeDeclType[0][typeIndex] = new DoubleDatatypeValidator(anySimpleType, null, false);
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_DOUBLE, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_DOUBLE, typeIndex++);
             fTypeDeclType[0][typeIndex] = new HexBinaryDatatypeValidator(anySimpleType, null, false);
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_HEXBINARY, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_HEXBINARY, typeIndex++);
             fTypeDeclType[0][typeIndex] = new NOTATIONDatatypeValidator(anySimpleType, null, false);
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_NOTATION, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_NOTATION, typeIndex++);
             
             facets.clear();
             facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATTVAL_REPLACE);
             DatatypeValidator normalizedDV = new StringDatatypeValidator(stringDV, facets, false);
             fTypeDeclType[0][typeIndex] = normalizedDV;
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_NORMALIZEDSTRING, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_NORMALIZEDSTRING, typeIndex++);
             facets.clear();
             facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATTVAL_COLLAPSE);
             DatatypeValidator tokenDV = new StringDatatypeValidator(normalizedDV, facets, false);
             fTypeDeclType[0][typeIndex] = tokenDV;
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_TOKEN, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_TOKEN, typeIndex++);
             facets.clear();
             facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATTVAL_COLLAPSE);
             //REVISIT: won't run: regexparser, locale, resource bundle
             //facets.put(SchemaSymbols.ELT_PATTERN , "([a-zA-Z]{2}|[iI]-[a-zA-Z]+|[xX]-[a-zA-Z]+)(-[a-zA-Z]+)*");
             fTypeDeclType[0][typeIndex] = new StringDatatypeValidator(tokenDV, facets, false);
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_LANGUAGE, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_LANGUAGE, typeIndex++);
             facets.clear();
             facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATTVAL_COLLAPSE);
             facets.put(AbstractStringValidator.FACET_SPECIAL_TOKEN, AbstractStringValidator.SPECIAL_TOKEN_NAME);
             DatatypeValidator nameDV = new StringDatatypeValidator(tokenDV, facets, false);
             fTypeDeclType[0][typeIndex] = nameDV;
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_NAME, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_NAME, typeIndex++);
             facets.clear();
             facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATTVAL_COLLAPSE);
             facets.put(AbstractStringValidator.FACET_SPECIAL_TOKEN, AbstractStringValidator.SPECIAL_TOKEN_NCNAME);
             DatatypeValidator ncnameDV = new StringDatatypeValidator(nameDV, facets, false);
             fTypeDeclType[0][typeIndex] = ncnameDV;
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_NCNAME, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_NCNAME, typeIndex++);
             DatatypeValidator qnameDV = new QNameDatatypeValidator(anySimpleType, null, false);
             ((QNameDatatypeValidator)qnameDV).setNCNameValidator(ncnameDV);
             fTypeDeclType[0][typeIndex] = qnameDV;
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_QNAME, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_QNAME, typeIndex++);
             fTypeDeclType[0][typeIndex] = new IDDatatypeValidator(ncnameDV, null, false);
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_ID, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_ID, typeIndex++);
             DatatypeValidator idrefDV = new IDREFDatatypeValidator(ncnameDV, null, false);
             fTypeDeclType[0][typeIndex] = idrefDV;
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_IDREF, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_IDREF, typeIndex++);
             fTypeDeclType[0][typeIndex] = new ListDatatypeValidator(idrefDV, null, true);
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_IDREFS, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_IDREFS, typeIndex++);
             //REVISIT: entity validators
             //DatatypeValidator entityDV = new ENTITYDatatypeValidator(ncnameDV, null, false);
             DatatypeValidator entityDV = new StringDatatypeValidator(ncnameDV, null, false);
             fTypeDeclType[0][typeIndex] = entityDV;
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_ENTITY, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_ENTITY, typeIndex++);
             //REVISIT: entity validators
             //fTypeDeclType[0][typeIndex] = new ListDatatypeValidator(entityDV, null, true);
             fTypeDeclType[0][typeIndex] = new StringDatatypeValidator(entityDV, null, true);
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_ENTITIES, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_ENTITIES, typeIndex++);
             facets.clear();
             facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATTVAL_COLLAPSE);
             facets.put(AbstractStringValidator.FACET_SPECIAL_TOKEN, AbstractStringValidator.SPECIAL_TOKEN_NMTOKEN);
             DatatypeValidator nmtokenDV = new StringDatatypeValidator(tokenDV, facets, false);
             fTypeDeclType[0][typeIndex] = nmtokenDV;
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_NMTOKEN, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_NMTOKEN, typeIndex++);
             fTypeDeclType[0][typeIndex] = new ListDatatypeValidator(nmtokenDV, null, true);
-            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_NMTOKENS, new Integer(typeIndex++));
+            topLevelTypeDecls.put(SchemaSymbols.ATTVAL_NMTOKENS, typeIndex++);
         } catch (InvalidDatatypeFacetException idf) {
             System.err.println("Internal error");
         }
@@ -429,7 +436,7 @@ public class SchemaGrammar {
         fElementDeclSubGroupIdx[chunk][index] = element.fSubGroupIdx;
         //REVISIT: other fields
         
-        topLevelElemDecls.put(element.fQName.localpart, new Integer(elementIndex));
+        topLevelElemDecls.put(element.fQName.localpart, elementIndex);
         
         return elementIndex;
     }
@@ -442,8 +449,7 @@ public class SchemaGrammar {
      * @return REVISIT: previously if failed returned false 
      */
     public int getElementIndex(String elementName) {
-        Integer elementIndex = (Integer)topLevelElemDecls.get(elementName);
-        return elementIndex == null ? -1 : elementIndex.intValue();
+        return topLevelElemDecls.get(elementName);
     } // getElementDecl(int,XSElementDecl):XSElementDecl
 
 
@@ -506,8 +512,7 @@ public class SchemaGrammar {
      * @return REVISIT: previously if failed returned false 
      */
     public int getAttributeIndex(String attributeName) {
-        Integer attributeIndex = (Integer)topLevelAttrDecls.get(attributeName);
-        return attributeIndex == null ? -1 : attributeIndex.intValue();
+        return topLevelAttrDecls.get(attributeName);
     } // getAttributeIndex(String):int
 
 
@@ -624,8 +629,7 @@ public class SchemaGrammar {
      * @return REVISIT: previously if failed returned false
      */
     public int getTypeIndex(String typeName) {
-        Integer typeIndex = (Integer)topLevelTypeDecls.get(typeName);
-        return typeIndex == null ? -1 : typeIndex.intValue();
+        return topLevelTypeDecls.get(typeName);
     }
 
     /**

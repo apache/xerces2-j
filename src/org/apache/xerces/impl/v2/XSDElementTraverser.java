@@ -56,6 +56,7 @@
  */
 package org.apache.xerces.impl.v2;
 
+import  org.apache.xerces.impl.v2.datatypes.*;
 import  org.apache.xerces.impl.XMLErrorReporter;
 import  org.apache.xerces.util.DOMUtil;
 import  org.apache.xerces.xni.QName;
@@ -121,6 +122,11 @@ class XSDElementTraverser extends XSDAbstractTraverser{
     int traverseLocal(Element elmDecl,
                       XSDocumentInfo schemaDoc,
                       SchemaGrammar grammar) {
+
+        //REVISIT: to implement
+        // 1. an empty particle decl object
+        // 2. register it
+        // 3. return the index
         return -1;
     }
 
@@ -132,17 +138,49 @@ class XSDElementTraverser extends XSDAbstractTraverser{
      *
      * @param  particleIdx
      * @param  elmDecl
-     * @param  attrValues
      * @param  schemaDoc
      * @param  grammar
      * @return the particle node index
      */
     int traverseLocal(int particleIdx,
                       Element elmDecl,
-                      Hashtable attrValues,
                       XSDocumentInfo schemaDoc,
                       SchemaGrammar grammar) {
-        return -1;
+
+        // General Attribute Checking
+        Object[] attrValues = fAttrChecker.checkAttributes(elmDecl, false);
+
+        QName   refAtt = (QName)   attrValues[XSAttributeChecker.ATTIDX_REF];
+        Integer minAtt = (Integer) attrValues[XSAttributeChecker.ATTIDX_MINOCCURS];
+        Integer maxAtt = (Integer) attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];
+
+        int elemIdx = -1;
+        if (refAtt != null) {
+            elemIdx = fSchemaHandler.getComponentDecl(schemaDoc, XSDHandler.ELEMENT_TYPE, refAtt);
+            if (elemIdx == -1) {
+                reportGenericSchemaError("element not found: "+refAtt.uri+","+refAtt.localpart);
+            }
+
+            Element child = DOMUtil.getFirstChildElement(elmDecl);
+            if(child != null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                traverseAnnotationDecl(child, attrValues, false);
+                child = DOMUtil.getNextSiblingElement(child);
+            }
+    
+            if (child != null) {
+                reportGenericSchemaError("src-element.0: the content of an element information item with 'ref' must match (annotation?)");
+            }
+            
+        } else {
+            elemIdx = traverseNamedElement(elmDecl, attrValues, schemaDoc, grammar, false);
+        }
+
+        // REVISIT: implement
+        // fill in the particle decl
+        
+        fAttrChecker.returnAttrArray(attrValues);
+
+        return particleIdx;
     }
 
     /**
@@ -189,27 +227,27 @@ class XSDElementTraverser extends XSDAbstractTraverser{
         Integer formAtt      = (Integer) attrValues[XSAttributeChecker.ATTIDX_FORM];
         String  nameAtt      = (String)  attrValues[XSAttributeChecker.ATTIDX_NAME];
         Boolean nillableAtt  = (Boolean) attrValues[XSAttributeChecker.ATTIDX_NILLABLE];
-        QName   refAtt       = (QName)   attrValues[XSAttributeChecker.ATTIDX_REF];
         QName   subGroupAtt  = (QName)   attrValues[XSAttributeChecker.ATTIDX_SUBSGROUP];
         QName   typeAtt      = (QName)   attrValues[XSAttributeChecker.ATTIDX_TYPE];
 
-        //REVISIT: notation datatype error checking
-        //checkEnumerationRequiredNotation(nameStr, typeStr);
-
-		if (defaultAtt != null && fixedAtt != null) {
-			// REVISIT:  localize
-			reportGenericSchemaError("src-element.1: an element cannot have both \"fixed\" and \"default\" present at the same time");
+        // Step 1: get declaration information
+        
+        // get 'target namespace'
+        String namespace = XSDHandler.EMPTY_STRING;
+        if (isGlobal) {
+            namespace = schemaDoc.fTargetNamespace;
+        }
+        else if (formAtt != null) {
+            if (formAtt.intValue() == SchemaSymbols.FORM_QUALIFIED)
+                namespace = schemaDoc.fTargetNamespace;
+        } else if (schemaDoc.fAreLocalElementsQualified) {
+            namespace = schemaDoc.fTargetNamespace;
         }
 
-        if (nameAtt == null) {
-            // REVISIT: Localize
-            if (isGlobal)
-                reportGenericSchemaError("globally-declared element must have a name");
-            else
-                reportGenericSchemaError("src-element.2.1: a local element must have a name or a ref attribute present");
-        }
-
-        // parse out 'block', 'final', 'nillable', 'abstract'
+        // get qname for 'name' and 'target namespace'
+        QName name = new QName(null, nameAtt, nameAtt, namespace);
+        
+        // get 'block', 'final', 'nillable', 'abstract'
         short blockSet = blockAtt == null ? SchemaSymbols.EMPTY_SET : blockAtt.shortValue();
         short finalSet = finalAtt == null ? SchemaSymbols.EMPTY_SET : finalAtt.shortValue();
         short elementMiscFlags = 0;
@@ -221,20 +259,34 @@ class XSDElementTraverser extends XSDAbstractTraverser{
         if (fixedAtt != null)
             elementMiscFlags |= XSElementDecl.FIXED;
 
-        // element has a single child element, either a datatype or a type, null if primitive
-        Element child = DOMUtil.getFirstChildElement(elmDecl);
+        // get 'value constraint'
+        if (defaultAtt == null && fixedAtt != null) {
+            defaultAtt = fixedAtt;
+            fixedAtt = null;
+        }
 
+        // get 'substitutionGroup affiliation'
+        String subGroupNS = null;
+        int subGroupIndex = -1;
+        if (subGroupAtt != null) {
+            subGroupIndex = fSchemaHandler.getComponentDecl(schemaDoc, XSDHandler.ELEMENT_TYPE, subGroupAtt);
+            if (subGroupIndex == -1) {
+                reportGenericSchemaError("substitutionGroup element not found: "+subGroupAtt.uri+","+subGroupAtt.localpart+" for element '"+nameAtt+"'");
+            } else {
+                subGroupNS = subGroupAtt.uri;
+            }
+        }
+        
+        // get 'annotation'
+        Element child = DOMUtil.getFirstChildElement(elmDecl);
         if(child != null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
 			traverseAnnotationDecl(child, attrValues, false);
             child = DOMUtil.getNextSiblingElement(child);
 		}
-        if(child != null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION))
-            // REVISIT: Localize
-            reportGenericSchemaError("element declarations can contain at most one annotation Element Information Item");
 
+        // get 'type definition'
+        String typeNS = null;
         int elementType = -1;
-
-        boolean noErrorSoFar = true;
         boolean haveAnonType = false;
 
         // Handle Anonymous type if there is one
@@ -242,258 +294,67 @@ class XSDElementTraverser extends XSDAbstractTraverser{
             String childName = DOMUtil.getLocalName(child);
 
             if (childName.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
-                // Determine what the type name will be
                 elementType = fSchemaHandler.fComplexTypeTraverser.traverse(child, schemaDoc, grammar, null);
-                if (elementType == -1 ) {
-                    noErrorSoFar = false;
-                    // REVISIT: Localize
-                    reportGenericSchemaError("traverse complexType error in element '" + nameAtt +"'");
-                }
+                if (elementType != -1)
+                    typeNS = schemaDoc.fTargetNamespace;
                 haveAnonType = true;
             	child = DOMUtil.getNextSiblingElement(child);
             }
             else if (childName.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
                 elementType = fSchemaHandler.fSimpleTypeTraverser.traverse(child, schemaDoc, grammar);
-                if (elementType == -1) {
-                    noErrorSoFar = false;
-                    // REVISIT: Localize
-                    reportGenericSchemaError("traverse simpleType error in element '" + nameAtt +"'");
-                }
+                if (elementType != -1)
+                    typeNS = schemaDoc.fTargetNamespace;
                 haveAnonType = true;
             	child = DOMUtil.getNextSiblingElement(child);
             }
+        }
 
-			// see if there's something here; it had better be key, keyref or unique.
-			if (child != null)
-                childName = DOMUtil.getLocalName(child);
-			while ((child != null) && ((childName.equals(SchemaSymbols.ELT_KEY))
-                    || (childName.equals(SchemaSymbols.ELT_KEYREF))
-                    || (childName.equals(SchemaSymbols.ELT_UNIQUE)))) {
-            	child = DOMUtil.getNextSiblingElement(child);
+        // Handler type attribute
+        if (elementType == -1 && typeAtt != null) {
+            elementType = fSchemaHandler.getComponentDecl(schemaDoc, XSDHandler.TYPEDECL_TYPE, typeAtt);
+            if (elementType != -1)
+                typeNS = typeAtt.uri;
+            else
+                reportGenericSchemaError("type not found: "+typeAtt.uri+","+typeAtt.localpart+" for element '"+nameAtt+"'");
+        }
+        
+        // Get it from the substitutionGroup declaration
+        if (elementType == -1 && subGroupIndex != -1) {
+            fTempElementDecl = (XSElementDecl)fSchemaHandler.getDecl(subGroupNS, XSDHandler.ELEMENT_TYPE, subGroupIndex);
+            elementType = fTempElementDecl.fTypeIdx;
+            if (elementType != -1)
+                typeNS = fTempElementDecl.fTypeNS;
+        }
+
+        // check for NOTATION type        
+        checkNotationType(nameAtt, typeNS, elementType);
+
+        if (elementType == -1) {
+            elementType = fSchemaHandler.getComponentDecl(schemaDoc, fSchemaHandler.TYPEDECL_TYPE, ANY_TYPE);
+            typeNS = SchemaSymbols.URI_SCHEMAFORSCHEMA;
+        }
+
+        // get 'identity constaint'
+        
+        // see if there's something here; it had better be key, keyref or unique.
+        if (child != null) {
+            String childName = DOMUtil.getLocalName(child);
+            while (child != null &&
+                   (childName.equals(SchemaSymbols.ELT_KEY) ||
+                    childName.equals(SchemaSymbols.ELT_KEYREF) ||
+                    childName.equals(SchemaSymbols.ELT_UNIQUE))) {
+                child = DOMUtil.getNextSiblingElement(child);
                 if (child != null) {
                     childName = DOMUtil.getLocalName(child);
                 }
-			}
-			if (child != null) {
-               	// REVISIT: Localize
-            	noErrorSoFar = false;
-                reportGenericSchemaError("src-element.0: the content of an element information item must match (annotation?, (simpleType | complexType)?, (unique | key | keyref)*)");
-			}
-        }
-
-        // handle type="" here
-        if (haveAnonType && (typeAtt != null)) {
-            noErrorSoFar = false;
-            // REVISIT: Localize
-            reportGenericSchemaError( "src-element.3: Element '"+ nameAtt +
-                                      "' have both a type attribute and a annoymous type child" );
-        }
-        // type specified as an attribute and no child is type decl.
-        else if (!haveAnonType && typeAtt != null) {
-            elementType = fSchemaHandler.getComponentDecl(schemaDoc, fSchemaHandler.TYPEDECL_TYPE, typeAtt);
-            if (elementType == -1) {
-                noErrorSoFar = false;
-                reportGenericSchemaError("type not found: "+typeAtt.uri+":"+typeAtt.localpart);
             }
         }
-
-        // Handle the substitutionGroup
-        String subGroupNS = null;
-        int subGroupIndex = -1;
-/*        Element substitutionGroupElementDecl = null;
-        int substitutionGroupElementDeclIndex = -1;
-
-        // now we need to make sure that our substitution (if any)
-        // is valid, now that we have all the requisite type-related info.
-        String substitutionGroupUri = null;
-        String substitutionGroupLocalpart = null;
-        String substitutionGroupFullName = null;
-        ComplexTypeInfo substitutionGroupEltTypeInfo = null;
-        DatatypeValidator substitutionGroupEltDV = null;
-        SchemaGrammar subGrammar = fSchemaGrammar;
-        boolean ignoreSub = false;
-
-        if ( substitutionGroupStr.length() > 0 ) {
-            if(refAtt != null)
-                // REVISIT: Localize
-                reportGenericSchemaError("a local element cannot have a substitutionGroup");
-            substitutionGroupUri =  resolvePrefixToURI(getPrefix(substitutionGroupStr));
-            substitutionGroupLocalpart = getLocalPart(substitutionGroupStr);
-            substitutionGroupFullName = substitutionGroupUri+","+substitutionGroupLocalpart;
-
-            if ( !substitutionGroupUri.equals(fTargetNSURIString) ) {
-                Grammar grammar = fGrammarResolver.getGrammar(substitutionGroupUri);
-                if (grammar != null && grammar instanceof SchemaGrammar) {
-                    subGrammar = (SchemaGrammar) grammar;
-                    substitutionGroupElementDeclIndex = subGrammar.getElementDeclIndex(fStringPool.addSymbol(substitutionGroupUri),
-                                                              fStringPool.addSymbol(substitutionGroupLocalpart),
-                                                              TOP_LEVEL_SCOPE);
-                    if (substitutionGroupElementDeclIndex<=-1) {
-                        // REVISIT:  localize
-                        noErrorSoFar = false;
-                        reportGenericSchemaError("couldn't find substitutionGroup " + substitutionGroupLocalpart + " referenced by element " + nameStr
-                                         + " in the SchemaGrammar "+substitutionGroupUri);
-
-                    } else {
-                        substitutionGroupEltTypeInfo = getElementDeclTypeInfoFromNS(substitutionGroupUri, substitutionGroupLocalpart);
-                        if (substitutionGroupEltTypeInfo == null) {
-                            substitutionGroupEltDV = getElementDeclTypeValidatorFromNS(substitutionGroupUri, substitutionGroupLocalpart);
-                            //if (substitutionGroupEltDV == null) {
-                                //TO DO: report error here;
-                                //noErrorSoFar = false;
-                                //reportGenericSchemaError("Could not find type for element '" +substitutionGroupLocalpart
-                                //                 + "' in schema '" + substitutionGroupUri+"'");
-                            //}
-                        }
-                    }
-                } else {
-                    // REVISIT:  locallize
-                    noErrorSoFar = false;
-                    reportGenericSchemaError("couldn't find a schema grammar with target namespace '" + substitutionGroupUri + "' for element '" + substitutionGroupStr + "'");
-                }
-            }
-            else {
-                substitutionGroupElementDecl = getTopLevelComponentByName(SchemaSymbols.ELT_ELEMENT, substitutionGroupLocalpart);
-                if (substitutionGroupElementDecl == null) {
-                    substitutionGroupElementDeclIndex =
-                        fSchemaGrammar.getElementDeclIndex(fTargetNSURI, getLocalPartIndex(substitutionGroupStr),TOP_LEVEL_SCOPE);
-                    if ( substitutionGroupElementDeclIndex == -1) {
-                        noErrorSoFar = false;
-                        // REVISIT: Localize
-                        reportGenericSchemaError("unable to locate substitutionGroup affiliation element "
-                                                  +substitutionGroupStr
-                                                  +" in element declaration "
-                                                  +nameStr);
-                    }
-                }
-                else {
-                    substitutionGroupElementDeclIndex =
-                        fSchemaGrammar.getElementDeclIndex(fTargetNSURI, getLocalPartIndex(substitutionGroupStr),TOP_LEVEL_SCOPE);
-
-                    if ( substitutionGroupElementDeclIndex == -1) {
-                        // check for mutual recursion!
-                        if(fSubstitutionGroupRecursionRegistry.contains(fTargetNSURIString+","+substitutionGroupElementDecl.getAttribute(SchemaSymbols.ATT_NAME))) {
-                            ignoreSub = true;
-                        } else {
-                            fSubstitutionGroupRecursionRegistry.addElement(fTargetNSURIString+","+substitutionGroupElementDecl.getAttribute(SchemaSymbols.ATT_NAME));
-                            traverseElementDecl(substitutionGroupElementDecl);
-                            substitutionGroupElementDeclIndex =
-                                fSchemaGrammar.getElementDeclIndex(fTargetNSURI, getLocalPartIndex(substitutionGroupStr),TOP_LEVEL_SCOPE);
-                            fSubstitutionGroupRecursionRegistry.removeElement((Object)fTargetNSURIString+","+substitutionGroupElementDecl.getAttribute(SchemaSymbols.ATT_NAME));
-                        }
-                    }
-                }
-
-                if (!ignoreSub && substitutionGroupElementDeclIndex != -1) {
-                    substitutionGroupEltTypeInfo = fSchemaGrammar.getElementComplexTypeInfo( substitutionGroupElementDeclIndex );
-                    if (substitutionGroupEltTypeInfo == null) {
-                        fSchemaGrammar.getElementDecl(substitutionGroupElementDeclIndex, fTempElementDecl);
-                        substitutionGroupEltDV = fTempElementDecl.datatypeValidator;
-                        //if (substitutionGroupEltDV == null) {
-                            //TO DO: report error here;
-                            //noErrorSoFar = false;
-                            //reportGenericSchemaError("Could not find type for element '" +substitutionGroupLocalpart
-                            //                         + "' in schema '" + substitutionGroupUri+"'");
-                        //}
-                    }
-                }
-            }
-            if (substitutionGroupElementDeclIndex <= -1)
-                ignoreSub = true;
-            if(!ignoreSub)
-                checkSubstitutionGroupOK(elementDecl, substitutionGroupElementDecl, noErrorSoFar, substitutionGroupElementDeclIndex, subGrammar, typeInfo, substitutionGroupEltTypeInfo, dv, substitutionGroupEltDV);
-        }
-
-        // this element is ur-type, check its substitutionGroup affiliation.
-        // if there is substitutionGroup affiliation and not type definition found for this element,
-        // then grab substitutionGroup affiliation's type and give it to this element
-        if ( noErrorSoFar && typeInfo == null && dv == null ) {
-			typeInfo = substitutionGroupEltTypeInfo;
-			dv = substitutionGroupEltDV;
-        }*/
-
-        if (elementType == -1 && noErrorSoFar) {
-            elementType = fSchemaHandler.getComponentDecl(schemaDoc, fSchemaHandler.TYPEDECL_TYPE, ANY_TYPE);
-        }
-
-        // Now we can handle validation etc. of default and fixed attributes,
-        // since we finally have all the type information.
-        /*if (fixedAtt != null)
-            defaultAtt = fixedAtt;
-        if (defaultAtt.length() != 0) {
-            // REVISIT: get type declaration
-            // check whether it's complex
-            // if so, check whether mixed or simple contnet
-            // if mixed, check whether it's emptible
-            if(typeInfo != null &&
-                    (typeInfo.contentType != XMLElementDecl.TYPE_MIXED_SIMPLE &&
-                     typeInfo.contentType != XMLElementDecl.TYPE_MIXED_COMPLEX &&
-                    typeInfo.contentType != XMLElementDecl.TYPE_SIMPLE)) {
-                // REVISIT: Localize
-                reportGenericSchemaError ("e-props-correct.2.1: element " + nameStr + " has a fixed or default value and must have a mixed or simple content model");
-            }
-            if(typeInfo != null &&
-               (typeInfo.contentType == XMLElementDecl.TYPE_MIXED_SIMPLE ||
-                typeInfo.contentType == XMLElementDecl.TYPE_MIXED_COMPLEX)) {
-                if (!particleEmptiable(typeInfo.contentSpecHandle))
-                    reportGenericSchemaError ("e-props-correct.2.2.2: for element " + nameStr + ", the {content type} is mixed, then the {content type}'s particle must be emptiable");
-            }
-
-            // get the simple type delaration, and validate
-            try {
-                if(dv != null) {
-                    dv.validate(defaultStr, null);
-                }
-            } catch (InvalidDatatypeValueException ide) {
-                reportGenericSchemaError ("e-props-correct.2: invalid fixed or default value '" + defaultStr + "' in element " + nameStr);
-            }
-        }
-
-        // check whether ID type has a default/fixed value
-        if (defaultStr.length() != 0 &&
-            dv != null && dv instanceof IDDatatypeValidator) {
-            reportGenericSchemaError ("e-props-correct.4: If the {type definition} or {type definition}'s {content type} is or is derived from ID then there must not be a {value constraint} -- element " + nameStr);
-        }*/
-
+        
         //
-        // Create element decl
+        // REVISIT: key/keyref/unique processing
         //
 
-        String namespace = "";
-        if (isGlobal) {
-            namespace = schemaDoc.fTargetNamespace;
-        }
-        else if (formAtt != null) {
-            if (formAtt.intValue() == SchemaSymbols.FORM_QUALIFIED)
-                namespace = schemaDoc.fTargetNamespace;
-        } else if (schemaDoc.fAreLocalElementsQualified) {
-            namespace = schemaDoc.fTargetNamespace;
-        }
-
-        // add element decl to the registry
-        fTempElementDecl.clear();
-        fTempElementDecl.fQName.setValues(null, nameAtt, nameAtt, namespace);
-        fTempElementDecl.fTypeNS = typeAtt == null ? schemaDoc.fTargetNamespace : typeAtt.uri;
-        fTempElementDecl.fTypeIdx = elementType;
-        fTempElementDecl.fElementMiscFlags = elementMiscFlags;
-        fTempElementDecl.fBlock = blockSet;
-        fTempElementDecl.fFinal = finalSet;
-        fTempElementDecl.fDefault = defaultAtt;
-        fTempElementDecl.fSubGroupNS = subGroupNS;
-        fTempElementDecl.fSubGroupIdx = subGroupIndex;
-        int elementIndex = grammar.addElementDecl(fTempElementDecl);
-
-        // REVISIT: process of substitutionGroup and idendity constraint
-        // substitutionGroup: double-direction
-        /*if (subGroupAtt != null && !ignoreSub) {
-            fSchemaHandler.addElementDeclOneSubstitutionGroupQName(substitutionGroupElementDeclIndex, eltQName, fSchemaGrammar, elementIndex);
-        }
-
-        //
-        // key/keyref/unique processing
-        //
-
-        Element ic = XUtil.getFirstChildElementNS(elementDecl, IDENTITY_CONSTRAINTS);
+        /*Element ic = XUtil.getFirstChildElementNS(elementDecl, IDENTITY_CONSTRAINTS);
         if (ic != null) {
             Integer elementIndexObj = new Integer(elementIndex);
             Vector identityConstraints = (Vector)fIdentityConstraints.get(elementIndexObj);
@@ -510,9 +371,140 @@ class XSDElementTraverser extends XSDAbstractTraverser{
             }
         }*/
 
+        // Step 2: create the declaration, and register it to the grammar
+        fTempElementDecl.clear();
+        fTempElementDecl.fQName.setValues(name);
+        fTempElementDecl.fTypeNS = typeNS;
+        fTempElementDecl.fTypeIdx = elementType;
+        fTempElementDecl.fElementMiscFlags = elementMiscFlags;
+        fTempElementDecl.fBlock = blockSet;
+        fTempElementDecl.fFinal = finalSet;
+        fTempElementDecl.fDefault = defaultAtt;
+        fTempElementDecl.fSubGroupNS = subGroupNS;
+        fTempElementDecl.fSubGroupIdx = subGroupIndex;
+        int elementIndex = grammar.addElementDecl(fTempElementDecl);
+
+        // Step 3: check against schema for schemas
+        
+        // required attributes
+        if (nameAtt == null) {
+            if (isGlobal)
+                reportGenericSchemaError("src-element.0: 'name' must be present in a global element declaration");
+            else
+                reportGenericSchemaError("src-element.2.1: One of 'ref' or 'name' must be present in a local element declaration");
+        }
+        
+        // element
+        if (child != null) {
+            reportGenericSchemaError("src-element.0: the content of an element information item must match (annotation?, (simpleType | complexType)?, (unique | key | keyref)*))");
+        }
+
+        // Step 4: check 3.3.3 constraints
+        
+        // src-element
+        
+        // 1 default and fixed must not both be present. 
+		if (defaultAtt != null && fixedAtt != null) {
+			// REVISIT:  localize
+			reportGenericSchemaError("src-element.1: 'default' and 'fixed' must not both be present in element declaration '" + nameAtt + "'");
+        }
+
+        // 2 If the item's parent is not <schema>, then all of the following must be true:
+        // 2.1 One of ref or name must be present, but not both. 
+        // This is checked in XSAttributeChecker
+        
+        // 2.2 If ref is present, then all of <complexType>, <simpleType>, <key>, <keyref>, <unique>, nillable, default, fixed, form, block and type must be absent, i.e. only minOccurs, maxOccurs, id are allowed in addition to ref, along with <annotation>. 
+        // Attributes are checked in XSAttributeChecker, elements are checked in "traverse" method
+        
+        // 3 type and either <simpleType> or <complexType> are mutually exclusive. 
+        if (haveAnonType && (typeAtt != null)) {
+            reportGenericSchemaError( "src-element.3: Element '"+ nameAtt +
+                                      "' have both a type attribute and a annoymous type child" );
+        }
+
+        // Step 5: check 3.3.6 constraints
+
+        // e-props-correct
+        
+        // 2 If there is a {value constraint}, the canonical lexical representation of its value must be ·valid· with respect to the {type definition} as defined in Element Default Valid (Immediate) (§3.3.6). 
+        if (defaultAtt != null) {
+            if (!checkDefaultValid(defaultAtt, typeNS, elementType, nameAtt)) {
+                reportGenericSchemaError ("e-props-correct.2: invalid fixed or default value '" + defaultAtt + "' in element " + nameAtt);
+            }
+        }
+
+        // 3 If there is an {substitution group affiliation}, the {type definition} of the element declaration must be validly derived from the {type definition} of the {substitution group affiliation}, given the value of the {substitution group exclusions} of the {substitution group affiliation}, as defined in Type Derivation OK (Complex) (§3.4.6) (if the {type definition} is complex) or as defined in Type Derivation OK (Simple) (§3.14.6) (if the {type definition} is simple). 
+        // REVISIT: to implement
+        //if(subGroupIndex != -1)
+        //    checkSubstitutionGroupOK(elementDecl, substitutionGroupElementDecl, noErrorSoFar, substitutionGroupElementDeclIndex, subGrammar, typeInfo, substitutionGroupEltTypeInfo, dv, substitutionGroupEltDV);
+
+        // 4 If the {type definition} or {type definition}'s {content type} is or is derived from ID then there must not be a {value constraint}. 
+        if (defaultAtt != null) {
+            XSType typeInfo = (XSType)fSchemaHandler.getDecl(typeNS, XSDHandler.TYPEDECL_TYPE, elementType);
+            if (typeInfo instanceof IDDatatypeValidator ||
+                typeInfo instanceof XSComplexTypeDecl &&
+                ((XSComplexTypeDecl)typeInfo).containsTypeID()) {
+                reportGenericSchemaError ("e-props-correct.4: If the {type definition} or {type definition}'s {content type} is or is derived from ID then there must not be a {value constraint} -- element " + nameAtt);
+            }
+        }
+
+        // Step 6: add substitutionGroup information to the handler
+
+        // REVISIT: substitutionGroup: double-direction
+        if (subGroupIndex != -1) {
+            //fSchemaHandler.addSubGroup(schemaDoc.fTargetNamespace, elementIndex,
+            //                           subGroupNS, subGroupIndex);
+        }
+
         return elementIndex;
     }
 
     //private help functions
+
+    // return whether the constraint value is valid for the given type
+    boolean checkDefaultValid(String defaultStr, String typeNS, int elementType, String referName) {
+
+        XSType typeInfo = (XSType)fSchemaHandler.getDecl(typeNS, XSDHandler.TYPEDECL_TYPE, elementType);
+        DatatypeValidator dv = null;
+        
+        // e-props-correct
+        // For a string to be a valid default with respect to a type definition the appropriate case among the following must be true:
+        // 1 If the type definition is a simple type definition, then the string must be ·valid· with respect to that definition as defined by String Valid (§3.14.4).
+        if (typeInfo instanceof DatatypeValidator) {
+            dv = (DatatypeValidator)typeInfo;
+        }
+        
+        // 2 If the type definition is a complex type definition, then all of the following must be true:
+        else {
+            // 2.1 its {content type} must be a simple type definition or mixed. 
+            XSComplexTypeDecl ctype = (XSComplexTypeDecl)typeInfo;            
+            // 2.2 The appropriate case among the following must be true:
+            // 2.2.1 If the {content type} is a simple type definition, then the string must be ·valid· with respect to that simple type definition as defined by String Valid (§3.14.4).
+            if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE) {
+                dv = ctype.fDatatypeValidator;
+            }
+            // 2.2.2 If the {content type} is mixed, then the {content type}'s particle must be ·emptiable· as defined by Particle Emptiable (§3.9.6).
+            else if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
+                //REVISIT: to implement
+                //if (!particleEmptiable(typeInfo.contentSpecHandle))
+                //    reportGenericSchemaError ("e-props-correct.2.2.2: for element " + nameStr + ", the {content type} is mixed, then the {content type}'s particle must be emptiable");
+            }
+            else {
+                reportGenericSchemaError ("e-props-correct.2.1: element " + referName + " has a fixed or default value and must have a mixed or simple content model");
+            }
+        }
+
+        // get the simple type delaration, and validate
+        boolean ret = true;
+        if (dv != null) {
+            try {
+                dv.validate(defaultStr, null);
+            } catch (InvalidDatatypeValueException ide) {
+                ret = false;
+            }
+        }
+        
+        return ret;
+    }
 
 }

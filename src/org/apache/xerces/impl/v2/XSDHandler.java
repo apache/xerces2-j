@@ -534,13 +534,13 @@ class XSDHandler {
         // REVISIT:  pass real Grammar instead of null
         switch (declType) {
         case ATTRIBUTE_TYPE :
-            return fAttributeTraverser.traverse(decl, schemaWithDecl, null);
+            return fAttributeTraverser.traverseGlobal(decl, schemaWithDecl, null);
         case ATTRIBUTEGROUP_TYPE :
-            return fAttributeGroupTraverser.traverse(decl, schemaWithDecl, null);
+            return fAttributeGroupTraverser.traverseGlobal(decl, schemaWithDecl, null);
         case ELEMENT_TYPE :
             return fElementTraverser.traverseGlobal(decl, schemaWithDecl, null);
         case GROUP_TYPE :
-            return fGroupTraverser.traverse(decl, schemaWithDecl);
+            return fGroupTraverser.traverseGlobal(decl, schemaWithDecl, null);
         case IDENTITYCONSTRAINT_TYPE :
             return -1;
         case NOTATION_TYPE :

@@ -141,5 +141,31 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     // 6. handleComplexTypeError
     // and more...
 
+/*
+    REVISIT: something done in AttriubteTraverser in Xerces1. Should be done
+             here in complexTypeTraverser.
+             
+        // add attribute to attr decl pool in fSchemaGrammar,
+        if (typeInfo != null) {
 
+            // check that there aren't duplicate attributes
+            int temp = fSchemaGrammar.getAttributeDeclIndex(typeInfo.templateElementIndex, attQName);
+            if (temp > -1) {
+              reportGenericSchemaError("ct-props-correct.4:  Duplicate attribute " +
+              fStringPool.toString(attQName.rawname) + " in type definition");
+            }
+
+            // check that there aren't multiple attributes with type derived from ID
+            if (dvIsDerivedFromID) {
+               if (typeInfo.containsAttrTypeID())  {
+                 reportGenericSchemaError("ct-props-correct.5: More than one attribute derived from type ID cannot appear in the same complex type definition.");
+               }
+               typeInfo.setContainsAttrTypeID();
+            }
+            fSchemaGrammar.addAttDeDecl(typeInfo.templateElementIndex,
+                                        attQName, attType,
+                                        dataTypeSymbol, attValueAndUseType,
+                                        fStringPool.toString( attValueConstraint), dv, attIsList);
+        }
+*/
 }

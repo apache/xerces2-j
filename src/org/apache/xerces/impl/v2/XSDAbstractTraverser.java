@@ -57,6 +57,8 @@
 
 package org.apache.xerces.impl.v2;
 
+import org.apache.xerces.impl.v2.datatypes.*;
+import org.apache.xerces.xni.QName;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.util.SymbolTable;
 import org.w3c.dom.Element;
@@ -146,5 +148,22 @@ abstract class XSDAbstractTraverser {
     //         returned value.
     Element checkContent( Element elm, Element content, boolean isEmpty ) {
         return content;
+    }
+    
+    /**
+     * Element/Attribute traversers call this method to check whether
+     * the type is NOTATION without enumeration facet
+     */
+    void checkNotationType(String refName, String typeNS, int typeIdx) {
+        XSType typeDecl = (XSType)fSchemaHandler.getDecl(typeNS, XSDHandler.TYPEDECL_TYPE, typeIdx);
+        if (typeDecl instanceof NOTATIONDatatypeValidator) {
+            //REVISIT: to check whether there is an enumeration facet
+            //if (((DatatypeValidator)typeDecl).hasEnumFacet) {
+            if (false) {
+                reportGenericSchemaError("[enumeration-required-notation] It is an error for NOTATION to be used "+
+                                         "directly in a schema in element/attribute '"+refName+"'. " +
+                                         "Only datatypes that are derived from NOTATION by specifying a value for enumeration can be used in a schema.");
+            }
+        }
     }
 }

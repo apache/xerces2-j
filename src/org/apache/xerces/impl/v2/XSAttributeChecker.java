@@ -1409,7 +1409,7 @@ public class XSAttributeChecker {
             sGrammar = grammarResolver.getGrammar(tempAttrDecl.fTypeNS);
             if (sGrammar == null)
                 continue;
-            DatatypeValidator dv = (DatatypeValidator)sGrammar.getTypeDecl(tempAttrDecl.fType);
+            DatatypeValidator dv = (DatatypeValidator)sGrammar.getTypeDecl(tempAttrDecl.fTypeIdx);
             if (dv == null)
                 continue;
 

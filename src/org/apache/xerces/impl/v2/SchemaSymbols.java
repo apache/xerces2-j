@@ -75,6 +75,9 @@ public final  class SchemaSymbols {
     public static final String XSI_TYPE = "type";
     public static final String XSI_NIL = "nil";
 
+    // xmlns attributes
+    public static final String XMLNS = "xmlns";
+    
     // all possible schema element names
     public static final String ELT_ALL                  = "all";
     public static final String ELT_ANNOTATION           = "annotation";

@@ -1,4 +1,3 @@
-
 /*
  * The Apache Software License, Version 1.1
  *
@@ -59,6 +58,7 @@
 package org.apache.xerces.impl.v2; 
 
 import org.apache.xerces.impl.v2.datatypes.DatatypeValidator;
+import org.apache.xerces.xni.QName;
 
 /**
  * 
@@ -66,54 +66,44 @@ import org.apache.xerces.impl.v2.datatypes.DatatypeValidator;
  */
 public class XSComplexTypeDecl implements XSType {
 
+    static final short CONTENTTYPE_EMPTY   = 1;
+    static final short CONTENTTYPE_SIMPLE  = 2;
+    static final short CONTENTTYPE_MIXED   = 3;
+    static final short CONTENTTYPE_ELEMENT = 4;
 
-    private static final short CT_IS_ABSTRACT=1;
-    private static final short CT_CONTAINS_ATTR_TYPE_ID=2;
-    private static final short CT_DECL_SEEN=3;    // indicates that the declaration was
-    // traversed as opposed to processed due
-    // to a forward reference
-
-    public String fTypeName;
-
-    public DatatypeValidator fBaseDTValidator;
-    public XSComplexTypeDecl fBaseCTInfo;
-
-    public int fDerivedBy = 0;
-    public String fBlockSet;
-    public String fFinalSet;
-
-    public short fMiscFlags=0;
-
-    public int fContentType;
+    public QName fTypeName;
+    public XSComplexTypeDecl fBaseType;
+    public short fDerivedBy = 0;
+    public short fFinalSet = 0;
+    public short fMiscFlags = 0;
+    public int fAttUseIndex = -1;
+    public int fAttWildcardIndex = -1;
+    public short fContentType = 0;
+    public DatatypeValidator fDatatypeValidator = null;
     public int fParticleIndex = -1;
+    public short fBlockSet = 0;
+
     public int fTemplateElmIndex = -1;
-    public int fAttlistHead = -1;
-    public DatatypeValidator fDatatypeValidator;
 
     public short getXSType () {
         return COMPLEX_TYPE;
     }
+
+    private static final short CT_IS_ABSTRACT = 1;
+    private static final short CT_HAS_TYPE_ID = 2;
+
     public boolean isAbstractType() {
-        return((fMiscFlags & CT_IS_ABSTRACT)!=0);
+        return((fMiscFlags & CT_IS_ABSTRACT) != 0);
     }
-    public boolean containsAttrTypeID () {
-        return((fMiscFlags & CT_CONTAINS_ATTR_TYPE_ID)!=0);
-    }
-    public boolean declSeen () {
-        return((fMiscFlags & CT_DECL_SEEN)!=0);
+    public boolean containsTypeID () {
+        return((fMiscFlags & CT_HAS_TYPE_ID) != 0);
     }
 
     public void setIsAbstractType() {
         fMiscFlags |= CT_IS_ABSTRACT;
     }
-    public void setContainsAttrTypeID() {
-        fMiscFlags |= CT_CONTAINS_ATTR_TYPE_ID;
+    public void setContainsTypeID() {
+        fMiscFlags |= CT_HAS_TYPE_ID;
     }
-    public void setDeclSeen() {
-        fMiscFlags |= CT_DECL_SEEN;
-    }
-
-
-
 
 } // class XSComplexTypeDecl

@@ -82,12 +82,16 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser{
         super(handler, errorReporter, gAttrCheck);
     }
 
-    //
-    // REVISIT:
-    // what should we return?
-    // should we store group decls in the grammar?
     int traverse(Element elmNode,
-                 XSDocumentInfo schemaDoc) {
+                 XSDocumentInfo schemaDoc,
+                 SchemaGrammar grammar) {
+
+        return -1;
+    }
+
+    int traverseGlobal(Element elmNode,
+                 XSDocumentInfo schemaDoc,
+                 SchemaGrammar grammar) {
 
         return -1;
     }
