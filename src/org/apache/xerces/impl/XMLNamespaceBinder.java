@@ -729,6 +729,7 @@ public class XMLNamespaceBinder
                                                "EmptyPrefixedAttName",
                                                new Object[]{element.rawname},
                                                XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    continue;
                 }
 
                 // declare prefix in context
