@@ -122,8 +122,7 @@ public abstract class XMLScanner
 
     /** Error reporter. */
     protected XMLErrorReporter fErrorReporter;
-
-
+    
     // private data
 
     // symbols
@@ -136,6 +135,11 @@ public abstract class XMLScanner
 
     /** Symbol: "standalone". */
     private String fStandaloneSymbol;
+
+    // pseudo-attribute values
+
+    /** Pseudo-attribute string buffer. */
+    private XMLStringBuffer fPseudoAttrStringBuffer = new XMLStringBuffer();
 
     //
     // XMLComponent methods
@@ -358,7 +362,7 @@ public abstract class XMLScanner
      * @param value The string to fill in with the attribute value
      * @return The name of the attribute
      *
-     * <strong>Note:</strong> This method uses fStringBuffer, anything in it
+     * <strong>Note:</strong> This method uses fPseudoAttrStringBuffer, anything in it
      * at the time of calling is lost.
      */
     public String scanPseudoAttribute(XMLString value) 
@@ -382,12 +386,12 @@ public abstract class XMLScanner
         }
         fEntityScanner.scanChar();
         if (fEntityScanner.scanLiteral(quote, value) != quote) {
-            fStringBuffer.clear();
+            fPseudoAttrStringBuffer.clear();
             do {
-                fStringBuffer.append(value);
+                fPseudoAttrStringBuffer.append(value);
             } while (fEntityScanner.scanLiteral(quote, value) != quote);
-            fStringBuffer.append(value);
-            value.setValues(fStringBuffer);
+            fPseudoAttrStringBuffer.append(value);
+            value.setValues(fPseudoAttrStringBuffer);
         }
         if (!fEntityScanner.skipChar(quote)) {
             fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "CloseQuoteMissingInTextDecl", 

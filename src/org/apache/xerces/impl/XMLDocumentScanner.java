@@ -297,6 +297,9 @@ public class XMLDocumentScanner
     /** Symbol: "xmlns". */
     private String fXmlnsSymbol;
 
+    /** Symbol: "CDATA". */
+    private String fCDATASymbol;
+
     //
     // Constructors
     //
@@ -382,6 +385,7 @@ public class XMLDocumentScanner
         fAposSymbol = fSymbolTable.addSymbol("apos");
         fXmlSymbol = fSymbolTable.addSymbol("xml");
         fXmlnsSymbol = fSymbolTable.addSymbol("xmlns");
+        fCDATASymbol = fSymbolTable.addSymbol("CDATA");
 
         // setup dispatcher
         setScannerState(SCANNER_STATE_XML_DECL);
@@ -977,8 +981,7 @@ public class XMLDocumentScanner
         fEntityScanner.scanChar();
 
         // content
-        final String CDATA = fSymbolTable.addSymbol("CDATA");
-        attributes.addAttribute(fAttributeQName, CDATA, null);
+        attributes.addAttribute(fAttributeQName, fCDATASymbol, null);
         XMLString value = fString;
         int c = fEntityScanner.scanLiteral(quote, fString);
         if (c != quote) {
@@ -994,6 +997,7 @@ public class XMLDocumentScanner
             }
             fStringBuffer.clear();
             do {
+                //System.out.println(">>> appending \""+fString.toString()+'"');
                 fStringBuffer.append(fString);
                 fAttributeOffset += fString.length;
                 if (DEBUG_ATTR_ENTITIES) {
@@ -1012,9 +1016,6 @@ public class XMLDocumentScanner
                         }
                     }
                     else {
-                        // REVISIT: Store offsets and lengths of
-                        //          expanded entities so that we
-                        //          can expose them in the DOM. -Ac
                         String entityName = fEntityScanner.scanName();
                         if (entityName == null) {
                             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
@@ -1063,12 +1064,17 @@ public class XMLDocumentScanner
                         }
                         else {
                             int odepth = fEntityStack.size();
-                            fEntityManager.startEntity(entityName, true);
+                            fEntityManager.startEntity(entityName, false);
                             int ndepth = fEntityStack.size();
                             // if we actually got a new entity and it's external
                             // parse text decl if there is any
                             if (odepth != ndepth && fEntityScanner.isExternal()) {
-                                scanXMLDeclOrTextDecl(true);
+                                if (DEBUG_ATTR_ENTITIES) {
+                                    System.out.println("*** scanning TextDecl");
+                                }
+                                if (fEntityScanner.skipString("<?xml")) {
+                                    scanXMLDeclOrTextDecl(true);
+                                }
                             }
                         }
                     }
