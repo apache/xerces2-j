@@ -65,6 +65,7 @@ import java.util.Locale;
 
 import org.apache.xerces.impl.Constants;
 
+import org.apache.xerces.impl.xs.psvi.PSVIProvider;
 import org.apache.xerces.util.EntityResolverWrapper;
 import org.apache.xerces.util.ErrorHandlerWrapper;
 
@@ -115,7 +116,8 @@ import org.xml.sax.helpers.LocatorImpl;
  */
 public abstract class AbstractSAXParser
     extends AbstractXMLDocumentParser
-    implements Parser, XMLReader // SAX1, SAX2
+    implements PSVIProvider, // PSVI 
+              Parser, XMLReader // SAX1, SAX2
 {
 
     //
@@ -214,6 +216,8 @@ public abstract class AbstractSAXParser
 
     // temp vars
     private final AttributesProxy fAttributesProxy = new AttributesProxy();
+    private Augmentations fAugmentations = null;
+
 
     // temporary buffer for sending normalized values
     // REVISIT: what should be the size of the buffer?
@@ -417,6 +421,7 @@ public abstract class AbstractSAXParser
 
             // SAX2
             if (fContentHandler != null) {
+                fAugmentations = augs;
 
                 int len = attributes.getLength();
                 for (int i = len - 1; i >= 0; i--) {
@@ -574,6 +579,7 @@ public abstract class AbstractSAXParser
 
             // SAX2
             if (fContentHandler != null) {
+                fAugmentations = augs;
                 String uri = element.uri != null ? element.uri : "";
                 String localpart = fNamespaces ? element.localpart : "";
                 fContentHandler.endElement(uri, localpart,
@@ -1901,6 +1907,7 @@ public abstract class AbstractSAXParser
         // features
         fNamespaces = fConfiguration.getFeature(NAMESPACES);           
         fNamespacePrefixes = fConfiguration.getFeature(NAMESPACE_PREFIXES);
+        fAugmentations = null;
         try {
             fNormalizeData = fConfiguration.getFeature(NORMALIZE_DATA);
         }
@@ -2037,5 +2044,24 @@ public abstract class AbstractSAXParser
         }
 
     } // class AttributesProxy
+
+
+    // PSVIProvider methods
+
+    public ElementPSVI getElementPSVI(){
+        return (fAugmentations != null)?(ElementPSVI)fAugmentations.getItem(Constants.ELEMENT_PSVI):null;
+    }
+
+
+    public AttributePSVI getAttributePSVI(int index){
+
+        return (AttributePSVI)fAttributesProxy.fAttributes.getAugmentations(index).getItem(Constants.ATTRIBUTE_PSVI);
+    }
+
+
+    public AttributePSVI getAttributePSVIByName(String uri, 
+                                                String localname){
+        return (AttributePSVI)fAttributesProxy.fAttributes.getAugmentations(uri, localname).getItem(Constants.ATTRIBUTE_PSVI);
+    }
 
 } // class AbstractSAXParser
