@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000  The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,6 +55,8 @@
  * <http://www.apache.org/>.
  */
 
+
+
 package util;
 
 import java.util.Stack;
@@ -87,8 +89,10 @@ import java.util.Vector;
  */
 
 public class Arguments {
+    private  boolean      fDbug          = true;
     private  Stack        stackOfOptions = new Stack();
     private  Stack        argumentList   = new Stack();
+    private  Stack        listOfFiles    = new Stack();
     private  String[]     messageArray   = null; 
     private  int          lastPopArgument = 0;
 
@@ -97,47 +101,54 @@ public class Arguments {
 
     }
 
-    public void    parseArgumentTokens(  String[] arguments ){
+    public void    parseArgumentTokens(  String[] arguments , char[] argsWithOptions ){
         int  theDash         = 0;
         int  lengthOfToken   = 0;
         char []bufferOfToken = null;
         Object[] temp;
+
+ outer:
         for ( int i = 0; i<arguments.length; i++ ){
             bufferOfToken = arguments[i].toCharArray();
             lengthOfToken = bufferOfToken.length;
             if ( bufferOfToken[0] == '-' ){
+                int   token;
                 for ( int j = 1; j<lengthOfToken; j++ ){
-                    stackOfOptions.push( (Object ) new Integer(bufferOfToken[j] ));
+                    token = bufferOfToken[j];
+                    stackOfOptions.push( (Object ) new Integer( token ));
+                    for ( int k = 0; k< argsWithOptions.length; k++) {
+                       if( token == argsWithOptions[k] ){
+                          System.out.println( "token = " + token );
+                          //stackOfOptions.push( (Object ) new Integer( -1 ));
+                          argumentList.push( arguments[++i] );
+                          continue outer;
+                       } 
+                    }
+
                 }
+                stackOfOptions.push( (Object ) new Integer( -1 ));
+
             } else{
-                argumentList.push( arguments[i] );
-                //argumentList.addElement( arguments[i] ); 
-         //       temp.addElement( arguments[i] );
+                //for ( int j = 0; j< argsWithOptions.length; j++) {
+                  //  if( bufferOfToken[i] == argsWithOptions[j] ){
+                    //    argumentList.push( arguments[i] );
+                    //}
+               // }
+            listOfFiles.push( arguments[i] );
             }
         }
 
-       //temp = argumentList.toArray();
-
-       //while( ! argumentList.isEmpty() ){
-         //  System.out.println( "remove" );
-          // argumentList.pop();
-      // }
-
-       //argumentList.removeAllElements();
-      // for( int j = temp.length -1 ; j>=0; j--){
-          //for( int j = 0; j < temp.length ; j++ )
-        //     System.out.println( "elem = " + temp[j] );
-          //   argumentList.push( temp[j] );
-       //}
-
-    //  for( int j = 0; j < argumentList.size() ; j++ ) {
-                                                    
-      //      System.out.println( "elem = " + (String )argumentList.elementAt( j) );
-       //}
-      
 
 
-        
+      for (  int i = 0; i<stackOfOptions.size(); i++ ){
+          System.out.println( "stc = " + stackOfOptions.elementAt( i ) );
+      }
+      for (  int i = 0; i<argumentList.size(); i++ ){
+         System.out.println( "argLst = " + argumentList.elementAt( i ) );
+      }
+      for (  int i = 0; i<listOfFiles.size(); i++ ){
+               System.out.println( "lst = " + listOfFiles.elementAt( i ) );
+           }
     }
 
     /**
@@ -160,15 +171,18 @@ public class Arguments {
     public  int getArguments(){
         Integer i;
         try {
+            if( stackOfOptions.empty() )
+            {
             i = (Integer ) stackOfOptions.pop();
             lastPopArgument = i.intValue();
+            }
         } catch ( EmptyStackException ex ) {
             return -1;
         }
         return lastPopArgument;
     }
 
-    
+
 
     /**
      * 
@@ -178,11 +192,25 @@ public class Arguments {
         String s = null;
         try {
             s = (String) argumentList.pop();
+            System.out.println( "string par = " + s );
         } catch ( EmptyStackException ex ) {
-            System.out.println("missing parameter for argument -" +  (char )lastPopArgument );
+           // System.out.println("missing parameter for argument -" +  (char )lastPopArgument );
         }
         return s;
     }
+
+
+    public String getlistFiles(){
+        String s = null;
+        try {
+            s = (String) listOfFiles.pop();
+        } catch ( EmptyStackException ex ) {
+         //   System.out.println("missing parameter for argument -" +  (char )lastPopArgument );
+        }
+        return s;
+    }
+
+
 
     public int stringParameterLeft( ){
         return argumentList.size();
@@ -214,7 +242,7 @@ public class Arguments {
                   "           Default parser: ",
                   "  -h       This help screen." } );
  
-        tst.parseArgumentTokens(argv);
+        tst.parseArgumentTokens(argv , new char[] { 'e' });
         while ( (c =  tst.getArguments()) != -1 ){
             switch (c) {
             case 'e':

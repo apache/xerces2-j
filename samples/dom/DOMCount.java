@@ -139,8 +139,7 @@ public class DOMCount {
         } catch (org.xml.sax.SAXParseException spe) {
         } catch (org.xml.sax.SAXNotRecognizedException ex ){
         } catch (org.xml.sax.SAXNotSupportedException ex ){
-        }
-        catch (org.xml.sax.SAXException se) {
+        } catch (org.xml.sax.SAXException se) {
             if (se.getException() != null)
                 se.getException().printStackTrace(System.err);
             else
@@ -272,53 +271,62 @@ public class DOMCount {
         // vars
         String  parserName = DEFAULT_PARSER_NAME;
 
-        argopt.parseArgumentTokens(argv);
+        argopt.parseArgumentTokens(argv , new char[] { 'p'} );
 
         int   c;
-        while ( (c =  argopt.getArguments()) != -1 ){
-            switch (c) {
-            case 'v':
-                setValidation = true;
-                break;
-            case 'V':
-                setValidation = false;
-                break;
-            case 'N':
-                setNameSpaces = false;
-                break;
-            case 'n':
-                setNameSpaces = true;
-                break;
-            case 'p':
-                parserName = argopt.getStringParameter();
-                break;
-            case 'd':
-                setDeferredDOM = true;
-                break;
-            case 'D':
-                setDeferredDOM = false;
-                break;
-            case 's':
-                setSchemaSupport = true;
-                break;
-            case 'S':
-                setSchemaSupport = false;
-                break;
-            case '?':
-            case 'h':
-            case '-':
-                argopt.printUsage();
-                System.exit(1);
-                break;
-            default:
-                break;
+        String arg = null; 
+        while ( ( arg =  argopt.getlistFiles() ) != null ) {
+outer:
+            while ( (c =  argopt.getArguments()) != -1 ){
+                switch (c) {
+                case 'v':
+                    setValidation = true;
+                    System.out.println( "v" );
+                    break;
+                case 'V':
+                    setValidation = false;
+                    System.out.println( "V" );
+                    break;
+                case 'N':
+                    setNameSpaces = false;
+                    break;
+                case 'n':
+                    setNameSpaces = true;
+                    break;
+                case 'p':
+                    System.out.println('p');
+                    parserName = argopt.getStringParameter();
+                    System.out.println( "parserName = " + parserName );
+                    break;
+                case 'd':
+                    setDeferredDOM = true;
+                    break;
+                case 'D':
+                    setDeferredDOM = false;
+                    break;
+                case 's':
+                    System.out.println("s" );
+                    setSchemaSupport = true;
+                    break;
+                case 'S':
+                    System.out.println("S" );
+                    setSchemaSupport = false;
+                    break;
+                case '?':
+                case 'h':
+                case '-':
+                    argopt.printUsage();
+                    System.exit(1);
+                    break;
+                case  -1:
+                    System.out.println( "-1" );
+                    break outer;
+                default:
+                    
+                    break;
+                }
             }
-        }
-
-        // count uri
-
-        for ( int j = 0; j<argopt.stringParameterLeft(); j++){
-            count(parserName, argopt.getStringParameter());
+            count(parserName, arg ); //count uri
         }
 
     } // main(String[])
