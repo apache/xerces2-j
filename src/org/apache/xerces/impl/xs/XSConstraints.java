@@ -357,7 +357,7 @@ public class XSConstraints {
             types = grammars[i].getUncheckedComplexTypeDecls();
             ctLocators = grammars[i].getUncheckedCTLocators();
             // for each type
-            for (j = types.length-1; j >= 0; j--) {
+            for (j = 0; j < types.length; j++) {
                 // if we've already full-checked this grammar, then
                 // skip the EDC constraint
                 if (!fullChecked) {
