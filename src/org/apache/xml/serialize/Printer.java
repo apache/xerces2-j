@@ -313,7 +313,16 @@ public class Printer
 
     public void flushLine( boolean preserveSpace )
     {
-        // NOOP
+        // Write anything left in the buffer into the writer.
+        try {
+            _writer.write( _buffer, 0, _pos );
+        } catch ( IOException except ) {
+            // We don't throw an exception, but hold it
+            // until the end of the document.
+            if ( _exception == null )
+                _exception = except;
+        }
+        _pos = 0;
     }
     
     
