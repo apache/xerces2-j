@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000-2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2000-2004 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -194,7 +194,7 @@ public class UTF8Reader
 
             // UTF-8:   [110y yyyy] [10xx xxxx]
             // Unicode: [0000 0yyy] [yyxx xxxx]
-            else if ((b0 & 0xE0) == 0xC0) {
+            else if ((b0 & 0xE0) == 0xC0 && (b0 & 0x1E) != 0) {
                 int b1 = index == fOffset
                        ? fInputStream.read() : fBuffer[index++] & 0x00FF;
                 if (b1 == -1) {
@@ -214,7 +214,9 @@ public class UTF8Reader
                 if (b1 == -1) {
                     expectedByte(2, 3);
                 }
-                if ((b1 & 0xC0) != 0x80 || (b0 == 0xED && b1 >= 0xA0)) {
+                if ((b1 & 0xC0) != 0x80 
+                    || (b0 == 0xED && b1 >= 0xA0)
+                    || ((b0 & 0x0F) == 0 && (b1 & 0x20) == 0)) {
                     invalidByte(2, 3, b1);
                 }
                 int b2 = index == fOffset
@@ -239,7 +241,8 @@ public class UTF8Reader
                 if (b1 == -1) {
                     expectedByte(2, 4);
                 }
-                if ((b1 & 0xC0) != 0x80) {
+                if ((b1 & 0xC0) != 0x80
+                    || ((b1 & 0x30) == 0 && (b0 & 0x07) == 0)) {
                     invalidByte(2, 3, b1);
                 }
                 int b2 = index == fOffset
@@ -370,7 +373,7 @@ public class UTF8Reader
             // UTF-8:   [110y yyyy] [10xx xxxx]
             // Unicode: [0000 0yyy] [yyxx xxxx]
             int b0 = byte1 & 0x0FF;
-            if ((b0 & 0xE0) == 0xC0) {
+            if ((b0 & 0xE0) == 0xC0 && (b0 & 0x1E) != 0) {
                 int b1 = -1;
                 if (++in < total) {
                     b1 = fBuffer[in] & 0x00FF;
@@ -421,7 +424,9 @@ public class UTF8Reader
                     }
                     count++;
                 }
-                if ((b1 & 0xC0) != 0x80 || (b0 == 0xED && b1 >= 0xA0)) {
+                if ((b1 & 0xC0) != 0x80 
+                    || (b0 == 0xED && b1 >= 0xA0)
+                    || ((b0 & 0x0F) == 0 && (b1 & 0x20) == 0)) {
                     if (out > offset) {
                         fBuffer[0] = (byte)b0;
                         fBuffer[1] = (byte)b1;
@@ -485,7 +490,8 @@ public class UTF8Reader
                     }
                     count++;
                 }
-                if ((b1 & 0xC0) != 0x80) {
+                if ((b1 & 0xC0) != 0x80
+                    || ((b1 & 0x30) == 0 && (b0 & 0x07) == 0)) {
                     if (out > offset) {
                         fBuffer[0] = (byte)b0;
                         fBuffer[1] = (byte)b1;
