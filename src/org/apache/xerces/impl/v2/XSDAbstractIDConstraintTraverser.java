@@ -73,12 +73,11 @@ import org.apache.xerces.impl.v2.xpath.*;
 class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
 
     public XSDAbstractIDConstraintTraverser (XSDHandler handler,
-                                  XMLErrorReporter errorReporter,
                                   XSAttributeChecker gAttrCheck) {
-        super(handler, errorReporter, gAttrCheck);
+        super(handler, gAttrCheck);
     }
 
-    void traverseIdentityConstraint(IdentityConstraint ic, 
+    void traverseIdentityConstraint(IdentityConstraint ic,
             Element icElem, XSDocumentInfo schemaDoc) {
 
         // General Attribute Checking will have been done on icElem by caller

@@ -88,9 +88,8 @@ import org.w3c.dom.Element;
 class  XSDWildcardTraverser extends XSDAbstractTraverser {
 
     XSDWildcardTraverser (XSDHandler handler,
-                          XMLErrorReporter errorReporter,
                           XSAttributeChecker gAttrCheck) {
-        super(handler, errorReporter, gAttrCheck);
+        super(handler, gAttrCheck);
     }
 
     XSParticleDecl traverseAny(Element elmNode,

@@ -87,9 +87,8 @@ import org.w3c.dom.Element;
 class XSDAttributeTraverser extends XSDAbstractTraverser {
 
     public XSDAttributeTraverser (XSDHandler handler,
-                                  XMLErrorReporter errorReporter,
                                   XSAttributeChecker gAttrCheck) {
-        super(handler, errorReporter, gAttrCheck);
+        super(handler, gAttrCheck);
     }
 
     protected XSAttributeUse traverseLocal(Element attrDecl,
@@ -358,8 +357,8 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         // no-xsi
 
         // The {target namespace} of an attribute declaration, whether local or top-level, must not match http://www.w3.org/2001/XMLSchema-instance (unless it is one of the four built-in declarations given in the next section).
-        if (attribute.fTargetNamespace.equals(SchemaSymbols.URI_XSI)) {
-            reportGenericSchemaError("no-xsi: The {target namespace} of an attribute declaration must not match " + SchemaSymbols.URI_XSI);
+        if (attribute.fTargetNamespace.equals(SchemaSymbols.OURI_XSI)) {
+            reportGenericSchemaError("no-xsi: The {target namespace} of an attribute declaration must not match " + SchemaSymbols.OURI_XSI);
         }
 
         return attribute;

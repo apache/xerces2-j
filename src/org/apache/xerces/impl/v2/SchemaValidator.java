@@ -84,7 +84,6 @@ import org.apache.xerces.xni.parser.XMLConfigurationException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
-import java.util.Stack;
 import java.util.StringTokenizer;
 
 /**
@@ -97,13 +96,10 @@ import java.util.StringTokenizer;
  * This component requires the following features and properties from the
  * component manager that uses it:
  * <ul>
- *  <li>http://xml.org/sax/features/namespaces</li>
  *  <li>http://xml.org/sax/features/validation</li>
- *  <li>http://apache.org/xml/features/validation/dynamic</li>
  *  <li>http://apache.org/xml/properties/internal/symbol-table</li>
  *  <li>http://apache.org/xml/properties/internal/error-reporter</li>
- *  <li>http://apache.org/xml/properties/internal/grammar-pool</li>
- *  <li>http://apache.org/xml/properties/internal/datatype-validator-factory</li>
+ *  <li>http://apache.org/xml/properties/internal/entity-resolver</li>
  * </ul>
  *
  * @author Eric Ye, IBM
@@ -122,17 +118,9 @@ public class SchemaValidator
 
     // feature identifiers
 
-    /** Feature identifier: namespaces. */
-    protected static final String NAMESPACES =
-        Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
-
     /** Feature identifier: validation. */
     protected static final String VALIDATION =
-        Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
-
-    /** Feature identifier: dynamic validation. */
-    protected static final String DYNAMIC_VALIDATION =
-        Constants.XERCES_FEATURE_PREFIX + Constants.DYNAMIC_VALIDATION_FEATURE;
+        Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE;
 
     // property identifiers
 
@@ -144,19 +132,22 @@ public class SchemaValidator
     protected static final String ERROR_REPORTER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
 
+    /** Property identifier: entiry resolver. */
+    protected static final String ENTITY_RESOLVER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
+
     // recognized features and properties
 
     /** Recognized features. */
     protected static final String[] RECOGNIZED_FEATURES = {
-        NAMESPACES,
         VALIDATION,
-        DYNAMIC_VALIDATION,
     };
 
     /** Recognized properties. */
     protected static final String[] RECOGNIZED_PROPERTIES = {
         SYMBOL_TABLE,
         ERROR_REPORTER,
+        ENTITY_RESOLVER,
     };
 
     //
@@ -165,17 +156,8 @@ public class SchemaValidator
 
     // features
 
-    /** Namespaces. */
-    protected boolean fNamespaces;
-
     /** Validation. */
     protected boolean fValidation;
-
-    /**
-     * Dynamic validation. This state of this feature is only useful when
-     * the validation feature is set to <code>true</code>.
-     */
-    protected boolean fDynamicValidation;
 
     // properties
 
@@ -184,161 +166,14 @@ public class SchemaValidator
 
     /** Error reporter. */
     protected XMLErrorReporter fErrorReporter;
-    
+
     /** Entity resolver */
     protected XMLEntityResolver fEntityResolver;
-    
+
     // handlers
 
     /** Document handler. */
     protected XMLDocumentHandler fDocumentHandler;
-
-    // state
-
-    /** Schema grammar. */
-    private SchemaGrammar fSchemaGrammar;
-
-    /** Schema grammar resolver. */
-    private XSGrammarResolver fGrammarResolver;
-    
-    /** Schema handler */
-    private XSDHandler fSchemaHandler;
-
-    /** Perform validation. */
-    private boolean fPerformValidation;
-
-    /** Skip validation. */
-    private boolean fSkipValidation;
-
-    // information regarding the current element
-
-    /** Current element name. */
-    private final QName fCurrentElement = new QName();
-
-    /** Current element index. */
-    private int fCurrentElementIndex = -1;
-
-    /** Current content model. */
-    //???private ContentModel fCurrentContentModel = null;
-
-    /** The root element name. */
-    private final QName fRootElement = new QName();
-
-    // element stack
-
-    /** Element index stack. */
-    private int[] fElementIndexStack = new int[8];
-
-    /** Content spec type stack. */
-    //???private ContentModel[] fContentModelStack = new int[8];
-
-    /** Element name stack. */
-    private QName[] fElementQNamePartsStack = new QName[8];
-
-    // children list and offset stack
-
-    /**
-     * Element children. This data structure is a growing stack that
-     * holds the children of elements from the root to the current
-     * element depth. This structure never gets "deeper" than the
-     * deepest element. Space is re-used once each element is closed.
-     * <p>
-     * <strong>Note:</strong> This is much more efficient use of memory
-     * than creating new arrays for each element depth.
-     * <p>
-     * <strong>Note:</strong> The use of this data structure is for
-     * validation "on the way out". If the validation model changes to
-     * "on the way in", then this data structure is not needed.
-     */
-    private QName[] fElementChildren = new QName[32];
-
-    /** Element children count. */
-    private int fElementChildrenLength = 0;
-
-    /**
-     * Element children offset stack. This stack refers to offsets
-     * into the <code>fElementChildren</code> array.
-     * @see #fElementChildren
-     */
-    private int[] fElementChildrenOffsetStack = new int[32];
-
-    /** Element depth. */
-    private int fElementDepth = -1;
-
-    // validation states
-
-    /** Validation of a standalone document. */
-    private boolean fStandaloneIsYes = false;
-
-    /** True if seen the root element. */
-    private boolean fSeenRootElement = false;
-
-    /** True if inside of element content. */
-    private boolean fInElementContent = false;
-
-    /** Mixed. */
-    private boolean fMixed;
-
-    // temporary variables
-
-    /** Temporary element declaration. */
-    private XSElementDecl fTempElementDecl = new XSElementDecl();
-    private Stack fElemDeclStack = new Stack();
-
-    /** Temporary atribute declaration. */
-    //private XSAttributeDecl fTempAttDecl = new XSAttributeDecl();
-
-    /** Temporary qualified name. */
-    private QName fTempQName = new QName();
-
-    /** Notation declaration hash. */
-    private Hashtable fNDataDeclNotations = new Hashtable();
-
-    /** Mixed element type "hash". */
-    private Vector fMixedElementTypes = new Vector();
-
-    /** Temporary string buffers. */
-    private StringBuffer fBuffer = new StringBuffer();
-    /** stack to hold string for all nodes */
-    private Stack fBufferStack = new Stack();
-
-    /**
-     * This table has to be own by instance of XMLValidator and shared
-     * among ID, IDREF and IDREFS.
-     * <p>
-     * <strong>Note:</strong> Only ID has read/write access.
-     * <p>
-     * <strong>Note:</strong> Should revisit and replace with a ligther
-     * structure.
-     */
-    private Hashtable fTableOfIDs;
-    private Hashtable fTableOfIDRefs;
-
-    // to check for duplicate ID or ANNOTATION attribute declare in
-    // ATTLIST, and misc VCs
-
-    /** ID attribute names. */
-    private Hashtable fTableOfIDAttributeNames;
-
-    /** NOTATION attribute names. */
-    private Hashtable fTableOfNOTATIONAttributeNames;
-
-    /** NOTATION enumeration values. */
-    private Hashtable fNotationEnumVals;
-
-    //
-    // Constructors
-    //
-
-    /** Default constructor. */
-    public SchemaValidator() {
-
-        // initialize data
-        for (int i = 0; i < fElementQNamePartsStack.length; i++) {
-            fElementQNamePartsStack[i] = new QName();
-        }
-
-    } // <init>()
 
     //
     // XMLComponent methods
@@ -361,64 +196,7 @@ public class SchemaValidator
     public void reset(XMLComponentManager componentManager)
         throws XMLConfigurationException {
 
-        // clear grammars
-        fSchemaGrammar = null;
-
-        // initialize state
-        fStandaloneIsYes = false;
-        fSeenRootElement = false;
-        fInElementContent = false;
-        fCurrentElementIndex = -1;
-        //???fCurrentContentModel = null;
-        fSkipValidation=false;
-
-        fRootElement.clear();
-
-        fNDataDeclNotations.clear();
-
-        // sax features
-        try {
-            fNamespaces = componentManager.getFeature(NAMESPACES);
-        }
-        catch (XMLConfigurationException e) {
-            fNamespaces = true;
-        }
-        try {
-            fValidation = componentManager.getFeature(VALIDATION);
-        }
-        catch (XMLConfigurationException e) {
-            fValidation = false;
-        }
-
-        // Xerces features
-        try {
-            fDynamicValidation = componentManager.getFeature(DYNAMIC_VALIDATION);
-        }
-        catch (XMLConfigurationException e) {
-            fDynamicValidation = false;
-        }
-
-        // get needed components
-        fErrorReporter = (XMLErrorReporter)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.ERROR_REPORTER_PROPERTY);
-        fSymbolTable = (SymbolTable)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SYMBOL_TABLE_PROPERTY);
-        fEntityResolver = (XMLEntityResolver)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.ENTITY_RESOLVER_PROPERTY);
-        if (fEntityResolver == null)
-            fEntityResolver = new XMLEntityResolver() {
-                public XMLInputSource resolveEntity(String publicId, String systemId,
-                                                    String baseSystemId)
-                    throws XNIException, IOException {
-                    return new XMLInputSource(null, systemId, baseSystemId);
-                }
-            };
-
-
-        fGrammarResolver = new XSGrammarResolver();
-        fSchemaHandler = new XSDHandler(fGrammarResolver, fErrorReporter,
-                                        fEntityResolver,
-                                        fSymbolTable);
-        
-        fElementDepth = -1;
-        init();
+        ownReset(componentManager);
 
     } // reset(XMLComponentManager)
 
@@ -448,6 +226,8 @@ public class SchemaValidator
      */
     public void setFeature(String featureId, boolean state)
         throws XMLConfigurationException {
+        if (featureId.equals(VALIDATION))
+            fValidation = state;
     } // setFeature(String,boolean)
 
     /**
@@ -492,23 +272,6 @@ public class SchemaValidator
     } // setDocumentHandler(XMLDocumentHandler)
 
     //
-    // XMLDTDSource methods
-    //
-
-    /**
-     * Sets the DTD handler.
-     *
-     * @param dtdHandler The DTD handler.
-     */
-    //public void setDTDHandler(XMLDTDHandler dtdHandler) {
-    //    fDTDHandler = dtdHandler;
-    //} // setDTDHandler(XMLDTDHandler)
-
-    //
-    // XMLDTDContentModelSource methods
-    //
-
-    //
     // XMLDocumentHandler methods
     //
 
@@ -549,9 +312,6 @@ public class SchemaValidator
      */
     public void xmlDecl(String version, String encoding, String standalone)
         throws XNIException {
-
-        // save standalone state
-        fStandaloneIsYes = standalone != null && standalone.equals("yes");
 
         // call handlers
         if (fDocumentHandler != null) {
@@ -611,7 +371,7 @@ public class SchemaValidator
     public void startElement(QName element, XMLAttributes attributes)
         throws XNIException {
 
-        handleStartElement(element, attributes, false);
+        handleStartElement(element, attributes);
         if (fDocumentHandler != null) {
             fDocumentHandler.startElement(element, attributes);
         }
@@ -629,8 +389,8 @@ public class SchemaValidator
     public void emptyElement(QName element, XMLAttributes attributes)
         throws XNIException {
 
-        handleStartElement(element, attributes, true);
-        handleEndElement(element, true);
+        handleStartElement(element, attributes);
+        handleEndElement(element);
         if (fDocumentHandler != null) {
             fDocumentHandler.emptyElement(element, attributes);
         }
@@ -645,32 +405,11 @@ public class SchemaValidator
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void characters(XMLString text) throws XNIException {
-        boolean callNextCharacters = true;
 
-        // REVISIT: [Q] Is there a more efficient way of doing this?
-        //          Perhaps if the scanner told us so we don't have to
-        //          look at the characters again. -Ac
-        boolean allWhiteSpace = true;
-        for (int i=text.offset; i< text.offset+text.length; i++) {
-            if (!XMLChar.isSpace(text.ch[i])) {
-                allWhiteSpace = false;
-                break;
-            }
-        }
-
-        // call the ignoreableWhiteSpace callback
-        if (fInElementContent && allWhiteSpace) {
-            if (fDocumentHandler != null) {
-                fDocumentHandler.ignorableWhitespace(text);
-                callNextCharacters = false;
-            }
-        }
-
-        // validate
-        fBuffer.append(text.toString());
+        handleCharacters(text);
 
         // call handlers
-        if (callNextCharacters && fDocumentHandler != null) {
+        if (fDocumentHandler != null) {
             fDocumentHandler.characters(text);
         }
 
@@ -706,7 +445,7 @@ public class SchemaValidator
      */
     public void endElement(QName element) throws XNIException {
 
-        handleEndElement(element, false);
+        handleEndElement(element);
         if (fDocumentHandler != null) {
             fDocumentHandler.endElement(element);
         }
@@ -736,10 +475,6 @@ public class SchemaValidator
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void startCDATA() throws XNIException {
-
-        if (fPerformValidation && fInElementContent) {
-            //???charDataInContent();
-        }
 
         // call handlers
         if (fDocumentHandler != null) {
@@ -908,119 +643,178 @@ public class SchemaValidator
 
     } // endEntity(String)
 
+    // constants
+
+    static final int INITIAL_STACK_SIZE = 8;
+    static final int INC_STACK_SIZE     = 8;
+
+    //
+    // Data
+    //
+
+    // some constants
+
+    String URI_XSI;
+    String XSI_SCHEMALOCACTION;
+    String XSI_NONAMESPACESCHEMALOCACTION;
+    String XSI_TYPE;
+    String XSI_NIL;
+    String URI_SCHEMAFORSCHEMA;
+
+    // state
+
+    /** Schema grammar resolver. */
+    final XSGrammarResolver fGrammarResolver;
+
+    /** Schema handler */
+    final XSDHandler fSchemaHandler;
+
+    /** Skip validation. */
+    int fSkipValidationDepth;
+
+    /** Element depth. */
+    int fElementDepth;
+
+    /** Child count. */
+    int fChildCount;
+
+    /** Element decl stack. */
+    int[] fChildCountStack = new int[INITIAL_STACK_SIZE];
+
+    /** Current element declaration. */
+    XSElementDecl fCurrentElemDecl;
+
+    /** Element decl stack. */
+    XSElementDecl[] fElemDeclStack = new XSElementDecl[INITIAL_STACK_SIZE];
+
+    /** Current type. */
+    XSTypeDecl fCurrentType;
+
+    /** type stack. */
+    XSTypeDecl[] fTypeStack = new XSTypeDecl[INITIAL_STACK_SIZE];
+
+    /** Current content model. */
+    XSCMValidator fCurrentCM;
+
+    /** Content model stack. */
+    XSCMValidator[] fCMStack = new XSCMValidator[INITIAL_STACK_SIZE];
+
+    /** the current state of the current content model */
+    Object fCurrCMState;
+
+    /** stack to hold content model states */
+    Object[] fCMStateStack = new Object[INITIAL_STACK_SIZE];
+
+    /** Temporary string buffers. */
+    StringBuffer fBuffer;
+
+    /** stack to hold string for all nodes */
+    StringBuffer[] fBufferStack = new StringBuffer[INITIAL_STACK_SIZE];
+
     /**
-     * Check that the content of an element is valid.
+     * This table has to be own by instance of XMLValidator and shared
+     * among ID, IDREF and IDREFS.
      * <p>
-     * This is the method of primary concern to the validator. This method is called
-     * upon the scanner reaching the end tag of an element. At that time, the
-     * element's children must be structurally validated, so it calls this method.
-     * The index of the element being checked (in the decl pool), is provided as
-     * well as an array of element name indexes of the children. The validator must
-     * confirm that this element can have these children in this order.
+     * <strong>Note:</strong> Only ID has read/write access.
      * <p>
-     * This can also be called to do 'what if' testing of content models just to see
-     * if they would be valid.
-     * <p>
-     * Note that the element index is an index into the element decl pool, whereas
-     * the children indexes are name indexes, i.e. into the string pool.
-     * <p>
-     * A value of -1 in the children array indicates a PCDATA node. All other
-     * indexes will be positive and represent child elements. The count can be
-     * zero, since some elements have the EMPTY content model and that must be
-     * confirmed.
-     *
-     * @param elementIndex The index within the <code>ElementDeclPool</code> of this
-     *                     element.
-     * @param childCount The number of entries in the <code>children</code> array.
-     * @param children The children of this element.
-     *
-     * @return The value -1 if fully valid, else the 0 based index of the child
-     *         that first failed. If the value returned is equal to the number
-     *         of children, then additional content is required to reach a valid
-     *         ending state.
-     *
-     * @exception Exception Thrown on error.
+     * <strong>Note:</strong> Should revisit and replace with a ligther
+     * structure.
      */
-    /*private int checkContent(int elementIndex,
-                             QName[] children,
-                             int childOffset,
-                             int childCount) throws XNIException {
+    Hashtable fTableOfIDs = new Hashtable();
+    Hashtable fTableOfIDRefs = new Hashtable();
 
-        fSchemaGrammar.getElementDecl(elementIndex, fTempElementDecl);
+    //
+    // Constructors
+    //
 
-        int typeIdx = fTempElementDecl.fXSTypeDecl;
-        XSType type = fSchemaGrammar.getTypeDecl(typeIdx, fTempTypeDecl);
+    /** Default constructor. */
+    public SchemaValidator() {
 
-        int result = -1;
-        if (type.getXSType() == XSType.COMPLEX_TYPE) {
-            ContentModel cmElem = ((XSComplexTypeInfo)fTempTypeDecl).fContentModel;
-            result = cmElem.validate(children, childOffset, childCount);
-        } else {
-            result = ((XSSimpleTypeInfo)fTempTypeDecl).validate();
+        fGrammarResolver = new XSGrammarResolver();
+        fSchemaHandler = new XSDHandler(fGrammarResolver);
+
+    } // <init>()
+
+    void ownReset(XMLComponentManager componentManager)
+        throws XMLConfigurationException {
+
+        try {
+            fValidation = componentManager.getFeature(VALIDATION);
+        }
+        catch (XMLConfigurationException e) {
+            fValidation = false;
         }
 
-        return result;
-    } // checkContent(int,int,QName[]):int
+        // get needed components
+        fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
 
-    /** Character data in content. */
-    /*private void charDataInContent() {
-
-        if (fElementChildren.length == fElementChildrenLength) {
-            QName[] newarray = new QName[fElementChildrenLength * 2];
-            System.arraycopy(fElementChildren, 0, newarray, 0, fElementChildrenLength);
-            fElementChildren = newarray;
-            for (int i = fElementChildrenLength; i < fElementChildren.length; i++) {
-                fElementChildren[i] = new QName();
-            }
-        } else {
-            fElementChildren[fElementChildrenLength].clear();
+        SymbolTable symbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
+        if (symbolTable != fSymbolTable) {
+            URI_XSI = symbolTable.addSymbol(SchemaSymbols.OURI_XSI);
+            XSI_SCHEMALOCACTION = symbolTable.addSymbol(SchemaSymbols.OXSI_SCHEMALOCACTION);
+            XSI_NONAMESPACESCHEMALOCACTION = symbolTable.addSymbol(SchemaSymbols.OXSI_NONAMESPACESCHEMALOCACTION);
+            XSI_TYPE = symbolTable.addSymbol(SchemaSymbols.OXSI_TYPE);
+            XSI_NIL = symbolTable.addSymbol(SchemaSymbols.OXSI_NIL);
+            URI_SCHEMAFORSCHEMA = symbolTable.addSymbol(SchemaSymbols.OURI_SCHEMAFORSCHEMA);
         }
-        fElementChildrenLength++;
+        fSymbolTable = symbolTable;
 
-    } // charDataInCount()
+        fEntityResolver = (XMLEntityResolver)componentManager.getProperty(ENTITY_RESOLVER);
+        if (fEntityResolver == null)
+            fEntityResolver = new XMLEntityResolver() {
+                // REVISIT: what's the default dehavior
+                public XMLInputSource resolveEntity(String publicId, String systemId,
+                                                    String baseSystemId)
+                    throws XNIException, IOException {
+                    return new XMLInputSource(null, systemId, baseSystemId);
+                }
+            };
 
-    /** intialization */
-    private void init() {
+        // clear grammars
+        fGrammarResolver.reset();
+        fGrammarResolver.putGrammar(URI_SCHEMAFORSCHEMA, SchemaGrammar.SG_SchemaNS);
 
-        //Initialize ID, IDREF, IDREFS validators
-        if (fTableOfIDs == null) {
-            fTableOfIDs = new Hashtable();
-            fTableOfIDRefs = new Hashtable();
-            fNotationEnumVals = new Hashtable();
-            fTableOfIDAttributeNames = new Hashtable();
-            fTableOfNOTATIONAttributeNames = new Hashtable();
-        }
+        fSchemaHandler.reset(fErrorReporter, fEntityResolver, fSymbolTable);
+
+        // initialize state
+        fCurrentElemDecl = null;
+        fCurrentType = null;
+        fCurrentCM = null;
+        fCurrCMState = null;
+        fSkipValidationDepth = -1;
+        fElementDepth = -1;
+        fChildCount = 0;
 
         fTableOfIDs.clear();
         fTableOfIDRefs.clear();
-        fNotationEnumVals.clear();
-        fTableOfIDAttributeNames.clear();
-        fTableOfNOTATIONAttributeNames.clear();
 
-    } // init()
+    } // reset(XMLComponentManager)
 
     /** ensure element stack capacity */
-    /*private void ensureStackCapacity ( int newElementDepth) {
+    void ensureStackCapacity() {
 
-        if (newElementDepth == fElementQNamePartsStack.length) {
-
-            QName[] newQNameStack = new QName[newElementDepth * 2];
-            System.arraycopy(fElementQNamePartsStack, 0,
-                             newQNameStack, 0, newElementDepth );
-            fElementQNamePartsStack = newQNameStack;
-
-            for (int i = newElementDepth; i < newElementDepth * 2; i++) {
-                fElementQNamePartsStack[i] = new QName();
-            }
-
-            int[] newIntStack = new int[newElementDepth * 2];
-            System.arraycopy(fElementIndexStack, 0, newIntStack, 0, newElementDepth);
-            fElementIndexStack = newIntStack;
-
-            ContentModel[] newCMStack = new ContentModel[newElementDepth * 2];
-            System.arraycopy(fContentModelStack, 0, newCMStack, 0, newElementDepth);
-            fContentModelStack = newCMStack;
+        if (fElementDepth == fElemDeclStack.length) {
+            int newSize = fElementDepth + INC_STACK_SIZE;
+            int[] newArrayI = new int[newSize];
+            System.arraycopy(fChildCountStack, 0, newArrayI, 0, newSize);
+            fChildCountStack = newArrayI;
+            XSElementDecl[] newArrayE = new XSElementDecl[newSize];
+            System.arraycopy(fElemDeclStack, 0, newArrayE, 0, newSize);
+            fElemDeclStack = newArrayE;
+            XSTypeDecl[] newArrayT = new XSTypeDecl[newSize];
+            System.arraycopy(fTypeStack, 0, newArrayT, 0, newSize);
+            fTypeStack = newArrayT;
+            XSCMValidator[] newArrayC = new XSCMValidator[newSize];
+            System.arraycopy(fCMStack, 0, newArrayC, 0, newSize);
+            fCMStack = newArrayC;
+            StringBuffer[] newArrayB = new StringBuffer[newSize];
+            System.arraycopy(fBufferStack, 0, newArrayB, 0, newSize);
+            fBufferStack = newArrayB;
+            Object[] newArrayO = new Object[newSize];
+            System.arraycopy(fCMStateStack, 0, newArrayO, 0, newSize);
+            fCMStateStack = newArrayO;
         }
+
     } // ensureStackCapacity
 
     //
@@ -1028,237 +822,236 @@ public class SchemaValidator
     //
 
     /** Handle element. */
-    /*protected void handleStartElement(QName element, XMLAttributes attributes,
-                                      boolean isEmpty) throws XNIException {
+    void handleStartElement(QName element, XMLAttributes attributes) {
 
-        // set wether we're performing validation
-        fPerformValidation = fValidation && !fDynamicValidation;
-
-        if (fSchemaGrammar == null && !fSkipValidation){
-
-            if  (!fPerformValidation) {
-                fCurrentElementIndex = -1;
-                fCurrentContentModel = null;
-                fInElementContent = false;
-            }
-            if (fPerformValidation) {
-                fSkipValidation = true;
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "MSG_GRAMMAR_NOT_FOUND",
-                                           new Object[]{ element.rawname},
-                                           XMLErrorReporter.SEVERITY_ERROR);
-            }
-        }
-        else {
-            //  resolve the element
-            fCurrentElementIndex = fSchemaGrammar.getElementDeclIndex(element, -1);
-
-            fCurrentContentModel = getContentSpecType(fCurrentElementIndex);
-            if (fCurrentElementIndex == -1 && fPerformValidation) {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "MSG_ELEMENT_NOT_DECLARED",
-                                           new Object[]{ element.rawname},
-                                           XMLErrorReporter.SEVERITY_ERROR);
-            }
-        }
-
-        // set element content state
-        fInElementContent = fCurrentContentModel.childrenCount() > 0;
-
-        // increment the element depth, add this element's
-        // QName to its enclosing element 's children list
-        fElementDepth++;
-        if (fPerformValidation) {
-            // push current length onto stack
-            if (fElementChildrenOffsetStack.length < fElementDepth) {
-                int newarray[] = new int[fElementChildrenOffsetStack.length * 2];
-                System.arraycopy(fElementChildrenOffsetStack, 0, newarray, 0, fElementChildrenOffsetStack.length);
-                fElementChildrenOffsetStack = newarray;
-            }
-            fElementChildrenOffsetStack[fElementDepth] = fElementChildrenLength;
-
-            // add this element to children
-            if (fElementChildren.length <= fElementChildrenLength) {
-                QName[] newarray = new QName[fElementChildrenLength * 2];
-                System.arraycopy(fElementChildren, 0, newarray, 0, fElementChildren.length);
-                fElementChildren = newarray;
-            }
-            QName qname = fElementChildren[fElementChildrenLength];
-            if (qname == null) {
-                for (int i = fElementChildrenLength; i < fElementChildren.length; i++) {
-                    fElementChildren[i] = new QName();
-                }
-                qname = fElementChildren[fElementChildrenLength];
-            }
-            qname.setValues(element);
-            fElementChildrenLength++;
-        }
-
-        // save current element information
-        fCurrentElement.setValues(element);
-        ensureStackCapacity(fElementDepth);
-        fElementQNamePartsStack[fElementDepth].setValues(fCurrentElement);
-        fElementIndexStack[fElementDepth] = fCurrentElementIndex;
-        fContentModelStack[fElementDepth] = fCurrentContentModel;
-
-        // call handlers
-        if (fDocumentHandler != null) {
-            if (isEmpty) {
-                fDocumentHandler.emptyElement(element, attributes);
-            }
-            else {
-                fDocumentHandler.startElement(element, attributes);
-            }
-        }
-
-    } // handleStartElement(QName,XMLAttributes,boolean)
-
-    /** Handle end element. */
-    /*protected void handleEndElement(QName element, boolean isEmpty)
-        throws XNIException {
-
-        // decrease element depth
-        fElementDepth--;
-
-        // validate
-        if (fPerformValidation) {
-            int elementIndex = fCurrentElementIndex;
-            if (elementIndex != -1 && fCurrentContentModel != null) {
-                QName children[] = fElementChildren;
-                int childrenOffset = fElementChildrenOffsetStack[fElementDepth + 1] + 1;
-                int childrenLength = fElementChildrenLength - childrenOffset;
-                int result = checkContent(elementIndex,
-                                          children, childrenOffset, childrenLength);
-
-                if (result != -1) {
-                    fSchemaGrammar.getElementDecl(elementIndex, fTempElementDecl);
-                    if (fTempElementDecl.type.contentModel.childrenCount() == 0) {
-                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                   "MSG_CONTENT_INVALID",
-                                                   new Object[]{ element.rawname, "EMPTY"},
-                                                   XMLErrorReporter.SEVERITY_ERROR);
-                    }
-                    else {
-                        String messageKey = result != childrenLength ?
-                                            "MSG_CONTENT_INVALID" : "MSG_CONTENT_INCOMPLETE";
-                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                   messageKey,
-                                                   new Object[]{ element.rawname,
-                                                       fTempElementDecl.type.contentModel.toString()},
-                                                   XMLErrorReporter.SEVERITY_ERROR);
-                    }
-                }
-            }
-            fElementChildrenLength = fElementChildrenOffsetStack[fElementDepth + 1] + 1;
-        }
-
-        // call handlers
-        if (fDocumentHandler != null && !isEmpty) {
-            // NOTE: The binding of the element doesn't actually happen
-            //       yet because the namespace binder does that. However,
-            //       if it does it before this point, then the endPrefix-
-            //       Mapping calls get made too soon! As long as the
-            //       rawnames match, we know it'll have a good binding,
-            //       so we can just use the current element. -Ac
-            fDocumentHandler.endElement(fCurrentElement);
-        }
-
-        // now pop this element off the top of the element stack
-        if (fElementDepth < -1) {
-            throw new RuntimeException("FWK008 Element stack underflow");
-        }
-        if (fElementDepth < 0) {
-            fCurrentElement.clear();
-            fCurrentElementIndex = -1;
-            fCurrentContentModel = null;
-            fInElementContent = false;
-
-            // TO DO : fix this
-            //
-            // Check after document is fully parsed
-            // (1) check that there was an element with a matching id for every
-            //   IDREF and IDREFS attr (V_IDREF0)
-            //
-            if (fPerformValidation) {
-                try {
-                    //Do final validation of IDREFS against IDs
-                    IDREFDatatypeValidator.checkIDREF(fTableOfIDs, fTableOfIDRefs);
-                }
-                catch (InvalidDatatypeValueException ex) {
-                    String  key = ex.getKeyIntoReporter();
-
-                    fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
-                                                key,
-                                                new Object[]{ ex.getMessage()},
-                                                XMLErrorReporter.SEVERITY_ERROR );
-                }
-                fTableOfIDs.clear();//Clear table of IDs
-            }
+        // if we are in the content of "skip", then just skip this element
+        if (fSkipValidationDepth >= 0) {
+            fElementDepth++;
             return;
         }
 
-        // If Namespace enable then localName != rawName
-        fCurrentElement.setValues(fElementQNamePartsStack[fElementDepth]);
+        // if it's not the root element, we store
+        // ElementDecl, ContentModel, ElementValue in the stacks
+        if (fElementDepth != -1) {
+            ensureStackCapacity();
+            fChildCountStack[fElementDepth] = fChildCount+1;
+            fChildCount = 0;
+            fElemDeclStack[fElementDepth] = fCurrentElemDecl;
+            fTypeStack[fElementDepth] = fCurrentType;
+            fCMStack[fElementDepth] = fCurrentCM;
+            fBufferStack[fElementDepth] = fBuffer;
+        }
 
-        fCurrentElementIndex = fElementIndexStack[fElementDepth];
-        fCurrentContentModel = fElementContentModelStack[fElementDepth];
-        fInElementContent = fCurrentContentModel.childrenCount() > 0;
-
-    } // handleEndElement(QName,boolean)*/
-
-    void handleStartElement(QName element, XMLAttributes attrs, boolean isEmpty) {
-        fBufferStack.push(fBuffer.toString());
-        fBuffer.setLength(0);
-        fElemDeclStack.push(fTempElementDecl);
-        fTempElementDecl = new XSElementDecl();
-        
-        String sLocation = attrs.getValue(SchemaSymbols.URI_XSI, SchemaSymbols.XSI_SCHEMALOCACTION);
-        String nsLocation = attrs.getValue(SchemaSymbols.URI_XSI, SchemaSymbols.XSI_NONAMESPACESCHEMALOCACTION);
+        // get xsi:schemaLocation and xsi:noNamespaceSchemaLocation attributes,
+        // parser them to get the grammars
+        // REVISIT: we'll defer this operation until there is a reference to
+        //          a component from that namespace
+        String sLocation = attributes.getValue(URI_XSI, XSI_SCHEMALOCACTION);
+        String nsLocation = attributes.getValue(URI_XSI, XSI_NONAMESPACESCHEMALOCACTION);
         if (sLocation != null) {
-            StringTokenizer t = new StringTokenizer(sLocation, " ");
+            StringTokenizer t = new StringTokenizer(sLocation, " \n\t\r");
             String namespace, location;
             while (t.hasMoreTokens()) {
                 namespace = t.nextToken ();
-                if (!t.hasMoreTokens())
+                if (!t.hasMoreTokens()) {
+                    // REVISIT: report error for wrong number of uris
                     break;
+                }
                 location = t.nextToken();
                 if (fGrammarResolver.getGrammar(namespace) == null)
                     fSchemaHandler.parseSchema(namespace, location);
             }
         }
         if (nsLocation != null) {
-            if (fGrammarResolver.getGrammar("") == null)
-                fSchemaHandler.parseSchema("", nsLocation);
+            if (fGrammarResolver.getGrammar(fSchemaHandler.EMPTY_STRING) == null)
+                fSchemaHandler.parseSchema(fSchemaHandler.EMPTY_STRING, nsLocation);
         }
-        
-        fSchemaGrammar = fGrammarResolver.getGrammar(element.uri);
-        if (fSchemaGrammar != null)
-            fTempElementDecl = fSchemaGrammar.getElementDecl(element.localpart, fTempElementDecl);
 
-        fBuffer.setLength(0);
-    }
-    
-    void handleEndElement(QName element, boolean isEmpty) {
-        SchemaGrammar grammar = null;
-        if (fTempElementDecl.fTypeNS != null)
-            grammar = fGrammarResolver.getGrammar(fTempElementDecl.fTypeNS);
-        if (grammar != null) {
-            XSType elemType = grammar.getTypeDecl(fTempElementDecl.fTypeIdx);
-            if (elemType.getXSType() == XSType.SIMPLE_TYPE) {
-                try {
-                    DatatypeValidator dv = (DatatypeValidator)elemType;
-                    String content = XSAttributeChecker.normalize(fBuffer.toString(), dv.getWSFacet());
-                    dv.validate(content, null);
-                } catch (InvalidDatatypeValueException e) {
-                    fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                               e.toString(), null,
-                                               XMLErrorReporter.SEVERITY_ERROR);
+        // get the element decl for this element
+        fCurrentElemDecl = null;
+
+        XSWildcardDecl wildcard = null;
+        // if there is a content model, then get the decl from that
+        if (fCurrentCM != null) {
+            Object decl = fCurrentCM.oneTransition(element, fCurrCMState);
+            if (decl instanceof XSElementDecl) {
+                fCurrentElemDecl = (XSElementDecl)decl;
+            } else if (decl instanceof XSWildcardDecl) {
+                wildcard = (XSWildcardDecl)decl;
+            } else if (fCurrCMState != null) {
+                // REVISIT: report error: invalid content
+                reportGenericSchemaError("invlid content starting with element '"+element.rawname+"'");
+                fCurrCMState = null;
+            }
+        }
+
+        // save the current content model state in the stack
+        if (fElementDepth != -1)
+            fCMStateStack[fElementDepth] = fCurrCMState;
+
+        // increase the element depth after we've saved all states for the
+        // parent element
+        fElementDepth++;
+
+        // if the wildcard is skip, then return
+        if (wildcard != null && wildcard.fPprocessContents == XSWildcardDecl.WILDCARD_SKIP) {
+            fSkipValidationDepth = fElementDepth;
+            return;
+        }
+
+        // try again to get the element decl
+        if (fCurrentElemDecl == null) {
+            // REVISIT: null or ""
+            SchemaGrammar sGrammar = fGrammarResolver.getGrammar(element.uri == null ? "" : element.uri);
+            if (sGrammar != null)
+                fCurrentElemDecl = sGrammar.getGlobalElementDecl(element.localpart);
+        }
+
+        // get the type for the current element
+        fCurrentType = null;
+        if (fCurrentElemDecl != null)
+            fCurrentType = fCurrentElemDecl.fType;
+
+        // get type from xsi:type
+        String xsiType = attributes.getValue(URI_XSI, XSI_TYPE);
+        if (xsiType != null) {
+            // REVISIT: bind namespace, get grammar, get type
+            // report error if type not found.
+        }
+
+        // if the element decl is not found
+        if (fCurrentType == null) {
+            // if this is the root element, or wildcard = strict, report error
+            if (fElementDepth == 0) {
+                // REVISIT: report error, because it's root element
+                reportGenericSchemaError("can't find decl for root element '"+element.rawname+"'");
+            } else if (wildcard != null &&
+                wildcard.fPprocessContents == XSWildcardDecl.WILDCARD_STRICT) {
+                // REVISIT: report error, because wilcard = strict
+                reportGenericSchemaError("can't find decl for strict wildcard '"+element.rawname+"'");
+            }
+
+            // no element decl found, have to skip this element
+            fSkipValidationDepth = fElementDepth;
+            return;
+        }
+
+        // then try to get the content model
+        fCurrentCM = null;
+        if (fCurrentType != null) {
+            if ((fCurrentType.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0) {
+                fCurrentCM = ((XSComplexTypeDecl)fCurrentType).getContentModel();
+            }
+        }
+
+        // and get the initial content model state
+        fCurrCMState = null;
+        if (fCurrentCM != null)
+            fCurrCMState = fCurrentCM.startContentModel();
+
+        // and the buffer to hold the value of the element
+        fBuffer = new StringBuffer();
+
+        // REVISIT: get xsi:nil (was bind...)
+
+        // REVISIT: validate attributes (was validateEle...)
+
+    } // handleStartElement(QName,XMLAttributes,boolean)
+
+    /** Handle end element. */
+    void handleEndElement(QName element) {
+
+        // if we are skipping, return
+        if (fSkipValidationDepth >= 0) {
+            if (fSkipValidationDepth == fElementDepth &&
+                fSkipValidationDepth > 0) {
+                fSkipValidationDepth = -1;
+                fElementDepth--;
+                fChildCount = fChildCountStack[fElementDepth];
+                fCurrentElemDecl = fElemDeclStack[fElementDepth];
+                fCurrentType = fTypeStack[fElementDepth];
+                fCurrentCM = fCMStack[fElementDepth];
+                fCurrCMState = fCMStateStack[fElementDepth];
+                fBuffer = fBufferStack[fElementDepth];
+            } else {
+                fElementDepth--;
+            }
+            return;
+        }
+
+        if (fValidation) {
+            // REVISIT: fCurrentElemDecl: fixed/default value; ...
+            // REVISIT: fCurrentType: value content, element content
+            if (fCurrentType != null) {
+                if (fCurrentCM == null && fChildCount != 0) {
+                    // the parent element doesn't expect any child element
+                    // REVISIT: report an error
+                    reportGenericSchemaError("element content doesn't allowed here");
+                }
+                if ((fCurrentType.getXSType() & XSTypeDecl.SIMPLE_TYPE) != 0) {
+                    try {
+                        DatatypeValidator dv = (DatatypeValidator)fCurrentType;
+                        String content = XSAttributeChecker.normalize(fBuffer.toString(), dv.getWSFacet());
+                        dv.validate(content, null);
+                    } catch (InvalidDatatypeValueException e) {
+                        //REVISIT
+                        reportGenericSchemaError("datatype error: " + e.getMessage());
+                    }
+                } else {
+                    if (fCurrentCM != null && !fCurrentCM.endContentModel(fCurrCMState)) {
+                        XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
+                        // REVISIT: report error for not matching content
+                        reportGenericSchemaError("the content of '"+element.rawname+"' doesn't match ("+ctype.fParticle.toString()+")");
+                    }
                 }
             }
         }
-        
-        fBuffer = new StringBuffer((String)fBufferStack.pop());
-        fTempElementDecl = (XSElementDecl)fElemDeclStack.pop();
+
+        // decrease element depth and restore states
+        fElementDepth--;
+        if (fElementDepth == -1) {
+            if (fValidation) {
+                try {
+                    //Do final validation of IDREFS against IDs
+                    // REVISIT: how to do it? new simpletype design?
+                    IDREFDatatypeValidator.checkIdRefs(fTableOfIDs, fTableOfIDRefs);
+                }
+                catch (InvalidDatatypeValueException ex) {
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "MSG_ELEMENT_WITH_ID_REQUIRED",
+                                               new Object[]{ ex.getMessage()},
+                                               XMLErrorReporter.SEVERITY_ERROR);
+                }
+            }
+        } else {
+            fChildCount = fChildCountStack[fElementDepth];
+            fCurrentElemDecl = fElemDeclStack[fElementDepth];
+            fCurrentType = fTypeStack[fElementDepth];
+            fCurrentCM = fCMStack[fElementDepth];
+            fCurrCMState = fCMStateStack[fElementDepth];
+            fBuffer = fBufferStack[fElementDepth];
+        }
+
+    } // handleEndElement(QName,boolean)*/
+
+    void handleCharacters(XMLString text) {
+        if (fSkipValidationDepth >= 0)
+            return;
+        fBuffer.append(text.toString());
+    } // handleCharacters(XMLString)
+
+    void reportSchemaError(String key, Object[] arguments) {
+        if (fValidation)
+            fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                       key, arguments,
+                                       XMLErrorReporter.SEVERITY_ERROR);
+    }
+
+    void reportGenericSchemaError(String msg) {
+        if (fValidation)
+            fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                       "General", new Object[]{msg},
+                                       XMLErrorReporter.SEVERITY_ERROR);
     }
 
 } // class XMLDTDValidator

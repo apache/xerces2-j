@@ -954,20 +954,14 @@ public class XSAttributeChecker {
     protected Hashtable fNonSchemaAttrs = new Hashtable();
 
     // constructor. Sets fErrorReproter and get datatype validators
-    public XSAttributeChecker (XSDHandler schemaHandler,
-                               XMLErrorReporter er,
-                               SymbolTable symbolTable) {
+    public XSAttributeChecker(XSDHandler schemaHandler) {
         fSchemaHandler = schemaHandler;
-        fErrorReporter = er;
-        fSymbolTable = symbolTable;
     }
 
-    public void reset() {
+    public void reset(XMLErrorReporter er, SymbolTable symbolTable) {
         fIdDefs.clear();
-        // REVISIT: set new error reporter?
-        // REVISIT: set new symbol table?
-        // REVISIT: set new schema symbol?
-        //???fErrorReporter = null;
+        fErrorReporter = er;
+        fSymbolTable = symbolTable;
         fNonSchemaAttrs.clear();
     }
 
@@ -1001,7 +995,7 @@ public class XSAttributeChecker {
             eleAttrsMap = fEleAttrsMapG;
         }
         else {
-            if (DOMUtil.getAttr(element, SchemaSymbols.ATT_REF) == null)
+            if (DOMUtil.getAttr(element, SchemaSymbols.ATT_REF) != null)
                 eleAttrsMap = fEleAttrsMapR;
             else
                 eleAttrsMap = fEleAttrsMapN;
@@ -1506,9 +1500,8 @@ public class XSAttributeChecker {
         return sb.toString();
     }
 
-    //REVISIT: how to resolver qname?
     protected QName resolveQName (String attrVal, SchemaNamespaceSupport nsSupport) {
-        String prefix = XSDHandler.EMPTY_STRING;
+        String prefix = fSchemaHandler.EMPTY_STRING;
         String localpart = attrVal;
         int colonptr = attrVal.indexOf(":");
         if ( colonptr > 0) {
@@ -1595,7 +1588,7 @@ public class XSAttributeChecker {
             if (rawname.startsWith("xmlns")) {
                 prefix = null;
                 if (rawname.length() == 5)
-                    prefix = XSDHandler.EMPTY_STRING;
+                    prefix = fSchemaHandler.EMPTY_STRING;
                 else if (rawname.charAt(5) == ':')
                     prefix = fSymbolTable.addSymbol(DOMUtil.getLocalName(sattr));
                 if (prefix != null) {

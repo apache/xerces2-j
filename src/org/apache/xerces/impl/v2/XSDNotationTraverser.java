@@ -80,9 +80,8 @@ import org.apache.xerces.util.DOMUtil;
 class  XSDNotationTraverser extends XSDAbstractTraverser {
 
     XSDNotationTraverser (XSDHandler handler,
-                          XMLErrorReporter errorReporter,
                           XSAttributeChecker gAttrCheck) {
-        super(handler, errorReporter, gAttrCheck);
+        super(handler, gAttrCheck);
     }
 
     XSNotationDecl traverse(Element elmNode,

@@ -111,21 +111,15 @@ abstract class XSDAbstractTraverser {
     static final XIntPool fXIntPool = new XIntPool();
 
     XSDAbstractTraverser (XSDHandler handler,
-                          XMLErrorReporter errorReporter,
                           XSAttributeChecker attrChecker) {
         fSchemaHandler = handler;
-        fErrorReporter = errorReporter;
         fAttrChecker = attrChecker;
     }
 
     //REVISIT: Implement
-    void reset() {
-    }
-
-    // REVISIT: should symbol table passed as parameter to constractor or
-    // be set using the following method?
-    void setSymbolTable (SymbolTable table) {
-        fSymbolTable = table;
+    void reset(XMLErrorReporter errorReporter, SymbolTable symbolTable) {
+        fErrorReporter = errorReporter;
+        fSymbolTable = symbolTable;
     }
 
     // traver the annotation declaration
@@ -164,8 +158,8 @@ abstract class XSDAbstractTraverser {
     // REVISIT: is it how we want to handle error reporting?
     void reportGenericSchemaError (String error) {
         fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                   error,
-                                   null,
+                                   "General",
+                                   new Object[]{error},
                                    XMLErrorReporter.SEVERITY_ERROR);
     }
 
@@ -207,7 +201,7 @@ abstract class XSDAbstractTraverser {
     protected XSParticleDecl checkOccurrences(XSParticleDecl particle,
                                               String particleName, Element parent,
                                               int allContextFlags,
-                                              int defaultVals) {
+                                              long defaultVals) {
 
         int min = particle.fMinOccurs;
         int max = particle.fMaxOccurs;

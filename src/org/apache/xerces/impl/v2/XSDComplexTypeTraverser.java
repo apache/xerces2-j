@@ -74,8 +74,8 @@ import org.w3c.dom.Element;
  *   mixed = boolean : false
  *   name = NCName
  *   {any attributes with non-schema namespace . . .}>
- *   Content: (annotation?, (simpleContent | complexContent | 
- *            ((group | all | choice | sequence)?, 
+ *   Content: (annotation?, (simpleContent | complexContent |
+ *            ((group | all | choice | sequence)?,
  *            ((attribute | attributeGroup)*, anyAttribute?))))
  * </complexType>
  * @version $Id$
@@ -85,9 +85,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 
 
     XSDComplexTypeTraverser (XSDHandler handler,
-                             XMLErrorReporter errorReporter,
                              XSAttributeChecker gAttrCheck) {
-        super(handler, errorReporter, gAttrCheck);
+        super(handler, gAttrCheck);
     }
 
 
@@ -97,22 +96,22 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     }
 
     /**
-     * Traverse local complexType declarations 
+     * Traverse local complexType declarations
      *
      * @param Element
      * @param XSDocumentInfo
      * @param SchemaGrammar
-     * @return XSComplexTypeDecl 
+     * @return XSComplexTypeDecl
      */
     XSComplexTypeDecl traverseLocal(Element complexTypeNode,
                       XSDocumentInfo schemaDoc,
                       SchemaGrammar grammar) {
 
 
-        Object[] attrValues = fAttrChecker.checkAttributes(complexTypeNode, false, 
+        Object[] attrValues = fAttrChecker.checkAttributes(complexTypeNode, false,
                               schemaDoc.fNamespaceSupport);
         String complexTypeName = genAnonTypeName(complexTypeNode);
-        XSComplexTypeDecl type = traverseComplexTypeDecl (complexTypeNode, 
+        XSComplexTypeDecl type = traverseComplexTypeDecl (complexTypeNode,
                                  complexTypeName, attrValues, schemaDoc, grammar);
         fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
 
@@ -120,21 +119,21 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     }
 
     /**
-     * Traverse global complexType declarations 
+     * Traverse global complexType declarations
      *
      * @param Element
      * @param XSDocumentInfo
      * @param SchemaGrammar
-     * @return XSComplexTypeDecXSComplexTypeDecl 
+     * @return XSComplexTypeDecXSComplexTypeDecl
      */
     XSComplexTypeDecl traverseGlobal (Element complexTypeNode,
                         XSDocumentInfo schemaDoc,
                         SchemaGrammar grammar){
 
-        Object[] attrValues = fAttrChecker.checkAttributes(complexTypeNode, true, 
+        Object[] attrValues = fAttrChecker.checkAttributes(complexTypeNode, true,
                               schemaDoc.fNamespaceSupport);
         String complexTypeName = (String)  attrValues[XSAttributeChecker.ATTIDX_NAME];
-        XSComplexTypeDecl type = traverseComplexTypeDecl (complexTypeNode, 
+        XSComplexTypeDecl type = traverseComplexTypeDecl (complexTypeNode,
                                  complexTypeName, attrValues, schemaDoc, grammar);
         grammar.addGlobalTypeDecl(type);
         fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
@@ -143,9 +142,9 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     }
 
 
-    private XSComplexTypeDecl traverseComplexTypeDecl(Element complexTypeDecl, 
-                                                      String complexTypeName, 
-                                                      Object[] attrValues, 
+    private XSComplexTypeDecl traverseComplexTypeDecl(Element complexTypeDecl,
+                                                      String complexTypeName,
+                                                      Object[] attrValues,
                                                       XSDocumentInfo schemaDoc,
                                                       SchemaGrammar grammar) {
 
@@ -154,24 +153,24 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         Boolean mixedAtt     = (Boolean) attrValues[XSAttributeChecker.ATTIDX_MIXED];
         XInt    finalAtt     = (XInt)    attrValues[XSAttributeChecker.ATTIDX_FINAL];
 
-        XSComplexTypeDecl complexType = new XSComplexTypeDecl(); 
-        complexType.fName = complexTypeName; 
-        complexType.fTargetNamespace = schemaDoc.fTargetNamespace;  
-        complexType.fBlock = blockAtt == null ? 
+        XSComplexTypeDecl complexType = new XSComplexTypeDecl();
+        complexType.fName = complexTypeName;
+        complexType.fTargetNamespace = schemaDoc.fTargetNamespace;
+        complexType.fBlock = blockAtt == null ?
                              SchemaSymbols.EMPTY_SET : blockAtt.shortValue();
         complexType.fFinal = finalAtt == null ?
                              SchemaSymbols.EMPTY_SET : finalAtt.shortValue();
         if (abstractAtt.booleanValue())
             complexType.setIsAbstractType();
-        
+
 
         Element child = null;
-        
+
         try {
             // ---------------------------------------------------------------
             // First, handle any ANNOTATION declaration and get next child
             // ---------------------------------------------------------------
-            child = checkContent(complexTypeDecl, 
+            child = checkContent(complexTypeDecl,
                     DOMUtil.getFirstChildElement(complexTypeDecl), true);
 
             // ---------------------------------------------------------------
@@ -183,7 +182,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
               //
               processComplexContent(child, complexType, null, mixedAtt.booleanValue(),
                                     schemaDoc, grammar);
-            } 
+            }
             else if (DOMUtil.getLocalName(child).equals
                     (SchemaSymbols.ELT_SIMPLECONTENT)) {
               //
@@ -202,10 +201,10 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
               // GROUP, ALL, SEQUENCE or CHOICE, followed by optional attributes
               // Note that it's possible that only attributes are specified.
               //
-              processComplexContent(child, complexType, null, mixedAtt.booleanValue(), 
+              processComplexContent(child, complexType, null, mixedAtt.booleanValue(),
                                     schemaDoc, grammar);
             }
-       }    
+       }
        catch (ComplexTypeRecoverableError e) {
          String message = e.getMessage();
          System.out.println(message);
@@ -213,19 +212,19 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
        }
 
        return complexType;
-             
-            
+
+
     }
 
     private void processComplexContent(Element complexContentChild,
                                  XSComplexTypeDecl typeInfo, QName baseName,
-                                 boolean isMixed, 
+                                 boolean isMixed,
                                  XSDocumentInfo schemaDoc, SchemaGrammar grammar)
                                  throws ComplexTypeRecoverableError {
 
        Element attrNode = null;
-       XSParticleDecl particle = null; 
-       String typeName = typeInfo.fName; 
+       XSParticleDecl particle = null;
+       String typeName = typeInfo.fName;
 
        if (complexContentChild != null) {
            // -------------------------------------------------------------
@@ -238,7 +237,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 
           if (childName.equals(SchemaSymbols.ELT_GROUP)) {
 
-               particle = fSchemaHandler.fGroupTraverser.traverseLocal(complexContentChild, 
+               particle = fSchemaHandler.fGroupTraverser.traverseLocal(complexContentChild,
                                          schemaDoc, grammar);
                attrNode = DOMUtil.getNextSiblingElement(complexContentChild);
            }
@@ -273,7 +272,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
        // -----------------------------------------------------------------------
 
        // -----------------------------------------------------------------------
-       // Set the content type 
+       // Set the content type
        // -----------------------------------------------------------------------
 
        if (isMixed) {
@@ -331,14 +330,14 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                                             boolean mixedOnComplexTypeDecl){
     }
 
-    /* 
+    /*
      * Generate a name for an anonymous type
      */
     private String genAnonTypeName(Element complexTypeDecl) {
 
         // Generate a unique name for the anonymous type by concatenating together the
         // names of parent nodes
-        // The name is quite good for debugging/error purposes, but we may want to 
+        // The name is quite good for debugging/error purposes, but we may want to
         // revisit how this is done for performance reasons (LM).
         String typeName;
         Element node=complexTypeDecl;

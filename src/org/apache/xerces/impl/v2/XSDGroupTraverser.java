@@ -78,10 +78,9 @@ import org.w3c.dom.Element;
 class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
 
     XSDGroupTraverser (XSDHandler handler,
-                       XMLErrorReporter errorReporter,
                        XSAttributeChecker gAttrCheck) {
 
-        super(handler, errorReporter, gAttrCheck);
+        super(handler, gAttrCheck);
     }
 
     XSParticleDecl traverseLocal(Element elmNode,

@@ -99,7 +99,7 @@ public class XSComplexTypeDecl implements XSTypeDecl {
     // if the content type is element or mixed, the particle
     public XSParticleDecl fParticle = null;
     // if there is a particle, the content model corresponding to that particle
-    public XSCMValidator fCMValidator = null;
+    XSCMValidator fCMValidator = null;
 
     // REVISIT: when XSTypeDecl becomes a class, remove this method
     public short getXSType () {
@@ -131,4 +131,13 @@ public class XSComplexTypeDecl implements XSTypeDecl {
         fMiscFlags |= CT_HAS_TYPE_ID;
     }
 
+    public XSCMValidator getContentModel() {
+        if (fCMValidator != null)
+            return fCMValidator;
+        if (fParticle == null || fParticle.fType == XSParticleDecl.PARTICLE_EMPTY)
+            return null;
+        // REVISIT: call CMBuilder.buildCM(this);
+
+        return fCMValidator;
+    }
 } // class XSComplexTypeDecl

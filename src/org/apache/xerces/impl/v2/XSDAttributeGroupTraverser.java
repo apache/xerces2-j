@@ -75,10 +75,9 @@ import  org.w3c.dom.Element;
 class  XSDAttributeGroupTraverser extends XSDAbstractTraverser{
 
     XSDAttributeGroupTraverser (XSDHandler handler,
-                                XMLErrorReporter errorReporter,
                                 XSAttributeChecker gAttrCheck) {
 
-        super(handler, errorReporter, gAttrCheck);
+        super(handler, gAttrCheck);
     }
 
     XSAttributeGroupDecl traverseLocal(Element elmNode,

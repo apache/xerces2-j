@@ -71,28 +71,30 @@ public final class SchemaSymbols {
     // are not symbols in the schema document.
     // the validator can choose to add them by itself.
 
-    // empty string
-    public static final String EMPTY_STRING = "";
-
-    // schema namespaces
-    public static final String URI_XSI                        = "http://www.w3.org/2001/XMLSchema-instance";
-    public static final String URI_SCHEMAFORSCHEMA            = "http://www.w3.org/2001/XMLSchema";
-
-    // xsi attributes
-    public static final String XSI_SCHEMALOCACTION            = "schemaLocation";
-    public static final String XSI_NONAMESPACESCHEMALOCACTION = "noNamespaceSchemaLocation";
-    public static final String XSI_TYPE                       = "type";
-    public static final String XSI_NIL                        = "nil";
-
     // xmlns attributes
-    public static final String XMLNS                          = "xmlns";
+    public static final String XMLNS                           = "xmlns";
+
+    // the following strings (xsi:, xsd) will be added into the
+    // symbol table that comes with the parser
+
+    // xsi attributes: in validator
+    public static final String OURI_XSI                        = "http://www.w3.org/2001/XMLSchema-instance";
+    public static final String OXSI_SCHEMALOCACTION            = "schemaLocation";
+    public static final String OXSI_NONAMESPACESCHEMALOCACTION = "noNamespaceSchemaLocation";
+    public static final String OXSI_TYPE                       = "type";
+    public static final String OXSI_NIL                        = "nil";
+
+    // schema namespace
+    public static final String OURI_SCHEMAFORSCHEMA            = "http://www.w3.org/2001/XMLSchema";
 
     // the schema symbol table that holds all schema symbols.
     // these are used within schema traversers (including XSDHandler).
     // when a new DOM parser is created to parse schema document,
-    // XSDHandler is responsible for creating a new SymbolTable which
-    // *shadow* the symbol table defined below.
+    // XSDHandler is responsible for passing this symbol table to that parser.
     public static final SymbolTable fSymbolTable = new SynchronizedSymbolTable();
+
+    // schema namespace is also added to the schema symbol table
+    public static final String URI_SCHEMAFORSCHEMA      = fSymbolTable.addSymbol(OURI_SCHEMAFORSCHEMA);
 
     // all possible schema element names
     public static final String ELT_ALL                  = fSymbolTable.addSymbol("all");

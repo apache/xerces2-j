@@ -81,7 +81,7 @@ public class XSElementDecl {
     // type of the element
     public XSTypeDecl fType = null;
     // misc flag of the element: nillable/abstract/fixed
-    public short fMiscFlags = 0;
+    short fMiscFlags = 0;
     // block set (disallowed substitutions) of the element
     public short fBlock = SchemaSymbols.EMPTY_SET;
     // final set (substitution group exclusions) of the element
@@ -93,7 +93,7 @@ public class XSElementDecl {
     // identity constraints
     static final int INITIAL_SIZE = 8;
     int fIDCPos = 0;
-    public IdentityConstraint[] fIDConstraints = new IdentityConstraint[INITIAL_SIZE];
+    IdentityConstraint[] fIDConstraints = new IdentityConstraint[INITIAL_SIZE];
 
     private static final short CONSTRAINT_MASK = 3;
     private static final short NILLABLE        = 4;
@@ -122,8 +122,23 @@ public class XSElementDecl {
     }
 
     public void addIDConstaint(IdentityConstraint idc) {
-        //REVISIT: resize of necessary
-        if (idc != null)
-            fIDConstraints[fIDCPos++] = idc;
+        if (fIDCPos == fIDConstraints.length) {
+            fIDConstraints = resize(fIDConstraints, fIDCPos*2);
+        }
+        fIDConstraints[fIDCPos++] = idc;
     }
+
+    public IdentityConstraint[] getIDConstraints() {
+        if (fIDCPos < fIDConstraints.length) {
+            fIDConstraints = resize(fIDConstraints, fIDCPos);
+        }
+        return fIDConstraints;
+    }
+
+    static final IdentityConstraint[] resize(IdentityConstraint[] oldArray, int newSize) {
+        IdentityConstraint[] newArray = new IdentityConstraint[newSize];
+        System.arraycopy(oldArray, 0, newArray, 0, Math.min(oldArray.length, newSize));
+        return newArray;
+    }
+
 } // class XMLElementDecl

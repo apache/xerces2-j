@@ -73,9 +73,8 @@ import org.apache.xerces.impl.v2.xpath.*;
 class XSDKeyrefTraverser extends XSDAbstractIDConstraintTraverser {
 
     public XSDKeyrefTraverser (XSDHandler handler,
-                                  XMLErrorReporter errorReporter,
                                   XSAttributeChecker gAttrCheck) {
-        super(handler, errorReporter, gAttrCheck);
+        super(handler, gAttrCheck);
     }
 
     void traverse(Element krElem, XSElementDecl element,

@@ -164,14 +164,14 @@ public class IDREFDatatypeValidator extends StringDatatypeValidator {
     } // addId(int):boolean
 
 
-    private void checkIdRefs(Hashtable IDList, Hashtable IDREFList) throws InvalidDatatypeValueException {
+    public static void checkIdRefs(Hashtable IDList, Hashtable IDREFList) throws InvalidDatatypeValueException {
         Enumeration en = IDREFList.keys();
 
         while ( en.hasMoreElements() ) {
             String key = (String)en.nextElement();
             if ( !IDList.containsKey(key) ) {
                 InvalidDatatypeValueException error = new InvalidDatatypeValueException( key );
-                
+
                 //REVISIT: handle errors
 
                 //error.setMinorCode(XMLMessages.MSG_ELEMENT_WITH_ID_REQUIRED);

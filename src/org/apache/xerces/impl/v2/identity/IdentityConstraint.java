@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001 The Apache Software Foundation.  
+ * Copyright (c) 2001 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -57,6 +57,7 @@
 
 package org.apache.xerces.impl.v2.identity;
 
+import org.apache.xerces.impl.v2.XSArrayResizer;
 
 /**
  * Base class of Schema identity constraint.
@@ -133,17 +134,10 @@ public abstract class IdentityConstraint {
 
     /** Adds a field. */
     public void addField(Field field) {
-        try {
-            fFields[fFieldCount] = null;
-        }
-        catch (NullPointerException e) {
+        if (fFields == null)
             fFields = new Field[4];
-        }
-        catch (ArrayIndexOutOfBoundsException e) {
-            Field[] newfields = new Field[fFields.length * 2];
-            System.arraycopy(fFields, 0, newfields, 0, fFields.length);
-            fFields = newfields;
-        }
+        else if (fFieldCount == fFields.length)
+            fFields = resize(fFields, fFieldCount*2);
         fFields[fFieldCount++] = field;
     } // addField(Field)
 
@@ -185,9 +179,15 @@ public abstract class IdentityConstraint {
         if(!areEqual) return false;
         areEqual = (fFieldCount == id.fFieldCount);
         if(!areEqual) return false;
-        for(int i=0; i<fFieldCount; i++) 
+        for(int i=0; i<fFieldCount; i++)
             if(!fFields[i].toString().equals(id.fFields[i].toString())) return false;
         return true;
     } // equals
+
+    static final Field[] resize(Field[] oldArray, int newSize) {
+        Field[] newArray = new Field[newSize];
+        System.arraycopy(oldArray, 0, newArray, 0, newSize);
+        return newArray;
+    }
 
 } // class IdentityConstraint

@@ -73,9 +73,8 @@ import org.apache.xerces.impl.v2.xpath.*;
 class XSDUniqueOrKeyTraverser extends XSDAbstractIDConstraintTraverser {
 
     public XSDUniqueOrKeyTraverser (XSDHandler handler,
-                                  XMLErrorReporter errorReporter,
                                   XSAttributeChecker gAttrCheck) {
-        super(handler, errorReporter, gAttrCheck);
+        super(handler, gAttrCheck);
     }
 
 

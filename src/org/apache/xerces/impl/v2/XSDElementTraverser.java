@@ -107,10 +107,9 @@ class XSDElementTraverser extends XSDAbstractTraverser {
     boolean fDeferTraversingLocalElements;
 
     XSDElementTraverser (XSDHandler handler,
-                         XMLErrorReporter errorReporter,
                          XSAttributeChecker gAttrCheck,
                          SubstitutionGroupHandler subGroupHandler) {
-        super(handler, errorReporter, gAttrCheck);
+        super(handler, gAttrCheck);
         fSubGroupHandler = subGroupHandler;
     }
 
@@ -186,10 +185,10 @@ class XSDElementTraverser extends XSDAbstractTraverser {
             particle.fMinOccurs = minAtt.intValue();
             particle.fMaxOccurs = maxAtt.intValue();
 
-            XInt defaultVals = (XInt)attrValues[XSAttributeChecker.ATTIDX_FROMDEFAULT];
+            Long defaultVals = (Long)attrValues[XSAttributeChecker.ATTIDX_FROMDEFAULT];
             checkOccurrences(particle, SchemaSymbols.ELT_ELEMENT,
                              (Element)elmDecl.getParentNode(), allContextFlags,
-                             defaultVals.intValue());
+                             defaultVals.longValue());
         }
 
         fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
@@ -269,7 +268,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         element.fFinal = finalAtt == null ? SchemaSymbols.EMPTY_SET : finalAtt.shortValue();
         if (nillableAtt.booleanValue())
             element.setIsNillable();
-        if (abstractAtt.booleanValue())
+        if (abstractAtt != null && abstractAtt.booleanValue())
             element.setIsAbstract();
 
         // get 'value constraint'

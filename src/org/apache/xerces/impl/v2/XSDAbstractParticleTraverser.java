@@ -70,10 +70,9 @@ import org.w3c.dom.Element;
 abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
 
     XSDAbstractParticleTraverser (XSDHandler handler,
-                                  XMLErrorReporter errorReporter,
                                   XSAttributeChecker gAttrCheck) {
 
-        super(handler, errorReporter, gAttrCheck);
+        super(handler, gAttrCheck);
     }
 
     /**
@@ -146,7 +145,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
 
         XInt minAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MINOCCURS];
         XInt maxAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];
-        XInt defaultVals = (XInt)attrValues[XSAttributeChecker.ATTIDX_FROMDEFAULT];
+        Long defaultVals = (Long)attrValues[XSAttributeChecker.ATTIDX_FROMDEFAULT];
         left.fMinOccurs = minAtt.intValue();
         left.fMaxOccurs = maxAtt.intValue();
 
@@ -154,7 +153,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
                                 SchemaSymbols.ELT_ALL,
                                 (Element)allDecl.getParentNode(),
                                 allContextFlags,
-                                defaultVals.intValue());
+                                defaultVals.longValue());
 
         fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
 
@@ -317,14 +316,14 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
 
         XInt minAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MINOCCURS];
         XInt maxAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];
-        XInt defaultVals = (XInt)attrValues[XSAttributeChecker.ATTIDX_FROMDEFAULT];
+        Long defaultVals = (Long)attrValues[XSAttributeChecker.ATTIDX_FROMDEFAULT];
         left.fMinOccurs = minAtt.intValue();
         left.fMaxOccurs = maxAtt.intValue();
         left = checkOccurrences(left,
                                 choice ? SchemaSymbols.ELT_CHOICE : SchemaSymbols.ELT_SEQUENCE,
                                 (Element)decl.getParentNode(),
                                 allContextFlags,
-                                defaultVals.intValue());
+                                defaultVals.longValue());
 
         fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
 

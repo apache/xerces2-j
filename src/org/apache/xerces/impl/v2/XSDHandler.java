@@ -116,8 +116,7 @@ class XSDHandler {
     // as unlikely as possible to cause collisions.
     public final static String REDEF_IDENTIFIER = "_fn3dktizrknc9pi";
 
-    //REVISIT: should we have this constant in symbolTable?
-    public final static String EMPTY_STRING="";
+    public String EMPTY_STRING;
 
     //
     //protected data that can be accessable by any traverser
@@ -296,6 +295,14 @@ class XSDHandler {
     protected XSDocumentInfo constructTrees(Document schemaRoot) {
         if(schemaRoot == null) return null;
         XSDocumentInfo currSchemaInfo = new XSDocumentInfo(schemaRoot, fAttributeChecker);
+        // we need to add all namespace into the symbol table
+        // REVISIT: either move this code into the constructor of XSDocumentInfo
+        //          or move the initialization code out of the constructor
+        if (currSchemaInfo.fTargetNamespace == null) {
+            currSchemaInfo.fTargetNamespace = EMPTY_STRING;
+        } else {
+            currSchemaInfo.fTargetNamespace = fSymbolTable.addSymbol(currSchemaInfo.fTargetNamespace);
+        }
         SchemaGrammar sg = new SchemaGrammar(fSymbolTable, currSchemaInfo.fTargetNamespace);
         fGrammarResolver.putGrammar(sg);
 
@@ -596,7 +603,8 @@ class XSDHandler {
         SchemaGrammar sGrammar = null;
         Element decl = null;
 
-        if (declToTraverse.uri.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) {
+        if (declToTraverse.uri != null &&
+            declToTraverse.uri.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) {
             sGrammar = SchemaGrammar.SG_SchemaNS;
         } else {
             String declKey = null;
@@ -668,7 +676,7 @@ class XSDHandler {
 
         if (retObj != null)
             return retObj;
-        
+
         if (decl != null) {
             if (DOMUtil.isHidden(decl)) {
                 //REVISIT: report an error: circular reference
@@ -707,7 +715,7 @@ class XSDHandler {
             // proper namespace binding.
             schemaWithDecl.restoreNSSupport();
         }
-            
+
         return retObj;
     } // getGlobalDecl(XSDocumentInfo, int, QName):  Object
 
@@ -750,28 +758,18 @@ class XSDHandler {
 
     // construct schemaGrammars.
     private void createTraversers() {
-        fAttributeChecker = new XSAttributeChecker(this, fErrorReporter, fSymbolTable);
+        fAttributeChecker = new XSAttributeChecker(this);
         fSubGroupHandler = new SubstitutionGroupHandler(fGrammarResolver);
-        fAttributeGroupTraverser = new
-                                   XSDAttributeGroupTraverser(this, fErrorReporter, fAttributeChecker);
-        fAttributeTraverser = new XSDAttributeTraverser(this,
-                                                        fErrorReporter, fAttributeChecker);
-        fComplexTypeTraverser = new XSDComplexTypeTraverser(this,
-                                                            fErrorReporter, fAttributeChecker);
-        fElementTraverser = new XSDElementTraverser(this, fErrorReporter,
-                                                    fAttributeChecker, fSubGroupHandler);
-        fGroupTraverser = new XSDGroupTraverser(this,
-                                                fErrorReporter, fAttributeChecker);
-        fKeyrefTraverser = new XSDKeyrefTraverser(this,
-                                                fErrorReporter, fAttributeChecker);
-        fNotationTraverser = new XSDNotationTraverser(this,
-                                                      fErrorReporter, fAttributeChecker);
-        fSimpleTypeTraverser = new XSDSimpleTypeTraverser(this,
-                                                          fErrorReporter, fAttributeChecker);
-        fUniqueOrKeyTraverser = new XSDUniqueOrKeyTraverser(this,
-                                                          fErrorReporter, fAttributeChecker);
-        fWildCardTraverser = new XSDWildcardTraverser(this,
-                                                      fErrorReporter, fAttributeChecker);
+        fAttributeGroupTraverser = new XSDAttributeGroupTraverser(this, fAttributeChecker);
+        fAttributeTraverser = new XSDAttributeTraverser(this, fAttributeChecker);
+        fComplexTypeTraverser = new XSDComplexTypeTraverser(this, fAttributeChecker);
+        fElementTraverser = new XSDElementTraverser(this, fAttributeChecker, fSubGroupHandler);
+        fGroupTraverser = new XSDGroupTraverser(this, fAttributeChecker);
+        fKeyrefTraverser = new XSDKeyrefTraverser(this, fAttributeChecker);
+        fNotationTraverser = new XSDNotationTraverser(this, fAttributeChecker);
+        fSimpleTypeTraverser = new XSDSimpleTypeTraverser(this, fAttributeChecker);
+        fUniqueOrKeyTraverser = new XSDUniqueOrKeyTraverser(this, fAttributeChecker);
+        fWildCardTraverser = new XSDWildcardTraverser(this, fAttributeChecker);
     } // createTraversers()
 
     // this method clears all the global structs of this object
@@ -782,6 +780,12 @@ class XSDHandler {
         fEntityResolver = entityResolver;
         fErrorReporter = errorReporter;
         fSymbolTable = symbolTable;
+
+        EMPTY_STRING = symbolTable.addSymbol("");
+
+        try {
+            fSchemaParser.setProperty(SchemaValidator.ERROR_REPORTER, errorReporter);
+        } catch (Exception e) {}
 
         fUnparsedAttributeRegistry.clear();
         fUnparsedAttributeGroupRegistry.clear();
@@ -806,20 +810,18 @@ class XSDHandler {
         fLocalElemNamespaceContext = new String [INIT_STACK_SIZE][1];
 
         // reset traversers
-        fAttributeChecker.reset();
-        fAttributeGroupTraverser.reset();
-        fAttributeTraverser.reset();
-        fComplexTypeTraverser.reset();
-        fElementTraverser.reset();
-        fGroupTraverser.reset();
-        fKeyrefTraverser.reset();
-        fNotationTraverser.reset();
-        fSimpleTypeTraverser.reset();
-        fUniqueOrKeyTraverser.reset();
-        fWildCardTraverser.reset();
+        fAttributeChecker.reset(errorReporter, symbolTable);
+        fAttributeGroupTraverser.reset(errorReporter, symbolTable);
+        fAttributeTraverser.reset(errorReporter, symbolTable);
+        fComplexTypeTraverser.reset(errorReporter, symbolTable);
+        fElementTraverser.reset(errorReporter, symbolTable);
+        fGroupTraverser.reset(errorReporter, symbolTable);
+        fKeyrefTraverser.reset(errorReporter, symbolTable);
+        fNotationTraverser.reset(errorReporter, symbolTable);
+        fSimpleTypeTraverser.reset(errorReporter, symbolTable);
+        fUniqueOrKeyTraverser.reset(errorReporter, symbolTable);
+        fWildCardTraverser.reset(errorReporter, symbolTable);
 
-        // REVISIT: what should be passed as parameters in constructor, and
-        //          what shoudl be passed to reset()?
     } // reset
 
     /**

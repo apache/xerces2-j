@@ -385,27 +385,37 @@ public class SchemaGrammar {
         return (IdentityConstraint)fGlobalIDConstraintDecls.get(declName);
     }
 
+    // array to store complex type decls
+    private static final int INITIAL_SIZE = 16;
+    private int fCTCount = 0;
+    private XSComplexTypeDecl[] fComplexTypeDecls = new XSComplexTypeDecl[INITIAL_SIZE];
+
     /**
      * add one complex type decl: for later constraint checking
      */
     final void addComplexTypeDecl(XSComplexTypeDecl decl) {
-        //REVISIT: implement: array, resize, store
+        if (fCTCount == fComplexTypeDecls.length)
+            fComplexTypeDecls = resize(fComplexTypeDecls, fCTCount*2);
+        fComplexTypeDecls[fCTCount++] = decl;
     }
 
     /**
      * get all complex type decls: for later constraint checking
      */
     final XSComplexTypeDecl[] getAllComplexTypeDecls() {
-        //REVISIT: return the internal array
-        //         ? how to return the size of the array
-        //         we can use the same approach as attribute group:
-        //         having a finish method, which resize the array
-        //         so that there is no empty entry in the array
-        return null;
+        if (fCTCount < fComplexTypeDecls.length)
+            fComplexTypeDecls = resize(fComplexTypeDecls, fCTCount);
+        return fComplexTypeDecls;
     }
 
     // the grammars to hold built-in types
     final static SchemaGrammar SG_SchemaNS = new SchemaGrammar(null, true);
     final static SchemaGrammar SG_SchemaBasicSet = new SchemaGrammar(null, false);
+
+    static final XSComplexTypeDecl[] resize(XSComplexTypeDecl[] oldArray, int newSize) {
+        XSComplexTypeDecl[] newArray = new XSComplexTypeDecl[newSize];
+        System.arraycopy(oldArray, 0, newArray, 0, Math.min(oldArray.length, newSize));
+        return newArray;
+    }
 
 } // class SchemaGrammar

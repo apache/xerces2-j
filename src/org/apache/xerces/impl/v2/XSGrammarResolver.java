@@ -91,6 +91,19 @@ class XSGrammarResolver {
     }
 
     /**
+     * put a schema grammar into the registry
+     * this method is for the grammar of schema namespace:
+     * the namespace in the grammar is not added into the current symbol table,
+     * so we provide the namespace, which is from the current symbol table.
+     *
+     * @param namespace the namespace of this grammar
+     * @param grammar   the grammar to put in the registry
+     */
+    public void putGrammar(String namespace, SchemaGrammar grammar) {
+        fGrammarRegistry.put(namespace, grammar);
+    }
+
+    /**
      * Check if a grammar for the specified namespace is in the registry
      *
      * @param namespace
@@ -102,6 +115,7 @@ class XSGrammarResolver {
 
     /**
      * Clear the registry.
+     * REVISIT: update to use another XMLGrammarResolver
      */
     public void reset() {
         fGrammarRegistry.clear();

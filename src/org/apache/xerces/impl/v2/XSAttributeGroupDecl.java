@@ -57,8 +57,6 @@
 
 package org.apache.xerces.impl.v2;
 
-import java.util.Hashtable;
-
 /**
  * The XML representation for an attribute group declaration
  * schema component is a global <attributeGroup> element information item
@@ -68,27 +66,36 @@ import java.util.Hashtable;
  */
 public class XSAttributeGroupDecl {
 
-    // when the number of attribute uses is greater than this number,
-    // we use a hashtable to store them
-    // REVISIT: what's the proper value
-    private static final int LARGE_ATTR_USES_NUM = 10;
-
     // name of the attribute group
     public String fName = null;
     // target namespace of the attribute group
     public String fTargetNamespace = null;
+    // number of attribute uses included by this attribute group
+    int fAttrUseNum = 0;
     // attribute uses included by this attribute group
-    // form 1: for large number of attribute uses, use a hashtable
-    public Hashtable fAttributeUsesL = null;
-    // form 2: for small number of attribute uses, use an array
-    public XSAttributeUse[] fAttributeUsesS = null;
+    private static final int INITIAL_SIZE = 5;
+    XSAttributeUse[] fAttributeUses = new XSAttributeUse[INITIAL_SIZE];
     // attribute wildcard included by this attribute group
     public XSWildcardDecl fAttributeWC = null;
 
-    public void addAttributeUse(XSAttributeUse attrUse) {
-        // REVISIT: add one attribute use
-        //          add to one of the two attribute use holders
-        //          according to the number of attribute uses
+    void addAttributeUse(XSAttributeUse attrUse) {
+        if (fAttrUseNum == fAttributeUses.length) {
+            fAttributeUses = resize(fAttributeUses, fAttrUseNum*2);
+        }
+        fAttributeUses[fAttrUseNum++] = attrUse;
+    }
+
+    public XSAttributeUse[] getAttributeUses() {
+        if (fAttrUseNum < fAttributeUses.length) {
+            fAttributeUses = resize(fAttributeUses, fAttrUseNum);
+        }
+        return fAttributeUses;
+    }
+
+    static final XSAttributeUse[] resize(XSAttributeUse[] oldArray, int newSize) {
+        XSAttributeUse[] newArray = new XSAttributeUse[newSize];
+        System.arraycopy(oldArray, 0, newArray, 0, Math.min(oldArray.length, newSize));
+        return newArray;
     }
 
 } // class XSAttributeGroupDecl

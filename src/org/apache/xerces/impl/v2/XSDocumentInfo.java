@@ -94,16 +94,16 @@ class XSDocumentInfo {
 
     // targetNamespace
     protected String fTargetNamespace;
-    
+
     // the root of the schema Document tree itself
     protected Document fSchemaDoc;
 
     XSDocumentInfo (Document schemaDoc, XSAttributeChecker attrChecker) {
         fSchemaDoc = schemaDoc;
         fNamespaceSupport = new SchemaNamespaceSupport();
-        
+
         if(schemaDoc != null) {
-            Element root = DOMUtil.getRoot(schemaDoc); 
+            Element root = DOMUtil.getRoot(schemaDoc);
             Object[] schemaAttrs = attrChecker.checkAttributes(root, true, fNamespaceSupport);
             fAreLocalAttributesQualified =
                 ((XInt)schemaAttrs[XSAttributeChecker.ATTIDX_AFORMDEFAULT]).intValue() == SchemaSymbols.FORM_QUALIFIED;
@@ -115,8 +115,8 @@ class XSDocumentInfo {
                 ((XInt)schemaAttrs[XSAttributeChecker.ATTIDX_FINALDEFAULT]).intValue();
             fTargetNamespace =
                 (String)schemaAttrs[XSAttributeChecker.ATTIDX_TARGETNAMESPACE];
-            if (fTargetNamespace == null)
-                fTargetNamespace = XSDHandler.EMPTY_STRING; 
+            //if (fTargetNamespace == null)
+            //    fTargetNamespace = XSDHandler.EMPTY_STRING;
 
             fNamespaceSupportRoot = new SchemaNamespaceSupport(fNamespaceSupport);
 
@@ -133,5 +133,5 @@ class XSDocumentInfo {
     void restoreNSSupport() {
         fNamespaceSupport = (SchemaNamespaceSupport)SchemaNamespaceSupportStack.pop();
     }
-    
+
 } // XSDocumentInfo

@@ -124,9 +124,8 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
     private final QName fQName = new QName();
 
     XSDSimpleTypeTraverser (XSDHandler handler,
-                            XMLErrorReporter errorReporter,
                             XSAttributeChecker gAttrCheck) {
-        super(handler, errorReporter, gAttrCheck);
+        super(handler, gAttrCheck);
     }
 
     //return qualified name of simpleType or empty string if error occured
