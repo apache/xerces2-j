@@ -973,6 +973,75 @@ public class XMLEntityManager
 
             // use specified encoding
             else {
+                encoding = encoding.toUpperCase(Locale.ENGLISH);
+                
+                // If encoding is UTF-8, consume BOM if one is present.
+                if (encoding.equals("UTF-8")) {
+                    final int[] b3 = new int[3];
+                    int count = 0;
+                    for (; count < 3; ++count) {
+                        b3[count] = stream.read();
+                        if (b3[count] == -1)
+                            break;
+                    }
+                    if (count == 3) {
+                        if (b3[0] != 0xEF || b3[1] != 0xBB || b3[2] != 0xBF) {
+                            // First three bytes are not BOM, so reset.
+                            stream.reset();
+                        }
+                    }
+                    else {
+                        stream.reset();
+                    }
+                }
+                // If encoding is UCS-4, we still need to read the first four bytes
+                // in order to discover the byte order.
+                else if (encoding.equals("ISO-10646-UCS-4")) {
+                    final int[] b4 = new int[4];
+                    int count = 0;
+                    for (; count < 4; ++count) {
+                        b4[count] = stream.read();
+                        if (b4[count] == -1)
+                            break;
+                    }
+                    stream.reset();
+
+                    // Ignore unusual octet order for now.
+                    if (count == 4) {
+                        // UCS-4, big endian (1234)
+                        if (b4[0] == 0x00 && b4[1] == 0x00 && b4[2] == 0x00 && b4[3] == 0x3C) {
+                            isBigEndian = Boolean.TRUE;
+                        }
+                        // UCS-4, little endian (1234)
+                        else if (b4[0] == 0x3C && b4[1] == 0x00 && b4[2] == 0x00 && b4[3] == 0x00) {
+                            isBigEndian = Boolean.FALSE;
+                        }
+                    }
+                }
+                // If encoding is UCS-2, we still need to read the first four bytes
+                // in order to discover the byte order.
+                else if (encoding.equals("ISO-10646-UCS-2")) {
+                    final int[] b4 = new int[4];
+                    int count = 0;
+                    for (; count < 4; ++count) {
+                        b4[count] = stream.read();
+                        if (b4[count] == -1)
+                            break;
+                    }
+                    stream.reset();
+
+                    if (count == 4) {
+                        // UCS-2, big endian
+                        if (b4[0] == 0x00 && b4[1] == 0x3C && b4[2] == 0x00 && b4[3] == 0x3F) {
+                            isBigEndian = Boolean.TRUE;
+                        }
+                        // UCS-2, little endian
+                        else if (b4[0] == 0x3C && b4[1] == 0x00 && b4[2] == 0x3F && b4[3] == 0x00) {
+                            isBigEndian = Boolean.FALSE;
+                        }
+                    }
+                }
+                
                 reader = createReader(stream, encoding, isBigEndian);
             }
 
