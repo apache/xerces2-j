@@ -91,7 +91,7 @@ import org.xml.sax.Attributes;
  *
  *
  * @version $Revision$ $Date$
- * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+ * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
  * @see Serializer
  */
 public final class TextSerializer
@@ -139,12 +139,6 @@ public final class TextSerializer
     // SAX document handler serializing methods //
     //------------------------------000---------//
 
-    
-    public void startDocument()
-    {
-        // Nothing to do here. All the magic happens in startDocument(String)
-    }
-    
     
     public void startElement( String tagName, AttributeList attrs )
     {

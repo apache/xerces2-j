@@ -56,6 +56,14 @@
  */
 
 
+// Aug 21, 2000:
+//  Added ability to omit DOCTYPE declaration.
+//  Reported by Lars Martin <lars@smb-tec.com>
+// Aug 25, 2000:
+//  Added ability to omit comments.
+//  Contributed by Anupam Bagchi <abagchi@jtcsv.com>
+
+
 package org.apache.xml.serialize;
 
 
@@ -84,8 +92,8 @@ import org.w3c.dom.html.HTMLDocument;
  *
  *
  * @version $Revision$ $Date$
- * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
- *         <a href="mailto:visco@exoffice.com">Keith Visco</a>
+ * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
+ *         <a href="mailto:visco@intalio.com">Keith Visco</a>
  * @see Serializer
  * @see Method
  * @see LineSeparator
@@ -199,6 +207,19 @@ public class OutputFormat
      * Ture if the XML declaration should be ommited;
      */
     private boolean _omitXmlDeclaration = false;
+
+
+    /**
+     * Ture if the DOCTYPE declaration should be ommited;
+     */
+    private boolean _omitDoctype = false;
+
+
+    /**
+<<<<<<< OutputFormat.java
+     * Ture if comments should be ommited;
+     */
+    private boolean _omitComments = false;
 
 
     /**
@@ -486,9 +507,11 @@ public class OutputFormat
 
     /**
      * Sets the document type public and system identifiers.
-     * No <tt>DOCTYPE</tt> will be serialized if both identifiers
-     * are null. A system identifier is required if a public
-     * identified is specified.
+     * Required only if the DOM Document or SAX events do not
+     * specify the document type, and one must be present in
+     * the serialized document. Any document type specified
+     * by the DOM Document or SAX events will override these
+     * values.
      *
      * @param publicId The public identifier, or null
      * @param systemId The system identifier, or null
@@ -521,6 +544,48 @@ public class OutputFormat
 
 
     /**
+     * Returns true if comments should be ommited.
+     * The default is false.
+     */
+    public boolean getOmitComments()
+    {
+        return _omitComments;
+    }
+
+
+    /**
+     * Sets comment omitting on and off.
+     *
+     * @param omit True if comments should be ommited
+     */
+    public void setOmitComments( boolean omit )
+    {
+        _omitComments = omit;
+    }
+
+
+    /**
+     * Returns true if the DOCTYPE declaration should
+     * be ommited. The default is false.
+     */
+    public boolean getOmitDocumentType()
+    {
+        return _omitDoctype;
+    }
+
+
+    /**
+     * Sets DOCTYPE declaration omitting on and off.
+     *
+     * @param omit True if DOCTYPE declaration should be ommited
+     */
+    public void setOmitDocumentType( boolean omit )
+    {
+        _omitDoctype = omit;
+    }
+
+
+    /**
      * Returns true if the XML document declaration should
      * be ommited. The default is false.
      */
@@ -538,26 +603,6 @@ public class OutputFormat
     public void setOmitXMLDeclaration( boolean omit )
     {
         _omitXmlDeclaration = omit;
-    }
-
-    /**
-     * Returns true if comments should
-     * be ommited. The default is false.
-     */
-    public boolean getStripComments()
-    {
-        return _stripComments;
-    }
-
-
-    /**
-     * Sets stripping comments on and off.
-     *
-     * @param strip True if comments should be ommited
-     */
-    public void setStripComments( boolean strip )
-    {
-        _stripComments = strip;
     }
 
 

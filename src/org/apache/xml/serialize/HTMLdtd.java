@@ -56,6 +56,11 @@
  */
 
 
+// Aug 21, 2000:
+//   Fixed bug in isElement and made HTMLdtd public.
+//   Contributed by Eric SCHAEFFER" <eschaeffer@posterconseil.com>
+
+
 package org.apache.xml.serialize;
 
 
@@ -77,9 +82,9 @@ import java.util.Hashtable;
  *
  *
  * @version $Revision$ $Date$
- * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+ * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
  */
-final class HTMLdtd
+public final class HTMLdtd
 {
 
 
@@ -469,7 +474,7 @@ final class HTMLdtd
         if ( flags == null )
             return false;
         else
-            return ( ( flags.intValue() & flag ) != 0 );
+            return ( ( flags.intValue() & flag ) == flag );
     }
     
     

@@ -1,7 +1,7 @@
 # $Id$
 #
 # @version $Revision$ $Date$
-# @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+# @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
 #
 # Character entity references for markup-significant
 #

@@ -56,6 +56,22 @@
  */
 
 
+// Aug 25, 2000:
+//   Fixed processing instruction printing inside element content
+//   to not escape content. Reported by Mikael Staldal
+//   <d96-mst-ingen-reklam@d.kth.se>
+// Aug 25, 2000:
+//   Added ability to omit comments.
+//   Contributed by Anupam Bagchi <abagchi@jtcsv.com>
+// Aug 26, 2000:
+//   Fixed bug in newline handling when preserving spaces.
+//   Contributed by Mike Dusseault <mdusseault@home.com>
+// Aug 29, 2000:
+//   Fixed state.unescaped not being set to false when
+//   entering element state.
+//   Reported by Lowell Vaughn <lvaughn@agillion.com>
+
+
 package org.apache.xml.serialize;
 
 
@@ -119,7 +135,7 @@ import org.xml.sax.ext.DeclHandler;
  *
  *
  * @version $Revision$ $Date$
- * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+ * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
  * @see Serializer
  * @see DOMSerializer
  */
@@ -316,14 +332,14 @@ public abstract class BaseMarkupSerializer
     }
 
 
-    private void prepare()
+    protected void prepare()
         throws IOException
     {
         if ( _prepared )
             return;
 
         if ( _writer == null && _output == null )
-            throw new IllegalStateException( "SER002 No writer supplied for serializer" );
+            throw new IOException( "SER002 No writer supplied for serializer" );
         // If the output stream has been set, use it to construct
         // the writer. It is possible that the serializer has been
         // reused with the same output stream and different encoding.
@@ -386,11 +402,6 @@ public abstract class BaseMarkupSerializer
         throws IOException
     {
         prepare();
-        if ( _printer == null )
-            throw new IllegalStateException( "SER002 No writer supplied for serializer" );
-        try {
-            startDocument();
-        } catch ( SAXException except ) { }
         serializeNode( elem );
         _printer.flush();
         if ( _printer.getException() != null )
@@ -411,11 +422,6 @@ public abstract class BaseMarkupSerializer
         throws IOException
     {
         prepare();
-        if ( _printer == null )
-            throw new IllegalStateException( "SER002 No writer supplied for serializer" );
-        try {
-            startDocument();
-        } catch ( SAXException except ) { }
         serializeNode( frag );
         _printer.flush();
         if ( _printer.getException() != null )
@@ -436,11 +442,6 @@ public abstract class BaseMarkupSerializer
         throws IOException
     {
         prepare();
-        if ( _printer == null )
-            throw new IllegalStateException( "SER002 No writer supplied for serializer" );
-        try {
-            startDocument();
-        } catch ( SAXException except ) { }
         serializeNode( doc );
         serializePreRoot();
         _printer.flush();
@@ -454,6 +455,18 @@ public abstract class BaseMarkupSerializer
     //------------------------------------------//
 
 
+    public void startDocument()
+        throws SAXException
+    {
+        try {
+            prepare();
+        } catch ( IOException except ) {
+            throw new SAXException( except.toString() );
+        }
+        // Nothing to do here. All the magic happens in startDocument(String)
+    }
+    
+    
     public void characters( char[] chars, int start, int length )
     {
         ElementState state;
@@ -521,12 +534,8 @@ public abstract class BaseMarkupSerializer
         // not indent twice.
         if ( _indenting ) {
             _printer.setThisIndent( 0 );
-            for ( i = start ; length-- > 0 ; ++i ) {
-                if ( chars[ i ] == '\n' || chars[ i ] == '\r' )
-                    _printer.breakLine( true );
-                else
-                    _printer.printText( chars[ i ] );
-            }
+            for ( i = start ; length-- > 0 ; ++i )
+                _printer.printText( chars[ i ] );
         }
     }
 
@@ -565,7 +574,7 @@ public abstract class BaseMarkupSerializer
             _preRoot.addElement( buffer.toString() );
         } else {
             _printer.indent();
-            printText( buffer.toString(), true, false );
+            printText( buffer.toString(), true, true );
             _printer.unindent();
         }
     }
@@ -582,8 +591,9 @@ public abstract class BaseMarkupSerializer
         StringBuffer buffer;
         int          index;
         ElementState state;
-
-        if (_format.getStripComments()) return;
+        
+        if ( _format.getOmitComments() )
+            return;
 
         state  = content();
         buffer = new StringBuffer( 40 );
@@ -906,9 +916,11 @@ public abstract class BaseMarkupSerializer
         case Node.COMMENT_NODE : {
             String text;
 
-            text = node.getNodeValue();
-            if ( text != null )
-                comment( node.getNodeValue() );
+            if ( ! _format.getOmitComments() ) {
+                text = node.getNodeValue();
+                if ( text != null )
+                    comment( node.getNodeValue() );
+            }
             break;
         }
 
@@ -1179,9 +1191,7 @@ public abstract class BaseMarkupSerializer
             while ( length-- > 0 ) {
                 ch = chars[ start ];
                 ++start;
-                if ( ch == '\n' || ch == '\r' )
-                    _printer.breakLine( true );
-                else if ( unescaped )
+                if ( ch == '\n' || ch == '\r' || ! unescaped )
                     _printer.printText( ch );
                 else
                     printEscaped( ch );
@@ -1218,9 +1228,7 @@ public abstract class BaseMarkupSerializer
             // break will occur.
             for ( index = 0 ; index < text.length() ; ++index ) {
                 ch = text.charAt( index );
-                if ( ch == '\n' || ch == '\r' )
-                    _printer.breakLine( true );
-                else if ( unescaped )
+                if ( ch == '\n' || ch == '\r' || ! unescaped ) 
                     _printer.printText( ch );
                 else
                     printEscaped( ch );
@@ -1359,6 +1367,7 @@ public abstract class BaseMarkupSerializer
         state.empty = true;
         state.afterElement = false;
         state.doCData = state.inCData = false;
+        state.unescaped = false;
         state.prefixes = _prefixes;
 
         _prefixes = null;

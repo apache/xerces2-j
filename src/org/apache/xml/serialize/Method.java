@@ -61,7 +61,7 @@ package org.apache.xml.serialize;
 
 /**
  * @version $Revision$ $Date$
- * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+ * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
  * @see OutputFormat
  */
 public final class Method

@@ -67,7 +67,7 @@ import java.util.Hashtable;
  *
  *
  * @version $Revision$ $Date$
- * @author <a href="mailto:arkin@openxml.org">Assaf Arkin</a>
+ * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
  * @see BaseMarkupSerializer
  */
 class ElementState

@@ -71,7 +71,7 @@ import java.util.StringTokenizer;
  *
  * @version $Revision$ $Date$
  * @author <a href="mailto:Scott_Boag/CAM/Lotus@lotus.com">Scott Boag</a>
- * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+ * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
  */
 public abstract class SerializerFactory
 {
