@@ -35,8 +35,9 @@
       As a convenience for users the parser provides a utility class:
       <code>org.apache.xerces.util.XMLCatalogResolver</code> which encapsulates
       the XML Commons Resolver exposing methods relevant to resolving XML entities.
-      It implements both the (<code>org.apache.xerces.xni.parser.XMLEntityResolver</code>)
-      XNI entity resolver and the (<code>org.xml.sax.EntityResolver</code>) SAX entity resolver 
+      It implements the (<code>org.apache.xerces.xni.parser.XMLEntityResolver</code>)
+      XNI entity resolver, the (<code>org.xml.sax.EntityResolver</code>) SAX entity resolver 
+      and the (<code>org.w3c.dom.ls.LSResourceResolver</code>) DOM resource resolver
       interfaces. In <code>XMLCatalogResolver</code> the resolveEntity methods only query the 
       catalog for a mapping of the given identifier. These methods may be overrided if
       other behaviour is required.
@@ -118,28 +119,28 @@ reader.setProperty(
       <strong>example.xsd</strong> and then return this to the parser. The parser would 
       then load the schema, enabling it to validate the instance document.
      </p>
-     <source><![CDATA[example.xml:
-<?xml version="1.0"?>
-<root xmlns="http://apache.org/xml/xcatalog/example">
-http://apache.org/xml/anyURI</root>
+     <source>example.xml:
+&lt;?xml version="1.0"?&gt;
+&lt;root xmlns="http://apache.org/xml/xcatalog/example"&gt;
+http://apache.org/xml/anyURI&lt;/root&gt;
 
 example.xsd:
-<?xml version="1.0"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+&lt;?xml version="1.0"?&gt;
+&lt;xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns="http://apache.org/xml/xcatalog/example"
-           targetNamespace="http://apache.org/xml/xcatalog/example">
- <xs:element name="root" type="xs:anyURI"/>
-</xs:schema>
+           targetNamespace="http://apache.org/xml/xcatalog/example"&gt;
+ &lt;xs:element name="root" type="xs:anyURI"/&gt;
+&lt;/xs:schema&gt;
 
 catalog.xml:
-<!DOCTYPE catalog
+&lt;!DOCTYPE catalog
  PUBLIC "-//OASIS//DTD Entity Resolution XML Catalog V1.0//EN"
- "http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd">
-<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
-         prefer="public">
- <uri name="http://apache.org/xml/xcatalog/example"
-      uri="example.xsd"/>                  
-</catalog>]]></source>
+ "http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd"&gt;
+&lt;catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+         prefer="public"&gt;
+ &lt;uri name="http://apache.org/xml/xcatalog/example"
+      uri="example.xsd"/&gt;
+&lt;/catalog&gt;</source>
     </a>
   </faq>
   
@@ -171,36 +172,36 @@ catalog.xml:
       URI <strong>example.ent</strong>. The parser would then open this resource and 
       then report "Hello world!" as the replacement text for the entity named <strong>text</strong>.
      </p>
-     <source><![CDATA[example.xml:
-<?xml version="1.0"?>
-<!DOCTYPE root [
- <!ENTITY text PUBLIC "-//A//XML CATALOG IDENTIFIER//EN" 
-  "urn:publicid:-:A:XML+CATALOG+IDENTIFIER:EN">
-]>
-<root>&text;</root>
+     <source>example.xml:
+&lt;?xml version="1.0"?&gt;
+&lt;!DOCTYPE root [
+ &lt;!ENTITY text PUBLIC "-//A//XML CATALOG IDENTIFIER//EN" 
+  "urn:publicid:-:A:XML+CATALOG+IDENTIFIER:EN"&gt;
+]&gt;
+&lt;root&gt;&amp;text;&lt;/root&gt;
 
 example.ent:
 Hello world!
 
 catalog.xml:
-<!DOCTYPE catalog
+&lt;!DOCTYPE catalog
  PUBLIC "-//OASIS//DTD Entity Resolution XML Catalog V1.0//EN"
- "http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd">
-<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
-         prefer="public">
- <delegatePublic publicIdStartString="-//A//"
-                 catalog="catalog2.xml"/>
-</catalog>
+ "http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd"&gt;
+&lt;catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+         prefer="public"&gt;
+ &lt;delegatePublic publicIdStartString="-//A//"
+                 catalog="catalog2.xml"/&gt;
+&lt;/catalog&gt;
 
 catalog2.xml:
-<!DOCTYPE catalog
+&lt;!DOCTYPE catalog
  PUBLIC "-//OASIS//DTD Entity Resolution XML Catalog V1.0//EN"
- "http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd">
-<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
-         prefer="public">
- <public publicId="-//A//XML CATALOG IDENTIFIER//EN" 
-         uri="example.ent"/>
-</catalog>]]></source>
+ "http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd"&gt;
+&lt;catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+         prefer="public"&gt;
+ &lt;public publicId="-//A//XML CATALOG IDENTIFIER//EN" 
+         uri="example.ent"/&gt;
+&lt;/catalog&gt;</source>
     </a>
   </faq>
   
