@@ -143,10 +143,6 @@ public class XMLParseException
             str.append(fPublicId);
         }
         str.append(':');
-        if (fPublicId != null) {
-            str.append(fPublicId);
-        }
-        str.append(':');
         if (fLiteralSystemId != null) {
             str.append(fLiteralSystemId);
         }
@@ -162,6 +158,8 @@ public class XMLParseException
         str.append(fLineNumber);
         str.append(':');
         str.append(fColumnNumber);
+        str.append(':');
+        str.append(fCharacterOffset);
         str.append(':');
         String message = getMessage();
         if (message == null) {
