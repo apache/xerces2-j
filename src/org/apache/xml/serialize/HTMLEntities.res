@@ -258,8 +258,9 @@ diams 9830
 # Latin Extended-A
 OElig 338
 oelig 339
-Scaron 352
-scaron 353
+#-- Commented out. NN 4.7 does not seem to support these --
+#Scaron 352
+#scaron 353
 Yuml 376
 #
 # Spacing Modifier Letters
