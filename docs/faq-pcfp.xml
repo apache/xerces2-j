@@ -7,7 +7,10 @@
    <p>
     If a validator is included in the pipeline, the assessment is
     done, whether the validation feature is set to true or false.
-    The validation feature only enables the validation constraint error reporting and it does not control the infoset augmentation: if a validator is included in the pipeline the parser will augment the infoset according to the grammar specified for the instance document. 
+    The validation feature only enables the validation constraint error 
+    reporting and it does not control the infoset augmentation: if a 
+    validator is included in the pipeline the parser will augment the 
+    infoset according to the grammar specified for the instance document. 
    </p>
   </a>
  </faq>
@@ -16,15 +19,16 @@
   <q>What validation behavior do I expect from the default parser configuration?</q>
   <a>
    <p>
-    The default configuration (StandardParserConfiguration) includes the DTD validator 
-    and the Namespace binder. Thus, the <link idref='features' anchor="validation">
-    validation feature</link> will enable validation against a DTD only.
-To allow validation against XML Schemas you must turn on the <link 
-idref='features' anchor="validation">validation feature</link> and the 
-<link idref='features' anchor="validation.schema">schema feature</link>, and 
-XML Schema Validator will be inserted in the pipeline. 
-If you've created your own configuration which does not extend StandardParserConfiguration, 
-you must make sure that your configuration inserts all needed validators in the pipeline.
+    The default configuration (&DefaultConfigLong;) includes the DTD validator 
+    and the document scanner (which are both capable of namespace binding). Thus, the 
+    <link idref='features' anchor="validation">validation feature</link> will enable 
+    validation against a DTD only. To allow validation against XML Schemas you must turn 
+    on the <link idref='features' anchor="validation">validation feature</link> and the 
+    <link idref='features' anchor="validation.schema">schema feature</link>, and 
+    XML Schema Validator will be inserted in the pipeline. if you've created your own 
+    configuration which does not extend &DefaultConfig; (or another
+    suitable configuration included with the parser), you must make sure that your 
+    configuration inserts all needed validators in the pipeline.
    </p>
   </a>
  </faq>
