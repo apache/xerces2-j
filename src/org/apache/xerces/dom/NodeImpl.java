@@ -163,6 +163,20 @@ public abstract class NodeImpl
     /** Synchronization of data needed. */
     protected transient boolean syncData;
 
+    // other transients
+
+    /** Last change number for index caching. */
+    protected transient int nodeListChanges = -1;
+
+    /** Cached node list length. */
+    protected transient int nodeListLength;
+
+    /** Last requested node. */
+    protected transient NodeImpl nodeListNode;
+
+    /** Last requested node index. */
+    protected transient int nodeListIndex;
+
     // internal data
 
 	/**
@@ -250,6 +264,22 @@ public abstract class NodeImpl
 
     /** Constructor for serialization. */
     public NodeImpl() {}
+
+    //
+    // Serialization methods
+    //
+
+    /** Deserialize object. */
+    private void readObject(ObjectInputStream ois)
+        throws ClassNotFoundException, IOException {
+
+        // perform default deseralization
+        ois.defaultReadObject();
+
+        // initialize transients
+        nodeListChanges = -1;
+
+    } // readObject(ObjectInputStream)
 
     //
     // Node methods
@@ -988,14 +1018,17 @@ public abstract class NodeImpl
      */
     public int getLength() {
 
-        // It is assumed that the getChildNodes call synchronized
-        // the children. Therefore, we can access the first child
-        // reference directly.
-    	int count = 0;
-    	for (NodeImpl node = firstChild; node != null; node = node.nextSibling) {
-    		count++;
-    	}
-    	return count;
+        if (nodeListChanges != changes) {
+            nodeListChanges = changes;
+            nodeListLength = 0;
+            nodeListIndex = 0;
+            nodeListNode = firstChild;
+            for (NodeImpl node = firstChild; node != null; node = node.nextSibling) {
+                nodeListLength++;
+            }
+        }
+        
+        return nodeListLength;
 
     } // getLength():int
 
@@ -1007,14 +1040,32 @@ public abstract class NodeImpl
      */
     public Node item(int index) {
 
-        // It is assumed that the getChildNodes call synchronized
-        // the children. Therefore, we can access the first child
-        // reference directly.
-        NodeImpl node = firstChild;
-        for (int i = 0; i < index && node != null; i++) {
-            node = node.nextSibling;
+        // short way
+        if (nodeListChanges == changes) {
+            if (nodeListIndex < index) {
+                while (nodeListIndex < index && nodeListNode != null) {
+                    nodeListIndex++;
+                    nodeListNode = nodeListNode.nextSibling;
+                }
+            }
+            else if (nodeListIndex > index) {
+                while (nodeListIndex > index && nodeListNode != null) {
+                    nodeListIndex--;
+                    nodeListNode = nodeListNode.previousSibling;
+                }
+            }
+            return nodeListNode;
         }
-        return node;
+
+        // long way
+        nodeListChanges = changes;
+        nodeListNode = firstChild;
+        for (nodeListIndex = 0; 
+             nodeListIndex < index && nodeListNode != null; 
+             nodeListIndex++) {
+            nodeListNode = nodeListNode.nextSibling;
+        }
+        return nodeListNode;
 
     } // item(int):Node
 
