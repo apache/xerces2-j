@@ -105,7 +105,8 @@ public class SchemaGrammar extends Grammar{
     private String fFromAnotherSchemaURI[][] = new String[INITIAL_CHUNK_COUNT][];
     private TraverseSchema.ComplexTypeInfo fComplexTypeInfo[][] = 
         new TraverseSchema.ComplexTypeInfo[INITIAL_CHUNK_COUNT][];
-    
+    private int fElementDeclDefaultType[][] = new int[INITIAL_CHUNK_COUNT][];
+    private String fElementDeclDefaultValue[][] = new String[INITIAL_CHUNK_COUNT][];
 
     //ComplexType and SimpleTypeRegistries
     private Hashtable fComplexTypeRegistry = null;
@@ -131,17 +132,36 @@ public class SchemaGrammar extends Grammar{
         return fScopeDefinedByElement[chunk][index];
 
     }
+    public int getElementDefaultTYpe(int elementDeclIndex) {
+        
+        if (elementDeclIndex < -1) {
+            return -1;
+        }
+        int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        int index = elementDeclIndex & CHUNK_MASK;
+        return fElementDeclDefaultType[chunk][index];
+
+    }
 
     public String getElementFromAnotherSchemaURI(int elementDeclIndex) {
         
         if (elementDeclIndex < 0 ) {
             return null;
         }
-// debugging
-//System.out.println("######In getElementFromAnotherSchemaURI, elementIndex:" + elementDeclIndex);
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex & CHUNK_MASK;
         return fFromAnotherSchemaURI[chunk][index];
+
+    }
+
+    public String getElementDefaultValue(int elementDeclIndex) {
+        
+        if (elementDeclIndex < 0 ) {
+            return null;
+        }
+        int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        int index = elementDeclIndex & CHUNK_MASK;
+        return fElementDeclDefaultValue[chunk][index];
 
     }
     public TraverseSchema.ComplexTypeInfo getElementComplexTypeInfo(int elementDeclIndex){
@@ -215,12 +235,24 @@ public class SchemaGrammar extends Grammar{
             }
         }
     }
+
     protected void setElementComplexTypeInfo(int elementDeclIndex, TraverseSchema.ComplexTypeInfo typeInfo){
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex & CHUNK_MASK;
         if ( ensureElementDeclCapacity(chunk) == true ) { // create an ElementDecl
             if (elementDeclIndex > -1 ) {
                 fComplexTypeInfo[chunk][index] = typeInfo;
+            }
+        }
+    }
+
+    protected void setElementDefault(int elementDeclIndex, int defaultType, String defaultValue) {
+        int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        int index = elementDeclIndex & CHUNK_MASK;
+        if ( ensureElementDeclCapacity(chunk) == true ) { // create an ElementDecl
+            if (elementDeclIndex > -1 ) {
+                fElementDeclDefaultType[chunk][index] = defaultType;
+                fElementDeclDefaultValue[chunk][index] = defaultValue;
             }
         }
     }
@@ -249,20 +281,18 @@ public class SchemaGrammar extends Grammar{
             setFirstAttributeDeclIndex(elementDeclIndex, attrListHead);
             //note, this is the scope defined by the element, not its enclosing scope
             setElementDefinedScope(elementDeclIndex, scopeDefined);
-// debugging
-//System.out.println("#######EltIndex :" + elementDeclIndex + ", contentSpecType: " + contentSpecType);
         }
 
-//debugging
-/*****
-         XMLElementDecl fTempElementDecl = new XMLElementDecl();                                          
-         getElementDecl(elementDeclIndex, fTempElementDecl);                                              
- System.out.println("elementDeclIndex in addElementDecl : " + elementDeclIndex                            
-                    + " \n and itsName : '"                                                               
+    //debugging
+    /*****
+             XMLElementDecl fTempElementDecl = new XMLElementDecl();                                          
+             getElementDecl(elementDeclIndex, fTempElementDecl);                                              
+             System.out.println("elementDeclIndex in addElementDecl : " + elementDeclIndex                            
+                                + " \n and itsName : '"                                                               
                                 + (fTempElementDecl.name.localpart)                                       
                                 +"' \n its ContentType:" + (fTempElementDecl.type)                        
                                 +"\n its ContentSpecIndex : " + fTempElementDecl.contentSpecIndex +"\n"); 
-/*****/
+    /*****/
         return elementDeclIndex;
 
     }
@@ -313,9 +343,6 @@ public class SchemaGrammar extends Grammar{
         
         int contentSpecIndex = createContentSpec();
         setContentSpec(contentSpecIndex, fTempContentSpecNode);
-//debugging
-//System.out.println("^^^^^^^add ContentSpecTypeNode: " + contentSpecIndex+","+contentSpecType +","+value+","+otherValue);
-
         return contentSpecIndex;
     }
                                                 

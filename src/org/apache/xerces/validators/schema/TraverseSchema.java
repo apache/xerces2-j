@@ -384,6 +384,9 @@ public class TraverseSchema implements
     //CONSTANTS
     private static final int TOP_LEVEL_SCOPE = -1;
 
+    //debuggin
+    private static boolean DEBUGGING = false;
+
     //private data members
 
 
@@ -498,8 +501,6 @@ public class TraverseSchema implements
 
         while ((sattr = (Attr)schemaEltAttrs.item(i++)) != null) {
             String attName = sattr.getName();
-//debugging
-//System.out.println("attName of schema element : " + attName + " = " + sattr.getValue());
             if (attName.startsWith("xmlns:")) {
                 String attValue = sattr.getValue();
                 String prefix = attName.substring(attName.indexOf(":")+1);
@@ -745,8 +746,9 @@ public class TraverseSchema implements
         int complexTypeName      =  fStringPool.addSymbol(
                                                          complexTypeDecl.getAttribute( SchemaSymbols.ATT_NAME ));
         String typeName = complexTypeDecl.getAttribute(SchemaSymbols.ATT_NAME); 
-//debugging
-//System.out.println("traversing complex Type : " + typeName +","+base+","+content+".");
+
+        if ( DEBUGGING )
+            System.out.println("traversing complex Type : " + typeName +","+base+","+content+".");
 
         if (typeName.equals("")) { // gensym a unique name
             //typeName = "http://www.apache.org/xml/xerces/internalType"+fTypeCount++;
@@ -1015,9 +1017,11 @@ public class TraverseSchema implements
                 String childName = child.getNodeName();
 
                 if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
-                    if (mixedContent || elementContent) {
-//debugging
-//System.out.println(" child element name " + child.getAttribute(SchemaSymbols.ATT_NAME));
+                    if (mixedContent || elementContent) 
+                        {
+                        if ( DEBUGGING )
+                            System.out.println(" child element name " + child.getAttribute(SchemaSymbols.ATT_NAME));
+
                         QName eltQName = traverseElementDecl(child);
                         index = fSchemaGrammar.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_LEAF,
                                                                    eltQName.localpart,
@@ -1109,8 +1113,9 @@ public class TraverseSchema implements
             contentSpecType = XMLElementDecl.TYPE_ANY;
         }
 
-//debugging
-//        System.out.println("!!!!!>>>>>" + typeName+", "+ baseTypeInfo + ", " + baseContentSpecHandle +", " + left +", "+scopeDefined);
+        if ( DEBUGGING )
+            System.out.println("!!!!!>>>>>" + typeName+", "+ baseTypeInfo + ", " 
+                               + baseContentSpecHandle +", " + left +", "+scopeDefined);
 
         ComplexTypeInfo typeInfo = new ComplexTypeInfo();
         typeInfo.baseComplexTypeInfo = baseTypeInfo;
@@ -1499,8 +1504,8 @@ public class TraverseSchema implements
         }
 
         QName attQName = new QName(-1,attName,attName,uriIndex);
-//debugging
-//      System.out.println(" the dataType Validator for " + fStringPool.toString(attName) + " is " + dv);
+        if ( DEBUGGING )
+            System.out.println(" the dataType Validator for " + fStringPool.toString(attName) + " is " + dv);
 
         // add attribute to attr decl pool in fSchemaGrammar, 
         fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
@@ -1676,8 +1681,10 @@ public class TraverseSchema implements
 
 
         String name = elementDecl.getAttribute(SchemaSymbols.ATT_NAME);
-//debugging
-//System.out.println("traversing element decl : " + name );
+
+        if ( DEBUGGING )
+            System.out.println("traversing element decl : " + name );
+
         String ref = elementDecl.getAttribute(SchemaSymbols.ATT_REF);
         String type = elementDecl.getAttribute(SchemaSymbols.ATT_TYPE);
         String minOccurs = elementDecl.getAttribute(SchemaSymbols.ATT_MINOCCURS);
@@ -1770,8 +1777,6 @@ public class TraverseSchema implements
                     fComplexTypeRegistry.get(fStringPool.toString(typeNameIndex));
                 
                 haveAnonType = true;
-//debugging
-//System.out.println("--------element Typeinfo : " + name + " : " + typeInfo.scopeDefined + "," + fCurrentScope);
             } 
             else if (childName.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
                 //   TO DO:  the Default and fixed attribute handling should be here.                
@@ -1821,8 +1826,6 @@ public class TraverseSchema implements
                 }
             }
             else {
-//debugging
-//System.out.println("typeURI : " + typeURI + ","+fCurrentScope + "," + name);
                 typeInfo = (ComplexTypeInfo) fComplexTypeRegistry.get(typeURI+","+localpart);
                 if (typeInfo == null) {
                     dv = fDatatypeRegistry.getDatatypeValidator(localpart);
@@ -1911,13 +1914,15 @@ public class TraverseSchema implements
         int elementIndex = fSchemaGrammar.addElementDecl(eltQName, enclosingScope, scopeDefined, 
                                                          contentSpecType, contentSpecNodeIndex, 
                                                          attrListHead, dv);
-//debugging
-        /***
-        System.out.println("########elementIndex:"+elementIndex+" "+elementDecl.getAttribute(SchemaSymbols.ATT_NAME)
-                           +" eltType:"+name+" contentSpecType:"+contentSpecType+
-                           " SpecNodeIndex:"+ contentSpecNodeIndex +" enclosingScope: " +enclosingScope +
-                           " scopeDefined: " +scopeDefined);
-         /***/
+        if ( DEBUGGING ) {
+            /***
+            System.out.println("########elementIndex:"+elementIndex+" "+elementDecl.getAttribute(SchemaSymbols.ATT_NAME)
+                               +" eltType:"+name+" contentSpecType:"+contentSpecType+
+                               " SpecNodeIndex:"+ contentSpecNodeIndex +" enclosingScope: " +enclosingScope +
+                               " scopeDefined: " +scopeDefined);
+             /***/
+        }
+
         if (typeInfo != null) {
             fSchemaGrammar.setElementComplexTypeInfo(elementIndex, typeInfo);
         }
@@ -1928,8 +1933,6 @@ public class TraverseSchema implements
         }
 
         // mark element if its type belongs to different Schema.
-//debugging
-//System.out.println(">>>>before setElementFromAnotherSchemaURI elementIndex: " + elementIndex);
         fSchemaGrammar.setElementFromAnotherSchemaURI(elementIndex, fromAnotherSchema);
 
         
