@@ -70,29 +70,21 @@ public class GrammarPool {
     //
 
     /** fGrammars */
-    protected Hashtable fGrammars;
-
-    //
-    // Constructors
-    //
+    protected Hashtable fGrammars = new Hashtable();
 
     /**
-     * 
+     * Default Constructor
      */
     public GrammarPool() {
     }
 
-    //
-    // Methods
-    //
-
     /**
-     * putGrammar
      * 
-     * @param key 
-     * @param grammar 
+     * @param key    Key to associate with Grammar
+     * @param grammar Grammar abstraction used by validator
      */
     public void putGrammar(String key, Grammar grammar) {
+        fGrammars.put( key, grammar);
     } // putGrammar
 
     /**
@@ -103,17 +95,20 @@ public class GrammarPool {
      * @return 
      */
     public Grammar getGrammar(String key) {
-        return null;
+        return(Grammar) fGrammars.get( key );
     } // getGrammar
 
     /**
-     * removeGrammar
+     * removeGrammar - Removes association of key and Grammar from
+     * Grammar pool.
      * 
      * @param key 
      * 
      * @return 
      */
     public Grammar removeGrammar(String key) {
+        if ( fGrammars.contains( key ) == true )
+            fGrammars.remove( key );
         return null;
     } // removeGrammar
 
