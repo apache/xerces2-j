@@ -740,7 +740,7 @@ public class DTDConfiguration
         //
 
         if (featureId.startsWith(Constants.XERCES_FEATURE_PREFIX)) {
-            final int prefixLength = Constants.XERCES_FEATURE_PREFIX.length();
+            final int suffixLength = featureId.length() - Constants.XERCES_FEATURE_PREFIX.length();
         	
             //
             // http://apache.org/xml/features/validation/dynamic
@@ -748,16 +748,16 @@ public class DTDConfiguration
             //   contains a grammar. Validation is turned on/off based
             //   on each document instance, automatically.
             //
-            if (featureId.regionMatches(prefixLength, Constants.DYNAMIC_VALIDATION_FEATURE,
-                0, Constants.DYNAMIC_VALIDATION_FEATURE.length())) {
+            if (suffixLength == Constants.DYNAMIC_VALIDATION_FEATURE.length() && 
+                featureId.endsWith(Constants.DYNAMIC_VALIDATION_FEATURE)) {
                 return;
             }
 
             //
             // http://apache.org/xml/features/validation/default-attribute-values
             //
-            if (featureId.regionMatches(prefixLength, Constants.DEFAULT_ATTRIBUTE_VALUES_FEATURE,
-                0, Constants.DEFAULT_ATTRIBUTE_VALUES_FEATURE.length())) {
+            if (suffixLength == Constants.DEFAULT_ATTRIBUTE_VALUES_FEATURE.length() &&
+                featureId.endsWith(Constants.DEFAULT_ATTRIBUTE_VALUES_FEATURE)) {
                 // REVISIT
                 short type = XMLConfigurationException.NOT_SUPPORTED;
                 throw new XMLConfigurationException(type, featureId);
@@ -765,8 +765,8 @@ public class DTDConfiguration
             //
             // http://apache.org/xml/features/validation/default-attribute-values
             //
-            if (featureId.regionMatches(prefixLength, Constants.VALIDATE_CONTENT_MODELS_FEATURE,
-                0, Constants.VALIDATE_CONTENT_MODELS_FEATURE.length())) {
+            if (suffixLength == Constants.VALIDATE_CONTENT_MODELS_FEATURE.length() && 
+                featureId.endsWith(Constants.VALIDATE_CONTENT_MODELS_FEATURE)) {
                 // REVISIT
                 short type = XMLConfigurationException.NOT_SUPPORTED;
                 throw new XMLConfigurationException(type, featureId);
@@ -774,23 +774,23 @@ public class DTDConfiguration
             //
             // http://apache.org/xml/features/validation/nonvalidating/load-dtd-grammar
             //
-            if (featureId.regionMatches(prefixLength, Constants.LOAD_DTD_GRAMMAR_FEATURE,
-                0, Constants.LOAD_DTD_GRAMMAR_FEATURE.length())) {
+            if (suffixLength == Constants.LOAD_DTD_GRAMMAR_FEATURE.length() && 
+                featureId.endsWith(Constants.LOAD_DTD_GRAMMAR_FEATURE)) {
                 return;
             }
             //
             // http://apache.org/xml/features/validation/nonvalidating/load-external-dtd
             //
-            if (featureId.regionMatches(prefixLength, Constants.LOAD_EXTERNAL_DTD_FEATURE,
-                0, Constants.LOAD_EXTERNAL_DTD_FEATURE.length())) {
+            if (suffixLength == Constants.LOAD_EXTERNAL_DTD_FEATURE.length() && 
+                featureId.endsWith(Constants.LOAD_EXTERNAL_DTD_FEATURE)) {
                 return;
             }
 
             //
             // http://apache.org/xml/features/validation/default-attribute-values
             //
-            if (featureId.regionMatches(prefixLength, Constants.VALIDATE_DATATYPES_FEATURE,
-                0, Constants.VALIDATE_DATATYPES_FEATURE.length())) {
+            if (suffixLength == Constants.VALIDATE_DATATYPES_FEATURE.length() && 
+                featureId.endsWith(Constants.VALIDATE_DATATYPES_FEATURE)) {
                 short type = XMLConfigurationException.NOT_SUPPORTED;
                 throw new XMLConfigurationException(type, featureId);
             }
@@ -825,10 +825,10 @@ public class DTDConfiguration
         //
 
         if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
-            final int prefixLength = Constants.XERCES_PROPERTY_PREFIX.length();
+            final int suffixLength = propertyId.length() - Constants.XERCES_PROPERTY_PREFIX.length();
 
-            if (propertyId.regionMatches(prefixLength, Constants.DTD_SCANNER_PROPERTY,
-                0, Constants.DTD_SCANNER_PROPERTY.length())) {
+            if (suffixLength == Constants.DTD_SCANNER_PROPERTY.length() && 
+                propertyId.endsWith(Constants.DTD_SCANNER_PROPERTY)) {
                 return;
             }
         }

@@ -1333,9 +1333,9 @@ public class XMLEntityManager
 
         // xerces features
         if (featureId.startsWith(Constants.XERCES_FEATURE_PREFIX)) {
-            final int prefixLength = Constants.XERCES_FEATURE_PREFIX.length();
-            if (featureId.regionMatches(prefixLength, Constants.ALLOW_JAVA_ENCODINGS_FEATURE,
-                0, Constants.ALLOW_JAVA_ENCODINGS_FEATURE.length())) {
+            final int suffixLength = featureId.length() - Constants.XERCES_FEATURE_PREFIX.length();
+            if (suffixLength == Constants.ALLOW_JAVA_ENCODINGS_FEATURE.length() && 
+                featureId.endsWith(Constants.ALLOW_JAVA_ENCODINGS_FEATURE)) {
                 fAllowJavaEncodings = state;
             }
         }
@@ -1371,25 +1371,25 @@ public class XMLEntityManager
 
         // Xerces properties
         if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
-            final int prefixLength = Constants.XERCES_PROPERTY_PREFIX.length();
+            final int suffixLength = propertyId.length() - Constants.XERCES_PROPERTY_PREFIX.length();
         	
-            if (propertyId.regionMatches(prefixLength, Constants.SYMBOL_TABLE_PROPERTY,
-                0, Constants.SYMBOL_TABLE_PROPERTY.length())) {
+            if (suffixLength == Constants.SYMBOL_TABLE_PROPERTY.length() && 
+                propertyId.endsWith(Constants.SYMBOL_TABLE_PROPERTY)) {
                 fSymbolTable = (SymbolTable)value;
                 return;
             }
-            if (propertyId.regionMatches(prefixLength, Constants.ERROR_REPORTER_PROPERTY,
-                0, Constants.ERROR_REPORTER_PROPERTY.length())) {
+            if (suffixLength == Constants.ERROR_REPORTER_PROPERTY.length() && 
+                propertyId.endsWith(Constants.ERROR_REPORTER_PROPERTY)) {
                 fErrorReporter = (XMLErrorReporter)value;
                 return;
             }
-            if (propertyId.regionMatches(prefixLength, Constants.ENTITY_RESOLVER_PROPERTY,
-                0, Constants.ENTITY_RESOLVER_PROPERTY.length())) {
+            if (suffixLength == Constants.ENTITY_RESOLVER_PROPERTY.length() && 
+                propertyId.endsWith(Constants.ENTITY_RESOLVER_PROPERTY)) {
                 fEntityResolver = (XMLEntityResolver)value;
                 return;
             }
-            if (propertyId.regionMatches(prefixLength, Constants.BUFFER_SIZE_PROPERTY,
-                0, Constants.BUFFER_SIZE_PROPERTY.length())) {
+            if (suffixLength == Constants.BUFFER_SIZE_PROPERTY.length() && 
+                propertyId.endsWith(Constants.BUFFER_SIZE_PROPERTY)) {
                 Integer bufferSize = (Integer)value;
                 if (bufferSize != null &&
                     bufferSize.intValue() > DEFAULT_XMLDECL_BUFFER_SIZE) {
@@ -1397,8 +1397,8 @@ public class XMLEntityManager
                     fEntityScanner.setBufferSize(fBufferSize);
                 }
             }
-            if (propertyId.regionMatches(prefixLength, Constants.SECURITY_MANAGER_PROPERTY,
-                0, Constants.SECURITY_MANAGER_PROPERTY.length())) {
+            if (suffixLength == Constants.SECURITY_MANAGER_PROPERTY.length() && 
+                propertyId.endsWith(Constants.SECURITY_MANAGER_PROPERTY)) {
                 fSecurityManager = (SecurityManager)value; 
                 fEntityExpansionLimit = (fSecurityManager != null)?fSecurityManager.getEntityExpansionLimit():0;
             }

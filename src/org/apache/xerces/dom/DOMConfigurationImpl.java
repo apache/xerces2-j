@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.
+ * Copyright (c) 2001-2004 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1034,7 +1034,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 
         // special cases
         if (propertyId.startsWith(Constants.SAX_PROPERTY_PREFIX)) {
-            final int prefixLength = Constants.SAX_PROPERTY_PREFIX.length();
+            final int suffixLength = propertyId.length() - Constants.SAX_PROPERTY_PREFIX.length();
 
             //
             // http://xml.org/sax/properties/xml-string
@@ -1046,8 +1046,8 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
             //   null (this is a good way to check for availability before the
             //   parse begins).
             //
-            if (propertyId.regionMatches(prefixLength, Constants.XML_STRING_PROPERTY,
-                0, Constants.XML_STRING_PROPERTY.length())) {
+            if (suffixLength == Constants.XML_STRING_PROPERTY.length() && 
+                propertyId.endsWith(Constants.XML_STRING_PROPERTY)) {
                 // REVISIT - we should probably ask xml-dev for a precise
                 // definition of what this is actually supposed to return, and
                 // in exactly which circumstances.

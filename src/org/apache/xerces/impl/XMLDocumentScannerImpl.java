@@ -389,15 +389,15 @@ public class XMLDocumentScannerImpl
 
         // Xerces properties
         if (featureId.startsWith(Constants.XERCES_FEATURE_PREFIX)) {
-            final int prefixLength = Constants.XERCES_FEATURE_PREFIX.length();
+            final int suffixLength = featureId.length() - Constants.XERCES_FEATURE_PREFIX.length();
         	
-            if (featureId.regionMatches(prefixLength, Constants.LOAD_EXTERNAL_DTD_FEATURE,
-                0, Constants.LOAD_EXTERNAL_DTD_FEATURE.length())) {
+            if (suffixLength == Constants.LOAD_EXTERNAL_DTD_FEATURE.length() && 
+                featureId.endsWith(Constants.LOAD_EXTERNAL_DTD_FEATURE)) {
                 fLoadExternalDTD = state;
                 return;
             }
-            else if (featureId.regionMatches(prefixLength, Constants.DISALLOW_DOCTYPE_DECL_FEATURE,
-                0, Constants.DISALLOW_DOCTYPE_DECL_FEATURE.length())) {
+            else if (suffixLength == Constants.DISALLOW_DOCTYPE_DECL_FEATURE.length() && 
+                featureId.endsWith(Constants.DISALLOW_DOCTYPE_DECL_FEATURE)) {
                 fDisallowDoctype = state;
                 return;
             }
@@ -443,14 +443,14 @@ public class XMLDocumentScannerImpl
 
         // Xerces properties
         if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
-            final int prefixLength = Constants.XERCES_PROPERTY_PREFIX.length();
+            final int suffixLength = propertyId.length() - Constants.XERCES_PROPERTY_PREFIX.length();
             
-            if (propertyId.regionMatches(prefixLength, Constants.DTD_SCANNER_PROPERTY,
-                0, Constants.DTD_SCANNER_PROPERTY.length())) {
+            if (suffixLength == Constants.DTD_SCANNER_PROPERTY.length() && 
+                propertyId.endsWith(Constants.DTD_SCANNER_PROPERTY)) {
                 fDTDScanner = (XMLDTDScanner)value;
             }
-            if (propertyId.regionMatches(prefixLength, Constants.NAMESPACE_CONTEXT_PROPERTY,
-                0, Constants.NAMESPACE_CONTEXT_PROPERTY.length())) {
+            if (suffixLength == Constants.NAMESPACE_CONTEXT_PROPERTY.length() && 
+                propertyId.endsWith(Constants.NAMESPACE_CONTEXT_PROPERTY)) {
                 if (value != null) {
                     fNamespaceContext = (NamespaceContext)value;
                 }

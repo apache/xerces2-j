@@ -457,15 +457,15 @@ public class XMLErrorReporter
         //
 
         if (featureId.startsWith(Constants.XERCES_FEATURE_PREFIX)) {
-            final int prefixLength = Constants.XERCES_FEATURE_PREFIX.length();
+            final int suffixLength = featureId.length() - Constants.XERCES_FEATURE_PREFIX.length();
             
             //
             // http://apache.org/xml/features/continue-after-fatal-error
             //   Allows the parser to continue after a fatal error.
             //   Normally, a fatal error would stop the parse.
             //
-            if (featureId.regionMatches(prefixLength, Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE,
-                0, Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE.length())) {
+            if (suffixLength == Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE.length() && 
+                featureId.endsWith(Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE)) {
                 fContinueAfterFatalError = state;
             }
         }
@@ -481,15 +481,15 @@ public class XMLErrorReporter
         //
 
         if (featureId.startsWith(Constants.XERCES_FEATURE_PREFIX)) {
-        	final int prefixLength = Constants.XERCES_FEATURE_PREFIX.length();
+        	final int suffixLength = featureId.length() - Constants.XERCES_FEATURE_PREFIX.length();
         	
             //
             // http://apache.org/xml/features/continue-after-fatal-error
             //   Allows the parser to continue after a fatal error.
             //   Normally, a fatal error would stop the parse.
             //
-            if (featureId.regionMatches(prefixLength, Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE,
-                0, Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE.length())) {
+            if (suffixLength == Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE.length() && 
+                featureId.endsWith(Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE)) {
                 return fContinueAfterFatalError ;
             }
         }
@@ -529,10 +529,10 @@ public class XMLErrorReporter
         //
 
         if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
-            final int prefixLength = Constants.XERCES_PROPERTY_PREFIX.length();
+            final int suffixLength = propertyId.length() - Constants.XERCES_PROPERTY_PREFIX.length();
 
-            if (propertyId.regionMatches(prefixLength, Constants.ERROR_HANDLER_PROPERTY,
-                0, Constants.ERROR_HANDLER_PROPERTY.length())) {
+            if (suffixLength == Constants.ERROR_HANDLER_PROPERTY.length() && 
+                propertyId.endsWith(Constants.ERROR_HANDLER_PROPERTY)) {
                 fErrorHandler = (XMLErrorHandler)value;
             }
         }

@@ -560,7 +560,7 @@ public abstract class BasicParserConfiguration
 
         // special cases
         if (propertyId.startsWith(Constants.SAX_PROPERTY_PREFIX)) {
-            final int prefixLength = Constants.SAX_PROPERTY_PREFIX.length();	
+            final int suffixLength = propertyId.length() - Constants.SAX_PROPERTY_PREFIX.length();	
         	
             //
             // http://xml.org/sax/properties/xml-string
@@ -572,8 +572,8 @@ public abstract class BasicParserConfiguration
             //   null (this is a good way to check for availability before the
             //   parse begins).
             //
-            if (propertyId.regionMatches(prefixLength, Constants.XML_STRING_PROPERTY,
-                0, Constants.XML_STRING_PROPERTY.length())) {
+            if (suffixLength == Constants.XML_STRING_PROPERTY.length() && 
+                propertyId.endsWith(Constants.XML_STRING_PROPERTY)) {
                 // REVISIT - we should probably ask xml-dev for a precise
                 // definition of what this is actually supposed to return, and
                 // in exactly which circumstances.
@@ -607,13 +607,13 @@ public abstract class BasicParserConfiguration
         // Xerces Features
         //
         if (featureId.startsWith(Constants.XERCES_FEATURE_PREFIX)) {
-            final int prefixLength = Constants.XERCES_FEATURE_PREFIX.length();
+            final int suffixLength = featureId.length() - Constants.XERCES_FEATURE_PREFIX.length();
 
             //
             // special performance feature: no one by component manager is allowed to set it
             //
-            if (featureId.regionMatches(prefixLength, Constants.PARSER_SETTINGS,
-                0, Constants.PARSER_SETTINGS.length())) {
+            if (suffixLength == Constants.PARSER_SETTINGS.length() && 
+                featureId.endsWith(Constants.PARSER_SETTINGS)) {
                 short type = XMLConfigurationException.NOT_SUPPORTED;
                 throw new XMLConfigurationException(type, featureId);
             }

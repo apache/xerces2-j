@@ -170,16 +170,16 @@ public class CMNodeFactory {
 
         // Xerces properties
         if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
-        	final int prefixLength = Constants.XERCES_PROPERTY_PREFIX.length();
+        	final int suffixLength = propertyId.length() - Constants.XERCES_PROPERTY_PREFIX.length();
         	
-            if (propertyId.regionMatches(prefixLength, Constants.SECURITY_MANAGER_PROPERTY,
-                0, Constants.SECURITY_MANAGER_PROPERTY.length())) {
+            if (suffixLength == Constants.SECURITY_MANAGER_PROPERTY.length() && 
+                propertyId.endsWith(Constants.SECURITY_MANAGER_PROPERTY)) {
                 fSecurityManager = (SecurityManager)value;                
                 maxNodeLimit = (fSecurityManager != null) ? fSecurityManager.getMaxOccurNodeLimit() * MULTIPLICITY : 0 ;
                 return;
             }
-            if (propertyId.regionMatches(prefixLength, Constants.ERROR_REPORTER_PROPERTY,
-                0, Constants.ERROR_REPORTER_PROPERTY.length())) {
+            if (suffixLength == Constants.ERROR_REPORTER_PROPERTY.length() && 
+                propertyId.endsWith(Constants.ERROR_REPORTER_PROPERTY)) {
                 fErrorReporter = (XMLErrorReporter)value;
                 return;
             }

@@ -298,14 +298,14 @@ public class XMLNamespaceBinder
 
         // Xerces properties
         if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
-        	final int prefixLength = Constants.XERCES_PROPERTY_PREFIX.length();
+        	final int suffixLength = propertyId.length() - Constants.XERCES_PROPERTY_PREFIX.length();
         	
-            if (propertyId.regionMatches(prefixLength, Constants.SYMBOL_TABLE_PROPERTY,
-                0, Constants.SYMBOL_TABLE_PROPERTY.length())) {
+            if (suffixLength == Constants.SYMBOL_TABLE_PROPERTY.length() && 
+                propertyId.endsWith(Constants.SYMBOL_TABLE_PROPERTY)) {
                 fSymbolTable = (SymbolTable)value;
             }
-            else if (propertyId.regionMatches(prefixLength, Constants.ERROR_REPORTER_PROPERTY,
-                0, Constants.ERROR_REPORTER_PROPERTY.length())) {
+            else if (suffixLength == Constants.ERROR_REPORTER_PROPERTY.length() && 
+                propertyId.endsWith(Constants.ERROR_REPORTER_PROPERTY)) {
                 fErrorReporter = (XMLErrorReporter)value;
             }
             return;

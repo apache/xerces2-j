@@ -1209,7 +1209,7 @@ public class XML11Configuration extends ParserConfigurationSettings
         //
 
         if (featureId.startsWith(Constants.XERCES_FEATURE_PREFIX)) {
-            final int prefixLength = Constants.XERCES_FEATURE_PREFIX.length();
+            final int suffixLength = featureId.length() - Constants.XERCES_FEATURE_PREFIX.length();
             
             //
             // http://apache.org/xml/features/validation/dynamic
@@ -1217,16 +1217,16 @@ public class XML11Configuration extends ParserConfigurationSettings
             //   contains a grammar. Validation is turned on/off based
             //   on each document instance, automatically.
             //
-            if (featureId.regionMatches(prefixLength, Constants.DYNAMIC_VALIDATION_FEATURE, 
-                0, Constants.DYNAMIC_VALIDATION_FEATURE.length())) {
+            if (suffixLength == Constants.DYNAMIC_VALIDATION_FEATURE.length() && 
+                featureId.endsWith(Constants.DYNAMIC_VALIDATION_FEATURE)) {
                 return;
             }
 
             //
             // http://apache.org/xml/features/validation/default-attribute-values
             //
-            if (featureId.regionMatches(prefixLength, Constants.DEFAULT_ATTRIBUTE_VALUES_FEATURE,
-                0, Constants.DEFAULT_ATTRIBUTE_VALUES_FEATURE.length())) {
+            if (suffixLength == Constants.DEFAULT_ATTRIBUTE_VALUES_FEATURE.length() &&
+                featureId.endsWith(Constants.DEFAULT_ATTRIBUTE_VALUES_FEATURE)) {
                 // REVISIT
                 short type = XMLConfigurationException.NOT_SUPPORTED;
                 throw new XMLConfigurationException(type, featureId);
@@ -1234,8 +1234,8 @@ public class XML11Configuration extends ParserConfigurationSettings
             //
             // http://apache.org/xml/features/validation/default-attribute-values
             //
-            if (featureId.regionMatches(prefixLength, Constants.VALIDATE_CONTENT_MODELS_FEATURE,
-                0, Constants.VALIDATE_CONTENT_MODELS_FEATURE.length())) {
+            if (suffixLength == Constants.VALIDATE_CONTENT_MODELS_FEATURE.length() && 
+                featureId.endsWith(Constants.VALIDATE_CONTENT_MODELS_FEATURE)) {
                 // REVISIT
                 short type = XMLConfigurationException.NOT_SUPPORTED;
                 throw new XMLConfigurationException(type, featureId);
@@ -1243,59 +1243,59 @@ public class XML11Configuration extends ParserConfigurationSettings
             //
             // http://apache.org/xml/features/validation/nonvalidating/load-dtd-grammar
             //
-            if (featureId.regionMatches(prefixLength, Constants.LOAD_DTD_GRAMMAR_FEATURE,
-                0, Constants.LOAD_DTD_GRAMMAR_FEATURE.length())) {
+            if (suffixLength == Constants.LOAD_DTD_GRAMMAR_FEATURE.length() && 
+                featureId.endsWith(Constants.LOAD_DTD_GRAMMAR_FEATURE)) {
                 return;
             }
             //
             // http://apache.org/xml/features/validation/nonvalidating/load-external-dtd
             //
-            if (featureId.regionMatches(prefixLength, Constants.LOAD_EXTERNAL_DTD_FEATURE,
-                0, Constants.LOAD_EXTERNAL_DTD_FEATURE.length())) {
+            if (suffixLength == Constants.LOAD_EXTERNAL_DTD_FEATURE.length() && 
+                featureId.endsWith(Constants.LOAD_EXTERNAL_DTD_FEATURE)) {
                 return;
             }
 
             //
             // http://apache.org/xml/features/validation/default-attribute-values
             //
-            if (featureId.regionMatches(prefixLength, Constants.VALIDATE_DATATYPES_FEATURE,
-                0, Constants.VALIDATE_DATATYPES_FEATURE.length())) {
+            if (suffixLength == Constants.VALIDATE_DATATYPES_FEATURE.length() && 
+                featureId.endsWith(Constants.VALIDATE_DATATYPES_FEATURE)) {
                 short type = XMLConfigurationException.NOT_SUPPORTED;
                 throw new XMLConfigurationException(type, featureId);
             }
             
-			 //
-			 // http://apache.org/xml/features/validation/schema
-			 //   Lets the user turn Schema validation support on/off.
-			 //
-			 if (featureId.regionMatches(prefixLength, Constants.SCHEMA_VALIDATION_FEATURE,
-			     0, Constants.SCHEMA_VALIDATION_FEATURE.length())) {
-				 return;
-			 }
-			 // activate full schema checking
-			 if (featureId.regionMatches(prefixLength, Constants.SCHEMA_FULL_CHECKING,
-			     0, Constants.SCHEMA_FULL_CHECKING.length())) {
-				 return;
-			 }
-			 // Feature identifier: expose schema normalized value 
-			 //  http://apache.org/xml/features/validation/schema/normalized-value
-			 if (featureId.regionMatches(prefixLength, Constants.SCHEMA_NORMALIZED_VALUE,
-			     0, Constants.SCHEMA_NORMALIZED_VALUE.length())) {
-                 return;
-             } 
-             // Feature identifier: send element default value via characters() 
-             // http://apache.org/xml/features/validation/schema/element-default
-             if (featureId.regionMatches(prefixLength, Constants.SCHEMA_ELEMENT_DEFAULT, 
-                 0, Constants.SCHEMA_ELEMENT_DEFAULT.length())) {
-                 return;
-             }
+            //
+            // http://apache.org/xml/features/validation/schema
+            //   Lets the user turn Schema validation support on/off.
+            //
+            if (suffixLength == Constants.SCHEMA_VALIDATION_FEATURE.length() && 
+                featureId.endsWith(Constants.SCHEMA_VALIDATION_FEATURE)) {
+                return;
+            }
+            // activate full schema checking
+            if (suffixLength == Constants.SCHEMA_FULL_CHECKING.length() && 
+                featureId.endsWith(Constants.SCHEMA_FULL_CHECKING)) {
+                return;
+            }
+            // Feature identifier: expose schema normalized value 
+            //  http://apache.org/xml/features/validation/schema/normalized-value
+            if (suffixLength == Constants.SCHEMA_NORMALIZED_VALUE.length() && 
+                featureId.endsWith(Constants.SCHEMA_NORMALIZED_VALUE)) {
+                return;
+            } 
+            // Feature identifier: send element default value via characters() 
+            // http://apache.org/xml/features/validation/schema/element-default
+            if (suffixLength == Constants.SCHEMA_ELEMENT_DEFAULT.length() && 
+                featureId.endsWith(Constants.SCHEMA_ELEMENT_DEFAULT)) {
+                return;
+            }
 			 
-             // special performance feature: only component manager is allowed to set it.			 
-             if (featureId.regionMatches(prefixLength, Constants.PARSER_SETTINGS,
-                 0, Constants.PARSER_SETTINGS.length())) {
-                 short type = XMLConfigurationException.NOT_SUPPORTED;
-                 throw new XMLConfigurationException(type, featureId);
-             }
+            // special performance feature: only component manager is allowed to set it.			 
+            if (suffixLength == Constants.PARSER_SETTINGS.length() && 
+                featureId.endsWith(Constants.PARSER_SETTINGS)) {
+                short type = XMLConfigurationException.NOT_SUPPORTED;
+                throw new XMLConfigurationException(type, featureId);
+            }
 
         }
 
@@ -1327,54 +1327,54 @@ public class XML11Configuration extends ParserConfigurationSettings
         //
 
         if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
-            final int prefixLength = Constants.XERCES_PROPERTY_PREFIX.length();
+            final int suffixLength = propertyId.length() - Constants.XERCES_PROPERTY_PREFIX.length();
 
-            if (propertyId.regionMatches(prefixLength, Constants.DTD_SCANNER_PROPERTY,
-                0, Constants.DTD_SCANNER_PROPERTY.length())) {
+            if (suffixLength == Constants.DTD_SCANNER_PROPERTY.length() && 
+                propertyId.endsWith(Constants.DTD_SCANNER_PROPERTY)) {
                 return;
             }
-            if (propertyId.regionMatches(prefixLength, Constants.SCHEMA_LOCATION,
-                0, Constants.SCHEMA_LOCATION.length())) {
+            if (suffixLength == Constants.SCHEMA_LOCATION.length() && 
+                propertyId.endsWith(Constants.SCHEMA_LOCATION)) {
                 return;
             }
-            if (propertyId.regionMatches(prefixLength, Constants.SCHEMA_NONS_LOCATION,
-                0, Constants.SCHEMA_NONS_LOCATION.length())) {
+            if (suffixLength == Constants.SCHEMA_NONS_LOCATION.length() && 
+                propertyId.endsWith(Constants.SCHEMA_NONS_LOCATION)) {
                 return;
             }
         }
         
-		if (propertyId.startsWith(Constants.JAXP_PROPERTY_PREFIX)) {
-            final int prefixLength = Constants.JAXP_PROPERTY_PREFIX.length();
+        if (propertyId.startsWith(Constants.JAXP_PROPERTY_PREFIX)) {
+            final int suffixLength = propertyId.length() - Constants.JAXP_PROPERTY_PREFIX.length();
 
-			if (propertyId.regionMatches(prefixLength, Constants.SCHEMA_SOURCE,
-                0, Constants.SCHEMA_SOURCE.length())) {
-				return;
-			}
-		}
+            if (suffixLength == Constants.SCHEMA_SOURCE.length() && 
+                propertyId.endsWith(Constants.SCHEMA_SOURCE)) {
+                return;
+            }
+        }
 		
-		// special cases
-		if (propertyId.startsWith(Constants.SAX_PROPERTY_PREFIX)) {
-            final int prefixLength = Constants.SAX_PROPERTY_PREFIX.length();
+        // special cases
+        if (propertyId.startsWith(Constants.SAX_PROPERTY_PREFIX)) {
+            final int suffixLength = propertyId.length() - Constants.SAX_PROPERTY_PREFIX.length();
 			
-			//
-			// http://xml.org/sax/properties/xml-string
-			// Value type: String
-			// Access: read-only
-			//   Get the literal string of characters associated with the
-			//   current event.  If the parser recognises and supports this
-			//   property but is not currently parsing text, it should return
-			//   null (this is a good way to check for availability before the
-			//   parse begins).
-			//
-			if (propertyId.regionMatches(prefixLength, Constants.XML_STRING_PROPERTY,
-                0, Constants.XML_STRING_PROPERTY.length())) {
-				// REVISIT - we should probably ask xml-dev for a precise
-				// definition of what this is actually supposed to return, and
-				// in exactly which circumstances.
-				short type = XMLConfigurationException.NOT_SUPPORTED;
-				throw new XMLConfigurationException(type, propertyId);
-			}
-		}
+            //
+            // http://xml.org/sax/properties/xml-string
+            // Value type: String
+            // Access: read-only
+            //   Get the literal string of characters associated with the
+            //   current event.  If the parser recognises and supports this
+            //   property but is not currently parsing text, it should return
+            //   null (this is a good way to check for availability before the
+            //   parse begins).
+            //
+            if (suffixLength == Constants.XML_STRING_PROPERTY.length() && 
+                propertyId.endsWith(Constants.XML_STRING_PROPERTY)) {
+                // REVISIT - we should probably ask xml-dev for a precise
+                // definition of what this is actually supposed to return, and
+                // in exactly which circumstances.
+                short type = XMLConfigurationException.NOT_SUPPORTED;
+                throw new XMLConfigurationException(type, propertyId);
+            }
+        }
 
         //
         // Not recognized
