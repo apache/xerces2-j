@@ -73,24 +73,22 @@ public class XMLAttributeDecl {
 
     public static final int TYPE_CDATA = 0;
     public static final int TYPE_ENTITY = 1;
-    //public static final int TYPE_ENTITIES = 2;
-    public static final int TYPE_ENUMERATION = 3;
-    public static final int TYPE_ID = 4;
-    public static final int TYPE_IDREF = 5;
-    //public static final int TYPE_IDREFS = 6;
-    public static final int TYPE_NMTOKEN = 7;
-    //public static final int TYPE_NMTOKENS = 8;
+    public static final int TYPE_ENUMERATION = 2;
+    public static final int TYPE_ID = 3;
+    public static final int TYPE_IDREF = 4;
+    public static final int TYPE_NMTOKEN = 5;
+    public static final int TYPE_NOTATION = 6;
 
     // schema
 
-    public static final int TYPE_SIMPLE = 9;
-    //public static final int TYPE_LIST = 10;
+    public static final int TYPE_SIMPLE = 7;
 
     // default type
 
-    public static final int DEFAULT_TYPE_NOTHING = 0;
+    public static final int DEFAULT_TYPE_IMPLIED = 0;
     public static final int DEFAULT_TYPE_FIXED = 1;
     public static final int DEFAULT_TYPE_REQUIRED = 2;
+    public static final int DEFAULT_TYPE_DEFAULT = 3;
 
     //
     // Data
@@ -137,7 +135,7 @@ public class XMLAttributeDecl {
         datatypeValidator = null;
         type = -1;
         list = false;
-        defaultType = DEFAULT_TYPE_NOTHING;
+        defaultType = DEFAULT_TYPE_IMPLIED;
         defaultValue = null;
     }
 

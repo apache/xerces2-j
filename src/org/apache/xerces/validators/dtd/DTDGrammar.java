@@ -422,7 +422,7 @@ public class DTDGrammar
      * @exception java.lang.Exception
      */
     public int addAttDef(QName elementDecl, QName attributeDecl, 
-                         int attType, int enumeration, 
+                         int attType, boolean attList, int enumeration, 
                          int attDefaultType, int attDefaultValue) 
         throws Exception {
         
@@ -447,8 +447,10 @@ public class DTDGrammar
         // set attribute decl values
         fAttributeDecl.clear();
         fAttributeDecl.name.setValues(attributeDecl);
+        fAttributeDecl.type = attType;
+        fAttributeDecl.list = attList;
         // REVISIT: Set the datatype validator
-        // REVISIT: Don't forget attribute decl type, and enumeration
+        // REVISIT: Don't forget the enumeration
         fAttributeDecl.defaultValue = fStringPool.toString(attDefaultValue);
 
         int elementDeclIndex = getElementDeclIndex(elementDecl.localpart, -1);
@@ -458,7 +460,7 @@ public class DTDGrammar
         if (fDTDEventHandler != null) {
             int mapping = fDTDEventHandler.addAttDef(elementDecl, 
                                                      attributeDecl, 
-                                                     attType, enumeration,
+                                                     attType, attList, enumeration,
                                                      attDefaultType, 
                                                      attDefaultValue);
             int chunk = attributeDeclIndex >> CHUNK_SHIFT;
