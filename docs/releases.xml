@@ -6,7 +6,8 @@
     <ul>
         <li>Added support for all IANA encoding aliases which have a clear mapping to 
             encodings recognized by Java [Neil Graham]</li>
-        <li>Performance improvements for DTD validation [Sandy Gao, Neil Graham]</li>
+        <li> Addressed degradations in DTD validation performance
+            caused by the schema implementation [Sandy Gao, Neil Graham]</li>
         <li>Bug fixes [Sandy Gao, Neil Graham, Elena Litani, Lisa Martin, Henry Zongaro, Edwin Goei] </li> 
         <li>Added support for setAttribute/getAttribute in JAXP [Edwin Goei]</li>
         <li>Added two new parser properties related to XML Schema [Elena Litani]</li>
