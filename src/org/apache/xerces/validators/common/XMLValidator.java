@@ -2943,7 +2943,7 @@ public final class XMLValidator
             return attrDecl.list ? fIDREFSSymbol : fIDREFSymbol;
          }
       case XMLAttributeDecl.TYPE_NMTOKEN: {
-            return attrDecl.list ? fNMTOKENSSymbol : fNMTOKENSSymbol;
+            return attrDecl.list ? fNMTOKENSSymbol : fNMTOKENSymbol;
          }
       case XMLAttributeDecl.TYPE_NOTATION: {
             return fNOTATIONSymbol;
