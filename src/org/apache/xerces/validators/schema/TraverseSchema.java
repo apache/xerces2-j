@@ -1724,10 +1724,16 @@ public class TraverseSchema implements
             //if not found, traverse the top level element that if referenced
 
             if (elementIndex == -1 ) {
-                eltName= 
-                    traverseElementDecl(
-                        getTopLevelComponentByName(SchemaSymbols.ELT_ELEMENT,localpart)
-                        );
+                Element targetElement = getTopLevelComponentByName(SchemaSymbols.ELT_ELEMENT,localpart);
+                if (targetElement == null ) {
+                    reportGenericSchemaError("Element " + ref + " not found in the Schema");
+                    //REVISIT, for now, return null, this needs to be investigated.
+                    return null;
+                    //return new QName(-1,-1,-1,-1);
+                }
+                else {
+                    eltName= traverseElementDecl(targetElement);
+                }
             }
             return eltName;
         }
@@ -2421,9 +2427,20 @@ public class TraverseSchema implements
             if (seeParticle) {
                 index = expandContentModel( index, child);
             }
-            allChildren[allChildCount++] = index;
+            try {
+                allChildren[allChildCount] = index;
+            }
+            catch (NullPointerException ne) {
+                allChildren = new int[32];
+                allChildren[allChildCount] = index;
+            }
+            catch (ArrayIndexOutOfBoundsException ae) {
+                int[] newArray = new int[allChildren.length*2];
+                System.arraycopy(allChildren, 0, newArray, 0, allChildren.length);
+                allChildren[allChildCount] = index;
+            }
+            allChildCount++;
         }
-
         left = buildAllModel(allChildren,allChildCount);
 
         return left;
@@ -2442,9 +2459,11 @@ public class TraverseSchema implements
             choice.value = -1;
             choice.otherValue = -1;
 
+            int[] exactChildren = new int[count];
+            System.arraycopy(children,0,exactChildren,0,count);
             // build all model
-            sort(children, 0, count);
-            int index = buildAllModel(children, 0, choice);
+            sort(exactChildren, 0, count);
+            int index = buildAllModel(exactChildren, 0, choice);
 
             return index;
         }
