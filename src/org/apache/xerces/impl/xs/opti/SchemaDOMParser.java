@@ -232,7 +232,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                 fAnnotationDepth = fDepth;
                 schemaDOM.startAnnotation(element, attributes, fNamespaceContext);
             } 
-            else if (fGenerateSyntheticAnnotation) {
+            else if (element.uri == SchemaSymbols.URI_SCHEMAFORSCHEMA && fGenerateSyntheticAnnotation) {
                 fSawAnnotation.push(false);
                 fHasNonSchemaAttributes.push(hasNonSchemaAttributes(element, attributes));
             }
@@ -266,7 +266,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
     throws XNIException {
         
         if (fGenerateSyntheticAnnotation && fAnnotationDepth == -1 && 
-                element.uri == SchemaSymbols.URI_SCHEMAFORSCHEMA && hasNonSchemaAttributes(element, attributes)) { 
+                element.uri == SchemaSymbols.URI_SCHEMAFORSCHEMA && element.localpart != SchemaSymbols.ELT_ANNOTATION && hasNonSchemaAttributes(element, attributes)) { 
             
             schemaDOM.startElement(element, attributes,
                     fLocator.getLineNumber(),
@@ -351,7 +351,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                 schemaDOM.endAnnotationElement(element, false);
             }
         } else { // not in an annotation at all
-            if(fGenerateSyntheticAnnotation) {
+            if(element.uri == SchemaSymbols.URI_SCHEMAFORSCHEMA && fGenerateSyntheticAnnotation) {
                 boolean value = fHasNonSchemaAttributes.pop();
                 boolean sawann = fSawAnnotation.pop();
                 if (value && !sawann) {
