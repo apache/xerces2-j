@@ -127,6 +127,9 @@ public class Counter
     /** Default memory usage report (false). */
     protected static final boolean DEFAULT_MEMORY_USAGE = false;
 
+    /** Default "tagginess" report (false). */
+    protected static final boolean DEFAULT_TAGGINESS = false;
+
     //
     // Data
     //
@@ -143,6 +146,9 @@ public class Counter
     /** Number of ignorable whitespace characters. */
     protected long fIgnorableWhitespace;
 
+    /** Number of characters of tags. */
+    protected long fTagCharacters;
+
     //
     // Constructors
     //
@@ -156,7 +162,8 @@ public class Counter
     //
 
     /** Prints the results. */
-    public void printResults(PrintWriter out, String uri, long time, long memory) {
+    public void printResults(PrintWriter out, String uri, long time, 
+                             long memory, boolean tagginess) {
 
         // filename.xml: 631 ms (4 elems, 0 attrs, 78 spaces, 0 chars)
         out.print(uri);
@@ -177,6 +184,14 @@ public class Counter
         out.print(" spaces, ");
         out.print(fCharacters);
         out.print(" chars)");
+        if (tagginess) {
+            out.print(' ');
+            long totalCharacters = fTagCharacters 
+                                 + fCharacters + fIgnorableWhitespace;
+            long tagValue = fTagCharacters * 100 / totalCharacters;
+            out.print(tagValue);
+            out.print("% tagginess");
+        }
         out.println();
         out.flush();
 
@@ -193,6 +208,7 @@ public class Counter
         fAttributes          = 0;
         fCharacters          = 0;
         fIgnorableWhitespace = 0;
+        fTagCharacters       = 0;
 
     } // startDocument()
 
@@ -201,9 +217,20 @@ public class Counter
                              Attributes attrs) throws SAXException {
 
         fElements++;
+        fTagCharacters++; // open angle bracket
+        fTagCharacters += raw.length();
         if (attrs != null) {
-            fAttributes += attrs.getLength();
+            int attrCount = attrs.getLength();
+            fAttributes += attrCount;
+            for (int i = 0; i < attrCount; i++) {
+                fTagCharacters++; // space
+                fTagCharacters += attrs.getQName(i).length();
+                fTagCharacters++; // '='
+                fTagCharacters++; // open quote
+                fTagCharacters++; // close quote
+            }
         }
+        fTagCharacters++; // close angle bracket
 
     } // startElement(String,String,StringAttributes)
 
@@ -222,6 +249,17 @@ public class Counter
         fIgnorableWhitespace += length;
 
     } // ignorableWhitespace(char[],int,int);
+
+    /** Processing instruction. */
+    public void processingInstruction(String target, String data)
+        throws SAXException {
+        fTagCharacters += 2; // "<?"
+        fTagCharacters += target.length();
+        if (data != null && data.length() > 0) {
+            fTagCharacters++; // space
+        }
+        fTagCharacters += 2; // "?>"
+    } // processingInstruction(String,String)
 
     //
     // ErrorHandler methods
@@ -292,6 +330,7 @@ public class Counter
         boolean validation = DEFAULT_VALIDATION;
         boolean schemaValidation = DEFAULT_SCHEMA_VALIDATION;
         boolean memoryUsage = DEFAULT_MEMORY_USAGE;
+        boolean tagginess = DEFAULT_TAGGINESS;
         
         // process arguments
         for (int i = 0; i < argv.length; i++) {
@@ -339,6 +378,10 @@ public class Counter
                     memoryUsage = option.equals("m");
                     continue;
                 }
+                if (option.equalsIgnoreCase("t")) {
+                    tagginess = option.equals("t");
+                    continue;
+                }
                 if (option.equals("-rem")) {
                     if (++i == argv.length) {
                         System.err.println("error: Missing argument to -# option.");
@@ -352,6 +395,8 @@ public class Counter
                     printUsage();
                     continue;
                 }
+                System.err.println("error: unknown option ("+option+").");
+                continue;
             }
 
             // use default parser?
@@ -403,7 +448,7 @@ public class Counter
                 long time = timeAfter - timeBefore;
                 long memory = memoryUsage 
                             ? memoryBefore - memoryAfter : Long.MIN_VALUE;
-                counter.printResults(out, arg, time, memory);
+                counter.printResults(out, arg, time, memory, tagginess);
             }
             catch (SAXParseException e) {
                 // ignore
@@ -436,6 +481,7 @@ public class Counter
         System.err.println("  -s | -S     Turn on/off Schema validation support.");
         System.err.println("              NOTE: Not supported by all parsers.");
         System.err.println("  -m | -M     Turn on/off memory usage report");
+        System.err.println("  -t | -T     Turn on/off \"tagginess\" report.");
         System.err.println("  --rem text  Output user defined comment before next parse.");
         System.err.println("  -h          This help screen.");
 
@@ -450,6 +496,8 @@ public class Counter
         System.err.println(DEFAULT_SCHEMA_VALIDATION ? "on" : "off");
         System.err.print("  Memory:     ");
         System.err.println(DEFAULT_MEMORY_USAGE ? "on" : "off");
+        System.err.print("  Tagginess:  ");
+        System.err.println(DEFAULT_TAGGINESS ? "on" : "off");
 
         System.err.println();
         System.err.println("notes:");
@@ -457,6 +505,15 @@ public class Counter
         System.err.println("  basis of parser performance comparison! Real analytical methods should be");
         System.err.println("  used. For better results, perform multiple document parses within the same");
         System.err.println("  virtual machine to remove class loading from parse time and memory usage.");
+        System.out.println();
+        System.out.println("  The \"tagginess\" measurement gives a rough estimate of the percentage of");
+        System.out.println("  markup versus content in the XML document. The percent tagginess of a ");
+        System.out.println("  document is equal to the minimum amount of tag characters required for ");
+        System.out.println("  elements, attributes, and processing instructions divided by the total");
+        System.out.println("  amount of characters (characters, ignorable whitespace, and tag characters)");
+        System.out.println("  in the document.");
+        System.out.println();
+        System.err.println("  Not all features are supported by different parser configurations.");
 
     } // printUsage()
 
