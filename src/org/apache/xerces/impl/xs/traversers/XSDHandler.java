@@ -41,6 +41,7 @@ import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.opti.ElementImpl;
 import org.apache.xerces.impl.xs.opti.SchemaParsingConfig;
 import org.apache.xerces.impl.xs.util.SimpleLocator;
+import org.apache.xerces.util.DefaultErrorHandler;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLSymbols;
@@ -1578,7 +1579,7 @@ public class XSDHandler {
             // than checking its value.  Don't set the ERROR_HANDLER
             // property unless it's actually changed.
             if (currErrorHandler != fSchemaParser.getProperty(ERROR_HANDLER)) {
-                fSchemaParser.setProperty(ERROR_HANDLER, currErrorHandler);
+                fSchemaParser.setProperty(ERROR_HANDLER, (currErrorHandler != null) ? currErrorHandler : new DefaultErrorHandler());
             }
         } catch (XMLConfigurationException e) {
         }
