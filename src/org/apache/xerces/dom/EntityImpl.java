@@ -309,8 +309,12 @@ public class EntityImpl
 
 
     /**
-     * DOM Level 3 WD - Experimental.
-     * Retrieve baseURI
+     * Returns the absolute base URI of this node or null if the implementation
+     * wasn't able to obtain an absolute URI. Note: If the URI is malformed, a
+     * null is returned.
+     * 
+     * @return The absolute base URI of this node or null.
+     * @since DOM Level 3
      */
     public String getBaseURI() {
 

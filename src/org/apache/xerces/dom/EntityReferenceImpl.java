@@ -16,6 +16,7 @@
 
 package org.apache.xerces.dom;
 
+import org.apache.xerces.util.URI;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.EntityReference;
 import org.w3c.dom.NamedNodeMap;
@@ -145,8 +146,12 @@ implements EntityReference {
     }
 
     /**
-     * DOM Level 3 WD - Experimental.
-     * Retrieve baseURI
+     * Returns the absolute base URI of this node or null if the implementation
+     * wasn't able to obtain an absolute URI. Note: If the URI is malformed, a
+     * null is returned.
+     * 
+     * @return The absolute base URI of this node or null.
+     * @since DOM Level 3
      */
     public String getBaseURI() {
         if (needsSyncData()) {
@@ -164,7 +169,15 @@ implements EntityReference {
                     return entDef.getBaseURI();
                 }
             }
-        }
+        } else if (baseURI != null && baseURI.length() != 0 ) {// attribute value is always empty string
+            try {
+                baseURI = new URI(baseURI).toString();
+            }
+            catch (org.apache.xerces.util.URI.MalformedURIException e){
+                // REVISIT: what should happen in this case?
+                return null;
+            }
+        }        
         return baseURI;    
     }
 

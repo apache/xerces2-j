@@ -19,6 +19,7 @@ package org.apache.xerces.dom;
 import java.lang.reflect.Constructor;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import org.apache.xerces.util.URI;
 
 import org.apache.xerces.dom3.DOMConfiguration;
 import org.apache.xerces.dom3.UserDataHandler;
@@ -1164,10 +1165,23 @@ extends ParentNode implements Document  {
 
 
     /**
-     * DOM Level 3 WD - Experimental.
-     * Retrieve baseURI
+     * Returns the absolute base URI of this node or null if the implementation
+     * wasn't able to obtain an absolute URI. Note: If the URI is malformed, a
+     * null is returned.
+     * 
+     * @return The absolute base URI of this node or null.
+     * @since DOM Level 3
      */
     public String getBaseURI() {
+        if (fDocumentURI != null && fDocumentURI.length() != 0 ) {// attribute value is always empty string
+            try {
+                fDocumentURI = new URI(fDocumentURI).toString();
+            }
+            catch (org.apache.xerces.util.URI.MalformedURIException e){
+                // REVISIT: what should happen in this case?
+                return null;
+            }
+        }            
         return fDocumentURI;
     }
 
