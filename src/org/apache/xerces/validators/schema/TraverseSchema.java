@@ -1506,7 +1506,8 @@ public class TraverseSchema implements
                   //
                   traverseSimpleContentDecl(typeNameIndex, child, typeInfo);
                   if (XUtil.getNextSiblingElement(child) != null) 
-                      reportGenericSchemaError("Invalid child following the simpleContent child in a complexType");
+                     throw new ComplexTypeRecoverableError(
+                      "Invalid child following the simpleContent child in the complexType");
               }
               else if (childName.equals(SchemaSymbols.ELT_COMPLEXCONTENT)) {
                   //
@@ -1515,7 +1516,8 @@ public class TraverseSchema implements
                   traverseComplexContentDecl(typeNameIndex, child, typeInfo,   
                         mixed.equals(SchemaSymbols.ATTVAL_TRUE) ? true:false);
                   if (XUtil.getNextSiblingElement(child) != null) 
-                      reportGenericSchemaError("Invalid child following the complexContent child in a complexType");
+                     throw new ComplexTypeRecoverableError(
+                      "Invalid child following the complexContent child in the complexType");
               }
               else {
                   // 
@@ -1648,9 +1650,8 @@ public class TraverseSchema implements
         else {
           
           throw new ComplexTypeRecoverableError(
-                     "The content of a simpleContent element of a "+
-                     "complexType definition is invalid.   The content must be " +
-                     "RESTRICTION or EXTENSION");
+                     "The content of the simpleContent element is invalid.  The " +
+                     "content must be RESTRICTION or EXTENSION");
         }
 
         // -----------------------------------------------------------------------
@@ -1673,7 +1674,7 @@ public class TraverseSchema implements
         if (base.length() == 0)  {
           throw new ComplexTypeRecoverableError(
                   "The BASE attribute must be specified for the " +
-                  "simpleContent element of a complexType"); 
+                  "RESTRICTION or EXTENSION element"); 
         }
 
         QName baseQName = parseBase(base);
@@ -1683,8 +1684,8 @@ public class TraverseSchema implements
         if (typeInfo.baseComplexTypeInfo != null)  {
              if (typeInfo.baseComplexTypeInfo.contentSpecHandle > -1) {
                  throw new ComplexTypeRecoverableError(
-                 "The type '"+ base +"' specified as a " + 
-                 "base in a simpleContent element must not have complexContent");
+                 "The type '"+ base +"' specified as the " + 
+                 "base in the simpleContent element must not have complexContent");
              }
         }
            
@@ -1854,7 +1855,7 @@ public class TraverseSchema implements
 
         if (XUtil.getNextSiblingElement(simpleContent) != null) 
             throw new ComplexTypeRecoverableError(
-               "Invalid child following the RESTRICTION or EXTENSION element in a " +
+               "Invalid child following the RESTRICTION or EXTENSION element in the " +
                "complex type definition");
 
     }  // end traverseSimpleContentDecl
@@ -1941,9 +1942,8 @@ public class TraverseSchema implements
           typeInfo.derivedBy = SchemaSymbols.EXTENSION;
         else {
            throw new ComplexTypeRecoverableError(
-                     "The content of a complexContent element of a " +
-                     "complexType definition is invalid.   The content must be " +
-                     "RESTRICTION or EXTENSION");
+                     "The content of the complexContent element is invalid. " +
+                     "The content must be RESTRICTION or EXTENSION");
         }
 
         // Get the attributes of the restriction/extension element
@@ -1962,7 +1962,7 @@ public class TraverseSchema implements
         if (base.length() == 0)  {
            throw new ComplexTypeRecoverableError(
                   "The BASE attribute must be specified for the " +
-                  "complexContent element of a complexType"); 
+                  "RESTRICTION or EXTENSION element"); 
         }
 
         QName baseQName = parseBase(base);
@@ -1980,7 +1980,7 @@ public class TraverseSchema implements
             //Check that the base is a complex type                                  
             if (typeInfo.baseComplexTypeInfo == null)  {
                  throw new ComplexTypeRecoverableError(
-                   "The base type specified in a complexContent element must be a complexType");
+                   "The base type specified in the complexContent element must be a complexType");
             }
         }
 
@@ -1991,7 +1991,7 @@ public class TraverseSchema implements
 
         if (XUtil.getNextSiblingElement(complexContent) != null) 
             throw new ComplexTypeRecoverableError(
-               "Invalid child following the RESTRICTION or EXTENSION element in a " +
+               "Invalid child following the RESTRICTION or EXTENSION element in the " +
                "complex type definition");
 
     }  // end traverseComplexContentDecl
@@ -2008,8 +2008,13 @@ public class TraverseSchema implements
     private void handleComplexTypeError(String message, int typeNameIndex,  
                                         ComplexTypeInfo typeInfo) throws Exception {
 
-        if (message != null)
-          reportGenericSchemaError(message);
+        String typeName = fStringPool.toString(typeNameIndex);
+        if (message != null) {
+          if (typeName.startsWith("#")) 
+            reportGenericSchemaError("Anonymous complexType: " + message);
+          else
+            reportGenericSchemaError("ComplexType '" + typeName + "': " + message);
+        }
 
         //
         //  Mock up the typeInfo structure so that there won't be problems during     
@@ -2021,7 +2026,6 @@ public class TraverseSchema implements
         typeInfo.datatypeValidator = null;
         typeInfo.attlistHead = -1;
 
-        String typeName = fStringPool.toString(typeNameIndex);
         int templateElementNameIndex = fStringPool.addSymbol("$"+typeName);
         typeInfo.templateElementIndex = fSchemaGrammar.addElementDecl(
             new QName(-1, templateElementNameIndex,typeNameIndex,fTargetNSURI),
@@ -2215,7 +2219,7 @@ public class TraverseSchema implements
            }
            else {
                throw new ComplexTypeRecoverableError(
-                "Invalid child '"+ childName +"' in a complex type");               
+                "Invalid child '"+ childName +"' in the complex type");               
            }
        }
      
@@ -2313,8 +2317,7 @@ public class TraverseSchema implements
        if (attrNode !=null) {
            if (!isAttrOrAttrGroup(attrNode)) {
               throw new ComplexTypeRecoverableError(
-                  "Invalid child of a complex type "+ 
-                    attrNode.getLocalName());
+                  "Invalid child "+ attrNode.getLocalName() + " in the complexType or complexContent");
            }
            else
               processAttributes(attrNode,baseName,typeInfo);
