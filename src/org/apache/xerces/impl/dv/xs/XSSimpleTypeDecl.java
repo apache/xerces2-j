@@ -207,7 +207,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 		public void addIdRef(String name) {
 		}
 		public String getSymbol (String symbol) {
-			return null;
+            return symbol.intern();
 		}
 		public String getURI(String prefix) {
 			return null;
@@ -2698,7 +2698,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 		}
 		
 		public String getSymbol (String symbol) {
-			return null;
+            return symbol.intern();
 		}
 		
 		public String getURI(String prefix) {
