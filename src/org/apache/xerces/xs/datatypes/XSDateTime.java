@@ -28,37 +28,37 @@ package org.apache.xerces.xs.datatypes;
 public interface XSDateTime {
 	
     /**
-     * @return years – can be negative for date-time related types;
+     * @return years - can be negative for date-time related types;
      *          returns 0 for duration types
      */
     public int getYears();
     
     /**
-     * @return months – can be negative only for duration types;
+     * @return months - can be negative only for duration types;
      *                  For duration types, it returns years*12 + months
      */
     public int getMonths();
     
     /**
-     * @return days – cannot be negative;
+     * @return days - cannot be negative;
      *          returns 0 for duration types 
      */
     public int getDays();
     
     /**
-     * @return hours – cannot be negative;
+     * @return hours - cannot be negative;
      *          returns 0 for duration types
      */
     public int getHours();
     
     /**
-     * @return minutes – cannot be negative;
+     * @return minutes - cannot be negative;
      *          returns 0 for duration types
      */
     public int getMinutes();
     
     /**
-     * @return seconds – can be negative only for durations;
+     * @return seconds - can be negative only for durations;
      *                   For duration types, it returns days*24*3600 + hours*3600 
      *                                                  + minutes*60 + seconds 
      */
