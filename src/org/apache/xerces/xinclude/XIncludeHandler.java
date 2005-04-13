@@ -830,7 +830,16 @@ public class XIncludeHandler
         Augmentations augs)
         throws XNIException {
         fDepth++;
-        setState(getState(fDepth - 1));
+        int lastState = getState(fDepth - 1);
+        // If the last two states were fallback then this must be a descendant of an include
+        // child which isn't a fallback. The specification says we should ignore such elements
+        // and their children.
+        if (lastState == STATE_EXPECT_FALLBACK && getState(fDepth - 2) == STATE_EXPECT_FALLBACK) {
+            setState(STATE_IGNORE);
+        }
+        else {
+            setState(lastState);
+        }
 
         // we process the xml:base and xml:lang attributes regardless
         // of what type of element it is.
@@ -891,7 +900,16 @@ public class XIncludeHandler
         Augmentations augs)
         throws XNIException {
         fDepth++;
-        setState(getState(fDepth - 1));
+        int lastState = getState(fDepth - 1);
+        // If the last two states were fallback then this must be a descendant of an include
+        // child which isn't a fallback. The specification says we should ignore such elements
+        // and their children.
+        if (lastState == STATE_EXPECT_FALLBACK && getState(fDepth - 2) == STATE_EXPECT_FALLBACK) {
+            setState(STATE_IGNORE);
+        }
+        else {
+            setState(lastState);
+        }
 
         // we process the xml:base and xml:lang attributes regardless
         // of what type of element it is.
