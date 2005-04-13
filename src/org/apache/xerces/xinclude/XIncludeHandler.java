@@ -946,7 +946,7 @@ public class XIncludeHandler
         }
         // reset the out of scope stack elements
         setSawFallback(fDepth + 1, false);
-        setSawInclude(fDepth + 1, false);
+        setSawInclude(fDepth, false);
 
         // check if an xml:base has gone out of scope
         if (fBaseURIScope.size() > 0 && fDepth == fBaseURIScope.peek()) {
@@ -983,7 +983,7 @@ public class XIncludeHandler
 
         // reset the out of scope stack elements
         setSawFallback(fDepth + 1, false);
-        setSawInclude(fDepth + 1, false);
+        setSawInclude(fDepth, false);
 
         // check if an xml:base has gone out of scope
         if (fBaseURIScope.size() > 0 && fDepth == fBaseURIScope.peek()) {
