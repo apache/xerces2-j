@@ -1,5 +1,5 @@
 /*
- * Copyright 1999,2000,2004 The Apache Software Foundation.
+ * Copyright 1999,2000,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,83 +22,84 @@ import org.apache.wml.*;
  * @version $Id$
  * @author <a href="mailto:david@topware.com.tw">David Li</a>
  */
-
 public class WMLCardElementImpl extends WMLElementImpl implements WMLCardElement {
-
+    
+    private static final long serialVersionUID = 3257005466683781686L;
+    
     public WMLCardElementImpl (WMLDocumentImpl owner, String tagName) {
-	super( owner, tagName);
+        super( owner, tagName);
     }
-
+    
     public void setOnTimer(String newValue) {
-	setAttribute("ontimer", newValue);
+        setAttribute("ontimer", newValue);
     }
-
+    
     public String getOnTimer() {
-	return getAttribute("ontimer");
+        return getAttribute("ontimer");
     }
-
+    
     public void setOrdered(boolean newValue) {
-	setAttribute("ordered", newValue);
+        setAttribute("ordered", newValue);
     }
-
+    
     public boolean getOrdered() {
-	return getAttribute("ordered", true);
+        return getAttribute("ordered", true);
     }
-
+    
     public void setOnEnterBackward(String newValue) {
-	setAttribute("onenterbackward", newValue);
+        setAttribute("onenterbackward", newValue);
     }
-
+    
     public String getOnEnterBackward() {
-	return getAttribute("onenterbackward");
+        return getAttribute("onenterbackward");
     }
-
+    
     public void setClassName(String newValue) {
-	setAttribute("class", newValue);
+        setAttribute("class", newValue);
     }
-
+    
     public String getClassName() {
-	return getAttribute("class");
+        return getAttribute("class");
     }
-
+    
     public void setXmlLang(String newValue) {
-	setAttribute("xml:lang", newValue);
+        setAttribute("xml:lang", newValue);
     }
-
+    
     public String getXmlLang() {
-	return getAttribute("xml:lang");
+        return getAttribute("xml:lang");
     }
-
+    
     public void setTitle(String newValue) {
-	setAttribute("title", newValue);
+        setAttribute("title", newValue);
     }
-
+    
     public String getTitle() {
-	return getAttribute("title");
+        return getAttribute("title");
     }
-
+    
     public void setNewContext(boolean newValue) {
-	setAttribute("newcontext", newValue);
+        setAttribute("newcontext", newValue);
     }
-
+    
     public boolean getNewContext() {
-	return getAttribute("newcontext", false);
+        return getAttribute("newcontext", false);
     }
-
+    
     public void setId(String newValue) {
-	setAttribute("id", newValue);
+        setAttribute("id", newValue);
     }
-
+    
     public String getId() {
-	return getAttribute("id");
+        return getAttribute("id");
     }
-
+    
     public void setOnEnterForward(String newValue) {
-	setAttribute("onenterforward", newValue);
+        setAttribute("onenterforward", newValue);
     }
-
+    
     public String getOnEnterForward() {
-	return getAttribute("onenterforward");
+        return getAttribute("onenterforward");
     }
-
+    
 }

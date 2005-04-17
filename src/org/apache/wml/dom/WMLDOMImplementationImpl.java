@@ -1,5 +1,5 @@
 /*
- * Copyright 1999,2000,2004 The Apache Software Foundation.
+ * Copyright 1999,2000,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,22 +24,21 @@ import org.apache.xerces.dom.*;
  * @version $Id$
  * @author <a href="mailto:david@topware.com.tw">David Li</a>
  */
-
 public class WMLDOMImplementationImpl extends DOMImplementationImpl implements WMLDOMImplementation {
-
-    static DOMImplementationImpl singleton = new WMLDOMImplementationImpl();
-
+    
+    static final DOMImplementationImpl singleton = new WMLDOMImplementationImpl();
+    
     /** NON-DOM: Obtain and return the single shared object */
     public static DOMImplementation getDOMImplementation() {
         return singleton;
     }  
-
+    
     /**
      * @see org.w3c.dom.DOMImplementation
      */
     public Document createDocument(String namespaceURI, 
-				   String qualifiedName, 
-				   DocumentType doctype) throws DOMException {
+            String qualifiedName, 
+            DocumentType doctype) throws DOMException {
         DocumentImpl doc = new WMLDocumentImpl(doctype);
         //((DocumentTypeImpl)doctype).ownerDocument = doc;
         Element e = doc.createElementNS( namespaceURI, qualifiedName);

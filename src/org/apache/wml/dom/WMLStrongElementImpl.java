@@ -1,5 +1,5 @@
 /*
- * Copyright 1999,2000,2004 The Apache Software Foundation.
+ * Copyright 1999,2000,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,35 +22,36 @@ import org.apache.wml.*;
  * @version $Id$
  * @author <a href="mailto:david@topware.com.tw">David Li</a>
  */
-
 public class WMLStrongElementImpl extends WMLElementImpl implements WMLStrongElement {
+    
+    private static final long serialVersionUID = 4049920450341778232L;
 
-  public WMLStrongElementImpl (WMLDocumentImpl owner, String tagName) {
-    super( owner, tagName);
-  }
-
-  public void setClassName(String newValue) {
-    setAttribute("class", newValue);
-  }
-
-  public String getClassName() {
-    return getAttribute("class");
-  }
-
-  public void setXmlLang(String newValue) {
-    setAttribute("xml:lang", newValue);
-  }
-
-  public String getXmlLang() {
-    return getAttribute("xml:lang");
-  }
-
-  public void setId(String newValue) {
-    setAttribute("id", newValue);
-  }
-
-  public String getId() {
-    return getAttribute("id");
-  }
-
+    public WMLStrongElementImpl (WMLDocumentImpl owner, String tagName) {
+        super( owner, tagName);
+    }
+    
+    public void setClassName(String newValue) {
+        setAttribute("class", newValue);
+    }
+    
+    public String getClassName() {
+        return getAttribute("class");
+    }
+    
+    public void setXmlLang(String newValue) {
+        setAttribute("xml:lang", newValue);
+    }
+    
+    public String getXmlLang() {
+        return getAttribute("xml:lang");
+    }
+    
+    public void setId(String newValue) {
+        setAttribute("id", newValue);
+    }
+    
+    public String getId() {
+        return getAttribute("id");
+    }
+    
 }

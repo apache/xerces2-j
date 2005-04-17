@@ -1,5 +1,5 @@
 /*
- * Copyright 1999,2000,2004 The Apache Software Foundation.
+ * Copyright 1999,2000,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,59 +22,60 @@ import org.apache.wml.*;
  * @version $Id$
  * @author <a href="mailto:david@topware.com.tw">David Li</a>
  */
-
 public class WMLOptionElementImpl extends WMLElementImpl implements WMLOptionElement {
+    
+    private static final long serialVersionUID = 3257004350009129273L;
 
-  public WMLOptionElementImpl (WMLDocumentImpl owner, String tagName) {
-    super( owner, tagName);
-  }
-
-  public void setValue(String newValue) {
-    setAttribute("value", newValue);
-  }
-
-  public String getValue() {
-    return getAttribute("value");
-  }
-
-  public void setClassName(String newValue) {
-    setAttribute("class", newValue);
-  }
-
-  public String getClassName() {
-    return getAttribute("class");
-  }
-
-  public void setXmlLang(String newValue) {
-    setAttribute("xml:lang", newValue);
-  }
-
-  public String getXmlLang() {
-    return getAttribute("xml:lang");
-  }
-
-  public void setTitle(String newValue) {
-    setAttribute("title", newValue);
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
-  }
-
-  public void setId(String newValue) {
-    setAttribute("id", newValue);
-  }
-
-  public String getId() {
-    return getAttribute("id");
-  }
-
-  public void setOnPick(String newValue) {
-    setAttribute("onpick", newValue);
-  }
-
-  public String getOnPick() {
-    return getAttribute("onpick");
-  }
-
+    public WMLOptionElementImpl (WMLDocumentImpl owner, String tagName) {
+        super( owner, tagName);
+    }
+    
+    public void setValue(String newValue) {
+        setAttribute("value", newValue);
+    }
+    
+    public String getValue() {
+        return getAttribute("value");
+    }
+    
+    public void setClassName(String newValue) {
+        setAttribute("class", newValue);
+    }
+    
+    public String getClassName() {
+        return getAttribute("class");
+    }
+    
+    public void setXmlLang(String newValue) {
+        setAttribute("xml:lang", newValue);
+    }
+    
+    public String getXmlLang() {
+        return getAttribute("xml:lang");
+    }
+    
+    public void setTitle(String newValue) {
+        setAttribute("title", newValue);
+    }
+    
+    public String getTitle() {
+        return getAttribute("title");
+    }
+    
+    public void setId(String newValue) {
+        setAttribute("id", newValue);
+    }
+    
+    public String getId() {
+        return getAttribute("id");
+    }
+    
+    public void setOnPick(String newValue) {
+        setAttribute("onpick", newValue);
+    }
+    
+    public String getOnPick() {
+        return getAttribute("onpick");
+    }
+    
 }

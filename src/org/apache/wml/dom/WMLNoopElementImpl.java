@@ -1,5 +1,5 @@
 /*
- * Copyright 1999,2000,2004 The Apache Software Foundation.
+ * Copyright 1999,2000,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,25 +23,27 @@ import org.apache.wml.*;
  * @author <a href="mailto:david@topware.com.tw">David Li</a>
  */
 public class WMLNoopElementImpl extends WMLElementImpl implements WMLNoopElement {
+    
+    private static final long serialVersionUID = 3256442521025458484L;
 
-  public WMLNoopElementImpl (WMLDocumentImpl owner, String tagName) {
-    super( owner, tagName);
-  }
-
-  public void setClassName(String newValue) {
-    setAttribute("class", newValue);
-  }
-
-  public String getClassName() {
-    return getAttribute("class");
-  }
-
-  public void setId(String newValue) {
-    setAttribute("id", newValue);
-  }
-
-  public String getId() {
-    return getAttribute("id");
-  }
-
+    public WMLNoopElementImpl (WMLDocumentImpl owner, String tagName) {
+        super( owner, tagName);
+    }
+    
+    public void setClassName(String newValue) {
+        setAttribute("class", newValue);
+    }
+    
+    public String getClassName() {
+        return getAttribute("class");
+    }
+    
+    public void setId(String newValue) {
+        setAttribute("id", newValue);
+    }
+    
+    public String getId() {
+        return getAttribute("id");
+    }
+    
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 1999,2000,2004 The Apache Software Foundation.
+ * Copyright 1999,2000,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,43 +22,44 @@ import org.apache.wml.*;
  * @version $Id$
  * @author <a href="mailto:david@topware.com.tw">David Li</a>
  */
-
 public class WMLPostfieldElementImpl extends WMLElementImpl implements WMLPostfieldElement {
+    
+    private static final long serialVersionUID = 3256438114523296562L;
 
-  public WMLPostfieldElementImpl (WMLDocumentImpl owner, String tagName) {
-    super( owner, tagName);
-  }
-
-  public void setValue(String newValue) {
-    setAttribute("value", newValue);
-  }
-
-  public String getValue() {
-    return getAttribute("value");
-  }
-
-  public void setClassName(String newValue) {
-    setAttribute("class", newValue);
-  }
-
-  public String getClassName() {
-    return getAttribute("class");
-  }
-
-  public void setId(String newValue) {
-    setAttribute("id", newValue);
-  }
-
-  public String getId() {
-    return getAttribute("id");
-  }
-
-  public void setName(String newValue) {
-    setAttribute("name", newValue);
-  }
-
-  public String getName() {
-    return getAttribute("name");
-  }
-
+    public WMLPostfieldElementImpl (WMLDocumentImpl owner, String tagName) {
+        super( owner, tagName);
+    }
+    
+    public void setValue(String newValue) {
+        setAttribute("value", newValue);
+    }
+    
+    public String getValue() {
+        return getAttribute("value");
+    }
+    
+    public void setClassName(String newValue) {
+        setAttribute("class", newValue);
+    }
+    
+    public String getClassName() {
+        return getAttribute("class");
+    }
+    
+    public void setId(String newValue) {
+        setAttribute("id", newValue);
+    }
+    
+    public String getId() {
+        return getAttribute("id");
+    }
+    
+    public void setName(String newValue) {
+        setAttribute("name", newValue);
+    }
+    
+    public String getName() {
+        return getAttribute("name");
+    }
+    
 }

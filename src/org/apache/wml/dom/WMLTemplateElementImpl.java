@@ -1,5 +1,5 @@
 /*
- * Copyright 1999,2000,2004 The Apache Software Foundation.
+ * Copyright 1999,2000,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,51 +22,52 @@ import org.apache.wml.*;
  * @version $Id$
  * @author <a href="mailto:david@topware.com.tw">David Li</a>
  */
-
 public class WMLTemplateElementImpl extends WMLElementImpl implements WMLTemplateElement {
+    
+    private static final long serialVersionUID = 3761124925280301624L;
 
-  public WMLTemplateElementImpl (WMLDocumentImpl owner, String tagName) {
-    super( owner, tagName);
-  }
-
-  public void setOnTimer(String newValue) {
-    setAttribute("ontimer", newValue);
-  }
-
-  public String getOnTimer() {
-    return getAttribute("ontimer");
-  }
-
-  public void setOnEnterBackward(String newValue) {
-    setAttribute("onenterbackward", newValue);
-  }
-
-  public String getOnEnterBackward() {
-    return getAttribute("onenterbackward");
-  }
-
-  public void setClassName(String newValue) {
-    setAttribute("class", newValue);
-  }
-
-  public String getClassName() {
-    return getAttribute("class");
-  }
-
-  public void setId(String newValue) {
-    setAttribute("id", newValue);
-  }
-
-  public String getId() {
-    return getAttribute("id");
-  }
-
-  public void setOnEnterForward(String newValue) {
-    setAttribute("onenterforward", newValue);
-  }
-
-  public String getOnEnterForward() {
-    return getAttribute("onenterforward");
-  }
-
+    public WMLTemplateElementImpl (WMLDocumentImpl owner, String tagName) {
+        super( owner, tagName);
+    }
+    
+    public void setOnTimer(String newValue) {
+        setAttribute("ontimer", newValue);
+    }
+    
+    public String getOnTimer() {
+        return getAttribute("ontimer");
+    }
+    
+    public void setOnEnterBackward(String newValue) {
+        setAttribute("onenterbackward", newValue);
+    }
+    
+    public String getOnEnterBackward() {
+        return getAttribute("onenterbackward");
+    }
+    
+    public void setClassName(String newValue) {
+        setAttribute("class", newValue);
+    }
+    
+    public String getClassName() {
+        return getAttribute("class");
+    }
+    
+    public void setId(String newValue) {
+        setAttribute("id", newValue);
+    }
+    
+    public String getId() {
+        return getAttribute("id");
+    }
+    
+    public void setOnEnterForward(String newValue) {
+        setAttribute("onenterforward", newValue);
+    }
+    
+    public String getOnEnterForward() {
+        return getAttribute("onenterforward");
+    }
+    
 }

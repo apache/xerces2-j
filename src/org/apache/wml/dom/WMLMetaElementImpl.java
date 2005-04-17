@@ -1,5 +1,5 @@
 /*
- * Copyright 1999,2000,2004 The Apache Software Foundation.
+ * Copyright 1999,2000,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,64 +23,66 @@ import org.apache.wml.*;
  * @author <a href="mailto:david@topware.com.tw">David Li</a>
  */
 public class WMLMetaElementImpl extends WMLElementImpl implements WMLMetaElement {
+    
+    private static final long serialVersionUID = 3256726199320589875L;
 
     public WMLMetaElementImpl (WMLDocumentImpl owner, String tagName) {
-	super( owner, tagName);
+        super( owner, tagName);
     }
-
+    
     public void setForua(boolean newValue) {
-	setAttribute("forua", newValue);
+        setAttribute("forua", newValue);
     }
-
+    
     public boolean getForua() {
-	return getAttribute("forua", false);
+        return getAttribute("forua", false);
     }
-
+    
     public void setScheme(String newValue) {
-	setAttribute("scheme", newValue);
+        setAttribute("scheme", newValue);
     }
-
+    
     public String getScheme() {
-	return getAttribute("scheme");
+        return getAttribute("scheme");
     }
-
+    
     public void setClassName(String newValue) {
-	setAttribute("class", newValue);
+        setAttribute("class", newValue);
     }
-
+    
     public String getClassName() {
-	return getAttribute("class");
+        return getAttribute("class");
     }
-
+    
     public void setHttpEquiv(String newValue) {
-	setAttribute("http-equiv", newValue);
+        setAttribute("http-equiv", newValue);
     }
-
+    
     public String getHttpEquiv() {
-	return getAttribute("http-equiv");
+        return getAttribute("http-equiv");
     }
-
+    
     public void setId(String newValue) {
-	setAttribute("id", newValue);
+        setAttribute("id", newValue);
     }
-
+    
     public String getId() {
-	return getAttribute("id");
+        return getAttribute("id");
     }
-
+    
     public void setContent(String newValue) {
-	setAttribute("content", newValue);
+        setAttribute("content", newValue);
     }
-
+    
     public String getContent() {
-	return getAttribute("content");
+        return getAttribute("content");
     }
-
+    
     public void setName(String newValue) {
-	setAttribute("name", newValue);
+        setAttribute("name", newValue);
     }
-
+    
     public String getName() {
-	return getAttribute("name");
+        return getAttribute("name");
     }
 }
