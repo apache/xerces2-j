@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004 The Apache Software Foundation.
+ * Copyright 1999-2002,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -496,9 +496,10 @@ public abstract class BaseMarkupSerializer
             saveIndent = _printer.getNextIndent();
             _printer.setNextIndent( 0 );
             char ch;
-            for ( int index = start ; index < length ; ++index ) {
+            final int end = start + length;
+            for ( int index = start ; index < end; ++index ) {
                 ch = chars[index];
-                if ( ch == ']' && index + 2 < length &&
+                if ( ch == ']' && index + 2 < end &&
                      chars[ index + 1 ] == ']' && chars[ index + 2 ] == '>' ) {
                     _printer.printText("]]]]><![CDATA[>");
                     index +=2; 
@@ -506,7 +507,7 @@ public abstract class BaseMarkupSerializer
                 }
                 if (!XMLChar.isValid(ch)) {
                     // check if it is surrogate
-                    if (++index <length) {
+                    if (++index < end) {
                         surrogates(ch, chars[index]);
                     } 
                     else {

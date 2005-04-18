@@ -202,9 +202,10 @@ extends XMLSerializer {
                 saveIndent = _printer.getNextIndent();
                 _printer.setNextIndent( 0 );
                 char ch;
-                for ( int index = start ; index < length ; ++index ) {
+                final int end = start + length;
+                for ( int index = start; index < end; ++index ) {
                     ch = chars[index];
-                    if ( ch == ']' && index + 2 < length &&
+                    if ( ch == ']' && index + 2 < end &&
                         chars[ index + 1 ] == ']' && chars[ index + 2 ] == '>' ) {
                         _printer.printText("]]]]><![CDATA[>");
                         index +=2; 
@@ -212,7 +213,7 @@ extends XMLSerializer {
                     }
                     if (!XML11Char.isXML11Valid(ch)) {
                         // check if it is surrogate
-                        if (++index <length) {
+                        if (++index < end) {
                             surrogates(ch, chars[index]);
                         } 
                         else {
