@@ -21,7 +21,7 @@
   <ul>
 	<li>If doubt exists whether the behavior in question is a bug 
           or a feature, please post a message to the <jump href="http://xml.apache.org/mail.html#xerces-j-user">
-          xerces-j-user</jump> list for clarification.
+          j-users@xerces.apache.org</jump> list for clarification.
          </li>
 	<li>To help to eliminate duplicate or invalid bug reports, such as the
 	    <jump href="http://issues.apache.org/jira/browse/XERCESJ-581">external-schemaLocation</jump> bug, 
@@ -34,7 +34,7 @@
 	  <li>Read <jump href="http://issues.apache.org/jira">JIRA Notes</jump></li>
       </ul>
       <p>We strongly encourage you write patches for problems you find and submit 
-         them to <jump href="http://xml.apache.org/mail.html#xerces-j-dev">xerces-j-dev@xml.apache.org</jump>.
+         them to <jump href="http://xml.apache.org/mail.html#xerces-j-dev">j-dev@xerces.apache.org</jump>.
          Being specific in the description of your bug report, and providing enough information to reproduce the 
          bug will improve the likelihood that the bug you found will be fixed in the foreseeable future. In the 
          interest of fixing bugs, adding enhancements, and addressing outstanding design issues, we need your 
