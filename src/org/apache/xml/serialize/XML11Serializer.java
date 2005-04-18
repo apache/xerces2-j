@@ -482,12 +482,11 @@ extends XMLSerializer {
             // consolidating spaces. If a line terminator is used, a line
             // break will occur.
             while ( length-- > 0 ) {
-                ch = chars[ start ];
-                ++start;
+                ch = chars[start++];
                 if (!XML11Char.isXML11Valid(ch)) {
                     // check if it is surrogate
-                    if (++start <length) {
-                        surrogates(ch, chars[start]);
+                    if ( length-- > 0) {
+                        surrogates(ch, chars[start++]);
                     } else {
                         fatalError("The character '"+(char)ch+"' is an invalid XML character"); 
                     }
@@ -505,13 +504,11 @@ extends XMLSerializer {
             // by printing mechanism. Line terminator is treated
             // no different than other text part.
             while ( length-- > 0 ) {
-                ch = chars[ start ];
-                ++start;
-
+                ch = chars[start++];
                 if (!XML11Char.isXML11Valid(ch)) {
                     // check if it is surrogate
-                    if (++start <length) {
-                        surrogates(ch, chars[start]);
+                    if ( length-- > 0) {
+                        surrogates(ch, chars[start++]);
                     } else {
                         fatalError("The character '"+(char)ch+"' is an invalid XML character"); 
                     }
