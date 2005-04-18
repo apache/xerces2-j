@@ -1,5 +1,5 @@
 /*
- * Copyright 1999,2000,2004 The Apache Software Foundation.
+ * Copyright 1999,2000,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package org.apache.html.dom;
 
-
 import org.w3c.dom.Node;
 import org.w3c.dom.html.HTMLCollection;
 import org.w3c.dom.html.HTMLElement;
@@ -23,7 +22,6 @@ import org.w3c.dom.html.HTMLTableCaptionElement;
 import org.w3c.dom.html.HTMLTableElement;
 import org.w3c.dom.html.HTMLTableRowElement;
 import org.w3c.dom.html.HTMLTableSectionElement;
-
 
 /**
  * @xerces.internal
@@ -36,8 +34,9 @@ public class HTMLTableElementImpl
     extends HTMLElementImpl
     implements HTMLTableElement
 {
-    
-    
+
+    private static final long serialVersionUID = 3977585787963651891L;
+
     public synchronized HTMLTableCaptionElement getCaption()
     {
         Node    child;
