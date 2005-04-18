@@ -42,7 +42,7 @@ import java.io.InputStreamReader;
  *
  * @version $Id$
  */
-class ObjectFactory {
+final class ObjectFactory {
 
     //
     // Constants
@@ -499,7 +499,7 @@ class ObjectFactory {
     /**
      * A configuration error.
      */
-    static class ConfigurationError
+    static final class ConfigurationError
         extends Error {
         
         /** Serialization version. */
