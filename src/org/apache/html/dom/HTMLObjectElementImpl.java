@@ -1,5 +1,5 @@
 /*
- * Copyright 1999,2000,2004 The Apache Software Foundation.
+ * Copyright 1999,2000,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,7 @@
  */
 package org.apache.html.dom;
 
-
 import org.w3c.dom.html.HTMLObjectElement;
-
 
 /**
  * @xerces.internal
@@ -31,7 +29,7 @@ public class HTMLObjectElementImpl
     implements HTMLObjectElement, HTMLFormControl
 {
     
-    
+    private static final long serialVersionUID = 3617014156759479090L;
 
     public String getCode()
     {

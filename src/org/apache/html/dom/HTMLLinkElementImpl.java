@@ -1,5 +1,5 @@
 /*
- * Copyright 1999,2000,2004 The Apache Software Foundation.
+ * Copyright 1999,2000,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,7 @@
  */
 package org.apache.html.dom;
 
-
 import org.w3c.dom.html.HTMLLinkElement;
-
 
 /**
  * @xerces.internal
@@ -31,7 +29,8 @@ public class HTMLLinkElementImpl
     implements HTMLLinkElement
 {
 
-    
+    private static final long serialVersionUID = 4050763784366929202L;
+
     public boolean getDisabled()
     {
         return getBinary( "disabled" );

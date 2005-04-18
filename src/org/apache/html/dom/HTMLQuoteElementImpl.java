@@ -1,5 +1,5 @@
 /*
- * Copyright 1999,2000,2004 The Apache Software Foundation.
+ * Copyright 1999,2000,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,7 @@
  */
 package org.apache.html.dom;
 
-
 import org.w3c.dom.html.HTMLQuoteElement;
-
 
 /**
  * @xerces.internal
@@ -30,8 +28,9 @@ public class HTMLQuoteElementImpl
     extends HTMLElementImpl
     implements HTMLQuoteElement
 {
-    
-    
+
+    private static final long serialVersionUID = 3257852082097764401L;
+
     public String getCite()
     {
         return getAttribute( "cite" );
