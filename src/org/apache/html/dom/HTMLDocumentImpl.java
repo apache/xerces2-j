@@ -1,5 +1,5 @@
 /*
- * Copyright 1999,2000,2004 The Apache Software Foundation.
+ * Copyright 1999,2000,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package org.apache.html.dom;
-
 
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
@@ -36,7 +35,6 @@ import org.w3c.dom.html.HTMLFrameSetElement;
 import org.w3c.dom.html.HTMLHeadElement;
 import org.w3c.dom.html.HTMLHtmlElement;
 import org.w3c.dom.html.HTMLTitleElement;
-
 
 /**
  * Implements an HTML document. Provides access to the top level element in the
@@ -63,6 +61,7 @@ public class HTMLDocumentImpl
     implements HTMLDocument
 {
 
+    private static final long serialVersionUID = 3258132457579427892L;
 
     /**
      * Holds {@link HTMLCollectionImpl} object with live collection of all

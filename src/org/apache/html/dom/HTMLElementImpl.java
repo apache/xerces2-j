@@ -1,5 +1,5 @@
 /*
- * Copyright 1999,2000,2004 The Apache Software Foundation.
+ * Copyright 1999,2000,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package org.apache.html.dom;
 
-
 import java.util.Locale;
 
 import org.apache.xerces.dom.ElementImpl;
@@ -24,7 +23,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.html.HTMLElement;
 import org.w3c.dom.html.HTMLFormElement;
-
 
 /**
  * Implements an HTML-specific element, an {@link org.w3c.dom.Element} that
@@ -46,6 +44,7 @@ public class HTMLElementImpl
     implements HTMLElement
 {
 
+    private static final long serialVersionUID = 3833188025499792690L;
 
     /**
      * Constructor required owner document and element tag name. Will be called

@@ -1,5 +1,5 @@
 /*
- * Copyright 1999,2000,2004 The Apache Software Foundation.
+ * Copyright 1999,2000,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.html.HTMLCollection;
 import org.w3c.dom.html.HTMLFormElement;
 
-
 /**
  * @xerces.internal
  * @version $Revision$ $Date$
@@ -33,7 +32,8 @@ public class HTMLFormElementImpl
     implements HTMLFormElement
 {
 
-    
+    private static final long serialVersionUID = 3690757284875876658L;
+
     public HTMLCollection getElements()
     {
         if ( _elements == null )
