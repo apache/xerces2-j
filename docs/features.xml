@@ -668,7 +668,7 @@ catch (SAXException e) {
    <note>
     This feature is currently experimental, and might be removed or changed in the
     next release. If you have any concerns or suggestions about its use, please
-    contact the xerces-j-user mailing list.
+    contact the j-users@xerces.apache.org mailing list.
    </note>
   </feature>
  </fcategory>
