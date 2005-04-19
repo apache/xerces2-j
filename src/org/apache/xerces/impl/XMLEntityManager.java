@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2004 The Apache Software Foundation.
+ * Copyright 1999-2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1032,6 +1032,50 @@ public class XMLEntityManager
                     else {
                         stream.reset();
                     }
+                    reader = createReader(stream, encoding, isBigEndian);
+                }
+                // If encoding is UTF-16, we still need to read the first four bytes
+                // in order to discover the byte order.
+                else if (encoding.equals("UTF-16")) {
+                    final int[] b4 = new int[4];
+                    int count = 0;
+                    for (; count < 4; ++count) {
+                        b4[count] = stream.read();
+                        if (b4[count] == -1)
+                            break;
+                    }
+                    stream.reset();
+                    
+                    String utf16Encoding = "UTF-16";
+                    if (count >= 2) {
+                        final int b0 = b4[0];
+                        final int b1 = b4[1];
+                        if (b0 == 0xFE && b1 == 0xFF) {
+                            // UTF-16, big-endian
+                            utf16Encoding = "UTF-16BE";
+                            isBigEndian = Boolean.TRUE;
+                        }
+                        else if (b0 == 0xFF && b1 == 0xFE) {
+                            // UTF-16, little-endian
+                            utf16Encoding = "UTF-16LE";
+                            isBigEndian = Boolean.FALSE;
+                        }
+                        else if (count == 4) {
+                            final int b2 = b4[2];
+                            final int b3 = b4[3];
+                            if (b0 == 0x00 && b1 == 0x3C && b2 == 0x00 && b3 == 0x3F) {
+                                // UTF-16, big-endian, no BOM
+                                utf16Encoding = "UTF-16BE";
+                                isBigEndian = Boolean.TRUE;
+                            }
+                            if (b0 == 0x3C && b1 == 0x00 && b2 == 0x3F && b3 == 0x00) {
+                                // UTF-16, little-endian, no BOM
+                                utf16Encoding = "UTF-16LE";
+                                isBigEndian = Boolean.FALSE;
+                            }
+                        }
+                    }
+                    reader = createReader(stream, utf16Encoding, isBigEndian);
                 }
                 // If encoding is UCS-4, we still need to read the first four bytes
                 // in order to discover the byte order.
@@ -1056,6 +1100,7 @@ public class XMLEntityManager
                             isBigEndian = Boolean.FALSE;
                         }
                     }
+                    reader = createReader(stream, encoding, isBigEndian);
                 }
                 // If encoding is UCS-2, we still need to read the first four bytes
                 // in order to discover the byte order.
@@ -1079,9 +1124,11 @@ public class XMLEntityManager
                             isBigEndian = Boolean.FALSE;
                         }
                     }
+                    reader = createReader(stream, encoding, isBigEndian);
                 }
-                
-                reader = createReader(stream, encoding, isBigEndian);
+                else {
+                    reader = createReader(stream, encoding, isBigEndian);
+                }
             }
 
             // read one character at a time so we don't jump too far
