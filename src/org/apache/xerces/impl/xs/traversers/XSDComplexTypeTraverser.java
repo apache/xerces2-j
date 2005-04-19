@@ -196,9 +196,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         fBlock &= (XSConstants.DERIVATION_EXTENSION | XSConstants.DERIVATION_RESTRICTION);
         fFinal &= (XSConstants.DERIVATION_EXTENSION | XSConstants.DERIVATION_RESTRICTION);
         
-        if (abstractAtt != null && abstractAtt.booleanValue())
-            fIsAbstract = true;
-        
+        fIsAbstract = (abstractAtt != null && abstractAtt.booleanValue());
         
         Element child = null;
         
