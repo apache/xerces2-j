@@ -20,9 +20,6 @@ import java.io.IOException;
 import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-
-// REVISIT: This is a HACK! DO NOT MODIFY THIS import.
-//          It allows us to expose DOM L3 implemenation via org.w3c.dom packages
 import org.w3c.dom.DOMConfiguration;
 import org.w3c.dom.UserDataHandler;
 import org.w3c.dom.*;
