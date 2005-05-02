@@ -22,9 +22,9 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Vector;
 
-import org.apache.xerces.dom3.DOMConfiguration;
-import org.apache.xerces.dom3.DOMErrorHandler;
-import org.apache.xerces.dom3.DOMStringList;
+import org.w3c.dom.DOMConfiguration;
+import org.w3c.dom.DOMErrorHandler;
+import org.w3c.dom.DOMStringList;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLEntityManager;

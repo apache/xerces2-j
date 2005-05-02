@@ -21,8 +21,8 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import org.apache.xerces.util.URI;
 
-import org.apache.xerces.dom3.DOMConfiguration;
-import org.apache.xerces.dom3.UserDataHandler;
+import org.w3c.dom.DOMConfiguration;
+import org.w3c.dom.UserDataHandler;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.XML11Char;
 import org.apache.xerces.xni.NamespaceContext;

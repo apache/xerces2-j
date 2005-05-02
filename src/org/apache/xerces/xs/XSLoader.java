@@ -16,7 +16,7 @@
 
 package org.apache.xerces.xs;
 
-import org.apache.xerces.dom3.DOMConfiguration;
+import org.w3c.dom.DOMConfiguration;
 import org.w3c.dom.ls.LSInput;
 
 /**

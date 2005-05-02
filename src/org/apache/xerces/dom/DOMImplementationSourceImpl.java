@@ -18,8 +18,8 @@ package org.apache.xerces.dom;
 
 import java.util.StringTokenizer;
 import java.util.Vector;
-import org.apache.xerces.dom3.DOMImplementationList;
-import org.apache.xerces.dom3.DOMImplementationSource;
+import org.w3c.dom.DOMImplementationList;
+import org.w3c.dom.DOMImplementationSource;
 import org.w3c.dom.DOMImplementation;
 import org.apache.xerces.dom.DOMImplementationListImpl;
 

@@ -24,7 +24,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
-import org.apache.xerces.dom3.TypeInfo;
+import org.w3c.dom.TypeInfo;
 import org.apache.xerces.util.URI;
 
 /**
@@ -1022,14 +1022,14 @@ public class ElementImpl
    }
 
     /**
-     * @see org.apache.xerces.dom3.TypeInfo#getTypeName()
+     * @see org.w3c.dom.TypeInfo#getTypeName()
      */
      public String getTypeName() {
         return null;
      }
 
     /**
-     * @see org.apache.xerces.dom3.TypeInfo#getTypeNamespace()
+     * @see org.w3c.dom.TypeInfo#getTypeNamespace()
      */
     public String getTypeNamespace() {
         return null;

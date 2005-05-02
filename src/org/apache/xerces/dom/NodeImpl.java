@@ -21,7 +21,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Hashtable;
 
-import org.apache.xerces.dom3.UserDataHandler;
+import org.w3c.dom.UserDataHandler;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;

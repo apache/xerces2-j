@@ -16,7 +16,7 @@
 
 package org.apache.xerces.impl.xs.opti;
 
-import org.apache.xerces.dom3.DOMConfiguration;
+import org.w3c.dom.DOMConfiguration;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;

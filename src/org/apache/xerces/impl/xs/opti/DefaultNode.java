@@ -16,7 +16,7 @@
 
 package org.apache.xerces.impl.xs.opti;
 
-import org.apache.xerces.dom3.UserDataHandler;
+import org.w3c.dom.UserDataHandler;
 import org.w3c.dom.Node;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;

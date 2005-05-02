@@ -16,8 +16,6 @@
 
 package org.apache.xerces.impl.xs;
 
-import org.apache.xerces.dom3.DOMConfiguration;
-import org.apache.xerces.dom3.DOMStringList;
 import org.apache.xerces.impl.xs.XMLSchemaLoader;
 import org.apache.xerces.impl.xs.util.XSGrammarPool;
 import org.apache.xerces.xni.grammars.Grammar;
@@ -32,7 +30,9 @@ import org.apache.xerces.xs.XSModel;
 import org.apache.xerces.xs.XSNamedMap;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
+import org.w3c.dom.DOMConfiguration;
 import org.w3c.dom.DOMException;
+import org.w3c.dom.DOMStringList;
 import org.w3c.dom.ls.LSInput;
 
 /**

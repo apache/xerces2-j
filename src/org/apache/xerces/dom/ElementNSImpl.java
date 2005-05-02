@@ -420,7 +420,7 @@ public class ElementNSImpl
 
 
     /**
-     * @see org.apache.xerces.dom3.TypeInfo#getTypeName()
+     * @see org.w3c.dom.TypeInfo#getTypeName()
      */
     public String getTypeName() {
         if (type !=null){
@@ -430,7 +430,7 @@ public class ElementNSImpl
     }
 
     /**
-     * @see org.apache.xerces.dom3.TypeInfo#getTypeNamespace()
+     * @see org.w3c.dom.TypeInfo#getTypeNamespace()
      */
     public String getTypeNamespace() {
         if (type !=null){

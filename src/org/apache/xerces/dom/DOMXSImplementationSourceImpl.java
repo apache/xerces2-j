@@ -17,7 +17,7 @@
 package org.apache.xerces.dom;
 
 import org.apache.xerces.impl.xs.XSImplementationImpl;
-import org.apache.xerces.dom3.DOMImplementationList;
+import org.w3c.dom.DOMImplementationList;
 import org.w3c.dom.DOMImplementation;
 import java.util.Vector;
 

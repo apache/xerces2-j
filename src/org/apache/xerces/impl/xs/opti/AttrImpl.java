@@ -16,7 +16,7 @@
 
 package org.apache.xerces.impl.xs.opti;
 
-import org.apache.xerces.dom3.TypeInfo;
+import org.w3c.dom.TypeInfo;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;

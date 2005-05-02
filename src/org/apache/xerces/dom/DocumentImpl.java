@@ -22,7 +22,7 @@ import java.util.Vector;
 
 import org.apache.xerces.dom.events.EventImpl;
 import org.apache.xerces.dom.events.MutationEventImpl;
-import org.apache.xerces.dom3.UserDataHandler;
+import org.w3c.dom.UserDataHandler;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMImplementation;

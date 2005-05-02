@@ -23,8 +23,8 @@ import java.io.ObjectOutputStream;
 
 // REVISIT: This is a HACK! DO NOT MODIFY THIS import.
 //          It allows us to expose DOM L3 implemenation via org.w3c.dom packages
-import org.apache.xerces.dom3.DOMConfiguration;
-import org.apache.xerces.dom3.UserDataHandler;
+import org.w3c.dom.DOMConfiguration;
+import org.w3c.dom.UserDataHandler;
 import org.w3c.dom.*;
 
 /**

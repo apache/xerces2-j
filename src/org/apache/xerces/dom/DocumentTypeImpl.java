@@ -21,7 +21,7 @@ import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
 import org.w3c.dom.NamedNodeMap;
 import java.util.Hashtable;
-import org.apache.xerces.dom3.UserDataHandler;
+import org.w3c.dom.UserDataHandler;
 
 /**
  * This class represents a Document Type <em>declaraction</em> in

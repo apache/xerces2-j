@@ -25,7 +25,7 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.apache.xerces.dom3.UserDataHandler;
+import org.w3c.dom.UserDataHandler;
 
 /**
  * ParentNode inherits from ChildNode and adds the capability of having child

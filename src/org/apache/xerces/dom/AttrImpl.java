@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import org.apache.xerces.dom3.TypeInfo;
+import org.w3c.dom.TypeInfo;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
@@ -279,14 +279,14 @@ public class AttrImpl
     }
     
     /**
-     * @see org.apache.xerces.dom3.TypeInfo#getTypeName()
+     * @see org.w3c.dom.TypeInfo#getTypeName()
      */
     public String getTypeName() {
         return (String)type;
     }
 
     /**
-     * @see org.apache.xerces.dom3.TypeInfo#getTypeNamespace()
+     * @see org.w3c.dom.TypeInfo#getTypeNamespace()
      */
     public String getTypeNamespace() {
         if (type != null) {
