@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2002,2004 The Apache Software Foundation.
+ * Copyright 2000-2002,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 
 package org.apache.xerces.jaxp;
 
@@ -122,4 +121,14 @@ public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
             }
         }
     }
+    
+    // TODO: Add in implementation. This is just a stub so that the code complies with JAXP 1.3.
+    public boolean getFeature(String name) 
+        throws ParserConfigurationException {
+        return false;
+    }
+    
+    // TODO: Add in implementation. This is just a stub so that the code complies with JAXP 1.3.
+    public void setFeature(String name, boolean value) 
+        throws ParserConfigurationException {}
 }
