@@ -34,7 +34,6 @@ import org.w3c.dom.*;
 import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.dom.DOMImplementationImpl;
 import org.apache.xerces.dom.NotationImpl;
-import org.apache.xerces.dom3.UserDataHandler;
 
 import java.lang.reflect.*;
 import dom.util.Assertion;

@@ -31,7 +31,6 @@ import org.w3c.dom.*;
 import org.xml.sax.*;
 
 import org.apache.xerces.dom.CoreDocumentImpl;
-import org.apache.xerces.dom3.DOMConfiguration;
 import org.apache.xerces.parsers.SAXParser;
 import org.apache.xerces.parsers.DOMParser;
 
