@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2004 The Apache Software Foundation.
+ * Copyright 2001-2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import org.apache.xerces.impl.Constants;
 import org.apache.xerces.xs.PSVIProvider;
 import org.apache.xerces.util.EntityResolverWrapper;
 import org.apache.xerces.util.EntityResolver2Wrapper;
-import org.apache.xerces.util.EntityResolver2Wrapper.EntityResolver2;
 import org.apache.xerces.util.ErrorHandlerWrapper;
 import org.apache.xerces.util.SAXMessageFormatter;
 import org.apache.xerces.util.SymbolHash;
@@ -59,8 +58,11 @@ import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
+import org.xml.sax.ext.Attributes2;
 import org.xml.sax.ext.DeclHandler;
+import org.xml.sax.ext.EntityResolver2;
 import org.xml.sax.ext.LexicalHandler;
+import org.xml.sax.ext.Locator2;
 import org.xml.sax.helpers.LocatorImpl;
 
 /**
@@ -1576,8 +1578,7 @@ public abstract class AbstractSAXParser
                 //   controls whether the methods of an object implementing
                 //   org.xml.sax.ext.EntityResolver2 will be used by the parser.
                 //
-                // TODO: Uncomment once SAX 2.0.2 is available. -- mrglavas
-                /**if (suffixLength == Constants.USE_ENTITY_RESOLVER2_FEATURE.length() &&
+                if (suffixLength == Constants.USE_ENTITY_RESOLVER2_FEATURE.length() &&
                     featureId.endsWith(Constants.USE_ENTITY_RESOLVER2_FEATURE)) {
                     if (state != fUseEntityResolver2) {
                         fUseEntityResolver2 = state;
@@ -1585,7 +1586,7 @@ public abstract class AbstractSAXParser
                         setEntityResolver(getEntityResolver());
                     }
                     return;
-                }**/
+                }
                 
                 //
                 // Read only features.
@@ -1757,11 +1758,10 @@ public abstract class AbstractSAXParser
                 //   controls whether the methods of an object implementing
                 //   org.xml.sax.ext.EntityResolver2 will be used by the parser.
                 //
-                // TODO: Uncomment once SAX 2.0.2 is available. -- mrglavas
-                /** if (suffixLength == Constants.USE_ENTITY_RESOLVER2_FEATURE.length() &&
+                if (suffixLength == Constants.USE_ENTITY_RESOLVER2_FEATURE.length() &&
                     featureId.endsWith(Constants.USE_ENTITY_RESOLVER2_FEATURE)) {
                     return fUseEntityResolver2;
-                }**/
+                }
                 
                 // http://xml.org/sax/features/use-attributes2
                 //   reports whether Attributes objects passed to startElement also implement
@@ -1774,8 +1774,7 @@ public abstract class AbstractSAXParser
                     featureId.endsWith(Constants.USE_ATTRIBUTES2_FEATURE)) ||
                     (suffixLength == Constants.USE_LOCATOR2_FEATURE.length() &&
                     featureId.endsWith(Constants.USE_LOCATOR2_FEATURE))) {
-                    // REVISIT: Return true once SAX 2.0.2 interfaces are available. -- mrglavas
-                    return false;
+                    return true;
                 }                
                 
 
@@ -2188,7 +2187,7 @@ public abstract class AbstractSAXParser
     //
 
     protected class LocatorProxy
-        implements Locator {
+        implements Locator2 {
 
         //
         // Data
@@ -2241,7 +2240,7 @@ public abstract class AbstractSAXParser
     } // class LocatorProxy
 
     protected static final class AttributesProxy
-        implements AttributeList, Attributes {
+        implements AttributeList, Attributes2 {
 
         //
         // Data

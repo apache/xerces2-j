@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2004 The Apache Software Foundation.
+ * Copyright 2000-2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.io.IOException;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.EntityResolverWrapper;
 import org.apache.xerces.util.EntityResolver2Wrapper;
-import org.apache.xerces.util.EntityResolver2Wrapper.EntityResolver2;
 import org.apache.xerces.util.ErrorHandlerWrapper;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.XNIException;
@@ -40,6 +39,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.ext.EntityResolver2;
 import org.xml.sax.helpers.LocatorImpl;
 
 /**
@@ -396,15 +396,14 @@ public class DOMParser
             //   controls whether the methods of an object implementing
             //   org.xml.sax.ext.EntityResolver2 will be used by the parser.
             //
-            // TODO: Uncomment once SAX 2.0.2 is available. -- mrglavas
-            /** if (featureId.equals(USE_ENTITY_RESOLVER2)) {
+            if (featureId.equals(USE_ENTITY_RESOLVER2)) {
                 if (state != fUseEntityResolver2) {
                     fUseEntityResolver2 = state;
                     // Refresh EntityResolver wrapper.
                     setEntityResolver(getEntityResolver());
                 }
                 return;
-            }**/
+            }
             
             //
             // Default handling
@@ -447,10 +446,9 @@ public class DOMParser
             //   controls whether the methods of an object implementing
             //   org.xml.sax.ext.EntityResolver2 will be used by the parser.
             //
-            // TODO: Uncomment once SAX 2.0.2 is available. -- mrglavas
-            /** if (featureId.equals(USE_ENTITY_RESOLVER2)) {
+            if (featureId.equals(USE_ENTITY_RESOLVER2)) {
                 return fUseEntityResolver2;
-            }**/
+            }
             
             //
             // Default handling

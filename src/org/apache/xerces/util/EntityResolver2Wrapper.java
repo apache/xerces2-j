@@ -27,7 +27,7 @@ import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.grammars.XMLDTDDescription;
 import org.apache.xerces.xni.parser.XMLInputSource;
 
-import org.xml.sax.EntityResolver;
+import org.xml.sax.ext.EntityResolver2;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -208,20 +208,5 @@ public class EntityResolver2Wrapper
         return xmlInputSource;
         
     } // createXMLInputSource(InputSource,String):XMLInputSource
-    
-    // TODO: Remove temporary EntityResolver2 interface when 
-    // the real one becomes available.
-    
-    /**
-     * <p>EntityResolver2 like interface to be removed once 
-     * the real interface (org.xml.sax.ext.EntityResolver2) is available.</p>
-     */
-    public interface EntityResolver2 extends EntityResolver {
-        public InputSource getExternalSubset(String name, String baseURI)
-            throws SAXException, IOException;
-        public InputSource resolveEntity(String name, String publicId,
-            String baseURI, String systemId)
-            throws SAXException, IOException;
-    } // interface EntityResolver2
     
 } // class EntityResolver2Wrapper

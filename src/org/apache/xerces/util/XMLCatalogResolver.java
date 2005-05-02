@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 The Apache Software Foundation.
+ * Copyright 2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,9 @@ package org.apache.xerces.util;
 
 import java.io.IOException;
 
-/**
- * Switch the following import statement once the real interface 
- * (org.xml.sax.ext.EntityResolver2) is available.
- */
-// import org.xml.sax.ext.EntityResolver2;
-import org.apache.xerces.util.EntityResolver2Wrapper.EntityResolver2;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.ext.EntityResolver2;
 
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
