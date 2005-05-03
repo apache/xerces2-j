@@ -39,13 +39,13 @@ import java.io.Writer;
 import java.util.Enumeration;
 
 import org.apache.xerces.dom.DOMMessageFormatter;
-import org.apache.xerces.dom3.DOMError;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.NamespaceContext;
 import org.w3c.dom.Attr;
+import org.w3c.dom.DOMError;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;

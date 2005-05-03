@@ -38,13 +38,13 @@ import java.io.OutputStream;
 import java.io.Writer;
 
 import org.apache.xerces.dom.DOMMessageFormatter;
-import org.apache.xerces.dom3.DOMError;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XML11Char;
 import org.apache.xerces.util.XMLChar;
 import org.xml.sax.SAXException;
+import org.w3c.dom.DOMError;
 
 /**
  * Implements an XML serializer supporting both DOM and SAX pretty
