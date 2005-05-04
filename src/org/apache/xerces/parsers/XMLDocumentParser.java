@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2004 The Apache Software Foundation.
+ * Copyright 2001-2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public class XMLDocumentParser
     public XMLDocumentParser() {
         super((XMLParserConfiguration)ObjectFactory.createObject(
             "org.apache.xerces.xni.parser.XMLParserConfiguration",
-            "org.apache.xerces.parsers.XML11Configuration"
+            "org.apache.xerces.parsers.XIncludeAwareParserConfiguration"
             ));
     } // <init>()
 
@@ -62,7 +62,7 @@ public class XMLDocumentParser
     public XMLDocumentParser(SymbolTable symbolTable) {
         super((XMLParserConfiguration)ObjectFactory.createObject(
             "org.apache.xerces.xni.parser.XMLParserConfiguration",
-            "org.apache.xerces.parsers.XML11Configuration"
+            "org.apache.xerces.parsers.XIncludeAwareParserConfiguration"
             ));
         fConfiguration.setProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SYMBOL_TABLE_PROPERTY, symbolTable);
     } // <init>(SymbolTable)
@@ -75,7 +75,7 @@ public class XMLDocumentParser
                              XMLGrammarPool grammarPool) {
         super((XMLParserConfiguration)ObjectFactory.createObject(
             "org.apache.xerces.xni.parser.XMLParserConfiguration",
-            "org.apache.xerces.parsers.XML11Configuration"
+            "org.apache.xerces.parsers.XIncludeAwareParserConfiguration"
             ));
         fConfiguration.setProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SYMBOL_TABLE_PROPERTY, symbolTable);
         fConfiguration.setProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.XMLGRAMMAR_POOL_PROPERTY, grammarPool);

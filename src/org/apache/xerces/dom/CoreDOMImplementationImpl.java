@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2004 The Apache Software Foundation.
+ * Copyright 1999-2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -361,7 +361,7 @@ public class CoreDOMImplementationImpl
 		else {
 			// create default parser configuration validating against XMLSchemas
 			return new DOMParserImpl(
-				"org.apache.xerces.parsers.XML11Configuration",
+				"org.apache.xerces.parsers.XIncludeAwareParserConfiguration",
 				schemaType);
 		}
 	}
