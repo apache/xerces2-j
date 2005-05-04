@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2004 The Apache Software Foundation.
+ * Copyright 2001-2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1491,6 +1491,16 @@ public class XML11Configuration extends ParserConfigurationSettings
 				
             f11Initialized = true;
         }
+    }
+    
+    /** 
+     * Returns the state of a feature. This method calls getFeature()
+     * on ParserConfigurationSettings, bypassing getFeature() on this
+     * class.
+     */
+    boolean getFeature0(String featureId)
+        throws XMLConfigurationException {
+        return super.getFeature(featureId);
     }
 
 } // class XML11Configuration
