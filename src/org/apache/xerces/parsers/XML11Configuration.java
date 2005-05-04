@@ -64,7 +64,6 @@ import org.apache.xerces.xni.parser.XMLPullParserConfiguration;
 
 /**
  * This class is the configuration used to parse XML 1.0 and XML 1.1 documents.
- * This is the default Xerces configuration.
  *
  * @author Elena Litani, IBM
  * @author Neil Graham, IBM
