@@ -1427,42 +1427,45 @@ public class XIncludeHandler
         String accept = attributes.getValue(XINCLUDE_ATTR_ACCEPT);
         String acceptLanguage = attributes.getValue(XINCLUDE_ATTR_ACCEPT_LANGUAGE);
         
-        if (href == null && xpointer == null) {
-            reportFatalError("XpointerMissing");
-        }
         if (parse == null) {
             parse = XINCLUDE_PARSE_XML;
         }
-        
+        if (href == null) {
+            href = XMLSymbols.EMPTY_STRING;
+        }
+        if (href.length() == 0 && XINCLUDE_PARSE_XML.equals(parse)) {
+            if (xpointer == null) {
+                reportFatalError("XpointerMissing");
+            }
+        }
+
         URI hrefURI = null;
         
         // Check whether href is correct and perform escaping as per section 4.1.1 of the XInclude spec.
         // Report fatal error if the href value contains a fragment identifier or if the value after
         // escaping is a syntactically invalid URI or IRI.
-        if (href != null) {
-            try {
-                hrefURI = new URI(href, true);
-                if (hrefURI.getFragment() != null) {
-                    reportFatalError("HrefFragmentIdentifierIllegal", new Object[] {href});
-                }
+        try {
+            hrefURI = new URI(href, true);
+            if (hrefURI.getFragment() != null) {
+                reportFatalError("HrefFragmentIdentifierIllegal", new Object[] {href});
             }
-            catch (URI.MalformedURIException exc) {
-                String newHref = escapeHref(href);
-                if (href != newHref) {
-                    href = newHref;
-                    try {
-                        hrefURI = new URI(href, true);
-                        if (hrefURI.getFragment() != null) {
-                            reportFatalError("HrefFragmentIdentifierIllegal", new Object[] {href});
-                        }
-                    }
-                    catch (URI.MalformedURIException exc2) {
-                        reportFatalError("HrefSyntacticallyInvalid", new Object[] {href});
+        }
+        catch (URI.MalformedURIException exc) {
+            String newHref = escapeHref(href);
+            if (href != newHref) {
+                href = newHref;
+                try {
+                    hrefURI = new URI(href, true);
+                    if (hrefURI.getFragment() != null) {
+                        reportFatalError("HrefFragmentIdentifierIllegal", new Object[] {href});
                     }
                 }
-                else {
+                catch (URI.MalformedURIException exc2) {
                     reportFatalError("HrefSyntacticallyInvalid", new Object[] {href});
                 }
+            }
+            else {
+                reportFatalError("HrefSyntacticallyInvalid", new Object[] {href});
             }
         }
         
