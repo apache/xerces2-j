@@ -408,11 +408,26 @@ public class XMLGregorianCalendarImpl
 		// GDAY
 		// Fix 4971612: invalid SCCS macro substitution in data string
 		format = "---%D" + "%z";
-	    } else if (lexRepLength >= 6 &&
-		       lexRep.charAt(5) == '-' && lexRep.charAt(4) == '-') {
+	    } else if (lexRepLength == 4 || (lexRepLength >= 6 && (lexRep.charAt(4) == '+' || (lexRep.charAt(4) == '-' && (lexRep.charAt(5) == '-' || lexRepLength == 10))))) {
 		// GMonth
 		// Fix 4971612: invalid SCCS macro substitution in data string
 		format = "--%M--%z";
+        Parser p = new Parser(format, lexRep);
+        try {
+            p.parse();
+            // check for validity
+            if (!isValid()) {
+                throw new IllegalArgumentException(
+                    DatatypeMessageFormatter.formatMessage(null,"InvalidXGCRepresentation", new Object[]{lexicalRepresentation})
+                    //"\"" + lexicalRepresentation + "\" is not a valid representation of an XML Gregorian Calendar value."
+                );
+            }
+            save();
+            return;
+        }
+        catch(IllegalArgumentException e) {
+            format = "--%M%z";
+        }
 	    } else {
 		// GMonthDay or invalid lexicalRepresentation
 		format = "--%M-%D" + "%z";
@@ -461,6 +476,7 @@ public class XMLGregorianCalendarImpl
 				//"\"" + lexicalRepresentation + "\" is not a valid representation of an XML Gregorian Calendar value."
 			);
 	    }
+        save();
     }
     
     /**
@@ -555,6 +571,8 @@ public class XMLGregorianCalendarImpl
                 */
             
 		}
+        
+        save();
 		
     }
 
@@ -616,6 +634,7 @@ public class XMLGregorianCalendarImpl
                  */
             
 		}
+        save();
     }
     
 	/**
@@ -696,6 +715,7 @@ public class XMLGregorianCalendarImpl
 	// Calendar ZONE_OFFSET and DST_OFFSET fields are in milliseconds.
 	int offsetInMinutes = (cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET)) / (60 * 1000);
 	this.setTimezone(offsetInMinutes);
+    save();
 	}
 
     // Factories
@@ -1427,11 +1447,11 @@ public class XMLGregorianCalendarImpl
      */
     public int compare(XMLGregorianCalendar rhs) {
         	
-		XMLGregorianCalendar lhs = this;
+		//MLGregorianCalendar lhs = this;
 
 	int result = DatatypeConstants.INDETERMINATE;
-        XMLGregorianCalendarImpl P = (XMLGregorianCalendarImpl) lhs;
-        XMLGregorianCalendarImpl Q = (XMLGregorianCalendarImpl) rhs;
+        XMLGregorianCalendar P = this;
+        XMLGregorianCalendar Q = rhs;
 
         if (P.getTimezone() == Q.getTimezone()) {
 	    // Optimization: 
@@ -1455,14 +1475,14 @@ public class XMLGregorianCalendarImpl
 	    }
 	    
 	    // C. step 1
-	    XMLGregorianCalendar MinQ = Q.normalizeToTimezone(DatatypeConstants.MIN_TIMEZONE_OFFSET);
+	    XMLGregorianCalendar MinQ = normalizeToTimezone(Q, DatatypeConstants.MIN_TIMEZONE_OFFSET);
 	    result = internalCompare(P, MinQ);
 	    if (result == DatatypeConstants.LESSER) {
 		return result;
 	    } 
 
 	    // C. step 2
-	    XMLGregorianCalendar MaxQ = Q.normalizeToTimezone(DatatypeConstants.MAX_TIMEZONE_OFFSET);
+	    XMLGregorianCalendar MaxQ = normalizeToTimezone(Q, DatatypeConstants.MAX_TIMEZONE_OFFSET);
 	    result = internalCompare(P, MaxQ);
 	    if (result == DatatypeConstants.GREATER) {
 		return result;
@@ -1473,18 +1493,18 @@ public class XMLGregorianCalendarImpl
 	} else { // Q.getTimezone() != DatatypeConstants.FIELD_UNDEFINED
 	    // P has no timezone and Q does.
 	    if (Q.getTimezone() != 0 ) { 
-			Q = (XMLGregorianCalendarImpl) Q.normalizeToTimezone(Q.getTimezone());
+			Q = (XMLGregorianCalendarImpl) normalizeToTimezone(Q, Q.getTimezone());
 	    }
 	    
 	    // D. step 1
-	    XMLGregorianCalendar MaxP = P.normalizeToTimezone(DatatypeConstants.MAX_TIMEZONE_OFFSET);
+	    XMLGregorianCalendar MaxP = normalizeToTimezone(P, DatatypeConstants.MAX_TIMEZONE_OFFSET);
 	    result = internalCompare(MaxP, Q);
 	    if (result == DatatypeConstants.LESSER) {
 		return result;
 	    } 
 
 	    // D. step 2
-	    XMLGregorianCalendar MinP = P.normalizeToTimezone(DatatypeConstants.MIN_TIMEZONE_OFFSET);
+	    XMLGregorianCalendar MinP = normalizeToTimezone(P, DatatypeConstants.MIN_TIMEZONE_OFFSET);
 	    result = internalCompare(MinP, Q);
 	    if (result == DatatypeConstants.GREATER) {
 		return result;
@@ -1503,7 +1523,7 @@ public class XMLGregorianCalendarImpl
      */
     public XMLGregorianCalendar normalize() {
 
-        XMLGregorianCalendar normalized = normalizeToTimezone(timezone);
+        XMLGregorianCalendar normalized = normalizeToTimezone(this, timezone);
         
         // if timezone was undefined, leave it undefined
         if (getTimezone() == DatatypeConstants.FIELD_UNDEFINED) {
@@ -1524,10 +1544,10 @@ public class XMLGregorianCalendarImpl
 	 * <p>2000-03-04T23:00:00+03:00 normalizes to 2000-03-04T20:00:00Z</p>
 	 * <p>Implements W3C XML Schema Part 2, Section 3.2.7.3 (A).</p>
 	 */
-	private XMLGregorianCalendar normalizeToTimezone(int timezone) {
+	private XMLGregorianCalendar normalizeToTimezone(XMLGregorianCalendar cal, int timezone) {
 
 	int minutes = timezone;    	
-	XMLGregorianCalendar result = (XMLGregorianCalendar) this.clone();
+	XMLGregorianCalendar result = (XMLGregorianCalendar) cal.clone();
 	
 	// normalizing to UTC time negates the timezone offset before 
 	// addition.
@@ -1691,7 +1711,7 @@ public class XMLGregorianCalendarImpl
 	}
 	XMLGregorianCalendar gc = this;
 	if (timezone != 0) {
-	    gc = this.normalizeToTimezone(getTimezone());
+	    gc = normalizeToTimezone(this, getTimezone());
 	}
 	return gc.getYear() + gc.getMonth() + gc.getDay() + 
 	    gc.getHour() + gc.getMinute() + gc.getSecond();

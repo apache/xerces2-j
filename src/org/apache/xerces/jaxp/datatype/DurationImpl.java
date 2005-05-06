@@ -865,20 +865,85 @@ public class DurationImpl
    		rhsCalendar.add(GregorianCalendar.HOUR_OF_DAY, rhs.getHours() * rhs.getSign());
    		rhsCalendar.add(GregorianCalendar.MINUTE, rhs.getMinutes() * rhs.getSign());
    		rhsCalendar.add(GregorianCalendar.SECOND, rhs.getSeconds() * rhs.getSign());
-   		
-   		if (lhsCalendar.before(rhsCalendar)) {
-   			return DatatypeConstants.LESSER;
-   		}
-    	
-   		if (lhsCalendar.after(rhsCalendar)) {
-   			return DatatypeConstants.GREATER;
-   		}
+   	
    		
    		if (lhsCalendar.equals(rhsCalendar)) {
    			return DatatypeConstants.EQUAL;
    		}
 
-   		return DatatypeConstants.INDETERMINATE;
+   		return compareDates(this, rhs);
+    }
+    
+    /**
+     * Compares 2 given durations. (refer to W3C Schema Datatypes "3.2.6 duration")
+     *
+     * @param duration1  Unnormalized duration
+     * @param duration2  Unnormalized duration
+     * @return INDETERMINATE if the order relationship between date1 and date2 is indeterminate.
+     * EQUAL if the order relation between date1 and date2 is EQUAL.
+     * If the strict parameter is true, return LESS_THAN if date1 is less than date2 and
+     * return GREATER_THAN if date1 is greater than date2.
+     * If the strict parameter is false, return LESS_THAN if date1 is less than OR equal to date2 and
+     * return GREATER_THAN if date1 is greater than OR equal to date2
+     */
+    private int compareDates(Duration duration1, Duration duration2) {
+        
+        int resultA = DatatypeConstants.INDETERMINATE; 
+        int resultB = DatatypeConstants.INDETERMINATE;
+        
+        XMLGregorianCalendar tempA = (XMLGregorianCalendar)TEST_POINTS[0].clone();
+        XMLGregorianCalendar tempB = (XMLGregorianCalendar)TEST_POINTS[0].clone();
+        
+        //long comparison algorithm is required
+        tempA.add(duration1);
+        tempB.add(duration2);
+        resultA =  tempA.compare(tempB);
+        if ( resultA == DatatypeConstants.INDETERMINATE ) {
+            return DatatypeConstants.INDETERMINATE;
+        }
+
+        tempA = (XMLGregorianCalendar)TEST_POINTS[1].clone();
+        tempB = (XMLGregorianCalendar)TEST_POINTS[1].clone();
+        
+        tempA.add(duration1);
+        tempB.add(duration2);
+        resultB = tempA.compare(tempB);
+        resultA = compareResults(resultA, resultB);
+        if (resultA == DatatypeConstants.INDETERMINATE) {
+            return DatatypeConstants.INDETERMINATE;
+        }
+
+        tempA = (XMLGregorianCalendar)TEST_POINTS[2].clone();
+        tempB = (XMLGregorianCalendar)TEST_POINTS[2].clone();
+        
+        tempA.add(duration1);
+        tempB.add(duration2);
+        resultB = tempA.compare(tempB);
+        resultA = compareResults(resultA, resultB);
+        if (resultA == DatatypeConstants.INDETERMINATE) {
+            return DatatypeConstants.INDETERMINATE;
+        }
+
+        tempA = (XMLGregorianCalendar)TEST_POINTS[3].clone();
+        tempB = (XMLGregorianCalendar)TEST_POINTS[3].clone();
+        
+        tempA.add(duration1);
+        tempB.add(duration2);
+        resultB = tempA.compare(tempB);
+        resultA = compareResults(resultA, resultB);
+
+        return resultA;
+    }
+
+    private int compareResults(int resultA, int resultB){
+
+      if ( resultB == DatatypeConstants.INDETERMINATE ) {
+            return DatatypeConstants.INDETERMINATE;
+        }
+        else if ( resultA!=resultB) {
+            return DatatypeConstants.INDETERMINATE;
+        }
+        return resultA;
     }
     
     /**
