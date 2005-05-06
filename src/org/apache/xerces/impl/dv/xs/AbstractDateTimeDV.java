@@ -16,7 +16,12 @@
 
 package org.apache.xerces.impl.dv.xs;
 
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.Duration;
+import javax.xml.datatype.XMLGregorianCalendar;
+
 import org.apache.xerces.impl.Constants;
+import org.apache.xerces.jaxp.datatype.DatatypeFactoryImpl;
 import org.apache.xerces.xs.datatypes.XSDateTime;
 
 /**
@@ -51,6 +56,8 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 	protected final static int YEAR=2000;
 	protected final static int MONTH=01;
 	protected final static int DAY = 01;
+    
+    protected DatatypeFactory factory = new DatatypeFactoryImpl();
 	
 	public short getAllowedFacets(){
 		return ( XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_WHITESPACE | XSSimpleTypeDecl.FACET_ENUMERATION |XSSimpleTypeDecl.FACET_MAXINCLUSIVE |XSSimpleTypeDecl.FACET_MININCLUSIVE | XSSimpleTypeDecl.FACET_MAXEXCLUSIVE  | XSSimpleTypeDecl.FACET_MINEXCLUSIVE  );
@@ -965,5 +972,27 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
             dt.unNormSecond = this.unNormSecond;
             return dt;
         }
+        
+        /* (non-Javadoc)
+         * @see org.apache.xerces.xs.datatypes.XSDateTime#getXMLGregorianCalendar()
+         */
+        public XMLGregorianCalendar getXMLGregorianCalendar() {
+            return type.getXMLGregorianCalendar(this);
+        }
+        /* (non-Javadoc)
+         * @see org.apache.xerces.xs.datatypes.XSDateTime#getDuration()
+         */
+        public Duration getDuration() {
+            return type.getDuration(this);
+        }
 	}
+
+    protected XMLGregorianCalendar getXMLGregorianCalendar(DateTimeData data) {
+        return null;
+    }
+
+
+    protected Duration getDuration(DateTimeData data) {
+        return null;
+    }
 }

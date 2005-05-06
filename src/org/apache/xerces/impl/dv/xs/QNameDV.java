@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2004 The Apache Software Foundation.
+ * Copyright 2001-2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,10 @@
 package org.apache.xerces.impl.dv.xs;
 
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
+import org.apache.xerces.impl.dv.ValidationContext;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.QName;
-import org.apache.xerces.impl.dv.ValidationContext;
+import org.apache.xerces.xs.datatypes.XSQName;
 
 /**
  * Represent the schema type "QName" and "NOTATION"
@@ -79,7 +80,7 @@ public class QNameDV extends TypeValidator {
     /**
      * represent QName data
      */
-    private static final class XQName extends QName {
+    private static final class XQName extends QName implements XSQName {
         /** Constructs a QName with the specified values. */
         public XQName(String prefix, String localpart, String rawname, String uri) {
             setValues(prefix, localpart, rawname, uri);
@@ -96,6 +97,12 @@ public class QNameDV extends TypeValidator {
 
         public synchronized String toString() {
             return rawname;
+        }
+        public javax.xml.namespace.QName getJAXPQName() {
+            return new javax.xml.namespace.QName(uri, localpart, prefix);
+        }
+        public QName getXNIQName() {
+            return this;
         }
     }
 } // class QNameDVDV

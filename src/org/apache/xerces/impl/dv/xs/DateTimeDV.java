@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004 The Apache Software Foundation.
+ * Copyright 1999-2002,2004,2005 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,11 @@
  */
 
 package org.apache.xerces.impl.dv.xs;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidationContext;
@@ -76,5 +81,10 @@ public class DateTimeDV extends AbstractDateTimeDV {
             normalize(date);
         }
         return date;
+    }
+    
+    protected XMLGregorianCalendar getXMLGregorianCalendar(DateTimeData date) {
+        return factory.newXMLGregorianCalendar(BigInteger.valueOf(date.unNormYear), date.unNormMonth, date.unNormDay
+                , date.unNormHour, date.unNormMinute, (int)date.unNormSecond, date.unNormSecond != 0?new BigDecimal(date.unNormSecond - ((int)date.unNormSecond)):null, date.timezoneHr * 60 + date.timezoneMin);
     }
 }

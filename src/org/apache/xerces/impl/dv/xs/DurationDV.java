@@ -16,6 +16,12 @@
 
 package org.apache.xerces.impl.dv.xs;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
+import javax.xml.datatype.DatatypeConstants;
+import javax.xml.datatype.Duration;
+
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidationContext;
 
@@ -357,5 +363,20 @@ public class DurationDV extends AbstractDateTimeDV {
         message.append('S');
 
         return message.toString();
+    }
+    
+    protected Duration getDuration(DateTimeData date) {
+        int sign = 1;
+        if ( date.year<0 || date.month<0 || date.day<0
+                || date.hour<0 || date.minute<0 || date.second<0) {
+            sign = -1;
+        }
+        return factory.newDuration(sign == 1, 
+                date.year != DatatypeConstants.FIELD_UNDEFINED?BigInteger.valueOf(sign*date.year):null, 
+                date.month != DatatypeConstants.FIELD_UNDEFINED?BigInteger.valueOf(sign*date.month):null, 
+                date.day != DatatypeConstants.FIELD_UNDEFINED?BigInteger.valueOf(sign*date.day):null, 
+                date.hour != DatatypeConstants.FIELD_UNDEFINED?BigInteger.valueOf(sign*date.hour):null, 
+                date.minute != DatatypeConstants.FIELD_UNDEFINED?BigInteger.valueOf(sign*date.minute):null, 
+                date.second != DatatypeConstants.FIELD_UNDEFINED?new BigDecimal(String.valueOf(sign*date.second)):null);
     }
 }
