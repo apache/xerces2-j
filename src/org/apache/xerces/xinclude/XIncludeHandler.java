@@ -19,6 +19,7 @@ import java.io.CharConversionException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Locale;
 import java.util.Stack;
 import java.util.StringTokenizer;
 
@@ -261,6 +262,7 @@ public class XIncludeHandler
     protected XMLParserConfiguration fChildConfig;
 
     protected XMLLocator fDocLocation;
+    protected XIncludeMessageFormatter fXIncludeMessageFormatter = new XIncludeMessageFormatter();
     protected XIncludeNamespaceSupport fNamespaceContext;
     protected SymbolTable fSymbolTable;
     protected XMLErrorReporter fErrorReporter;
@@ -1374,8 +1376,7 @@ public class XIncludeHandler
         fErrorReporter = reporter;
         if (fErrorReporter != null) {
             fErrorReporter.putMessageFormatter(
-                XIncludeMessageFormatter.XINCLUDE_DOMAIN,
-                new XIncludeMessageFormatter());
+                XIncludeMessageFormatter.XINCLUDE_DOMAIN, fXIncludeMessageFormatter);
             // this ensures the proper location is displayed in error messages
             if (fDocLocation != null) {
                 fErrorReporter.setDocumentLocator(fDocLocation);
@@ -1436,6 +1437,14 @@ public class XIncludeHandler
         if (href.length() == 0 && XINCLUDE_PARSE_XML.equals(parse)) {
             if (xpointer == null) {
                 reportFatalError("XpointerMissing");
+            }
+            else {
+                // When parse="xml" and an xpointer is specified treat 
+                // all absences of the href attribute as a resource error.
+                Locale locale = (fErrorReporter != null) ? fErrorReporter.getLocale() : null;
+                String reason = fXIncludeMessageFormatter.formatMessage(locale, "XPointerStreamability", null);
+                reportResourceError("XMLResourceError", new Object[] { href, reason });
+                return false;
             }
         }
 
