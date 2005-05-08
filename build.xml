@@ -165,6 +165,9 @@ Copyright:
 
     <copy file="${src.dir}/org/apache/xerces/jaxp/javax.xml.parsers.SAXParserFactory"
       tofile="${build.dest}/META-INF/services/javax.xml.parsers.SAXParserFactory"/>
+  	
+    <copy file="${src.dir}/org/apache/xerces/jaxp/datatype/javax.xml.datatype.DatatypeFactory"
+      tofile="${build.dest}/META-INF/services/javax.xml.datatype.DatatypeFactory"/>
 
     <copy file="${src.dir}/org/apache/xerces/parsers/org.xml.sax.driver"
       tofile="${build.dest}/META-INF/services/org.xml.sax.driver"/>
@@ -186,7 +189,6 @@ Copyright:
         <fileset 
             dir="${src.dir}"
             includes="org/apache/**
-                org/w3c/dom/ls/**
                 org/w3c/dom/html/HTMLDOMImplementation.java"
             excludes="**/classfiles_updated **/CVS* **/.#* **/XMLMessages.java
                        **/DatatypeContentModel.java **/ComplexTypeInfo.java
@@ -199,10 +201,17 @@ Copyright:
     <unzip src="${src.apis.zip}" dest="${build.src}">
         <patternset
             includes="org/xml/sax/** 
+    	        javax/xml/**
+    	        javax/xml/datatype/**
+    	        javax/xml/namespace/**
                 javax/xml/parsers/**
+    	        javax/xml/transform/**
+    	        javax/xml/validation/**
+    	        javax/xml/xpath/**
                 org/w3c/dom/*
                 org/w3c/dom/events/**
                 org/w3c/dom/html/**
+                org/w3c/dom/ls/**
                 org/w3c/dom/ranges/**
                 org/w3c/dom/traversal/**"
         />
@@ -235,6 +244,7 @@ Copyright:
                 javax/xml/parsers/**
                 org/w3c/dom/*
                 org/w3c/dom/events/**
+                org/w3c/dom/ls/**
                 org/w3c/dom/html/**
                 org/w3c/dom/ranges/**
                 org/w3c/dom/traversal/**"
@@ -252,7 +262,7 @@ Copyright:
   </target>
 
   <!-- =================================================================== -->
-  <!-- Creates the implementation class package, excluding DOM Level 3     -->
+  <!-- Creates the implementation class package, including DOM Level 3     -->
   <!-- =================================================================== -->
   <target name="jar" depends="compile">
     <!-- take care of manifest file -->
@@ -265,14 +275,7 @@ Copyright:
          basedir="${build.dest}"
          compress="true"
          includes="org/apache/**, META-INF/**
-                    org/w3c/dom/html/HTMLDOMImplementation.class
-                   org/w3c/dom/ls/**
-                   org/w3c/dom/DOMError.class
-                   org/w3c/dom/DOMErrorHandler.class
-                   org/w3c/dom/DOMImplementationSource.class
-                   org/w3c/dom/DOMImplementationRegistry.class
-                   org/w3c/dom/DOMLocator.class
-                   org/w3c/dom/UserDataHandler.class"
+                   org/w3c/dom/html/HTMLDOMImplementation.class"
          manifest="${build.dir}/manifest.xerces">
       <manifest>
         <attribute name="Ant-Version" value="${ant.version}"/>
@@ -412,7 +415,7 @@ Copyright:
       additionalparam='${additional.param}'
       />
     <mkdir dir='${build.dir}/docs/javadocs/xs'/>
-    <javadoc packagenames='org.apache.xerces.xs'
+    <javadoc packagenames='org.apache.xerces.xs, org.apache.xerces.xs.datatypes'
       locale='en_US'
       sourcepath='${build.src}' destdir='${build.dir}/docs/javadocs/xs'
       author='true' version='true'
@@ -434,7 +437,7 @@ Copyright:
     <mkdir dir='${build.dir}/docs/javadocs/xerces2'/>
     <javadoc packagenames='org.apache.xerces.dom.*,
                            org.apache.xerces.impl.*,
-                           org.apache.xerces.jaxp,
+                           org.apache.xerces.jaxp.*,
                            org.apache.xerces.parsers,
                            org.apache.xerces.util,
                            org.apache.xerces.xinclude'
