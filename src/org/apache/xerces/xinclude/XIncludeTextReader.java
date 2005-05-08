@@ -121,7 +121,7 @@ public class XIncludeTextReader {
 
                 URL url = new URL(expandedSystemId);
                 URLConnection urlCon = url.openConnection();
-				
+                
                 // If this is an HTTP connection attach any request properties to the request.
                 if (urlCon instanceof HttpURLConnection && source instanceof HTTPInputSource) {
                     final HttpURLConnection urlConnection = (HttpURLConnection) urlCon;
@@ -219,7 +219,7 @@ public class XIncludeTextReader {
             encoding = encoding.toUpperCase(Locale.ENGLISH);
             
             // eat the Byte Order Mark
-            consumeBOM(stream, encoding);
+            encoding = consumeBOM(stream, encoding);
             
             // If the document is UTF-8 or US-ASCII use 
             // the Xerces readers for these encodings. For
@@ -239,11 +239,11 @@ public class XIncludeTextReader {
             // The XIncludeHandler will report this as a ResourceError and then will
             // attempt to include a fallback if there is one.
             if (javaEncoding == null) {
-            	MessageFormatter aFormatter = 
+                MessageFormatter aFormatter = 
                     fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN);
-            	Locale aLocale = fErrorReporter.getLocale();
-            	throw new IOException( aFormatter.formatMessage( aLocale, 
-            	    "EncodingDeclInvalid", 
+                Locale aLocale = fErrorReporter.getLocale();
+                throw new IOException( aFormatter.formatMessage( aLocale, 
+                    "EncodingDeclInvalid", 
                     new Object[] {encoding} ) );
             }
             else if (javaEncoding.equals("ASCII")) {
@@ -280,12 +280,14 @@ public class XIncludeTextReader {
     }
 
     /**
-     * Removes the byte order mark from the stream, if it exists.
+     * Removes the byte order mark from the stream, if
+     * it exists and returns the encoding name.
+     * 
      * @param stream
      * @param encoding
      * @throws IOException
      */
-    protected void consumeBOM(InputStream stream, String encoding)
+    protected String consumeBOM(InputStream stream, String encoding)
         throws IOException {
 
         byte[] b = new byte[3];
@@ -294,9 +296,9 @@ public class XIncludeTextReader {
         if (encoding.equals("UTF-8")) {
             count = stream.read(b, 0, 3);
             if (count == 3) {
-                int b0 = b[0] & 0xFF; 
-                int b1 = b[1] & 0xFF;
-                int b2 = b[2] & 0xFF;
+                final int b0 = b[0] & 0xFF; 
+                final int b1 = b[1] & 0xFF;
+                final int b2 = b[2] & 0xFF;
                 if (b0 != 0xEF || b1 != 0xBB || b2 != 0xBF) {
                     // First three bytes are not BOM, so reset.
                     stream.reset();
@@ -309,22 +311,23 @@ public class XIncludeTextReader {
         else if (encoding.startsWith("UTF-16")) {
             count = stream.read(b, 0, 2);
             if (count == 2) {
-                int b0 = b[0] & 0xFF;
-                int b1 = b[1] & 0xFF;
-                if ((b0 != 0xFE || b1 != 0xFF) 
-                    && (b0 != 0xFF || b1 != 0xFE)) {
-                    // First two bytes are not BOM, so reset.
-                    stream.reset();
+                final int b0 = b[0] & 0xFF;
+                final int b1 = b[1] & 0xFF;
+                if (b0 == 0xFE && b1 == 0xFF) {
+                    return "UTF-16BE";
+                }
+                else if (b0 == 0xFF && b1 == 0xFE) {
+                    return "UTF-16LE";
                 }
             }
-            else {
-                stream.reset();
-            }
+            // First two bytes are not BOM, so reset.
+            stream.reset();
         }
         // We could do UTF-32, but since the getEncodingName() doesn't support that
         // we won't support it here.
         // To implement UTF-32, look for:  00 00 FE FF for big-endian
         //                             or  FF FE 00 00 for little-endian
+        return encoding;
     }
 
     /**
@@ -502,8 +505,8 @@ public class XIncludeTextReader {
      * @param bufferSize The size of the buffer desired
      */
     protected void setBufferSize(int bufferSize) {
-    	if (fTempString.ch.length != ++bufferSize) {
-    		fTempString.ch = new char[bufferSize];
+        if (fTempString.ch.length != ++bufferSize) {
+            fTempString.ch = new char[bufferSize];
         }
     }
  
