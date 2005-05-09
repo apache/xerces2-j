@@ -283,6 +283,7 @@ public class XIncludeAwareParserConfiguration extends XML11Configuration {
         throws XMLConfigurationException {
         if (featureId.equals(XINCLUDE_FEATURE)) {
             fXIncludeEnabled = state;
+            fConfigUpdated = true;
             return;
         }
         super.setFeature(featureId,state);
