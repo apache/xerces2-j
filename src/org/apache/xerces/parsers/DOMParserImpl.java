@@ -30,15 +30,26 @@ import org.apache.xerces.util.DOMEntityResolverWrapper;
 import org.apache.xerces.util.DOMErrorHandlerWrapper;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLSymbols;
-import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.Augmentations;
+import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
+import org.apache.xerces.xni.XMLDTDContentModelHandler;
+import org.apache.xerces.xni.XMLDTDHandler;
+import org.apache.xerces.xni.XMLDocumentHandler;
+import org.apache.xerces.xni.XMLLocator;
+import org.apache.xerces.xni.XMLResourceIdentifier;
+import org.apache.xerces.xni.XMLString;
+import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLDTDContentModelSource;
+import org.apache.xerces.xni.parser.XMLDTDSource;
+import org.apache.xerces.xni.parser.XMLDocumentSource;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
-import org.apache.xerces.xni.parser.XMLParserConfiguration;
 import org.apache.xerces.xni.parser.XMLParseException;
+import org.apache.xerces.xni.parser.XMLParserConfiguration;
 import org.w3c.dom.DOMConfiguration;
 import org.w3c.dom.DOMError;
 import org.w3c.dom.DOMErrorHandler;
@@ -47,10 +58,11 @@ import org.w3c.dom.DOMStringList;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.ls.LSException;
+import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSParser;
 import org.w3c.dom.ls.LSParserFilter;
 import org.w3c.dom.ls.LSResourceResolver;
-import org.w3c.dom.ls.LSInput;
+import org.xml.sax.SAXException;
 
 
 /**
@@ -116,12 +128,18 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
     protected String fSchemaType = null;
 
     protected boolean fBusy = false;
+    
+    private boolean abortNow = false;
+    
+    private Thread currentThread;
 
     protected final static boolean DEBUG = false;
 
     private Vector fSchemaLocations = new Vector ();
     private String fSchemaLocation = null;
 	private DOMStringList fRecognizedParameters;
+    
+    private AbortHandler abortHandler = new AbortHandler();
 
     //
     // Constructors
@@ -840,11 +858,27 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
 
         XMLInputSource source = new XMLInputSource (null, uri, null);
         try {
+            currentThread = Thread.currentThread();
 			fBusy = true;
             parse (source);
             fBusy = false;
+            if(abortNow && currentThread.isInterrupted())
+            {
+                //reset interrupt state 
+                abortNow = false;
+                currentThread.interrupted();
+            }
         } catch (Exception e){
             fBusy = false;
+            if(abortNow && currentThread.isInterrupted())
+            {
+                currentThread.interrupted();
+            }
+            if(abortNow) {
+                abortNow = false;
+                restoreHandlers();
+                return null;
+            }
             // Consume this exception if the user
             // issued an interrupt or an abort.
             if (e != abort) {
@@ -881,11 +915,27 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
         }
 
         try {
+            currentThread = Thread.currentThread();
 			fBusy = true;
             parse (xmlInputSource);
-            fBusy = false;
+            fBusy = false;   
+            if(abortNow && currentThread.isInterrupted())
+            {
+                //reset interrupt state 
+                abortNow = false;
+                currentThread.interrupted();
+            }
         } catch (Exception e) {
             fBusy = false;
+            if(abortNow && currentThread.isInterrupted())
+            {
+                currentThread.interrupted();
+            }
+            if(abortNow) {
+                abortNow = false;
+                restoreHandlers();
+                return null;
+            }
             // Consume this exception if the user
             // issued an interrupt or an abort.
             if (e != abort) {
@@ -903,6 +953,13 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
             }
         }
         return getDocument ();
+    }
+
+
+    private void restoreHandlers() {
+        fConfiguration.setDocumentHandler(this);
+        fConfiguration.setDTDHandler(this);
+        fConfiguration.setDTDContentModelHandler(this);
     }
 
     /**
@@ -1001,7 +1058,18 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
         // If parse operation is in progress then reset it
         if ( fBusy ) {
             fBusy = false;
-            throw abort;
+            if(currentThread != null) {
+                abortNow = true;
+                
+                fConfiguration.setDocumentHandler(abortHandler);
+                fConfiguration.setDTDHandler(abortHandler);
+                fConfiguration.setDTDContentModelHandler(abortHandler);
+                
+                if(currentThread == Thread.currentThread())
+                    throw abort;
+                
+                currentThread.interrupt();
+            }               
         }
         return; // If not busy then this is noop
     }
@@ -1030,6 +1098,210 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
             }
         }
         super.startElement(element, attributes, augs);
+    }
+    
+    private class AbortHandler implements XMLDocumentHandler, XMLDTDHandler, XMLDTDContentModelHandler  {
+
+        private XMLDocumentSource documentSource;
+        private XMLDTDContentModelSource dtdContentSource;
+        private XMLDTDSource dtdSource;
+
+        public void startDocument(XMLLocator locator, String encoding, NamespaceContext namespaceContext, Augmentations augs) throws XNIException {
+            throw abort;
+        }
+
+        public void xmlDecl(String version, String encoding, String standalone, Augmentations augs) throws XNIException {
+            throw abort;
+        }
+
+        public void doctypeDecl(String rootElement, String publicId, String systemId, Augmentations augs) throws XNIException {
+            throw abort;
+        }
+
+        public void comment(XMLString text, Augmentations augs) throws XNIException {
+            throw abort;
+        }
+
+        public void processingInstruction(String target, XMLString data, Augmentations augs) throws XNIException {
+            throw abort;
+        }
+
+        public void startElement(QName element, XMLAttributes attributes, Augmentations augs) throws XNIException {
+            throw abort;
+        }
+
+        public void emptyElement(QName element, XMLAttributes attributes, Augmentations augs) throws XNIException {
+            throw abort;
+        }
+
+        public void startGeneralEntity(String name, XMLResourceIdentifier identifier, String encoding, Augmentations augs) throws XNIException {
+            throw abort;
+        }
+
+        public void textDecl(String version, String encoding, Augmentations augs) throws XNIException {
+            throw abort;
+        }
+
+        public void endGeneralEntity(String name, Augmentations augs) throws XNIException {
+            throw abort;
+        }
+
+        public void characters(XMLString text, Augmentations augs) throws XNIException {
+            throw abort;
+        }
+
+        public void ignorableWhitespace(XMLString text, Augmentations augs) throws XNIException {
+            throw abort;
+        }
+
+        public void endElement(QName element, Augmentations augs) throws XNIException {
+            throw abort;
+        }
+
+        public void startCDATA(Augmentations augs) throws XNIException {
+            throw abort;
+        }
+
+        public void endCDATA(Augmentations augs) throws XNIException {
+            throw abort;
+        }
+
+        public void endDocument(Augmentations augs) throws XNIException {
+            throw abort;
+        }
+
+        public void setDocumentSource(XMLDocumentSource source) {
+            documentSource = source;
+        }
+
+        public XMLDocumentSource getDocumentSource() {
+            return documentSource;
+        }
+
+        public void startDTD(XMLLocator locator, Augmentations augmentations) throws XNIException {
+            throw abort;
+        }
+
+        public void startParameterEntity(String name, XMLResourceIdentifier identifier, String encoding, Augmentations augmentations) throws XNIException {
+            throw abort;
+        }
+
+        public void endParameterEntity(String name, Augmentations augmentations) throws XNIException {
+            throw abort;
+        }
+
+        public void startExternalSubset(XMLResourceIdentifier identifier, Augmentations augmentations) throws XNIException {
+            throw abort;
+        }
+
+        public void endExternalSubset(Augmentations augmentations) throws XNIException {
+            throw abort;
+        }
+
+        public void elementDecl(String name, String contentModel, Augmentations augmentations) throws XNIException {
+            throw abort;
+        }
+
+        public void startAttlist(String elementName, Augmentations augmentations) throws XNIException {
+            throw abort;
+        }
+
+        public void attributeDecl(String elementName, String attributeName, String type, String[] enumeration, String defaultType, XMLString defaultValue, XMLString nonNormalizedDefaultValue, Augmentations augmentations) throws XNIException {
+            throw abort;
+        }
+
+        public void endAttlist(Augmentations augmentations) throws XNIException {
+            throw abort;
+        }
+
+        public void internalEntityDecl(String name, XMLString text, XMLString nonNormalizedText, Augmentations augmentations) throws XNIException {
+            throw abort;
+        }
+
+        public void externalEntityDecl(String name, XMLResourceIdentifier identifier, Augmentations augmentations) throws XNIException {
+            throw abort;
+        }
+
+        public void unparsedEntityDecl(String name, XMLResourceIdentifier identifier, String notation, Augmentations augmentations) throws XNIException {
+            throw abort;
+        }
+
+        public void notationDecl(String name, XMLResourceIdentifier identifier, Augmentations augmentations) throws XNIException {
+            throw abort;
+        }
+
+        public void startConditional(short type, Augmentations augmentations) throws XNIException {
+            throw abort;
+        }
+
+        public void ignoredCharacters(XMLString text, Augmentations augmentations) throws XNIException {
+            throw abort;
+        }
+
+        public void endConditional(Augmentations augmentations) throws XNIException {
+            throw abort;
+        }
+
+        public void endDTD(Augmentations augmentations) throws XNIException {
+            throw abort;
+        }
+
+        public void setDTDSource(XMLDTDSource source) {
+            dtdSource = source;
+        }
+
+        public XMLDTDSource getDTDSource() {
+            return dtdSource;
+        }
+
+        public void startContentModel(String elementName, Augmentations augmentations) throws XNIException {
+            throw abort;
+        }
+
+        public void any(Augmentations augmentations) throws XNIException {
+            throw abort;
+        }
+
+        public void empty(Augmentations augmentations) throws XNIException {
+            throw abort;
+        }
+
+        public void startGroup(Augmentations augmentations) throws XNIException {
+            throw abort;
+        }
+
+        public void pcdata(Augmentations augmentations) throws XNIException {
+            throw abort;
+        }
+
+        public void element(String elementName, Augmentations augmentations) throws XNIException {
+            throw abort;
+        }
+
+        public void separator(short separator, Augmentations augmentations) throws XNIException {
+            throw abort;
+        }
+
+        public void occurrence(short occurrence, Augmentations augmentations) throws XNIException {
+            throw abort;
+        }
+
+        public void endGroup(Augmentations augmentations) throws XNIException {
+            throw abort;
+        }
+
+        public void endContentModel(Augmentations augmentations) throws XNIException {
+            throw abort;
+        }
+
+        public void setDTDContentModelSource(XMLDTDContentModelSource source) {
+            dtdContentSource = source;
+        }
+
+        public XMLDTDContentModelSource getDTDContentModelSource() {
+            return dtdContentSource;
+        }
+        
     }
 	
 } // class DOMParserImpl
