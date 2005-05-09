@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004 The Apache Software Foundation.
+ * Copyright 1999-2002,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,17 +19,16 @@ package dom;
 import org.w3c.dom.DOMConfiguration;
 import org.w3c.dom.DOMError;
 import org.w3c.dom.DOMErrorHandler;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.bootstrap.DOMImplementationRegistry;
-import org.w3c.dom.Document;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSOutput;
 import org.w3c.dom.ls.LSParser;
 import org.w3c.dom.ls.LSParserFilter;
-import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSSerializer;
 import org.w3c.dom.traversal.NodeFilter;
-import org.w3c.dom.ls.LSOutput;
-import org.apache.xerces.dom.DOMOutputImpl;
 
 /**
  * This sample program illustrates how to use DOM L3 
@@ -127,7 +126,7 @@ public class DOM3 implements DOMErrorHandler, LSParserFilter {
 
             // serialize document to standard output
             //domWriter.writeNode(System.out, doc);
-            LSOutput dOut = new DOMOutputImpl();
+            LSOutput dOut = impl.createLSOutput();
             dOut.setByteStream(System.out);
             domWriter.write(doc,dOut);
 
@@ -148,11 +147,11 @@ public class DOM3 implements DOMErrorHandler, LSParserFilter {
 
     public boolean handleError(DOMError error){
         short severity = error.getSeverity();
-        if (severity == error.SEVERITY_ERROR) {
+        if (severity == DOMError.SEVERITY_ERROR) {
             System.out.println("[dom3-error]: "+error.getMessage());
         }
 
-        if (severity == error.SEVERITY_WARNING) {
+        if (severity == DOMError.SEVERITY_WARNING) {
             System.out.println("[dom3-warning]: "+error.getMessage());
         }
         return true;

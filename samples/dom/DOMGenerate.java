@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2002,2004 The Apache Software Foundation.
+ * Copyright 2000-2002,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-
-
 package dom;
-import  org.w3c.dom.*;
-import  org.apache.xerces.dom.DocumentImpl;
-import  org.apache.xerces.dom.DOMImplementationImpl;
-import  org.w3c.dom.Document;
-import  org.apache.xml.serialize.OutputFormat;
-import  org.apache.xml.serialize.Serializer;
-import  org.apache.xml.serialize.SerializerFactory;
-import  org.apache.xml.serialize.XMLSerializer;
-import  java.io.*;
+
+import java.io.StringWriter;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.apache.xml.serialize.OutputFormat;
+import org.apache.xml.serialize.XMLSerializer;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  * Simple Sample that:
@@ -37,7 +36,10 @@ import  java.io.*;
 public class DOMGenerate {
     public static void main( String[] argv ) {
         try {
-            Document doc= new DocumentImpl();
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            Document doc = db.newDocument();
+            
             Element root = doc.createElement("person");     // Create Root Element
             Element item = doc.createElement("name");       // Create element
             item.appendChild( doc.createTextNode("Jeff") );
@@ -49,7 +51,6 @@ public class DOMGenerate {
             item.appendChild( doc.createTextNode("1.80" ) );
             root.appendChild( item );                       // Attach another Element - grandaugther
             doc.appendChild( root );                        // Add Root to Document
-
 
             OutputFormat    format  = new OutputFormat( doc );   //Serialize DOM
             StringWriter  stringOut = new StringWriter();        //Writer will be a String
