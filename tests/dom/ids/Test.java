@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004 The Apache Software Foundation.
+ * Copyright 1999-2002,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,15 @@
 
 package dom.ids;
 
-import java.io.PrintWriter;
-
-import org.apache.xerces.dom.AttrImpl;
-import org.apache.xerces.dom.ElementImpl;
-import org.w3c.dom.*;
-
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import dom.util.Assertion;
 import dom.ParserWrapper;
+import dom.util.Assertion;
 
 /**
  * A simple program to test Document.getElementById() and the management
@@ -126,7 +124,7 @@ public class Test {
         elem = doc.getElementById("id02");
         Assertion.verify(elem ==null, "elem by id '02'");
         
-        ElementImpl person = (ElementImpl)doc.getElementsByTagNameNS(null, "person").item(0);
+        Element person = (Element)doc.getElementsByTagNameNS(null, "person").item(0);
         person.removeAttribute("id");
         person.removeAttribute("id2");
         person.setAttributeNS(null, "idAttr", "eb0009");
@@ -142,7 +140,7 @@ public class Test {
         doc.getDocumentElement().appendChild(person);
         elem = doc.getElementById("eb0009");
         Assertion.verify(elem !=null, "elem by id 'eb0009'");
-        AttrImpl attr = (AttrImpl)person.getAttributeNode("idAttr");
+        Attr attr = (Attr)person.getAttributeNode("idAttr");
         Assertion.verify(attr.isId(), "attribute is id");
 
         person.setIdAttribute("idAttr", false);
