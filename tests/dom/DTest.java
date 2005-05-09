@@ -1,5 +1,5 @@
 /*
- * Copyright 1999,2004 The Apache Software Foundation.
+ * Copyright 1999,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,28 @@
 
 package dom;
 
-import org.w3c.dom.*;
-import java.lang.reflect.*;
-import java.io.StringWriter;
-import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+import org.w3c.dom.Attr;
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.CharacterData;
+import org.w3c.dom.Comment;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.DocumentType;
+import org.w3c.dom.Element;
+import org.w3c.dom.Entity;
+import org.w3c.dom.EntityReference;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Notation;
+import org.w3c.dom.ProcessingInstruction;
+import org.w3c.dom.Text;
+
 import dom.util.Assertion;
 
 /**
@@ -188,10 +206,10 @@ public void docBuilder(org.w3c.dom.Document document, String name)
 //************************************************* ERROR TESTS
 	DTest tests = new DTest();
 
-	OK &= Assertion.verify(tests.DOMExceptionsTest(document, "appendChild", new Class[]{Node.class}, new Object[]{docBody}, DOMException.HIERARCHY_REQUEST_ERR )); 
-	OK &= Assertion.verify(tests.DOMExceptionsTest(docNode3, "appendChild", new Class[]{Node.class}, new Object[]{docNode4}, DOMException.HIERARCHY_REQUEST_ERR )); 
-	OK &= Assertion.verify(tests.DOMExceptionsTest(doc, "insertBefore", new Class[]{Node.class, Node.class}, new Object[]{docEntity, docFirstElement}, DOMException.HIERARCHY_REQUEST_ERR )); 
-	OK &= Assertion.verify(tests.DOMExceptionsTest(doc, "replaceChild", new Class[]{Node.class, Node.class}, new Object[]{docCDATASection, docFirstElement}, DOMException.HIERARCHY_REQUEST_ERR )); 
+	OK &= Assertion.verify(DTest.DOMExceptionsTest(document, "appendChild", new Class[]{Node.class}, new Object[]{docBody}, DOMException.HIERARCHY_REQUEST_ERR )); 
+	OK &= Assertion.verify(DTest.DOMExceptionsTest(docNode3, "appendChild", new Class[]{Node.class}, new Object[]{docNode4}, DOMException.HIERARCHY_REQUEST_ERR )); 
+	OK &= Assertion.verify(DTest.DOMExceptionsTest(doc, "insertBefore", new Class[]{Node.class, Node.class}, new Object[]{docEntity, docFirstElement}, DOMException.HIERARCHY_REQUEST_ERR )); 
+	OK &= Assertion.verify(DTest.DOMExceptionsTest(doc, "replaceChild", new Class[]{Node.class, Node.class}, new Object[]{docCDATASection, docFirstElement}, DOMException.HIERARCHY_REQUEST_ERR )); 
 
         docFirstElement.setNodeValue("This shouldn't do anything!");
 	OK &= Assertion.verify(docFirstElement.getNodeValue() == null);
@@ -208,10 +226,10 @@ public void docBuilder(org.w3c.dom.Document document, String name)
         docNotation.setNodeValue("This shouldn't do anything!");
 	OK &= Assertion.verify(docNotation.getNodeValue() == null);
 
-	OK &= Assertion.verify(tests.DOMExceptionsTest(docReferenceEntity, "appendChild", new Class[]{Node.class}, new Object[]{entityReferenceText2 }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
-	OK &= Assertion.verify(tests.DOMExceptionsTest(docBodyLevel32, "insertBefore", new Class[]{Node.class, Node.class}, new Object[]{docTextNode11,docBody }, DOMException.NOT_FOUND_ERR ));
-	OK &= Assertion.verify(tests.DOMExceptionsTest(docBodyLevel32, "removeChild", new Class[]{Node.class}, new Object[]{docFirstElement}, DOMException.NOT_FOUND_ERR ));
-	OK &= Assertion.verify(tests.DOMExceptionsTest(docBodyLevel32, "replaceChild", new Class[]{Node.class, Node.class}, new Object[]{docTextNode11,docFirstElement }, DOMException.NOT_FOUND_ERR ));
+	OK &= Assertion.verify(DTest.DOMExceptionsTest(docReferenceEntity, "appendChild", new Class[]{Node.class}, new Object[]{entityReferenceText2 }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
+	OK &= Assertion.verify(DTest.DOMExceptionsTest(docBodyLevel32, "insertBefore", new Class[]{Node.class, Node.class}, new Object[]{docTextNode11,docBody }, DOMException.NOT_FOUND_ERR ));
+	OK &= Assertion.verify(DTest.DOMExceptionsTest(docBodyLevel32, "removeChild", new Class[]{Node.class}, new Object[]{docFirstElement}, DOMException.NOT_FOUND_ERR ));
+	OK &= Assertion.verify(DTest.DOMExceptionsTest(docBodyLevel32, "replaceChild", new Class[]{Node.class, Node.class}, new Object[]{docTextNode11,docFirstElement }, DOMException.NOT_FOUND_ERR ));
 
 
 //!! Throws a NOT_FOUND_ERR	********
@@ -637,7 +655,7 @@ public void testAttr(org.w3c.dom.Document document)
 //************************************************* ERROR TESTS
 	DTest tests = new DTest();
         Assertion.verify(
-          tests.DOMExceptionsTest(document.getDocumentElement(),
+          DTest.DOMExceptionsTest(document.getDocumentElement(),
                                   "appendChild",
                                   new Class[]{Node.class},
                                   new Object[]{attributeNode},
@@ -645,7 +663,7 @@ public void testAttr(org.w3c.dom.Document document)
 
 	attribute2 = document.createAttribute("testAttribute2");
         Assertion.verify(
-          tests.DOMExceptionsTest(document.getDocumentElement(),
+          DTest.DOMExceptionsTest(document.getDocumentElement(),
                                   "removeAttributeNode",
                                   new Class[]{Attr.class},
                                   new Object[]{attribute2},
@@ -654,7 +672,7 @@ public void testAttr(org.w3c.dom.Document document)
         Element element = (Element)document.getLastChild().getLastChild();
         // Tests setNamedItem
         Assertion.verify(
-          tests.DOMExceptionsTest(element,
+          DTest.DOMExceptionsTest(element,
                                   "setAttributeNode",
                                   new Class[]{Attr.class},
                                   new Object[]{testAttribute},
@@ -796,45 +814,45 @@ public void testCharacterData(org.w3c.dom.Document document)
 	DTest tests = new DTest();
 
 //!! Throws INDEX_SIZE_ERR ********************
-	OK &= Assertion.verify(tests.DOMExceptionsTest(charData, "deleteData", new Class[]{int.class, int.class}, 
+	OK &= Assertion.verify(DTest.DOMExceptionsTest(charData, "deleteData", new Class[]{int.class, int.class}, 
 			new Object[]{new Integer(-1),new Integer(5) }, DOMException.INDEX_SIZE_ERR ));
-	OK &= Assertion.verify(tests.DOMExceptionsTest(charData, "deleteData", new Class[]{int.class, int.class}, 
+	OK &= Assertion.verify(DTest.DOMExceptionsTest(charData, "deleteData", new Class[]{int.class, int.class}, 
 			new Object[]{new Integer(2),new Integer(-1) }, DOMException.INDEX_SIZE_ERR ));
-	OK &= Assertion.verify(tests.DOMExceptionsTest(charData, "deleteData", new Class[]{int.class, int.class}, 
+	OK &= Assertion.verify(DTest.DOMExceptionsTest(charData, "deleteData", new Class[]{int.class, int.class}, 
 			new Object[]{new Integer(100),new Integer(5) }, DOMException.INDEX_SIZE_ERR ));
 	
-	OK &= Assertion.verify(tests.DOMExceptionsTest(charData, "insertData", new Class[]{int.class, String.class}, 
+	OK &= Assertion.verify(DTest.DOMExceptionsTest(charData, "insertData", new Class[]{int.class, String.class}, 
 			new Object[]{new Integer(-1),"Stuff inserted" }, DOMException.INDEX_SIZE_ERR ));
-	OK &= Assertion.verify(tests.DOMExceptionsTest(charData, "insertData", new Class[]{int.class, String.class}, 
+	OK &= Assertion.verify(DTest.DOMExceptionsTest(charData, "insertData", new Class[]{int.class, String.class}, 
 			new Object[]{new Integer(100),"Stuff inserted" }, DOMException.INDEX_SIZE_ERR ));
 	
-	OK &= Assertion.verify(tests.DOMExceptionsTest(charData, "replaceData", new Class[]{int.class, int.class, String.class}, 
+	OK &= Assertion.verify(DTest.DOMExceptionsTest(charData, "replaceData", new Class[]{int.class, int.class, String.class}, 
 			new Object[]{new Integer(-1),new Integer(5),"Replacement stuff" }, DOMException.INDEX_SIZE_ERR ));
-	OK &= Assertion.verify(tests.DOMExceptionsTest(charData, "replaceData", new Class[]{int.class, int.class, String.class}, 
+	OK &= Assertion.verify(DTest.DOMExceptionsTest(charData, "replaceData", new Class[]{int.class, int.class, String.class}, 
 			new Object[]{new Integer(100),new Integer(5),"Replacement stuff" }, DOMException.INDEX_SIZE_ERR ));
-	OK &= Assertion.verify(tests.DOMExceptionsTest(charData, "replaceData", new Class[]{int.class, int.class, String.class}, 
+	OK &= Assertion.verify(DTest.DOMExceptionsTest(charData, "replaceData", new Class[]{int.class, int.class, String.class}, 
 			new Object[]{new Integer(2),new Integer(-1),"Replacement stuff" }, DOMException.INDEX_SIZE_ERR ));
 	
-	OK &= Assertion.verify(tests.DOMExceptionsTest(charData, "substringData", new Class[]{int.class, int.class}, 
+	OK &= Assertion.verify(DTest.DOMExceptionsTest(charData, "substringData", new Class[]{int.class, int.class}, 
 			new Object[]{new Integer(-1),new Integer(5) }, DOMException.INDEX_SIZE_ERR ));
-	OK &= Assertion.verify(tests.DOMExceptionsTest(charData, "substringData", new Class[]{int.class, int.class}, 
+	OK &= Assertion.verify(DTest.DOMExceptionsTest(charData, "substringData", new Class[]{int.class, int.class}, 
 			new Object[]{new Integer(100),new Integer(5) }, DOMException.INDEX_SIZE_ERR ));
-	OK &= Assertion.verify(tests.DOMExceptionsTest(charData, "substringData", new Class[]{int.class, int.class}, 
+	OK &= Assertion.verify(DTest.DOMExceptionsTest(charData, "substringData", new Class[]{int.class, int.class}, 
 			new Object[]{new Integer(2),new Integer(-1) }, DOMException.INDEX_SIZE_ERR ));
 	
 
 //!! Throws NO_MODIFICATION_ALLOWED_ERR ******** 
 	Node node = document.getDocumentElement().getElementsByTagName("dBodyLevel24").item(0).getFirstChild().getChildNodes().item(0); // node gets ourEntityReference node's child text
 
-	OK &= Assertion.verify(tests.DOMExceptionsTest(node, "appendData", new Class[]{String.class}, 
+	OK &= Assertion.verify(DTest.DOMExceptionsTest(node, "appendData", new Class[]{String.class}, 
 			new Object[]{"new data" }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
-	OK &= Assertion.verify(tests.DOMExceptionsTest(node, "deleteData", new Class[]{int.class, int.class}, 
+	OK &= Assertion.verify(DTest.DOMExceptionsTest(node, "deleteData", new Class[]{int.class, int.class}, 
 			new Object[]{new Integer(5),new Integer(10) }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
-	OK &= Assertion.verify(tests.DOMExceptionsTest(node, "insertData", new Class[]{int.class, String.class}, 
+	OK &= Assertion.verify(DTest.DOMExceptionsTest(node, "insertData", new Class[]{int.class, String.class}, 
 			new Object[]{new Integer(5),"Stuff inserted" }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
-	OK &= Assertion.verify(tests.DOMExceptionsTest(node, "replaceData", new Class[]{int.class, int.class, String.class}, 
+	OK &= Assertion.verify(DTest.DOMExceptionsTest(node, "replaceData", new Class[]{int.class, int.class, String.class}, 
 			new Object[]{new Integer(5),new Integer(10),"Replacementstuff" }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
-	OK &= Assertion.verify(tests.DOMExceptionsTest(node, "setData", new Class[]{String.class}, 
+	OK &= Assertion.verify(DTest.DOMExceptionsTest(node, "setData", new Class[]{String.class}, 
 			new Object[]{"New setdata stuff"}, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
 	
 		
@@ -1169,8 +1187,8 @@ public void testDOMerrors(Document document) {
 
 	DTest tests = new DTest();
 
-	OK &= Assertion.verify(tests.DOMExceptionsTest(document, "appendChild", new Class[]{Node.class}, new Object[]{testElementNode}, DOMException.HIERARCHY_REQUEST_ERR )); 
-	OK &= Assertion.verify(tests.DOMExceptionsTest(testTextNode, "appendChild", new Class[]{Node.class}, new Object[]{testTextNode}, DOMException.HIERARCHY_REQUEST_ERR )); 
+	OK &= Assertion.verify(DTest.DOMExceptionsTest(document, "appendChild", new Class[]{Node.class}, new Object[]{testElementNode}, DOMException.HIERARCHY_REQUEST_ERR )); 
+	OK &= Assertion.verify(DTest.DOMExceptionsTest(testTextNode, "appendChild", new Class[]{Node.class}, new Object[]{testTextNode}, DOMException.HIERARCHY_REQUEST_ERR )); 
 //	OK &= Assertion.assert(tests.DOMExceptionsTest(document, "insertBefore", new Class[]{Node.class, Node.class}, new Object[]{document.getElementsByTagName("docEntity").item(0), document.getElementsByTagName("docFirstElement").item(0)}, DOMException.HIERARCHY_REQUEST_ERR )); 
 //	OK &= Assertion.assert(tests.DOMExceptionsTest(document, "replaceChild", new Class[]{Node.class, Node.class}, new Object[]{document.getElementsByTagName("docCDATASection").item(0), document.getElementsByTagName("docFirstElement").item(0)}, DOMException.HIERARCHY_REQUEST_ERR )); 
 
