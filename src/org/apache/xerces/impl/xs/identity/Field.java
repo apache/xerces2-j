@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2004 The Apache Software Foundation.
+ * Copyright 2001-2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,13 @@
 package org.apache.xerces.impl.xs.identity;
 
 import org.apache.xerces.impl.xpath.XPathException;
-import org.apache.xerces.xs.XSComplexTypeDefinition;
-import org.apache.xerces.xs.XSTypeDefinition;
+import org.apache.xerces.impl.xs.util.ShortListImpl;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.NamespaceContext;
+import org.apache.xerces.xs.ShortList;
+import org.apache.xerces.xs.XSComplexTypeDefinition;
+import org.apache.xerces.xs.XSConstants;
+import org.apache.xerces.xs.XSTypeDefinition;
 
 /**
  * Schema identity constraint field.
@@ -166,20 +169,65 @@ public class Field {
          * This method is called when the XPath handler matches the
          * XPath expression.
          */
-        protected void matched(Object actualValue,  boolean isNil) {
-            super.matched(actualValue, isNil);
+        protected void matched(Object actualValue, short valueType, ShortList itemValueType, boolean isNil) {
+            super.matched(actualValue, valueType, itemValueType, isNil);
             if(isNil && (fIdentityConstraint.getCategory() == IdentityConstraint.IC_KEY)) {
                 String code = "KeyMatchesNillable";
                 fStore.reportError(code, new Object[]{fIdentityConstraint.getElementName()});
             }
-            fStore.addValue(Field.this, actualValue);
+            fStore.addValue(Field.this, actualValue, convertToPrimitiveKind(valueType), convertToPrimitiveKind(itemValueType));
             // once we've stored the value for this field, we set the mayMatch
             // member to false so that, in the same scope, we don't match any more
             // values (and throw an error instead).
             fFieldActivator.setMayMatch(Field.this, Boolean.FALSE);
         } // matched(String)
 
-        protected void handleContent(XSTypeDefinition type, boolean nillable, Object actualValue) {
+        private short convertToPrimitiveKind(short valueType) {
+            switch(valueType) {
+            
+            case XSConstants.ID_DT:
+            case XSConstants.IDREF_DT:
+            case XSConstants.ENTITY_DT:
+            case XSConstants.NCNAME_DT:
+            case XSConstants.NAME_DT:
+            case XSConstants.LANGUAGE_DT:
+            case XSConstants.NMTOKEN_DT:
+            case XSConstants.TOKEN_DT:
+            case XSConstants.NORMALIZEDSTRING_DT:
+                return XSConstants.STRING_DT;
+                
+            case XSConstants.UNSIGNEDBYTE_DT:
+            case XSConstants.UNSIGNEDINT_DT:
+            case XSConstants.UNSIGNEDLONG_DT:
+            case XSConstants.UNSIGNEDSHORT_DT:
+            case XSConstants.BYTE_DT:
+            case XSConstants.SHORT_DT:
+            case XSConstants.INT_DT:
+            case XSConstants.POSITIVEINTEGER_DT:
+            case XSConstants.NEGATIVEINTEGER_DT:
+            case XSConstants.NONNEGATIVEINTEGER_DT:
+            case XSConstants.NONPOSITIVEINTEGER_DT:
+            case XSConstants.LONG_DT:
+            case XSConstants.INTEGER_DT:
+                return XSConstants.DECIMAL_DT;    
+                
+            default:
+                return valueType;
+            }
+        }
+
+        private ShortList convertToPrimitiveKind(ShortList itemValueType) {
+            if(itemValueType != null) {
+                short[] arr = new short[itemValueType.getLength()];
+                for(int i = 0;i < arr.length; i++) {
+                    arr[i] = convertToPrimitiveKind(itemValueType.item(i));
+                }
+                return new ShortListImpl(arr, arr.length);
+            }
+            return itemValueType;
+        }
+
+        protected void handleContent(XSTypeDefinition type, boolean nillable, Object actualValue, short valueType, ShortList itemValueType) {
             if (type == null || 
                type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE &&
                ((XSComplexTypeDefinition) type).getContentType()
@@ -192,7 +240,7 @@ public class Field {
                 
             }
             fMatchedString = actualValue;
-            matched(fMatchedString, nillable);
+            matched(fMatchedString, valueType, itemValueType, nillable);
         } // handleContent(XSElementDecl, String)
 
     } // class Matcher

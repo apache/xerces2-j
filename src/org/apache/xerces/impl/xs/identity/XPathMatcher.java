@@ -1,5 +1,5 @@
 /*
- * Copyright 2001, 2002,2004 The Apache Software Foundation.
+ * Copyright 2001, 2002,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,13 @@ package org.apache.xerces.impl.xs.identity;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xpath.XPath;
-import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.util.IntStack;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xs.AttributePSVI;
+import org.apache.xerces.xs.ShortList;
+import org.apache.xerces.xs.XSTypeDefinition;
+import org.xml.sax.SAXException;
 
 
 /**
@@ -151,7 +153,7 @@ public class XPathMatcher {
 
     // a place-holder method; to be overridden by subclasses
     // that care about matching element content.
-    protected void handleContent(XSTypeDefinition type, boolean nillable, Object value) { 
+    protected void handleContent(XSTypeDefinition type, boolean nillable, Object value, short valueType, ShortList itemValueType) { 
     } 
 
     /**
@@ -159,7 +161,7 @@ public class XPathMatcher {
      * XPath expression. Subclasses can override this method to
      * provide default handling upon a match.
      */
-    protected void matched(Object actualValue, boolean isNil) {
+    protected void matched(Object actualValue, short valueType, ShortList itemValueType, boolean isNil) {
         if (DEBUG_METHODS3) {
             System.out.println(toString()+"#matched(\""+actualValue+"\")");
         }
@@ -326,7 +328,7 @@ public class XPathMatcher {
                                 if(j==i) {
                                     AttributePSVI attrPSVI = (AttributePSVI)attributes.getAugmentations(aIndex).getItem(Constants.ATTRIBUTE_PSVI);
                                     fMatchedString = attrPSVI.getActualNormalizedValue();
-                                    matched(fMatchedString, false);
+                                    matched(fMatchedString, attrPSVI.getActualNormalizedValueType(), attrPSVI.getItemValueTypes(), false);
                                 }
                             }
                             break;
@@ -367,7 +369,7 @@ public class XPathMatcher {
        * @param value - actual value
        *        the typed value of the content of this element. 
        */
-    public void endElement(QName element, XSTypeDefinition type, boolean nillable, Object value ) {
+    public void endElement(QName element, XSTypeDefinition type, boolean nillable, Object value, short valueType, ShortList itemValueType) {
         if (DEBUG_METHODS2) {
             System.out.println(toString()+"#endElement("+
                                "element={"+element+"},"+
@@ -394,7 +396,7 @@ public class XPathMatcher {
                 // match element content.  This permits
                 // them a way to override this to do nothing
                 // and hopefully save a few operations.
-                handleContent(type, nillable, value);
+                handleContent(type, nillable, value, valueType, itemValueType);
                 fMatched[i] = 0;
             }
 

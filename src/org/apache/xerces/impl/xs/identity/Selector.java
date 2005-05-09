@@ -1,5 +1,5 @@
 /*
- * Copyright 2001, 2002,2004 The Apache Software Foundation.
+ * Copyright 2001, 2002,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,12 @@
 package org.apache.xerces.impl.xs.identity;
 
 import org.apache.xerces.impl.xpath.XPathException;
-import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
+import org.apache.xerces.xs.ShortList;
+import org.apache.xerces.xs.XSTypeDefinition;
 
 /**
  * Schema identity constraint selector.
@@ -227,8 +228,8 @@ public class Selector {
 
         } // startElement(QName,XMLAttrList,int)
 
-        public void endElement(QName element, XSTypeDefinition type, boolean nillable, Object actualValue) {
-            super.endElement(element, type, nillable, actualValue);
+        public void endElement(QName element, XSTypeDefinition type, boolean nillable, Object actualValue, short valueType, ShortList itemValueType) {
+            super.endElement(element, type, nillable, actualValue, valueType, itemValueType);
             if (fElementDepth-- == fMatchedDepth) {
                 fMatchedDepth = -1;
                 fFieldActivator.endValueScopeFor(fIdentityConstraint, fInitialDepth);
