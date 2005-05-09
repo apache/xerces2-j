@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004 The Apache Software Foundation.
+ * Copyright 1999-2002,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,20 @@
  * limitations under the License.
  */
 
-
 package dom.dom3;
+
 import java.io.Reader;
 import java.io.StringReader;
 
-import org.apache.xerces.dom.CoreDocumentImpl;
 import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.dom.NodeImpl;
-import org.apache.xerces.dom.TextImpl;
+import org.apache.xerces.xs.ElementPSVI;
+import org.w3c.dom.Attr;
 import org.w3c.dom.DOMConfiguration;
 import org.w3c.dom.DOMError;
 import org.w3c.dom.DOMErrorHandler;
-import org.w3c.dom.bootstrap.DOMImplementationRegistry;
-import org.w3c.dom.DOMLocator;
-import org.apache.xerces.xs.ElementPSVI;
-import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
+import org.w3c.dom.DOMLocator;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
@@ -38,18 +35,21 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
-import org.w3c.dom.ls.LSParser;
-import org.w3c.dom.ls.LSResourceResolver;
+import org.w3c.dom.bootstrap.DOMImplementationRegistry;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSInput;
+import org.w3c.dom.ls.LSParser;
+import org.w3c.dom.ls.LSResourceResolver;
 import org.w3c.dom.ls.LSSerializer;
 
 import dom.util.Assertion;
 
 /**
  * The program tests vacarious DOM Level 3 functionality
+ * 
+ * @version $Id$
  */
-public class Test implements DOMErrorHandler, LSResourceResolver{
+public class Test implements DOMErrorHandler, LSResourceResolver {
     
     static int errorCounter = 0;
     static DOMErrorHandler errorHandler = new Test();
@@ -147,7 +147,7 @@ public class Test implements DOMErrorHandler, LSResourceResolver{
                 config = builder.getDomConfig();
                 config.setParameter("error-handler",errorHandler);
                 config.setParameter("validate", Boolean.TRUE);
-                DocumentImpl core = (DocumentImpl)builder.parseURI("tests/dom/dom3/schema.xml");
+                Document core = builder.parseURI("tests/dom/dom3/schema.xml");
                 Assertion.verify(errorCounter == 0, "No errors should be reported");
                 
                 errorCounter = 0;    
@@ -202,7 +202,7 @@ public class Test implements DOMErrorHandler, LSResourceResolver{
                 config.setParameter("error-handler",errorHandler);
                 config.setParameter("validate", Boolean.TRUE);
                 config.setParameter("psvi", Boolean.TRUE);
-                DocumentImpl core = (DocumentImpl)builder.parseURI("data/personal-schema.xml");
+                Document core = builder.parseURI("data/personal-schema.xml");
                 Assertion.verify(errorCounter == 0, "No errors should be reported");
 
                 NodeList ls2 = core.getElementsByTagName("person");
@@ -271,7 +271,7 @@ public class Test implements DOMErrorHandler, LSResourceResolver{
                 child3.appendChild(child4);
                 root.appendChild(child3);
 
-                ((CoreDocumentImpl)doc).normalizeDocument();
+                doc.normalizeDocument();
                 
                 //
                 // assertions
@@ -469,7 +469,7 @@ public class Test implements DOMErrorHandler, LSResourceResolver{
             config.setParameter("error-handler",errorHandler);
             config.setParameter("validate", Boolean.FALSE);
             config.setParameter("entities", Boolean.TRUE);
-            DocumentImpl doc = (DocumentImpl)builder.parseURI("tests/dom/dom3/wholeText.xml");
+            Document doc = builder.parseURI("tests/dom/dom3/wholeText.xml");
 
             Element root = doc.getDocumentElement();
             Element test = (Element)doc.getElementsByTagName("elem").item(0);
@@ -486,15 +486,15 @@ public class Test implements DOMErrorHandler, LSResourceResolver{
             Assertion.verify(ls.getLength()==5, "List length");
             
             String compare1 = "Home Address: 1900 Dallas Road (East) City: Dallas. California. USA  PO #5668";
-            Assertion.verify(((TextImpl)ls.item(0)).getWholeText().equals(compare1), "Compare1");
+            Assertion.verify(((Text)ls.item(0)).getWholeText().equals(compare1), "Compare1");
             String compare2 = "Home Address: 1900 Dallas Road (East) City: Dallas. California. USA  PO #5668";
-            Assertion.verify(((TextImpl)ls.item(1)).getWholeText().equals(compare2), "Compare2");
+            Assertion.verify(((Text)ls.item(1)).getWholeText().equals(compare2), "Compare2");
             
 
             //TEST replaceWholeText()
             ((NodeImpl)ls.item(0)).setReadOnly(true, true);
             
-            TextImpl original = (TextImpl)ls.item(0);
+            Text original = (Text)ls.item(0);
             Node newNode = original.replaceWholeText("Replace with this text");
             ls = test.getChildNodes();
             Assertion.verify(ls.getLength() == 1, "Length == 1");
@@ -504,13 +504,13 @@ public class Test implements DOMErrorHandler, LSResourceResolver{
             // replace text for node which is not yet attached to the tree
             Text text = doc.createTextNode("readonly");
             ((NodeImpl)text).setReadOnly(true, true);
-            text = ((TextImpl)text).replaceWholeText("Data");
+            text = text.replaceWholeText("Data");
             Assertion.verify(text.getNodeValue().equals("Data"), "New value 'Data'");
 
             // test with second child that does not have any content
             test = (Element)doc.getElementsByTagName("elem").item(1);
             try {            
-                ((TextImpl)test.getFirstChild()).replaceWholeText("can't replace");
+                ((Text)test.getFirstChild()).replaceWholeText("can't replace");
             } catch (DOMException e){
                Assertion.verify(e !=null);
             }
@@ -534,21 +534,21 @@ public class Test implements DOMErrorHandler, LSResourceResolver{
                 
                 // schema-type is not set validate against both grammars 
                 errorCounter = 0;
-                DocumentImpl core2 = (DocumentImpl)builder.parseURI("tests/dom/dom3/both-error.xml");
+                Document core2 = builder.parseURI("tests/dom/dom3/both-error.xml");
                 Assertion.verify(errorCounter == 4, "4 errors should be reported");
                 
                 errorCounter = 0;
                 // set schema-type to be XML Schema 
                 config.setParameter("schema-type", "http://www.w3.org/2001/XMLSchema");
                 // test parsing a file that has both XML schema and DTD
-                core2 = (DocumentImpl)builder.parseURI("tests/dom/dom3/both.xml");
+                core2 = builder.parseURI("tests/dom/dom3/both.xml");
                 Assertion.verify(errorCounter == 0, "No errors should be reported");
                 
             
                 // parse a file with XML schema and DTD but validate against DTD only
                 errorCounter = 0;
                 config.setParameter("schema-type","http://www.w3.org/TR/REC-xml");
-                core2 = (DocumentImpl)builder.parseURI("tests/dom/dom3/both-error.xml");
+                core2 = builder.parseURI("tests/dom/dom3/both-error.xml");
                 Assertion.verify(errorCounter == 3, "3 errors should be reported");
                 
                 // parse a file with DTD only but set schema-location and 
@@ -556,7 +556,7 @@ public class Test implements DOMErrorHandler, LSResourceResolver{
                 // set schema location
                 
                 
-                core2 = (DocumentImpl)builder.parseURI("tests/dom/dom3/both-error.xml");
+                core2 = builder.parseURI("tests/dom/dom3/both-error.xml");
                 
                 // normalize document
                 errorCounter = 0;
@@ -607,15 +607,15 @@ public class Test implements DOMErrorHandler, LSResourceResolver{
     public boolean handleError(DOMError error){
         fError.setLength(0);
         short severity = error.getSeverity();
-        if (severity == error.SEVERITY_ERROR) {
+        if (severity == DOMError.SEVERITY_ERROR) {
             errorCounter++;
             fError.append("[Error]");
         }
 
-        if (severity == error.SEVERITY_FATAL_ERROR) {
+        if (severity == DOMError.SEVERITY_FATAL_ERROR) {
             fError.append("[FatalError]");
         }
-        if (severity == error.SEVERITY_WARNING) {
+        if (severity == DOMError.SEVERITY_WARNING) {
             fError.append("[Warning]");
         }
 
