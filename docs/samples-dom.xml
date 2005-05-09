@@ -32,7 +32,7 @@
    -->
    <li><link anchor='GetElementsByTagName'>dom.GetElementsByTagName</link></li>
    <li><link anchor='Writer'>dom.Writer</link></li>
-   <li><link anchor='ASBuilder'>dom.ASBuilder</link></li>
+   <!-- <li><link anchor='ASBuilder'>dom.ASBuilder</link></li> -->
    <li><link anchor='DOM3'>dom.DOM3</link></li>
    <li><link anchor='DOMAddLines'>dom.DOMAddLines</link></li>
   </ul>
@@ -122,6 +122,27 @@
       <strong>NOTE:</strong> Not supported by all parsers.
      </td>
     </tr>
+    <tr>
+     <td>-xi | -XI</td>
+     <td>
+      Turn on/off XInclude processing.<br/>
+      <strong>NOTE:</strong> Not supported by all parsers.
+     </td>
+    </tr>
+    <tr>
+     <td>-xb | -XB</td>
+     <td>
+      Turn on/off base URI fixup during XInclude processing.<br/>
+      <strong>NOTE:</strong> Requires use of -xi and not supported by all parsers.
+     </td>
+    </tr>
+    <tr>
+     <td>-xl | -XL</td>
+     <td>
+      Turn on/off language fixup during XInclude processing.<br/>
+      <strong>NOTE:</strong> Requires use of -xi and not supported by all parsers.
+     </td>
+    </tr>
     <tr><td>-h</td><td>Display help screen.</td></tr>
    </table>
   </s3>
@@ -177,6 +198,27 @@
      <td>
       Turn on/off dynamic validation.<br/>
       <strong>NOTE:</strong> Not supported by all parsers.
+     </td>
+    </tr>
+    <tr>
+     <td>-xi | -XI</td>
+     <td>
+      Turn on/off XInclude processing.<br/>
+      <strong>NOTE:</strong> Not supported by all parsers.
+     </td>
+    </tr>
+    <tr>
+     <td>-xb | -XB</td>
+     <td>
+      Turn on/off base URI fixup during XInclude processing.<br/>
+      <strong>NOTE:</strong> Requires use of -xi and not supported by all parsers.
+     </td>
+    </tr>
+    <tr>
+     <td>-xl | -XL</td>
+     <td>
+      Turn on/off language fixup during XInclude processing.<br/>
+      <strong>NOTE:</strong> Requires use of -xi and not supported by all parsers.
      </td>
     </tr>
     <tr><td>-h</td><td>Display help screen.</td></tr>
@@ -240,6 +282,27 @@
      </td>
     </tr>
     <tr>
+     <td>-xi | -XI</td>
+     <td>
+      Turn on/off XInclude processing.<br/>
+      <strong>NOTE:</strong> Not supported by all parsers.
+     </td>
+    </tr>
+    <tr>
+     <td>-xb | -XB</td>
+     <td>
+      Turn on/off base URI fixup during XInclude processing.<br/>
+      <strong>NOTE:</strong> Requires use of -xi and not supported by all parsers.
+     </td>
+    </tr>
+    <tr>
+     <td>-xl | -XL</td>
+     <td>
+      Turn on/off language fixup during XInclude processing.<br/>
+      <strong>NOTE:</strong> Requires use of -xi and not supported by all parsers.
+     </td>
+    </tr>
+    <tr>
      <td>-c | -C</td>
      <td>
       Turn on/off Canonical XML output.<br/>
@@ -251,7 +314,7 @@
   </s3>
  </s2>
 
-
+<!--
  <anchor name='ASBuilder'/>
  <s2 title='Sample dom.ASBuilder'>
   <p>
@@ -271,21 +334,12 @@
     <tr><td>-i uri ...</td><td>Provide a list of instance documents to validate.</td></tr>
    </table>
   </s3>
- </s2>
+ </s2> -->
 
  <anchor name='DOM3'/>
  <s2 title='Sample dom.DOM3'>
-  <p>
-   This sample program illustrates how to use the DOM Level 3 API. </p>
+  <p>This sample program illustrates how to use the DOM Level 3 API.</p>
 
-   <note>This sample is <strong>not</strong> included in the default Xerces 
-      distribution. 
-      The sample uses the DOM Level 3 interfaces 
-      (<link idref='faq-dom'>Accessing the DOM Level 3 API
-      </link>) and will <strong>not</strong> complile with the default 
-      Xerces build. 
-   </note>
-  
   <s3 title='usage'>
    <source>java dom.DOM3 uri</source>
   </s3>
@@ -302,13 +356,6 @@
     <li>How to use the SAX Locator to return row position (line number of DOM element)</li>
     <li>How to attach user defined Objects to Nodes using the DOM Level 3 setUserData method.</li>
   </ul>
-   <note>This sample is <strong>not</strong> included in the default Xerces 
-      distribution. 
-      The sample uses the DOM Level 3 interfaces 
-      (<link idref='faq-dom'>Accessing the DOM Level 3 API
-      </link>) and will <strong>not</strong> complile with the default 
-      Xerces build. 
-   </note>
  <s3 title='usage'>
    <source>java dom.DOMAddLines (options) uri ...</source>
   </s3>

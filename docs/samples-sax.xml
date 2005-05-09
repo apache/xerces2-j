@@ -111,6 +111,27 @@
       <strong>NOTE:</strong> Not supported by all parsers.
      </td>
     </tr>
+    <tr>
+     <td>-xi | -XI</td>
+     <td>
+      Turn on/off XInclude processing.<br/>
+      <strong>NOTE:</strong> Not supported by all parsers.
+     </td>
+    </tr>
+    <tr>
+     <td>-xb | -XB</td>
+     <td>
+      Turn on/off base URI fixup during XInclude processing.<br/>
+      <strong>NOTE:</strong> Requires use of -xi and not supported by all parsers.
+     </td>
+    </tr>
+    <tr>
+     <td>-xl | -XL</td>
+     <td>
+      Turn on/off language fixup during XInclude processing.<br/>
+      <strong>NOTE:</strong> Requires use of -xi and not supported by all parsers.
+     </td>
+    </tr>
     <tr><td>-m  | -M</td><td>Turn on/off memory usage report.</td></tr>
     <tr><td>-t  | -T</td><td>Turn on/off \"tagginess\" report.</td></tr>
     <tr>
@@ -200,6 +221,27 @@
       <strong>NOTE:</strong> Not supported by all parsers.
      </td>
     </tr>
+    <tr>
+     <td>-xi | -XI</td>
+     <td>
+      Turn on/off XInclude processing.<br/>
+      <strong>NOTE:</strong> Not supported by all parsers.
+     </td>
+    </tr>
+    <tr>
+     <td>-xb | -XB</td>
+     <td>
+      Turn on/off base URI fixup during XInclude processing.<br/>
+      <strong>NOTE:</strong> Requires use of -xi and not supported by all parsers.
+     </td>
+    </tr>
+    <tr>
+     <td>-xl | -XL</td>
+     <td>
+      Turn on/off language fixup during XInclude processing.<br/>
+      <strong>NOTE:</strong> Requires use of -xi and not supported by all parsers.
+     </td>
+    </tr>
     <tr><td>-h</td><td>Display help screen.</td></tr>
    </table>
   </s3>
@@ -267,6 +309,27 @@
      <td>
       Turn on/off dynamic validation.<br/>
       <strong>NOTE:</strong> Not supported by all parsers.
+     </td>
+    </tr>
+    <tr>
+     <td>-xi | -XI</td>
+     <td>
+      Turn on/off XInclude processing.<br/>
+      <strong>NOTE:</strong> Not supported by all parsers.
+     </td>
+    </tr>
+    <tr>
+     <td>-xb | -XB</td>
+     <td>
+      Turn on/off base URI fixup during XInclude processing.<br/>
+      <strong>NOTE:</strong> Requires use of -xi and not supported by all parsers.
+     </td>
+    </tr>
+    <tr>
+     <td>-xl | -XL</td>
+     <td>
+      Turn on/off language fixup during XInclude processing.<br/>
+      <strong>NOTE:</strong> Requires use of -xi and not supported by all parsers.
      </td>
     </tr>
     <tr>
