@@ -39,6 +39,8 @@ public class TreeWalkerView
     extends JFrame 
     implements ActionListener {
 
+    private static final long serialVersionUID = 3257566187583189559L;
+    
     Document document;
     TreeNode lastSelected;
     DOMParser parser;
@@ -243,6 +245,7 @@ public class TreeWalkerView
             whatToShow = new JList(whatArray);
             JScrollPane whatScroll = 
             new JScrollPane(whatToShow) {
+                    private static final long serialVersionUID = 3545240236637305138L;
                     public Dimension getPreferredSize(){
                         return new Dimension(200, 65 );
                     }

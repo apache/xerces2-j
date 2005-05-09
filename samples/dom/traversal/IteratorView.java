@@ -38,7 +38,9 @@ import ui.DOMTreeFull;
 public class IteratorView 
     extends JFrame 
     implements ActionListener {
-
+    
+    private static final long serialVersionUID = 3256726186452662580L;
+    
     Document document;
     TreeNode lastSelected;
     DOMParser parser;
@@ -195,6 +197,7 @@ public class IteratorView
             whatToShow = new JList(DOMTreeFull.whatArray);
             JScrollPane whatScroll = 
             new JScrollPane(whatToShow) {
+                    private static final long serialVersionUID = 3546357344813724213L;
                     public Dimension getPreferredSize(){
                         return new Dimension(200, 75 );
                     }
