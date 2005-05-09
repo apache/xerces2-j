@@ -84,6 +84,15 @@ public class Writer
     
     /** Load external DTD feature id (http://apache.org/xml/features/nonvalidating/load-external-dtd). */
     protected static final String LOAD_EXTERNAL_DTD_FEATURE_ID = "http://apache.org/xml/features/nonvalidating/load-external-dtd";
+    
+    /** XInclude feature id (http://apache.org/xml/features/xinclude). */
+    protected static final String XINCLUDE_FEATURE_ID = "http://apache.org/xml/features/xinclude";
+    
+    /** XInclude fixup base URIs feature id (http://apache.org/xml/features/xinclude/fixup-base-uris). */
+    protected static final String XINCLUDE_FIXUP_BASE_URIS_FEATURE_ID = "http://apache.org/xml/features/xinclude/fixup-base-uris";
+    
+    /** XInclude fixup language feature id (http://apache.org/xml/features/xinclude/fixup-language). */
+    protected static final String XINCLUDE_FIXUP_LANGUAGE_FEATURE_ID = "http://apache.org/xml/features/xinclude/fixup-language";
 
     // property ids
 
@@ -121,6 +130,15 @@ public class Writer
     
     /** Default dynamic validation support (false). */
     protected static final boolean DEFAULT_DYNAMIC_VALIDATION = false;
+    
+    /** Default XInclude processing support (false). */
+    protected static final boolean DEFAULT_XINCLUDE = false;
+    
+    /** Default XInclude fixup base URIs support (true). */
+    protected static final boolean DEFAULT_XINCLUDE_FIXUP_BASE_URIS = true;
+    
+    /** Default XInclude fixup language support (true). */
+    protected static final boolean DEFAULT_XINCLUDE_FIXUP_LANGUAGE = true;
 
     /** Default canonical output (false). */
     protected static final boolean DEFAULT_CANONICAL = false;
@@ -551,6 +569,9 @@ public class Writer
         boolean validateAnnotations = DEFAULT_VALIDATE_ANNOTATIONS;
         boolean generateSyntheticAnnotations = DEFAULT_GENERATE_SYNTHETIC_ANNOTATIONS;
         boolean dynamicValidation = DEFAULT_DYNAMIC_VALIDATION;
+        boolean xincludeProcessing = DEFAULT_XINCLUDE;
+        boolean xincludeFixupBaseURIs = DEFAULT_XINCLUDE_FIXUP_BASE_URIS;
+        boolean xincludeFixupLanguage = DEFAULT_XINCLUDE_FIXUP_LANGUAGE;
         boolean canonical = DEFAULT_CANONICAL;
 
         // process arguments
@@ -617,6 +638,18 @@ public class Writer
                 }
                 if (option.equalsIgnoreCase("dv")) {
                     dynamicValidation = option.equals("dv");
+                    continue;
+                }
+                if (option.equalsIgnoreCase("xi")) {
+                    xincludeProcessing = option.equals("xi");
+                    continue;
+                }
+                if (option.equalsIgnoreCase("xb")) {
+                    xincludeFixupBaseURIs = option.equals("xb");
+                    continue;
+                }
+                if (option.equalsIgnoreCase("xl")) {
+                    xincludeFixupLanguage = option.equals("xl");
                     continue;
                 }
                 if (option.equalsIgnoreCase("c")) {
@@ -716,6 +749,33 @@ public class Writer
             catch (SAXNotSupportedException e) {
                 System.err.println("warning: Parser does not support feature ("+DYNAMIC_VALIDATION_FEATURE_ID+")");
             }
+            try {
+                parser.setFeature(XINCLUDE_FEATURE_ID, xincludeProcessing);
+            }
+            catch (SAXNotRecognizedException e) {
+                System.err.println("warning: Parser does not recognize feature ("+XINCLUDE_FEATURE_ID+")");
+            }
+            catch (SAXNotSupportedException e) {
+                System.err.println("warning: Parser does not support feature ("+XINCLUDE_FEATURE_ID+")");
+            }
+            try {
+                parser.setFeature(XINCLUDE_FIXUP_BASE_URIS_FEATURE_ID, xincludeFixupBaseURIs);
+            }
+            catch (SAXNotRecognizedException e) {
+                System.err.println("warning: Parser does not recognize feature ("+XINCLUDE_FIXUP_BASE_URIS_FEATURE_ID+")");
+            }
+            catch (SAXNotSupportedException e) {
+                System.err.println("warning: Parser does not support feature ("+XINCLUDE_FIXUP_BASE_URIS_FEATURE_ID+")");
+            }
+            try {
+                parser.setFeature(XINCLUDE_FIXUP_LANGUAGE_FEATURE_ID, xincludeFixupLanguage);
+            }
+            catch (SAXNotRecognizedException e) {
+                System.err.println("warning: Parser does not recognize feature ("+XINCLUDE_FIXUP_LANGUAGE_FEATURE_ID+")");
+            }
+            catch (SAXNotSupportedException e) {
+                System.err.println("warning: Parser does not support feature ("+XINCLUDE_FIXUP_LANGUAGE_FEATURE_ID+")");
+            }
             
             // setup writer
             if (writer == null) {
@@ -773,13 +833,13 @@ public class Writer
 
         System.err.println("options:");
         System.err.println("  -p name     Select parser by name.");
-        System.err.println("  -n | -N     Turn on/off namespace processing.");
+        System.err.println("  -n  | -N    Turn on/off namespace processing.");
         System.err.println("  -np | -NP   Turn on/off namespace prefixes.");
         System.err.println("              NOTE: Requires use of -n.");
-        System.err.println("  -v | -V     Turn on/off validation.");
+        System.err.println("  -v  | -V    Turn on/off validation.");
         System.err.println("  -xd | -XD   Turn on/off loading of external DTDs.");
         System.err.println("              NOTE: Always on when -v in use and not supported by all parsers.");
-        System.err.println("  -s | -S     Turn on/off Schema validation support.");
+        System.err.println("  -s  | -S    Turn on/off Schema validation support.");
         System.err.println("              NOTE: Not supported by all parsers.");
         System.err.println("  -f  | -F    Turn on/off Schema full checking.");
         System.err.println("              NOTE: Requires use of -s and not supported by all parsers.");
@@ -789,6 +849,12 @@ public class Writer
         System.err.println("              NOTE: Requires use of -s and not supported by all parsers.");
         System.err.println("  -dv | -DV   Turn on/off dynamic validation.");
         System.err.println("              NOTE: Not supported by all parsers.");
+        System.err.println("  -xi | -XI   Turn on/off XInclude processing.");
+        System.err.println("              NOTE: Not supported by all parsers.");
+        System.err.println("  -xb | -XB   Turn on/off base URI fixup during XInclude processing.");
+        System.err.println("              NOTE: Requires use of -xi and not supported by all parsers.");
+        System.err.println("  -xl | -XL   Turn on/off language fixup during XInclude processing.");
+        System.err.println("              NOTE: Requires use of -xi and not supported by all parsers.");
         System.err.println("  -c | -C     Turn on/off Canonical XML output.");
         System.err.println("              NOTE: This is not W3C canonical output.");
         System.err.println("  -h          This help screen.");
@@ -816,6 +882,12 @@ public class Writer
         System.err.println(DEFAULT_VALIDATE_ANNOTATIONS ? "on" : "off");
         System.err.print("  Generate Synthetic Annotations:    ");
         System.err.println(DEFAULT_GENERATE_SYNTHETIC_ANNOTATIONS ? "on" : "off");
+        System.err.print("  XInclude:   ");
+        System.err.println(DEFAULT_XINCLUDE ? "on" : "off");
+        System.err.print("  XInclude base URI fixup:  ");
+        System.err.println(DEFAULT_XINCLUDE_FIXUP_BASE_URIS ? "on" : "off");
+        System.err.print("  XInclude language fixup:  ");
+        System.err.println(DEFAULT_XINCLUDE_FIXUP_LANGUAGE ? "on" : "off");
 
     } // printUsage()
 
