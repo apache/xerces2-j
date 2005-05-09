@@ -22,10 +22,10 @@ import java.util.Stack;
 import org.apache.xerces.dom.AttrImpl;
 import org.apache.xerces.dom.CoreDocumentImpl;
 import org.apache.xerces.dom.DOMErrorImpl;
+import org.apache.xerces.dom.DOMMessageFormatter;
 import org.apache.xerces.dom.DeferredDocumentImpl;
 import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.dom.DocumentTypeImpl;
-import org.apache.xerces.dom.DOMMessageFormatter;
 import org.apache.xerces.dom.ElementDefinitionImpl;
 import org.apache.xerces.dom.ElementImpl;
 import org.apache.xerces.dom.ElementNSImpl;
@@ -39,7 +39,6 @@ import org.apache.xerces.dom.PSVIElementNSImpl;
 import org.apache.xerces.dom.TextImpl;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dv.XSSimpleType;
-import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.util.DOMErrorHandlerWrapper;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.NamespaceContext;
@@ -52,6 +51,7 @@ import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 import org.apache.xerces.xs.AttributePSVI;
 import org.apache.xerces.xs.ElementPSVI;
+import org.apache.xerces.xs.XSTypeDefinition;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
@@ -67,6 +67,7 @@ import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
 import org.w3c.dom.ls.LSParserFilter;
 import org.w3c.dom.traversal.NodeFilter;
+import org.xml.sax.SAXException;
 
 /**
  * This is the base class of all DOM parsers. It implements the XNI
@@ -1003,7 +1004,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                             }
                         case LSParserFilter.FILTER_SKIP :
                             {
-                                fSkippedElemStack.push(element);
+                                fSkippedElemStack.push(element.clone());
                                 return;
                             }
                         default : {}
