@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004 The Apache Software Foundation.
+ * Copyright 1999-2002,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,15 +30,32 @@
 //
 
 package dom.mem;
-import org.w3c.dom.*;
-import org.apache.xerces.dom.DocumentImpl;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import org.apache.xerces.dom.DOMImplementationImpl;
-import org.apache.xerces.dom.NotationImpl;
-
-import java.lang.reflect.*;
-import dom.util.Assertion;
-
+import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.dom.NodeImpl;
+import org.w3c.dom.Attr;
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.Comment;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.DocumentType;
+import org.w3c.dom.Element;
+import org.w3c.dom.EntityReference;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Notation;
+import org.w3c.dom.ProcessingInstruction;
+import org.w3c.dom.Text;
+import org.w3c.dom.UserDataHandler;
+
+import dom.util.Assertion;
 
 
 public class Test {
