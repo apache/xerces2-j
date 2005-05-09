@@ -1,5 +1,5 @@
 /*
- * Copyright 2001,2004 The Apache Software Foundation.
+ * Copyright 2001,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,32 +14,37 @@
  * limitations under the License.
  */
 
+package thread;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.StringReader;
+
+import org.apache.xerces.dom.CoreDocumentImpl;
+import org.apache.xerces.parsers.DOMParser;
+import org.apache.xerces.parsers.SAXParser;
+import org.w3c.dom.DOMConfiguration;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.xml.sax.AttributeList;
+import org.xml.sax.HandlerBase;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+
 /**
- * $Id$
- *
  * This program is a straight port of xerces/c/tests/ThreadTest.cpp
  * No particular effort has been made to make it more java-like (who cares
  * besides a few biggots? ;-)
  *
  * @author Andy Heninger, IBM (C++ version)
  * @author Arnaud  Le Hors, IBM
+ * 
+ * @version $Id$
  */
-
-package thread;
-
-import org.w3c.dom.*;
-import org.xml.sax.*;
-
-import org.apache.xerces.dom.CoreDocumentImpl;
-import org.apache.xerces.parsers.SAXParser;
-import org.apache.xerces.parsers.DOMParser;
-
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStreamReader;
-import java.io.IOException;
-import java.io.StringReader;
-
 public class Test {
 
 

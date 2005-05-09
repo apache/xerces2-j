@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2002,2004 The Apache Software Foundation.
+ * Copyright 2000-2002,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,23 @@
  * limitations under the License.
  */
 
- package jaxp;
+package jaxp;
 
-import javax.xml.parsers.*;
-import org.xml.sax.*;
-import org.w3c.dom.*;
-import java.io.FileOutputStream;
 import java.io.File;
-import java.io.IOException;
-import org.xml.sax.helpers.*;
 
-/** This testcase tests for following scenarios as per JAXP 1.2 specification.
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.helpers.DefaultHandler;
+
+/** 
+ * This testcase tests for following scenarios as per JAXP 1.2 specification.
  *
  * 1.Parser(SAX and DOM) should ignore SchemaLanguage property when validation
  *  feature is set to false.
@@ -34,8 +40,9 @@ import org.xml.sax.helpers.*;
  *  set without setting SchemaLanguage property.
  *
  * @author k.venugopal@sun.com
+ * 
+ * @version $Id$
  */
-
 public class JAXPSpecTest extends DefaultHandler {
     
     /** TestCase Main.
@@ -47,7 +54,7 @@ public class JAXPSpecTest extends DefaultHandler {
         JAXPSpecTest jaxpTest = new JAXPSpecTest();
         
         if (args.length == 0) {
-            jaxpTest.printUsage();
+            JAXPSpecTest.printUsage();
         }
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
@@ -60,12 +67,13 @@ public class JAXPSpecTest extends DefaultHandler {
             else if(arg.equals("testSchemaSourceDOM"))
                 jaxpTest.testSchemaSourceDOM();
             else
-                jaxpTest.printUsage();
+                JAXPSpecTest.printUsage();
         }
         
     }
     
-    /** Schema Language property should be ignored if
+    /** 
+     * Schema Language property should be ignored if
      * validation feature is set to false
      * @throws Exception
      */
