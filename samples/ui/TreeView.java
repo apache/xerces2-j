@@ -15,8 +15,7 @@
  */
 
 package ui;                    
-                    
-
+   
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -69,15 +68,15 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-
-
 /**
  * A sample DOM Tree Viewer. This sample program illustrates how to
  * traverse a DOM tree and display it in a Swing JTree View.
  *
- * @version
+ * @version $Id$
  */
 public class TreeView extends JFrame implements ActionListener, TextListener {
+
+    private static final long serialVersionUID = 3688504394090098738L;
 
     //
     // Constants
@@ -177,6 +176,7 @@ public class TreeView extends JFrame implements ActionListener, TextListener {
         messageText.setFont(new Font("dialog", Font.PLAIN, 12));
         JPanel messagePanel = new JPanel(new BorderLayout());
         messagePanel.add(new JScrollPane(messageText) {
+            private static final long serialVersionUID = 3978426918603075632L;
             public Dimension getPreferredSize(){
                 Dimension size = TreeView.this.getSize();
                 return new Dimension(size.width, size.height / 4);
@@ -201,6 +201,7 @@ public class TreeView extends JFrame implements ActionListener, TextListener {
         sourceText.setEditable(false);
         JPanel sourcePanel = new JPanel(new BorderLayout());
         sourcePanel.add(new JScrollPane(sourceText){
+            private static final long serialVersionUID = 4121135831458068789L;
             public Dimension getPreferredSize(){
                 Dimension size = TreeView.this.getSize();
                 return new Dimension(size.width / 2, size.height * 3 / 5);
@@ -237,6 +238,7 @@ public class TreeView extends JFrame implements ActionListener, TextListener {
         m_tree.setFont(new Font("dialog", Font.PLAIN, 12));
 
         treePanel.add(new JScrollPane(m_tree) {
+            private static final long serialVersionUID = 3977860665971126320L;
             public Dimension getPreferredSize(){
                 Dimension size = TreeView.this.getSize();
                 return new Dimension(size.width / 2, size.height * 3 / 5);
@@ -528,8 +530,9 @@ public class TreeView extends JFrame implements ActionListener, TextListener {
      * highlighting of errors in the tree and shows the gender values
      * as different icons.
      */
-    class XMLTreeCellRenderer extends DefaultTreeCellRenderer
-    {
+    class XMLTreeCellRenderer extends DefaultTreeCellRenderer {
+        
+        private static final long serialVersionUID = 3761130444229720113L;
 
         public Component getTreeCellRendererComponent(JTree tree, Object value,
                           boolean selected, boolean expanded,
@@ -584,7 +587,8 @@ public class TreeView extends JFrame implements ActionListener, TextListener {
      */
     class FileNameInput extends JFrame implements ActionListener {
 
-
+        private static final long serialVersionUID = 3257562893292615472L;
+        
         JLabel fileLabel;
         JTextField textField;
         JButton ok;

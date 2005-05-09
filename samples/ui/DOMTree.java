@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package ui;
 
 import java.io.Serializable;
@@ -32,11 +33,13 @@ import org.w3c.dom.NodeList;
  * Displays a DOM document in a tree control.
  *
  * @author  Andy Clark, IBM
- * @version
+ * @version $Id$
  */
 public class DOMTree
     extends JTree 
     {
+    
+    private static final long serialVersionUID = 3977582510937224497L;
 
     //
     // Constructors
@@ -93,6 +96,8 @@ public class DOMTree
         extends DefaultTreeModel
         implements Serializable
         {
+        
+        private static final long serialVersionUID = 3257286915924571186L;
 
         //
         // Data

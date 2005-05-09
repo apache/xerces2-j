@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package ui;
 
 
@@ -35,10 +36,13 @@ import org.w3c.dom.Notation;
  *  DOMTree class to enter every DOM node into a Swing JTree tree.
  *  The forward and backward mappings between Nodes to TreeNodes are kept.
  *
+ * @version $Id$
  */
 public class DOMTreeFull
     extends JTree 
     {
+    
+    private static final long serialVersionUID = 3978144335541975344L;
 
     //
     // Constructors
@@ -98,6 +102,8 @@ public class DOMTreeFull
         extends DefaultTreeModel
         implements Serializable
         {
+        
+        private static final long serialVersionUID = 3258131375181018673L;
 
         //
         // Data
