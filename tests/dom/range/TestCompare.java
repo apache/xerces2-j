@@ -1,5 +1,5 @@
 /*
- * Copyright 2000,2004 The Apache Software Foundation.
+ * Copyright 2000,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 package dom.range;
-import junit.framework.*;
+
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
 import org.apache.xerces.dom.DocumentImpl;
-import org.w3c.dom.*;
-import org.w3c.dom.ranges.*;
+import org.w3c.dom.Element;
+import org.w3c.dom.Text;
+import org.w3c.dom.ranges.Range;
 
 /**
  * This class is used to validate that the implementation of DOM Ranges
@@ -25,6 +29,8 @@ import org.w3c.dom.ranges.*;
  * from the DOM Spec.
  *
  * @author Lynn Monson
+ * 
+ * @version $Id$
  */
 public class TestCompare extends TestCase 
 {

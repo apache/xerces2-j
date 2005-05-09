@@ -1,5 +1,5 @@
 /*
- * Copyright 1999,2004 The Apache Software Foundation.
+ * Copyright 1999,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,24 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package dom.range;
-import org.apache.xerces.parsers.*;
-import org.apache.xerces.dom.*;
+
+import java.io.StringReader;
+
 import org.apache.xerces.dom.DocumentImpl;
-
-import org.w3c.dom.*;
-import org.w3c.dom.Element;
-import org.w3c.dom.ranges.*;
-import org.w3c.dom.ranges.RangeException;
-
-import java.io.*;
-import dom.Writer;
+import org.apache.xerces.parsers.DOMParser;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.ranges.Range;
 import org.xml.sax.InputSource;
 
-/** This RangeTest tests all of the cases delineated as examples
- *  in the DOM Level 2 Range specification, and a few others.
- *  <p>These do not by any means completely test the API and 
- *  corner cases. 
+import dom.Writer;
+
+/** 
+ * This RangeTest tests all of the cases delineated as examples
+ * in the DOM Level 2 Range specification, and a few others.
+ * <p>These do not by any means completely test the API and 
+ * corner cases.
+ * 
+ * @version $Id$
  */
 public class Test {
     
