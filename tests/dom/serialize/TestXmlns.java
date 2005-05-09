@@ -42,6 +42,7 @@ import org.w3c.dom.ls.LSSerializer;
  * The namespace fixup is only performed with DOMWriter.
  * 
  * @author Elena Litani, IBM
+ * @version $Id$
  */
 public class TestXmlns implements DOMErrorHandler{
 

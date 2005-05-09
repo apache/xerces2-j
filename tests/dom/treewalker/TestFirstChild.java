@@ -1,5 +1,5 @@
 /*
- * Copyright 2001,2004 The Apache Software Foundation.
+ * Copyright 2001,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,22 @@
  */
 
 package dom.treewalker;
-import java.io.*;
-import javax.xml.parsers.*;
-import org.w3c.dom.*;
-import org.w3c.dom.traversal.*;
-import org.xml.sax.*;
+
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.Text;
+import org.w3c.dom.traversal.DocumentTraversal;
+import org.w3c.dom.traversal.NodeFilter;
+import org.w3c.dom.traversal.TreeWalker;
 
 
 /**
@@ -35,7 +46,7 @@ public class TestFirstChild {
 
 
         System.out.println(" --- "
-                           + org.apache.xerces.impl.Version.fVersion
+                           + org.apache.xerces.impl.Version.getVersion()
                            + " --- ");
         Document doc = getNodeSet1();
         NodeFilter nodefilter = null;

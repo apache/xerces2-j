@@ -1,5 +1,5 @@
 /*
- * Copyright 2000,2004 The Apache Software Foundation.
+ * Copyright 2000,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,14 @@
  */
 
 package dom.serialize;
-import java.io.ObjectOutputStream;
-import org.apache.xerces.parsers.DOMParser;
-import org.apache.xerces.dom.DocumentImpl;
-import org.apache.xerces.dom.DeferredDocumentImpl;
-import org.w3c.dom.NodeList;
-import org.apache.xerces.dom.NodeImpl;
-import org.w3c.dom.Document;
+
 import java.io.FileOutputStream;
-import org.w3c.dom.Node;
+import java.io.ObjectOutputStream;
+
+import org.apache.xerces.dom.DocumentImpl;
+import org.apache.xerces.parsers.DOMParser;
+import org.w3c.dom.Document;
+
 import dom.Writer;
 
 
@@ -34,7 +33,7 @@ import dom.Writer;
  * regresion
  * 
  * @author Jeffrey Rodriguez
- * @version $id$
+ * @version $Id$
  * @see                      TestSerializeDOMOut
  */
 

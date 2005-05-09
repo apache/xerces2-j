@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004 The Apache Software Foundation.
+ * Copyright 1999-2002,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,22 @@
 
 package dom.serialize;
 
-import  org.w3c.dom.*;
+import java.io.FileOutputStream;
 
-import org.apache.xerces.dom.*;
-import org.w3c.dom.ls.LSSerializer;
-import org.w3c.dom.ls.LSOutput;
+import org.apache.xerces.dom.DOMImplementationImpl;
+import org.apache.xerces.dom.DOMOutputImpl;
+import org.apache.xerces.parsers.DOMParser;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentType;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 import org.w3c.dom.ls.DOMImplementationLS;
-import org.apache.xerces.parsers.*;
-import org.apache.xml.serialize.*;
-import java.io.*;
-
+import org.w3c.dom.ls.LSOutput;
+import org.w3c.dom.ls.LSSerializer;
 
 /**
  * This class is testing namespace algorithm during serialization.
