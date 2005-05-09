@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2002,2004 The Apache Software Foundation.
+ * Copyright 2000-2002,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,13 @@
 
 package dom.events;
 
-import org.w3c.dom.*;
-import org.w3c.dom.events.*;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.Text;
+import org.w3c.dom.events.EventTarget;
 
 public class Test
 {
