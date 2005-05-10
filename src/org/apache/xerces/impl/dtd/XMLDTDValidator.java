@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2004 The Apache Software Foundation.
+ * Copyright 1999-2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.apache.xerces.impl.dtd;
 
 import org.apache.xerces.impl.Constants;
+import org.apache.xerces.impl.RevalidationHandler;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.dtd.models.ContentModelValidator;
@@ -81,7 +82,7 @@ import org.apache.xerces.xni.parser.XMLDocumentSource;
  * @version $Id$
  */
 public class XMLDTDValidator
-        implements XMLComponent, XMLDocumentFilter, XMLDTDValidatorFilter {
+        implements XMLComponent, XMLDocumentFilter, XMLDTDValidatorFilter, RevalidationHandler {
 
     //
     // Constants
@@ -2082,5 +2083,10 @@ public class XMLDTDValidator
     protected boolean isSpace(int c) {
         return XMLChar.isSpace(c);
     } // isSpace(int):  boolean
+
+    public boolean characterData(String data, Augmentations augs) {       
+        characters(new XMLString(data.toCharArray(), 0, data.length()), augs);
+        return true;
+    }
 
 } // class XMLDTDValidator

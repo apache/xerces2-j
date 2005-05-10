@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2004 The Apache Software Foundation.
+ * Copyright 2001-2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -285,14 +285,17 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition {
                 ancestorName = SchemaSymbols.ATTVAL_ANYSIMPLETYPE;
             }
 
-            if (fBaseType != null && fBaseType instanceof XSSimpleTypeDecl) {
-                
-                return ((XSSimpleTypeDecl) fBaseType).isDOMDerivedFrom(ancestorNS,
-                        ancestorName, derivationMethod);
-            } else if (fBaseType != null
-                    && fBaseType instanceof XSComplexTypeDecl) {
-                return ((XSComplexTypeDecl) fBaseType).isDOMDerivedFrom(
-                        ancestorNS, ancestorName, derivationMethod);
+            if(!(fName.equals(SchemaSymbols.ATTVAL_ANYTYPE) 
+                            && fTargetNamespace.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA))){
+                if (fBaseType != null && fBaseType instanceof XSSimpleTypeDecl) {
+                    
+                    return ((XSSimpleTypeDecl) fBaseType).isDOMDerivedFrom(ancestorNS,
+                            ancestorName, derivationMethod);
+                } else if (fBaseType != null
+                        && fBaseType instanceof XSComplexTypeDecl) {
+                    return ((XSComplexTypeDecl) fBaseType).isDOMDerivedFrom(
+                            ancestorNS, ancestorName, derivationMethod);
+                }
             }
         }
         
@@ -328,9 +331,9 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition {
      */
     private boolean isDerivedByAny(String ancestorNS, String ancestorName,
             int derivationMethod, XSTypeDefinition type) {
-        
+        XSTypeDefinition oldType = null;
         boolean derivedFrom = false;
-        while (type != null) {
+        while (type != null && type != oldType) {
             
             // If the ancestor type is reached or is the same as this type.
             if ((ancestorName.equals(type.getName()))
@@ -349,7 +352,7 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition {
                     derivationMethod, type)) {
                 return true;
             }
-            
+            oldType = type;
             type = type.getBaseType();
         }
         
@@ -375,7 +378,8 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition {
     private boolean isDerivedByRestriction(String ancestorNS,
             String ancestorName, int derivationMethod, XSTypeDefinition type) {
         
-        while (type != null) {
+        XSTypeDefinition oldType = null;
+        while (type != null && type != oldType) {
             
             // ancestor is anySimpleType, return false
             if (ancestorNS != null
@@ -409,7 +413,7 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition {
                     return false;
                 }
             }
-            
+            oldType = type;
             type = type.getBaseType();
             
         }
@@ -437,8 +441,8 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition {
             String ancestorName, int derivationMethod, XSTypeDefinition type) {
         
         boolean extension = false;
-        
-        while (type != null) {
+        XSTypeDefinition oldType = null;
+        while (type != null && type != oldType) {
             // If ancestor is anySimpleType return false.
             if (ancestorNS != null
                     && ancestorNS.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)
@@ -484,7 +488,7 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition {
                     extension = extension | true;
                 }
             }
-            
+            oldType = type;
             type = type.getBaseType();
         }
         

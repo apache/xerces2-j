@@ -18,6 +18,7 @@ package org.apache.xerces.dom;
 import org.apache.xerces.impl.RevalidationHandler;
 import org.apache.xerces.parsers.DOMParserImpl;
 import org.apache.xerces.util.XMLChar;
+import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xml.serialize.DOMSerializerImpl;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMImplementation;
@@ -56,7 +57,10 @@ public class CoreDOMImplementationImpl
     // validators pool
     private static final int SIZE = 2;
     private RevalidationHandler validators[] = new RevalidationHandler[SIZE];
+    
+    private RevalidationHandler dtdValidators[] = new RevalidationHandler[SIZE];
     private int freeValidatorIndex = -1;
+    private int freeDTDValidatorIndex = -1;
     private int currentSize = SIZE;
 
     // Document and doctype counter.  Used to assign order to documents and
@@ -380,8 +384,8 @@ public class CoreDOMImplementationImpl
          * reference to the default error handler.
 	 */
 	public LSSerializer createLSSerializer() {
-		return new DOMSerializerImpl();
-	}
+        return new DOMSerializerImpl();
+    } 
 	/**
 	 * DOM Level 3 LS CR - Experimental.
          * Create a new empty input source.
@@ -397,36 +401,64 @@ public class CoreDOMImplementationImpl
 	/** NON-DOM: retrieve validator. */
 	synchronized RevalidationHandler getValidator(String schemaType) {
 		// REVISIT: implement retrieving DTD validator
-        if (freeValidatorIndex < 0) {
+        if (schemaType == XMLGrammarDescription.XML_SCHEMA) {
             // create new validator - we should not attempt
             // to restrict the number of validation handlers being
             // requested
-            return (RevalidationHandler) (ObjectFactory
-                        .newInstance(
-                            "org.apache.xerces.impl.xs.XMLSchemaValidator",
-                            ObjectFactory.findClassLoader(),
-                            true));
-
+            if(freeValidatorIndex < 0) {
+                return (RevalidationHandler) (ObjectFactory
+                            .newInstance(
+                                "org.apache.xerces.impl.xs.XMLSchemaValidator",
+                                ObjectFactory.findClassLoader(),
+                                true));
+            }
+            // return first available validator
+            RevalidationHandler val = validators[freeValidatorIndex];
+            validators[freeValidatorIndex--] = null;
+            return val;
         }
-        // return first available validator
-        RevalidationHandler val = validators[freeValidatorIndex];
-        validators[freeValidatorIndex--] = null;
-        return val;
+        else if(schemaType == XMLGrammarDescription.XML_DTD) {
+            if(freeDTDValidatorIndex < 0) {
+                return (RevalidationHandler) (ObjectFactory
+                            .newInstance(
+                                "org.apache.xerces.impl.dtd.XMLDTDValidator",
+                                ObjectFactory.findClassLoader(),
+                                true));
+            }
+            // return first available validator
+            RevalidationHandler val = dtdValidators[freeDTDValidatorIndex];
+            dtdValidators[freeDTDValidatorIndex--] = null;
+            return val;
+        }
+        return null;
 	}
 
 	/** NON-DOM: release validator */
 	synchronized void releaseValidator(String schemaType,
                                          RevalidationHandler validator) {
        // REVISIT: implement support for DTD validators as well
-       ++freeValidatorIndex;
-       if (validators.length == freeValidatorIndex ){
-            // resize size of the validators
-            currentSize+=SIZE;
-            RevalidationHandler newarray[] =  new RevalidationHandler[currentSize];
-            System.arraycopy(validators, 0, newarray, 0, validators.length);
-            validators = newarray;
+       if(schemaType == XMLGrammarDescription.XML_SCHEMA) {
+           ++freeValidatorIndex;
+           if (validators.length == freeValidatorIndex ){
+                // resize size of the validators
+                currentSize+=SIZE;
+                RevalidationHandler newarray[] =  new RevalidationHandler[currentSize];
+                System.arraycopy(validators, 0, newarray, 0, validators.length);
+                validators = newarray;
+           }
+           validators[freeValidatorIndex]=validator;
        }
-       validators[freeValidatorIndex]=validator;
+       else if(schemaType == XMLGrammarDescription.XML_DTD) {
+           ++freeDTDValidatorIndex;
+           if (dtdValidators.length == freeDTDValidatorIndex ){
+                // resize size of the validators
+                currentSize+=SIZE;
+                RevalidationHandler newarray[] =  new RevalidationHandler[currentSize];
+                System.arraycopy(dtdValidators, 0, newarray, 0, dtdValidators.length);
+                dtdValidators = newarray;
+           }
+           dtdValidators[freeDTDValidatorIndex]=validator;
+       }
 	}
 
        /** NON-DOM:  increment document/doctype counter */

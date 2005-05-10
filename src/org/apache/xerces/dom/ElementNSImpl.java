@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004 The Apache Software Foundation.
+ * Copyright 1999-2002,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -424,7 +424,11 @@ public class ElementNSImpl
      */
     public String getTypeName() {
         if (type !=null){
-            return type.getName();
+            if (type instanceof XSSimpleTypeDefinition) {
+                return ((XSSimpleTypeDecl) type).getTypeName();
+            } else {
+                return ((XSComplexTypeDecl) type).getTypeName();
+            }
         }
         return null;
     }
@@ -456,6 +460,9 @@ public class ElementNSImpl
      */
     public boolean isDerivedFrom(String typeNamespaceArg, String typeNameArg, 
             int derivationMethod) {
+        if(needsSyncData()) {
+            synchronizeData();
+        }
         if (type != null) {
             if (type instanceof XSSimpleTypeDefinition) {
                 return ((XSSimpleTypeDecl) type).isDOMDerivedFrom(

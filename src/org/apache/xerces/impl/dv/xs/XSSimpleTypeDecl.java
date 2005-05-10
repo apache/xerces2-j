@@ -207,7 +207,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 		public void addIdRef(String name) {
 		}
 		public String getSymbol (String symbol) {
-            return symbol.intern();
+			return symbol.intern();
 		}
 		public String getURI(String prefix) {
 			return null;
@@ -538,8 +538,12 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 	}
 	
 	public String getName() {
-		return fTypeName;
+		return getAnonymous()?null:fTypeName;
 	}
+    
+    public String getTypeName() {
+        return fTypeName;
+    }
 	
 	public String getNamespace() {
 		return fTargetNamespace;
@@ -558,7 +562,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 	}
 	
 	public boolean getAnonymous() {
-		return fTypeName == null;
+		return fAnonymous || (fTypeName == null);
 	}
 	
 	public short getVariety(){
@@ -1560,6 +1564,8 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 		
 		Object ob = validatedInfo.actualValue;
 		String content = validatedInfo.normalizedValue;
+        short type = validatedInfo.actualValueType;
+        ShortList itemType = validatedInfo.itemValueTypes;
 		
 		// For QName and NOTATION types, we don't check length facets
 		if (fValidationDV != DV_QNAME && fValidationDV != DV_NOTATION) {
@@ -1594,9 +1600,18 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 		if ( ((fFacetsDefined & FACET_ENUMERATION) != 0 ) ) {
 			boolean present = false;
 			for (int i = 0; i < fEnumeration.size(); i++) {
-				if (fEnumeration.elementAt(i).equals(ob)) {
-					present = true;
-					break;
+				if (fEnumerationType[i] == type && fEnumeration.elementAt(i).equals(ob)) {
+                    if(type == XSConstants.LIST_DT || type == XSConstants.LISTOFUNION_DT) {
+                        ShortList enumItemType = fEnumerationItemType[i];
+                        if(enumItemType.equals(itemType)) {
+                            present = true;
+                            break;
+                        }
+                     }
+                    else {
+    					present = true;
+    					break;
+                    }
 				}
 			}
 			if(!present){
@@ -1812,9 +1827,31 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 				} catch(InvalidDatatypeValueException invalidValue) {
 				}
 			}
-			
-			throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.2",
-					new Object[]{content, fTypeName});
+			StringBuffer typesBuffer = new StringBuffer();
+            XSSimpleTypeDecl decl;
+            for(int i = 0;i < fMemberTypes.length; i++) {
+                if(i != 0)
+                    typesBuffer.append(" | ");
+                decl = fMemberTypes[i];
+                if(decl.fTargetNamespace != null) {
+                    typesBuffer.append('{');
+                    typesBuffer.append(decl.fTargetNamespace);
+                    typesBuffer.append('}');
+                }
+                typesBuffer.append(decl.fTypeName);
+                if(decl.fEnumeration != null) {
+                    Vector v = decl.fEnumeration;
+                    typesBuffer.append(" : [");
+                    for(int j = 0;j < v.size(); j++) {
+                        if(j != 0)
+                            typesBuffer.append(',');
+                        typesBuffer.append(v.elementAt(j));
+                    }
+                    typesBuffer.append(']');
+                }             
+            }
+			throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.3",
+					new Object[]{content, fTypeName, typesBuffer.toString()});
 		}
 		
 	}//getActualValue()
@@ -2522,9 +2559,9 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 			XSTypeDefinition type) {
 		
 		boolean derivedFrom = false;
-		
+		XSTypeDefinition oldType = null;
 		// for each base, item or member type
-		while (type != null)  {
+		while (type != null && type != oldType)  {
 			
 			// If the ancestor type is reached or is the same as this type.
 			if ((ancestorName.equals(type.getName()))
@@ -2542,7 +2579,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 			} else  if (isDerivedByUnion(ancestorNS, ancestorName, type)) {
 				return true;
 			}
-			
+			oldType = type;
 			// get the base, item or member type depending on the variety
 			if (((XSSimpleTypeDecl) type).getVariety() == VARIETY_ABSENT
 					|| ((XSSimpleTypeDecl) type).getVariety() == VARIETY_ATOMIC) {
@@ -2577,13 +2614,15 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 	 *         reference type
 	 */
 	private boolean isDerivedByRestriction (String ancestorNS, String ancestorName, XSTypeDefinition type) {
-		while (type != null) {
+        XSTypeDefinition oldType = null;
+		while (type != null && type != oldType) {
 			if ((ancestorName.equals(type.getName()))
 					&& ((ancestorNS != null && ancestorNS.equals(type.getNamespace())) 
 							|| (type.getNamespace() == null && ancestorNS == null))) { 
 				
 				return true;
 			}
+            oldType = type;
 			type = type.getBaseType();
 		}
 		
@@ -2698,13 +2737,15 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 		}
 		
 		public String getSymbol (String symbol) {
-            return symbol.intern();
+			return symbol.intern();
 		}
 		
 		public String getURI(String prefix) {
 			return null;
 		}
 	};
+    
+    private boolean fAnonymous = false;
 	
 	/**
 	 * A wrapper of ValidationContext, to provide a way of switching to a
@@ -3004,6 +3045,10 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     
     public Object getMaxExclusiveValue() {
         return fMaxExclusive;
+    }
+    
+    public void setAnonymous(boolean anon) {
+        fAnonymous = anon;
     }
 	
 	private static final class XSFacetImpl implements XSFacet {
