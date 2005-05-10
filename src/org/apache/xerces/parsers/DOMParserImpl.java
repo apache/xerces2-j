@@ -862,19 +862,17 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
 			fBusy = true;
             parse (source);
             fBusy = false;
-            if(abortNow && currentThread.isInterrupted())
-            {
+            if (abortNow && currentThread.isInterrupted()) {
                 //reset interrupt state 
                 abortNow = false;
-                currentThread.interrupted();
+                Thread.interrupted();
             }
         } catch (Exception e){
             fBusy = false;
-            if(abortNow && currentThread.isInterrupted())
-            {
-                currentThread.interrupted();
+            if (abortNow && currentThread.isInterrupted()) {
+                Thread.interrupted();
             }
-            if(abortNow) {
+            if (abortNow) {
                 abortNow = false;
                 restoreHandlers();
                 return null;
@@ -919,19 +917,17 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
 			fBusy = true;
             parse (xmlInputSource);
             fBusy = false;   
-            if(abortNow && currentThread.isInterrupted())
-            {
+            if (abortNow && currentThread.isInterrupted()) {
                 //reset interrupt state 
                 abortNow = false;
-                currentThread.interrupted();
+                Thread.interrupted();
             }
         } catch (Exception e) {
             fBusy = false;
-            if(abortNow && currentThread.isInterrupted())
-            {
-                currentThread.interrupted();
+            if (abortNow && currentThread.isInterrupted()) {
+                Thread.interrupted();
             }
-            if(abortNow) {
+            if (abortNow) {
                 abortNow = false;
                 restoreHandlers();
                 return null;
