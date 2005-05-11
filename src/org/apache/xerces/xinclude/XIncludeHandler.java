@@ -1385,11 +1385,15 @@ public class XIncludeHandler
     }
 
     protected void handleFallbackElement() {
-        setSawInclude(fDepth, false);
-        fNamespaceContext.setContextInvalid();
         if (!getSawInclude(fDepth - 1)) {
+            if (getState() == STATE_IGNORE) {
+                return;
+            }
             reportFatalError("FallbackParent");
         }
+        
+        setSawInclude(fDepth, false);
+        fNamespaceContext.setContextInvalid();
 
         if (getSawFallback(fDepth)) {
             reportFatalError("MultipleFallbacks");
@@ -1408,13 +1412,14 @@ public class XIncludeHandler
 
     protected boolean handleIncludeElement(XMLAttributes attributes)
         throws XNIException {
-        setSawInclude(fDepth, true);
-        fNamespaceContext.setContextInvalid();
         if (getSawInclude(fDepth - 1)) {
             reportFatalError("IncludeChild", new Object[] { XINCLUDE_INCLUDE });
         }
-        if (getState() == STATE_IGNORE)
+        if (getState() == STATE_IGNORE) {
             return true;
+        }
+        setSawInclude(fDepth, true);
+        fNamespaceContext.setContextInvalid();
 
         // TODO: does Java use IURIs by default?
         //       [Definition: An internationalized URI reference, or IURI, is a URI reference that directly uses [Unicode] characters.]
