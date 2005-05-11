@@ -10,7 +10,6 @@ public class DatatypeAPITest {
         DatatypeFactory df = DatatypeFactory.newInstance();
         // my work number in milliseconds:
         Duration myPhone = df.newDuration(9054133519l);
-        // my approximate life span up to the conference
         Duration myLife = df.newDuration(true, 29, 2, 15, 13, 45, 0);
         int compareVal = myPhone.compare(myLife);
         switch (compareVal) {
@@ -27,9 +26,13 @@ public class DatatypeAPITest {
             System.out.println("The comparison could not be carried out.");
         }
         
-        // create a yearmonthDuration
+        // create a yearMonthDuration
         Duration ymDuration = df.newDurationYearMonth("P12Y10M");
         System.out.println("P12Y10M is of type: " + ymDuration.getXMLSchemaType());
+        
+        // create a dayTimeDuration
+        Duration dtDuration = df.newDurationDayTime("P12Y10M");
+        System.out.println("P12Y10M is of type: " + dtDuration.getXMLSchemaType());
         
         // try to fool the factory!
         try {
@@ -51,6 +54,10 @@ public class DatatypeAPITest {
         xgc.add(myPhone);
         System.out.println("The approximate end of the number of milliseconds in my phone number was " + xgc);
         
+        //adding a duration to XMLGregorianCalendar
+        xgc.add(myLife);
+        System.out.println("Adding the duration myLife to the above calendar:" + xgc);
+        
         // create a new XMLGregorianCalendar using the string format of xgc.
         XMLGregorianCalendar xgc_copy = df.newXMLGregorianCalendar(xgc.toXMLFormat());
         
@@ -59,7 +66,7 @@ public class DatatypeAPITest {
             System.out.println("oooops!");
         }
         else {
-            System.out.println("Very good: " + xgc +  " is values are equal to " + xgc_copy);
+            System.out.println("Very good: " + xgc +  " is equal to " + xgc_copy);
         }
     }
 }
