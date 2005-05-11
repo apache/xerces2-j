@@ -30,18 +30,14 @@ public class DatatypeAPITest {
         Duration ymDuration = df.newDurationYearMonth("P12Y10M");
         System.out.println("P12Y10M is of type: " + ymDuration.getXMLSchemaType());
         
-        // create a dayTimeDuration
+        // create a dayTimeDuration (supposed)
         Duration dtDuration = df.newDurationDayTime("P12Y10M");
         System.out.println("P12Y10M is of type: " + dtDuration.getXMLSchemaType());
         
-        // try to fool the factory!
-        try {
-            ymDuration = df.newDurationYearMonth("P12Y10M1D");
-        }
-        catch(IllegalArgumentException e) {
-            System.out.println("'duration': P12Y10M1D is not 'yearMonthDuration'!!!");
-        }
-        
+        // create a dayTimeDuration (really this time)
+        dtDuration = df.newDurationDayTime("P10DT10H12M0S");
+        System.out.println("P10DT10H12M is of type: " + dtDuration.getXMLSchemaType());
+
         XMLGregorianCalendar xgc = df.newXMLGregorianCalendar();
         xgc.setYear(1975);
         xgc.setMonth(DatatypeConstants.AUGUST);
