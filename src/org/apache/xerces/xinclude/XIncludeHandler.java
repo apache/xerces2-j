@@ -364,7 +364,7 @@ public class XIncludeHandler
         throws XNIException {
         fNamespaceContext = null;
         fDepth = 0;
-        fResultDepth = 0;
+        fResultDepth = isRootDocument() ? 0 : fParentXIncludeHandler.getResultDepth();
         fNotations.clear();
         fUnparsedEntities.clear();
         fParentRelativeURI = null;
@@ -874,7 +874,7 @@ public class XIncludeHandler
                     new Object[] { element.rawname });
             }
             if (getState() == STATE_NORMAL_PROCESSING) {
-                if (fResultDepth++ == 0 && isRootDocument()) {
+                if (fResultDepth++ == 0) {
                     checkMultipleRootElements();
                 }
                 if (fDocumentHandler != null) {
@@ -885,7 +885,7 @@ public class XIncludeHandler
             }
         }
         else if (getState() == STATE_NORMAL_PROCESSING) {
-            if (fResultDepth++ == 0 && isRootDocument()) {
+            if (fResultDepth++ == 0) {
                 checkMultipleRootElements();
             }
             if (fDocumentHandler != null) {
@@ -944,7 +944,7 @@ public class XIncludeHandler
                     new Object[] { element.rawname });
             }
             if (getState() == STATE_NORMAL_PROCESSING) {
-                if (fResultDepth == 0 && isRootDocument()) {
+                if (fResultDepth == 0) {
                     checkMultipleRootElements();
                 }
                 if (fDocumentHandler != null) {
@@ -955,7 +955,7 @@ public class XIncludeHandler
             }
         }
         else if (getState() == STATE_NORMAL_PROCESSING) {
-            if (fResultDepth == 0 && isRootDocument()) {
+            if (fResultDepth == 0) {
                 checkMultipleRootElements();
             }
             if (fDocumentHandler != null) {
@@ -1027,7 +1027,7 @@ public class XIncludeHandler
         Augmentations augs)
         throws XNIException {
         if (getState() == STATE_NORMAL_PROCESSING) {
-            if (fResultDepth == 0 && isRootDocument()) {
+            if (fResultDepth == 0) {
                 if (augs != null && Boolean.TRUE.equals(augs.getItem(Constants.ENTITY_SKIPPED))) {
                     reportFatalError("UnexpandedEntityReferenceIllegal");
                 }
@@ -1050,7 +1050,7 @@ public class XIncludeHandler
         throws XNIException {
         if (fDocumentHandler != null
             && getState() == STATE_NORMAL_PROCESSING
-            && (fResultDepth != 0 || !isRootDocument())) {
+            && fResultDepth != 0) {
             fDocumentHandler.endGeneralEntity(name, augs);
         }
     }
@@ -1058,7 +1058,7 @@ public class XIncludeHandler
     public void characters(XMLString text, Augmentations augs)
         throws XNIException {
         if (getState() == STATE_NORMAL_PROCESSING) {
-            if (fResultDepth == 0 && isRootDocument()) {
+            if (fResultDepth == 0) {
                 checkWhitespace(text);
             }
             else if (fDocumentHandler != null) {
@@ -1075,7 +1075,7 @@ public class XIncludeHandler
         throws XNIException {
         if (fDocumentHandler != null
             && getState() == STATE_NORMAL_PROCESSING
-            && (fResultDepth != 0 || !isRootDocument())) {
+            && fResultDepth != 0) {
             fDocumentHandler.ignorableWhitespace(text, augs);
         }
     }
@@ -1083,7 +1083,7 @@ public class XIncludeHandler
     public void startCDATA(Augmentations augs) throws XNIException {
         if (fDocumentHandler != null
             && getState() == STATE_NORMAL_PROCESSING
-            && (fResultDepth != 0 || !isRootDocument())) {
+            && fResultDepth != 0) {
             fDocumentHandler.startCDATA(augs);
         }
     }
@@ -1091,7 +1091,7 @@ public class XIncludeHandler
     public void endCDATA(Augmentations augs) throws XNIException {
         if (fDocumentHandler != null
             && getState() == STATE_NORMAL_PROCESSING
-            && (fResultDepth != 0 || !isRootDocument())) {
+            && fResultDepth != 0) {
             fDocumentHandler.endCDATA(augs);
         }
     }
@@ -2052,6 +2052,13 @@ public class XIncludeHandler
         // a fallback element
         return 0;
     }
+    
+    /** 
+     * Returns the current element depth of the result infoset.
+     */
+    private int getResultDepth() {
+        return fResultDepth;
+    }
 
     /**
      * Modify the augmentations.  Add an [included] infoset item, if the current
@@ -2382,10 +2389,28 @@ public class XIncludeHandler
      * Checks whether the root element has already been processed.
      */
     private void checkMultipleRootElements() {
-        if (fSeenRootElement) {
+        if (getRootElementProcessed()) {
             reportFatalError("MultipleRootElements");
         }
-        fSeenRootElement = true;
+        setRootElementProcessed(true);
+    }
+    
+    /**
+     * Sets whether the root element has been processed.
+     */
+    private void setRootElementProcessed(boolean seenRoot) {
+        if (isRootDocument()) {
+            fSeenRootElement = seenRoot;
+            return;
+        }
+        fParentXIncludeHandler.setRootElementProcessed(seenRoot);
+    }
+    
+    /**
+     * Returns whether the root element has been processed.
+     */
+    private boolean getRootElementProcessed() {
+        return isRootDocument() ? fSeenRootElement : fParentXIncludeHandler.getRootElementProcessed();
     }
 
     // It would be nice if we didn't have to repeat code like this, but there's no interface that has
