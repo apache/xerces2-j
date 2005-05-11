@@ -994,11 +994,11 @@ public class XIncludeHandler
                 setState(STATE_IGNORE);
             }
         }
-        else if (
-            fDocumentHandler != null
-                && getState() == STATE_NORMAL_PROCESSING) {
+        else if (getState() == STATE_NORMAL_PROCESSING) {
             --fResultDepth;
-            fDocumentHandler.endElement(element, augs);
+            if (fDocumentHandler != null) {
+                fDocumentHandler.endElement(element, augs);
+            }
         }
 
         // reset the out of scope stack elements
