@@ -29,21 +29,31 @@ import org.xml.sax.SAXParseException;
 final class DraconianErrorHandler implements ErrorHandler {
 
     /**
-     * Use this singleton instance.
+     * Singleton instance.
      */
-    public static final ErrorHandler theInstance = new DraconianErrorHandler();
+    private static final DraconianErrorHandler ERROR_HANDLER_INSTANCE 
+        = new DraconianErrorHandler();
     
     private DraconianErrorHandler() {}
     
+    /** Returns the one and only instance of this error handler. */
+    public static DraconianErrorHandler getInstance() {
+        return ERROR_HANDLER_INSTANCE;
+    }
+    
+    /** Warning: Ignore. */
     public void warning(SAXParseException e) throws SAXException {
         // noop
     }
     
+    /** Error: Throws back SAXParseException. */
     public void error(SAXParseException e) throws SAXException {
         throw e;
     }
     
+    /** Fatal Error: Throws back SAXParseException. */
     public void fatalError(SAXParseException e) throws SAXException {
         throw e;
     }
-}
+    
+} // DraconianErrorHandler
