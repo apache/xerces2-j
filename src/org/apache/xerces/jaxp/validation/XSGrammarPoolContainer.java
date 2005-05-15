@@ -36,7 +36,7 @@ public interface XSGrammarPoolContainer {
     /**
      * <p>Returns whether the schema components contained in this object
      * can be considered to be a fully composed schema and should be
-     * used to exclusion of other schema components which may be
+     * used to the exclusion of other schema components which may be
      * present elsewhere.</p>
      * 
      * @return whether the schema components contained in this object
