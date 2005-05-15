@@ -25,30 +25,30 @@ import org.w3c.dom.Node;
  * @version $Id$
  */
 public class DOMInputSource extends XMLInputSource {
-
-	private Node fNode;
+    
+    private Node fNode;
     
     public DOMInputSource() {
         this(null);
     }
-	
-	public DOMInputSource(Node node) {
-		super(null, getSystemIdFromNode(node), null);
-		fNode = node;
-	}
-	
-	public DOMInputSource(Node node, String systemId) {
-		super(null, systemId, null);
-		fNode = node;
-	}
-	
-	public Node getNode() {
-		return fNode;
-	}
-	
-	public void setNode(Node node) {
-		fNode = node;
-	}
+    
+    public DOMInputSource(Node node) {
+        super(null, getSystemIdFromNode(node), null);
+        fNode = node;
+    }
+    
+    public DOMInputSource(Node node, String systemId) {
+        super(null, systemId, null);
+        fNode = node;
+    }
+    
+    public Node getNode() {
+        return fNode;
+    }
+    
+    public void setNode(Node node) {
+        fNode = node;
+    }
     
     private static String getSystemIdFromNode(Node node) {
         if (node != null) {
