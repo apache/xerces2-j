@@ -46,19 +46,19 @@ public interface XSDecimal {
     
     /**
      * @return the int value representation of this object
-     * @exception NumberFormatException if the value cannot be represented as a int
+     * @exception NumberFormatException if the value cannot be represented as a <code>int</code>
      */
     public int getInt() throws NumberFormatException;
     
     /**
      * @return the short value representation of this object
-     * @exception NumberFormatException if the value cannot be represented as a short
+     * @exception NumberFormatException if the value cannot be represented as a <code>short</code>
      */
     public short getShort() throws NumberFormatException;
     
     /**
      * @return the byte value representation of this object
-     * @exception NumberFormatException if the value cannot be represented as a byte
+     * @exception NumberFormatException if the value cannot be represented as a <code>byte</code>
      */
     public byte getByte() throws NumberFormatException;
 }
