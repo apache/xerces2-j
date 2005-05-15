@@ -1,5 +1,5 @@
 /*
- * Copyright 2004, 2005 The Apache Software Foundation.
+ * Copyright 2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,6 @@ import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 /**
- * <p><b>EXPERIMENTAL: This interface should not be considered stable.
- * It is likely it may be altered or replaced in the future.</b></p>
- * 
  * <p>Interface to expose the values for all date-time related types. The following 
  * table shows the methods defined for various XML Schema 1.0 built-in types. 'X' 
  * marks whether a particular method is defined for a particular type. Accessing undefined

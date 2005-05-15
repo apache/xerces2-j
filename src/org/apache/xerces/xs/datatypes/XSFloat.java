@@ -1,5 +1,5 @@
 /*
- * Copyright 2004, 2005 The Apache Software Foundation.
+ * Copyright 2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,6 @@
 package org.apache.xerces.xs.datatypes;
 
 /**
- * <p><b>EXPERIMENTAL: This interface should not be considered stable.
- * It is likely it may be altered or replaced in the future.</b></p>
- * 
  * <p>Interface to expose value of the float datatype.</p>
  * 
  * @author Ankit Pasricha, IBM

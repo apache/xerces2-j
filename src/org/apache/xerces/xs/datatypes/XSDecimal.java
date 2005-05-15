@@ -19,10 +19,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 /**
- * <p><b>EXPERIMENTAL: This interface should not be considered stable.
- * It is likely it may be altered or replaced in the future.</b></p>
- * 
- * <p>Interface to expose the value of '' and related datatypes.</p>
+ * <p>Interface to expose the value of 'decimal' and related datatypes.</p>
  * 
  * @author Naela Nissar, IBM
  * 

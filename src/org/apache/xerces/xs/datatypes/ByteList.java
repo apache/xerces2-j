@@ -1,5 +1,5 @@
 /*
- * Copyright 2004, 2005 The Apache Software Foundation.
+ * Copyright 2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,6 @@ package org.apache.xerces.xs.datatypes;
 import org.apache.xerces.xs.XSException;
 
 /**
- * <p><b>EXPERIMENTAL: This interface should not be considered stable.
- * It is likely it may be altered or replaced in the future.</b></p>
- * 
  * <p>The <code>ByteList</code> is an immutable ordered collection of 
  * <code>byte</code>.</p>
  * 
