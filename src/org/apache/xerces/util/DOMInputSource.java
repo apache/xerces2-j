@@ -24,7 +24,7 @@ import org.w3c.dom.Node;
  * 
  * @version $Id$
  */
-public class DOMInputSource extends XMLInputSource {
+public final class DOMInputSource extends XMLInputSource {
     
     private Node fNode;
     
