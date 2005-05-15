@@ -469,18 +469,19 @@ XSLoader, DOMConfiguration {
     } // getEntityResolver():  XMLEntityResolver
     
     /**
+     * Returns a Grammar object by parsing the contents of the
+     * entities pointed to by sources.
      * 
      * @param source[]  the locations of the entity which forms 
      *                      the staring point of the grammars to be constructed
      * @throws IOException  when a problem is encounted reading the entity
-     * @throws XNIException when a condition arises (such as a FatalErro) that requires parsing
+     * @throws XNIException when a condition arises (such as a FatalError) that requires parsing
      *                          of the entity be terminated
      */
-    //Notes: so far, we assume one grammar won't come from multiple sources--Jack
     public void loadGrammar(XMLInputSource source[]) 
-    throws IOException, XNIException{
+    throws IOException, XNIException {
         int numSource = source.length;
-        for(int i = 0; i < numSource; i++){
+        for (int i = 0; i < numSource; ++i) {
             loadGrammar(source[i]);
         }   
     }
