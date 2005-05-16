@@ -94,6 +94,9 @@ public class XMLSchemaFactory extends SchemaFactory {
     /** The LSResrouceResolver */
     private LSResourceResolver fLSResourceResolver;
     
+    /** The DOMEntityResolverWrapper */
+    private final DOMEntityResolverWrapper fDOMEntityResolverWrapper;
+    
     /** The SecurityManager. */
     private final SecurityManager fSecurityManager;
     
@@ -102,6 +105,7 @@ public class XMLSchemaFactory extends SchemaFactory {
     private boolean fEnableSP;
     
     public XMLSchemaFactory() {
+        fDOMEntityResolverWrapper = new DOMEntityResolverWrapper();
         fSecurityManager = new SecurityManager();
         // intercept error report and remember the last thrown exception.
         fXMLSchemaLoader.setErrorHandler(new ErrorHandlerWrapper(new ErrorHandler() {
@@ -167,8 +171,9 @@ public class XMLSchemaFactory extends SchemaFactory {
     }
     
     public void setResourceResolver(LSResourceResolver resourceResolver) {
-        this.fLSResourceResolver = resourceResolver;
-        fXMLSchemaLoader.setEntityResolver(new DOMEntityResolverWrapper(resourceResolver));
+        fLSResourceResolver = resourceResolver;
+        fDOMEntityResolverWrapper.setEntityResolver(resourceResolver);
+        fXMLSchemaLoader.setEntityResolver(fDOMEntityResolverWrapper);
     }
     
     public ErrorHandler getErrorHandler() {
