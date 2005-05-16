@@ -75,5 +75,23 @@ public class ShortListImpl implements ShortList {
             throw new XSException(XSException.INDEX_SIZE_ERR, null);
         return fArray[index];
     }
+    
+    public boolean equals(Object obj) {
+        if (obj == null || !(obj instanceof ShortList)) {
+            return false;
+        }
+        ShortList rhs = (ShortList)obj;
+        
+        if (fLength != rhs.getLength()) {
+            return false;
+        }
+        
+        for (int i = 0;i < fLength; ++i) {
+            if (fArray[i] != rhs.item(i)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
 } // class XSParticle
