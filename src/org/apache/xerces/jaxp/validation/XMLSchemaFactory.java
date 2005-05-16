@@ -76,38 +76,48 @@ public class XMLSchemaFactory extends SchemaFactory {
     private static final String SECURITY_MANAGER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.SECURITY_MANAGER_PROPERTY;
     
-    private final XMLSchemaLoader loader = new XMLSchemaLoader();
-    private static XSMessageFormatter messageFormatter = new XSMessageFormatter();
+    //
+    // Data
+    //
+    
+    /** The XMLSchemaLoader */
+    private final XMLSchemaLoader fXMLSchemaLoader = new XMLSchemaLoader();
+    
+    /** Schema message formatter. */
+    private static XSMessageFormatter fXSMessageFormatter = new XSMessageFormatter();
+    
     /**
-     * User-specified ErrorHandler. can be null.
+     * User-specified ErrorHandler; can be null.
      */
-    private ErrorHandler errorHandler;
+    private ErrorHandler fErrorHandler;
     
-    private LSResourceResolver resourceResolver;
+    /** The LSResrouceResolver */
+    private LSResourceResolver fLSResourceResolver;
     
-    private SAXParseException lastException;
+    /** The SecurityManager. */
+    private final SecurityManager fSecurityManager;
     
-    private final SecurityManager secureProcessing ;
+    private SAXParseException fLastException;
     
-    private boolean enableSP;
+    private boolean fEnableSP;
     
     public XMLSchemaFactory() {
-        secureProcessing = new SecurityManager();
+        fSecurityManager = new SecurityManager();
         // intercept error report and remember the last thrown exception.
-        loader.setErrorHandler(new ErrorHandlerWrapper(new ErrorHandler() {
+        fXMLSchemaLoader.setErrorHandler(new ErrorHandlerWrapper(new ErrorHandler() {
             public void warning(SAXParseException exception) throws SAXException {
-                if( errorHandler!=null )    errorHandler.warning(exception);
+                if( fErrorHandler!=null )    fErrorHandler.warning(exception);
             }
             
             public void error(SAXParseException exception) throws SAXException {
-                lastException = exception;
-                if( errorHandler!=null )    errorHandler.error(exception);
+                fLastException = exception;
+                if( fErrorHandler!=null )    fErrorHandler.error(exception);
                 else    throw exception;
             }
             
             public void fatalError(SAXParseException exception) throws SAXException {
-                lastException = exception;
-                if( errorHandler!=null )    errorHandler.fatalError(exception);
+                fLastException = exception;
+                if( fErrorHandler!=null )    fErrorHandler.fatalError(exception);
                 else    throw exception;
             }
         }));
@@ -130,14 +140,14 @@ public class XMLSchemaFactory extends SchemaFactory {
         
         if (schemaLanguage == null) {
             throw new NullPointerException(
-            messageFormatter.formatMessage(Locale.getDefault(),
+            fXSMessageFormatter.formatMessage(Locale.getDefault(),
             "SchemaLanguageSupportedErrorWhenNull",
             new Object [] {this.getClass().getName()}));
         }
         
         if (schemaLanguage.length() == 0) {
             throw new IllegalArgumentException(
-            messageFormatter.formatMessage(Locale.getDefault(),
+            fXSMessageFormatter.formatMessage(Locale.getDefault(),
             "SchemaLanguageSupportedErrorWhenLength",
             new Object [] {this.getClass().getName()}));
         }
@@ -153,36 +163,36 @@ public class XMLSchemaFactory extends SchemaFactory {
     }
     
     public LSResourceResolver getResourceResolver() {
-        return resourceResolver;
+        return fLSResourceResolver;
     }
     
     public void setResourceResolver(LSResourceResolver resourceResolver) {
-        this.resourceResolver = resourceResolver;
-        loader.setEntityResolver(new DOMEntityResolverWrapper(resourceResolver));
+        this.fLSResourceResolver = resourceResolver;
+        fXMLSchemaLoader.setEntityResolver(new DOMEntityResolverWrapper(resourceResolver));
     }
     
     public ErrorHandler getErrorHandler() {
-        return errorHandler;
+        return fErrorHandler;
     }
     
     public void setErrorHandler(ErrorHandler errorHandler) {
-        this.errorHandler = errorHandler;
+        this.fErrorHandler = errorHandler;
     }
     
     
     
     public Schema newSchema( Source[] schemas ) throws SAXException {
         
-        lastException = null;
+        fLastException = null;
         
         // this will let the loader store parsed Grammars into the pool.
         XMLGrammarPool pool = new XMLGrammarPoolImpl();
-        loader.setProperty(XMLGRAMMAR_POOL, pool);
-        loader.setFeature(SCHEMA_FULL_CHECKING, true);
-        if(enableSP)
-            loader.setProperty(SECURITY_MANAGER, secureProcessing);
+        fXMLSchemaLoader.setProperty(XMLGRAMMAR_POOL, pool);
+        fXMLSchemaLoader.setFeature(SCHEMA_FULL_CHECKING, true);
+        if(fEnableSP)
+            fXMLSchemaLoader.setProperty(SECURITY_MANAGER, fSecurityManager);
         else
-            loader.setProperty(SECURITY_MANAGER, null);
+            fXMLSchemaLoader.setProperty(SECURITY_MANAGER, null);
         
         XMLInputSource[] xmlInputSources = new XMLInputSource[schemas.length];
         InputStream inputStream;
@@ -225,21 +235,21 @@ public class XMLSchemaFactory extends SchemaFactory {
             }
             
             try {
-                loader.loadGrammar(xmlInputSources);
+                fXMLSchemaLoader.loadGrammar(xmlInputSources);
             } catch (XNIException e) {
                 // this should have been reported to users already.
                 throw Util.toSAXException(e);
             } catch (IOException e) {
                 // this hasn't been reported, so do so now.
                 SAXParseException se = new SAXParseException(e.getMessage(),null,e);
-                errorHandler.error(se);
+                fErrorHandler.error(se);
                 throw se; // and we must throw it.
             }
         }
         
         // if any error had been reported, throw it.
-        if( lastException!=null )
-            throw lastException;
+        if( fLastException!=null )
+            throw fLastException;
         
         // make sure no further grammars are added by making it read-only.
         return new XMLSchema(new ReadOnlyGrammarPool(pool));
@@ -269,7 +279,7 @@ public class XMLSchemaFactory extends SchemaFactory {
         if(name==null) throw new NullPointerException(SAXMessageFormatter.formatMessage(Locale.getDefault(),
         "nullparameter",new Object[] {"setFeature(String,boolean)"}));
         if(name.equals(XMLConstants.FEATURE_SECURE_PROCESSING)){
-            enableSP = value;
+            fEnableSP = value;
         }else throw new SAXNotRecognizedException(SAXMessageFormatter.formatMessage(Locale.getDefault(),
         "feature-not-supported", new Object [] {name}));
         
@@ -279,7 +289,7 @@ public class XMLSchemaFactory extends SchemaFactory {
         if(name==null) throw new NullPointerException(SAXMessageFormatter.formatMessage(Locale.getDefault(),
         "nullparameter",new Object[] {"getFeature(String)"}));
         if(name.equals(XMLConstants.FEATURE_SECURE_PROCESSING))
-            return enableSP;
+            return fEnableSP;
         else throw new SAXNotRecognizedException(SAXMessageFormatter.formatMessage(Locale.getDefault(),
         "feature-not-supported", new Object [] {name}));
     }
