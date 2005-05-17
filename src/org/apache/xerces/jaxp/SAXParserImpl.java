@@ -29,6 +29,9 @@ import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 
 import org.apache.xerces.util.SAXMessageFormatter;
+import org.apache.xerces.xs.AttributePSVI;
+import org.apache.xerces.xs.ElementPSVI;
+import org.apache.xerces.xs.PSVIProvider;
 
 /**
  * This is the implementation specific class for the
@@ -40,7 +43,7 @@ import org.apache.xerces.util.SAXMessageFormatter;
  * @version $Id$
  */
 public class SAXParserImpl extends javax.xml.parsers.SAXParser
-    implements JAXPConstants {
+    implements JAXPConstants, PSVIProvider {
 
     private XMLReader xmlReader;
     private String schemaLanguage = null;     // null means DTD
@@ -198,5 +201,21 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
         } else {
             return xmlReader.getProperty(name);
         }
+    }
+    
+    /*
+     * PSVIProvider methods
+     */
+
+    public ElementPSVI getElementPSVI() {
+        return ((PSVIProvider)xmlReader).getElementPSVI();
+    }
+
+    public AttributePSVI getAttributePSVI(int index) {
+        return ((PSVIProvider)xmlReader).getAttributePSVI(index);
+    }
+
+    public AttributePSVI getAttributePSVIByName(String uri, String localname) {
+        return ((PSVIProvider)xmlReader).getAttributePSVIByName(uri, localname);
     }
 }
