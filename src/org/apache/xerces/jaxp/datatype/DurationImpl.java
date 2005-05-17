@@ -96,7 +96,7 @@ import org.apache.xerces.util.DatatypeMessageFormatter;
  * @version $Id$
  * @see XMLGregorianCalendar#add(Duration)
  */
-public class DurationImpl
+class DurationImpl
 	extends Duration
 	implements Serializable {
     

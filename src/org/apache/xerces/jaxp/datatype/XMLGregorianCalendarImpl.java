@@ -176,7 +176,7 @@ import org.apache.xerces.util.DatatypeMessageFormatter;
  * @see javax.xml.datatype.Duration
  */
 
-public class XMLGregorianCalendarImpl
+class XMLGregorianCalendarImpl
 	extends XMLGregorianCalendar
 	implements Serializable, Cloneable {
 
