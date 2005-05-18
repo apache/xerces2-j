@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--
- * Copyright 2004 The Apache Software Foundation.
+ * Copyright 2004,2005 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,7 +76,7 @@ reader.setProperty(
      </p>
      <p>
       In addition to being used as an entity resolver, it is intended that 
-      the <code>XMLCatalogManager</code> may be used standalone to perform 
+      the <code>XMLCatalogResolver</code> may be used standalone to perform 
       catalog resolution outside of a parsing context. It may also be shared
       between several parsers and the application. See the <link idref="api">API</link> 
       documentation for details.
