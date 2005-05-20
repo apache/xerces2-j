@@ -2224,6 +2224,7 @@ public class XIncludeHandler
         ent.systemId = identifier.getLiteralSystemId();
         ent.publicId = identifier.getPublicId();
         ent.baseURI = identifier.getBaseSystemId();
+        ent.expandedSystemId = identifier.getExpandedSystemId();
         ent.notation = notation;
         ent.augmentations = augmentations;
         fUnparsedEntities.add(ent);
@@ -2244,6 +2245,7 @@ public class XIncludeHandler
         not.systemId = identifier.getLiteralSystemId();
         not.publicId = identifier.getPublicId();
         not.baseURI = identifier.getBaseSystemId();
+        not.expandedSystemId = identifier.getExpandedSystemId();
         not.augmentations = augmentations;
         fNotations.add(not);
     }
@@ -2304,8 +2306,8 @@ public class XIncludeHandler
                         ent.publicId,
                         ent.systemId,
                         ent.baseURI,
-                        null);
-                this.addUnparsedEntity(
+                        ent.expandedSystemId);
+                addUnparsedEntity(
                     ent.name,
                     id,
                     ent.notation,
@@ -2350,8 +2352,8 @@ public class XIncludeHandler
                         not.publicId,
                         not.systemId,
                         not.baseURI,
-                        null);
-                this.addNotation(not.name, id, not.augmentations);
+                        not.expandedSystemId);
+                addNotation(not.name, id, not.augmentations);
                 if (fSendUEAndNotationEvents && fDTDHandler != null) {
                     fDTDHandler.notationDecl(not.name, id, not.augmentations);
                 }
@@ -2479,6 +2481,7 @@ public class XIncludeHandler
         public String systemId;
         public String baseURI;
         public String publicId;
+        public String expandedSystemId;
         public Augmentations augmentations;
 
         // equals() returns true if two Notations have the same name.
@@ -2497,19 +2500,22 @@ public class XIncludeHandler
         // from 4.5.2
         // Notation items with the same [name], [system identifier],
         // [public identifier], and [declaration base URI] are considered
-        // to be duplicate
+        // to be duplicate. An application may also be able to detect that 
+        // notations are duplicate through other means. For instance, the URI 
+        // resulting from combining the system identifier and the declaration 
+        // base URI is the same.
         public boolean isDuplicate(Object obj) {
             if (obj != null && obj instanceof Notation) {
                 Notation other = (Notation)obj;
                 return name.equals(other.name)
-                    && (systemId == other.systemId
-                        || (systemId != null && systemId.equals(other.systemId)))
-                    && (publicId == other.publicId
-                        || (publicId != null && publicId.equals(other.publicId)))
-                    && (baseURI == other.baseURI
-                        || (baseURI != null && baseURI.equals(other.baseURI)));
+                && isEqual(publicId, other.publicId)
+                && isEqual(expandedSystemId, other.expandedSystemId);
             }
             return false;
+        }
+        
+        private boolean isEqual(String one, String two) {
+            return (one == two || (one != null && one.equals(two)));
         }
     }
 
@@ -2520,6 +2526,7 @@ public class XIncludeHandler
         public String systemId;
         public String baseURI;
         public String publicId;
+        public String expandedSystemId;
         public String notation;
         public Augmentations augmentations;
 
@@ -2539,21 +2546,23 @@ public class XIncludeHandler
         // from 4.5.1:
         // Unparsed entity items with the same [name], [system identifier],
         // [public identifier], [declaration base URI], [notation name], and
-        // [notation] are considered to be duplicate
+        // [notation] are considered to be duplicate. An application may also 
+        // be able to detect that unparsed entities are duplicate through other 
+        // means. For instance, the URI resulting from combining the system 
+        // identifier and the declaration base URI is the same.
         public boolean isDuplicate(Object obj) {
             if (obj != null && obj instanceof UnparsedEntity) {
                 UnparsedEntity other = (UnparsedEntity)obj;
                 return name.equals(other.name)
-                    && (systemId == other.systemId
-                        || (systemId != null && systemId.equals(other.systemId)))
-                    && (publicId == other.publicId
-                        || (publicId != null && publicId.equals(other.publicId)))
-                    && (baseURI == other.baseURI
-                        || (baseURI != null && baseURI.equals(other.baseURI)))
-                    && (notation == other.notation
-                        || (notation != null && notation.equals(other.notation)));
+                && isEqual(publicId, other.publicId)
+                && isEqual(expandedSystemId, other.expandedSystemId)
+                && isEqual(notation, other.notation);
             }
             return false;
+        }
+        
+        private boolean isEqual(String one, String two) {
+            return (one == two || (one != null && one.equals(two)));
         }
     }
 
