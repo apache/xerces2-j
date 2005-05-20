@@ -37,6 +37,11 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
+ * <p>Demonstrates how to use the datatype interfaces in 
+ * <code>org.apache.xerces.xs.datatypes</code>.</p>
+ * 
+ * @author Ankit Pasricha, IBM
+ * 
  * @version $Id$
  */
 public class DatatypeInterfaceUsage extends DefaultHandler {
