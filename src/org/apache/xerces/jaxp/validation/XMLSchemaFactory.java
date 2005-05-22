@@ -32,16 +32,14 @@ import javax.xml.validation.SchemaFactory;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.XMLSchemaLoader;
 import org.apache.xerces.impl.xs.XSMessageFormatter;
-import org.apache.xerces.jaxp.validation.ReadOnlyGrammarPool;
-import org.apache.xerces.jaxp.validation.Util;
 import org.apache.xerces.util.DOMEntityResolverWrapper;
 import org.apache.xerces.util.DOMInputSource;
 import org.apache.xerces.util.ErrorHandlerWrapper;
 import org.apache.xerces.util.SAXInputSource;
 import org.apache.xerces.util.SAXMessageFormatter;
+import org.apache.xerces.util.SecurityManager;
 import org.apache.xerces.util.XMLGrammarPoolImpl;
 import org.apache.xerces.xni.XNIException;
-import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLInputSource;
@@ -50,10 +48,9 @@ import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.apache.xerces.util.SecurityManager;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.SAXParseException;
 
 /**
  * {@link SchemaFactory} for XML Schema.
@@ -61,7 +58,7 @@ import org.xml.sax.SAXNotSupportedException;
  * @author Kohsuke Kawaguchi (kohsuke.kawaguchi@sun.com)
  * @version $Id$
  */
-public class XMLSchemaFactory extends SchemaFactory {
+public final class XMLSchemaFactory extends SchemaFactory {
     
     // property identifiers
     
@@ -254,23 +251,8 @@ public class XMLSchemaFactory extends SchemaFactory {
     }
     
     public Schema newSchema() throws SAXException {
-        // use a pool that uses the system id as the equality source.
-        return new XMLSchema(new XMLGrammarPoolImpl() {
-            public boolean equals(XMLGrammarDescription desc1, XMLGrammarDescription desc2) {
-                String sid1 = desc1.getExpandedSystemId();
-                String sid2 = desc2.getExpandedSystemId();
-                if( sid1!=null && sid2!=null )
-                    return sid1.equals(sid2);
-                if( sid1==null && sid2==null )
-                    return true;
-                return false;
-            }
-            public int hashCode(XMLGrammarDescription desc) {
-                String s = desc.getExpandedSystemId();
-                if(s!=null)     return s.hashCode();
-                return 0;
-            }
-        });
+        // Use a Schema that uses the system id as the equality source.
+        return new WeakReferenceXMLSchema();
     }
     
     public boolean getFeature(String name) 
