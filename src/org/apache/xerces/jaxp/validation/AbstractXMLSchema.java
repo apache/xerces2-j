@@ -37,9 +37,7 @@ abstract class AbstractXMLSchema extends Schema implements
      * @see javax.xml.validation.Schema#newValidator()
      */
     public Validator newValidator() {
-        // TODO: Integrate ValidatorImpl from the RI
-        // return new ValidatorImpl(this);
-        return null;
+        return new ValidatorImpl(this);
     }
 
     /* 
