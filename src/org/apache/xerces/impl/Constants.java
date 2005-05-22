@@ -282,6 +282,12 @@ public final class Constants {
     /** XInclude fixup language feature ("xinclude/fixup-language"). */
     public static final String XINCLUDE_FIXUP_LANGUAGE_FEATURE = "xinclude/fixup-language";
     
+    /**
+     * Internal feature. When set to true the schema validator will only use
+     * schema components from the grammar pool provided.
+     */
+    public static final String USE_GRAMMAR_POOL_ONLY_FEATURE = "internal/validation/schema/use-grammar-pool-only";
+    
     /** Internal performance related feature: 
      * false - the parser settings (features/properties) have not changed between 2 parses
      * true - the parser settings have changed between 2 parses  
