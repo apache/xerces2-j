@@ -95,35 +95,19 @@ public final class XMLSchemaFactory extends SchemaFactory {
     /** The DOMEntityResolverWrapper */
     private final DOMEntityResolverWrapper fDOMEntityResolverWrapper;
     
+    /** The ErrorHandlerWrapper */
+    private ErrorHandlerWrapper fErrorHandlerWrapper;
+    
     /** The SecurityManager. */
     private SecurityManager fSecurityManager;
     
-    private SAXParseException fLastException;
-    
     public XMLSchemaFactory() {
+        fErrorHandlerWrapper = new ErrorHandlerWrapper(DraconianErrorHandler.getInstance());
         fDOMEntityResolverWrapper = new DOMEntityResolverWrapper();
         fXMLSchemaLoader.setFeature(SCHEMA_FULL_CHECKING, true);
         fXMLSchemaLoader.setEntityResolver(fDOMEntityResolverWrapper);
-        // intercept error report and remember the last thrown exception.
-        fXMLSchemaLoader.setErrorHandler(new ErrorHandlerWrapper(new ErrorHandler() {
-            public void warning(SAXParseException exception) throws SAXException {
-                if( fErrorHandler!=null )    fErrorHandler.warning(exception);
-            }
-            
-            public void error(SAXParseException exception) throws SAXException {
-                fLastException = exception;
-                if( fErrorHandler!=null )    fErrorHandler.error(exception);
-                else    throw exception;
-            }
-            
-            public void fatalError(SAXParseException exception) throws SAXException {
-                fLastException = exception;
-                if( fErrorHandler!=null )    fErrorHandler.fatalError(exception);
-                else    throw exception;
-            }
-        }));
+        fXMLSchemaLoader.setErrorHandler(fErrorHandlerWrapper);
     }
-    
     
     /**
      * <p>Is specified schema supported by this <code>SchemaFactory</code>?</p>
@@ -138,29 +122,16 @@ public final class XMLSchemaFactory extends SchemaFactory {
      *   or <code>schemaLanguage</code> does not specify a <a href="#schemaLanguage">valid</a> schema language.
      */
     public boolean isSchemaLanguageSupported(String schemaLanguage) {
-        
         if (schemaLanguage == null) {
-            throw new NullPointerException(
-                    fXSMessageFormatter.formatMessage(Locale.getDefault(),
-                            "SchemaLanguageSupportedErrorWhenNull",
-                            new Object [] {this.getClass().getName()}));
+            throw new NullPointerException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+                    "SchemaLanguageNull", null));
         }
-        
         if (schemaLanguage.length() == 0) {
-            throw new IllegalArgumentException(
-                    fXSMessageFormatter.formatMessage(Locale.getDefault(),
-                            "SchemaLanguageSupportedErrorWhenLength",
-                            new Object [] {this.getClass().getName()}));
+            throw new IllegalArgumentException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+                    "SchemaLanguageLengthZero", null));
         }
-        
-        // understand W3C Schema and RELAX NG
-        if (schemaLanguage.equals(XMLConstants.W3C_XML_SCHEMA_NS_URI)
-                || schemaLanguage.equals(XMLConstants.RELAXNG_NS_URI)) {
-            return true;
-        }
-        
-        // don't know how to validate anything else
-        return false;
+        // only W3C XML Schema 1.0 is supported 
+        return schemaLanguage.equals(XMLConstants.W3C_XML_SCHEMA_NS_URI);
     }
     
     public LSResourceResolver getResourceResolver() {
@@ -179,11 +150,11 @@ public final class XMLSchemaFactory extends SchemaFactory {
     
     public void setErrorHandler(ErrorHandler errorHandler) {
         fErrorHandler = errorHandler;
+        fErrorHandlerWrapper.setErrorHandler(errorHandler != null ? errorHandler : DraconianErrorHandler.getInstance());
+        fXMLSchemaLoader.setErrorHandler(fErrorHandlerWrapper);
     }  
     
     public Schema newSchema( Source[] schemas ) throws SAXException {
-        
-        fLastException = null;
         
         // this will let the loader store parsed Grammars into the pool.
         XMLGrammarPool pool = new XMLGrammarPoolImpl();
@@ -241,10 +212,6 @@ public final class XMLSchemaFactory extends SchemaFactory {
                 throw se; // and we must throw it.
             }
         }
-        
-        // if any error had been reported, throw it.
-        if( fLastException!=null )
-            throw fLastException;
         
         // make sure no further grammars are added by making it read-only.
         return new XMLSchema(new ReadOnlyGrammarPool(pool));
