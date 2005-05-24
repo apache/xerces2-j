@@ -40,6 +40,8 @@ import org.apache.xerces.util.SAXMessageFormatter;
 import org.apache.xerces.util.SecurityManager;
 import org.apache.xerces.util.XMLGrammarPoolImpl;
 import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.grammars.Grammar;
+import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLInputSource;
@@ -84,9 +86,7 @@ public final class XMLSchemaFactory extends SchemaFactory {
     /** Schema message formatter. */
     private static XSMessageFormatter fXSMessageFormatter = new XSMessageFormatter();
     
-    /**
-     * User-specified ErrorHandler; can be null.
-     */
+    /** User-specified ErrorHandler; can be null. */
     private ErrorHandler fErrorHandler;
     
     /** The LSResrouceResolver */
@@ -101,10 +101,15 @@ public final class XMLSchemaFactory extends SchemaFactory {
     /** The SecurityManager. */
     private SecurityManager fSecurityManager;
     
+    /** The container for the real grammar pool. */ 
+    private XMLGrammarPoolWrapper fXMLGrammarPoolWrapper;
+    
     public XMLSchemaFactory() {
         fErrorHandlerWrapper = new ErrorHandlerWrapper(DraconianErrorHandler.getInstance());
         fDOMEntityResolverWrapper = new DOMEntityResolverWrapper();
+        fXMLGrammarPoolWrapper = new XMLGrammarPoolWrapper();
         fXMLSchemaLoader.setFeature(SCHEMA_FULL_CHECKING, true);
+        fXMLSchemaLoader.setProperty(XMLGRAMMAR_POOL, fXMLGrammarPoolWrapper);
         fXMLSchemaLoader.setEntityResolver(fDOMEntityResolverWrapper);
         fXMLSchemaLoader.setErrorHandler(fErrorHandlerWrapper);
     }
@@ -157,8 +162,8 @@ public final class XMLSchemaFactory extends SchemaFactory {
     public Schema newSchema( Source[] schemas ) throws SAXException {
         
         // this will let the loader store parsed Grammars into the pool.
-        XMLGrammarPool pool = new XMLGrammarPoolImpl();
-        fXMLSchemaLoader.setProperty(XMLGRAMMAR_POOL, pool);
+        XMLGrammarPoolImplExtension pool = new XMLGrammarPoolImplExtension();
+        fXMLGrammarPoolWrapper.setGrammarPool(pool);
         
         XMLInputSource[] xmlInputSources = new XMLInputSource[schemas.length];
         InputStream inputStream;
@@ -199,22 +204,37 @@ public final class XMLSchemaFactory extends SchemaFactory {
                         "SchemaFactorySourceUnrecognized", 
                         new Object [] {source.getClass().getName()}));
             }
-            
-            try {
-                fXMLSchemaLoader.loadGrammar(xmlInputSources);
-            } catch (XNIException e) {
-                // this should have been reported to users already.
-                throw Util.toSAXException(e);
-            } catch (IOException e) {
-                // this hasn't been reported, so do so now.
-                SAXParseException se = new SAXParseException(e.getMessage(),null,e);
-                fErrorHandler.error(se);
-                throw se; // and we must throw it.
-            }
         }
         
-        // make sure no further grammars are added by making it read-only.
-        return new XMLSchema(new ReadOnlyGrammarPool(pool));
+        try {
+            fXMLSchemaLoader.loadGrammar(xmlInputSources);
+        } 
+        catch (XNIException e) {
+            // this should have been reported to users already.
+            throw Util.toSAXException(e);
+        } 
+        catch (IOException e) {
+            // this hasn't been reported, so do so now.
+            SAXParseException se = new SAXParseException(e.getMessage(),null,e);
+            fErrorHandler.error(se);
+            throw se; // and we must throw it.
+        }
+        
+        // Clear reference to grammar pool.
+        fXMLGrammarPoolWrapper.setGrammarPool(null);
+        
+        // Select Schema implementation based on grammar count.
+        final int grammarCount = pool.getGrammarCount();
+        if (grammarCount > 1) {
+            return new XMLSchema(new ReadOnlyGrammarPool(pool));
+        }
+        else if (grammarCount == 1) {
+            Grammar[] grammars = pool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA);
+            return new SimpleXMLSchema(grammars[0]);
+        }
+        else {
+            return EmptyXMLSchema.getInstance();
+        }
     }
     
     public Schema newSchema() throws SAXException {
@@ -257,6 +277,11 @@ public final class XMLSchemaFactory extends SchemaFactory {
         }
         if (name.equals(SECURITY_MANAGER)) {
             return fSecurityManager;
+        }
+        else if (name.equals(XMLGRAMMAR_POOL)) {
+            throw new SAXNotSupportedException(
+                    SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                    "property-not-supported", new Object [] {name}));
         }
         try {
             return fXMLSchemaLoader.getProperty(name);
@@ -316,6 +341,11 @@ public final class XMLSchemaFactory extends SchemaFactory {
             fXMLSchemaLoader.setProperty(SECURITY_MANAGER, fSecurityManager);
             return;
         }
+        else if (name.equals(XMLGRAMMAR_POOL)) {
+            throw new SAXNotSupportedException(
+                    SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                    "property-not-supported", new Object [] {name}));
+        }
         try {
             fXMLSchemaLoader.setProperty(name, object);
         }
@@ -333,5 +363,77 @@ public final class XMLSchemaFactory extends SchemaFactory {
             }
         }
     }
+    
+    /** 
+     * Extension of XMLGrammarPoolImpl which exposes the number of
+     * grammars stored in the grammar pool.
+     */
+    static class XMLGrammarPoolImplExtension extends XMLGrammarPoolImpl {
+        
+        /** Constructs a grammar pool with a default number of buckets. */
+        public XMLGrammarPoolImplExtension() {
+            super();
+        }
+
+        /** Constructs a grammar pool with a specified number of buckets. */
+        public XMLGrammarPoolImplExtension(int initialCapacity) {
+            super(initialCapacity);
+        }
+        
+        /** Returns the number of grammars contained in this pool. */
+        int getGrammarCount() {
+            return fGrammarCount;
+        }
+        
+    } // XMLSchemaFactory.XMLGrammarPoolImplExtension
+    
+    /**
+     * A grammar pool which wraps another.
+     */
+    static class XMLGrammarPoolWrapper implements XMLGrammarPool {
+
+        private XMLGrammarPool fGrammarPool;
+        
+        /*
+         * XMLGrammarPool methods
+         */
+        
+        public Grammar[] retrieveInitialGrammarSet(String grammarType) {
+            return fGrammarPool.retrieveInitialGrammarSet(grammarType);
+        }
+
+        public void cacheGrammars(String grammarType, Grammar[] grammars) {
+            fGrammarPool.cacheGrammars(grammarType, grammars);
+        }
+
+        public Grammar retrieveGrammar(XMLGrammarDescription desc) {
+            return fGrammarPool.retrieveGrammar(desc);
+        }
+
+        public void lockPool() {
+            fGrammarPool.lockPool();
+        }
+
+        public void unlockPool() {
+            fGrammarPool.unlockPool();
+        }
+
+        public void clear() {
+            fGrammarPool.clear();
+        }
+        
+        /*
+         * Other methods
+         */
+        
+        void setGrammarPool(XMLGrammarPool grammarPool) {
+            fGrammarPool = grammarPool;
+        }
+        
+        XMLGrammarPool getGrammarPool() {
+            return fGrammarPool;
+        }
+        
+    } // XMLSchemaFactory.XMLGrammarPoolWrapper
     
 } // XMLSchemaFactory
