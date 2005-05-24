@@ -3261,7 +3261,7 @@ public class XMLSchemaValidator
         protected Field[] fFields = null;
         /** current data */
         protected Object[] fLocalValues = null;
-        protected int[] fLocalValueTypes = null;
+        protected short[] fLocalValueTypes = null;
         protected ShortList[] fLocalItemValueTypes = null;
 
         /** Current data value count. */
@@ -3269,9 +3269,7 @@ public class XMLSchemaValidator
 
         /** global data */
         public final Vector fValues = new Vector();
-        
-        public final Vector fValueTypes = new Vector();
-        
+        public final ShortVector fValueTypes = new ShortVector();
         public final Vector fItemValueTypes = new Vector();
 
         /** buffer for error messages */
@@ -3287,7 +3285,7 @@ public class XMLSchemaValidator
             fFieldCount = fIdentityConstraint.getFieldCount();
             fFields = new Field[fFieldCount];
             fLocalValues = new Object[fFieldCount];
-            fLocalValueTypes = new int[fFieldCount];
+            fLocalValueTypes = new short[fFieldCount];
             fLocalItemValueTypes = new ShortList[fFieldCount];
             for (int i = 0; i < fFieldCount; i++) {
                 fFields[i] = fIdentityConstraint.getFieldAt(i);
@@ -3431,8 +3429,8 @@ public class XMLSchemaValidator
                 // store values
                 for (i = 0; i < fFieldCount; i++) {
                     fValues.addElement(fLocalValues[i]);
-                    fValueTypes.addElement(new Integer(fLocalValueTypes[i]));
-                    fItemValueTypes.add(fLocalItemValueTypes[i]);
+                    fValueTypes.add(fLocalValueTypes[i]);
+                    fItemValueTypes.addElement(fLocalItemValueTypes[i]);
                 }
             }
         } // addValue(String,Field)
@@ -3450,8 +3448,8 @@ public class XMLSchemaValidator
                 for (int j = 0; j < fFieldCount; j++) {
                     Object value1 = fLocalValues[j];
                     Object value2 = fValues.elementAt(i);
-                    int valueType1 = fLocalValueTypes[j];
-                    int valueType2 = ((Integer)fValueTypes.elementAt(i)).intValue();
+                    short valueType1 = fLocalValueTypes[j];
+                    short valueType2 = fValueTypes.valueAt(i);
                     if (value1 == null || value2 == null || valueType1 != valueType2 || !(value1.equals(value2))) {
                         continue LOOP;
                     }
@@ -3475,16 +3473,16 @@ public class XMLSchemaValidator
          * values, otherwise the index of the first field in the
          * key sequence.
          */
-        public int contains(Vector values, Vector valueTypes, Vector itemValueTypes) {
+        public int contains(Vector values, ShortVector valueTypes, Vector itemValueTypes) {
             
             final int size1 = values.size();
             if (fFieldCount <= 1) {
                 for (int i = 0; i < size1; ++i) {
-                    Integer val = (Integer)valueTypes.elementAt(i);
+                    short val = valueTypes.valueAt(i);
                     if (!fValueTypes.contains(val) || !fValues.contains(values.elementAt(i))) {
                         return i;
                     }
-                    else if(val.intValue() == XSConstants.LIST_DT || val.intValue() == XSConstants.LISTOFUNION_DT) {
+                    else if(val == XSConstants.LIST_DT || val == XSConstants.LISTOFUNION_DT) {
                         ShortList list1 = (ShortList)itemValueTypes.elementAt(i);
                         if(!fItemValueTypes.contains(list1))
                             return i;
@@ -3501,8 +3499,8 @@ public class XMLSchemaValidator
                         for (int k = 0; k < fFieldCount; ++k) {
                             final Object value1 = values.elementAt(i+k);
                             final Object value2 = fValues.elementAt(j+k);
-                            final int valueType1 = ((Integer)valueTypes.elementAt(i+k)).intValue();
-                            final int valueType2 = ((Integer)fValueTypes.elementAt(j+k)).intValue();
+                            final short valueType1 = valueTypes.valueAt(i+k);
+                            final short valueType2 = fValueTypes.valueAt(j+k);
                             if (value1 != value2 && (valueType1 != valueType2 || value1 == null || !value1.equals(value2))) {
                                 continue INNER;
                             }
@@ -3995,4 +3993,71 @@ public class XMLSchemaValidator
         }
     } // class LocalIDKey
 
+    /**
+     * A simple vector for <code>short</code>s.
+     */
+    protected static final class ShortVector {
+        
+        //
+        // Data
+        //
+
+        /** Current length. */
+        private int fLength;
+
+        /** Data. */
+        private short[] fData;
+
+        //
+        // Public methods
+        //
+
+        /** Returns the length of the vector. */
+        public int length() {
+            return fLength;
+        }
+
+        /** Adds the value to the vector. */
+        public void add(short value) {
+            ensureCapacity(fLength + 1);
+            fData[fLength++] = value;
+        }
+
+        /** Returns the short value at the specified position in the vector. */
+        public short valueAt(int position) {
+            return fData[position];
+        }
+
+        /** Clears the vector. */
+        public void clear() {
+            fLength = 0;
+        }
+        
+        /** Returns whether the short is contained in the vector. */
+        public boolean contains(short value) {
+            for (int i = 0; i < fLength; ++i) {
+                if (fData[i] == value) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        //
+        // Private methods
+        //
+
+        /** Ensures capacity. */
+        private void ensureCapacity(int size) {
+            if (fData == null) {
+                fData = new short[8];
+            }
+            else if (fData.length <= size) {
+                short[] newdata = new short[fData.length * 2];
+                System.arraycopy(fData, 0, newdata, 0, fData.length);
+                fData = newdata;
+            }
+        }
+    }
+    
 } // class SchemaValidator
