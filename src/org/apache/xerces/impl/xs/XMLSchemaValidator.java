@@ -3269,8 +3269,16 @@ public class XMLSchemaValidator
 
         /** global data */
         public final Vector fValues = new Vector();
-        public final ShortVector fValueTypes = new ShortVector();
-        public final Vector fItemValueTypes = new Vector();
+        public ShortVector fValueTypes = null;
+        public Vector fItemValueTypes = null;
+        
+        private boolean fUseValueTypeVector = false;
+        private int fValueTypesLength = 0; 
+        private short fValueType = 0;
+        
+        private boolean fUseItemValueTypeVector = false;
+        private int fItemValueTypesLength = 0;
+        private ShortList fItemValueType = null;
 
         /** buffer for error messages */
         final StringBuffer fTempBuffer = new StringBuffer();
@@ -3300,9 +3308,19 @@ public class XMLSchemaValidator
         // locally-scoped ID constraint is involved.
         public void clear() {
             fValuesCount = 0;
+            fUseValueTypeVector = false;
+            fValueTypesLength = 0; 
+            fValueType = 0;
+            fUseItemValueTypeVector = false;
+            fItemValueTypesLength = 0;
+            fItemValueType = null;
             fValues.setSize(0);
-            fValueTypes.clear();
-            fItemValueTypes.setSize(0);
+            if (fValueTypes != null) {
+                fValueTypes.clear();
+            }
+            if (fItemValueTypes != null) {
+                fItemValueTypes.setSize(0);
+            }
         } // end clear():void
 
         // appends the contents of one ValueStore to those of us.
@@ -3431,8 +3449,8 @@ public class XMLSchemaValidator
                 // store values
                 for (i = 0; i < fFieldCount; i++) {
                     fValues.addElement(fLocalValues[i]);
-                    fValueTypes.add(fLocalValueTypes[i]);
-                    fItemValueTypes.addElement(fLocalItemValueTypes[i]);
+                    addValueType(fLocalValueTypes[i]);
+                    addItemValueType(fLocalItemValueTypes[i]);
                 }
             }
         } // addValue(String,Field)
@@ -3451,13 +3469,13 @@ public class XMLSchemaValidator
                     Object value1 = fLocalValues[j];
                     Object value2 = fValues.elementAt(i);
                     short valueType1 = fLocalValueTypes[j];
-                    short valueType2 = fValueTypes.valueAt(i);
+                    short valueType2 = getValueTypeAt(i);
                     if (value1 == null || value2 == null || valueType1 != valueType2 || !(value1.equals(value2))) {
                         continue LOOP;
                     }
                     else if(valueType1 == XSConstants.LIST_DT || valueType1 == XSConstants.LISTOFUNION_DT) {
                         ShortList list1 = fLocalItemValueTypes[j];
-                        ShortList list2 = (ShortList)fItemValueTypes.elementAt(i);
+                        ShortList list2 = getItemValueTypeAt(i);
                         if(list1 == null || list2 == null || !list1.equals(list2))
                             continue LOOP;
                     }
@@ -3475,18 +3493,19 @@ public class XMLSchemaValidator
          * values, otherwise the index of the first field in the
          * key sequence.
          */
-        public int contains(Vector values, ShortVector valueTypes, Vector itemValueTypes) {
+        public int contains(ValueStoreBase vsb) {
             
+            final Vector values = vsb.fValues;         
             final int size1 = values.size();
             if (fFieldCount <= 1) {
                 for (int i = 0; i < size1; ++i) {
-                    short val = valueTypes.valueAt(i);
-                    if (!fValueTypes.contains(val) || !fValues.contains(values.elementAt(i))) {
+                    short val = vsb.getValueTypeAt(i);
+                    if (!valueTypeContains(val) || !fValues.contains(values.elementAt(i))) {
                         return i;
                     }
                     else if(val == XSConstants.LIST_DT || val == XSConstants.LISTOFUNION_DT) {
-                        ShortList list1 = (ShortList)itemValueTypes.elementAt(i);
-                        if (!fItemValueTypes.contains(list1)) {
+                        ShortList list1 = vsb.getItemValueTypeAt(i);
+                        if (!itemValueTypeContains(list1)) {
                             return i;
                         }
                     }
@@ -3502,16 +3521,17 @@ public class XMLSchemaValidator
                         for (int k = 0; k < fFieldCount; ++k) {
                             final Object value1 = values.elementAt(i+k);
                             final Object value2 = fValues.elementAt(j+k);
-                            final short valueType1 = valueTypes.valueAt(i+k);
-                            final short valueType2 = fValueTypes.valueAt(j+k);
+                            final short valueType1 = vsb.getValueTypeAt(i+k);
+                            final short valueType2 = getValueTypeAt(j+k);
                             if (value1 != value2 && (valueType1 != valueType2 || value1 == null || !value1.equals(value2))) {
                                 continue INNER;
                             }
                             else if(valueType1 == XSConstants.LIST_DT || valueType1 == XSConstants.LISTOFUNION_DT) {
-                                ShortList list1 = (ShortList)itemValueTypes.elementAt(i+k);
-                                ShortList list2 = (ShortList)fItemValueTypes.elementAt(j+k);
-                                if(list1 == null || list2 == null || !list1.equals(list2))
+                                ShortList list1 = vsb.getItemValueTypeAt(i+k);
+                                ShortList list2 = getItemValueTypeAt(j+k);
+                                if (list1 == null || list2 == null || !list1.equals(list2)) {
                                     continue INNER;
+                                }
                             }
                         }
                         continue OUTER;
@@ -3595,6 +3615,78 @@ public class XMLSchemaValidator
             }
             return s + '[' + fIdentityConstraint + ']';
         } // toString():String
+        
+        //
+        // Private methods
+        //
+        
+        private void addValueType(short type) {
+            if (fUseValueTypeVector) {
+                fValueTypes.add(type);
+            }
+            else if (fValueTypesLength++ == 0) {
+                fValueType = type;
+            }
+            else if (fValueType != type) {
+                fUseValueTypeVector = true;
+                if (fValueTypes == null) {
+                    fValueTypes = new ShortVector(fValueTypesLength * 2);
+                }
+                for (int i = 1; i < fValueTypesLength; ++i) {
+                    fValueTypes.add(fValueType);
+                }
+                fValueTypes.add(type);
+            }
+        }
+        
+        private short getValueTypeAt(int index) {
+            if (fUseValueTypeVector) {
+                return fValueTypes.valueAt(index);
+            }
+            return fValueType;
+        }
+        
+        private boolean valueTypeContains(short value) {
+            if (fUseValueTypeVector) {
+                return fValueTypes.contains(value);
+            }
+            return fValueType == value;
+        }
+        
+        private void addItemValueType(ShortList itemValueType) {
+            if (fUseItemValueTypeVector) {
+                fItemValueTypes.add(itemValueType);
+            }
+            else if (fItemValueTypesLength++ == 0) {
+                fItemValueType = itemValueType;
+            }
+            else if (!(fItemValueType == itemValueType ||
+                    (fItemValueType != null && fItemValueType.equals(itemValueType)))) {
+                fUseItemValueTypeVector = true;
+                if (fItemValueTypes == null) {
+                    fItemValueTypes = new Vector(fItemValueTypesLength * 2);
+                }
+                for (int i = 1; i < fItemValueTypesLength; ++i) {
+                    fItemValueTypes.add(fItemValueType);
+                }
+                fItemValueTypes.add(itemValueType);
+            }
+        }
+        
+        private ShortList getItemValueTypeAt(int index) {
+            if (fUseItemValueTypeVector) {
+                return (ShortList) fItemValueTypes.elementAt(index);
+            }
+            return fItemValueType;
+        }
+        
+        private boolean itemValueTypeContains(ShortList value) {
+            if (fUseItemValueTypeVector) {
+                return fItemValueTypes.contains(value);
+            }
+            return fItemValueType == value || 
+                (fItemValueType != null && fItemValueType.equals(value));
+        }
 
     } // class ValueStoreBase
 
@@ -3717,7 +3809,7 @@ public class XMLSchemaValidator
                 reportSchemaError(code, new Object[] { value });
                 return;
             }
-            int errorIndex = fKeyValueStore.contains(fValues, fValueTypes, fItemValueTypes);
+            int errorIndex = fKeyValueStore.contains(this);
             if (errorIndex != -1) {
                 String code = "KeyNotFound";
                 String values = toString(fValues, errorIndex, fFieldCount);
@@ -4010,6 +4102,16 @@ public class XMLSchemaValidator
 
         /** Data. */
         private short[] fData;
+        
+        //
+        // Constructors
+        //
+        
+        public ShortVector() {}
+        
+        public ShortVector(int initialCapacity) {
+            fData = new short[initialCapacity];
+        }
 
         //
         // Public methods
