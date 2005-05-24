@@ -3301,6 +3301,8 @@ public class XMLSchemaValidator
         public void clear() {
             fValuesCount = 0;
             fValues.setSize(0);
+            fValueTypes.clear();
+            fItemValueTypes.setSize(0);
         } // end clear():void
 
         // appends the contents of one ValueStore to those of us.
@@ -3484,8 +3486,9 @@ public class XMLSchemaValidator
                     }
                     else if(val == XSConstants.LIST_DT || val == XSConstants.LISTOFUNION_DT) {
                         ShortList list1 = (ShortList)itemValueTypes.elementAt(i);
-                        if(!fItemValueTypes.contains(list1))
+                        if (!fItemValueTypes.contains(list1)) {
                             return i;
+                        }
                     }
                 }
             }
