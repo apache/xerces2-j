@@ -955,6 +955,10 @@ public class EncodingMap {
      * 
      * @param ianaEncoding The IANA encoding name.
      * @param javaEncoding The Java encoding name.
+     * 
+     * @deprecated Use of this method is not recommended. Its
+     * effect is JVM wide and may cause unforeseen behaviour
+     * for other applications running in the system.
      */
     public static void putIANA2JavaMapping(String ianaEncoding, 
                                            String javaEncoding) {
@@ -974,6 +978,10 @@ public class EncodingMap {
      * Removes an IANA to Java encoding name mapping.
      * 
      * @param ianaEncoding The IANA encoding name.
+     * 
+     * @deprecated Use of this method is not recommended. Its
+     * effect is JVM wide and may cause unforeseen behaviour
+     * for other applications running in the system.
      */
     public static String removeIANA2JavaMapping(String ianaEncoding) {
         return (String)fIANA2JavaMap.remove(ianaEncoding);
@@ -984,6 +992,10 @@ public class EncodingMap {
      * 
      * @param javaEncoding The Java encoding name.
      * @param ianaEncoding The IANA encoding name.
+     * 
+     * @deprecated Use of this method is not recommended. Its
+     * effect is JVM wide and may cause unforeseen behaviour
+     * for other applications running in the system.
      */
     public static void putJava2IANAMapping(String javaEncoding, 
                                            String ianaEncoding) {
@@ -1003,6 +1015,10 @@ public class EncodingMap {
      * Removes a Java to IANA encoding name mapping.
      * 
      * @param javaEncoding The Java encoding name.
+     * 
+     * @deprecated Use of this method is not recommended. Its
+     * effect is JVM wide and may cause unforeseen behaviour
+     * for other applications running in the system.
      */
     public static String removeJava2IANAMapping(String javaEncoding) {
         return (String)fJava2IANAMap.remove(javaEncoding);
