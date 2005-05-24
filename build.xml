@@ -168,6 +168,9 @@ Copyright:
   	
     <copy file="${src.dir}/org/apache/xerces/jaxp/datatype/javax.xml.datatype.DatatypeFactory"
       tofile="${build.dest}/META-INF/services/javax.xml.datatype.DatatypeFactory"/>
+  	
+    <copy file="${src.dir}/org/apache/xerces/jaxp/validation/javax.xml.validation.SchemaFactory"
+      tofile="${build.dest}/META-INF/services/javax.xml.validation.SchemaFactory"/>
 
     <copy file="${src.dir}/org/apache/xerces/parsers/org.xml.sax.driver"
       tofile="${build.dest}/META-INF/services/org.xml.sax.driver"/>
@@ -241,7 +244,7 @@ Copyright:
            includeAntRuntime="false"
            includeJavaRuntime="false"
            excludes="org/xml/sax/** 
-                javax/xml/parsers/**
+                javax/xml/**
                 org/w3c/dom/*
                 org/w3c/dom/events/**
                 org/w3c/dom/ls/**
