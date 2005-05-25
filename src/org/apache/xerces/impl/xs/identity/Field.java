@@ -183,46 +183,42 @@ public class Field {
         } // matched(String)
 
         private short convertToPrimitiveKind(short valueType) {
-            switch(valueType) {
-            
-            case XSConstants.ID_DT:
-            case XSConstants.IDREF_DT:
-            case XSConstants.ENTITY_DT:
-            case XSConstants.NCNAME_DT:
-            case XSConstants.NAME_DT:
-            case XSConstants.LANGUAGE_DT:
-            case XSConstants.NMTOKEN_DT:
-            case XSConstants.TOKEN_DT:
-            case XSConstants.NORMALIZEDSTRING_DT:
-                return XSConstants.STRING_DT;
-                
-            case XSConstants.UNSIGNEDBYTE_DT:
-            case XSConstants.UNSIGNEDINT_DT:
-            case XSConstants.UNSIGNEDLONG_DT:
-            case XSConstants.UNSIGNEDSHORT_DT:
-            case XSConstants.BYTE_DT:
-            case XSConstants.SHORT_DT:
-            case XSConstants.INT_DT:
-            case XSConstants.POSITIVEINTEGER_DT:
-            case XSConstants.NEGATIVEINTEGER_DT:
-            case XSConstants.NONNEGATIVEINTEGER_DT:
-            case XSConstants.NONPOSITIVEINTEGER_DT:
-            case XSConstants.LONG_DT:
-            case XSConstants.INTEGER_DT:
-                return XSConstants.DECIMAL_DT;    
-                
-            default:
+            /** Primitive datatypes. */
+            if (valueType <= XSConstants.NOTATION_DT) {
                 return valueType;
             }
+            /** Types derived from string. */
+            if (valueType <= XSConstants.ENTITY_DT) {
+                return XSConstants.STRING_DT;
+            }
+            /** Types derived from decimal. */
+            if (valueType <= XSConstants.POSITIVEINTEGER_DT) {
+                return XSConstants.DECIMAL_DT;
+            }
+            /** Other types. */
+            return valueType;
         }
 
         private ShortList convertToPrimitiveKind(ShortList itemValueType) {
-            if(itemValueType != null) {
-                short[] arr = new short[itemValueType.getLength()];
-                for(int i = 0;i < arr.length; i++) {
-                    arr[i] = convertToPrimitiveKind(itemValueType.item(i));
+            if (itemValueType != null) {
+                int i;
+                final int length = itemValueType.getLength();
+                for (i = 0; i < length; ++i) {
+                    short type = itemValueType.item(i);
+                    if (type != convertToPrimitiveKind(type)) {
+                        break;
+                    }
                 }
-                return new ShortListImpl(arr, arr.length);
+                if (i != length) {
+                    final short [] arr = new short[length];
+                    for (int j = 0; j < i; ++j) {
+                        arr[j] = itemValueType.item(j);
+                    }
+                    for(; i < length; ++i) {
+                        arr[i] = convertToPrimitiveKind(itemValueType.item(i));
+                    }
+                    return new ShortListImpl(arr, arr.length);
+                }
             }
             return itemValueType;
         }
