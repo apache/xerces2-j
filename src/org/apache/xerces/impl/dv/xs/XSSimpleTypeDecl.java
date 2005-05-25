@@ -477,6 +477,10 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 		
 		//we also set fundamental facets information in case applyFacets is not called.
 		caclFundamentalFacets();
+        
+        // Inherit from the base type
+        fBuiltInKind = base.fBuiltInKind;
+        
 		return this;
 	}
 	
@@ -500,6 +504,10 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 		
 		//setting fundamental facets
 		caclFundamentalFacets();
+        
+        // Values of this type are lists
+        fBuiltInKind = XSConstants.LIST_DT;
+        
 		return this;
 	}
 	
@@ -526,6 +534,10 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 		
 		//setting fundamental facets
 		caclFundamentalFacets();
+        
+        // No value can be of this type, so it's unavailable.
+        fBuiltInKind = XSConstants.UNAVAILABLE_DT;
+        
 		return this;
 	}
 	
