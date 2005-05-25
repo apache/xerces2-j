@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2002,2004 The Apache Software Foundation.
+ * Copyright 2000-2002,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,6 +87,9 @@ public class ElementPSVImpl implements ElementPSVI {
 
     /** validation context: could be QName or XPath expression*/
     protected String fValidationContext = null;
+    
+    /** deferred XSModel **/
+    protected SchemaGrammar[] fGrammars = null;
 
     /** the schema information property */
     protected XSModel fSchemaInformation = null;
@@ -220,7 +223,10 @@ public class ElementPSVImpl implements ElementPSVI {
      * @return The schema information property if it's the validation root,
      *         null otherwise.
      */
-    public XSModel getSchemaInformation() {
+    public synchronized XSModel getSchemaInformation() {
+        if (fSchemaInformation == null && fGrammars != null) {
+            fSchemaInformation = new XSModelImpl(fGrammars);
+        }
         return fSchemaInformation;
     }
     

@@ -1535,6 +1535,10 @@ public class XMLSchemaValidator
     // handle start document
     void handleStartDocument(XMLLocator locator, String encoding) {
         fValueStoreCache.startDocument();
+        if (fAugPSVI) {
+            fCurrentPSVI.fGrammars = null;
+            fCurrentPSVI.fSchemaInformation = null;
+        }
     } // handleStartDocument(XMLLocator,String)
 
     void handleEndDocument() {
@@ -2302,7 +2306,8 @@ public class XMLSchemaValidator
 
             if (root) {
                 // store [schema information] in the PSVI
-                fCurrentPSVI.fSchemaInformation = new XSModelImpl(grammars);
+                fCurrentPSVI.fGrammars = grammars;
+                fCurrentPSVI.fSchemaInformation = null;
             }
         }
 
