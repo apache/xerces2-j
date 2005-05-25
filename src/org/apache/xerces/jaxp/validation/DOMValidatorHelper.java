@@ -37,7 +37,6 @@ import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
-import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLParseException;
@@ -115,8 +114,8 @@ final class DOMValidatorHelper implements ValidatorHelper, EntityState {
     /** Component manager. **/
     private XMLSchemaValidatorComponentManager fComponentManager;
     
-    /** REVISIT: Dummy locator object for DOM. **/
-    private final XMLLocator fXMLLocator = new SimpleLocator(null, null, -1, -1, -1);
+    /** Simple Locator. **/
+    private final SimpleLocator fXMLLocator = new SimpleLocator(null, null, -1, -1, -1);
     
     /** DOM document handler. **/
     private DOMDocumentHandler fDOMValidatorHandler;
@@ -164,6 +163,9 @@ final class DOMValidatorHelper implements ValidatorHelper, EntityState {
             if (node != null) {
                 fComponentManager.reset();
                 fValidationManager.setEntityState(this);
+                String systemId = domSource.getSystemId();
+                fXMLLocator.setLiteralSystemId(systemId);
+                fXMLLocator.setExpandedSystemId(systemId);
                 fErrorReporter.setDocumentLocator(fXMLLocator);
                 try {
                     // regardless of what type of node this is, fire start and end document events
