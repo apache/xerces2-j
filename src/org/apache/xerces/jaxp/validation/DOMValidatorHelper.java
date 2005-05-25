@@ -17,6 +17,7 @@
 package org.apache.xerces.jaxp.validation;
 
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.Locale;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -102,6 +103,9 @@ final class DOMValidatorHelper implements ValidatorHelper, EntityState {
     /** The namespace context of this document: stores namespaces in scope. **/
     private NamespaceContext fNamespaceContext;
     
+    /** The namespace context of the DOMSource, includes context from ancestor nodes. **/
+    private DOMNamespaceContext fDOMNamespaceContext = new DOMNamespaceContext();
+    
     /** Schema validator. **/
     private org.apache.xerces.impl.xs.XMLSchemaValidator fSchemaValidator;
     
@@ -132,6 +136,9 @@ final class DOMValidatorHelper implements ValidatorHelper, EntityState {
     /** Array for holding character data. **/
     private char [] fCharBuffer = new char[CHUNK_SIZE];
     
+    /** Root node. **/
+    private Node fRoot;
+    
     /** Current element. **/
     private Node fCurrentElement;
     
@@ -160,9 +167,11 @@ final class DOMValidatorHelper implements ValidatorHelper, EntityState {
             final DOMSource domSource = (DOMSource) source;
             final DOMResult domResult = (DOMResult) result;
             Node node = domSource.getNode();
+            fRoot = node;
             if (node != null) {
                 fComponentManager.reset();
                 fValidationManager.setEntityState(this);
+                fDOMNamespaceContext.reset();
                 String systemId = domSource.getSystemId();
                 fXMLLocator.setLiteralSystemId(systemId);
                 fXMLLocator.setExpandedSystemId(systemId);
@@ -171,7 +180,7 @@ final class DOMValidatorHelper implements ValidatorHelper, EntityState {
                     // regardless of what type of node this is, fire start and end document events
                     setupEntityMap((node.getNodeType() == Node.DOCUMENT_NODE) ? (Document) node : node.getOwnerDocument());
                     setupDOMResultHandler(domSource, domResult);
-                    fSchemaValidator.startDocument(fXMLLocator, null, fNamespaceContext, null);
+                    fSchemaValidator.startDocument(fXMLLocator, null, fDOMNamespaceContext, null);
                     validate(node);
                     fSchemaValidator.endDocument(null);
                 }
@@ -183,6 +192,7 @@ final class DOMValidatorHelper implements ValidatorHelper, EntityState {
                 }
                 finally {
                     // Release references to application objects
+                    fRoot = null;
                     fCurrentElement = null;
                     fEntities = null;
                     if (fDOMValidatorHandler != null) {
@@ -439,6 +449,139 @@ final class DOMValidatorHelper implements ValidatorHelper, EntityState {
     
     Node getCurrentElement() {
         return fCurrentElement;
+    }
+    
+    /**
+     * NamespaceContext for the DOMSource, includes context for ancestor nodes.
+     */
+    final class DOMNamespaceContext implements NamespaceContext {
+        
+        //
+        // Data
+        //
+
+        /** 
+         * Namespace binding information. This array is composed of a
+         * series of tuples containing the namespace binding information:
+         * &lt;prefix, uri&gt;.
+         */
+        protected String[] fNamespace = new String[16 * 2];
+
+        /** The size of the namespace information array. */
+        protected int fNamespaceSize = 0;
+        
+        /** 
+         * Flag indicating whether the namespace context 
+         * has been from the root node's ancestors.
+         */
+        protected boolean fDOMContextBuilt = false;
+        
+        //
+        // Methods
+        //
+
+        public void pushContext() {
+            fNamespaceContext.pushContext();
+        }
+
+        public void popContext() {
+            fNamespaceContext.popContext();
+        }
+
+        public boolean declarePrefix(String prefix, String uri) {
+            return fNamespaceContext.declarePrefix(prefix, uri);
+        }
+
+        public String getURI(String prefix) {
+            String uri = fNamespaceContext.getURI(prefix);
+            if (uri == null) {
+                if (!fDOMContextBuilt) {
+                    fillNamespaceContext();
+                    fDOMContextBuilt = true;
+                }
+                uri = getURI0(prefix);
+            }
+            return uri;
+        }
+
+        public String getPrefix(String uri) {
+            return fNamespaceContext.getPrefix(uri);
+        }
+
+        public int getDeclaredPrefixCount() {
+            return fNamespaceContext.getDeclaredPrefixCount();
+        }
+
+        public String getDeclaredPrefixAt(int index) {
+            return fNamespaceContext.getDeclaredPrefixAt(index);
+        }
+
+        public Enumeration getAllPrefixes() {
+            return fNamespaceContext.getAllPrefixes();
+        }
+
+        public void reset() {
+            fDOMContextBuilt = false;
+            fNamespaceSize = 0; 
+        }
+        
+        private void fillNamespaceContext() {
+            if (fRoot != null) {
+                Node currentNode = fRoot.getParentNode();
+                while (currentNode != null) {
+                    if (Node.ELEMENT_NODE == currentNode.getNodeType()) {
+                        NamedNodeMap attributes = currentNode.getAttributes();
+                        final int attrCount = attributes.getLength();
+                        for (int i = 0; i < attrCount; ++i) {
+                            Attr attr = (Attr) attributes.item(i);
+                            String value = attr.getValue();
+                            if (value == null) {
+                                value = XMLSymbols.EMPTY_STRING;
+                            }
+                            fillQName(fAttributeQName, attr);
+                            // REVISIT: Should we be looking at non-namespace attributes
+                            // for additional mappings? Should we detect illegal namespace
+                            // declarations and exclude them from the context? -- mrglavas
+                            if (fAttributeQName.uri == NamespaceContext.XMLNS_URI) {
+                                // process namespace attribute
+                                if (fAttributeQName.prefix == XMLSymbols.PREFIX_XMLNS) {
+                                    declarePrefix0(fAttributeQName.localpart, fSymbolTable.addSymbol(value));
+                                }
+                                else {
+                                    declarePrefix0(XMLSymbols.EMPTY_STRING, fSymbolTable.addSymbol(value));
+                                }
+                            }
+                        }
+                        
+                    }
+                    currentNode = currentNode.getParentNode();
+                }
+            }
+        }
+        
+        private void declarePrefix0(String prefix, String uri) {           
+            // resize array, if needed
+            if (fNamespaceSize == fNamespace.length) {
+                String[] namespacearray = new String[fNamespaceSize * 2];
+                System.arraycopy(fNamespace, 0, namespacearray, 0, fNamespaceSize);
+                fNamespace = namespacearray;
+            }
+
+            // bind prefix to uri in current context
+            fNamespace[fNamespaceSize++] = prefix;
+            fNamespace[fNamespaceSize++] = uri;
+        }
+        
+        private String getURI0(String prefix) {
+            // find prefix in the DOM context
+            for (int i = 0; i < fNamespaceSize; i += 2) {
+                if (fNamespace[i] == prefix) {
+                    return fNamespace[i + 1];
+                }
+            }
+            // prefix not found
+            return null;
+        }
     }
     
 } // DOMValidatorHelper
