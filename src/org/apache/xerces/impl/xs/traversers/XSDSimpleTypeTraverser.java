@@ -125,8 +125,9 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         Object[] attrValues = fAttrChecker.checkAttributes(elmNode, false, schemaDoc);
         String name = genAnonTypeName(elmNode);
         XSSimpleType type = getSimpleType (name, elmNode, attrValues, schemaDoc, grammar);
-        if(type instanceof XSSimpleTypeDefinition)
+        if (type instanceof XSSimpleTypeDecl) {
             ((XSSimpleTypeDecl)type).setAnonymous(true);
+        }
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
         
         return type;
