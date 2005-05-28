@@ -380,7 +380,7 @@ final class SoftReferenceGrammarPool implements XMLGrammarPool {
      * This class is a grammar pool entry. Each entry acts as a node
      * in a doubly linked list.
      */
-    protected static final class Entry {
+    static final class Entry {
 
         public int hash;
         public int bucket;
@@ -418,7 +418,7 @@ final class SoftReferenceGrammarPool implements XMLGrammarPool {
      * This class stores a soft reference to a grammar object. It keeps a reference
      * to its associated entry, so that it can be easily removed from the pool.
      */
-    protected static final class SoftGrammarReference extends SoftReference {
+    static final class SoftGrammarReference extends SoftReference {
 
         public Entry entry;
         
@@ -426,6 +426,7 @@ final class SoftReferenceGrammarPool implements XMLGrammarPool {
             super(grammar, queue);
             this.entry = entry;
         }
-    } // class Entry
+        
+    } // class SoftGrammarReference
     
 } // class SoftReferenceGrammarPool
