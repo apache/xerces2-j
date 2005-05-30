@@ -143,8 +143,10 @@ class XSDElementTraverser extends XSDAbstractTraverser {
             XSObject parent,
             String[] localNSDecls) {
         
-        if (localNSDecls != null)
+        if (localNSDecls != null) {
             schemaDoc.fNamespaceSupport.setEffectiveContext(localNSDecls);
+        }
+        
         // General Attribute Checking
         Object[] attrValues = fAttrChecker.checkAttributes(elmDecl, false, schemaDoc);
         
@@ -206,7 +208,8 @@ class XSDElementTraverser extends XSDAbstractTraverser {
             XSDocumentInfo schemaDoc,
             SchemaGrammar grammar) {
         
-        // General Attribute Checking
+        // General Attribute Checking'
+
         Object[] attrValues = fAttrChecker.checkAttributes(elmDecl, true, schemaDoc);
         XSElementDecl element = traverseNamedElement(elmDecl, attrValues, schemaDoc, grammar, true, null);
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
@@ -376,7 +379,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                         fSchemaHandler.checkForDuplicateNames(
                                 (schemaDoc.fTargetNamespace == null) ? ","+DOMUtil.getAttrValue(child, SchemaSymbols.ATT_NAME)
                                         : schemaDoc.fTargetNamespace+","+ DOMUtil.getAttrValue(child, SchemaSymbols.ATT_NAME),
-                                        fSchemaHandler.getIDRegistry(),
+                                        fSchemaHandler.getIDRegistry(), fSchemaHandler.getIDRegistry_sub(),
                                         child, schemaDoc);
                     }
                 } else if (childName.equals(SchemaSymbols.ELT_KEYREF)) {

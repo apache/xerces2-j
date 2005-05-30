@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2004 The Apache Software Foundation.
+ * Copyright 1999-2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,7 @@ import org.apache.xerces.impl.xs.SchemaNamespaceSupport;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XMLSchemaException;
 import org.apache.xerces.impl.xs.util.XInt;
-import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.SymbolTable;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
@@ -64,7 +62,7 @@ class XSDocumentInfo {
     protected boolean fIsChameleonSchema;
 
     // the root of the schema Document tree itself
-    protected Document fSchemaDoc;
+    protected Element fSchemaElement;
 
     // all namespaces that this document can refer to
     Vector fImportedNS = new Vector();
@@ -87,9 +85,9 @@ class XSDocumentInfo {
 
     // note that the caller must ensure to call returnSchemaAttrs()
     // to avoid memory leaks!
-    XSDocumentInfo (Document schemaDoc, XSAttributeChecker attrChecker, SymbolTable symbolTable)
+    XSDocumentInfo (Element schemaRoot, XSAttributeChecker attrChecker, SymbolTable symbolTable)
                     throws XMLSchemaException {
-        fSchemaDoc = schemaDoc;
+        fSchemaElement = schemaRoot;
         fNamespaceSupport = new SchemaNamespaceSupport();
         fNamespaceSupport.reset();
         fIsChameleonSchema = false;
@@ -97,8 +95,8 @@ class XSDocumentInfo {
         fSymbolTable = symbolTable;
         fAttrChecker = attrChecker;
 
-        if(schemaDoc != null) {
-            Element root = DOMUtil.getRoot(schemaDoc);
+        if (schemaRoot != null) {
+            Element root = schemaRoot;
             fSchemaAttrs = attrChecker.checkAttributes(root, true, this);
             // schemaAttrs == null means it's not an <xsd:schema> element
             // throw an exception, but we don't know the document systemId,

@@ -16,6 +16,8 @@
 
 package org.apache.xerces.impl.xs.opti;
 
+import java.io.IOException;
+
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.xs.SchemaSymbols;
@@ -29,6 +31,8 @@ import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.parser.XMLEntityResolver;
+import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 import org.w3c.dom.Document;
 
@@ -450,6 +454,82 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
      */
     public Document getDocument() {
         return schemaDOM;
+    }
+    
+    /**
+     * Delegates to SchemaParsingConfig.setFeature
+     * @param featureId
+     * @param state
+     */
+    public void setFeature(String featureId, boolean state){
+    	config.setFeature(featureId, state);
+    }
+    
+    /**
+     * Delegates to SchemaParsingConfig.getFeature
+     * @param featureId
+     * @return boolean
+     */
+    public boolean getFeature(String featureId){
+        return config.getFeature(featureId);
+    }
+    
+    /**
+     * Delegates to SchemaParsingConfig.setProperty.
+     * @param propertyId
+     * @param value
+     */
+    public void setProperty(String propertyId, Object value){
+        config.setProperty(propertyId, value);
+    }
+    
+    /**
+     * Delegates to SchemaParsingConfig.getProperty.
+     * @param propertyId
+     * @return Object
+     */
+    public Object getProperty(String propertyId){
+        return config.getProperty(propertyId);
+    }
+    
+    /**
+     * Delegates to SchemaParsingConfig.setEntityResolver.
+     * @param er XMLEntityResolver
+     */
+    public void setEntityResolver(XMLEntityResolver er) {
+    	config.setEntityResolver(er);
+    }
+    
+    /**
+     * Delegates parsing to SchemaParsingConfig
+     * 
+     * @param inputSource
+     * @throws IOException
+     */
+    public void parse(XMLInputSource inputSource) throws IOException {
+        config.parse(inputSource);
+    }
+    
+    /**
+     * Gets the document from SchemaParsingConfig
+     * @return Document
+     */
+    public Document getDocument2() {
+    	return ((SchemaParsingConfig)config).getDocument();
+    }
+    
+    /**
+     * Reset SchemaParsingConfig
+     */
+    public void reset() {
+    	((SchemaParsingConfig)config).reset();
+    }
+    
+    /**
+     * ResetNodePool on SchemaParsingConfig
+     */
+    public void resetNodePool() {
+    	((SchemaParsingConfig)config).resetNodePool();
     }
     
     /**
