@@ -26,6 +26,8 @@ import org.apache.xerces.xni.XMLLocator;
  * when bridging between SAX and XNI components.</p>
  * 
  * @author Michael Glavassevich, IBM
+ * 
+ * @version $Id$
  */
 public final class SAXLocatorWrapper implements XMLLocator {
     
