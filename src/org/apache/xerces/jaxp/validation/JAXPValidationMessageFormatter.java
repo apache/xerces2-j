@@ -27,7 +27,7 @@ import java.util.PropertyResourceBundle;
  * @author Michael Glavassevich, IBM
  * @version $Id$
  */
-class JAXPValidationMessageFormatter {
+final class JAXPValidationMessageFormatter {
 
     /**
      * Formats a message with the specified arguments using the given
