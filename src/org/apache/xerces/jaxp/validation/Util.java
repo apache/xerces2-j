@@ -30,7 +30,7 @@ import org.xml.sax.SAXParseException;
  * @author Kohsuke Kawaguchi (kohsuke.kawaguchi@sun.com)
  * @version $Id$
  */
-class Util {
+final class Util {
     
     /**
      * Creates a proper {@link XMLInputSource} from a {@link StreamSource}.
