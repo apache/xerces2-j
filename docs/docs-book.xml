@@ -32,6 +32,7 @@
            id='samples' source='samples.xml'/>
  <hidden title='DOM Samples' id='samples-dom' source='samples-dom.xml'/>
  <hidden title='SAX Samples' id='samples-sax' source='samples-sax.xml'/>
+ <hidden title='JAXP Samples' id='samples-jaxp' source='samples-jaxp.xml'/>
  <hidden title='Socket Samples' id='samples-socket' source='samples-socket.xml'/>
  <hidden title='User Interface Samples'
          id='samples-ui' source='samples-ui.xml'/>
