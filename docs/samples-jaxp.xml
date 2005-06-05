@@ -90,28 +90,28 @@
      <td>-f  | -F</td>
      <td>
       Turn on/off Schema full checking.<br/>
-      <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
+      <strong>NOTE:</strong> Not supported by all schema factories and validators.
      </td>
     </tr>
     <tr>
      <td>-hs | -HS</td>
      <td>
       Turn on/off honouring of all schema locations.<br/>
-      <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
+      <strong>NOTE:</strong> Not supported by all schema factories and validators.
      </td>
     </tr>
     <tr>
      <td>-va | -VA</td>
      <td>
       Turn on/off validation of schema annotations.<br/>
-      <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
+      <strong>NOTE:</strong> Not supported by all schema factories and validators.
      </td>
     </tr>
     <tr>
      <td>-ga | -GA</td>
      <td>
       Turn on/off generation of synthetic schema annotations.<br/>
-      <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
+      <strong>NOTE:</strong> Not supported by all schema factories and validators.
      </td>
     </tr>
     <tr><td>-m  | -M</td><td>Turn on/off memory usage report.</td></tr>
@@ -170,28 +170,28 @@
      <td>-f  | -F</td>
      <td>
       Turn on/off Schema full checking.<br/>
-      <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
+      <strong>NOTE:</strong> Not supported by all schema factories and validators.
      </td>
     </tr>
     <tr>
      <td>-hs | -HS</td>
      <td>
       Turn on/off honouring of all schema locations.<br/>
-      <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
+      <strong>NOTE:</strong> Not supported by all schema factories and validators.
      </td>
     </tr>
     <tr>
      <td>-va | -VA</td>
      <td>
       Turn on/off validation of schema annotations.<br/>
-      <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
+      <strong>NOTE:</strong> Not supported by all schema factories and validators.
      </td>
     </tr>
     <tr>
      <td>-ga | -GA</td>
      <td>
       Turn on/off generation of synthetic schema annotations.<br/>
-      <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
+      <strong>NOTE:</strong> Not supported by all schema factories and validators.
      </td>
     </tr>
     <tr><td>-m  | -M</td><td>Turn on/off memory usage report.</td></tr>
@@ -232,28 +232,28 @@
      <td>-f  | -F</td>
      <td>
       Turn on/off Schema full checking.<br/>
-      <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
+      <strong>NOTE:</strong> Not supported by all schema factories and validators.
      </td>
     </tr>
     <tr>
      <td>-hs | -HS</td>
      <td>
       Turn on/off honouring of all schema locations.<br/>
-      <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
+      <strong>NOTE:</strong> Not supported by all schema factories and validators.
      </td>
     </tr>
     <tr>
      <td>-va | -VA</td>
      <td>
       Turn on/off validation of schema annotations.<br/>
-      <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
+      <strong>NOTE:</strong> Not supported by all schema factories and validators.
      </td>
     </tr>
     <tr>
      <td>-ga | -GA</td>
      <td>
       Turn on/off generation of synthetic schema annotations.<br/>
-      <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
+      <strong>NOTE:</strong> Not supported by all schema factories and validators.
      </td>
     </tr>
     <tr><td>-h</td><td>Display help screen.</td></tr>
