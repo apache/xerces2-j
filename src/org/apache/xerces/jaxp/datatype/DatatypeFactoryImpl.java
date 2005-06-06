@@ -62,7 +62,7 @@ public class DatatypeFactoryImpl
 	/**
 	 * <p>Public constructor is empty..</p>
 	 * 
-	 * <p>Use {@link DatatypeFactory#newInstance()} to create a <code>DatatypeFactory<code>.</p>
+	 * <p>Use {@link DatatypeFactory#newInstance()} to create a <code>DatatypeFactory</code>.</p>
 	 */
 	public DatatypeFactoryImpl() {
 	}
