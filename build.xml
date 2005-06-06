@@ -83,7 +83,7 @@ Copyright:
     <property name="distsrc.dir" value="${build.dir}/${parser.shortname}-${parser_version}"/>
     <property name="disttools.dir" value="${build.dir}/tools"/>
     <property name="distbin.dir" value="${build.dir}/${parser.shortname}-${parser_version}"/>
-    <property name='src.apis.zip' value="${tools.dir}/xml-commons-external-1.2.01-src.zip"/>
+    <property name='src.apis.zip' value="${tools.dir}/xml-commons-external-src.zip"/>
 
     <filter token="year" value="${year}"/>
     <filter token="version" value="${parser.Version}"/>
@@ -399,7 +399,7 @@ Copyright:
     </condition>
   	
     <mkdir dir='${build.dir}/docs/javadocs/api'/>
-    <javadoc packagenames='javax.xml.parsers,org.w3c.*,org.xml.*'
+    <javadoc packagenames='javax.xml.*,org.w3c.*,org.xml.*'
       locale='en_US'
       sourcepath='${build.src}' destdir='${build.dir}/docs/javadocs/api'
       author='true' version='true'
