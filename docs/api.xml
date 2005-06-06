@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--
- * Copyright 1999-2004 The Apache Software Foundation.
+ * Copyright 1999-2005 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,33 @@
     <li>Java API for XML Processing (JAXP)</li>
     <ul>
      <li>
-      <jump href='javadocs/api/javax/xml/parsers/package-summary.html'>XML
-      Parser Factories</jump>
+      <jump href='javadocs/api/javax/xml/package-summary.html'>Constants</jump>
+     </li>
+     <li>
+      <jump href='javadocs/api/javax/xml/datatype/package-summary.html'>Datatype</jump>
+     </li>
+     <li>
+      <jump href='javadocs/api/javax/xml/namespace/package-summary.html'>Namespace</jump>
+     </li>
+     <li>
+      <jump href='javadocs/api/javax/xml/parsers/package-summary.html'>Parsers</jump>
+     </li>
+     <li>
+      <jump href='javadocs/api/javax/xml/transform/package-summary.html'>Transform</jump>
+     </li>
+     <ul>
+      <li>
+       <jump href='javadocs/api/javax/xml/transform/dom/package-summary.html'>DOM</jump>
+      </li>
+      <li>
+       <jump href='javadocs/api/javax/xml/transform/sax/package-summary.html'>SAX</jump>
+      </li>
+      <li>
+       <jump href='javadocs/api/javax/xml/transform/stream/package-summary.html'>Stream</jump>
+      </li>
+     </ul>
+     <li>
+      <jump href='javadocs/api/javax/xml/validation/package-summary.html'>Validation</jump>
      </li>
     </ul>
     <li>Document Object Model (DOM)</li>
@@ -40,6 +65,10 @@
      <li>
       <jump href='javadocs/api/org/w3c/dom/package-summary.html'>Core</jump>
      </li>
+     <li>
+      <jump href='javadocs/api/org/w3c/dom/ls/package-summary.html'>Load and Save</jump>
+     </li>
+    
      <li>
       <jump href='javadocs/api/org/w3c/dom/events/package-summary.html'>Events</jump>
      </li>
@@ -111,9 +140,7 @@
   <p>
    Some of the interfaces in the XML Schema API reference interfaces
    from <jump href="http://www.w3.org/DOM/DOMTR#dom3">DOM Level 3</jump>
-   which are now in the <code>org.apache.xerces.dom3</code> package. The
-   API will be updated to use the official DOM Level 3 package when DOM
-   becomes a W3C Recommendation.
+   which is now a W3C Recommendation.
   </p>
   <ul>
    <li>
@@ -121,19 +148,6 @@
    </li>
   </ul>
  </s2>
-<s2 title='DOM Level 3 API'>
-  <p>Includes DOM Level 3 Working Draft APIs:</p>
-  <ul>
-    <li><jump href="http://www.w3.org/DOM/DOMTR#dom3">Document Object Model Level 3 Core</jump>
-    </li>
-    <li><jump href="http://www.w3.org/DOM/DOMTR#dom3">Document Object Model Level 3 Load and Save</jump>
-    </li>
-   </ul>
-  <p>
-  These APIs are unstable and may change:
-  <jump href='javadocs/dom3-api/index.html'>org.apache.xerces.dom3</jump> 
-</p>
-</s2>
  <s2 title='Xerces2 Implementation Documentation'>
   <p>
    For maintainers and developers of the Xerces2 reference
