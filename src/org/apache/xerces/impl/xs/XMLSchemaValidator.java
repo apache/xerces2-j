@@ -43,6 +43,7 @@ import org.apache.xerces.impl.xs.identity.XPathMatcher;
 import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.models.CMNodeFactory;
 import org.apache.xerces.impl.xs.models.XSCMValidator;
+import org.apache.xerces.impl.xs.util.ShortListImpl;
 import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.IntStack;
 import org.apache.xerces.util.SymbolTable;
@@ -3002,18 +3003,19 @@ public class XMLSchemaValidator
                     }
                     // 5.2.2.2.2 If the {content type} of the actual type definition is a simple type definition, then the actual value of the item must match the canonical lexical representation of the {value constraint} value.
                     else if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE) {
-                        if (actualValue != null
-                            && !actualValue.equals(fCurrentElemDecl.fDefault.actualValue))
+                        if (actualValue != null && (!isComparable(fValidatedInfo, fCurrentElemDecl.fDefault)
+                                || !actualValue.equals(fCurrentElemDecl.fDefault.actualValue))) {
                             reportSchemaError(
                                 "cvc-elt.5.2.2.2.2",
                                 new Object[] {
                                     element.rawname,
                                     content,
                                     fCurrentElemDecl.fDefault.stringValue()});
+                        }
                     }
                 } else if (fCurrentType.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
-                    if (actualValue != null
-                        && !actualValue.equals(fCurrentElemDecl.fDefault.actualValue))
+                    if (actualValue != null && (!isComparable(fValidatedInfo, fCurrentElemDecl.fDefault) 
+                            || !actualValue.equals(fCurrentElemDecl.fDefault.actualValue))) {
                         // REVISIT: the spec didn't mention this case: fixed
                         //          value with simple type
                         reportSchemaError(
@@ -3022,6 +3024,7 @@ public class XMLSchemaValidator
                                 element.rawname,
                                 content,
                                 fCurrentElemDecl.fDefault.stringValue()});
+                    }
                 }
             }
         }
@@ -3142,6 +3145,62 @@ public class XMLSchemaValidator
                 key,
                 arguments,
                 XMLErrorReporter.SEVERITY_ERROR);
+    }
+    
+    /** Returns true if the two ValidatedInfo objects can be compared in the same value space. **/
+    private boolean isComparable(ValidatedInfo info1, ValidatedInfo info2) {
+        final short primitiveType1 = convertToPrimitiveKind(info1.actualValueType);
+        final short primitiveType2 = convertToPrimitiveKind(info2.actualValueType);
+        if (primitiveType1 != primitiveType2) {
+            return false;
+        }
+        else if (primitiveType1 == XSConstants.LIST_DT || primitiveType1 == XSConstants.LISTOFUNION_DT) {
+            final ShortList primitiveTypeList1 = convertToPrimitiveKind(info1.itemValueTypes);
+            final ShortList primitiveTypeList2 = convertToPrimitiveKind(info2.itemValueTypes);
+            return primitiveTypeList1.equals(primitiveTypeList2);
+        }
+        return true;
+    }
+    
+    private short convertToPrimitiveKind(short valueType) {
+        /** Primitive datatypes. */
+        if (valueType <= XSConstants.NOTATION_DT) {
+            return valueType;
+        }
+        /** Types derived from string. */
+        if (valueType <= XSConstants.ENTITY_DT) {
+            return XSConstants.STRING_DT;
+        }
+        /** Types derived from decimal. */
+        if (valueType <= XSConstants.POSITIVEINTEGER_DT) {
+            return XSConstants.DECIMAL_DT;
+        }
+        /** Other types. */
+        return valueType;
+    }
+
+    private ShortList convertToPrimitiveKind(ShortList itemValueType) {
+        if (itemValueType != null) {
+            int i;
+            final int length = itemValueType.getLength();
+            for (i = 0; i < length; ++i) {
+                short type = itemValueType.item(i);
+                if (type != convertToPrimitiveKind(type)) {
+                    break;
+                }
+            }
+            if (i != length) {
+                final short [] arr = new short[length];
+                for (int j = 0; j < i; ++j) {
+                    arr[j] = itemValueType.item(j);
+                }
+                for(; i < length; ++i) {
+                    arr[i] = convertToPrimitiveKind(itemValueType.item(i));
+                }
+                return new ShortListImpl(arr, arr.length);
+            }
+        }
+        return itemValueType;
     }
 
     private String expectedStr(Vector expected) {
