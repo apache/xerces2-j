@@ -43,7 +43,6 @@ import org.apache.xerces.impl.xs.identity.XPathMatcher;
 import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.models.CMNodeFactory;
 import org.apache.xerces.impl.xs.models.XSCMValidator;
-import org.apache.xerces.impl.xs.util.ShortListImpl;
 import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.IntStack;
 import org.apache.xerces.util.SymbolTable;
@@ -3188,31 +3187,7 @@ public class XMLSchemaValidator
         /** Other types. */
         return valueType;
     }
-
-    private ShortList convertToPrimitiveKind(ShortList itemValueType) {
-        if (itemValueType != null) {
-            int i;
-            final int length = itemValueType.getLength();
-            for (i = 0; i < length; ++i) {
-                short type = itemValueType.item(i);
-                if (type != convertToPrimitiveKind(type)) {
-                    break;
-                }
-            }
-            if (i != length) {
-                final short [] arr = new short[length];
-                for (int j = 0; j < i; ++j) {
-                    arr[j] = itemValueType.item(j);
-                }
-                for(; i < length; ++i) {
-                    arr[i] = convertToPrimitiveKind(itemValueType.item(i));
-                }
-                return new ShortListImpl(arr, arr.length);
-            }
-        }
-        return itemValueType;
-    }
-
+    
     private String expectedStr(Vector expected) {
         StringBuffer ret = new StringBuffer("{");
         int size = expected.size();
