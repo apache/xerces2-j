@@ -316,19 +316,19 @@ void printFinal(short finalSet){
 
     System.err.println("'final' values \t\t\t: " );
 
-    if ((finalSet & XSConstants.DERIVATION_EXTENSION ) != 0){
+    if ((finalSet & XSConstants.DERIVATION_EXTENSION ) != 0) {
         System.err.println("\t\t\t\t Extension");
     }
-    if ((finalSet & XSConstants.DERIVATION_RESTRICTION) != 0){
+    if ((finalSet & XSConstants.DERIVATION_RESTRICTION) != 0) {
         System.err.println("\t\t\t\t Restriction");
     }
-    if((finalSet & XSConstants.DERIVATION_LIST ) != 0){
+    if ((finalSet & XSConstants.DERIVATION_LIST ) != 0) {
         System.err.println("\t\t\t\t List");
     }
-    if((finalSet & XSConstants.DERIVATION_UNION ) != 0){
+    if ((finalSet & XSConstants.DERIVATION_UNION ) != 0) {
         System.err.println("\t\t\t\t Union");
     }
-    if((finalSet & XSConstants.DERIVATION_NONE ) != 0){
+    if (finalSet == XSConstants.DERIVATION_NONE) {
         System.err.println("\t\t\t\t EMPTY");
     }
 
