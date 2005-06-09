@@ -2757,7 +2757,7 @@ public class XMLSchemaValidator
         // get the value constraint from use or decl
         // 4 The item's actual value must match the value of the {value constraint}, if it is present and fixed.                 // now check the value against the simpleType
         if (actualValue != null && currDecl.getConstraintType() == XSConstants.VC_FIXED) {
-            if (!actualValue.equals(currDecl.fDefault.actualValue)) {
+            if (!isComparable(fValidatedInfo, currDecl.fDefault) || !actualValue.equals(currDecl.fDefault.actualValue)) {
                 reportSchemaError(
                     "cvc-attribute.4",
                     new Object[] {
@@ -2772,7 +2772,7 @@ public class XMLSchemaValidator
         if (actualValue != null
             && currUse != null
             && currUse.fConstraintType == XSConstants.VC_FIXED) {
-            if (!actualValue.equals(currUse.fDefault.actualValue)) {
+            if (!isComparable(fValidatedInfo, currDecl.fDefault) || !actualValue.equals(currUse.fDefault.actualValue)) {
                 reportSchemaError(
                     "cvc-complex-type.3.1",
                     new Object[] {
@@ -3155,9 +3155,19 @@ public class XMLSchemaValidator
             return false;
         }
         else if (primitiveType1 == XSConstants.LIST_DT || primitiveType1 == XSConstants.LISTOFUNION_DT) {
-            final ShortList primitiveTypeList1 = convertToPrimitiveKind(info1.itemValueTypes);
-            final ShortList primitiveTypeList2 = convertToPrimitiveKind(info2.itemValueTypes);
-            return primitiveTypeList1.equals(primitiveTypeList2);
+            final ShortList typeList1 = info1.itemValueTypes;
+            final ShortList typeList2 = info2.itemValueTypes;
+            final int typeList1Length = typeList1 != null ? typeList1.getLength() : 0;
+            final int typeList2Length = typeList2 != null ? typeList2.getLength() : 0;
+            if (typeList1Length != typeList2Length) {
+                return false;
+            }
+            for (int i = 0; i < typeList1Length; ++i) {
+                if (convertToPrimitiveKind(typeList1.item(i)) != 
+                    convertToPrimitiveKind(typeList2.item(i))) {
+                    return false;
+                }
+            }
         }
         return true;
     }
