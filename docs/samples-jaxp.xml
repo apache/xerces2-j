@@ -49,6 +49,7 @@
     <tr><td>-a uri ...</td><td>Provide a list of schema documents.</td></tr>
     <tr><td>-api (sax|dom)</td><td>Select API to use (sax|dom).</td></tr>
     <tr><td>-xi | -XI</td><td>Turn on/off XInclude processing.</td></tr>
+    <tr><td>-sp | -SP</td><td>Turn on/off secure processing.</td></tr>
     <tr><td>-h</td><td>Display help screen.</td></tr>
    </table>
   </s3>
