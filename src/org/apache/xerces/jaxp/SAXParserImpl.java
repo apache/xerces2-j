@@ -30,6 +30,7 @@ import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 
 import org.apache.xerces.util.SAXMessageFormatter;
+import org.apache.xerces.util.SecurityManager;
 import org.apache.xerces.xs.AttributePSVI;
 import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.PSVIProvider;
@@ -65,6 +66,10 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
     /** Feature identifier: XInclude processing */
     private static final String XINCLUDE_FEATURE = 
         Constants.XERCES_FEATURE_PREFIX + Constants.XINCLUDE_FEATURE;
+    
+    /** Property identifier: security manager. */
+    private static final String SECURITY_MANAGER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SECURITY_MANAGER_PROPERTY;
 
     private XMLReader xmlReader;
     private String schemaLanguage = null;     // null means DTD
@@ -74,7 +79,16 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
      * Create a SAX parser with the associated features
      * @param features Hashtable of SAX features, may be null
      */
-    SAXParserImpl(SAXParserFactory spf, Hashtable features)
+    SAXParserImpl(SAXParserFactory spf, Hashtable features) 
+        throws SAXException {
+        this(spf, features, false);
+    }
+    
+    /**
+     * Create a SAX parser with the associated features
+     * @param features Hashtable of SAX features, may be null
+     */
+    SAXParserImpl(SAXParserFactory spf, Hashtable features, boolean secureProcessing)
         throws SAXException
     {
         // Instantiate a SAXParser directly and not through SAX so that we
@@ -105,6 +119,11 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
         // does not support XInclude.
         if (spf.isXIncludeAware()) {
             xmlReader.setFeature(XINCLUDE_FEATURE, true);
+        }
+        
+        // If the secure processing feature is on set a security manager.
+        if (secureProcessing) {
+            xmlReader.setProperty(SECURITY_MANAGER, new SecurityManager());
         }
         
         this.grammar = spf.getSchema();

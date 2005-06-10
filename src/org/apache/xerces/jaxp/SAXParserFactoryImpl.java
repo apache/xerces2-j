@@ -18,6 +18,7 @@ package org.apache.xerces.jaxp;
 
 import java.util.Hashtable;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -41,6 +42,11 @@ public class SAXParserFactoryImpl extends SAXParserFactory {
     private Hashtable features;
     private Schema grammar;
     private boolean isXIncludeAware;
+    
+    /**
+     * State of the secure processing feature, initially <code>false</code>
+     */
+    private boolean fSecureProcess = false;
 
     /**
      * Creates a new instance of <code>SAXParser</code> using the currently
@@ -52,7 +58,7 @@ public class SAXParserFactoryImpl extends SAXParserFactory {
     {
         SAXParser saxParserImpl;
         try {
-            saxParserImpl = new SAXParserImpl(this, features);
+            saxParserImpl = new SAXParserImpl(this, features, fSecureProcess);
         } catch (SAXException se) {
             // Translate to ParserConfigurationException
             throw new ParserConfigurationException(se.getMessage());
@@ -86,8 +92,16 @@ public class SAXParserFactoryImpl extends SAXParserFactory {
      */
     public void setFeature(String name, boolean value)
         throws ParserConfigurationException, SAXNotRecognizedException, 
-		SAXNotSupportedException
-    {
+		SAXNotSupportedException {
+        if (name == null) {
+            throw new NullPointerException();
+        }
+        // If this is the secure processing feature, save it then return.
+        if (name.equals(XMLConstants.FEATURE_SECURE_PROCESSING)) {
+            fSecureProcess = value;
+            return;
+        }
+        
         // XXX This is ugly.  We have to collect the features and then
         // later create an XMLReader to verify the features.
         if (features == null) {
@@ -113,8 +127,13 @@ public class SAXParserFactoryImpl extends SAXParserFactory {
      */
     public boolean getFeature(String name)
         throws ParserConfigurationException, SAXNotRecognizedException,
-		SAXNotSupportedException
-    {
+		SAXNotSupportedException {
+        if (name == null) {
+            throw new NullPointerException();
+        }
+        if (name.equals(XMLConstants.FEATURE_SECURE_PROCESSING)) {
+            return fSecureProcess;
+        }
         // Check for valid name by creating a dummy XMLReader to get
         // feature value
         return newSAXParserImpl().getXMLReader().getFeature(name);

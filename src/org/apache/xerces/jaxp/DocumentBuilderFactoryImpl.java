@@ -16,16 +16,18 @@
 
 package org.apache.xerces.jaxp;
 
-import javax.xml.parsers.DocumentBuilderFactory;
+import java.util.Hashtable;
+import java.util.Locale;
+
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.validation.Schema;
 
-import org.xml.sax.SAXException;
-
-import java.util.Hashtable;
-
 import org.apache.xerces.parsers.DOMParser;
+import org.apache.xerces.util.SAXMessageFormatter;
+import org.xml.sax.SAXException;
 
 /**
  * @author Rajiv Mordani
@@ -37,6 +39,11 @@ public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
     private Hashtable attributes;
     private Schema grammar;
     private boolean isXIncludeAware;
+    
+    /**
+     * State of the secure processing feature, initially <code>false</code>
+     */
+    private boolean fSecureProcess = false;
 
     /**
      * Creates a new instance of a {@link javax.xml.parsers.DocumentBuilder}
@@ -46,7 +53,7 @@ public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
         throws ParserConfigurationException 
     {
         try {
-            return new DocumentBuilderImpl(this, attributes);
+            return new DocumentBuilderImpl(this, attributes, fSecureProcess);
         } catch (SAXException se) {
             // Handles both SAXNotSupportedException, SAXNotRecognizedException
             throw new ParserConfigurationException(se.getMessage());
@@ -141,13 +148,25 @@ public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
         this.isXIncludeAware = state;
     }
     
-    // TODO: Add in implementation. This is just a stub so that the code complies with JAXP 1.3.
     public boolean getFeature(String name) 
         throws ParserConfigurationException {
-        return false;
+        if (name.equals(XMLConstants.FEATURE_SECURE_PROCESSING)) {
+            return fSecureProcess;
+        }
+        throw new ParserConfigurationException(
+                SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        "feature-not-supported", new Object [] {name}));
     }
     
-    // TODO: Add in implementation. This is just a stub so that the code complies with JAXP 1.3.
     public void setFeature(String name, boolean value) 
-        throws ParserConfigurationException {}
+        throws ParserConfigurationException {
+        // If this is the secure processing feature, save it then return.
+        if (name.equals(XMLConstants.FEATURE_SECURE_PROCESSING)) {
+            fSecureProcess = value;
+            return;
+        }
+        throw new ParserConfigurationException(
+                SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                        "feature-not-supported", new Object [] {name}));
+    }
 }

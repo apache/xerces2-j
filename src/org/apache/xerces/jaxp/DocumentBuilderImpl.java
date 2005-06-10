@@ -28,6 +28,7 @@ import org.apache.xerces.dom.DOMImplementationImpl;
 import org.apache.xerces.dom.DOMMessageFormatter;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.parsers.DOMParser;
+import org.apache.xerces.util.SecurityManager;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.xml.sax.EntityResolver;
@@ -77,10 +78,19 @@ public class DocumentBuilderImpl extends DocumentBuilder
     private static final String VALIDATION_FEATURE =
         Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
     
+    /** Property identifier: security manager. */
+    private static final String SECURITY_MANAGER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SECURITY_MANAGER_PROPERTY;
+    
     private DOMParser domParser = null;
     private final Schema grammar;
-
+    
     DocumentBuilderImpl(DocumentBuilderFactory dbf, Hashtable dbfAttrs)
+        throws SAXNotRecognizedException, SAXNotSupportedException {
+        this(dbf, dbfAttrs, false);
+    }
+
+    DocumentBuilderImpl(DocumentBuilderFactory dbf, Hashtable dbfAttrs, boolean secureProcessing)
         throws SAXNotRecognizedException, SAXNotSupportedException
     {
         domParser = new DOMParser();
@@ -112,6 +122,11 @@ public class DocumentBuilderImpl extends DocumentBuilder
         // does not support XInclude.
         if (dbf.isXIncludeAware()) {
             domParser.setFeature(XINCLUDE_FEATURE, true);
+        }
+        
+        // If the secure processing feature is on set a security manager.
+        if (secureProcessing) {
+            domParser.setProperty(SECURITY_MANAGER, new SecurityManager());
         }
         
         this.grammar = dbf.getSchema();
