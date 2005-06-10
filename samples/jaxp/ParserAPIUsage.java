@@ -49,6 +49,9 @@ public class ParserAPIUsage extends DefaultHandler {
     /** Default XInclude processing support (false). */
     protected static final boolean DEFAULT_XINCLUDE = false;
     
+    /** Default secure processing support (false). */
+    protected static final boolean DEFAULT_SECURE_PROCESSING = false;
+    
     //
     // Constructors
     //
@@ -119,6 +122,7 @@ public class ParserAPIUsage extends DefaultHandler {
         String docURI = argv[argv.length - 1];
         String apiToUse = DEFAULT_API_TO_USE;
         boolean xincludeProcessing = DEFAULT_XINCLUDE;
+        boolean secureProcessing = DEFAULT_SECURE_PROCESSING;
         
         // process arguments
         for (int i = 0; i < argv.length - 1; ++i) {
@@ -151,6 +155,10 @@ public class ParserAPIUsage extends DefaultHandler {
                     xincludeProcessing = option.equals("xi");
                     continue;
                 }
+                if (option.equalsIgnoreCase("sp")) {
+                    secureProcessing = option.equals("sp");
+                    continue;
+                }
                 if (option.equals("h")) {
                     printUsage();
                     continue;
@@ -180,6 +188,7 @@ public class ParserAPIUsage extends DefaultHandler {
                 dbf.setNamespaceAware(true);
                 dbf.setXIncludeAware(xincludeProcessing);
                 dbf.setSchema(schema);
+                dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, secureProcessing);
                 
                 // Create a DocumentBuilder
                 DocumentBuilder db = dbf.newDocumentBuilder();
@@ -198,6 +207,7 @@ public class ParserAPIUsage extends DefaultHandler {
                 spf.setNamespaceAware(true);
                 spf.setXIncludeAware(xincludeProcessing);
                 spf.setSchema(schema);
+                spf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, secureProcessing);
                 
                 // Create a SAXParser
                 SAXParser sp = spf.newSAXParser();
@@ -237,13 +247,16 @@ public class ParserAPIUsage extends DefaultHandler {
         System.err.println("  -a uri ...      Provide a list of schema documents.");
         System.err.println("  -api (sax|dom)  Select API to use (sax|dom).");
         System.err.println("  -xi | -XI       Turn on/off XInclude processing.");
+        System.err.println("  -sp | -SP       Turn on/off secure processing.");
         System.err.println("  -h              This help screen.");
         
         System.err.println();
         System.err.println("defaults:");
-        System.err.println("  API to use:   " + DEFAULT_API_TO_USE);
-        System.err.print("  XInclude:     ");
+        System.err.println("  API to use:            " + DEFAULT_API_TO_USE);
+        System.err.print("  XInclude:              ");
         System.err.println(DEFAULT_XINCLUDE ? "on" : "off");
+        System.err.print("  Secure processing:     ");
+        System.err.println(DEFAULT_SECURE_PROCESSING ? "on" : "off");
         
     } // printUsage()
     
