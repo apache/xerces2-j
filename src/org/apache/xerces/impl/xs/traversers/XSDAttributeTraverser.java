@@ -126,7 +126,6 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
                 attrUse.fDefault.normalizedValue = defaultAtt;
             }
         }
-        fAttrChecker.returnAttrArray(attrValues, schemaDoc);
         
         //src-attribute
         
@@ -171,6 +170,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
             }
         }
         
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc);
         return attrUse;
     }
     
