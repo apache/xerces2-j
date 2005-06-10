@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2004 The Apache Software Foundation.
+ * Copyright 2000-2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.validation.Schema;
 
 import org.apache.xerces.impl.Constants;
 import org.xml.sax.Parser;
@@ -44,9 +45,30 @@ import org.apache.xerces.xs.PSVIProvider;
  */
 public class SAXParserImpl extends javax.xml.parsers.SAXParser
     implements JAXPConstants, PSVIProvider {
+    
+    /** Feature identifier: namespaces. */
+    private static final String NAMESPACES_FEATURE =
+        Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
+    
+    /** Feature identifier: namespace prefixes. */
+    private static final String NAMESPACE_PREFIXES_FEATURE =
+        Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACE_PREFIXES_FEATURE;
+    
+    /** Feature identifier: validation. */
+    private static final String VALIDATION_FEATURE =
+        Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
+    
+    /** Feature identifier: XML Schema validation */
+    private static final String XMLSCHEMA_VALIDATION_FEATURE =
+        Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE;
+    
+    /** Feature identifier: XInclude processing */
+    private static final String XINCLUDE_FEATURE = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.XINCLUDE_FEATURE;
 
     private XMLReader xmlReader;
     private String schemaLanguage = null;     // null means DTD
+    private final Schema grammar;
     
     /**
      * Create a SAX parser with the associated features
@@ -66,22 +88,26 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
             xmlReader.setErrorHandler(new DefaultValidationErrorHandler());
         }
 
-        xmlReader.setFeature(Constants.SAX_FEATURE_PREFIX +
-                             Constants.VALIDATION_FEATURE, spf.isValidating());
+        xmlReader.setFeature(VALIDATION_FEATURE, spf.isValidating());
 
         // JAXP "namespaceAware" == SAX Namespaces feature
         // Note: there is a compatibility problem here with default values:
         // JAXP default is false while SAX 2 default is true!
-        xmlReader.setFeature(Constants.SAX_FEATURE_PREFIX +
-                             Constants.NAMESPACES_FEATURE,
-                             spf.isNamespaceAware());
+        xmlReader.setFeature(NAMESPACES_FEATURE, spf.isNamespaceAware());
 
         // SAX "namespaces" and "namespace-prefixes" features should not
         // both be false.  We make them opposite for backward compatibility
         // since JAXP 1.0 apps may want to receive xmlns* attributes.
-        xmlReader.setFeature(Constants.SAX_FEATURE_PREFIX +
-                             Constants.NAMESPACE_PREFIXES_FEATURE,
-                             !spf.isNamespaceAware());
+        xmlReader.setFeature(NAMESPACE_PREFIXES_FEATURE, !spf.isNamespaceAware());
+        
+        // Avoid setting the XInclude processing feature if the value is false.
+        // This will keep the configuration from throwing an exception if it
+        // does not support XInclude.
+        if (spf.isXIncludeAware()) {
+            xmlReader.setFeature(XINCLUDE_FEATURE, true);
+        }
+        
+        this.grammar = spf.getSchema();
 
         setFeatures(features);
     }
@@ -121,19 +147,32 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
 
     public boolean isNamespaceAware() {
         try {
-            return xmlReader.getFeature(Constants.SAX_FEATURE_PREFIX +
-                                        Constants.NAMESPACES_FEATURE);
-        } catch (SAXException x) {
+            return xmlReader.getFeature(NAMESPACES_FEATURE);
+        } 
+        catch (SAXException x) {
             throw new IllegalStateException(x.getMessage());
         }
     }
 
     public boolean isValidating() {
         try {
-            return xmlReader.getFeature(Constants.SAX_FEATURE_PREFIX +
-                                        Constants.VALIDATION_FEATURE);
-        } catch (SAXException x) {
+            return xmlReader.getFeature(VALIDATION_FEATURE);
+        } 
+        catch (SAXException x) {
             throw new IllegalStateException(x.getMessage());
+        }
+    }
+    
+    /**
+     * Gets the XInclude processing mode for this parser
+     * @return the state of XInclude processing mode
+     */
+    public boolean isXIncludeAware() {
+        try {
+            return xmlReader.getFeature(XINCLUDE_FEATURE);
+        }
+        catch (SAXException exc) {
+            return false;
         }
     }
 
@@ -150,9 +189,7 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
                 //None of the properties will take effect till the setValidating(true) has been called                                                        
                 if( isValidating() ) {
                     schemaLanguage = W3C_XML_SCHEMA;
-                    xmlReader.setFeature(Constants.XERCES_FEATURE_PREFIX +
-                                     Constants.SCHEMA_VALIDATION_FEATURE,
-                                     true);
+                    xmlReader.setFeature(XMLSCHEMA_VALIDATION_FEATURE, true);
                     // this will allow the parser not to emit DTD-related
                     // errors, as the spec demands
                     xmlReader.setProperty(JAXP_SCHEMA_LANGUAGE, W3C_XML_SCHEMA);
@@ -160,9 +197,7 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
                 
             } else if (value == null) {
                 schemaLanguage = null;
-                xmlReader.setFeature(Constants.XERCES_FEATURE_PREFIX +
-                                     Constants.SCHEMA_VALIDATION_FEATURE,
-                                     false);
+                xmlReader.setFeature(XMLSCHEMA_VALIDATION_FEATURE, false);
             } else {
                 // REVISIT: It would be nice if we could format this message
                 // using a user specified locale as we do in the underlying
@@ -202,6 +237,13 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
             return xmlReader.getProperty(name);
         }
     }
+    
+    public Schema getSchema() {
+        return grammar;
+    }
+    
+    // TODO: Add in implementation.
+    public void reset() {}
     
     /*
      * PSVIProvider methods

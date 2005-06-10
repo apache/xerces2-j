@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2004 The Apache Software Foundation.
+ * Copyright 2000-2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.util.Hashtable;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.validation.Schema;
 
 import org.apache.xerces.dom.DOMImplementationImpl;
 import org.apache.xerces.dom.DOMMessageFormatter;
@@ -44,7 +45,40 @@ import org.xml.sax.SAXNotSupportedException;
 public class DocumentBuilderImpl extends DocumentBuilder
         implements JAXPConstants
 {
+    /** Feature identifier: namespaces. */
+    private static final String NAMESPACES_FEATURE =
+        Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
+    
+    /** Feature identifier: include ignorable white space. */
+    private static final String INCLUDE_IGNORABLE_WHITESPACE =
+        Constants.XERCES_FEATURE_PREFIX + Constants.INCLUDE_IGNORABLE_WHITESPACE;
+    
+    /** Feature identifier: create entiry ref nodes feature. */
+    private static final String CREATE_ENTITY_REF_NODES_FEATURE =
+        Constants.XERCES_FEATURE_PREFIX + Constants.CREATE_ENTITY_REF_NODES_FEATURE;
+    
+    /** Feature identifier: include comments feature. */
+    private static final String INCLUDE_COMMENTS_FEATURE =
+        Constants.XERCES_FEATURE_PREFIX + Constants.INCLUDE_COMMENTS_FEATURE;
+    
+    /** Feature identifier: create cdata nodes feature. */
+    private static final String CREATE_CDATA_NODES_FEATURE =
+        Constants.XERCES_FEATURE_PREFIX + Constants.CREATE_CDATA_NODES_FEATURE;
+    
+    /** Feature identifier: XInclude processing */
+    private static final String XINCLUDE_FEATURE = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.XINCLUDE_FEATURE;
+
+    /** feature identifier: XML Schema validation */
+    private static final String XMLSCHEMA_VALIDATION_FEATURE =
+        Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE;
+    
+    /** Feature identifier: validation */
+    private static final String VALIDATION_FEATURE =
+        Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
+    
     private DOMParser domParser = null;
+    private final Schema grammar;
 
     DocumentBuilderImpl(DocumentBuilderFactory dbf, Hashtable dbfAttrs)
         throws SAXNotRecognizedException, SAXNotSupportedException
@@ -58,27 +92,29 @@ public class DocumentBuilderImpl extends DocumentBuilder
             setErrorHandler(new DefaultValidationErrorHandler());
         }
 
-        domParser.setFeature(Constants.SAX_FEATURE_PREFIX +
-                             Constants.VALIDATION_FEATURE, dbf.isValidating());
+        domParser.setFeature(VALIDATION_FEATURE, dbf.isValidating());
 
         // "namespaceAware" == SAX Namespaces feature
-        domParser.setFeature(Constants.SAX_FEATURE_PREFIX +
-                             Constants.NAMESPACES_FEATURE,
-                             dbf.isNamespaceAware());
+        domParser.setFeature(NAMESPACES_FEATURE, dbf.isNamespaceAware());
 
         // Set various parameters obtained from DocumentBuilderFactory
-        domParser.setFeature(Constants.XERCES_FEATURE_PREFIX +
-                             Constants.INCLUDE_IGNORABLE_WHITESPACE,
-                             !dbf.isIgnoringElementContentWhitespace());
-        domParser.setFeature(Constants.XERCES_FEATURE_PREFIX +
-                             Constants.CREATE_ENTITY_REF_NODES_FEATURE,
-                             !dbf.isExpandEntityReferences());
-        domParser.setFeature(Constants.XERCES_FEATURE_PREFIX +
-                             Constants.INCLUDE_COMMENTS_FEATURE,
-                             !dbf.isIgnoringComments());
-        domParser.setFeature(Constants.XERCES_FEATURE_PREFIX +
-                             Constants.CREATE_CDATA_NODES_FEATURE,
-                             !dbf.isCoalescing());
+        domParser.setFeature(INCLUDE_IGNORABLE_WHITESPACE, 
+                !dbf.isIgnoringElementContentWhitespace());
+        domParser.setFeature(CREATE_ENTITY_REF_NODES_FEATURE,
+                !dbf.isExpandEntityReferences());
+        domParser.setFeature(INCLUDE_COMMENTS_FEATURE,
+                !dbf.isIgnoringComments());
+        domParser.setFeature(CREATE_CDATA_NODES_FEATURE,
+                !dbf.isCoalescing());
+        
+        // Avoid setting the XInclude processing feature if the value is false.
+        // This will keep the configuration from throwing an exception if it
+        // does not support XInclude.
+        if (dbf.isXIncludeAware()) {
+            domParser.setFeature(XINCLUDE_FEATURE, true);
+        }
+        
+        this.grammar = dbf.getSchema();
 
         setDocumentBuilderFactoryAttributes(dbfAttrs);
     }
@@ -111,9 +147,7 @@ public class DocumentBuilderImpl extends DocumentBuilder
                     //None of the properties will take effect till the setValidating(true) has been called                                        
                     if ( W3C_XML_SCHEMA.equals(val) ) {
                         if( isValidating() ) {
-                            domParser.setFeature(
-                                Constants.XERCES_FEATURE_PREFIX +
-                                Constants.SCHEMA_VALIDATION_FEATURE, true);
+                            domParser.setFeature(XMLSCHEMA_VALIDATION_FEATURE, true);
                             // this should allow us not to emit DTD errors, as expected by the 
                             // spec when schema validation is enabled
                             domParser.setProperty(JAXP_SCHEMA_LANGUAGE, W3C_XML_SCHEMA);
@@ -164,19 +198,32 @@ public class DocumentBuilderImpl extends DocumentBuilder
 
     public boolean isNamespaceAware() {
         try {
-            return domParser.getFeature(Constants.SAX_FEATURE_PREFIX +
-                                        Constants.NAMESPACES_FEATURE);
-        } catch (SAXException x) {
+            return domParser.getFeature(NAMESPACES_FEATURE);
+        } 
+        catch (SAXException x) {
             throw new IllegalStateException(x.getMessage());
         }
     }
 
     public boolean isValidating() {
         try {
-            return domParser.getFeature(Constants.SAX_FEATURE_PREFIX +
-                                        Constants.VALIDATION_FEATURE);
-        } catch (SAXException x) {
+            return domParser.getFeature(VALIDATION_FEATURE);
+        } 
+        catch (SAXException x) {
             throw new IllegalStateException(x.getMessage());
+        }
+    }
+    
+    /**
+     * Gets the XInclude processing mode for this parser
+     * @return the state of XInclude processing mode
+     */
+    public boolean isXIncludeAware() {
+        try {
+            return domParser.getFeature(XINCLUDE_FEATURE);
+        }
+        catch (SAXException exc) {
+            return false;
         }
     }
 
@@ -187,6 +234,13 @@ public class DocumentBuilderImpl extends DocumentBuilder
     public void setErrorHandler(ErrorHandler eh) {
         domParser.setErrorHandler(eh);
     }
+    
+    public Schema getSchema() {
+        return grammar;
+    }
+    
+    // TODO: Add in implementation.
+    public void reset() {}
 
     // package private
     DOMParser getDOMParser() {
