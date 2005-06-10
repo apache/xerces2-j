@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2002,2004 The Apache Software Foundation.
+ * Copyright 2000-2002,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package org.apache.xerces.jaxp;
 
 import java.util.Hashtable;
@@ -22,24 +21,26 @@ import java.util.Hashtable;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.validation.Schema;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 
 /**
- * @author Rajiv Mordani
- * @author Edwin Goei
- * @version $Id$
- */
-
-/**
  * This is the implementation specific class for the
  * <code>javax.xml.parsers.SAXParserFactory</code>. This is the platform
  * default implementation for the platform.
+ * 
+ * @author Rajiv Mordani
+ * @author Edwin Goei
+ * 
+ * @version $Id$
  */
 public class SAXParserFactoryImpl extends SAXParserFactory {
     private Hashtable features;
+    private Schema grammar;
+    private boolean isXIncludeAware;
 
     /**
      * Creates a new instance of <code>SAXParser</code> using the currently
@@ -117,5 +118,21 @@ public class SAXParserFactoryImpl extends SAXParserFactory {
         // Check for valid name by creating a dummy XMLReader to get
         // feature value
         return newSAXParserImpl().getXMLReader().getFeature(name);
+    }
+    
+    public Schema getSchema() {
+        return grammar;
+    }
+
+    public void setSchema(Schema grammar) {
+        this.grammar = grammar;
+    }
+
+    public boolean isXIncludeAware() {
+        return this.isXIncludeAware;
+    }
+
+    public void setXIncludeAware(boolean state) {
+        this.isXIncludeAware = state;
     }
 }

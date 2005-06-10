@@ -19,6 +19,7 @@ package org.apache.xerces.jaxp;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.validation.Schema;
 
 import org.xml.sax.SAXException;
 
@@ -34,6 +35,8 @@ import org.apache.xerces.parsers.DOMParser;
 public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
     /** These are DocumentBuilderFactory attributes not DOM attributes */
     private Hashtable attributes;
+    private Schema grammar;
+    private boolean isXIncludeAware;
 
     /**
      * Creates a new instance of a {@link javax.xml.parsers.DocumentBuilder}
@@ -120,6 +123,22 @@ public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
                 throw new IllegalArgumentException(se1.getMessage());
             }
         }
+    }
+    
+    public Schema getSchema() {
+        return grammar;
+    }
+    
+    public void setSchema(Schema grammar) {
+        this.grammar = grammar;
+    }
+    
+    public boolean isXIncludeAware() {
+        return this.isXIncludeAware;
+    }
+    
+    public void setXIncludeAware(boolean state) {
+        this.isXIncludeAware = state;
     }
     
     // TODO: Add in implementation. This is just a stub so that the code complies with JAXP 1.3.
