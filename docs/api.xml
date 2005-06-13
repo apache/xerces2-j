@@ -81,6 +81,9 @@
      <li>
       <jump href='javadocs/api/org/w3c/dom/traversal/package-summary.html'>Traversal</jump>
      </li>
+     <li>
+      <jump href='javadocs/api/org/w3c/dom/xpath/package-summary.html'>XPath</jump>
+     </li>
     </ul>
     <li>Simple API for XML (SAX)</li>
     <ul>
