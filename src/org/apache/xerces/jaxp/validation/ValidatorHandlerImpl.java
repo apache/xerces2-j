@@ -833,7 +833,8 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
          */
         private void checkState() {
             if( !fInStartElement ) {
-                throw new IllegalStateException();
+                throw new IllegalStateException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+                        "TypeInfoProviderIllegalState", null));
             }
         }
         
@@ -942,7 +943,7 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
         // Data
         //
 
-        /** XML 1.0 type constant according to DOM L3 LS CR spec "http://www.w3.org/TR/2003/CR-DOM-Level-3-LS-20031107" */
+        /** XML 1.0 type constant according to DOM L3 LS REC spec "http://www.w3.org/TR/2004/REC-DOM-Level-3-LS-20040407/" */
         private static final String XML_TYPE = "http://www.w3.org/TR/REC-xml";
 
         /** The DOM entity resolver. */
