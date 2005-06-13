@@ -338,6 +338,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
      */
     public void setParameter (String name, Object value) throws DOMException {
         // set features
+    	
         if(value instanceof Boolean){
             boolean state = ((Boolean)value).booleanValue ();
             try {
@@ -719,6 +720,10 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
     }
 
     public boolean canSetParameter (String name, Object value) {
+    	if (value == null){
+    		return true;
+    	}
+    	
         if(value instanceof Boolean){
             boolean state = ((Boolean)value).booleanValue ();
             if ( name.equalsIgnoreCase (Constants.DOM_SUPPORTED_MEDIATYPES_ONLY)

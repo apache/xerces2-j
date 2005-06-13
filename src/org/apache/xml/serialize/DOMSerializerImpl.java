@@ -283,6 +283,10 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
      * Check if parameter can be set
      */
 	public boolean canSetParameter(String name, Object state) {
+		if (state == null){
+			return true;
+		}
+		
 		if (state instanceof Boolean){
 			boolean value = ((Boolean)state).booleanValue();
 			if (name.equalsIgnoreCase(Constants.DOM_NAMESPACES)
