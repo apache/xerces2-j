@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2004 The Apache Software Foundation.
+ * Copyright 2001-2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -220,9 +220,9 @@ public class SchemaDVFactoryImpl extends SchemaDVFactory {
         fBuiltInTypes.put(DURATION, durationDV);
         
         if (Constants.SCHEMA_1_1_SUPPORT) {
-            fBuiltInTypes.put(YEARMONTHDURATION, new XSSimpleTypeDecl(durationDV, YEARMONTHDURATION, XSSimpleTypeDecl.DV_YEARMONTHDURATION, XSSimpleType.ORDERED_PARTIAL, false, false, false, true, XSConstants.YEARMONTHDURATION_DT));
-            fBuiltInTypes.put(DAYTIMEDURATION, new XSSimpleTypeDecl(durationDV, DAYTIMEDURATION, XSSimpleTypeDecl.DV_DAYTIMEDURATION, XSSimpleType.ORDERED_PARTIAL, false, false, false, true, XSConstants.DAYTIMEDURATION_DT));
-            //fBuiltInTypes.put(PRECISIONDECIMAL, new XSSimpleTypeDecl(anySimpleType, PRECISIONDECIMAL, XSSimpleTypeDecl.DV_PRECISIONDECIMAL, XSSimpleType.ORDERED_PARTIAL, false, false, true, true, XSConstants.PRECISIONDECIMAL_DT));
+            fBuiltInTypes.put(YEARMONTHDURATION, new XSSimpleTypeDecl(durationDV, YEARMONTHDURATION, XSSimpleTypeDecl.DV_YEARMONTHDURATION, XSSimpleType.ORDERED_PARTIAL, false, false, false, true, XSSimpleTypeDecl.YEARMONTHDURATION_DT));
+            fBuiltInTypes.put(DAYTIMEDURATION, new XSSimpleTypeDecl(durationDV, DAYTIMEDURATION, XSSimpleTypeDecl.DV_DAYTIMEDURATION, XSSimpleType.ORDERED_PARTIAL, false, false, false, true, XSSimpleTypeDecl.DAYTIMEDURATION_DT));
+            fBuiltInTypes.put(PRECISIONDECIMAL, new XSSimpleTypeDecl(anySimpleType, PRECISIONDECIMAL, XSSimpleTypeDecl.DV_PRECISIONDECIMAL, XSSimpleType.ORDERED_PARTIAL, false, false, true, true, XSSimpleTypeDecl.PRECISIONDECIMAL_DT));
         }
         
         fBuiltInTypes.put(DATETIME, new XSSimpleTypeDecl(baseAtomicType, DATETIME, XSSimpleTypeDecl.DV_DATETIME, XSSimpleType.ORDERED_PARTIAL, false, false, false, true, XSConstants.DATETIME_DT));

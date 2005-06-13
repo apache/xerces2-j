@@ -1511,6 +1511,13 @@ Copyright:
   <target name="prepare-src-schema11" depends="prepare-src">
   	<replace file="${build.src}/org/apache/xerces/impl/Constants.java"
   		token="SCHEMA_1_1_SUPPORT = false" value="SCHEMA_1_1_SUPPORT = true"/>
+  	<replace file="${build.src}/org/apache/xerces/xs/XSConstants.java"
+  	    token="public static final short UNAVAILABLE_DT            = 45;"
+  	    value="public static final short UNAVAILABLE_DT            = 45;&#xA;
+      &#xA;    public static final short YEARMONTHDURATION_DT      = 46;&#xA;
+      &#xA;    public static final short DAYTIMEDURATION_DT        = 47;&#xA;
+      &#xA;    public static final short PRECISIONDECIMAL_DT       = 48;&#xA;
+      &#xA;    public static final short ANYATOMICTYPE_DT          = 49;"/>
   </target>
 
   <!-- =================================================================== -->

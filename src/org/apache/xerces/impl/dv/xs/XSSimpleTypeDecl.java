@@ -172,6 +172,12 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 	
 	static final String URI_SCHEMAFORSCHEMA = "http://www.w3.org/2001/XMLSchema";
 	static final String ANY_TYPE = "anyType";
+    
+    // XML Schema 1.1 type constants
+    public static final short YEARMONTHDURATION_DT      = 46;
+    public static final short DAYTIMEDURATION_DT        = 47;   
+    public static final short PRECISIONDECIMAL_DT       = 48;
+    public static final short ANYATOMICTYPE_DT          = 49;
 	
 	// DOM Level 3 TypeInfo Derivation Method constants
 	static final int DERIVATION_ANY = 0;
@@ -2710,7 +2716,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 	
 	static final XSSimpleTypeDecl fAnySimpleType = new XSSimpleTypeDecl(null, "anySimpleType", DV_ANYSIMPLETYPE, ORDERED_FALSE, false, true, false, true, XSConstants.ANYSIMPLETYPE_DT);
 	
-	static final XSSimpleTypeDecl fAnyAtomicType = new XSSimpleTypeDecl(fAnySimpleType, "anyAtomicType", DV_ANYATOMICTYPE, ORDERED_FALSE, false, true, false, true, XSConstants.ANYATOMICTYPE_DT);
+	static final XSSimpleTypeDecl fAnyAtomicType = new XSSimpleTypeDecl(fAnySimpleType, "anyAtomicType", DV_ANYATOMICTYPE, ORDERED_FALSE, false, true, false, true, XSSimpleTypeDecl.ANYATOMICTYPE_DT);
 	
 	/**
 	 * Validation context used to validate facet values.
