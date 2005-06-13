@@ -2771,7 +2771,7 @@ public class XMLSchemaValidator
         if (actualValue != null
             && currUse != null
             && currUse.fConstraintType == XSConstants.VC_FIXED) {
-            if (!isComparable(fValidatedInfo, currDecl.fDefault) || !actualValue.equals(currUse.fDefault.actualValue)) {
+            if (!isComparable(fValidatedInfo, currUse.fDefault) || !actualValue.equals(currUse.fDefault.actualValue)) {
                 reportSchemaError(
                     "cvc-complex-type.3.1",
                     new Object[] {
