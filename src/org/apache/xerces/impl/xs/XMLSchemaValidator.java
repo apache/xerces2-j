@@ -158,6 +158,10 @@ public class XMLSchemaValidator
     protected static final String HONOUR_ALL_SCHEMALOCATIONS = 
         Constants.XERCES_FEATURE_PREFIX + Constants.HONOUR_ALL_SCHEMALOCATIONS_FEATURE;
 
+    /** Feature identifier: use grammar pool only */
+    protected static final String USE_GRAMMAR_POOL_ONLY =
+        Constants.XERCES_FEATURE_PREFIX + Constants.USE_GRAMMAR_POOL_ONLY_FEATURE;
+
     /** Feature identifier: whether to continue parsing a schema after a fatal error is encountered */
     protected static final String CONTINUE_AFTER_FATAL_ERROR =
         Constants.XERCES_FEATURE_PREFIX + Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE;
@@ -219,7 +223,9 @@ public class XMLSchemaValidator
             STANDARD_URI_CONFORMANT_FEATURE,
             GENERATE_SYNTHETIC_ANNOTATIONS,
             VALIDATE_ANNOTATIONS,
-            HONOUR_ALL_SCHEMALOCATIONS};
+            HONOUR_ALL_SCHEMALOCATIONS,
+            USE_GRAMMAR_POOL_ONLY};
+
 
     /** Feature defaults. */
     private static final Boolean[] FEATURE_DEFAULTS = { null,
@@ -234,6 +240,7 @@ public class XMLSchemaValidator
         null, //Boolean.FALSE,
         null, //Boolean.FALSE,
         null, //Boolean.FALSE,
+        null,
         null,
         null,
         null,
@@ -293,6 +300,8 @@ public class XMLSchemaValidator
     protected boolean fSchemaElementDefault = true;
     protected boolean fAugPSVI = true;
     protected boolean fIdConstraint = false;
+    protected boolean fUseGrammarPoolOnly = false;
+
     /** Schema type: None, DTD, Schema */
     private String fSchemaType = null;
 
@@ -1348,6 +1357,13 @@ public class XMLSchemaValidator
         } catch (XMLConfigurationException e) {
             fSchemaType = null;
         }
+        
+        try {
+            fUseGrammarPoolOnly = componentManager.getFeature(USE_GRAMMAR_POOL_ONLY);
+        } 
+        catch (XMLConfigurationException e) {
+            fUseGrammarPoolOnly = false;
+        }
 
         fEntityResolver = (XMLEntityResolver) componentManager.getProperty(ENTITY_MANAGER);
 
@@ -2400,7 +2416,7 @@ public class XMLSchemaValidator
                     }
                 }
             }
-            if (grammar == null) {
+            if (grammar == null && !fUseGrammarPoolOnly) {
                 // try to parse the grammar using location hints from that namespace..
                 try {
                     XMLInputSource xis =
