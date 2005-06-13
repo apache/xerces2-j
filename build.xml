@@ -216,7 +216,8 @@ Copyright:
                 org/w3c/dom/html/**
                 org/w3c/dom/ls/**
                 org/w3c/dom/ranges/**
-                org/w3c/dom/traversal/**"
+                org/w3c/dom/traversal/**
+        	    org/w3c/dom/xpath/**"
         />
     </unzip>
     
@@ -250,7 +251,8 @@ Copyright:
                 org/w3c/dom/ls/**
                 org/w3c/dom/html/**
                 org/w3c/dom/ranges/**
-                org/w3c/dom/traversal/**"
+                org/w3c/dom/traversal/**
+                org/w3c/dom/xpath/**"
            />
   </target>
 
@@ -1530,12 +1532,13 @@ Copyright:
                includeAntRuntime="false"
                includeJavaRuntime="false"
                excludes="org/xml/sax/** 
-                    javax/xml/parsers/**
+                    javax/xml/**
                     org/w3c/dom/*
                     org/w3c/dom/events/**
                     org/w3c/dom/html/**
                     org/w3c/dom/ranges/**
-                    org/w3c/dom/traversal/**"
+                    org/w3c/dom/traversal/**
+                    org/w3c/dom/xpath/**"
                />
   	</target>
   
