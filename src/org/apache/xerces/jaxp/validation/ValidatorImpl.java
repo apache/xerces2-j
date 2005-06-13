@@ -19,38 +19,33 @@ package org.apache.xerces.jaxp.validation;
 import java.io.IOException;
 import java.util.Locale;
 
-import javax.xml.parsers.FactoryConfigurationError;
-import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Validator;
-import javax.xml.validation.ValidatorHandler;
 
 import org.apache.xerces.util.SAXMessageFormatter;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
-import org.w3c.dom.ls.LSInput;
+import org.apache.xerces.xs.AttributePSVI;
+import org.apache.xerces.xs.ElementPSVI;
+import org.apache.xerces.xs.PSVIProvider;
 import org.w3c.dom.ls.LSResourceResolver;
-import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
 
 /**
  * <p>Implementation of Validator for W3C XML Schemas.</p>
  *
  * @author <a href="mailto:Kohsuke.Kawaguchi@Sun.com">Kohsuke Kawaguchi</a>
  * @author Michael Glavassevich, IBM
+ * 
  * @version $Id$
  */
-final class ValidatorImpl extends Validator {
+final class ValidatorImpl extends Validator implements PSVIProvider {
     
     //
     // Data
@@ -59,10 +54,8 @@ final class ValidatorImpl extends Validator {
     /** Component manager. **/
     private XMLSchemaValidatorComponentManager fComponentManager;
     
-    /**
-     * TODO: Need to merge in SAX.
-     */
-    private ValidatorHandler handler = null;
+    /** SAX validator helper. **/
+    private ValidatorHandlerImpl fSAXValidatorHelper;
     
     /** DOM validator helper. **/
     private DOMValidatorHelper fDOMValidatorHelper;
@@ -88,8 +81,11 @@ final class ValidatorImpl extends Validator {
     public void validate(Source source, Result result)
         throws SAXException, IOException {
         if (source instanceof SAXSource) {
-            // TODO: Hand off to SAX validator helper.
-            process((SAXSource) source, (SAXResult) result);
+            // Hand off to SAX validator helper.
+            if (fSAXValidatorHelper == null) {
+                fSAXValidatorHelper = new ValidatorHandlerImpl(fComponentManager);
+            }
+            fSAXValidatorHelper.validate(source, result);
         }
         else if (source instanceof DOMSource) {
             // Hand off to DOM validator helper.
@@ -209,92 +205,6 @@ final class ValidatorImpl extends Validator {
         fConfigurationChanged = true;
     }
     
-    /**
-     * Parses a {@link SAXSource} potentially to a {@link SAXResult}.
-     */
-    private void process(SAXSource source, SAXResult result) throws IOException, SAXException {
-        if( result!=null ) {
-            handler.setContentHandler(result.getHandler());
-        }
-        
-        try {
-            XMLReader reader = source.getXMLReader();
-            if( reader==null ) {
-                // create one now
-                SAXParserFactory spf = SAXParserFactory.newInstance();
-                spf.setNamespaceAware(true);
-                try {
-                    reader = spf.newSAXParser().getXMLReader();
-                } catch( Exception e ) {
-                    // this is impossible, but better safe than sorry
-                    throw new FactoryConfigurationError(e);
-                }
-            }
-            
-            reader.setErrorHandler(errorForwarder);
-            reader.setEntityResolver(resolutionForwarder);
-            reader.setContentHandler(handler);
-            
-            InputSource is = source.getInputSource();
-            reader.parse(is);
-        } finally {
-            // release the reference to user's handler ASAP
-            handler.setContentHandler(null);
-        }
-    }
-    
-    /**
-     * Forwards the error to the {@link ValidatorHandler}.
-     * If the {@link ValidatorHandler} doesn't have its own
-     * {@link ErrorHandler}, behave draconian.
-     */
-    private final ErrorHandler errorForwarder = new ErrorHandler() {
-        public void warning(SAXParseException exception) throws SAXException {
-            ErrorHandler realHandler = handler.getErrorHandler();
-            if( realHandler!=null )
-                realHandler.warning(exception);
-        }
-        
-        public void error(SAXParseException exception) throws SAXException {
-            ErrorHandler realHandler = handler.getErrorHandler();
-            if( realHandler!=null )
-                realHandler.error(exception);
-            else
-                throw exception;
-        }
-        
-        public void fatalError(SAXParseException exception) throws SAXException {
-            ErrorHandler realHandler = handler.getErrorHandler();
-            if( realHandler!=null )
-                realHandler.fatalError(exception);
-            else
-                throw exception;
-        }
-    };
-    
-    /**
-     * Forwards the entity resolution to the {@link ValidatorHandler}.
-     * If the {@link ValidatorHandler} doesn't have its own
-     * {@link DOMResourceResolver}, let the parser do the resolution.
-     */
-    private final EntityResolver resolutionForwarder = new EntityResolver() {
-        public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-            LSResourceResolver resolver = handler.getResourceResolver();
-            if( resolver==null )    return null;
-            
-            LSInput di = resolver.resolveResource(null,null,publicId,systemId,null);
-            if(di==null)    return null;
-            
-            InputSource r = new InputSource();
-            r.setByteStream(di.getByteStream());
-            r.setCharacterStream(di.getCharacterStream());
-            r.setEncoding(di.getEncoding());
-            r.setPublicId(di.getPublicId());
-            r.setSystemId(di.getSystemId());
-            return r;
-        }
-    };
-    
     public void reset() {
         // avoid resetting features and properties if the state the validator
         // is currently in, is the same as it will be after reset.
@@ -316,6 +226,22 @@ final class ValidatorImpl extends Validator {
                 fResourceResolverChanged = false;
             }
         }
+    }
+    
+    /*
+     * PSVIProvider methods
+     */
+    
+    public ElementPSVI getElementPSVI() {
+        return (fSAXValidatorHelper != null) ? fSAXValidatorHelper.getElementPSVI() : null;
+    }
+    
+    public AttributePSVI getAttributePSVI(int index) {
+        return (fSAXValidatorHelper != null) ? fSAXValidatorHelper.getAttributePSVI(index) : null;
+    }
+    
+    public AttributePSVI getAttributePSVIByName(String uri, String localname) {
+        return (fSAXValidatorHelper != null) ? fSAXValidatorHelper.getAttributePSVIByName(uri, localname) : null;
     }
     
 } // ValidatorImpl
