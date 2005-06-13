@@ -45,6 +45,7 @@ import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.datatypes.ObjectList;
+import org.w3c.dom.TypeInfo;
 
 /**
  * @xerces.internal
@@ -54,7 +55,7 @@ import org.apache.xerces.xs.datatypes.ObjectList;
  *
  * @version $Id$
  */
-public class XSSimpleTypeDecl implements XSSimpleType {
+public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 	
 	static final short DV_STRING        = PRIMITIVE_STRING;
 	static final short DV_BOOLEAN       = PRIMITIVE_BOOLEAN;
@@ -3203,7 +3204,14 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 			return XSConstants.MULTIVALUE_FACET;
 		}
 	}
-	
+
+    public String getTypeNamespace() {
+        return getNamespace();
+    }
+
+    public boolean isDerivedFrom(String typeNamespaceArg, String typeNameArg, int derivationMethod) {
+        return isDOMDerivedFrom(typeNamespaceArg, typeNameArg, derivationMethod);
+    }
 	
 } // class XSSimpleTypeDecl
 
