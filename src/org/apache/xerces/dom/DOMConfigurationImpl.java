@@ -29,6 +29,7 @@ import org.w3c.dom.DOMStringList;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.dv.DTDDVFactory;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.ValidationManager;
 import org.apache.xerces.util.DOMEntityResolverWrapper;
@@ -92,7 +93,9 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
     protected static final String SEND_PSVI =
         Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_AUGMENT_PSVI;
 
-
+    protected final static String DTD_VALIDATOR_FACTORY_PROPERTY = 
+    	Constants.XERCES_PROPERTY_PREFIX + Constants.DATATYPE_VALIDATOR_FACTORY_PROPERTY;
+    
     // property identifiers
 
     /** Property identifier: entity manager. */
@@ -247,7 +250,8 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
             VALIDATION_MANAGER,
             GRAMMAR_POOL,
             JAXP_SCHEMA_SOURCE,
-            JAXP_SCHEMA_LANGUAGE
+            JAXP_SCHEMA_LANGUAGE,
+			DTD_VALIDATOR_FACTORY_PROPERTY
         };
         addRecognizedProperties(recognizedProperties);
 
@@ -272,6 +276,8 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
         setProperty(ERROR_REPORTER, fErrorReporter);
         addComponent(fErrorReporter);
 
+        setProperty(DTD_VALIDATOR_FACTORY_PROPERTY, DTDDVFactory.getInstance());
+		
         XMLEntityManager manager =  new XMLEntityManager();
         setProperty(ENTITY_MANAGER, manager);
         addComponent(manager);
@@ -679,12 +685,9 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                                 Constants.NS_XMLSCHEMA);
                         }	                        
                         else if (value.equals(Constants.NS_DTD)) {
-                            // REVISIT: revalidation against DTDs is not supported
-                             String msg = DOMMessageFormatter.formatMessage(
-                            DOMMessageFormatter.DOM_DOMAIN,
-                            "FEATURE_NOT_SUPPORTED",
-                            new Object[] { name });
-                            throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+                            // Added support for revalidation against DTDs
+                        	setProperty(Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_LANGUAGE,
+                        			Constants.NS_DTD);
                         }
                     }
                     catch (XMLConfigurationException e) {}
