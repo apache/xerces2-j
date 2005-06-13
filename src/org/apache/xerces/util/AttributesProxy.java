@@ -19,7 +19,7 @@ package org.apache.xerces.util;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.xni.XMLAttributes;
 import org.xml.sax.AttributeList;
-import org.xml.sax.Attributes;
+import org.xml.sax.ext.Attributes2;
 
 /**
  * Wraps {@link XMLAttributes} and makes it look like
@@ -31,7 +31,7 @@ import org.xml.sax.Attributes;
  * @version $Id$
  */
 public final class AttributesProxy
-    implements AttributeList, Attributes {
+    implements AttributeList, Attributes2 {
     
     //
     // Data
