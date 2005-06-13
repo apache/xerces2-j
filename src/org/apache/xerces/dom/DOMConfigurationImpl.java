@@ -519,6 +519,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
      * setParameter
      */
     public void setParameter(String name, Object value) throws DOMException {
+    	boolean found = true;
 
         // REVISIT: Recognizes DOM L3 default features only.
         //          Does not yet recognize Xerces features.
@@ -606,15 +607,22 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                   features = (short) (state ? features | PSVI : features & ~PSVI);
             }
             else {
+            	found = false;
+                /*
                 String msg =
                     DOMMessageFormatter.formatMessage(
                         DOMMessageFormatter.DOM_DOMAIN,
                         "FEATURE_NOT_FOUND",
                         new Object[] { name });
                 throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
+                */
             }
+            
         }
-        else { // set properties
+		
+		if (!found || !(value instanceof Boolean))  { // set properties
+			found = true;
+
             if (name.equalsIgnoreCase(Constants.DOM_ERROR_HANDLER)) {
                 if (value instanceof DOMErrorHandler || value == null) {
                     fErrorHandlerWrapper.setErrorHandler((DOMErrorHandler)value);
@@ -628,7 +636,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                             DOMMessageFormatter.DOM_DOMAIN,
                             "TYPE_MISMATCH_ERR",
                             new Object[] { name });
-                    throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+                    throw new DOMException(DOMException.TYPE_MISMATCH_ERR, msg);
                 }
             }
             else if (name.equalsIgnoreCase(Constants.DOM_RESOURCE_RESOLVER)) {
@@ -645,7 +653,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                             DOMMessageFormatter.DOM_DOMAIN,
                             "TYPE_MISMATCH_ERR",
                             new Object[] { name });
-                    throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+                    throw new DOMException(DOMException.TYPE_MISMATCH_ERR, msg);
                 }
 
             }
@@ -666,7 +674,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                             DOMMessageFormatter.DOM_DOMAIN,
                             "TYPE_MISMATCH_ERR",
                             new Object[] { name });
-                    throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+                    throw new DOMException(DOMException.TYPE_MISMATCH_ERR, msg);
                 }
 
             }
@@ -698,7 +706,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                             DOMMessageFormatter.DOM_DOMAIN,
                             "TYPE_MISMATCH_ERR",
                             new Object[] { name });
-                    throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+                    throw new DOMException(DOMException.TYPE_MISMATCH_ERR, msg);
                 }
 
             }
@@ -714,7 +722,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                             DOMMessageFormatter.DOM_DOMAIN,
                             "TYPE_MISMATCH_ERR",
                             new Object[] { name });
-                    throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+                    throw new DOMException(DOMException.TYPE_MISMATCH_ERR, msg);
                 }
             }
             else if (name.equalsIgnoreCase (GRAMMAR_POOL)){
@@ -728,7 +736,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                             DOMMessageFormatter.DOM_DOMAIN,
                             "TYPE_MISMATCH_ERR",
                             new Object[] { name });
-                    throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+                    throw new DOMException(DOMException.TYPE_MISMATCH_ERR, msg);
                 }
 
             }

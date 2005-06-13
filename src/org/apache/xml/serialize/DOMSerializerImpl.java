@@ -250,13 +250,12 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
             if (value == null || value instanceof DOMErrorHandler) {
                 fErrorHandler = (DOMErrorHandler)value;
             } else {
-                // REVISIT: modify error exception to TYPE_MISMATCH
                 String msg =
                     DOMMessageFormatter.formatMessage(
                         DOMMessageFormatter.DOM_DOMAIN,
                         "TYPE_MISMATCH_ERR",
                         new Object[] { name });
-                throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
+                throw new DOMException(DOMException.TYPE_MISMATCH_ERR, msg);
             }
         } else if (
             name.equalsIgnoreCase(Constants.DOM_RESOURCE_RESOLVER)

@@ -466,7 +466,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                     DOMMessageFormatter.DOM_DOMAIN,
                     "TYPE_MISMATCH_ERR",
                     new Object[] { name });
-                    throw new DOMException (DOMException.NOT_SUPPORTED_ERR, msg);
+                    throw new DOMException (DOMException.TYPE_MISMATCH_ERR, msg);
                 }
 
             }
@@ -484,7 +484,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                     DOMMessageFormatter.DOM_DOMAIN,
                     "TYPE_MISMATCH_ERR",
                     new Object[] { name });
-                    throw new DOMException (DOMException.NOT_SUPPORTED_ERR, msg);
+                    throw new DOMException (DOMException.TYPE_MISMATCH_ERR, msg);
                 }
 
             }
@@ -528,7 +528,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                     DOMMessageFormatter.DOM_DOMAIN,
                     "TYPE_MISMATCH_ERR",
                     new Object[] { name });
-                    throw new DOMException (DOMException.NOT_SUPPORTED_ERR, msg);
+                    throw new DOMException (DOMException.TYPE_MISMATCH_ERR, msg);
                 }
 
             }
@@ -579,7 +579,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                     DOMMessageFormatter.DOM_DOMAIN,
                     "TYPE_MISMATCH_ERR",
                     new Object[] { name });
-                    throw new DOMException (DOMException.NOT_SUPPORTED_ERR, msg);
+                    throw new DOMException (DOMException.TYPE_MISMATCH_ERR, msg);
                 }
 
             }
