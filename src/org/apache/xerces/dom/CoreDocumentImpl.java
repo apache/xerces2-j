@@ -1756,13 +1756,30 @@ extends ParentNode implements Document  {
             return null;
         }
         
-        //Return null when the source node comes from a different implementation.
+        // Return null if the source is null
+        
         if (source == null ) {
         	return null;
         } else if (source != null && source.getOwnerDocument() != null) {
-        	if (this.getImplementation() != source.getOwnerDocument()
-        			.getImplementation()) {
-        		return null;
+
+            DOMImplementation thisImpl = this.getImplementation();
+            DOMImplementation otherImpl = source.getOwnerDocument().getImplementation();
+            
+            // when the source node comes from a different implementation.
+            if (thisImpl != otherImpl) {
+            
+                // Adopting from a DefferedDOM to DOM
+                if (thisImpl instanceof org.apache.xerces.dom.DOMImplementationImpl &&
+                        otherImpl instanceof org.apache.xerces.dom.DeferredDOMImplementationImpl) {
+                    // traverse the DOM and expand deffered nodes and then allow adoption
+                    undeferChildren (node);
+                } else if ( thisImpl instanceof org.apache.xerces.dom.DeferredDOMImplementationImpl
+                        && otherImpl instanceof org.apache.xerces.dom.DOMImplementationImpl) {
+                    // Adopting from a DOM into a DefferedDOM, this should be okay
+                } else {
+                    // Adopting between two dissimilar DOM's is not allowed
+                    return null;  
+                }
         	}
         }
         
@@ -1868,6 +1885,45 @@ extends ParentNode implements Document  {
         return node;
     }
 
+    /**
+     * Traverses the DOM Tree and expands deferred nodes and their
+     * children.
+     * 
+     */
+    protected void undeferChildren(Node node) {
+        
+        Node top = node;
+        
+        while (null != node) {
+            
+            if (((NodeImpl)node).needsSyncData()) {
+                ((NodeImpl)node).synchronizeData();
+            }
+            
+            Node nextNode = null;
+            nextNode = node.getFirstChild();
+            
+            while (null == nextNode) {
+                
+                if (top.equals(node))
+                    break;
+                
+                nextNode = node.getNextSibling();
+                
+                if (null == nextNode) {
+                    node = node.getParentNode();
+                    
+                    if ((null == node) || (top.equals(node))) {
+                        nextNode = null;
+                        break;
+                    }
+                }
+            }
+            
+            node = nextNode;
+        }
+    }
+    
     // identifier maintenence
     /**
      * Introduced in DOM Level 2
