@@ -22,6 +22,7 @@ import org.apache.xerces.impl.xs.models.XSCMValidator;
 import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
+import org.w3c.dom.TypeInfo;
 
 /**
  * The XML representation for a complexType
@@ -33,7 +34,7 @@ import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
  * @author Sandy Gao, IBM
  * @version $Id$
  */
-public class XSComplexTypeDecl implements XSComplexTypeDefinition {
+public class XSComplexTypeDecl implements XSComplexTypeDefinition, TypeInfo {
 
     // name of the complexType
     String fName = null;
@@ -680,6 +681,14 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition {
      */
     public XSAttributeUse getAttributeUse(String namespace, String name) {
          return fAttrGrp.getAttributeUse(namespace, name);
+    }
+
+    public String getTypeNamespace() {
+        return getNamespace();
+    }
+
+    public boolean isDerivedFrom(String typeNamespaceArg, String typeNameArg, int derivationMethod) {
+        return isDOMDerivedFrom(typeNamespaceArg, typeNameArg, derivationMethod);
     }
 
 } // class XSComplexTypeDecl
