@@ -16,8 +16,7 @@
 
 package xni.parser;
 
-
-import org.apache.xerces.parsers.IntegratedParserConfiguration;
+import org.apache.xerces.parsers.XIncludeAwareParserConfiguration;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.parser.XMLComponentManager;
@@ -32,7 +31,7 @@ import xni.PSVIWriter;
  * @author Elena Litani, IBM
  * @version $Id$
  */
-public class PSVIConfiguration extends IntegratedParserConfiguration {
+public class PSVIConfiguration extends XIncludeAwareParserConfiguration {
 
 
      /** PSVI Writer */
