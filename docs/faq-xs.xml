@@ -201,6 +201,18 @@ XMLReader reader = parser.getXMLReader();
 PSVIProvider psviProvider = (PSVIProvider)reader;</source>
     </a>
   </faq>
+
+ <faq title="Accessing PSVI via the JAXP 1.3 Validation API">
+   <q>How do I access PSVI via the JAXP 1.3 Validation API?</q>
+   <a> <p>Like the Xerces SAX parser the implementations of <code>javax.xml.validation.Validator</code>
+       and <code>javax.xml.validation.ValidatorHandler</code> also implement the
+       <code>org.apache.xerces.xs.PSVIProvider</code> interface. Within the scope of the methods 
+       handling the start (<code>org.xml.sax.ContentHandler.startElement</code>) and end 
+       (<code>org.xml.sax.ContentHandler.endElement</code>) of an element, applications may use 
+       the <code>PSVIProvider</code> to retrieve the PSVI related to the element and its attributes.</p>
+   </a>
+ </faq>
+  
   <faq title="Parsing and analyzing an XML schema">
     <q>How do I parse and analyze an XML schema?</q>
     <a> <p>Please, refer to the <link idref='faq-grammars'>Examining Grammars</link> FAQ.</p>
