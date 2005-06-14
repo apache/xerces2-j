@@ -31,7 +31,6 @@ import javax.xml.validation.SchemaFactory;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.XMLSchemaLoader;
-import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.util.DOMEntityResolverWrapper;
 import org.apache.xerces.util.DOMInputSource;
 import org.apache.xerces.util.ErrorHandlerWrapper;
@@ -82,9 +81,6 @@ public final class XMLSchemaFactory extends SchemaFactory {
     
     /** The XMLSchemaLoader */
     private final XMLSchemaLoader fXMLSchemaLoader = new XMLSchemaLoader();
-    
-    /** Schema message formatter. */
-    private static XSMessageFormatter fXSMessageFormatter = new XSMessageFormatter();
     
     /** User-specified ErrorHandler; can be null. */
     private ErrorHandler fErrorHandler;
