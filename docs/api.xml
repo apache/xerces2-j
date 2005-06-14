@@ -59,6 +59,9 @@
      <li>
       <jump href='javadocs/api/javax/xml/validation/package-summary.html'>Validation</jump>
      </li>
+     <li>
+      <jump href='javadocs/api/javax/xml/xpath/package-summary.html'>XPath</jump>
+     </li>
     </ul>
     <li>Document Object Model (DOM)</li>
     <ul>
