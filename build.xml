@@ -181,8 +181,12 @@ Copyright:
   <!-- Prepares the source code                                            -->
   <!-- =================================================================== -->
   <target name="prepare-src" depends="prepare-common">
-    <copy file="${src.dir}/org/apache/xerces/parsers/org.apache.xerces.xni.parser.XMLParserConfiguration"
-      tofile="${build.dest}/META-INF/services/org.apache.xerces.xni.parser.XMLParserConfiguration"/>
+  	
+  	<!-- Do not include this file in xercesImpl.jar. It prevents applications further down the 
+  	     classpath from overriding the parser's default and may also cause an incompatible mix 
+  	     of classes to be loaded leading to a failure such as a NoSuchMethodError. -->
+  	<!-- <copy file="${src.dir}/org/apache/xerces/parsers/org.apache.xerces.xni.parser.XMLParserConfiguration"
+      tofile="${build.dest}/META-INF/services/org.apache.xerces.xni.parser.XMLParserConfiguration"/> -->
       
     <copy file="${src.dir}/org/apache/xerces/dom/org.w3c.dom.DOMImplementationSourceList"
       tofile="${build.dest}/META-INF/services/org.w3c.dom.DOMImplementationSourceList"/>
