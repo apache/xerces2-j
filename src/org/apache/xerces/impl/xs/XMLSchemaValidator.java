@@ -3166,8 +3166,9 @@ public class XMLSchemaValidator
     private boolean isComparable(ValidatedInfo info1, ValidatedInfo info2) {
         final short primitiveType1 = convertToPrimitiveKind(info1.actualValueType);
         final short primitiveType2 = convertToPrimitiveKind(info2.actualValueType);
-        if (primitiveType1 != primitiveType2) {
-            return false;
+        if (primitiveType1 != primitiveType2) {    
+            return (primitiveType1 == XSConstants.ANYSIMPLETYPE_DT && primitiveType2 == XSConstants.STRING_DT ||
+                    primitiveType1 == XSConstants.STRING_DT && primitiveType2 == XSConstants.ANYSIMPLETYPE_DT);
         }
         else if (primitiveType1 == XSConstants.LIST_DT || primitiveType1 == XSConstants.LISTOFUNION_DT) {
             final ShortList typeList1 = info1.itemValueTypes;
@@ -3178,8 +3179,13 @@ public class XMLSchemaValidator
                 return false;
             }
             for (int i = 0; i < typeList1Length; ++i) {
-                if (convertToPrimitiveKind(typeList1.item(i)) != 
-                    convertToPrimitiveKind(typeList2.item(i))) {
+                final short primitiveItem1 = convertToPrimitiveKind(typeList1.item(i));
+                final short primitiveItem2 = convertToPrimitiveKind(typeList2.item(i));
+                if (primitiveItem1 != primitiveItem2) {
+                    if (primitiveItem1 == XSConstants.ANYSIMPLETYPE_DT && primitiveItem2 == XSConstants.STRING_DT ||
+                        primitiveItem1 == XSConstants.STRING_DT && primitiveItem2 == XSConstants.ANYSIMPLETYPE_DT) {
+                        continue;
+                    }
                     return false;
                 }
             }
