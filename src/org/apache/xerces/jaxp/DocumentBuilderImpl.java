@@ -85,12 +85,12 @@ public class DocumentBuilderImpl extends DocumentBuilder
     private DOMParser domParser = null;
     private final Schema grammar;
     
-    DocumentBuilderImpl(DocumentBuilderFactory dbf, Hashtable dbfAttrs)
+    DocumentBuilderImpl(DocumentBuilderFactoryImpl dbf, Hashtable dbfAttrs)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         this(dbf, dbfAttrs, false);
     }
 
-    DocumentBuilderImpl(DocumentBuilderFactory dbf, Hashtable dbfAttrs, boolean secureProcessing)
+    DocumentBuilderImpl(DocumentBuilderFactoryImpl dbf, Hashtable dbfAttrs, boolean secureProcessing)
         throws SAXNotRecognizedException, SAXNotSupportedException
     {
         domParser = new DOMParser();

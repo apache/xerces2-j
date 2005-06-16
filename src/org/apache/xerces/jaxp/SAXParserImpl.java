@@ -79,7 +79,7 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
      * Create a SAX parser with the associated features
      * @param features Hashtable of SAX features, may be null
      */
-    SAXParserImpl(SAXParserFactory spf, Hashtable features) 
+    SAXParserImpl(SAXParserFactoryImpl spf, Hashtable features) 
         throws SAXException {
         this(spf, features, false);
     }
@@ -88,7 +88,7 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
      * Create a SAX parser with the associated features
      * @param features Hashtable of SAX features, may be null
      */
-    SAXParserImpl(SAXParserFactory spf, Hashtable features, boolean secureProcessing)
+    SAXParserImpl(SAXParserFactoryImpl spf, Hashtable features, boolean secureProcessing)
         throws SAXException
     {
         // Instantiate a SAXParser directly and not through SAX so that we
