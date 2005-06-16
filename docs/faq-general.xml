@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--
- * Copyright 1999-2004 The Apache Software Foundation.
+ * Copyright 1999-2005 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,23 @@
         idref="install">the installation documentation</link>.
         </p>
     </a>
+ </faq>
+ <faq title="Using JAXP 1.3 on JDK 1.4">
+  <q>How can I use JAXP 1.3 on JDK 1.4?</q>
+  <a>
+   <p>
+    Use the <jump href="http://java.sun.com/j2se/1.4/docs/guide/standards/">Endorsed Standards Override Mechanism</jump>
+    to specify xml-apis.jar and xercesImpl.jar. This will override the version of JAXP in the JDK. A more complete 
+    description is available <jump href="http://xml.apache.org/xalan-j/faq.html#faq-N100CC">here</jump>.
+   </p>
+   <p>
+     The following methods <strong>do not work</strong>:
+     <ul>
+      <li>Using the CLASSPATH environment variable or using -classpath to place the new classes in the classpath.</li>
+      <li>Using the -jar option to explicitly execute the classes inside the new jar files.</li>
+     </ul>
+   </p>
+  </a>
  </faq>
  <faq title="ClassCastException using Xerces">
    <q>Why do I get a ClassCastException when I use Xerces and WebSphere Application Server?</q>
