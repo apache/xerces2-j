@@ -60,6 +60,8 @@ import org.apache.xerces.xni.parser.XMLDocumentSource;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
+import org.apache.xerces.xpointer.XPointerHandler;
+import org.apache.xerces.xpointer.XPointerProcessor;
 
 /**
  * <p>
@@ -260,6 +262,14 @@ public class XIncludeHandler
     // we cache the child parser configuration, so we don't have to re-create
     // the objects when the parser is re-used
     protected XMLParserConfiguration fChildConfig;
+
+    // The cached child parser configuration, may contain a
+    // XInclude or XPointer Handler.  Cache both these
+    protected XMLParserConfiguration fXIncludeChildConfig;
+    protected XMLParserConfiguration fXPointerChildConfig;
+    
+    // The XPointerProcessor
+    protected XPointerProcessor fXPtrProcessor = null;
 
     protected XMLLocator fDocLocation;
     protected XIncludeMessageFormatter fXIncludeMessageFormatter = new XIncludeMessageFormatter();
@@ -1540,9 +1550,13 @@ public class XIncludeHandler
         
         if (parse.equals(XINCLUDE_PARSE_XML)) {
             // Instead of always creating a new configuration, the first one can be reused
-            if (fChildConfig == null) {
-                String parserName = XINCLUDE_DEFAULT_CONFIGURATION;
-
+            if ((xpointer != null && fXPointerChildConfig == null) 
+            		|| (xpointer == null && fXIncludeChildConfig == null) ) {
+            	
+            	String parserName = XINCLUDE_DEFAULT_CONFIGURATION;
+            	if (xpointer != null)
+            		parserName = "org.apache.xerces.parsers.XPointerParserConfiguration";
+            	
                 fChildConfig =
                     (XMLParserConfiguration)ObjectFactory.newInstance(
                         parserName,
@@ -1565,12 +1579,74 @@ public class XIncludeHandler
                         + Constants.NAMESPACE_CONTEXT_PROPERTY,
                     fNamespaceContext);
 
-                XIncludeHandler newHandler =
-                    (XIncludeHandler)fChildConfig.getProperty(
-                        Constants.XERCES_PROPERTY_PREFIX
-                            + Constants.XINCLUDE_HANDLER_PROPERTY);
-                newHandler.setParent(this);
-                newHandler.setDocumentHandler(this.getDocumentHandler());
+                fChildConfig.setFeature(
+                            XINCLUDE_FIXUP_BASE_URIS,
+                            fFixupBaseURIs);
+
+                fChildConfig.setFeature(
+                            XINCLUDE_FIXUP_LANGUAGE,
+                            fFixupLanguage);
+                
+               
+                // If the xpointer attribute is present
+                if (xpointer != null ) {
+                	
+                    XPointerHandler newHandler =
+                        (XPointerHandler)fChildConfig.getProperty(
+                            Constants.XERCES_PROPERTY_PREFIX
+                                + Constants.XPOINTER_HANDLER_PROPERTY);
+
+                	fXPtrProcessor = newHandler;
+
+                	// ???
+                	((XPointerHandler)fXPtrProcessor).setProperty(
+                            Constants.XERCES_PROPERTY_PREFIX
+                            + Constants.NAMESPACE_CONTEXT_PROPERTY,
+                        fNamespaceContext);
+
+                    ((XPointerHandler)fXPtrProcessor).setProperty(XINCLUDE_FIXUP_BASE_URIS,
+                            new Boolean(fFixupBaseURIs));
+
+                    ((XPointerHandler)fXPtrProcessor).setProperty(
+                            XINCLUDE_FIXUP_LANGUAGE,
+                            new Boolean (fFixupLanguage));
+                    
+                    if (fErrorReporter != null) 
+                    	((XPointerHandler)fXPtrProcessor).setProperty(ERROR_REPORTER, fErrorReporter);
+                	// ???
+                    
+                    newHandler.setParent(this); 
+                    newHandler.setDocumentHandler(this.getDocumentHandler());
+                    fXPointerChildConfig = fChildConfig;                       
+                } else {
+                    XIncludeHandler newHandler =
+                        (XIncludeHandler)fChildConfig.getProperty(
+                            Constants.XERCES_PROPERTY_PREFIX
+                                + Constants.XINCLUDE_HANDLER_PROPERTY);
+
+                	newHandler.setParent(this);
+                    newHandler.setDocumentHandler(this.getDocumentHandler());
+                    fXIncludeChildConfig = fChildConfig;
+                }
+            }
+
+            // If an xpointer attribute is present
+            if (xpointer != null ) {
+            	fChildConfig = fXPointerChildConfig ;
+            	
+                // Parse the XPointer expression
+                try {
+                    ((XPointerProcessor)fXPtrProcessor).parseXPointer(xpointer);
+                    
+                } catch (XNIException ex) {
+                    // report the XPointer error as a resource error
+                    reportResourceError(
+                            "XMLResourceError",
+                            new Object[] { href, ex.getMessage()});
+                        return false;
+                }
+            } else {
+            	fChildConfig = fXIncludeChildConfig;
             }
 
             // set all features on parserConfig to match this parser configuration
@@ -1581,10 +1657,23 @@ public class XIncludeHandler
 
             try {
                 fNamespaceContext.pushScope();
+
                 fChildConfig.parse(includedSource);
                 // necessary to make sure proper location is reported in errors
                 if (fErrorReporter != null) {
                     fErrorReporter.setDocumentLocator(fDocLocation);
+                }
+
+                // If the xpointer attribute is present
+                if (xpointer != null ) { 
+                	// and it was not resolved
+                	if (!((XPointerProcessor)fXPtrProcessor).isXPointerResolved()) {
+                        Locale locale = (fErrorReporter != null) ? fErrorReporter.getLocale() : null;
+                        String reason = fXIncludeMessageFormatter.formatMessage(locale, "XPointerResolutionUnsuccessful", null);
+                        reportResourceError("XMLResourceError", new Object[] {href, reason});
+                		// use the fallback
+                		return false;
+                	}
                 }
             }
             catch (XNIException e) {

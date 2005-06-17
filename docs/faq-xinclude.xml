@@ -21,22 +21,19 @@
     <q>How do I enable XInclude processing?</q>
     <a>
      <p>
-      The simplest way to enable XInclude processing is to use a 
-      <code>org.apache.xerces.parsers.XIncludeParserConfiguration</code> as your
-      parser configuration.  This configuration includes a DTD validator, a namespace
-      binder, and a Schema validator, in addition to a handler for XInclude.  See
-      <link idref="faq-xni" anchor="override-default-config">this FAQ</link> for
-      instructions about how to change your parser configuration.
+      Applications using JAXP 1.3 can enable XInclude processing by setting
+      XInclude awareness on the parser factory. The following demonstrates
+      how to accomplish this with SAX:
      </p>
+     <source>import javax.xml.parsers.SAXParserFactory;
+     
+SAXParserFactory spf = SAXParserFactory.newInstance();
+spf.setXIncludeAware(true);
+...  
+</source>
      <p>
-      If <code>XIncludeParserConfiguration</code> doesn't meet your needs, then you'll
-      have to write your own parser configuration. Make sure that this configuration
-      includes a <code>org.apache.xerces.xinclude.XIncludeHandler</code>, and that the
-      property &quot;http://apache.org/xml/properties/internal/namespace-context&quot; is an instance of
-      <code>org.apache.xerces.xinclude.XIncludeNamespaceSupport</code>.  It is strongly
-      recommended that the <code>XIncludeHandler</code> be placed in the pipeline
-      before the Schema validator, if there is one.  PSVI information cannot be
-      guaranteed to be valid after XInclude processing.
+      You can also enable XInclude processing by turning on the 
+      <link idref='features' anchor="xinclude">XInclude feature</link>.
      </p>
     </a>
   </faq>
@@ -82,19 +79,20 @@
      <p>
       Yes. The XInclude processor will preserve language information on a top-level included element
       by adding an <code>xml:lang</code> attribute if its include parent has a different [language]
-      property. Support for language fixup was added to the XInclude implementation in Xerces 2.7.0.
+      property. Support for language fixup was added to the XInclude implementation in Xerces-2J2.7.0
      </p>
     </a>
   </faq>
   
   <faq title="Document Fragments">
-    <q>Why doesn't including document fragments work?</q>
+    <q>Does the XInclude processor support XPointer?</q>
     <a>
      <p>
-      Currently, our implementation of XInclude is not fully complete, and we do
-      not support <jump href="http://www.w3.org/TR/2004/REC-xinclude-20041220/#XPCore">XPointer</jump>
-      references.  We hope that in the future we will have a
-      fully compliant XInclude processor that can handle this feature.
+      Yes. The XInclude processor supports the 
+      <jump href="http://www.w3.org/TR/2003/REC-xptr-framework-20030325/">XPointer Framework</jump>
+      and the
+      <jump href="http://www.w3.org/TR/2003/REC-xptr-element-20030325/">XPointer element() Scheme</jump>.
+      The XPointer xpointer() Scheme is currently not supported.
      </p>
     </a>
   </faq>

@@ -318,6 +318,9 @@ public final class Constants {
     /** XInclude handler property ("internal/xinclude-handler"). */
     public static final String XINCLUDE_HANDLER_PROPERTY = "internal/xinclude-handler";
     
+    /** XPointer handler property ("internal/xpointer-handler"). */
+    public static final String XPOINTER_HANDLER_PROPERTY = "internal/xpointer-handler";
+    
     /** Entity manager property ("internal/entity-manager"). */
     public static final String ENTITY_MANAGER_PROPERTY = "internal/entity-manager";
     
