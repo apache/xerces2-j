@@ -1,6 +1,6 @@
 <?xml version="1.0" standalone="no"?>
 <!--
- * Copyright 2001-2004 The Apache Software Foundation.
+ * Copyright 2001-2005 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 -->
 <!DOCTYPE s1 SYSTEM "./dtd/document.dtd">
 <s1 title="Document Object Model Level 3 Implementation">
+	<!--
 	<s2 title="Disclaimer">
 		<p>
 
@@ -34,26 +35,20 @@
 			considered as complete or correct.
 		</p>
 	</s2>
+	-->
 	<s2 title="Introduction">
 		<p>
 			The &ParserNameLong; &ParserVersion; contains an implementation of 
-			the Document Object Model Level 3 <jump href="http://www.w3.org/TR/2004/PR-DOM-Level-3-Core-20040205/">Core</jump> 
-			and Document Object Model Level 3 <jump href="http://www.w3.org/TR/2004/PR-DOM-Level-3-LS-20040205/">Load and Save</jump> Proposed Recommendations.
+			the Document Object Model Level 3 <jump href="http://www.w3.org/TR/DOM-Level-3-Core/">Core</jump> 
+			and Document Object Model Level 3 <jump href="http://www.w3.org/TR/DOM-Level-3-LS/">Load and Save</jump> Recommendations.
 			To learn how to program with the DOM Level 3 see <jump href="samples-dom.html#DOM3">dom.DOM3</jump> sample.
 		</p>
 
-
-		<note>
-			To find out how to access
-			<em>DOM Level 3 functionality</em>, please refer to the
-			<link idref='faq-dom'>FAQ</link>
-			.
-		</note>
 	</s2>
 
 	<s2 title='Implementation of DOM Level 3 Core'>
 		<p>
-			The <code>parameters</code> supported are:
+			DOM Level 3 Core DOMConfiguration <code>parameters</code> supported are:
 		</p>
 		<ul>
 			<li>
@@ -65,7 +60,7 @@
 			<li>
 				<strong>resource-resolver</strong>
 				[
-				<em>DOMResourceResolver</em>
+				<em>LSResourceResolver</em>
 				]
 			</li>
 			<li>
@@ -119,7 +114,7 @@
 			<li>
 				<strong>namespace-declarations</strong>
 				[
-				<em>true</em>
+				<em>true/false</em>
 				]
 			</li>
 			<li>
@@ -190,15 +185,63 @@
 	</s2>
 
 	<s2 title='Implementation of DOM Level 3 Load and Save'>
-		<p>Most of the functionality is implemented. Here is the list of limitations:</p>
+		<p>
+			Additional DOM Level 3 Load and Save DOMConfiguration <code>parameters</code> supported:
+		</p>
+		<ul>
+			<li>
+				<strong>charset-overrides-xml-encoding</strong>
+				[
+				<em>true/false</em>
+				]
+			</li>
+			<li>
+				<strong>disallow-doctype</strong>
+				[
+				<em>true/false</em>
+				]
+			</li>			
+			<li>
+				<strong>ignore-unknown-character-denormalizations</strong>
+				[
+				<em>true</em>
+				]
+			</li>			
+			<li>
+				<strong>supported-media-types-only</strong>
+				[
+				<em>false</em>
+				]
+			</li>
+			<li>
+				<strong>discard-default-content</strong>
+				[
+				<em>true/false</em>
+				]
+			</li>
+			<li>
+				<strong>format-pretty-print</strong>
+				[
+				<em>false</em>
+				]
+			</li>			
+			<li>
+				<strong>xml-declaration</strong>
+				[
+				<em>true/false</em>
+				]
+			</li>
+		</ul>
+		<p></p>
+		<p>Here is the list of DOM Level 3 Load and Save limitations:</p>
 		<ul>
 
     		<li>
-    			<strong>LSParser</strong> <jump href="http://www.w3.org/TR/2003/CR-DOM-Level-3-LS-20031107/load-save.html#LS-LSParser-parseWithContext">
-    			parseWithContext</jump>
+    			<strong>LSParser</strong> <jump href="http://www.w3.org/TR/DOM-Level-3-LS/load-save.html#LS-LSParser-parseWithContext">
+    			parserWithContext</jump>
     			 -- not supported.
 	    	</li>
-	      <li><strong>DOMImplementationLS</strong> <jump href="http://www.w3.org/TR/2003/CR-DOM-Level-3-LS-20031107/load-save.html#LS-DOMIMplementationLS-MODE_ASYNCH">
+	      <li><strong>DOMImplementationLS</strong> <jump href="http://www.w3.org/TR/DOM-Level-3-LS/load-save.html#LS-DOMImplementationLS-MODE_ASYNCH">
 			MODE_ASYNCHRONOUS</jump> 
 				-- not supported.
 			</li>

@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--
- * Copyright 2002-2004 The Apache Software Foundation.
+ * Copyright 2002-2005 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,18 +87,43 @@ LSParser builder = impl.createLSParser(
     DOMImplementationLS.MODE_SYNCHRONOUS, null);
 	
 Document document = builder.parseURI("data/personal.xml");</source>
-      <note>You can use DOM Level 3 Load/Save interfaces with the default Xerces distribution. 
-	To access the DOM Level 3 Core functionality you need to extract the code from 
-	CVS and build Xerces with the <strong>jars-dom3</strong> target.</note>
-
+      <note>You can now use DOM Level 3 Load/Save and Core interfaces with the default Xerces distribution. 
+      </note>
     </a>
   </faq>
 
   <faq title="Serializing a DOM document">
     <q>How do I serialize DOM to an output stream?</q>
     <a><anchor name="dom-xml-serialization"/>
+      <p>You can serialize a DOM tree by using the DOM Level 3 Load and Save. 
+	<code>LSSerializer</code> performs automatic namespace fixup to make your document namespace
+	well-formed.
+      </p>
+      <source>import  org.w3c.dom.DOMImplementationRegistry;
+import  org.w3c.dom.Document;
+import  org.w3c.dom.ls.DOMImplementationLS;
+import  org.w3c.dom.ls.LSSerializer;
+
+...
+
+System.setProperty(DOMImplementationRegistry.PROPERTY,
+    "org.apache.xerces.dom.DOMImplementationSourceImpl");
+DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
+
+DOMImplementationLS impl = 
+    (DOMImplementationLS)registry.getDOMImplementation("LS");
+
+...     
+
+LSSerializer writer = impl.createLSSerializer();
+String str = writer.writeToString(document);</source>  
+
       <p>
-	You can serialize a DOM tree by using Xerces <code>org.apache.xml.XMLSerializer</code>:
+	You can also serialize a DOM tree by using the <a href='http://xml.apache.org/xerces2-j/faq-general.html#faq-5'>JAXP Transformer API.</a>
+      </p>
+
+      <p>
+	You can also serialize a DOM tree by using the Xerces <code>org.apache.xml.XMLSerializer</code> serialization code directly.  This is a non-standard way of serializing a DOM and should be avoided:
       </p>
       <source>import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
@@ -115,28 +140,6 @@ XMLSerializer serializer = new XMLSerializer (
     new FileWriter("output.xml"), format);
 serializer.asDOMSerializer();
 serializer.serialize(document);</source>
-      <p>You can also serialize a DOM tree by using the DOM Level 3 Load and Save. 
-	<code>DOMWriter</code> performs automatic namespace fixup to make your document namespace
-	well-formed.
-      </p>
-      <source>import  org.w3c.dom.DOMImplementationRegistry;
-import  org.w3c.dom.Document;
-import  org.w3c.dom.ls.DOMImplementationLS;
-import  org.w3c.dom.ls.LSWriter;
-
-...
-
-System.setProperty(DOMImplementationRegistry.PROPERTY,
-    "org.apache.xerces.dom.DOMImplementationSourceImpl");
-DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
-
-DOMImplementationLS impl = 
-    (DOMImplementationLS)registry.getDOMImplementation("LS");
-
-...     
-
-LSWriter writer = impl.createLSSerializer();
-String str = writer.writeToString(document);</source>  
     </a>
   </faq>
   
@@ -172,9 +175,9 @@ String str = writer.writeToString(document);</source>
 	<code>org.w3c.dom.Document</code> interface:</p>
       <ul>
 	<li><code>org.apache.xerces.dom.CoreDocumentImpl</code> --  
-	  supports DOM Level 2 Core Recommendation.</li>
+	  supports DOM Level 3 Core Recommendation.</li>
 	<li><code>org.apache.xerces.dom.DocumentImpl</code> -- 
-	  supports DOM Level 2 Core, Mutation Events, Traversal and Ranges.</li>
+	  supports DOM Level 3 Core, Mutation Events, Traversal and Ranges.</li>
 	<li><code>org.apache.xerces.dom.PSVIDocumentImpl</code> -- 
 	  provides access to the post schema validation infoset via DOM.</li>
       </ul>
@@ -186,24 +189,10 @@ String str = writer.writeToString(document);</source>
   <faq title="Accessing the DOM Level 3 API">
     <q>How do I access the DOM Level 3 functionality?</q>
     <a>    <anchor name="dom3"/>
-    <p>
-	The DOM Level 3 functionality is not exposed in the regular 
-	Xerces distribution.
-	To get access to the DOM Level 3, you need either to extract source code from CVS or 
-	to download both Xerces source and tools distributions and 
-	build Xerces with the target <strong>jars-dom3</strong>. The build will generate 
-	the <code>dom3-xml-apis.jar</code> that includes the DOM Level 3 API and 
-	<code>dom3-xercesImpl.jar</code> that includes partial implementation of the API. 
-	The samples (i.e. <code>samples.dom.DOM3</code>) can be found in 
-	<code>xercesSamples.jar</code>.
-      </p> 
-      <p>For more information, refer to the <link idref='dom3'>DOM Level 3 
-	  Implementation</link> page. 
-      </p>
-      <note>Always remove build directory (either manually or by 
-	executing build <code>clean</code> target)
-	before building specialized Xerces jars.
-      </note>
+     <p>The DOM Level 3 functionality is now exposed by default since Xerces-2J 2.7.0</p> 
+     <p>For more information, refer to the <link idref='dom3'>DOM Level 3 
+	Implementation</link> page.
+     </p>    
     </a>
   </faq>
   
@@ -211,7 +200,7 @@ String str = writer.writeToString(document);</source>
     <q>How do I access run under Sun JDK 1.4 and higher?</q>
     <a>    <anchor name="dom3-run"/>
     <p>Use the <jump href="http://java.sun.com/j2se/1.4/docs/guide/standards/">
-    Endorsed Standards Override Mechanism</jump> to specify dom3-xml-apis.jar.
+    Endorsed Standards Override Mechanism</jump> to specify xercesImpl.jar and xml-apis.jar.
     More complete description is available <jump href="http://xml.apache.org/xalan-j/faq.html#faq-N100CB">here</jump>.
     </p>
     </a>
@@ -223,7 +212,7 @@ String str = writer.writeToString(document);</source>
 <a> <anchor name="xsdom"/>
 <p>By default Xerces does not store the PSVI information in the DOM tree. </p>
 <p>
-The following source shows you how to parse an XML document (using JAXP) and how to retrieve PSVI (using the <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040122/">XML Schema API</jump>):
+The following source shows you how to parse an XML document (using JAXP) and how to retrieve PSVI (using the <jump href="http://www.w3.org/Submission/xmlschema-api/">XML Schema API</jump>):
 <source>
 //<code>dbf</code> is JAXP DocumentBuilderFactory
 
@@ -257,7 +246,7 @@ DOMImplementation impl =
     (DOMImplementation) registry.getDOMImplementation("psvi");
 </source>
 
-The PSVI information will not be added or modified as you modify the tree in memory. Instead, if you want to get updated PSVI information, you need to validate your DOM in memory using the <jump href="http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107/core.html#Document3-normalizeDocument">normalizeDocument</jump> method as described in the <jump href="#xsrevalidate">next question</jump>.
+The PSVI information will not be added or modified as you modify the tree in memory. Instead, if you want to get updated PSVI information, you need to validate your DOM in memory using the <jump href="http://www.w3.org/TR/DOM-Level-3-Core/core.html#Document3-normalizeDocument">normalizeDocument</jump> method as described in the <jump href="#xsrevalidate">next question</jump>.
 
 <p>You can find more information about how to use the XML Schema API <jump href="faq-xs.html">here</jump>.</p>
 </a>
@@ -276,9 +265,6 @@ The PSVI information will not be added or modified as you modify the tree in mem
   		<p>To revalidate the document you need:</p>
   		<ul>
   			<li>
-  				<jump href="#dom3">Build</jump> DOM Level 3 Xerces jars.  			
-  		    </li>
-  			<li>
   				<jump href="#domparser">Create</jump> the DOMParser.
   			</li>
   			<li>
@@ -294,19 +280,19 @@ The PSVI information will not be added or modified as you modify the tree in mem
   			</li>
   			<li>
   				Relative URIs for the schema documents will be resolved relative to the
-  		       <jump href="http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107/core.html#Document3-documentURI">documentURI</jump>
+  		       <jump href="http://www.w3.org/TR/DOM-Level-3-Core/core.html#Document3-documentURI">documentURI</jump>
   		       (which should be set).
-  		       Otherwise, you can implement your own <code>DOMResourceResolver</code> and set it 
+  		       Otherwise, you can implement your own <code>LSResourceResolver</code> and set it 
   		       via <code>resource-resolver</code> on the <code>DOMConfiguration</code>.
   			</li>
   		</ul>
   		<p>
   			<strong>Note:</strong> if a document contains any DOM Level 1 nodes (the nodes created using createElement, 
   			createAttribute, etc.) a fatal error will occur as described in the 
-  			<jump href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107/namespaces-algorithms.html'>Namespace Normalization</jump>
+  			<jump href='http://www.w3.org/TR/DOM-Level-3-Core/namespaces-algorithms.html'>Namespace Normalization</jump>
   			algorithm.
   			In general, the
-  			<jump href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107/core.html#Namespaces-Considerations'>DOM specification</jump>
+  			<jump href='http://www.w3.org/TR/DOM-Level-3-Core/core.html#Namespaces-Considerations'>DOM specification</jump>
   			discourages using DOM Level 1 nodes in the namespace aware application:
   		</p>
   		<p><em>DOM Level 1 methods are namespace ignorant. Therefore, while it is safe to use these methods when not 
@@ -323,7 +309,7 @@ import org.w3c.dom.ls.LSParser;
 ..... 
 
 Document document = builder.parseURI("data/personal-schema.xml");
-DOMConfiguration config = document.getConfig();
+DOMConfiguration config = document.getDomConfig();
 config.setParameter("error-handler",new MyErrorHandler());
 config.setParameter("validate", Boolean.TRUE);
 document.normalizeDocument();</source>
@@ -370,7 +356,7 @@ ErrorHandler handler = new ErrorHandler() {
 DocumentBuilder builder = /* builder instance */;
 builder.setErrorHandler(handler);</source>
       <p>If you are using <jump href="http://www.w3.org/DOM/DOMTR#DOML3">DOM Level 3</jump> 
-	you can register an error handler with the <code>DOMBuilder</code> by supplying
+	you can register an error handler with the <code>LSParser</code> by supplying
 	a class which implements the <code>org.w3c.dom.DOMErrorHandler</code>
 	interface. <strong>Note:</strong> all exceptions during parsing or saving XML data 
 	are reported via DOMErrorHandler.</p>
@@ -383,7 +369,7 @@ builder.setErrorHandler(handler);</source>
     <a>
       <p>The Xerces  <code>http://apache.org/xml/features/dom/create-entity-ref-nodes</code> 
         feature
-	(or corresponding DOM Level 3 DOMBuilder <code>entities</code> feature)  
+	(or corresponding DOM Level 3 LSParser <code>entities</code> feature)  
 	controls how entities appear in the DOM tree. When one of those features 
 	is set to true (the default), an occurrence of an entity reference
 	in the XML document will be represented by a subtree with an 
@@ -446,7 +432,7 @@ builder.setErrorHandler(handler);</source>
   
      <faq title="Accessing type information">
     <q>How do I access type information in the DOM?</q>
-    <a> <p><jump href="#dom3">DOM Level 3</jump> defines a  <jump href="http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107/core.html#TypeInfo">TypeInfo</jump> 
+    <a> <p><jump href="#dom3">DOM Level 3</jump> defines a  <jump href="http://www.w3.org/TR/DOM-Level-3-Core/core.html#TypeInfo">TypeInfo</jump> 
     interface that exposes type information for 
      element and attribute nodes. The type information depends on the document schema and is only available
      if Xerces was able to find the corresponding grammar (DOM Level 3 <code>validate</code> or 

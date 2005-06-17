@@ -39,11 +39,11 @@
 	XML Schema</link> page. 
     </p>
     <p>
-      Xerces2 also provides an <link idref='dom3'>experimental implementation</link> of the 
+      Xerces2 also provides an <link idref='dom3'>complete implementation</link> of the 
 <jump href="http://www.w3.org/DOM/DOMTR#dom3">Document 
-      Object Model Level 3 Core and Load/Save</jump> Proposed Recommendations and provides a 
-      <link idref='faq-xinclude'>partial implementation</link> of the <jump href="http://www.w3.org/TR/2003/WD-xinclude-20031110/">XML Inclusions 
-      (XInclude)</jump> W3C Working Draft in Last Call. It also provides <link idref='faq-xcatalogs'>support</link>
+      Object Model Level 3 Core and Load/Save</jump> W3C Recommendations and provides a 
+      <link idref='faq-xinclude'>complete implementation</link> of the <jump href="http://www.w3.org/TR/2004/REC-xinclude-20041220/">XML Inclusions 
+      (XInclude)</jump> W3C Recommendation. It also provides <link idref='faq-xcatalogs'>support</link>
       for <jump href="http://www.oasis-open.org/committees/entity/spec.html">OASIS XML Catalogs</jump>.
     </p>
 
@@ -88,7 +88,14 @@
           Namespaces in XML 1.1</jump> Recommendation
       </li>
       <li>
+        <jump href='http://www.w3.org/TR/2004/REC-xinclude-20041220/'>
+          XML Inclusions (XInclude) Version 1.0</jump> Recommendation
+      </li>
+      <li>
 	<jump href='http://www.w3.org/DOM/'>Document Object Model</jump>
+	(DOM) Level 3
+	<jump href='http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/'>Core</jump>,
+	<jump href='http://www.w3.org/TR/2004/REC-DOM-Level-3-LS-20040407/'>Load and Save</jump>,
 	(DOM) Level 2
 	<jump href='http://www.w3.org/TR/DOM-Level-2-Core/'>Core</jump>,
 	<jump href='http://www.w3.org/TR/DOM-Level-2-Events'>Events</jump>,
@@ -97,22 +104,18 @@
 	  and Range</jump> Recommendations
       </li>
       <li>
-	<jump href='http://sax.sourceforge.net/'>Simple API for XML</jump>
-	(SAX) 2.0.1
-	<jump href='http://prdownloads.sourceforge.net/sax/sax2r2.jar'>Core</jump>,
-	and
-	<jump href='http://prdownloads.sourceforge.net/sax/sax2-ext-1.0.zip'>Extensions</jump>
+	<jump href='http://sax.sourceforge.net/'>Simple API for XML</jump> (SAX) 2.0.2 Core and Extensions
       </li>
       <li>
 	<jump href='http://java.sun.com/xml/xml_jaxp.html'>Java APIs for 
-	  XML Processing</jump> (JAXP) 1.2
+	  XML Processing</jump> (JAXP) 1.3
       </li>
       <li>
 	<jump href='http://www.w3.org/XML/Schema'>XML Schema</jump> 1.0
-	<jump href='http://www.w3.org/TR/xmlschema-1/'>Structures</jump>
+	<jump href='http://www.w3.org/TR/2004/REC-xmlschema-1-20041028/'>Structures</jump>
 	and
-	<jump href='http://www.w3.org/TR/xmlschema-2/'>Datatypes</jump>
-	Recommendations
+	<jump href='http://www.w3.org/TR/2004/REC-xmlschema-2-20041028/'>Datatypes</jump>
+	Second Edition Recommendations
       </li>
       
     </ul>
@@ -129,16 +132,14 @@
   <s2 title='Changes from Previous Release'>
     
     <p>
-      The &ParserNameLong; &ParserVersion; contains several bug fixes:
+      The &ParserNameLong; &ParserVersion; contains a complete implementation of the parsing portion of JAXP 1.3 including new support for:
     </p>
     
     <ul>
-       <li>This release fixes a documentation bug in the <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040309/">XML Schema API</jump>. 
-           In particular in the <code>XSModel</code> interface the order of the parameters in <code>getTypeDefinition, getNotationDeclaration, 
-           getModelGroupDefinition, getElementDeclaration, getAttributeDeclaration, getAttributeGroup</code> methods have been changed 
-           from <code>(String namespace, String name) to (String name, String namespace)</code>. 
-       </li>
-       <li>This release requires JDK 1.2 or later to run and also requires JDK 1.2 or later to build the source code</li>
+       <li>SAX 2.0.2</li>
+       <li>DOM Level 3 Core and Load &amp; Save</li>
+       <li>XInclude 1.0</li>
+       <li>The datatype and validation APIs in javax.xml.datatype and javax.xml.validation</li>
     </ul>
     <p>
       
