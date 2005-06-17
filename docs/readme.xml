@@ -39,7 +39,7 @@
 	XML Schema</link> page. 
     </p>
     <p>
-      Xerces2 also provides an <link idref='dom3'>complete implementation</link> of the 
+      Xerces2 also provides a <link idref='dom3'>complete implementation</link> of the 
 <jump href="http://www.w3.org/DOM/DOMTR#dom3">Document 
       Object Model Level 3 Core and Load/Save</jump> W3C Recommendations and provides a 
       <link idref='faq-xinclude'>complete implementation</link> of the <jump href="http://www.w3.org/TR/2004/REC-xinclude-20041220/">XML Inclusions 
