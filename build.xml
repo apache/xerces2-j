@@ -1046,6 +1046,7 @@ Copyright:
 
     <xjavac srcdir="${build.src}"
            destdir="${build.dest}"
+    	   classpath="${build.dir}/classes:${tools.dir}/${jar.apis}"
            debug="${debug}"
            deprecation="${deprecation}"
            optimize="${optimize}"
@@ -1062,11 +1063,14 @@ Copyright:
     <copy todir="${build.src}">
         <fileset 
             dir="${src.dir}"
-            includes="org/apache/xerces/impl/dv/**,
-                      org/apache/xerces/impl/msg/XMLSchema**,
-                      org/apache/xerces/impl/xpath/regex/**,
+            includes="org/apache/xerces/impl/Constants.java
+        	          org/apache/xerces/impl/dv/**
+                      org/apache/xerces/impl/msg/XMLSchema**
+                      org/apache/xerces/impl/xpath/regex/**
 		      org/apache/xerces/impl/xs/util/ShortListImpl.java,
-                      org/apache/xerces/impl/xs/XSTypeDecl.java,
+        	          org/apache/xerces/impl/xs/SchemaSymbols.java
+                      org/apache/xerces/impl/xs/XSTypeDecl.java
+        	org/apache/xerces/jaxp/datatype/*.java
 			org/apache/xerces/xs/XSException.java
 			org/apache/xerces/xs/StringList.java
 			org/apache/xerces/xs/ShortList.java
@@ -1093,17 +1097,18 @@ Copyright:
 			org/apache/xerces/xs/XSTypeDefinition.java
 			org/apache/xerces/xs/XSWildcard.java
 			org/apache/xerces/xs/XSFacet.java
-			org/apache/xerces/xs/XSMultiValueFacet.java
-			org/apache/xerces/xs/datatypes/*.java
-                      org/apache/xerces/impl/xs/util/StringListImpl.java,
-                      org/apache/xerces/impl/xs/util/XSObjectListImpl.java,
-                      org/apache/xerces/util/ObjectFactory.java,
-                      org/apache/xerces/util/SecuritySupport.java,
-                      org/apache/xerces/util/SecuritySupport12.java,
-                      org/apache/xerces/util/SymbolHash.java,
-                      org/apache/xerces/util/URI.java,
-                      org/apache/xerces/util/XMLChar.java,
-                      org/apache/xerces/xni/NamespaceContext.java,
+                      org/apache/xerces/xs/XSMultiValueFacet.java
+                      org/apache/xerces/xs/datatypes/*.java
+                      org/apache/xerces/impl/xs/util/StringListImpl.java
+                      org/apache/xerces/impl/xs/util/XSObjectListImpl.java
+                      org/apache/xerces/util/DatatypeMessageFormatter.java
+                      org/apache/xerces/util/ObjectFactory.java
+                      org/apache/xerces/util/SecuritySupport.java
+                      org/apache/xerces/util/SecuritySupport12.java
+                      org/apache/xerces/util/SymbolHash.java
+                      org/apache/xerces/util/URI.java
+                      org/apache/xerces/util/XMLChar.java
+                      org/apache/xerces/xni/NamespaceContext.java
                       org/apache/xerces/xni/QName.java
                      "
             excludes="org/apache/xerces/impl/dv/DatatypeValidator.java
