@@ -1,6 +1,6 @@
 <?xml version="1.0" standalone="no"?>
 <!--
- * Copyright 2004 The Apache Software Foundation.
+ * Copyright 2004,2005 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@
 <!DOCTYPE s1 SYSTEM "./dtd/document.dtd">
 <s1 title="SAX">
 <s2 title="Introduction">
-<p> Xerces2 provides an implementation of SAX 2.0.1 and SAX2 Extensions 1.0.</p>
+<p> Xerces2 provides an implementation of SAX 2.0.2 and SAX2 Extensions 1.1.</p>
 <p> SAX 1.0 and SAX 2.0 information: </p>
 <ul>
-<li><jump href='http://www.saxproject.org/?selected=sax1'>SAX 1.0 Overview</jump></li>
-<li><jump href='http://www.saxproject.org/?selected=sax2'>SAX 2.0 Changes</jump></li>
-<li><jump href='http://www.saxproject.org/?selected=ext'>SAX 2.0 Extensions</jump></li>
+<li><jump href='http://www.saxproject.org/sax1-roadmap.html'>SAX 1.0 Overview</jump></li>
+<li><jump href='http://www.saxproject.org/sax2-history.html'>SAX 2.0 Changes</jump></li>
+<li><jump href='http://www.saxproject.org/sax2-ext.html'>SAX 2.0 Extensions</jump></li>
 </ul>
 </s2>
 
