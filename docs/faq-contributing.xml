@@ -100,7 +100,7 @@
             (tags for releases usually have the form Xerces-J_x_y_z
             where x.y.z is the Xerces-J release number)
             You should also tag the current branch of xml-commons
-            containing the API's that the parser needs to conform
+            containing the APIs that the parser needs to conform
             to; see step 1 above.
         </li>
         <li>Do a test build and regression test run;

@@ -189,7 +189,7 @@ serializer.serialize(document);</source>
   <faq title="Accessing the DOM Level 3 API">
     <q>How do I access the DOM Level 3 functionality?</q>
     <a>    <anchor name="dom3"/>
-     <p>The DOM Level 3 functionality is now exposed by default since Xerces-2J 2.7.0</p> 
+     <p>The DOM Level 3 functionality is now exposed by default since Xerces-J 2.7.0</p> 
      <p>For more information, refer to the <link idref='dom3'>DOM Level 3 
 	Implementation</link> page.
      </p>    
@@ -201,7 +201,7 @@ serializer.serialize(document);</source>
     <a>    <anchor name="dom3-run"/>
     <p>Use the <jump href="http://java.sun.com/j2se/1.4/docs/guide/standards/">
     Endorsed Standards Override Mechanism</jump> to specify xercesImpl.jar and xml-apis.jar.
-    More complete description is available <jump href="http://xml.apache.org/xalan-j/faq.html#faq-N100CB">here</jump>.
+    More complete description is available <jump href="http://xml.apache.org/xalan-j/faq.html#faq-N100CC">here</jump>.
     </p>
     </a>
   </faq>

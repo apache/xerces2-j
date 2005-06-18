@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--
- * Copyright 2002-2004 The Apache Software Foundation.
+ * Copyright 2002-2005 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -319,7 +319,7 @@
     </p>
   </a>
  </faq>
- <faq title="Grammar caching with Standard API's">
+ <faq title="Grammar caching with Standard APIs">
   <q>All right, I've (somehow) got a grammar pool full of
   grammars.  How do I use this with my application that uses
   standard (SAX|DOM|JAXP) parsers?</q>

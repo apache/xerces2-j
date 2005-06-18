@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--
- * Copyright 2001-2004 The Apache Software Foundation.
+ * Copyright 2001-2005 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -468,7 +468,7 @@
      <p> The third step can be quite time-consuming, especially if you
     have a lot of jars on your classpath and run applications which
     require the creation of lots of parsers.  If you know you're
-    only using applications which require "standard" API's (that
+    only using applications which require "standard" APIs (that
     is, don't need some special Xerces property), or you want to
     try and force applications to use only certain Xerces
     configurations, then you may wish to copy this file into your
