@@ -32,6 +32,7 @@ import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.validation.EntityState;
 import org.apache.xerces.impl.validation.ValidationManager;
+import org.apache.xerces.impl.xs.XMLSchemaValidator;
 import org.apache.xerces.impl.xs.util.SimpleLocator;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLAttributesImpl;
@@ -107,7 +108,7 @@ final class DOMValidatorHelper implements ValidatorHelper, EntityState {
     private DOMNamespaceContext fDOMNamespaceContext = new DOMNamespaceContext();
     
     /** Schema validator. **/
-    private org.apache.xerces.impl.xs.XMLSchemaValidator fSchemaValidator;
+    private XMLSchemaValidator fSchemaValidator;
     
     /** Symbol table **/
     private SymbolTable fSymbolTable;
@@ -152,7 +153,7 @@ final class DOMValidatorHelper implements ValidatorHelper, EntityState {
         fComponentManager = componentManager;
         fErrorReporter = (XMLErrorReporter) fComponentManager.getProperty(ERROR_REPORTER);
         fNamespaceContext = (NamespaceContext) fComponentManager.getProperty(NAMESPACE_CONTEXT);
-        fSchemaValidator = (org.apache.xerces.impl.xs.XMLSchemaValidator) fComponentManager.getProperty(SCHEMA_VALIDATOR);
+        fSchemaValidator = (XMLSchemaValidator) fComponentManager.getProperty(SCHEMA_VALIDATOR);
         fSymbolTable = (SymbolTable) fComponentManager.getProperty(SYMBOL_TABLE);        
         fValidationManager = (ValidationManager) fComponentManager.getProperty(VALIDATION_MANAGER);
     }
