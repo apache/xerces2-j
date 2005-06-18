@@ -41,12 +41,20 @@
      </note>
      <submitter name='Naela Nissar, Ankit Pasricha'/>
     </add>
+    <add>
+     <note>
+      Implemented features for configuring whether the XInclude processor 
+      performs <jump href="http://www.w3.org/TR/2004/REC-xinclude-20041220/#base">base URI fixup</jump>
+      and/or <jump href="http://www.w3.org/TR/2004/REC-xinclude-20041220/#language">language fixup</jump>.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </add>
     <update>
      <note>
       Implemented the <jump href="http://www.w3.org/TR/2004/REC-xinclude-20041220/">XInclude</jump>
-      Recommendation (December 2004), excluding support for XPointer.
+      Recommendation (December 2004).
      </note>
-     <submitter name='Michael Glavassevich'/>
+     <submitter name='Neil Delima, Michael Glavassevich'/>
     </update>
     <fix>
      <note>
@@ -97,7 +105,7 @@
      <note>
       Fixed numerous schema related bugs.
      </note>
-     <submitter name='Mike Boos, Neil Delima, Sandy Gao, Michael Glavassevich, Kohsuke Kawaguchi, Elena Litani'/>
+     <submitter name='Mike Boos, Neil Delima, Sandy Gao, Michael Glavassevich, Kohsuke Kawaguchi, Elena Litani, Ankit Pasricha'/>
     </fix>
     <update>
      <note>
@@ -151,6 +159,12 @@
       spurious errors about duplicate field matches to be reported.
      </note>
      <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed various bugs.
+     </note>
+     <submitter name='Dave Brosius, Michael Glavassevich, Eric Isakson'/>
     </fix>
    </changes>
   </release>
