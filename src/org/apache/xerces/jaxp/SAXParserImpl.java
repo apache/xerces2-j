@@ -287,7 +287,7 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
             super();
         }
         
-        private JAXPSAXParser(SAXParserImpl saxParser) {
+        JAXPSAXParser(SAXParserImpl saxParser) {
             super();
             fSAXParser = saxParser;
         }
