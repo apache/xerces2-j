@@ -22,6 +22,7 @@ import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.EntityResolverWrapper;
 import org.apache.xerces.util.EntityResolver2Wrapper;
 import org.apache.xerces.util.ErrorHandlerWrapper;
+import org.apache.xerces.util.SAXMessageFormatter;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
@@ -412,12 +413,16 @@ public class DOMParser
             fConfiguration.setFeature(featureId, state);
         }
         catch (XMLConfigurationException e) {
-            String message = e.getMessage();
+            String identifier = e.getIdentifier();
             if (e.getType() == XMLConfigurationException.NOT_RECOGNIZED) {
-                throw new SAXNotRecognizedException(message);
+                throw new SAXNotRecognizedException(
+                    SAXMessageFormatter.formatMessage(fConfiguration.getLocale(), 
+                    "feature-not-recognized", new Object [] {identifier}));
             }
             else {
-                throw new SAXNotSupportedException(message);
+                throw new SAXNotSupportedException(
+                    SAXMessageFormatter.formatMessage(fConfiguration.getLocale(), 
+                    "feature-not-supported", new Object [] {identifier}));
             }
         }
 
@@ -457,12 +462,16 @@ public class DOMParser
             return fConfiguration.getFeature(featureId);
         }
         catch (XMLConfigurationException e) {
-            String message = e.getMessage();
+            String identifier = e.getIdentifier();
             if (e.getType() == XMLConfigurationException.NOT_RECOGNIZED) {
-                throw new SAXNotRecognizedException(message);
+                throw new SAXNotRecognizedException(
+                    SAXMessageFormatter.formatMessage(fConfiguration.getLocale(), 
+                    "feature-not-recognized", new Object [] {identifier}));
             }
             else {
-                throw new SAXNotSupportedException(message);
+                throw new SAXNotSupportedException(
+                    SAXMessageFormatter.formatMessage(fConfiguration.getLocale(), 
+                    "feature-not-supported", new Object [] {identifier}));
             }
         }
 
@@ -490,12 +499,16 @@ public class DOMParser
             fConfiguration.setProperty(propertyId, value);
         }
         catch (XMLConfigurationException e) {
-            String message = e.getMessage();
+            String identifier = e.getIdentifier();
             if (e.getType() == XMLConfigurationException.NOT_RECOGNIZED) {
-                throw new SAXNotRecognizedException(message);
+                throw new SAXNotRecognizedException(
+                    SAXMessageFormatter.formatMessage(fConfiguration.getLocale(), 
+                    "property-not-recognized", new Object [] {identifier}));
             }
             else {
-                throw new SAXNotSupportedException(message);
+                throw new SAXNotSupportedException(
+                    SAXMessageFormatter.formatMessage(fConfiguration.getLocale(), 
+                    "property-not-supported", new Object [] {identifier}));
             }
         }
 
@@ -537,12 +550,16 @@ public class DOMParser
             return fConfiguration.getProperty(propertyId);
         }
         catch (XMLConfigurationException e) {
-            String message = e.getMessage();
+            String identifier = e.getIdentifier();
             if (e.getType() == XMLConfigurationException.NOT_RECOGNIZED) {
-                throw new SAXNotRecognizedException(message);
+                throw new SAXNotRecognizedException(
+                    SAXMessageFormatter.formatMessage(fConfiguration.getLocale(), 
+                    "property-not-recognized", new Object [] {identifier}));
             }
             else {
-                throw new SAXNotSupportedException(message);
+                throw new SAXNotSupportedException(
+                    SAXMessageFormatter.formatMessage(fConfiguration.getLocale(), 
+                    "property-not-supported", new Object [] {identifier}));
             }
         }
 
