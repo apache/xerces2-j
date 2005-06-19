@@ -28,6 +28,8 @@ import javax.xml.validation.Schema;
 import org.apache.xerces.parsers.DOMParser;
 import org.apache.xerces.util.SAXMessageFormatter;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 
 /**
  * @author Rajiv Mordani
@@ -37,6 +39,7 @@ import org.xml.sax.SAXException;
 public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
     /** These are DocumentBuilderFactory attributes not DOM attributes */
     private Hashtable attributes;
+    private Hashtable features;
     private Schema grammar;
     private boolean isXIncludeAware;
     
@@ -53,7 +56,7 @@ public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
         throws ParserConfigurationException 
     {
         try {
-            return new DocumentBuilderImpl(this, attributes, fSecureProcess);
+            return new DocumentBuilderImpl(this, attributes, features, fSecureProcess);
         } catch (SAXException se) {
             // Handles both SAXNotSupportedException, SAXNotRecognizedException
             throw new ParserConfigurationException(se.getMessage());
@@ -90,7 +93,7 @@ public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
 
         // Test the attribute name by possibly throwing an exception
         try {
-            new DocumentBuilderImpl(this, attributes);
+            new DocumentBuilderImpl(this, attributes, features);
         } catch (Exception e) {
             attributes.remove(name);
             throw new IllegalArgumentException(e.getMessage());
@@ -117,7 +120,7 @@ public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
             // We create a dummy DocumentBuilderImpl in case the attribute
             // name is not one that is in the attributes hashtable.
             domParser =
-                new DocumentBuilderImpl(this, attributes).getDOMParser();
+                new DocumentBuilderImpl(this, attributes, features).getDOMParser();
             return domParser.getProperty(name);
         } catch (SAXException se1) {
             // assert(name is not recognized or not supported), try feature
@@ -153,9 +156,20 @@ public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
         if (name.equals(XMLConstants.FEATURE_SECURE_PROCESSING)) {
             return fSecureProcess;
         }
-        throw new ParserConfigurationException(
-                SAXMessageFormatter.formatMessage(Locale.getDefault(), 
-                        "feature-not-supported", new Object [] {name}));
+        // See if it's in the features Hashtable
+        if (features != null) {
+            Object val = features.get(name);
+            if (val != null) {
+                return ((Boolean) val).booleanValue();
+            }
+        }
+        try {
+            DOMParser domParser = new DocumentBuilderImpl(this, attributes, features).getDOMParser();
+            return domParser.getFeature(name);
+        }
+        catch (SAXException e) {
+            throw new ParserConfigurationException(e.getMessage());
+        }
     }
     
     public void setFeature(String name, boolean value) 
@@ -165,8 +179,21 @@ public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
             fSecureProcess = value;
             return;
         }
-        throw new ParserConfigurationException(
-                SAXMessageFormatter.formatMessage(Locale.getDefault(), 
-                        "feature-not-supported", new Object [] {name}));
+        if (features == null) {
+            features = new Hashtable();
+        }
+        features.put(name, value ? Boolean.TRUE : Boolean.FALSE);
+        // Test the feature by possibly throwing SAX exceptions
+        try {
+            new DocumentBuilderImpl(this, attributes, features);
+        } 
+        catch (SAXNotSupportedException e) {
+            features.remove(name);
+            throw new ParserConfigurationException(e.getMessage());
+        } 
+        catch (SAXNotRecognizedException e) {
+            features.remove(name);
+            throw new ParserConfigurationException(e.getMessage());
+        }
     }
 }

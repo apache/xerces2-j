@@ -90,12 +90,12 @@ public class DocumentBuilderImpl extends DocumentBuilder
     /** Initial EntityResolver */
     private final EntityResolver fInitEntityResolver;
     
-    DocumentBuilderImpl(DocumentBuilderFactoryImpl dbf, Hashtable dbfAttrs)
+    DocumentBuilderImpl(DocumentBuilderFactoryImpl dbf, Hashtable dbfAttrs, Hashtable features)
         throws SAXNotRecognizedException, SAXNotSupportedException {
-        this(dbf, dbfAttrs, false);
+        this(dbf, dbfAttrs, features, false);
     }
 
-    DocumentBuilderImpl(DocumentBuilderFactoryImpl dbf, Hashtable dbfAttrs, boolean secureProcessing)
+    DocumentBuilderImpl(DocumentBuilderFactoryImpl dbf, Hashtable dbfAttrs, Hashtable features, boolean secureProcessing)
         throws SAXNotRecognizedException, SAXNotSupportedException
     {
         domParser = new DOMParser();
@@ -140,10 +140,25 @@ public class DocumentBuilderImpl extends DocumentBuilder
         
         this.grammar = dbf.getSchema();
 
+        // Set features
+        setFeatures(features);
+        
+        // Set attributes
         setDocumentBuilderFactoryAttributes(dbfAttrs);
         
         // Initial EntityResolver
         fInitEntityResolver = domParser.getEntityResolver();
+    }
+    
+    private void setFeatures(Hashtable features)
+        throws SAXNotSupportedException, SAXNotRecognizedException {
+        if (features != null) {
+            for (Enumeration e = features.keys(); e.hasMoreElements();) {
+                String feature = (String)e.nextElement();
+                boolean value = ((Boolean)features.get(feature)).booleanValue();
+                domParser.setFeature(feature, value);
+            }
+        }
     }
 
     /**
