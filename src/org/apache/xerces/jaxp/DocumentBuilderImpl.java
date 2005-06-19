@@ -21,7 +21,6 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.validation.Schema;
 
 import org.apache.xerces.dom.DOMImplementationImpl;
@@ -85,6 +84,12 @@ public class DocumentBuilderImpl extends DocumentBuilder
     private DOMParser domParser = null;
     private final Schema grammar;
     
+    /** Initial ErrorHandler */
+    private final ErrorHandler fInitErrorHandler;
+    
+    /** Initial EntityResolver */
+    private final EntityResolver fInitEntityResolver;
+    
     DocumentBuilderImpl(DocumentBuilderFactoryImpl dbf, Hashtable dbfAttrs)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         this(dbf, dbfAttrs, false);
@@ -99,7 +104,11 @@ public class DocumentBuilderImpl extends DocumentBuilder
         // validation errors with a warning telling the user to set an
         // ErrorHandler
         if (dbf.isValidating()) {
-            setErrorHandler(new DefaultValidationErrorHandler());
+            fInitErrorHandler = new DefaultValidationErrorHandler();
+            setErrorHandler(fInitErrorHandler);
+        }
+        else {
+            fInitErrorHandler = domParser.getErrorHandler();
         }
 
         domParser.setFeature(VALIDATION_FEATURE, dbf.isValidating());
@@ -132,6 +141,9 @@ public class DocumentBuilderImpl extends DocumentBuilder
         this.grammar = dbf.getSchema();
 
         setDocumentBuilderFactoryAttributes(dbfAttrs);
+        
+        // Initial EntityResolver
+        fInitEntityResolver = domParser.getEntityResolver();
     }
 
     /**
@@ -254,8 +266,16 @@ public class DocumentBuilderImpl extends DocumentBuilder
         return grammar;
     }
     
-    // TODO: Add in implementation.
-    public void reset() {}
+    public void reset() {
+        /** Restore the initial error handler. **/
+        if (domParser.getErrorHandler() != fInitErrorHandler) {
+            domParser.setErrorHandler(fInitErrorHandler);
+        }
+        /** Restore the initial entity resolver. **/
+        if (domParser.getEntityResolver() != fInitEntityResolver) {
+            domParser.setEntityResolver(fInitEntityResolver);
+        }
+    }
 
     // package private
     DOMParser getDOMParser() {
