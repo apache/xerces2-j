@@ -25,10 +25,8 @@
   </p>
   <p>
    The DocumentBuilderFactory interface contains a 
-   <code>setAttribute(String,Object)</code> method which <em>may</em>
-   provide a means to set features on the underlying parser. When using
-   Xerces, to set a feature you specify an instance of
-   <code>java.lang.Boolean</code> as the value of the attribute.
+   <code>setFeature(String,boolean)</code> method which 
+   can be used to set features on the underlying parser.
    For example:
   </p>
   <source>import javax.xml.parsers.DocumentBuilderFactory;
@@ -36,10 +34,10 @@ import javax.xml.parsers.DocumentBuilder;
   
 DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 try {
-    dbf.setAttribute("http://apache.org/xml/features/allow-java-encodings", 
-                     Boolean.TRUE);
+    dbf.setFeature("http://apache.org/xml/features/allow-java-encodings", 
+                   true);
 } 
-catch (IllegalArgumentException e) {
+catch (ParserConfigurationException e) {
     System.err.println("could not set parser feature");
 }</source>
   <p>
