@@ -19,21 +19,21 @@ package org.apache.xerces.jaxp;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import javax.xml.parsers.SAXParserFactory;
 import javax.xml.validation.Schema;
 
 import org.apache.xerces.impl.Constants;
-import org.xml.sax.Parser;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.XMLReader;
-
 import org.apache.xerces.util.SAXMessageFormatter;
 import org.apache.xerces.util.SecurityManager;
 import org.apache.xerces.xs.AttributePSVI;
 import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.PSVIProvider;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.Parser;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.XMLReader;
 
 /**
  * This is the implementation specific class for the
@@ -75,6 +75,12 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
     private String schemaLanguage = null;     // null means DTD
     private final Schema grammar;
     
+    /** Initial ErrorHandler */
+    private final ErrorHandler fInitErrorHandler;
+    
+    /** Initial EntityResolver */
+    private final EntityResolver fInitEntityResolver;
+    
     /**
      * Create a SAX parser with the associated features
      * @param features Hashtable of SAX features, may be null
@@ -99,7 +105,11 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
         // validation errors with a warning telling the user to set an
         // ErrorHandler.
         if (spf.isValidating()) {
-            xmlReader.setErrorHandler(new DefaultValidationErrorHandler());
+            fInitErrorHandler = new DefaultValidationErrorHandler();
+            xmlReader.setErrorHandler(fInitErrorHandler);
+        }
+        else {
+            fInitErrorHandler = xmlReader.getErrorHandler();
         }
 
         xmlReader.setFeature(VALIDATION_FEATURE, spf.isValidating());
@@ -129,6 +139,9 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
         this.grammar = spf.getSchema();
 
         setFeatures(features);
+        
+        // Initial EntityResolver
+        fInitEntityResolver = xmlReader.getEntityResolver();
     }
 
     /**
@@ -261,8 +274,17 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
         return grammar;
     }
     
-    // TODO: Add in implementation.
-    public void reset() {}
+    public void reset() {
+        /** Restore various handlers. **/
+        xmlReader.setContentHandler(null);
+        xmlReader.setDTDHandler(null);
+        if (xmlReader.getErrorHandler() != fInitErrorHandler) {
+            xmlReader.setErrorHandler(fInitErrorHandler);
+        }
+        if (xmlReader.getEntityResolver() != fInitEntityResolver) {
+            xmlReader.setEntityResolver(fInitEntityResolver);
+        }
+    }
     
     /*
      * PSVIProvider methods
