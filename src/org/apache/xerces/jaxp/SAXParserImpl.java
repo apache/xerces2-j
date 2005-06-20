@@ -16,6 +16,7 @@
 
 package org.apache.xerces.jaxp;
 
+import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -26,15 +27,21 @@ import javax.xml.XMLConstants;
 import javax.xml.validation.Schema;
 
 import org.apache.xerces.impl.Constants;
+import org.apache.xerces.impl.xs.XMLSchemaValidator;
+import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.jaxp.validation.XSGrammarPoolContainer;
 import org.apache.xerces.util.SAXMessageFormatter;
 import org.apache.xerces.util.SecurityManager;
+import org.apache.xerces.xni.parser.XMLComponent;
+import org.apache.xerces.xni.parser.XMLComponentManager;
+import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 import org.apache.xerces.xs.AttributePSVI;
 import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.PSVIProvider;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
 import org.xml.sax.Parser;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
@@ -80,6 +87,9 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
     private JAXPSAXParser xmlReader;
     private String schemaLanguage = null;     // null means DTD
     private final Schema grammar;
+    
+    private XMLComponent fSchemaValidator;
+    private XMLComponentManager fSchemaValidatorComponentManager;
     
     /** Initial ErrorHandler */
     private final ErrorHandler fInitErrorHandler;
@@ -145,6 +155,19 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
         
         // Get the Schema object from the factory
         this.grammar = spf.getSchema();
+        if (grammar != null) {
+            if (grammar instanceof XSGrammarPoolContainer) {
+                XMLParserConfiguration config = xmlReader.getXMLParserConfiguration();
+                XMLSchemaValidator validator = new XMLSchemaValidator();
+                config.addRecognizedFeatures(validator.getRecognizedFeatures());
+                config.addRecognizedProperties(validator.getRecognizedProperties());
+                config.setDocumentHandler(validator);
+                validator.setDocumentHandler(xmlReader);
+                xmlReader.setDocumentSource(validator);
+                fSchemaValidator = validator;
+                fSchemaValidatorComponentManager = new SchemaValidatorConfiguration(config, (XSGrammarPoolContainer) grammar);
+            }
+        }
         
         // Initial EntityResolver
         fInitEntityResolver = xmlReader.getEntityResolver();
@@ -327,6 +350,10 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
                 boolean current = super.getFeature(name);
                 fInitFeatures.put(name, current ? Boolean.TRUE : Boolean.FALSE); 
             }
+            /** Forward feature to the schema validator if there is one. **/
+            if (fSAXParser != null && fSAXParser.fSchemaValidator != null) {
+                setSchemaValidatorFeature(name, value);
+            }
             super.setFeature(name, value);               
         }
         
@@ -421,6 +448,10 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
             if (!fInitProperties.containsKey(name)) {
                 fInitProperties.put(name, super.getProperty(name));
             }
+            /** Forward property to the schema validator if there is one. **/
+            if (fSAXParser != null && fSAXParser.fSchemaValidator != null) {
+                setSchemaValidatorProperty(name, value);
+            }
             super.setProperty(name, value);
         }
         
@@ -462,6 +493,22 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
             }
         }
         
+        public void parse(InputSource inputSource)
+            throws SAXException, IOException {
+            if (fSAXParser != null && fSAXParser.fSchemaValidator != null) {
+                resetSchemaValidator();
+            }
+            super.parse(inputSource);
+        }
+        
+        public void parse(String systemId) 
+            throws SAXException, IOException {
+            if (fSAXParser != null && fSAXParser.fSchemaValidator != null) {
+                resetSchemaValidator();
+            }
+            super.parse(systemId);
+        }
+        
         XMLParserConfiguration getXMLParserConfiguration() {
             return fConfiguration;
         }
@@ -484,6 +531,58 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
         Object getProperty0(String name)
             throws SAXNotRecognizedException, SAXNotSupportedException {
             return super.getProperty(name);
+        }
+        
+        private void setSchemaValidatorFeature(String name, boolean value)
+            throws SAXNotRecognizedException, SAXNotSupportedException {
+            try {
+                fSAXParser.fSchemaValidator.setFeature(name, value);
+            }
+            // This should never be thrown from the schema validator.
+            catch (XMLConfigurationException e) {
+                String identifier = e.getIdentifier();
+                if (e.getType() == XMLConfigurationException.NOT_RECOGNIZED) {
+                    throw new SAXNotRecognizedException(
+                        SAXMessageFormatter.formatMessage(fConfiguration.getLocale(), 
+                        "feature-not-recognized", new Object [] {identifier}));
+                }
+                else {
+                    throw new SAXNotSupportedException(
+                        SAXMessageFormatter.formatMessage(fConfiguration.getLocale(), 
+                        "feature-not-supported", new Object [] {identifier}));
+                }
+            }
+        }
+        
+        private void setSchemaValidatorProperty(String name, Object value) 
+            throws SAXNotRecognizedException, SAXNotSupportedException {
+            try {
+                fSAXParser.fSchemaValidator.setProperty(name, value);
+            }
+            // This should never be thrown from the schema validator.
+            catch (XMLConfigurationException e) {
+                String identifier = e.getIdentifier();
+                if (e.getType() == XMLConfigurationException.NOT_RECOGNIZED) {
+                    throw new SAXNotRecognizedException(
+                        SAXMessageFormatter.formatMessage(fConfiguration.getLocale(), 
+                        "property-not-recognized", new Object [] {identifier}));
+                }
+                else {
+                    throw new SAXNotSupportedException(
+                        SAXMessageFormatter.formatMessage(fConfiguration.getLocale(), 
+                        "property-not-supported", new Object [] {identifier}));
+                }
+            }
+        }
+        
+        private void resetSchemaValidator() throws SAXException {
+            try {
+                fSAXParser.fSchemaValidator.reset(fSAXParser.fSchemaValidatorComponentManager);
+            }
+            // This should never be thrown from the schema validator.
+            catch (XMLConfigurationException e) {
+                throw new SAXException(e);
+            }
         }
     }
 }

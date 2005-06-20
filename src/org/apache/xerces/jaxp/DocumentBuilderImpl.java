@@ -26,8 +26,14 @@ import javax.xml.validation.Schema;
 import org.apache.xerces.dom.DOMImplementationImpl;
 import org.apache.xerces.dom.DOMMessageFormatter;
 import org.apache.xerces.impl.Constants;
+import org.apache.xerces.impl.xs.XMLSchemaValidator;
+import org.apache.xerces.jaxp.validation.XSGrammarPoolContainer;
 import org.apache.xerces.parsers.DOMParser;
 import org.apache.xerces.util.SecurityManager;
+import org.apache.xerces.xni.parser.XMLComponent;
+import org.apache.xerces.xni.parser.XMLComponentManager;
+import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLParserConfiguration;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.xml.sax.EntityResolver;
@@ -84,6 +90,9 @@ public class DocumentBuilderImpl extends DocumentBuilder
     private DOMParser domParser = null;
     private final Schema grammar;
     
+    private XMLComponent fSchemaValidator;
+    private XMLComponentManager fSchemaValidatorComponentManager;
+    
     /** Initial ErrorHandler */
     private final ErrorHandler fInitErrorHandler;
     
@@ -139,6 +148,19 @@ public class DocumentBuilderImpl extends DocumentBuilder
         }
         
         this.grammar = dbf.getSchema();
+        if (grammar != null) {
+            if (grammar instanceof XSGrammarPoolContainer) {
+                XMLParserConfiguration config = domParser.getXMLParserConfiguration();
+                XMLSchemaValidator validator = new XMLSchemaValidator();
+                config.addRecognizedFeatures(validator.getRecognizedFeatures());
+                config.addRecognizedProperties(validator.getRecognizedProperties());
+                config.setDocumentHandler(validator);
+                validator.setDocumentHandler(domParser);
+                domParser.setDocumentSource(validator);
+                fSchemaValidator = validator;
+                fSchemaValidatorComponentManager = new SchemaValidatorConfiguration(config, (XSGrammarPoolContainer) grammar);
+            }
+        }
 
         // Set features
         setFeatures(features);
@@ -234,6 +256,9 @@ public class DocumentBuilderImpl extends DocumentBuilder
                 DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, 
                 "jaxp-null-input-source", null));
         }
+        if (fSchemaValidator != null) {
+            resetSchemaValidator();
+        }
         domParser.parse(is);
         return domParser.getDocument();
     }
@@ -295,5 +320,15 @@ public class DocumentBuilderImpl extends DocumentBuilder
     // package private
     DOMParser getDOMParser() {
         return domParser;
+    }
+    
+    private void resetSchemaValidator() throws SAXException {
+        try {
+            fSchemaValidator.reset(fSchemaValidatorComponentManager);
+        }
+        // This should never be thrown from the schema validator.
+        catch (XMLConfigurationException e) {
+            throw new SAXException(e);
+        }
     }
 }

@@ -564,5 +564,12 @@ public class DOMParser
         }
 
     } // getProperty(String):Object
+    
+    /** 
+     * Returns this parser's XMLParserConfiguration.
+     */
+    public XMLParserConfiguration getXMLParserConfiguration() {
+        return fConfiguration;
+    } // getXMLParserConfiguration():XMLParserConfiguration
 
 } // class DOMParser
