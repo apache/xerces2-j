@@ -176,9 +176,10 @@ public class Test implements DOMErrorHandler, LSResourceResolver {
                 config = core.getDomConfig();
                 config.setParameter("error-handler",errorHandler);
                 config.setParameter("validate", Boolean.TRUE);
+                config.setParameter("schema-type", "http://www.w3.org/2001/XMLSchema");
                 core.normalizeDocument();
                 Assertion.verify(errorCounter == 3, "3 errors should be reported");
-
+				
                 errorCounter = 0;
                 config.setParameter("validate", Boolean.FALSE);
                 config.setParameter("comments", Boolean.FALSE);
@@ -229,6 +230,7 @@ public class Test implements DOMErrorHandler, LSResourceResolver {
                 config.setParameter("psvi", Boolean.TRUE);
                 config.setParameter("error-handler",errorHandler);
                 config.setParameter("validate", Boolean.TRUE);
+                config.setParameter("schema-type", "http://www.w3.org/2001/XMLSchema");
                 core.normalizeDocument();
                 Assertion.verify(errorCounter == 0, "No errors should be reported");
                 Assertion.verify(((ElementPSVI)e1).getElementDeclaration().getName().equals("person"), "e1 decl");              
