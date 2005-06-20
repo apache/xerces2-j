@@ -28,6 +28,7 @@
      <source>import javax.xml.parsers.SAXParserFactory;
      
 SAXParserFactory spf = SAXParserFactory.newInstance();
+spf.setNamespaceAware(true);
 spf.setXIncludeAware(true);
 ...  
 </source>
