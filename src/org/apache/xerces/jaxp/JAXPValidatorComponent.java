@@ -82,6 +82,18 @@ import org.xml.sax.helpers.DefaultHandler;
 class JAXPValidatorComponent 
     extends TeeXMLDocumentFilterImpl implements XMLComponent {
     
+    /** Property identifier: entity manager. */
+    private static final String ENTITY_MANAGER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_MANAGER_PROPERTY;    
+    
+    /** Property identifier: error reporter. */
+    private static final String ERROR_REPORTER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
+    
+    /** Property identifier: symbol table. */
+    private static final String SYMBOL_TABLE =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
+    
     // pipeline parts
     private final ValidatorHandler validator;
     private final XNI2SAX xni2sax = new XNI2SAX();
@@ -137,7 +149,7 @@ class JAXPValidatorComponent
                 if(fEntityResolver==null)   return null;
                 try {
                     XMLInputSource is = fEntityResolver.resolveEntity(
-                        new XMLResourceIdentifierImpl(publicId,systemId,baseUri,systemId));
+                        new XMLResourceIdentifierImpl(publicId,systemId,baseUri,null));
                     if(is==null)    return null;
                         
                     LSInput di = new DOMInputImpl();
@@ -193,11 +205,14 @@ class JAXPValidatorComponent
 
     public void reset(XMLComponentManager componentManager) throws XMLConfigurationException {
         // obtain references from the manager
-        fSymbolTable = (SymbolTable)componentManager.getProperty(
-            Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY);
-        
-        fErrorReporter = (XMLErrorReporter)componentManager.getProperty(
-            Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY);       
+        fSymbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
+        fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
+        try {
+            fEntityResolver = (XMLEntityResolver) componentManager.getProperty(ENTITY_MANAGER);
+        }
+        catch (XMLConfigurationException e) {
+            fEntityResolver = null;
+        }
     }
     
     /**
@@ -563,13 +578,10 @@ class JAXPValidatorComponent
     }
 
     public String[] getRecognizedProperties() {
-        return new String[]{Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY};
+        return new String[]{ENTITY_MANAGER, ERROR_REPORTER, SYMBOL_TABLE};
     }
 
     public void setProperty(String propertyId, Object value) throws XMLConfigurationException {
-        if(propertyId.equals(Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY)) {
-            fEntityResolver = (XMLEntityResolver)value;
-        }
     }
     
     public Boolean getFeatureDefault(String featureId) {
