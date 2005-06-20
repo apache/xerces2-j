@@ -108,21 +108,14 @@ Copyright:
     <echo message=" jar      --> generates the xercesImpl.jar file"/>
     <echo message=" sampjar  --> generates the xercesSamples.jar file"/>
     <echo message=" jars --> generates xercesImpl &amp; xercesSamples jars"/>
-    <echo message=" jar-dom3  --> 'jar' + DOM Level 3 support"/>
-    <echo message=" sampjar-dom3  --> 'sampjar' + DOM Level 3 support"/>
-    <echo message=" apijar-dom3   --> 'apijar' + DOM Level 3 support."/>
-    <echo message=" jars-dom3  --> 'jars' + DOM Level 3 support."/>
     <echo message=" jar-schema11 --> 'jar' + XML Schema 1.1 support"/>
     <echo message=" jars-schema11 --> 'jars' + XML Schema 1.1 support"/>
     <echo message=" docs     --> generates the HTML documentation"/>
     <echo message=" javadocs --> generates the API docs (needs Java 1.2 or higher)"/>
     <echo message=" samples  --> compiles the samples source code"/>
-    <echo message=" samples-dom3  --> 'samples' + DOM Level 3 support."/>
     <echo message=" compile  --> compiles the source code"/>
-    <echo message=" compile-dom3  --> 'compile' + DOM Level 3 support."/>
     <echo message=" deprecatedjar  --> generates the xerces.jar file"/>
     <echo message=" tests    --> compiles the tests source code"/>
-    <echo message=" tests-dom3    --> 'tests' + DOM Level 3 support."/>
     <echo message=" deprecatedjars --> generates xerces.jar and samples jar"/>
     <echo message=" dtdjars --> generates xercesImpl containing no schema support or WML/HTML DOM and xercesSamples &amp; xmlParserAPIs jars"/>
     <echo message=" dvjar --> generates a Schema datatype jar"/>
@@ -133,7 +126,6 @@ Copyright:
     <echo message=" all      --> generates the binary, source and tools distributions"/>
     <echo message=" deprecatedall --> generates the binary, source and tools distributions with the xerces.jar"/>
     <echo message=" test     --> runs a sanity test on the sample files"/>
-    <echo message=" test-dom3     --> 'test' + DOM Level 3 support."/>
     <echo message=" clean    --> cleans up all generated files and directories"/>
     <echo message=" usage    --> provides help on using the build tool (default)"/>
     <echo message=""/>
@@ -298,9 +290,7 @@ Copyright:
   <target name="samples" depends="compile">
     <mkdir dir="${build.samples}"/>
     <copy todir="${build.samples}" >
-        <fileset dir="${samples.dir}"
-           excludes="dom/DOMAddLines.java 
-                     dom/DOM3.java" />
+        <fileset dir="${samples.dir}"/>
     </copy>
     <xjavac srcdir="${build.samples}"
            destdir="${build.dest}"
@@ -317,7 +307,7 @@ Copyright:
     <mkdir dir="${build.tests}"/>
     <copy todir="${build.tests}">
         <fileset dir="${tests.dir}"
-         excludes="dom/rename/**, dom/registry/**" />
+         excludes="dom/rename/**" />
     </copy>
     <xjavac srcdir="${build.tests}"
            destdir="${build.dest}"
@@ -440,7 +430,8 @@ Copyright:
                            org.apache.xerces.jaxp.*,
                            org.apache.xerces.parsers,
                            org.apache.xerces.util,
-                           org.apache.xerces.xinclude'
+                           org.apache.xerces.xinclude,
+                           org.apache.xerces.xpointer'
       locale='en_US'
       sourcepath='${build.src}' destdir='${build.dir}/docs/javadocs/xerces2'
       classpath='${tools.dir}/${jar.resolver}'
@@ -823,6 +814,16 @@ Copyright:
           classname="xinclude.Test"
           failOnError="yes">
     </java>
+    <java fork="yes"
+          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
+          classname="dom.registry.Test"
+          failOnError="yes">
+    </java>
+    <java fork="yes"
+          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
+          classname="dom.dom3.Test"
+          failOnError="yes">
+    </java>    
   </target>
 
   <!-- =================================================================== -->
@@ -952,6 +953,7 @@ Copyright:
                         org/apache/xerces/parsers/XMLGrammarCachingConfiguration.java
                         org/apache/xerces/parsers/CachingParserPool.java
                         org/apache/xerces/xinclude/**
+                        org/apache/xerces/xpointer/**
                         org/apache/xerces/dom/ASModelImpl.java
                         org/apache/xerces/dom/ASDOMImplementationImpl.java
                         org/apache/xerces/impl/XML11D*.java
@@ -1167,351 +1169,6 @@ Copyright:
 
 
 
-  </target>
-  <!-- =================================================================== -->
-  <!-- Prepares the source code with DOM Level 3                           -->
-  <!-- =================================================================== -->
-  <target name="prepare-src-dom3" depends="prepare-common">
-    <copy file="${src.dir}/org/apache/xerces/parsers/org.apache.xerces.xni.parser.XMLParserConfiguration"
-      tofile="${build.dest}/META-INF/services/org.apache.xerces.xni.parser.XMLParserConfiguration"/>
-
-    <copy file="${src.dir}/org/apache/xerces/dom/org.w3c.dom.DOMImplementationSourceList"
-      tofile="${build.dest}/META-INF/services/org.w3c.dom.DOMImplementationSourceList"/>
-    
-    <!-- copy src files -->
-    <copy todir="${build.src}">
-        <fileset 
-            dir="${src.dir}"
-            includes="javax/**, org/**" 
-            excludes="**/classfiles_updated **/CVS* **/.#* **/XMLMessages.java
-                       **/DatatypeContentModel.java **/ComplexTypeInfo.java
-                       **/v1/** **/v2/**
-                       javax.xml.parsers.ConvertToURI.java
-                       org/apache/xerces/dom3/*.java
-                       org/apache/xerces/dom3/bootstrap/*.java
-                       org/w3c/dom/*.java">
-        </fileset>
-    </copy>
-
-    <!-- copy dom 3 src files -->
-    <copy todir="${build.src}">
-        <fileset 
-            dir="${src.dir}/dom3"
-            includes="org/**" 
-            excludes="**/classfiles_updated **/CVS* **/.#*">
-        </fileset>
-    </copy>
-    
-    <!-- substitute tokens as needed -->
-    <replace file="${build.dir}/src/org/apache/xerces/impl/Version.java" 
-             token="@@VERSION@@" value="${parser.Name} ${parser.Version}"/>
-
-
-       <!-- DOM level 3 hack: replace import statements-->
-     <replace file="${build.src}/org/apache/xerces/dom/NodeImpl.java"               	 	     	     token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-    <replace file="${build.src}/org/apache/xerces/dom/ElementImpl.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>    
-    <replace file="${build.src}/org/apache/xerces/dom/ElementNSImpl.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-    <replace file="${build.src}/org/apache/xerces/dom/AttrImpl.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-    <replace file="${build.src}/org/apache/xerces/dom/AttrNSImpl.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-    <replace file="${build.src}/org/apache/xerces/dom/DocumentImpl.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-    <replace file="${build.src}/org/apache/xerces/dom/DOMNormalizer.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-    <replace file="${build.src}/org/apache/xerces/dom/DOMConfigurationImpl.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-    <replace file="${build.src}/org/apache/xerces/dom/PSVIDocumentImpl.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-    <replace file="${build.src}/org/apache/xerces/dom/DOMLocatorImpl.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-    <replace file="${build.src}/org/apache/xerces/dom/DOMImplementationListImpl.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-    <replace file="${build.src}/org/apache/xerces/dom/DOMImplementationSourceImpl.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-    <replace file="${build.src}/org/apache/xerces/dom/DOMXSImplementationSourceImpl.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-    <replace file="${build.src}/org/apache/xerces/dom/DOMErrorImpl.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-    <replace file="${build.src}/org/apache/xerces/dom/CoreDocumentImpl.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>  
-    <replace file="${build.src}/org/apache/xerces/parsers/DOMParserImpl.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/> 
-    <replace file="${build.src}/org/apache/xerces/dom/ParentNode.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/> 
-    <replace file="${build.src}/org/apache/xerces/dom/DocumentTypeImpl.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/> 
-    <replace file="${build.src}/org/apache/xerces/parsers/AbstractDOMParser.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>                                   
-    <replace file="${build.src}/org/apache/xerces/util/DOMErrorHandlerWrapper.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>             
-    <replace file="${build.src}/org/apache/xml/serialize/XMLSerializer.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-    <replace file="${build.src}/org/apache/xml/serialize/BaseMarkupSerializer.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-    <replace file="${build.src}/org/apache/xml/serialize/DOMSerializerImpl.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>             
-    <replace file="${build.src}/org/apache/xml/serialize/XML11Serializer.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>             
-    <replace file="${build.src}/org/w3c/dom/ls/LSSerializer.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-    <replace file="${build.src}/org/w3c/dom/ls/LSParser.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-    <replace file="${build.src}/org/apache/xerces/impl/xs/opti/DefaultNode.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-    <replace file="${build.src}/org/apache/xerces/impl/xs/opti/AttrImpl.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-    <replace file="${build.src}/org/apache/xerces/impl/xs/opti/DefaultElement.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-    <replace file="${build.src}/org/apache/xerces/impl/xs/opti/DefaultDocument.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-    <replace file="${build.src}/org/apache/xerces/xs/XSLoader.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-   <replace file="${build.src}/org/apache/xerces/dom/DOMStringListImpl.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-   <replace file="${build.src}/org/apache/xerces/impl/xs/XSLoaderImpl.java"
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-   <replace file="${build.src}/org/apache/xerces/impl/xs/XMLSchemaLoader.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-  </target>
-
-  <!-- =================================================================== -->
-  <!-- Compiles the source directory with DOM Level 3                      -->
-  <!-- =================================================================== -->
-  <target name="compile-dom3" depends="prepare-src-dom3">
-    <copy todir="${build.dest}">
-      <fileset dir="${build.src}"
-        includes="**/*.res, **/*.properties">
-      </fileset>
-    </copy>
-
-    <xjavac srcdir="${build.src}"
-           destdir="${build.dest}"
-           debug="${debug}"
-           deprecation="${deprecation}"
-           optimize="${optimize}"
-           includeAntRuntime="false"
-           includeJavaRuntime="true"
-           classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}"/>
-  </target>
-
-  <!-- =================================================================== -->
-  <!-- Compiles the samples with DOM Level 3                               -->
-  <!-- =================================================================== -->
-  <target name="samples-dom3" depends="jar-dom3, apijar-dom3">
-    <mkdir dir="${build.samples}"/>
-    <copy todir="${build.samples}" >
-        <fileset dir="${samples.dir}" />
-    </copy>
-   <!-- DOM Level 3 hack: replace import statements-->
-    <replace file="${build.samples}/dom/ASBuilder.java"  
-             token="org.apache.xerces.dom3.DOMError" value="org.w3c.dom.DOMError"/>
-
-   <replace file="${build.samples}/dom/ASBuilder.java"  
-             token="org.apache.xerces.dom3.DOMErrorHandler" value="org.w3c.dom.DOMErrorHandler"/>
-
-   <replace file="${build.samples}/dom/ASBuilder.java"  
-             token="org.apache.xerces.dom3.DOMConfiguration" value="org.w3c.dom.DOMConfiguration"/>
-
-   <replace file="${build.samples}/xs/QueryXS.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/> 
- 
-   <xjavac srcdir="${build.samples}"
-           destdir="${build.dest}"
-           classpath="${build.dir}/classes:${build.dir}/dom3-${jar.parser}:${build.dir}/dom3-${jar.apis}:${tools.dir}/${jar.apis}"
-           debug="${debug}"
-           includeAntRuntime="false"
-           includeJavaRuntime="true"/>
-
- 
-    
-  </target>
-
-  <!-- =================================================================== -->
-  <!-- Compiles the tests with DOM Level 3                                 -->
-  <!-- =================================================================== -->
-  <target name="tests-dom3" depends="samples-dom3">
-    <mkdir dir="${build.tests}"/>
-    <copy todir="${build.tests}">
-        <fileset dir="${tests.dir}" />
-    </copy>
-     <replace file="${build.tests}/dom/mem/Test.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-     <replace file="${build.tests}/dom/dom3/Test.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-     <replace file="${build.tests}/dom/ids/Test.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-     <replace file="${build.tests}/thread/Test.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-     <replace file="${build.tests}/dom/serialize/TestXmlns.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
-
-    <xjavac srcdir="${build.tests}"
-           destdir="${build.dest}"
-           classpath="${build.dir}/dom3-${jar.apis}:${build.dir}/classes:./tools/junit.jar"
-           debug="${debug}"
-           includeAntRuntime="false"
-           includeJavaRuntime="true"/>
-  </target>
-
-  <!-- =================================================================== -->
-  <!-- Do a sanity test using samples with DOM Level 3                     -->
-  <!-- =================================================================== -->
-  <target name="test-dom3" depends="tests-dom3">
-    <echo message="Performing sanity test for ${parser.Name} ${parser.Version} ..." />
-    <echo message="Using classpath=&apos;${build.dir}/classes&apos;" />
-    <echo message="Running sax.Counter ..." />
-   <java fork="yes"
-          classpath="${build.dir}/dom3-${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
-          classname="sax.Counter"
-          failOnError="yes">
-       <arg value="${data.dir}/personal.xml"/>
-    </java>
-    <echo message="Running sax.Writer ..." />
-    <java fork="yes"
-          classpath="${build.dir}/dom3-${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes" 
-          classname="sax.Writer"
-          failOnError="yes">
-       <arg value="${data.dir}/personal.xml"/>
-    </java>
-    <echo message="Running dom.Counter ..." />
-    <java fork="yes"
-          classpath="${build.dir}/dom3-${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
-          classname="dom.Counter"
-          failOnError="yes">
-       <arg value="${data.dir}/personal.xml"/>
-    </java>
-    <echo message="Running dom.Writer ..." />
-    <java fork="yes"
-          classpath="${build.dir}/dom3-${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes" 
-          classname="dom.Writer"
-          failOnError="yes">
-       <arg value="${data.dir}/personal.xml"/>
-    </java>
-
-    <echo message="Running QueryXS ..." />
-    <java fork="yes"
-          classpath="${build.dir}/dom3-${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
-          classname="xs.QueryXS">
-       <arg value="${data.dir}/personal.xsd"/>
-    </java>
-
-    <!-- The following are samples but not command-line applications.
-    <echo message="Running IteratorView ..." />
-    <java fork="yes"
-          classpath="${build.dir}/dom3-${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
-          classname="dom.traversal.IteratorView"
-          failOnError="yes"
-          args="${data.dir}/personal.xml"/>
-    <echo message="Running TreeWalkerView ..." />
-    <java fork="yes"
-          classpath="${build.dir}/dom3-${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
-          classname="dom.traversal.TreeWalkerView"
-          failOnError="yes"
-          args="${data.dir}/personal.xml"/>
-    <echo message="Running TreeViewer ..." />
-    <java fork="yes"
-          classpath="${build.dir}/dom3-${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
-          classname="dom.TreeViewer"
-          failOnError="yes"
-          args="${data.dir}/personal.xml"/>
-     -->
-    <echo message="Running dom.mem.Test ..." />
-    <java fork="yes"
-          classpath="${build.dir}/dom3-${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
-          classname="dom.mem.Test"
-          failOnError="yes">
-    </java>
-    <echo message="Running thread.Test ..." />
-    <java fork="yes"
-          classpath="${build.dir}/dom3-${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
-          classname="thread.Test"
-          failOnError="yes">
-           <arg value="-dom"/>
-           <arg value="-threads"/>
-           <arg value="20"/>
-           <arg value="-time"/>
-           <arg value="10"/>
-           <arg value="${data.dir}/personal-schema.xml"/>
-
-    </java>
-
-    <echo message="Running dom.ids.Test ..." />
-    <java fork="yes"
-          classpath="${build.dir}/dom3-${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
-          classname="dom.ids.Test"
-          failOnError="yes">
-    </java>
-    <echo message="Running dom.DTest ..." />
-    <java fork="yes"
-          classpath="${build.dir}/dom3-${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
-          classname="dom.DTest"
-          failOnError="yes">
-    </java>
-    <echo message="Running dom.serialization.Test ..." />
-    <java fork="yes"
-          classpath="${build.dir}/dom3-${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
-          classname="dom.serialization.Test"
-          failOnError="yes">
-           <arg value="${data.dir}/personal.xml"/>
-           <arg value="out.xml"/>
-    </java>
-    <java fork="yes"
-          classpath="${build.dir}/dom3-${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
-          classname="dom.registry.Test"
-          failOnError="yes">
-    </java>
-
-    <java fork="yes"
-          classpath="${build.dir}/dom3-${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
-          classname="dom.dom3.Test"
-          failOnError="yes">
-    </java>
-
-  </target>
-
-  <!-- =================================================================== -->
-  <!-- Creates the implementation class package with DOM Level 3           -->
-  <!-- =================================================================== -->
-  <target name="jar-dom3" depends="compile-dom3">
-    <jar jarfile="${build.dir}/dom3-${jar.parser}"
-         basedir="${build.dest}"
-         compress="true"
-         includes="org/apache/**, META-INF/**" />
-  </target>
-
-  <!-- =================================================================== -->
-  <!-- Creates the API class package with DOM Level 3                      -->
-  <!-- =================================================================== -->
-  <target name="apijar-dom3" depends="compile-dom3">
-    <copy file="${tools.dir}/${jar.apis}"
-        tofile="${build.dir}/dom3-${jar.apis}"/>
-    <jar jarfile="${build.dir}/dom3-${jar.apis}"
-         basedir="${build.dest}"
-         compress="true"
-         includes="org/xml/**, org/w3c/**"
-         update="yes"/>
-  </target>
-
-
-  <!-- =================================================================== -->
-  <!-- Creates the samples package with DOM Level 3                        -->
-  <!-- =================================================================== -->
-  <target name="sampjar-dom3" depends="samples-dom3">
-    <jar jarfile="${build.dir}/${jar.samples}"
-         basedir="${build.dest}"
-         compress="true"
-         includes="dom/**,sax/**,socket/**,ui/**,xni/**,xs/**"/>
-  </target>
-
-  <!-- =================================================================== -->
-  <!-- Builds xercesImpl, xmlParserAPIs, and sample jars with DOM Level 3  -->
-  <!-- =================================================================== -->
-  <target name="jars-dom3" depends="jar-dom3, apijar-dom3, sampjar-dom3">
-    <!-- support xml-commons resolver -->
-    <copy file="${tools.dir}/${jar.resolver}" tofile="${build.dir}/${jar.resolver}"/>
   </target>
 
   <!-- =================================================================== -->
