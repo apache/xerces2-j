@@ -30,9 +30,11 @@ import org.apache.xerces.impl.xs.XMLSchemaValidator;
 import org.apache.xerces.jaxp.validation.XSGrammarPoolContainer;
 import org.apache.xerces.parsers.DOMParser;
 import org.apache.xerces.util.SecurityManager;
+import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLDocumentSource;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
@@ -149,17 +151,24 @@ public class DocumentBuilderImpl extends DocumentBuilder
         
         this.grammar = dbf.getSchema();
         if (grammar != null) {
+            XMLParserConfiguration config = domParser.getXMLParserConfiguration();
+            XMLComponent validatorComponent = null;
+            /** For Xerces grammars, use built-in schema validator. **/
             if (grammar instanceof XSGrammarPoolContainer) {
-                XMLParserConfiguration config = domParser.getXMLParserConfiguration();
-                XMLSchemaValidator validator = new XMLSchemaValidator();
-                config.addRecognizedFeatures(validator.getRecognizedFeatures());
-                config.addRecognizedProperties(validator.getRecognizedProperties());
-                config.setDocumentHandler(validator);
-                validator.setDocumentHandler(domParser);
-                domParser.setDocumentSource(validator);
-                fSchemaValidator = validator;
+                validatorComponent = new XMLSchemaValidator();
                 fSchemaValidatorComponentManager = new SchemaValidatorConfiguration(config, (XSGrammarPoolContainer) grammar);
             }
+            /** For third party grammars, use the JAXP validator component. **/
+            else {
+                validatorComponent = new JAXPValidatorComponent(grammar.newValidatorHandler());
+                fSchemaValidatorComponentManager = config;
+            }
+            config.addRecognizedFeatures(validatorComponent.getRecognizedFeatures());
+            config.addRecognizedProperties(validatorComponent.getRecognizedProperties());
+            config.setDocumentHandler((XMLDocumentHandler) validatorComponent);
+            ((XMLDocumentSource)validatorComponent).setDocumentHandler(domParser);
+            domParser.setDocumentSource((XMLDocumentSource) validatorComponent);
+            fSchemaValidator = validatorComponent;
         }
 
         // Set features

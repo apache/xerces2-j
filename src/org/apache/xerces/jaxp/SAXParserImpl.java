@@ -32,9 +32,11 @@ import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.jaxp.validation.XSGrammarPoolContainer;
 import org.apache.xerces.util.SAXMessageFormatter;
 import org.apache.xerces.util.SecurityManager;
+import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLDocumentSource;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 import org.apache.xerces.xs.AttributePSVI;
 import org.apache.xerces.xs.ElementPSVI;
@@ -156,17 +158,24 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
         // Get the Schema object from the factory
         this.grammar = spf.getSchema();
         if (grammar != null) {
+            XMLParserConfiguration config = xmlReader.getXMLParserConfiguration();
+            XMLComponent validatorComponent = null;
+            /** For Xerces grammars, use built-in schema validator. **/
             if (grammar instanceof XSGrammarPoolContainer) {
-                XMLParserConfiguration config = xmlReader.getXMLParserConfiguration();
-                XMLSchemaValidator validator = new XMLSchemaValidator();
-                config.addRecognizedFeatures(validator.getRecognizedFeatures());
-                config.addRecognizedProperties(validator.getRecognizedProperties());
-                config.setDocumentHandler(validator);
-                validator.setDocumentHandler(xmlReader);
-                xmlReader.setDocumentSource(validator);
-                fSchemaValidator = validator;
+                validatorComponent = new XMLSchemaValidator();
                 fSchemaValidatorComponentManager = new SchemaValidatorConfiguration(config, (XSGrammarPoolContainer) grammar);
             }
+            /** For third party grammars, use the JAXP validator component. **/
+            else {
+                validatorComponent = new JAXPValidatorComponent(grammar.newValidatorHandler());
+                fSchemaValidatorComponentManager = config;
+            }
+            config.addRecognizedFeatures(validatorComponent.getRecognizedFeatures());
+            config.addRecognizedProperties(validatorComponent.getRecognizedProperties());
+            config.setDocumentHandler((XMLDocumentHandler) validatorComponent);
+            ((XMLDocumentSource)validatorComponent).setDocumentHandler(xmlReader);
+            xmlReader.setDocumentSource((XMLDocumentSource) validatorComponent);
+            fSchemaValidator = validatorComponent;
         }
         
         // Initial EntityResolver
