@@ -814,11 +814,13 @@ Copyright:
           classname="xinclude.Test"
           failOnError="yes">
     </java>
+    <echo message="Running dom.registry.Test ..." />
     <java fork="yes"
           classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
           classname="dom.registry.Test"
           failOnError="yes">
     </java>
+    <echo message="Running dom.dom3.Test ..." />
     <java fork="yes"
           classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
           classname="dom.dom3.Test"
