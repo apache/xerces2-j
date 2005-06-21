@@ -17,7 +17,6 @@
 package org.apache.xerces.jaxp;
 
 import java.util.Hashtable;
-import java.util.Locale;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -25,7 +24,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.validation.Schema;
 
-import org.apache.xerces.dom.DOMMessageFormatter;
 import org.apache.xerces.parsers.DOMParser;
 import org.apache.xerces.util.SAXMessageFormatter;
 import org.xml.sax.SAXException;
