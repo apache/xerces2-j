@@ -27,6 +27,7 @@ import javax.xml.XMLConstants;
 import javax.xml.validation.Schema;
 
 import org.apache.xerces.impl.Constants;
+import org.apache.xerces.impl.validation.ValidationManager;
 import org.apache.xerces.impl.xs.XMLSchemaValidator;
 import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.jaxp.validation.XSGrammarPoolContainer;
@@ -36,6 +37,7 @@ import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLDTDFilter;
 import org.apache.xerces.xni.parser.XMLDocumentSource;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 import org.apache.xerces.xs.AttributePSVI;
@@ -92,6 +94,7 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
     
     private XMLComponent fSchemaValidator;
     private XMLComponentManager fSchemaValidatorComponentManager;
+    private ValidationManager fSchemaValidationManager;
     
     /** Initial ErrorHandler */
     private final ErrorHandler fInitErrorHandler;
@@ -163,7 +166,13 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
             /** For Xerces grammars, use built-in schema validator. **/
             if (grammar instanceof XSGrammarPoolContainer) {
                 validatorComponent = new XMLSchemaValidator();
-                fSchemaValidatorComponentManager = new SchemaValidatorConfiguration(config, (XSGrammarPoolContainer) grammar);
+                fSchemaValidationManager = new ValidationManager();
+                XMLDTDFilter entityHandler = new UnparsedEntityHandler(fSchemaValidationManager);
+                config.setDTDHandler(entityHandler);
+                entityHandler.setDTDHandler(xmlReader);
+                xmlReader.setDTDSource(entityHandler);
+                fSchemaValidatorComponentManager = new SchemaValidatorConfiguration(config, 
+                        (XSGrammarPoolContainer) grammar, fSchemaValidationManager);
             }
             /** For third party grammars, use the JAXP validator component. **/
             else {
@@ -505,6 +514,9 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
         public void parse(InputSource inputSource)
             throws SAXException, IOException {
             if (fSAXParser != null && fSAXParser.fSchemaValidator != null) {
+                if (fSAXParser.fSchemaValidationManager != null) {
+                    fSAXParser.fSchemaValidationManager.reset();
+                }
                 resetSchemaValidator();
             }
             super.parse(inputSource);
@@ -513,6 +525,9 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
         public void parse(String systemId) 
             throws SAXException, IOException {
             if (fSAXParser != null && fSAXParser.fSchemaValidator != null) {
+                if (fSAXParser.fSchemaValidationManager != null) {
+                    fSAXParser.fSchemaValidationManager.reset();
+                }
                 resetSchemaValidator();
             }
             super.parse(systemId);

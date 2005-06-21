@@ -18,6 +18,7 @@ package org.apache.xerces.jaxp;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.validation.ValidationManager;
 import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.jaxp.validation.XSGrammarPoolContainer;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
@@ -55,6 +56,10 @@ class SchemaValidatorConfiguration implements XMLComponentManager {
     private static final String ERROR_REPORTER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
     
+    /** Property identifier: validation manager. */
+    private static final String VALIDATION_MANAGER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATION_MANAGER_PROPERTY;
+    
     /** Property identifier: grammar pool. */
     private static final String XMLGRAMMAR_POOL =
         Constants.XERCES_PROPERTY_PREFIX + Constants.XMLGRAMMAR_POOL_PROPERTY;
@@ -67,7 +72,7 @@ class SchemaValidatorConfiguration implements XMLComponentManager {
     private final XMLComponentManager fParentComponentManager;
     
     /** The Schema's grammar pool. **/
-    private final XMLGrammarPool fGrammarPool;  
+    private final XMLGrammarPool fGrammarPool;
 
     /** 
      * Tracks whether the validator should use components from 
@@ -75,11 +80,15 @@ class SchemaValidatorConfiguration implements XMLComponentManager {
      */
     private final boolean fUseGrammarPoolOnly;
     
+    /** Validation manager. */
+    private final ValidationManager fValidationManager;
+    
     public SchemaValidatorConfiguration(XMLComponentManager parentManager, 
-            XSGrammarPoolContainer grammarContainer) {
+            XSGrammarPoolContainer grammarContainer, ValidationManager validationManager) {
         fParentComponentManager = parentManager;
         fGrammarPool = grammarContainer.getGrammarPool();
         fUseGrammarPoolOnly = grammarContainer.isFullyComposed();
+        fValidationManager = validationManager;
         // add schema message formatter to error reporter
         try {
             XMLErrorReporter errorReporter = (XMLErrorReporter) fParentComponentManager.getProperty(ERROR_REPORTER);
@@ -133,6 +142,9 @@ class SchemaValidatorConfiguration implements XMLComponentManager {
             throws XMLConfigurationException {
         if (XMLGRAMMAR_POOL.equals(propertyId)) {
             return fGrammarPool;
+        }
+        else if (VALIDATION_MANAGER.equals(propertyId)) {
+            return fValidationManager;
         }
         return fParentComponentManager.getProperty(propertyId);
     }

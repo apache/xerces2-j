@@ -26,6 +26,7 @@ import javax.xml.validation.Schema;
 import org.apache.xerces.dom.DOMImplementationImpl;
 import org.apache.xerces.dom.DOMMessageFormatter;
 import org.apache.xerces.impl.Constants;
+import org.apache.xerces.impl.validation.ValidationManager;
 import org.apache.xerces.impl.xs.XMLSchemaValidator;
 import org.apache.xerces.jaxp.validation.XSGrammarPoolContainer;
 import org.apache.xerces.parsers.DOMParser;
@@ -34,6 +35,7 @@ import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLDTDFilter;
 import org.apache.xerces.xni.parser.XMLDocumentSource;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 import org.w3c.dom.DOMImplementation;
@@ -94,6 +96,7 @@ public class DocumentBuilderImpl extends DocumentBuilder
     
     private XMLComponent fSchemaValidator;
     private XMLComponentManager fSchemaValidatorComponentManager;
+    private ValidationManager fSchemaValidationManager;
     
     /** Initial ErrorHandler */
     private final ErrorHandler fInitErrorHandler;
@@ -156,7 +159,13 @@ public class DocumentBuilderImpl extends DocumentBuilder
             /** For Xerces grammars, use built-in schema validator. **/
             if (grammar instanceof XSGrammarPoolContainer) {
                 validatorComponent = new XMLSchemaValidator();
-                fSchemaValidatorComponentManager = new SchemaValidatorConfiguration(config, (XSGrammarPoolContainer) grammar);
+                fSchemaValidationManager = new ValidationManager();
+                XMLDTDFilter entityHandler = new UnparsedEntityHandler(fSchemaValidationManager);
+                config.setDTDHandler(entityHandler);
+                entityHandler.setDTDHandler(domParser);
+                domParser.setDTDSource(entityHandler);
+                fSchemaValidatorComponentManager = new SchemaValidatorConfiguration(config, 
+                        (XSGrammarPoolContainer) grammar, fSchemaValidationManager);
             }
             /** For third party grammars, use the JAXP validator component. **/
             else {
@@ -266,6 +275,9 @@ public class DocumentBuilderImpl extends DocumentBuilder
                 "jaxp-null-input-source", null));
         }
         if (fSchemaValidator != null) {
+            if (fSchemaValidationManager != null) {
+                fSchemaValidationManager.reset();
+            }
             resetSchemaValidator();
         }
         domParser.parse(is);
