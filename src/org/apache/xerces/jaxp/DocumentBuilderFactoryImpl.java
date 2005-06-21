@@ -25,6 +25,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.validation.Schema;
 
+import org.apache.xerces.dom.DOMMessageFormatter;
 import org.apache.xerces.parsers.DOMParser;
 import org.apache.xerces.util.SAXMessageFormatter;
 import org.xml.sax.SAXException;
@@ -55,6 +56,20 @@ public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
     public DocumentBuilder newDocumentBuilder()
         throws ParserConfigurationException 
     {
+        /** Check that if a Schema has been specified that neither of the schema properties have been set. */
+        if (grammar != null && attributes != null) {
+            if (attributes.containsKey(JAXPConstants.JAXP_SCHEMA_LANGUAGE)) {
+                throw new ParserConfigurationException(
+                        SAXMessageFormatter.formatMessage(null, 
+                        "schema-already-specified", new Object[] {JAXPConstants.JAXP_SCHEMA_LANGUAGE}));
+            }
+            else if (attributes.containsKey(JAXPConstants.JAXP_SCHEMA_SOURCE)) {
+                throw new ParserConfigurationException(
+                        SAXMessageFormatter.formatMessage(null, 
+                        "schema-already-specified", new Object[] {JAXPConstants.JAXP_SCHEMA_SOURCE}));                
+            }
+        }
+        
         try {
             return new DocumentBuilderImpl(this, attributes, features, fSecureProcess);
         } catch (SAXException se) {
