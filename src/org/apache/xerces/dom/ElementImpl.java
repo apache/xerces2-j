@@ -1062,7 +1062,10 @@ public class ElementImpl
 	 * @return TypeInfo
 	 */
     public TypeInfo getSchemaTypeInfo(){
-      return this;
+        if(needsSyncData()) {
+            synchronizeData();
+        }
+        return this;
     }
 
     //
