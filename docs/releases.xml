@@ -17,9 +17,29 @@
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
-  <release version='&ParserName; TBD'>
-   <desc>TBD... This release incorporates two minor changes to the Xerces Native Interface.</desc>
+  <release version='&ParserName; 2.7.0'>
+   <desc>
+    <p>This release provides a complete implementation of the parser related 
+    portions of JAXP 1.3 and also brings Xerces into compliance with SAX 2.0.2,
+    the DOM Level 3 Core and Load/Save W3C Recommendations, the XML Inclusions
+    (XInclude) Version 1.0 W3C Recommendation and the XML Schema 1.0 Structures 
+    and Datatypes Second Edition W3C Recommendations.</p>
+    <p>&ParserName; 2.7.0 incorporates two minor changes to the Xerces Native Interface
+    (documented below). A new package <code>org.apache.xerces.xs.datatypes</code> has
+    been added to Xerces' XML Schema API that provides a full schema datatype to 
+    object mapping. In addition, in this release we introduced many new parser
+    features, improved parser performance in several areas and fixed many bugs.
+    </p>
+   </desc>
    <changes>
+    <add>
+     <note>
+      Implemented the following packages defined by JAXP 1.3: 
+      javax.xml.datatype, javax.xml.parsers and javax.xml.validation.
+     </note>
+     <submitter name='Neeraj Bajaj, Neil Delima, Joseph Fialli, Michael Glavassevich, Kohsuke Kawaguchi, 
+                      Ankit Pasricha, Jeff Suttor, K. Venugopal, Jack Z. Wang, Arun Yadav'/>
+    </add>
     <add>
      <note>
       Defined and implemented interfaces (<code>org.apache.xerces.xs.datatypes</code>) for accessing actual values.
