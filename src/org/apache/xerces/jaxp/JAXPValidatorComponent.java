@@ -80,7 +80,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Kohsuke Kawaguchi (kohsuke.kawaguchi@sun.com)
  * @version $Id$
  */
-class JAXPValidatorComponent 
+final class JAXPValidatorComponent 
     extends TeeXMLDocumentFilterImpl implements XMLComponent {
     
     /** Property identifier: entity manager. */

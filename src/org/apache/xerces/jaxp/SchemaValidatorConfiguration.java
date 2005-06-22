@@ -30,7 +30,7 @@ import org.apache.xerces.xni.parser.XMLConfigurationException;
  * 
  * @version $Id$
  */
-class SchemaValidatorConfiguration implements XMLComponentManager {
+final class SchemaValidatorConfiguration implements XMLComponentManager {
     
     // feature identifiers
     

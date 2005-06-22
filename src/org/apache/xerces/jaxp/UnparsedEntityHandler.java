@@ -37,7 +37,7 @@ import org.apache.xerces.xni.parser.XMLDTDSource;
  * @author Michael Glavassevich, IBM
  * @version $Id$
  */
-class UnparsedEntityHandler implements XMLDTDFilter, EntityState {
+final class UnparsedEntityHandler implements XMLDTDFilter, EntityState {
 
     /** DTD source and handler. **/
     private XMLDTDSource fDTDSource;
