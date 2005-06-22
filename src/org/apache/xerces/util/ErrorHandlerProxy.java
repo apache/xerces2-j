@@ -36,6 +36,8 @@ import org.xml.sax.SAXParseException;
  * and update all of them whenever it is changed, IMO.
  * 
  * @author Kohsuke Kawaguchi (kohsuke.kawaguchi@sun.com)
+ * 
+ * @version $Id$
  */
 public abstract class ErrorHandlerProxy implements ErrorHandler {
     
