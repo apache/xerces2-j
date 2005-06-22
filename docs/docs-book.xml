@@ -21,6 +21,8 @@
  <separator/>
  <document label='Readme' title='&ParserNameLong; Readme'
            id='index' source='readme.xml'/>
+ <document label="Charter" title='Xerces Project Charter'
+           id='charter' source='charter.xml'/>
  <document label='Installation' title='Installation Instructions'
            id='install' source='install.xml'/>
  <external label='Download' href='http://xml.apache.org/xerces2-j/download.cgi'/>
@@ -89,11 +91,10 @@
  <document label='Limitations' title='Parser Limitations'
            id='limitations' source='limitations.xml'/>
  <separator/>
-
+ 
  <releases label='Release Info' title='Release Information'
            id='releases' source='releases.xml'/>
-
-
  <document label='Report a Bug' title='Reporting Bugs'
            id='jira' source='bugzilla.xml'/>
+
 </book>
