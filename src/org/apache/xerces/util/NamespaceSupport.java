@@ -260,6 +260,31 @@ public class NamespaceSupport implements NamespaceContext {
 		return new Prefixes(fPrefixes, count);
 	}
     
+    /*
+     * non-NamespaceContext methods
+     */
+    
+    /** 
+     * Checks whether a binding or unbinding for
+     * the given prefix exists in the context.
+     * 
+     * @param prefix The prefix to look up. 
+     * 
+     * @return true if the given prefix exists in the context
+     */
+    public boolean containsPrefix(String prefix) {
+
+        // find prefix in current context
+        for (int i = fNamespaceSize; i > 0; i -= 2) {
+            if (fNamespace[i - 2] == prefix) {
+                return true;
+            }
+        }
+        
+        // prefix not found
+        return false;
+    }
+    
     protected final class Prefixes implements Enumeration {
         private String[] prefixes;
         private int counter = 0;

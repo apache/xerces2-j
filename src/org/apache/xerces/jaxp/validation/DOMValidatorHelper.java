@@ -34,6 +34,7 @@ import org.apache.xerces.impl.validation.EntityState;
 import org.apache.xerces.impl.validation.ValidationManager;
 import org.apache.xerces.impl.xs.XMLSchemaValidator;
 import org.apache.xerces.impl.xs.util.SimpleLocator;
+import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.util.XMLSymbols;
@@ -102,7 +103,7 @@ final class DOMValidatorHelper implements ValidatorHelper, EntityState {
     private XMLErrorReporter fErrorReporter;
     
     /** The namespace context of this document: stores namespaces in scope. **/
-    private NamespaceContext fNamespaceContext;
+    private NamespaceSupport fNamespaceContext;
     
     /** The namespace context of the DOMSource, includes context from ancestor nodes. **/
     private DOMNamespaceContext fDOMNamespaceContext = new DOMNamespaceContext();
@@ -152,7 +153,7 @@ final class DOMValidatorHelper implements ValidatorHelper, EntityState {
     public DOMValidatorHelper(XMLSchemaValidatorComponentManager componentManager) {
         fComponentManager = componentManager;
         fErrorReporter = (XMLErrorReporter) fComponentManager.getProperty(ERROR_REPORTER);
-        fNamespaceContext = (NamespaceContext) fComponentManager.getProperty(NAMESPACE_CONTEXT);
+        fNamespaceContext = (NamespaceSupport) fComponentManager.getProperty(NAMESPACE_CONTEXT);
         fSchemaValidator = (XMLSchemaValidator) fComponentManager.getProperty(SCHEMA_VALIDATOR);
         fSymbolTable = (SymbolTable) fComponentManager.getProperty(SYMBOL_TABLE);        
         fValidationManager = (ValidationManager) fComponentManager.getProperty(VALIDATION_MANAGER);
@@ -421,10 +422,10 @@ final class DOMValidatorHelper implements ValidatorHelper, EntityState {
             if (fAttributeQName.uri == NamespaceContext.XMLNS_URI) {
                 // process namespace attribute
                 if (fAttributeQName.prefix == XMLSymbols.PREFIX_XMLNS) {
-                    fNamespaceContext.declarePrefix(fAttributeQName.localpart, fSymbolTable.addSymbol(value));
+                    fNamespaceContext.declarePrefix(fAttributeQName.localpart, value.length() != 0 ? fSymbolTable.addSymbol(value) : null);
                 }
                 else {
-                    fNamespaceContext.declarePrefix(XMLSymbols.EMPTY_STRING, fSymbolTable.addSymbol(value));
+                    fNamespaceContext.declarePrefix(XMLSymbols.EMPTY_STRING, value.length() != 0 ? fSymbolTable.addSymbol(value) : null);
                 }
             }
         }
@@ -500,7 +501,10 @@ final class DOMValidatorHelper implements ValidatorHelper, EntityState {
                     fillNamespaceContext();
                     fDOMContextBuilt = true;
                 }
-                uri = getURI0(prefix);
+                if (fNamespaceSize > 0 && 
+                    !fNamespaceContext.containsPrefix(prefix)) {
+                    uri = getURI0(prefix);
+                }
             }
             return uri;
         }
@@ -546,10 +550,10 @@ final class DOMValidatorHelper implements ValidatorHelper, EntityState {
                             if (fAttributeQName.uri == NamespaceContext.XMLNS_URI) {
                                 // process namespace attribute
                                 if (fAttributeQName.prefix == XMLSymbols.PREFIX_XMLNS) {
-                                    declarePrefix0(fAttributeQName.localpart, fSymbolTable.addSymbol(value));
+                                    declarePrefix0(fAttributeQName.localpart, value.length() != 0 ? fSymbolTable.addSymbol(value) : null);
                                 }
                                 else {
-                                    declarePrefix0(XMLSymbols.EMPTY_STRING, fSymbolTable.addSymbol(value));
+                                    declarePrefix0(XMLSymbols.EMPTY_STRING, value.length() != 0 ? fSymbolTable.addSymbol(value) : null);
                                 }
                             }
                         }
