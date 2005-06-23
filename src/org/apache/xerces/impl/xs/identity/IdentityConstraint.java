@@ -194,7 +194,7 @@ public abstract class IdentityConstraint implements XSIDCDefinition {
      * {selector} A restricted XPath ([XPath]) expression
      */
     public String getSelectorStr() {
-        return fSelector.toString();
+        return (fSelector != null) ? fSelector.toString() : null;
     }
 
     /**
