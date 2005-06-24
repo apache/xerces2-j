@@ -23,34 +23,17 @@
            id='index' source='readme.xml'/>
  <document label="Charter" title='Xerces Project Charter'
            id='charter' source='charter.xml'/>
+ <releases label='Release Info' title='Release Information'
+           id='releases' source='releases.xml'/>
+ <separator/>
  <document label='Installation' title='Installation Instructions'
            id='install' source='install.xml'/>
  <external label='Download' href='http://xml.apache.org/xerces2-j/download.cgi'/>
  <hidden  title='Download' id='download' source='download.xml'/>
- <external label='Source Repository'
-           href='http://xml.apache.org/websrc/cvsweb.cgi/xml-xerces/java/'/>
+ <document label='Bug-Reporting' title='Reporting Bugs'
+           id='jira' source='bugzilla.xml'/>
+
  <separator/>
- <document label='Samples' title='Sample Programs'
-           id='samples' source='samples.xml'/>
- <hidden title='DOM Samples' id='samples-dom' source='samples-dom.xml'/>
- <hidden title='SAX Samples' id='samples-sax' source='samples-sax.xml'/>
- <hidden title='JAXP Samples' id='samples-jaxp' source='samples-jaxp.xml'/>
- <hidden title='Socket Samples' id='samples-socket' source='samples-socket.xml'/>
- <hidden title='User Interface Samples'
-         id='samples-ui' source='samples-ui.xml'/>
- <hidden title='XNI Samples' id='samples-xni' source='samples-xni.xml'/>
- <document label='API JavaDoc' title='API JavaDoc'
-           id='api' source='api.xml'/>
- <!--
- <external label='API JavaDoc' href='apiDocs/index.html'/>
- -->
- <hidden title='XNI Design Details' 
-         id='xni-design' source='xni-design.xml'/>
- <hidden title='XNI Core Interfaces' 
-         id='xni-core' source='xni-core.xml'/>
- <hidden title='XNI Parser Configuration'
-         id='xni-config' source='xni-config.xml'/>
- <hidden title='Xerces2 Components' id='xni-xerces2' source='xni-xerces2.xml'/>
  <faqs label='FAQs' title='Frequently Asked Questions' id='faqs'>
   <faq title='Common FAQs' id='faq-common' source='faq-common.xml'/>
   <faq title='General FAQs' id='faq-general' source='faq-general.xml'/>
@@ -75,6 +58,28 @@
        id='faq-performance' source='faq-performance.xml'/>
   <faq title='FAQs for Contributors' id='faq-contributing' source='faq-contributing.xml'/>
  </faqs>
+ <document label='Samples' title='Sample Programs'
+           id='samples' source='samples.xml'/>
+ <hidden title='DOM Samples' id='samples-dom' source='samples-dom.xml'/>
+ <hidden title='SAX Samples' id='samples-sax' source='samples-sax.xml'/>
+ <hidden title='JAXP Samples' id='samples-jaxp' source='samples-jaxp.xml'/>
+ <hidden title='Socket Samples' id='samples-socket' source='samples-socket.xml'/>
+ <hidden title='User Interface Samples'
+         id='samples-ui' source='samples-ui.xml'/>
+ <hidden title='XNI Samples' id='samples-xni' source='samples-xni.xml'/>
+ <document label='API JavaDoc' title='API JavaDoc'
+           id='api' source='api.xml'/>
+ <!--
+ <external label='API JavaDoc' href='apiDocs/index.html'/>
+ -->
+ <hidden title='XNI Design Details' 
+         id='xni-design' source='xni-design.xml'/>
+ <hidden title='XNI Core Interfaces' 
+         id='xni-core' source='xni-core.xml'/>
+ <hidden title='XNI Parser Configuration'
+         id='xni-config' source='xni-config.xml'/>
+ <hidden title='Xerces2 Components' id='xni-xerces2' source='xni-xerces2.xml'/>
+
  <separator/>
  <settings title='Parser Features' label='Features' 
            id='features' source='features.xml'/>
@@ -92,9 +97,11 @@
            id='limitations' source='limitations.xml'/>
  <separator/>
  
- <releases label='Release Info' title='Release Information'
-           id='releases' source='releases.xml'/>
- <document label='Report a Bug' title='Reporting Bugs'
-           id='jira' source='bugzilla.xml'/>
+ <external label='Source Repository'
+           href='http://xml.apache.org/websrc/cvsweb.cgi/xml-xerces/java/'/>
+ <external label='User Mail Archive'
+           href='http://marc.theaimsgroup.com/?l=xerces-j-user'/>
+ <external label='Dev Mail Archive'
+           href='http://marc.theaimsgroup.com/?l=xerces-j-dev'/>
 
 </book>
