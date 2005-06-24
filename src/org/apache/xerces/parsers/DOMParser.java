@@ -273,13 +273,26 @@ public class DOMParser
     public void setEntityResolver(EntityResolver resolver) {
 
         try {
+            XMLEntityResolver xer = (XMLEntityResolver) fConfiguration.getProperty(ENTITY_RESOLVER);
             if (fUseEntityResolver2 && resolver instanceof EntityResolver2) {
-                fConfiguration.setProperty(ENTITY_RESOLVER,
-                    new EntityResolver2Wrapper((EntityResolver2) resolver));
+                if (xer instanceof EntityResolver2Wrapper) {
+                    EntityResolver2Wrapper er2w = (EntityResolver2Wrapper) xer;
+                    er2w.setEntityResolver((EntityResolver2) resolver);
+                }
+                else {
+                    fConfiguration.setProperty(ENTITY_RESOLVER,
+                            new EntityResolver2Wrapper((EntityResolver2) resolver));
+                }
             }
             else {
-                fConfiguration.setProperty(ENTITY_RESOLVER,
-                    new EntityResolverWrapper(resolver));
+                if (xer instanceof EntityResolverWrapper) {
+                    EntityResolverWrapper erw = (EntityResolverWrapper) xer;
+                    erw.setEntityResolver(resolver);
+                }
+                else {
+                    fConfiguration.setProperty(ENTITY_RESOLVER,
+                            new EntityResolverWrapper(resolver));
+                }
             }
         }
         catch (XMLConfigurationException e) {
@@ -340,8 +353,15 @@ public class DOMParser
     public void setErrorHandler(ErrorHandler errorHandler) {
 
         try {
-            fConfiguration.setProperty(ERROR_HANDLER,
-                                       new ErrorHandlerWrapper(errorHandler));
+            XMLErrorHandler xeh = (XMLErrorHandler) fConfiguration.getProperty(ERROR_HANDLER);
+            if (xeh instanceof ErrorHandlerWrapper) {
+                ErrorHandlerWrapper ehw = (ErrorHandlerWrapper) xeh;
+                ehw.setErrorHandler(errorHandler);
+            }
+            else {
+                fConfiguration.setProperty(ERROR_HANDLER,
+                        new ErrorHandlerWrapper(errorHandler));
+            }
         }
         catch (XMLConfigurationException e) {
             // do nothing
