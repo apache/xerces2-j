@@ -1616,28 +1616,50 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 		}
 		
 		//enumeration
-		if ( ((fFacetsDefined & FACET_ENUMERATION) != 0 ) ) {
-			boolean present = false;
-			for (int i = 0; i < fEnumeration.size(); i++) {
-				if (fEnumerationType[i] == type && fEnumeration.elementAt(i).equals(ob)) {
-                    if(type == XSConstants.LIST_DT || type == XSConstants.LISTOFUNION_DT) {
+        if ( ((fFacetsDefined & FACET_ENUMERATION) != 0 ) ) {
+            boolean present = false;
+            final int enumSize = fEnumeration.size();
+            for (int i = 0; i < enumSize; i++) {
+                final short primitiveType1 = convertToPrimitiveKind(fEnumerationType[i]);
+                final short primitiveType2 = convertToPrimitiveKind(type);
+                if ((primitiveType1 == primitiveType2 ||
+                     primitiveType1 == XSConstants.ANYSIMPLETYPE_DT && primitiveType2 == XSConstants.STRING_DT ||
+                     primitiveType1 == XSConstants.STRING_DT && primitiveType2 == XSConstants.ANYSIMPLETYPE_DT)
+                     && fEnumeration.elementAt(i).equals(ob)) {
+                    if (primitiveType1 == XSConstants.LIST_DT || primitiveType1 == XSConstants.LISTOFUNION_DT) {
                         ShortList enumItemType = fEnumerationItemType[i];
-                        if(enumItemType.equals(itemType)) {
-                            present = true;
-                            break;
+                        final int typeList1Length = itemType != null ? itemType.getLength() : 0;
+                        final int typeList2Length = enumItemType != null ? enumItemType.getLength() : 0;
+                        if (typeList1Length == typeList2Length) {
+                            int j;
+                            for (j = 0; j < typeList1Length; ++j) {
+                                final short primitiveItem1 = convertToPrimitiveKind(itemType.item(j));
+                                final short primitiveItem2 = convertToPrimitiveKind(enumItemType.item(j));
+                                if (primitiveItem1 != primitiveItem2) {
+                                    if (primitiveItem1 == XSConstants.ANYSIMPLETYPE_DT && primitiveItem2 == XSConstants.STRING_DT ||
+                                        primitiveItem1 == XSConstants.STRING_DT && primitiveItem2 == XSConstants.ANYSIMPLETYPE_DT) {
+                                        continue;
+                                    }
+                                    break;
+                                }
+                            }
+                            if (j == typeList1Length) {
+                                present = true;
+                                break;
+                            }
                         }
-                     }
-                    else {
-    					present = true;
-    					break;
                     }
-				}
-			}
-			if(!present){
-				throw new InvalidDatatypeValueException("cvc-enumeration-valid",
-						new Object [] {content, fEnumeration.toString()});
-			}
-		}
+                    else {
+                        present = true;
+                        break;
+                    }
+                }
+            }
+            if(!present){
+                throw new InvalidDatatypeValueException("cvc-enumeration-valid",
+                        new Object [] {content, fEnumeration.toString()});
+            }
+        }
 		
 		//fractionDigits
 		if ((fFacetsDefined & FACET_FRACTIONDIGITS) != 0) {
@@ -3211,6 +3233,23 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 
     public boolean isDerivedFrom(String typeNamespaceArg, String typeNameArg, int derivationMethod) {
         return isDOMDerivedFrom(typeNamespaceArg, typeNameArg, derivationMethod);
+    }
+    
+    private short convertToPrimitiveKind(short valueType) {
+        /** Primitive datatypes. */
+        if (valueType <= XSConstants.NOTATION_DT) {
+            return valueType;
+        }
+        /** Types derived from string. */
+        if (valueType <= XSConstants.ENTITY_DT) {
+            return XSConstants.STRING_DT;
+        }
+        /** Types derived from decimal. */
+        if (valueType <= XSConstants.POSITIVEINTEGER_DT) {
+            return XSConstants.DECIMAL_DT;
+        }
+        /** Other types. */
+        return valueType;
     }
 	
 } // class XSSimpleTypeDecl
