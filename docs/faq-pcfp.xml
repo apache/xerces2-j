@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--
- * Copyright 2001-2004 The Apache Software Foundation.
+ * Copyright 2001-2005 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,8 +80,47 @@
   <q>How can I tell the parser to validate against XML Schema and not to report DTD validation errors?</q>
   <a>
    <p>
-    With JAXP 1.2 (or higher), you can instruct the parser to validate against XML Schema only. Using
-    JAXP if the schema language property has been set to <code>http://www.w3.org/2001/XMLSchema</code>
+    Using JAXP you can instruct the parser to validate against XML Schema only. The JAXP 1.3
+    Validation API allows you to build an in-memory representation of an XML Schema which 
+    you can then set on a parser factory. Parsers created from the factory will validate
+    documents using the schema object you specified.
+   </p>
+   <p>By doing the following you can configure a SAX parser or DocumentBuilder to validate against XML Schema only:</p>
+   <source>import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+
+...
+
+StreamSource[] sources = /* created by your application */;
+
+SchemaFactory factory = 
+    SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+Schema schema = factory.newSchema(sources);
+
+/** Setup SAX parser for schema validation. */
+SAXParserFactory spf = SAXParserFactory.newInstance();
+spf.setNamespaceAware(true);
+spf.setSchema(schema);
+SAXParser parser = spf.newSAXParser();
+
+/** Setup DocumentBuilder for schema validation. */
+DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+dbf.setNamespaceAware(true);
+dbf.setSchema(schema);
+DocumentBuilder db = dbf.newDocumentBuilder();
+
+...
+</source>
+    
+   <p>
+    Another option is to use the JAXP schema language property defined by JAXP 1.2. If the schema
+    language property has been set to <code>http://www.w3.org/2001/XMLSchema</code>
     and the parser has been configured to validate then your documents will be validated against 
     XML Schema only, even if they have a DTD.
    </p>
