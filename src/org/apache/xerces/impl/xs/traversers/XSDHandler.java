@@ -501,7 +501,8 @@ public class XSDHandler {
             }
             fXSContentHandler.reset(fSchemaParser, fSymbolTable, 
                     namespacePrefixes, stringsInternalized);
-        	parser.setContentHandler(fXSContentHandler);   
+            parser.setContentHandler(fXSContentHandler);
+            parser.setErrorHandler(fErrorReporter.getSAXErrorHandler());
         	try {
             	parser.parse(inputSource);	
         	}
@@ -1724,7 +1725,8 @@ public class XSDHandler {
             }
             fXSContentHandler.reset(fSchemaParser, fSymbolTable, 
                     namespacePrefixes, stringsInternalized);
-            parser.setContentHandler(fXSContentHandler);   
+            parser.setContentHandler(fXSContentHandler);
+            parser.setErrorHandler(fErrorReporter.getSAXErrorHandler());
             try {
                 parser.parse(inputSource);  
             }

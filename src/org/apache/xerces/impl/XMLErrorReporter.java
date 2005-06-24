@@ -20,6 +20,7 @@ import java.util.Hashtable;
 import java.util.Locale;
 
 import org.apache.xerces.util.DefaultErrorHandler;
+import org.apache.xerces.util.ErrorHandlerProxy;
 import org.apache.xerces.util.MessageFormatter;
 import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XNIException;
@@ -28,6 +29,7 @@ import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLParseException;
+import org.xml.sax.ErrorHandler;
 
 /**
  * This class is a common element of all parser configurations and is
@@ -161,6 +163,9 @@ public class XMLErrorReporter
      * reported by users of the parser.
      */
     protected XMLErrorHandler fDefaultErrorHandler;
+    
+    /** A SAX proxy to the error handler contained in this error reporter. */
+    private ErrorHandler fSaxProxy = null;
 
     //
     // Constructors
@@ -541,6 +546,21 @@ public class XMLErrorReporter
      */
     public XMLErrorHandler getErrorHandler() {
         return fErrorHandler;
+    }
+    
+    /**
+     * Gets the internal XMLErrorHandler
+     * as SAX ErrorHandler.
+     */
+    public ErrorHandler getSAXErrorHandler() {
+        if (fSaxProxy == null) {
+            fSaxProxy = new ErrorHandlerProxy() {
+                protected XMLErrorHandler getErrorHandler() {
+                    return fErrorHandler;
+                }
+            };
+        }
+        return fSaxProxy;
     }
     
 } // class XMLErrorReporter
