@@ -47,7 +47,7 @@ public class Encodings
     static final int LAST_PRINTABLE_UNICODE = 0xffff;
     // unicode-compliant encodings; can express plane 0
     static final String[] UNICODE_ENCODINGS = {
-        "Unicode", "UnicodeBig", "UnicodeLittle", "GB2312", "UTF8", 
+        "Unicode", "UnicodeBig", "UnicodeLittle", "GB2312", "UTF8", "UTF-16",
     };
     // default (Java) encoding if none supplied:
     static final String DEFAULT_ENCODING = "UTF8";
