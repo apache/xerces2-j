@@ -27,7 +27,7 @@
            id='install' source='install.xml'/>
  <external label='Download' href='http://xml.apache.org/xerces2-j/download.cgi'/>
  <hidden  title='Download' id='download' source='download.xml'/>
- <external label='CVS Repository'
+ <external label='Source Repository'
            href='http://xml.apache.org/websrc/cvsweb.cgi/xml-xerces/java/'/>
  <separator/>
  <document label='Samples' title='Sample Programs'
