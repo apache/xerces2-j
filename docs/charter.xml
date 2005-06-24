@@ -375,7 +375,8 @@ b) Subproject Source Repositories -- These are several repositories
    subprojects.  
 
 </p><p>
-c) Website -- A xerces.apache.org website will contain information about
+c) Website -- A <jump href='http://xerces.apache.org'>xerces.apache.org</jump>
+   website will contain information about
    the Apache Xerces project, including documentation, downloads of
    releases, and this charter. Each subproject will have its own website
    with subproject information.
