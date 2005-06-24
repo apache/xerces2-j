@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2004 The Apache Software Foundation.
+ * Copyright 1999-2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1286,6 +1286,39 @@ import java.io.Serializable;
    */
   public String getRegBasedAuthority() {
     return m_regAuthority;
+  }
+  
+  /**
+   * Get the authority for this URI.
+   * 
+   * @return the authority
+   */
+  public String getAuthority() {
+      StringBuffer authority = new StringBuffer();
+      if (m_host != null || m_regAuthority != null) {
+          authority.append("//");
+          
+          // Server based authority.
+          if (m_host != null) {
+              
+              if (m_userinfo != null) {
+                  authority.append(m_userinfo);
+                  authority.append('@');
+              }
+              
+              authority.append(m_host);
+              
+              if (m_port != -1) {
+                  authority.append(':');
+                  authority.append(m_port);
+              }
+          }
+          // Registry based authority.
+          else {
+              authority.append(m_regAuthority);
+          }
+      }
+      return authority.toString();
   }
 
  /**

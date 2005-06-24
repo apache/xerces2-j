@@ -2076,9 +2076,48 @@ public class XIncludeHandler
                 if (fParentRelativeURI.equals("")) {
                     return relativeURI;
                 }
-                URI uri = new URI("file", fParentRelativeURI);
-                uri = new URI(uri, relativeURI);
-                return uri.getPath();
+
+                URI base = new URI(fParentRelativeURI, true);
+                URI uri = new URI(base, relativeURI);
+                
+                /** Check whether the scheme components are equal. */
+                final String baseScheme = base.getScheme();
+                final String literalScheme = uri.getScheme();
+                if (!isEqual(baseScheme, literalScheme)) {
+                    return relativeURI;
+                }
+                
+                /** Check whether the authority components are equal. */
+                final String baseAuthority = base.getAuthority();
+                final String literalAuthority = uri.getAuthority();
+                if (!isEqual(baseAuthority, literalAuthority)) {
+                    return uri.getSchemeSpecificPart();
+                }
+                
+                /** 
+                 * The scheme and authority components are equal,
+                 * return the path and the possible query and/or
+                 * fragment which follow.
+                 */
+                final String literalPath = uri.getPath();
+                final String literalQuery = uri.getQueryString();
+                final String literalFragment = uri.getFragment();
+                if (literalQuery != null || literalFragment != null) {
+                    StringBuffer buffer = new StringBuffer();
+                    if (literalPath != null) {
+                        buffer.append(literalPath);
+                    }
+                    if (literalQuery != null) {
+                        buffer.append('?');
+                        buffer.append(literalQuery);
+                    }
+                    if (literalFragment != null) {
+                        buffer.append('#');
+                        buffer.append(literalFragment);
+                    }
+                    return buffer.toString();
+                }
+                return literalPath;
             }
             else {
                 return relativeURI;
@@ -2840,6 +2879,10 @@ public class XIncludeHandler
             httpSource.setHTTPRequestProperty(XIncludeHandler.HTTP_ACCEPT_LANGUAGE, acceptLanguage);
         }
         return httpSource;
+    }
+    
+    private boolean isEqual(String one, String two) {
+        return (one == two || (one != null && one.equals(two)));
     }
     
     // which ASCII characters need to be escaped
