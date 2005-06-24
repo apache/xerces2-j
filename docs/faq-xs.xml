@@ -250,10 +250,6 @@ XSImplementation impl =
 XSLoader schemaLoader = impl.createXSLoader(null);
 
 ...</source>
-   <p>
-       In order to get access to DOM Level 3 functionality in Xerces, see this 
-       <link idref="faq-dom" anchor="dom3">FAQ</link>.
-   </p>
   </a>
  </faq>
 </faqs>
