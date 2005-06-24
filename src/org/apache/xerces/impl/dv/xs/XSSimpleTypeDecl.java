@@ -1619,9 +1619,9 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         if ( ((fFacetsDefined & FACET_ENUMERATION) != 0 ) ) {
             boolean present = false;
             final int enumSize = fEnumeration.size();
+            final short primitiveType1 = convertToPrimitiveKind(type);
             for (int i = 0; i < enumSize; i++) {
-                final short primitiveType1 = convertToPrimitiveKind(fEnumerationType[i]);
-                final short primitiveType2 = convertToPrimitiveKind(type);
+                final short primitiveType2 = convertToPrimitiveKind(fEnumerationType[i]);
                 if ((primitiveType1 == primitiveType2 ||
                      primitiveType1 == XSConstants.ANYSIMPLETYPE_DT && primitiveType2 == XSConstants.STRING_DT ||
                      primitiveType1 == XSConstants.STRING_DT && primitiveType2 == XSConstants.ANYSIMPLETYPE_DT)
