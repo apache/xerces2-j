@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2004 The Apache Software Foundation.
+ * Copyright 2001-2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,22 +63,20 @@ public class FloatDV extends TypeValidator {
 
         private float value;
         public XFloat(String s) throws NumberFormatException {
-            try {
+            if (DoubleDV.isPossibleFP(s)) {
                 value = Float.parseFloat(s);
             }
-            catch ( NumberFormatException nfe ) {
-                if ( s.equals("INF") ) {
-                    value = Float.POSITIVE_INFINITY;
-                }
-                else if ( s.equals("-INF") ) {
-                    value = Float.NEGATIVE_INFINITY;
-                }
-                else if ( s.equals("NaN" ) ) {
-                    value = Float.NaN;
-                }
-                else {
-                    throw nfe;
-                }
+            else if ( s.equals("INF") ) {
+                value = Float.POSITIVE_INFINITY;
+            }
+            else if ( s.equals("-INF") ) {
+                value = Float.NEGATIVE_INFINITY;
+            }
+            else if ( s.equals("NaN") ) {
+                value = Float.NaN;
+            }
+            else {
+                throw new NumberFormatException(s);
             }
         }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2004 The Apache Software Foundation.
+ * Copyright 2001-2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,26 +58,41 @@ public class DoubleDV extends TypeValidator {
         }
         return false;
     }//isIdentical()
+    
+    /** 
+     * Returns true if it's possible that the given
+     * string represents a valid floating point value
+     * (excluding NaN, INF and -INF).
+     */
+    static boolean isPossibleFP(String val) {
+        final int length = val.length();
+        for (int i = 0; i < length; ++i) {
+            char c = val.charAt(i);
+            if (!(c >= '0' && c <= '9' || c == '.' || 
+                c == '-' || c == '+' || c == 'E' || c == 'e')) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     private static final class XDouble implements XSDouble {
         private double value;
         public XDouble(String s) throws NumberFormatException {
-            try {
+            if (isPossibleFP(s)) {
                 value = Double.parseDouble(s);
             }
-            catch ( NumberFormatException nfe ) {
-                if ( s.equals("INF") ) {
-                    value = Double.POSITIVE_INFINITY;
-                }
-                else if ( s.equals("-INF") ) {
-                    value = Double.NEGATIVE_INFINITY;
-                }
-                else if ( s.equals("NaN" ) ) {
-                    value = Double.NaN;
-                }
-                else {
-                    throw nfe;
-                }
+            else if ( s.equals("INF") ) {
+                value = Double.POSITIVE_INFINITY;
+            }
+            else if ( s.equals("-INF") ) {
+                value = Double.NEGATIVE_INFINITY;
+            }
+            else if ( s.equals("NaN" ) ) {
+                value = Double.NaN;
+            }
+            else {
+                throw new NumberFormatException(s);
             }
         }
 
