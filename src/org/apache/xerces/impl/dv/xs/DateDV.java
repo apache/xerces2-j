@@ -20,6 +20,7 @@ import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
+import org.apache.xerces.impl.dv.ValidationContext;
 
 /**
  * Validator for <date> datatype (W3C Schema datatypes)
@@ -33,7 +34,7 @@ import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
  */
 public class DateDV extends DateTimeDV {
 
-    public Object getActualValue(String content) throws InvalidDatatypeValueException {
+    public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
         try{
             return parse(content);
         } catch(Exception ex){
