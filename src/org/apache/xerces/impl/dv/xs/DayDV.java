@@ -68,12 +68,11 @@ public class DayDV extends AbstractDateTimeDV {
         date.day=parseInt(str, 3,5);
 
         if ( DAY_SIZE<len ) {
-            int sign = findUTCSign(str, DAY_SIZE, len);
-            if ( sign<0 ) {
+            if (!isNextCharUTCSign(str, DAY_SIZE, len)) {
                 throw new SchemaDateTimeException ("Error in day parsing");
             }
             else {
-                getTimeZone(str, date, sign, len);
+                getTimeZone(str, date, DAY_SIZE, len);
             }
         }
 

@@ -329,13 +329,12 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 		
 		//fStart points right after the date
 		
-		if ( start<end ) {
-			int sign = findUTCSign(buffer, start, end);
-			if ( sign<0 ) {
+		if ( start < end ) {
+			if (!isNextCharUTCSign(buffer, start, end)) {
 				throw new RuntimeException ("Error in month parsing");
 			}
 			else {
-				getTimeZone(buffer, date, sign, end);
+				getTimeZone(buffer, date, start, end);
 			}
 		}
 	}
@@ -493,6 +492,17 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 		}
 		return -1;
 	}
+    
+    /**
+     * Returns <code>true</code> if the character at start is 'Z', '+' or '-'.
+     */
+    protected final boolean isNextCharUTCSign(String buffer, int start, int end) {
+        if (start < end) {
+            char c = buffer.charAt(start);
+            return (c == 'Z' || c == '+' || c == '-');
+        }
+        return false;
+    }
 	
 	/**
 	 * Given start and end position, parses string value

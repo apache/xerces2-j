@@ -78,12 +78,11 @@ public class MonthDV extends AbstractDateTimeDV {
             stop += 2;
         }
         if (stop < len) {
-            int sign = findUTCSign(str, stop, len);
-            if ( sign<0 ) {
+            if (!isNextCharUTCSign(str, stop, len)) {
                 throw new SchemaDateTimeException ("Error in month parsing: "+str);
             }
             else {
-                getTimeZone(str, date, sign, len);
+                getTimeZone(str, date, stop, len);
             }
         }
         //validate and normalize
