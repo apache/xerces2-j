@@ -71,14 +71,15 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
    <tr>
     <td>xercesImpl.jar</td>
     <td>Jar file containing all the parser class files that implement
-    one of the standard API&apos;s supported by the parser</td>
+    one of the standard APIs supported by the parser</td>
    </tr>
    <tr>
     <td>xml-apis.jar</td>
-    <td>Jar file containing all the standard API&apos;s implemented by
+    <td>Jar file containing all the standard APIs implemented by
     the parser.  Currently, &ParserName; supports DOM level 3, SAX
-    2.0.2, and the <code>javax.xml.parsers</code> part of JAXP
-    1.3.  </td>
+    2.0.2, and the <code>javax.xml.datatype</code>, 
+    <code>javax.xml.parsers</code> and <code>javax.xml.validation</code> 
+    parts of JAXP 1.3.</td>
    </tr>
    <tr>
     <td>xercesSamples.jar</td>
@@ -207,14 +208,14 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
  <s2 title='Changes in Xerces jar files'>
  <p>In order to accomodate the very common case in which Xerces is
  used with an XSLT processor such as Xalan, between Xerces 2.0.0 beta 3
- and beta 4 a change in the default organization of Xerces&apos;s jar
+ and beta 4 a change in the default organization of Xerces&apos; jar
  files was introduced.  As well as the <code>xercesSamples.jar</code>
  file, which we still produce, Xerces formerly came with a file called
  <code>xerces.jar</code>.  This file contained all of the
  parser&apos;s functionality.  Two files are now included:
- <code>xercesImpl.jar</code>, our implementation of various API&apos;s,
- and <code>xml-apis.jar</code>, the API&apos;s themselves.  This
- was done so that, if your XSLT processor ships with API&apos;s at the
+ <code>xercesImpl.jar</code>, our implementation of various APIs,
+ and <code>xml-apis.jar</code>, the APIs themselves.  This
+ was done so that, if your XSLT processor ships with APIs at the
  same level as those supported by &ParserName;, you can avoid putting
  <code>xml-apis.jar</code> on your classpath.</p>
 
