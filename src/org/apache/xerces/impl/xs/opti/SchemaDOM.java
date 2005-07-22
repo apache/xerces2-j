@@ -375,6 +375,9 @@ public class SchemaDOM extends DefaultDocument {
         while(currPrefixes.hasMoreElements()) {
             String prefix = (String)currPrefixes.nextElement();
             String uri = namespaceContext.getURI(prefix);
+            if (uri == null) {
+                uri = XMLSymbols.EMPTY_STRING;
+            }
             if (!namespaces.contains(prefix)) {
                 // have to declare this one
                 if(prefix == XMLSymbols.EMPTY_STRING) {
