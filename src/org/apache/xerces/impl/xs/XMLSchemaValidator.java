@@ -977,10 +977,7 @@ public class XMLSchemaValidator
      * @throws XNIException Thrown by application to signal an error.
      */
     public void comment(XMLString text, Augmentations augs) throws XNIException {
-
-        // record the fact that there is a comment child.
-        fSawChildren = true;
-
+        
         // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.comment(text, augs);
@@ -1007,9 +1004,6 @@ public class XMLSchemaValidator
      */
     public void processingInstruction(String target, XMLString data, Augmentations augs)
         throws XNIException {
-
-        // record the fact that there is a PI child.
-        fSawChildren = true;
 
         // call handlers
         if (fDocumentHandler != null) {
@@ -1169,12 +1163,6 @@ public class XMLSchemaValidator
 
     /** Stack to record if we saw character data outside of element content*/
     private boolean[] fStringContent = new boolean[INITIAL_STACK_SIZE];
-
-    /** Did we see children that are neither characters nor elements? */
-    private boolean fSawChildren = false;
-
-    /** Stack to record if we other children that character or elements */
-    private boolean[] fSawChildrenStack = new boolean[INITIAL_STACK_SIZE];
 
     /** temporary qname */
     private final QName fTempQName = new QName();
@@ -1534,10 +1522,6 @@ public class XMLSchemaValidator
             fStringContent = newArrayB;
 
             newArrayB = new boolean[newSize];
-            System.arraycopy(fSawChildrenStack, 0, newArrayB, 0, fElementDepth);
-            fSawChildrenStack = newArrayB;
-
-            newArrayB = new boolean[newSize];
             System.arraycopy(fStrictAssessStack, 0, newArrayB, 0, fElementDepth);
             fStrictAssessStack = newArrayB;
 
@@ -1813,7 +1797,6 @@ public class XMLSchemaValidator
             fCMStateStack[fElementDepth] = fCurrCMState;
             fSawTextStack[fElementDepth] = fSawText;
             fStringContent[fElementDepth] = fSawCharacters;
-            fSawChildrenStack[fElementDepth] = fSawChildren;
         }
 
         // increase the element depth after we've saved
@@ -1830,7 +1813,6 @@ public class XMLSchemaValidator
         fBuffer.setLength(0);
         fSawText = false;
         fSawCharacters = false;
-        fSawChildren = false;
 
         // check what kind of declaration the "decl" from
         // oneTransition() maps to
@@ -2112,8 +2094,8 @@ public class XMLSchemaValidator
                 fCurrCMState = fCMStateStack[fElementDepth];
                 fSawText = fSawTextStack[fElementDepth];
                 fSawCharacters = fStringContent[fElementDepth];
-                fSawChildren = fSawChildrenStack[fElementDepth];
-            } else {
+            } 
+            else {
                 fElementDepth--;
             }
 
@@ -2240,7 +2222,6 @@ public class XMLSchemaValidator
             fCurrCMState = fCMStateStack[fElementDepth];
             fSawText = fSawTextStack[fElementDepth];
             fSawCharacters = fStringContent[fElementDepth];
-            fSawChildren = fSawChildrenStack[fElementDepth];
 
             // We should have a stack for whitespace value, and pop it up here.
             // But when fWhiteSpace != -1, and we see a sub-element, it must be
@@ -3109,7 +3090,7 @@ public class XMLSchemaValidator
         if (!fNil) {
             // 2.1 If the {content type} is empty, then the element information item has no character or element information item [children].
             if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_EMPTY
-                && (fSubElement || fSawText || fSawChildren)) {
+                && (fSubElement || fSawText)) {
                 reportSchemaError("cvc-complex-type.2.1", new Object[] { element.rawname });
             }
             // 2.2 If the {content type} is a simple type definition, then the element information item has no element information item [children], and the normalized value of the element information item is valid with respect to that simple type definition as defined by String Valid (3.14.4).
