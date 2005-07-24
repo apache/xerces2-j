@@ -462,6 +462,7 @@ public class SourceValidator
                     DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
                     dbf.setNamespaceAware(true);
                     DocumentBuilder db = dbf.newDocumentBuilder();
+                    db.setErrorHandler(sourceValidator);
                     for (int j = 0; j < length; ++j) {
                         String systemId = (String) instances.elementAt(j);
                         Document doc = db.parse(systemId);
