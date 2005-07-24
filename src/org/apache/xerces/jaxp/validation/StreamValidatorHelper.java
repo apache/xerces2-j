@@ -25,6 +25,8 @@ import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.xerces.impl.Constants;
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.parsers.XML11Configuration;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLInputSource;
@@ -134,7 +136,14 @@ final class StreamValidatorHelper implements ValidatorHelper {
         XML11Configuration config = new XML11Configuration();
         config.setProperty(ENTITY_RESOLVER, fComponentManager.getProperty(ENTITY_RESOLVER));
         config.setProperty(ERROR_HANDLER, fComponentManager.getProperty(ERROR_HANDLER));
-        config.setProperty(ERROR_REPORTER, fComponentManager.getProperty(ERROR_REPORTER));
+        XMLErrorReporter errorReporter = (XMLErrorReporter) fComponentManager.getProperty(ERROR_REPORTER);
+        config.setProperty(ERROR_REPORTER, errorReporter);
+        // add message formatters
+        if (errorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN) == null) {
+            XMLMessageFormatter xmft = new XMLMessageFormatter();
+            errorReporter.putMessageFormatter(XMLMessageFormatter.XML_DOMAIN, xmft);
+            errorReporter.putMessageFormatter(XMLMessageFormatter.XMLNS_DOMAIN, xmft);
+        }
         config.setProperty(SYMBOL_TABLE, fComponentManager.getProperty(SYMBOL_TABLE));
         config.setProperty(VALIDATION_MANAGER, fComponentManager.getProperty(VALIDATION_MANAGER));
         config.setDocumentHandler(fSchemaValidator);
