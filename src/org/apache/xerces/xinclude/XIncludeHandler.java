@@ -550,14 +550,18 @@ public class XIncludeHandler
         fSettings = new ParserConfigurationSettings();
         copyFeatures(componentManager, fSettings);
         
-        // we don't want a schema validator on the new pipeline,
-        // so if it was enabled, we set the feature to false as 
-        // well as other validation features.
+        // We don't want a schema validator on the new pipeline,
+        // so if it was enabled, we set the feature to false. If
+        // the validation feature was also enabled we turn on
+        // dynamic validation, so that DTD validation is performed
+        // on the included documents only if they have a DOCTYPE. 
+        // This is consistent with the behaviour on the main pipeline.
         try {
             if (componentManager.getFeature(SCHEMA_VALIDATION)) {
                 fSettings.setFeature(SCHEMA_VALIDATION, false);
-                fSettings.setFeature(DYNAMIC_VALIDATION, false);
-                fSettings.setFeature(VALIDATION, false);
+                if (componentManager.getFeature(VALIDATION)) {
+                    fSettings.setFeature(DYNAMIC_VALIDATION, true);
+                }
             }
         }
         catch (XMLConfigurationException e) {}
