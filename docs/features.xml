@@ -138,12 +138,17 @@ catch (SAXException e) {
   </feature>
   <feature name='http://apache.org/xml/features/validation/schema'
            id='validation.schema'>
-   <true>Turn on XML Schema validation by inserting XML Schema validator in the pipeline.
+   <true>Turn on XML Schema validation by inserting an XML Schema validator into the pipeline.
    </true>
    <false>Do not report validation errors against XML Schema.</false>
    <default value='false'/>   
    <access parsing='read-only' not-parsing='read-write'/>
-   <note> Validation errors will only be reported if <link anchor="validation">validation feature</link> is set to true. For more information, please, refer to the <link idref='faq-pcfp'>FAQ</link>
+   <note> Validation errors will only be reported if the <link anchor="validation">validation feature</link> is set to true. For more information, please, refer to the <link idref='faq-pcfp'>FAQ</link>
+   </note>
+   <note> 
+    Checking of constraints on a schema grammar which are either time-consuming or memory intensive
+    such as unique particle attribution will only occur if the
+    <link anchor="validation.schema-full-checking">schema full checking feature</link> is set to true.
    </note>  
    <see idref='validation'/>
    <see idref='validation.dynamic'/>
@@ -153,8 +158,8 @@ catch (SAXException e) {
            id='validation.schema-full-checking'>
    <true>
     Enable full schema grammar constraint checking, including checking 
-    which may be time-consuming or memory intensive. Currently, particle 
-    unique attribution constraint checking and particle derivation 
+    which may be time-consuming or memory intensive. Currently, unique
+    particle attribution constraint checking and particle derivation 
     restriction checking are controlled by this option. 
    </true>
    <false>Disable full constraint checking.</false>
