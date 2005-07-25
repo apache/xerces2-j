@@ -195,6 +195,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
     			fValidationHandler =
     				CoreDOMImplementationImpl.singleton.getValidator(XMLGrammarDescription.XML_SCHEMA);
                 fConfiguration.setFeature(DOMConfigurationImpl.SCHEMA, true);
+                fConfiguration.setFeature(DOMConfigurationImpl.SCHEMA_FULL_CHECKING, true);
                 // report fatal error on DOM Level 1 nodes
                 fNamespaceValidation = true;              
                 

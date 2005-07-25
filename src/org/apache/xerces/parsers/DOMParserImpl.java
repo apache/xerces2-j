@@ -95,6 +95,10 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
     /** XML Schema validation */
     protected static final String XMLSCHEMA =
     Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE;
+    
+    /** XML Schema full checking */
+    protected static final String XMLSCHEMA_FULL_CHECKING =
+    Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_FULL_CHECKING;    
 
     /** Dynamic validation */
     protected static final String DYNAMIC_VALIDATION =
@@ -412,6 +416,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                     fConfiguration.setFeature (VALIDATION_FEATURE, state);
                     if (fSchemaType != Constants.NS_DTD) {
                         fConfiguration.setFeature (XMLSCHEMA, state);
+                        fConfiguration.setFeature (XMLSCHEMA_FULL_CHECKING, state);
                     }
                     if (state){
                         fConfiguration.setFeature (DYNAMIC_VALIDATION, false);
@@ -536,11 +541,9 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                 if (value instanceof String || value == null) {
                     try {
                         if (value == null) {
-                            // turn off schema feature
-                            fConfiguration.setFeature (
-                            Constants.XERCES_FEATURE_PREFIX
-                            + Constants.SCHEMA_VALIDATION_FEATURE,
-                            false);
+                            // turn off schema features
+                            fConfiguration.setFeature (XMLSCHEMA, false);
+                            fConfiguration.setFeature (XMLSCHEMA_FULL_CHECKING, false);
                             // map to JAXP schemaLanguage
                             fConfiguration.setProperty ( Constants.JAXP_PROPERTY_PREFIX
                             + Constants.SCHEMA_LANGUAGE,
@@ -548,10 +551,9 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                             fSchemaType = null;
                         }
                         else if (value.equals (Constants.NS_XMLSCHEMA)) {
-                            // turn on schema feature
-                            fConfiguration.setFeature (Constants.XERCES_FEATURE_PREFIX
-                            + Constants.SCHEMA_VALIDATION_FEATURE,
-                            true);
+                            // turn on schema features
+                            fConfiguration.setFeature (XMLSCHEMA, true);
+                            fConfiguration.setFeature (XMLSCHEMA_FULL_CHECKING, true);
                             // map to JAXP schemaLanguage
                             fConfiguration.setProperty ( Constants.JAXP_PROPERTY_PREFIX
                             + Constants.SCHEMA_LANGUAGE,
@@ -559,11 +561,9 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                             fSchemaType = Constants.NS_XMLSCHEMA;
                         }
                         else if (value.equals (Constants.NS_DTD)) {
-                            // turn off schema feature
-                            fConfiguration.setFeature (
-                            Constants.XERCES_FEATURE_PREFIX
-                            + Constants.SCHEMA_VALIDATION_FEATURE,
-                            false);
+                            // turn off schema features
+                            fConfiguration.setFeature (XMLSCHEMA, false);
+                            fConfiguration.setFeature (XMLSCHEMA_FULL_CHECKING, false);
                             // map to JAXP schemaLanguage
                             fConfiguration.setProperty ( Constants.JAXP_PROPERTY_PREFIX
                             + Constants.SCHEMA_LANGUAGE,

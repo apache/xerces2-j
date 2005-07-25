@@ -82,6 +82,9 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 
     protected static final String SCHEMA =
         Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE;
+    
+    protected static final String SCHEMA_FULL_CHECKING =
+        Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_FULL_CHECKING;
 
     protected static final String DYNAMIC_VALIDATION =
         Constants.XERCES_FEATURE_PREFIX + Constants.DYNAMIC_VALIDATION_FEATURE;
@@ -225,6 +228,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
             XERCES_VALIDATION,
             XERCES_NAMESPACES,
             SCHEMA,
+            SCHEMA_FULL_CHECKING,
             DYNAMIC_VALIDATION,
             NORMALIZE_DATA,
             SEND_PSVI,
@@ -234,6 +238,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
         // set state for default features
         setFeature(XERCES_VALIDATION, false);
         setFeature(SCHEMA, false);
+        setFeature(SCHEMA_FULL_CHECKING, false);
         setFeature(DYNAMIC_VALIDATION, false);
         setFeature(NORMALIZE_DATA, false);
         setFeature(XERCES_NAMESPACES, true);
