@@ -941,6 +941,9 @@ XSLoader, DOMConfiguration {
         // the entity manager property is null
         fEntityManager = (XMLEntityManager)componentManager.getProperty(ENTITY_MANAGER);      
         
+        // get the error reporter
+        fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
+        
         boolean psvi = true;
         try {
             psvi = componentManager.getFeature(AUGMENT_PSVI);
