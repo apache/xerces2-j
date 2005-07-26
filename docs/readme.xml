@@ -132,17 +132,10 @@
   <s2 title='Changes from Previous Release'>
     
     <p>
-      The &ParserNameLong; &ParserVersion; contains a complete implementation of the parsing portion of JAXP 1.3 including new support for:
+      The &ParserNameLong; &ParserVersion; contains several fixes for schema 
+      related bugs as well as a fix for a bug related to XInclude.
     </p>
-    
-    <ul>
-       <li>SAX 2.0.2</li>
-       <li>DOM Level 3 Core and Load &amp; Save</li>
-       <li>XInclude 1.0</li>
-       <li>The datatype and validation APIs in javax.xml.datatype and javax.xml.validation</li>
-    </ul>
     <p>
-      
       For a more complete list of changes, refer to the 
       <link idref='releases'>Release Information</link> page.
     </p>	      
