@@ -189,7 +189,16 @@ serializer.serialize(document);</source>
   <faq title="Accessing the DOM Level 3 API">
     <q>How do I access the DOM Level 3 functionality?</q>
     <a>    <anchor name="dom3"/>
-     <p>The DOM Level 3 functionality is now exposed by default since Xerces-J 2.7.0</p> 
+     <p>
+      The DOM Level 3 functionality is now exposed by default since Xerces-J 2.7.0.
+     </p>
+     <p>
+      The experimental interfaces which were once present in the <code>org.apache.xerces.dom3</code>
+      package no longer exist. This package existed primarily so that the DOM Level 2
+      and DOM Level 3 implementations in Xerces-J 2.6.2 and prior could co-exist. Code which
+      depended on the <code>org.apache.xerces.dom3</code> must be modified to use the official
+      DOM Level 3 API located in the <code>org.w3c.dom.*</code> packages.
+     </p> 
      <p>For more information, refer to the <link idref='dom3'>DOM Level 3 
 	Implementation</link> page.
      </p>    
