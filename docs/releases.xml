@@ -17,6 +17,58 @@
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
+  <release version='&ParserName; 2.7.1'>
+   <desc>
+    <p>
+     This release fixes one XInclude bug and several schema related 
+     bugs which were present in Xerces-J 2.7.0.
+    </p>
+   </desc>
+   <changes>
+    <fix>
+     <note>
+      Fixed an inconsistency in the validation behaviour of the parser
+      when XInclude processing is enabled and the
+      <link idref='features' anchor="validation">validation</link> and 
+      <link idref='features' anchor="validation.schema">schema validation</link> 
+      features are also enabled. 
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed a bug where in a DOM Level 3 context with schema validation
+      enabled, not all schema constraints (such as unique particle 
+      attribution) were being checked.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed bugs which allowed various invalid lexical values to be
+      accepted by the schema validator for the following types: double, 
+      date, float, gDay, gMonthDay, gMonth and gYearMonth.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed a schema bug where errors would be reported for comments and 
+      processing instructions which appear as the children of an 
+      element declared to have empty content.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed a bug which caused an NPE to be thrown for a
+      namespace declaration such as xmlns="" which appeared on
+      an ancestor element of an &lt;annotation&gt;.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+   </changes>
+  </release>
   <release version='&ParserName; 2.7.0'>
    <desc>
     <p>This release provides a complete implementation of the parser related 
