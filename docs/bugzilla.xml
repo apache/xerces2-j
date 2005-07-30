@@ -28,7 +28,7 @@
 	    <em>please take a quick look at bugs in JIRA</em> opened against the version you're working 
         with to see whether the bug has been already reported and/or fixed.
 	    You can also download the 
-	    <jump href='http://brutus.apache.org/gump/public-jars/xml-xerces2/'>latest code</jump> 
+	    <jump href='http://vmgump.apache.org/gump/public-jars/xml-xerces2/'>latest code</jump> 
 	    in CVS and check if you can reproduce the bug.</li>
 	  <li>Report bugs against the newest release.</li>
 	  <li>Read <jump href="http://issues.apache.org/jira">JIRA Notes</jump></li>
