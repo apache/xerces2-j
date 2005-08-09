@@ -510,24 +510,30 @@ final class RangeToken extends Token implements java.io.Serializable {
     private static final int MAPSIZE = 256;
     private void createMap() {
         int asize = MAPSIZE/32;                 // 32 is the number of bits in `int'.
-        this.map = new int[asize];
-        this.nonMapIndex = this.ranges.length;
-        for (int i = 0;  i < asize;  i ++)  this.map[i] = 0;
-        for (int i = 0;  i < this.ranges.length;  i += 2) {
+        int [] map = new int[asize];
+        int nonMapIndex = this.ranges.length;
+        for (int i = 0; i < asize; ++i) {
+            map[i] = 0;
+        }
+        for (int i = 0; i < this.ranges.length;  i += 2) {
             int s = this.ranges[i];
             int e = this.ranges[i+1];
             if (s < MAPSIZE) {
-                for (int j = s;  j <= e && j < MAPSIZE;  j ++)
-                    this.map[j/32] |= 1<<(j&0x1f); // s&0x1f : 0-31
-            } else {
-                this.nonMapIndex = i;
+                for (int j = s; j <= e && j < MAPSIZE; j++) {
+                    map[j/32] |= 1<<(j&0x1f); // s&0x1f : 0-31
+                }
+            } 
+            else {
+                nonMapIndex = i;
                 break;
             }
             if (e >= MAPSIZE) {
-                this.nonMapIndex = i;
+                nonMapIndex = i;
                 break;
             }
         }
+        this.map = map;
+        this.nonMapIndex = nonMapIndex;
         //for (int i = 0;  i < asize;  i ++)  System.err.println("Map: "+Integer.toString(this.map[i], 16));
     }
 
