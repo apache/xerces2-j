@@ -375,6 +375,9 @@ extends ParentNode implements Document  {
         // Only one such child permitted
         int type = newChild.getNodeType();
         if (errorChecking) {
+            if (needsSyncChildren()) {
+                synchronizeChildren();
+            }
             if((type == Node.ELEMENT_NODE && docElement != null) ||
             (type == Node.DOCUMENT_TYPE_NODE && docType != null)) {
                 String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "HIERARCHY_REQUEST_ERR", null);
