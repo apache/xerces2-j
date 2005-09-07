@@ -756,7 +756,7 @@ class DurationImpl
     	if (seconds != null && seconds.toBigInteger().compareTo(maxintAsBigInteger) == 1) {
     		throw new UnsupportedOperationException(
                         DatatypeMessageFormatter.formatMessage(null, "TooLarge", 
-                            new Object[]{this.getClass().getName() + "#compare(Duration duration)" + DatatypeConstants.SECONDS.toString(), seconds.toString()})
+                            new Object[]{this.getClass().getName() + "#compare(Duration duration)" + DatatypeConstants.SECONDS.toString(), toString(seconds)})
             
     					//this.getClass().getName() + "#compare(Duration duration)"
 						//+ " seconds too large to be supported by this implementation "

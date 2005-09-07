@@ -2957,7 +2957,7 @@ class XMLGregorianCalendarImpl
             case 's':
                 printNumber(buf,getSecond(),2);
 		if (getFractionalSecond() != null) {
-		    String frac = getFractionalSecond().toString();
+		    String frac = toString(getFractionalSecond());
 		    //skip leading zero.
 		    buf.append(frac.substring(1, frac.length()));
 		} 
@@ -3022,6 +3022,43 @@ class XMLGregorianCalendarImpl
         for( int i=s.length(); i<nDigits; i++ )
             out.append('0');
         out.append(s);
+    }
+    
+    /**
+     * <p>Turns {@link BigDecimal} to a string representation.</p>
+     * 
+     * <p>Due to a behavior change in the {@link BigDecimal#toString()}
+     * method in JDK1.5, this had to be implemented here.</p>
+     * 
+     * @param bd <code>BigDecimal</code> to format as a <code>String</code>
+     * 
+     * @return  <code>String</code> representation of <code>BigDecimal</code> 
+     */
+    private String toString(BigDecimal bd) {
+        String intString = bd.unscaledValue().toString();
+        int scale = bd.scale();
+
+        if (scale == 0) {
+            return intString;
+        }
+
+        /* Insert decimal point */
+        StringBuffer buf;
+        int insertionPoint = intString.length() - scale;
+        if (insertionPoint == 0) { /* Point goes right before intVal */
+            return "0." + intString;
+        } else if (insertionPoint > 0) { /* Point goes inside intVal */
+            buf = new StringBuffer(intString);
+            buf.insert(insertionPoint, '.');
+        } else { /* We must insert zeros between point and intVal */
+            buf = new StringBuffer(3 - insertionPoint + intString.length());
+            buf.append("0.");
+            for (int i = 0; i < -insertionPoint; i++) {
+                buf.append('0');
+            }
+            buf.append(intString);
+        }
+        return buf.toString();
     }
 
     /**
