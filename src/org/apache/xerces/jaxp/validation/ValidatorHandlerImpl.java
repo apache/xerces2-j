@@ -78,6 +78,7 @@ import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.Attributes2;
 import org.xml.sax.ext.EntityResolver2;
+import org.xml.sax.ext.LexicalHandler;
 
 /**
  * <p>Implementation of ValidatorHandler for W3C XML Schemas and
@@ -106,6 +107,10 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
     /** Property identifier: error reporter. */
     private static final String ERROR_REPORTER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
+    
+    /** Property identifier: lexical handler. */
+    private static final String LEXICAL_HANDLER =
+        Constants.SAX_PROPERTY_PREFIX + Constants.LEXICAL_HANDLER_PROPERTY;
     
     /** Property identifier: namespace context. */
     private static final String NAMESPACE_CONTEXT =
@@ -646,8 +651,15 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
             final SAXSource saxSource = (SAXSource) source;
             final SAXResult saxResult = (SAXResult) result;
             
+            LexicalHandler lh = null;
             if (result != null) {
-                setContentHandler(saxResult.getHandler());
+                ContentHandler ch = saxResult.getHandler();
+                lh = saxResult.getLexicalHandler();
+                /** If the lexical handler is not set try casting the ContentHandler. **/
+                if (lh == null && ch instanceof LexicalHandler) {
+                    lh = (LexicalHandler) ch;
+                }
+                setContentHandler(ch);
             }
             
             try {
@@ -692,6 +704,11 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
                 fResolutionForwarder.setEntityResolver(fComponentManager.getResourceResolver());
                 reader.setContentHandler(this);
                 reader.setDTDHandler(this);
+                try {
+                    reader.setProperty(LEXICAL_HANDLER, lh);
+                }
+                // Ignore the exception if the lexical handler cannot be set.
+                catch (SAXException exc) {}
                 
                 InputSource is = saxSource.getInputSource();
                 reader.parse(is);
