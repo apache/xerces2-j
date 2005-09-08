@@ -16,7 +16,17 @@
 
 package org.apache.xerces.impl.xs;
 
+import org.apache.xerces.impl.xs.opti.ElementImpl;
 import org.apache.xerces.util.NamespaceSupport;
+import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLSymbols;
+import org.apache.xerces.xni.NamespaceContext;
+import org.apache.xerces.xni.QName;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 
 /**
  * This class customizes the behaviour of the util.NamespaceSupport
@@ -31,13 +41,22 @@ import org.apache.xerces.util.NamespaceSupport;
  */
 public class SchemaNamespaceSupport 
     extends NamespaceSupport {
+    
+    private SchemaRootContext fSchemaRootContext = null;
 
-    public SchemaNamespaceSupport () {
+    public SchemaNamespaceSupport (Element schemaRoot, SymbolTable symbolTable) {
         super();
+        if (schemaRoot != null && !(schemaRoot instanceof ElementImpl)) {
+            Document ownerDocument = schemaRoot.getOwnerDocument();
+            if (ownerDocument != null && schemaRoot != ownerDocument.getDocumentElement()) {
+                fSchemaRootContext = new SchemaRootContext(schemaRoot, symbolTable);
+            }
+        }
     } // constructor
 
     // more effecient than NamespaceSupport(NamespaceContext)
     public SchemaNamespaceSupport(SchemaNamespaceSupport nSupport) {
+        fSchemaRootContext = nSupport.fSchemaRootContext;
         fNamespaceSize = nSupport.fNamespaceSize;
         if (fNamespace.length < fNamespaceSize)
             fNamespace = new String[fNamespaceSize];
@@ -106,4 +125,130 @@ public class SchemaNamespaceSupport
             fNamespaceSize = fContext[3];
         }
     } // makeGlobal
+    
+    public String getURI(String prefix) {
+        String uri = super.getURI(prefix);
+        if (uri == null && fSchemaRootContext != null) {
+            if (!fSchemaRootContext.fDOMContextBuilt) {
+                fSchemaRootContext.fillNamespaceContext();
+                fSchemaRootContext.fDOMContextBuilt = true;
+            }
+            if (fSchemaRootContext.fNamespaceSize > 0 && 
+                !containsPrefix(prefix)) {
+                uri = fSchemaRootContext.getURI(prefix);
+            }
+        }
+        return uri;
+    }
+    
+    /**
+     * This class keeps track of the namespace bindings 
+     * declared on ancestors of the schema root.
+     */
+    static final class SchemaRootContext {
+        
+        //
+        // Data
+        //
+
+        /** 
+         * Namespace binding information. This array is composed of a
+         * series of tuples containing the namespace binding information:
+         * &lt;prefix, uri&gt;.
+         */
+        String[] fNamespace = new String[16 * 2];
+
+        /** The size of the namespace information array. */
+        int fNamespaceSize = 0;
+        
+        /** 
+         * Flag indicating whether the namespace context 
+         * has been from the root node's ancestors.
+         */
+        boolean fDOMContextBuilt = false;
+        
+        /** Schema root. **/
+        private final Element fSchemaRoot;
+        
+        /** Symbol table. **/
+        private final SymbolTable fSymbolTable;
+        
+        /** Temporary storage for attribute QNames. **/
+        private final QName fAttributeQName = new QName();
+        
+        SchemaRootContext(Element schemaRoot, SymbolTable symbolTable) {
+            fSchemaRoot = schemaRoot;
+            fSymbolTable = symbolTable;
+        }
+        
+        void fillNamespaceContext() {
+            if (fSchemaRoot != null) {
+                Node currentNode = fSchemaRoot.getParentNode();
+                while (currentNode != null) {
+                    if (Node.ELEMENT_NODE == currentNode.getNodeType()) {
+                        NamedNodeMap attributes = currentNode.getAttributes();
+                        final int attrCount = attributes.getLength();
+                        for (int i = 0; i < attrCount; ++i) {
+                            Attr attr = (Attr) attributes.item(i);
+                            String value = attr.getValue();
+                            if (value == null) {
+                                value = XMLSymbols.EMPTY_STRING;
+                            }
+                            fillQName(fAttributeQName, attr);
+                            // REVISIT: Should we be looking at non-namespace attributes
+                            // for additional mappings? Should we detect illegal namespace
+                            // declarations and exclude them from the context? -- mrglavas
+                            if (fAttributeQName.uri == NamespaceContext.XMLNS_URI) {
+                                // process namespace attribute
+                                if (fAttributeQName.prefix == XMLSymbols.PREFIX_XMLNS) {
+                                    declarePrefix(fAttributeQName.localpart, value.length() != 0 ? fSymbolTable.addSymbol(value) : null);
+                                }
+                                else {
+                                    declarePrefix(XMLSymbols.EMPTY_STRING, value.length() != 0 ? fSymbolTable.addSymbol(value) : null);
+                                }
+                            }
+                        }
+                        
+                    }
+                    currentNode = currentNode.getParentNode();
+                }
+            }
+        }
+        
+        String getURI(String prefix) {
+            // find prefix in the DOM context
+            for (int i = 0; i < fNamespaceSize; i += 2) {
+                if (fNamespace[i] == prefix) {
+                    return fNamespace[i + 1];
+                }
+            }
+            // prefix not found
+            return null;
+        }
+        
+        private void declarePrefix(String prefix, String uri) {           
+            // resize array, if needed
+            if (fNamespaceSize == fNamespace.length) {
+                String[] namespacearray = new String[fNamespaceSize * 2];
+                System.arraycopy(fNamespace, 0, namespacearray, 0, fNamespaceSize);
+                fNamespace = namespacearray;
+            }
+
+            // bind prefix to uri in current context
+            fNamespace[fNamespaceSize++] = prefix;
+            fNamespace[fNamespaceSize++] = uri;
+        }
+        
+        private void fillQName(QName toFill, Node node) {
+            final String prefix = node.getPrefix();
+            final String localName = node.getLocalName();
+            final String rawName = node.getNodeName();
+            final String namespace = node.getNamespaceURI();
+            toFill.prefix = (prefix != null) ? fSymbolTable.addSymbol(prefix) : XMLSymbols.EMPTY_STRING;
+            toFill.localpart = (localName != null) ? fSymbolTable.addSymbol(localName) : XMLSymbols.EMPTY_STRING;
+            toFill.rawname = (rawName != null) ? fSymbolTable.addSymbol(rawName) : XMLSymbols.EMPTY_STRING; 
+            toFill.uri = (namespace != null && namespace.length() > 0) ? fSymbolTable.addSymbol(namespace) : null;
+        }
+    }
+    
 } // class NamespaceSupport
