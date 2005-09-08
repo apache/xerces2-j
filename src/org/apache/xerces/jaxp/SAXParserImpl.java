@@ -45,12 +45,14 @@ import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.PSVIProvider;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
+import org.xml.sax.HandlerBase;
 import org.xml.sax.InputSource;
 import org.xml.sax.Parser;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * This is the implementation specific class for the
@@ -272,6 +274,36 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
         return xmlReader.getProperty(name);
     }
     
+    public void parse(InputSource is, DefaultHandler dh)
+        throws SAXException, IOException {
+        if (is == null) {
+            throw new IllegalArgumentException();
+        }
+        if (dh != null) {
+            xmlReader.setContentHandler(dh);
+            xmlReader.setEntityResolver(dh);
+            xmlReader.setErrorHandler(dh);
+            xmlReader.setDTDHandler(dh);
+            xmlReader.setDocumentHandler(null);
+        }
+        xmlReader.parse(is);
+    }
+    
+    public void parse(InputSource is, HandlerBase hb)
+        throws SAXException, IOException {
+        if (is == null) {
+            throw new IllegalArgumentException();
+        }
+        if (hb != null) {
+            xmlReader.setDocumentHandler(hb);
+            xmlReader.setEntityResolver(hb);
+            xmlReader.setErrorHandler(hb);
+            xmlReader.setDTDHandler(hb);
+            xmlReader.setContentHandler(null);
+        }
+        xmlReader.parse(is);
+    }
+     
     public Schema getSchema() {
         return grammar;
     }
