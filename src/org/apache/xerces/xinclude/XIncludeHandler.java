@@ -340,6 +340,9 @@ public class XIncludeHandler
     // track whether a DTD is being parsed
     private boolean fInDTD;
     
+    // tracks whether start document has been called on the child pipeline
+    private boolean fChildHasSeenStartDocument;
+    
     // track whether the root element of the result infoset has been processed
     private boolean fSeenRootElement;
     
@@ -745,11 +748,13 @@ public class XIncludeHandler
         // otherwise, the locator from the root document would always be used
         fErrorReporter.setDocumentLocator(locator);
 
-        if (!isRootDocument()
-            && fParentXIncludeHandler.searchForRecursiveIncludes(locator)) {
-            reportFatalError(
-                "RecursiveInclude",
-                new Object[] { locator.getExpandedSystemId()});
+        if (!isRootDocument()) {
+            fParentXIncludeHandler.fChildHasSeenStartDocument = true;
+            if (fParentXIncludeHandler.searchForRecursiveIncludes(locator)) {
+                reportFatalError(
+                        "RecursiveInclude",
+                        new Object[] { locator.getExpandedSystemId()});
+            }
         }
 
         if (!(namespaceContext instanceof XIncludeNamespaceSupport)) {
@@ -1660,6 +1665,7 @@ public class XIncludeHandler
             fNeedCopyFeatures = false;
 
             try {
+                fChildHasSeenStartDocument = false;
                 fNamespaceContext.pushScope();
 
                 fChildConfig.parse(includedSource);
@@ -1692,9 +1698,16 @@ public class XIncludeHandler
                 if (fErrorReporter != null) {
                     fErrorReporter.setDocumentLocator(fDocLocation);
                 }
-                // An IOException indicates that we had trouble reading the file, not
-                // that it was an invalid XML file.  So we send a resource error, not a
-                // fatal error.
+                // If the start document event has been seen on the child pipeline it
+                // means the resource was successfully opened and we started reporting
+                // document events. If an IOException is thrown after the start document
+                // event we had a failure midstream and cannot recover.
+                if (fChildHasSeenStartDocument) {
+                    throw new XNIException(e);
+                }
+                // In other circumstances an IOException indicates that we had trouble 
+                // accessing or opening the file, not that it was an invalid XML file. So we 
+                // send a resource error, not a fatal error.
                 reportResourceError(
                     "XMLResourceError",
                     new Object[] { href, e.getMessage()});
