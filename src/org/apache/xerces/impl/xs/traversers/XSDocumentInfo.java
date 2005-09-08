@@ -87,8 +87,9 @@ class XSDocumentInfo {
     // to avoid memory leaks!
     XSDocumentInfo (Element schemaRoot, XSAttributeChecker attrChecker, SymbolTable symbolTable)
                     throws XMLSchemaException {
+        
         fSchemaElement = schemaRoot;
-        fNamespaceSupport = new SchemaNamespaceSupport();
+        fNamespaceSupport = new SchemaNamespaceSupport(schemaRoot, symbolTable);
         fNamespaceSupport.reset();
         fIsChameleonSchema = false;
 
