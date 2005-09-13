@@ -340,8 +340,8 @@ public class XIncludeHandler
     // track whether a DTD is being parsed
     private boolean fInDTD;
     
-    // tracks whether start document has been called on the child pipeline
-    private boolean fChildHasSeenStartDocument;
+    // tracks whether content has been reported on the child pipeline
+    boolean fHasIncludeReportedContent;
     
     // track whether the root element of the result infoset has been processed
     private boolean fSeenRootElement;
@@ -749,7 +749,7 @@ public class XIncludeHandler
         fErrorReporter.setDocumentLocator(locator);
 
         if (!isRootDocument()) {
-            fParentXIncludeHandler.fChildHasSeenStartDocument = true;
+            fParentXIncludeHandler.fHasIncludeReportedContent = true;
             if (fParentXIncludeHandler.searchForRecursiveIncludes(locator)) {
                 reportFatalError(
                         "RecursiveInclude",
@@ -1665,7 +1665,7 @@ public class XIncludeHandler
             fNeedCopyFeatures = false;
 
             try {
-                fChildHasSeenStartDocument = false;
+                fHasIncludeReportedContent = false;
                 fNamespaceContext.pushScope();
 
                 fChildConfig.parse(includedSource);
@@ -1702,7 +1702,7 @@ public class XIncludeHandler
                 // means the resource was successfully opened and we started reporting
                 // document events. If an IOException is thrown after the start document
                 // event we had a failure midstream and cannot recover.
-                if (fChildHasSeenStartDocument) {
+                if (fHasIncludeReportedContent) {
                     throw new XNIException(e);
                 }
                 // In other circumstances an IOException indicates that we had trouble 
@@ -1724,6 +1724,8 @@ public class XIncludeHandler
             XIncludeTextReader textReader = null;
             
             try {
+                fHasIncludeReportedContent = false;
+                
                 // Setup the appropriate text reader.
                 if (!fIsXML11) {
                     if (fXInclude10TextReader == null) {
@@ -1756,6 +1758,12 @@ public class XIncludeHandler
                     "CharConversionFailure", null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
             }
             catch (IOException e) {
+                // If a characters event has already been sent down the pipeline it
+                // means the resource was successfully opened and that this IOException
+                // is from a failure midstream from which we cannot recover.
+                if (fHasIncludeReportedContent) {
+                    throw new XNIException(e);
+                }
                 reportResourceError(
                     "TextResourceError",
                     new Object[] { href, e.getMessage()});

@@ -408,10 +408,10 @@ public class XIncludeTextReader {
      * @throws IOException
      */
     public void parse() throws IOException {
-        
         fReader = getReader(fSource);
         fSource = null;
         int readSize = fReader.read(fTempString.ch, 0, fTempString.ch.length - 1);
+        fHandler.fHasIncludeReportedContent = true;
         while (readSize != -1) {
             for (int i = 0; i < readSize; ++i) {
                 char ch = fTempString.ch[i];
