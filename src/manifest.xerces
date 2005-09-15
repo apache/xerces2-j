@@ -9,7 +9,7 @@ Implementation-Vendor: Apache Software Foundation
 Implementation-URL: http://xml.apache.org/xerces2-j/
 
 Name: org/xml/sax/
-Comment: based on xml-commons external 1.3.01
+Comment: based on xml-commons external 1.3.02
 Specification-Title: Simple API for XML
 Specification-Vendor: David Megginson
 Specification-Version: 2.0.2
