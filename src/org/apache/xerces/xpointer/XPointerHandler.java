@@ -120,10 +120,6 @@ public final class XPointerHandler extends XIncludeHandler implements
         fDocumentHandler = handler;
     }
     
-    public void setDTDHandler(XMLDTDHandler handler) {
-        fDTDHandler = handler;
-    }
-    
     // ************************************************************************
     //  Implementation of the XPointerProcessor interface.
     // ************************************************************************

@@ -1394,15 +1394,7 @@ public class XIncludeHandler
      * @see org.apache.xerces.xni.parser.XMLDTDSource#setDTDHandler(org.apache.xerces.xni.XMLDTDHandler)
      */
     public void setDTDHandler(XMLDTDHandler handler) {
-        if (fDTDHandler != handler) {
-            fDTDHandler = handler;
-            if (fXIncludeChildConfig != null) {
-                fXIncludeChildConfig.setDTDHandler(handler);
-            }
-            if (fXPointerChildConfig != null) {
-                fXPointerChildConfig.setDTDHandler(handler);
-            }
-        }
+        fDTDHandler = handler;
     }
 
     // XIncludeHandler methods
