@@ -28,6 +28,8 @@ import org.apache.xerces.xinclude.XIncludeNamespaceSupport;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
+import org.apache.xerces.xni.XMLDTDHandler;
+import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
@@ -112,6 +114,14 @@ public final class XPointerHandler extends XIncludeHandler implements
         fErrorHandler = errorHandler;
         fXPointerErrorReporter = errorReporter;
         //fErrorReporter = errorReporter; // The XInclude ErrorReporter
+    }
+    
+    public void setDocumentHandler(XMLDocumentHandler handler) {
+        fDocumentHandler = handler;
+    }
+    
+    public void setDTDHandler(XMLDTDHandler handler) {
+        fDTDHandler = handler;
     }
     
     // ************************************************************************

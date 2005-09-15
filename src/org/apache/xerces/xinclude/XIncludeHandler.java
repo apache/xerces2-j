@@ -720,7 +720,15 @@ public class XIncludeHandler
     } // getPropertyDefault(String):Object
 
     public void setDocumentHandler(XMLDocumentHandler handler) {
-        fDocumentHandler = handler;
+        if (fDocumentHandler != handler) {
+            fDocumentHandler = handler;
+            if (fXIncludeChildConfig != null) {
+                fXIncludeChildConfig.setDocumentHandler(handler);
+            }
+            if (fXPointerChildConfig != null) {
+                fXPointerChildConfig.setDocumentHandler(handler);
+            }
+        }
     }
 
     public XMLDocumentHandler getDocumentHandler() {
@@ -1386,7 +1394,15 @@ public class XIncludeHandler
      * @see org.apache.xerces.xni.parser.XMLDTDSource#setDTDHandler(org.apache.xerces.xni.XMLDTDHandler)
      */
     public void setDTDHandler(XMLDTDHandler handler) {
-        fDTDHandler = handler;
+        if (fDTDHandler != handler) {
+            fDTDHandler = handler;
+            if (fXIncludeChildConfig != null) {
+                fXIncludeChildConfig.setDTDHandler(handler);
+            }
+            if (fXPointerChildConfig != null) {
+                fXPointerChildConfig.setDTDHandler(handler);
+            }
+        }
     }
 
     // XIncludeHandler methods
@@ -1641,7 +1657,7 @@ public class XIncludeHandler
 
             // If an xpointer attribute is present
             if (xpointer != null ) {
-            	fChildConfig = fXPointerChildConfig ;
+            	fChildConfig = fXPointerChildConfig;
             	
                 // Parse the XPointer expression
                 try {
