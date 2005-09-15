@@ -821,9 +821,17 @@ public class DOMUtil {
         return node.getNamespaceURI();
     }
     
-    //return synthetic annotation
+    // return annotation
+    public static String getAnnotation(Node node) {
+        if (node instanceof ElementImpl) {
+            return ((ElementImpl)node).getAnnotation();
+        }
+        return null;
+    }
+    
+    // return synthetic annotation
     public static String getSyntheticAnnotation(Node node) {
-        if(node instanceof ElementImpl) {
+        if (node instanceof ElementImpl) {
             return ((ElementImpl)node).getSyntheticAnnotation();
         }
         return null;

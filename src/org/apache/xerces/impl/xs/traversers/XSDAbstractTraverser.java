@@ -33,6 +33,7 @@ import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
+import org.apache.xerces.impl.xs.opti.ElementImpl;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.DOMUtil;
@@ -106,7 +107,7 @@ abstract class XSDAbstractTraverser {
         Object[] attrValues = fAttrChecker.checkAttributes(annotationDecl, isGlobal, schemaDoc);
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
         
-        String contents = null;
+        String contents = DOMUtil.getAnnotation(annotationDecl);
         Element child = DOMUtil.getFirstChildElement(annotationDecl);
         if (child != null) {
             do {
@@ -117,11 +118,6 @@ abstract class XSDAbstractTraverser {
                 if (!((name.equals(SchemaSymbols.ELT_APPINFO)) ||
                         (name.equals(SchemaSymbols.ELT_DOCUMENTATION)))) {
                     reportSchemaError("src-annotation", new Object[]{name}, child);
-                } else { // the annotation, as we currently know it, is a Text child
-                    Node textContent = child.getFirstChild();
-                    if(textContent != null && textContent.getNodeType() == Node.TEXT_NODE) {
-                        contents = ((Text)textContent).getData();
-                    }
                 }
                 
                 // General Attribute Checking
@@ -133,18 +129,6 @@ abstract class XSDAbstractTraverser {
                 child = DOMUtil.getNextSiblingElement(child);
             }
             while (child != null);
-        }
-        // REVISIT: When an annotation has no <documentation> or
-        // <appinfo> children the text child is stored on the first child of its
-        // parent. Only if the annotation is the first child will we find the
-        // text node there. See SchemaDOM. We need to store the string representation
-        // in a consistent place so it can be reliably retrieved, perhaps as 
-        // user data. -- mrglavas
-        else {
-            Node textContent = annotationDecl.getFirstChild();
-            if(textContent != null && textContent.getNodeType() == Node.TEXT_NODE) {
-                contents = ((Text)textContent).getData();
-            }
         }
         // if contents was null, must have been some kind of error;
         // nothing to contribute to PSVI

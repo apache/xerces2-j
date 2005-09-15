@@ -78,6 +78,8 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
         this.config = config;
     }
     
+    // Reference to the current annotation element.
+    private ElementImpl fCurrentAnnotationElement;
     // where an annotation element itself begins
     // -1 means not in an annotation's scope
     private int fAnnotationDepth = -1;
@@ -106,7 +108,8 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
         fGenerateSyntheticAnnotation = config.getFeature(GENERATE_SYNTHETIC_ANNOTATION);
         fHasNonSchemaAttributes.clear();
         fSawAnnotation.clear();
-        schemaDOM = new SchemaDOM(); 
+        schemaDOM = new SchemaDOM();
+        fCurrentAnnotationElement = null;
         fAnnotationDepth = -1;
         fInnerAnnotationDepth = -1;
         fDepth = -1;
@@ -235,15 +238,22 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                 }
                 fAnnotationDepth = fDepth;
                 schemaDOM.startAnnotation(element, attributes, fNamespaceContext);
+                fCurrentAnnotationElement = schemaDOM.startElement(element, attributes, 
+                        fLocator.getLineNumber(),
+                        fLocator.getColumnNumber(),
+                        fLocator.getCharacterOffset());
+                return;
             } 
             else if (element.uri == SchemaSymbols.URI_SCHEMAFORSCHEMA && fGenerateSyntheticAnnotation) {
                 fSawAnnotation.push(false);
                 fHasNonSchemaAttributes.push(hasNonSchemaAttributes(element, attributes));
             }
-        } else if(fDepth == fAnnotationDepth+1) {
+        } 
+        else if (fDepth == fAnnotationDepth + 1) {
             fInnerAnnotationDepth = fDepth;
             schemaDOM.startAnnotationElement(element, attributes);
-        } else {
+        } 
+        else {
             schemaDOM.startAnnotationElement(element, attributes);
             // avoid falling through; don't call startElement in this case
             return;
@@ -308,11 +318,12 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
                     element.localpart == SchemaSymbols.ELT_ANNOTATION) {
                 schemaDOM.startAnnotation(element, attributes, fNamespaceContext);
             }
-        } else {
+        } 
+        else {
             schemaDOM.startAnnotationElement(element, attributes);
         }
         
-        schemaDOM.emptyElement(element, attributes, 
+        ElementImpl newElem = schemaDOM.emptyElement(element, attributes, 
                 fLocator.getLineNumber(),
                 fLocator.getColumnNumber(),
                 fLocator.getCharacterOffset());
@@ -321,10 +332,11 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
             // this is messed up, but a case to consider:
             if (element.uri == SchemaSymbols.URI_SCHEMAFORSCHEMA &&
                     element.localpart == SchemaSymbols.ELT_ANNOTATION) {
-                schemaDOM.endAnnotationElement(element, true);
+                schemaDOM.endAnnotation(element, newElem);
             }
-        } else {
-            schemaDOM.endAnnotationElement(element, false);
+        } 
+        else {
+            schemaDOM.endAnnotationElement(element);
         } 
     }
     
@@ -345,14 +357,14 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
         if(fAnnotationDepth > -1) {
             if (fInnerAnnotationDepth == fDepth) {
                 fInnerAnnotationDepth = -1;
-                schemaDOM.endAnnotationElement(element, false);
+                schemaDOM.endAnnotationElement(element);
                 schemaDOM.endElement();
             } else if (fAnnotationDepth == fDepth) {
                 fAnnotationDepth = -1;
-                schemaDOM.endAnnotationElement(element, true);
+                schemaDOM.endAnnotation(element, fCurrentAnnotationElement);
                 schemaDOM.endElement();
             } else { // inside a child of annotation
-                schemaDOM.endAnnotationElement(element, false);
+                schemaDOM.endAnnotationElement(element);
             }
         } else { // not in an annotation at all
             if(element.uri == SchemaSymbols.URI_SCHEMAFORSCHEMA && fGenerateSyntheticAnnotation) {

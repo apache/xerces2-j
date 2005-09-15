@@ -58,32 +58,31 @@ public class SchemaDOM extends DefaultDocument {
     }
     
     
-    public void startElement(QName element, XMLAttributes attributes,
+    public ElementImpl startElement(QName element, XMLAttributes attributes,
             int line, int column, int offset) {
         ElementImpl node = new ElementImpl(line, column, offset);
         processElement(element, attributes, node);
         // now the current node added, becomes the parent
         parent = node;
+        return node;
     }
     
-    
-    public void emptyElement(QName element, XMLAttributes attributes,
+    public ElementImpl emptyElement(QName element, XMLAttributes attributes,
             int line, int column, int offset) {
         ElementImpl node = new ElementImpl(line, column, offset);
         processElement(element, attributes, node);
+        return node;
     }
     
-    public void startElement(QName element, XMLAttributes attributes,
+    public ElementImpl startElement(QName element, XMLAttributes attributes,
             int line, int column) {
-        startElement(element, attributes, line, column, -1);
+        return startElement(element, attributes, line, column, -1);
     }
     
-    
-    public void emptyElement(QName element, XMLAttributes attributes,
+    public ElementImpl emptyElement(QName element, XMLAttributes attributes,
             int line, int column) {
-        emptyElement(element, attributes, line, column, -1);
+        return emptyElement(element, attributes, line, column, -1);
     }
-    
     
     private void processElement(QName element, XMLAttributes attributes, ElementImpl node) {
         
@@ -191,40 +190,15 @@ public class SchemaDOM extends DefaultDocument {
         }
     }
     
-    void endAnnotationElement(QName elemName, boolean complete) {
-        if(complete) {
-            fAnnotationBuffer.append("\n</").append(elemName.rawname).append(">");
-            // note that this is always called after endElement on <annotation>'s
-            // child and before endElement on annotation.
-            // hence, we must make this the child of the current
-            // parent's only child.
-            ElementImpl child = (ElementImpl)relations[currLoc][1];
-            
-            // check if array needs to be resized
-            if (nextFreeLoc == relations.length) {
-                resizeRelations();
-            }
-            int newRow = child.parentRow = nextFreeLoc++; 
-            
-            // now find the place to insert this node
-            boolean foundPlace = false;
-            int i = 1;
-            for (; i<relations[newRow].length; i++) {
-                if (relations[newRow][i] == null) {
-                    foundPlace = true;
-                    break;
-                }
-            }
-            
-            if (!foundPlace) {
-                resizeRelations(newRow);
-            }
-            relations[newRow][i] = new TextImpl(fAnnotationBuffer, this, newRow, i);
-            // apparently, there is no sensible way of resetting
-            // these things
-            fAnnotationBuffer = null;
-        } else      //capturing character calls
-            fAnnotationBuffer.append("</").append(elemName.rawname).append(">");
+    void endAnnotation(QName elemName, ElementImpl annotation) {
+        fAnnotationBuffer.append("\n</").append(elemName.rawname).append(">");
+        annotation.fAnnotation = fAnnotationBuffer.toString();
+        // apparently, there is no sensible way of resetting these things
+        fAnnotationBuffer = null;
+    }
+    
+    void endAnnotationElement(QName elemName) {
+        fAnnotationBuffer.append("</").append(elemName.rawname).append(">");
     }
     
     void endSyntheticAnnotationElement(QName elemName, boolean complete) {

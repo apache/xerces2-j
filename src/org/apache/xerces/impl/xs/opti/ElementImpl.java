@@ -40,6 +40,7 @@ public class ElementImpl extends DefaultElement {
     int line;
     int column;
     int charOffset;
+    String fAnnotation;
     String fSyntheticAnnotation;
     
     public ElementImpl(int line, int column, int offset) {
@@ -244,6 +245,10 @@ public class ElementImpl extends DefaultElement {
     /** Returns the character offset. */
     public int getCharacterOffset() {
         return charOffset;
+    }
+    
+    public String getAnnotation() {
+        return fAnnotation;
     }
     
     public String getSyntheticAnnotation() {
