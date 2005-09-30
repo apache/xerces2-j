@@ -31,7 +31,7 @@ import org.w3c.dom.Element;
  */
 public class WMLDocumentImpl extends DocumentImpl implements WMLDocument {
     
-    private static final long serialVersionUID = 3257844364091929145L;
+    private static final long serialVersionUID = -6582904849512384104L;
     
     private static Hashtable        _elementTypesWML;
     private static final Class[]    _elemClassSigWML =

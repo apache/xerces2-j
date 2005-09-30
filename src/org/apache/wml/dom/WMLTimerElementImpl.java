@@ -24,7 +24,7 @@ import org.apache.wml.*;
  */
 public class WMLTimerElementImpl extends WMLElementImpl implements WMLTimerElement {
     
-    private static final long serialVersionUID = 4120852161702801969L;
+    private static final long serialVersionUID = 9055622169756832726L;
 
     public WMLTimerElementImpl (WMLDocumentImpl owner, String tagName) {
         super( owner, tagName);

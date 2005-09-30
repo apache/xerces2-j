@@ -24,7 +24,7 @@ import org.apache.wml.*;
  */
 public class WMLPostfieldElementImpl extends WMLElementImpl implements WMLPostfieldElement {
     
-    private static final long serialVersionUID = 3256438114523296562L;
+    private static final long serialVersionUID = -1169432003991642980L;
 
     public WMLPostfieldElementImpl (WMLDocumentImpl owner, String tagName) {
         super( owner, tagName);

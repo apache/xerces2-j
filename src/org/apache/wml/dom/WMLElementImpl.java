@@ -25,7 +25,7 @@ import org.apache.wml.*;
  */
 public class WMLElementImpl extends ElementImpl implements WMLElement {
     
-    private static final long serialVersionUID = 3689631376446338103L;
+    private static final long serialVersionUID = 3440984702956371604L;
     
     public WMLElementImpl (WMLDocumentImpl owner, String tagName) {
         super(owner, tagName);

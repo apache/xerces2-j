@@ -24,7 +24,7 @@ import org.apache.wml.*;
  */
 public class WMLCardElementImpl extends WMLElementImpl implements WMLCardElement {
     
-    private static final long serialVersionUID = 3257005466683781686L;
+    private static final long serialVersionUID = -3571126568344328924L;
     
     public WMLCardElementImpl (WMLDocumentImpl owner, String tagName) {
         super( owner, tagName);

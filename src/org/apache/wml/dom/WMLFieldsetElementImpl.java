@@ -24,7 +24,7 @@ import org.apache.wml.*;
  */
 public class WMLFieldsetElementImpl extends WMLElementImpl implements WMLFieldsetElement {
     
-    private static final long serialVersionUID = 3907211537721405752L;
+    private static final long serialVersionUID = 6941811812235840705L;
     
     public WMLFieldsetElementImpl (WMLDocumentImpl owner, String tagName) {
         super( owner, tagName);

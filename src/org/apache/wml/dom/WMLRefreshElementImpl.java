@@ -24,7 +24,7 @@ import org.apache.wml.*;
  */
 public class WMLRefreshElementImpl extends WMLElementImpl implements WMLRefreshElement {
 
-    private static final long serialVersionUID = 4050768173890484024L;
+    private static final long serialVersionUID = 8781837880806459398L;
 
     public WMLRefreshElementImpl (WMLDocumentImpl owner, String tagName) {
         super( owner, tagName);

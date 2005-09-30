@@ -24,7 +24,7 @@ import org.apache.wml.*;
  */
 public class WMLNoopElementImpl extends WMLElementImpl implements WMLNoopElement {
     
-    private static final long serialVersionUID = 3256442521025458484L;
+    private static final long serialVersionUID = -1581314434256075931L;
 
     public WMLNoopElementImpl (WMLDocumentImpl owner, String tagName) {
         super( owner, tagName);
