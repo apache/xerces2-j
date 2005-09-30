@@ -61,7 +61,7 @@ public class HTMLDocumentImpl
     implements HTMLDocument
 {
 
-    private static final long serialVersionUID = 3258132457579427892L;
+    private static final long serialVersionUID = 4285791750126227180L;
 
     /**
      * Holds {@link HTMLCollectionImpl} object with live collection of all
