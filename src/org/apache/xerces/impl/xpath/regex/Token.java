@@ -28,7 +28,7 @@ import java.util.Hashtable;
  */
 class Token implements java.io.Serializable {
 
-    private static final long serialVersionUID = 4049923761862293040L;
+    private static final long serialVersionUID = 8484976002585487481L;
 
     static final boolean COUNTTOKENS = true;
     static int tokens = 0;

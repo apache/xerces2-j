@@ -98,7 +98,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     
     private class ComplexTypeRecoverableError extends Exception {
         
-        private static final long serialVersionUID = 3762247556666831417L;
+        private static final long serialVersionUID = 6802729912091130335L;
         
         Object[] errorSubstText=null;
         Element  errorElem = null;

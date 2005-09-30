@@ -480,7 +480,7 @@ public class DocumentImpl
      */
     class LEntry implements Serializable {
 
-        private static final long serialVersionUID = 3258416144514626360L;
+        private static final long serialVersionUID = -8426757059492421631L;
         String type;
         EventListener listener;
         boolean useCapture;
@@ -864,7 +864,7 @@ public class DocumentImpl
      * string value. Simple struct, no methods.
      */
     class EnclosingAttr implements Serializable {
-        private static final long serialVersionUID = 3257001077260759859L;
+        private static final long serialVersionUID = 5208387723391647216L;
         AttrImpl node;
         String oldvalue;
     }

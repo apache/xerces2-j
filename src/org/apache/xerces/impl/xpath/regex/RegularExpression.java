@@ -482,7 +482,7 @@ import java.text.CharacterIterator;
  */
 public class RegularExpression implements java.io.Serializable {
     
-    private static final long serialVersionUID = 3905241217112815923L;
+    private static final long serialVersionUID = 6242499334195006401L;
 
     static final boolean DEBUG = false;
 
