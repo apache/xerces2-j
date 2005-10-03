@@ -930,7 +930,9 @@ XSLoader, DOMConfiguration {
         catch (XMLConfigurationException e){
             parser_settings = true;
         }
-        if (!parser_settings || !fSettingsChanged){            
+        if (!parser_settings || !fSettingsChanged) {
+            // need to reprocess JAXP schema sources
+            fJAXPProcessed = false;
             // reinitialize grammar bucket
             initGrammarBucket();
             return;           
