@@ -514,23 +514,8 @@ public class DTDGrammar
         //add(or set) this elementDecl to the local cache
         this.fElementDeclTab.put(name, elementDecl );
 
-        fElementDecl         = elementDecl;
-
-        if ((fDepth == 0 ||
-            (fDepth == 1 && elementDecl.type == XMLElementDecl.TYPE_MIXED)) &&
-            fNodeIndexStack != null) {
-            if (elementDecl.type == XMLElementDecl.TYPE_MIXED) {
-                int pcdata = addUniqueLeafNode(null);
-                if (fNodeIndexStack[0] == -1) {
-                    fNodeIndexStack[0] = pcdata;
-                }
-                else {
-                    fNodeIndexStack[0] = addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE,
-                                                            pcdata, fNodeIndexStack[0]);
-                }
-            }
-            setContentSpecIndex(fCurrentElementIndex, fNodeIndexStack[fDepth]);
-        }
+        fElementDecl = elementDecl;
+        addContentSpecToElement(elementDecl);
 
         if ( DEBUG ) {
             System.out.println(  "name = " + fElementDecl.name.localpart );
@@ -1648,6 +1633,26 @@ public class DTDGrammar
     //
     // Protected methods
     //
+    
+    /**
+     * Adds the content spec to the give element declaration.
+     */
+    protected void addContentSpecToElement(XMLElementDecl elementDecl) {
+        if ((fDepth == 0 || (fDepth == 1 && elementDecl.type == XMLElementDecl.TYPE_MIXED)) &&
+                fNodeIndexStack != null) {
+            if (elementDecl.type == XMLElementDecl.TYPE_MIXED) {
+                int pcdata = addUniqueLeafNode(null);
+                if (fNodeIndexStack[0] == -1) {
+                    fNodeIndexStack[0] = pcdata;
+                }
+                else {
+                    fNodeIndexStack[0] = addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE,
+                            pcdata, fNodeIndexStack[0]);
+                }
+            }
+            setContentSpecIndex(fCurrentElementIndex, fNodeIndexStack[fDepth]);
+        }
+    }
 
     /**
      * getElementContentModelValidator
