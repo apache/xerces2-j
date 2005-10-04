@@ -210,7 +210,7 @@ final class BalancedDTDGrammar extends DTDGrammar {
     //
     
     /**
-     * Adds the content spec to the give element declaration.
+     * Adds the content spec to the given element declaration.
      */
     protected final void addContentSpecToElement(XMLElementDecl elementDecl) {
         int contentSpec = fGroupIndexStackSizes[0] > 0 ? fGroupIndexStack[0][0] : -1;

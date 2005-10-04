@@ -1635,7 +1635,7 @@ public class DTDGrammar
     //
     
     /**
-     * Adds the content spec to the give element declaration.
+     * Adds the content spec to the given element declaration.
      */
     protected void addContentSpecToElement(XMLElementDecl elementDecl) {
         if ((fDepth == 0 || (fDepth == 1 && elementDecl.type == XMLElementDecl.TYPE_MIXED)) &&
