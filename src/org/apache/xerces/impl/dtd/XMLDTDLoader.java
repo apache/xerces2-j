@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2004 The Apache Software Foundation.
+ * Copyright 1999-2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,13 +74,18 @@ public class XMLDTDLoader
     /** Feature identifier: standard uri conformant feature. */
     protected static final String STANDARD_URI_CONFORMANT_FEATURE =
         Constants.XERCES_FEATURE_PREFIX + Constants.STANDARD_URI_CONFORMANT_FEATURE;
+    
+    /** Feature identifier: balance syntax trees. */
+    protected static final String BALANCE_SYNTAX_TREES =
+        Constants.XERCES_FEATURE_PREFIX + Constants.BALANCE_SYNTAX_TREES;
 
     // recognized features:
-    private static final String[] RECOGNIZED_FEATURES = {
+    private static final String[] LOADER_RECOGNIZED_FEATURES = {
         VALIDATION,
         WARN_ON_DUPLICATE_ATTDEF,
         NOTIFY_CHAR_REFS,
-        STANDARD_URI_CONFORMANT_FEATURE
+        STANDARD_URI_CONFORMANT_FEATURE,
+        BALANCE_SYNTAX_TREES
     };
 
     // property identifiers
@@ -105,6 +110,9 @@ public class XMLDTDLoader
 
     // enforcing strict uri?
     private boolean fStrictURI = false;
+    
+    /** Controls whether the DTD grammar produces balanced syntax trees. */
+    private boolean fBalanceSyntaxTrees = false;
 
     /** Entity resolver . */
     protected XMLEntityResolver fEntityResolver;
@@ -166,6 +174,15 @@ public class XMLDTDLoader
     } // init(SymbolTable, XMLGrammarPool, XMLErrorReporter, XMLEntityResolver)
 
     // XMLGrammarLoader methods
+    
+    /**
+     * Returns a list of feature identifiers that are recognized by
+     * this component. This method may return null if no features
+     * are recognized by this component.
+     */
+    public String[] getRecognizedFeatures() {
+        return (String[])(LOADER_RECOGNIZED_FEATURES.clone());
+    } // getRecognizedFeatures():String[]
 
     /**
      * Sets the state of a feature. This method is called by the component
@@ -184,15 +201,22 @@ public class XMLDTDLoader
      */
     public void setFeature(String featureId, boolean state)
             throws XMLConfigurationException {
-        if(featureId.equals(VALIDATION)) {
+        if (featureId.equals(VALIDATION)) {
             fValidation = state;
-        } else if(featureId.equals(WARN_ON_DUPLICATE_ATTDEF)) {
+        } 
+        else if (featureId.equals(WARN_ON_DUPLICATE_ATTDEF)) {
             fWarnDuplicateAttdef = state;
-        } else if(featureId.equals(NOTIFY_CHAR_REFS)) {
+        } 
+        else if (featureId.equals(NOTIFY_CHAR_REFS)) {
             fDTDScanner.setFeature(featureId, state);
-        } else if(featureId.equals(STANDARD_URI_CONFORMANT_FEATURE)) {
+        } 
+        else if (featureId.equals(STANDARD_URI_CONFORMANT_FEATURE)) {
             fStrictURI = state;
-        }  else {
+        }
+        else if (featureId.equals(BALANCE_SYNTAX_TREES)) {
+            fBalanceSyntaxTrees = state;
+        }
+        else {
             throw new XMLConfigurationException(XMLConfigurationException.NOT_RECOGNIZED, featureId);
         }
     } // setFeature(String,boolean)
@@ -282,12 +306,20 @@ public class XMLDTDLoader
      */
     public boolean getFeature(String featureId) 
             throws XMLConfigurationException {
-        if(featureId.equals( VALIDATION)) {
+        if (featureId.equals(VALIDATION)) {
             return fValidation;
-        } else if(featureId.equals( WARN_ON_DUPLICATE_ATTDEF)) {
+        } 
+        else if (featureId.equals(WARN_ON_DUPLICATE_ATTDEF)) {
             return fWarnDuplicateAttdef;
-        } else if(featureId.equals( NOTIFY_CHAR_REFS)) {
+        } 
+        else if (featureId.equals(NOTIFY_CHAR_REFS)) {
             return fDTDScanner.getFeature(featureId);
+        }
+        else if (featureId.equals(STANDARD_URI_CONFORMANT_FEATURE)) {
+            return fStrictURI;
+        }
+        else if (featureId.equals(BALANCE_SYNTAX_TREES)) {
+            return fBalanceSyntaxTrees;
         }
         throw new XMLConfigurationException(XMLConfigurationException.NOT_RECOGNIZED, featureId);
     } //getFeature(String):  boolean
@@ -353,7 +385,13 @@ public class XMLDTDLoader
         reset();
         // First chance checking strict URI
         String eid = XMLEntityManager.expandSystemId(source.getSystemId(), source.getBaseSystemId(), fStrictURI);
-        fDTDGrammar = new DTDGrammar(fSymbolTable, new XMLDTDDescription(source.getPublicId(), source.getSystemId(), source.getBaseSystemId(), eid, null));
+        XMLDTDDescription desc = new XMLDTDDescription(source.getPublicId(), source.getSystemId(), source.getBaseSystemId(), eid, null);
+        if (!fBalanceSyntaxTrees) {
+            fDTDGrammar = new DTDGrammar(fSymbolTable, desc);
+        }
+        else {
+            fDTDGrammar = new BalancedDTDGrammar(fSymbolTable, desc);
+        }
         fGrammarBucket = new DTDGrammarBucket();
         fGrammarBucket.setStandalone(false);
         fGrammarBucket.setActiveGrammar(fDTDGrammar); 

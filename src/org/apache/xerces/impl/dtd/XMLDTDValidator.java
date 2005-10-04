@@ -97,19 +97,23 @@ public class XMLDTDValidator
 
     /** Feature identifier: namespaces. */
     protected static final String NAMESPACES =
-    Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
+        Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
 
     /** Feature identifier: validation. */
     protected static final String VALIDATION =
-    Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
+        Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
 
     /** Feature identifier: dynamic validation. */
     protected static final String DYNAMIC_VALIDATION = 
-    Constants.XERCES_FEATURE_PREFIX + Constants.DYNAMIC_VALIDATION_FEATURE;
+        Constants.XERCES_FEATURE_PREFIX + Constants.DYNAMIC_VALIDATION_FEATURE;
+    
+    /** Feature identifier: balance syntax trees. */
+    protected static final String BALANCE_SYNTAX_TREES =
+        Constants.XERCES_FEATURE_PREFIX + Constants.BALANCE_SYNTAX_TREES;
 
     /** Feature identifier: warn on duplicate attdef */
     protected static final String WARN_ON_DUPLICATE_ATTDEF = 
-    Constants.XERCES_FEATURE_PREFIX +Constants.WARN_ON_DUPLICATE_ATTDEF_FEATURE; 
+        Constants.XERCES_FEATURE_PREFIX + Constants.WARN_ON_DUPLICATE_ATTDEF_FEATURE; 
     
 	protected static final String PARSER_SETTINGS = 
 		Constants.XERCES_FEATURE_PREFIX + Constants.PARSER_SETTINGS;	
@@ -144,13 +148,15 @@ public class XMLDTDValidator
     private static final String[] RECOGNIZED_FEATURES = {
         NAMESPACES,
         VALIDATION,
-        DYNAMIC_VALIDATION
+        DYNAMIC_VALIDATION,
+        BALANCE_SYNTAX_TREES
     };
 
     /** Feature defaults. */
     private static final Boolean[] FEATURE_DEFAULTS = {
         null,
         null,
+        Boolean.FALSE,
         Boolean.FALSE,
     };
 
@@ -206,6 +212,9 @@ public class XMLDTDValidator
      * the validation feature is set to <code>true</code>.
      */
     protected boolean fDynamicValidation;
+    
+    /** Controls whether the DTD grammar produces balanced syntax trees. */
+    protected boolean fBalanceSyntaxTrees;
 
     /** warn on duplicate attribute definition, this feature works only when validation is true */
     protected boolean fWarnDuplicateAttdef;
@@ -466,6 +475,13 @@ public class XMLDTDValidator
         }
         catch (XMLConfigurationException e) {
             fDynamicValidation = false;
+        }
+        
+        try {
+            fBalanceSyntaxTrees = componentManager.getFeature(BALANCE_SYNTAX_TREES);
+        }
+        catch (XMLConfigurationException e) {
+            fBalanceSyntaxTrees = false;
         }
         
         try {
@@ -733,7 +749,12 @@ public class XMLDTDValidator
         }
         if(fDTDGrammar == null) {
             // we'll have to create it...
-            fDTDGrammar = new DTDGrammar(fSymbolTable, grammarDesc);
+            if (!fBalanceSyntaxTrees) {
+                fDTDGrammar = new DTDGrammar(fSymbolTable, grammarDesc);
+            }
+            else {
+                fDTDGrammar = new BalancedDTDGrammar(fSymbolTable, grammarDesc);
+            }
         } else {
             // we've found a cached one;so let's make sure not to read
             // any external subset!
