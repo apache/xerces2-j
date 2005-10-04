@@ -255,7 +255,7 @@ public final class Constants {
     /** Validate datatypes feature ("validation/validate-datatypes"). */
     public static final String VALIDATE_DATATYPES_FEATURE = "validation/validate-datatypes";
     
-    /** Balanace syntax trees feature ("validation/balance-syntax-trees"). */
+    /** Balance syntax trees feature ("validation/balance-syntax-trees"). */
     public static final String BALANCE_SYNTAX_TREES = "validation/balance-syntax-trees";
     
     /** Notify character references feature (scanner/notify-char-refs"). */
