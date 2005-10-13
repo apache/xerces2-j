@@ -27,17 +27,16 @@ import java.util.Properties;
 import java.util.Locale;
 
 /**
- * The implementation of the javac compiler for IBM JDK 1.4
+ * The implementation of the javac compiler for JDK 1.4 and above
  *
  * The purpose of this task is to diagnose whether we're
- * running on an IBM 1.4 JVM; if we are, to
+ * running on a 1.4 or above JVM; if we are, to
  * set up the bootclasspath such that the build will
  * succeed; if we aren't, then invoke the Javac12
  * task.
  *
  * @author Neil Graham, IBM
  */
-
 public class XJavac extends Javac {
 
     /**
@@ -57,40 +56,9 @@ public class XJavac extends Javac {
             }
             // this is supposed to be provided by all JVM's from time immemorial
             String vendor = ((String)props.get("java.vendor")).toUpperCase(Locale.ENGLISH);
-            if(vendor.indexOf("IBM") >= 0){
-                // we're on an IBM 1.4; fiddle with the bootclasspath.
-                Path bcp = createBootclasspath();
-                String javaHome = System.getProperty("java.home");
-                StringBuffer bcpMember = new StringBuffer();
-                bcpMember.append(javaHome).append("/lib/charsets.jar:");
-                bcp.createPathElement().setPath(bcpMember.toString());
-                bcpMember.replace(javaHome.length(), bcpMember.length(), "/lib/core.jar:");
-                bcp.createPathElement().setPath(bcpMember.toString());
-                bcpMember.replace(javaHome.length(), bcpMember.length(),  "/lib/graphics.jar:");
-                bcp.createPathElement().setPath(bcpMember.toString());
-                bcpMember.replace(javaHome.length(), bcpMember.length(),  "/lib/javaws.jar:");
-                bcp.createPathElement().setPath(bcpMember.toString());
-                bcpMember.replace(javaHome.length(), bcpMember.length(),  "/lib/jaws.jar:");
-                bcp.createPathElement().setPath(bcpMember.toString());
-                bcpMember.replace(javaHome.length(), bcpMember.length(),  "/lib/security.jar:");
-                bcp.createPathElement().setPath(bcpMember.toString());
-                bcpMember.replace(javaHome.length(), bcpMember.length(),  "/lib/server.jar:");
-                bcp.createPathElement().setPath(bcpMember.toString());
-                bcpMember.replace(javaHome.length(), bcpMember.length(),  "/lib/ext/JawBridge.jar:");
-                bcp.createPathElement().setPath(bcpMember.toString());
-                bcpMember.replace(javaHome.length(), bcpMember.length(),  "/lib/ext/gskikm.jar:");
-                bcp.createPathElement().setPath(bcpMember.toString());
-                bcpMember.replace(javaHome.length(), bcpMember.length(),  "/lib/ext/ibmjceprovider.jar:");
-                bcp.createPathElement().setPath(bcpMember.toString());
-                bcpMember.replace(javaHome.length(), bcpMember.length(),  "/lib/ext/indicim.jar:");
-                bcp.createPathElement().setPath(bcpMember.toString());
-                bcpMember.replace(javaHome.length(), bcpMember.length(),  "/lib/ext/jaccess.jar:");
-                bcp.createPathElement().setPath(bcpMember.toString());
-                bcpMember.replace(javaHome.length(), bcpMember.length(),  "/lib/ext/ldapsec.jar:");
-                bcp.createPathElement().setPath(bcpMember.toString());
-                bcpMember.replace(javaHome.length(), bcpMember.length(),  "/lib/ext/oldcertpath.jar");
-                bcp.createPathElement().setPath(bcpMember.toString());
-                setBootclasspath(bcp);
+            if (vendor.indexOf("IBM") >= 0) {
+                // we're on an IBM 1.4 or higher; fiddle with the bootclasspath.
+                setBootclasspath(createIBMJDKBootclasspath());
             }
             // need to do special things for Sun too and also
             // for Apple, HP and Blackdown: a Linux port of Sun Java
@@ -98,7 +66,7 @@ public class XJavac extends Javac {
                      (vendor.indexOf("BLACKDOWN") >= 0) || 
                      (vendor.indexOf("APPLE") >= 0) ||
                      (vendor.indexOf("HEWLETT-PACKARD") >= 0)) {
-                // we're on an SUN 1.4; fiddle with the bootclasspath.
+                // we're on an SUN 1.4 or higher; fiddle with the bootclasspath.
                 // since we can't eviscerate XML-related info here,
                 // we must use the classpath
                 Path bcp = createBootclasspath();
@@ -113,6 +81,46 @@ public class XJavac extends Javac {
         }
         // now just do the normal thing:
         super.execute();
+    }
+    
+    /**
+     * Creates bootclasspath for IBM JDK 1.4 and above.
+     */
+    private Path createIBMJDKBootclasspath() {
+        Path bcp = createBootclasspath();
+        String javaHome = System.getProperty("java.home");
+        StringBuffer bcpMember = new StringBuffer();
+        bcpMember.append(javaHome).append("/lib/charsets.jar:");
+        bcp.createPathElement().setPath(bcpMember.toString());
+        bcpMember.replace(javaHome.length(), bcpMember.length(), "/lib/core.jar:");
+        bcp.createPathElement().setPath(bcpMember.toString());
+        bcpMember.replace(javaHome.length(), bcpMember.length(), "/lib/vm.jar:");
+        bcp.createPathElement().setPath(bcpMember.toString());
+        bcpMember.replace(javaHome.length(), bcpMember.length(),  "/lib/graphics.jar:");
+        bcp.createPathElement().setPath(bcpMember.toString());
+        bcpMember.replace(javaHome.length(), bcpMember.length(),  "/lib/javaws.jar:");
+        bcp.createPathElement().setPath(bcpMember.toString());
+        bcpMember.replace(javaHome.length(), bcpMember.length(),  "/lib/jaws.jar:");
+        bcp.createPathElement().setPath(bcpMember.toString());
+        bcpMember.replace(javaHome.length(), bcpMember.length(),  "/lib/security.jar:");
+        bcp.createPathElement().setPath(bcpMember.toString());
+        bcpMember.replace(javaHome.length(), bcpMember.length(),  "/lib/server.jar:");
+        bcp.createPathElement().setPath(bcpMember.toString());
+        bcpMember.replace(javaHome.length(), bcpMember.length(),  "/lib/ext/JawBridge.jar:");
+        bcp.createPathElement().setPath(bcpMember.toString());
+        bcpMember.replace(javaHome.length(), bcpMember.length(),  "/lib/ext/gskikm.jar:");
+        bcp.createPathElement().setPath(bcpMember.toString());
+        bcpMember.replace(javaHome.length(), bcpMember.length(),  "/lib/ext/ibmjceprovider.jar:");
+        bcp.createPathElement().setPath(bcpMember.toString());
+        bcpMember.replace(javaHome.length(), bcpMember.length(),  "/lib/ext/indicim.jar:");
+        bcp.createPathElement().setPath(bcpMember.toString());
+        bcpMember.replace(javaHome.length(), bcpMember.length(),  "/lib/ext/jaccess.jar:");
+        bcp.createPathElement().setPath(bcpMember.toString());
+        bcpMember.replace(javaHome.length(), bcpMember.length(),  "/lib/ext/ldapsec.jar:");
+        bcp.createPathElement().setPath(bcpMember.toString());
+        bcpMember.replace(javaHome.length(), bcpMember.length(),  "/lib/ext/oldcertpath.jar");
+        bcp.createPathElement().setPath(bcpMember.toString());
+        return bcp;
     }
     
     /**
