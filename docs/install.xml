@@ -279,10 +279,10 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
             Obtain a copy of the public key of the Xerces
             committer.  While most committers have posted their
             keys to public "key servers", probably the easiest
-            place to get them from is CVS.  The public keys of
+            place to get them from is SVN.  The public keys of
             all Xerces committers who post releases are available
             from the file called <code>KEYS</code> located in the
-            root directory of the <code>xml-xerces/java</code>
+            root directory of the <code>http://svn.apache.org/repos/asf/xerces/java/trunk/</code>
             repository.
         </li>
         <li>

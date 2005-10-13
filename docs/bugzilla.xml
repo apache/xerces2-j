@@ -29,7 +29,7 @@
         with to see whether the bug has been already reported and/or fixed.
 	    You can also download the 
 	    <jump href='http://vmgump.apache.org/gump/public-jars/xml-xerces2/'>latest code</jump> 
-	    in CVS and check if you can reproduce the bug.</li>
+	    in SVN and check if you can reproduce the bug.</li>
 	  <li>Report bugs against the newest release.</li>
 	  <li>Read <jump href="http://issues.apache.org/jira">JIRA Notes</jump></li>
       </ul>
