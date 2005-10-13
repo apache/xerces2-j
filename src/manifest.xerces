@@ -45,8 +45,8 @@ Specification-Version: 1.3
 Specification-Vendor: Sun Microsystems Inc.
 Implementation-Title: javax.xml.datatype
 Implementation-Version: 1.3.02
-Implementation-Vendor: Sun Microsystems Inc.
-Implementation-URL: http://java.sun.com/xml/jaxp.html
+Implementation-Vendor: Apache Software Foundation
+Implementation-URL: http://xml.apache.org/commons/
 
 Name: javax/xml/parsers/
 Comment: based on xml-commons external 1.3.02
@@ -55,8 +55,8 @@ Specification-Version: 1.3
 Specification-Vendor: Sun Microsystems Inc.
 Implementation-Title: javax.xml.parsers
 Implementation-Version: 1.3.02
-Implementation-Vendor: Sun Microsystems Inc.
-Implementation-URL: http://java.sun.com/xml/jaxp.html
+Implementation-Vendor: Apache Software Foundation
+Implementation-URL: http://xml.apache.org/commons/
 
 Name: javax/xml/transform/
 Comment: based on xml-commons external 1.3.02
@@ -65,8 +65,8 @@ Specification-Version: 1.3
 Specification-Vendor: Sun Microsystems Inc.
 Implementation-Title: javax.xml.transform
 Implementation-Version: 1.3.02
-Implementation-Vendor: Sun Microsystems Inc.
-Implementation-URL: http://java.sun.com/xml/jaxp.html
+Implementation-Vendor: Apache Software Foundation
+Implementation-URL: http://xml.apache.org/commons/
 
 Name: javax/xml/validation/
 Comment: based on xml-commons external 1.3.02
@@ -75,8 +75,8 @@ Specification-Version: 1.3
 Specification-Vendor: Sun Microsystems Inc.
 Implementation-Title: javax.xml.validation
 Implementation-Version: 1.3.02
-Implementation-Vendor: Sun Microsystems Inc.
-Implementation-URL: http://java.sun.com/xml/jaxp.html
+Implementation-Vendor: Apache Software Foundation
+Implementation-URL: http://xml.apache.org/commons/
 
 Name: javax/xml/xpath/
 Comment: based on xml-commons external 1.3.02
@@ -85,8 +85,8 @@ Specification-Version: 1.3
 Specification-Vendor: Sun Microsystems Inc.
 Implementation-Title: javax.xml.xpath
 Implementation-Version: 1.3.02
-Implementation-Vendor: Sun Microsystems Inc.
-Implementation-URL: http://java.sun.com/xml/jaxp.html
+Implementation-Vendor: Apache Software Foundation
+Implementation-URL: http://xml.apache.org/commons/
 
 Name: org/apache/xerces/xni/
 Comment: Xerces Native Interface
