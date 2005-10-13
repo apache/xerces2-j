@@ -98,7 +98,7 @@
  <separator/>
  
  <external label='Source Repository'
-           href='http://xml.apache.org/websrc/cvsweb.cgi/xml-xerces/java/'/>
+           href='http://svn.apache.org/viewcvs.cgi/xerces/java/trunk/'/>
  <external label='User Mail Archive'
            href='http://marc.theaimsgroup.com/?l=xerces-j-user'/>
  <external label='Dev Mail Archive'
