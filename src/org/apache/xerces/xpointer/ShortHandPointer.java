@@ -258,7 +258,7 @@ class ShortHandPointer implements XPointerPart {
      * @see org.apache.xerces.xpointer.XPointerPart#isChildFragmentResolved()
      */
     public boolean isChildFragmentResolved() {
-        return fIsFragmentResolved & ( fMatchingChildCount >  0);
+        return fIsFragmentResolved && (fMatchingChildCount > 0);
     }
     
     /**
