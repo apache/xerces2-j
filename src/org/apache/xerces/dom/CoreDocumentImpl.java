@@ -1903,6 +1903,14 @@ extends ParentNode implements Document  {
                 ((NodeImpl)node).synchronizeData();
             }
             
+            NamedNodeMap attributes = node.getAttributes();
+            if (attributes != null) {
+                int length = attributes.getLength();
+                for (int i = 0; i < length; ++i) {
+                    undeferChildren(attributes.item(i));
+                }
+            }
+            
             Node nextNode = null;
             nextNode = node.getFirstChild();
             
