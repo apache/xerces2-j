@@ -985,25 +985,25 @@ class DurationImpl
         buf.append('P');
         
         if (years != null) {
-            buf.append(years + "Y");
+            buf.append(years).append('Y');
         }
         if (months != null) {
-            buf.append(months + "M");
+            buf.append(months).append('M');
         }
         if (days != null) {
-            buf.append(days + "D");
+            buf.append(days).append('D');
         }
 
         if (hours != null || minutes != null || seconds != null) {
             buf.append('T');
             if (hours != null) {
-                buf.append(hours + "H");
+                buf.append(hours).append('H');
             }
             if (minutes != null) {
-                buf.append(minutes + "M");
+                buf.append(minutes).append('M');
             }
             if (seconds != null) {
-                buf.append(toString(seconds) + "S");
+                buf.append(toString(seconds)).append('S');
             }
         }
         

@@ -105,18 +105,14 @@ public class CMAny
     public String toString()
     {
         StringBuffer strRet = new StringBuffer();
-        strRet.append("(");
+        strRet.append('(');
         strRet.append("##any:uri=");
         strRet.append(fURI);
         strRet.append(')');
-        if (fPosition >= 0)
-        {
-            strRet.append
-            (
-                " (Pos:"
-                + Integer.toString(fPosition)
-                + ")"
-            );
+        if (fPosition >= 0) {
+            strRet.append(" (Pos:")
+            	  .append(Integer.toString(fPosition))
+            	  .append(')');
         }
         return strRet.toString();
     }

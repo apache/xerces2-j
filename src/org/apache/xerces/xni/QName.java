@@ -163,28 +163,28 @@ public class QName
         StringBuffer str = new StringBuffer();
         boolean comma = false;
         if (prefix != null) {
-            str.append("prefix=\""+prefix+'"');
+            str.append("prefix=\"").append(prefix).append('"');
             comma = true;
         }
         if (localpart != null) {
             if (comma) {
                 str.append(',');
             }
-            str.append("localpart=\""+localpart+'"');
+            str.append("localpart=\"").append(localpart).append('"');
             comma = true;
         }
         if (rawname != null) {
             if (comma) {
                 str.append(',');
             }
-            str.append("rawname=\""+rawname+'"');
+            str.append("rawname=\"").append(rawname).append('"');
             comma = true;
         }
         if (uri != null) {
             if (comma) {
                 str.append(',');
             }
-            str.append("uri=\""+uri+'"');
+            str.append("uri=\"").append(uri).append('"');
         }
         return str.toString();
 

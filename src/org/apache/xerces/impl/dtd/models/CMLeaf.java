@@ -103,14 +103,10 @@ public class CMLeaf
         strRet.append(',');
         strRet.append(fElement.localpart);
         strRet.append(')');
-        if (fPosition >= 0)
-        {
-            strRet.append
-            (
-                " (Pos:"
-                + Integer.toString(fPosition)
-                + ")"
-            );
+        if (fPosition >= 0) {
+            strRet.append(" (Pos:")
+                  .append(Integer.toString(fPosition))
+                  .append(')');
         }
         return strRet.toString();
     }

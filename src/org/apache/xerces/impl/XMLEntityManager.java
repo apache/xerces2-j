@@ -990,7 +990,6 @@ public class XMLEntityManager
                     isBigEndian = (Boolean)(encodingDesc[1]);
 
                     stream.reset();
-                    int offset = 0;
                     // Special case UTF-8 files with BOM created by Microsoft
                     // tools. It's more efficient to consume the BOM than make
                     // the reader perform extra checks. -Ac
@@ -2682,13 +2681,13 @@ public class XMLEntityManager
         public String toString() {
             
             StringBuffer str = new StringBuffer();
-            str.append("name=\""+name+'"');
+            str.append("name=\"").append(name).append('"');
             str.append(",ch=");
             str.append(ch);
-            str.append(",position=" + position);
-            str.append(",count=" + count);
-            str.append(",baseCharOffset=" + baseCharOffset);
-            str.append(",startPosition=" + startPosition);
+            str.append(",position=").append(position);
+            str.append(",count=").append(count);
+            str.append(",baseCharOffset=").append(baseCharOffset);
+            str.append(",startPosition=").append(startPosition);
             return str.toString();
             
         } // toString():String

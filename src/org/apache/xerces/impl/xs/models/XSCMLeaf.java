@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004 The Apache Software Foundation.
+ * Copyright 1999-2002,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,12 +97,9 @@ public class XSCMLeaf
     public String toString() {
         StringBuffer strRet = new StringBuffer(fLeaf.toString());
         if (fPosition >= 0) {
-            strRet.append
-            (
-                " (Pos:"
-                + Integer.toString(fPosition)
-                + ")"
-            );
+            strRet.append(" (Pos:")
+                  .append(Integer.toString(fPosition))
+                  .append(')');
         }
         return strRet.toString();
     }

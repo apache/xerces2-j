@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2002,2004 The Apache Software Foundation.
+ * Copyright 2000-2002,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ import org.apache.xerces.xni.Augmentations;
  * @author Elena Litani, IBM
  * @version $Id$
  */
-public class AugmentationsImpl implements Augmentations{
+public class AugmentationsImpl implements Augmentations {
     
     private AugmentationsItemsContainer fAugmentationsContainer =
                                         new SmallContainer();
@@ -192,7 +192,7 @@ public class AugmentationsImpl implements Augmentations{
 
         public String toString() {
             StringBuffer buff = new StringBuffer();
-            buff.append("SmallContainer - fNumEntries == " + fNumEntries);
+            buff.append("SmallContainer - fNumEntries == ").append(fNumEntries);
 
             for (int i = 0; i < SIZE_LIMIT*2; i=i+2) {
                 buff.append("\nfAugmentations[");

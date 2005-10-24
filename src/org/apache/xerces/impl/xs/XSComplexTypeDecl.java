@@ -172,18 +172,19 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition, TypeInfo {
         String contentType[] = {"EMPTY", "SIMPLE", "ELEMENT", "MIXED"};
         String derivedBy[] = {"EMPTY", "EXTENSION", "RESTRICTION"};
 
-        str.append("Complex type name='" + fTargetNamespace + "," + getTypeName() + "', ");
-        if (fBaseType != null)
-            str.append(" base type name='" + fBaseType.getName() + "', ");
-
-        str.append(" content type='" + contentType[fContentType] + "', ");
-        str.append(" isAbstract='" + getAbstract() + "', ");
-        str.append(" hasTypeId='" + containsTypeID() + "', ");
-        str.append(" final='" + fFinal + "', ");
-        str.append(" block='" + fBlock + "', ");
-        if (fParticle != null)
-            str.append(" particle='" + fParticle.toString() + "', ");
-        str.append(" derivedBy='" + derivedBy[fDerivedBy] + "'. ");
+        str.append("Complex type name='").append(fTargetNamespace).append(",").append(getTypeName()).append("', ");
+        if (fBaseType != null) {
+            str.append(" base type name='").append(fBaseType.getName()).append("', ");
+        }
+        str.append(" content type='").append(contentType[fContentType]).append("', ");
+        str.append(" isAbstract='").append(getAbstract()).append("', ");
+        str.append(" hasTypeId='").append(containsTypeID()).append("', ");
+        str.append(" final='").append(fFinal).append("', ");
+        str.append(" block='").append(fBlock).append("', ");
+        if (fParticle != null) {
+            str.append(" particle='").append(fParticle.toString()).append("', ");
+        }
+        str.append(" derivedBy='").append(derivedBy[fDerivedBy]).append("'. ");
 
     }
 

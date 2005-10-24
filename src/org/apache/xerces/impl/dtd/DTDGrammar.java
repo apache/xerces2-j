@@ -1505,7 +1505,7 @@ public class DTDGrammar
                             str.append("#PCDATA");
                         }
                         else if (contentSpec.otherValue != null) {
-                            str.append("##any:uri="+contentSpec.otherValue);
+                            str.append("##any:uri=").append(contentSpec.otherValue);
                         }
                         else if (contentSpec.value == null) {
                             str.append("##any");
@@ -1539,7 +1539,7 @@ public class DTDGrammar
                             str.append("#PCDATA");
                         }
                         else if (contentSpec.otherValue != null) {
-                            str.append("##any:uri="+contentSpec.otherValue);
+                            str.append("##any:uri=").append(contentSpec.otherValue);
                         }
                         else if (contentSpec.value == null) {
                             str.append("##any");
@@ -2022,7 +2022,7 @@ public class DTDGrammar
                     str.append("#PCDATA");
                 }
                 else if (contentSpec.value == null && contentSpec.otherValue != null) {
-                    str.append("##any:uri="+contentSpec.otherValue);
+                    str.append("##any:uri=").append(contentSpec.otherValue);
                 }
                 else if (contentSpec.value == null) {
                     str.append("##any");
