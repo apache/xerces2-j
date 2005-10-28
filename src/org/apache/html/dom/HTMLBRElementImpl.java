@@ -29,7 +29,7 @@ public class HTMLBRElementImpl
     implements HTMLBRElement
 {
 
-    private static final long serialVersionUID = 3688783691585172016L;
+    private static final long serialVersionUID = 311960206282154750L;
 
     public String getClear()
     {

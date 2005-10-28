@@ -34,7 +34,7 @@ public class HTMLOptionElementImpl
     implements HTMLOptionElement
 {
 
-    private static final long serialVersionUID = 3257285846528112436L;
+    private static final long serialVersionUID = -4486774554137530907L;
 
     public boolean getDefaultSelected()
     {

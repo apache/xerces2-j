@@ -29,7 +29,7 @@ public class HTMLBodyElementImpl
     implements HTMLBodyElement
 {
     
-    private static final long serialVersionUID = 4120852174621454900L;
+    private static final long serialVersionUID = 9058852459426595202L;
 
     public String getALink()
     {

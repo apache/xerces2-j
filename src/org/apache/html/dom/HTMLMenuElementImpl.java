@@ -29,7 +29,7 @@ public class HTMLMenuElementImpl
     implements HTMLMenuElement
 {
 
-    private static final long serialVersionUID = 3256441421648247094L;
+    private static final long serialVersionUID = -1489696654903916901L;
 
     public boolean getCompact()
     {

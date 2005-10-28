@@ -32,7 +32,7 @@ public class HTMLFormElementImpl
     implements HTMLFormElement
 {
 
-    private static final long serialVersionUID = 3690757284875876658L;
+    private static final long serialVersionUID = -7324749629151493210L;
 
     public HTMLCollection getElements()
     {

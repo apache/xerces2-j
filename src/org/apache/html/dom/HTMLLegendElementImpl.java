@@ -29,7 +29,7 @@ public class HTMLLegendElementImpl
     implements HTMLLegendElement
 {
 
-    private static final long serialVersionUID = 3257846567426865457L;
+    private static final long serialVersionUID = -621849164029630762L;
 
     public String getAccessKey()
     {

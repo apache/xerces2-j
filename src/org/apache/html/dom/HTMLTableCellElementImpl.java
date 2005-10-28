@@ -31,7 +31,7 @@ public class HTMLTableCellElementImpl
     implements HTMLTableCellElement
 {
 
-    private static final long serialVersionUID = 3256722862214820152L;
+    private static final long serialVersionUID = -2406518157464313922L;
 
     public int getCellIndex()
     {

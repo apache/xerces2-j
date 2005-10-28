@@ -29,7 +29,7 @@ public class HTMLLabelElementImpl
     implements HTMLLabelElement, HTMLFormControl
 {
 
-    private static final long serialVersionUID = 3834594305066416178L;
+    private static final long serialVersionUID = 5774388295313199380L;
 
     public String getAccessKey()
     {

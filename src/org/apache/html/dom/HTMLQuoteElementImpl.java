@@ -29,7 +29,7 @@ public class HTMLQuoteElementImpl
     implements HTMLQuoteElement
 {
 
-    private static final long serialVersionUID = 3257852082097764401L;
+    private static final long serialVersionUID = -67544811597906132L;
 
     public String getCite()
     {

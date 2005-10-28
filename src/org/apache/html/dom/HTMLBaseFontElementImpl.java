@@ -29,7 +29,7 @@ public class HTMLBaseFontElementImpl
     implements HTMLBaseFontElement
 {
     
-    private static final long serialVersionUID = 3257006557588763705L;
+    private static final long serialVersionUID = -3650249921091097229L;
 
     public String getColor()
     {

@@ -29,7 +29,7 @@ public class HTMLParagraphElementImpl
     implements HTMLParagraphElement
 {
 
-    private static final long serialVersionUID = 4048796766621415217L;
+    private static final long serialVersionUID = 8075287150683866287L;
 
     public String getAlign()
     {

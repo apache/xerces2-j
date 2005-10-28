@@ -31,7 +31,7 @@ public class HTMLTitleElementImpl
     implements HTMLTitleElement
 {
 
-    private static final long serialVersionUID = 4050769294810034992L;
+    private static final long serialVersionUID = 879646303512367875L;
 
     public String getText()
     {

@@ -31,7 +31,7 @@ public class HTMLMapElementImpl
     implements HTMLMapElement
 {
 
-    private static final long serialVersionUID = 3257847692725270834L;
+    private static final long serialVersionUID = 7520887584251976392L;
 
     public HTMLCollection getAreas()
     {

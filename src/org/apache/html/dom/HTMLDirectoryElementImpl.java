@@ -29,7 +29,7 @@ public class HTMLDirectoryElementImpl
     implements HTMLDirectoryElement
 {
     
-    private static final long serialVersionUID = 3256436993385772854L;
+    private static final long serialVersionUID = -1010376135190194454L;
 
     public boolean getCompact()
     {

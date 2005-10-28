@@ -29,7 +29,7 @@ public class HTMLUListElementImpl
     implements HTMLUListElement
 {
 
-    private static final long serialVersionUID = 3257002146657480753L;
+    private static final long serialVersionUID = -3220401442015109211L;
 
     public boolean getCompact()
     {

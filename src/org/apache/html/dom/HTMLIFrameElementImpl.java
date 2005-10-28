@@ -29,7 +29,7 @@ public class HTMLIFrameElementImpl
     implements HTMLIFrameElement
 {
 
-    private static final long serialVersionUID = 3617297817824014903L;
+    private static final long serialVersionUID = 2393622754706230429L;
 
     public String getAlign()
     {

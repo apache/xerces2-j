@@ -29,7 +29,7 @@ public class HTMLDivElementImpl
     implements HTMLDivElement
 {
     
-    private static final long serialVersionUID = 3617290138322286649L;
+    private static final long serialVersionUID = 2327098984177358833L;
 
     public String getAlign()
     {

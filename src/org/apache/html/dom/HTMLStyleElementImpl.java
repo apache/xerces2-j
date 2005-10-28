@@ -29,7 +29,7 @@ public class HTMLStyleElementImpl
     implements HTMLStyleElement
 {
 
-    private static final long serialVersionUID = 3258688788921594165L;
+    private static final long serialVersionUID = -9001815754196124532L; 
 
     public boolean getDisabled()
     {

@@ -29,7 +29,7 @@ public class HTMLLinkElementImpl
     implements HTMLLinkElement
 {
 
-    private static final long serialVersionUID = 4050763784366929202L;
+    private static final long serialVersionUID = 874345520063418879L;
 
     public boolean getDisabled()
     {

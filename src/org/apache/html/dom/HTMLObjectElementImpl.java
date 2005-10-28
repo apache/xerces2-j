@@ -29,7 +29,7 @@ public class HTMLObjectElementImpl
     implements HTMLObjectElement, HTMLFormControl
 {
     
-    private static final long serialVersionUID = 3617014156759479090L;
+    private static final long serialVersionUID = 2276953229932965067L;
 
     public String getCode()
     {

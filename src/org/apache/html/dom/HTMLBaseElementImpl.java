@@ -29,7 +29,7 @@ public class HTMLBaseElementImpl
     implements HTMLBaseElement
 {
     
-    private static final long serialVersionUID = 3257009860519409717L;
+    private static final long serialVersionUID = -396648580810072153L;
 
     public String getHref()
     {

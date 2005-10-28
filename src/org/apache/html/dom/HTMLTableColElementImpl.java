@@ -29,7 +29,7 @@ public class HTMLTableColElementImpl
     implements HTMLTableColElement
 {
 
-    private static final long serialVersionUID = 3257845497996915254L;
+    private static final long serialVersionUID = -6189626162811911792L;
 
     public String getAlign()
     {

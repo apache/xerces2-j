@@ -29,7 +29,7 @@ public class HTMLPreElementImpl
     implements HTMLPreElement
 {
 
-    private static final long serialVersionUID = 3257282552271156784L;
+    private static final long serialVersionUID = -4195360849946217644L;
 
     public int getWidth()
     {

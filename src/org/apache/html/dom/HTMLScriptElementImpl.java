@@ -31,7 +31,7 @@ public class HTMLScriptElementImpl
     implements HTMLScriptElement
 {
 
-    private static final long serialVersionUID = 3832626162072498224L;
+    private static final long serialVersionUID = 5090330049085326558L;
 
     public String getText()
     {

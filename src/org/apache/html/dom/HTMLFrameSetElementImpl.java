@@ -29,7 +29,7 @@ public class HTMLFrameSetElementImpl
     implements HTMLFrameSetElement
 {
 
-    private static final long serialVersionUID = 4049914961339888440L;
+    private static final long serialVersionUID = 8403143821972586708L;
 
     public String getCols()
     {

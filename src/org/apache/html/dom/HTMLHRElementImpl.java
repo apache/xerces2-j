@@ -29,7 +29,7 @@ public class HTMLHRElementImpl
     implements HTMLHRElement
 {
 
-    private static final long serialVersionUID = 3257283617338963251L;
+    private static final long serialVersionUID = -4210053417678939270L;
 
     public String getAlign()
     {

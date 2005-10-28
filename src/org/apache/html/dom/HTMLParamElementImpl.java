@@ -29,7 +29,7 @@ public class HTMLParamElementImpl
     implements HTMLParamElement
 {
 
-    private static final long serialVersionUID = 3258412815831020848L;
+    private static final long serialVersionUID = -8513050483880341412L;
 
     public String getName()
     {

@@ -28,7 +28,7 @@ public class HTMLAnchorElementImpl
     extends HTMLElementImpl
     implements HTMLAnchorElement
 {
-    private static final long serialVersionUID = 3256441387221334069L;
+    private static final long serialVersionUID = -140558580924061847L;
 
     public String getAccessKey()
     {

@@ -29,7 +29,7 @@ public class HTMLTextAreaElementImpl
     implements HTMLTextAreaElement, HTMLFormControl
 {
 
-    private static final long serialVersionUID = 3257852073558357816L;
+    private static final long serialVersionUID = -6737778308542678104L;
 
     public String getDefaultValue()
     {
