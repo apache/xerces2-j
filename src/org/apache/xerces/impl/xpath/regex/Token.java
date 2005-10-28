@@ -1092,7 +1092,7 @@ class Token implements java.io.Serializable {
      */
     static class StringToken extends Token implements java.io.Serializable {
 
-        private static final long serialVersionUID = 3257288015452780086L;
+        private static final long serialVersionUID = -4614366944218504172L;
         
         String string;
         int refNumber;
@@ -1123,7 +1123,7 @@ class Token implements java.io.Serializable {
      */
     static class ConcatToken extends Token implements java.io.Serializable {
 
-        private static final long serialVersionUID = 4050760502994940212L;
+        private static final long serialVersionUID = 8717321425541346381L;
         
         Token child;
         Token child2;
@@ -1158,7 +1158,7 @@ class Token implements java.io.Serializable {
      */
     static class CharToken extends Token implements java.io.Serializable {
 
-        private static final long serialVersionUID = 3257284751277569842L;
+        private static final long serialVersionUID = -4394272816279496989L;
         
         int chardata;
 
@@ -1222,7 +1222,7 @@ class Token implements java.io.Serializable {
      */
     static class ClosureToken extends Token implements java.io.Serializable {
 
-        private static final long serialVersionUID = 3545230349706932537L;
+        private static final long serialVersionUID = 1308971930673997452L;
         
         int min;
         int max;
@@ -1291,7 +1291,7 @@ class Token implements java.io.Serializable {
      */
     static class ParenToken extends Token implements java.io.Serializable {
 
-        private static final long serialVersionUID = 3257572797621219636L;
+        private static final long serialVersionUID = -5938014719827987704L;
         
         Token child;
         int parennumber;
@@ -1349,7 +1349,7 @@ class Token implements java.io.Serializable {
      */
     static class ConditionToken extends Token implements java.io.Serializable {
 
-        private static final long serialVersionUID = 3761408607870399794L;
+        private static final long serialVersionUID = 4353765277910594411L;
         
         int refNumber;
         Token condition;
@@ -1395,7 +1395,7 @@ class Token implements java.io.Serializable {
      */
     static class ModifierToken extends Token implements java.io.Serializable {
 
-        private static final long serialVersionUID = 3258689892778324790L;
+        private static final long serialVersionUID = -9114536559696480356L;
         
         Token child;
         int add;
@@ -1438,7 +1438,7 @@ class Token implements java.io.Serializable {
      */
     static class UnionToken extends Token implements java.io.Serializable {
 
-        private static final long serialVersionUID = 3256723987530003507L;
+        private static final long serialVersionUID = -2568843945989489861L;
         
         Vector children;
 

@@ -25,7 +25,7 @@ package org.apache.xerces.impl.xpath.regex;
  */
 final class RangeToken extends Token implements java.io.Serializable {
 
-    private static final long serialVersionUID = 3257568399592010545L;
+    private static final long serialVersionUID = -553983121197679934L;
     
     int[] ranges;
     boolean sorted;
