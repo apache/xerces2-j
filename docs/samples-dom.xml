@@ -109,6 +109,13 @@
      </td>
     </tr>
     <tr>
+     <td>-hs | -HS</td>
+     <td>
+      Turn on/off honouring of all schema locations.<br/>
+      <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
+     </td>
+    </tr>
+    <tr>
      <td>-va | -VA</td>
      <td>
       Turn on/off validation of schema annotations.<br/>
@@ -187,6 +194,13 @@
      </td>
     </tr>
     <tr>
+     <td>-hs | -HS</td>
+     <td>
+      Turn on/off honouring of all schema locations.<br/>
+      <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
+     </td>
+    </tr>
+    <tr>
      <td>-va | -VA</td>
      <td>
       Turn on/off validation of schema annotations.<br/>
@@ -261,9 +275,9 @@
      </td>
     </tr>
     <tr>
-     <td>-ga | -GA</td>
+     <td>-hs | -HS</td>
      <td>
-      Turn on/off generation of synthetic schema annotations.<br/>
+      Turn on/off honouring of all schema locations.<br/>
       <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
      </td>
     </tr>
@@ -271,6 +285,13 @@
      <td>-va | -VA</td>
      <td>
       Turn on/off validation of schema annotations.<br/>
+      <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
+     </td>
+    </tr>
+    <tr>
+     <td>-ga | -GA</td>
+     <td>
+      Turn on/off generation of synthetic schema annotations.<br/>
       <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
      </td>
     </tr>
