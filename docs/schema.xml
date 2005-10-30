@@ -1,6 +1,6 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE s1 SYSTEM "./dtd/document.dtd">
-<s1 title="Schema Implementation Limitations">
+<s1 title="XML Schema">
 	<s2 title="Introduction">
 		<p>This package contains an implementation of the W3C XML 
 		Schema Language, a recommendation of the Worldwide Web Consortium

@@ -1,17 +1,44 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * Copyright 1999-2005 The Apache Software Foundation.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
 <!DOCTYPE book SYSTEM "./dtd/book.dtd">
 
-<book title="Xerces-J Documentation" copyright="1999, 2000 The Apache Software Foundation">
-  <external href="../index.html"  label="Home"/>
+<book title="Xerces-J Documentation" copyright="1999-2005 The Apache Software Foundation">
+  <external label="Home" href="http://xerces.apache.org/"/>
+  
+  <separator/>
+  <document label="Readme" id="index" source="readme.xml"/>
+  <document label="Charter" id='charter' source='charter.xml'/>
+  <document label="Release Info" id="releases" source="releases.xml"/>
 
   <separator/>
-  <document id="index"       label="Readme"       source="readme.xml"      />
-  <external href="http://xml.apache.org/dist/xerces-j/"  label="Download"/>
-  <external href="http://xml.apache.org/websrc/cvsweb.cgi/xml-xerces/java/"  label="Repository"/>
-  <document id="install"     label="Installation" source="install.xml"     />
+  <document label="Installation" id="install" source="install.xml"/>
+  <external label="Download" href="http://archive.apache.org/dist/xml/xerces-j/"/>
 
   <separator/>
-  <document id="api"         label="API Docs"     source="api.xml"         />
+  <group    id="faqs" title="Frequently Asked Questions" label="FAQs">
+    <entry  id="faq-general"                      source="faq-general.xml" />
+    <entry  id="faq-build"                        source="faq-build.xml"   />
+    <entry  id="faq-write"                        source="faq-write.xml"   />
+    <entry  id="faq-performance"                  source="faq-performance.xml"   />
+    <entry  id="faq-migrate"                      source="faq-migrate.xml" />
+    <entry  id="faq-common"                       source="faq-common.xml"  />
+  </group>
+  <document id='samples'     label='Samples'      source='samples.xml'/>
+  <document id="api"         label="API Docs"     source="api.xml"/>
   <!--
   <container id="samples"     label="Samples"      source="samples.xml">
 	<entry  id="domcount"        source="sam-domcount.xml" />
@@ -22,33 +49,30 @@
 	<entry  id="treeview"        source="sam-treeview.xml" />
   </container>
   -->
-  <document id='samples'     label='Samples'      source='samples.xml'/>
   <hidden id='domcount' source='sam-domcount.xml'/>
   <hidden id="domwriter"       source="sam-domwriter.xml"/>
   <hidden id="domfilter"       source="sam-domfilter.xml"/>
   <hidden id="iterator"        source="sam-iterator.xml" />
   <hidden  id="tree"            source="sam-tree.xml"     />
   <hidden  id="treeview"        source="sam-treeview.xml" />
-  <document id="schema"      label="Schema"       source="schema.xml"      />
+  
 
   <separator/>
-  <document id="properties"  label="Properties"   source="properties.xml"  />
   <document id="features"    label="Features"     source="features.xml"    />
-  <group    id="faqs"        title="Frequently Asked Questions" label="FAQs">
-    <entry  id="faq-general"                      source="faq-general.xml" />
-    <entry  id="faq-build"                        source="faq-build.xml"   />
-    <entry  id="faq-write"                        source="faq-write.xml"   />
-    <entry  id="faq-performance"                  source="faq-performance.xml"   />
-    <entry  id="faq-migrate"                      source="faq-migrate.xml" />
-    <entry  id="faq-common"                       source="faq-common.xml"  />
-  </group>
-	<hidden   id="jpc"       	  source="javapurecheck.xml"/>
+  <document id="properties"  label="Properties"   source="properties.xml"  />
+  <hidden   id="jpc"       	  source="javapurecheck.xml"/>
 
   <separator/>
-  <document id="releases"    label="Releases"     source="releases.xml"    />
-  <document id="caveats"     label="Caveats"      source="caveats.xml"     />
-  <document id="feedback"    label="Feedback"     source="feedback.xml"    />
-
+  <document id="schema"   label="XML Schema"     source="schema.xml"/>
+  <document id="caveats"  label="Caveats"        source="caveats.xml"/>
+  <document id="feedback" label="Feedback"       source="feedback.xml"/>
+  <document id="y2k"      label="Y2K Compliance" source="y2k.xml"/>
+  
   <separator/>
-  <document id="y2k"         label="Y2K Compliance" source="y2k.xml"       />
+  <external label="Source Repository"
+            href="http://svn.apache.org/viewcvs.cgi/xerces/java/branches/xerces_j_1/"/>
+  <external label='User Mail Archive'
+            href='http://marc.theaimsgroup.com/?l=xerces-j-user'/>
+  <external label='Dev Mail Archive'
+            href='http://marc.theaimsgroup.com/?l=xerces-j-dev'/>
 </book>
