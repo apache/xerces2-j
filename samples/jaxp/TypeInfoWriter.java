@@ -352,6 +352,7 @@ public class TypeInfoWriter
                     // get parser name
                     if (++i == argv.length) {
                         System.err.println("error: Missing argument to -p option.");
+                        continue;
                     }
                     String parserName = argv[i];
                     
