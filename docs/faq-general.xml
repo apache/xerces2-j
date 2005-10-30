@@ -31,13 +31,13 @@
       		         <li> To help to eliminate duplicate bug reports, 
        		         before reporting a bug, you should
 			first query the bugzilla database to see whether the bug has already been reported (and perhaps fixed).
-			Then, checkout code from CVS, and 
+			Then, checkout code from SVN, and 
        		         build Xerces-J locally to verify that a bug still exists. </li>
        	         </ul>
        	         <p>For more information visit the following links:</p>
        		         <ul>
-       		         <li><jump href="http://nagoya.apache.org/bugzilla/">
-				http://nagoya.apache.org/bugzilla/</jump></li>
+       		         <li><jump href="http://issues.apache.org/bugzilla/">
+				http://issues.apache.org/bugzilla/</jump></li>
 	                <li><jump href="http://www.mozilla.org/bugs/">
                 		http://www.mozilla.org/bugs/</jump></li>
                 	</ul>
@@ -45,13 +45,11 @@
         	 </a>
 	</faq>
 
-	<faq title="Extracting code from CVS">
-		<q>How do I extract code from CVS?</q>
+	<faq title="Extracting code from SVN">
+		<q>How do I extract code from SVN?</q>
 		<a>
 			<p>
-    	   		 <br/>set CVSROOT=:pserver:anoncvs@cvs.apache.org:/home/cvspublic
-		        <br/>cvs login        <em>(password: anoncvs)</em>
-        		<br/>cvs checkout -d xerces_j xml-xerces/java 
+    	   		<br/>svn co http://svn.apache.org/repos/asf/xerces/java/branches/xerces_j_1/
 			</p>
         	</a> 
 	</faq>
