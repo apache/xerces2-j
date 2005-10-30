@@ -713,12 +713,9 @@ public class DFAContentModel
                         int[][] newTransTable = new int[newSize][];
 
                         // Copy over all of the existing content
-                        for (int expIndex = 0; expIndex < curArraySize; expIndex++)
-                        {
-                            newToDo[expIndex] = statesToDo[expIndex];
-                            newFinalFlags[expIndex] = fFinalStateFlags[expIndex];
-                            newTransTable[expIndex] = fTransTable[expIndex];
-                        }
+                        System.arraycopy(statesToDo, 0, newToDo, 0, curArraySize);
+                        System.arraycopy(fFinalStateFlags, 0, newFinalFlags, 0, curArraySize);
+                        System.arraycopy(fTransTable, 0, newTransTable, 0, curArraySize);
 
                         // Store the new array size
                         curArraySize = newSize;
