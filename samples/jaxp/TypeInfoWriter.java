@@ -77,7 +77,10 @@ public class TypeInfoWriter
     
     // default settings
     
-    /** Default parser name. */
+    /** Default schema language (http://www.w3.org/2001/XMLSchema). */
+    protected static final String DEFAULT_SCHEMA_LANGUAGE = XMLConstants.W3C_XML_SCHEMA_NS_URI;
+    
+    /** Default parser name (org.apache.xerces.parsers.SAXParser). */
     protected static final String DEFAULT_PARSER_NAME = "org.apache.xerces.parsers.SAXParser";
     
     /** Default schema full checking support (false). */
@@ -338,6 +341,7 @@ public class TypeInfoWriter
         XMLReader parser = null;
         Vector schemas = null;
         Vector instances = null;
+        String schemaLanguage = DEFAULT_SCHEMA_LANGUAGE;
         boolean schemaFullChecking = DEFAULT_SCHEMA_FULL_CHECKING;
         boolean honourAllSchemaLocations = DEFAULT_HONOUR_ALL_SCHEMA_LOCATIONS;
         boolean validateAnnotations = DEFAULT_VALIDATE_ANNOTATIONS;
@@ -348,6 +352,16 @@ public class TypeInfoWriter
             String arg = argv[i];
             if (arg.startsWith("-")) {
                 String option = arg.substring(1);
+                if (option.equals("l")) {
+                    // get schema language name
+                    if (++i == argv.length) {
+                        System.err.println("error: Missing argument to -l option.");
+                    }
+                    else {
+                        schemaLanguage = argv[i];
+                    }
+                    continue;
+                }
                 if (option.equals("p")) {
                     // get parser name
                     if (++i == argv.length) {
@@ -441,7 +455,7 @@ public class TypeInfoWriter
             writer.setOutput(System.out, "UTF8");
             
             // Create SchemaFactory and configure
-            SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            SchemaFactory factory = SchemaFactory.newInstance(schemaLanguage);
             factory.setErrorHandler(writer);
             
             try {
@@ -577,9 +591,10 @@ public class TypeInfoWriter
         System.err.println();
         
         System.err.println("options:");
+        System.err.println("  -l name     Select schema language by name.");
+        System.err.println("  -p name     Select parser by name.");
         System.err.println("  -a uri ...  Provide a list of schema documents");
         System.err.println("  -i uri ...  Provide a list of instance documents to validate");
-        System.err.println("  -p name     Select parser by name.");
         System.err.println("  -f  | -F    Turn on/off Schema full checking.");
         System.err.println("              NOTE: Not supported by all schema factories and validators.");
         System.err.println("  -hs | -HS   Turn on/off honouring of all schema locations.");
@@ -592,7 +607,8 @@ public class TypeInfoWriter
         
         System.err.println();
         System.err.println("defaults:");
-        System.err.println("  Parser:     "+DEFAULT_PARSER_NAME);
+        System.err.println("  Schema language:                 " + DEFAULT_SCHEMA_LANGUAGE);
+        System.err.println("  Parser:                          " + DEFAULT_PARSER_NAME);
         System.err.print("  Schema full checking:            ");
         System.err.println(DEFAULT_SCHEMA_FULL_CHECKING ? "on" : "off");
         System.err.print("  Honour all schema locations:     ");

@@ -86,6 +86,9 @@ public class SourceValidator
     
     // default settings
     
+    /** Default schema language (http://www.w3.org/2001/XMLSchema). */
+    protected static final String DEFAULT_SCHEMA_LANGUAGE = XMLConstants.W3C_XML_SCHEMA_NS_URI;
+    
     /** Default repetition (1). */
     protected static final int DEFAULT_REPETITION = 1;
     
@@ -251,6 +254,7 @@ public class SourceValidator
         // variables
         Vector schemas = null;
         Vector instances = null;
+        String schemaLanguage = DEFAULT_SCHEMA_LANGUAGE;
         int repetition = DEFAULT_REPETITION;
         String validationSource = DEFAULT_VALIDATION_SOURCE;
         boolean schemaFullChecking = DEFAULT_SCHEMA_FULL_CHECKING;
@@ -264,6 +268,16 @@ public class SourceValidator
             String arg = argv[i];
             if (arg.startsWith("-")) {
                 String option = arg.substring(1);
+                if (option.equals("l")) {
+                    // get schema language name
+                    if (++i == argv.length) {
+                        System.err.println("error: Missing argument to -l option.");
+                    }
+                    else {
+                        schemaLanguage = argv[i];
+                    }
+                    continue;
+                }
                 if (option.equals("x")) {
                     if (++i == argv.length) {
                         System.err.println("error: Missing argument to -x option.");
@@ -350,7 +364,7 @@ public class SourceValidator
             SourceValidator sourceValidator = new SourceValidator();
             
             // Create SchemaFactory and configure
-            SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            SchemaFactory factory = SchemaFactory.newInstance(schemaLanguage);
             factory.setErrorHandler(sourceValidator);
             
             try {
@@ -507,6 +521,7 @@ public class SourceValidator
         System.err.println();
         
         System.err.println("options:");
+        System.err.println("  -l name     Select schema language by name.");
         System.err.println("  -x number   Select number of repetitions.");
         System.err.println("  -a uri ...  Provide a list of schema documents");
         System.err.println("  -i uri ...  Provide a list of instance documents to validate");
@@ -524,6 +539,7 @@ public class SourceValidator
         
         System.err.println();
         System.err.println("defaults:");
+        System.err.println("  Schema language:                 " + DEFAULT_SCHEMA_LANGUAGE);
         System.err.println("  Repetition:                      " + DEFAULT_REPETITION);
         System.err.println("  Validation source:               " + DEFAULT_VALIDATION_SOURCE);
         System.err.print("  Schema full checking:            ");

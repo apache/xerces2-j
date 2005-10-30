@@ -90,6 +90,9 @@ public class InlineSchemaValidator
     
     // default settings
     
+    /** Default schema language (http://www.w3.org/2001/XMLSchema). */
+    protected static final String DEFAULT_SCHEMA_LANGUAGE = XMLConstants.W3C_XML_SCHEMA_NS_URI;
+    
     /** Default repetition (1). */
     protected static final int DEFAULT_REPETITION = 1;
     
@@ -354,6 +357,7 @@ public class InlineSchemaValidator
         HashMap prefixMappings = null;
         HashMap uriMappings = null;
         String docURI = argv[argv.length - 1];
+        String schemaLanguage = DEFAULT_SCHEMA_LANGUAGE;
         int repetition = DEFAULT_REPETITION;
         boolean schemaFullChecking = DEFAULT_SCHEMA_FULL_CHECKING;
         boolean honourAllSchemaLocations = DEFAULT_HONOUR_ALL_SCHEMA_LOCATIONS;
@@ -366,6 +370,16 @@ public class InlineSchemaValidator
             String arg = argv[i];
             if (arg.startsWith("-")) {
                 String option = arg.substring(1);
+                if (option.equals("l")) {
+                    // get schema language name
+                    if (++i == argv.length) {
+                        System.err.println("error: Missing argument to -l option.");
+                    }
+                    else {
+                        schemaLanguage = argv[i];
+                    }
+                    continue;
+                }
                 if (option.equals("x")) {
                     if (++i == argv.length) {
                         System.err.println("error: Missing argument to -x option.");
@@ -487,7 +501,7 @@ public class InlineSchemaValidator
             }
 
             // Create SchemaFactory and configure
-            SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            SchemaFactory factory = SchemaFactory.newInstance(schemaLanguage);
             factory.setErrorHandler(inlineSchemaValidator);
             
             try {
@@ -630,6 +644,7 @@ public class InlineSchemaValidator
         System.err.println();
         
         System.err.println("options:");
+        System.err.println("  -l name          Select schema language by name.");
         System.err.println("  -x number        Select number of repetitions.");
         System.err.println("  -a xpath    ...  Provide a list of XPath expressions for schema roots");
         System.err.println("  -i xpath    ...  Provide a list of XPath expressions for validation roots");
@@ -647,6 +662,7 @@ public class InlineSchemaValidator
         
         System.err.println();
         System.err.println("defaults:");
+        System.err.println("  Schema language:                 " + DEFAULT_SCHEMA_LANGUAGE);
         System.err.println("  Repetition:                      " + DEFAULT_REPETITION);
         System.err.print("  Schema full checking:            ");
         System.err.println(DEFAULT_SCHEMA_FULL_CHECKING ? "on" : "off");
