@@ -73,6 +73,9 @@ public class Writer
     /** Schema full checking feature id (http://apache.org/xml/features/validation/schema-full-checking). */
     protected static final String SCHEMA_FULL_CHECKING_FEATURE_ID = "http://apache.org/xml/features/validation/schema-full-checking";
     
+    /** Honour all schema locations feature id (http://apache.org/xml/features/honour-all-schemaLocations). */
+    protected static final String HONOUR_ALL_SCHEMA_LOCATIONS_ID = "http://apache.org/xml/features/honour-all-schemaLocations";
+    
     /** Validate schema annotations feature id (http://apache.org/xml/features/validate-annotations) */
     protected static final String VALIDATE_ANNOTATIONS_ID = "http://apache.org/xml/features/validate-annotations";
     
@@ -121,6 +124,9 @@ public class Writer
 
     /** Default Schema full checking support (false). */
     protected static final boolean DEFAULT_SCHEMA_FULL_CHECKING = false;
+    
+    /** Default honour all schema locations (false). */
+    protected static final boolean DEFAULT_HONOUR_ALL_SCHEMA_LOCATIONS = false;
     
     /** Default validate schema annotations (false). */
     protected static final boolean DEFAULT_VALIDATE_ANNOTATIONS = false;
@@ -566,6 +572,7 @@ public class Writer
         boolean externalDTD = DEFAULT_LOAD_EXTERNAL_DTD;
         boolean schemaValidation = DEFAULT_SCHEMA_VALIDATION;
         boolean schemaFullChecking = DEFAULT_SCHEMA_FULL_CHECKING;
+        boolean honourAllSchemaLocations = DEFAULT_HONOUR_ALL_SCHEMA_LOCATIONS;
         boolean validateAnnotations = DEFAULT_VALIDATE_ANNOTATIONS;
         boolean generateSyntheticAnnotations = DEFAULT_GENERATE_SYNTHETIC_ANNOTATIONS;
         boolean dynamicValidation = DEFAULT_DYNAMIC_VALIDATION;
@@ -626,6 +633,10 @@ public class Writer
                 }
                 if (option.equalsIgnoreCase("f")) {
                     schemaFullChecking = option.equals("f");
+                    continue;
+                }
+                if (option.equalsIgnoreCase("hs")) {
+                    honourAllSchemaLocations = option.equals("hs");
                     continue;
                 }
                 if (option.equalsIgnoreCase("va")) {
@@ -721,6 +732,15 @@ public class Writer
             }
             catch (SAXNotSupportedException e) {
                 System.err.println("warning: Parser does not support feature ("+SCHEMA_FULL_CHECKING_FEATURE_ID+")");
+            }
+            try {
+                parser.setFeature(HONOUR_ALL_SCHEMA_LOCATIONS_ID, honourAllSchemaLocations);
+            }
+            catch (SAXNotRecognizedException e) {
+                System.err.println("warning: Parser does not recognize feature ("+HONOUR_ALL_SCHEMA_LOCATIONS_ID+")");
+            }
+            catch (SAXNotSupportedException e) {
+                System.err.println("warning: Parser does not support feature ("+HONOUR_ALL_SCHEMA_LOCATIONS_ID+")");
             }
             try {
                 parser.setFeature(VALIDATE_ANNOTATIONS_ID, validateAnnotations);
@@ -843,6 +863,8 @@ public class Writer
         System.err.println("              NOTE: Not supported by all parsers.");
         System.err.println("  -f  | -F    Turn on/off Schema full checking.");
         System.err.println("              NOTE: Requires use of -s and not supported by all parsers.");
+        System.err.println("  -hs | -HS   Turn on/off honouring of all schema locations.");
+        System.err.println("              NOTE: Requires use of -s and not supported by all parsers.");
         System.err.println("  -va | -VA   Turn on/off validation of schema annotations.");
         System.err.println("              NOTE: Requires use of -s and not supported by all parsers.");
         System.err.println("  -ga | -GA   Turn on/off generation of synthetic schema annotations.");
@@ -878,7 +900,9 @@ public class Writer
         System.err.println(DEFAULT_DYNAMIC_VALIDATION ? "on" : "off");
         System.err.print("  Canonical:  ");
         System.err.println(DEFAULT_CANONICAL ? "on" : "off");
-        System.err.print("  Validate Annotations:    ");
+        System.err.print("  Honour all schema locations:       ");
+        System.err.println(DEFAULT_HONOUR_ALL_SCHEMA_LOCATIONS ? "on" : "off");
+        System.err.print("  Validate Annotations:              ");
         System.err.println(DEFAULT_VALIDATE_ANNOTATIONS ? "on" : "off");
         System.err.print("  Generate Synthetic Annotations:    ");
         System.err.println(DEFAULT_GENERATE_SYNTHETIC_ANNOTATIONS ? "on" : "off");
