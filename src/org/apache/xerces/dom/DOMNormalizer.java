@@ -1461,28 +1461,28 @@ public class DOMNormalizer implements XMLDocumentHandler {
         }
 
 
-		/**
+        /**
          * This method adds default declarations
-		 * @see org.apache.xerces.xni.XMLAttributes#addAttribute(QName, String, String)
-		 */
-		public int addAttribute(QName qname, String attrType, String attrValue) {
- 			int index = fElement.getXercesAttribute(qname.uri, qname.localpart);
-			// add defaults to the tree
-			if (index < 0) {
+         * @see org.apache.xerces.xni.XMLAttributes#addAttribute(QName, String, String)
+         */
+        public int addAttribute(QName qname, String attrType, String attrValue) {
+            int index = fElement.getXercesAttribute(qname.uri, qname.localpart);
+            // add defaults to the tree
+            if (index < 0) {
                 // the default attribute was removed by a user and needed to 
                 // be added back
-				AttrImpl attr = (AttrImpl)
-					((CoreDocumentImpl) fElement.getOwnerDocument()).createAttributeNS(
-						qname.uri,
-						qname.rawname,
-						qname.localpart);
+                AttrImpl attr = (AttrImpl)
+                    ((CoreDocumentImpl) fElement.getOwnerDocument()).createAttributeNS(
+                        qname.uri,
+                        qname.rawname,
+                        qname.localpart);
                 // REVISIT: the following should also update ID table
-				index = fElement.setXercesAttributeNode(attr);
-				attr.setNodeValue(attrValue);
-				fAugmentations.insertElementAt(new AugmentationsImpl(), index);
+                attr.setNodeValue(attrValue);
+                index = fElement.setXercesAttributeNode(attr);
+                fAugmentations.insertElementAt(new AugmentationsImpl(), index);
                 attr.setSpecified(false);
-			}            
-			else {
+            }            
+            else {
                 // default attribute is in the tree
                 // we don't need to do anything since prefix was already fixed
                 // at the namespace fixup time and value must be same value, otherwise
@@ -1491,7 +1491,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
                 
             }
             return index;
-		}
+        }
 
 
         public void removeAllAttributes(){
