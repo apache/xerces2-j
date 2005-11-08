@@ -24,7 +24,6 @@ import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLInputSource;
-import org.xml.sax.SAXException;
 
 /**
  * This class scans the version of the document to determine
@@ -89,7 +88,7 @@ public class XMLVersionDetector {
      * 
      * @param componentManager The component manager.
      *
-     * @throws SAXException Throws exception if required features and
+     * @throws XNIException Throws exception if required features and
      *                      properties cannot be found.
      */
     public void reset(XMLComponentManager componentManager)
