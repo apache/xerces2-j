@@ -21,10 +21,10 @@ import java.io.IOException;
 
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLInputSource;
+import org.xml.sax.SAXException;
 
 /**
  * This class scans the version of the document to determine
@@ -80,8 +80,6 @@ public class XMLVersionDetector {
     protected XMLEntityManager fEntityManager;
 
     protected String fEncoding = null;
-
-    private XMLString fVersionNum = new XMLString();
 
     private final char [] fExpectedVersionString = {'<', '?', 'x', 'm', 'l', ' ', 'v', 'e', 'r', 's', 
                     'i', 'o', 'n', '=', ' ', ' ', ' ', ' ', ' '};
