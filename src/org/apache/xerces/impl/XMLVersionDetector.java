@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2004 The Apache Software Foundation.
+ * Copyright 1999-2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -181,21 +181,19 @@ public class XMLVersionDetector {
                 if (fExpectedVersionString[15 + matched] != XML11_VERSION[matched])
                     break;
             }
-            if (matched == XML11_VERSION.length)
-                return Constants.XML_VERSION_1_1;
-            return Constants.XML_VERSION_1_0;
-            // premature end of file
+            return (matched == XML11_VERSION.length) ? 
+                    Constants.XML_VERSION_1_1 :
+                    Constants.XML_VERSION_1_0;
         }
+        // premature end of file
         catch (EOFException e) {
             fErrorReporter.reportError(
                 XMLMessageFormatter.XML_DOMAIN,
                 "PrematureEOF",
                 null,
                 XMLErrorReporter.SEVERITY_FATAL_ERROR);
-            return Constants.XML_VERSION_1_0;
-			
+            return Constants.XML_VERSION_ERROR;
         }
-
     }
 
     // This method prepends "length" chars from the char array,

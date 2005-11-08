@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 The Apache Software Foundation.
+ * Copyright 2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -627,13 +627,20 @@ public class XML11NonValidatingConfiguration extends ParserConfigurationSettings
                 resetCommon();
 
                 short version = fVersionDetector.determineDocVersion(fInputSource);
-                if (version == Constants.XML_VERSION_1_1) {
+                // XML 1.0
+                if (version == Constants.XML_VERSION_1_0) {
+                    configurePipeline();
+                    reset();
+                }
+                // XML 1.1
+                else if (version == Constants.XML_VERSION_1_1) {
                     initXML11Components();
                     configureXML11Pipeline();
                     resetXML11();
-                } else {
-                    configurePipeline();
-                    reset();
+                }
+                // Unrecoverable error reported during version detection
+                else {
+                   return false;
                 }
                 
                 // mark configuration as fixed

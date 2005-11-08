@@ -409,6 +409,7 @@ public final class Constants {
     public final static String CHAR_REF_PROBABLE_WS = "CHAR_REF_PROBABLE_WS";
     
     // XML version constants 
+    public final static short XML_VERSION_ERROR = -1;
     public final static short XML_VERSION_1_0 = 1;
     public final static short XML_VERSION_1_1 = 2;
     

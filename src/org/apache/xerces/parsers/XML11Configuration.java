@@ -769,13 +769,20 @@ public class XML11Configuration extends ParserConfigurationSettings
                 resetCommon();
 
                 short version = fVersionDetector.determineDocVersion(fInputSource);
-                if (version == Constants.XML_VERSION_1_1) {
+                // XML 1.0
+                if (version == Constants.XML_VERSION_1_0) {
+                    configurePipeline();
+                    reset();
+                }
+                // XML 1.1
+                else if (version == Constants.XML_VERSION_1_1) {
                     initXML11Components();
                     configureXML11Pipeline();
                     resetXML11();
-                } else {
-                    configurePipeline();
-                    reset();
+                }
+                // Unrecoverable error reported during version detection
+                else {
+                   return false;
                 }
                 
                 // mark configuration as fixed
