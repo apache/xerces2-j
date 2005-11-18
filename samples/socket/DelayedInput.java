@@ -222,7 +222,7 @@ public class DelayedInput
             long before = System.currentTimeMillis();
             count = in.read(buffer, offset, length);
             try {
-                Thread.currentThread().sleep(Math.abs(fRandom.nextInt()) % 2000);
+                Thread.sleep(Math.abs(fRandom.nextInt()) % 2000);
             }
             catch (InterruptedException e) {
                 e.printStackTrace(System.err);
@@ -290,7 +290,6 @@ public class DelayedInput
 
         // variables
         DefaultHandler handler = new DelayedInput();
-        PrintWriter out = new PrintWriter(System.out);
         XMLReader parser = null;
         boolean namespaces = DEFAULT_NAMESPACES;
         boolean validation = DEFAULT_VALIDATION;
