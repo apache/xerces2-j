@@ -379,8 +379,6 @@ public class TreeView extends JFrame implements ActionListener, TextListener {
         }
 
         String line;
-        int i = 0;
-
         int len = 0;
         textLine = new Vector();
         String nl = "\n";
