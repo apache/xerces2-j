@@ -3405,34 +3405,19 @@ public class XMLSchemaValidator
                 return;
             }
 
-            // do we have enough values?
+            // Validation Rule: Identity-constraint Satisfied
+            // 4.2 If the {identity-constraint category} is key, then all of the following must be true:
+            // 4.2.1 The target node set and the qualified node set are equal, that is, every member of the 
+            // target node set is also a member of the qualified node set and vice versa.
+            //
+            // If the IDC is a key check whether we have all the fields.
             if (fValuesCount != fFieldCount) {
-                switch (fIdentityConstraint.getCategory()) {
-                    case IdentityConstraint.IC_UNIQUE :
-                        {
-                            String code = "UniqueNotEnoughValues";
-                            String ename = fIdentityConstraint.getElementName();
-                            reportSchemaError(code, new Object[] { ename });
-                            break;
-                        }
-                    case IdentityConstraint.IC_KEY :
-                        {
-                            String code = "KeyNotEnoughValues";
-                            UniqueOrKey key = (UniqueOrKey) fIdentityConstraint;
-                            String ename = fIdentityConstraint.getElementName();
-                            String kname = key.getIdentityConstraintName();
-                            reportSchemaError(code, new Object[] { ename, kname });
-                            break;
-                        }
-                    case IdentityConstraint.IC_KEYREF :
-                        {
-                            String code = "KeyRefNotEnoughValues";
-                            KeyRef keyref = (KeyRef) fIdentityConstraint;
-                            String ename = fIdentityConstraint.getElementName();
-                            String kname = (keyref.getKey()).getIdentityConstraintName();
-                            reportSchemaError(code, new Object[] { ename, kname });
-                            break;
-                        }
+                if (fIdentityConstraint.getCategory() == IdentityConstraint.IC_KEY) {
+                    String code = "KeyNotEnoughValues";
+                    UniqueOrKey key = (UniqueOrKey) fIdentityConstraint;
+                    String ename = fIdentityConstraint.getElementName();
+                    String kname = key.getIdentityConstraintName();
+                    reportSchemaError(code, new Object[] { ename, kname });
                 }
                 return;
             }
