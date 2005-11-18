@@ -73,6 +73,10 @@ public class DocumentTracer
     /** Schema full checking feature id (http://apache.org/xml/features/validation/schema-full-checking). */
     protected static final String SCHEMA_FULL_CHECKING_FEATURE_ID =
         "http://apache.org/xml/features/validation/schema-full-checking";
+    
+    /** Honour all schema locations feature id (http://apache.org/xml/features/honour-all-schemaLocations). */
+    protected static final String HONOUR_ALL_SCHEMA_LOCATIONS_ID = 
+        "http://apache.org/xml/features/honour-all-schemaLocations";
 
     /** Character ref notification feature id (http://apache.org/xml/features/scanner/notify-char-refs). */
     protected static final String NOTIFY_CHAR_REFS_FEATURE_ID =
@@ -95,6 +99,9 @@ public class DocumentTracer
 
     /** Default Schema full checking support (false). */
     protected static final boolean DEFAULT_SCHEMA_FULL_CHECKING = false;
+    
+    /** Default honour all schema locations (false). */
+    protected static final boolean DEFAULT_HONOUR_ALL_SCHEMA_LOCATIONS = false;
 
     /** Default character notifications (false). */
     protected static final boolean DEFAULT_NOTIFY_CHAR_REFS = false;
@@ -1372,6 +1379,7 @@ public class DocumentTracer
         boolean validation = DEFAULT_VALIDATION;
         boolean schemaValidation = DEFAULT_SCHEMA_VALIDATION;
         boolean schemaFullChecking = DEFAULT_SCHEMA_FULL_CHECKING;
+        boolean honourAllSchemaLocations = DEFAULT_HONOUR_ALL_SCHEMA_LOCATIONS;
         boolean notifyCharRefs = DEFAULT_NOTIFY_CHAR_REFS;
 
         // process arguments
@@ -1413,6 +1421,10 @@ public class DocumentTracer
                 }
                 if (option.equalsIgnoreCase("f")) {
                     schemaFullChecking = option.equals("f");
+                    continue;
+                }
+                if (option.equalsIgnoreCase("hs")) {
+                    honourAllSchemaLocations = option.equals("hs");
                     continue;
                 }
                 if (option.equalsIgnoreCase("c")) {
@@ -1472,6 +1484,14 @@ public class DocumentTracer
                 }
             }
             try {
+                parserConfig.setFeature(HONOUR_ALL_SCHEMA_LOCATIONS_ID, honourAllSchemaLocations);
+            }
+            catch (XMLConfigurationException e) {
+                if (e.getType() == XMLConfigurationException.NOT_SUPPORTED) {
+                    System.err.println("warning: Parser does not support feature ("+HONOUR_ALL_SCHEMA_LOCATIONS_ID+")");
+                }
+            }
+            try {
                 parserConfig.setFeature(NOTIFY_CHAR_REFS_FEATURE_ID, notifyCharRefs);
             }
             catch (XMLConfigurationException e) {
@@ -1513,28 +1533,32 @@ public class DocumentTracer
         System.err.println();
 
         System.err.println("options:");
-        System.out.println("  -p name  Specify parser configuration by name.");
-        System.err.println("  -n | -N  Turn on/off namespace processing.");
-        System.err.println("  -v | -V  Turn on/off validation.");
-        System.err.println("  -s | -S  Turn on/off Schema validation support.");
-        System.err.println("           NOTE: Not supported by all parser configurations.");
-        System.err.println("  -f  | -F Turn on/off Schema full checking.");
-        System.err.println("           NOTE: Requires use of -s and not supported by all parsers.");
-        System.err.println("  -c | -C  Turn on/off character notifications");
-        System.err.println("  -h       This help screen.");
+        System.err.println("  -p name     Specify parser configuration by name.");
+        System.err.println("  -n | -N     Turn on/off namespace processing.");
+        System.err.println("  -v | -V     Turn on/off validation.");
+        System.err.println("  -s | -S     Turn on/off Schema validation support.");
+        System.err.println("              NOTE: Not supported by all parser configurations.");
+        System.err.println("  -f  | -F    Turn on/off Schema full checking.");
+        System.err.println("              NOTE: Requires use of -s and not supported by all parsers.");
+        System.err.println("  -hs | -HS   Turn on/off honouring of all schema locations.");
+        System.err.println("              NOTE: Requires use of -s and not supported by all parsers.");
+        System.err.println("  -c | -C     Turn on/off character notifications");
+        System.err.println("  -h          This help screen.");
         System.err.println();
 
         System.err.println("defaults:");
-        System.out.println("  Config:     "+DEFAULT_PARSER_CONFIG);
-        System.out.print("  Namespaces: ");
+        System.err.println("  Config:     "+DEFAULT_PARSER_CONFIG);
+        System.err.print("  Namespaces: ");
         System.err.println(DEFAULT_NAMESPACES ? "on" : "off");
-        System.out.print("  Validation: ");
+        System.err.print("  Validation: ");
         System.err.println(DEFAULT_VALIDATION ? "on" : "off");
-        System.out.print("  Schema:     ");
+        System.err.print("  Schema:     ");
         System.err.println(DEFAULT_SCHEMA_VALIDATION ? "on" : "off");
         System.err.print("  Schema full checking:     ");
         System.err.println(DEFAULT_SCHEMA_FULL_CHECKING ? "on" : "off");
-        System.out.print("  Char refs:  ");
+        System.err.print("  Honour all schema locations:     ");
+        System.err.println(DEFAULT_HONOUR_ALL_SCHEMA_LOCATIONS ? "on" : "off");
+        System.err.print("  Char refs:  ");
         System.err.println(DEFAULT_NOTIFY_CHAR_REFS ? "on" : "off" );
 
     } // printUsage()

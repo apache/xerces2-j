@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2004 The Apache Software Foundation.
+ * Copyright 2001-2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,6 +80,10 @@ public class Counter
     /** Schema full checking feature id (http://apache.org/xml/features/validation/schema-full-checking). */
     protected static final String SCHEMA_FULL_CHECKING_FEATURE_ID =
         "http://apache.org/xml/features/validation/schema-full-checking";
+    
+    /** Honour all schema locations feature id (http://apache.org/xml/features/honour-all-schemaLocations). */
+    protected static final String HONOUR_ALL_SCHEMA_LOCATIONS_ID = 
+        "http://apache.org/xml/features/honour-all-schemaLocations";
 
     // default settings
 
@@ -104,6 +108,9 @@ public class Counter
 
     /** Default Schema full checking support (false). */
     protected static final boolean DEFAULT_SCHEMA_FULL_CHECKING = false;
+    
+    /** Default honour all schema locations (false). */
+    protected static final boolean DEFAULT_HONOUR_ALL_SCHEMA_LOCATIONS = false;
 
     /** Default memory usage report (false). */
     protected static final boolean DEFAULT_MEMORY_USAGE = false;
@@ -357,6 +364,7 @@ public class Counter
         boolean validation = DEFAULT_VALIDATION;
         boolean schemaValidation = DEFAULT_SCHEMA_VALIDATION;
         boolean schemaFullChecking = DEFAULT_SCHEMA_FULL_CHECKING;
+        boolean honourAllSchemaLocations = DEFAULT_HONOUR_ALL_SCHEMA_LOCATIONS;
         boolean memoryUsage = DEFAULT_MEMORY_USAGE;
         boolean tagginess = DEFAULT_TAGGINESS;
 
@@ -425,6 +433,10 @@ public class Counter
                 }
                 if (option.equalsIgnoreCase("f")) {
                     schemaFullChecking = option.equals("f");
+                    continue;
+                }
+                if (option.equalsIgnoreCase("hs")) {
+                    honourAllSchemaLocations = option.equals("hs");
                     continue;
                 }
                 if (option.equalsIgnoreCase("m")) {
@@ -501,6 +513,14 @@ public class Counter
                     System.err.println("warning: Parser does not support feature ("+SCHEMA_FULL_CHECKING_FEATURE_ID+")");
                 }
             }
+            try {
+                parserConfig.setFeature(HONOUR_ALL_SCHEMA_LOCATIONS_ID, honourAllSchemaLocations);
+            }
+            catch (XMLConfigurationException e) {
+                if (e.getType() == XMLConfigurationException.NOT_SUPPORTED) {
+                    System.err.println("warning: Parser does not support feature ("+HONOUR_ALL_SCHEMA_LOCATIONS_ID+")");
+                }
+            }
 
             // parse file
             try {
@@ -560,6 +580,8 @@ public class Counter
         System.err.println("              NOTE: Not supported by all parser configurations.");
         System.err.println("  -f  | -F    Turn on/off Schema full checking.");
         System.err.println("              NOTE: Requires use of -s and not supported by all parsers.");
+        System.err.println("  -hs | -HS   Turn on/off honouring of all schema locations.");
+        System.err.println("              NOTE: Requires use of -s and not supported by all parsers.");
         System.err.println("  -m  | -M    Turn on/off memory usage report.");
         System.err.println("  -t  | -T    Turn on/off \"tagginess\" report.");
         System.err.println("  --rem text  Output user defined comment before next parse.");
@@ -579,6 +601,8 @@ public class Counter
         System.err.println(DEFAULT_SCHEMA_VALIDATION ? "on" : "off");
         System.err.print("  Schema full checking:     ");
         System.err.println(DEFAULT_SCHEMA_FULL_CHECKING ? "on" : "off");
+        System.err.print("  Honour all schema locations:     ");
+        System.err.println(DEFAULT_HONOUR_ALL_SCHEMA_LOCATIONS ? "on" : "off");
         System.err.print("  Memory:     ");
         System.err.println(DEFAULT_MEMORY_USAGE ? "on" : "off");
         System.err.print("  Tagginess:  ");

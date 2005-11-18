@@ -70,6 +70,10 @@ public class Writer
     /** Schema full checking feature id (http://apache.org/xml/features/validation/schema-full-checking). */
     protected static final String SCHEMA_FULL_CHECKING_FEATURE_ID =
         "http://apache.org/xml/features/validation/schema-full-checking";
+    
+    /** Honour all schema locations feature id (http://apache.org/xml/features/honour-all-schemaLocations). */
+    protected static final String HONOUR_ALL_SCHEMA_LOCATIONS_ID = 
+        "http://apache.org/xml/features/honour-all-schemaLocations";
 
     // default settings
 
@@ -88,6 +92,9 @@ public class Writer
 
     /** Default Schema full checking support (false). */
     protected static final boolean DEFAULT_SCHEMA_FULL_CHECKING = false;
+    
+    /** Default honour all schema locations (false). */
+    protected static final boolean DEFAULT_HONOUR_ALL_SCHEMA_LOCATIONS = false;
 
     /** Default canonical output (false). */
     protected static final boolean DEFAULT_CANONICAL = false;
@@ -451,6 +458,7 @@ public class Writer
         boolean validation = DEFAULT_VALIDATION;
         boolean schemaValidation = DEFAULT_SCHEMA_VALIDATION;
         boolean schemaFullChecking = DEFAULT_SCHEMA_FULL_CHECKING;
+        boolean honourAllSchemaLocations = DEFAULT_HONOUR_ALL_SCHEMA_LOCATIONS;
         boolean canonical = DEFAULT_CANONICAL;
         boolean incremental = DEFAULT_INCREMENTAL;
 
@@ -498,6 +506,10 @@ public class Writer
                 }
                 if (option.equalsIgnoreCase("f")) {
                     schemaFullChecking = option.equals("f");
+                    continue;
+                }
+                if (option.equalsIgnoreCase("hs")) {
+                    honourAllSchemaLocations = option.equals("hs");
                     continue;
                 }
                 if (option.equalsIgnoreCase("c")) {
@@ -566,6 +578,14 @@ public class Writer
                     System.err.println("warning: Parser does not support feature ("+SCHEMA_FULL_CHECKING_FEATURE_ID+")");
                 }
             }
+            try {
+                parserConfig.setFeature(HONOUR_ALL_SCHEMA_LOCATIONS_ID, honourAllSchemaLocations);
+            }
+            catch (XMLConfigurationException e) {
+                if (e.getType() == XMLConfigurationException.NOT_SUPPORTED) {
+                    System.err.println("warning: Parser does not support feature ("+HONOUR_ALL_SCHEMA_LOCATIONS_ID+")");
+                }
+            }
 
             // parse file
             try {
@@ -614,21 +634,23 @@ public class Writer
         System.err.println();
 
         System.err.println("options:");
-        System.err.println("  -p name  Select parser configuration by name.");
-        System.err.println("  -n | -N  Turn on/off namespace processing.");
-        System.err.println("  -v | -V  Turn on/off validation.");
-        System.err.println("  -s | -S  Turn on/off Schema validation support.");
-        System.err.println("           NOTE: Not supported by all parsers.");
-        System.err.println("  -f  | -F Turn on/off Schema full checking.");
-        System.err.println("           NOTE: Requires use of -s and not supported by all parsers.");
+        System.err.println("  -p name     Select parser configuration by name.");
+        System.err.println("  -n | -N     Turn on/off namespace processing.");
+        System.err.println("  -v | -V     Turn on/off validation.");
+        System.err.println("  -s | -S     Turn on/off Schema validation support.");
+        System.err.println("              NOTE: Not supported by all parsers.");
+        System.err.println("  -f  | -F    Turn on/off Schema full checking.");
+        System.err.println("              NOTE: Requires use of -s and not supported by all parsers.");
+        System.err.println("  -hs | -HS   Turn on/off honouring of all schema locations.");
+        System.err.println("              NOTE: Requires use of -s and not supported by all parsers.");
         /***
-        System.err.println("  -c | -C  Turn on/off Canonical XML output.");
-        System.err.println("           NOTE: This is not W3C canonical output.");
+        System.err.println("  -c | -C     Turn on/off Canonical XML output.");
+        System.err.println("              NOTE: This is not W3C canonical output.");
         /***/
-        System.err.println("  -i | -I  Incremental mode.");
-        System.err.println("           NOTE: This feature only works if the configuration used");
-        System.err.println("                 implements XMLPullParserConfiguration.");
-        System.err.println("  -h       This help screen.");
+        System.err.println("  -i | -I     Incremental mode.");
+        System.err.println("              NOTE: This feature only works if the configuration used");
+        System.err.println("                    implements XMLPullParserConfiguration.");
+        System.err.println("  -h          This help screen.");
         System.err.println();
 
         System.err.println("defaults:");
@@ -641,6 +663,8 @@ public class Writer
         System.err.println(DEFAULT_SCHEMA_VALIDATION ? "on" : "off");
         System.err.print("  Schema full checking:     ");
         System.err.println(DEFAULT_SCHEMA_FULL_CHECKING ? "on" : "off");
+        System.err.print("  Honour all schema locations:     ");
+        System.err.println(DEFAULT_HONOUR_ALL_SCHEMA_LOCATIONS ? "on" : "off");
         /***
         System.err.print("  Canonical:  ");
         System.err.println(DEFAULT_CANONICAL ? "on" : "off");
