@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2004 The Apache Software Foundation.
+ * Copyright 1999-2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,17 @@
 
 package xni;
 
+import java.util.Vector;
+
+import org.apache.xerces.impl.Constants;
+import org.apache.xerces.parsers.XIncludeAwareParserConfiguration;
 import org.apache.xerces.parsers.XMLGrammarPreparser;
-import org.apache.xerces.parsers.IntegratedParserConfiguration;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLGrammarPoolImpl;
-import org.apache.xerces.impl.Constants;
-
-import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.Grammar;
+import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
-
-import java.util.Vector;
 
 /**
  * This sample program illustrates how to use Xerces2's grammar
@@ -241,9 +240,10 @@ public class XMLGrammarBuilder {
         }
         // Now we have a grammar pool and a SymbolTable; just
         // build a configuration and we're on our way!
-        if(parserConfiguration == null) {
-            parserConfiguration = new IntegratedParserConfiguration(sym, grammarPool);
-        } else {
+        if (parserConfiguration == null) {
+            parserConfiguration = new XIncludeAwareParserConfiguration(sym, grammarPool);
+        } 
+        else {
             // set GrammarPool and SymbolTable...
             parserConfiguration.setProperty(SYMBOL_TABLE, sym);
             parserConfiguration.setProperty(GRAMMAR_POOL, grammarPool);
