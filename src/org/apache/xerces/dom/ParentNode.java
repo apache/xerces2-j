@@ -617,14 +617,9 @@ public abstract class ParentNode
             if (next == null) {
                 return hasTextContent(child) ? ((NodeImpl) child).getTextContent() : "";
             }
-            if (fBufferStr == null){
-                fBufferStr = new StringBuffer();
-            }
-            else {
-                fBufferStr.setLength(0);
-            }
-            getTextContent(fBufferStr);
-            return fBufferStr.toString();
+            StringBuffer buf = new StringBuffer();
+            getTextContent(buf);
+            return buf.toString();
         }
         return "";
     }

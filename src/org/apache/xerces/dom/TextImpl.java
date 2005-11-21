@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004 The Apache Software Foundation.
+ * Copyright 1999-2002,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -142,28 +142,23 @@ public class TextImpl
             synchronizeData();
         }
      
-        if (fBufferStr == null){
-            fBufferStr = new StringBuffer();
-        }
-        else {
-            fBufferStr.setLength(0);
-        }
+        StringBuffer buffer = new StringBuffer();
         if (data != null && data.length() != 0) {
-            fBufferStr.append(data);
+            buffer.append(data);
         }
         
-        //concatenate text of logically adjacent text nodes to the left of this node in the tree
-        getWholeTextBackward(this.getPreviousSibling(), fBufferStr, this.getParentNode());
-        String temp = fBufferStr.toString();
+        // concatenate text of logically adjacent text nodes to the left of this node in the tree
+        getWholeTextBackward(this.getPreviousSibling(), buffer, this.getParentNode());
+        String temp = buffer.toString();
       
-        //clear buffer
-        fBufferStr.setLength(0);
+        // clear buffer
+        buffer.setLength(0);
         
-        //concatenate text of logically adjacent text nodes to the right of this node in the tree
-        getWholeTextForward(this.getNextSibling(), fBufferStr, this.getParentNode());
+        // concatenate text of logically adjacent text nodes to the right of this node in the tree
+        getWholeTextForward(this.getNextSibling(), buffer, this.getParentNode());
         
-        return temp + fBufferStr.toString();
-    
+        return temp + buffer.toString();
+        
     }
     
     /**
