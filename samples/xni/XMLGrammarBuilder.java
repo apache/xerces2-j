@@ -72,6 +72,9 @@ public class XMLGrammarBuilder {
 
     /** Schema full checking feature id (http://apache.org/xml/features/validation/schema-full-checking). */
     protected static final String SCHEMA_FULL_CHECKING_FEATURE_ID = "http://apache.org/xml/features/validation/schema-full-checking";
+    
+    /** Honour all schema locations feature id (http://apache.org/xml/features/honour-all-schemaLocations). */
+    protected static final String HONOUR_ALL_SCHEMA_LOCATIONS_ID = "http://apache.org/xml/features/honour-all-schemaLocations";
 
     // a larg(ish) prime to use for a symbol table to be shared
     // among
@@ -83,6 +86,9 @@ public class XMLGrammarBuilder {
 
     /** Default Schema full checking support (false). */
     protected static final boolean DEFAULT_SCHEMA_FULL_CHECKING = false;
+    
+    /** Default honour all schema locations (false). */
+    protected static final boolean DEFAULT_HONOUR_ALL_SCHEMA_LOCATIONS = false;
 
     //
     // MAIN
@@ -135,17 +141,29 @@ public class XMLGrammarBuilder {
             }
         }
 
-        // process -f/F
+        // process -f/F and -hs/HS
         Vector schemas = null;
         boolean schemaFullChecking = DEFAULT_SCHEMA_FULL_CHECKING;
+        boolean honourAllSchemaLocations = DEFAULT_HONOUR_ALL_SCHEMA_LOCATIONS;
         if(i < argv.length) {
             arg = argv[i];
             if (arg.equals("-f")) {
                 schemaFullChecking = true;
                 i++;
                 arg = argv[i];
-            } else if (arg.equals("-F")) {
+            } 
+            else if (arg.equals("-F")) {
                 schemaFullChecking = false;
+                i++;
+                arg = argv[i];
+            }
+            else if (arg.equals("-hs")) {
+                honourAllSchemaLocations = true;
+                i++;
+                arg = argv[i];
+            }
+            else if (arg.equals("-HS")) {
+                honourAllSchemaLocations = false;
                 i++;
                 arg = argv[i];
             }
@@ -220,6 +238,7 @@ public class XMLGrammarBuilder {
         // note we can set schema features just in case...
         preparser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
         preparser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, schemaFullChecking);
+        preparser.setFeature(HONOUR_ALL_SCHEMA_LOCATIONS_ID, honourAllSchemaLocations);
         // parse the grammar...
 
         try {
@@ -256,6 +275,7 @@ public class XMLGrammarBuilder {
             // so long as it's our configuraiton......
             parserConfiguration.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
             parserConfiguration.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, schemaFullChecking);
+            parserConfiguration.setFeature(HONOUR_ALL_SCHEMA_LOCATIONS_ID, honourAllSchemaLocations);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
@@ -281,18 +301,20 @@ public class XMLGrammarBuilder {
     /** Prints the usage. */
     private static void printUsage() {
 
-        System.err.println("usage: java xni.XMLGrammarBuilder [-p config_file] -d uri ... | [-f|-F] -a uri ... [-i uri ...]");
+        System.err.println("usage: java xni.XMLGrammarBuilder [-p name] -d uri ... | [-f|-F] [-hs|-HS] -a uri ... [-i uri ...]");
         System.err.println();
 
         System.err.println("options:");
-        System.err.println("  -p config_file:   configuration to use for instance validation");
-        System.err.println("  -d    grammars to preparse are DTD external subsets");
+        System.err.println("  -p name     Select parser configuration by name to use for instance validation");
+        System.err.println("  -d          Grammars to preparse are DTD external subsets");
         System.err.println("  -f  | -F    Turn on/off Schema full checking (default "+
                 (DEFAULT_SCHEMA_FULL_CHECKING ? "on" : "off)"));
+        System.err.println("  -hs | -HS   Turn on/off honouring of all schema locations (default "+
+                (DEFAULT_HONOUR_ALL_SCHEMA_LOCATIONS ? "on" : "off)"));
         System.err.println("  -a uri ...  Provide a list of schema documents");
         System.err.println("  -i uri ...  Provide a list of instance documents to validate");
         System.err.println();
-        System.err.println("NOTE:  both -d and -a cannot be specified!");
+        System.err.println("NOTE: Both -d and -a cannot be specified!");
 
     } // printUsage()
 
