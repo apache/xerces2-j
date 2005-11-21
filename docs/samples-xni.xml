@@ -65,7 +65,7 @@
    Most of the XNI samples have a command line option that allows the
    user to specify a different XNI parser configuration to use. In
    order to supply another parser configuration besides the default
-   Xerces <code>StandardParserConfiguration</code>, the configuration
+   Xerces <code>&DefaultConfig;</code>, the configuration
    must implement the 
    <code>org.apache.xerces.xni.parser.XMLParserConfiguration</code>
    interface.
@@ -121,6 +121,13 @@
       <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
      </td>
     </tr>
+    <tr>
+     <td>-hs | -HS</td>
+     <td>
+      Turn on/off honouring of all schema locations.<br/>
+      <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
+     </td>
+    </tr>
     <tr><td>-m  | -M</td><td>Turn on/off memory usage report.</td></tr>
     <tr><td>-t  | -T</td><td>Turn on/off \"tagginess\" report.</td></tr>
     <tr>
@@ -173,7 +180,21 @@
       <strong>NOTE:</strong> Not supported by all parser configurations.
      </td>
     </tr>
-    <tr><td>-c | -C</td><td>Turn on/off character notifications");</td></tr>
+    <tr>
+     <td>-f  | -F</td>
+     <td>
+      Turn on/off Schema full checking.<br/>
+      <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
+     </td>
+    </tr>
+    <tr>
+     <td>-hs | -HS</td>
+     <td>
+      Turn on/off honouring of all schema locations.<br/>
+      <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
+     </td>
+    </tr>
+    <tr><td>-c | -C</td><td>Turn on/off character notifications</td></tr>
     <tr><td>-h</td><td>Display help screen.</td></tr>
    </table>
   </s3>
@@ -199,6 +220,20 @@
      <td>
       Turn on/off Schema validation support.<br/>
       <strong>NOTE:</strong> Not supported by all parser configurations.
+     </td>
+    </tr>
+    <tr>
+     <td>-f  | -F</td>
+     <td>
+      Turn on/off Schema full checking.<br/>
+      <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
+     </td>
+    </tr>
+    <tr>
+     <td>-hs | -HS</td>
+     <td>
+      Turn on/off honouring of all schema locations.<br/>
+      <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
      </td>
     </tr>
     <!--
@@ -232,7 +267,7 @@
  <anchor name='XMLGrammarBuilder'/>
  <s2 title='Sample xni.XMLGrammarBuilder'>
   <p>
-    This sample illustrates how to use Xerces's grammar
+    This sample illustrates how to use Xerces' grammar
     preparsing functionality to build a compiled representation of a grammar
     and use it to parse instance documents.  It is also meant
     to replace the DOM ASBuilder sample (which
@@ -240,19 +275,26 @@
     handles both XML Schema grammars and DTD external subsets.
   </p>
   <s3 title='usage'>
-   <source>java xni.XMLGrammarBuilder [-p config_file] -d uri ... | [-f|-F] -a uri ... [-i uri ...]</source>
+   <source>java xni.XMLGrammarBuilder [-p name] -d uri ... | [-f|-F] [-hs|-HS] -a uri ... [-i uri ...]</source>
   </s3>
   <s3 title='options'>
    <table>
     <tr><th>Option</th><th>Description</th></tr>
-    <tr><td>-p name</td><td>Select parser configuration by name.</td></tr>
+    <tr><td>-p name</td><td>Select parser configuration by name to use for instance validation.</td></tr>
     <tr><td>-d</td><td>URI of file(s) to be compiled as DTD external
         subsets</td></tr>
     <tr><td>-a</td><td>URI of file(s) to be compiled as XML Schema grammars</td></tr>
-     <tr>
+    <tr>
      <td>-f  | -F</td>
      <td>
       Turn on/off Schema full checking when validating instances against schemas.<br/>
+      <strong>NOTE:</strong> Requires use of -a and not supported by all parsers.
+     </td>
+    </tr>
+    <tr>
+     <td>-hs | -HS</td>
+     <td>
+      Turn on/off honouring of all schema locations.<br/>
       <strong>NOTE:</strong> Requires use of -a and not supported by all parsers.
      </td>
     </tr>
