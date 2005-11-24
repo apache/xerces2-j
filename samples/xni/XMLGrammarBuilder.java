@@ -157,7 +157,7 @@ public class XMLGrammarBuilder {
                 i++;
                 arg = argv[i];
             }
-            else if (arg.equals("-hs")) {
+            if (arg.equals("-hs")) {
                 honourAllSchemaLocations = true;
                 i++;
                 arg = argv[i];
