@@ -1052,24 +1052,6 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 		// step 2: check facets against each other: length, bounds
 		if(fFacetsDefined != 0) {
 			
-			// check 4.3.1.c1 error: length & (maxLength | minLength)
-			if((fFacetsDefined & FACET_LENGTH) != 0 ){
-				if ((fFacetsDefined & FACET_MINLENGTH) != 0) {
-					if ((fFacetsDefined & FACET_MAXLENGTH) != 0) {
-						// length, minLength and maxLength defined
-						reportError("length-minLength-maxLength.a", new Object[]{fTypeName, Integer.toString(fLength), Integer.toString(fMinLength), Integer.toString(fMaxLength)});
-					}
-					else {
-						// length and minLength defined
-						reportError("length-minLength-maxLength.b", new Object[]{fTypeName, Integer.toString(fLength), Integer.toString(fMinLength)});
-					}
-				}
-				else if ((fFacetsDefined & FACET_MAXLENGTH) != 0) {
-					// length and maxLength defined
-					reportError("length-minLength-maxLength.c", new Object[]{fTypeName, Integer.toString(fLength), Integer.toString(fMaxLength)});
-				}
-			}
-			
 			// check 4.3.2.c1 must: minLength <= maxLength
 			if(((fFacetsDefined & FACET_MINLENGTH ) != 0 ) && ((fFacetsDefined & FACET_MAXLENGTH) != 0))
 			{
@@ -1126,12 +1108,12 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 				if ((fBase.fFacetsDefined & FACET_MINLENGTH) != 0 &&
 						fLength < fBase.fMinLength) {
 					// length, fBase.minLength and fBase.maxLength defined
-					reportError("length-minLength-maxLength.d", new Object[]{fTypeName, Integer.toString(fLength), Integer.toString(fBase.fMinLength)});
+					reportError("length-minLength-maxLength.1.1", new Object[]{fTypeName, Integer.toString(fLength), Integer.toString(fBase.fMinLength)});
 				}
 				if ((fBase.fFacetsDefined & FACET_MAXLENGTH) != 0 &&
 						fLength > fBase.fMaxLength) {
 					// length and fBase.maxLength defined
-					reportError("length-minLength-maxLength.e", new Object[]{fTypeName, Integer.toString(fLength), Integer.toString(fBase.fMaxLength)});
+					reportError("length-minLength-maxLength.2.1", new Object[]{fTypeName, Integer.toString(fLength), Integer.toString(fBase.fMaxLength)});
 				}
 				if ( (fBase.fFacetsDefined & FACET_LENGTH) != 0 ) {
 					// check 4.3.1.c2 error: length != fBase.length
@@ -1141,16 +1123,30 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 			}
 			
 			// check 4.3.1.c1 error: fBase.length & (maxLength | minLength)
-			else if((fBase.fFacetsDefined & FACET_LENGTH) != 0 ){
-				if ((fFacetsDefined & FACET_MINLENGTH) != 0 &&
-						fBase.fLength < fMinLength) {
-					// fBase.length, minLength and maxLength defined
-					reportError("length-minLength-maxLength.d", new Object[]{fTypeName, Integer.toString(fBase.fLength), Integer.toString(fMinLength)});
+			if((fBase.fFacetsDefined & FACET_LENGTH) != 0 || (fFacetsDefined & FACET_LENGTH) != 0){
+				if ((fFacetsDefined & FACET_MINLENGTH) != 0){
+					if (fBase.fLength < fMinLength) {
+						// fBase.length, minLength and maxLength defined
+						reportError("length-minLength-maxLength.1.1", new Object[]{fTypeName, Integer.toString(fBase.fLength), Integer.toString(fMinLength)});
+					}
+					if ((fBase.fFacetsDefined & FACET_MINLENGTH) == 0){ 
+						reportError("length-minLength-maxLength.1.2.a", new Object[]{fTypeName});  
+					}
+					if (fMinLength != fBase.fMinLength){
+						reportError("length-minLength-maxLength.1.2.b", new Object[]{fTypeName, Integer.toString(fMinLength), Integer.toString(fBase.fMinLength)}); 
+					}
 				}
-				if ((fFacetsDefined & FACET_MAXLENGTH) != 0 &&
-						fBase.fLength > fMaxLength) {
-					// fBase.length and maxLength defined
-					reportError("length-minLength-maxLength.e", new Object[]{this, Integer.toString(fBase.fLength), Integer.toString(fMaxLength)});
+				if ((fFacetsDefined & FACET_MAXLENGTH) != 0){
+					if (fBase.fLength > fMaxLength) {
+						// fBase.length, minLength and maxLength defined
+						reportError("length-minLength-maxLength.2.1", new Object[]{fTypeName, Integer.toString(fBase.fLength), Integer.toString(fMaxLength)});
+					}
+					if ((fBase.fFacetsDefined & FACET_MAXLENGTH) == 0){ 
+						reportError("length-minLength-maxLength.2.2.a", new Object[]{fTypeName});  
+					}
+					if (fMaxLength != fBase.fMaxLength){
+						reportError("length-minLength-maxLength.2.2.b", new Object[]{fTypeName, Integer.toString(fMaxLength), Integer.toString(fBase.fBase.fMaxLength)}); 
+					}
 				}
 			}
 			
