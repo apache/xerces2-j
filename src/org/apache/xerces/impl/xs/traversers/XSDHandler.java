@@ -242,6 +242,7 @@ public class XSDHandler {
     private Vector fAllTNSs = new Vector();
     // stores instance document mappings between namespaces and schema hints
     private Hashtable fLocationPairs = null;
+    private static final Hashtable EMPTY_TABLE = new Hashtable();
     
     //this hashtable is keyded on by DOM node objects. 
     //The table stores the hidden nodes
@@ -895,7 +896,13 @@ public class XSDHandler {
                 // built), ignore this one (don't traverse it).
                 if ((!fHonourAllSchemaLocations && findGrammar(fSchemaGrammarDescription) != null) || isExistingGrammar(fSchemaGrammarDescription))
                     continue;
-                newSchemaRoot = resolveSchema(fSchemaGrammarDescription, false, child);
+                // If "findGrammar" returns a grammar, then this is not the
+                // the first time we see a location for a given namespace.
+                // Don't consult the location pair hashtable in this case,
+                // otherwise the location will be ignored because it'll get
+                // resolved to the same location as the first hint.
+                newSchemaRoot = resolveSchema(fSchemaGrammarDescription, false, child,
+                                              findGrammar(fSchemaGrammarDescription) == null);
             }
             else if ((localName.equals(SchemaSymbols.ELT_INCLUDE)) ||
                     (localName.equals(SchemaSymbols.ELT_REDEFINE))) {
@@ -972,7 +979,7 @@ public class XSDHandler {
                 fSchemaGrammarDescription.setBaseSystemId(doc2SystemId(schemaRoot));
                 fSchemaGrammarDescription.setLocationHints(new String[]{schemaHint});
                 fSchemaGrammarDescription.setTargetNamespace(callerTNS);
-                newSchemaRoot = resolveSchema(fSchemaGrammarDescription, mustResolve, child);
+                newSchemaRoot = resolveSchema(fSchemaGrammarDescription, mustResolve, child, true);
                 schemaNamespace = currSchemaInfo.fTargetNamespace;
             }
             else {
@@ -1653,11 +1660,12 @@ public class XSDHandler {
      * @param referElement
      * @return A schema Element or null.
      */
-    private Element resolveSchema(XSDDescription desc,
-              boolean mustResolve, Element referElement) {
+    private Element resolveSchema(XSDDescription desc, boolean mustResolve,
+                                  Element referElement, boolean usePairs) {
         XMLInputSource schemaSource = null;
         try {
-            schemaSource = XMLSchemaLoader.resolveDocument(desc, fLocationPairs, fEntityResolver);
+            Hashtable pairs = usePairs ? fLocationPairs : EMPTY_TABLE;
+            schemaSource = XMLSchemaLoader.resolveDocument(desc, pairs, fEntityResolver);
         }
         catch (IOException ex) {
             if (mustResolve) {
