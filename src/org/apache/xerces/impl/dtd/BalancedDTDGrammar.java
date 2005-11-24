@@ -186,7 +186,8 @@ final class BalancedDTDGrammar extends DTDGrammar {
      * @throws XNIException Thrown by handler to signal an error.
      */
     public final void endGroup(Augmentations augs) throws XNIException {
-        final int group = addContentSpecNodes(0, fGroupIndexStackSizes[fDepth] - 1);
+        final int group = fGroupIndexStackSizes[fDepth] > 0 ? 
+                addContentSpecNodes(0, fGroupIndexStackSizes[fDepth] - 1) : addUniqueLeafNode(null);
         --fDepth;
         addToCurrentGroup(group);
     } // endGroup()
