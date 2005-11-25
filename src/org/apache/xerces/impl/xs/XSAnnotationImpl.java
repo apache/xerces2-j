@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2004 The Apache Software Foundation.
+ * Copyright 2001-2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package org.apache.xerces.impl.xs;
 import org.apache.xerces.xs.XSAnnotation;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSNamespaceItem;
+import org.apache.xerces.dom.CoreDocumentImpl;
+import org.apache.xerces.dom.PSVIDocumentImpl;
 import org.apache.xerces.parsers.SAXParser;
 import org.apache.xerces.parsers.DOMParser;
 
@@ -141,23 +143,37 @@ public class XSAnnotationImpl implements XSAnnotation {
 
     // this creates the new Annotation element as the first child
     // of the Node
-    private synchronized void writeToDOM(Node target, short type){
-        Document futureOwner = (type == XSAnnotation.W3C_DOM_ELEMENT)?target.getOwnerDocument():(Document)target;
+    private synchronized void writeToDOM(Node target, short type) {
+        Document futureOwner = (type == XSAnnotation.W3C_DOM_ELEMENT) ? 
+                target.getOwnerDocument() : (Document)target;
         DOMParser parser = fGrammar.getDOMParser();
         StringReader aReader = new StringReader(fData);
         InputSource aSource = new InputSource(aReader);
         try {
             parser.parse(aSource);
-        } catch (SAXException e) {
+        } 
+        catch (SAXException e) {
             // this should never happen!
             // REVISIT:  what to do with this?; should really not
             // eat it...
-        } catch (IOException i) {
+        } 
+        catch (IOException i) {
             // ditto with above
         }
         Document aDocument = parser.getDocument();
         Element annotation = aDocument.getDocumentElement();
-        Node newElem = futureOwner.importNode(annotation, true);
+        Node newElem = null;
+        if (futureOwner instanceof CoreDocumentImpl &&
+            !(futureOwner instanceof PSVIDocumentImpl)) {
+            newElem = futureOwner.adoptNode(annotation);
+            // this should never fail but if it does, import the node instead
+            if (newElem == null) {
+                newElem = futureOwner.importNode(annotation, true);
+            }
+        }
+        else {
+            newElem = futureOwner.importNode(annotation, true);
+        }
         target.insertBefore(newElem, target.getFirstChild());
     }
 

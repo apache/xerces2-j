@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2004 The Apache Software Foundation.
+ * Copyright 2001-2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package org.apache.xerces.impl.xs;
 
+import java.lang.ref.SoftReference;
 import java.util.Vector;
 
 import org.apache.xerces.impl.Constants;
@@ -29,8 +30,8 @@ import org.apache.xerces.impl.xs.util.XSNamedMap4Types;
 import org.apache.xerces.impl.xs.util.XSNamedMapImpl;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.parsers.DOMParser;
-import org.apache.xerces.parsers.IntegratedParserConfiguration;
 import org.apache.xerces.parsers.SAXParser;
+import org.apache.xerces.parsers.XML11Configuration;
 import org.apache.xerces.util.SymbolHash;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.NamespaceContext;
@@ -51,6 +52,7 @@ import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSParticle;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.XSWildcard;
+import org.xml.sax.SAXException;
 
 /**
  * This class is to hold all schema component declaration that are declared
@@ -95,8 +97,8 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
     // symbol table for constructing parsers (annotation support)
     private SymbolTable fSymbolTable = null;
     // parsers for annotation support
-    private SAXParser fSAXParser = null;
-    private DOMParser fDOMParser = null;
+    private SoftReference fSAXParser = null;
+    private SoftReference fDOMParser = null;
 
     //
     // Constructors
@@ -985,31 +987,48 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
 
     // annotation support
     synchronized DOMParser getDOMParser() {
-        if (fDOMParser != null) return fDOMParser;
+        if (fDOMParser != null) {
+            DOMParser parser = (DOMParser) fDOMParser.get();
+            if (parser != null) {
+                return parser;
+            }
+        }
         // REVISIT:  when schema handles XML 1.1, will need to 
         // revisit this (and the practice of not prepending an XML decl to the annotation string
-        IntegratedParserConfiguration config = new IntegratedParserConfiguration(fSymbolTable);
+        XML11Configuration config = new XML11Configuration(fSymbolTable);
         // note that this should never produce errors or require
         // entity resolution, so just a barebones configuration with
         // a couple of feature  set will do fine
         config.setFeature(Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE, true);
         config.setFeature(Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE, false);
-        fDOMParser = new DOMParser(config);
-        return fDOMParser;
+        
+        DOMParser parser = new DOMParser(config);
+        try {
+            parser.setFeature(Constants.XERCES_FEATURE_PREFIX + Constants.DEFER_NODE_EXPANSION_FEATURE, false);
+        }
+        catch (SAXException exc) {}
+        fDOMParser = new SoftReference(parser);
+        return parser;
     }
 
     synchronized SAXParser getSAXParser() {
-        if (fSAXParser != null) return fSAXParser;
+        if (fSAXParser != null) {
+            SAXParser parser = (SAXParser) fSAXParser.get();
+            if (parser != null) {
+                return parser;
+            }
+        }
         // REVISIT:  when schema handles XML 1.1, will need to 
         // revisit this (and the practice of not prepending an XML decl to the annotation string
-        IntegratedParserConfiguration config = new IntegratedParserConfiguration(fSymbolTable);
+        XML11Configuration config = new XML11Configuration(fSymbolTable);
         // note that this should never produce errors or require
         // entity resolution, so just a barebones configuration with
         // a couple of feature  set will do fine
         config.setFeature(Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE, true);
         config.setFeature(Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE, false);
-        fSAXParser = new SAXParser(config);
-        return fSAXParser;
+        SAXParser parser = new SAXParser(config);
+        fSAXParser = new SoftReference(parser);
+        return parser;
     }
 
     /**
