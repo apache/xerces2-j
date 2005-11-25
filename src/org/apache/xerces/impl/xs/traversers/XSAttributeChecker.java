@@ -451,7 +451,6 @@ public class XSAttributeChecker {
 
         // step 4: for each element, make a list of possible attributes
         Container attrList;
-        OneElement oneEle;
 
         // for element "attribute" - global
         attrList = Container.getContainer(5);
@@ -465,8 +464,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_NAME, allAttrs[ATT_NAME_R]);
         // type = QName
         attrList.put(SchemaSymbols.ATT_TYPE, allAttrs[ATT_TYPE_N]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapG.put(SchemaSymbols.ELT_ATTRIBUTE, oneEle);
+        fEleAttrsMapG.put(SchemaSymbols.ELT_ATTRIBUTE, attrList);
 
         // for element "attribute" - local name
         attrList = Container.getContainer(7);
@@ -484,8 +482,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_TYPE, allAttrs[ATT_TYPE_N]);
         // use = (optional | prohibited | required) : optional
         attrList.put(SchemaSymbols.ATT_USE, allAttrs[ATT_USE_D]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapL.put(ATTRIBUTE_N, oneEle);
+        fEleAttrsMapL.put(ATTRIBUTE_N, attrList);
 
         // for element "attribute" - local ref
         attrList = Container.getContainer(5);
@@ -499,8 +496,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_REF, allAttrs[ATT_REF_R]);
         // use = (optional | prohibited | required) : optional
         attrList.put(SchemaSymbols.ATT_USE, allAttrs[ATT_USE_D]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapL.put(ATTRIBUTE_R, oneEle);
+        fEleAttrsMapL.put(ATTRIBUTE_R, attrList);
 
         // for element "element" - global
         attrList = Container.getContainer(10);
@@ -524,8 +520,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_SUBSTITUTIONGROUP, allAttrs[ATT_SUBSTITUTION_G_N]);
         // type = QName
         attrList.put(SchemaSymbols.ATT_TYPE, allAttrs[ATT_TYPE_N]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapG.put(SchemaSymbols.ELT_ELEMENT, oneEle);
+        fEleAttrsMapG.put(SchemaSymbols.ELT_ELEMENT, attrList);
 
         // for element "element" - local name
         attrList = Container.getContainer(10);
@@ -549,8 +544,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_NILLABLE, allAttrs[ATT_NILLABLE_D]);
         // type = QName
         attrList.put(SchemaSymbols.ATT_TYPE, allAttrs[ATT_TYPE_N]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapL.put(ELEMENT_N, oneEle);
+        fEleAttrsMapL.put(ELEMENT_N, attrList);
 
         // for element "element" - local ref
         attrList = Container.getContainer(4);
@@ -562,8 +556,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_MINOCCURS, allAttrs[ATT_MINOCCURS_D]);
         // ref = QName
         attrList.put(SchemaSymbols.ATT_REF, allAttrs[ATT_REF_R]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapL.put(ELEMENT_R, oneEle);
+        fEleAttrsMapL.put(ELEMENT_R, attrList);
 
         // for element "complexType" - global
         attrList = Container.getContainer(6);
@@ -579,8 +572,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_MIXED, allAttrs[ATT_MIXED_D]);
         // name = NCName
         attrList.put(SchemaSymbols.ATT_NAME, allAttrs[ATT_NAME_R]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapG.put(SchemaSymbols.ELT_COMPLEXTYPE, oneEle);
+        fEleAttrsMapG.put(SchemaSymbols.ELT_COMPLEXTYPE, attrList);
 
         // for element "notation" - global
         attrList = Container.getContainer(4);
@@ -592,8 +584,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_PUBLIC, allAttrs[ATT_PUBLIC_R]);
         // system = anyURI
         attrList.put(SchemaSymbols.ATT_SYSTEM, allAttrs[ATT_SYSTEM_N]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapG.put(SchemaSymbols.ELT_NOTATION, oneEle);
+        fEleAttrsMapG.put(SchemaSymbols.ELT_NOTATION, attrList);
 
 
         // for element "complexType" - local
@@ -602,15 +593,13 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
         // mixed = boolean : false
         attrList.put(SchemaSymbols.ATT_MIXED, allAttrs[ATT_MIXED_D]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapL.put(SchemaSymbols.ELT_COMPLEXTYPE, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_COMPLEXTYPE, attrList);
 
         // for element "simpleContent" - local
         attrList = Container.getContainer(1);
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapL.put(SchemaSymbols.ELT_SIMPLECONTENT, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_SIMPLECONTENT, attrList);
 
         // for element "restriction" - local
         attrList = Container.getContainer(2);
@@ -618,8 +607,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_BASE, allAttrs[ATT_BASE_N]);
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapL.put(SchemaSymbols.ELT_RESTRICTION, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_RESTRICTION, attrList);
 
         // for element "extension" - local
         attrList = Container.getContainer(2);
@@ -627,8 +615,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_BASE, allAttrs[ATT_BASE_R]);
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapL.put(SchemaSymbols.ELT_EXTENSION, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_EXTENSION, attrList);
 
         // for element "attributeGroup" - local ref
         attrList = Container.getContainer(2);
@@ -636,8 +623,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
         // ref = QName
         attrList.put(SchemaSymbols.ATT_REF, allAttrs[ATT_REF_R]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapL.put(SchemaSymbols.ELT_ATTRIBUTEGROUP, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_ATTRIBUTEGROUP, attrList);
 
         // for element "anyAttribute" - local
         attrList = Container.getContainer(3);
@@ -647,8 +633,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_NAMESPACE, allAttrs[ATT_NAMESPACE_D]);
         // processContents = (lax | skip | strict) : strict
         attrList.put(SchemaSymbols.ATT_PROCESSCONTENTS, allAttrs[ATT_PROCESS_C_D]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapL.put(SchemaSymbols.ELT_ANYATTRIBUTE, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_ANYATTRIBUTE, attrList);
 
         // for element "complexContent" - local
         attrList = Container.getContainer(2);
@@ -656,8 +641,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
         // mixed = boolean
         attrList.put(SchemaSymbols.ATT_MIXED, allAttrs[ATT_MIXED_N]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapL.put(SchemaSymbols.ELT_COMPLEXCONTENT, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_COMPLEXCONTENT, attrList);
 
         // for element "attributeGroup" - global
         attrList = Container.getContainer(2);
@@ -665,8 +649,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
         // name = NCName
         attrList.put(SchemaSymbols.ATT_NAME, allAttrs[ATT_NAME_R]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapG.put(SchemaSymbols.ELT_ATTRIBUTEGROUP, oneEle);
+        fEleAttrsMapG.put(SchemaSymbols.ELT_ATTRIBUTEGROUP, attrList);
 
         // for element "group" - global
         attrList = Container.getContainer(2);
@@ -674,8 +657,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
         // name = NCName
         attrList.put(SchemaSymbols.ATT_NAME, allAttrs[ATT_NAME_R]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapG.put(SchemaSymbols.ELT_GROUP, oneEle);
+        fEleAttrsMapG.put(SchemaSymbols.ELT_GROUP, attrList);
 
         // for element "group" - local ref
         attrList = Container.getContainer(4);
@@ -687,8 +669,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_MINOCCURS, allAttrs[ATT_MINOCCURS_D]);
         // ref = QName
         attrList.put(SchemaSymbols.ATT_REF, allAttrs[ATT_REF_R]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapL.put(SchemaSymbols.ELT_GROUP, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_GROUP, attrList);
 
         // for element "all" - local
         attrList = Container.getContainer(3);
@@ -698,8 +679,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_MAXOCCURS, allAttrs[ATT_MAXOCCURS1_D]);
         // minOccurs = (0 | 1) : 1
         attrList.put(SchemaSymbols.ATT_MINOCCURS, allAttrs[ATT_MINOCCURS1_D]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapL.put(SchemaSymbols.ELT_ALL, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_ALL, attrList);
 
         // for element "choice" - local
         attrList = Container.getContainer(3);
@@ -709,10 +689,9 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_MAXOCCURS, allAttrs[ATT_MAXOCCURS_D]);
         // minOccurs = nonNegativeInteger : 1
         attrList.put(SchemaSymbols.ATT_MINOCCURS, allAttrs[ATT_MINOCCURS_D]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapL.put(SchemaSymbols.ELT_CHOICE, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_CHOICE, attrList);
         // for element "sequence" - local
-        fEleAttrsMapL.put(SchemaSymbols.ELT_SEQUENCE, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_SEQUENCE, attrList);
 
         // for element "any" - local
         attrList = Container.getContainer(5);
@@ -726,8 +705,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_NAMESPACE, allAttrs[ATT_NAMESPACE_D]);
         // processContents = (lax | skip | strict) : strict
         attrList.put(SchemaSymbols.ATT_PROCESSCONTENTS, allAttrs[ATT_PROCESS_C_D]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapL.put(SchemaSymbols.ELT_ANY, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_ANY, attrList);
 
         // for element "unique" - local
         attrList = Container.getContainer(2);
@@ -735,10 +713,9 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
         // name = NCName
         attrList.put(SchemaSymbols.ATT_NAME, allAttrs[ATT_NAME_R]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapL.put(SchemaSymbols.ELT_UNIQUE, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_UNIQUE, attrList);
         // for element "key" - local
-        fEleAttrsMapL.put(SchemaSymbols.ELT_KEY, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_KEY, attrList);
 
         // for element "keyref" - local
         attrList = Container.getContainer(3);
@@ -748,8 +725,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_NAME, allAttrs[ATT_NAME_R]);
         // refer = QName
         attrList.put(SchemaSymbols.ATT_REFER, allAttrs[ATT_REFER_R]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapL.put(SchemaSymbols.ELT_KEYREF, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_KEYREF, attrList);
 
         // for element "selector" - local
         attrList = Container.getContainer(2);
@@ -757,8 +733,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
         // xpath = a subset of XPath expression
         attrList.put(SchemaSymbols.ATT_XPATH, allAttrs[ATT_XPATH_R]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapL.put(SchemaSymbols.ELT_SELECTOR, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_SELECTOR, attrList);
 
         // for element "field" - local
         attrList = Container.getContainer(2);
@@ -766,25 +741,22 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
         // xpath = a subset of XPath expression
         attrList.put(SchemaSymbols.ATT_XPATH, allAttrs[ATT_XPATH1_R]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapL.put(SchemaSymbols.ELT_FIELD, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_FIELD, attrList);
 
         // for element "annotation" - global
         attrList = Container.getContainer(1);
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapG.put(SchemaSymbols.ELT_ANNOTATION, oneEle);
+        fEleAttrsMapG.put(SchemaSymbols.ELT_ANNOTATION, attrList);
         // for element "annotation" - local
-        fEleAttrsMapL.put(SchemaSymbols.ELT_ANNOTATION, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_ANNOTATION, attrList);
 
         // for element "appinfo" - local
         attrList = Container.getContainer(1);
         // source = anyURI
         attrList.put(SchemaSymbols.ATT_SOURCE, allAttrs[ATT_SOURCE_N]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapG.put(SchemaSymbols.ELT_APPINFO, oneEle);
-        fEleAttrsMapL.put(SchemaSymbols.ELT_APPINFO, oneEle);
+        fEleAttrsMapG.put(SchemaSymbols.ELT_APPINFO, attrList);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_APPINFO, attrList);
 
         // for element "documentation" - local
         attrList = Container.getContainer(2);
@@ -792,9 +764,8 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_SOURCE, allAttrs[ATT_SOURCE_N]);
         // xml:lang = language
         attrList.put(SchemaSymbols.ATT_XML_LANG, allAttrs[ATT_XML_LANG]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapG.put(SchemaSymbols.ELT_DOCUMENTATION, oneEle);
-        fEleAttrsMapL.put(SchemaSymbols.ELT_DOCUMENTATION, oneEle);
+        fEleAttrsMapG.put(SchemaSymbols.ELT_DOCUMENTATION, attrList);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_DOCUMENTATION, attrList);
 
         // for element "simpleType" - global
         attrList = Container.getContainer(3);
@@ -804,8 +775,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
         // name = NCName
         attrList.put(SchemaSymbols.ATT_NAME, allAttrs[ATT_NAME_R]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapG.put(SchemaSymbols.ELT_SIMPLETYPE, oneEle);
+        fEleAttrsMapG.put(SchemaSymbols.ELT_SIMPLETYPE, attrList);
 
         // for element "simpleType" - local
         attrList = Container.getContainer(2);
@@ -813,8 +783,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_FINAL, allAttrs[ATT_FINAL1_N]);
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapL.put(SchemaSymbols.ELT_SIMPLETYPE, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_SIMPLETYPE, attrList);
 
         // for element "restriction" - local
         // already registered for complexType
@@ -825,8 +794,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
         // itemType = QName
         attrList.put(SchemaSymbols.ATT_ITEMTYPE, allAttrs[ATT_ITEMTYPE_N]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapL.put(SchemaSymbols.ELT_LIST, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_LIST, attrList);
 
         // for element "union" - local
         attrList = Container.getContainer(2);
@@ -834,8 +802,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
         // memberTypes = List of QName
         attrList.put(SchemaSymbols.ATT_MEMBERTYPES, allAttrs[ATT_MEMBER_T_N]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapL.put(SchemaSymbols.ELT_UNION, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_UNION, attrList);
 
         // for element "schema" - global
         attrList = Container.getContainer(8);
@@ -855,8 +822,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_VERSION, allAttrs[ATT_VERSION_N]);
         // xml:lang = language
         attrList.put(SchemaSymbols.ATT_XML_LANG, allAttrs[ATT_XML_LANG]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapG.put(SchemaSymbols.ELT_SCHEMA, oneEle);
+        fEleAttrsMapG.put(SchemaSymbols.ELT_SCHEMA, attrList);
 
         // for element "include" - global
         attrList = Container.getContainer(2);
@@ -864,10 +830,9 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
         // schemaLocation = anyURI
         attrList.put(SchemaSymbols.ATT_SCHEMALOCATION, allAttrs[ATT_SCHEMA_L_R]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapG.put(SchemaSymbols.ELT_INCLUDE, oneEle);
+        fEleAttrsMapG.put(SchemaSymbols.ELT_INCLUDE, attrList);
         // for element "redefine" - global
-        fEleAttrsMapG.put(SchemaSymbols.ELT_REDEFINE, oneEle);
+        fEleAttrsMapG.put(SchemaSymbols.ELT_REDEFINE, attrList);
 
         // for element "import" - global
         attrList = Container.getContainer(3);
@@ -877,8 +842,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_NAMESPACE, allAttrs[ATT_NAMESPACE_N]);
         // schemaLocation = anyURI
         attrList.put(SchemaSymbols.ATT_SCHEMALOCATION, allAttrs[ATT_SCHEMA_L_N]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapG.put(SchemaSymbols.ELT_IMPORT, oneEle);
+        fEleAttrsMapG.put(SchemaSymbols.ELT_IMPORT, attrList);
 
         // for element "length" - local
         attrList = Container.getContainer(3);
@@ -888,14 +852,13 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_VALUE, allAttrs[ATT_VALUE_NNI_N]);
         // fixed = boolean : false
         attrList.put(SchemaSymbols.ATT_FIXED, allAttrs[ATT_FIXED_D]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapL.put(SchemaSymbols.ELT_LENGTH, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_LENGTH, attrList);
         // for element "minLength" - local
-        fEleAttrsMapL.put(SchemaSymbols.ELT_MINLENGTH, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_MINLENGTH, attrList);
         // for element "maxLength" - local
-        fEleAttrsMapL.put(SchemaSymbols.ELT_MAXLENGTH, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_MAXLENGTH, attrList);
         // for element "fractionDigits" - local
-        fEleAttrsMapL.put(SchemaSymbols.ELT_FRACTIONDIGITS, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_FRACTIONDIGITS, attrList);
 
         // for element "totalDigits" - local
         attrList = Container.getContainer(3);
@@ -905,8 +868,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_VALUE, allAttrs[ATT_VALUE_PI_N]);
         // fixed = boolean : false
         attrList.put(SchemaSymbols.ATT_FIXED, allAttrs[ATT_FIXED_D]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapL.put(SchemaSymbols.ELT_TOTALDIGITS, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_TOTALDIGITS, attrList);
 
         // for element "pattern" - local
         attrList = Container.getContainer(2);
@@ -914,8 +876,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
         // value = string
         attrList.put(SchemaSymbols.ATT_VALUE, allAttrs[ATT_VALUE_STR_N]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapL.put(SchemaSymbols.ELT_PATTERN, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_PATTERN, attrList);
 
         // for element "enumeration" - local
         attrList = Container.getContainer(2);
@@ -923,8 +884,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
         // value = anySimpleType
         attrList.put(SchemaSymbols.ATT_VALUE, allAttrs[ATT_VALUE_STR_N]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapL.put(SchemaSymbols.ELT_ENUMERATION, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_ENUMERATION, attrList);
 
         // for element "whiteSpace" - local
         attrList = Container.getContainer(3);
@@ -934,8 +894,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_VALUE, allAttrs[ATT_VALUE_WS_N]);
         // fixed = boolean : false
         attrList.put(SchemaSymbols.ATT_FIXED, allAttrs[ATT_FIXED_D]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapL.put(SchemaSymbols.ELT_WHITESPACE, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_WHITESPACE, attrList);
 
         // for element "maxInclusive" - local
         attrList = Container.getContainer(3);
@@ -945,14 +904,13 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_VALUE, allAttrs[ATT_VALUE_STR_N]);
         // fixed = boolean : false
         attrList.put(SchemaSymbols.ATT_FIXED, allAttrs[ATT_FIXED_D]);
-        oneEle = new OneElement (attrList);
-        fEleAttrsMapL.put(SchemaSymbols.ELT_MAXINCLUSIVE, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_MAXINCLUSIVE, attrList);
         // for element "maxExclusive" - local
-        fEleAttrsMapL.put(SchemaSymbols.ELT_MAXEXCLUSIVE, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_MAXEXCLUSIVE, attrList);
         // for element "minInclusive" - local
-        fEleAttrsMapL.put(SchemaSymbols.ELT_MININCLUSIVE, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_MININCLUSIVE, attrList);
         // for element "minExclusive" - local
-        fEleAttrsMapL.put(SchemaSymbols.ELT_MINEXCLUSIVE, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_MINEXCLUSIVE, attrList);
     }
 
     // used to resolver namespace prefixes
@@ -1051,8 +1009,8 @@ public class XSAttributeChecker {
         }
 
         // get desired attribute list of this element
-        OneElement oneEle = (OneElement)eleAttrsMap.get(lookupName);
-        if (oneEle == null) {
+        Container attrList = (Container)eleAttrsMap.get(lookupName);
+        if (attrList == null) {
             // should never gets here.
             // when this method is called, the call already knows that
             // the element can appear.
@@ -1064,7 +1022,6 @@ public class XSAttributeChecker {
         Object[] attrValues = getAvailableArray();
         //Hashtable otherValues = new Hashtable();
         long fromDefault = 0;
-        Container attrList = oneEle.attrList;
 
         // clear the "seen" flag.
         System.arraycopy(fSeenTemp, 0, fSeen, 0, ATTIDX_COUNT);
@@ -1101,8 +1058,7 @@ public class XSAttributeChecker {
             if (attrURI != null && attrURI.length() != 0) {
                 // attributes with schema namespace are not allowed
                 // and not allowed on "document" and "appInfo"
-                if (attrURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) ||
-                    !oneEle.allowNonSchemaAttr) {
+                if (attrURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) {
                     reportSchemaError ("s4s-att-not-allowed", new Object[] {elName, attrName}, element);
                 }
                 else {
@@ -1135,7 +1091,7 @@ public class XSAttributeChecker {
             }
 
             // check whether this attribute is allowed
-            OneAttr oneAttr = (OneAttr)attrList.get(attrName);
+            OneAttr oneAttr = attrList.get(attrName);
             if (oneAttr == null) {
                 reportSchemaError ("s4s-att-not-allowed",
                                    new Object[] {elName, attrName},
@@ -1188,7 +1144,7 @@ public class XSAttributeChecker {
         }
 
         // apply default values
-        OneAttr[] reqAttrs = oneEle.attrList.values;
+        OneAttr[] reqAttrs = attrList.values;
         for (int i = 0; i < reqAttrs.length; i++) {
             OneAttr oneAttr = reqAttrs[i];
 
@@ -1613,7 +1569,7 @@ public class XSAttributeChecker {
 
             // get all values appeared with this attribute name
             Vector values = (Vector)fNonSchemaAttrs.get(attrRName);
-            String elName, attrVal;
+            String elName;
             String attrName = (String)values.elementAt(0);
             // for each of the values
             int count = values.size();
@@ -1785,22 +1741,6 @@ class OneAttr {
         this.dvIndex = dvIndex;
         this.valueIndex = valueIndex;
         this.dfltValue = dfltValue;
-    }
-}
-
-class OneElement {
-    // the list of attributes that can appear in one element
-    public Container attrList;
-    // does this element allow attributes from non-schema namespace
-    public boolean allowNonSchemaAttr;
-
-    public OneElement (Container attrList) {
-        this(attrList, true);
-    }
-
-    public OneElement (Container attrList, boolean allowNonSchemaAttr) {
-        this.attrList = attrList;
-        this.allowNonSchemaAttr = allowNonSchemaAttr;
     }
 }
 
