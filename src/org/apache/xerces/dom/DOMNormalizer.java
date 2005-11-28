@@ -1514,66 +1514,78 @@ public class DOMNormalizer implements XMLDocumentHandler {
             return -1;
         }
 
-        public int getIndex(String uri, String localPart){
+        public int getIndex(String uri, String localPart) {
             // REVISIT: implement
             return -1;
         }
 
-        public void setName(int attrIndex, QName attrName){
+        public void setName(int attrIndex, QName attrName) {
             // REVISIT: implement
         }
 
-        public void getName(int attrIndex, QName attrName){
-            if (fAttributes !=null) {
+        public void getName(int attrIndex, QName attrName) {
+            if (fAttributes != null) {
                 updateQName((Node)fAttributes.getItem(attrIndex), attrName);
             }
         }
 
-        public String getPrefix(int index){
-            // REVISIT: implement
+        public String getPrefix(int index) {
+            if (fAttributes != null) {
+                Node node = (Node) fAttributes.getItem(index);
+                String prefix = node.getPrefix();
+                prefix = (prefix != null && prefix.length() != 0) ? fSymbolTable.addSymbol(prefix) : null;
+                return prefix;
+            }
+            return null;
+        }
+
+        public String getURI(int index) {
+            if (fAttributes != null) {
+                Node node = (Node) fAttributes.getItem(index);
+                String namespace = node.getNamespaceURI();
+                namespace = (namespace != null) ? fSymbolTable.addSymbol(namespace) : null;
+                return namespace;
+            }
             return null;
         }
 
 
-        public String getURI(int index){
-            // REVISIT: implement
+        public String getLocalName(int index) {
+            if (fAttributes != null) {
+                Node node = (Node) fAttributes.getItem(index);
+                String localName = node.getLocalName();
+                localName = (localName != null) ? fSymbolTable.addSymbol(localName) : null;
+                return localName;
+            }
             return null;
         }
 
-
-        public String getLocalName(int index){
-            // REVISIT: implement
+        public String getQName(int index) {
+            if (fAttributes != null) {
+                Node node = (Node) fAttributes.getItem(index);
+                String rawname = fSymbolTable.addSymbol(node.getNodeName());
+                return rawname;
+            }
             return null;
         }
 
-
-        public String getQName(int index){
-            // REVISIT: implement
-            return null;
-        }
-
-
-        public void setType(int attrIndex, String attrType){
+        public void setType(int attrIndex, String attrType) {
             // REVISIT: implement
         }
 
-
-        public String getType(int index){
+        public String getType(int index) {
             return "CDATA";
         }
 
-
-        public String getType(String qName){
+        public String getType(String qName) {
             return "CDATA";
         }
 
-
-        public String getType(String uri, String localName){
+        public String getType(String uri, String localName) {
             return "CDATA";
         }
 
-
-        public void setValue(int attrIndex, String attrValue){
+        public void setValue(int attrIndex, String attrValue) {
             // REVISIT: is this desired behaviour? 
             // The values are updated in the case datatype-normalization is turned on
             // in this case we need to make sure that specified attributes stay specified
@@ -1587,18 +1599,15 @@ public class DOMNormalizer implements XMLDocumentHandler {
             }
         }
 
-
-        public String getValue(int index){
+        public String getValue(int index) {
             return (fAttributes !=null)?fAttributes.item(index).getNodeValue():"";
 
         }
-
 
         public String getValue(String qName){
             // REVISIT: implement
             return null;
         }
-
 
         public String getValue(String uri, String localName){ 
             if (fAttributes != null) {
@@ -1608,18 +1617,15 @@ public class DOMNormalizer implements XMLDocumentHandler {
             return null;
         }
 
-
         public void setNonNormalizedValue(int attrIndex, String attrValue){
             // REVISIT: implement
 
         }
 
-
         public String getNonNormalizedValue(int attrIndex){
             // REVISIT: implement
             return null;
         }
-
 
         public void setSpecified(int attrIndex, boolean specified){
             AttrImpl attr = (AttrImpl)fAttributes.getItem(attrIndex);
