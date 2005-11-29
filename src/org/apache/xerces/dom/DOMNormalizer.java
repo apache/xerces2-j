@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004, 2005 The Apache Software Foundation.
+ * Copyright 1999-2002,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.RevalidationHandler;
 import org.apache.xerces.impl.dtd.DTDGrammar;
 import org.apache.xerces.impl.dtd.XMLDTDDescription;
-import org.apache.xerces.impl.dtd.XMLDTDValidator;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.util.SimpleLocator;
 import org.apache.xerces.parsers.XMLGrammarPreparser;
@@ -159,8 +158,8 @@ public class DOMNormalizer implements XMLDocumentHandler {
      */
     public static final RuntimeException abort = new RuntimeException();
     
-    //DTD validator
-    private XMLDTDValidator fDTDValidator;
+    /** Empty string to pass to the validator. **/
+    public static final XMLString EMPTY_STRING = new XMLString();
     
     //Check if element content is all "ignorable whitespace"
     private boolean allWhitespace = false;
@@ -191,7 +190,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
 		if ((fConfiguration.features & DOMConfigurationImpl.VALIDATE) != 0) {
             String schemaLang = (String)fConfiguration.getProperty(DOMConfigurationImpl.JAXP_SCHEMA_LANGUAGE);
             
-            if(schemaLang != null && schemaLang.equals(Constants.NS_XMLSCHEMA)) {
+            if (schemaLang != null && schemaLang.equals(Constants.NS_XMLSCHEMA)) {
     			fValidationHandler =
     				CoreDOMImplementationImpl.singleton.getValidator(XMLGrammarDescription.XML_SCHEMA);
                 fConfiguration.setFeature(DOMConfigurationImpl.SCHEMA, true);
@@ -202,16 +201,25 @@ public class DOMNormalizer implements XMLDocumentHandler {
                 // check if we need to fill in PSVI
                 fPSVI = ((fConfiguration.features & DOMConfigurationImpl.PSVI) !=0)?true:false;       
             }
+            else {
+                fValidationHandler =
+                    CoreDOMImplementationImpl.singleton.getValidator(XMLGrammarDescription.XML_DTD);
+                DocumentTypeImpl docType = (DocumentTypeImpl) fDocument.getDoctype();
+                if (docType != null) {
+                    fConfiguration.setProperty(Constants.XERCES_PROPERTY_PREFIX + Constants.XMLGRAMMAR_POOL_PROPERTY, createGrammarPool(docType));
+                }
+                fPSVI = false;
+            }
             
 			fConfiguration.setFeature(DOMConfigurationImpl.XERCES_VALIDATION, true);       
             
             // reset ID table           
             fDocument.clearIdentifiers();
             
-            if(fValidationHandler != null)
-            // reset schema validator
+            if (fValidationHandler != null) {
+                // reset the validation handler
                 ((XMLComponent) fValidationHandler).reset(fConfiguration);
-            
+            }
 		}
 
 		fErrorHandler = (DOMErrorHandler) fConfiguration.getParameter(Constants.DOM_ERROR_HANDLER);
@@ -275,16 +283,11 @@ public class DOMNormalizer implements XMLDocumentHandler {
                 if (DEBUG_ND) {
                     System.out.println("==>normalizeNode:{doctype}");
                 }
-                DocumentTypeImpl docType = (DocumentTypeImpl)node;
-                fDTDValidator = (XMLDTDValidator)CoreDOMImplementationImpl.singleton.getValidator(XMLGrammarDescription.XML_DTD);
-                fDTDValidator.setDocumentHandler(this);
-                fConfiguration.setProperty(Constants.XERCES_PROPERTY_PREFIX + Constants.XMLGRAMMAR_POOL_PROPERTY, createGrammarPool(docType));
-                fDTDValidator.reset(fConfiguration);
-                fDTDValidator.startDocument(
-                        new SimpleLocator(fDocument.fDocumentURI, fDocument.fDocumentURI,
-                            -1, -1 ), fDocument.encoding, fNamespaceContext, null);
-                fDTDValidator.doctypeDecl(docType.getName(), docType.getPublicId(), docType.getSystemId(), null);
-                //REVISIT: well-formness encoding info
+                // REVISIT: well-formedness encoding info
+                DocumentTypeImpl docType = (DocumentTypeImpl) node;
+                if (fValidationHandler != null) {
+                    fValidationHandler.doctypeDecl(docType.getName(), docType.getPublicId(), docType.getSystemId(), null);
+                }
                 break;
             }
 
@@ -380,20 +383,6 @@ public class DOMNormalizer implements XMLDocumentHandler {
                     // call re-validation handler
                     fValidationHandler.startElement(fQName, fAttrProxy, null);
                 }
-                
-                if (fDTDValidator != null) {
-                    // REVISIT: possible solutions to discard default content are:
-                    //         either we pass some flag to XML Schema validator
-                    //         or rely on the PSVI information.
-                    fAttrProxy.setAttributes(attributes, fDocument, elem);
-                    updateQName(elem, fQName); // updates global qname
-                    // set error node in the dom error wrapper
-                    // so if error occurs we can report an error node
-                    fConfiguration.fErrorHandlerWrapper.fCurrentNode = node;
-                    fCurrentNode = node;
-                    // call re-validation handler
-                    fDTDValidator.startElement(fQName, fAttrProxy, null);
-                }
 
                 // normalize children
                 Node kid, next;
@@ -414,7 +403,6 @@ public class DOMNormalizer implements XMLDocumentHandler {
 
                 }
 
-
                 if (fValidationHandler != null) {
                     updateQName(elem, fQName); // updates global qname
                     //
@@ -423,16 +411,6 @@ public class DOMNormalizer implements XMLDocumentHandler {
                     fConfiguration.fErrorHandlerWrapper.fCurrentNode = node;
                     fCurrentNode = node;
                     fValidationHandler.endElement(fQName, null);
-                }
-                
-                if (fDTDValidator != null) {
-                    updateQName(elem, fQName); // updates global qname
-                    //
-                    // set error node in the dom error wrapper
-                    // so if error occurs we can report an error node
-                    fConfiguration.fErrorHandlerWrapper.fCurrentNode = node;
-                    fCurrentNode = node;
-                    fDTDValidator.endElement(fQName, null);
                 }
 
                 // pop namespace context
@@ -467,6 +445,13 @@ public class DOMNormalizer implements XMLDocumentHandler {
                         // of the document                            
                         isCommentWF(fErrorHandler, fError, fLocator, commentdata, fDocument.isXML11Version());                        
                     }
+                    if (fValidationHandler != null) {
+                        // Don't bother filling an XMLString with the text of the comment.
+                        // We only send the comment event to the validator handler so that
+                        // when  the schema-type is DTD an error will be reported for a
+                        // comment appearing in EMPTY content.
+                        fValidationHandler.comment(EMPTY_STRING, null);
+                    }         
                 }//end-else if comment node is not to be removed.
 				break;
             }
@@ -532,16 +517,6 @@ public class DOMNormalizer implements XMLDocumentHandler {
                     fValidationHandler.startCDATA(null);
                     fValidationHandler.characterData(node.getNodeValue(), null);
                     fValidationHandler.endCDATA(null);
-                }
-                
-                if (fDTDValidator != null) {
-                    // set error node in the dom error wrapper
-                    // so if error occurs we can report an error node
-                    fConfiguration.fErrorHandlerWrapper.fCurrentNode = node;
-                    fCurrentNode = node;
-                    fDTDValidator.startCDATA(null);
-                    fDTDValidator.characterData(node.getNodeValue(), null);
-                    fDTDValidator.endCDATA(null);
                 }
                 String value = node.getNodeValue();
                 
@@ -619,24 +594,14 @@ public class DOMNormalizer implements XMLDocumentHandler {
                                      fConfiguration.fErrorHandlerWrapper.fCurrentNode = node;
                                      fCurrentNode = node;
                                      fValidationHandler.characterData(node.getNodeValue(), null);
+                                     if (allWhitespace) {
+                                         allWhitespace = false;
+                                         ((TextImpl)node).setIgnorableWhitespace(true);
+                                     }
                                      if (DEBUG_ND) {
                                          System.out.println("=====>characterData(),"+nextType);
-
                                      }
-                              }   
-                              if (fDTDValidator != null) {
-                                  fConfiguration.fErrorHandlerWrapper.fCurrentNode = node;
-                                  fCurrentNode = node;
-                                  fDTDValidator.characterData(node.getNodeValue(), null);
-                                  if (DEBUG_ND) {
-                                      System.out.println("=====>characterData(),"+nextType);
-
-                                  }
-                                  if(allWhitespace) {
-                                      allWhitespace = false;
-                                      ((TextImpl)node).setIgnorableWhitespace(true);
-                                  }
-                              }   
+                              }  
                     }
                     else {
                             if (DEBUG_ND) {
@@ -676,6 +641,15 @@ public class DOMNormalizer implements XMLDocumentHandler {
                 //which may not be valid XML character               
                 isXMLCharWF(fErrorHandler, fError, fLocator, pinode.getData(), fDocument.isXML11Version());
             }
+            
+            if (fValidationHandler != null) {
+                // Don't bother filling an XMLString with the data section of the
+                // processing instruction. We only send the processing instruction
+                // event to the validator handler so that when the schema-type is 
+                // DTD an error will be reported for a processing instruction
+                // appearing in EMPTY content.
+                fValidationHandler.processingInstruction(((ProcessingInstruction) node).getTarget(), EMPTY_STRING, null);
+            } 
         }//end case Node.PROCESSING_INSTRUCTION_NODE
         
         }//end of switch
