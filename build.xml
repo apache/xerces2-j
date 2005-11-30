@@ -17,9 +17,22 @@ Copyright:
 ==================================================================== -->
 
 <project default="usage" basedir=".">
+	
+  <!-- Xerces Java directories -->
+  <property name="build.dir" value="./build"/>
+  <property name="data.dir" value="./data"/>
+  <property name="docs.dir" value="./docs"/>
+  <property name="samples.dir" value="./samples"/>
+  <property name="src.dir" value="./src"/>
+  <property name="tests.dir" value="./tests"/>
+  <property name="tools.dir" value="./tools"/>
 
-  <!-- enable compilation under IBM JDK 1.4 -->
-  <taskdef name="xjavac" classname="org.apache.xerces.util.XJavac"/>
+  <!-- enable compilation under JDK 1.4 and above -->
+  <taskdef name="xjavac" classname="org.apache.xerces.util.XJavac">
+    <classpath>
+      <pathelement location="${tools.dir}/bin/xjavac.jar"/>
+    </classpath>
+  </taskdef>
 
   <!-- Allow properties following these statements to be overridden -->
   <!-- Note that all of these don't have to exist.  They've just been defined
@@ -57,13 +70,6 @@ Copyright:
     <property name="optimize" value="on"/>
     <property name="deprecation" value="off"/>
 
-    <property name="src.dir" value="./src"/>
-    <property name="tools.dir" value="./tools"/>
-    <property name="docs.dir" value="./docs"/>
-    <property name="data.dir" value="./data"/>
-    <property name="samples.dir" value="./samples"/>
-    <property name="tests.dir" value="./tests"/>
-    <property name="tools.dir" value="./tools"/>
     <property name="docs.book" value="${docs.dir}/docs-book.xml"/>
 
     <property name="packages" value="org.*"/>
@@ -71,7 +77,6 @@ Copyright:
     <property name="doc.generator" value="org.apache.stylebook.StyleBook"/>
     <property name="doc.generator.package" value="${tools.dir}/stylebook-1.0-b2.jar"/>
 
-    <property name="build.dir" value="./build"/>
     <property name="build.src" value="${build.dir}/src"/>
     <property name="build.dest" value="${build.dir}/classes"/>
     <property name="build.docs" value="${build.dir}/docs"/>
@@ -117,7 +122,7 @@ Copyright:
     <echo message=" deprecatedjar  --> generates the xerces.jar file"/>
     <echo message=" tests    --> compiles the tests source code"/>
     <echo message=" deprecatedjars --> generates xerces.jar and samples jar"/>
-    <echo message=" dtdjars --> generates xercesImpl containing no schema support or WML/HTML DOM and xercesSamples &amp; xmlParserAPIs jars"/>
+    <echo message=" dtdjars --> generates xercesImpl containing no schema support or WML/HTML DOM and xercesSamples &amp; xml-apis jars"/>
     <echo message=" dvjar --> generates a Schema datatype jar"/>
     <echo message=" pack-tools --> generates the tools distributions (zip and tar.gz)"/>
     <echo message=" pack-src   --> generates the source distributions (zip and tar.gz)"/>
@@ -837,7 +842,7 @@ Copyright:
   </target>
 
   <!-- =================================================================== -->
-  <!-- Builds xercesImpl, xmlParserAPIs and sample jar files               -->
+  <!-- Builds xercesImpl, xml-apis and sample jar files                    -->
   <!-- =================================================================== -->
   <target name="jars" depends="jar, sampjar">
     <!-- support xml-commons APIs -->
@@ -867,7 +872,7 @@ Copyright:
   </target>
 
   <!-- =================================================================== -->
-  <!-- Creates the dtd implementation class package                       -->
+  <!-- Creates the dtd implementation class package                        -->
   <!-- (that is, with no schema support or WML/HTML DOM.)                  -->
   <!-- =================================================================== -->
   <target name="dtdjar" depends="dtdcompile">
@@ -1017,7 +1022,7 @@ Copyright:
   </target>
 
   <!-- =================================================================== -->
-  <!-- Builds xercesImpl (dtd), xmlParserAPIs, and sample jars            -->
+  <!-- Builds xercesImpl (dtd), xml-apis, and sample jars                  -->
   <!-- =================================================================== -->
   <target name="dtdjars" depends="dtdjar, sampjar">
     <!-- support xml-commons APIs -->
@@ -1151,8 +1156,8 @@ Copyright:
       <arg value="${parser.version}"/>
       <classpath>
         <pathelement location="tests/conformance/utilities.jar"/>
-        <pathelement location="build/xmlParserAPIs.jar"/>
-        <pathelement location="build/xercesImpl.jar"/>
+        <pathelement location="${build.dir}/${jar.apis}"/>
+        <pathelement location="${build.dir}/${jar.parser}"/>
       </classpath>
     </java>
 
@@ -1164,12 +1169,10 @@ Copyright:
       <arg value="${parser.version}"/>
       <classpath>
         <pathelement location="tests/conformance/utilities.jar"/>
-        <pathelement location="build/xmlParserAPIs.jar"/>
-        <pathelement location="build/xercesImpl.jar"/>
+        <pathelement location="${build.dir}/${jar.apis}"/>
+        <pathelement location="${build.dir}/${jar.parser}"/>
       </classpath>
     </java>
-
-
 
   </target>
 
