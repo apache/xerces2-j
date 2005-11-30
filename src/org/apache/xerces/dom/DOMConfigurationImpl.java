@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2004 The Apache Software Foundation.
+ * Copyright 2001-2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,8 +52,6 @@ import org.apache.xerces.xni.parser.XMLParserConfiguration;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.ls.LSResourceResolver;
 
-
-
 /**
  * Xerces implementation of DOMConfiguration that maintains a table of recognized parameters.
  * 
@@ -91,13 +89,42 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 
     protected static final String NORMALIZE_DATA =
         Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_NORMALIZED_VALUE;
+    
+    /** Feature identifier: send element default value via characters() */
+    protected static final String SCHEMA_ELEMENT_DEFAULT =
+        Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_ELEMENT_DEFAULT;
 
     /** sending psvi in the pipeline */
     protected static final String SEND_PSVI =
         Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_AUGMENT_PSVI;
-
-    protected final static String DTD_VALIDATOR_FACTORY_PROPERTY = 
-    	Constants.XERCES_PROPERTY_PREFIX + Constants.DATATYPE_VALIDATOR_FACTORY_PROPERTY;
+    
+    /** Feature: generate synthetic annotations */
+    protected static final String GENERATE_SYNTHETIC_ANNOTATIONS = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.GENERATE_SYNTHETIC_ANNOTATIONS_FEATURE;
+    
+    /** Feature identifier: validate annotations */
+    protected static final String VALIDATE_ANNOTATIONS =
+        Constants.XERCES_FEATURE_PREFIX + Constants.VALIDATE_ANNOTATIONS_FEATURE;
+    
+    /** Feature identifier: honour all schemaLocations */
+    protected static final String HONOUR_ALL_SCHEMALOCATIONS = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.HONOUR_ALL_SCHEMALOCATIONS_FEATURE;
+    
+    /** Feature identifier: use grammar pool only */
+    protected static final String USE_GRAMMAR_POOL_ONLY =
+        Constants.XERCES_FEATURE_PREFIX + Constants.USE_GRAMMAR_POOL_ONLY_FEATURE;
+    
+    /** Feature identifier: load external DTD. */
+    protected static final String DISALLOW_DOCTYPE_DECL_FEATURE =
+        Constants.XERCES_FEATURE_PREFIX + Constants.DISALLOW_DOCTYPE_DECL_FEATURE;
+    
+    /** Feature identifier: balance syntax trees. */
+    protected static final String BALANCE_SYNTAX_TREES =
+        Constants.XERCES_FEATURE_PREFIX + Constants.BALANCE_SYNTAX_TREES;
+    
+    /** Feature identifier: warn on duplicate attribute definition. */
+    protected static final String WARN_ON_DUPLICATE_ATTDEF =
+        Constants.XERCES_FEATURE_PREFIX + Constants.WARN_ON_DUPLICATE_ATTDEF_FEATURE;
     
     // property identifiers
 
@@ -119,7 +146,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 
     /** Property id: Grammar pool*/
     protected static final String GRAMMAR_POOL =
-    Constants.XERCES_PROPERTY_PREFIX + Constants.XMLGRAMMAR_POOL_PROPERTY;
+        Constants.XERCES_PROPERTY_PREFIX + Constants.XMLGRAMMAR_POOL_PROPERTY;
 
     /** Property identifier: error handler. */
     protected static final String ERROR_HANDLER =
@@ -131,14 +158,27 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 
     /** Property identifier: JAXP schema language / DOM schema-type. */
     protected static final String JAXP_SCHEMA_LANGUAGE =
-    Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_LANGUAGE;
+        Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_LANGUAGE;
 
     /** Property identifier: JAXP schema source/ DOM schema-location. */
     protected static final String JAXP_SCHEMA_SOURCE =
-    Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE;
+        Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE;
+    
+    /** Property identifier: datatype validator factory. */
+    protected static final String DTD_VALIDATOR_FACTORY_PROPERTY = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.DATATYPE_VALIDATOR_FACTORY_PROPERTY;
 
     protected static final String VALIDATION_MANAGER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATION_MANAGER_PROPERTY;
+    
+    /** Property identifier: schema location. */
+    protected static final String SCHEMA_LOCATION =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_LOCATION;
+
+    /** Property identifier: no namespace schema location. */
+    protected static final String SCHEMA_NONS_LOCATION =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_NONS_LOCATION;
+    
     //
     // Data
     //
@@ -231,7 +271,16 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
             SCHEMA_FULL_CHECKING,
             DYNAMIC_VALIDATION,
             NORMALIZE_DATA,
+            SCHEMA_ELEMENT_DEFAULT,
             SEND_PSVI,
+            GENERATE_SYNTHETIC_ANNOTATIONS,
+            VALIDATE_ANNOTATIONS,
+            HONOUR_ALL_SCHEMALOCATIONS,
+            USE_GRAMMAR_POOL_ONLY,
+            DISALLOW_DOCTYPE_DECL_FEATURE,
+            BALANCE_SYNTAX_TREES,
+            WARN_ON_DUPLICATE_ATTDEF,
+            PARSER_SETTINGS
         };
         addRecognizedFeatures(recognizedFeatures);
 
@@ -241,8 +290,17 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
         setFeature(SCHEMA_FULL_CHECKING, false);
         setFeature(DYNAMIC_VALIDATION, false);
         setFeature(NORMALIZE_DATA, false);
+        setFeature(SCHEMA_ELEMENT_DEFAULT, false);
         setFeature(XERCES_NAMESPACES, true);
         setFeature(SEND_PSVI, true);
+        setFeature(GENERATE_SYNTHETIC_ANNOTATIONS, false);
+        setFeature(VALIDATE_ANNOTATIONS, false);
+        setFeature(HONOUR_ALL_SCHEMALOCATIONS, false);
+        setFeature(USE_GRAMMAR_POOL_ONLY, false);
+        setFeature(DISALLOW_DOCTYPE_DECL_FEATURE, false);
+        setFeature(BALANCE_SYNTAX_TREES, false);
+        setFeature(WARN_ON_DUPLICATE_ATTDEF, false);
+        setFeature(PARSER_SETTINGS, true);
 
         // add default recognized properties
         final String[] recognizedProperties = {
@@ -256,7 +314,9 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
             GRAMMAR_POOL,
             JAXP_SCHEMA_SOURCE,
             JAXP_SCHEMA_LANGUAGE,
-			DTD_VALIDATOR_FACTORY_PROPERTY
+            SCHEMA_LOCATION,
+            SCHEMA_NONS_LOCATION,
+            DTD_VALIDATOR_FACTORY_PROPERTY
         };
         addRecognizedProperties(recognizedProperties);
 
