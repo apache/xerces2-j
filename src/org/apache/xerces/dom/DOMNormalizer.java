@@ -249,18 +249,24 @@ public class DOMNormalizer implements XMLDocumentHandler {
             // release resources
             if (fValidationHandler != null) {
                 fValidationHandler.endDocument(null);
+                fValidationHandler.setDocumentHandler(null);
                 CoreDOMImplementationImpl.singleton.releaseValidator(schemaType, xmlVersion, fValidationHandler);
                 fValidationHandler = null;
             }
         }
         catch (RuntimeException e) {
-            if( e==abort )
+            // release resources
+            if (fValidationHandler != null) {
+                fValidationHandler.setDocumentHandler(null);
+                CoreDOMImplementationImpl.singleton.releaseValidator(schemaType, xmlVersion, fValidationHandler);
+                fValidationHandler = null;
+            }
+            if (e == abort) {
                 return; // processing aborted by the user
-            throw e;    // otherwise re-throw.
+            }
+            throw e; // otherwise re-throw.
         }
-        
     }
-
 
     /**
      * 
