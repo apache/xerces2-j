@@ -175,24 +175,27 @@ public class DOMNormalizer implements XMLDocumentHandler {
      * Normalizes document.
      * Note: reset() must be called before this method.
      */
-	protected void normalizeDocument(CoreDocumentImpl document, DOMConfigurationImpl config) {
-
-		fDocument = document;
-		fConfiguration = config;
-
-		// intialize and reset DOMNormalizer component
-		// 
-		fSymbolTable = (SymbolTable) fConfiguration.getProperty(DOMConfigurationImpl.SYMBOL_TABLE);
-		// reset namespace context
-		fNamespaceContext.reset();
-		fNamespaceContext.declarePrefix(XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING);
-
-		if ((fConfiguration.features & DOMConfigurationImpl.VALIDATE) != 0) {
+    protected void normalizeDocument(CoreDocumentImpl document, DOMConfigurationImpl config) {
+        
+        fDocument = document;
+        fConfiguration = config;
+        
+        String xmlVersion = fDocument.getXmlVersion();
+        String schemaType = null;
+        
+        // intialize and reset DOMNormalizer component
+        // 
+        fSymbolTable = (SymbolTable) fConfiguration.getProperty(DOMConfigurationImpl.SYMBOL_TABLE);
+        // reset namespace context
+        fNamespaceContext.reset();
+        fNamespaceContext.declarePrefix(XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING);
+        
+        if ((fConfiguration.features & DOMConfigurationImpl.VALIDATE) != 0) {
             String schemaLang = (String)fConfiguration.getProperty(DOMConfigurationImpl.JAXP_SCHEMA_LANGUAGE);
             
             if (schemaLang != null && schemaLang.equals(Constants.NS_XMLSCHEMA)) {
-    			fValidationHandler =
-    				CoreDOMImplementationImpl.singleton.getValidator(XMLGrammarDescription.XML_SCHEMA);
+                schemaType = XMLGrammarDescription.XML_SCHEMA;
+                fValidationHandler = CoreDOMImplementationImpl.singleton.getValidator(schemaType, xmlVersion);
                 fConfiguration.setFeature(DOMConfigurationImpl.SCHEMA, true);
                 fConfiguration.setFeature(DOMConfigurationImpl.SCHEMA_FULL_CHECKING, true);
                 // report fatal error on DOM Level 1 nodes
@@ -202,8 +205,8 @@ public class DOMNormalizer implements XMLDocumentHandler {
                 fPSVI = ((fConfiguration.features & DOMConfigurationImpl.PSVI) !=0)?true:false;       
             }
             else {
-                fValidationHandler =
-                    CoreDOMImplementationImpl.singleton.getValidator(XMLGrammarDescription.XML_DTD);
+                schemaType = XMLGrammarDescription.XML_DTD;
+                fValidationHandler = CoreDOMImplementationImpl.singleton.getValidator(schemaType, xmlVersion);
                 DocumentTypeImpl docType = (DocumentTypeImpl) fDocument.getDoctype();
                 if (docType != null) {
                     fConfiguration.setProperty(Constants.XERCES_PROPERTY_PREFIX + Constants.XMLGRAMMAR_POOL_PROPERTY, createGrammarPool(docType));
@@ -211,7 +214,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
                 fPSVI = false;
             }
             
-			fConfiguration.setFeature(DOMConfigurationImpl.XERCES_VALIDATION, true);       
+            fConfiguration.setFeature(DOMConfigurationImpl.XERCES_VALIDATION, true);       
             
             // reset ID table           
             fDocument.clearIdentifiers();
@@ -220,41 +223,43 @@ public class DOMNormalizer implements XMLDocumentHandler {
                 // reset the validation handler
                 ((XMLComponent) fValidationHandler).reset(fConfiguration);
             }
-		}
-
-		fErrorHandler = (DOMErrorHandler) fConfiguration.getParameter(Constants.DOM_ERROR_HANDLER);
-		if (fValidationHandler != null) {
-			fValidationHandler.setDocumentHandler(this);
-			fValidationHandler.startDocument(
+        }
+        else {
+            fValidationHandler = null;
+        }
+        
+        fErrorHandler = (DOMErrorHandler) fConfiguration.getParameter(Constants.DOM_ERROR_HANDLER);
+        if (fValidationHandler != null) {
+            fValidationHandler.setDocumentHandler(this);
+            fValidationHandler.startDocument(
                     new SimpleLocator(fDocument.fDocumentURI, fDocument.fDocumentURI,
-						-1, -1 ), fDocument.encoding, fNamespaceContext, null);
-
-		}
-		try {
-			Node kid, next;
-			for (kid = fDocument.getFirstChild(); kid != null; kid = next) {
-				next = kid.getNextSibling();
-				kid = normalizeNode(kid);
-				if (kid != null) { // don't advance
-					next = kid;
-				}
-			}
-
-			// release resources
-			if (fValidationHandler != null) {
-				fValidationHandler.endDocument(null);
-				CoreDOMImplementationImpl.singleton.releaseValidator(
-					XMLGrammarDescription.XML_SCHEMA, fValidationHandler);
-				fValidationHandler = null;
-			}
-		}
-		catch (RuntimeException e) {
+                            -1, -1 ), fDocument.encoding, fNamespaceContext, null);
+            
+        }
+        try {
+            Node kid, next;
+            for (kid = fDocument.getFirstChild(); kid != null; kid = next) {
+                next = kid.getNextSibling();
+                kid = normalizeNode(kid);
+                if (kid != null) { // don't advance
+                    next = kid;
+                }
+            }
+            
+            // release resources
+            if (fValidationHandler != null) {
+                fValidationHandler.endDocument(null);
+                CoreDOMImplementationImpl.singleton.releaseValidator(schemaType, xmlVersion, fValidationHandler);
+                fValidationHandler = null;
+            }
+        }
+        catch (RuntimeException e) {
             if( e==abort )
                 return; // processing aborted by the user
             throw e;    // otherwise re-throw.
-		}
-
-	}
+        }
+        
+    }
 
 
     /**

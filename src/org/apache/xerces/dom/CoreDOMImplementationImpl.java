@@ -30,6 +30,7 @@ import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSOutput;
 import org.w3c.dom.ls.LSSerializer;
+
 /**
  * The DOMImplementation class is description of a particular
  * implementation of the Document Object Model. As such its data is
@@ -56,11 +57,15 @@ public class CoreDOMImplementationImpl
 
     // validators pool
     private static final int SIZE = 2;
-    private RevalidationHandler validators[] = new RevalidationHandler[SIZE];
     
-    private RevalidationHandler dtdValidators[] = new RevalidationHandler[SIZE];
-    private int freeValidatorIndex = -1;
-    private int freeDTDValidatorIndex = -1;
+    private RevalidationHandler schemaValidators[] = new RevalidationHandler[SIZE];
+    private RevalidationHandler xml10DTDValidators[] = new RevalidationHandler[SIZE];
+    private RevalidationHandler xml11DTDValidators[] = new RevalidationHandler[SIZE];
+    
+    private int freeSchemaValidatorIndex = -1;
+    private int freeXML10DTDValidatorIndex = -1;
+    private int freeXML11DTDValidatorIndex = -1;
+    
     private int currentSize = SIZE;
 
     // Document and doctype counter.  Used to assign order to documents and
@@ -344,7 +349,7 @@ public class CoreDOMImplementationImpl
      *    NOT_SUPPORTED_ERR: Raised if the requested mode or schema type is
      *   not supported.
 	 */
-        public LSParser createLSParser(short mode, String schemaType)
+    public LSParser createLSParser(short mode, String schemaType)
 		throws DOMException {
 		if (mode != DOMImplementationLS.MODE_SYNCHRONOUS || (schemaType !=null &&
 		   !"http://www.w3.org/2001/XMLSchema".equals(schemaType) &&
@@ -370,26 +375,27 @@ public class CoreDOMImplementationImpl
 		}
 	}
 
-	/**
-	 * DOM Level 3 LS CR - Experimental.
-         * Create a new <code>LSSerializer</code> object.
-         * @return The newly created <code>LSSerializer</code> object.
-         * <p ><b>Note:</b>    By default, the newly created
-         * <code>LSSerializer</code> has no <code>DOMErrorHandler</code>,
-         * i.e. the value of the <code>"error-handler"</code> configuration
-         * parameter is <code>null</code>. However, implementations may
-         * provide a default error handler at creation time. In that case, the
-         * initial value of the <code>"error-handler"</code> configuration
-         * parameter on the new created <code>LSSerializer</code> contains a
-         * reference to the default error handler.
-	 */
-	public LSSerializer createLSSerializer() {
+    /**
+     * DOM Level 3 LS CR - Experimental.
+     * Create a new <code>LSSerializer</code> object.
+     * @return The newly created <code>LSSerializer</code> object.
+     * <p ><b>Note:</b>    By default, the newly created
+     * <code>LSSerializer</code> has no <code>DOMErrorHandler</code>,
+     * i.e. the value of the <code>"error-handler"</code> configuration
+     * parameter is <code>null</code>. However, implementations may
+     * provide a default error handler at creation time. In that case, the
+     * initial value of the <code>"error-handler"</code> configuration
+     * parameter on the new created <code>LSSerializer</code> contains a
+     * reference to the default error handler.
+     */
+    public LSSerializer createLSSerializer() {
         return new DOMSerializerImpl();
-    } 
+    }
+    
 	/**
 	 * DOM Level 3 LS CR - Experimental.
-         * Create a new empty input source.
-         * @return  The newly created input object.
+	 * Create a new empty input source.
+	 * @return  The newly created input object.
 	 */
 	public LSInput createLSInput() {
 		return new DOMInputImpl();
@@ -399,13 +405,12 @@ public class CoreDOMImplementationImpl
 	// Protected methods
 	//
 	/** NON-DOM: retrieve validator. */
-	synchronized RevalidationHandler getValidator(String schemaType) {
-		// REVISIT: implement retrieving DTD validator
+	synchronized RevalidationHandler getValidator(String schemaType, String xmlVersion) {
         if (schemaType == XMLGrammarDescription.XML_SCHEMA) {
             // create new validator - we should not attempt
             // to restrict the number of validation handlers being
             // requested
-            if(freeValidatorIndex < 0) {
+            if(freeSchemaValidatorIndex < 0) {
                 return (RevalidationHandler) (ObjectFactory
                             .newInstance(
                                 "org.apache.xerces.impl.xs.XMLSchemaValidator",
@@ -413,74 +418,106 @@ public class CoreDOMImplementationImpl
                                 true));
             }
             // return first available validator
-            RevalidationHandler val = validators[freeValidatorIndex];
-            validators[freeValidatorIndex--] = null;
+            RevalidationHandler val = schemaValidators[freeSchemaValidatorIndex];
+            schemaValidators[freeSchemaValidatorIndex--] = null;
             return val;
         }
         else if(schemaType == XMLGrammarDescription.XML_DTD) {
-            if(freeDTDValidatorIndex < 0) {
-                return (RevalidationHandler) (ObjectFactory
-                            .newInstance(
-                                "org.apache.xerces.impl.dtd.XMLDTDValidator",
-                                ObjectFactory.findClassLoader(),
-                                true));
+            // return an instance of XML11DTDValidator
+            if ("1.1".equals(xmlVersion)) {
+                if (freeXML11DTDValidatorIndex < 0) {
+                    return (RevalidationHandler) (ObjectFactory
+                                .newInstance(
+                                    "org.apache.xerces.impl.dtd.XML11DTDValidator",
+                                    ObjectFactory.findClassLoader(),
+                                    true));
+                }
+                // return first available validator
+                RevalidationHandler val = xml11DTDValidators[freeXML11DTDValidatorIndex];
+                xml11DTDValidators[freeXML11DTDValidatorIndex--] = null;
+                return val;
             }
-            // return first available validator
-            RevalidationHandler val = dtdValidators[freeDTDValidatorIndex];
-            dtdValidators[freeDTDValidatorIndex--] = null;
-            return val;
+            // return an instance of XMLDTDValidator
+            else {
+                if (freeXML10DTDValidatorIndex < 0) {
+                    return (RevalidationHandler) (ObjectFactory
+                                .newInstance(
+                                    "org.apache.xerces.impl.dtd.XMLDTDValidator",
+                                    ObjectFactory.findClassLoader(),
+                                    true));
+                }
+                // return first available validator
+                RevalidationHandler val = xml10DTDValidators[freeXML10DTDValidatorIndex];
+                xml10DTDValidators[freeXML10DTDValidatorIndex--] = null;
+                return val;
+            }
         }
         return null;
 	}
 
 	/** NON-DOM: release validator */
-	synchronized void releaseValidator(String schemaType,
-                                         RevalidationHandler validator) {
-       // REVISIT: implement support for DTD validators as well
-       if(schemaType == XMLGrammarDescription.XML_SCHEMA) {
-           ++freeValidatorIndex;
-           if (validators.length == freeValidatorIndex ){
-                // resize size of the validators
-                currentSize+=SIZE;
-                RevalidationHandler newarray[] =  new RevalidationHandler[currentSize];
-                System.arraycopy(validators, 0, newarray, 0, validators.length);
-                validators = newarray;
-           }
-           validators[freeValidatorIndex]=validator;
-       }
-       else if(schemaType == XMLGrammarDescription.XML_DTD) {
-           ++freeDTDValidatorIndex;
-           if (dtdValidators.length == freeDTDValidatorIndex ){
-                // resize size of the validators
-                currentSize+=SIZE;
-                RevalidationHandler newarray[] =  new RevalidationHandler[currentSize];
-                System.arraycopy(dtdValidators, 0, newarray, 0, dtdValidators.length);
-                dtdValidators = newarray;
-           }
-           dtdValidators[freeDTDValidatorIndex]=validator;
-       }
+	synchronized void releaseValidator(String schemaType, String xmlVersion,
+	        RevalidationHandler validator) {
+	    if (schemaType == XMLGrammarDescription.XML_SCHEMA) {
+	        ++freeSchemaValidatorIndex;
+	        if (schemaValidators.length == freeSchemaValidatorIndex) {
+	            // resize size of the validators
+	            currentSize += SIZE;
+	            RevalidationHandler newarray[] =  new RevalidationHandler[currentSize];
+	            System.arraycopy(schemaValidators, 0, newarray, 0, schemaValidators.length);
+	            schemaValidators = newarray;
+	        }
+	        schemaValidators[freeSchemaValidatorIndex] = validator;
+	    }
+	    else if (schemaType == XMLGrammarDescription.XML_DTD) {
+            // release an instance of XML11DTDValidator
+            if ("1.1".equals(xmlVersion)) {
+                ++freeXML11DTDValidatorIndex;
+                if (xml11DTDValidators.length == freeXML11DTDValidatorIndex) {
+                    // resize size of the validators
+                    currentSize += SIZE;
+                    RevalidationHandler newarray[] =  new RevalidationHandler[currentSize];
+                    System.arraycopy(xml11DTDValidators, 0, newarray, 0, xml11DTDValidators.length);
+                    xml11DTDValidators = newarray;
+                }
+                xml11DTDValidators[freeXML11DTDValidatorIndex] = validator;
+            }
+            // release an instance of XMLDTDValidator
+            else {
+                ++freeXML10DTDValidatorIndex;
+                if (xml10DTDValidators.length == freeXML10DTDValidatorIndex) {
+                    // resize size of the validators
+                    currentSize += SIZE;
+                    RevalidationHandler newarray[] =  new RevalidationHandler[currentSize];
+                    System.arraycopy(xml10DTDValidators, 0, newarray, 0, xml10DTDValidators.length);
+                    xml10DTDValidators = newarray;
+                }
+                xml10DTDValidators[freeXML10DTDValidatorIndex] = validator;
+            }
+	    }
 	}
-
-       /** NON-DOM:  increment document/doctype counter */
-       protected synchronized int assignDocumentNumber() {
-            return ++docAndDoctypeCounter;
-       }
-       /** NON-DOM:  increment document/doctype counter */
-       protected synchronized int assignDocTypeNumber() {
-            return ++docAndDoctypeCounter;
-       }
-
-    /* DOM Level 3 LS CR - Experimental.
-     *
-     * Create a new empty output destination object where
-     * <code>LSOutput.characterStream</code>,
-     * <code>LSOutput.byteStream</code>, <code>LSOutput.systemId</code>,
-     * <code>LSOutput.encoding</code> are null.
-
-     * @return  The newly created output object.
-     */
-       public LSOutput createLSOutput() {
-           return new DOMOutputImpl();
-       }
+    
+	/** NON-DOM:  increment document/doctype counter */
+	protected synchronized int assignDocumentNumber() {
+	    return ++docAndDoctypeCounter;
+	}
+    
+	/** NON-DOM:  increment document/doctype counter */
+	protected synchronized int assignDocTypeNumber() {
+	    return ++docAndDoctypeCounter;
+	}
+	
+	/**
+     * DOM Level 3 LS CR - Experimental.
+	 *
+	 * Create a new empty output destination object where
+	 * <code>LSOutput.characterStream</code>,
+	 * <code>LSOutput.byteStream</code>, <code>LSOutput.systemId</code>,
+	 * <code>LSOutput.encoding</code> are null.
+	 * @return  The newly created output object.
+	 */
+	public LSOutput createLSOutput() {
+	    return new DOMOutputImpl();
+	}
 
 } // class DOMImplementationImpl
