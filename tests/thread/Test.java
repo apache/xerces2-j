@@ -227,6 +227,7 @@ int parse(int fileNum)
             CoreDocumentImpl core = (CoreDocumentImpl) doc;
             DOMConfiguration config = core.getDomConfig();
             config.setParameter("validate", Boolean.TRUE);
+            config.setParameter("schema-type", "http://www.w3.org/2001/XMLSchema");
             core.normalizeDocument();
 
         }
