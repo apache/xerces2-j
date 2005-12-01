@@ -524,6 +524,26 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
     public XMLErrorHandler getErrorHandler() {
         return (XMLErrorHandler)fProperties.get(ERROR_HANDLER);
     } // getErrorHandler():XMLErrorHandler
+    
+    /**
+     * Returns the state of a feature.
+     * 
+     * @param featureId The feature identifier.
+     * @return true if the feature is supported
+     * 
+     * @throws XMLConfigurationException Thrown for configuration error.
+     *                                   In general, components should
+     *                                   only throw this exception if
+     *                                   it is <strong>really</strong>
+     *                                   a critical error.
+     */
+    public boolean getFeature(String featureId)
+        throws XMLConfigurationException {
+        if (featureId.equals(PARSER_SETTINGS)) {
+            return true;
+        }
+        return super.getFeature(featureId);
+    }
 
     /**
      * Set the state of a feature.
