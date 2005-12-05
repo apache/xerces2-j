@@ -507,7 +507,7 @@ public class CoreDOMImplementationImpl
 	            if (xml11DTDValidators.length == freeXML11DTDValidatorIndex) {
 	                // resize size of the validators
 	                xml11DTDValidatorsCurrentSize += SIZE;
-	                SoftReference [] newarray = new SoftReference[schemaValidatorsCurrentSize];
+	                SoftReference [] newarray = new SoftReference[xml11DTDValidatorsCurrentSize];
 	                System.arraycopy(xml11DTDValidators, 0, newarray, 0, xml11DTDValidators.length);
 	                xml11DTDValidators = newarray;
 	            }
@@ -527,7 +527,7 @@ public class CoreDOMImplementationImpl
 	            if (xml10DTDValidators.length == freeXML10DTDValidatorIndex) {
 	                // resize size of the validators
 	                xml10DTDValidatorsCurrentSize += SIZE;
-	                SoftReference [] newarray = new SoftReference[schemaValidatorsCurrentSize];
+	                SoftReference [] newarray = new SoftReference[xml10DTDValidatorsCurrentSize];
 	                System.arraycopy(xml10DTDValidators, 0, newarray, 0, xml10DTDValidators.length);
 	                xml10DTDValidators = newarray;
 	            }
