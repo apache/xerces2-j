@@ -56,10 +56,6 @@ import org.apache.xerces.xni.XNIException;
 public class XML11DocumentScannerImpl
     extends XMLDocumentScannerImpl {
 
-
-    /** Array of 3 strings. */
-    private String[] fStrings = new String[3];
-
     /** String. */
     private XMLString fString = new XMLString();
 
