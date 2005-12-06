@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2004 The Apache Software Foundation.
+ * Copyright 1999-2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,19 +53,9 @@ import org.apache.xerces.xni.XNIException;
 public class XML11DTDScannerImpl
     extends XMLDTDScannerImpl {
 
-    /** Array of 3 strings. */
-    private String[] fStrings = new String[3];
-
-    /** String. */
-    private XMLString fString = new XMLString();
-
     /** String buffer. */
     private XMLStringBuffer fStringBuffer = new XMLStringBuffer();
-
-    /** String buffer. */
-    private XMLStringBuffer fStringBuffer2 = new XMLStringBuffer();
-    private XMLStringBuffer fStringBuffer3 = new XMLStringBuffer();
-
+    
     //
     // Constructors
     //
