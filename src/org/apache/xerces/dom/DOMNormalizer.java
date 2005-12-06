@@ -206,10 +206,11 @@ public class DOMNormalizer implements XMLDocumentHandler {
             }
             else {
                 schemaType = XMLGrammarDescription.XML_DTD;
+                fConfiguration.setDTDValidatorFactory(xmlVersion);
                 fValidationHandler = CoreDOMImplementationImpl.singleton.getValidator(schemaType, xmlVersion);
                 DocumentTypeImpl docType = (DocumentTypeImpl) fDocument.getDoctype();
                 if (docType != null) {
-                    fConfiguration.setProperty(Constants.XERCES_PROPERTY_PREFIX + Constants.XMLGRAMMAR_POOL_PROPERTY, createGrammarPool(docType));
+                    fConfiguration.setProperty(DOMConfigurationImpl.GRAMMAR_POOL, createGrammarPool(docType));
                 }
                 fPSVI = false;
             }

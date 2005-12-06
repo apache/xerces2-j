@@ -67,6 +67,9 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
     //
     // Constants
     //
+    
+    protected static final String XML11_DATATYPE_VALIDATOR_FACTORY =
+        "org.apache.xerces.impl.dv.dtd.XML11DTDDVFactoryImpl";
 
     // feature identifiers
 
@@ -164,6 +167,10 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
     protected static final String JAXP_SCHEMA_SOURCE =
         Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE;
     
+    /** Property identifier: DTD validator. */
+    protected final static String DTD_VALIDATOR_PROPERTY =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.DTD_VALIDATOR_PROPERTY;
+    
     /** Property identifier: datatype validator factory. */
     protected static final String DTD_VALIDATOR_FACTORY_PROPERTY = 
         Constants.XERCES_PROPERTY_PREFIX + Constants.DATATYPE_VALIDATOR_FACTORY_PROPERTY;
@@ -220,6 +227,15 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 
     protected final DOMErrorHandlerWrapper fErrorHandlerWrapper =
                 new DOMErrorHandlerWrapper();
+    
+    /** Current Datatype validator factory. */
+    protected DTDDVFactory fCurrentDVFactory;
+    
+    /** The XML 1.0 Datatype validator factory. */
+    protected DTDDVFactory fDatatypeValidatorFactory;
+    
+    /** The XML 1.1 Datatype validator factory. **/
+    protected DTDDVFactory fXML11DatatypeFactory;
 
     // private data
 
@@ -316,6 +332,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
             JAXP_SCHEMA_LANGUAGE,
             SCHEMA_LOCATION,
             SCHEMA_NONS_LOCATION,
+            DTD_VALIDATOR_PROPERTY,
             DTD_VALIDATOR_FACTORY_PROPERTY
         };
         addRecognizedProperties(recognizedProperties);
@@ -341,7 +358,10 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
         setProperty(ERROR_REPORTER, fErrorReporter);
         addComponent(fErrorReporter);
 
-        setProperty(DTD_VALIDATOR_FACTORY_PROPERTY, DTDDVFactory.getInstance());
+        fDatatypeValidatorFactory = DTDDVFactory.getInstance();
+        fXML11DatatypeFactory = DTDDVFactory.getInstance(XML11_DATATYPE_VALIDATOR_FACTORY);
+        fCurrentDVFactory = fDatatypeValidatorFactory;
+        setProperty(DTD_VALIDATOR_FACTORY_PROPERTY, fCurrentDVFactory);
 		
         XMLEntityManager manager =  new XMLEntityManager();
         setProperty(ENTITY_MANAGER, manager);
@@ -1147,6 +1167,19 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 
     protected ValidationManager createValidationManager(){
         return new ValidationManager();
+    }
+    
+    protected final void setDTDValidatorFactory(String version) {
+        if ("1.1".equals(version)) {
+            if (fCurrentDVFactory != fXML11DatatypeFactory) {
+                fCurrentDVFactory = fXML11DatatypeFactory;
+                setProperty(DTD_VALIDATOR_FACTORY_PROPERTY, fCurrentDVFactory);
+            }
+        }
+        else if (fCurrentDVFactory != fDatatypeValidatorFactory) {
+            fCurrentDVFactory = fDatatypeValidatorFactory;
+            setProperty(DTD_VALIDATOR_FACTORY_PROPERTY, fCurrentDVFactory);
+        }
     }
 
 } // class XMLParser
