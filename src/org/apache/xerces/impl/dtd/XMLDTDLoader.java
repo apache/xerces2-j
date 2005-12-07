@@ -37,6 +37,7 @@ import org.apache.xerces.xni.parser.XMLInputSource;
 import java.util.Locale;
 import java.io.IOException;
 import java.io.EOFException;
+import java.io.StringReader;
 
 /**
  * The DTD loader. The loader knows how to build grammars from XMLInputSources.
@@ -58,6 +59,7 @@ import java.io.EOFException;
  * @xerces.internal
  *
  * @author Neil Graham, IBM
+ * @author Michael Glavassevich, IBM
  *
  * @version $Id$
  */
@@ -167,7 +169,7 @@ public class XMLDTDLoader
             fEntityManager = new XMLEntityManager();
         }
         fEntityManager.setProperty(Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY, errorReporter);
-        fDTDScanner = new XMLDTDScannerImpl(fSymbolTable, fErrorReporter, fEntityManager);
+        fDTDScanner = createDTDScanner(fSymbolTable, fErrorReporter, fEntityManager);
         fDTDScanner.setDTDHandler(this);
         fDTDScanner.setDTDContentModelHandler(this);
         reset();
@@ -290,6 +292,7 @@ public class XMLDTDLoader
             fErrorReporter.setProperty(propertyId, value);
         } else if(propertyId.equals( ENTITY_RESOLVER)) {
             fEntityResolver = (XMLEntityResolver)value;
+            fEntityManager.setProperty(propertyId, value);
         } else if(propertyId.equals( GRAMMAR_POOL)) {
             fGrammarPool = (XMLGrammarPool)value;
         } else {
@@ -363,6 +366,7 @@ public class XMLDTDLoader
      */
     public void setEntityResolver(XMLEntityResolver entityResolver) {
         fEntityResolver = entityResolver;
+        fEntityManager.setProperty(ENTITY_RESOLVER, entityResolver);
     } // setEntityResolver(XMLEntityResolver)
 
     /** Returns the registered entity resolver.  */
@@ -414,6 +418,50 @@ public class XMLDTDLoader
         }
         return fDTDGrammar;
     } // loadGrammar(XMLInputSource):  Grammar
+    
+    /**
+     * Parse a DTD internal and/or external subset and insert the content
+     * into the existing DTD grammar owned by the given DTDValidator.
+     */
+    public void loadGrammarWithContext(XMLDTDValidator validator, String rootName,
+            String publicId, String systemId, String baseSystemId, String internalSubset) 
+        throws IOException, XNIException {
+        final DTDGrammarBucket grammarBucket = validator.getGrammarBucket();
+        final DTDGrammar activeGrammar = grammarBucket.getActiveGrammar();
+        if (activeGrammar != null && !activeGrammar.isImmutable()) {
+            fGrammarBucket = grammarBucket;
+            fEntityManager.setScannerVersion(getScannerVersion());
+            reset();
+            try {
+                // process internal subset
+                if (internalSubset != null) {
+                    // To get the DTD scanner to end at the right place we have to fool
+                    // it into thinking that it reached the end of the internal subset
+                    // in a real document.
+                    StringBuffer buffer = new StringBuffer(internalSubset.length() + 2);
+                    buffer.append(internalSubset).append("]>");
+                    XMLInputSource is = new XMLInputSource(null, baseSystemId, 
+                            null, new StringReader(buffer.toString()), null);
+                    fEntityManager.startDocumentEntity(is);
+                    fDTDScanner.scanDTDInternalSubset(true, false, systemId != null);
+                }
+                // process external subset
+                if (systemId != null) {
+                    XMLDTDDescription desc = new XMLDTDDescription(publicId, systemId, baseSystemId, null, rootName);
+                    XMLInputSource source = fEntityManager.resolveEntity(desc);
+                    fDTDScanner.setInputSource(source);
+                    fDTDScanner.scanDTDExternalSubset(true);
+                }
+            } 
+            catch (EOFException e) {
+                // expected behaviour...
+            }
+            finally {
+                // Close all streams opened by the parser.
+                fEntityManager.closeReaders();
+            }
+        }
+    } // loadGrammarWithContext(XMLDTDValidator, String, XMLInputSource)
 
     // reset all the components that we rely upon
     protected void reset() {
@@ -422,5 +470,14 @@ public class XMLDTDLoader
         fEntityManager.reset();
         fErrorReporter.setDocumentLocator(fEntityManager.getEntityScanner());
     }
+    
+    protected XMLDTDScannerImpl createDTDScanner(SymbolTable symbolTable,
+            XMLErrorReporter errorReporter, XMLEntityManager entityManager) {
+        return new XMLDTDScannerImpl(symbolTable, errorReporter, entityManager);
+    } // createDTDScanner(SymbolTable, XMLErrorReporter, XMLEntityManager) : XMLDTDScannerImpl
+    
+    protected short getScannerVersion() {
+        return Constants.XML_VERSION_1_0;
+    } // getScannerVersion() : short
 
 } // class XMLDTDLoader

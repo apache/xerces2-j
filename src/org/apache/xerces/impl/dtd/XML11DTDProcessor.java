@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004 The Apache Software Foundation.
+ * Copyright 1999-2002,2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,15 @@
 
 package org.apache.xerces.impl.dtd;
 
+import org.apache.xerces.impl.Constants;
+import org.apache.xerces.impl.XML11DTDScannerImpl;
+import org.apache.xerces.impl.XMLDTDScannerImpl;
+import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XML11Char;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
-
 
 /**
  * This class extends XMLDTDProcessor by giving it
@@ -68,5 +71,14 @@ public class XML11DTDProcessor extends XMLDTDLoader{
     protected boolean isValidName(String name) {
         return XML11Char.isXML11ValidName(name);
     } // isValidNmtoken(String):  boolean
+    
+    protected XMLDTDScannerImpl createDTDScanner(SymbolTable symbolTable,
+            XMLErrorReporter errorReporter, XMLEntityManager entityManager) {
+        return new XML11DTDScannerImpl(symbolTable, errorReporter, entityManager);
+    } // createDTDScanner(SymbolTable, XMLErrorReporter, XMLEntityManager) : XMLDTDScannerImpl
+    
+    protected short getScannerVersion() {
+        return Constants.XML_VERSION_1_1;
+    } // getScannerVersion() : short
     
 } // class XML11DTDProcessor
