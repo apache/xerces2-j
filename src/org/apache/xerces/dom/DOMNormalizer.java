@@ -16,24 +16,20 @@
 
 package org.apache.xerces.dom;
 
-
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.Vector;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.RevalidationHandler;
-import org.apache.xerces.impl.dtd.DTDGrammar;
-import org.apache.xerces.impl.dtd.XMLDTDDescription;
+import org.apache.xerces.impl.dtd.XMLDTDLoader;
+import org.apache.xerces.impl.dtd.XMLDTDValidator;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.util.SimpleLocator;
-import org.apache.xerces.parsers.XMLGrammarPreparser;
 import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XML11Char;
 import org.apache.xerces.util.XMLChar;
-import org.apache.xerces.util.XMLGrammarPoolImpl;
 import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.NamespaceContext;
@@ -45,10 +41,8 @@ import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
-import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLDocumentSource;
-import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xs.AttributePSVI;
 import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.XSTypeDefinition;
@@ -65,6 +59,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
+
 /**
  * This class adds implementation for normalizeDocument method.
  * It acts as if the document was going through a save and load cycle, putting
@@ -182,6 +177,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
         
         String xmlVersion = fDocument.getXmlVersion();
         String schemaType = null;
+        String schemaLocation = null;
         
         // intialize and reset DOMNormalizer component
         // 
@@ -206,12 +202,11 @@ public class DOMNormalizer implements XMLDocumentHandler {
             }
             else {
                 schemaType = XMLGrammarDescription.XML_DTD;
+                if (schemaLang != null) {
+                    schemaLocation = (String) fConfiguration.getProperty(DOMConfigurationImpl.JAXP_SCHEMA_SOURCE);
+                }
                 fConfiguration.setDTDValidatorFactory(xmlVersion);
                 fValidationHandler = CoreDOMImplementationImpl.singleton.getValidator(schemaType, xmlVersion);
-                DocumentTypeImpl docType = (DocumentTypeImpl) fDocument.getDoctype();
-                if (docType != null) {
-                    fConfiguration.setProperty(DOMConfigurationImpl.GRAMMAR_POOL, createGrammarPool(docType));
-                }
                 fPSVI = false;
             }
             
@@ -235,9 +230,14 @@ public class DOMNormalizer implements XMLDocumentHandler {
             fValidationHandler.startDocument(
                     new SimpleLocator(fDocument.fDocumentURI, fDocument.fDocumentURI,
                             -1, -1 ), fDocument.encoding, fNamespaceContext, null);
-            
+            fValidationHandler.xmlDecl(fDocument.getXmlVersion(), 
+                    fDocument.getXmlEncoding(), fDocument.getXmlStandalone() ? "yes" : "no", null);
         }
         try {
+            if (schemaType == XMLGrammarDescription.XML_DTD) {
+                processDTD(xmlVersion, schemaLocation);
+            }            
+            
             Node kid, next;
             for (kid = fDocument.getFirstChild(); kid != null; kid = next) {
                 next = kid.getNextSibling();
@@ -296,10 +296,6 @@ public class DOMNormalizer implements XMLDocumentHandler {
                     System.out.println("==>normalizeNode:{doctype}");
                 }
                 // REVISIT: well-formedness encoding info
-                DocumentTypeImpl docType = (DocumentTypeImpl) node;
-                if (fValidationHandler != null) {
-                    fValidationHandler.doctypeDecl(docType.getName(), docType.getPublicId(), docType.getSystemId(), null);
-                }
                 break;
             }
 
@@ -668,36 +664,51 @@ public class DOMNormalizer implements XMLDocumentHandler {
         return null;
     }//normalizeNode
 
-    private XMLGrammarPool createGrammarPool(DocumentTypeImpl docType) {
-
-        XMLGrammarPoolImpl pool = new XMLGrammarPoolImpl();
+    private void processDTD(String xmlVersion, String schemaLocation) {
         
-        XMLGrammarPreparser preParser = new XMLGrammarPreparser(fSymbolTable);
-        preParser.registerPreparser(XMLGrammarDescription.XML_DTD, null);
-        preParser.setFeature(Constants.XERCES_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE, true);
-        preParser.setFeature(Constants.XERCES_FEATURE_PREFIX + Constants.VALIDATION_FEATURE, true);
-        preParser.setProperty(Constants.XERCES_PROPERTY_PREFIX + Constants.XMLGRAMMAR_POOL_PROPERTY, pool);
+        String rootName = null;
+        String publicId = null;
+        String systemId = schemaLocation;
+        String baseSystemId = fDocument.getDocumentURI();
+        String internalSubset = null;
         
-        String internalSubset = docType.getInternalSubset();
-        XMLInputSource is = new XMLInputSource(docType.getPublicId(), docType.getSystemId(), null);
-        
-        if(internalSubset != null)
-            is.setCharacterStream(new StringReader(internalSubset));
-        try {
-            DTDGrammar g = (DTDGrammar)preParser.preparseGrammar(XMLGrammarDescription.XML_DTD, is);
-            ((XMLDTDDescription)g.getGrammarDescription()).setRootName(docType.getName());
-            is.setCharacterStream(null);
-            g = (DTDGrammar)preParser.preparseGrammar(XMLGrammarDescription.XML_DTD, is);
-            ((XMLDTDDescription)g.getGrammarDescription()).setRootName(docType.getName());
-            
-        } catch (XNIException e) {
-        } catch (IOException e) {
+        DocumentType docType = (DocumentType) fDocument.getDoctype();
+        if (docType != null) {
+            rootName = docType.getName();
+            publicId = docType.getPublicId();
+            if (systemId == null || systemId.length() == 0) {
+                systemId = docType.getSystemId();
+            }
+            internalSubset = docType.getInternalSubset();
+        }
+        // If the DOM doesn't have a DocumentType node we may still
+        // be able to fetch a DTD if the application provided a URI
+        else {
+            Element elem = fDocument.getDocumentElement();
+            if (elem == null) return;
+            rootName = elem.getNodeName();
+            if (systemId == null || systemId.length() == 0) return;
         }
         
-        return pool;
-    }
-
-
+        XMLDTDLoader loader = null;
+        try {
+            fValidationHandler.doctypeDecl(rootName, publicId, systemId, null);
+            loader = CoreDOMImplementationImpl.singleton.getDTDLoader(xmlVersion);
+            loader.setFeature(DOMConfigurationImpl.XERCES_VALIDATION, true);
+            loader.setEntityResolver(fConfiguration.getEntityResolver());
+            loader.setErrorHandler(fConfiguration.getErrorHandler());
+            loader.loadGrammarWithContext((XMLDTDValidator) fValidationHandler, rootName, 
+                    publicId, systemId, baseSystemId, internalSubset);
+        }
+        // REVISIT: Should probably report this exception to the error handler.
+        catch (IOException e) {   
+        }
+        finally {
+            if (loader != null) {
+                CoreDOMImplementationImpl.singleton.releaseDTDLoader(xmlVersion, loader);
+            }
+        }
+    } // processDTD(String, String)
 
     protected final void expandEntityRef (Node parent, Node reference){
         Node kid, next;
