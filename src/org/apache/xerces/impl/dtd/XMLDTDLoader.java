@@ -461,7 +461,7 @@ public class XMLDTDLoader
                 fEntityManager.closeReaders();
             }
         }
-    } // loadGrammarWithContext(XMLDTDValidator, String, XMLInputSource)
+    } // loadGrammarWithContext(XMLDTDValidator, String, String, String, String, String)
 
     // reset all the components that we rely upon
     protected void reset() {
