@@ -35,6 +35,8 @@ import java.io.IOException;
  * This is an implementation of the XSAnnotation schema component.
  * 
  * @xerces.internal 
+ * 
+ * @version $Id$
  */
 public class XSAnnotationImpl implements XSAnnotation {
 
