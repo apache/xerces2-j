@@ -19,7 +19,6 @@ import org.apache.xerces.xs.XSAnnotation;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSNamespaceItem;
 import org.apache.xerces.dom.CoreDocumentImpl;
-import org.apache.xerces.dom.PSVIDocumentImpl;
 import org.apache.xerces.parsers.SAXParser;
 import org.apache.xerces.parsers.DOMParser;
 
@@ -163,10 +162,9 @@ public class XSAnnotationImpl implements XSAnnotation {
         Document aDocument = parser.getDocument();
         Element annotation = aDocument.getDocumentElement();
         Node newElem = null;
-        if (futureOwner instanceof CoreDocumentImpl &&
-            !(futureOwner instanceof PSVIDocumentImpl)) {
+        if (futureOwner instanceof CoreDocumentImpl) {
             newElem = futureOwner.adoptNode(annotation);
-            // this should never fail but if it does, import the node instead
+            // adoptNode will return null when the DOM implementations are not compatible.
             if (newElem == null) {
                 newElem = futureOwner.importNode(annotation, true);
             }
