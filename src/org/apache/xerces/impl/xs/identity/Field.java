@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2005 The Apache Software Foundation.
+ * Copyright 2001-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -173,7 +173,8 @@ public class Field {
             super.matched(actualValue, valueType, itemValueType, isNil);
             if(isNil && (fIdentityConstraint.getCategory() == IdentityConstraint.IC_KEY)) {
                 String code = "KeyMatchesNillable";
-                fStore.reportError(code, new Object[]{fIdentityConstraint.getElementName()});
+                fStore.reportError(code, 
+                    new Object[]{fIdentityConstraint.getElementName(), fIdentityConstraint.getIdentityConstraintName()});
             }
             fStore.addValue(Field.this, actualValue, convertToPrimitiveKind(valueType), convertToPrimitiveKind(itemValueType));
             // once we've stored the value for this field, we set the mayMatch

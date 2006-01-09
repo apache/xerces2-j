@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2005 The Apache Software Foundation.
+ * Copyright 1999-2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -3400,7 +3400,8 @@ public class XMLSchemaValidator
                 if (fIdentityConstraint.getCategory() == IdentityConstraint.IC_KEY) {
                     String code = "AbsentKeyValue";
                     String eName = fIdentityConstraint.getElementName();
-                    reportSchemaError(code, new Object[] { eName });
+                    String cName = fIdentityConstraint.getIdentityConstraintName();
+                    reportSchemaError(code, new Object[] { eName, cName });
                 }
                 return;
             }
@@ -3415,9 +3416,9 @@ public class XMLSchemaValidator
                 if (fIdentityConstraint.getCategory() == IdentityConstraint.IC_KEY) {
                     String code = "KeyNotEnoughValues";
                     UniqueOrKey key = (UniqueOrKey) fIdentityConstraint;
-                    String ename = fIdentityConstraint.getElementName();
-                    String kname = key.getIdentityConstraintName();
-                    reportSchemaError(code, new Object[] { ename, kname });
+                    String eName = fIdentityConstraint.getElementName();
+                    String cName = key.getIdentityConstraintName();
+                    reportSchemaError(code, new Object[] { eName, cName });
                 }
                 return;
             }
@@ -3470,12 +3471,15 @@ public class XMLSchemaValidator
             // do we even know this field?
             if (i == -1) {
                 String code = "UnknownField";
-                reportSchemaError(code, new Object[] { field.toString()});
+                String eName = fIdentityConstraint.getElementName();
+                String cName = fIdentityConstraint.getIdentityConstraintName();
+                reportSchemaError(code, new Object[] { field.toString(), eName, cName });
                 return;
             }
             if (Boolean.TRUE != mayMatch(field)) {
                 String code = "FieldMultipleMatch";
-                reportSchemaError(code, new Object[] { field.toString()});
+                String cName = fIdentityConstraint.getIdentityConstraintName();
+                reportSchemaError(code, new Object[] { field.toString(), cName });
             } else {
                 fValuesCount++;
             }
@@ -3756,8 +3760,9 @@ public class XMLSchemaValidator
             if (contains()) {
                 String code = "DuplicateUnique";
                 String value = toString(fLocalValues);
-                String ename = fIdentityConstraint.getElementName();
-                reportSchemaError(code, new Object[] { value, ename });
+                String eName = fIdentityConstraint.getElementName();
+                String cName = fIdentityConstraint.getIdentityConstraintName();
+                reportSchemaError(code, new Object[] { value, eName, cName });
             }
         } // duplicateValue(Hashtable)
 
@@ -3792,8 +3797,9 @@ public class XMLSchemaValidator
             if (contains()) {
                 String code = "DuplicateKey";
                 String value = toString(fLocalValues);
-                String ename = fIdentityConstraint.getElementName();
-                reportSchemaError(code, new Object[] { value, ename });
+                String eName = fIdentityConstraint.getElementName();
+                String cName = fIdentityConstraint.getIdentityConstraintName();
+                reportSchemaError(code, new Object[] { value, eName, cName });
             }
         } // duplicateValue(Hashtable)
 
