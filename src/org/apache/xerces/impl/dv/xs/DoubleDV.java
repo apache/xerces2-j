@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2005 The Apache Software Foundation.
+ * Copyright 2001-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,6 +112,15 @@ public class DoubleDV extends TypeValidator {
                 return true;
 
             return false;
+        }
+        
+        public int hashCode() {
+            // This check is necessary because doubleToLongBits(+0) != doubleToLongBits(-0)
+            if (value == 0d) {
+                return 0;
+            }
+            long v = Double.doubleToLongBits(value);
+            return (int) (v ^ (v >>> 32));
         }
         
         // NOTE: 0.0 is equal but not identical to -0.0
