@@ -2268,7 +2268,14 @@ public class XMLSchemaValidator
             // otherwise partial, and anything above this level will be partial
             else {
                 fCurrentPSVI.fValidationAttempted = ElementPSVI.VALIDATION_PARTIAL;
-                fNFullValidationDepth = fNNoneValidationDepth = fElementDepth - 1;
+            }
+            
+            // this guarantees that depth settings do not cross-over between sibling nodes
+            if (fNFullValidationDepth == fElementDepth) {
+                fNFullValidationDepth = fElementDepth - 1;
+            }
+            if (fNNoneValidationDepth == fElementDepth) {
+                fNNoneValidationDepth = fElementDepth - 1;
             }
 
             if (fDefaultValue != null)
