@@ -1,5 +1,5 @@
 /*
- * Copyright 2000,2004,2005 The Apache Software Foundation.
+ * Copyright 2000,2004-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -171,7 +171,7 @@ public class TestCompare extends TestCase
             for( int j=0; j<ranges.length; ++j )
             {
                 int result = ranges[i].compareBoundaryPoints( how, ranges[j] );
-                assert( "Compare returned the wrong value i="+i+" j="+j + " result="+result, result == results[i][j] );
+                assertTrue( "Compare returned the wrong value i="+i+" j="+j + " result="+result, result == results[i][j] );
             }
         }
     }
