@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 #=========================================================================
-# Copyright 2000-2004 The Apache Software Foundation.
+# Copyright 2000-2004,2006 The Apache Software Foundation.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ LIBDIR=./tools
 ANT_HOME="$LIBDIR"
 LOCALCLASSPATH="$JAVA_HOME/lib/tools.jar:$JAVA_HOME/lib/classes.zip"
 LOCALCLASSPATH="$LOCALCLASSPATH:$LIBDIR/ant.jar"
+LOCALCLASSPATH="$LOCALCLASSPATH:$LIBDIR/ant-nodeps.jar"
 LOCALCLASSPATH="$LOCALCLASSPATH:$LIBDIR/xml-apis.jar"
 LOCALCLASSPATH="$LOCALCLASSPATH:$LIBDIR/xercesImpl.jar"
 LOCALCLASSPATH="$LOCALCLASSPATH:$LIBDIR/bin/xjavac.jar"

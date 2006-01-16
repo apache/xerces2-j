@@ -2,7 +2,7 @@
 
 rem
 rem ==========================================================================
-rem = Copyright 2000-2004 The Apache Software Foundation.
+rem = Copyright 2000-2004,2006 The Apache Software Foundation.
 rem =
 rem = Licensed under the Apache License, Version 2.0 (the "License");
 rem = you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ if "%JAVA_HOME%" == "" goto error
 
 rem Keep this classpath to the minimum required to run ant
 rem Application dependent classpaths are specified in build.xml 
-set LOCALCLASSPATH=%JAVA_HOME%\lib\tools.jar;%JAVA_HOME%\lib\classes.zip;.\tools\ant.jar;.\tools\xercesImpl.jar;.\tools\xml-apis.jar;.\tools\bin\xjavac.jar
+set LOCALCLASSPATH=%JAVA_HOME%\lib\tools.jar;%JAVA_HOME%\lib\classes.zip;.\tools\ant.jar;.\tools\ant-nodeps.jar;.\tools\xercesImpl.jar;.\tools\xml-apis.jar;.\tools\bin\xjavac.jar
 
 echo Building with ant classpath %LOCALCLASSPATH%
 echo Starting Ant...
