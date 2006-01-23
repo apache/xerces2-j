@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004,2005 The Apache Software Foundation.
+ * Copyright 1999-2002,2004-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1432,6 +1432,20 @@ public class DTDGrammar
         contentSpec.value      = fContentSpecValue[chunk][index];
         contentSpec.otherValue = fContentSpecOtherValue[chunk][index];
         return true;
+    }
+    
+    /**
+     * Returns the index to the content spec for the given element 
+     * declaration, or <code>-1</code> if the element declaration
+     * index was invalid.
+     */
+    public int getContentSpecIndex(int elementDeclIndex) {
+        if (elementDeclIndex < 0 || elementDeclIndex >= fElementDeclCount) {
+            return -1;
+        }
+        final int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        final int index = elementDeclIndex & CHUNK_MASK;
+        return fElementDeclContentSpecIndex[chunk][index];
     }
 
     /**
