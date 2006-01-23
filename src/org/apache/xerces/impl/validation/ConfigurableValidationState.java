@@ -25,7 +25,7 @@ package org.apache.xerces.impl.validation;
  * @author Peter McCracken, IBM
  * @version $Id: $
  */
-public class ConfigurableValidationState extends ValidationState {
+public final class ConfigurableValidationState extends ValidationState {
     
     /**
      * Whether to check for ID/IDREF errors
