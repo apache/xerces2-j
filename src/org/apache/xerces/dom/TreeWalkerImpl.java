@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004 The Apache Software Foundation.
+ * Copyright 1999-2002,2004,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +17,18 @@
 package org.apache.xerces.dom;
 
 import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeFilter;
 import org.w3c.dom.traversal.TreeWalker;
 
-/** This class implements the TreeWalker interface. 
+/** 
+ * This class implements the TreeWalker interface. 
  *
  * @xerces.internal
  * 
  * @version $Id$
  */
-
 public class TreeWalkerImpl implements TreeWalker {
     
     //
@@ -44,6 +45,8 @@ public class TreeWalkerImpl implements TreeWalker {
     Node fCurrentNode;
     /** The root Node. */
     Node fRoot;
+    /** Use Node.isSameNode() to check if one node is the same as another. */
+    private boolean fUseIsSameNode;
     
     //
     // Implementation Note: No state is kept except the data above
@@ -63,6 +66,7 @@ public class TreeWalkerImpl implements TreeWalker {
                           boolean entityReferenceExpansion) {
         fCurrentNode = root;
         fRoot = root;
+        fUseIsSameNode = useIsSameNode(root);
         fWhatToShow = whatToShow;
         fNodeFilter = nodeFilter;
         fEntityReferenceExpansion = entityReferenceExpansion;
@@ -270,7 +274,7 @@ public class TreeWalkerImpl implements TreeWalker {
      */
     Node getParentNode(Node node) {
         
-        if (node == null || node == fRoot) return null;
+        if (node == null || isSameNode(node, fRoot)) return null;
         
         Node newNode = node.getParentNode();
         if (newNode == null)  return null; 
@@ -305,14 +309,14 @@ public class TreeWalkerImpl implements TreeWalker {
      */
     Node getNextSibling(Node node, Node root) {
         
-        if (node == null || node == root) return null;
+        if (node == null || isSameNode(node, root)) return null;
         
         Node newNode = node.getNextSibling();
         if (newNode == null) {
                 
             newNode = node.getParentNode();
                 
-            if (newNode == null || newNode == root)  return null; 
+            if (newNode == null || isSameNode(newNode, root)) return null; 
                 
             int parentAccept = acceptNode(newNode);
                 
@@ -360,13 +364,13 @@ public class TreeWalkerImpl implements TreeWalker {
      */
     Node getPreviousSibling(Node node, Node root) {
         
-        if (node == null || node == root) return null;
+        if (node == null || isSameNode(node, root)) return null;
         
         Node newNode = node.getPreviousSibling();
         if (newNode == null) {
                 
             newNode = node.getParentNode();
-            if (newNode == null || newNode == root)  return null; 
+            if (newNode == null || isSameNode(newNode, root)) return null; 
                 
             int parentAccept = acceptNode(newNode);
                 
@@ -500,5 +504,25 @@ public class TreeWalkerImpl implements TreeWalker {
                 return NodeFilter.FILTER_SKIP;
             }
         }
-    } 
+    }
+    
+    /**
+     * Use isSameNode() for testing node equality if the DOM implementation
+     * supports DOM Level 3 core and it isn't the Xerces implementation.
+     */
+    private boolean useIsSameNode(Node node) {
+        if (node instanceof NodeImpl) {
+            return false;
+        }
+        Document doc = node.getNodeType() == Node.DOCUMENT_NODE 
+            ? (Document) node : node.getOwnerDocument();
+        return (doc != null && doc.getImplementation().hasFeature("Core", "3.0"));
+    }
+    
+    /**
+     * Returns true if <code>m</code> is the same node <code>n</code>.
+     */
+    private boolean isSameNode(Node m, Node n) {
+        return (fUseIsSameNode) ? m.isSameNode(n) : m == n;
+    }
 }
