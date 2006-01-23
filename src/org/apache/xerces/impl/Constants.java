@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2005 The Apache Software Foundation.
+ * Copyright 2000-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -286,6 +286,40 @@ public final class Constants {
     public static final String XINCLUDE_FIXUP_LANGUAGE_FEATURE = "xinclude/fixup-language";
     
     /**
+     * Feature to ignore xsi:type attributes on elements during validation,
+     * until a global element declaration is found. ("validation/schema/ignore-xsi-type-until-elemdecl")
+     * If this feature is on when validating a document, then beginning at the validation root
+     * element, xsi:type attributes are ignored until a global element declaration is
+     * found for an element.  Once a global element declaration has been found, xsi:type
+     * attributes will start being processed for the sub-tree beginning at the element for
+     * which the declaration was found.
+     * 
+     * Suppose an element A has two element children, B and C.
+     * 
+     * If a global element declaration is found for A, xsi:type attributes on A, B and C,
+     * and all of B and C's descendents, will be processed.
+     * 
+     * If no global element declaration is found for A or B, but one is found for C,
+     * then xsi:type attributes will be ignored on A and B (and any descendents of B,
+     * until a global element declaration is found), but xsi:type attributes will be
+     * processed for C and all of C's descendents.
+     * 
+     * Once xsi:type attributes stop being ignored for a subtree, they do not start
+     * being ignored again, even if more elements are encountered for which no global
+     * element declaration can be found.
+     */
+    public static final String IGNORE_XSI_TYPE_FEATURE = "validation/schema/ignore-xsi-type-until-elemdecl";
+    
+    /** Perform checking of ID/IDREFs ("validation/id-idref-checking") */
+    public static final String ID_IDREF_CHECKING_FEATURE = "validation/id-idref-checking";
+    
+    /** Feature to ignore errors caused by identity constraints ("validation/identity-constraint-checking") */
+    public static final String IDC_CHECKING_FEATURE = "validation/identity-constraint-checking";
+    
+    /** Feature to ignore errors caused by unparsed entities ("validation/unparsed-entity-checking") */
+    public static final String UNPARSED_ENTITY_CHECKING_FEATURE = "validation/unparsed-entity-checking";
+    
+    /**
      * Internal feature. When set to true the schema validator will only use
      * schema components from the grammar pool provided.
      */
@@ -376,6 +410,9 @@ public final class Constants {
     /** Validation manager property ("internal/validation-manager"). */
     public static final String VALIDATION_MANAGER_PROPERTY = "internal/validation-manager";
     
+    /** Schema type of the root element in a document ("validation/schema/root-type-definition"). */
+    public static final String ROOT_TYPE_DEFINITION_PROPERTY = "validation/schema/root-type-definition";
+    
     // general constants
     
     /** Element PSVI is stored in augmentations using string "ELEMENT_PSVI" */
@@ -464,7 +501,11 @@ public final class Constants {
             HONOUR_ALL_SCHEMALOCATIONS_FEATURE,
             XINCLUDE_FEATURE,
             XINCLUDE_FIXUP_BASE_URIS_FEATURE,
-            XINCLUDE_FIXUP_LANGUAGE_FEATURE
+            XINCLUDE_FIXUP_LANGUAGE_FEATURE,
+            IGNORE_XSI_TYPE_FEATURE,
+            ID_IDREF_CHECKING_FEATURE,
+            IDC_CHECKING_FEATURE,
+            UNPARSED_ENTITY_CHECKING_FEATURE,
     };
     
     /** Xerces properties. */
@@ -485,7 +526,8 @@ public final class Constants {
             SCHEMA_NONS_LOCATION,
             VALIDATION_MANAGER_PROPERTY,
             BUFFER_SIZE_PROPERTY,
-            SECURITY_MANAGER_PROPERTY
+            SECURITY_MANAGER_PROPERTY,
+            ROOT_TYPE_DEFINITION_PROPERTY,
     };
     
     /** Empty enumeration. */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2005 The Apache Software Foundation.
+ * Copyright 2005,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,11 +27,19 @@ import org.apache.xerces.xni.grammars.XMLGrammarPool;
 final class XMLSchema extends AbstractXMLSchema {
     
     /** The grammar pool is immutable */
-    private final XMLGrammarPool fGrammarPool;  
+    private final XMLGrammarPool fGrammarPool;
     
-    /** Constructor */
+    /** Whether to consider this schema to be fully composed */
+    private final boolean fFullyComposed;
+    
+    /** Constructors */
     public XMLSchema(XMLGrammarPool grammarPool) {
+        this(grammarPool, true);
+    }
+    
+    public XMLSchema(XMLGrammarPool grammarPool, boolean fullyComposed) {
         fGrammarPool = grammarPool;
+        fFullyComposed = fullyComposed;
     }
     
     /*
@@ -46,7 +54,7 @@ final class XMLSchema extends AbstractXMLSchema {
     public XMLGrammarPool getGrammarPool() {
         return fGrammarPool;
     }
-
+    
     /**
      * <p>Returns whether the schema components contained in this object
      * can be considered to be a fully composed schema and should be
@@ -57,7 +65,7 @@ final class XMLSchema extends AbstractXMLSchema {
      * can be considered to be a fully composed schema
      */
     public boolean isFullyComposed() {
-        return true;
+        return fFullyComposed;
     }
     
 } // XMLSchema

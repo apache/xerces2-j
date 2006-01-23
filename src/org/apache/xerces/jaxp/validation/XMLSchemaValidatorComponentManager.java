@@ -1,5 +1,5 @@
 /*
- * Copyright 2005 The Apache Software Foundation.
+ * Copyright 2005,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,6 +62,22 @@ final class XMLSchemaValidatorComponentManager extends ParserConfigurationSettin
     /** Feature identifier: use grammar pool only. */
     private static final String USE_GRAMMAR_POOL_ONLY =
         Constants.XERCES_FEATURE_PREFIX + Constants.USE_GRAMMAR_POOL_ONLY_FEATURE;
+    
+    /** Feature identifier: whether to ignore xsi:type attributes until a global element declaration is encountered */
+    protected static final String IGNORE_XSI_TYPE =
+        Constants.XERCES_FEATURE_PREFIX + Constants.IGNORE_XSI_TYPE_FEATURE;
+    
+    /** Feature identifier: whether to ignore ID/IDREF errors */
+    protected static final String ID_IDREF_CHECKING =
+        Constants.XERCES_FEATURE_PREFIX + Constants.ID_IDREF_CHECKING_FEATURE;
+    
+    /** Feature identifier: whether to ignore unparsed entity errors */
+    protected static final String UNPARSED_ENTITY_CHECKING =
+        Constants.XERCES_FEATURE_PREFIX + Constants.UNPARSED_ENTITY_CHECKING_FEATURE;
+    
+    /** Feature identifier: whether to ignore identity constraint errors */
+    protected static final String IDENTITY_CONSTRAINT_CHECKING =
+        Constants.XERCES_FEATURE_PREFIX + Constants.IDC_CHECKING_FEATURE;
     
     // property identifiers
 
@@ -187,7 +203,17 @@ final class XMLSchemaValidatorComponentManager extends ParserConfigurationSettin
         // add all recognized features and properties and apply their defaults
         addRecognizedParamsAndSetDefaults(fEntityManager);
         addRecognizedParamsAndSetDefaults(fErrorReporter);
-        addRecognizedParamsAndSetDefaults(fSchemaValidator); 
+        addRecognizedParamsAndSetDefaults(fSchemaValidator);
+        
+        /* TODO: are other XMLSchemaValidator default values never set?
+         * Initial investigation indicates that they aren't set, but
+         * that they all have default values of false, so it works out
+         * anyway -PM
+         */
+        fFeatures.put(IGNORE_XSI_TYPE, Boolean.FALSE);
+        fFeatures.put(ID_IDREF_CHECKING, Boolean.TRUE);
+        fFeatures.put(IDENTITY_CONSTRAINT_CHECKING, Boolean.TRUE);
+        fFeatures.put(UNPARSED_ENTITY_CHECKING, Boolean.TRUE);
     }
 
     /**

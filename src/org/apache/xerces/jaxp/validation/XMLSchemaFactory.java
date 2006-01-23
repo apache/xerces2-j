@@ -1,5 +1,5 @@
 /*
- * Copyright 2005 The Apache Software Foundation.
+ * Copyright 2005,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,11 +61,17 @@ import org.xml.sax.SAXParseException;
  */
 public final class XMLSchemaFactory extends SchemaFactory {
     
-    // property identifiers
+    // feature identifiers
     
     /** Feature identifier: schema full checking. */
     private static final String SCHEMA_FULL_CHECKING =
         Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_FULL_CHECKING;
+    
+    /** Feature identifier: use grammar pool only. */
+    private static final String USE_GRAMMAR_POOL_ONLY =
+        Constants.XERCES_FEATURE_PREFIX + Constants.USE_GRAMMAR_POOL_ONLY_FEATURE;
+    
+    // property identifiers
     
     /** Property identifier: grammar pool. */
     private static final String XMLGRAMMAR_POOL =
@@ -100,6 +106,9 @@ public final class XMLSchemaFactory extends SchemaFactory {
     /** The container for the real grammar pool. */ 
     private XMLGrammarPoolWrapper fXMLGrammarPoolWrapper;
     
+    /** Whether or not to allow new schemas to be added to the grammar pool */
+    private boolean fUseGrammarPoolOnly;
+    
     public XMLSchemaFactory() {
         fErrorHandlerWrapper = new ErrorHandlerWrapper(DraconianErrorHandler.getInstance());
         fDOMEntityResolverWrapper = new DOMEntityResolverWrapper();
@@ -108,6 +117,7 @@ public final class XMLSchemaFactory extends SchemaFactory {
         fXMLSchemaLoader.setProperty(XMLGRAMMAR_POOL, fXMLGrammarPoolWrapper);
         fXMLSchemaLoader.setEntityResolver(fDOMEntityResolverWrapper);
         fXMLSchemaLoader.setErrorHandler(fErrorHandlerWrapper);
+        fUseGrammarPoolOnly = true;
     }
     
     /**
@@ -221,19 +231,32 @@ public final class XMLSchemaFactory extends SchemaFactory {
         
         // Select Schema implementation based on grammar count.
         final int grammarCount = pool.getGrammarCount();
-        if (grammarCount > 1) {
-            return new XMLSchema(new ReadOnlyGrammarPool(pool));
-        }
-        else if (grammarCount == 1) {
-            Grammar[] grammars = pool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA);
-            return new SimpleXMLSchema(grammars[0]);
+        if (fUseGrammarPoolOnly) {
+            if (grammarCount > 1) {
+                return new XMLSchema(new ReadOnlyGrammarPool(pool));
+            }
+            else if (grammarCount == 1) {
+                Grammar[] grammars = pool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA);
+                return new SimpleXMLSchema(grammars[0]);
+            }
+            else {
+                return EmptyXMLSchema.getInstance();
+            }
         }
         else {
-            return EmptyXMLSchema.getInstance();
+            return new XMLSchema(new ReadOnlyGrammarPool(pool), false);
         }
     }
     
     public Schema newSchema() throws SAXException {
+        /*
+         * It would make sense to return an EmptyXMLSchema object here, if
+         * fUseGrammarPoolOnly is set to true. However, because the default
+         * value of this feature is true, doing so would change the default
+         * behaviour of this method. Thus, we return a WeakReferenceXMLSchema
+         * regardless of the value of fUseGrammarPoolOnly. -PM
+         */
+        
         // Use a Schema that uses the system id as the equality source.
         return new WeakReferenceXMLSchema();
     }
@@ -246,6 +269,9 @@ public final class XMLSchemaFactory extends SchemaFactory {
         }
         if (name.equals(XMLConstants.FEATURE_SECURE_PROCESSING)) {
             return (fSecurityManager != null);
+        }
+        else if (name.equals(USE_GRAMMAR_POOL_ONLY)) {
+            return fUseGrammarPoolOnly;
         }
         try {
             return fXMLSchemaLoader.getFeature(name);
@@ -306,6 +332,10 @@ public final class XMLSchemaFactory extends SchemaFactory {
         if (name.equals(XMLConstants.FEATURE_SECURE_PROCESSING)) {
             fSecurityManager = value ? new SecurityManager() : null;
             fXMLSchemaLoader.setProperty(SECURITY_MANAGER, fSecurityManager);
+            return;
+        }
+        else if (name.equals(USE_GRAMMAR_POOL_ONLY)) {
+            fUseGrammarPoolOnly = value;
             return;
         }
         try {
