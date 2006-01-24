@@ -56,6 +56,7 @@ Copyright:
     <property name='jar.samples' value='xercesSamples.jar'/>
     <property name='jar.dv' value='xercesDV.jar'/>
     <property name='jar.resolver' value='resolver.jar'/>
+    <property name='jar.junit' value='junit.jar'/>
     
     <property name='default.parser.config.name' value='XIncludeAwareParserConfiguration'/>
     <property name='default.parser.config.qualified' value='org.apache.xerces.parsers.XIncludeAwareParserConfiguration'/>
@@ -796,6 +797,16 @@ Copyright:
           classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
           classname="schema.Test"
           failOnError="yes">
+    </java>
+    <echo message="Running schema.config.AllTests ..." />
+  	<java fork="yes"
+          classname="schema.config.AllTests"
+          failOnError="yes">
+        <classpath>
+            <pathelement path="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes" />
+            <pathelement path="${tools.dir}/${jar.junit}" />
+            <pathelement path="${build.dir}/tests" />
+        </classpath>
     </java>
     <echo message="Running jaxp.PropertyTest ..." />
     <java fork="yes"
