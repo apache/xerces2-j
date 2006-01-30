@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2005 The Apache Software Foundation.
+ * Copyright 1999-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,6 +85,7 @@ public class XMLDTDLoader
     private static final String[] LOADER_RECOGNIZED_FEATURES = {
         VALIDATION,
         WARN_ON_DUPLICATE_ATTDEF,
+        WARN_ON_UNDECLARED_ELEMDEF,
         NOTIFY_CHAR_REFS,
         STANDARD_URI_CONFORMANT_FEATURE,
         BALANCE_SYNTAX_TREES
@@ -208,7 +209,10 @@ public class XMLDTDLoader
         } 
         else if (featureId.equals(WARN_ON_DUPLICATE_ATTDEF)) {
             fWarnDuplicateAttdef = state;
-        } 
+        }
+        else if (featureId.equals(WARN_ON_UNDECLARED_ELEMDEF)) {
+            fWarnOnUndeclaredElemdef = state;
+        }
         else if (featureId.equals(NOTIFY_CHAR_REFS)) {
             fDTDScanner.setFeature(featureId, state);
         } 
@@ -314,7 +318,10 @@ public class XMLDTDLoader
         } 
         else if (featureId.equals(WARN_ON_DUPLICATE_ATTDEF)) {
             return fWarnDuplicateAttdef;
-        } 
+        }
+        else if (featureId.equals(WARN_ON_UNDECLARED_ELEMDEF)) {
+            return fWarnOnUndeclaredElemdef;
+        }
         else if (featureId.equals(NOTIFY_CHAR_REFS)) {
             return fDTDScanner.getFeature(featureId);
         }

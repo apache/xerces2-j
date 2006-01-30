@@ -1243,6 +1243,15 @@ public class DTDGrammar
         return true;
 
     } // getElementDecl(int,XMLElementDecl):boolean
+    
+    QName getElementDeclName(int elementDeclIndex) {
+        if (elementDeclIndex < 0 || elementDeclIndex >= fElementDeclCount) {
+            return null;
+        }
+        int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        int index = elementDeclIndex &  CHUNK_MASK;
+        return fElementDeclName[chunk][index];
+    }
 
     // REVISIT: Make this getAttributeDeclCount/getAttributeDeclAt. -Ac
 

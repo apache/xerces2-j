@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004,2005 The Apache Software Foundation.
+ * Copyright 1999-2002,2004-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,13 +88,17 @@ public class XMLDTDProcessor
     /** Feature identifier: notify character references. */
     protected static final String NOTIFY_CHAR_REFS =
         Constants.XERCES_FEATURE_PREFIX + Constants.NOTIFY_CHAR_REFS_FEATURE;
-
+    
     /** Feature identifier: warn on duplicate attdef */
     protected static final String WARN_ON_DUPLICATE_ATTDEF = 
-        Constants.XERCES_FEATURE_PREFIX +Constants.WARN_ON_DUPLICATE_ATTDEF_FEATURE; 
+        Constants.XERCES_FEATURE_PREFIX +Constants.WARN_ON_DUPLICATE_ATTDEF_FEATURE;
+    
+    /** Feature identifier: warn on undeclared element referenced in content model. */
+    protected static final String WARN_ON_UNDECLARED_ELEMDEF =
+        Constants.XERCES_FEATURE_PREFIX + Constants.WARN_ON_UNDECLARED_ELEMDEF_FEATURE;
         
 	protected static final String PARSER_SETTINGS = 
-			Constants.XERCES_FEATURE_PREFIX + Constants.PARSER_SETTINGS;
+        Constants.XERCES_FEATURE_PREFIX + Constants.PARSER_SETTINGS;
 
     // property identifiers
 
@@ -120,12 +124,14 @@ public class XMLDTDProcessor
     private static final String[] RECOGNIZED_FEATURES = {
         VALIDATION,
         WARN_ON_DUPLICATE_ATTDEF,
+        WARN_ON_UNDECLARED_ELEMDEF,
         NOTIFY_CHAR_REFS,
     };
 
     /** Feature defaults. */
     private static final Boolean[] FEATURE_DEFAULTS = {
         null,
+        Boolean.FALSE,
         Boolean.FALSE,
         null,
     };
@@ -162,6 +168,9 @@ public class XMLDTDProcessor
 
     /** warn on duplicate attribute definition, this feature works only when validation is true */
     protected boolean fWarnDuplicateAttdef;
+    
+    /** warn on undeclared element referenced in content model, this feature only works when valiation is true */
+    protected boolean fWarnOnUndeclaredElemdef;
         
     // properties
 
@@ -312,8 +321,15 @@ public class XMLDTDProcessor
 
         try {
             fWarnDuplicateAttdef = componentManager.getFeature(WARN_ON_DUPLICATE_ATTDEF);
-        } catch (XMLConfigurationException e) {
+        } 
+        catch (XMLConfigurationException e) {
             fWarnDuplicateAttdef = false;
+        }
+        try {
+            fWarnOnUndeclaredElemdef = componentManager.getFeature(WARN_ON_UNDECLARED_ELEMDEF);
+        } 
+        catch (XMLConfigurationException e) {
+            fWarnOnUndeclaredElemdef = false;
         }
 
         // get needed components
@@ -1277,7 +1293,6 @@ public class XMLDTDProcessor
             if(fGrammarPool != null)
                 fGrammarPool.cacheGrammars(XMLGrammarDescription.XML_DTD, new Grammar[] {fDTDGrammar});
         }
-        // check VC: Notation declared,  in the production of NDataDecl
         if (fValidation) {
             DTDGrammar grammar = (fDTDGrammar != null? fDTDGrammar: fGrammarBucket.getActiveGrammar());
 
@@ -1322,9 +1337,15 @@ public class XMLDTDProcessor
                                                XMLErrorReporter.SEVERITY_ERROR);
                 }
             }
-
-            fTableOfIDAttributeNames = null;//should be safe to release these references
+            
+            // should be safe to release these references
+            fTableOfIDAttributeNames = null;
             fTableOfNOTATIONAttributeNames = null;
+            
+            // check whether each element referenced in a content model is declared
+            if (fWarnOnUndeclaredElemdef) {
+                checkDeclaredElements(grammar);
+            }
         }
 
         // call handlers
@@ -1643,7 +1664,6 @@ public class XMLDTDProcessor
         return false;
     }
 
-    
     protected boolean isValidNmtoken(String nmtoken) {
         return XMLChar.isValidNmtoken(nmtoken);
     } // isValidNmtoken(String):  boolean
@@ -1651,4 +1671,61 @@ public class XMLDTDProcessor
     protected boolean isValidName(String name) {
         return XMLChar.isValidName(name);
     } // isValidName(String):  boolean
+    
+    /** 
+     * Checks that all elements referenced in content models have
+     * been declared. This method calls out to the error handler 
+     * to indicate warnings.
+     */
+    private void checkDeclaredElements(DTDGrammar grammar) {
+        int elementIndex = grammar.getFirstElementDeclIndex();
+        XMLContentSpec contentSpec = new XMLContentSpec();
+        while (elementIndex >= 0) {
+            int type = grammar.getContentSpecType(elementIndex);
+            if (type == XMLElementDecl.TYPE_CHILDREN || type == XMLElementDecl.TYPE_MIXED) {
+                checkDeclaredElements(grammar, 
+                        elementIndex, 
+                        grammar.getContentSpecIndex(elementIndex),
+                        contentSpec);
+            }
+            elementIndex = grammar.getNextElementDeclIndex(elementIndex);
+        }
+    }
+    
+    /** 
+     * Does a recursive (if necessary) check on the specified element's
+     * content spec to make sure that all children refer to declared
+     * elements.
+     */
+    private void checkDeclaredElements(DTDGrammar grammar, int elementIndex, 
+            int contentSpecIndex, XMLContentSpec contentSpec) {
+        grammar.getContentSpec(contentSpecIndex, contentSpec);
+        if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+            String value = (String) contentSpec.value;
+            if (value != null && grammar.getElementDeclIndex(value) == -1) {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                        "UndeclaredElementInContentSpec",
+                        new Object[]{grammar.getElementDeclName(elementIndex).rawname, value},
+                        XMLErrorReporter.SEVERITY_WARNING);
+            }
+        } 
+        else {
+            // It's not a leaf, so we have to recurse its left and maybe right
+            // nodes. Save both values before we recurse and trash the node.
+            final int leftNode = ((int[])contentSpec.value)[0];
+            final int rightNode = ((int[])contentSpec.otherValue)[0];
+            if ((contentSpec.type == XMLContentSpec.CONTENTSPECNODE_CHOICE)
+                || (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_SEQ)) {
+                //  Recurse on both children.
+                checkDeclaredElements(grammar, elementIndex, leftNode, contentSpec);
+                checkDeclaredElements(grammar, elementIndex, rightNode, contentSpec);
+            }
+            else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE
+                  || contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE
+                  || contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE) {
+                checkDeclaredElements(grammar, elementIndex, leftNode, contentSpec);
+            }
+        }
+    }
+    
 } // class XMLDTDProcessor
