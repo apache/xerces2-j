@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--
- * Copyright 1999-2005 The Apache Software Foundation.
+ * Copyright 1999-2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -283,6 +283,41 @@ catch (SAXException e) {
     Enabling this feature may cost your application some performance when DTDs are 
     processed so it is recommended that it only be turned on when necessary.
    </note>
+  </feature>
+  <feature name='http://apache.org/xml/features/validation/id-idref-checking'
+           id='validation.id-idref-checking'>
+   <true>Enable checking of ID/IDREF constraints.</true>
+   <false>
+    Disable checking of ID/IDREF constraints. Validation will not fail if 
+    there are non-unique ID values or dangling IDREF values in the document.
+   </false>
+   <default value='true'/>
+   <access parsing='read-only' not-parsing='read-write'/>
+   <since value='Xerces-J 2.8.0'/>
+   <note>This feature only applies to schema validation.</note>
+   <see idref='validation'/>
+   <see idref='validation.schema'/>
+  </feature>
+  <feature name='http://apache.org/xml/features/validation/identity-constraint-checking'
+           id='validation.identity-constraint-checking'>
+   <true>Enable identity constraint checking.</true>
+   <false>Disable identity constraint checking.</false>
+   <default value='true'/>
+   <access parsing='read-only' not-parsing='read-write'/>
+   <since value='Xerces-J 2.8.0'/>
+   <see idref='validation'/>
+   <see idref='validation.schema'/>
+  </feature>
+  <feature name='http://apache.org/xml/features/validation/unparsed-entity-checking'
+           id='validation.unparsed-entity-checking'>
+   <true>Check that each value of type ENTITY matches the name of an unparsed entity declared in the DTD.</true>
+   <false>Do not check that each value of type ENTITY matches the name of an unparsed entity declared in the DTD.</false>
+   <default value='true'/>
+   <access parsing='read-only' not-parsing='read-write'/>
+   <since value='Xerces-J 2.8.0'/>
+   <note>This feature only applies to schema validation.</note>
+   <see idref='validation'/>
+   <see idref='validation.schema'/>
   </feature>
   <feature name='http://apache.org/xml/features/validation/warn-on-duplicate-attdef'
            id='validation.warn-on-duplicate-attdef'>
