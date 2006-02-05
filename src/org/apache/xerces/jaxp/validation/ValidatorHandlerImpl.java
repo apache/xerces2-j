@@ -1,5 +1,5 @@
 /*
- * Copyright 2005 The Apache Software Foundation.
+ * Copyright 2005,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1026,7 +1026,7 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
                      */
                     InputSource inputSource = new InputSource();
                     inputSource.setPublicId(pubId);
-                    inputSource.setSystemId((baseSystemId != null) ? resolveSystemId(systemId, baseSystemId) : systemId);
+                    inputSource.setSystemId((baseSystemId != null) ? resolveSystemId(sysId, baseSystemId) : sysId);
                     
                     if (charStream != null) {
                         inputSource.setCharacterStream(charStream);
