@@ -23,7 +23,7 @@ package org.apache.xerces.impl.validation;
  * @xerces.internal
  *
  * @author Peter McCracken, IBM
- * @version $Id: $
+ * @version $Id$
  */
 public final class ConfigurableValidationState extends ValidationState {
     
