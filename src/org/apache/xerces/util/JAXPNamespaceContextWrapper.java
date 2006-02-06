@@ -27,7 +27,7 @@ import org.apache.xerces.xni.NamespaceContext;
  * 
  * @author Michael Glavassevich, IBM
  * 
- * @version $Id: $
+ * @version $Id$
  */
 public class JAXPNamespaceContextWrapper implements NamespaceContext {
     
