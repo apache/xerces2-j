@@ -26,7 +26,7 @@ import org.xml.sax.SAXException;
 //reference to non-existent ID
 /**
  * @author Peter McCracken, IBM
- * @version $Id: $
+ * @version $Id$
  */
 public class IdIdrefCheckingTest extends BaseTest {
     public static final String DUPLICATE_ID = "cvc-id.2";

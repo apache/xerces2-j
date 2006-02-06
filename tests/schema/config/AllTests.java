@@ -21,7 +21,7 @@ import junit.framework.TestSuite;
 
 /**
  * @author Peter McCracken, IBM
- * @version $Id: $
+ * @version $Id$
  */
 public class AllTests {
     

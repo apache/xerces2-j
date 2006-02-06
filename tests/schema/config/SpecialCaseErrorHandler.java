@@ -25,7 +25,7 @@ import org.xml.sax.SAXParseException;
 
 /**
  * @author Peter McCracken, IBM
- * @version $Id: $
+ * @version $Id$
  */
 public class SpecialCaseErrorHandler implements ErrorHandler {
     

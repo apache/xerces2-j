@@ -27,7 +27,7 @@ import org.apache.xerces.xs.ItemPSVI;
  * calls in processOneAttribute.
  * 
  * @author Peter McCracken, IBM
- * @version $Id: $
+ * @version $Id$
  */
 public class FixedAttrTest extends BaseTest {
     

@@ -45,7 +45,7 @@ import org.w3c.dom.Node;
 
 /**
  * @author Peter McCracken, IBM
- * @version $Id: $
+ * @version $Id$
  */
 public abstract class BaseTest extends TestCase {
     protected final static String ROOT_TYPE = Constants.XERCES_PROPERTY_PREFIX

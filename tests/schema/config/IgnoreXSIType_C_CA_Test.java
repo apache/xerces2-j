@@ -24,7 +24,7 @@ import org.xml.sax.SAXException;
 
 /**
  * @author Peter McCracken, IBM
- * @version $Id: $
+ * @version $Id$
  */
 public class IgnoreXSIType_C_CA_Test extends BaseTest {
     

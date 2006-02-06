@@ -23,7 +23,7 @@ import org.apache.xerces.xs.ItemPSVI;
 
 /**
  * @author Peter McCracken, IBM
- * @version $Id: $
+ * @version $Id$
  */
 public class BasicTest extends BaseTest {
     
