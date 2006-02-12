@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2005 The Apache Software Foundation.
+ * Copyright 2001-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -254,7 +254,6 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
     /** Base uri stack*/
     protected Stack fBaseURIStack = new Stack ();
 
-
     /** LSParserFilter: the QNAME of rejected element*/
     protected final QName fRejectedElement = new QName ();
 
@@ -266,6 +265,9 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
 
     /** Attribute QName. */
     private QName fAttrQName = new QName ();
+    
+    /** Document locator. */
+    private XMLLocator fLocator;
 
     // handlers
 
@@ -730,6 +732,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
     NamespaceContext namespaceContext, Augmentations augs)
     throws XNIException {
 
+        fLocator = locator;
         if (!fDeferNodeExpansion) {
             if (fDocumentClassName.equals (DEFAULT_DOCUMENT_CLASS_NAME)) {
                 fDocument = new DocumentImpl ();
@@ -1424,13 +1427,20 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
         if (!fDeferNodeExpansion) {
             // REVISIT: when DOM Level 3 is REC rely on Document.support
             //          instead of specific class
-            // set DOM error checking back on
+            // set the actual encoding and set DOM error checking back on
             if (fDocumentImpl != null) {
+                if (fLocator != null) {
+                    fDocumentImpl.setInputEncoding (fLocator.getEncoding());
+                }
                 fDocumentImpl.setStrictErrorChecking (true);
             }
             fCurrentNode = null;
         }
         else {
+            // set the actual encoding
+            if (fLocator != null) {
+                fDeferredDocumentImpl.setInputEncoding (fLocator.getEncoding());
+            }
             fCurrentNodeIndex = -1;
         }
 
