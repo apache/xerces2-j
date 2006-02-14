@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2004 The Apache Software Foundation.
+ * Copyright 1999-2004,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.io.IOException;
 
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.XMLStringBuffer;
 import org.apache.xerces.xni.Augmentations;
@@ -142,9 +141,6 @@ public class XMLDTDScannerImpl
 
     /** Start DTD called. */
     private boolean fStartDTDCalled;
-
-    /** Default attribute */
-    private XMLAttributesImpl fAttributes = new XMLAttributesImpl();
 
     /** 
      * Stack of content operators (either '|' or ',') in children 
@@ -564,16 +560,13 @@ public class XMLDTDScannerImpl
             if (fEntityScanner.isExternal()) {
                 fExtEntityDepth--;
             }
+            // call handler
+            if (fDTDHandler != null && reportEntity) {
+                fDTDHandler.endParameterEntity(name, augs);
+            }
         }
-
-        // call handler
-        boolean dtdEntity = name.equals("[dtd]");
-        if (fDTDHandler != null && !dtdEntity && reportEntity) {
-            fDTDHandler.endParameterEntity(name, augs);
-        }
-
         // end DTD
-        if (dtdEntity) {
+        else if (name.equals("[dtd]")) {
             if (fIncludeSectDepth != 0) {
                 reportFatalError("IncludeSectUnterminated", null);
             }
