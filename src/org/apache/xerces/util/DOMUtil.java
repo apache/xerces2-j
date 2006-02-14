@@ -887,7 +887,7 @@ public class DOMUtil {
                 fgThrowableMethodsAvailable = true;
             }
             // ClassNotFoundException, NoSuchMethodException or SecurityException
-            // Whatever the case, we cannot use java.nio.charset.*.
+            // Whatever the case, we cannot use java.lang.Throwable.initCause(java.lang.Throwable).
             catch (Exception exc) {
                 fgThrowableInitCauseMethod = null;
                 fgThrowableMethodsAvailable = false;
