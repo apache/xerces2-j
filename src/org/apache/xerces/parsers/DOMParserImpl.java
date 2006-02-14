@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2005 The Apache Software Foundation.
+ * Copyright 2000-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.apache.xerces.dom.DOMStringListImpl;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.DOMEntityResolverWrapper;
 import org.apache.xerces.util.DOMErrorHandlerWrapper;
+import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.Augmentations;
@@ -895,7 +896,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                 if (DEBUG) {
                     e.printStackTrace ();
                 }
-                throw new LSException(LSException.PARSE_ERR, e.getMessage());
+                throw (LSException) DOMUtil.createLSException(LSException.PARSE_ERR, e).fillInStackTrace();
             }
         }
         return getDocument ();
@@ -950,7 +951,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                 if (DEBUG) {
                    e.printStackTrace ();
                 }
-                throw new LSException(LSException.PARSE_ERR, e.getMessage());
+                throw (LSException) DOMUtil.createLSException(LSException.PARSE_ERR, e).fillInStackTrace();
             }
         }
         return getDocument ();

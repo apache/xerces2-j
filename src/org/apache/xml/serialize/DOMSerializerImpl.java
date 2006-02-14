@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2005 The Apache Software Foundation.
+ * Copyright 1999-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import org.w3c.dom.DOMErrorHandler;
 import org.w3c.dom.DOMStringList;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLEntityManager;
+import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XML11Char;
@@ -521,7 +522,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                 // stopped at user request
                 return null;
             }
-            throw new LSException(LSException.SERIALIZE_ERR, e.toString());            
+            throw (LSException) DOMUtil.createLSException(LSException.SERIALIZE_ERR, e).fillInStackTrace();       
         } catch (IOException ioe) {
             // REVISIT: A generic IOException doesn't provide enough information
             // to determine that the serialized document is too large to fit
@@ -810,7 +811,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                 // stopped at user request
                 return false;
             }
-            throw new LSException(LSException.SERIALIZE_ERR, e.toString());            
+            throw (LSException) DOMUtil.createLSException(LSException.SERIALIZE_ERR, e).fillInStackTrace();
         } catch (Exception e) {
             if (ser.fDOMErrorHandler != null) {
                 DOMErrorImpl error = new DOMErrorImpl();
@@ -819,9 +820,8 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                 error.fSeverity = DOMError.SEVERITY_ERROR;
                 ser.fDOMErrorHandler.handleError(error);
 
-            }   
-            e.printStackTrace();       
-            throw new LSException(LSException.SERIALIZE_ERR, e.toString());
+            }
+            throw (LSException) DOMUtil.createLSException(LSException.SERIALIZE_ERR, e).fillInStackTrace();
         }
         return true;
 
@@ -960,7 +960,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                 // stopped at user request
                 return false;
             }
-            throw new LSException(LSException.SERIALIZE_ERR, e.toString());            
+            throw (LSException) DOMUtil.createLSException(LSException.SERIALIZE_ERR, e).fillInStackTrace();
         } catch (Exception e) {
             if (ser.fDOMErrorHandler != null) {
                 DOMErrorImpl error = new DOMErrorImpl();
@@ -969,7 +969,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                 error.fSeverity = DOMError.SEVERITY_ERROR;
                 ser.fDOMErrorHandler.handleError(error);
             }
-            throw new LSException(LSException.SERIALIZE_ERR, e.toString());
+            throw (LSException) DOMUtil.createLSException(LSException.SERIALIZE_ERR, e).fillInStackTrace();
         }
         return true;
     } //writeURI

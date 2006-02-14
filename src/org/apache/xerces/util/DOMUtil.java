@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004,2005 The Apache Software Foundation.
+ * Copyright 1999-2002,2004-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,13 @@ import java.util.Hashtable;
 import org.apache.xerces.dom.AttrImpl;
 import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.impl.xs.opti.ElementImpl;
-
 import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
 import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.w3c.dom.ls.LSException;
 
 /**
  * Some useful utility methods.
@@ -836,4 +836,63 @@ public class DOMUtil {
         }
         return null;
     }
-} // class XUtil
+    
+    /**
+     * Creates a DOMException. On J2SE 1.4 and above the cause for the exception will be set.
+     */
+    public static DOMException createDOMException(short code, Throwable cause) {
+        DOMException de = new DOMException(code, cause != null ? cause.getMessage() : null);
+        if (cause != null && ThrowableMethods.fgThrowableMethodsAvailable) {
+            try {
+                ThrowableMethods.fgThrowableInitCauseMethod.invoke(de, new Object [] {cause});
+            }
+            // Something went wrong. There's not much we can do about it.
+            catch (Exception e) {}
+        }
+        return de;
+    }
+    
+    /**
+     * Creates an LSException. On J2SE 1.4 and above the cause for the exception will be set.
+     */
+    public static LSException createLSException(short code, Throwable cause) {
+        LSException lse = new LSException(code, cause != null ? cause.getMessage() : null);
+        if (cause != null && ThrowableMethods.fgThrowableMethodsAvailable) {
+            try {
+                ThrowableMethods.fgThrowableInitCauseMethod.invoke(lse, new Object [] {cause});
+            }
+            // Something went wrong. There's not much we can do about it.
+            catch (Exception e) {}
+        }
+        return lse;
+    }
+    
+    /**
+     * Holder of methods from java.lang.Throwable.
+     */
+    static class ThrowableMethods {
+        
+        // Method: java.lang.Throwable.initCause(java.lang.Throwable)
+        private static java.lang.reflect.Method fgThrowableInitCauseMethod = null;
+        
+        // Flag indicating whether or not Throwable methods available.
+        private static boolean fgThrowableMethodsAvailable = false;
+        
+        private ThrowableMethods() {}
+        
+        // Attempt to get methods for java.lang.Throwable on class initialization.
+        static {
+            try {
+                fgThrowableInitCauseMethod = Throwable.class.getMethod("initCause", new Class [] {Throwable.class});
+                fgThrowableMethodsAvailable = true;
+            }
+            // ClassNotFoundException, NoSuchMethodException or SecurityException
+            // Whatever the case, we cannot use java.nio.charset.*.
+            catch (Exception exc) {
+                fgThrowableInitCauseMethod = null;
+                fgThrowableMethodsAvailable = false;
+            }
+        }
+    }
+    
+} // class DOMUtil
