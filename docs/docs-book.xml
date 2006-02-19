@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--
- * Copyright 1999-2005 The Apache Software Foundation.
+ * Copyright 1999-2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 -->
 <!DOCTYPE book SYSTEM 'dtd/book.dtd'>
 <book title='&ParserName; Documentation' 
-      copyright='1999-2005 The Apache Software Foundation'>
+      copyright='1999-2006 The Apache Software Foundation'>
  <external label='Home' href='http://xerces.apache.org/'/>
  <separator/>
  <document label='Readme' title='&ParserNameLong; Readme'
