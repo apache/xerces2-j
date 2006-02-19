@@ -106,6 +106,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
     protected final static short XMLDECL             = 0x1<<8;
     protected final static short NSDECL              = 0x1<<9;
     protected final static short DOM_ELEMENT_CONTENT_WHITESPACE = 0x1<<10;
+    protected final static short PRETTY_PRINT        = 0x1<<11;
     
     // well-formness checking
     private DOMErrorHandler fErrorHandler = null;    
@@ -203,13 +204,17 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                      (short) (state
                          ? features | COMMENTS
                          : features & ~COMMENTS);
+            } else if (name.equalsIgnoreCase(Constants.DOM_FORMAT_PRETTY_PRINT)) {
+                features =
+                     (short) (state
+                         ? features | PRETTY_PRINT
+                         : features & ~PRETTY_PRINT);
             }
                 else if (name.equalsIgnoreCase(Constants.DOM_CANONICAL_FORM)
                     || name.equalsIgnoreCase(Constants.DOM_VALIDATE_IF_SCHEMA)
                     || name.equalsIgnoreCase(Constants.DOM_VALIDATE)
                     || name.equalsIgnoreCase(Constants.DOM_CHECK_CHAR_NORMALIZATION)
                     || name.equalsIgnoreCase(Constants.DOM_DATATYPE_NORMALIZATION)
-                    || name.equalsIgnoreCase(Constants.DOM_FORMAT_PRETTY_PRINT)
                     || name.equalsIgnoreCase(Constants.DOM_NORMALIZE_CHARACTERS)) {
                 // true is not supported
                 if (state) {
@@ -298,6 +303,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
             || name.equalsIgnoreCase(Constants.DOM_ENTITIES)
             || name.equalsIgnoreCase(Constants.DOM_CDATA_SECTIONS)
             || name.equalsIgnoreCase(Constants.DOM_COMMENTS)
+            || name.equalsIgnoreCase(Constants.DOM_FORMAT_PRETTY_PRINT)
             || name.equalsIgnoreCase(Constants.DOM_NAMESPACE_DECLARATIONS)){
 	            // both values supported
 				return true;
@@ -307,7 +313,6 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
 			    || name.equalsIgnoreCase(Constants.DOM_VALIDATE)
 			    || name.equalsIgnoreCase(Constants.DOM_CHECK_CHAR_NORMALIZATION)
 			    || name.equalsIgnoreCase(Constants.DOM_DATATYPE_NORMALIZATION)
-			    || name.equalsIgnoreCase(Constants.DOM_FORMAT_PRETTY_PRINT)
 			    || name.equalsIgnoreCase(Constants.DOM_NORMALIZE_CHARACTERS)) {
 				// true is not supported
 				return !value;
@@ -398,6 +403,8 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
             return Boolean.TRUE;
         }else if (name.equalsIgnoreCase(Constants.DOM_DISCARD_DEFAULT_CONTENT)){
             return ((features & DISCARDDEFAULT)!=0)?Boolean.TRUE:Boolean.FALSE;
+        }else if (name.equalsIgnoreCase(Constants.DOM_FORMAT_PRETTY_PRINT)){
+          return ((features & PRETTY_PRINT)!=0)?Boolean.TRUE:Boolean.FALSE;
         }else if (name.equalsIgnoreCase(Constants.DOM_INFOSET)){
             if ((features & ENTITIES) == 0 &&
                  (features & CDATA) == 0 &&
@@ -408,8 +415,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                      return Boolean.TRUE;
                  }                 
                  return Boolean.FALSE;
-        } else if (name.equalsIgnoreCase (Constants.DOM_FORMAT_PRETTY_PRINT)
-                || name.equalsIgnoreCase(Constants.DOM_NORMALIZE_CHARACTERS)
+        } else if (name.equalsIgnoreCase(Constants.DOM_NORMALIZE_CHARACTERS)
                 || name.equalsIgnoreCase(Constants.DOM_CANONICAL_FORM)
                 || name.equalsIgnoreCase(Constants.DOM_VALIDATE_IF_SCHEMA)
                 || name.equalsIgnoreCase(Constants.DOM_CHECK_CHAR_NORMALIZATION)
@@ -985,6 +991,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
         ser.fDOMErrorHandler = fErrorHandler;
         ser.fNamespaces = (features & NAMESPACES) != 0;
         ser.fNamespacePrefixes = (features & NSDECL) != 0;
+        ser._format.setIndenting((features & PRETTY_PRINT) != 0);
         ser._format.setOmitComments((features & COMMENTS)==0);
         ser._format.setOmitXMLDeclaration((features & XMLDECL) == 0);   
  
