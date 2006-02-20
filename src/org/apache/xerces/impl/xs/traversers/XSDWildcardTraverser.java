@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2004 The Apache Software Foundation.
+ * Copyright 2001-2004,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,9 @@ import org.apache.xerces.impl.xs.XSAnnotationImpl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.impl.xs.util.XInt;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.DOMUtil;
+import org.apache.xerces.xs.XSObjectList;
 import org.w3c.dom.Element;
 
 /**
@@ -99,6 +101,7 @@ class XSDWildcardTraverser extends XSDAbstractTraverser {
                 particle.fValue = wildcard;
                 particle.fMinOccurs = min;
                 particle.fMaxOccurs = max;
+                particle.fAnnotations = wildcard.fAnnotations;
             }
         }
         
@@ -179,7 +182,14 @@ class XSDWildcardTraverser extends XSDAbstractTraverser {
                 annotation = traverseSyntheticAnnotation(elmNode, text, attrValues, false, schemaDoc);
             }
         }
-        wildcard.fAnnotation = annotation;
+        XSObjectList annotations;
+        if (annotation != null) {
+            annotations = new XSObjectListImpl();
+            ((XSObjectListImpl) annotations).add(annotation);
+        } else {
+            annotations = XSObjectListImpl.EMPTY_LIST;
+        }
+        wildcard.fAnnotations = annotations;
         
         return wildcard;
         

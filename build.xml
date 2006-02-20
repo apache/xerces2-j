@@ -808,6 +808,16 @@ Copyright:
             <pathelement path="${build.dir}/tests" />
         </classpath>
     </java>
+    <echo message="Running schema.annotations.AllTests ..." />
+  	<java fork="yes"
+          classname="schema.annotations.AllTests"
+          failOnError="yes">
+        <classpath>
+            <pathelement path="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes" />
+            <pathelement path="${tools.dir}/${jar.junit}" />
+            <pathelement path="${build.dir}/tests" />
+        </classpath>
+    </java>
     <echo message="Running jaxp.PropertyTest ..." />
     <java fork="yes"
           classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"

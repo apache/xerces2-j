@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2004 The Apache Software Foundation.
+ * Copyright 2001-2004,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,10 @@ import org.apache.xerces.impl.xs.XSAnnotationImpl;
 import org.apache.xerces.impl.xs.XSModelGroupImpl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.util.XInt;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.xs.XSObject;
+import org.apache.xerces.xs.XSObjectList;
 import org.w3c.dom.Element;
 
 /**
@@ -105,12 +107,20 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
         group.fCompositor = XSModelGroupImpl.MODELGROUP_ALL;
         group.fParticleCount = fPArray.getParticleCount();
         group.fParticles = fPArray.popContext();
-        group.fAnnotation = annotation;
+        XSObjectList annotations;
+        if (annotation != null) {
+            annotations = new XSObjectListImpl();
+            ((XSObjectListImpl)annotations).add (annotation);
+        } else {
+            annotations = XSObjectListImpl.EMPTY_LIST;
+        }
+        group.fAnnotations = annotations;
         particle = new XSParticleDecl();
         particle.fType = XSParticleDecl.PARTICLE_MODELGROUP;
         particle.fMinOccurs = minAtt.intValue();
         particle.fMaxOccurs = maxAtt.intValue();
         particle.fValue = group;
+        particle.fAnnotations = annotations;
         
         particle = checkOccurrences(particle,
                 SchemaSymbols.ELT_ALL,
@@ -262,12 +272,20 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
         group.fCompositor = choice ? XSModelGroupImpl.MODELGROUP_CHOICE : XSModelGroupImpl.MODELGROUP_SEQUENCE;
         group.fParticleCount = fPArray.getParticleCount();
         group.fParticles = fPArray.popContext();
-        group.fAnnotation = annotation;
+        XSObjectList annotations;
+        if (annotation != null) {
+            annotations = new XSObjectListImpl();
+            ((XSObjectListImpl)annotations).add (annotation);
+        } else {
+            annotations = XSObjectListImpl.EMPTY_LIST;
+        }
+        group.fAnnotations = annotations;
         particle = new XSParticleDecl();
         particle.fType = XSParticleDecl.PARTICLE_MODELGROUP;
         particle.fMinOccurs = minAtt.intValue();
         particle.fMaxOccurs = maxAtt.intValue();
         particle.fValue = group;
+        particle.fAnnotations = annotations;
         
         particle = checkOccurrences(particle,
                 choice ? SchemaSymbols.ELT_CHOICE : SchemaSymbols.ELT_SEQUENCE,

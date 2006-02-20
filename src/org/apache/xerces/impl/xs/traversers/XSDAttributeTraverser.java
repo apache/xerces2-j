@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2004 The Apache Software Foundation.
+ * Copyright 2001-2004,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,12 @@ import org.apache.xerces.impl.xs.XSAttributeDecl;
 import org.apache.xerces.impl.xs.XSAttributeUseImpl;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.impl.xs.util.XInt;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xs.XSConstants;
+import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.w3c.dom.Element;
 
@@ -78,15 +80,21 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         
         // get 'attribute declaration'
         XSAttributeDecl attribute = null;
+        XSAnnotationImpl annotation = null;
         if (attrDecl.getAttributeNode(SchemaSymbols.ATT_REF) != null) {
             if (refAtt != null) {
                 attribute = (XSAttributeDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.ATTRIBUTE_TYPE, refAtt, attrDecl);
                 
                 Element child = DOMUtil.getFirstChildElement(attrDecl);
                 if (child != null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                    // REVISIT:  put this somewhere
-                    traverseAnnotationDecl(child, attrValues, false, schemaDoc);
+                    annotation = traverseAnnotationDecl(child, attrValues, false, schemaDoc);
                     child = DOMUtil.getNextSiblingElement(child);
+                }
+                else {
+                    String text = DOMUtil.getSyntheticAnnotation(attrDecl);
+                    if (text != null) {
+                        annotation = traverseSyntheticAnnotation(attrDecl, text, attrValues, false, schemaDoc);
+                    }
                 }
                 
                 if (child != null) {
@@ -124,6 +132,19 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
             if (defaultAtt != null) {
                 attrUse.fDefault = new ValidatedInfo();
                 attrUse.fDefault.normalizedValue = defaultAtt;
+            }
+            // Get the annotation associated witht the local attr decl
+            if (attrDecl.getAttributeNode(SchemaSymbols.ATT_REF) == null) {
+                attrUse.fAnnotations = attribute.getAnnotations();
+            } else {
+                XSObjectList annotations;
+                if (annotation != null) {
+                    annotations = new XSObjectListImpl();
+                    ((XSObjectListImpl) annotations).add(annotation);
+                } else {
+                    annotations = XSObjectListImpl.EMPTY_LIST;
+                }
+                attrUse.fAnnotations = annotations;
             }
         }
         
@@ -299,8 +320,15 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
             attrType = SchemaGrammar.fAnySimpleType;
         }
         
-        attribute.setValues(nameAtt, tnsAtt, attrType,
-                constraintType, scope, attDefault, enclCT, annotation);
+        XSObjectList annotations;
+        if (annotation != null) {
+            annotations = new XSObjectListImpl();
+            ((XSObjectListImpl)annotations).add(annotation);
+        } else {
+            annotations = XSObjectListImpl.EMPTY_LIST;
+        }
+        attribute.setValues(nameAtt, tnsAtt, attrType, constraintType, scope,
+                attDefault, enclCT, annotations);
         
         // Step 2: register attribute decl to the grammar
         if (isGlobal && nameAtt != null)

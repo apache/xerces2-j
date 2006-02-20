@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2004 The Apache Software Foundation.
+ * Copyright 2001-2004,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,11 @@ import org.apache.xerces.impl.xs.XSGroupDecl;
 import org.apache.xerces.impl.xs.XSModelGroupImpl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.util.XInt;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.QName;
+import org.apache.xerces.xs.XSObjectList;
 import org.w3c.dom.Element;
 
 /**
@@ -72,12 +74,17 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
             group = (XSGroupDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.GROUP_TYPE, refAttr, elmNode);
         }
         
+        XSAnnotationImpl annotation = null;
         // no children other than "annotation?" are allowed
         Element child = DOMUtil.getFirstChildElement(elmNode);
         if (child != null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-            // REVISIT:  put this somewhere
-            traverseAnnotationDecl(child, attrValues, false, schemaDoc);
+            annotation = traverseAnnotationDecl(child, attrValues, false, schemaDoc);
             child = DOMUtil.getNextSiblingElement(child);
+        } else {
+            String text = DOMUtil.getSyntheticAnnotation(child);
+            if (text != null) {
+                annotation = traverseSyntheticAnnotation(child, text, attrValues, false, schemaDoc);
+            }
         }
         
         if (child != null) {
@@ -102,6 +109,18 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
             particle.fValue = group.fModelGroup;
             particle.fMinOccurs = minOccurs;
             particle.fMaxOccurs = maxOccurs;
+            if (refAttr != null) {
+                XSObjectList annotations;
+                if (annotation != null) {
+                    annotations = new XSObjectListImpl();
+                    ((XSObjectListImpl) annotations).add(annotation);
+                } else {
+                    annotations = XSObjectListImpl.EMPTY_LIST;
+                }
+                particle.fAnnotations = annotations;
+            } else {
+                particle.fAnnotations = group.fAnnotations;
+            }
         }
         
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
@@ -183,7 +202,14 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
                 group.fTargetNamespace = schemaDoc.fTargetNamespace;
                 if (particle != null)
                     group.fModelGroup = (XSModelGroupImpl)particle.fValue;
-                group.fAnnotation = annotation;
+                XSObjectList annotations;
+                if (annotation != null) {
+                    annotations = new XSObjectListImpl();
+                    ((XSObjectListImpl) annotations).add(annotation);
+                } else {
+                    annotations = XSObjectListImpl.EMPTY_LIST;
+                }
+                group.fAnnotations = annotations;                
                 grammar.addGlobalGroupDecl(group);
             }
             else {

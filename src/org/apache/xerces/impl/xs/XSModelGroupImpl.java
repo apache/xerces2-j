@@ -1,5 +1,5 @@
 /*
- * Copyright 2002,2003-2004 The Apache Software Foundation.
+ * Copyright 2002-2004,2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,8 +45,8 @@ public class XSModelGroupImpl implements XSModelGroup {
     public XSParticleDecl[] fParticles = null;
     public int fParticleCount = 0;
 
-    // this particle's optional annotation
-    public XSAnnotationImpl fAnnotation;
+    // this particle's optional annotations
+    public XSObjectList fAnnotations = null;
 
     // whether this model group contains nothing
     public boolean isEmpty() {
@@ -167,7 +167,7 @@ public class XSModelGroupImpl implements XSModelGroup {
         fParticles = null;
         fParticleCount = 0;
         fDescription = null;
-        fAnnotation = null;
+        fAnnotations = null;
     }
 
     /**
@@ -218,7 +218,14 @@ public class XSModelGroupImpl implements XSModelGroup {
      * Optional. Annotation.
      */
     public XSAnnotation getAnnotation() {
-        return fAnnotation;
+        return (XSAnnotation) fAnnotations.item(0);
+    }
+
+    /**
+     * Optional. Annotations.
+     */
+    public XSObjectList getAnnotations() {
+        return fAnnotations;
     }
 
     /**

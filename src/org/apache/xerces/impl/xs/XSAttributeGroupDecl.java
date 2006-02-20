@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2004 The Apache Software Foundation.
+ * Copyright 2001-2004, 2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
     public String fIDAttrName = null;
 
     // optional annotation
-    public XSAnnotationImpl fAnnotation;
+    public XSObjectList fAnnotations;
     
     protected XSObjectListImpl fAttrUses = null;
 
@@ -296,7 +296,7 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
         } 
         fAttrUseNum = 0;
         fAttributeWC = null;
-        fAnnotation = null;
+        fAnnotations = null;
         fIDAttrName = null;
 
     }
@@ -346,7 +346,14 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
      * Optional. Annotation.
      */
     public XSAnnotation getAnnotation() {
-        return fAnnotation;
+        return (XSAnnotation) fAnnotations.item(0);
+    }
+
+    /**
+     * Optional. Annotations.
+     */
+    public XSObjectList getAnnotations() {
+        return fAnnotations;
     }
     
 	/**

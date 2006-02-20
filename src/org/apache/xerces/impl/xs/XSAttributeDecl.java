@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2004 The Apache Software Foundation.
+ * Copyright 2001-2004,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,15 +49,15 @@ public class XSAttributeDecl implements XSAttributeDeclaration {
     short fScope = XSConstants.SCOPE_ABSENT;
     // enclosing complex type, when the scope is local
     XSComplexTypeDecl fEnclosingCT = null;
-    // optional annotation
-    XSAnnotationImpl fAnnotation = null;
+    // optional annotations
+    XSObjectList fAnnotations = null;    
     // value constraint value
     ValidatedInfo fDefault = null;
 
     public void setValues(String name, String targetNamespace,
             XSSimpleType simpleType, short constraintType, short scope,
             ValidatedInfo valInfo, XSComplexTypeDecl enclosingCT,
-            XSAnnotationImpl annotation) { 
+            XSObjectList annotations) {
         fName = name;
         fTargetNamespace = targetNamespace;
         fType = simpleType;
@@ -65,7 +65,7 @@ public class XSAttributeDecl implements XSAttributeDeclaration {
         fScope = scope;
         fDefault = valInfo;
         fEnclosingCT = enclosingCT;
-        fAnnotation = annotation;
+        fAnnotations = annotations;
     }
 
     public void reset(){
@@ -75,7 +75,7 @@ public class XSAttributeDecl implements XSAttributeDeclaration {
         fConstraintType = XSConstants.VC_NONE;
         fScope = XSConstants.SCOPE_ABSENT;
         fDefault = null;
-        fAnnotation = null;
+        fAnnotations = null;
     }
 
     /**
@@ -151,7 +151,14 @@ public class XSAttributeDecl implements XSAttributeDeclaration {
      * Optional. Annotation.
      */
     public XSAnnotation getAnnotation() {
-        return fAnnotation;
+        return (XSAnnotation) fAnnotations.item(0);
+    }
+
+    /**
+     * Optional. Annotations.
+     */
+    public XSObjectList getAnnotations() {
+        return fAnnotations;
     }
     
     public ValidatedInfo getValInfo() {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2004 The Apache Software Foundation.
+ * Copyright 2001-2004,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.apache.xerces.xs.XSAnnotation;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSNamespaceItem;
 import org.apache.xerces.xs.XSNotationDeclaration;
+import org.apache.xerces.xs.XSObjectList;
 
 /**
  * The XML representation for a NOTATION declaration
@@ -42,7 +43,7 @@ public class XSNotationDecl implements XSNotationDeclaration {
     public String fSystemId = null;
 
     // optional annotation
-    public XSAnnotationImpl fAnnotation = null;
+    public XSObjectList fAnnotations = null;   
 
     /**
      * Get the type of the object, i.e ELEMENT_DECLARATION.
@@ -87,7 +88,14 @@ public class XSNotationDecl implements XSNotationDeclaration {
      * Optional. Annotation.
      */
     public XSAnnotation getAnnotation() {
-        return fAnnotation;
+        return (XSAnnotation) fAnnotations.item(0);
+    }
+
+    /**
+     * Optional. Annotations.
+     */
+    public XSObjectList getAnnotations() {
+        return fAnnotations;
     }
 
 	/**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2005 The Apache Software Foundation.
+ * Copyright 2001-2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -3092,20 +3092,43 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 		final short kind;
 		final String value;
 		final boolean fixed;
-		final XSAnnotation annotation;
+        XSObjectList annotations = null;  
 		
 		public XSFacetImpl(short kind, String value, boolean fixed, XSAnnotation annotation) {
 			this.kind = kind;
 			this.value = value;
 			this.fixed = fixed;
-			this.annotation = annotation;
+
+		    if (annotation != null) {
+                this.annotations = new XSObjectListImpl();
+                ((XSObjectListImpl)this.annotations).add(annotation);
+            } else {
+                this.annotations =  XSObjectListImpl.EMPTY_LIST;
+            }
 		}
-		/* (non-Javadoc)
-		 * @see org.apache.xerces.xs.XSFacet#getAnnotation()
-		 */
-		public XSAnnotation getAnnotation() {
-			return annotation;
-		}
+		/*
+         * (non-Javadoc)
+         * 
+         * @see org.apache.xerces.xs.XSFacet#getAnnotation()
+         */
+        /**
+         * Optional. Annotation.
+         */
+        public XSAnnotation getAnnotation() {
+            return (XSAnnotation) annotations.item(0);
+        }
+
+        /*
+         * (non-Javadoc)
+         * 
+         * @see org.apache.xerces.xs.XSFacet#getAnnotations()
+         */
+        /**
+         * Optional. Annotations.
+         */
+        public XSObjectList getAnnotations() {
+            return annotations;
+        }
 		
 		/* (non-Javadoc)
 		 * @see org.apache.xerces.xs.XSFacet#getFacetKind()

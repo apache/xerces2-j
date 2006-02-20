@@ -1,5 +1,5 @@
 /*
- * Copyright 2003,2004 The Apache Software Foundation.
+ * Copyright 2003-2004,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,7 +96,12 @@ public interface XSAttributeDeclaration extends XSObject {
 
     /**
      * An annotation if it exists, otherwise <code>null</code>. 
+     * If not null then the first [annotation] from the sequence of annotations.
      */
     public XSAnnotation getAnnotation();
-
+    
+    /**
+     * A sequence of [annotations] or an empty  <code>XSObjectList</code>. 
+     */
+    public XSObjectList getAnnotations();    
 }

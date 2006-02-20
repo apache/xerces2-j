@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2004 The Apache Software Foundation.
+ * Copyright 2001-2004,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSAnnotation;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSNamespaceItem;
+import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSWildcard;
 import org.apache.xerces.impl.xs.util.StringListImpl;
 
@@ -48,7 +49,7 @@ public class XSWildcardDecl implements XSWildcard {
     public String[] fNamespaceList;
 
     // optional annotation
-    public XSAnnotationImpl fAnnotation = null;
+    public XSObjectList fAnnotations = null;  
 
     // I'm trying to implement the following constraint exactly as what the
     // spec describes. Sometimes it seems redundant, and sometimes there seems
@@ -573,9 +574,15 @@ public class XSWildcardDecl implements XSWildcard {
      * Optional. Annotation.
      */
     public XSAnnotation getAnnotation() {
-        return fAnnotation;
+        return (XSAnnotation) fAnnotations.item(0);
     }
 
+    /**
+     * Optional. Annotations.
+     */
+    public XSObjectList getAnnotations() {
+        return fAnnotations;
+    }
 
 	/**
 	 * @see org.apache.xerces.xs.XSObject#getNamespaceItem()

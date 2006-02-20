@@ -1,5 +1,5 @@
 /*
- * Copyright 2001,2002,2004,2005 The Apache Software Foundation.
+ * Copyright 2001-2002,2004-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSNamespaceItem;
+import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSParticle;
 import org.apache.xerces.xs.XSTerm;
 
@@ -54,6 +55,8 @@ public class XSParticleDecl implements XSParticle {
     public int fMinOccurs = 1;
     // maximum occurrence of this particle
     public int fMaxOccurs = 1;
+    // optional annotation
+    public XSObjectList fAnnotations = null;  
 
     // clone this decl
     public XSParticleDecl makeClone() {
@@ -63,6 +66,7 @@ public class XSParticleDecl implements XSParticle {
         particle.fMaxOccurs = fMaxOccurs;
         particle.fDescription = fDescription;
         particle.fValue = fValue;
+        particle.fAnnotations = fAnnotations;
         return particle;
     }
     
@@ -167,6 +171,7 @@ public class XSParticleDecl implements XSParticle {
         fMinOccurs = 1;
         fMaxOccurs = 1;
         fDescription = null;
+        fAnnotations = null;
     }
 
     /**
@@ -227,5 +232,12 @@ public class XSParticleDecl implements XSParticle {
 	public XSNamespaceItem getNamespaceItem() {
 		return null;
 	}
+
+    /**
+     * Optional. Annotations.
+     */
+    public XSObjectList getAnnotations() {
+        return fAnnotations;
+    }
 
 } // class XSParticle

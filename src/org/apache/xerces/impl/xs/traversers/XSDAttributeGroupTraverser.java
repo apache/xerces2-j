@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2004 The Apache Software Foundation.
+ * Copyright 2001-2004,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,11 @@ import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSAnnotationImpl;
 import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.QName;
+import org.apache.xerces.xs.XSObjectList;
 import org.w3c.dom.Element;
 
 /**
@@ -81,6 +83,11 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
             if (childName.equals(SchemaSymbols.ELT_ANNOTATION)) {
                 traverseAnnotationDecl(child, attrValues, false, schemaDoc);
                 child = DOMUtil.getNextSiblingElement(child);
+            } else {
+                String text = DOMUtil.getSyntheticAnnotation(child);
+                if (text != null) {
+                    traverseSyntheticAnnotation(child, text, attrValues, false, schemaDoc);
+                }
             }
             
             if (child != null) {
@@ -155,7 +162,15 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
             }
         }
         
-        attrGrp.fAnnotation = annotation;
+        XSObjectList annotations;
+        if (annotation != null) {
+            annotations = new XSObjectListImpl();
+            ((XSObjectListImpl)annotations).add (annotation);
+        } else {
+            annotations = XSObjectListImpl.EMPTY_LIST;
+        }
+        
+        attrGrp.fAnnotations = annotations;
         
         // make an entry in global declarations.
         grammar.addGlobalAttributeGroupDecl(attrGrp);

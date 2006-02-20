@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2004 The Apache Software Foundation.
+ * Copyright 2001-2004,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSNamedMap;
 import org.apache.xerces.xs.XSNamespaceItem;
+import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.impl.xs.util.XSNamedMapImpl;
 
@@ -61,7 +62,7 @@ public class XSElementDecl implements XSElementDeclaration {
     // final set (substitution group exclusions) of the element
     public short fFinal = XSConstants.DERIVATION_NONE;
     // optional annotation
-    public XSAnnotationImpl fAnnotation = null;
+    public XSObjectList fAnnotations = null;
     // value constraint value
     public ValidatedInfo fDefault = null;
     // the substitution group affiliation of the element
@@ -172,7 +173,7 @@ public class XSElementDecl implements XSElementDeclaration {
         fBlock = XSConstants.DERIVATION_NONE;
         fFinal = XSConstants.DERIVATION_NONE;
         fDefault = null;
-        fAnnotation = null;
+        fAnnotations = null;
         fSubGroup = null;
         // reset identity constraints
         for (int i=0;i<fIDCPos;i++) {
@@ -333,7 +334,14 @@ public class XSElementDecl implements XSElementDeclaration {
      * Optional. Annotation.
      */
     public XSAnnotation getAnnotation() {
-        return fAnnotation;
+        return (XSAnnotation)fAnnotations.item(0);
+    }
+
+    /**
+     * Optional. Annotations.
+     */
+    public XSObjectList getAnnotations() {
+        return fAnnotations;
     }
     
 

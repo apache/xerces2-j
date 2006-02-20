@@ -1,5 +1,5 @@
 /*
- * Copyright 2003,2004 The Apache Software Foundation.
+ * Copyright 2003-2004,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -231,8 +231,7 @@ public interface XSSimpleTypeDefinition extends XSTypeDefinition {
     public XSObjectList getMultiValueFacets();
 
     /**
-     *  [annotations]: a set of annotations for this simple type component if 
-     * it exists, otherwise an empty <code>XSObjectList</code>. 
+     * A sequence of [annotations] or an empty <code>XSObjectList</code>.
      */
     public XSObjectList getAnnotations();
 

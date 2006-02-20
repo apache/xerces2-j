@@ -313,28 +313,20 @@ abstract class XSDAbstractTraverser {
                     enumNSDecls.addElement(nsDecls);
                 Element child = DOMUtil.getFirstChildElement( content );
                 
-                if (child != null) {
+                if (child != null &&
+                    DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
                     // traverse annotation if any
-                    
-                    if (DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                        enumAnnotations.add(enumAnnotations.getLength()-1,traverseAnnotationDecl(child, attrs, false, schemaDoc));
-                        child = DOMUtil.getNextSiblingElement(child);
-                    }
-                    else {
-                        String text = DOMUtil.getSyntheticAnnotation(content);
-                        if (text != null) {
-                            enumAnnotations.add(enumAnnotations.getLength()-1, traverseSyntheticAnnotation(content, text, attrs, false, schemaDoc));
-                        }
-                    }
-                    if (child !=null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                        reportSchemaError("s4s-elt-must-match.1", new Object[]{"enumeration", "(annotation?)", DOMUtil.getLocalName(child)}, child);
-                    }
+                    enumAnnotations.add(enumAnnotations.getLength()-1,traverseAnnotationDecl(child, attrs, false, schemaDoc));
+                    child = DOMUtil.getNextSiblingElement(child);
                 }
                 else {
                     String text = DOMUtil.getSyntheticAnnotation(content);
                     if (text != null) {
-                        enumAnnotations.add(enumAnnotations.getLength() - 1, traverseSyntheticAnnotation(content, text, attrs, false, schemaDoc));
+                        enumAnnotations.add(enumAnnotations.getLength()-1, traverseSyntheticAnnotation(content, text, attrs, false, schemaDoc));
                     }
+                }
+                if (child !=null) {
+                    reportSchemaError("s4s-elt-must-match.1", new Object[]{"enumeration", "(annotation?)", DOMUtil.getLocalName(child)}, child);
                 }
             }
             else if (facet.equals(SchemaSymbols.ELT_PATTERN)) {
@@ -349,20 +341,27 @@ abstract class XSDAbstractTraverser {
                     fPattern.append((String)attrs[XSAttributeChecker.ATTIDX_VALUE]);
                 }
                 Element child = DOMUtil.getFirstChildElement( content );
-                if (child != null) {
+                if (child != null &&
+                        DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
                     // traverse annotation if any
-                    if (DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                    if (patternAnnotations == null){
+                        patternAnnotations = new XSObjectListImpl();
+                    }
+                    patternAnnotations.add(traverseAnnotationDecl(child, attrs, false, schemaDoc));
+                    child = DOMUtil.getNextSiblingElement(child);
+                }
+                else {
+                    String text = DOMUtil.getSyntheticAnnotation(content);
+                    if (text != null) {
                         if (patternAnnotations == null){
                             patternAnnotations = new XSObjectListImpl();
                         }
-                        patternAnnotations.add(traverseAnnotationDecl(child, attrs, false, schemaDoc));
-                        child = DOMUtil.getNextSiblingElement(child);
-                    }
-                    if (child !=null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                        reportSchemaError("s4s-elt-must-match.1", new Object[]{"pattern", "(annotation?)", DOMUtil.getLocalName(child)}, child);
+                        patternAnnotations.add(traverseSyntheticAnnotation(content, text, attrs, false, schemaDoc));
                     }
                 }
-                
+                if (child !=null) {
+                    reportSchemaError("s4s-elt-must-match.1", new Object[]{"pattern", "(annotation?)", DOMUtil.getLocalName(child)}, child);
+                }
             }
             else {
                 if (facet.equals(SchemaSymbols.ELT_MINLENGTH)) {
@@ -445,87 +444,53 @@ abstract class XSDAbstractTraverser {
                 }
                 
                 Element child = DOMUtil.getFirstChildElement( content );
-                if (child != null) {
+                XSAnnotationImpl annotation = null;
+                if (child != null &&
+                    DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
                     // traverse annotation if any
-                    if (DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                        XSAnnotationImpl annotation = traverseAnnotationDecl(child, attrs, false, schemaDoc);
-                        switch (currentFacet) {
-                        case XSSimpleType.FACET_MINLENGTH:
-                            xsFacets.minLengthAnnotation = annotation;
-                        break;
-                        case XSSimpleType.FACET_MAXLENGTH:
-                            xsFacets.maxLengthAnnotation = annotation;
-                        break;
-                        case XSSimpleType.FACET_MAXEXCLUSIVE:
-                            xsFacets.maxExclusiveAnnotation = annotation;
-                        break;
-                        case XSSimpleType.FACET_MAXINCLUSIVE:
-                            xsFacets.maxInclusiveAnnotation = annotation;
-                        break;
-                        case XSSimpleType.FACET_MINEXCLUSIVE:
-                            xsFacets.minExclusiveAnnotation = annotation;
-                        break;
-                        case XSSimpleType.FACET_MININCLUSIVE:
-                            xsFacets.minInclusiveAnnotation = annotation;
-                        break;
-                        case XSSimpleType.FACET_TOTALDIGITS:
-                            xsFacets.totalDigitsAnnotation = annotation;
-                        break;
-                        case XSSimpleType.FACET_FRACTIONDIGITS:
-                            xsFacets.fractionDigitsAnnotation = annotation;
-                        break;
-                        case XSSimpleType.FACET_WHITESPACE:
-                            xsFacets.whiteSpaceAnnotation = annotation;
-                        break;
-                        case XSSimpleType.FACET_LENGTH:
-                            xsFacets.lengthAnnotation = annotation;
-                        break;
-                        }
-                        
-                        
-                        child = DOMUtil.getNextSiblingElement(child);
+                    annotation = traverseAnnotationDecl(child, attrs, false, schemaDoc);
+                    child = DOMUtil.getNextSiblingElement(child);
+                }
+                else {
+                    String text = DOMUtil.getSyntheticAnnotation(content);
+                    if (text != null) {
+                        annotation = traverseSyntheticAnnotation(content, text, attrs, false, schemaDoc);
                     }
-                    else {
-                        String text = DOMUtil.getSyntheticAnnotation(content);
-                        if (text != null) {
-                            XSAnnotationImpl annotation = traverseSyntheticAnnotation(content, text, attrs, false, schemaDoc);
-                            switch (currentFacet) {
-                                case XSSimpleType.FACET_MINLENGTH:
-                                    xsFacets.minLengthAnnotation = annotation;
-                                    break;
-                                case XSSimpleType.FACET_MAXLENGTH:
-                                    xsFacets.maxLengthAnnotation = annotation;
-                                    break;
-                                case XSSimpleType.FACET_MAXEXCLUSIVE:
-                                    xsFacets.maxExclusiveAnnotation = annotation;
-                                    break;
-                                case XSSimpleType.FACET_MAXINCLUSIVE:
-                                    xsFacets.maxInclusiveAnnotation = annotation;
-                                    break;
-                                case XSSimpleType.FACET_MINEXCLUSIVE:
-                                    xsFacets.minExclusiveAnnotation = annotation;
-                                    break;
-                                case XSSimpleType.FACET_MININCLUSIVE:
-                                    xsFacets.minInclusiveAnnotation = annotation;
-                                    break;
-                                case XSSimpleType.FACET_TOTALDIGITS:
-                                    xsFacets.totalDigitsAnnotation = annotation;
-                                    break;
-                                case XSSimpleType.FACET_FRACTIONDIGITS:
-                                    xsFacets.fractionDigitsAnnotation = annotation;
-                                    break;
-                                case XSSimpleType.FACET_WHITESPACE:
-                                    xsFacets.whiteSpaceAnnotation = annotation;
-                                    break;
-                                case XSSimpleType.FACET_LENGTH:
-                                    xsFacets.lengthAnnotation = annotation;
-                                    break;
-                            }
-                        }
-                    }
-                    if (child != null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                        reportSchemaError("s4s-elt-must-match.1", new Object[]{facet, "(annotation?)", DOMUtil.getLocalName(child)}, child);
-                    }
+               }
+                switch (currentFacet) {
+                case XSSimpleType.FACET_MINLENGTH:
+                    xsFacets.minLengthAnnotation = annotation;
+                break;
+                case XSSimpleType.FACET_MAXLENGTH:
+                    xsFacets.maxLengthAnnotation = annotation;
+                break;
+                case XSSimpleType.FACET_MAXEXCLUSIVE:
+                    xsFacets.maxExclusiveAnnotation = annotation;
+                break;
+                case XSSimpleType.FACET_MAXINCLUSIVE:
+                    xsFacets.maxInclusiveAnnotation = annotation;
+                break;
+                case XSSimpleType.FACET_MINEXCLUSIVE:
+                    xsFacets.minExclusiveAnnotation = annotation;
+                break;
+                case XSSimpleType.FACET_MININCLUSIVE:
+                    xsFacets.minInclusiveAnnotation = annotation;
+                break;
+                case XSSimpleType.FACET_TOTALDIGITS:
+                    xsFacets.totalDigitsAnnotation = annotation;
+                break;
+                case XSSimpleType.FACET_FRACTIONDIGITS:
+                    xsFacets.fractionDigitsAnnotation = annotation;
+                break;
+                case XSSimpleType.FACET_WHITESPACE:
+                    xsFacets.whiteSpaceAnnotation = annotation;
+                break;
+                case XSSimpleType.FACET_LENGTH:
+                    xsFacets.lengthAnnotation = annotation;
+                break;
+                }
+                if (child != null) {
+                    reportSchemaError("s4s-elt-must-match.1", new Object[]{facet, "(annotation?)", DOMUtil.getLocalName(child)}, child);
                 }
             }
             fAttrChecker.returnAttrArray (attrs, schemaDoc);

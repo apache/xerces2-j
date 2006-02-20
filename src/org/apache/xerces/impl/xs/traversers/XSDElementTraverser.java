@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2005 The Apache Software Foundation.
+ * Copyright 2001-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,10 @@ import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSObject;
+import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.impl.xs.util.XInt;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.QName;
@@ -155,15 +157,20 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         XInt  maxAtt = (XInt)  attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];
         
         XSElementDecl element = null;
+        XSAnnotationImpl annotation = null;
         if (elmDecl.getAttributeNode(SchemaSymbols.ATT_REF) != null) {
             if (refAtt != null) {
                 element = (XSElementDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.ELEMENT_TYPE, refAtt, elmDecl);
                 
                 Element child = DOMUtil.getFirstChildElement(elmDecl);
                 if (child != null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                    // REVISIT:  put this somewhere
-                    traverseAnnotationDecl(child, attrValues, false, schemaDoc);
+                    annotation = traverseAnnotationDecl(child, attrValues, false, schemaDoc);
                     child = DOMUtil.getNextSiblingElement(child);
+                } else {
+                    String text = DOMUtil.getSyntheticAnnotation(child);
+                    if (text != null) {
+                        annotation = traverseSyntheticAnnotation(child, text, attrValues, false, schemaDoc);
+                    }
                 }
                 // Element Declaration Representation OK
                 // 2 If the item's parent is not <schema>, then all of the following must be true:
@@ -187,6 +194,19 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         }
         else {
             particle.fType = XSParticleDecl.PARTICLE_EMPTY;
+        }
+        if (refAtt != null) {
+            XSObjectList annotations;
+            if (annotation != null) {
+                annotations = new XSObjectListImpl();
+                ((XSObjectListImpl) annotations).add(annotation);
+            } else {
+                annotations = XSObjectListImpl.EMPTY_LIST;
+            }
+            particle.fAnnotations = annotations;
+        } else {
+            particle.fAnnotations = ((element != null) ? element.fAnnotations
+                    : XSObjectListImpl.EMPTY_LIST);
         }
         Long defaultVals = (Long)attrValues[XSAttributeChecker.ATTIDX_FROMDEFAULT];
         checkOccurrences(particle, SchemaSymbols.ELT_ELEMENT,
@@ -321,7 +341,15 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                 annotation = traverseSyntheticAnnotation(elmDecl, text, attrValues, false, schemaDoc);
             }
         }
-        element.fAnnotation = annotation;
+        
+        XSObjectList annotations;
+        if (annotation != null) {
+            annotations = new XSObjectListImpl();
+            ((XSObjectListImpl)annotations).add (annotation);
+        } else {
+            annotations = XSObjectListImpl.EMPTY_LIST;
+        }
+        element.fAnnotations = annotations;
         
         // get 'type definition'
         XSTypeDefinition elementType = null;

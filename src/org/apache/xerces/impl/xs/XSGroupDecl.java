@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2004 The Apache Software Foundation.
+ * Copyright 1999-2004,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,8 +35,8 @@ public class XSGroupDecl implements XSModelGroupDefinition {
     public String fTargetNamespace = null;
     // model group of the group
     public XSModelGroupImpl fModelGroup = null;
-    // optional annotation 
-    public XSAnnotationImpl fAnnotation = null;
+    // optional annotations
+    public XSObjectList fAnnotations = null;
 
     /**
      * Get the type of the object, i.e ELEMENT_DECLARATION.
@@ -73,7 +73,14 @@ public class XSGroupDecl implements XSModelGroupDefinition {
      * Optional. Annotation.
      */
     public XSAnnotation getAnnotation() {
-        return fAnnotation;
+        return (XSAnnotation)fAnnotations.item(0);
+    }
+
+    /**
+     * Optional. Annotations.
+     */
+    public XSObjectList getAnnotations() {
+        return fAnnotations;
     }
     
 	/**

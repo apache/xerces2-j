@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004 The Apache Software Foundation.
+ * Copyright 1999-2002,2004,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.apache.xerces.xs.XSAttributeDeclaration;
 import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSNamespaceItem;
+import org.apache.xerces.xs.XSObjectList;
 
 /**
  * The XML representation for an attribute use
@@ -43,11 +44,15 @@ public class XSAttributeUseImpl implements XSAttributeUse {
     // value constraint value
     public ValidatedInfo fDefault = null;
 
+    // optional annotation
+    public XSObjectList fAnnotations = null;
+    
     public void reset(){
         fDefault = null;
         fAttrDecl = null;
         fUse = SchemaSymbols.USE_OPTIONAL;
         fConstraintType = XSConstants.VC_NONE;
+        fAnnotations = null;
     }
 
     /**
@@ -106,8 +111,7 @@ public class XSAttributeUseImpl implements XSAttributeUse {
         // REVISIT: SCAPI: what's the proper representation
         return getConstraintType() == XSConstants.VC_NONE ?
                null :
-               ((fDefault != null && fDefault.actualValue != null) ?
-                       fDefault.actualValue.toString() : null);
+               fDefault.actualValue.toString();
     }
 
     /**
@@ -135,4 +139,11 @@ public class XSAttributeUseImpl implements XSAttributeUse {
                fDefault.itemValueTypes;
     }
 
+    /**
+     * Optional. Annotations.
+     */
+    public XSObjectList getAnnotations() {
+        return fAnnotations;
+    }
+    
 } // class XSAttributeUseImpl

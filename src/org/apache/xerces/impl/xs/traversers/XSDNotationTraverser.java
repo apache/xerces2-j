@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2004 The Apache Software Foundation.
+ * Copyright 2001-2004,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,9 @@ import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSAnnotationImpl;
 import org.apache.xerces.impl.xs.XSNotationDecl;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.DOMUtil;
+import org.apache.xerces.xs.XSObjectList;
 import org.w3c.dom.Element;
 
 /**
@@ -88,7 +90,14 @@ class  XSDNotationTraverser extends XSDAbstractTraverser {
                 annotation = traverseSyntheticAnnotation(elmNode, text, attrValues, false, schemaDoc);
             }
         }
-        notation.fAnnotation = annotation;
+        XSObjectList annotations;
+        if (annotation != null) {
+            annotations = new XSObjectListImpl();
+            ((XSObjectListImpl) annotations).add(annotation);
+        } else {
+            annotations = XSObjectListImpl.EMPTY_LIST;
+        }
+        notation.fAnnotations = annotations;
         if (content!=null){
             Object[] args = new Object [] {SchemaSymbols.ELT_NOTATION, "(annotation?)", DOMUtil.getLocalName(content)};
             reportSchemaError("s4s-elt-must-match.1", args, content);
