@@ -17,6 +17,7 @@
 package org.apache.xerces.util;
 
 import java.util.Enumeration;
+import java.util.List;
 
 import javax.xml.XMLConstants;
 
@@ -29,10 +30,11 @@ import org.apache.xerces.xni.NamespaceContext;
  * 
  * @version $Id$
  */
-public class JAXPNamespaceContextWrapper implements NamespaceContext {
+public final class JAXPNamespaceContextWrapper implements NamespaceContext {
     
     private javax.xml.namespace.NamespaceContext fNamespaceContext;
     private SymbolTable fSymbolTable;
+    private List fPrefixes;
 
     public JAXPNamespaceContextWrapper(SymbolTable symbolTable) {
         setSymbolTable(symbolTable);
@@ -52,6 +54,14 @@ public class JAXPNamespaceContextWrapper implements NamespaceContext {
     
     public SymbolTable getSymbolTable() {
         return fSymbolTable;
+    }
+    
+    public void setDeclaredPrefixes(List prefixes) {
+        fPrefixes = prefixes;
+    }
+    
+    public List getDeclaredPrefixes() {
+        return fPrefixes;
     }
     
     /*
@@ -104,11 +114,11 @@ public class JAXPNamespaceContextWrapper implements NamespaceContext {
     }
 
     public int getDeclaredPrefixCount() {
-        return 0;
+        return (fPrefixes != null) ? fPrefixes.size() : 0;
     }
 
     public String getDeclaredPrefixAt(int index) {
-        return null;
+        return (String) fPrefixes.get(index);
     }
 
     public void reset() {}
