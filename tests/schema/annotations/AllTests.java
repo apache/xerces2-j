@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package schema.annotations;
 
 import junit.framework.Test;
@@ -21,7 +22,8 @@ import junit.framework.TestSuite;
 /**
  * All XSModel Tests
  * 
- * @version $Id: $
+ * @author Neil Delima, IBM
+ * @version $Id$
  */
 public class AllTests {
 

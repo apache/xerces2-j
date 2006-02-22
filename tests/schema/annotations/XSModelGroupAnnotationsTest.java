@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package schema.annotations;
 
 import org.apache.xerces.xs.XSAnnotation;
@@ -31,7 +32,8 @@ import org.w3c.dom.bootstrap.DOMImplementationRegistry;
  * Tests methods getAnnotation and getAnnotations on XSModelGroup XSModel
  * components.
  * 
- * @version $Id: $
+ * @author Neil Delima, IBM
+ * @version $Id$
  */
 public class XSModelGroupAnnotationsTest extends TestCase {
 

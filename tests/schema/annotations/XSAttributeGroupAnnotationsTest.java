@@ -28,7 +28,8 @@ import org.w3c.dom.bootstrap.DOMImplementationRegistry;
  * Tests methods getAnnotation and getAnnotations of XSAttributeGroupDefinition
  * XSModel components
  * 
- * @version $Id: $
+ * @author Neil Delima, IBM
+ * @version $Id$
  */
 public class XSAttributeGroupAnnotationsTest extends TestCase {
 
