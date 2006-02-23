@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004 The Apache Software Foundation.
+ * Copyright 1999-2002,2004,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -226,8 +226,8 @@ public class ElementImpl
      * NON-DOM
      * set the ownerDocument of this node, its children, and its attributes
      */
-    void setOwnerDocument(CoreDocumentImpl doc) {
-	super.setOwnerDocument(doc);
+    protected void setOwnerDocument(CoreDocumentImpl doc) {
+        super.setOwnerDocument(doc);
         if (attributes != null) {
             attributes.setOwnerDocument(doc);
         }

@@ -1,5 +1,5 @@
  /*
- * Copyright 1999-2002,2004 The Apache Software Foundation.
+ * Copyright 1999-2002,2004,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -322,13 +322,13 @@ public abstract class NodeImpl
      * NON-DOM
      * set the ownerDocument of this node
      */
-    void setOwnerDocument(CoreDocumentImpl doc) {
+    protected void setOwnerDocument(CoreDocumentImpl doc) {
         if (needsSyncData()) {
             synchronizeData();
         }
         // if we have an owner we rely on it to have it right
         // otherwise ownerNode is our ownerDocument
-	if (!isOwned()) {
+        if (!isOwned()) {
             ownerNode = doc;
         }
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 1999,2000,2004,2005 The Apache Software Foundation.
+ * Copyright 1999,2000,2004-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ public class HTMLElementImpl
      * @param owner The owner HTML document
      * @param tagName The element's tag name
      */
-    HTMLElementImpl( HTMLDocumentImpl owner, String tagName )
+    public HTMLElementImpl( HTMLDocumentImpl owner, String tagName )
     {
         super( owner, tagName.toUpperCase(Locale.ENGLISH) );
     }

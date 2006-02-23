@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004,2005 The Apache Software Foundation.
+ * Copyright 1999-2002,2004-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -171,16 +171,16 @@ public abstract class ParentNode
      * NON-DOM
      * set the ownerDocument of this node and its children
      */
-    void setOwnerDocument(CoreDocumentImpl doc) {
+    protected void setOwnerDocument(CoreDocumentImpl doc) {
         if (needsSyncChildren()) {
             synchronizeChildren();
         }
         super.setOwnerDocument(doc);
         ownerDocument = doc;
-	for (ChildNode child = firstChild;
-	     child != null; child = child.nextSibling) {
-	    child.setOwnerDocument(doc);
-	}
+        for (ChildNode child = firstChild;
+        child != null; child = child.nextSibling) {
+            child.setOwnerDocument(doc);
+        }
     }
 
     /**
