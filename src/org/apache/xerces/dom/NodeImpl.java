@@ -973,9 +973,7 @@ public abstract class NodeImpl
           return 0; 
 
         // check if other is from a different implementation
-        try {
-            NodeImpl node = (NodeImpl) other;
-        } catch (ClassCastException e) {
+        if (other != null && !(other instanceof NodeImpl)) {
             // other comes from a different implementation
             String msg = DOMMessageFormatter.formatMessage(
                DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
@@ -1472,8 +1470,7 @@ public abstract class NodeImpl
 
         switch (type) {
         case Node.ELEMENT_NODE: {
-
-                String namespace = this.getNamespaceURI(); // to flip out children 
+                this.getNamespaceURI(); // to flip out children 
                 return lookupNamespacePrefix(namespaceURI, (ElementImpl)this);
             }
         case Node.DOCUMENT_NODE:{

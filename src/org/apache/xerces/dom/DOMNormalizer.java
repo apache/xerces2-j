@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004,2005 The Apache Software Foundation.
+ * Copyright 1999-2002,2004-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -360,7 +360,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
                             //removeDefault(attr, attributes);
                             attr.normalize();
                             if (fDocument.errorChecking && ((fConfiguration.features & DOMConfigurationImpl.WELLFORMED) != 0)){
-                                    isAttrValueWF(fErrorHandler, fError, fLocator, attributes, (AttrImpl)attr, attr.getValue(), fDocument.isXML11Version());
+                                    isAttrValueWF(fErrorHandler, fError, fLocator, attributes, attr, attr.getValue(), fDocument.isXML11Version());
                                 if (fDocument.isXMLVersionChanged()){                                   
                                     wellformed=CoreDocumentImpl.isXMLName(node.getNodeName() , fDocument.isXML11Version());
                                     if (!wellformed){
@@ -672,7 +672,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
         String baseSystemId = fDocument.getDocumentURI();
         String internalSubset = null;
         
-        DocumentType docType = (DocumentType) fDocument.getDoctype();
+        DocumentType docType = fDocument.getDoctype();
         if (docType != null) {
             rootName = docType.getName();
             publicId = docType.getPublicId();
@@ -739,7 +739,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
         //
         // ------------------------------------
 
-        String value, name, uri, prefix;
+        String value, uri, prefix;
         if (attributes != null) {
 
             // Record all valid local declarations
@@ -881,8 +881,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
                 }
                 // normalize attribute value
                 attr.normalize();                
-                value = attr.getValue();
-                name = attr.getNodeName();                
+                value = attr.getValue();           
                 uri = attr.getNamespaceURI();
 
                 // make sure that value is never null.
@@ -908,7 +907,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
                     // check if value of the attribute is namespace well-formed
                     //---------------------------------------
                     if (fDocument.errorChecking && ((fConfiguration.features & DOMConfigurationImpl.WELLFORMED) != 0)) {
-                            isAttrValueWF(fErrorHandler, fError, fLocator, attributes, (AttrImpl)attr, attr.getValue(), fDocument.isXML11Version());
+                            isAttrValueWF(fErrorHandler, fError, fLocator, attributes, attr, attr.getValue(), fDocument.isXML11Version());
                             if (fDocument.isXMLVersionChanged()){                                   
                                 boolean wellformed=CoreDocumentImpl.isXMLName(attr.getNodeName() , fDocument.isXML11Version());
                                 if (!wellformed){
@@ -950,7 +949,6 @@ public class DOMNormalizer implements XMLDocumentHandler {
                         // conflict: attribute has a prefix that conficlicts with a binding
                         //           already active in scope
 
-                        name  = attr.getNodeName();
                         // Find if any prefix for attributes namespace URI is available
                         // in the scope
                         String declaredPrefix = fNamespaceContext.getPrefix(uri);

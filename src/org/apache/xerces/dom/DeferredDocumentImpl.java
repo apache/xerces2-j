@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004,2005 The Apache Software Foundation.
+ * Copyright 1999-2002,2004-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -426,8 +426,6 @@ public class DeferredDocumentImpl
 		// get element's last attribute
 		int lastAttrNodeIndex = getChunkIndex(fNodeExtra, elementChunk, elementIndex);
 		if (lastAttrNodeIndex != 0) {
-			int lastAttrChunk = lastAttrNodeIndex >> CHUNK_SHIFT;
-			int lastAttrIndex = lastAttrNodeIndex & CHUNK_MASK;
 			// add link from new attribute to last attribute
 			setChunkIndex(fNodePrevSib, lastAttrNodeIndex, attrChunk, attrIndex);
 		}

@@ -288,7 +288,7 @@ public class DocumentTypeImpl
                 Node entNode2 =
                     argEntities.getNamedItem(entNode1.getNodeName());
 
-                if (!((NodeImpl) entNode1).isEqualNode((NodeImpl) entNode2))
+                if (!((NodeImpl) entNode1).isEqualNode(entNode2))
                     return false;
             }
         }
@@ -308,7 +308,7 @@ public class DocumentTypeImpl
                 Node noteNode2 =
                     argNotations.getNamedItem(noteNode1.getNodeName());
 
-                if (!((NodeImpl) noteNode1).isEqualNode((NodeImpl) noteNode2))
+                if (!((NodeImpl) noteNode1).isEqualNode(noteNode2))
                     return false;
             }
         }
