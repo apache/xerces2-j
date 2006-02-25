@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--
- * Copyright 1999-2005 The Apache Software Foundation.
+ * Copyright 1999-2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -123,6 +123,19 @@ catch (SAXException e) {
     http://apache.org/xml/properties/schema/external-schemaLocation 
     property.
    </note>
+  </property>
+  <property name='http://apache.org/xml/properties/validation/schema/root-type-definition'
+            id='validation.schema.root-type-definition'>
+   <desc>
+    A QName object representing the top-level type definition used when 
+    validating the root element of a document or document fragment (also
+    known as the validation root). If the value of this property is non-null, 
+    the validation root will not be validated against any element declaration. 
+    If the type definition cannot be found an error will be reported.
+   </desc>
+   <type>javax.xml.namespace.QName</type>
+   <access general='read-write'/>
+   <since value='&ParserName; 2.8.0'/>
   </property>
   <property name='http://apache.org/xml/properties/input-buffer-size'
             id='input-buffer-size'>
