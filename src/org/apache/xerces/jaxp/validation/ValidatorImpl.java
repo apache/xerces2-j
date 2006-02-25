@@ -1,5 +1,5 @@
 /*
- * Copyright 2005 The Apache Software Foundation.
+ * Copyright 2005,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Validator;
 
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.SAXMessageFormatter;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xs.AttributePSVI;
@@ -46,6 +47,12 @@ import org.xml.sax.SAXNotSupportedException;
  * @version $Id$
  */
 final class ValidatorImpl extends Validator implements PSVIProvider {
+    
+    // property identifiers
+    
+    /** Property identifier: Current element node. */
+    private static final String CURRENT_ELEMENT_NODE =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.CURRENT_ELEMENT_NODE_PROPERTY;
     
     //
     // Data
@@ -173,6 +180,10 @@ final class ValidatorImpl extends Validator implements PSVIProvider {
         if (name == null) {
             throw new NullPointerException();
         }
+        if (CURRENT_ELEMENT_NODE.equals(name)) {
+            return (fDOMValidatorHelper != null) ? 
+                    fDOMValidatorHelper.getCurrentElement() : null;
+        }
         try {
             return fComponentManager.getProperty(name);
         }
@@ -190,6 +201,11 @@ final class ValidatorImpl extends Validator implements PSVIProvider {
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (name == null) {
             throw new NullPointerException();
+        }
+        if (CURRENT_ELEMENT_NODE.equals(name)) {
+            throw new SAXNotSupportedException(
+                    SAXMessageFormatter.formatMessage(Locale.getDefault(), 
+                    "property-read-only", new Object [] {name}));
         }
         try {
             fComponentManager.setProperty(name, object);
