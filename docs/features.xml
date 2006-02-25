@@ -215,6 +215,17 @@ catch (SAXException e) {
    <see idref='validation.schema'/> 
   </feature>
   
+  <feature name='http://apache.org/xml/features/validation/schema/ignore-xsi-type-until-elemdecl'
+           id='validation.schema.ignore-xsi-type-until-elemdecl'>
+   <true>xsi:type attributes will be ignored until a global element declaration has been found, at which point xsi:type attributes will be processed on the element for which the global element declaration was found as well as its descendants.</true>
+   <false>Do not ignore xsi:type attributes.</false>
+   <default value='false'/>
+   <access parsing='read-only' not-parsing='read-write'/>
+   <since value='&ParserName; 2.8.0'/>
+   <see idref='validation'/>
+   <see idref='validation.schema'/>
+  </feature>
+  
   <feature name='http://apache.org/xml/features/generate-synthetic-annotations'
            id='generate-synthetic-annotations'>
    <true>Enable generation of synthetic annotations. A synthetic annotation will be generated when a schema component has non-schema attributes but no child annotation.</true>
@@ -278,7 +289,7 @@ catch (SAXException e) {
    </false>
    <default value='false'/>
    <access parsing='read-only' not-parsing='read-write'/>
-   <since value='Xerces-J 2.8.0'/>
+   <since value='&ParserName; 2.8.0'/>
    <note>
     Enabling this feature may cost your application some performance when DTDs are 
     processed so it is recommended that it only be turned on when necessary.
@@ -293,7 +304,7 @@ catch (SAXException e) {
    </false>
    <default value='true'/>
    <access parsing='read-only' not-parsing='read-write'/>
-   <since value='Xerces-J 2.8.0'/>
+   <since value='&ParserName; 2.8.0'/>
    <note>This feature only applies to schema validation.</note>
    <see idref='validation'/>
    <see idref='validation.schema'/>
@@ -304,7 +315,7 @@ catch (SAXException e) {
    <false>Disable identity constraint checking.</false>
    <default value='true'/>
    <access parsing='read-only' not-parsing='read-write'/>
-   <since value='Xerces-J 2.8.0'/>
+   <since value='&ParserName; 2.8.0'/>
    <see idref='validation'/>
    <see idref='validation.schema'/>
   </feature>
@@ -314,7 +325,7 @@ catch (SAXException e) {
    <false>Do not check that each value of type ENTITY matches the name of an unparsed entity declared in the DTD.</false>
    <default value='true'/>
    <access parsing='read-only' not-parsing='read-write'/>
-   <since value='Xerces-J 2.8.0'/>
+   <since value='&ParserName; 2.8.0'/>
    <note>This feature only applies to schema validation.</note>
    <see idref='validation'/>
    <see idref='validation.schema'/>
