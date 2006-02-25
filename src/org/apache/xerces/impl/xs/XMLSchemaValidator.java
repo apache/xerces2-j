@@ -1406,6 +1406,13 @@ public class XMLSchemaValidator
         fValidationManager.addValidationState(fValidationState);
         fValidationState.setSymbolTable(fSymbolTable);
         
+        try {
+            fRootTypeQName = (javax.xml.namespace.QName)componentManager.getProperty(ROOT_TYPE_DEF);
+        } 
+        catch (XMLConfigurationException e) {
+            fRootTypeQName = null;
+        }
+        
         boolean ignoreXSIType;
         try {
             ignoreXSIType = componentManager.getFeature(IGNORE_XSI_TYPE);
