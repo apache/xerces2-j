@@ -16,12 +16,17 @@
 
 package schema.config;
 
+import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.validation.SchemaFactory;
 
 import junit.framework.Assert;
 
 import org.apache.xerces.dom.PSVIElementNSImpl;
 import org.apache.xerces.impl.xs.SchemaSymbols;
+import org.apache.xerces.xs.ElementPSVI;
 import org.apache.xerces.xs.ItemPSVI;
 import org.xml.sax.SAXException;
 
@@ -74,6 +79,27 @@ public class RootTypeDefinitionTest extends BaseTest {
         }
         
         checkDefault();
+    }
+    
+    public void testUsingDocumentBuilderFactory() throws Exception {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setAttribute(ROOT_TYPE, typeX);
+        dbf.setAttribute(DOCUMENT_CLASS_NAME,"org.apache.xerces.dom.PSVIDocumentImpl");
+        dbf.setNamespaceAware(true);
+        dbf.setValidating(false);
+
+        SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        dbf.setSchema(sf.newSchema(fSchemaURL));
+
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        fDocument = db.parse(fDocumentURL.toExternalForm());
+        fRootNode = (ElementPSVI) fDocument.getDocumentElement();
+        
+        assertValidity(ItemPSVI.VALIDITY_VALID, fRootNode.getValidity());
+        assertValidationAttempted(ItemPSVI.VALIDATION_FULL, fRootNode
+                .getValidationAttempted());
+        assertElementNull(fRootNode.getElementDeclaration());
+        assertTypeName("X", fRootNode.getTypeDefinition().getName());
     }
     
     public void testSettingNull() {

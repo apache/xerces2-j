@@ -77,6 +77,7 @@ public abstract class BaseTest extends TestCase {
     protected Document fDocument;
     protected ElementPSVI fRootNode;
     protected URL fDocumentURL;
+    protected URL fSchemaURL;
     
     protected abstract String getSchemaFile();
     
@@ -110,11 +111,11 @@ public abstract class BaseTest extends TestCase {
         .newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
         sf.setFeature(USE_GRAMMAR_POOL_ONLY, getUseGrammarPoolOnly());
         String schemaPath = packageDir + "/" + getSchemaFile();
-        URL schemaURL = ClassLoader.getSystemResource(schemaPath);
-        if (schemaURL == null) {
+        fSchemaURL = ClassLoader.getSystemResource(schemaPath);
+        if (fSchemaURL == null) {
             throw new FileNotFoundException("Couldn't find schema file for test: " + schemaPath);
         }
-        Schema schema = sf.newSchema(schemaURL);
+        Schema schema = sf.newSchema(fSchemaURL);
         fValidator = schema.newValidator();
         fValidator.setErrorHandler(fErrorHandler);
         fValidator.setFeature(DYNAMIC_VALIDATION, false);
