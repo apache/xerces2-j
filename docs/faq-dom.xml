@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--
- * Copyright 2002-2005 The Apache Software Foundation.
+ * Copyright 2002-2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -269,7 +269,7 @@ The PSVI information will not be added or modified as you modify the tree in mem
   			DOM revalidation is supported via W3C DOM Level 3 Core
   			<em>Document.normalizeDocument()</em>.
   		</p>
-  		<note>This release only supports revalidation against XML Schemas. Revalidation against DTDs or any other schema type is not implemented.</note>
+  		<note>This release only supports revalidation against XML Schemas and DTDs. Revalidation against other schema types is not implemented.</note>
 
   		<p>To revalidate the document you need:</p>
   		<ul>
@@ -320,6 +320,7 @@ import org.w3c.dom.ls.LSParser;
 Document document = builder.parseURI("data/personal-schema.xml");
 DOMConfiguration config = document.getDomConfig();
 config.setParameter("error-handler",new MyErrorHandler());
+config.setParameter("schema-type", "http://www.w3.org/2001/XMLSchema");
 config.setParameter("validate", Boolean.TRUE);
 document.normalizeDocument();</source>
 
