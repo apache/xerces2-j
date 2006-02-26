@@ -35,7 +35,7 @@ import org.xml.sax.SAXNotSupportedException;
 
 /**
  * @author Peter McCracken, IBM
- * @version $Id: $
+ * @version $Id$
  */
 public class FeaturePropagationTest extends TestCase {
     
