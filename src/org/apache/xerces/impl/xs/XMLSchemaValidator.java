@@ -2229,7 +2229,7 @@ public class XMLSchemaValidator
             // validation attempted, validity, and error codes
 
             // check extra schema constraints on root element
-            if (fElementDepth == -1 && fFullChecking) {
+            if (fElementDepth == -1 && fFullChecking && !fUseGrammarPoolOnly) {
                 XSConstraints.fullSchemaChecking(
                     fGrammarBucket,
                     fSubGroupHandler,
@@ -2325,7 +2325,7 @@ public class XMLSchemaValidator
                 reportSchemaError("cvc-id.1", new Object[] { invIdRef });
             }
             // check extra schema constraints
-            if (fFullChecking) {
+            if (fFullChecking && !fUseGrammarPoolOnly) {
                 XSConstraints.fullSchemaChecking(
                     fGrammarBucket,
                     fSubGroupHandler,
