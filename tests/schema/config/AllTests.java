@@ -45,6 +45,7 @@ public class AllTests {
         suite.addTestSuite(UseGrammarPoolOnly_True_Test.class);
         suite.addTestSuite(UseGrammarPoolOnly_False_Test.class);
         suite.addTestSuite(FixedAttrTest.class);
+        suite.addTestSuite(FeaturePropagationTest.class);
         return suite;
     }
 }
