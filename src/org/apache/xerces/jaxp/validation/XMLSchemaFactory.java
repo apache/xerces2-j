@@ -231,21 +231,24 @@ public final class XMLSchemaFactory extends SchemaFactory {
         
         // Select Schema implementation based on grammar count.
         final int grammarCount = pool.getGrammarCount();
+        AbstractXMLSchema schema = null;
         if (fUseGrammarPoolOnly) {
             if (grammarCount > 1) {
-                return new XMLSchema(new ReadOnlyGrammarPool(pool));
+                schema = new XMLSchema(new ReadOnlyGrammarPool(pool));
             }
             else if (grammarCount == 1) {
                 Grammar[] grammars = pool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA);
-                return new SimpleXMLSchema(grammars[0]);
+                schema = new SimpleXMLSchema(grammars[0]);
             }
             else {
-                return EmptyXMLSchema.getInstance();
+                schema = new EmptyXMLSchema();
             }
         }
         else {
-            return new XMLSchema(new ReadOnlyGrammarPool(pool), false);
+            schema = new XMLSchema(new ReadOnlyGrammarPool(pool), false);
         }
+        propagateFeatures(schema);
+        return schema;
     }
     
     public Schema newSchema() throws SAXException {
@@ -258,7 +261,9 @@ public final class XMLSchemaFactory extends SchemaFactory {
          */
         
         // Use a Schema that uses the system id as the equality source.
-        return new WeakReferenceXMLSchema();
+        AbstractXMLSchema schema = new WeakReferenceXMLSchema();
+        propagateFeatures(schema);
+        return schema;
     }
     
     public boolean getFeature(String name) 
@@ -387,6 +392,15 @@ public final class XMLSchemaFactory extends SchemaFactory {
                         SAXMessageFormatter.formatMessage(Locale.getDefault(), 
                         "property-not-supported", new Object [] {identifier}));
             }
+        }
+    }
+    
+    private void propagateFeatures(AbstractXMLSchema schema) {
+        schema.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, fSecurityManager != null);
+        String[] features = fXMLSchemaLoader.getRecognizedFeatures();
+        for (int i = 0; i < features.length; ++i) {
+            boolean state = fXMLSchemaLoader.getFeature(features[i]);
+            schema.setFeature(features[i], state);
         }
     }
     

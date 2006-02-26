@@ -1,5 +1,5 @@
 /*
- * Copyright 2005 The Apache Software Foundation.
+ * Copyright 2005,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,17 +29,10 @@ import org.apache.xerces.xni.grammars.XMLGrammarPool;
  */
 final class EmptyXMLSchema extends AbstractXMLSchema implements XMLGrammarPool {
     
-    private static EmptyXMLSchema EMPTY_XML_SCHEMA_INSTANCE = new EmptyXMLSchema();
-    
     /** Zero length grammar array. */
     private static final Grammar [] ZERO_LENGTH_GRAMMAR_ARRAY = new Grammar [0];
 
-    /** Returns the one and only instance of this class. */
-    public static EmptyXMLSchema getInstance() {
-        return EMPTY_XML_SCHEMA_INSTANCE;
-    }
-    
-    private EmptyXMLSchema() {}
+    public EmptyXMLSchema() {}
     
     /*
      * XMLGrammarPool methods

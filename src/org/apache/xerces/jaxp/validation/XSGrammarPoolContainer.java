@@ -1,5 +1,5 @@
 /*
- * Copyright 2005 The Apache Software Foundation.
+ * Copyright 2005,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,5 +43,12 @@ public interface XSGrammarPoolContainer {
      * can be considered to be a fully composed schema
      */
     public boolean isFullyComposed();
+    
+    /**
+     * Returns the initial value of a feature for validators created
+     * using this grammar pool container or null if the validators
+     * should use the default value.
+     */
+    public Boolean getFeature(String featureId);
     
 }
