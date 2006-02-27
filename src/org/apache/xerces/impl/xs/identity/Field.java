@@ -16,11 +16,10 @@
 
 package org.apache.xerces.impl.xs.identity;
 
-import java.util.StringTokenizer;
-
 import org.apache.xerces.impl.xpath.XPathException;
 import org.apache.xerces.impl.xs.util.ShortListImpl;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xs.ShortList;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
@@ -124,34 +123,72 @@ public class Field {
             }
         } // <init>(String,SymbolTable,NamespacesContext)
         
+        /** Fixup XPath expression. Avoid creating a new String if possible. */
         private static String fixupXPath(String xpath) {
+            
+            final int end = xpath.length();
+            int offset = 0;
+            boolean whitespace = true;
+            char c;
+            
             // NOTE: We have to prefix the field XPath with "./" in
             //       order to handle selectors such as "@attr" that 
             //       select the attribute because the fields could be
             //       relative to the selector element. -Ac
             //       Unless xpath starts with a descendant node -Achille Fokoue
             //      ... or a / or a . - NG
-            int union = xpath.indexOf('|');
-            if (union == -1) {
-                return ((xpath.trim().startsWith("/") || xpath.trim().startsWith(".")) ?
-                        xpath : "./"+xpath);
-            }
-            else {
-                // REVISIT: Replace with a more efficient solution.
-                StringBuffer buffer = new StringBuffer(xpath.length());
-                StringTokenizer tokenizer = new StringTokenizer(xpath, "|");
-                int length = tokenizer.countTokens();
-                for (int i = length - 1; i >= 0; --i) {
-                    String token = tokenizer.nextToken();
-                    buffer.append(((token.trim().startsWith("/") || token.trim().startsWith(".")) ?
-                            token : "./"+token));
-                    if (i > 0) {
-                        buffer.append('|');
+            for (; offset < end; ++offset) {
+                c = xpath.charAt(offset);
+                if (whitespace) {
+                    if (!XMLChar.isSpace(c)) {
+                        if (c == '.' || c == '/') {
+                            whitespace = false;
+                        }
+                        else if (c != '|') {
+                            return fixupXPath2(xpath, offset, end);
+                        }
                     }
                 }
-                return buffer.toString();
+                else if (c == '|') {
+                    whitespace = true;
+                }
             }
-        }
+            return xpath;
+            
+        } // fixupXPath(String):String
+        
+        private static String fixupXPath2(String xpath, int offset, final int end) {
+       
+            StringBuffer buffer = new StringBuffer(end + 2);
+            for (int i = 0; i < offset; ++i) {
+                buffer.append(xpath.charAt(i));
+            }
+            buffer.append("./");
+            
+            boolean whitespace = false;
+            char c;
+            
+            for (; offset < end; ++offset) {
+                c = xpath.charAt(offset);
+                if (whitespace) {
+                    if (!XMLChar.isSpace(c)) {
+                        if (c == '.' || c == '/') {
+                            whitespace = false;
+                        }
+                        else if (c != '|') {
+                            buffer.append("./");
+                            whitespace = false;
+                        }
+                    }
+                }
+                else if (c == '|') {
+                    whitespace = true;
+                }
+                buffer.append(c);
+            }
+            return buffer.toString();
+            
+        } // fixupXPath2(String, int, int):String
 
     } // class XPath
 
