@@ -1,5 +1,5 @@
 /*
- * Copyright 2002,2004 The Apache Software Foundation.
+ * Copyright 2002,2004,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -133,10 +133,8 @@ public class XSNamedMapImpl implements XSNamedMap {
      *   identify any <code>XSObject</code> in this map.
      */
     public XSObject itemByName(String namespace, String localName) {
-        if (namespace != null)
-            namespace = namespace.intern();
         for (int i = 0; i < fNSNum; i++) {
-            if (namespace == fNamespaces[i]) {
+            if (isEqual(namespace, fNamespaces[i])) {
                 // when this map is created from SymbolHash's
                 // get the component from SymbolHash
                 if (fMaps != null)
@@ -179,6 +177,10 @@ public class XSNamedMapImpl implements XSNamedMap {
         if (index < 0 || index >= fLength)
             return null;
         return fArray[index];
+    }
+    
+    final boolean isEqual(String one, String two) {
+        return (one == two || (one != null && one.equals(two)));
     }
     
 } // class XSNamedMapImpl

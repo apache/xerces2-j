@@ -1,5 +1,5 @@
 /*
- * Copyright 2002,2004 The Apache Software Foundation.
+ * Copyright 2002,2004,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,10 +102,8 @@ public class XSNamedMap4Types extends XSNamedMapImpl {
      *   identify any <code>XSObject</code> in this map.
      */
     public XSObject itemByName(String namespace, String localName) {
-        if (namespace != null)
-            namespace = namespace.intern();
         for (int i = 0; i < fNSNum; i++) {
-            if (namespace == fNamespaces[i]) {
+            if (isEqual(namespace, fNamespaces[i])) {
                 XSTypeDefinition type = (XSTypeDefinition)fMaps[i].get(localName);
                 // only return it if it mataches the required type
                 if (type.getTypeCategory() == fType)
