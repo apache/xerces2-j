@@ -180,7 +180,7 @@ public class XSNamedMapImpl implements XSNamedMap {
     }
     
     final boolean isEqual(String one, String two) {
-        return (one == two || (one != null && one.equals(two)));
+        return (one != null) ? one.equals(two) : (two == null);
     }
     
 } // class XSNamedMapImpl
