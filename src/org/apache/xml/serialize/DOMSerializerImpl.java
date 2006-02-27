@@ -1161,13 +1161,13 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
      */
     static class DocumentMethods {
         
-        // Method: org.w3c.dom.getXmlVersion()
+        // Method: org.w3c.dom.Document.getXmlVersion()
         private static java.lang.reflect.Method fgDocumentGetXmlVersionMethod = null;
         
-        // Method: org.w3c.dom.getInputEncoding()
+        // Method: org.w3c.dom.Document.getInputEncoding()
         private static java.lang.reflect.Method fgDocumentGetInputEncodingMethod = null;
         
-        // Method: org.w3c.dom.getXmlEncoding()
+        // Method: org.w3c.dom.Document.getXmlEncoding()
         private static java.lang.reflect.Method fgDocumentGetXmlEncodingMethod = null;
         
         // Flag indicating whether or not Document methods are available.
