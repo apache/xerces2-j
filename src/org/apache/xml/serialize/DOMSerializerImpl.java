@@ -112,7 +112,6 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
     private DOMErrorHandler fErrorHandler = null;    
     private final DOMErrorImpl fError = new DOMErrorImpl();
     private final DOMLocatorImpl fLocator = new DOMLocatorImpl();
-    private static final RuntimeException abort = new RuntimeException();
 
     /**
      * Constructs a new LSSerializer.
@@ -467,21 +466,9 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
      */
     public String writeToString(Node wnode) throws DOMException, LSException {
         // determine which serializer to use:
-        Document doc = (wnode.getNodeType() == Node.DOCUMENT_NODE)?(Document)wnode:wnode.getOwnerDocument();
-        Method getVersion = null;
         XMLSerializer ser = null;
-        String ver = null;
-        // this should run under JDK 1.1.8...
-        try {
-            getVersion = doc.getClass().getMethod("getXmlVersion", new Class[]{});
-            if(getVersion != null ) {
-                ver = (String)getVersion.invoke(doc, (Object[]) null);
-            }
-        } catch (Exception e) {
-            // no way to test the version...
-            // ignore the exception
-        }
-        if(ver != null && ver.equals("1.1")) {
+        String ver = _getXmlVersion(wnode);
+        if (ver != null && ver.equals("1.1")) {
             if(xml11Serializer == null) {
                 xml11Serializer = new XML11Serializer();
                 initSerializer(xml11Serializer);
@@ -489,7 +476,8 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
             // copy setting from "main" serializer to XML 1.1 serializer
             copySettings(serializer, xml11Serializer);
             ser = xml11Serializer;
-        } else {
+        } 
+        else {
             ser = serializer;
         }
 
@@ -670,23 +658,9 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
 
         if (node == null)
             return false;
-            
-        Method getVersion = null;
+
         XMLSerializer ser = null;
-        String ver = null;
-        Document fDocument =(node.getNodeType() == Node.DOCUMENT_NODE)
-                ? (Document) node
-                : node.getOwnerDocument();
-        // this should run under JDK 1.1.8...
-        try {
-            getVersion = fDocument.getClass().getMethod("getXmlVersion", new Class[] {});
-            if (getVersion != null) {
-                ver = (String) getVersion.invoke(fDocument, (Object[]) null);
-            }
-        } catch (Exception e) {
-            //no way to test the version...
-            //ignore the exception
-        }
+        String ver = _getXmlVersion(node);
         //determine which serializer to use:
         if (ver != null && ver.equals("1.1")) {
             if (xml11Serializer == null) {
@@ -696,31 +670,16 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
             //copy setting from "main" serializer to XML 1.1 serializer
             copySettings(serializer, xml11Serializer);
             ser = xml11Serializer;
-        } else {
+        } 
+        else {
             ser = serializer;
         }
 
         String encoding = null;
         if ((encoding = destination.getEncoding()) == null) {
-            try {
-                Method getEncoding =
-                    fDocument.getClass().getMethod("getInputEncoding", new Class[] {});
-                if (getEncoding != null) {
-                    encoding = (String) getEncoding.invoke(fDocument, (Object[]) null);
-                }
-            } catch (Exception e) {
-                // ignore the exception
-            }
+            encoding = _getInputEncoding(node);
             if (encoding == null) {
-                try {
-                    Method getEncoding =
-                        fDocument.getClass().getMethod("getXmlEncoding", new Class[] {});
-                    if (getEncoding != null) {
-                        encoding = (String) getEncoding.invoke(fDocument, (Object[]) null);
-                    }
-                } catch (Exception e) {
-                    // ignore the exception
-                }
+                encoding = _getXmlEncoding(node);
                 if (encoding == null) {
                     encoding = "UTF-8";
                 }
@@ -863,25 +822,9 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
             return false;
         }
 
-        Method getXmlVersion = null;
         XMLSerializer ser = null;
-        String ver = null;
-        String encoding = null;
+        String ver = _getXmlVersion(node);
 
-        Document fDocument =(node.getNodeType() == Node.DOCUMENT_NODE)
-                ? (Document) node
-                : node.getOwnerDocument();
-        // this should run under JDK 1.1.8...
-        try {
-            getXmlVersion =
-                fDocument.getClass().getMethod("getXmlVersion", new Class[] {});
-            if (getXmlVersion != null) {
-                ver = (String) getXmlVersion.invoke(fDocument, (Object[]) null);
-            }
-        } catch (Exception e) {
-            // no way to test the version...
-            // ignore the exception
-        }
         if (ver != null && ver.equals("1.1")) {
             if (xml11Serializer == null) {
                 xml11Serializer = new XML11Serializer();
@@ -890,29 +833,14 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
             // copy setting from "main" serializer to XML 1.1 serializer
             copySettings(serializer, xml11Serializer);
             ser = xml11Serializer;
-        } else {
+        } 
+        else {
             ser = serializer;
         }        
 
-        try {
-            Method getEncoding =
-                fDocument.getClass().getMethod("getInputEncoding", new Class[] {});
-            if (getEncoding != null) {
-                encoding = (String) getEncoding.invoke(fDocument, (Object[]) null);
-            }
-        } catch (Exception e) {
-            // ignore the exception
-        }
+        String encoding = _getInputEncoding(node);
         if (encoding == null) {
-            try {
-                Method getEncoding =
-                    fDocument.getClass().getMethod("getXmlEncoding", new Class[] {});
-                if (getEncoding != null) {
-                    encoding = (String) getEncoding.invoke(fDocument, (Object[]) null);
-                }
-            } catch (Exception e) {
-                // ignore the exception
-            }
+            encoding = _getXmlEncoding(node);
             if (encoding == null) {
                 encoding = "UTF-8";
             }
@@ -1176,9 +1104,94 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
         }
         return origPath;
     }
+    
+    private String _getXmlVersion(Node node) {
+        Document doc = (node.getNodeType() == Node.DOCUMENT_NODE) ? 
+                (Document) node : node.getOwnerDocument();
+        if (doc != null && DocumentMethods.fgDocumentMethodsAvailable) {
+            try {
+                return (String) DocumentMethods.fgDocumentGetXmlVersionMethod.invoke(doc, (Object[]) null);
+            }
+            // ThreadDeath should always be re-thrown
+            catch (ThreadDeath td) {
+                throw td;
+            }
+            // Ignore all other exceptions and errors
+            catch (Throwable t) {}
+        }
+        return null;
+    }
 
-}//DOMSerializerImpl
+    private String _getInputEncoding(Node node) {
+        Document doc = (node.getNodeType() == Node.DOCUMENT_NODE) ? 
+                (Document) node : node.getOwnerDocument();
+        if (doc != null && DocumentMethods.fgDocumentMethodsAvailable) {
+            try {
+                return (String) DocumentMethods.fgDocumentGetInputEncodingMethod.invoke(doc, (Object[]) null);
+            }
+            // ThreadDeath should always be re-thrown
+            catch (ThreadDeath td) {
+                throw td;
+            }
+            // Ignore all other exceptions and errors
+            catch (Throwable t) {}
+        }
+        return null;
+    }
+    
+    private String _getXmlEncoding(Node node) {
+        Document doc = (node.getNodeType() == Node.DOCUMENT_NODE) ? 
+                (Document) node : node.getOwnerDocument();
+        if (doc != null && DocumentMethods.fgDocumentMethodsAvailable) {
+            try {
+                return (String) DocumentMethods.fgDocumentGetXmlEncodingMethod.invoke(doc, (Object[]) null);
+            }
+            // ThreadDeath should always be re-thrown
+            catch (ThreadDeath td) {
+                throw td;
+            }
+            // Ignore all other exceptions and errors
+            catch (Throwable t) {}
+        }
+        return null;
+    }
+    
+    /**
+     * Holder of DOM Level 3 methods from org.w3c.dom.Document.
+     */
+    static class DocumentMethods {
+        
+        // Method: org.w3c.dom.getXmlVersion()
+        private static java.lang.reflect.Method fgDocumentGetXmlVersionMethod = null;
+        
+        // Method: org.w3c.dom.getInputEncoding()
+        private static java.lang.reflect.Method fgDocumentGetInputEncodingMethod = null;
+        
+        // Method: org.w3c.dom.getXmlEncoding()
+        private static java.lang.reflect.Method fgDocumentGetXmlEncodingMethod = null;
+        
+        // Flag indicating whether or not Document methods are available.
+        private static boolean fgDocumentMethodsAvailable = false;
+        
+        private DocumentMethods() {}
+        
+        // Attempt to get methods for org.w3c.dom.Document on class initialization.
+        static {
+            try {
+                fgDocumentGetXmlVersionMethod = Document.class.getMethod("getXmlVersion", new Class [] {});
+                fgDocumentGetInputEncodingMethod = Document.class.getMethod("getInputEncoding", new Class [] {});
+                fgDocumentGetXmlEncodingMethod = Document.class.getMethod("getXmlEncoding", new Class [] {});
+                fgDocumentMethodsAvailable = true;
+            }
+            // ClassNotFoundException, NoSuchMethodException or SecurityException
+            // Whatever the case, we cannot retrieve the methods.
+            catch (Exception exc) {
+                fgDocumentGetXmlVersionMethod = null;
+                fgDocumentGetInputEncodingMethod = null;
+                fgDocumentGetXmlEncodingMethod = null;
+                fgDocumentMethodsAvailable = false;
+            }
+        }
+    }
 
-
-
-
+} //DOMSerializerImpl
