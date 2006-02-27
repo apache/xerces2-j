@@ -16,6 +16,8 @@
 
 package org.apache.xerces.impl.xs.identity;
 
+import java.util.StringTokenizer;
+
 import org.apache.xerces.impl.xpath.XPathException;
 import org.apache.xerces.impl.xs.util.ShortListImpl;
 import org.apache.xerces.util.SymbolTable;
@@ -107,15 +109,7 @@ public class Field {
         public XPath(String xpath, 
                      SymbolTable symbolTable,
                      NamespaceContext context) throws XPathException {
-            // NOTE: We have to prefix the field XPath with "./" in
-            //       order to handle selectors such as "@attr" that 
-            //       select the attribute because the fields could be
-            //       relative to the selector element. -Ac
-            //       Unless xpath starts with a descendant node -Achille Fokoue
-            //      ... or a / or a . - NG
-            super(((xpath.trim().startsWith("/") ||xpath.trim().startsWith("."))?
-                    xpath:"./"+xpath), 
-                  symbolTable, context);
+            super(fixupXPath(xpath), symbolTable, context);
             
             // verify that only one attribute is selected per branch
             for (int i=0;i<fLocationPaths.length;i++) {
@@ -129,6 +123,35 @@ public class Field {
                 }
             }
         } // <init>(String,SymbolTable,NamespacesContext)
+        
+        private static String fixupXPath(String xpath) {
+            // NOTE: We have to prefix the field XPath with "./" in
+            //       order to handle selectors such as "@attr" that 
+            //       select the attribute because the fields could be
+            //       relative to the selector element. -Ac
+            //       Unless xpath starts with a descendant node -Achille Fokoue
+            //      ... or a / or a . - NG
+            int union = xpath.indexOf('|');
+            if (union == -1) {
+                return ((xpath.trim().startsWith("/") || xpath.trim().startsWith(".")) ?
+                        xpath : "./"+xpath);
+            }
+            else {
+                // REVISIT: Replace with a more efficient solution.
+                StringBuffer buffer = new StringBuffer(xpath.length());
+                StringTokenizer tokenizer = new StringTokenizer(xpath, "|");
+                int length = tokenizer.countTokens();
+                for (int i = length - 1; i >= 0; --i) {
+                    String token = tokenizer.nextToken();
+                    buffer.append(((token.trim().startsWith("/") || token.trim().startsWith(".")) ?
+                            token : "./"+token));
+                    if (i > 0) {
+                        buffer.append('|');
+                    }
+                }
+                return buffer.toString();
+            }
+        }
 
     } // class XPath
 
