@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2005 The Apache Software Foundation.
+ * Copyright 1999-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.apache.xerces.dom;
 import java.lang.ref.SoftReference;
 
 import org.apache.xerces.impl.RevalidationHandler;
-import org.apache.xerces.impl.dtd.XML11DTDProcessor;
 import org.apache.xerces.impl.dtd.XMLDTDLoader;
 import org.apache.xerces.parsers.DOMParserImpl;
 import org.apache.xerces.util.XMLChar;
@@ -29,10 +28,10 @@ import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
-import org.w3c.dom.ls.LSParser;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSOutput;
+import org.w3c.dom.ls.LSParser;
 import org.w3c.dom.ls.LSSerializer;
 
 /**
@@ -571,7 +570,11 @@ public class CoreDOMImplementationImpl
                 }
                 xml11DTDLoaders[freeXML11DTDLoaderIndex--] = null;
             }
-            return new XML11DTDProcessor();
+            return (XMLDTDLoader) (ObjectFactory
+                    .newInstance(
+                        "org.apache.xerces.impl.dtd.XML11DTDProcessor",
+                        ObjectFactory.findClassLoader(),
+                        true));
         }
         // return an instance of XMLDTDLoader
         else {
