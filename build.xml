@@ -969,16 +969,24 @@ Copyright:
                         org/apache/xerces/impl/xpath/regex/**
                         org/apache/xerces/impl/dv/Schema*.java
                         org/apache/xerces/impl/msg/XMLSchema**
+                        org/apache/xerces/jaxp/JAXPValidatorComponent.java
+                        org/apache/xerces/jaxp/SchemaValidatorConfiguration.java
+                        org/apache/xerces/jaxp/TeeXMLDocumentFilterImpl.java
+                        org/apache/xerces/jaxp/UnparsedEntityHandler.java
+                        org/apache/xerces/jaxp/datatype/**
+                        org/apache/xerces/jaxp/validation/**
                         org/apache/xerces/parsers/DOMASBuilderImpl.java
                         org/apache/xerces/parsers/StandardParserConfiguration.java
                         org/apache/xerces/parsers/IntegratedParserConfiguration.java
                         org/apache/xerces/parsers/XIncludeParserConfiguration.java
+                        org/apache/xerces/parsers/XIncludeAwareParserConfiguration.java
                         org/apache/xerces/parsers/SecurityConfiguration.java
                         org/apache/xerces/parsers/XML11Configurable.java
                         org/apache/xerces/parsers/XML11Configuration.java
                         org/apache/xerces/parsers/XML11DTDConfiguration.java
                         org/apache/xerces/parsers/XML11NonValidatingConfiguration.java
                         org/apache/xerces/parsers/XMLGrammarCachingConfiguration.java
+                        org/apache/xerces/parsers/XPointerParserConfiguration.java
                         org/apache/xerces/parsers/CachingParserPool.java
                         org/apache/xerces/xinclude/**
                         org/apache/xerces/xpointer/**
@@ -988,7 +996,7 @@ Copyright:
                         org/apache/xerces/impl/XML11NamespaceBinder.java
                         org/apache/xerces/impl/XML11NSDocumentScannerImpl.java
                         org/apache/xerces/impl/XMLVersionDetector.java
-                        org/apache/xerces/util/DOMUtil.java
+                        org/apache/xerces/impl/dtd/XML11*.java
                         org/apache/html/**
                         org/apache/wml/**
            ">
@@ -1013,11 +1021,37 @@ Copyright:
     <replace file="${build.dir}/src/org/apache/xerces/dom/AttrNSImpl.java" 
              token="import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;" value=""/>
     <replace file="${build.dir}/src/org/apache/xerces/dom/AttrNSImpl.java" 
+             token="return ((XSSimpleTypeDecl) type).isDOMDerivedFrom(" value="return false;"/>
+    <replace file="${build.dir}/src/org/apache/xerces/dom/AttrNSImpl.java" 
+             token="typeNamespaceArg, typeNameArg, derivationMethod);" value=""/>
+    <replace file="${build.dir}/src/org/apache/xerces/dom/AttrNSImpl.java" 
              token="XSSimpleTypeDecl" value="String"/>
+    <replace file="${build.dir}/src/org/apache/xerces/dom/AttrNSImpl.java"
+             token="import org.apache.xerces.xs.XSSimpleTypeDefinition;" value=""/>
+    <replace file="${build.dir}/src/org/apache/xerces/dom/AttrNSImpl.java"
+             token="XSSimpleTypeDefinition" value="String"/>
     <replace file="${build.dir}/src/org/apache/xerces/dom/AttrNSImpl.java" 
              token="return ((String)type).getName();" value="return (String)type;"/>
     <replace file="${build.dir}/src/org/apache/xerces/dom/AttrNSImpl.java" 
              token="return ((String)type).getNamespace();" value="return null;"/>
+  	
+  	<!-- HACK: Remove references to schema DOM from DOMUtil -->
+    <replace file="${build.dir}/src/org/apache/xerces/util/DOMUtil.java" 
+             token="import org.apache.xerces.impl.xs.opti.ElementImpl;" value=""/>
+    <replace file="${build.dir}/src/org/apache/xerces/util/DOMUtil.java" 
+             token="(node instanceof ElementImpl)" value="(node == null)"/>
+    <replace file="${build.dir}/src/org/apache/xerces/util/DOMUtil.java" 
+             token="return ((ElementImpl)node).getAnnotation();" value="return null;"/>
+    <replace file="${build.dir}/src/org/apache/xerces/util/DOMUtil.java" 
+             token="return ((ElementImpl)node).getSyntheticAnnotation();" value="return null;"/>
+    <replace file="${build.dir}/src/org/apache/xerces/util/DOMUtil.java" 
+             token="(node instanceof org.apache.xerces.impl.xs.opti.NodeImpl)" value="(node == null)"/>
+    <replace file="${build.dir}/src/org/apache/xerces/util/DOMUtil.java" 
+             token="((org.apache.xerces.impl.xs.opti.NodeImpl)node).setReadOnly(true, false);" value="return;"/>
+    <replace file="${build.dir}/src/org/apache/xerces/util/DOMUtil.java" 
+             token="((org.apache.xerces.impl.xs.opti.NodeImpl)node).setReadOnly(false, false);" value="return;"/>
+    <replace file="${build.dir}/src/org/apache/xerces/util/DOMUtil.java" 
+             token="return ((org.apache.xerces.impl.xs.opti.NodeImpl)node).getReadOnly();" value="return false;"/>
              
     <!-- HACK: Remove reference to XML11Configurable from SAX parser -->
     <replace file="${build.dir}/src/org/apache/xerces/parsers/AbstractSAXParser.java"
@@ -1027,12 +1061,20 @@ Copyright:
     <unzip src="${src.apis.zip}" dest="${build.src}">
         <patternset
             includes="org/xml/sax/** 
+                javax/xml/**
+                javax/xml/datatype/**
+                javax/xml/namespace/**
                 javax/xml/parsers/**
+                javax/xml/transform/**
+                javax/xml/validation/**
+                javax/xml/xpath/**
                 org/w3c/dom/*
                 org/w3c/dom/events/**
                 org/w3c/dom/html/**
+                org/w3c/dom/ls/**
                 org/w3c/dom/ranges/**
-                org/w3c/dom/traversal/**"
+                org/w3c/dom/traversal/**
+                org/w3c/dom/xpath/**"
         />
     </unzip>
 
