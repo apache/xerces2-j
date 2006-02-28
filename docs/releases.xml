@@ -31,9 +31,8 @@
    <changes>
     <add>
      <note>
-      Added getAnnotations() methods to the component interfaces in the XML Schema API
-      (including XSParticle and XSAttributeUse) and implemented the support for the new
-      methods.
+      Added a getAnnotations() method to each of the component interfaces in the XML Schema API
+      (including XSParticle and XSAttributeUse) and implemented the support for the new methods.
      </note>
      <submitter name='Neil Delima'/>
     </add>
