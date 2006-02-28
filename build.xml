@@ -897,22 +897,26 @@ Copyright:
   <!-- (that is, with no schema support or WML/HTML DOM.)                  -->
   <!-- =================================================================== -->
   <target name="dtdjar" depends="dtdcompile">
+    <!-- take care of manifest file -->
+    <filter token="java.version" value="${java.version}"/>
+    <filter token="java.vendor" value="${java.vendor}"/>
+    <filter token="impl.name" value="${parser.Name} ${parser.Version}"/>
+    <filter token="impl.version" value="${parser.Version}"/>   
+    <copy todir="${build.dir}" file="${src.dir}/manifest.xerces" filtering="true"/>
     <jar jarfile="${build.dir}/dtd-${jar.parser}"
          basedir="${build.dest}"
          compress="true"
          includes="org/apache/**, META-INF/**
-                   org/w3c/dom/html/HTMLDOMImplementation.class
-                   org/w3c/dom/ls/**
-                   org/w3c/dom/DOMError.class
-                   org/w3c/dom/DOMErrorHandler.class
-                   org/w3c/dom/DOMImplementationSource.class
-                   org/w3c/dom/DOMImplementationRegistry.class
-                   org/w3c/dom/DOMLocator.class
-                   org/w3c/dom/UserDataHandler.class"/>
+                   org/w3c/dom/html/HTMLDOMImplementation.class"
+         manifest="${build.dir}/manifest.xerces">
+      <manifest>
+        <attribute name="Ant-Version" value="${ant.version}"/>
+      </manifest>
+    </jar>
   </target>
 
   <!-- =================================================================== -->
-  <!-- Compiles the dtd source directory                                  -->
+  <!-- Compiles the dtd source directory                                   -->
   <!-- =================================================================== -->
   <target name="dtdcompile" depends="dtdprepare-src">
     <copy todir="${build.dest}">
@@ -928,7 +932,7 @@ Copyright:
            optimize="${optimize}"
            includeAntRuntime="false"
            includeJavaRuntime="true"
-           classpath="${tools.dir}/${jar.resolver}"/>
+           classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}"/>
   </target>
 
 
@@ -941,6 +945,11 @@ Copyright:
       
     <copy file="${src.dir}/org/apache/xerces/dom/org.apache.xerces.dom.DOMImplementationSourceImpl"
       tofile="${build.dest}/META-INF/services/org.w3c.dom.DOMImplementationSourceList"/>
+  	
+    <!-- delete META-INF/services files for DatatypeFactory/SchemaFactory 
+         since no implementation is provided in this jar -->
+  	<delete file="${build.dest}/META-INF/services/javax.xml.datatype.DatatypeFactory"/>
+    <delete file="${build.dest}/META-INF/services/javax.xml.validation.SchemaFactory"/>
 
     <!-- copy src files -->
     <copy todir="${build.src}">
@@ -951,7 +960,6 @@ Copyright:
                        **/DatatypeContentModel.java **/ComplexTypeInfo.java
                        **/v1/** **/v2/**
                         javax.xml.parsers.ConvertToURI.java
-                        org/apache/xerces/dom/DOMXSImplementationSourceImpl.java
                         org/apache/xerces/impl/xs/*.java
                         org/apache/xerces/impl/dv/xs/**
                         org/apache/xerces/impl/xs/identity/**
@@ -992,11 +1000,18 @@ Copyright:
                         org/apache/xerces/xpointer/**
                         org/apache/xerces/dom/ASModelImpl.java
                         org/apache/xerces/dom/ASDOMImplementationImpl.java
+                        org/apache/xerces/dom/DOMXSImplementationSourceImpl.java
+                        org/apache/xerces/dom3/as/**
                         org/apache/xerces/impl/XML11D*.java
                         org/apache/xerces/impl/XML11NamespaceBinder.java
                         org/apache/xerces/impl/XML11NSDocumentScannerImpl.java
                         org/apache/xerces/impl/XMLVersionDetector.java
                         org/apache/xerces/impl/dtd/XML11*.java
+                        org/apache/xerces/impl/msg/DatatypeMessage*.properties
+                        org/apache/xerces/impl/msg/JAXPValidationMessage*.properties
+                        org/apache/xerces/impl/msg/XIncludeMessage*.properties
+                        org/apache/xerces/impl/msg/XPointerMessage*.properties
+                        org/apache/xerces/util/DatatypeMessageFormatter.java
                         org/apache/html/**
                         org/apache/wml/**
            ">
@@ -1007,17 +1022,18 @@ Copyright:
     <copy todir="${build.src}">
         <fileset 
             dir="${src.dir}"
-            includes="org/apache/xerces/xs/**,
+            includes="org/apache/xerces/xs/*.java,
                       org/apache/xerces/impl/xs/XSTypeDecl.java
                      ">
         </fileset>
     </copy>
 
     <!-- HACK: DOM implementation now is aware of type information
-         and thus is imports XSSimpleTypeDecl (for XML Schema type support)
-         Since in DTD jars we never going to have XSSimpleTypeDecl we can safely
-         replace it by String. The code after replacement may look a bit strange.. 
-         but there is nothing we can do at this point-->
+         and thus is imports XSSimpleTypeDecl (among other XSModel interfaces 
+         for XML Schema type support) Since in DTD jars we never going to have 
+         XSSimpleTypeDecl we can safely replace it by String. The code after 
+         replacement may look a bit strange.. but there is nothing we can do at 
+         this point -->
     <replace file="${build.dir}/src/org/apache/xerces/dom/AttrNSImpl.java" 
              token="import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;" value=""/>
     <replace file="${build.dir}/src/org/apache/xerces/dom/AttrNSImpl.java" 
@@ -1034,8 +1050,33 @@ Copyright:
              token="return ((String)type).getName();" value="return (String)type;"/>
     <replace file="${build.dir}/src/org/apache/xerces/dom/AttrNSImpl.java" 
              token="return ((String)type).getNamespace();" value="return null;"/>
+
+    <replace file="${build.dir}/src/org/apache/xerces/dom/ElementNSImpl.java" 
+             token="import org.apache.xerces.xs.XSSimpleTypeDefinition;" value=""/>
+    <replace file="${build.dir}/src/org/apache/xerces/dom/ElementNSImpl.java" 
+             token="import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;" value=""/>
+    <replace file="${build.dir}/src/org/apache/xerces/dom/ElementNSImpl.java" 
+             token="import org.apache.xerces.impl.xs.XSComplexTypeDecl;" value=""/>
+    <replace file="${build.dir}/src/org/apache/xerces/dom/ElementNSImpl.java" 
+             token="transient XSTypeDefinition type;" value="transient Object type;"/>
+    <replace file="${build.dir}/src/org/apache/xerces/dom/ElementNSImpl.java" 
+             token="XSSimpleTypeDefinition" value="String"/>
+    <replace file="${build.dir}/src/org/apache/xerces/dom/ElementNSImpl.java" 
+             token="return ((XSSimpleTypeDecl) type).getTypeName();" value="return null;"/>
+    <replace file="${build.dir}/src/org/apache/xerces/dom/ElementNSImpl.java" 
+             token="return ((XSComplexTypeDecl) type).getTypeName();" value="return null;"/>
+    <replace file="${build.dir}/src/org/apache/xerces/dom/ElementNSImpl.java" 
+             token="return type.getNamespace();" value="return null;"/>
+    <replace file="${build.dir}/src/org/apache/xerces/dom/ElementNSImpl.java" 
+             token="return type.getNamespace();" value="return null;"/>
+    <replace file="${build.dir}/src/org/apache/xerces/dom/ElementNSImpl.java" 
+             token="return ((XSSimpleTypeDecl) type).isDOMDerivedFrom(" value="return false;"/>
+    <replace file="${build.dir}/src/org/apache/xerces/dom/ElementNSImpl.java" 
+             token="return ((XSComplexTypeDecl) type).isDOMDerivedFrom(" value="return false;"/>
+    <replace file="${build.dir}/src/org/apache/xerces/dom/ElementNSImpl.java" 
+             token="typeNamespaceArg, typeNameArg, derivationMethod);" value=""/>
   	
-  	<!-- HACK: Remove references to schema DOM from DOMUtil -->
+    <!-- HACK: Remove references to schema DOM from DOMUtil -->
     <replace file="${build.dir}/src/org/apache/xerces/util/DOMUtil.java" 
              token="import org.apache.xerces.impl.xs.opti.ElementImpl;" value=""/>
     <replace file="${build.dir}/src/org/apache/xerces/util/DOMUtil.java" 
@@ -1052,6 +1093,59 @@ Copyright:
              token="((org.apache.xerces.impl.xs.opti.NodeImpl)node).setReadOnly(false, false);" value="return;"/>
     <replace file="${build.dir}/src/org/apache/xerces/util/DOMUtil.java" 
              token="return ((org.apache.xerces.impl.xs.opti.NodeImpl)node).getReadOnly();" value="return false;"/>
+  	
+  	<!-- HACK: Remove references to schema validation support from org.apache.xerces.jaxp -->
+    <replace file="${build.dir}/src/org/apache/xerces/jaxp/SAXParserImpl.java" 
+             token="import org.apache.xerces.impl.xs.XMLSchemaValidator;" value=""/>
+    <replace file="${build.dir}/src/org/apache/xerces/jaxp/SAXParserImpl.java" 
+             token="import org.apache.xerces.jaxp.validation.XSGrammarPoolContainer;" value=""/>
+    <replace file="${build.dir}/src/org/apache/xerces/jaxp/SAXParserImpl.java" 
+             token="this.grammar = spf.getSchema();" value="this.grammar = null;"/>
+    <replace file="${build.dir}/src/org/apache/xerces/jaxp/SAXParserImpl.java" 
+             token="(grammar != null)" value="(false)"/>
+    <replace file="${build.dir}/src/org/apache/xerces/jaxp/SAXParserImpl.java" 
+             token="(grammar instanceof XSGrammarPoolContainer)" value="(grammar != null)"/>
+    <replace file="${build.dir}/src/org/apache/xerces/jaxp/SAXParserImpl.java" 
+             token="new XMLSchemaValidator();" value="null;"/>
+    <replace file="${build.dir}/src/org/apache/xerces/jaxp/SAXParserImpl.java" 
+             token="new UnparsedEntityHandler(fSchemaValidationManager);" value="null;"/>
+    <replace file="${build.dir}/src/org/apache/xerces/jaxp/SAXParserImpl.java" 
+             token="new JAXPValidatorComponent(grammar.newValidatorHandler());" value="null;"/>
+    <replace file="${build.dir}/src/org/apache/xerces/jaxp/SAXParserImpl.java" 
+             token="new SchemaValidatorConfiguration(config," value="null;"/>
+    <replace file="${build.dir}/src/org/apache/xerces/jaxp/SAXParserImpl.java" 
+             token="(XSGrammarPoolContainer) grammar, fSchemaValidationManager);" value=""/>
+  	
+    <replace file="${build.dir}/src/org/apache/xerces/jaxp/DocumentBuilderImpl.java" 
+             token="import org.apache.xerces.impl.xs.XMLSchemaValidator;" value=""/>
+    <replace file="${build.dir}/src/org/apache/xerces/jaxp/DocumentBuilderImpl.java" 
+             token="import org.apache.xerces.jaxp.validation.XSGrammarPoolContainer;" value=""/>
+    <replace file="${build.dir}/src/org/apache/xerces/jaxp/DocumentBuilderImpl.java" 
+             token="this.grammar = dbf.getSchema();" value="this.grammar = null;"/>
+    <replace file="${build.dir}/src/org/apache/xerces/jaxp/DocumentBuilderImpl.java" 
+             token="(grammar != null)" value="(false)"/>
+    <replace file="${build.dir}/src/org/apache/xerces/jaxp/DocumentBuilderImpl.java" 
+             token="(grammar instanceof XSGrammarPoolContainer)" value="(grammar != null)"/>
+    <replace file="${build.dir}/src/org/apache/xerces/jaxp/DocumentBuilderImpl.java" 
+             token="new XMLSchemaValidator();" value="null;"/>
+    <replace file="${build.dir}/src/org/apache/xerces/jaxp/DocumentBuilderImpl.java" 
+             token="new UnparsedEntityHandler(fSchemaValidationManager);" value="null;"/>
+    <replace file="${build.dir}/src/org/apache/xerces/jaxp/DocumentBuilderImpl.java" 
+             token="new JAXPValidatorComponent(grammar.newValidatorHandler());" value="null;"/>
+    <replace file="${build.dir}/src/org/apache/xerces/jaxp/DocumentBuilderImpl.java" 
+             token="new SchemaValidatorConfiguration(config," value="null;"/>
+    <replace file="${build.dir}/src/org/apache/xerces/jaxp/DocumentBuilderImpl.java" 
+             token="(XSGrammarPoolContainer) grammar, fSchemaValidationManager);" value=""/>
+  	
+    <replace file="${build.dir}/src/org/apache/xerces/jaxp/SAXParserFactoryImpl.java" 
+             token="return grammar;" value="throw new UnsupportedOperationException();"/>
+    <replace file="${build.dir}/src/org/apache/xerces/jaxp/SAXParserFactoryImpl.java" 
+             token="this.grammar = grammar;" value="throw new UnsupportedOperationException();"/>
+
+    <replace file="${build.dir}/src/org/apache/xerces/jaxp/DocumentBuilderFactoryImpl.java" 
+             token="return grammar;" value="throw new UnsupportedOperationException();"/>
+    <replace file="${build.dir}/src/org/apache/xerces/jaxp/DocumentBuilderFactoryImpl.java" 
+             token="this.grammar = grammar;" value="throw new UnsupportedOperationException();"/>
              
     <!-- HACK: Remove reference to XML11Configurable from SAX parser -->
     <replace file="${build.dir}/src/org/apache/xerces/parsers/AbstractSAXParser.java"
