@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--
- * Copyright 1999-2005 The Apache Software Foundation.
+ * Copyright 1999-2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,125 @@
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
+  <release version='&ParserName; 2.8.0'>
+   <desc>
+    <p>
+     This release ...
+    </p>
+   </desc>
+   <changes>
+    <add>
+     <note>
+      Implemented a <link idref='properties' anchor="validation.schema.root-type-definition">property</link> 
+      for starting schema assessment from a specific type definition.
+     </note>
+     <submitter name='Peter McCracken'/>
+    </add>
+    <add>
+     <note>
+      Implemented features for disabling ID/IDREF, unparsed entity and identity constraint checking.
+     </note>
+     <submitter name='Peter McCracken'/>
+    </add>
+    <add>
+     <note>
+      Implemented a <link idref='features' anchor="validation.schema.ignore-xsi-type-until-elemdecl">feature</link> 
+      which instructs the schema validator to ignore xsi:type attributes until a global element declaration 
+      has been found.
+     </note>
+     <submitter name='Peter McCracken'/>
+    </add>
+    <update>
+     <note>
+      Modified the JAXP Validation API implementation so that it propagates features set on the SchemaFactory
+      to the Schemas created from the factory and in turn ValidatorHandlers and Validators constructed from 
+      those Schema objects (as clarified by JAXP 1.4).
+     </note>
+     <submitter name='Peter McCracken'/>
+    </update>
+    <add>
+     <note>
+      Implemented the DOM Level 3 Load and Save
+      <jump href="http://www.w3.org/TR/2004/REC-DOM-Level-3-LS-20040407/load-save.html#parameter-format-pretty-print">format-pretty-print</jump>
+      parameter.
+     </note>
+     <submitter name='Matej Kraus'/>
+    </add>
+    <fix>
+     <note>
+      Fixed the <link idref='features' anchor="validation.warn-on-undeclared-elemdef">warn-on-undeclared-elemdef</link> 
+      feature which had been broken for many releases.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <add>
+     <note>
+      Implemented a <link idref='features' anchor="validation.balance-syntax-trees">feature</link>
+      which allows the parser to process DTDs containing large content models which under normal 
+      operation may cause a StackOverflowError to occur.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </add>   
+    <update>
+     <note>
+      Improved the performance and memory usage of XSAnnotation.writeAnnotation().
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </update>
+    <fix>
+     <note>
+      Implemented XML Schema erratum E2-66.
+     </note>
+     <submitter name='Sandy Gao'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed bugs in the implementation of Document.normalizeDocument() which caused DTD 
+      validation to fail in numerous scenarios.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed a bug where schema validation performed in Document.normalizeDocument() was adding 
+      default attributes without setting their owner element or firing mutation events.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed a bug which caused the JAXP 1.2 method for schema validation to fail when the 
+      parser is reused. 
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed a bug which caused a ClassCastException to be thrown when adopting a node from a 
+      deferred DOM into a non-deferred DOM. 
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed the dtdjars build target which had been broken for several releases.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <update>
+     <note>
+      Improved identity constraint error messages.
+     </note>
+     <submitter name='George Cristian Bina'/>
+    </update>
+    <fix>
+     <note>
+      Fixed various bugs and made various improvements.
+     </note>
+     <submitter name='Nathan Beyer, Dave Brosius, Sandy Gao, Michael Glavassevich, Matej Kraus, Peter McCracken'/>
+    </fix>
+   </changes>
+  </release>
   <release version='&ParserName; 2.7.1'>
    <desc>
     <p>
