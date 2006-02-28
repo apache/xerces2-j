@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--
- * Copyright 1999-2005 The Apache Software Foundation.
+ * Copyright 1999-2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -132,8 +132,9 @@
   <s2 title='Changes from Previous Release'>
     
     <p>
-      The &ParserNameLong; &ParserVersion; contains several fixes for schema 
-      related bugs as well as a fix for a bug related to XInclude.
+      The &ParserNameLong; &ParserVersion; contains several new validation related 
+      features and provides enhancements to the schema annotation support in the
+      XML Schema API.
     </p>
     <p>
       For a more complete list of changes, refer to the 
