@@ -147,12 +147,20 @@ public class SchemaDOM extends DefaultDocument {
     
     // note that this will only be called within appinfo/documentation
     void comment(XMLString text) {
-        fAnnotationBuffer.append("<!--").append(text.ch, text.offset, text.length).append("-->");
+        fAnnotationBuffer.append("<!--");
+        if (text.length > 0) {
+            fAnnotationBuffer.append(text.ch, text.offset, text.length);
+        }
+        fAnnotationBuffer.append("-->");
     }
     
     // note that this will only be called within appinfo/documentation
     void processingInstruction(String target, XMLString data) {
-        fAnnotationBuffer.append("<?").append(target).append(" ").append(data.ch, data.offset, data.length).append("?>");
+        fAnnotationBuffer.append("<?").append(target);
+        if (data.length > 0) {
+            fAnnotationBuffer.append(' ').append(data.ch, data.offset, data.length);
+        }
+        fAnnotationBuffer.append("?>");
     }
     
     // note that this will only be called within appinfo/documentation
