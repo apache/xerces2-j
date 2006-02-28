@@ -948,7 +948,7 @@ Copyright:
   	
     <!-- delete META-INF/services files for DatatypeFactory/SchemaFactory 
          since no implementation is provided in this jar -->
-  	<delete file="${build.dest}/META-INF/services/javax.xml.datatype.DatatypeFactory"/>
+    <delete file="${build.dest}/META-INF/services/javax.xml.datatype.DatatypeFactory"/>
     <delete file="${build.dest}/META-INF/services/javax.xml.validation.SchemaFactory"/>
 
     <!-- copy src files -->
@@ -1094,7 +1094,7 @@ Copyright:
     <replace file="${build.dir}/src/org/apache/xerces/util/DOMUtil.java" 
              token="return ((org.apache.xerces.impl.xs.opti.NodeImpl)node).getReadOnly();" value="return false;"/>
   	
-  	<!-- HACK: Remove references to schema validation support from org.apache.xerces.jaxp -->
+    <!-- HACK: Remove references to schema validation support from org.apache.xerces.jaxp -->
     <replace file="${build.dir}/src/org/apache/xerces/jaxp/SAXParserImpl.java" 
              token="import org.apache.xerces.impl.xs.XMLSchemaValidator;" value=""/>
     <replace file="${build.dir}/src/org/apache/xerces/jaxp/SAXParserImpl.java" 
