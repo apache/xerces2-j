@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2005 The Apache Software Foundation.
+ * Copyright 2001-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -147,12 +147,12 @@ public class SchemaDOM extends DefaultDocument {
     
     // note that this will only be called within appinfo/documentation
     void comment(XMLString text) {
-        fAnnotationBuffer.append("<!--").append(text.toString()).append("-->");
+        fAnnotationBuffer.append("<!--").append(text.ch, text.offset, text.length).append("-->");
     }
     
     // note that this will only be called within appinfo/documentation
-    void processingInstruction(String target, String data) {
-        fAnnotationBuffer.append("<?").append(target).append(" ").append(data).append("?>");
+    void processingInstruction(String target, XMLString data) {
+        fAnnotationBuffer.append("<?").append(target).append(" ").append(data.ch, data.offset, data.length).append("?>");
     }
     
     // note that this will only be called within appinfo/documentation

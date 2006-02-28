@@ -580,7 +580,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
         if (fInDTD) {
             if (fInternalSubset != null && !fInDTDExternalSubset) {
                 fInternalSubset.append ("<!-- ");
-                fInternalSubset.append (text.toString ());
+                fInternalSubset.append (text.ch, text.offset, text.length);
                 fInternalSubset.append (" -->");
             }
             return;
@@ -655,7 +655,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                 fInternalSubset.append ("<?");
                 fInternalSubset.append (target);
                 fInternalSubset.append (' ');
-                fInternalSubset.append (data.toString ());
+                fInternalSubset.append (data.ch, data.offset, data.length);
                 fInternalSubset.append ("?>");
 
             }
@@ -1141,7 +1141,6 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                     return;
                 }
 
-                String value = text.toString ();
                 Node child = fCurrentNode.getLastChild ();
                 if (child != null && child.getNodeType () == Node.TEXT_NODE) {
                     // collect all the data into the string buffer.
@@ -1154,11 +1153,11 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                         }
                         fFirstChunk = false;
                     }
-                    fStringBuffer.append (value);
+                    fStringBuffer.append (text.ch, text.offset, text.length);
                 }
                 else {
                     fFirstChunk = true;
-                    Text textNode = fDocument.createTextNode (value);
+                    Text textNode = fDocument.createTextNode (text.toString());
                     fCurrentNode.appendChild (textNode);
                 }
 
