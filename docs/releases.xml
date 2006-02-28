@@ -20,10 +20,23 @@
   <release version='&ParserName; 2.8.0'>
    <desc>
     <p>
-     This release ...
+     This release introduces several new validation related features and provides enhancements 
+     to the XML schema annotation support. All of the schema component interfaces in the XML Schema API 
+     now have a getAnnotations() method which returns a list of XSAnnotations. This includes annotations 
+     on particles and attribute uses which were previously "lost". In addition, in this release we
+     implemented support for pretty-printing in the LSSerializer, repaired the warn-on-undeclared-elemdef
+     feature which had been broken for several releases and fixed many other bugs.
     </p>
    </desc>
    <changes>
+    <add>
+     <note>
+      Added getAnnotations() methods to the component interfaces in the XML Schema API
+      (including XSParticle and XSAttributeUse) and implemented the support for the new
+      methods.
+     </note>
+     <submitter name='Neil Delima'/>
+    </add>
     <add>
      <note>
       Implemented a <link idref='properties' anchor="validation.schema.root-type-definition">property</link> 
