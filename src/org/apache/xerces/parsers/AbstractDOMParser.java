@@ -580,7 +580,9 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
         if (fInDTD) {
             if (fInternalSubset != null && !fInDTDExternalSubset) {
                 fInternalSubset.append ("<!-- ");
-                fInternalSubset.append (text.ch, text.offset, text.length);
+                if (text.length > 0) {
+                    fInternalSubset.append (text.ch, text.offset, text.length);
+                }
                 fInternalSubset.append (" -->");
             }
             return;
@@ -654,10 +656,10 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
             if (fInternalSubset != null && !fInDTDExternalSubset) {
                 fInternalSubset.append ("<?");
                 fInternalSubset.append (target);
-                fInternalSubset.append (' ');
-                fInternalSubset.append (data.ch, data.offset, data.length);
+                if (data.length > 0) {
+                    fInternalSubset.append (' ').append (data.ch, data.offset, data.length);
+                }
                 fInternalSubset.append ("?>");
-
             }
             return;
         }
@@ -1153,7 +1155,9 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                         }
                         fFirstChunk = false;
                     }
-                    fStringBuffer.append (text.ch, text.offset, text.length);
+                    if (text.length > 0) {
+                        fStringBuffer.append (text.ch, text.offset, text.length);
+                    }
                 }
                 else {
                     fFirstChunk = true;
