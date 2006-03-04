@@ -73,4 +73,20 @@
         </choice>
     </complexType>
 
+	<complexType name='CT4'>
+		<sequence>
+			<element name='el1' type='string' />
+		</sequence>
+	</complexType>
+	<complexType name='CT5'>
+		<complexContent>
+			<extension base='sv:CT4'>
+				<sequence>
+				    <annotation/>
+					<element name='el2' type='string' />
+				</sequence>
+			</extension>
+		</complexContent>
+	</complexType>
+	
 </schema>

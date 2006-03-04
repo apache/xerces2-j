@@ -870,10 +870,12 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 group.fParticles = new XSParticleDecl[2];
                 group.fParticles[0] = (XSParticleDecl)baseType.getParticle();
                 group.fParticles[1] = fParticle;
+                group.fAnnotations = XSObjectListImpl.EMPTY_LIST;
                 // the particle to contain the above sequence
                 XSParticleDecl particle = new XSParticleDecl();
                 particle.fType = XSParticleDecl.PARTICLE_MODELGROUP;
                 particle.fValue = group;
+                particle.fAnnotations = fParticle.getAnnotations(); 
                 
                 fParticle = particle;
             }
@@ -1029,9 +1031,11 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 group.fCompositor = XSModelGroupImpl.MODELGROUP_SEQUENCE;
                 group.fParticleCount = 0;
                 group.fParticles = null;
+                group.fAnnotations = XSObjectListImpl.EMPTY_LIST;
                 fEmptyParticle = new XSParticleDecl();
                 fEmptyParticle.fType = XSParticleDecl.PARTICLE_MODELGROUP;
                 fEmptyParticle.fValue = group;
+                fEmptyParticle.fAnnotations = XSObjectListImpl.EMPTY_LIST;
             }
             particle = fEmptyParticle;
         }

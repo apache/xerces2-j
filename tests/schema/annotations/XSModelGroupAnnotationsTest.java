@@ -487,6 +487,38 @@ public class XSModelGroupAnnotationsTest extends TestCase {
         group9AnnotationTest(Boolean.TRUE);
     }
 
+    public void testGroup10Annotation() {
+        String expected = trim("<annotation "
+                + "xmlns=\"http://www.w3.org/2001/XMLSchema\" "
+                + "xmlns:sv=\"XSModelGroup\" xmlns:sn=\"SyntheticAnnotation\" > "
+                + "</annotation>");
+
+        XSModel model = fSchemaLoader
+                .loadURI(getResourceURL("XSModelGroupTest01.xsd"));
+
+        XSComplexTypeDefinition type = (XSComplexTypeDefinition) model
+                .getTypeDefinition("CT4", "XSModelGroup");
+        XSModelGroup modelGroup = (XSModelGroup) type.getParticle().getTerm();
+
+        XSAnnotation annotation = modelGroup.getAnnotation();
+        XSObjectList annotations = modelGroup.getAnnotations();
+        assertNull("TEST10_NO_ANNOTATIONS_CT4", annotation);
+        assertEquals("TEST10_NO_ANNOTATIONS_CT4", annotations.getLength(), 0);
+
+        type = (XSComplexTypeDefinition) model.getTypeDefinition("CT5",
+                "XSModelGroup");
+        annotation = modelGroup.getAnnotation();
+        annotations = modelGroup.getAnnotations();
+        assertNull("TEST10_NO_ANNOTATIONS_CT5", annotation);
+        assertEquals("TEST10_NO_ANNOTATIONS_CT5", annotations.getLength(), 0);
+
+        XSParticle part = (XSParticle) type.getParticle();
+        assertEquals("TEST10_NO_ANNOTATIONS_CT5", expected,
+                trim(((XSAnnotation) part.getAnnotations().item(0))
+                        .getAnnotationString()));
+    }
+    
+    
     public static void main(String args[]) {
         junit.textui.TestRunner.run(XSModelGroupAnnotationsTest.class);
     }
