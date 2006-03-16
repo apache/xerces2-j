@@ -6,7 +6,7 @@ Comment: @impl.name@
 Implementation-Title: org.apache.xerces.impl.Version
 Implementation-Version: @impl.version@
 Implementation-Vendor: Apache Software Foundation
-Implementation-URL: http://xml.apache.org/xerces2-j/
+Implementation-URL: http://xerces.apache.org/xerces2-j/
 
 Name: org/xml/sax/
 Comment: based on xml-commons external 1.3.03
@@ -96,4 +96,4 @@ Specification-Vendor: Apache Software Foundation
 Implementation-Title: org.apache.xerces.xni
 Implementation-Version: 1.2
 Implementation-Vendor: Apache Software Foundation
-Implementation-URL: http://xml.apache.org/xerces2-j/
+Implementation-URL: http://xerces.apache.org/xerces2-j/
