@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2005 The Apache Software Foundation.
+ * Copyright 2000-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Locale;
 import java.util.StringTokenizer;
@@ -64,8 +65,8 @@ import org.apache.xerces.xs.XSModel;
 import org.w3c.dom.DOMConfiguration;
 import org.w3c.dom.DOMError;
 import org.w3c.dom.DOMErrorHandler;
-import org.w3c.dom.DOMStringList;
 import org.w3c.dom.DOMException;
+import org.w3c.dom.DOMStringList;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.InputSource;
@@ -741,7 +742,7 @@ XSLoader, DOMConfiguration {
         // InputSource also, apart from [] of type Object.
         Object[] objArr = (Object[]) fJAXPSource;
         //make local vector for storing targetn namespaces of schemasources specified in object arrays.
-        Vector jaxpSchemaSourceNamespaces = new Vector() ;
+        ArrayList jaxpSchemaSourceNamespaces = new ArrayList();
         for (int i = 0; i < objArr.length; i++) {
             if(objArr[i] instanceof InputStream ||
                     objArr[i] instanceof InputSource) {

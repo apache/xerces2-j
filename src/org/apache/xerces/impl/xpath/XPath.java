@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2002,2004,2005 The Apache Software Foundation.
+ * Copyright 2000-2002,2004-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,12 @@
 
 package org.apache.xerces.impl.xpath;
 
+import java.util.ArrayList;
 import java.util.Vector;
 
 import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.util.XMLChar;
+import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
 
@@ -178,7 +179,7 @@ public class XPath {
         
         //fTokens.dumpTokens();
         Vector stepsVector = new Vector();
-        Vector locationPathsVector= new Vector();
+        ArrayList locationPathsVector= new ArrayList();
         
         // true when the next token should be 'Step' (as defined in
         // the production rule [3] of XML Schema P1 section 3.11.6
@@ -194,7 +195,7 @@ public class XPath {
             switch (token) {
                 case  XPath.Tokens.EXPRTOKEN_OPERATOR_UNION :{
                     check(!expectingStep);
-                    locationPathsVector.addElement(buildLocationPath(stepsVector));
+                    locationPathsVector.add(buildLocationPath(stepsVector));
                     expectingStep=true;
                     break;
                 }
@@ -271,11 +272,10 @@ public class XPath {
         
         check(!expectingStep);
 
-        locationPathsVector.addElement(buildLocationPath(stepsVector));
+        locationPathsVector.add(buildLocationPath(stepsVector));
 
         // save location path
-        fLocationPaths=new LocationPath[locationPathsVector.size()];
-        locationPathsVector.copyInto(fLocationPaths);
+        fLocationPaths = (LocationPath[])locationPathsVector.toArray(new LocationPath[locationPathsVector.size()]);
 
 
         if (DEBUG_XPATH_PARSE) {

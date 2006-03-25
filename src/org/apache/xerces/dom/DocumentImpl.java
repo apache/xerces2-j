@@ -1,5 +1,5 @@
 /*
- * Copyright 2001,2002,2004,2005 The Apache Software Foundation.
+ * Copyright 2001,2002,2004-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@
 package org.apache.xerces.dom;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Vector;
 
 import org.apache.xerces.dom.events.EventImpl;
 import org.apache.xerces.dom.events.MutationEventImpl;
-import org.w3c.dom.UserDataHandler;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMImplementation;
@@ -30,6 +30,7 @@ import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.w3c.dom.UserDataHandler;
 import org.w3c.dom.events.DocumentEvent;
 import org.w3c.dom.events.Event;
 import org.w3c.dom.events.EventException;
@@ -687,11 +688,11 @@ public class DocumentImpl
         // is issued to the Element rather than the Attr
         // and causes a _second_ DOMSubtreeModified in the Element's
         // tree.
-        Vector pv = new Vector(10,10);
+        ArrayList pv = new ArrayList(10);
         Node p = node;
         Node n = p.getParentNode();
         while (n != null) {
-            pv.addElement(n);
+            pv.add(n);
             p = n;
             n = n.getParentNode();
         }
@@ -706,7 +707,7 @@ public class DocumentImpl
                     break;  // Someone set the flag. Phase ends.
 
                 // Handle all capturing listeners on this node
-                NodeImpl nn = (NodeImpl) pv.elementAt(j);
+                NodeImpl nn = (NodeImpl) pv.get(j);
                 evt.currentTarget = nn;
                 Vector nodeListeners = getEventListeners(nn);
                 if (nodeListeners != null) {
@@ -768,7 +769,7 @@ public class DocumentImpl
                         break;  // Someone set the flag. Phase ends.
 
                     // Handle all bubbling listeners on this node
-                    NodeImpl nn = (NodeImpl) pv.elementAt(j);
+                    NodeImpl nn = (NodeImpl) pv.get(j);
                     evt.currentTarget = nn;
                     nodeListeners = getEventListeners(nn);
                     if (nodeListeners != null) {

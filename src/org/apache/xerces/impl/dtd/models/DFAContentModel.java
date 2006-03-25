@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004 The Apache Software Foundation.
+ * Copyright 1999-2002,2004,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,10 @@
 
 package org.apache.xerces.impl.dtd.models;
 
-import org.apache.xerces.xni.QName;
+import java.util.HashMap;
+
 import org.apache.xerces.impl.dtd.XMLContentSpec;
+import org.apache.xerces.xni.QName;
 
 /**
  * DFAContentModel is the derivative of ContentModel that does
@@ -588,7 +590,7 @@ public class DFAContentModel
 	     * a large content model such as, "(t001+|t002+|.... |t500+)".
 	     */
 
-	java.util.Hashtable stateTable = new java.util.Hashtable();
+        HashMap stateTable = new HashMap();
 
 	    /* Optimization(Jan, 2001) */
 

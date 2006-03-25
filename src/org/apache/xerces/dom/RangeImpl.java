@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2005 The Apache Software Foundation.
+ * Copyright 1999-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package org.apache.xerces.dom;
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.DOMException;
@@ -123,25 +123,25 @@ public class RangeImpl  implements Range {
                 DOMException.INVALID_STATE_ERR, 
                 DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_STATE_ERR", null));
         }
-        Vector startV = new Vector();
+        ArrayList startV = new ArrayList();
         Node node;
         for (node=fStartContainer; node != null; 
              node=node.getParentNode()) 
         {
-            startV.addElement(node);
+            startV.add(node);
         }
-        Vector endV = new Vector();
+        ArrayList endV = new ArrayList();
         for (node=fEndContainer; node != null; 
              node=node.getParentNode()) 
         {
-            endV.addElement(node);
+            endV.add(node);
         }
         int s = startV.size()-1;
         int e = endV.size()-1;
         Object result = null;
         while (s>=0 && e>=0) {
-            if (startV.elementAt(s) == endV.elementAt(e)) {
-                result = startV.elementAt(s);
+            if (startV.get(s) == endV.get(e)) {
+                result = startV.get(s);
             } else {
                 break;
             }

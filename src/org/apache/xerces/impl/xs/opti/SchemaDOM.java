@@ -16,18 +16,18 @@
 
 package org.apache.xerces.impl.xs.opti;
 
+import java.util.ArrayList;
+import java.util.Enumeration;
+
+import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLString;
-import org.apache.xerces.util.XMLSymbols;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
-
-import java.util.Vector;
-import java.util.Enumeration;
 
 /**
  * @xerces.internal  
@@ -339,14 +339,14 @@ public class SchemaDOM extends DefaultDocument {
         // for other namespaces so that we can also include them.
         // optimized for simplicity and the case that not many
         // namespaces are declared on this annotation...
-        Vector namespaces = new Vector();
+        ArrayList namespaces = new ArrayList();
         for (int i = 0; i < attributes.getLength(); ++i) {
             String aValue = attributes.getValue(i);
             String aPrefix = attributes.getPrefix(i);
             String aQName = attributes.getQName(i);
             // if it's xmlns:* or xmlns, must be a namespace decl
             if (aPrefix == XMLSymbols.PREFIX_XMLNS || aQName == XMLSymbols.PREFIX_XMLNS) {
-                namespaces.addElement(aPrefix == XMLSymbols.PREFIX_XMLNS ? 
+                namespaces.add(aPrefix == XMLSymbols.PREFIX_XMLNS ? 
                         attributes.getLocalName(i) : XMLSymbols.EMPTY_STRING);
             }
             fAnnotationBuffer.append(aQName).append("=\"").append(processAttValue(aValue)).append("\" ");

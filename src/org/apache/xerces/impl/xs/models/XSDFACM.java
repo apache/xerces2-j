@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2004 The Apache Software Foundation.
+ * Copyright 1999-2004,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,19 @@
 
 package org.apache.xerces.impl.xs.models;
 
-import org.apache.xerces.xni.QName;
+import java.util.HashMap;
+import java.util.Vector;
+
 import org.apache.xerces.impl.dtd.models.CMNode;
 import org.apache.xerces.impl.dtd.models.CMStateSet;
 import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
-import org.apache.xerces.impl.xs.XSElementDecl;
-import org.apache.xerces.impl.xs.XSParticleDecl;
-import org.apache.xerces.impl.xs.XSModelGroupImpl;
-import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.impl.xs.XMLSchemaException;
 import org.apache.xerces.impl.xs.XSConstraints;
-
-import java.util.Vector;
+import org.apache.xerces.impl.xs.XSElementDecl;
+import org.apache.xerces.impl.xs.XSModelGroupImpl;
+import org.apache.xerces.impl.xs.XSParticleDecl;
+import org.apache.xerces.impl.xs.XSWildcardDecl;
+import org.apache.xerces.xni.QName;
 
 /**
  * DFAContentModel is the implementation of XSCMValidator that does
@@ -508,7 +509,7 @@ public class XSDFACM
          * a large content model such as, "(t001+|t002+|.... |t500+)".
          */
 
-        java.util.Hashtable stateTable = new java.util.Hashtable();
+        HashMap stateTable = new HashMap();
 
         /* Optimization(Jan, 2001) */
 
