@@ -16,6 +16,7 @@
 
 package org.apache.xerces.impl.xs;
 
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSNamespaceItem;
 import org.apache.xerces.xs.XSObjectList;
@@ -237,7 +238,7 @@ public class XSParticleDecl implements XSParticle {
      * Optional. Annotations.
      */
     public XSObjectList getAnnotations() {
-        return fAnnotations;
+        return (fAnnotations != null) ? fAnnotations : XSObjectListImpl.EMPTY_LIST;
     }
 
-} // class XSParticle
+} // class XSParticleDecl

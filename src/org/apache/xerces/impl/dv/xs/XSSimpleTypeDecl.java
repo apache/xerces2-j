@@ -3088,25 +3088,27 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         fAnonymous = anon;
     }
 	
-	private static final class XSFacetImpl implements XSFacet {
-		final short kind;
-		final String value;
-		final boolean fixed;
-        XSObjectList annotations = null;  
-		
-		public XSFacetImpl(short kind, String value, boolean fixed, XSAnnotation annotation) {
-			this.kind = kind;
-			this.value = value;
-			this.fixed = fixed;
-
-		    if (annotation != null) {
+    private static final class XSFacetImpl implements XSFacet {
+        final short kind;
+        final String value;
+        final boolean fixed;
+        final XSObjectList annotations;  
+        
+        public XSFacetImpl(short kind, String value, boolean fixed, XSAnnotation annotation) {
+            this.kind = kind;
+            this.value = value;
+            this.fixed = fixed;
+            
+            if (annotation != null) {
                 this.annotations = new XSObjectListImpl();
                 ((XSObjectListImpl)this.annotations).add(annotation);
-            } else {
+            } 
+            else {
                 this.annotations =  XSObjectListImpl.EMPTY_LIST;
             }
-		}
-		/*
+        }
+        
+        /*
          * (non-Javadoc)
          * 
          * @see org.apache.xerces.xs.XSFacet#getAnnotation()
@@ -3117,7 +3119,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         public XSAnnotation getAnnotation() {
             return (XSAnnotation) annotations.item(0);
         }
-
+        
         /*
          * (non-Javadoc)
          * 
@@ -3129,122 +3131,120 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         public XSObjectList getAnnotations() {
             return annotations;
         }
-		
-		/* (non-Javadoc)
-		 * @see org.apache.xerces.xs.XSFacet#getFacetKind()
-		 */
-		public short getFacetKind() {
-			return kind;
-		}
-		
-		/* (non-Javadoc)
-		 * @see org.apache.xerces.xs.XSFacet#getLexicalFacetValue()
-		 */
-		public String getLexicalFacetValue() {
-			return value;
-		}
-		
-		/* (non-Javadoc)
-		 * @see org.apache.xerces.xs.XSFacet#isFixed()
-		 */
-		public boolean getFixed() {
-			return fixed;
-		}
-		
-		/* (non-Javadoc)
-		 * @see org.apache.xerces.xs.XSObject#getName()
-		 */
-		public String getName() {
-			return null;
-		}
-		
-		/* (non-Javadoc)
-		 * @see org.apache.xerces.xs.XSObject#getNamespace()
-		 */
-		public String getNamespace() {
-			return null;
-		}
-		
-		/* (non-Javadoc)
-		 * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
-		 */
-		public XSNamespaceItem getNamespaceItem() {
-			// REVISIT: implement
-			return null;
-		}
-		
-		/* (non-Javadoc)
-		 * @see org.apache.xerces.xs.XSObject#getType()
-		 */
-		public short getType() {
-			return XSConstants.FACET;
-		}
-		
-	}
+        
+        /* (non-Javadoc)
+         * @see org.apache.xerces.xs.XSFacet#getFacetKind()
+         */
+        public short getFacetKind() {
+            return kind;
+        }
+        
+        /* (non-Javadoc)
+         * @see org.apache.xerces.xs.XSFacet#getLexicalFacetValue()
+         */
+        public String getLexicalFacetValue() {
+            return value;
+        }
+        
+        /* (non-Javadoc)
+         * @see org.apache.xerces.xs.XSFacet#isFixed()
+         */
+        public boolean getFixed() {
+            return fixed;
+        }
+        
+        /* (non-Javadoc)
+         * @see org.apache.xerces.xs.XSObject#getName()
+         */
+        public String getName() {
+            return null;
+        }
+        
+        /* (non-Javadoc)
+         * @see org.apache.xerces.xs.XSObject#getNamespace()
+         */
+        public String getNamespace() {
+            return null;
+        }
+        
+        /* (non-Javadoc)
+         * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
+         */
+        public XSNamespaceItem getNamespaceItem() {
+            // REVISIT: implement
+            return null;
+        }
+        
+        /* (non-Javadoc)
+         * @see org.apache.xerces.xs.XSObject#getType()
+         */
+        public short getType() {
+            return XSConstants.FACET;
+        }
+        
+    }
 	
-	private static final class XSMVFacetImpl implements XSMultiValueFacet {
-		final short kind;
-		XSObjectList annotations;
-		StringList values;
-		
-		public XSMVFacetImpl(short kind, StringList values, XSObjectList annotations) {
-			this.kind = kind;
-			this.values = values;
-			this.annotations = annotations;
-		}
-		
-		
-		/* (non-Javadoc)
-		 * @see org.apache.xerces.xs.XSFacet#getFacetKind()
-		 */
-		public short getFacetKind() {
-			return kind;
-		}
-		
-		
-		/* (non-Javadoc)
-		 * @see org.apache.xerces.xs.XSMultiValueFacet#getAnnotations()
-		 */
-		public XSObjectList getAnnotations() {
-			return annotations;
-		}
-		
-		/* (non-Javadoc)
-		 * @see org.apache.xerces.xs.XSMultiValueFacet#getLexicalFacetValues()
-		 */
-		public StringList getLexicalFacetValues() {
-			return values;
-		}
-		
-		/* (non-Javadoc)
-		 * @see org.apache.xerces.xs.XSObject#getName()
-		 */
-		public String getName() {
-			return null;
-		}
-		
-		/* (non-Javadoc)
-		 * @see org.apache.xerces.xs.XSObject#getNamespace()
-		 */
-		public String getNamespace() {
-			return null;
-		}
-		
-		/* (non-Javadoc)
-		 * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
-		 */
-		public XSNamespaceItem getNamespaceItem() {
-			// REVISIT: implement
-			return null;
-		}
-		
-		/* (non-Javadoc)
-		 * @see org.apache.xerces.xs.XSObject#getType()
-		 */
-		public short getType() {
-			return XSConstants.MULTIVALUE_FACET;
-		}
-	}
+    private static final class XSMVFacetImpl implements XSMultiValueFacet {
+        final short kind;
+        final XSObjectList annotations;
+        final StringList values;
+        
+        public XSMVFacetImpl(short kind, StringList values, XSObjectList annotations) {
+            this.kind = kind;
+            this.values = values;
+            this.annotations = (annotations != null) ? annotations : XSObjectListImpl.EMPTY_LIST;
+        }		
+        
+        /* (non-Javadoc)
+         * @see org.apache.xerces.xs.XSFacet#getFacetKind()
+         */
+        public short getFacetKind() {
+            return kind;
+        }	
+        
+        /* (non-Javadoc)
+         * @see org.apache.xerces.xs.XSMultiValueFacet#getAnnotations()
+         */
+        public XSObjectList getAnnotations() {
+            return annotations;
+        }
+        
+        /* (non-Javadoc)
+         * @see org.apache.xerces.xs.XSMultiValueFacet#getLexicalFacetValues()
+         */
+        public StringList getLexicalFacetValues() {
+            return values;
+        }
+        
+        /* (non-Javadoc)
+         * @see org.apache.xerces.xs.XSObject#getName()
+         */
+        public String getName() {
+            return null;
+        }
+        
+        /* (non-Javadoc)
+         * @see org.apache.xerces.xs.XSObject#getNamespace()
+         */
+        public String getNamespace() {
+            return null;
+        }
+        
+        /* (non-Javadoc)
+         * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
+         */
+        public XSNamespaceItem getNamespaceItem() {
+            // REVISIT: implement
+            return null;
+        }
+        
+        /* (non-Javadoc)
+         * @see org.apache.xerces.xs.XSObject#getType()
+         */
+        public short getType() {
+            return XSConstants.MULTIVALUE_FACET;
+        }
+    }
 
     public String getTypeNamespace() {
         return getNamespace();

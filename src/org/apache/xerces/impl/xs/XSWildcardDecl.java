@@ -23,6 +23,7 @@ import org.apache.xerces.xs.XSNamespaceItem;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSWildcard;
 import org.apache.xerces.impl.xs.util.StringListImpl;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 
 /**
  * The XML representation for a wildcard declaration
@@ -574,14 +575,14 @@ public class XSWildcardDecl implements XSWildcard {
      * Optional. Annotation.
      */
     public XSAnnotation getAnnotation() {
-        return (XSAnnotation) fAnnotations.item(0);
+        return (fAnnotations != null) ? (XSAnnotation) fAnnotations.item(0) : null;
     }
 
     /**
      * Optional. Annotations.
      */
     public XSObjectList getAnnotations() {
-        return fAnnotations;
+        return (fAnnotations != null) ? fAnnotations : XSObjectListImpl.EMPTY_LIST;
     }
 
 	/**

@@ -19,6 +19,7 @@ package org.apache.xerces.impl.xs;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.xs.*;
 import org.apache.xerces.impl.dv.ValidatedInfo;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 
 /**
  * The XML representation for an attribute declaration
@@ -151,14 +152,14 @@ public class XSAttributeDecl implements XSAttributeDeclaration {
      * Optional. Annotation.
      */
     public XSAnnotation getAnnotation() {
-        return (XSAnnotation) fAnnotations.item(0);
+        return (fAnnotations != null) ? (XSAnnotation) fAnnotations.item(0) : null;
     }
 
     /**
      * Optional. Annotations.
      */
     public XSObjectList getAnnotations() {
-        return fAnnotations;
+        return (fAnnotations != null) ? fAnnotations : XSObjectListImpl.EMPTY_LIST;
     }
     
     public ValidatedInfo getValInfo() {

@@ -28,6 +28,7 @@ import org.apache.xerces.xs.XSNamespaceItem;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.impl.xs.util.XSNamedMapImpl;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 
 /**
  * The XML representation for an element declaration
@@ -334,14 +335,14 @@ public class XSElementDecl implements XSElementDeclaration {
      * Optional. Annotation.
      */
     public XSAnnotation getAnnotation() {
-        return (XSAnnotation)fAnnotations.item(0);
+        return (fAnnotations != null) ? (XSAnnotation) fAnnotations.item(0) : null;
     }
 
     /**
      * Optional. Annotations.
      */
     public XSObjectList getAnnotations() {
-        return fAnnotations;
+        return (fAnnotations != null) ? fAnnotations : XSObjectListImpl.EMPTY_LIST;
     }
     
 

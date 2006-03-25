@@ -17,6 +17,7 @@
 package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.impl.dv.ValidatedInfo;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.xs.ShortList;
 import org.apache.xerces.xs.XSAttributeDeclaration;
 import org.apache.xerces.xs.XSAttributeUse;
@@ -43,7 +44,6 @@ public class XSAttributeUseImpl implements XSAttributeUse {
     public short fConstraintType = XSConstants.VC_NONE;
     // value constraint value
     public ValidatedInfo fDefault = null;
-
     // optional annotation
     public XSObjectList fAnnotations = null;
     
@@ -143,7 +143,7 @@ public class XSAttributeUseImpl implements XSAttributeUse {
      * Optional. Annotations.
      */
     public XSObjectList getAnnotations() {
-        return fAnnotations;
+        return (fAnnotations != null) ? fAnnotations : XSObjectListImpl.EMPTY_LIST;
     }
     
 } // class XSAttributeUseImpl
