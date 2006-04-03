@@ -62,7 +62,7 @@ Copyright:
     <property name='default.parser.config.qualified' value='org.apache.xerces.parsers.XIncludeAwareParserConfiguration'/>
 
     <property name="year" value="1999-2006"/>
-    <property name="copyright" value="Copyright &#169; ${year} Apache XML Project. All Rights Reserved."/>
+    <property name="copyright" value="Copyright &#169; ${year} The Apache Software Foundation. All Rights Reserved."/>
 
     <echo message= "---------------- ${parser.Name} ${parser.Version} [${year}] ---------------"/>
     <!-- changed made to synchronize with a patch from Sam Ruby (<rubys@apache.org>) to Xerces1
