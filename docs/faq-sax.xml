@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--
- * Copyright 2004,2005 The Apache Software Foundation.
+ * Copyright 2004-2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import org.xml.sax.helpers.DefaultHandler;
 String xmlFile = &quot;file:///&parserdir;/data/personal.xml&quot;; 
 try {
     SAXParserFactory factory = SAXParserFactory.newInstance();
+    factory.setNamespaceAware(true);
     SAXParser parser = factory.newSAXParser();
     DefaultHandler handler = /* custom handler class */;
     parser.parse(xmlFile, handler);
