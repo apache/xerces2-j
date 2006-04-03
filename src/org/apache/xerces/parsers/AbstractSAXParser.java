@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2005 The Apache Software Foundation.
+ * Copyright 2001-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,10 +91,6 @@ public abstract class AbstractSAXParser
     protected static final String NAMESPACES =
         Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
 
-    /** Feature identifier: namespace prefixes. */
-    protected static final String NAMESPACE_PREFIXES =
-        Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACE_PREFIXES_FEATURE;
-
     /** Feature id: string interning. */
     protected static final String STRING_INTERNING =
         Constants.SAX_FEATURE_PREFIX + Constants.STRING_INTERNING_FEATURE;
@@ -108,7 +104,6 @@ public abstract class AbstractSAXParser
     /** Recognized features. */
     private static final String[] RECOGNIZED_FEATURES = {
         NAMESPACES,
-        NAMESPACE_PREFIXES,
         STRING_INTERNING,
     };
 
@@ -1529,7 +1524,6 @@ public abstract class AbstractSAXParser
                 //
                 if (suffixLength == Constants.NAMESPACE_PREFIXES_FEATURE.length() && 
                     featureId.endsWith(Constants.NAMESPACE_PREFIXES_FEATURE)) {
-                    fConfiguration.setFeature(featureId, state);
                     fNamespacePrefixes = state;
                     return;
                 }
@@ -1709,8 +1703,7 @@ public abstract class AbstractSAXParser
                 //
                 if (suffixLength == Constants.NAMESPACE_PREFIXES_FEATURE.length() && 
                     featureId.endsWith(Constants.NAMESPACE_PREFIXES_FEATURE)) {
-                    boolean state = fConfiguration.getFeature(featureId);
-                    return state;
+                    return fNamespacePrefixes;
                 }
                 // http://xml.org/sax/features/string-interning
                 //   controls the use of java.lang.String#intern() for strings
@@ -2195,8 +2188,7 @@ public abstract class AbstractSAXParser
         fStandalone = false;
 
         // features
-        fNamespaces = fConfiguration.getFeature(NAMESPACES);           
-        fNamespacePrefixes = fConfiguration.getFeature(NAMESPACE_PREFIXES);
+        fNamespaces = fConfiguration.getFeature(NAMESPACES);
         fAugmentations = null;
         fDeclaredAttrs = null;
         
