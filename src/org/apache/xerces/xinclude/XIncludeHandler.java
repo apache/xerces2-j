@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2005 The Apache Software Foundation.
+ * Copyright 2003-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -294,6 +294,8 @@ public class XIncludeHandler
     protected IntStack fLanguageScope;
     protected Stack fLanguageStack;
     protected String fCurrentLanguage;
+    
+    protected String fHrefFromParent;
 
     // used for passing features on to child XIncludeHandler objects
     protected ParserConfigurationSettings fSettings;
@@ -756,15 +758,6 @@ public class XIncludeHandler
         // otherwise, the locator from the root document would always be used
         fErrorReporter.setDocumentLocator(locator);
 
-        if (!isRootDocument()) {
-            fParentXIncludeHandler.fHasIncludeReportedContent = true;
-            if (fParentXIncludeHandler.searchForRecursiveIncludes(locator)) {
-                reportFatalError(
-                        "RecursiveInclude",
-                        new Object[] { locator.getExpandedSystemId()});
-            }
-        }
-
         if (!(namespaceContext instanceof XIncludeNamespaceSupport)) {
             reportFatalError("IncompatibleNamespaceContext");
         }
@@ -772,15 +765,24 @@ public class XIncludeHandler
         fDocLocation = locator;
 
         // initialize the current base URI
-        fCurrentBaseURI.setBaseSystemId(locator.getBaseSystemId());
-        fCurrentBaseURI.setExpandedSystemId(locator.getExpandedSystemId());
-        fCurrentBaseURI.setLiteralSystemId(locator.getLiteralSystemId());
+        setupCurrentBaseURI(locator);
         saveBaseURI();
         if (augs == null) {
             augs = new AugmentationsImpl();
         }
         augs.putItem(CURRENT_BASE_URI, fCurrentBaseURI);
         
+        // abort here if we detect a recursive include
+        if (!isRootDocument()) {
+            fParentXIncludeHandler.fHasIncludeReportedContent = true;
+            if (fParentXIncludeHandler.searchForRecursiveIncludes(
+                fCurrentBaseURI.getExpandedSystemId())) {
+                reportFatalError(
+                        "RecursiveInclude",
+                        new Object[] { fCurrentBaseURI.getExpandedSystemId()});
+            }
+        }
+
         // initialize the current language
         fCurrentLanguage = XMLSymbols.EMPTY_STRING;
         saveLanguage(fCurrentLanguage);
@@ -1633,6 +1635,7 @@ public class XIncludeHandler
                 	// ???
                     
                     newHandler.setParent(this); 
+                    newHandler.setHref(href);
                     newHandler.setDocumentHandler(this.getDocumentHandler());
                     fXPointerChildConfig = fChildConfig;                       
                 } else {
@@ -1641,7 +1644,8 @@ public class XIncludeHandler
                             Constants.XERCES_PROPERTY_PREFIX
                                 + Constants.XINCLUDE_HANDLER_PROPERTY);
 
-                	newHandler.setParent(this);
+                    newHandler.setParent(this);
+                    newHandler.setHref(href);
                     newHandler.setDocumentHandler(this.getDocumentHandler());
                     fXIncludeChildConfig = fChildConfig;
                 }
@@ -1876,37 +1880,52 @@ public class XIncludeHandler
         return parentLanguage != null && parentLanguage.equalsIgnoreCase(fCurrentLanguage);
     }
 
-    /**
-     * Checks if the file indicated by the given XMLLocator has already been included
-     * in the current stack.
-     * @param includedSource the source to check for inclusion
-     * @return true if the source has already been included
-     */
-    protected boolean searchForRecursiveIncludes(XMLLocator includedSource) {
-        String includedSystemId = includedSource.getExpandedSystemId();
+    protected void setupCurrentBaseURI(XMLLocator locator) {
+        fCurrentBaseURI.setBaseSystemId(locator.getBaseSystemId());
 
-        if (includedSystemId == null) {
+        if (locator.getLiteralSystemId() != null) {
+            fCurrentBaseURI.setLiteralSystemId(locator.getLiteralSystemId());
+        }
+        else {
+            fCurrentBaseURI.setLiteralSystemId(fHrefFromParent);
+        }
+
+        String expandedSystemId = locator.getExpandedSystemId();
+        if (expandedSystemId == null) {
+            // attempt to expand it ourselves
             try {
-                includedSystemId =
+                expandedSystemId =
                     XMLEntityManager.expandSystemId(
-                        includedSource.getLiteralSystemId(),
-                        includedSource.getBaseSystemId(),
+                        fCurrentBaseURI.getLiteralSystemId(),
+                        fCurrentBaseURI.getBaseSystemId(),
                         false);
+                if (expandedSystemId == null) {
+                    expandedSystemId = fCurrentBaseURI.getLiteralSystemId();
+                }
             }
             catch (MalformedURIException e) {
                 reportFatalError("ExpandedSystemId");
             }
         }
-
-        if (includedSystemId.equals(fCurrentBaseURI.getExpandedSystemId())) {
+        fCurrentBaseURI.setExpandedSystemId(expandedSystemId);
+    }
+    
+    /**
+     * Checks if the file indicated by the given system id has already been
+     * included in the current stack.
+     * @param includedSysId the system id to check for inclusion
+     * @return true if the source has already been included
+     */
+    protected boolean searchForRecursiveIncludes(String includedSysId) {
+        if (includedSysId.equals(fCurrentBaseURI.getExpandedSystemId())) {
             return true;
         }
-
-        if (fParentXIncludeHandler == null) {
+        else if (fParentXIncludeHandler == null) {
             return false;
         }
-        return fParentXIncludeHandler.searchForRecursiveIncludes(
-            includedSource);
+        else {
+            return fParentXIncludeHandler.searchForRecursiveIncludes(includedSysId);
+        }
     }
 
     /**
@@ -2364,6 +2383,10 @@ public class XIncludeHandler
         fParentXIncludeHandler = parent;
     }
 
+    protected void setHref(String href) {
+       fHrefFromParent = href;
+    }
+    
     // used to know whether to pass declarations to the document handler
     protected boolean isRootDocument() {
         return fParentXIncludeHandler == null;
