@@ -1,5 +1,5 @@
 /*
- * Copyright 2003,2004 The Apache Software Foundation.
+ * Copyright 2003,2004,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.StringTokenizer;
 
 import org.apache.xerces.parsers.XIncludeParserConfiguration;
 import org.apache.xerces.xni.XNIException;
@@ -307,8 +308,8 @@ public class Test implements XMLErrorHandler {
                 }
             }
             else {
-				compareOutput(new FileReader(expectedOutputFile),
-									new StringReader(fResults));
+                compareOutput(new FileReader(expectedOutputFile),
+                                    new StringReader(fResults));
                 fLogStream.println(fResults);
                 fLogStream.println("Result: FAIL");
                 return false;
@@ -450,9 +451,6 @@ public class Test implements XMLErrorHandler {
         return true;
     }
 
-    // returns "true" if the Strings are different only because of
-    // a different absolute filename (NOTE: only works if they are different because
-    // of ONE filename)
     private String stripUserDir(StringBuffer buf) {
         String userDir = System.getProperty("user.dir");
         String userURI = "file://";
@@ -460,7 +458,7 @@ public class Test implements XMLErrorHandler {
             userURI += "/";
         }
         userURI += userDir.replace('\\', '/');
-        String str = buf.toString();
+        String str = getPathWithoutEscapes(buf.toString());
 
         int start = 0, end = 0;
         // strip ones in URI form
@@ -476,5 +474,23 @@ public class Test implements XMLErrorHandler {
             str = str.substring(0, start) + str.substring(end+1);
         }
         return str;
+    }
+    
+    private static String getPathWithoutEscapes(String origPath) {
+        if (origPath != null && origPath.length() != 0 && origPath.indexOf('%') != -1) {
+            // Locate the escape characters
+            StringTokenizer tokenizer = new StringTokenizer(origPath, "%");
+            StringBuffer result = new StringBuffer(origPath.length());
+            int size = tokenizer.countTokens();
+            result.append(tokenizer.nextToken());
+            for(int i = 1; i < size; ++i) {
+                String token = tokenizer.nextToken();
+                // Decode the 2 digit hexadecimal number following % in '%nn'
+                result.append((char)Integer.valueOf(token.substring(0, 2), 16).intValue());
+                result.append(token.substring(2));
+            }
+            return result.toString();
+        }
+        return origPath;
     }
 }
