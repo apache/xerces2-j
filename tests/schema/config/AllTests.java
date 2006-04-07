@@ -33,6 +33,7 @@ public class AllTests {
         TestSuite suite = new TestSuite("Tests for various schema validation configurations.");
         suite.addTestSuite(BasicTest.class);
         suite.addTestSuite(RootTypeDefinitionTest.class);
+        suite.addTestSuite(RootSimpleTypeDefinitionTest.class);
         suite.addTestSuite(IgnoreXSIType_C_A_Test.class);
         suite.addTestSuite(IgnoreXSIType_C_C_Test.class);
         suite.addTestSuite(IgnoreXSIType_A_A_Test.class);
