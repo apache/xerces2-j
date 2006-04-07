@@ -1928,17 +1928,21 @@ public class XMLSchemaValidator
             if (rootTypeNamespace != null && rootTypeNamespace.equals(XMLConstants.NULL_NS_URI)) {
                 rootTypeNamespace = null;
             }
-            SchemaGrammar grammarForRootType =
-                findSchemaGrammar(
-                        XSDDescription.CONTEXT_ELEMENT, rootTypeNamespace, null, null, null);
-            if (grammarForRootType != null) {
-                fCurrentType = grammarForRootType.getGlobalTypeDecl(fRootTypeQName.getLocalPart());
+            if (rootTypeNamespace == SchemaSymbols.URI_SCHEMAFORSCHEMA) {
+                fCurrentType = SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(fRootTypeQName.getLocalPart());
+            }
+            else {
+                SchemaGrammar grammarForRootType = findSchemaGrammar(
+                    XSDDescription.CONTEXT_ELEMENT, rootTypeNamespace, null, null, null);
+                if (grammarForRootType != null) {
+                    fCurrentType = grammarForRootType.getGlobalTypeDecl(fRootTypeQName.getLocalPart());
+                }
             }
             if (fCurrentType == null) {
                 String typeName = (fRootTypeQName.getPrefix().equals(XMLConstants.DEFAULT_NS_PREFIX)) ?
-                        fRootTypeQName.getLocalPart() :
-                            fRootTypeQName.getPrefix()+":"+fRootTypeQName.getLocalPart();
-                        reportSchemaError("cvc-type.1", new Object[] {typeName});
+                    fRootTypeQName.getLocalPart() :
+                    fRootTypeQName.getPrefix()+":"+fRootTypeQName.getLocalPart();
+                reportSchemaError("cvc-type.1", new Object[] {typeName});
             }
         }
         
