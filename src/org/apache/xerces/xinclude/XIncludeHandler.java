@@ -141,8 +141,8 @@ public class XIncludeHandler
     public final static String CURRENT_BASE_URI = "currentBaseURI";
 
     // used for adding [base URI] attributes
-    public final static String XINCLUDE_BASE = "base".intern();
-    public final static QName XML_BASE_QNAME =
+    private final static String XINCLUDE_BASE = "base".intern();
+    private final static QName XML_BASE_QNAME =
         new QName(
             XMLSymbols.PREFIX_XML,
             XINCLUDE_BASE,
@@ -150,15 +150,15 @@ public class XIncludeHandler
             NamespaceContext.XML_URI);
     
     // used for adding [language] attributes
-    public final static String XINCLUDE_LANG = "lang".intern();
-    public final static QName XML_LANG_QNAME = 
+    private final static String XINCLUDE_LANG = "lang".intern();
+    private final static QName XML_LANG_QNAME = 
         new QName(
             XMLSymbols.PREFIX_XML,
             XINCLUDE_LANG,
             (XMLSymbols.PREFIX_XML + ":" + XINCLUDE_LANG).intern(),
             NamespaceContext.XML_URI);
 
-    public final static QName NEW_NS_ATTR_QNAME =
+    private final static QName NEW_NS_ATTR_QNAME =
         new QName(
             XMLSymbols.PREFIX_XMLNS,
             "",
@@ -218,7 +218,7 @@ public class XIncludeHandler
         Constants.XERCES_PROPERTY_PREFIX + Constants.SECURITY_MANAGER_PROPERTY;
     
     /** property identifier: buffer size. */
-    public static final String BUFFER_SIZE =
+    protected static final String BUFFER_SIZE =
         Constants.XERCES_PROPERTY_PREFIX + Constants.BUFFER_SIZE_PROPERTY;
     
     protected static final String PARSER_SETTINGS = 
