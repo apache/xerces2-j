@@ -26,7 +26,7 @@ import org.xml.sax.SAXException;
 
 /**
  * @author Peter McCracken, IBM
- * @version $Id: RootTypeDefinitionTest.java 381005 2006-02-25 22:14:10Z mrglavas $
+ * @version $Id$
  */
 public class RootSimpleTypeDefinitionTest extends BaseTest {
     
