@@ -54,8 +54,12 @@ public class RootSimpleTypeDefinitionTest extends BaseTest {
     
     public RootSimpleTypeDefinitionTest(String name) {
         super(name);
-        typeString = new QName(XMLConstants.W3C_XML_SCHEMA_NS_URI, "string", "xsd");
-        typeNonNegInt = new QName(XMLConstants.W3C_XML_SCHEMA_NS_URI, "nonNegativeInteger", "xsd");
+        // This is a roundabout way of making sure that we're not using an
+        // interned string (so that == doesn't work)
+        String ns = "x" + XMLConstants.W3C_XML_SCHEMA_NS_URI;
+        ns = ns.substring(1);
+        typeString = new QName(ns, "string", "xsd");
+        typeNonNegInt = new QName(ns, "nonNegativeInteger", "xsd");
     }
     
     public void testSettingSimpleType() throws Exception {

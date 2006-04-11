@@ -1928,7 +1928,7 @@ public class XMLSchemaValidator
             if (rootTypeNamespace != null && rootTypeNamespace.equals(XMLConstants.NULL_NS_URI)) {
                 rootTypeNamespace = null;
             }
-            if (rootTypeNamespace == SchemaSymbols.URI_SCHEMAFORSCHEMA) {
+            if (SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(rootTypeNamespace)) {
                 fCurrentType = SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(fRootTypeQName.getLocalPart());
             }
             else {
