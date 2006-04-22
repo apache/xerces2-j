@@ -377,7 +377,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 		fFacetsDefined = fBase.fFacetsDefined;
 		
 		//we also set fundamental facets information in case applyFacets is not called.
-		caclFundamentalFacets();
+		calcFundamentalFacets();
 		fIsImmutable = isImmutable;
 		
 		// Inherit from the base type
@@ -401,7 +401,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 		fWhiteSpace = WS_COLLAPSE;
 		
 		//setting fundamental facets
-		caclFundamentalFacets();
+		calcFundamentalFacets();
 		fIsImmutable = isImmutable;
 		
 		// Values of this type are lists
@@ -428,7 +428,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 		fWhiteSpace = WS_COLLAPSE;
 		
 		//setting fundamental facets
-		caclFundamentalFacets();
+		calcFundamentalFacets();
 		// none of the schema-defined types are unions, so just set
 		// fIsImmutable to false.
 		fIsImmutable = false;
@@ -483,7 +483,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 		fFacetsDefined = fBase.fFacetsDefined;
 		
 		//we also set fundamental facets information in case applyFacets is not called.
-		caclFundamentalFacets();
+		calcFundamentalFacets();
         
         // Inherit from the base type
         fBuiltInKind = base.fBuiltInKind;
@@ -510,7 +510,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 		fWhiteSpace = WS_COLLAPSE;
 		
 		//setting fundamental facets
-		caclFundamentalFacets();
+		calcFundamentalFacets();
         
         // Values of this type are lists
         fBuiltInKind = XSConstants.LIST_DT;
@@ -540,7 +540,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 		fWhiteSpace = WS_COLLAPSE;
 		
 		//setting fundamental facets
-		caclFundamentalFacets();
+		calcFundamentalFacets();
         
         // No value can be of this type, so it's unavailable.
         fBuiltInKind = XSConstants.UNAVAILABLE_DT;
@@ -1477,7 +1477,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 		fFixedFacet |= fBase.fFixedFacet;
 		
 		//step 6: setting fundamental facets
-		caclFundamentalFacets();
+		calcFundamentalFacets();
 		
 	} //applyFacets()
 	
@@ -2276,7 +2276,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 		return (fAnnotations != null) ? fAnnotations : XSObjectListImpl.EMPTY_LIST;
 	}
 	
-	private void caclFundamentalFacets() {
+	private void calcFundamentalFacets() {
 		setOrdered();
 		setNumeric();
 		setBounded();
