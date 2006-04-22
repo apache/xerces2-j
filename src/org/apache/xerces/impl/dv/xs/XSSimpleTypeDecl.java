@@ -375,6 +375,20 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 		fPatternType = fBase.fPatternType;
 		fFixedFacet = fBase.fFixedFacet;
 		fFacetsDefined = fBase.fFacetsDefined;
+        
+        // always inherit facet annotations in case applyFacets is not called.
+        lengthAnnotation = fBase.lengthAnnotation;
+        minLengthAnnotation = fBase.minLengthAnnotation;
+        maxLengthAnnotation = fBase.maxLengthAnnotation;
+        patternAnnotations = fBase.patternAnnotations;
+        enumerationAnnotations = fBase.enumerationAnnotations;
+        whiteSpaceAnnotation = fBase.whiteSpaceAnnotation;
+        maxExclusiveAnnotation = fBase.maxExclusiveAnnotation;
+        maxInclusiveAnnotation = fBase.maxInclusiveAnnotation;
+        minExclusiveAnnotation = fBase.minExclusiveAnnotation;
+        minInclusiveAnnotation = fBase.minInclusiveAnnotation;
+        totalDigitsAnnotation = fBase.totalDigitsAnnotation;
+        fractionDigitsAnnotation = fBase.fractionDigitsAnnotation;
 		
 		//we also set fundamental facets information in case applyFacets is not called.
 		calcFundamentalFacets();
