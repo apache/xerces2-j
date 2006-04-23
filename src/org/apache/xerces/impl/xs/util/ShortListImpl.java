@@ -1,5 +1,5 @@
 /*
- * Copyright 2002,2003-2004 The Apache Software Foundation.
+ * Copyright 2002,2003-2004,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,21 @@ import org.apache.xerces.xs.XSException;
  */
 public class ShortListImpl implements ShortList {
 
+    /**
+     * An immutable empty list.
+     */
+    public static final ShortList EMPTY_LIST = new ShortList() {
+        public int getLength() {
+            return 0;
+        }
+        public boolean contains(short item) {
+            return false;
+        }
+        public short item(int index) throws XSException {
+            throw new XSException(XSException.INDEX_SIZE_ERR, null);
+        }
+    };
+    
     // The array to hold all data
     private short[] fArray = null;
     // Number of elements in this list

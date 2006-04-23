@@ -2244,8 +2244,9 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 	
 	public ShortList getEnumerationTypeList() {
 		if (fEnumerationTypeList == null) {
-            if (fEnumerationType == null)
-                return null;
+            if (fEnumerationType == null) {
+                return ShortListImpl.EMPTY_LIST;
+            }
             fEnumerationTypeList = new ShortListImpl (fEnumerationType, fEnumerationType.length);
 		}
 		return fEnumerationTypeList;
