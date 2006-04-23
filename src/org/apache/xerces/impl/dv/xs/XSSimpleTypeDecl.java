@@ -1411,22 +1411,28 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 		}
 		// inherit pattern
 		if ( (fBase.fFacetsDefined & FACET_PATTERN) != 0 ) {
-			if ((fFacetsDefined & FACET_PATTERN) == 0) {
-				fPattern = fBase.fPattern;
-				fPatternStr = fBase.fPatternStr;
-				fFacetsDefined |= FACET_PATTERN;
-			}
-			else {
-				for (int i = fBase.fPattern.size()-1; i >= 0; i--) {
-					fPattern.addElement(fBase.fPattern.elementAt(i));
-					fPatternStr.addElement(fBase.fPatternStr.elementAt(i));
-				}
-				if (fBase.patternAnnotations != null){
-					for (int i = fBase.patternAnnotations.getLength()-1;i>=0;i--){
-						patternAnnotations.add(fBase.patternAnnotations.item(i));
-					}
-				}
-			}
+		    if ((fFacetsDefined & FACET_PATTERN) == 0) {
+		        fFacetsDefined |= FACET_PATTERN;
+		        fPattern = fBase.fPattern;
+		        fPatternStr = fBase.fPatternStr;
+		        patternAnnotations = fBase.patternAnnotations;
+		    }
+		    else {
+		        for (int i = fBase.fPattern.size()-1; i >= 0; --i) {
+		            fPattern.addElement(fBase.fPattern.elementAt(i));
+		            fPatternStr.addElement(fBase.fPatternStr.elementAt(i));
+		        }
+		        if (fBase.patternAnnotations != null) {
+		            if (patternAnnotations != null) {
+		                for (int i = fBase.patternAnnotations.getLength()-1; i >= 0; --i) {
+		                    patternAnnotations.add(fBase.patternAnnotations.item(i));
+		                }
+		            }
+		            else {
+		                patternAnnotations = fBase.patternAnnotations;
+		            }
+		        }
+		    }
 		}
 		// inherit whiteSpace
 		if ( (fFacetsDefined & FACET_WHITESPACE) == 0 &&  (fBase.fFacetsDefined & FACET_WHITESPACE) != 0 ) {
