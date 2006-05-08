@@ -74,7 +74,7 @@
 	  Edition</jump> Recommendation
       </li>
       <li>
-	<jump href='http://www.w3.org/TR/REC-xml-names/'>Namespaces
+	<jump href='http://www.w3.org/TR/1999/REC-xml-names-19990114/'>Namespaces
 	  in XML</jump> Recommendation
       </li>
       <li>
@@ -97,10 +97,10 @@
 	<jump href='http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/'>Core</jump>,
 	<jump href='http://www.w3.org/TR/2004/REC-DOM-Level-3-LS-20040407/'>Load and Save</jump>,
 	(DOM) Level 2
-	<jump href='http://www.w3.org/TR/DOM-Level-2-Core/'>Core</jump>,
-	<jump href='http://www.w3.org/TR/DOM-Level-2-Events'>Events</jump>,
+	<jump href='http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/'>Core</jump>,
+	<jump href='http://www.w3.org/TR/2000/REC-DOM-Level-2-Events-20001113/'>Events</jump>,
 	and
-	<jump href='http://www.w3.org/TR/DOM-Level-2-Traversal-Range'>Traversal
+	<jump href='http://www.w3.org/TR/2000/REC-DOM-Level-2-Traversal-Range-20001113/'>Traversal
 	  and Range</jump> Recommendations
       </li>
       <li>
