@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004,2005 The Apache Software Foundation.
+ * Copyright 1999-2002,2004-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-
-
 // Sep 14, 2000:
 //  Fixed problem with namespace handling. Contributed by
 //  David Blondeau <blondeau@intalio.com>
@@ -29,9 +27,7 @@
 // Aug 21, 2000:
 //  Added ability to omit DOCTYPE declaration.
 
-
 package org.apache.xml.serialize;
-
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -1230,7 +1226,7 @@ extends BaseMarkupSerializer {
             int ch = source.charAt(i);
             if (!XMLChar.isValid(ch)) {
                 if (++i < length) {
-                    surrogates(ch, source.charAt(i));
+                    surrogates(ch, source.charAt(i), false);
                 } else {
                     fatalError("The character '" + (char) ch + "' is an invalid XML character");
                 }
@@ -1288,7 +1284,7 @@ extends BaseMarkupSerializer {
                 if (!XMLChar.isValid(ch)) {
                     // check if it is surrogate
                     if (++index <length) {
-                        surrogates(ch, text.charAt(index));
+                        surrogates(ch, text.charAt(index), true);
                     } else {
                         fatalError("The character '"+(char)ch+"' is an invalid XML character"); 
                     }
@@ -1310,7 +1306,7 @@ extends BaseMarkupSerializer {
                 if (!XMLChar.isValid(ch)) {
                     // check if it is surrogate
                     if (++index <length) {
-                        surrogates(ch, text.charAt(index));
+                        surrogates(ch, text.charAt(index), true);
                     } else {
                         fatalError("The character '"+(char)ch+"' is an invalid XML character"); 
                     }
@@ -1342,7 +1338,7 @@ extends BaseMarkupSerializer {
                 if (!XMLChar.isValid(ch)) {
                     // check if it is surrogate
                     if ( length-- > 0 ) {
-                        surrogates(ch, chars[start++]);
+                        surrogates(ch, chars[start++], true);
                     } else {
                         fatalError("The character '"+(char)ch+"' is an invalid XML character"); 
                     }
@@ -1364,7 +1360,7 @@ extends BaseMarkupSerializer {
                 if (!XMLChar.isValid(ch)) {
                     // check if it is surrogate
                     if ( length-- > 0 ) {
-                        surrogates(ch, chars[start++]);
+                        surrogates(ch, chars[start++], true);
                     } else {
                         fatalError("The character '"+(char)ch+"' is an invalid XML character"); 
                     }

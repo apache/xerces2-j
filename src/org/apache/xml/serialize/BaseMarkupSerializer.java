@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004,2005 The Apache Software Foundation.
+ * Copyright 1999-2002,2004-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 
 // Sep 14, 2000:
 //  Fixed comments to preserve whitespaces and add a line break
@@ -39,9 +38,7 @@
 //   entering element state.
 //   Reported by Lowell Vaughn <lvaughn@agillion.com>
 
-
 package org.apache.xml.serialize;
-
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -508,7 +505,7 @@ public abstract class BaseMarkupSerializer
                 if (!XMLChar.isValid(ch)) {
                     // check if it is surrogate
                     if (++index < end) {
-                        surrogates(ch, chars[index]);
+                        surrogates(ch, chars[index], true);
                     } 
                     else {
                         fatalError("The character '"+(char)ch+"' is an invalid XML character"); 
@@ -1455,7 +1452,7 @@ public abstract class BaseMarkupSerializer
             if (!XMLChar.isValid(ch)) {
                 // check if it is surrogate
                 if (++index <length) {
-                    surrogates(ch, text.charAt(index));
+                    surrogates(ch, text.charAt(index), true);
                 } 
                 else {
                     fatalError("The character '"+(char)ch+"' is an invalid XML character"); 
@@ -1477,7 +1474,7 @@ public abstract class BaseMarkupSerializer
     }
 
 
-    protected void surrogates(int high, int low) throws IOException{
+    protected void surrogates(int high, int low, boolean inContent) throws IOException{
         if (XMLChar.isHighSurrogate(high)) {
             if (!XMLChar.isLowSurrogate(low)) {
                 //Invalid XML
@@ -1490,7 +1487,7 @@ public abstract class BaseMarkupSerializer
                     fatalError("The character '"+(char)supplemental+"' is an invalid XML character"); 
                 }
                 else {
-                    if (content().inCData ) {
+                    if (inContent && content().inCData) {
                         _printer.printText("]]>&#x");                        
                         _printer.printText(Integer.toHexString(supplemental));                        
                         _printer.printText(";<![CDATA[");
