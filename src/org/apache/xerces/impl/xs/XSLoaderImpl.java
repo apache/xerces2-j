@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 The Apache Software Foundation.
+ * Copyright 2004,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -161,7 +161,7 @@ public final class XSLoaderImpl implements XSLoader, DOMConfiguration {
     /**
      *  Parse an XML Schema document from a resource identified by a 
      * <code>LSInput</code> . 
-     * @param is  The <code>DOMInputSource</code> from which the source 
+     * @param is  The <code>LSInput</code> from which the source 
      *   document is to be read. 
      * @return An XSModel representing this schema.
      */
