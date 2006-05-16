@@ -2,4 +2,4 @@
 <x xmlns="http://www.schemaTest.org/xinclude-test" xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.schemaTest.org/xinclude-test tests.xsd">
    <!-- tests that values for parse other than "xml" or "text" are invalid -->
    <!-- EXPECT FAILURE -->
-   [Fatal Error] test07.xml:9:45: Invalid value for 'parse' attribute on 'include' element: 'xxx'.
+   [Fatal Error] test07.xml:9:45

@@ -397,8 +397,14 @@ public class Test implements XMLErrorHandler {
         fOutputWriter.print(ex.getLineNumber());
         fOutputWriter.print(':');
         fOutputWriter.print(ex.getColumnNumber());
+        /*
+         * The String returned by getMessage() is not stable across JDKs, so we
+         * don't print it.  Unfortunately, there doesn't seem to be a way to get
+         * the underlying type of exception (like FileNotFoundException) so
+         * we just don't print anything.
         fOutputWriter.print(": ");
         fOutputWriter.print(ex.getMessage());
+        */
         fOutputWriter.println();
         fOutputWriter.flush();
     } // printError(String,XMLParseException)

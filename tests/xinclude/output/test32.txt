@@ -6,5 +6,5 @@
         notation -->
    <!-- EXPECT FAILURE -->
    <elem foo="image"/>
-   [Fatal Error] ue2.xml:12:56: Multiple notations were used which had the name 'jpg', but which were not determined to be duplicates.
-[Fatal Error] test32.xml:14:44: Error attempting to parse XML file (href='../included/ue2.xml').
+   [Fatal Error] ue2.xml:12:56
+[Fatal Error] test32.xml:14:44

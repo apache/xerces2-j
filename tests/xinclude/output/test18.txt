@@ -2,4 +2,4 @@
 <x xmlns="http://www.schemaTest.org/xinclude-test" xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.schemaTest.org/xinclude-test tests.xsd">
    <!-- tests that fallback must be child of include -->
    <!-- EXPECT FAILURE -->
-   [Fatal Error] test18.xml:8:18: A 'fallback' element was found that did not have 'include' as the parent.
+   [Fatal Error] test18.xml:8:18
