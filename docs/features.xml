@@ -501,7 +501,7 @@ catch (SAXException e) {
     Fully expand the DOM nodes.
    </false>
    <default value='true**'/>
-   <note>In the <code>DOMBuilder</code> implementation the default value of 
+   <note>In the <code>LSParser</code> implementation the default value of 
     this feature is <strong>false</strong>. 
    </note>
    <note>
@@ -528,7 +528,7 @@ catch (SAXException e) {
    <false>
     Do not create <code>EntityReference</code> nodes in the DOM tree. 
     No <code>EntityReference</code> nodes will be created, only the 
-    nodes corresponding to their fully expanded sustitution text will 
+    nodes corresponding to their fully expanded substitution text will 
     be created.  
    </false>
    <default value='true'/>
