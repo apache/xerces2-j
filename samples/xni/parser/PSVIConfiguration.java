@@ -112,8 +112,11 @@ public class PSVIConfiguration extends XIncludeAwareParserConfiguration {
     protected void addPSVIWriterToPipeline() {
         if (fSchemaValidator != null) {
             fSchemaValidator.setDocumentHandler(fPSVIWriter);
-            fPSVIWriter.setDocumentHandler(fDocumentHandler);
             fPSVIWriter.setDocumentSource(fSchemaValidator);
+            fPSVIWriter.setDocumentHandler(fDocumentHandler);
+            if (fDocumentHandler != null) {
+                fDocumentHandler.setDocumentSource(fPSVIWriter);
+            }
         }
     } // addPSVIWriterToPipeline()
 
