@@ -1,5 +1,5 @@
 /*
- * Copyright 2001,2002,2004,2005 The Apache Software Foundation.
+ * Copyright 2001,2002,2004-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,7 @@ import xni.PSVIWriter;
  */
 public class PSVIConfiguration extends XIncludeAwareParserConfiguration {
 
-
-     /** PSVI Writer */
+    /** PSVI Writer */
     protected PSVIWriter fPSVIWriter;
     
     //
@@ -90,27 +89,33 @@ public class PSVIConfiguration extends XIncludeAwareParserConfiguration {
                                     XMLGrammarPool grammarPool,
                                     XMLComponentManager parentSettings) {
         super(symbolTable, grammarPool, parentSettings);
-
         fPSVIWriter = createPSVIWriter();
         if (fPSVIWriter != null) {
-            addComponent(fPSVIWriter);
+            addCommonComponent(fPSVIWriter);
         }
 
     } // <init>(SymbolTable,XMLGrammarPool)
 
-
     /** Configures the pipeline. */
     protected void configurePipeline() {
-
         super.configurePipeline();
+        addPSVIWriterToPipeline();
+    } // configurePipeline()
+    
+    /** Configures the XML 1.1 pipeline. */
+    protected void configureXML11Pipeline() {
+        super.configureXML11Pipeline();
+        addPSVIWriterToPipeline();
+    } // configureXML11Pipeline()
+    
+    /** Adds PSVI writer to the pipeline. */
+    protected void addPSVIWriterToPipeline() {
         if (fSchemaValidator != null) {
             fSchemaValidator.setDocumentHandler(fPSVIWriter);
             fPSVIWriter.setDocumentHandler(fDocumentHandler);
             fPSVIWriter.setDocumentSource(fSchemaValidator);
         }
-
-    } // configurePipeline()
-
+    } // addPSVIWriterToPipeline()
 
     /** Create a PSVIWriter */
     protected PSVIWriter createPSVIWriter(){
