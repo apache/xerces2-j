@@ -1112,6 +1112,10 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
             try {
                 return (String) DocumentMethods.fgDocumentGetXmlVersionMethod.invoke(doc, (Object[]) null);
             }
+            // The VM ran out of memory or there was some other serious problem. Re-throw.
+            catch (VirtualMachineError vme) {
+                throw vme;
+            }
             // ThreadDeath should always be re-thrown
             catch (ThreadDeath td) {
                 throw td;
@@ -1129,6 +1133,10 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
             try {
                 return (String) DocumentMethods.fgDocumentGetInputEncodingMethod.invoke(doc, (Object[]) null);
             }
+            // The VM ran out of memory or there was some other serious problem. Re-throw.
+            catch (VirtualMachineError vme) {
+                throw vme;
+            }
             // ThreadDeath should always be re-thrown
             catch (ThreadDeath td) {
                 throw td;
@@ -1145,6 +1153,10 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
         if (doc != null && DocumentMethods.fgDocumentMethodsAvailable) {
             try {
                 return (String) DocumentMethods.fgDocumentGetXmlEncodingMethod.invoke(doc, (Object[]) null);
+            }
+            // The VM ran out of memory or there was some other serious problem. Re-throw.
+            catch (VirtualMachineError vme) {
+                throw vme;
             }
             // ThreadDeath should always be re-thrown
             catch (ThreadDeath td) {
