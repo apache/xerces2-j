@@ -1773,7 +1773,11 @@ public abstract class BaseMarkupSerializer
     {
         return _elementStateCount == 0;
     }
-
+    
+    /** Clears document state. **/
+    final void clearDocumentState() {
+        _elementStateCount = 0;
+    }
 
     /**
      * Returns the namespace prefix for the specified URI.

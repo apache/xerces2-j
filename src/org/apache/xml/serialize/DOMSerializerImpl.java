@@ -508,16 +508,19 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                 }
                 throw new LSException(LSException.SERIALIZE_ERR, msg);
             }
-        } catch (LSException lse) {
+        } 
+        catch (LSException lse) {
             // Rethrow LSException.
             throw lse;
-        } catch (RuntimeException e) {
+        } 
+        catch (RuntimeException e) {
             if (e == DOMNormalizer.abort){
                 // stopped at user request
                 return null;
             }
             throw (LSException) DOMUtil.createLSException(LSException.SERIALIZE_ERR, e).fillInStackTrace();       
-        } catch (IOException ioe) {
+        } 
+        catch (IOException ioe) {
             // REVISIT: A generic IOException doesn't provide enough information
             // to determine that the serialized document is too large to fit
             // into a string. This could have thrown for some other reason. -- mrglavas
@@ -526,6 +529,9 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                 "STRING_TOO_LONG",
                 new Object[] { ioe.getMessage()});
             throw new DOMException(DOMException.DOMSTRING_SIZE_ERR,msg);
+        }
+        finally {
+            ser.clearDocumentState();
         }
         return destination.toString();
     }
@@ -754,7 +760,8 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                 ser.serialize((Element) node);
             else
                 return false;
-        } catch( UnsupportedEncodingException ue) {
+        } 
+        catch( UnsupportedEncodingException ue) {
             if (ser.fDOMErrorHandler != null) {
                 DOMErrorImpl error = new DOMErrorImpl();
                 error.fException = ue;
@@ -768,16 +775,19 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                     DOMMessageFormatter.SERIALIZER_DOMAIN, 
                     "unsupported-encoding", null));			
 			//return false;
-        } catch (LSException lse) {
+        } 
+        catch (LSException lse) {
             // Rethrow LSException.
             throw lse;
-        } catch (RuntimeException e) {
+        } 
+        catch (RuntimeException e) {
             if (e == DOMNormalizer.abort){
                 // stopped at user request
                 return false;
             }
             throw (LSException) DOMUtil.createLSException(LSException.SERIALIZE_ERR, e).fillInStackTrace();
-        } catch (Exception e) {
+        } 
+        catch (Exception e) {
             if (ser.fDOMErrorHandler != null) {
                 DOMErrorImpl error = new DOMErrorImpl();
                 error.fException = e;
@@ -787,6 +797,9 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
 
             }
             throw (LSException) DOMUtil.createLSException(LSException.SERIALIZE_ERR, e).fillInStackTrace();
+        }
+        finally {
+            ser.clearDocumentState();
         }
         return true;
 
@@ -886,16 +899,19 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                 ser.serialize((Element) node);
             else
                 return false;
-        } catch (LSException lse) {
+        } 
+        catch (LSException lse) {
             // Rethrow LSException.
             throw lse;
-        } catch (RuntimeException e) {
+        } 
+        catch (RuntimeException e) {
             if (e == DOMNormalizer.abort){
                 // stopped at user request
                 return false;
             }
             throw (LSException) DOMUtil.createLSException(LSException.SERIALIZE_ERR, e).fillInStackTrace();
-        } catch (Exception e) {
+        } 
+        catch (Exception e) {
             if (ser.fDOMErrorHandler != null) {
                 DOMErrorImpl error = new DOMErrorImpl();
                 error.fException = e;
@@ -904,6 +920,9 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                 ser.fDOMErrorHandler.handleError(error);
             }
             throw (LSException) DOMUtil.createLSException(LSException.SERIALIZE_ERR, e).fillInStackTrace();
+        }
+        finally {
+            ser.clearDocumentState();
         }
         return true;
     } //writeURI
