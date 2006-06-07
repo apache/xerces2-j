@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--
- * Copyright 2002-2005 The Apache Software Foundation.
+ * Copyright 2002-2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -147,7 +147,7 @@
         <li>Website:<br/>
             Upload generated docs directory to daedalus (until this process 
                 matures and becomes SVN-based).
-            Commit <code>/www/xml.apache.org/xerces2-j</code> to SVN;
+            Commit <code>/www/xerces.apache.org/xerces2-j</code> to SVN;
                i.e., update the xml-site module.
         </li>
         </ol>

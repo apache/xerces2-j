@@ -119,7 +119,7 @@ LSSerializer writer = impl.createLSSerializer();
 String str = writer.writeToString(document);</source>  
 
       <p>
-	You can also serialize a DOM tree by using the <a href='http://xml.apache.org/xerces2-j/faq-general.html#faq-5'>JAXP Transformer API.</a>
+	You can also serialize a DOM tree by using the JAXP Transformer API.
       </p>
 
       <p>

@@ -28,7 +28,7 @@
  <separator/>
  <document label='Installation' title='Installation Instructions'
            id='install' source='install.xml'/>
- <external label='Download' href='http://xml.apache.org/xerces2-j/download.cgi'/>
+ <external label='Download' href='http://xerces.apache.org/xerces2-j/download.cgi'/>
  <hidden  title='Download' id='download' source='download.xml'/>
  <document label='Bug-Reporting' title='Reporting Bugs'
            id='jira' source='bugzilla.xml'/>

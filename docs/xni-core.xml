@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--
- * Copyright 2001-2004 The Apache Software Foundation.
+ * Copyright 2001-2004,2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,7 +72,7 @@
     is the most important handler interface in the Xerces Native
     Interface.
    </p>
-<!-- REVISIT: this info is already available in http://xml.apache.org/xerces2-j/api.html
+<!-- REVISIT: this info is already available in http://xerces.apache.org/xerces2-j/api.html
    <table>
     <tr><th>Methods</th></tr>
     <tr>
@@ -264,7 +264,7 @@
     parser component or configuration.
    </p>
 
-<!-- REVISIT: see http://xml.apache.org/xerces2-j/api.html
+<!-- REVISIT: see http://xerces.apache.org/xerces2-j/api.html
    <table>
     <tr><th>Methods</th></tr>
     <tr>
@@ -439,7 +439,7 @@
     exceptions do not "leak" out to the application code.
    </p>
 
-<!-- REVISIT: http://xml.apache.org/xerces2-j/api.html
+<!-- REVISIT: http://xerces.apache.org/xerces2-j/api.html
 
    <table>
     <tr><th>Constructors</th></tr>
@@ -537,7 +537,7 @@
     handlers.
    </p>
    
-<!-- REVISIT: http://xml.apache.org/xerces2-j/api.html
+<!-- REVISIT: http://xerces.apache.org/xerces2-j/api.html
 <table>
     <tr><th>Methods</th></tr>
     <tr><td><code>public String getPublicId();</code></td></tr>
@@ -562,7 +562,7 @@
     the data is to be used beyond the scope of the method call.
    </p>
 
-<!-- REVISIT: http://xml.apache.org/xerces2-j/api.html
+<!-- REVISIT: http://xerces.apache.org/xerces2-j/api.html
    <table>
     <tr><th>Fields</th></tr>
     <tr><td><code>public String prefix;</code></td></tr>
@@ -625,7 +625,7 @@
     the attribute have no meaning for the normalized value.
    </p>
 
-<!-- REVISIT: http://xml.apache.org/xerces2-j/api.html
+<!-- REVISIT: http://xerces.apache.org/xerces2-j/api.html
    <table>
     <tr><th>Methods</th></tr>
     <tr>
@@ -838,7 +838,7 @@
     operation of the caller.
    </p>
 
-<!-- REVISIT: http://xml.apache.org/xerces2-j/api.html
+<!-- REVISIT: http://xerces.apache.org/xerces2-j/api.html
    <table>
     <tr><th>Fields</th></tr>
     <tr><td><code>public char[] ch;</code></td></tr>
@@ -887,7 +887,7 @@
     <code>XMLDocumentFragmentHandler</code> interface.
    </p>
 
-<!-- REVISIT: http://xml.apache.org/xerces2-j/api.html   
+<!-- REVISIT: http://xerces.apache.org/xerces2-j/api.html   
 <table>
     <tr><th>Constants</th></tr>
     <tr><td><code>public static final String XMLNS;</code></td></tr>
@@ -925,7 +925,7 @@
     informed of characters within an ignored conditional section.
    </p>
 
-<!-- REVISIT: http://xml.apache.org/xerces2-j/api.html
+<!-- REVISIT: http://xerces.apache.org/xerces2-j/api.html
    <table>
     <tr><th>Constants</th></tr>
     <tr>
@@ -1128,7 +1128,7 @@
     content model.
    </p>
 
-<!-- REVISIT: http://xml.apache.org/xerces2-j/api.html
+<!-- REVISIT: http://xerces.apache.org/xerces2-j/api.html
    <table>
     <tr><th>Constants</th></tr>
     <tr>

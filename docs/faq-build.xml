@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--
- * Copyright 1999-2004 The Apache Software Foundation.
+ * Copyright 1999-2004,2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,12 +33,12 @@
     Kit (JDK) version 1.2 (or higher) installed on your machine.
     The actual build is performed by the Ant program which is
     written in Java and is a subproject of the Apache
-    <jump href='http://jakarta.apache.org/'>Jakarta</jump>
+    <jump href='http://ant.apache.org/'>Ant</jump>
     project. The build also requires a few other tools but
     all of the tools you need (including Ant) are contained
     in the <ref>&ParserName;-tools.&parserversion;.zip</ref>
     file, packaged separately. Go to the &ParserName; 
-    <jump href='http://xml.apache.org/xerces2-j/download.cgi'>download</jump>
+    <jump href='http://xerces.apache.org/xerces2-j/download.cgi'>download</jump>
     page to download the tools package and then extract it in the
     same location as the source package.
    </p>
