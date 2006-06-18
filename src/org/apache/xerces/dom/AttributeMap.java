@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2002,2004,2005 The Apache Software Foundation.
+ * Copyright 2000-2002,2004-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.util.Vector;
 
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
-
 
 /**
  * AttributeMap inherits from NamedNodeMapImpl and extends it to deal with the
@@ -102,7 +101,7 @@ public class AttributeMap extends NamedNodeMapImpl {
         argn.ownerNode = ownerNode;
         argn.isOwned(true);
         
-        int i = findNamePoint(arg.getNodeName(),0);
+        int i = findNamePoint(argn.getNodeName(),0);
         AttrImpl previous = null;
         if (i >= 0) {
             previous = (AttrImpl) nodes.elementAt(i);
@@ -571,14 +570,14 @@ public class AttributeMap extends NamedNodeMapImpl {
         argn.ownerNode = ownerNode;
         argn.isOwned(true); 
         
-        int i = findNamePoint(arg.getNamespaceURI(), arg.getLocalName());
+        int i = findNamePoint(argn.getNamespaceURI(), argn.getLocalName());
         if (i >= 0) {
             nodes.setElementAt(arg,i);
         } 
         else {
             // If we can't find by namespaceURI, localName, then we find by
             // nodeName so we know where to insert.
-            i = findNamePoint(arg.getNodeName(),0);
+            i = findNamePoint(argn.getNodeName(),0);
             if (i >= 0) {
                 nodes.insertElementAt(arg,i);
             } 

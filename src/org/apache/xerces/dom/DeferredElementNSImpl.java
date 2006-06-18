@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004 The Apache Software Foundation.
+ * Copyright 1999-2002,2004,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -117,9 +117,18 @@ public class DeferredElementNSImpl
         if (attrIndex != -1) {
             NamedNodeMap attrs = getAttributes();
             do {
-                NodeImpl attr =
-                    (NodeImpl)ownerDocument.getNodeObject(attrIndex);
-                attrs.setNamedItem(attr);
+                AttrImpl attr = (AttrImpl) ownerDocument.getNodeObject(attrIndex);
+                // Take special care of schema defaulted attributes. Calling the 
+                // non-namespace aware setAttributeNode() method could overwrite
+                // another attribute with the same local name.
+                if (!attr.getSpecified() && 
+                    attr.getNamespaceURI() != null && 
+                    attr.getName().indexOf(':') < 0) {
+                    attrs.setNamedItemNS(attr);
+                }
+                else {
+                    attrs.setNamedItem(attr);
+                }
                 attrIndex = ownerDocument.getPrevSibling(attrIndex);
             } while (attrIndex != -1);
         }

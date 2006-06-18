@@ -922,9 +922,17 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                     ((PSVIAttrNSImpl) attr).setPSVI (attrPSVI);
                 }
 
-
                 attr.setValue (attrValue);
-                el.setAttributeNode (attr);
+                boolean specified = attributes.isSpecified(i);
+                // Take special care of schema defaulted attributes. Calling the 
+                // non-namespace aware setAttributeNode() method could overwrite
+                // another attribute with the same local name.
+                if (!specified && fAttrQName.uri != null && fAttrQName.prefix == null) {
+                    el.setAttributeNodeNS(attr);
+                }
+                else {
+                    el.setAttributeNode(attr);
+                }
                 // NOTE: The specified value MUST be set after you set
                 //       the node value because that turns the "specified"
                 //       flag to "true" which may overwrite a "false"
@@ -971,7 +979,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                         ((ElementImpl) el).setIdAttributeNode (attr, true);
                     }
 
-                    attrImpl.setSpecified (attributes.isSpecified (i));
+                    attrImpl.setSpecified (specified);
                     // REVISIT: Handle entities in attribute value.
                 }
             }
@@ -1037,7 +1045,9 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
             element.rawname,
             type);
             int attrCount = attributes.getLength ();
-            for (int i = 0; i < attrCount; i++) {
+            // Need to loop in reverse order so that the attributes
+            // are processed in document order when the DOM is expanded.
+            for (int i = attrCount - 1; i >= 0; --i) {
                 // set type information
                 AttributePSVI attrPSVI = (AttributePSVI)attributes.getAugmentations (i).getItem (Constants.ATTRIBUTE_PSVI);
                 boolean id = false;
