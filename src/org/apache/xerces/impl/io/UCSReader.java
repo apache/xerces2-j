@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2002,2004 The Apache Software Foundation.
+ * Copyright 2000-2002,2004,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,13 +52,13 @@ public class UCSReader extends Reader {
     //
 
     /** Input stream. */
-    protected InputStream fInputStream;
+    protected final InputStream fInputStream;
 
     /** Byte buffer. */
-    protected byte[] fBuffer;
+    protected final byte[] fBuffer;
 
     // what kind of data we're dealing with
-    protected short fEncoding;
+    protected final short fEncoding;
 
     //
     // Constructors

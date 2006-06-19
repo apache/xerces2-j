@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2002,2004 The Apache Software Foundation.
+ * Copyright 2000-2002,2004,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,10 +48,10 @@ public class ASCIIReader
     //
 
     /** Input stream. */
-    protected InputStream fInputStream;
+    protected final InputStream fInputStream;
 
     /** Byte buffer. */
-    protected byte[] fBuffer;
+    protected final byte[] fBuffer;
 
     // message formatter; used to produce localized
     // exception messages
