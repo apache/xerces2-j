@@ -30,6 +30,7 @@ import java.util.Map;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.io.ASCIIReader;
+import org.apache.xerces.impl.io.Latin1Reader;
 import org.apache.xerces.impl.io.UTF8Reader;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.util.EncodingMap;
@@ -252,7 +253,9 @@ public class XIncludeTextReader {
                     fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), 
                     fErrorReporter.getLocale() );
             }
-            
+            else if (javaEncoding.equals("ISO8859_1")) {
+                return new Latin1Reader(stream, fTempString.ch.length);
+            }
             return new InputStreamReader(stream, javaEncoding);
         }
     }
