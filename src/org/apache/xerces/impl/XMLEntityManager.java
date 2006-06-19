@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2005 The Apache Software Foundation.
+ * Copyright 1999-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.apache.xerces.impl.io.ASCIIReader;
+import org.apache.xerces.impl.io.Latin1Reader;
 import org.apache.xerces.impl.io.UCSReader;
 import org.apache.xerces.impl.io.UTF8Reader;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
@@ -2077,8 +2078,12 @@ public class XMLEntityManager
             }
             return new ASCIIReader(inputStream, fBufferSize, fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), fErrorReporter.getLocale());
         }
-        
-        
+        else if (javaEncoding.equals("ISO8859_1")) {
+            if (DEBUG_ENCODINGS) {
+                System.out.println("$$$ creating Latin1Reader");
+            }
+            return new Latin1Reader(inputStream, fBufferSize);
+        }
         if (DEBUG_ENCODINGS) {
             System.out.print("$$$ creating Java InputStreamReader: encoding="+javaEncoding);
             if (javaEncoding == encoding) {
