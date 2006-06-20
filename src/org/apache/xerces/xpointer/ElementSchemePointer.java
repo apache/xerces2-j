@@ -341,15 +341,17 @@ class ElementSchemePointer implements XPointerPart {
 
                 // Donot check for empty elements if the empty element is 
                 // a child of a found parent element 
-                //if (!fIsElementFound) {
-                    if (checkMatch()) {
-                        fIsElementFound = true;
+                if (checkMatch()) {
+                    if (!fIsElementFound) {
                         fWasOnlyEmptyElementFound = true;
                     } else {
-                        fIsElementFound = false;
+                        fWasOnlyEmptyElementFound = false;
                     }
-                //} 
-                
+                    fIsElementFound = true;
+                } else {
+                    fIsElementFound = false;
+                    fWasOnlyEmptyElementFound = false;
+                }  
             }
         }
 
