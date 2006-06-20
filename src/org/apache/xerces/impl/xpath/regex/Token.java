@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004,2005 The Apache Software Foundation.
+ * Copyright 1999-2002,2004-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -437,20 +437,8 @@ class Token implements java.io.Serializable {
             }
             return FC_TERMINAL;
 
-          case DOT:                             // ****
-            if (isSet(options, RegularExpression.SINGLE_LINE)) {
-                return FC_CONTINUE;             // **** We can not optimize.
-            } else {
-                return FC_CONTINUE;
-                /*
-                result.addRange(0, RegularExpression.LINE_FEED-1);
-                result.addRange(RegularExpression.LINE_FEED+1, RegularExpression.CARRIAGE_RETURN-1);
-                result.addRange(RegularExpression.CARRIAGE_RETURN+1,
-                                RegularExpression.LINE_SEPARATOR-1);
-                result.addRange(RegularExpression.PARAGRAPH_SEPARATOR+1, UTF16_MAX);
-                return 1;
-                */
-            }
+          case DOT:
+              return FC_ANY;
 
           case RANGE:
             if (isSet(options, RegularExpression.IGNORE_CASE)) {
