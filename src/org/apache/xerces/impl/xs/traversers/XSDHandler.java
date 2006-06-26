@@ -834,7 +834,8 @@ public class XSDHandler {
                     schemaNamespace = fSymbolTable.addSymbol(schemaNamespace);
                 // a document can't import another document with the same namespace
                 if (schemaNamespace == currSchemaInfo.fTargetNamespace) {
-                    reportSchemaError("src-import.1.1", new Object [] {schemaNamespace}, child);
+                    reportSchemaError(schemaNamespace != null ? 
+                            "src-import.1.1" : "src-import.1.2", new Object [] {schemaNamespace}, child);
                 }
                 
                 // check contents and process optional annotations
