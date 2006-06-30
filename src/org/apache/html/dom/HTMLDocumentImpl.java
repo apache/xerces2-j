@@ -1,5 +1,5 @@
 /*
- * Copyright 1999,2000,2004,2005 The Apache Software Foundation.
+ * Copyright 1999,2000,2004-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -627,16 +627,9 @@ public class HTMLDocumentImpl
     public Node cloneNode( boolean deep )
     {
         HTMLDocumentImpl    clone;
-        NodeImpl            node;
 
         clone = new HTMLDocumentImpl();
-        if ( deep ) {
-            node = (NodeImpl) getFirstChild();
-            while ( node != null ) {
-                clone.appendChild( clone.importNode( node, true ) );
-                node = (NodeImpl) node.getNextSibling();
-            }
-        }
+        cloneNode(clone, deep);
         return clone;
     }
 
