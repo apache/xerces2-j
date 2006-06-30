@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2005 The Apache Software Foundation.
+ * Copyright 1999-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -935,8 +935,8 @@ public class XMLDocumentScannerImpl
                             // REVISIT: Should there be a feature for
                             //          the "complete" parameter?
                             boolean completeDTD = true;
-
-                            boolean moreToScan = fDTDScanner.scanDTDInternalSubset(completeDTD, fStandalone, fHasExternalDTD && fLoadExternalDTD);
+                            boolean readExternalSubset = (fValidation || fLoadExternalDTD) && (fValidationManager == null || !fValidationManager.isCachedDTD());
+                            boolean moreToScan = fDTDScanner.scanDTDInternalSubset(completeDTD, fStandalone, fHasExternalDTD && readExternalSubset);
                             if (!moreToScan) {
                                 // end doctype declaration
                                 if (!fEntityScanner.skipChar(']')) {
@@ -951,15 +951,13 @@ public class XMLDocumentScannerImpl
 
                                 // scan external subset next
                                 if (fDoctypeSystemId != null) {
-                                    if ((fValidation || fLoadExternalDTD) 
-                                        && (fValidationManager == null || !fValidationManager.isCachedDTD())) {
+                                    if (readExternalSubset) {
                                         setScannerState(SCANNER_STATE_DTD_EXTERNAL);
                                         break;
                                     }
                                 }
                                 else if (fExternalSubsetSource != null) {
-                                    if ((fValidation || fLoadExternalDTD) 
-                                        && (fValidationManager == null || !fValidationManager.isCachedDTD())) {
+                                    if (readExternalSubset) {
                                         // This handles the case of a DOCTYPE that only had an internal subset.
                                         fDTDScanner.setInputSource(fExternalSubsetSource);
                                         fExternalSubsetSource = null;
