@@ -21,7 +21,6 @@ import java.util.Hashtable;
 import java.util.Locale;
 
 import org.apache.xerces.dom.DocumentImpl;
-import org.apache.xerces.dom.NodeImpl;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
