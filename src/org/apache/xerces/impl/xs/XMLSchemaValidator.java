@@ -3018,15 +3018,20 @@ public class XMLSchemaValidator
                 attName =
                     new QName(null, currDecl.fName, currDecl.fName, currDecl.fTargetNamespace);
                 String normalized = (defaultValue != null) ? defaultValue.stringValue() : "";
-                int attrIndex = attributes.addAttribute(attName, "CDATA", normalized);
+                int attrIndex;
                 if (attributes instanceof XMLAttributesImpl) {
                     XMLAttributesImpl attrs = (XMLAttributesImpl) attributes;
+                    attrIndex = attrs.getLength();
+                    attrs.addAttributeNS(attName, "CDATA", normalized);
                     boolean schemaId =
                         defaultValue != null
                             && defaultValue.memberType != null
                                 ? defaultValue.memberType.isIDType()
                                 : currDecl.fType.isIDType();
                     attrs.setSchemaId(attrIndex, schemaId);
+                }
+                else {
+                    attrIndex = attributes.addAttribute(attName, "CDATA", normalized);
                 }
 
                 if (fAugPSVI) {
