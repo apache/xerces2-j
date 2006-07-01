@@ -579,11 +579,11 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
     public void comment (XMLString text, Augmentations augs) throws XNIException {
         if (fInDTD) {
             if (fInternalSubset != null && !fInDTDExternalSubset) {
-                fInternalSubset.append ("<!-- ");
+                fInternalSubset.append ("<!--");
                 if (text.length > 0) {
                     fInternalSubset.append (text.ch, text.offset, text.length);
                 }
-                fInternalSubset.append (" -->");
+                fInternalSubset.append ("-->");
             }
             return;
         }
