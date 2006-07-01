@@ -911,6 +911,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
             }
             Element el = createElementNode (element);
             int attrCount = attributes.getLength ();
+            boolean seenSchemaDefault = false;
             for (int i = 0; i < attrCount; i++) {
                 attributes.getName (i, fAttrQName);
                 Attr attr = createAttrNode (fAttrQName);
@@ -927,8 +928,9 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                 // Take special care of schema defaulted attributes. Calling the 
                 // non-namespace aware setAttributeNode() method could overwrite
                 // another attribute with the same local name.
-                if (!specified && fAttrQName.uri != null && fAttrQName.prefix == null) {
+                if (!specified && (seenSchemaDefault || (fAttrQName.uri != null && fAttrQName.prefix == null))) {
                     el.setAttributeNodeNS(attr);
+                    seenSchemaDefault = true;
                 }
                 else {
                     el.setAttributeNode(attr);

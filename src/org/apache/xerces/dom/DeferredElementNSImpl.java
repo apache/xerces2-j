@@ -116,14 +116,16 @@ public class DeferredElementNSImpl
         int attrIndex = ownerDocument.getNodeExtra(fNodeIndex);
         if (attrIndex != -1) {
             NamedNodeMap attrs = getAttributes();
+            boolean seenSchemaDefault = false;
             do {
                 AttrImpl attr = (AttrImpl) ownerDocument.getNodeObject(attrIndex);
                 // Take special care of schema defaulted attributes. Calling the 
                 // non-namespace aware setAttributeNode() method could overwrite
                 // another attribute with the same local name.
-                if (!attr.getSpecified() && 
-                    attr.getNamespaceURI() != null && 
-                    attr.getName().indexOf(':') < 0) {
+                if (!attr.getSpecified() && (seenSchemaDefault ||
+                    (attr.getNamespaceURI() != null && 
+                    attr.getName().indexOf(':') < 0))) {
+                    seenSchemaDefault = true;
                     attrs.setNamedItemNS(attr);
                 }
                 else {
