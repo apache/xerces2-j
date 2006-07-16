@@ -28,7 +28,7 @@ import javax.xml.transform.Result;
 /**
  * <p>Implementation of XMLOutputFactory.</p>
  * 
- * @version $Id: $
+ * @version $Id$
  */
 public class XMLOutputFactoryImpl extends XMLOutputFactory {
 
