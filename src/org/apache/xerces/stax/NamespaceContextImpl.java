@@ -24,7 +24,7 @@ import javax.xml.namespace.NamespaceContext;
 import javax.xml.XMLConstants;
 
 /**
- * <p>NamespaceContext for the DOM XMLStreamReader.</p>
+ * <p>NamespaceContext for the SAX and DOM XMLStreamReaders.</p>
  * 
  * @author Hua Lei
  * 
