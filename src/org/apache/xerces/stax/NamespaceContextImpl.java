@@ -30,7 +30,7 @@ import javax.xml.XMLConstants;
  * 
  * @version $Id$
  */
-final class DOMNamespaceContext implements NamespaceContext {
+final class NamespaceContextImpl implements NamespaceContext {
     
     // Record the avaliable namespaces
     private Stack namespaceStack;
@@ -39,17 +39,8 @@ final class DOMNamespaceContext implements NamespaceContext {
      * The initialization method of DOMNamespaceContext, 
      * the DOMNamespaceContext is a singleton
      */
-    private DOMNamespaceContext() {
+    public NamespaceContextImpl() {
         namespaceStack = new Stack();
-    }
-    
-    /**
-     * Factory method to create a DOMNamespaceContext instance
-     * 
-     * @return
-     */
-    public static DOMNamespaceContext createDOMNamespaceContext() {
-        return new DOMNamespaceContext();
     }
     
     /**

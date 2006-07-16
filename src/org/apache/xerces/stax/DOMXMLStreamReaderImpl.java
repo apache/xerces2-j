@@ -82,7 +82,7 @@ public class DOMXMLStreamReaderImpl implements XMLStreamReader {
     private ArrayList curNamespaces;
     
     // Record the current namespace context
-    private DOMNamespaceContext dc;
+    private NamespaceContextImpl dc;
     
     /**
      * The construction method of DOMXMLStreamReader
@@ -101,7 +101,7 @@ public class DOMXMLStreamReaderImpl implements XMLStreamReader {
         
         isCoalesce = Boolean.getBoolean(XMLInputFactory.IS_COALESCING);
         
-        dc = DOMNamespaceContext.createDOMNamespaceContext();
+        dc = new NamespaceContextImpl();
         
         if (curType == XMLStreamConstants.START_DOCUMENT) {
             Document doc = (Document)domNode;
