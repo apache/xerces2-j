@@ -23,7 +23,7 @@ import org.xml.sax.XMLReader;
 /**
  * @author Hua Lei
  * 
- * @version $Id: $
+ * @version $Id$
  */
 final class AsyncSAXParser extends Thread {
     

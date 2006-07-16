@@ -36,7 +36,7 @@ import org.xml.sax.XMLReader;
  * 
  * @author Hua Lei
  * 
- * @version $Id: $
+ * @version $Id$
  */
 public class SAXXMLStreamReaderImpl implements XMLStreamReader {
     

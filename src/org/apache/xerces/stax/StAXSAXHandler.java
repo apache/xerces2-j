@@ -24,7 +24,7 @@ import org.xml.sax.helpers.DefaultHandler;
 /**
  * @author Hua Lei
  * 
- * @version $Id: $
+ * @version $Id$
  */
 final class StAXSAXHandler extends DefaultHandler {
     
