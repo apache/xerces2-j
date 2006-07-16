@@ -1624,11 +1624,11 @@ public class XIncludeHandler
                         fNamespaceContext);
 
                     ((XPointerHandler)fXPtrProcessor).setProperty(XINCLUDE_FIXUP_BASE_URIS,
-                            new Boolean(fFixupBaseURIs));
+                            fFixupBaseURIs ? Boolean.TRUE : Boolean.FALSE);
 
                     ((XPointerHandler)fXPtrProcessor).setProperty(
                             XINCLUDE_FIXUP_LANGUAGE,
-                            new Boolean (fFixupLanguage));
+                            fFixupLanguage ? Boolean.TRUE : Boolean.FALSE);
                     
                     if (fErrorReporter != null) 
                     	((XPointerHandler)fXPtrProcessor).setProperty(ERROR_REPORTER, fErrorReporter);
