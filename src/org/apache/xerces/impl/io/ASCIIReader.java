@@ -55,10 +55,10 @@ public class ASCIIReader
 
     // message formatter; used to produce localized
     // exception messages
-    private MessageFormatter fFormatter = null;
+    private final MessageFormatter fFormatter;
 
     //Locale to use for messages
-    private Locale fLocale = null;
+    private final Locale fLocale;
 
     //
     // Constructors
@@ -88,11 +88,24 @@ public class ASCIIReader
      */
     public ASCIIReader(InputStream inputStream, int size,
             MessageFormatter messageFormatter, Locale locale) {
+        this(inputStream, new byte[size], messageFormatter, locale);
+    } // <init>(InputStream, int, MessageFormatter, Locale)
+    
+    /** 
+     * Constructs an ASCII reader from the specified input stream and buffer.
+     *
+     * @param inputStream The input stream.
+     * @param buffer      The byte buffer.
+     * @param messageFormatter  the MessageFormatter to use to message reporting.
+     * @param locale    the Locale for which messages are to be reported
+     */
+    public ASCIIReader(InputStream inputStream, byte [] buffer,
+            MessageFormatter messageFormatter, Locale locale) {
         fInputStream = inputStream;
-        fBuffer = new byte[size];
+        fBuffer = buffer;
         fFormatter = messageFormatter;
         fLocale = locale;
-    } // <init>(InputStream,int, MessageFormatter, Locale)
+    } // <init>(InputStream, byte[], MessageFormatter, Locale)
 
     //
     // Reader methods

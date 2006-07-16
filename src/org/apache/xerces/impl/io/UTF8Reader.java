@@ -66,10 +66,10 @@ public class UTF8Reader
 
     // message formatter; used to produce localized
     // exception messages
-    private MessageFormatter fFormatter = null;
+    private final MessageFormatter fFormatter;
 
     //Locale to use for messages
-    private Locale fLocale = null;
+    private final Locale fLocale;
 
     //
     // Constructors
@@ -109,11 +109,25 @@ public class UTF8Reader
      */
     public UTF8Reader(InputStream inputStream, int size,
             MessageFormatter messageFormatter, Locale locale) {
+        this(inputStream, new byte[size], messageFormatter, locale);
+    } // <init>(InputStream, int, MessageFormatter, Locale)
+    
+    /**
+     * Constructs a UTF-8 reader from the specified input stream,
+     * buffer and MessageFormatter.
+     *
+     * @param inputStream The input stream.
+     * @param buffer      The byte buffer.
+     * @param messageFormatter  the formatter for localizing/formatting errors.
+     * @param locale    the Locale to use for messages
+     */
+    public UTF8Reader(InputStream inputStream, byte [] buffer,
+            MessageFormatter messageFormatter, Locale locale) {
         fInputStream = inputStream;
-        fBuffer = new byte[size];
+        fBuffer = buffer;
         fFormatter = messageFormatter;
         fLocale = locale;
-    } // <init>(InputStream, int, MessageFormatter, Locale)
+    } // <init>(InputStream, byte[], MessageFormatter, Locale)
 
     //
     // Reader methods

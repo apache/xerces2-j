@@ -36,7 +36,8 @@ public class UCSReader extends Reader {
     // Constants
     //
 
-    /** Default byte buffer size (8192, larger than that of ASCIIReader
+    /** 
+     * Default byte buffer size (8192, larger than that of ASCIIReader
      * since it's reasonable to surmise that the average UCS-4-encoded
      * file should be 4 times as large as the average ASCII-encoded file). 
      */
@@ -65,7 +66,7 @@ public class UCSReader extends Reader {
     //
 
     /** 
-     * Constructs an ASCII reader from the specified input stream 
+     * Constructs a UCS reader from the specified input stream 
      * using the default buffer size.  The Endian-ness and whether this is
      * UCS-2 or UCS-4 needs also to be known in advance.
      *
@@ -77,7 +78,7 @@ public class UCSReader extends Reader {
     } // <init>(InputStream, short)
 
     /** 
-     * Constructs an ASCII reader from the specified input stream 
+     * Constructs a UCS reader from the specified input stream 
      * and buffer size.  The Endian-ness and whether this is
      * UCS-2 or UCS-4 needs also to be known in advance.
      *
@@ -86,8 +87,21 @@ public class UCSReader extends Reader {
      * @param encoding One of UCS2LE, UCS2BE, UCS4LE or UCS4BE.
      */
     public UCSReader(InputStream inputStream, int size, short encoding) {
+        this(inputStream, new byte[size], encoding);
+    } // <init>(InputStream,int,short)
+    
+    /** 
+     * Constructs a UCS reader from the specified input stream 
+     * and buffer.  The Endian-ness and whether this is
+     * UCS-2 or UCS-4 needs also to be known in advance.
+     *
+     * @param inputStream The input stream.
+     * @param buffer      The byte buffer.
+     * @param encoding One of UCS2LE, UCS2BE, UCS4LE or UCS4BE.
+     */
+    public UCSReader(InputStream inputStream, byte [] buffer, short encoding) {
         fInputStream = inputStream;
-        fBuffer = new byte[size];
+        fBuffer = buffer;
         fEncoding = encoding;
     } // <init>(InputStream,int,short)
 

@@ -71,9 +71,19 @@ public class Latin1Reader
      * @param size        The initial buffer size.
      */
     public Latin1Reader(InputStream inputStream, int size) {
-        fInputStream = inputStream;
-        fBuffer = new byte[size];
+        this(inputStream, new byte[size]);
     } // <init>(InputStream, int)
+    
+    /** 
+     * Constructs an ISO-8859-1 reader from the specified input stream and buffer.
+     *
+     * @param inputStream The input stream.
+     * @param buffer      The byte buffer.
+     */
+    public Latin1Reader(InputStream inputStream, byte [] buffer) {
+        fInputStream = inputStream;
+        fBuffer = buffer;
+    } // <init>(InputStream, byte[])
     
     //
     // Reader methods
