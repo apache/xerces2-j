@@ -28,7 +28,7 @@ import javax.xml.XMLConstants;
  * 
  * @author Hua Lei
  * 
- * @version $Id: $
+ * @version $Id$
  */
 final class DOMNamespaceContext implements NamespaceContext {
     

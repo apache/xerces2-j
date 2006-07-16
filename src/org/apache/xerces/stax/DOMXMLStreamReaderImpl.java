@@ -43,7 +43,7 @@ import org.w3c.dom.ProcessingInstruction;
  * 
  * @author Hua Lei
  * 
- * @version $Id: $
+ * @version $Id$
  */
 public class DOMXMLStreamReaderImpl implements XMLStreamReader {
     
