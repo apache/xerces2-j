@@ -54,13 +54,13 @@ public class DOMXMLStreamReaderImpl implements XMLStreamReader {
     private Node domNode;
     
     // The following are four XML declaration features
-    private String xmlVersion;
+    private String xmlVersion = "1.0";
     
-    private boolean xmlStandalone;
+    private boolean xmlStandalone = false;
     
-    private String xmlEncoding;
+    private String xmlEncoding = "UTF-8";
     
-    private String inputEncoding;
+    private String inputEncoding = "UTF-8";
     
     // Record the cursor's position
     private Node curNode;
@@ -90,7 +90,7 @@ public class DOMXMLStreamReaderImpl implements XMLStreamReader {
      * @param domNode
      * @param xif
      */
-    public DOMXMLStreamReaderImpl(Node domNode, XMLInputFactory xif){
+    public DOMXMLStreamReaderImpl(Node domNode, XMLInputFactory xif) {
         this.domNode = domNode;
         this.xif = xif;
         this.curNode = domNode;
@@ -134,7 +134,7 @@ public class DOMXMLStreamReaderImpl implements XMLStreamReader {
      * @return The value of the property
      * @throws IllegalArgumentException if name is null
      */
-    public Object getProperty(java.lang.String name) throws java.lang.IllegalArgumentException{
+    public Object getProperty(java.lang.String name) throws java.lang.IllegalArgumentException {
         if (name == null)
             throw new IllegalArgumentException("The feature name should not be null");
         return xif.getProperty(name);
@@ -149,7 +149,7 @@ public class DOMXMLStreamReaderImpl implements XMLStreamReader {
      * @return true if there are more events, false otherwise
      * @throws XMLStreamException if there is a fatal error detecting the next state
      */
-    public boolean hasNext() throws XMLStreamException{
+    public boolean hasNext() throws XMLStreamException {
         if (curType == XMLStreamConstants.END_DOCUMENT) return false;
         return true;
     }
@@ -1054,7 +1054,7 @@ public class DOMXMLStreamReaderImpl implements XMLStreamReader {
      * called.
      */
     public Location getLocation() {
-        return null;
+        return EmptyLocation.getInstance();
     }
     
     /**
