@@ -25,6 +25,8 @@ import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Locale;
@@ -1543,6 +1545,13 @@ public class XMLEntityManager
             gAfterEscaping2[ch] = gHexChs[ch & 0xf];
         }
     }
+    
+    private static PrivilegedAction GET_USER_DIR_SYSTEM_PROPERTY = new PrivilegedAction() {
+        public Object run() {
+            return System.getProperty("user.dir");
+        }
+    };
+    
     // To escape the "user.dir" system property, by using %HH to represent
     // special ASCII characters: 0x00~0x1F, 0x7F, ' ', '<', '>', '#', '%'
     // and '"'. It's a static method, so needs to be synchronized.
@@ -1557,10 +1566,9 @@ public class XMLEntityManager
         // get the user.dir property
         String userDir = "";
         try {
-            userDir = System.getProperty("user.dir");
+            userDir = (String) AccessController.doPrivileged(GET_USER_DIR_SYSTEM_PROPERTY);
         }
-        catch (SecurityException se) {
-        }
+        catch (SecurityException se) {}
 
         // return empty string if property value is empty string.
         if (userDir.length() == 0) 

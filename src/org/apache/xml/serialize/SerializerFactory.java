@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004 The Apache Software Foundation.
+ * Copyright 1999-2002,2004,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-
 package org.apache.xml.serialize;
-
 
 import java.io.OutputStream;
 import java.io.Writer;
@@ -25,21 +23,15 @@ import java.util.Hashtable;
 import java.util.StringTokenizer;
 
 /**
- *
- *
  * @version $Revision$ $Date$
  * @author <a href="mailto:Scott_Boag/CAM/Lotus@lotus.com">Scott Boag</a>
  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
  */
-public abstract class SerializerFactory
-{
-
-
+public abstract class SerializerFactory {
+    
     public static final String FactoriesProperty = "org.apache.xml.serialize.factories";
 
-
     private static Hashtable  _factories = new Hashtable();
-
 
     static
     {
@@ -60,7 +52,8 @@ public abstract class SerializerFactory
         factory =  new SerializerFactoryImpl( Method.TEXT );
         registerSerializerFactory( factory );
 
-        list = System.getProperty( FactoriesProperty );
+        SecuritySupport ss = SecuritySupport.getInstance();
+        list = ss.getSystemProperty( FactoriesProperty );
         if ( list != null ) {
             token = new StringTokenizer( list, " ;,:" );
             while ( token.hasMoreTokens() ) {
