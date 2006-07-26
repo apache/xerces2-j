@@ -206,14 +206,15 @@ Copyright:
     <unzip src="${src.apis.zip}" dest="${build.src}">
         <patternset
             includes="org/xml/sax/** 
-    	        javax/xml/**
-    	        javax/xml/datatype/**
-    	        javax/xml/namespace/**
+                javax/xml/**
+                javax/xml/datatype/**
+                javax/xml/namespace/**
                 javax/xml/parsers/**
-    	        javax/xml/transform/**
-    	        javax/xml/validation/**
-    	        javax/xml/xpath/**
+                javax/xml/transform/**
+                javax/xml/validation/**
+                javax/xml/xpath/**
                 org/w3c/dom/*
+                org/w3c/dom/bootstrap/**
                 org/w3c/dom/events/**
                 org/w3c/dom/html/**
                 org/w3c/dom/ls/**
@@ -1163,6 +1164,7 @@ Copyright:
                 javax/xml/validation/**
                 javax/xml/xpath/**
                 org/w3c/dom/*
+                org/w3c/dom/bootstrap/**
                 org/w3c/dom/events/**
                 org/w3c/dom/html/**
                 org/w3c/dom/ls/**
