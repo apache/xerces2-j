@@ -2003,9 +2003,12 @@ public class XMLEntityManager
     protected Reader createReader(InputStream inputStream, String encoding, Boolean isBigEndian)
         throws IOException {
 
-        // normalize encoding name
-        if (encoding == null) {
-            encoding = "UTF-8";
+        // if the encoding is UTF-8 use the optimized UTF-8 reader
+        if (encoding == "UTF-8" || encoding == null) {
+            if (DEBUG_ENCODINGS) {
+                System.out.println("$$$ creating UTF8Reader");
+            }
+            return new UTF8Reader(inputStream, fBufferSize, fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), fErrorReporter.getLocale());
         }
 
         // try to use an optimized reader
@@ -2014,7 +2017,7 @@ public class XMLEntityManager
             if (DEBUG_ENCODINGS) {
                 System.out.println("$$$ creating UTF8Reader");
             }
-            return new UTF8Reader(inputStream, fBufferSize, fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), fErrorReporter.getLocale() );
+            return new UTF8Reader(inputStream, fBufferSize, fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), fErrorReporter.getLocale());
         }
         if(ENCODING.equals("ISO-10646-UCS-4")) {
             if(isBigEndian != null) {
@@ -2063,7 +2066,10 @@ public class XMLEntityManager
             //       invalid UTF-8 sequence to be detected. This is only
             //       important when continue-after-fatal-error is turned
             //       on. -Ac
-            encoding = "ISO-8859-1";
+            if (DEBUG_ENCODINGS) {
+                System.out.println("$$$ creating Latin1Reader");
+            }
+            return new Latin1Reader(inputStream, fBufferSize);
         }
 
         // try to use a Java reader
@@ -2077,7 +2083,10 @@ public class XMLEntityManager
                                        new Object[] { encoding },
                                        XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 // see comment above.
-                javaEncoding = "ISO8859_1";
+                if (DEBUG_ENCODINGS) {
+                    System.out.println("$$$ creating Latin1Reader");
+                }
+                return new Latin1Reader(inputStream, fBufferSize);
             }
         }
         else if (javaEncoding.equals("ASCII")) {
