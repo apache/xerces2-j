@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--
- * Copyright 1999-2005 The Apache Software Foundation.
+ * Copyright 1999-2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,12 +66,14 @@
     <li>Document Object Model (DOM)</li>
     <ul>
      <li>
+      <jump href='javadocs/api/org/w3c/dom/bootstrap/package-summary.html'>Bootstrap</jump>
+     </li>
+     <li>
       <jump href='javadocs/api/org/w3c/dom/package-summary.html'>Core</jump>
      </li>
      <li>
       <jump href='javadocs/api/org/w3c/dom/ls/package-summary.html'>Load and Save</jump>
      </li>
-    
      <li>
       <jump href='javadocs/api/org/w3c/dom/events/package-summary.html'>Events</jump>
      </li>
