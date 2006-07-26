@@ -2188,6 +2188,8 @@ public class XMLSchemaValidator
             fCurrentPSVI.fTypeDecl = fCurrentType;
             // PSVI: add notation attribute
             fCurrentPSVI.fNotation = fNotation;
+            // PSVI: add nil
+            fCurrentPSVI.fNil = fNil;
         }
 
         return augs;
@@ -2385,11 +2387,12 @@ public class XMLSchemaValidator
         if (fAugPSVI) {
             augs = getEmptyAugs(augs);
 
-            // the 4 properties sent on startElement calls
+            // the 5 properties sent on startElement calls
             fCurrentPSVI.fDeclaration = this.fCurrentElemDecl;
             fCurrentPSVI.fTypeDecl = this.fCurrentType;
             fCurrentPSVI.fNotation = this.fNotation;
             fCurrentPSVI.fValidationContext = this.fValidationRoot;
+            fCurrentPSVI.fNil = this.fNil;
             // PSVI: validation attempted
             // nothing below or at the same level has none or partial
             // (which means this level is strictly assessed, and all chidren
@@ -2418,7 +2421,6 @@ public class XMLSchemaValidator
 
             if (fDefaultValue != null)
                 fCurrentPSVI.fSpecified = true;
-            fCurrentPSVI.fNil = fNil;
             fCurrentPSVI.fMemberType = fValidatedInfo.memberType;
             fCurrentPSVI.fNormalizedValue = fValidatedInfo.normalizedValue;
             fCurrentPSVI.fActualValue = fValidatedInfo.actualValue;
