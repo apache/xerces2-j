@@ -2259,10 +2259,10 @@ public class XMLSchemaValidator
             int oldCount = fMatcherStack.getMatcherCount();
             for (int i = oldCount - 1; i >= 0; i--) {
                 XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
-                if (fCurrentElemDecl == null)
-                    matcher.endElement(element, null, false, fValidatedInfo.actualValue, fValidatedInfo.actualValueType, fValidatedInfo.itemValueTypes);
-                
-                else
+                if (fCurrentElemDecl == null) {
+                    matcher.endElement(element, fCurrentType, false, fValidatedInfo.actualValue, fValidatedInfo.actualValueType, fValidatedInfo.itemValueTypes);
+                }
+                else {
                     matcher.endElement(
                             element,
                             fCurrentType,
@@ -2276,6 +2276,7 @@ public class XMLSchemaValidator
                             fDefaultValue == null
                                 ? fValidatedInfo.itemValueTypes
                                 : fCurrentElemDecl.fDefault.itemValueTypes);
+                }
             }
             
             if (fMatcherStack.size() > 0) {
