@@ -29,7 +29,9 @@ import javax.xml.stream.XMLStreamReader;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
 import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.LocatorImpl;
 
 /**
  * <p>An XMLStreamReader created from a SAXSource.</p>
@@ -51,6 +53,11 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
     
     // The current event type
     private int curType;
+    
+    // Record the location of SAX parser
+    private Locator loc;
+    
+    private SAXLocation sl;
     
     // The attribute of element event
     private Attributes attrs;
@@ -83,14 +90,17 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
      * @param xif
      */
     public SAXXMLStreamReaderImpl(XMLReader xr, InputSource is, XMLInputFactory xif)
-        throws XMLStreamException {
+    throws XMLStreamException {
         
         this.xif = xif;
         this.curAttrs = new ArrayList();
         
         try {
             asp = new AsyncSAXParser(xr, is);
-            handler = new StAXSAXHandler(asp, this);
+            loc = new LocatorImpl();
+            sl = new SAXLocation(loc);		
+            
+            handler = new StAXSAXHandler(asp, this, loc);
             
             xr.setContentHandler(handler);
             xr.setDTDHandler(handler);
@@ -185,7 +195,7 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
             this.attrs = attrs;
             if (attrs != null) {
                 for (int i = 0; i < attrs.getLength(); i++) {
-                                       
+                    
                     String name = attrs.getQName(i);
                     String value = attrs.getValue(i);
                     String type = attrs.getType(i);
@@ -400,10 +410,15 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
      */
     public String getAttributeValue(String namespaceURI,
             String localName) {
-        if (curType == XMLStreamConstants.START_ELEMENT) {
-            String value = attrs.getValue(namespaceURI, localName);
+        if(curType == XMLStreamConstants.START_ELEMENT){
+            String value = null;
+            for(int i = 0; i < curAttrs.size(); i++){
+                Attribute attr = (Attribute)curAttrs.get(i);
+                if(attr.local.equals(localName)) return attr.value;
+            }
             return value;
         }
+        
         throw new IllegalStateException("Current event is not START_ELEMENT or ATTRIBUTE");
     }
     
@@ -582,12 +597,13 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
      * @throws IllegalStateException if this is not a START_ELEMEN or, END_ELEMENT
      */
     public int getNamespaceCount() { 
-        if (curType == XMLStreamConstants.START_ELEMENT || curType == XMLStreamConstants.END_ELEMENT) {
-            return 0;
+        if(curType == XMLStreamConstants.START_ELEMENT || curType == XMLStreamConstants.END_ELEMENT){
+            ArrayList al = dc.getNamespaces();
+            
+            return al.size();
         }
-        if (curType == XMLStreamConstants.NAMESPACE) {
+        if(curType == XMLStreamConstants.NAMESPACE)
             return 1;
-        }
         return 0;
     }
     
@@ -602,7 +618,17 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
      *    END_ELEMENT or NAMESPACE
      */
     public String getNamespacePrefix(int index) {
-        return null;
+        int leng = getNamespaceCount();
+        
+        if(index + 1 > leng || index < 0)
+            throw new IndexOutOfBoundsException("The index "+ index+ " should be between 0..."+ (leng-1));
+        
+        if(curType == XMLStreamConstants.START_ELEMENT || curType == XMLStreamConstants.START_ELEMENT) { 
+            return dc.getNamespacePrefix(index);
+        }
+        else
+            throw new IllegalStateException(
+            "Current event is not START_ELEMENT, END_ELEMENT or ATTRIBUTE");	
     }
     
     /**
@@ -615,7 +641,17 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
      *   END_ELEMENT or NAMESPACE
      */
     public String getNamespaceURI(int index) {
-        return null;	
+        int leng = getNamespaceCount();
+        
+        if(index + 1 > leng || index < 0)
+            throw new IndexOutOfBoundsException("The index "+ index+ " should be between 0..."+ (leng-1));
+        
+        if(curType == XMLStreamConstants.START_ELEMENT || curType == XMLStreamConstants.START_ELEMENT) { 
+            return dc.getNamespaceURI(index);
+        }
+        else
+            throw new IllegalStateException(
+            "Current event is not START_ELEMENT, END_ELEMENT or ATTRIBUTE");		
     }
     
     /**
@@ -655,7 +691,14 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
      * a valid text state.
      */
     public String getText() {
-        return null;
+        if(curType == XMLStreamConstants.CHARACTERS || curType == XMLStreamConstants.SPACE){
+            char[] chars = asp.getCharacters();
+            
+            return  String.valueOf(chars);
+        }
+        
+        throw new IllegalStateException(
+        "The current event is not a valid text state.");	
     }
     
     /**
@@ -695,7 +738,7 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
      * @throws NullPointerException is if target is null
      */
     public int getTextCharacters(int sourceStart, char[] target, int targetStart, int length) 
-        throws XMLStreamException {
+    throws XMLStreamException {
         
         if (target == null)
             throw new NullPointerException();
@@ -755,7 +798,7 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
      * @return the encoding of this instance or null
      */
     public String getEncoding() {
-        return null;
+        return inputEncoding;
     }
     
     /**
@@ -780,7 +823,7 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
      * called.
      */
     public Location getLocation() {
-        return null;
+        return sl;
     }
     
     /**
@@ -809,8 +852,16 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
      * END_ELEMENT or ENTITY_REFERENCE
      */
     public String getLocalName() {
-        
-        return null;
+        if(curType == XMLStreamConstants.START_ELEMENT || curType == XMLStreamConstants.END_ELEMENT) { 
+            String local = asp.getElementName();
+            int indexPre = local.indexOf(":");
+            if (indexPre != -1){
+                local = local.substring(indexPre + 1);		
+            }
+            return local;
+        }
+        else
+            throw new IllegalStateException("Current event is not START_ELEMENT, END_ELEMENT or ENTITY_REFERENCE");
     }
     
     /**
@@ -835,9 +886,10 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
      *    or ATTRIBUTE
      */
     public String getNamespaceURI() {
+        String prefix = getPrefix();  
         
-        
-        return null;
+        if(prefix == null) prefix = ""; 
+        return dc.getNamespaceURI(prefix);
     }
     
     /**
@@ -847,8 +899,17 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
      * @throws IllegalStateException if this is not a START_ELEMENT or END_ELEMENT
      */
     public String getPrefix() {
-        
-        return null;
+        if(curType == XMLStreamConstants.START_ELEMENT || curType == XMLStreamConstants.START_ELEMENT) { 
+            String pre = null;
+            String name = asp.getElementName();
+            int indexPre = name.indexOf(":");
+            if(indexPre != -1){
+                pre = name.substring(0, indexPre);		
+            }
+            return pre;
+        }
+        else
+            throw new IllegalStateException("Current event is not START_ELEMENT, END_ELEMENT");
     }
     
     /**

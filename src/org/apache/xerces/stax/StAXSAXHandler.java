@@ -19,6 +19,7 @@ package org.apache.xerces.stax;
 import javax.xml.stream.XMLStreamConstants;
 
 import org.xml.sax.Attributes;
+import org.xml.sax.Locator;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
@@ -30,10 +31,12 @@ final class StAXSAXHandler extends DefaultHandler {
     
     private AsyncSAXParser asp;
     private SAXXMLStreamReaderImpl reader;
+    private Locator loc;
     
-    public StAXSAXHandler(AsyncSAXParser asp, SAXXMLStreamReaderImpl reader) {
+    public StAXSAXHandler(AsyncSAXParser asp, SAXXMLStreamReaderImpl reader, Locator loc) {
         this.asp = asp;
         this.reader = reader;  
+        this.loc = loc;
     }
     
     public void characters(char[] ch, int start, int length) {
@@ -140,6 +143,8 @@ final class StAXSAXHandler extends DefaultHandler {
             synchronized (asp) {
                 while (asp.getRunningFlag() == false)
                     asp.wait();
+                
+                setDocumentLocator(loc);
                 
                 reader.setCurType(XMLStreamConstants.START_DOCUMENT);
                 

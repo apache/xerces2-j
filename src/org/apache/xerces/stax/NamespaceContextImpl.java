@@ -35,12 +35,16 @@ final class NamespaceContextImpl implements NamespaceContext {
     // Record the avaliable namespaces
     private Stack namespaceStack;
     
+    // Record the namespaces of START_ELEMENT and END_ELEMENT for SAXSource
+    private ArrayList eleNamespaces;
+    
     /**
      * The initialization method of DOMNamespaceContext, 
      * the DOMNamespaceContext is a singleton
      */
     public NamespaceContextImpl() {
         namespaceStack = new Stack();
+        eleNamespaces = new ArrayList();
     }
     
     /**
@@ -52,7 +56,8 @@ final class NamespaceContextImpl implements NamespaceContext {
         if (!namespaceStack.empty()) {
             Iterator iter = namespaceStack.iterator();
             while(iter.hasNext()){
-                DOMNamespace dc = (DOMNamespace)iter.next();
+                Namespace dc = (Namespace)iter.next();
+                if(dc.level == 0) eleNamespaces.add(dc);
                 dc.increaseLevel();
             }
         }
@@ -69,9 +74,11 @@ final class NamespaceContextImpl implements NamespaceContext {
             Iterator iter = namespaceStack.iterator();
             
             while (iter.hasNext()) {
-                DOMNamespace dc = (DOMNamespace)iter.next();
+                Namespace dc = (Namespace)iter.next();
                 int level = dc.decreaseLevel();
                 
+                // When encounter endElement event, the namespace whose level equals zero will not
+                // removed from namespace stack util next end element
                 if(level <= 0){
                     int index = namespaceStack.indexOf(dc);
                     int deleteNum = namespaceStack.size() - index;
@@ -84,13 +91,49 @@ final class NamespaceContextImpl implements NamespaceContext {
     }
     
     /**
+     * Get the ArrayList which records the namespaces of element.
+     * This method is for SAXSource. 
+     * 
+     * @return
+     */
+    protected ArrayList getNamespaces() {
+        return eleNamespaces;
+    }
+    
+    /**
+     * Get the prefix of element namespace at specified index
+     * This method is for SAXSource
+     * 
+     * @param index
+     * @return
+     */
+    protected String getNamespacePrefix(int index) {
+        Namespace dm = (Namespace)eleNamespaces.get(index);
+        
+        return dm.getPrefix();
+    }
+    
+    /**
+     * Get the uri of element namespace at specified index.
+     * This method is for SAXSource
+     * 
+     * @param index
+     * @return
+     */
+    protected String getNamespaceURI(int index) {
+        Namespace dm = (Namespace)eleNamespaces.get(index);
+        
+        return dm.getNamespaceURI();
+    }
+    
+    /**
      * Add the prefix and namespaceURI to the namespace stack
      * 
      * @param prefix
      * @param namespaceURI
      */
     public void addNamespace(String prefix, String namespaceURI) {
-        DOMNamespace dn = new DOMNamespace(prefix, namespaceURI);
+        Namespace dn = new Namespace(prefix, namespaceURI);
         namespaceStack.push(dn);
     }
     
@@ -107,7 +150,7 @@ final class NamespaceContextImpl implements NamespaceContext {
         int size = namespaceStack.size();
         
         while (size > 0) {
-            DOMNamespace dc = (DOMNamespace) namespaceStack.elementAt(--size);
+            Namespace dc = (Namespace) namespaceStack.elementAt(--size);
             String pre = dc.getPrefix();
             if (prefix.equals(pre))
                 return dc.getNamespaceURI();
@@ -129,7 +172,7 @@ final class NamespaceContextImpl implements NamespaceContext {
         int size = namespaceStack.size();
         
         while (size > 0) {
-            DOMNamespace dc = (DOMNamespace) namespaceStack.elementAt(--size);
+            Namespace dc = (Namespace) namespaceStack.elementAt(--size);
             String namespace = dc.getNamespaceURI();
             if (namespaceURI.equals(namespace))
                 return dc.getPrefix();
@@ -149,7 +192,7 @@ final class NamespaceContextImpl implements NamespaceContext {
         if (!namespaceStack.empty()) {
             Iterator iter = namespaceStack.iterator();
             while(iter.hasNext()){
-                DOMNamespace dc = (DOMNamespace)iter.next();
+                Namespace dc = (Namespace)iter.next();
                 String namespace = dc.getNamespaceURI();
                 if(namespaceURI.equals(namespace))
                     prefixes.add(dc.getPrefix());
@@ -160,17 +203,17 @@ final class NamespaceContextImpl implements NamespaceContext {
     }
     
     /**
-     * Class to represent the namespace in DOMSource
+     * Class to represent the namespace in DOMSource and SAXSource
      * 
      * @author Hua Lei
      */
-    final class DOMNamespace {
+    final class Namespace {
         
         private String prefix;
         private String namespaceURI;
         private int level;
         
-        DOMNamespace(String prefix, String namespaceURI) {
+        Namespace(String prefix, String namespaceURI) {
             this.prefix = prefix;
             this.namespaceURI = namespaceURI;
             level = 0;
