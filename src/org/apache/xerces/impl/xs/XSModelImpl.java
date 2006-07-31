@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2005 The Apache Software Foundation.
+ * Copyright 2002-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -469,10 +469,6 @@ public class XSModelImpl implements XSModel {
         return fHasIDC;
     }
 
-    /**
-     * REVISIT: to expose substitution group of a given element.
-     * We need to add this to the XSModel interface.
-     */
     public XSObjectList getSubstitutionGroup(XSElementDeclaration head) {
         return (XSObjectList)fSubGroupMap.get(head);
     }
