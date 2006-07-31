@@ -1,5 +1,5 @@
 /*
- * Copyright 2003,2004 The Apache Software Foundation.
+ * Copyright 2003,2004,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -140,5 +140,18 @@ public interface XSModel {
      */
     public XSNotationDeclaration getNotationDeclaration(String name, 
                                                         String namespace);
+    
+    /**
+     * Convenience method. Returns a list containing the members of the
+     * substitution group for the given <code>XSElementDeclaration</code>
+     * or an empty <code>XSObjectList</code> if the substitution group
+     * contains no members.
+     * @param head The substitution group head.
+     * @return A list containing the members of the substitution group 
+     *  for the given <code>XSElementDeclaration</code> or an empty 
+     *  <code>XSObjectList</code> if the substitution group contains 
+     *  no members.
+     */
+    public XSObjectList getSubstitutionGroup(XSElementDeclaration head);
 
 }
