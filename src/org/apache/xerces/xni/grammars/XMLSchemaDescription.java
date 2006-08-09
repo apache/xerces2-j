@@ -1,5 +1,5 @@
 /*
- * Copyright 2002,2004,2005 The Apache Software Foundation.
+ * Copyright 2002,2004-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -126,7 +126,7 @@ public interface XMLSchemaDescription extends XMLGrammarDescription {
     
     /**
      * If a call is triggered by an element/attribute/xsi:type in the instance,
-     * this call returns all attribute of such element (or enclosing element).
+     * this call returns all attributes of such an element (or enclosing element).
      * 
      * @return  all attributes of the tiggering/enclosing element
      */
