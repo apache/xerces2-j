@@ -1149,7 +1149,7 @@ public class DOMXMLStreamReaderImpl implements XMLStreamReader {
      * @throws IllegalStateException if this is not a START_ELEMENT or END_ELEMENT
      */
     public String getPrefix(){
-        if (curType == XMLStreamConstants.START_ELEMENT || curType == XMLStreamConstants.START_ELEMENT) {
+        if (curType == XMLStreamConstants.START_ELEMENT || curType == XMLStreamConstants.END_ELEMENT) {
             String nodeName = curNode.getNodeName();
             String prefix = null;
             int index = nodeName.indexOf(":");
