@@ -1068,7 +1068,7 @@ public class DOMXMLStreamReaderImpl implements XMLStreamReader {
     public QName getName() {
         // DOM Level 2	  
         if(curType == XMLStreamConstants.START_ELEMENT || curType == XMLStreamConstants.END_ELEMENT){ 
-            return new QName(getLocalName(), getNamespaceURI());
+            return new QName(getNamespaceURI(), getLocalName());
         }
         throw new IllegalStateException(
         "The current event is not START_ELEMENT or END_ELEMENT.");	

@@ -836,9 +836,10 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
      */
     public QName getName() {
         if (curType == XMLStreamConstants.START_ELEMENT || curType == XMLStreamConstants.END_ELEMENT) { 
-            return new QName(getLocalName(), getNamespaceURI());
+            return new QName(getNamespaceURI(), getLocalName());
         }
-        return null;
+        throw new IllegalStateException(
+        "The current event is not START_ELEMENT or END_ELEMENT.");
     }
     
     /**
