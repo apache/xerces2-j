@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--
- * Copyright 1999-2004 The Apache Software Foundation.
+ * Copyright 1999-2004,2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,9 +47,9 @@
     HTML must match the XHTML standard for well-formedness before it 
     can be parsed by &ParserName; or any other XML parser. You can 
     find the 
-    <jump href="http://www.w3c.org/TR/1999/PR-xhtml1-19991210">XHTML 
+    <jump href="http://www.w3.org/TR/2002/REC-xhtml1-20020801/">XHTML 
     standard</jump> on the 
-    <jump href="http://www.w3c.org">W3C web site</jump>.
+    <jump href="http://www.w3.org/">W3C web site</jump>.
    </p>
   </a>
  </faq>
@@ -60,11 +60,11 @@
     There are many Unicode characters that are not allowed in an 
     XML document, according to the XML spec. Typical disallowed 
     characters are control characters, even if you escape them 
-    using the Character Reference form: &amp;#xxxx; . See the XML
-    spec, sections 
-    <jump href="http://www.w3.org/TR/REC-xml#charsets">2.2</jump> 
+    using the Character Reference form: &amp;#xxxx; . See the XML 1.0
+    specification, sections 
+    <jump href="http://www.w3.org/TR/2006/REC-xml-20060816/#charsets">2.2</jump> 
     and 
-    <jump href="http://www.w3.org/TR/REC-xml#sec-references">4.1</jump> 
+    <jump href="http://www.w3.org/TR/2006/REC-xml-20060816/#sec-references">4.1</jump> 
     for details. If the parser is generating this error, it is very
     likely that there is a character in the file that you can not see.
     You can generally use a UNIX command like &quot;od -hc&quot; to 

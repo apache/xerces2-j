@@ -49,12 +49,12 @@
 
 
     <p>Xerces2 is able to parse documents written according to the
-        <jump href="http://www.w3.org/TR/2004/REC-xml11-20040204/">
+        <jump href="http://www.w3.org/TR/2006/REC-xml11-20060816/">
         XML 1.1 Recommendation</jump>, except that 
         it does not yet provide an option to enable normalization checking as described
         in section 2.13 of this specification.
         It also handles namespaces according to the 
-        <jump href="http://www.w3.org/TR/2004/REC-xml-names11-20040204/">
+        <jump href="http://www.w3.org/TR/2006/REC-xml-names11-20060816/">
         XML Namespaces 1.1 Recommendation</jump>,
         and will correctly serialize XML 1.1 documents if the DOM level
         3 load/save APIs are in use.
@@ -70,22 +70,22 @@
       <li>
 	<jump href='http://www.w3.org/XML/'>eXtensible Markup Language</jump>
 	(XML) 1.0 
-	<jump href='http://www.w3.org/TR/2004/REC-xml-20040204/'>Third 
+	<jump href='http://www.w3.org/TR/2006/REC-xml-20060816/'>Fourth 
 	  Edition</jump> Recommendation
       </li>
       <li>
-	<jump href='http://www.w3.org/TR/1999/REC-xml-names-19990114/'>Namespaces
-	  in XML</jump> Recommendation
+	   <jump href='http://www.w3.org/TR/2006/REC-xml-names-20060816/'>Namespaces in XML 1.0</jump>
+	   Second Edition Recommendation
       </li>
       <li>
 	<jump href='http://www.w3.org/XML/'>eXtensible Markup Language</jump>
 	(XML) 1.1 
-	<jump href='http://www.w3.org/TR/2004/REC-xml11-20040204/'>First 
+	<jump href='http://www.w3.org/TR/2006/REC-xml11-20060816/'>Second 
 	  Edition</jump> Recommendation
       </li>
       <li>
-        <jump href='http://www.w3.org/TR/2004/REC-xml-names11-20040204/'>
-          Namespaces in XML 1.1</jump> Recommendation
+        <jump href='http://www.w3.org/TR/2006/REC-xml-names11-20060816/'>Namespaces in XML 1.1</jump>
+        Second Edition Recommendation
       </li>
       <li>
         <jump href='http://www.w3.org/TR/2004/REC-xinclude-20041220/'>

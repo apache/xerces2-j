@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--
- * Copyright 2002-2005 The Apache Software Foundation.
+ * Copyright 2002-2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -113,7 +113,7 @@
     <tr>
      <td>NonValidatingConfiguration</td>
      <td>A non-validating configuration. It does not provide a
-         <jump href="http://www.w3.org/TR/REC-xml#sec-conformance">conformant</jump>
+         <jump href="http://www.w3.org/TR/2006/REC-xml-20060816/#sec-conformance">conformant</jump>
          non-validating XML processor because it does not process the declarations
          in an internal subset besides checking their well-formedness.
      </td>

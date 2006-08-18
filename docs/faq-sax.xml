@@ -80,7 +80,7 @@ event.
     <q>Why doesn't the SAX parser report ignorable whitespace for XML Schemas?</q>
     <a>
       <p>SAX is very clear that ignorableWhitespace is only called for
-         <jump href="http://www.w3.org/TR/REC-xml/#sec-white-space">
+         <jump href="http://www.w3.org/TR/2006/REC-xml-20060816/#sec-white-space">
          element content whitespace</jump>, which is defined in the context of a DTD.
          The result of schema validation is the Post-Schema-Validation Infoset (PSVI). 
          Schema processors augment the base Infoset by adding new properties to 
