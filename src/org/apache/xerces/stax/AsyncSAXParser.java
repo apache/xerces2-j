@@ -27,7 +27,7 @@ import org.xml.sax.XMLReader;
  */
 final class AsyncSAXParser extends Thread {
     
-    private XMLReader xr;
+    XMLReader xr;
     private InputSource is;
     
     // The flag which represents the status of AsyncSAXParser. If true,
@@ -43,12 +43,15 @@ final class AsyncSAXParser extends Thread {
     
     // The current element name
     private String eleName;
+    private String uri;
+    
+    Exception ex = null;
     
     public AsyncSAXParser(XMLReader xr, InputSource is) {
         this.xr = xr;
         this.is = is;
         
-        this.runningFlag = true;     
+        this.runningFlag = false;     
     }
     
     /**
@@ -59,8 +62,11 @@ final class AsyncSAXParser extends Thread {
             xr.parse(is);
         }
         catch(Exception e){
-            System.out.print("Error occurs during the SAX parsing process at ");
-            e.printStackTrace();
+//          System.out.print("Error occurs during the SAX parsing process at ");
+//          System.out.flush();
+//          e.printStackTrace();
+            ex = e;
+//          throw new RuntimeException(e.getMessage(), e);
         }
     }  
     
@@ -91,11 +97,13 @@ final class AsyncSAXParser extends Thread {
      * @param length
      */
     public void setCharacters(char[] ch, int start, int length) {
-        charactersBuf = null;
-        charactersBuf = new char[length];
-        for (int i = 0; i < length; i++, start++) {
-            charactersBuf[i] = ch[start];
+        if(ch == null) {
+            charactersBuf = new char[0];
+            return;
         }
+        
+        charactersBuf = new char[length];
+        System.arraycopy(ch, start, charactersBuf, 0, length);
     }
     
     /**
@@ -158,5 +166,13 @@ final class AsyncSAXParser extends Thread {
     
     public String getPITarget() {
         return piTarget;
+    }
+    
+    public String getUri() {
+        return uri;
+    }
+    
+    public void setUri(String uri) {
+        this.uri = uri;
     }
 }

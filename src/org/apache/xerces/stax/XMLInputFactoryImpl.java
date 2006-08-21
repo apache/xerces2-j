@@ -44,24 +44,27 @@ import org.xml.sax.XMLReader;
  * @version $Id$
  */
 public class XMLInputFactoryImpl extends XMLInputFactory {
-
+    
+    ConfigurationContext config = new ConfigurationContext();
+    
     public XMLInputFactoryImpl() {}
-
+    
     public XMLStreamReader createXMLStreamReader(Reader reader)
-            throws XMLStreamException {
+    throws XMLStreamException {
         return null;
     }
-
+    
     public XMLStreamReader createXMLStreamReader(Source source)
-        throws XMLStreamException {
+    throws XMLStreamException {
         if (source instanceof SAXSource) {
             SAXSource ss = (SAXSource) source;
             InputSource is = ss.getInputSource();
             XMLReader xr = ss.getXMLReader();
-            SAXXMLStreamReaderImpl sxsReader = new SAXXMLStreamReaderImpl(xr, is, this);
             if(is == null || xr == null)
                 throw new XMLStreamException(
                 "Can only create StAX reader for a SAXSource if Reader and InputStream exposed by getSource()");
+            
+            SAXXMLStreamReaderImpl sxsReader = new SAXXMLStreamReaderImpl(xr, is, this);
             return sxsReader;
         }
         if (source instanceof DOMSource) {
@@ -76,10 +79,10 @@ public class XMLInputFactoryImpl extends XMLInputFactory {
     }
     
     public XMLStreamReader createXMLStreamReader(InputStream stream)
-            throws XMLStreamException {
+    throws XMLStreamException {
         return null;
     }
-
+    
     public XMLStreamReader createXMLStreamReader(InputStream stream,
             String encoding) throws XMLStreamException {
         return null;
@@ -89,34 +92,34 @@ public class XMLInputFactoryImpl extends XMLInputFactory {
             InputStream stream) throws XMLStreamException {
         return null;
     }
-
+    
     public XMLStreamReader createXMLStreamReader(String systemId, Reader reader)
-            throws XMLStreamException {
+    throws XMLStreamException {
         return null;
     }
     
     public XMLEventReader createXMLEventReader(Reader reader)
-            throws XMLStreamException {
+    throws XMLStreamException {
         return null;
     }
-
+    
     public XMLEventReader createXMLEventReader(String systemId, Reader reader)
-            throws XMLStreamException {
+    throws XMLStreamException {
         return null;
     }
-
+    
     public XMLEventReader createXMLEventReader(XMLStreamReader reader)
-            throws XMLStreamException {
+    throws XMLStreamException {
         return null;
     }
     
     public XMLEventReader createXMLEventReader(Source source)
-            throws XMLStreamException {
+    throws XMLStreamException {
         return null;
     }
-
+    
     public XMLEventReader createXMLEventReader(InputStream stream)
-            throws XMLStreamException {
+    throws XMLStreamException {
         return null;
     }
     
@@ -124,12 +127,12 @@ public class XMLInputFactoryImpl extends XMLInputFactory {
             String encoding) throws XMLStreamException {
         return null;
     }
-
+    
     public XMLEventReader createXMLEventReader(String systemId,
             InputStream stream) throws XMLStreamException {
         return null;
     }
-
+    
     public XMLStreamReader createFilteredReader(XMLStreamReader reader,
             StreamFilter filter) throws XMLStreamException {
         return null;
@@ -139,37 +142,77 @@ public class XMLInputFactoryImpl extends XMLInputFactory {
             EventFilter filter) throws XMLStreamException {
         return null;
     }
-
+    
+    /**
+     * The resolver that will be set on any XMLStreamReader or XMLEventReader created by this factory instance.
+     */
     public XMLResolver getXMLResolver() {
-        return null;
+        return config.getXMLResolver();
     }
     
-    public void setXMLResolver(XMLResolver resolver) {
+    /**
+     * The resolver that will be set on any XMLStreamReader or XMLEventReader created by this factory instance.
+     * @param resolver the resolver to use to resolve references
+     */
+    public void  setXMLResolver(XMLResolver resolver) {
+        config.setXMLResolver(resolver);
     }
     
+    /**
+     * The reporter that will be set on any XMLStreamReader or XMLEventReader created by this factory instance.
+     */
     public XMLReporter getXMLReporter() {
-        return null;
+        return config.getXMLReporter();
     }
-
+    
+    /**
+     * The reporter that will be set on any XMLStreamReader or XMLEventReader created by this factory instance.
+     * @param reporter the resolver to use to report non fatal errors
+     */
     public void setXMLReporter(XMLReporter reporter) {
+        config.setXMLReporter(reporter);
     }
-
-    public void setProperty(String name, Object value)
-            throws IllegalArgumentException {
+    
+    
+    /**
+     * Set a user defined event allocator for events
+     * @param allocator the user defined allocator
+     */
+    public void setEventAllocator(XMLEventAllocator allocator) { 
+        config.setEventAllocator(allocator);
     }
-
-    public Object getProperty(String name) throws IllegalArgumentException {
-        return null;
-    }
-
-    public boolean isPropertySupported(String name) {
-        return false;
-    }
-
-    public void setEventAllocator(XMLEventAllocator allocator) {
-    }
-
+    
+    /**
+     * Gets the allocator used by streams created with this factory
+     */
     public XMLEventAllocator getEventAllocator() {
-        return null;
+        return config.getEventAllocator();
+    }
+    
+    /**
+     * Specifies that the stream produced by this code will append all adjacent text nodes. 
+     */  
+    public void setCoalescing(boolean coalescing){
+        config.setCoalescing(coalescing);
+    }
+    
+    /**
+     * Indicates whether or not the factory is configured to produced streams that coalesce adjacent text nodes.
+     */
+    public boolean isCoalescing(){
+        return config.isCoalescing();
+    }
+    
+    public void setProperty(String name, Object value) throws IllegalArgumentException {
+        // TODO - cwitt : check against supported feature list
+        config.setProperty(name,value);
+    }
+    
+    public Object getProperty(String name) throws IllegalArgumentException {
+        return config.getProperty(name);
+    }
+    
+    public boolean isPropertySupported(String name) {
+        return config.isPropertySupported(name);
     }
 }

@@ -29,10 +29,6 @@ public final class SAXLocation implements Location {
     
     private Locator loc;
     
-    public SAXLocation(Locator loc) {
-        this.loc = loc;
-    }
-    
     /**
      * Return the line number where the current event ends,
      * returns -1 if none is available.
@@ -77,6 +73,10 @@ public final class SAXLocation implements Location {
      */
     public String getSystemId() {
         return loc.getSystemId();
+    }
+    
+    public void setLocator(Locator loc) {
+        this.loc = loc;
     }
     
 }

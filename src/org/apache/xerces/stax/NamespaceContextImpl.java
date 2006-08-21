@@ -16,12 +16,13 @@
 
 package org.apache.xerces.stax;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Stack;
-import java.util.ArrayList;
 
-import javax.xml.namespace.NamespaceContext;
 import javax.xml.XMLConstants;
+import javax.xml.namespace.NamespaceContext;
 
 /**
  * <p>NamespaceContext for the SAX and DOM XMLStreamReaders.</p>
@@ -36,7 +37,9 @@ final class NamespaceContextImpl implements NamespaceContext {
     private Stack namespaceStack;
     
     // Record the namespaces of START_ELEMENT and END_ELEMENT for SAXSource
-    private ArrayList eleNamespaces;
+    private ArrayList eleNamespaces = new ArrayList();
+    
+    private Stack enStack;
     
     /**
      * The initialization method of DOMNamespaceContext, 
@@ -44,15 +47,19 @@ final class NamespaceContextImpl implements NamespaceContext {
      */
     public NamespaceContextImpl() {
         namespaceStack = new Stack();
-        eleNamespaces = new ArrayList();
+        enStack = new Stack();
     }
     
     /**
      * When encounters a StartElement event, the namespace level in the namespace
      * stack is increased.
-     *
      */
     public void onStartElement() {
+        if(eleNamespaces != null) {
+            enStack.push(eleNamespaces);
+        }
+        
+        eleNamespaces = new ArrayList();
         if (!namespaceStack.empty()) {
             Iterator iter = namespaceStack.iterator();
             while(iter.hasNext()){
@@ -69,6 +76,8 @@ final class NamespaceContextImpl implements NamespaceContext {
      * and removed from avaliable stack.
      */
     public void onEndElement() {
+        eleNamespaces = (ArrayList)enStack.pop();
+        
         if (!namespaceStack.empty()) {
             
             Iterator iter = namespaceStack.iterator();
@@ -167,15 +176,22 @@ final class NamespaceContextImpl implements NamespaceContext {
             throw new IllegalArgumentException("The input namespaceURI should not be null");
         
         if (namespaceURI.equals(XMLConstants.XML_NS_URI)) return "xml";
-        if (namespaceURI.equals(XMLConstants.XML_NS_URI)) return "xmlns";
+        if (namespaceURI.equals(XMLConstants.XMLNS_ATTRIBUTE_NS_URI)) return "xmlns";
         
         int size = namespaceStack.size();
         
+        HashSet prefixes = new HashSet();
         while (size > 0) {
             Namespace dc = (Namespace) namespaceStack.elementAt(--size);
-            String namespace = dc.getNamespaceURI();
-            if (namespaceURI.equals(namespace))
-                return dc.getPrefix();
+            if (namespaceURI.equals(dc.namespaceURI)) {
+                if(!prefixes.contains(dc.prefix))
+                    return dc.prefix;
+                else
+                    return null;
+            }
+            else {
+                prefixes.add(dc.prefix);
+            }
         }
         
         return null;
