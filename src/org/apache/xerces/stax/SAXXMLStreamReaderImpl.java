@@ -165,11 +165,14 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
      */
     public  int next() throws XMLStreamException {	 
         if (hasNext() == false) {
+            asp.interrupt();
             throw new XMLStreamException("No such element!");
         }
         
-        if(asp.ex != null)
+        if(asp.ex != null) {
+            asp.interrupt();
             throw new XMLStreamException(asp.ex.getMessage(), asp.ex);
+        }
         
         synchronized(asp) {
             asp.setRunningFlag(true);
@@ -177,14 +180,17 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
             
             try {
                 while (asp.getRunningFlag() == true) {
-                    if(asp.ex != null)
+                    if(asp.ex != null) {
+                        asp.interrupt();
                         throw new XMLStreamException(asp.ex.getMessage(), asp.ex);
+                    }
                     asp.wait();
                 }
                 
                 return curType;
             } 
             catch (Exception e) {
+                asp.interrupt();
                 throw new XMLStreamException(
                         "Error occurs when processing SAXSource", e);
             }
@@ -413,7 +419,9 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
      * @throws XMLStreamException if there are errors freeing associated resources
      */
     public void close() throws XMLStreamException {
-        // As for SAXSource, this method needs to close the underlying bytestream
+        //if the asp thread is still alive, interrupt it
+        if(asp.isAlive() && !asp.isInterrupted())
+            asp.interrupt();
     }
     
     /**

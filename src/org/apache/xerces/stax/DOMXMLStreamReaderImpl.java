@@ -174,6 +174,9 @@ public class DOMXMLStreamReaderImpl implements XMLStreamReader {
         if (hasNext() == false) {
             throw new XMLStreamException("No such element!");
         }
+        
+        if (curType == XMLStreamConstants.END_ELEMENT)
+            dc.onEndElement();
         try {		  
             Node curChild = curNode.getFirstChild();
             
@@ -230,7 +233,6 @@ public class DOMXMLStreamReaderImpl implements XMLStreamReader {
             return curType;
         }
         catch(Exception e) {
-            e.printStackTrace();
             throw new XMLStreamException("Error occurs when processing DOMSource", e);
         }
     }
@@ -314,8 +316,6 @@ public class DOMXMLStreamReaderImpl implements XMLStreamReader {
             }
             if (curType == XMLStreamConstants.START_ELEMENT)
                 dc.onStartElement();
-            if (curType == XMLStreamConstants.END_ELEMENT)
-                dc.onEndElement();
         }
     }
     
@@ -531,13 +531,15 @@ public class DOMXMLStreamReaderImpl implements XMLStreamReader {
         if (curType == XMLStreamConstants.START_ELEMENT) {
             NamedNodeMap attributes = curNode.getAttributes();
             
-            Attr attr = (Attr)attributes.getNamedItem(localName);
+            Attr attr = (Attr)attributes.getNamedItemNS(namespaceURI, localName);
             if (attr!= null) {
                 if(namespaceURI != null && !namespaceURI.equals(attr.getNamespaceURI())) {
                     return null;
                 }
                 return attr.getValue();
-            }	  
+            }
+            else
+                return null;
         }
         if (curType == XMLStreamConstants.ATTRIBUTE) {
             Attr attr = (Attr)curNode;
@@ -559,7 +561,6 @@ public class DOMXMLStreamReaderImpl implements XMLStreamReader {
      * @throws IllegalStateException if this is not a START_ELEMENT or ATTRIBUTE
      */
     public int getAttributeCount(){
-//      int count = 0;
         String attrName;
         if (curType == XMLStreamConstants.START_ELEMENT) {
             return curAttrs.size();
@@ -588,22 +589,18 @@ public class DOMXMLStreamReaderImpl implements XMLStreamReader {
     public QName getAttributeName(int index){
         String localName;
         String namespaceURI;
-//      Attr attr = null;
         
         if (curType == XMLStreamConstants.START_ELEMENT) {
             int leng = getAttributeCount();
             if(index + 1 > leng || index < 0)
                 throw new IndexOutOfBoundsException("The index "+ index+ " should be between 0..."+ (leng-1));
             
-//          attr = (Attr) curAttrs.get(index);
             namespaceURI = this.getAttributeNamespace(index);
             localName = this.getAttributeLocalName(index);
             
             return new QName(namespaceURI, localName);
         }
         if (curType == XMLStreamConstants.ATTRIBUTE) {
-//          attr = (Attr) curNode;
-            
             namespaceURI = this.getAttributeNamespace(index);
             localName = this.getAttributeLocalName(index);
             return new QName(namespaceURI, localName);
@@ -621,7 +618,10 @@ public class DOMXMLStreamReaderImpl implements XMLStreamReader {
      */
     public String getAttributeNamespace(int index){
         String pre = this.getAttributePrefix(index);
-        return dc.getNamespaceURI(pre);	
+        if(pre == null) 
+            return null;
+        else
+            return dc.getNamespaceURI(pre);	
     }
     
     /**
@@ -644,14 +644,17 @@ public class DOMXMLStreamReaderImpl implements XMLStreamReader {
             attr = (Attr) curAttrs.get(index);
             
         }
-        if (curType == XMLStreamConstants.ATTRIBUTE) {
+        else if (curType == XMLStreamConstants.ATTRIBUTE) {
             attr = (Attr) curNode;
         }
         
         if(attr != null) {
             String nodeName = attr.getNodeName();
             int indexPre = nodeName.indexOf(":");
-            if(indexPre != -1) localName = nodeName.substring(indexPre + 1);
+            if(indexPre != -1) 
+                localName = nodeName.substring(indexPre + 1);
+            else
+                localName = nodeName;
             
             return localName;
         }
@@ -678,7 +681,7 @@ public class DOMXMLStreamReaderImpl implements XMLStreamReader {
             
             attr = (Attr) curAttrs.get(index);
         }
-        if (curType == XMLStreamConstants.ATTRIBUTE) {
+        else if (curType == XMLStreamConstants.ATTRIBUTE) {
             attr = (Attr) curNode;      
         }
         
@@ -914,12 +917,13 @@ public class DOMXMLStreamReaderImpl implements XMLStreamReader {
         if (curType == XMLStreamConstants.CHARACTERS) {
             String text = "";
             Node cur = curNode;
+            int count = contiNum;
             if (this.isCoalescing) {
                 text = getText(cur);
-                while(contiNum >0){
+                while(count >0){
                     cur = cur.getPreviousSibling();
                     text = getText(cur)+ text;
-                    contiNum--;
+                    count--;
                 }
             }
             else{
@@ -1153,7 +1157,7 @@ public class DOMXMLStreamReaderImpl implements XMLStreamReader {
     public String getNamespaceURI(){
         
         if (curType == XMLStreamConstants.START_ELEMENT
-                || curType == XMLStreamConstants.START_ELEMENT || curType == XMLStreamConstants.ATTRIBUTE) {
+                || curType == XMLStreamConstants.END_ELEMENT || curType == XMLStreamConstants.ATTRIBUTE) {
             
             String nodeName = curNode.getNodeName();
             String prefix = "";;

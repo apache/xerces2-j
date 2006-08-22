@@ -37,7 +37,7 @@ final class NamespaceContextImpl implements NamespaceContext {
     private Stack namespaceStack;
     
     // Record the namespaces of START_ELEMENT and END_ELEMENT for SAXSource
-    private ArrayList eleNamespaces = new ArrayList();
+    private ArrayList eleNamespaces;
     
     private Stack enStack;
     
@@ -76,7 +76,8 @@ final class NamespaceContextImpl implements NamespaceContext {
      * and removed from avaliable stack.
      */
     public void onEndElement() {
-        eleNamespaces = (ArrayList)enStack.pop();
+        if(!enStack.isEmpty())
+            eleNamespaces = (ArrayList)enStack.pop();
         
         if (!namespaceStack.empty()) {
             
