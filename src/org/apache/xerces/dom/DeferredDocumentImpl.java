@@ -998,11 +998,6 @@ public class DeferredDocumentImpl
                     node = new DeferredElementImpl(this, nodeIndex);
                 }
 
-                // save the document element node
-                if (docElement == null) {
-                    docElement = (ElementImpl)node;
-                }
-
                 // check to see if this element needs to be
                 // registered for its ID attributes
                 if (fIdElement != null) {
