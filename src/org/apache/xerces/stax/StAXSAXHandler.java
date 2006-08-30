@@ -74,11 +74,6 @@ final class StAXSAXHandler extends DefaultHandler {
                 checkCoalescing();
                 
                 reader.setCurType(XMLStreamConstants.END_DOCUMENT);
-                while (asp.getRunningFlag() == false) {
-                    asp.notify();
-                    asp.wait();
-                }                
-
                 asp.setRunningFlag(false);
             }
         }

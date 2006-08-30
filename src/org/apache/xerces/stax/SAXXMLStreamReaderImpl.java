@@ -1083,5 +1083,10 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
         }
         throw new IllegalStateException("Current event is not PROCESSING_INSTRUCTION");
     }
+
+	protected void finalize() throws Throwable {
+		close();
+		super.finalize();
+	}
     
 }
