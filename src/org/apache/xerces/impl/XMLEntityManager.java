@@ -2588,7 +2588,7 @@ public class XMLEntityManager
 
             // search for the first external entity on the stack
             int size = fEntityStack.size();
-            for (int i = size - 1; i >= 0 ; i--) {
+            for (int i = size - 1; i >= 0; --i) {
                ScannedEntity externalEntity =
                     (ScannedEntity)fEntityStack.elementAt(i);
 
@@ -2605,7 +2605,7 @@ public class XMLEntityManager
         public String getLiteralSystemId() { 
             // search for the first external entity on the stack
             int size = fEntityStack.size();
-            for (int i = size - 1; i >= 0 ; i--) {
+            for (int i = size - 1; i >= 0; --i) {
                ScannedEntity externalEntity =
                     (ScannedEntity)fEntityStack.elementAt(i);
 
@@ -2622,7 +2622,7 @@ public class XMLEntityManager
         public int getLineNumber() {
             // search for the first external entity on the stack
             int size = fEntityStack.size();
-            for (int i=size-1; i>0 ; i--) {
+            for (int i = size - 1; i >= 0 ; --i) {
                 ScannedEntity firstExternalEntity = (ScannedEntity)fEntityStack.elementAt(i);
                 if (firstExternalEntity.isExternal()) {
                     return firstExternalEntity.lineNumber;
@@ -2636,7 +2636,7 @@ public class XMLEntityManager
         public int getColumnNumber() {
             // search for the first external entity on the stack
             int size = fEntityStack.size();
-            for (int i=size-1; i>0 ; i--) {
+            for (int i = size - 1; i >= 0; --i) {
                 ScannedEntity firstExternalEntity = (ScannedEntity)fEntityStack.elementAt(i);
                 if (firstExternalEntity.isExternal()) {
                     return firstExternalEntity.columnNumber;
@@ -2650,7 +2650,7 @@ public class XMLEntityManager
         public int getCharacterOffset() {
             // search for the first external entity on the stack
             int size = fEntityStack.size();
-            for (int i=size-1; i>0 ; i--) {
+            for (int i = size - 1; i >= 0; --i) {
                 ScannedEntity firstExternalEntity = (ScannedEntity)fEntityStack.elementAt(i);
                 if (firstExternalEntity.isExternal()) {
                     return firstExternalEntity.baseCharOffset + (firstExternalEntity.position - firstExternalEntity.startPosition);
@@ -2663,7 +2663,7 @@ public class XMLEntityManager
         public String getEncoding() {
             // search for the first external entity on the stack
             int size = fEntityStack.size();
-            for (int i=size-1; i>0 ; i--) {
+            for (int i = size - 1; i >= 0; --i) {
                 ScannedEntity firstExternalEntity = (ScannedEntity)fEntityStack.elementAt(i);
                 if (firstExternalEntity.isExternal()) {
                     return firstExternalEntity.encoding;
@@ -2676,7 +2676,7 @@ public class XMLEntityManager
         public String getXMLVersion() {
             // search for the first external entity on the stack
             int size = fEntityStack.size();
-            for (int i=size-1; i>0 ; i--) {
+            for (int i = size - 1; i >= 0; --i) {
                 ScannedEntity firstExternalEntity = (ScannedEntity)fEntityStack.elementAt(i);
                 if (firstExternalEntity.isExternal()) {
                     return firstExternalEntity.xmlVersion;
