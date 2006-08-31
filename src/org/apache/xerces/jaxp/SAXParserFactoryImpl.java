@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2002,2004,2005 The Apache Software Foundation.
+ * Copyright 2000-2002,2004-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.validation.Schema;
 
+import org.apache.xerces.impl.Constants;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
@@ -39,6 +40,19 @@ import org.xml.sax.SAXNotSupportedException;
  * @version $Id$
  */
 public class SAXParserFactoryImpl extends SAXParserFactory {
+    
+    /** Feature identifier: namespaces. */
+    private static final String NAMESPACES_FEATURE =
+        Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
+
+    /** Feature identifier: validation. */
+    private static final String VALIDATION_FEATURE =
+        Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
+    
+    /** Feature identifier: XInclude processing */
+    private static final String XINCLUDE_FEATURE = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.XINCLUDE_FEATURE;
+    
     private Hashtable features;
     private Schema grammar;
     private boolean isXIncludeAware;
@@ -54,16 +68,17 @@ public class SAXParserFactoryImpl extends SAXParserFactory {
      * @return javax.xml.parsers.SAXParser
      */
     public SAXParser newSAXParser()
-        throws ParserConfigurationException
-    {
+        throws ParserConfigurationException {
+        
         SAXParser saxParserImpl;
         try {
             saxParserImpl = new SAXParserImpl(this, features, fSecureProcess);
-        } catch (SAXException se) {
+        } 
+        catch (SAXException se) {
             // Translate to ParserConfigurationException
             throw new ParserConfigurationException(se.getMessage());
         }
-	return saxParserImpl;
+        return saxParserImpl;
     }
 
     /**
@@ -71,8 +86,8 @@ public class SAXParserFactoryImpl extends SAXParserFactory {
      */
     private SAXParserImpl newSAXParserImpl()
         throws ParserConfigurationException, SAXNotRecognizedException, 
-        SAXNotSupportedException
-    {
+        SAXNotSupportedException {
+        
         SAXParserImpl saxParserImpl;
         try {
             saxParserImpl = new SAXParserImpl(this, features);
@@ -101,6 +116,19 @@ public class SAXParserFactoryImpl extends SAXParserFactory {
             fSecureProcess = value;
             return;
         }
+        // Keep built-in settings in synch with the feature values.
+        else if (name.equals(NAMESPACES_FEATURE)) {
+            setNamespaceAware(value);
+            return;
+        }
+        else if (name.equals(VALIDATION_FEATURE)) {
+            setValidating(value);
+            return;
+        }
+        else if (name.equals(XINCLUDE_FEATURE)) {
+            setXIncludeAware(value);
+            return;
+        }
         
         // XXX This is ugly.  We have to collect the features and then
         // later create an XMLReader to verify the features.
@@ -112,10 +140,12 @@ public class SAXParserFactoryImpl extends SAXParserFactory {
         // Test the feature by possibly throwing SAX exceptions
         try {
             newSAXParserImpl();
-        } catch (SAXNotSupportedException e) {
+        } 
+        catch (SAXNotSupportedException e) {
             features.remove(name);
             throw e;
-        } catch (SAXNotRecognizedException e) {
+        } 
+        catch (SAXNotRecognizedException e) {
             features.remove(name);
             throw e;
         }
@@ -133,6 +163,15 @@ public class SAXParserFactoryImpl extends SAXParserFactory {
         }
         if (name.equals(XMLConstants.FEATURE_SECURE_PROCESSING)) {
             return fSecureProcess;
+        }
+        else if (name.equals(NAMESPACES_FEATURE)) {
+            return isNamespaceAware();
+        }
+        else if (name.equals(VALIDATION_FEATURE)) {
+            return isValidating();
+        }
+        else if (name.equals(XINCLUDE_FEATURE)) {
+            return isXIncludeAware();
         }
         // Check for valid name by creating a dummy XMLReader to get
         // feature value
