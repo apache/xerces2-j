@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2002,2004,2005 The Apache Software Foundation.
+ * Copyright 2000-2002,2004-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.validation.Schema;
 
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.parsers.DOMParser;
 import org.apache.xerces.util.SAXMessageFormatter;
 import org.xml.sax.SAXException;
@@ -36,6 +37,35 @@ import org.xml.sax.SAXNotSupportedException;
  * @version $Id$
  */
 public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
+    
+    /** Feature identifier: namespaces. */
+    private static final String NAMESPACES_FEATURE =
+        Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
+    
+    /** Feature identifier: validation */
+    private static final String VALIDATION_FEATURE =
+        Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
+    
+    /** Feature identifier: XInclude processing */
+    private static final String XINCLUDE_FEATURE = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.XINCLUDE_FEATURE;
+    
+    /** Feature identifier: include ignorable white space. */
+    private static final String INCLUDE_IGNORABLE_WHITESPACE =
+        Constants.XERCES_FEATURE_PREFIX + Constants.INCLUDE_IGNORABLE_WHITESPACE;
+    
+    /** Feature identifier: create entiry ref nodes feature. */
+    private static final String CREATE_ENTITY_REF_NODES_FEATURE =
+        Constants.XERCES_FEATURE_PREFIX + Constants.CREATE_ENTITY_REF_NODES_FEATURE;
+    
+    /** Feature identifier: include comments feature. */
+    private static final String INCLUDE_COMMENTS_FEATURE =
+        Constants.XERCES_FEATURE_PREFIX + Constants.INCLUDE_COMMENTS_FEATURE;
+    
+    /** Feature identifier: create cdata nodes feature. */
+    private static final String CREATE_CDATA_NODES_FEATURE =
+        Constants.XERCES_FEATURE_PREFIX + Constants.CREATE_CDATA_NODES_FEATURE;
+    
     /** These are DocumentBuilderFactory attributes not DOM attributes */
     private Hashtable attributes;
     private Hashtable features;
@@ -169,6 +199,27 @@ public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
         if (name.equals(XMLConstants.FEATURE_SECURE_PROCESSING)) {
             return fSecureProcess;
         }
+        else if (name.equals(NAMESPACES_FEATURE)) {
+            return isNamespaceAware();
+        }
+        else if (name.equals(VALIDATION_FEATURE)) {
+            return isValidating();
+        }
+        else if (name.equals(XINCLUDE_FEATURE)) {
+            return isXIncludeAware();
+        }
+        else if (name.equals(INCLUDE_IGNORABLE_WHITESPACE)) {
+            return !isIgnoringElementContentWhitespace();
+        }
+        else if (name.equals(CREATE_ENTITY_REF_NODES_FEATURE)) {
+            return !isExpandEntityReferences();
+        }
+        else if (name.equals(INCLUDE_COMMENTS_FEATURE)) {
+            return !isIgnoringComments();
+        }
+        else if (name.equals(CREATE_CDATA_NODES_FEATURE)) {
+            return !isCoalescing();
+        }
         // See if it's in the features Hashtable
         if (features != null) {
             Object val = features.get(name);
@@ -192,6 +243,36 @@ public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
             fSecureProcess = value;
             return;
         }
+        // Keep built-in settings in synch with the feature values.
+        else if (name.equals(NAMESPACES_FEATURE)) {
+            setNamespaceAware(value);
+            return;
+        }
+        else if (name.equals(VALIDATION_FEATURE)) {
+            setValidating(value);
+            return;
+        }
+        else if (name.equals(XINCLUDE_FEATURE)) {
+            setXIncludeAware(value);
+            return;
+        }
+        else if (name.equals(INCLUDE_IGNORABLE_WHITESPACE)) {
+            setIgnoringElementContentWhitespace(!value);
+            return;
+        }
+        else if (name.equals(CREATE_ENTITY_REF_NODES_FEATURE)) {
+            setExpandEntityReferences(!value);
+            return;
+        }
+        else if (name.equals(INCLUDE_COMMENTS_FEATURE)) {
+            setIgnoringComments(!value);
+            return;
+        }
+        else if (name.equals(CREATE_CDATA_NODES_FEATURE)) {
+            setCoalescing(!value);
+            return;
+        }
+           
         if (features == null) {
             features = new Hashtable();
         }
