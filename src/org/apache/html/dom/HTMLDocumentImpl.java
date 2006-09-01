@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.html.dom;
 
 import java.io.StringWriter;
@@ -26,6 +27,7 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.UserDataHandler;
 import org.w3c.dom.html.HTMLBodyElement;
 import org.w3c.dom.html.HTMLCollection;
 import org.w3c.dom.html.HTMLDocument;
@@ -625,11 +627,10 @@ public class HTMLDocumentImpl
 
     public Node cloneNode( boolean deep )
     {
-        HTMLDocumentImpl    clone;
-
-        clone = new HTMLDocumentImpl();
-        cloneNode(clone, deep);
-        return clone;
+        HTMLDocumentImpl newdoc = new HTMLDocumentImpl();
+        callUserDataHandlers(this, newdoc, UserDataHandler.NODE_CLONED);
+        cloneNode(newdoc, deep);
+        return newdoc;
     }
 
 

@@ -2418,7 +2418,7 @@ extends ParentNode implements Document  {
      * @param c The copy node or null.
      * @param operation The operation - import, clone, or delete.
      */
-    void callUserDataHandlers(Node n, Node c, short operation) {
+    protected void callUserDataHandlers(Node n, Node c, short operation) {
         if (userData == null) {
             return;
         }
