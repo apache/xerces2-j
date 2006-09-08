@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004 The Apache Software Foundation.
+ * Copyright 1999-2002,2004-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -904,16 +904,16 @@ public class EncodingMap {
         fJava2IANAMap.put("CP918",     "EBCDIC-CP-AR2");
         fJava2IANAMap.put("CP924",     "IBM00924");
         fJava2IANAMap.put("CP1026",     "IBM1026");
-        fJava2IANAMap.put("Cp01140",     "IBM01140");
-        fJava2IANAMap.put("Cp01141",     "IBM01141");
-        fJava2IANAMap.put("Cp01142",     "IBM01142");
-        fJava2IANAMap.put("Cp01143",     "IBM01143");
-        fJava2IANAMap.put("Cp01144",     "IBM01144");
-        fJava2IANAMap.put("Cp01145",     "IBM01145");
-        fJava2IANAMap.put("Cp01146",     "IBM01146");
-        fJava2IANAMap.put("Cp01147",     "IBM01147");
-        fJava2IANAMap.put("Cp01148",     "IBM01148");
-        fJava2IANAMap.put("Cp01149",     "IBM01149");
+        fJava2IANAMap.put("CP1140",     "IBM01140");
+        fJava2IANAMap.put("CP1141",     "IBM01141");
+        fJava2IANAMap.put("CP1142",     "IBM01142");
+        fJava2IANAMap.put("CP1143",     "IBM01143");
+        fJava2IANAMap.put("CP1144",     "IBM01144");
+        fJava2IANAMap.put("CP1145",     "IBM01145");
+        fJava2IANAMap.put("CP1146",     "IBM01146");
+        fJava2IANAMap.put("CP1147",     "IBM01147");
+        fJava2IANAMap.put("CP1148",     "IBM01148");
+        fJava2IANAMap.put("CP1149",     "IBM01149");
         fJava2IANAMap.put("EUCJIS",    "EUC-JP");
         fJava2IANAMap.put("KS_C_5601-1987",          "KS_C_5601-1987");
         fJava2IANAMap.put("GB2312",    "GB2312");
