@@ -2075,6 +2075,11 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                 System.out.println ("   baseURI:"+ identifier.getBaseSystemId ());
             }
         }
+        if (augs != null && fInternalSubset != null && 
+            !fInDTDExternalSubset && 
+            Boolean.TRUE.equals(augs.getItem(Constants.ENTITY_SKIPPED))) {
+            fInternalSubset.append(name).append(";\n");
+        }
         fBaseURIStack.push (identifier.getExpandedSystemId ());
     }
 
