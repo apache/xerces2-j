@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2005 The Apache Software Foundation.
+ * Copyright 1999-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1852,13 +1852,12 @@ public class XMLDTDValidator
     } // init()
 
     /** ensure element stack capacity */
-    private void ensureStackCapacity ( int newElementDepth) {
+    private void ensureStackCapacity (int newElementDepth) {
         if (newElementDepth == fElementQNamePartsStack.length) {
-            int[] newStack = new int[newElementDepth * 2];
 
             QName[] newStackOfQueue = new QName[newElementDepth * 2];
             System.arraycopy(this.fElementQNamePartsStack, 0, newStackOfQueue, 0, newElementDepth );
-            fElementQNamePartsStack      = newStackOfQueue;
+            fElementQNamePartsStack = newStackOfQueue;
 
             QName qname = fElementQNamePartsStack[newElementDepth];
             if (qname == null) {
@@ -1867,7 +1866,7 @@ public class XMLDTDValidator
                 }
             }
 
-            newStack = new int[newElementDepth * 2];
+            int[] newStack = new int[newElementDepth * 2];
             System.arraycopy(fElementIndexStack, 0, newStack, 0, newElementDepth);
             fElementIndexStack = newStack;
 
