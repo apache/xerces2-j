@@ -212,7 +212,6 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
             }
         }
         
-        boolean hadContent = false;
         String childName = null;
         XSParticleDecl particle;
         fPArray.pushContext();
