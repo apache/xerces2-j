@@ -262,7 +262,6 @@ public class HTMLDocumentImpl
         // When found, make sure the TITLE is a direct child of HEAD,
         // and return the title's text (the Text node contained within).
         head = getHead();
-        title = head.getElementsByTagName( "TITLE" ).item( 0 );
         list = head.getElementsByTagName( "TITLE" );
         if ( list.getLength() > 0 ) {
             title = list.item( 0 );
