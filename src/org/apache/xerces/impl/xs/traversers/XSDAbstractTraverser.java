@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2005 The Apache Software Foundation.
+ * Copyright 2001-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,18 +31,15 @@ import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
-import org.apache.xerces.xs.XSObjectList;
-import org.apache.xerces.xs.XSTypeDefinition;
-import org.apache.xerces.impl.xs.opti.ElementImpl;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.QName;
+import org.apache.xerces.xs.XSObjectList;
+import org.apache.xerces.xs.XSTypeDefinition;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.Text;
 
 /**
  * Class <code>XSDAbstractTraverser</code> serves as the base class for all
@@ -156,7 +153,7 @@ abstract class XSDAbstractTraverser {
                     prefix = rawname.substring(0,colonIndex);
                     localpart = rawname.substring(colonIndex+1);
                 }
-                String uri = schemaDoc.fNamespaceSupport.getURI(prefix.intern());
+                String uri = schemaDoc.fNamespaceSupport.getURI(fSymbolTable.addSymbol(prefix));
                 if (!annotationDecl.getAttributeNS(uri, localpart).equals("")) {
                     i++; // skip the next value, too
                     continue;
@@ -219,7 +216,7 @@ abstract class XSDAbstractTraverser {
                     prefix = rawname.substring(0,colonIndex);
                     localpart = rawname.substring(colonIndex+1);
                 }
-                String uri = schemaDoc.fNamespaceSupport.getURI(prefix.intern());
+                String uri = schemaDoc.fNamespaceSupport.getURI(fSymbolTable.addSymbol(prefix));
                 localStrBuffer.append(rawname)
                 .append("=\"");
                 String value = (String)annotationLocalAttrs.elementAt(i++);
