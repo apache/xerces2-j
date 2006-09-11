@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.xerces.impl.xs.traversers;
 
 import org.apache.xerces.impl.xs.SchemaGrammar;
@@ -80,10 +81,11 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
         if (child != null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
             annotation = traverseAnnotationDecl(child, attrValues, false, schemaDoc);
             child = DOMUtil.getNextSiblingElement(child);
-        } else {
-            String text = DOMUtil.getSyntheticAnnotation(child);
+        } 
+        else {
+            String text = DOMUtil.getSyntheticAnnotation(elmNode);
             if (text != null) {
-                annotation = traverseSyntheticAnnotation(child, text, attrValues, false, schemaDoc);
+                annotation = traverseSyntheticAnnotation(elmNode, text, attrValues, false, schemaDoc);
             }
         }
         

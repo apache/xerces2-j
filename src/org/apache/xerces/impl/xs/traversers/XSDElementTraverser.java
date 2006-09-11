@@ -166,10 +166,11 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                 if (child != null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
                     annotation = traverseAnnotationDecl(child, attrValues, false, schemaDoc);
                     child = DOMUtil.getNextSiblingElement(child);
-                } else {
-                    String text = DOMUtil.getSyntheticAnnotation(child);
+                } 
+                else {
+                    String text = DOMUtil.getSyntheticAnnotation(elmDecl);
                     if (text != null) {
-                        annotation = traverseSyntheticAnnotation(child, text, attrValues, false, schemaDoc);
+                        annotation = traverseSyntheticAnnotation(elmDecl, text, attrValues, false, schemaDoc);
                     }
                 }
                 // Element Declaration Representation OK
