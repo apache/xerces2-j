@@ -43,7 +43,7 @@ import org.w3c.dom.Element;
 
 /**
  * Class <code>XSDAbstractTraverser</code> serves as the base class for all
- * other <code>XSD???Traverser</code>s. It holds the common data and provide
+ * other <code>XSD???Traverser</code>s. It holds the common data and provides
  * a unified way to initialize these data.
  *
  * @xerces.internal 
@@ -161,7 +161,7 @@ abstract class XSDAbstractTraverser {
                 localStrBuffer.append(rawname)
                 .append("=\"");
                 String value = (String)annotationLocalAttrs.elementAt(i++);
-                // search for pesky "s and >s within attr value:
+                // search for pesky "s and <s within attr value:
                 value = processAttValue(value);
                 localStrBuffer.append(value)
                 .append("\" ");
@@ -220,7 +220,7 @@ abstract class XSDAbstractTraverser {
                 localStrBuffer.append(rawname)
                 .append("=\"");
                 String value = (String)annotationLocalAttrs.elementAt(i++);
-                // search for pesky "s and >s within attr value:
+                // search for pesky "s and <s within attr value:
                 value = processAttValue(value);
                 localStrBuffer.append(value)
                 .append("\" ");
@@ -732,19 +732,49 @@ abstract class XSDAbstractTraverser {
         return particle;
     }
     
-    // this is not terribly performant!
     private static String processAttValue(String original) {
+        final int length = original.length();
         // normally, nothing will happen
-        StringBuffer newVal = new StringBuffer(original.length());
-        for(int i=0; i<original.length(); i++) {
+        for (int i = 0; i < length; ++i) {
             char currChar = original.charAt(i);
-            if(currChar == '"') {
+            if (currChar == '"' || currChar == '<' || currChar == '&' ||
+                    currChar == 0x09 || currChar == 0x0A || currChar == 0x0D) {
+                return escapeAttValue(original, i);
+            }
+        }
+        return original;
+    }
+    
+    // this is not terribly performant!
+    private static String escapeAttValue(String original, int from) {
+        int i;
+        final int length = original.length();
+        StringBuffer newVal = new StringBuffer(length);
+        newVal.append(original.substring(0, from));
+        for (i = from; i < length; ++i) {
+            char currChar = original.charAt(i);
+            if (currChar == '"') {
                 newVal.append("&quot;");
-            } else if (currChar == '>') {
-                newVal.append("&gt;");
-            } else if (currChar == '&') {
+            } 
+            else if (currChar == '<') {
+                newVal.append("&lt;");
+            }
+            else if (currChar == '&') {
                 newVal.append("&amp;");
-            } else {
+            }
+            // Must escape 0x09, 0x0A and 0x0D if they appear in attribute
+            // value so that they may be round-tripped. They would otherwise
+            // be transformed to a 0x20 during attribute value normalization.
+            else if (currChar == 0x09) {
+                newVal.append("&#x9;");
+            }
+            else if (currChar == 0x0A) {
+                newVal.append("&#xA;");
+            }
+            else if (currChar == 0x0D) {
+                newVal.append("&#xD;");
+            }
+            else {
                 newVal.append(currChar);
             }
         }
