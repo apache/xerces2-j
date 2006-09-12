@@ -672,6 +672,9 @@ public abstract class ParentNode
     private int nodeListGetLength() {
 
         if (fNodeListCache == null) {
+            if (needsSyncChildren()) {
+                synchronizeChildren();
+            }
             // get rid of trivial cases
             if (firstChild == null) {
                 return 0;
@@ -721,6 +724,9 @@ public abstract class ParentNode
     private Node nodeListItem(int index) {
 
         if (fNodeListCache == null) {
+            if (needsSyncChildren()) {
+                synchronizeChildren();
+            }
             // get rid of trivial case
             if (firstChild == lastChild()) {
                 return index == 0 ? firstChild : null;
