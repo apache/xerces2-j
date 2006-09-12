@@ -1,5 +1,5 @@
 /*
- * Copyright 1999,2000,2004 The Apache Software Foundation.
+ * Copyright 1999,2000,2004,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.html.dom;
 
+package org.apache.html.dom;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -30,7 +30,6 @@ import org.w3c.dom.html.HTMLOptionElement;
 import org.w3c.dom.html.HTMLTableCellElement;
 import org.w3c.dom.html.HTMLTableRowElement;
 import org.w3c.dom.html.HTMLTableSectionElement;
-
 
 /**
  * Implements {@link org.w3c.dom.html.HTMLCollection} to traverse any named
@@ -439,7 +438,7 @@ class HTMLCollectionImpl
             case TBODY:
                 // Any <TBODY> element (one of three table section types).
                 match = ( elem instanceof HTMLTableSectionElement &&
-                          elem.getTagName().equals( "tbody" ) );
+                          elem.getTagName().equals( "TBODY" ) );
                 break;
             case CELL:
                 // Any <TD> element.
