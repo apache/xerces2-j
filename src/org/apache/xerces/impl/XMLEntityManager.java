@@ -356,6 +356,9 @@ public class XMLEntityManager
     /** Pool of byte buffers. */
     private final ByteBufferPool fByteBufferPool = new ByteBufferPool(fBufferSize);
     
+    /** Temporary storage for the current entity's byte buffer. */
+    private byte[] fTempByteBuffer = null;
+    
     /** Pool of character buffers. */
     private final CharacterBufferPool fCharacterBufferPool = new CharacterBufferPool(fBufferSize, DEFAULT_INTERNAL_BUFFER_SIZE);
 
@@ -377,7 +380,6 @@ public class XMLEntityManager
      * how to access the entity declarations is implicit.
      */
     public XMLEntityManager(XMLEntityManager entityManager) {
-
 
         // save shared entity declarations
         fDeclaredEntities = entityManager != null
@@ -923,6 +925,7 @@ public class XMLEntityManager
         String encoding = xmlInputSource.getEncoding();
         final boolean encodingExternallySpecified = (encoding != null);
         Boolean isBigEndian = null;
+        fTempByteBuffer = null;
 
         // create reader
         InputStream stream = null;
@@ -1463,6 +1466,7 @@ public class XMLEntityManager
                     bufferSize.intValue() > DEFAULT_XMLDECL_BUFFER_SIZE) {
                     fBufferSize = bufferSize.intValue();
                     fEntityScanner.setBufferSize(fBufferSize);
+                    fByteBufferPool.setBufferSize(fBufferSize);
                     fCharacterBufferPool.setExternalBufferSize(fBufferSize);
                 }
             }
@@ -1884,8 +1888,13 @@ public class XMLEntityManager
             fReaderStack.pop();
         } 
 
-        //Release the character buffer back to the pool for reuse
-        fCharacterBufferPool.returnToPool(fCurrentEntity.fBuffer);
+        // Release the character buffer back to the pool for reuse
+        fCharacterBufferPool.returnBuffer(fCurrentEntity.fCharacterBuffer);
+        
+        // Release the byte buffer back to the pool for reuse
+        if (fCurrentEntity.fByteBuffer != null) {
+            fByteBufferPool.returnBuffer(fCurrentEntity.fByteBuffer);
+        }
         
         // Pop entity stack.
         fCurrentEntity = fEntityStack.size() > 0
@@ -2011,7 +2020,10 @@ public class XMLEntityManager
             if (DEBUG_ENCODINGS) {
                 System.out.println("$$$ creating UTF8Reader");
             }
-            return new UTF8Reader(inputStream, fBufferSize, fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), fErrorReporter.getLocale());
+            if (fTempByteBuffer == null) {
+                fTempByteBuffer = fByteBufferPool.getBuffer();
+            }
+            return new UTF8Reader(inputStream, fTempByteBuffer, fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), fErrorReporter.getLocale());
         }
 
         // try to use an optimized reader
@@ -2020,7 +2032,10 @@ public class XMLEntityManager
             if (DEBUG_ENCODINGS) {
                 System.out.println("$$$ creating UTF8Reader");
             }
-            return new UTF8Reader(inputStream, fBufferSize, fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), fErrorReporter.getLocale());
+            if (fTempByteBuffer == null) {
+                fTempByteBuffer = fByteBufferPool.getBuffer();
+            }
+            return new UTF8Reader(inputStream, fTempByteBuffer, fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), fErrorReporter.getLocale());
         }
         if(ENCODING.equals("ISO-10646-UCS-4")) {
             if(isBigEndian != null) {
@@ -2078,9 +2093,10 @@ public class XMLEntityManager
         // try to use a Java reader
         String javaEncoding = EncodingMap.getIANA2JavaMapping(ENCODING);
         if (javaEncoding == null) {
-            if(fAllowJavaEncodings) {
-            javaEncoding = encoding;
-            } else {
+            if (fAllowJavaEncodings) {
+                javaEncoding = encoding;
+            } 
+            else {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                        "EncodingDeclInvalid",
                                        new Object[] { encoding },
@@ -2089,20 +2105,29 @@ public class XMLEntityManager
                 if (DEBUG_ENCODINGS) {
                     System.out.println("$$$ creating Latin1Reader");
                 }
-                return new Latin1Reader(inputStream, fBufferSize);
+                if (fTempByteBuffer == null) {
+                    fTempByteBuffer = fByteBufferPool.getBuffer();
+                }
+                return new Latin1Reader(inputStream, fTempByteBuffer);
             }
         }
         else if (javaEncoding.equals("ASCII")) {
             if (DEBUG_ENCODINGS) {
                 System.out.println("$$$ creating ASCIIReader");
             }
-            return new ASCIIReader(inputStream, fBufferSize, fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), fErrorReporter.getLocale());
+            if (fTempByteBuffer == null) {
+                fTempByteBuffer = fByteBufferPool.getBuffer();
+            }
+            return new ASCIIReader(inputStream, fTempByteBuffer, fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), fErrorReporter.getLocale());
         }
         else if (javaEncoding.equals("ISO8859_1")) {
             if (DEBUG_ENCODINGS) {
                 System.out.println("$$$ creating Latin1Reader");
             }
-            return new Latin1Reader(inputStream, fBufferSize);
+            if (fTempByteBuffer == null) {
+                fTempByteBuffer = fByteBufferPool.getBuffer();
+            }
+            return new Latin1Reader(inputStream, fTempByteBuffer);
         }
         if (DEBUG_ENCODINGS) {
             System.out.print("$$$ creating Java InputStreamReader: encoding="+javaEncoding);
@@ -2542,9 +2567,11 @@ public class XMLEntityManager
         public boolean mayReadChunks;
         
         /** Character buffer container. */
-        private CharacterBuffer fBuffer;
+        private CharacterBuffer fCharacterBuffer;
         
-
+        /** Byte buffer. */
+        private byte [] fByteBuffer;
+        
         //
         // Constructors
         //
@@ -2562,8 +2589,9 @@ public class XMLEntityManager
             this.literal = literal;
             this.mayReadChunks = mayReadChunks;
             this.isExternal = isExternal;
-            this.fBuffer = fCharacterBufferPool.getBuffer(isExternal);
-            this.ch = fBuffer.ch;
+            this.fCharacterBuffer = fCharacterBufferPool.getBuffer(isExternal);
+            this.ch = fCharacterBuffer.ch;
+            this.fByteBuffer = fTempByteBuffer;
         } // <init>(StringXMLResourceIdentifier,InputStream,Reader,String,boolean, boolean)
 
         //
@@ -2581,7 +2609,9 @@ public class XMLEntityManager
         } // isUnparsed():boolean
 
         public void setReader(InputStream stream, String encoding, Boolean isBigEndian) throws IOException {
+            fTempByteBuffer = fByteBuffer;
             reader = createReader(stream, encoding, isBigEndian);
+            fByteBuffer = fTempByteBuffer;
         }
 
         // return the expanded system ID of the 
@@ -2850,7 +2880,7 @@ public class XMLEntityManager
         }
         
         /** Returns buffer to pool. **/
-        public void returnToPool(CharacterBuffer buffer) {
+        public void returnBuffer(CharacterBuffer buffer) {
             if (buffer.isExternal) {
                 if (fExternalTop < fExternalBufferPool.length - 1) {
                     fExternalBufferPool[++fExternalTop] = buffer;
