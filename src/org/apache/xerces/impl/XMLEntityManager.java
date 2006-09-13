@@ -353,8 +353,11 @@ public class XMLEntityManager
     /** Augmentations for entities. */
     private final Augmentations fEntityAugs = new AugmentationsImpl();
     
+    /** Pool of byte buffers. */
+    private final ByteBufferPool fByteBufferPool = new ByteBufferPool(fBufferSize);
+    
     /** Pool of character buffers. */
-    private CharacterBufferPool fBufferPool = new CharacterBufferPool(fBufferSize, DEFAULT_INTERNAL_BUFFER_SIZE);
+    private final CharacterBufferPool fCharacterBufferPool = new CharacterBufferPool(fBufferSize, DEFAULT_INTERNAL_BUFFER_SIZE);
 
     //
     // Constructors
@@ -1460,7 +1463,7 @@ public class XMLEntityManager
                     bufferSize.intValue() > DEFAULT_XMLDECL_BUFFER_SIZE) {
                     fBufferSize = bufferSize.intValue();
                     fEntityScanner.setBufferSize(fBufferSize);
-                    fBufferPool.setExternalBufferSize(fBufferSize);
+                    fCharacterBufferPool.setExternalBufferSize(fBufferSize);
                 }
             }
             if (suffixLength == Constants.SECURITY_MANAGER_PROPERTY.length() && 
@@ -1882,7 +1885,7 @@ public class XMLEntityManager
         } 
 
         //Release the character buffer back to the pool for reuse
-        fBufferPool.returnToPool(fCurrentEntity.fBuffer);
+        fCharacterBufferPool.returnToPool(fCurrentEntity.fBuffer);
         
         // Pop entity stack.
         fCurrentEntity = fEntityStack.size() > 0
@@ -2559,7 +2562,7 @@ public class XMLEntityManager
             this.literal = literal;
             this.mayReadChunks = mayReadChunks;
             this.isExternal = isExternal;
-            this.fBuffer = fBufferPool.getBuffer(isExternal);
+            this.fBuffer = fCharacterBufferPool.getBuffer(isExternal);
             this.ch = fBuffer.ch;
         } // <init>(StringXMLResourceIdentifier,InputStream,Reader,String,boolean, boolean)
 
@@ -2717,6 +2720,53 @@ public class XMLEntityManager
     } // class ScannedEntity
     
     /**
+     * Pool of byte buffers for the java.io.Readers.
+     * 
+     * @xerces.internal
+     * 
+     * @author Michael Glavassevich, IBM
+     */
+    private static final class ByteBufferPool {
+        
+        private static final int DEFAULT_POOL_SIZE = 3;
+        
+        private int fPoolSize;
+        private int fBufferSize;
+        private byte[][] fByteBufferPool;
+        private int fDepth;
+        
+        public ByteBufferPool(int bufferSize) {
+            this(DEFAULT_POOL_SIZE, bufferSize);
+        }
+        
+        public ByteBufferPool(int poolSize, int bufferSize) {
+            fPoolSize = poolSize;
+            fBufferSize = bufferSize;
+            fByteBufferPool = new byte[fPoolSize][];
+            fDepth = 0;
+        }
+        
+        /** Retrieves a byte buffer from the pool. **/
+        public byte[] getBuffer() {
+            return (fDepth > 0) ? fByteBufferPool[--fDepth] : new byte[fBufferSize];
+        }
+        
+        /** Returns byte buffer to pool. **/
+        public void returnBuffer(byte[] buffer) {
+            if (fDepth < fByteBufferPool.length) {
+                fByteBufferPool[fDepth++] = buffer;
+            }
+        }
+
+        /** Sets the size of the buffers and dumps the old pool. **/
+        public void setBufferSize(int bufferSize) {
+            fBufferSize = bufferSize;
+            fByteBufferPool = new byte[fPoolSize][];
+            fDepth = 0;
+        } 
+    }
+    
+    /**
      * Buffer used in entity manager to reuse character arrays instead
      * of creating new ones every time.
      * 
@@ -2724,7 +2774,7 @@ public class XMLEntityManager
      * 
      * @author Ankit Pasricha, IBM
      */
-    private static class CharacterBuffer {
+    private static final class CharacterBuffer {
 
         /** character buffer */
         private char[] ch;
@@ -2746,7 +2796,7 @@ public class XMLEntityManager
      * 
      * @author Ankit Pasricha, IBM
      */
-    private static class CharacterBufferPool {
+    private static final class CharacterBufferPool {
 
         private static final int DEFAULT_POOL_SIZE = 3;
         
@@ -2755,7 +2805,7 @@ public class XMLEntityManager
 
         private int fExternalBufferSize;
         private int fInternalBufferSize;
-        private int poolSize;
+        private int fPoolSize;
         
         private int fInternalTop;
         private int fExternalTop;
@@ -2767,14 +2817,14 @@ public class XMLEntityManager
         public CharacterBufferPool(int poolSize, int externalBufferSize, int internalBufferSize) {
             fExternalBufferSize = externalBufferSize;
             fInternalBufferSize = internalBufferSize;
-            this.poolSize = poolSize;
+            fPoolSize = poolSize;
             init();
         }
         
         /** Initializes buffer pool. **/
         private void init() {
-            fInternalBufferPool = new CharacterBuffer[poolSize];
-            fExternalBufferPool = new CharacterBuffer[poolSize];
+            fInternalBufferPool = new CharacterBuffer[fPoolSize];
+            fExternalBufferPool = new CharacterBuffer[fPoolSize];
             fInternalTop = -1;
             fExternalTop = -1;
         }
@@ -2814,7 +2864,7 @@ public class XMLEntityManager
         /** Sets the size of external buffers and dumps the old pool. **/
         public void setExternalBufferSize(int bufferSize) {
             fExternalBufferSize = bufferSize;
-            fExternalBufferPool = new CharacterBuffer[poolSize];
+            fExternalBufferPool = new CharacterBuffer[fPoolSize];
             fExternalTop = -1;
         }
     }
