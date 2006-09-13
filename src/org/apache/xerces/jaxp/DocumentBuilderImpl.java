@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2005 The Apache Software Foundation.
+ * Copyright 2000-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -281,7 +281,9 @@ public class DocumentBuilderImpl extends DocumentBuilder
             resetSchemaValidator();
         }
         domParser.parse(is);
-        return domParser.getDocument();
+        Document doc = domParser.getDocument();
+        domParser.dropDocumentReferences();
+        return doc;
     }
 
     public boolean isNamespaceAware() {

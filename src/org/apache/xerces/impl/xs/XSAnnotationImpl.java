@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2005 The Apache Software Foundation.
+ * Copyright 2001-2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -162,6 +162,7 @@ public class XSAnnotationImpl implements XSAnnotation {
             // ditto with above
         }
         Document aDocument = parser.getDocument();
+        parser.dropDocumentReferences();
         Element annotation = aDocument.getDocumentElement();
         Node newElem = null;
         if (futureOwner instanceof CoreDocumentImpl) {

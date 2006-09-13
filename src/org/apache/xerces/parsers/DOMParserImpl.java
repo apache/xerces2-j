@@ -65,7 +65,6 @@ import org.w3c.dom.ls.LSParserFilter;
 import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.SAXException;
 
-
 /**
  * This is Xerces DOM Builder class. It uses the abstract DOM
  * parser with a document scanner, a dtd scanner, and a validator, as
@@ -76,12 +75,8 @@ import org.xml.sax.SAXException;
  * @author Rahul Srivastava, Sun Microsystems Inc.
  * @version $Id$
  */
-
-
 public class DOMParserImpl
-extends AbstractDOMParser implements LSParser, DOMConfiguration {
-
-
+    extends AbstractDOMParser implements LSParser, DOMConfiguration {
 
     // SAX & Xerces feature ids
 
@@ -899,7 +894,9 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                 throw (LSException) DOMUtil.createLSException(LSException.PARSE_ERR, e).fillInStackTrace();
             }
         }
-        return getDocument ();
+        Document doc = getDocument();
+        dropDocumentReferences();
+        return doc;
     }
 
     /**
@@ -954,7 +951,9 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                 throw (LSException) DOMUtil.createLSException(LSException.PARSE_ERR, e).fillInStackTrace();
             }
         }
-        return getDocument ();
+        Document doc = getDocument();
+        dropDocumentReferences();
+        return doc;
     }
 
 

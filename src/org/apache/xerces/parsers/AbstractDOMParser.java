@@ -368,6 +368,19 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
     public Document getDocument () {
         return fDocument;
     } // getDocument():Document
+    
+    /** 
+     * Drops all references to the last DOM which was built by this parser.
+     */
+    public final void dropDocumentReferences() {
+        fDocument = null;
+        fDocumentImpl = null;
+        fDeferredDocumentImpl = null;
+        fDocumentType = null;
+        fCurrentNode = null;
+        fCurrentCDATASection = null;
+        fCurrentEntityDecl = null;
+    } // dropDocumentReferences()
 
     //
     // XMLDocumentParser methods
