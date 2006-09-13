@@ -1160,7 +1160,7 @@ public class XMLEntityManager
         // create entity
         fCurrentEntity = new ScannedEntity(name,
                 new XMLResourceIdentifierImpl(publicId, literalSystemId, baseSystemId, expandedSystemId),
-                stream, reader, encoding, literal, false, isExternal);
+                stream, reader, fTempByteBuffer, encoding, literal, false, isExternal);
 		fCurrentEntity.setEncodingExternallySpecified(encodingExternallySpecified);
         fEntityScanner.setCurrentEntity(fCurrentEntity);
         fResourceIdentifier.setValues(publicId, literalSystemId, baseSystemId, expandedSystemId);
@@ -2579,7 +2579,7 @@ public class XMLEntityManager
         /** Constructs a scanned entity. */
         public ScannedEntity(String name,
                              XMLResourceIdentifier entityLocation,
-                             InputStream stream, Reader reader,
+                             InputStream stream, Reader reader, byte [] byteBuffer,
                              String encoding, boolean literal, boolean mayReadChunks, boolean isExternal) {
             super(name,XMLEntityManager.this.fInExternalSubset);
             this.entityLocation = entityLocation;
@@ -2591,7 +2591,7 @@ public class XMLEntityManager
             this.isExternal = isExternal;
             this.fCharacterBuffer = fCharacterBufferPool.getBuffer(isExternal);
             this.ch = fCharacterBuffer.ch;
-            this.fByteBuffer = fTempByteBuffer;
+            this.fByteBuffer = byteBuffer;
         } // <init>(StringXMLResourceIdentifier,InputStream,Reader,String,boolean, boolean)
 
         //
