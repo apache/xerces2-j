@@ -100,8 +100,8 @@
  <external label='Source Repository'
            href='http://svn.apache.org/viewcvs.cgi/xerces/java/trunk/'/>
  <external label='User Mail Archive'
-           href='http://marc.theaimsgroup.com/?l=xerces-j-user'/>
+           href='http://mail-archives.apache.org/mod_mbox/xerces-j-users/'/>
  <external label='Dev Mail Archive'
-           href='http://marc.theaimsgroup.com/?l=xerces-j-dev'/>
+           href='http://mail-archives.apache.org/mod_mbox/xerces-j-dev/'/>
 
 </book>
