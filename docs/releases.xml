@@ -17,6 +17,81 @@
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
+  <release version='&ParserName; 2.8.1'>
+   <desc>
+    <p>
+     This release fixes several bugs which were present in Xerces-J 2.8.0. 
+     It also includes a few minor enhancements and performance improvements.
+    </p>
+   </desc>
+   <changes>
+    <fix>
+     <note>
+      Fixed numerous schema annotation related bugs including those introduced in
+      Xerces-J 2.8.0 which caused NPEs to be thrown from several of the getAnnotation() 
+      methods in the XML Schema API.
+     </note>
+     <submitter name='Neil Delima, Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed a DOM bug which caused the internal subset of a DocumentType node to be
+      omitted from a cloned Document.
+     </note>
+     <submitter name='Jacob Kjome'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed a bug in Xerces' regular expression support involving patterns starting with '.'.
+     </note>
+     <submitter name='Kent Tamura'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed a bug which caused the DOM builder to drop all of the text in the document if 
+      grammar caching is enabled and the document being processed contains both an internal 
+      and an external DTD subset.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed a schema bug which allowed defaulted attributes with the same local 
+      name to overwrite each other.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed a bug which caused a schema document to be loaded multiple times if it 
+      was both included and redefined. This made it possible for the redefined components 
+      to be incorrectly overwritten by the original ones from the include.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed a bug in Xerces' native serializer which caused documents containing 
+      supplemental characters in attribute values to be written incorrectly.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed a bug in the XInclude processor which in some instances caused 
+      content to be omitted from the result if an element() XPointer is 
+      specified on an include element.
+     </note>
+     <submitter name='Neil Delima'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed various bugs and made various improvements.
+     </note>
+     <submitter name='Dave Brosius, Michael Glavassevich, Jacob Kjome, Peter McCracken'/>
+    </fix>
+   </changes>
+  </release>
   <release version='&ParserName; 2.8.0'>
    <desc>
     <p>
