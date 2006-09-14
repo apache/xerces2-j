@@ -25,6 +25,35 @@
     </p>
    </desc>
    <changes>
+    <add>
+     <note>
+      Implemented native support for the ISO-8859-1 encoding.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </add>
+    <add>
+     <note>
+      Added a method to XSModel which returns a list containing the members 
+      of the substitution group for a given element declaration.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </add>
+    <update>
+     <note>
+      Improved the performance of Xerces' optimized readers (for small 
+      documents) by recycling their byte buffers.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </update>
+    <update>
+     <note>
+      Modified the DocumentBuilder and LSParser implementations so that they drop 
+      their internal references to the DOM they just built. If an application is 
+      pooling parsers this will allow the garbage collector to reclaim the Document 
+      and all of its nodes if the application no longer has any references to it.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </update>
     <fix>
      <note>
       Fixed numerous schema annotation related bugs including those introduced in
