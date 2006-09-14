@@ -132,9 +132,9 @@
   <s2 title='Changes from Previous Release'>
     
     <p>
-      The &ParserNameLong; &ParserVersion; contains several new validation related 
-      features and provides enhancements to the schema annotation support in the
-      XML Schema API.
+      The &ParserNameLong; &ParserVersion; fixes several bugs which were present 
+      in the previous release. It also includes a few minor enhancements and performance 
+      improvements.
     </p>
     <p>
       For a more complete list of changes, refer to the 
