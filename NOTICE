@@ -1,9 +1,12 @@
    =========================================================================
    ==  NOTICE file corresponding to section 4(d) of the Apache License,   ==
-   ==  Version 2.0, in this case for the Apache Xerces distribution.      ==
+   ==  Version 2.0, in this case for the Apache Xerces Java distribution. ==
    =========================================================================
 
-   This product includes software developed by
+   Apache Xerces Java
+   Copyright 1999-2006 The Apache Software Foundation.
+
+   This product includes software developed at
    The Apache Software Foundation (http://www.apache.org/).
 
    Portions of this software were originally based on the following:
