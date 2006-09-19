@@ -403,7 +403,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                         childName.equals(SchemaSymbols.ELT_UNIQUE)) {
                     // need to set <key>/<unique> to hidden before traversing it,
                     // because it has global scope
-                    DOMUtil.setHidden(child);
+                    DOMUtil.setHidden(child, fSchemaHandler.fHiddenNodes);
                     fSchemaHandler.fUniqueOrKeyTraverser.traverse(child, element, schemaDoc, grammar);
                     if(DOMUtil.getAttrValue(child, SchemaSymbols.ATT_NAME).length() != 0 ) {
                         fSchemaHandler.checkForDuplicateNames(

@@ -245,9 +245,8 @@ public class XSDHandler {
     private Hashtable fLocationPairs = null;
     private static final Hashtable EMPTY_TABLE = new Hashtable();
     
-    //this hashtable is keyded on by DOM node objects. 
-    //The table stores the hidden nodes
-    private Hashtable fHiddenNodes = null;
+    // Records which nodes are hidden when the input is a DOMInputSource.
+    Hashtable fHiddenNodes = null;
     
     // convenience methods
     private String null2EmptyString(String ns) {

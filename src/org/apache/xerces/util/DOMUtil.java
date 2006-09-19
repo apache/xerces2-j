@@ -317,12 +317,12 @@ public class DOMUtil {
 
     // set this Node as being hidden, overloaded method
     public static void setHidden(Node node, Hashtable hiddenNodes) {
-        if (node instanceof org.apache.xerces.impl.xs.opti.NodeImpl)
+        if (node instanceof org.apache.xerces.impl.xs.opti.NodeImpl) {
             ((org.apache.xerces.impl.xs.opti.NodeImpl)node).setReadOnly(true, false);
-        else if (node instanceof org.apache.xerces.dom.NodeImpl)
-            ((org.apache.xerces.dom.NodeImpl)node).setReadOnly(true, false);
-        else
+        }
+        else {
         	hiddenNodes.put(node, "");
+        }
     } // setHidden(node):void
     
     // set this Node as being visible
@@ -335,12 +335,12 @@ public class DOMUtil {
 
     // set this Node as being visible, overloaded method
     public static void setVisible(Node node, Hashtable hiddenNodes) {
-        if (node instanceof org.apache.xerces.impl.xs.opti.NodeImpl)
-            ((org.apache.xerces.impl.xs.opti.NodeImpl)node).setReadOnly(false, false);
-        else if (node instanceof org.apache.xerces.dom.NodeImpl)
-            ((org.apache.xerces.dom.NodeImpl)node).setReadOnly(false, false);
-        else
-        	hiddenNodes.remove(node);
+        if (node instanceof org.apache.xerces.impl.xs.opti.NodeImpl) {
+            ((org.apache.xerces.impl.xs.opti.NodeImpl)node).setReadOnly(false, false);   
+        }
+        else {
+            hiddenNodes.remove(node);
+        }
     } // setVisible(node):void
     
     // is this node hidden?
@@ -354,12 +354,12 @@ public class DOMUtil {
 
     // is this node hidden? overloaded method
     public static boolean isHidden(Node node, Hashtable hiddenNodes) {
-        if (node instanceof org.apache.xerces.impl.xs.opti.NodeImpl)
+        if (node instanceof org.apache.xerces.impl.xs.opti.NodeImpl) {
             return ((org.apache.xerces.impl.xs.opti.NodeImpl)node).getReadOnly();
-        else if (node instanceof org.apache.xerces.dom.NodeImpl)
-            return ((org.apache.xerces.dom.NodeImpl)node).getReadOnly();
-        else
-        	return hiddenNodes.containsKey(node);
+        }
+        else {
+            return hiddenNodes.containsKey(node);
+        }
     } // isHidden(Node):boolean
     
     /** Finds and returns the first child node with the given name. */
