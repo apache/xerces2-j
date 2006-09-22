@@ -54,7 +54,7 @@ public class DefaultErrorHandler
 
     /** 
      * Constructs an error handler that prints error messages to the
-     * specified <code>PrintWriter</code. 
+     * specified <code>PrintWriter</code>. 
      */
     public DefaultErrorHandler(PrintWriter out) {
         fOut = out;
