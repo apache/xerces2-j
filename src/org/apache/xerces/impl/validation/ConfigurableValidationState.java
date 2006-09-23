@@ -51,7 +51,7 @@ public final class ConfigurableValidationState extends ValidationState {
     
     /**
      * Turns checking for ID/IDREF errors on and off.
-     * @param setting: true to turn on error checking
+     * @param setting true to turn on error checking,
      *                 false to turn off error checking
      */
     public void setIdIdrefChecking(boolean setting) {
@@ -60,7 +60,7 @@ public final class ConfigurableValidationState extends ValidationState {
     
     /**
      * Turns checking for unparsed entity errors on and off.
-     * @param setting: true to turn on error checking
+     * @param setting true to turn on error checking,
      *                 false to turn off error checking
      */
     public void setUnparsedEntityChecking(boolean setting) {
@@ -105,7 +105,7 @@ public final class ConfigurableValidationState extends ValidationState {
     
     /**
      * Adds the ID, if ID/IDREF checking is enabled.
-     * @param the ID to add
+     * @param name the ID to add
      */
     public void addId(String name) {
         if (fIdIdrefChecking) {
@@ -115,7 +115,7 @@ public final class ConfigurableValidationState extends ValidationState {
     
     /**
      * Adds the IDREF, if ID/IDREF checking is enabled.
-     * @param the IDREF to add
+     * @param name the IDREF to add
      */
     public void addIdRef(String name) {
         if (fIdIdrefChecking) {
