@@ -125,29 +125,33 @@ public class UCSReader extends Reader {
      */
     public int read() throws IOException { 
         int b0 = fInputStream.read() & 0xff;
-        if (b0 == 0xff)
+        if (b0 == 0xff) {
             return -1;
-        int b1 = fInputStream.read() & 0xff;
-        if (b1 == 0xff)
-            return -1;
-        if(fEncoding >=4) {
-            int b2 = fInputStream.read() & 0xff;
-            if (b2 == 0xff)
-                return -1;
-            int b3 = fInputStream.read() & 0xff;
-            if (b3 == 0xff)
-                return -1;
-            System.err.println("b0 is " + (b0 & 0xff) + " b1 " + (b1 & 0xff) + " b2 " + (b2 & 0xff) + " b3 " + (b3 & 0xff));
-            if (fEncoding == UCS4BE)
-                return (b0<<24)+(b1<<16)+(b2<<8)+b3;
-            else
-                return (b3<<24)+(b2<<16)+(b1<<8)+b0;
-        } else { // UCS-2
-            if (fEncoding == UCS2BE)
-                return (b0<<8)+b1;
-            else
-                return (b1<<8)+b0;
         }
+        int b1 = fInputStream.read() & 0xff;
+        if (b1 == 0xff) {
+            return -1;
+        }
+        // UCS-4
+        if (fEncoding >= 4) {
+            int b2 = fInputStream.read() & 0xff;
+            if (b2 == 0xff) {
+                return -1;
+            }
+            int b3 = fInputStream.read() & 0xff;
+            if (b3 == 0xff) {
+                return -1;
+            }
+            if (fEncoding == UCS4BE) {
+                return (b0<<24)+(b1<<16)+(b2<<8)+b3;
+            }
+            return (b3<<24)+(b2<<16)+(b1<<8)+b0;
+        }
+        // UCS-2
+        if (fEncoding == UCS2BE) {
+            return (b0<<8)+b1;
+        }
+        return (b1<<8)+b0;
     } // read():int
 
     /**
@@ -170,30 +174,32 @@ public class UCSReader extends Reader {
             byteLength = fBuffer.length;
         }
         int count = fInputStream.read(fBuffer, 0, byteLength);
-        if(count == -1) return -1;
+        if (count == -1) return -1;
         // try and make count be a multiple of the number of bytes we're looking for
-        if(fEncoding >= 4) { // BigEndian
+        if (fEncoding >= 4) { // BigEndian
             // this looks ugly, but it avoids an if at any rate...
             int numToRead = (4 - (count & 3) & 3);
-            for(int i=0; i<numToRead; i++) {
+            for (int i = 0; i < numToRead; i++) {
                 int charRead = fInputStream.read();
-                if(charRead == -1) { // end of input; something likely went wrong!A  Pad buffer with nulls.
-                    for (int j = i;j<numToRead; j++)
+                if (charRead == -1) { // end of input; something likely went wrong!A  Pad buffer with nulls.
+                    for (int j = i; j < numToRead; j++) {
                         fBuffer[count+j] = 0;
+                    }
                     break;
-                } else {
-                    fBuffer[count+i] = (byte)charRead; 
                 }
+                fBuffer[count+i] = (byte)charRead;
             }
             count += numToRead;
-        } else {
+        } 
+        else {
             int numToRead = count & 1;
-            if(numToRead != 0) {
+            if (numToRead != 0) {
                 count++;
                 int charRead = fInputStream.read();
-                if(charRead == -1) { // end of input; something likely went wrong!A  Pad buffer with nulls.
+                if (charRead == -1) { // end of input; something likely went wrong!A  Pad buffer with nulls.
                     fBuffer[count] = 0;
-                } else {
+                } 
+                else {
                     fBuffer[count] = (byte)charRead;
                 }
             }
@@ -205,18 +211,24 @@ public class UCSReader extends Reader {
         for (int i = 0; i < numChars; i++) {
             int b0 = fBuffer[curPos++] & 0xff;
             int b1 = fBuffer[curPos++] & 0xff;
-            if(fEncoding >=4) {
+            // UCS-4
+            if (fEncoding >= 4) {
                 int b2 = fBuffer[curPos++] & 0xff;
                 int b3 = fBuffer[curPos++] & 0xff;
-                if (fEncoding == UCS4BE)
+                if (fEncoding == UCS4BE) {
                     ch[offset+i] = (char)((b0<<24)+(b1<<16)+(b2<<8)+b3);
-                else
+                }
+                else {
                     ch[offset+i] = (char)((b3<<24)+(b2<<16)+(b1<<8)+b0);
-            } else { // UCS-2
-                if (fEncoding == UCS2BE)
+                }
+            } 
+            else { // UCS-2
+                if (fEncoding == UCS2BE) {
                     ch[offset+i] = (char)((b0<<8)+b1);
-                else
+                }
+                else {
                     ch[offset+i] = (char)((b1<<8)+b0);
+                }
             }
         }
         return numChars;
