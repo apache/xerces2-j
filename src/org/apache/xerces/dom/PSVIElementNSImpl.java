@@ -237,7 +237,7 @@ public class PSVIElementNSImpl extends ElementNSImpl implements ElementPSVI {
     /**
      * Copy PSVI properties from another psvi item.
      * 
-     * @param attr  the source of attribute PSVI items
+     * @param elem  the source of element PSVI items
      */
     public void setPSVI(ElementPSVI elem) {
         this.fDeclaration = elem.getElementDeclaration();

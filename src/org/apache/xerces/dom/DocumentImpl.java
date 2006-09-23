@@ -908,7 +908,7 @@ public class DocumentImpl
      * @param node The node to dispatch to
      * @param enclosingAttr The Attr node (if any) whose value has been changed
      * as a result of the DOM operation. Null if none such.
-     * @param oldValue The String value previously held by the
+     * @param oldvalue The String value previously held by the
      * enclosingAttr. Ignored if none such.
      * @param change Type of modification to the attr. See
      * MutationEvent.attrChange
@@ -963,7 +963,6 @@ public class DocumentImpl
      * preparation for later generating DOMAttrModified events.
      * Determines whether this node is within an Attr
      * @param node node to get enclosing attribute for
-     * @return either a description of that Attr, or null if none such. 
      */
     protected void saveEnclosingAttr(NodeImpl node) {
         savedEnclosingAttr = null;

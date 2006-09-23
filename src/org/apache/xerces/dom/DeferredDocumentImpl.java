@@ -374,12 +374,18 @@ public class DeferredDocumentImpl
 
     } // createDeferredElement(String,String):int
 
-    /** @deprecated. Creates an element node in the table. */
+    /** 
+     * Creates an element node in the table.
+     * @deprecated 
+     */
     public int createDeferredElement(String elementName) {
         return createDeferredElement(null, elementName);
     }
 
-    /** @deprecated. Creates an element node with a URI in the table. */
+    /** 
+     * Creates an element node with a URI in the table.
+     * @deprecated  
+     */
     public int createDeferredElement(String elementURI, String elementName) {
 
         // create node
@@ -454,7 +460,10 @@ public class DeferredDocumentImpl
 		return attrNodeIndex;
 	}
     
-    /** @deprecated. Sets an attribute on an element node.*/
+    /**  
+     * Sets an attribute on an element node.
+     * @deprecated
+     */
     public int setDeferredAttribute(int elementNodeIndex,
                                     String attrName, String attrURI,
                                     String attrValue, boolean specified) {

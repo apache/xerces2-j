@@ -284,7 +284,7 @@ public class NamedNodeMapImpl
      *                      The namespace URI of the node to remove.
      *                      When it is null or an empty string, this
      *                      method behaves like removeNamedItem.
-     * @param               The local name of the node to remove.
+     * @param name          The local name of the node to remove.
      * @return Node         The node removed from the map if a node with such
      *                      a local name and namespace URI exists.
      * @throws              NOT_FOUND_ERR: Raised if there is no node named

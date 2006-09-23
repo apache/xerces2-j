@@ -749,7 +749,7 @@ public class ElementImpl
      * namespace URI is already present in the element, it is replaced
      * by the new one.
      *
-     * @param Attr      The Attr node to add to the attribute list. When
+     * @param newAttr   The Attr node to add to the attribute list. When
      *                  the Node has no namespaceURI, this method behaves
      *                  like setAttributeNode.
      * @return Attr     If the newAttr attribute replaces an existing attribute
@@ -1041,12 +1041,12 @@ public class ElementImpl
      * Checks if a type is derived from another by restriction. See:
      * http://www.w3.org/TR/DOM-Level-3-Core/core.html#TypeInfo-isDerivedFrom
      * 
-     * @param ancestorNS 
+     * @param typeNamespaceArg 
      *        The namspace of the ancestor type declaration
-     * @param ancestorName
+     * @param typeNameArg
      *        The name of the ancestor type declaration
-     * @param type
-     *        The reference type definition
+     * @param derivationMethod
+     *        The derivation method
      * 
      * @return boolean True if the type is derived by restriciton for the
      *         reference type

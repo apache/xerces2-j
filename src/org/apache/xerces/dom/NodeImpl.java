@@ -558,7 +558,7 @@ public abstract class NodeImpl
      * @see ParentNode
      *
      * @return org.w3c.dom.Node
-     * @param Index int
+     * @param index int
      */
     public Node item(int index) {
 	return null;
@@ -1506,8 +1506,8 @@ public abstract class NodeImpl
      * Look up the namespace URI associated to the given prefix, starting from this node.
      * Use lookupNamespaceURI(null) to lookup the default namespace
      * 
-     * @param namespaceURI
-     * @return th URI for the namespace
+     * @param specifiedPrefix
+     * @return the URI for the namespace
      * @since DOM Level 3
      */
     public String lookupNamespaceURI(String specifiedPrefix) {
@@ -1682,9 +1682,6 @@ public abstract class NodeImpl
      * <code>Text</code> nodes, as well as any user data or event listeners 
      * registered on the nodes.
      * @param arg The node to compare equality with.
-     * @param deep If <code>true</code>, recursively compare the subtrees; if 
-     *   <code>false</code>, compare only the nodes themselves (and its 
-     *   attributes, if it is an <code>Element</code>).
      * @return If the nodes, and possibly subtrees are equal, 
      *   <code>true</code> otherwise <code>false</code>.
      * @since DOM Level 3

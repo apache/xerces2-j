@@ -357,7 +357,7 @@ public class AttributeMap extends NamedNodeMapImpl {
      *                      The namespace URI of the node to remove.
      *                      When it is null or an empty string, this
      *                      method behaves like removeNamedItem.
-     * @param               The local name of the node to remove. If the
+     * @param name          The local name of the node to remove. If the
      *                      removed attribute is known to have a default
      *                      value, an attribute immediately appears
      *                      containing the default value.

@@ -78,7 +78,7 @@ public class DOMStringListImpl implements DOMStringList {
      * DOM Internal:
      * Add a <code>DOMString</code> to the list.
      * 
-     * @param domString A string to add to the list
+     * @param param A string to add to the list
      */
     public void add(String param) {
         fStrings.add(param);

@@ -1358,7 +1358,9 @@ extends ParentNode implements Document  {
      * as its OwnerDoc. (REC-DOM-Level-1-19981001 left the process of building
      * DTD information unspecified.)
      *
-     * @param name The name of the Entity we wish to provide a value for.
+     * @param qualifiedName
+     * @param publicID
+     * @param systemID
      *
      * @throws DOMException(NOT_SUPPORTED_ERR) for HTML documents, where
      * DTDs are not permitted. (HTML not yet implemented.)

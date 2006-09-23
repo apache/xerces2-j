@@ -449,12 +449,12 @@ public class ElementNSImpl
      * Checks if a type is derived from another by restriction. See:
      * http://www.w3.org/TR/DOM-Level-3-Core/core.html#TypeInfo-isDerivedFrom
      * 
-     * @param ancestorNS 
+     * @param typeNamespaceArg 
      *        The namspace of the ancestor type declaration
-     * @param ancestorName
+     * @param typeNameArg
      *        The name of the ancestor type declaration
-     * @param type
-     *        The reference type definition
+     * @param derivationMethod
+     *        The derivation method
      * 
      * @return boolean True if the type is derived by restriciton for the
      *         reference type
