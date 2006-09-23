@@ -297,10 +297,10 @@ public class XMLDTDScannerImpl
      * @param standalone True if the document was specified as standalone.
      *                   This value is important for verifying certain
      *                   well-formedness constraints.
-     * @param hasExternalDTD True if the document has an external DTD.
-     *                       This allows the scanner to properly notify
-     *                       the handler of the end of the DTD in the
-     *                       absence of an external subset.
+     * @param hasExternalSubset True if the document has an external DTD.
+     *                          This allows the scanner to properly notify
+     *                          the handler of the end of the DTD in the
+     *                          absence of an external subset.
      *
      * @return True if there is more to scan, false otherwise.
      */
@@ -648,12 +648,9 @@ public class XMLDTDScannerImpl
     }
 
     /** 
-     * Dispatch an XML "event".
+     * Dispatch an XML "event".              
      *
-     * @param complete True if this method is intended to scan
-     *                 and dispatch as much as possible.                 
-     *
-     * @return True if a TextDecl was scanned.
+     * @return true if a TextDecl was scanned.
      *
      * @throws IOException  Thrown on i/o error.
      * @throws XNIException Thrown on parse error.
@@ -1320,8 +1317,11 @@ public class XMLDTDScannerImpl
      * [60] DefaultDecl ::= '#REQUIRED' | '#IMPLIED' | (('#FIXED' S)? AttValue)
      * </pre>
      *
-     * @param name The name of the attribute being scanned.
+     * @param elName
+     * @param atName The name of the attribute being scanned.
+     * @param type
      * @param defaultVal The string to fill in with the default value.
+     * @param nonNormalizedDefaultVal
      */
     protected final String scanAttDefaultDecl(String elName, String atName,
                                               String type,

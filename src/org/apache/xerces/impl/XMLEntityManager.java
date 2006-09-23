@@ -626,13 +626,7 @@ public class XMLEntityManager
      * is unable to resolve the entity, then default entity
      * resolution will occur.
      *
-     * @param publicId     The public identifier of the entity.
-     * @param systemId     The system identifier of the entity.
-     * @param baseSystemId The base system identifier of the entity.
-     *                     This is the system identifier of the current
-     *                     entity and is used to expand the system
-     *                     identifier when the system identifier is a
-     *                     relative URI.
+     * @param resourceIdentifier The XMLResourceIdentifier for the resource to resolve.
      *
      * @return Returns an input source that wraps the resolved entity.
      *         This method will never return null.

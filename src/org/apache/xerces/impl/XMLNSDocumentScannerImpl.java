@@ -94,13 +94,10 @@ extends XMLDocumentScannerImpl {
      * The scanner is responsible for removing DTD validator
      * from the pipeline if it is not needed.
      *
-     * @param previous The filter component before DTDValidator
-     * @param dtdValidator
-     *                 The DTDValidator
-     * @param next     The documentHandler after the DTDValidator
+     * @param dtdValidator The DTDValidator
      */
-    public void setDTDValidator(XMLDTDValidatorFilter dtd){
-        fDTDValidator = dtd;
+    public void setDTDValidator(XMLDTDValidatorFilter dtdValidator) {
+        fDTDValidator = dtdValidator;
     }
 
     /**

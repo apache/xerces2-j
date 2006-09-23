@@ -961,7 +961,7 @@ public class XMLEntityScanner implements XMLLocator {
      *
      * @param delimiter The string that signifies the end of the character
      *                  data to be scanned.
-     * @param data      The data structure to fill.
+     * @param buffer    The XMLStringBuffer to fill.
      *
      * @return Returns true if there is more data to scan, false otherwise.
      *
