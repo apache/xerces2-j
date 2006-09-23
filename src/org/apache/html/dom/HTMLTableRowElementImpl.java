@@ -44,10 +44,12 @@ public class HTMLTableRowElementImpl
         Node    parent;
         
         parent = getParentNode();
-        if ( parent instanceof HTMLTableSectionElement )
+        if ( parent instanceof HTMLTableSectionElement ) {
             parent = parent.getParentNode();
-        if ( parent instanceof HTMLTableElement )
-            return getRowIndex( parent );;
+        }
+        if ( parent instanceof HTMLTableElement ) {
+            return getRowIndex( parent );
+        }
         return -1;
     }
     
@@ -57,10 +59,12 @@ public class HTMLTableRowElementImpl
         Node    parent;
         
         parent = getParentNode();
-        if ( parent instanceof HTMLTableSectionElement )
+        if ( parent instanceof HTMLTableSectionElement ) {
             parent = parent.getParentNode();
-        if ( parent instanceof HTMLTableElement )
+        }
+        if ( parent instanceof HTMLTableElement ) {
             ( (HTMLTableElementImpl) parent ).insertRowX( rowIndex, this );
+        }
     }
 
   
@@ -69,10 +73,10 @@ public class HTMLTableRowElementImpl
         Node    parent;
         
         parent = getParentNode();
-        if ( parent instanceof HTMLTableSectionElement )
+        if ( parent instanceof HTMLTableSectionElement ) {
             return getRowIndex( parent );
-        else
-            return -1;
+        }
+        return -1;
     }
     
     
@@ -81,8 +85,9 @@ public class HTMLTableRowElementImpl
         Node    parent;
         
         parent = getParentNode();
-        if ( parent instanceof HTMLTableSectionElement )
+        if ( parent instanceof HTMLTableSectionElement ) {
             ( (HTMLTableSectionElementImpl) parent ).insertRowX( sectionRowIndex, this );
+        }
     }
   
   
@@ -95,17 +100,20 @@ public class HTMLTableRowElementImpl
         // TR elements under the TABLE/section. Access to the returned NodeList
         // is very fast and the snapshot solves many synchronization problems.
         rows = ( (HTMLElement) parent ).getElementsByTagName( "TR" );
-        for ( i = 0 ; i < rows.getLength() ; ++i )
-            if ( rows.item( i ) == this )
+        for ( i = 0 ; i < rows.getLength() ; ++i ) {
+            if ( rows.item( i ) == this ) {
                 return i;
+            }
+        }
         return -1;
     }
 
   
     public HTMLCollection  getCells()
     {
-        if ( _cells == null )
+        if ( _cells == null ) {
             _cells = new HTMLCollectionImpl( this, HTMLCollectionImpl.CELL );
+        }
         return _cells;
     }
     
@@ -116,15 +124,13 @@ public class HTMLTableRowElementImpl
         int        i;
         
         child = getFirstChild();
-        while ( child != null )
-        {
+        while ( child != null ) {
             removeChild( child );
             child = child.getNextSibling();
         }
         i = 0;
         child = cells.item( i );
-        while ( child != null )
-        {
+        while ( child != null ) {
             appendChild ( child );
             ++i;
             child = cells.item( i );
@@ -139,12 +145,9 @@ public class HTMLTableRowElementImpl
         
         newCell = new HTMLTableCellElementImpl( (HTMLDocumentImpl) getOwnerDocument(), "TD" );
         child = getFirstChild();
-        while ( child != null )
-        {
-            if ( child instanceof HTMLTableCellElement )
-            {
-                if ( index == 0 )
-                {
+        while ( child != null ) {
+            if ( child instanceof HTMLTableCellElement ) {
+                if ( index == 0 ) {
                     insertBefore( newCell, child );
                     return newCell;
                 }
@@ -162,12 +165,9 @@ public class HTMLTableRowElementImpl
         Node    child;
         
         child = getFirstChild();
-        while ( child != null )
-        {
-            if ( child instanceof HTMLTableCellElement )
-            {
-                if ( index == 0 )
-                {
+        while ( child != null ) {
+            if ( child instanceof HTMLTableCellElement ) {
+                if ( index == 0 ) {
                     removeChild ( child );
                     return;
                 }
@@ -208,8 +208,9 @@ public class HTMLTableRowElementImpl
         
         // Make sure that the access key is a single character.
         ch = getAttribute( "char" );
-        if ( ch != null && ch.length() > 1 )
+        if ( ch != null && ch.length() > 1 ) {
             ch = ch.substring( 0, 1 );
+        }
         return ch;
     }
     
@@ -217,8 +218,9 @@ public class HTMLTableRowElementImpl
     public void setCh( String ch )
     {
         // Make sure that the access key is a single character.
-        if ( ch != null && ch.length() > 1 )
+        if ( ch != null && ch.length() > 1 ) {
             ch = ch.substring( 0, 1 );
+        }
         setAttribute( "char", ch );
     }
 

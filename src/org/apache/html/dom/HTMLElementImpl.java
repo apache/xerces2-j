@@ -55,71 +55,49 @@ public class HTMLElementImpl
      * @param owner The owner HTML document
      * @param tagName The element's tag name
      */
-    public HTMLElementImpl( HTMLDocumentImpl owner, String tagName )
-    {
+    public HTMLElementImpl( HTMLDocumentImpl owner, String tagName ) {
         super( owner, tagName.toUpperCase(Locale.ENGLISH) );
     }
     
-    
-    public String getId()
-    {
+    public String getId() {
         return getAttribute( "id" );
     }
     
-    
-    public void setId( String id )
-    {
+    public void setId( String id ) {
         setAttribute( "id", id );
-    }
+    }   
     
-    
-    public String getTitle()
-    {
+    public String getTitle() {
         return getAttribute( "title" );
     }
     
-    
-    public void setTitle( String title )
-    {
+    public void setTitle( String title ) {
         setAttribute( "title", title );
     }
     
-    
-    public String getLang()
-    {
+    public String getLang() {
         return getAttribute( "lang" );
-    }
+    }  
     
-    
-    public void setLang( String lang )
-    {
+    public void setLang( String lang ) {
         setAttribute( "lang", lang );
     }
     
-    
-    public String getDir()
-    {
+    public String getDir() {
         return getAttribute( "dir" );
     }
     
-    
-    public void setDir( String dir )
-    {
+    public void setDir( String dir ) {
         setAttribute( "dir", dir );
     }
-
-    
-    public String getClassName()
-    {
+ 
+    public String getClassName() {
         return getAttribute( "class" );
     }
-
     
-    public void setClassName( String className )
-    {
+    public void setClassName( String className ) {
         setAttribute( "class", className );
     }
-    
     
     /**
      * Convenience method used to translate an attribute value into an integer
@@ -129,18 +107,14 @@ public class HTMLElementImpl
      * @param value The value of the attribute
      * @return The integer value, or zero if not a valid numeric string
      */
-    int getInteger( String value )
-    {
-        try
-        {
+    int getInteger( String value ) {
+        try {
             return Integer.parseInt( value );
         }
-        catch ( NumberFormatException except )
-        {
+        catch ( NumberFormatException except ) {
             return 0;
         }
     }
-    
     
     /**
      * Convenience method used to translate an attribute value into a boolean
@@ -151,11 +125,9 @@ public class HTMLElementImpl
      * @param value The value of the attribute
      * @return True or false depending on whether the attribute has been set
      */
-    boolean getBinary( String name )
-    {
+    boolean getBinary( String name ) {
         return ( getAttributeNode( name ) != null );
     }
-    
     
     /**
      * Convenience method used to set a boolean attribute. If the value is true,
@@ -165,62 +137,50 @@ public class HTMLElementImpl
      * @param name The name of the attribute
      * @param value The value of the attribute
      */
-    void setAttribute( String name, boolean value )
-    {
-        if ( value )
+    void setAttribute( String name, boolean value ) {
+        if ( value ) {
             setAttribute( name, name );
-        else
+        }
+        else {
             removeAttribute( name );
+        }
     }
 
-
-    public Attr getAttributeNode( String attrName )
-    {
-	return super.getAttributeNode( attrName.toLowerCase(Locale.ENGLISH) );
+    public Attr getAttributeNode( String attrName ) {
+        return super.getAttributeNode( attrName.toLowerCase(Locale.ENGLISH) );
     }
-
 
     public Attr getAttributeNodeNS( String namespaceURI,
-				    String localName )
-    {
-	if ( namespaceURI != null && namespaceURI.length() > 0 )
-	    return super.getAttributeNodeNS( namespaceURI, localName );
-	else
-	    return super.getAttributeNode( localName.toLowerCase(Locale.ENGLISH) );
+            String localName ) {
+        if ( namespaceURI != null && namespaceURI.length() > 0 ) {
+            return super.getAttributeNodeNS( namespaceURI, localName );
+        }
+        return super.getAttributeNode( localName.toLowerCase(Locale.ENGLISH) );
     }
     
-    
-    public String getAttribute( String attrName )
-    {
-	return super.getAttribute( attrName.toLowerCase(Locale.ENGLISH) );
+    public String getAttribute( String attrName ) {
+        return super.getAttribute( attrName.toLowerCase(Locale.ENGLISH) );
     }
-
 
     public String getAttributeNS( String namespaceURI,
-				  String localName )
-    {
-	if ( namespaceURI != null && namespaceURI.length() > 0 )
-	    return super.getAttributeNS( namespaceURI, localName );
-	else
-	    return super.getAttribute( localName.toLowerCase(Locale.ENGLISH) );
+            String localName ) {
+        if ( namespaceURI != null && namespaceURI.length() > 0 ) {
+            return super.getAttributeNS( namespaceURI, localName );
+        }
+        return super.getAttribute( localName.toLowerCase(Locale.ENGLISH) );
     }
 
-
-    public final NodeList getElementsByTagName( String tagName )
-    {
-	return super.getElementsByTagName( tagName.toUpperCase(Locale.ENGLISH) );
+    public final NodeList getElementsByTagName( String tagName ) {
+        return super.getElementsByTagName( tagName.toUpperCase(Locale.ENGLISH) );
     }
-
 
     public final NodeList getElementsByTagNameNS( String namespaceURI,
-					          String localName )
-    {
-	if ( namespaceURI != null && namespaceURI.length() > 0 )
-	    return super.getElementsByTagNameNS( namespaceURI, localName.toUpperCase(Locale.ENGLISH) );
-	else
-	    return super.getElementsByTagName( localName.toUpperCase(Locale.ENGLISH) );
-    } 
-
+            String localName ) {
+        if ( namespaceURI != null && namespaceURI.length() > 0 ) {
+            return super.getElementsByTagNameNS( namespaceURI, localName.toUpperCase(Locale.ENGLISH) );
+        }
+        return super.getElementsByTagName( localName.toUpperCase(Locale.ENGLISH) );
+    }
 
     /**
      * Convenience method used to capitalize a one-off attribute value before it
@@ -230,25 +190,24 @@ public class HTMLElementImpl
      * @param value The value of the attribute
      * @return The capitalized value
      */
-    String capitalize( String value )
-    {
+    String capitalize( String value ) {
+        
         char[]    chars;
         int        i;
         
         // Convert string to charactares. Convert the first one to upper case,
         // the other characters to lower case, and return the converted string.
         chars = value.toCharArray();
-        if ( chars.length > 0 )
-        {
+        if ( chars.length > 0 ) {
             chars[ 0 ] = Character.toUpperCase( chars[ 0 ] );
-            for ( i = 1 ; i < chars.length ; ++i )
+            for ( i = 1 ; i < chars.length ; ++i ) {
                 chars[ i ] = Character.toLowerCase( chars[ i ] );
+            }
             return String.valueOf( chars );
         }
         return value;
     }
     
-
     /**
      * Convenience method used to capitalize a one-off attribute value before it
      * is returned. For example, the align values "LEFT" and "left" will both
@@ -257,23 +216,21 @@ public class HTMLElementImpl
      * @param name The name of the attribute
      * @return The capitalized value
      */
-    String getCapitalized( String name )
-    {
+    String getCapitalized( String name ) {
         String    value;
         char[]    chars;
         int        i;
         
         value = getAttribute( name );
-        if ( value != null )
-        {
+        if ( value != null ) {
             // Convert string to charactares. Convert the first one to upper case,
             // the other characters to lower case, and return the converted string.
             chars = value.toCharArray();
-            if ( chars.length > 0 )
-            {
+            if ( chars.length > 0 ) {
                 chars[ 0 ] = Character.toUpperCase( chars[ 0 ] );
-                for ( i = 1 ; i < chars.length ; ++i )
+                for ( i = 1 ; i < chars.length ; ++i ) {
                     chars[ i ] = Character.toLowerCase( chars[ i ] );
+                }
                 return String.valueOf( chars );
             }
         }
@@ -286,20 +243,15 @@ public class HTMLElementImpl
      * This method is exposed for form elements through the DOM API, but other
      * elements have no access to it through the API.
      */
-    public HTMLFormElement getForm()
-    {
-        Node    parent;
-        
-        parent = getParentNode(); 
-        while ( parent != null )
-        {
-            if ( parent instanceof HTMLFormElement )
+    public HTMLFormElement getForm() {
+        Node parent = getParentNode(); 
+        while ( parent != null ) {
+            if ( parent instanceof HTMLFormElement ) {
                 return (HTMLFormElement) parent;
+            }
             parent = parent.getParentNode();
         }
         return null;
     }
 
-
 }
-

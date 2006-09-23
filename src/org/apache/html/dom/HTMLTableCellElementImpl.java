@@ -64,7 +64,6 @@ public class HTMLTableCellElementImpl
     {
         Node    parent;
         Node    child;
-        int        index;
         
         parent = getParentNode();
         if ( parent instanceof HTMLTableRowElement )

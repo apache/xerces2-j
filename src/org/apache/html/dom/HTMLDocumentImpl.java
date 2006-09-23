@@ -418,10 +418,10 @@ public class HTMLDocumentImpl
     public final NodeList getElementsByTagNameNS( String namespaceURI,
                                                   String localName )
     {
-        if ( namespaceURI != null && namespaceURI.length() > 0 )
+        if ( namespaceURI != null && namespaceURI.length() > 0 ) {
             return super.getElementsByTagNameNS( namespaceURI, localName.toUpperCase(Locale.ENGLISH) );
-        else
-            return super.getElementsByTagName( localName.toUpperCase(Locale.ENGLISH) );
+        }
+        return super.getElementsByTagName( localName.toUpperCase(Locale.ENGLISH) );
     }
 
 
@@ -447,11 +447,10 @@ public class HTMLDocumentImpl
 
     public Element createElementNS( String namespaceURI, String qualifiedName )
     {
-        if ( namespaceURI == null || namespaceURI.length() == 0 )
+        if ( namespaceURI == null || namespaceURI.length() == 0 ) {
             return createElement( qualifiedName );
-        else {
-            return super.createElementNS( namespaceURI, qualifiedName );
         }
+        return super.createElementNS( namespaceURI, qualifiedName );
     }
 
 
@@ -478,15 +477,16 @@ public class HTMLDocumentImpl
             }
             catch ( Exception except )
             {
+                /*
                 Throwable thrw;
 
                 if ( except instanceof java.lang.reflect.InvocationTargetException )
                     thrw = ( (java.lang.reflect.InvocationTargetException) except ).getTargetException();
                 else
                     thrw = except;
-//                System.out.println( "Exception " + thrw.getClass().getName() );
-//                System.out.println( thrw.getMessage() );
-
+                System.out.println( "Exception " + thrw.getClass().getName() );
+                System.out.println( thrw.getMessage() );
+                */
                 throw new IllegalStateException( "HTM15 Tag '" + tagName + "' associated with an Element class that failed to construct.\n" + tagName);
             }
         }

@@ -52,17 +52,10 @@ public class HTMLBuilder
     
     /**
      * The current node in the document into which elements, text and
-     * other nodes will be inserted. This starts as the document iself
+     * other nodes will be inserted. This starts as the document itself
      * and reflects each element that is currently being parsed.
      */
     protected ElementImpl        _current;
-    
-    /**
-     * A reference to the current locator, this is generally the parser
-     * itself. The locator is used to locate errors and identify the
-     * source locations of elements.
-     */
-    private Locator         _locator;
 
 
     /**
@@ -195,9 +188,7 @@ public class HTMLBuilder
     
     public void ignorableWhitespace( char[] text, int start, int length )
         throws SAXException
-    {
-        Node    node;
-        
+    {        
         if ( ! _ignoreWhitespace )
 	    _current.appendChild( new TextImpl( _document, new String( text, start, length ) ) );
      }
@@ -205,9 +196,7 @@ public class HTMLBuilder
     
     public void processingInstruction( String target, String instruction )
         throws SAXException
-    {
-        Node    node;
-        
+    {        
 	// Processing instruction may appear before the document element (in fact, before the
 	// document has been created, or after the document element has been closed.
         if ( _current == null && _document == null )
@@ -226,13 +215,13 @@ public class HTMLBuilder
     
     public HTMLDocument getHTMLDocument()
     {
-        return (HTMLDocument) _document;
+        return _document;
     }
 
     
     public void setDocumentLocator( Locator locator )
     {
-        _locator = locator;
+        // ignored
     }
 
 
