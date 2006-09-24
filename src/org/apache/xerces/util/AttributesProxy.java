@@ -24,7 +24,7 @@ import org.xml.sax.ext.Attributes2;
 
 /**
  * Wraps {@link XMLAttributes} and makes it look like
- * {@link AttributeList} and {@link Attributes}.
+ * {@link AttributeList} and {@link Attributes2}.
  *
  * @author Arnaud Le Hors, IBM
  * @author Andy Clark, IBM

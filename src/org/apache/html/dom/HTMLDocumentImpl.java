@@ -66,35 +66,35 @@ public class HTMLDocumentImpl
     private static final long serialVersionUID = 4285791750126227180L;
 
     /**
-     * Holds {@link HTMLCollectionImpl} object with live collection of all
+     * Holds <code>HTMLCollectionImpl</code> object with live collection of all
      * anchors in document. This reference is on demand only once.
      */
     private HTMLCollectionImpl    _anchors;
 
 
     /**
-     * Holds {@link HTMLCollectionImpl} object with live collection of all
+     * Holds <code>HTMLCollectionImpl</code> object with live collection of all
      * forms in document. This reference is on demand only once.
      */
     private HTMLCollectionImpl    _forms;
 
 
     /**
-     * Holds {@link HTMLCollectionImpl} object with live collection of all
+     * Holds <code>HTMLCollectionImpl</code> object with live collection of all
      * images in document. This reference is on demand only once.
      */
     private HTMLCollectionImpl    _images;
 
 
     /**
-     * Holds {@link HTMLCollectionImpl} object with live collection of all
+     * Holds <code>HTMLCollectionImpl</code> object with live collection of all
      * links in document. This reference is on demand only once.
      */
     private HTMLCollectionImpl    _links;
 
 
     /**
-     * Holds {@link HTMLCollectionImpl} object with live collection of all
+     * Holds <code>HTMLCollectionImpl</code> object with live collection of all
      * applets in document. This reference is on demand only once.
      */
     private HTMLCollectionImpl    _applets;
@@ -433,7 +433,7 @@ public class HTMLDocumentImpl
      *                     create.
      * @param qualifiedName The qualified name of the element type to
      *                      instantiate.
-     * @param localName     The local name of the element to instantiate.
+     * @param localpart     The local name of the element to instantiate.
      * @return Element A new Element object with the following attributes:
      * @throws DOMException INVALID_CHARACTER_ERR: Raised if the specified
      *                      name contains an invalid character.

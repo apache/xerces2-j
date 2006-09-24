@@ -87,16 +87,11 @@ public class SimpleLocator implements XMLLocator {
     public String getBaseSystemId() {
         return null;
     }
-    /**
-     * @see org.apache.xerces.xni.XMLLocator#setColumnNumber(int)
-     */
+
     public void setColumnNumber(int col) {
         this.column = col;
     }
     
-    /**
-     * @see org.apache.xerces.xni.XMLLocator#setLineNumber(int)
-     */
     public void setLineNumber(int line) {
         this.line = line;
     }
@@ -129,7 +124,8 @@ public class SimpleLocator implements XMLLocator {
      */
     public void setPublicId(String publicId) {}
     
-    /** Returns the encoding of the current entity.  
+    /** 
+     * Returns the encoding of the current entity.  
      * Since these locators are used in the construction of
      * XMLParseExceptions, which know nothing about encodings, there is
      * no point in having this object deal intelligently 

@@ -1965,7 +1965,7 @@ public class XIncludeHandler
      * unparsed entities are processed as described in the spec, sections 4.5.1 and 4.5.2
      * </ul>
      * @param attributes
-     * @return
+     * @return the processed XMLAttributes
      */
     protected XMLAttributes processAttributes(XMLAttributes attributes) {
         if (isTopLevelIncludedItem()) {
@@ -2340,7 +2340,7 @@ public class XIncludeHandler
      * as an ancestor of the current item.
      *
      * @param depth
-     * @return
+     * @return true if an include was seen at the given depth, false otherwise
      */
     protected boolean getSawInclude(int depth) {
         if (depth >= fSawInclude.length) {
@@ -2782,7 +2782,7 @@ public class XIncludeHandler
     /**
      * Saves the given language on the top of the stack.
      * 
-     * @param lanaguage the language to push onto the stack.
+     * @param language the language to push onto the stack.
      */
     protected void saveLanguage(String language) {
         fLanguageScope.push(fDepth);

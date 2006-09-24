@@ -120,7 +120,7 @@ import org.xml.sax.ext.LexicalHandler;
  * @author <a href="mailto:rahul.srivastava@sun.com">Rahul Srivastava</a>
  * @author Elena Litani, IBM 
  * @see Serializer
- * @see LSSerializer
+ * @see org.w3c.dom.ls.LSSerializer
  */
 public abstract class BaseMarkupSerializer
     implements ContentHandler, DocumentHandler, LexicalHandler,
@@ -414,7 +414,7 @@ public abstract class BaseMarkupSerializer
      * writer and output format. Throws an exception only if
      * an I/O exception occured while serializing.
      *
-     * @param elem The element to serialize
+     * @param frag The document fragment to serialize
      * @throws IOException An I/O exception occured while
      *   serializing
      */
@@ -1295,7 +1295,6 @@ public abstract class BaseMarkupSerializer
      * whether the text is printed as CDATA or unescaped.
      *
      * @param text The text to print
-     * @param unescaped True is should print unescaped
      * @throws IOException An I/O exception occured while
      *   serializing
      */
@@ -1513,7 +1512,9 @@ public abstract class BaseMarkupSerializer
      * Multiple spaces are printed as such, but spaces at beginning
      * of line are removed.
      *
-     * @param text The text to print
+     * @param chars The text to print
+     * @param start The start offset
+     * @param length The number of characters
      * @param preserveSpace Space preserving flag
      * @param unescaped Print unescaped
      */

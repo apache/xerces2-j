@@ -405,7 +405,7 @@ public class XSDHandler {
      * @param is
      * @param desc
      * @param locationPairs
-     * @return
+     * @return the SchemaGrammar
      * @throws IOException
      */
     public SchemaGrammar parseSchema(XMLInputSource is, XSDDescription desc,

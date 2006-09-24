@@ -241,7 +241,7 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition, TypeInfo {
      *            The namspace of the ancestor type declaration
      * @param ancestorName
      *            The name of the ancestor type declaration
-     * @param derivation
+     * @param derivationMethod
      *            The derivation method
      * 
      * @return boolean True if the ancestor type is derived from the reference

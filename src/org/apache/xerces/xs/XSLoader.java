@@ -55,7 +55,7 @@ public interface XSLoader {
      * Parses the content of XML Schema documents specified as the list of URI 
      * references. If the URI contains a fragment identifier, the behavior 
      * is not defined by this specification. 
-     * @param uri The list of URI locations.
+     * @param uriList The list of URI locations.
      * @return An XSModel representing the schema documents.
      */
     public XSModel loadURIList(StringList uriList);

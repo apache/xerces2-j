@@ -577,7 +577,6 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 	 * If timezone present - normalize dateTime  [E Adding durations to dateTimes]
 	 *
 	 * @param date   CCYY-MM-DDThh:mm:ss+03
-	 * @return CCYY-MM-DDThh:mm:ssZ
 	 */
 	protected void normalize(DateTimeData date) {
 		

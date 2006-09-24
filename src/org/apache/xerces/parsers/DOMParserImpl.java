@@ -1054,7 +1054,7 @@ public class DOMParserImpl
     }
 
     /**
-     * @see org.w3c.dom.ls.DOMParser#abort()
+     * @see org.w3c.dom.ls.LSParser#abort()
      */
     public void abort () {
         // If parse operation is in progress then reset it

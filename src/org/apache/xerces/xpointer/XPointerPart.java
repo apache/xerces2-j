@@ -47,7 +47,7 @@ public interface XPointerPart {
      * Provides scheme specific parsing of a XPointer expression i.e. 
      * the PointerPart or ShortHandPointer.  
      * 
-     * @param  xpointer A String representing the PointerPart or ShortHandPointer.
+     * @param  part A String representing the PointerPart or ShortHandPointer.
      * @throws XNIException Thrown if the PointerPart string does not conform to 
      *         the syntax defined by its scheme.
      *   

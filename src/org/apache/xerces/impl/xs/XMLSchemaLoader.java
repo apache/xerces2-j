@@ -89,7 +89,6 @@ import org.xml.sax.InputSource;
  * @author Neil Graham, IBM
  * @version $Id$
  */
-
 public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent,
 // XML Component API 
 XSLoader, DOMConfiguration {
@@ -205,7 +204,6 @@ XSLoader, DOMConfiguration {
     
     // features and properties
     private ParserConfigurationSettings fLoaderConfig = new ParserConfigurationSettings();
-    private SymbolTable fSymbolTable = null;
     private XMLErrorReporter fErrorReporter = new XMLErrorReporter ();
     private XMLEntityManager fEntityManager = null;
     private XMLEntityResolver fUserEntityResolver = null;
@@ -474,7 +472,7 @@ XSLoader, DOMConfiguration {
      * Returns a Grammar object by parsing the contents of the
      * entities pointed to by sources.
      * 
-     * @param source[]  the locations of the entity which forms 
+     * @param source the locations of the entity which forms 
      *                      the staring point of the grammars to be constructed
      * @throws IOException  when a problem is encounted reading the entity
      * @throws XNIException when a condition arises (such as a FatalError) that requires parsing
@@ -556,7 +554,8 @@ XSLoader, DOMConfiguration {
         return grammar;
     } // loadSchema(XSDDescription, XMLInputSource):  SchemaGrammar
     
-    /** This method tries to resolve location of the given schema.
+    /** 
+     * This method tries to resolve location of the given schema.
      * The loader stores the namespace/location pairs in a hashtable (use "" as the
      * namespace of absent namespace). When resolving an entity, loader first tries
      * to find in the hashtable whether there is a value for that namespace,
@@ -565,7 +564,7 @@ XSLoader, DOMConfiguration {
      * @param desc
      * @param locationPairs
      * @param entityResolver
-     * @return
+     * @return the XMLInputSource
      * @throws IOException
      */
     public static XMLInputSource resolveDocument(XSDDescription desc, Hashtable locationPairs,
