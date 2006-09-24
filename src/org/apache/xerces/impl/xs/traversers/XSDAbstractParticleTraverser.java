@@ -47,12 +47,12 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
      *
      * Traverse the "All" declaration
      *
-     * <all
+     * &lt;all
      *   id = ID
      *   maxOccurs = 1 : 1
-     *   minOccurs = (0 | 1) : 1>
+     *   minOccurs = (0 | 1) : 1&gt;
      *   Content: (annotation? , element*)
-     * </all>
+     * &lt;/all&gt;
      **/
     XSParticleDecl traverseAll(Element allDecl,
             XSDocumentInfo schemaDoc,

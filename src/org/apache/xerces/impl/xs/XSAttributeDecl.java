@@ -24,7 +24,7 @@ import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 
 /**
  * The XML representation for an attribute declaration
- * schema component is an <attribute> element information item
+ * schema component is an &lt;attribute&gt; element information item
  * 
  * @xerces.internal 
  *

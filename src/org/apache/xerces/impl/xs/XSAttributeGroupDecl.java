@@ -29,7 +29,7 @@ import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 
 /**
  * The XML representation for an attribute group declaration
- * schema component is a global <attributeGroup> element information item
+ * schema component is a global &lt;attributeGroup&gt; element information item
  * 
  * @xerces.internal 
  *

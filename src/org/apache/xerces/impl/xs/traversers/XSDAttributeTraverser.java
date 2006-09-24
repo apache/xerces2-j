@@ -39,7 +39,7 @@ import org.w3c.dom.Element;
 /**
  * The attribute declaration schema component traverser.
  *
- * <attribute
+ * &lt;attribute
  *   default = string
  *   fixed = string
  *   form = (qualified | unqualified)
@@ -48,9 +48,9 @@ import org.w3c.dom.Element;
  *   ref = QName
  *   type = QName
  *   use = (optional | prohibited | required) : optional
- *   {any attributes with non-schema namespace . . .}>
+ *   {any attributes with non-schema namespace . . .}&gt;
  *   Content: (annotation?, (simpleType?))
- * </attribute>
+ * &lt;/attribute&gt;
  *
  * @xerces.internal 
  *

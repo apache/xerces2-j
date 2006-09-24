@@ -27,7 +27,7 @@ import org.w3c.dom.TypeInfo;
 
 /**
  * The XML representation for a complexType
- * schema component is a <complexType> element information item
+ * schema component is a &lt;complexType&gt; element information item
  *
  * @xerces.internal 
  *

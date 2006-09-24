@@ -30,13 +30,13 @@ import org.w3c.dom.Element;
 /**
  * The attribute group definition schema component traverser.
  *
- * <attributeGroup
+ * &lt;attributeGroup
  *   id = ID
  *   name = NCName
  *   ref = QName
- *   {any attributes with non-schema namespace . . .}>
+ *   {any attributes with non-schema namespace . . .}&gt;
  *   Content: (annotation?, ((attribute | attributeGroup)*, anyAttribute?))
- * </attributeGroup>
+ * &lt;/attributeGroup&gt;
  *
  * @xerces.internal 
  *

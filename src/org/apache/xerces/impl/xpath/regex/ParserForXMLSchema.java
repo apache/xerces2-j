@@ -159,8 +159,8 @@ class ParserForXMLSchema extends RegexParser {
      * c-c-subtraction  ::= (positive-c-group | negative-c-group) subtraction
      * subtraction      ::= '-' c-c-expression
      * c-range          ::= single-range | from-to-range
-     * single-range     ::= multi-c-escape | category-c-escape | block-c-escape | <any XML char>
-     * cc-normal-c      ::= <any character except [, ], \>
+     * single-range     ::= multi-c-escape | category-c-escape | block-c-escape | &lt;any XML char&gt;
+     * cc-normal-c      ::= &lt;any character except [, ], \&gt;
      * from-to-range    ::= cc-normal-c '-' cc-normal-c
      *
      * @param useNrage Ignored.

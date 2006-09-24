@@ -28,7 +28,7 @@ import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 
 /**
  * The XML representation for a wildcard declaration
- * schema component is an <any> or <anyAttribute> element information item
+ * schema component is an &lt;any&gt; or &lt;anyAttribute&gt; element information item
  *
  * @xerces.internal 
  *

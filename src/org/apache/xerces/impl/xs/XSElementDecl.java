@@ -33,7 +33,7 @@ import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 
 /**
  * The XML representation for an element declaration
- * schema component is an <element> element information item
+ * schema component is an &lt;element&gt; element information item
  *
  * @xerces.internal 
  *

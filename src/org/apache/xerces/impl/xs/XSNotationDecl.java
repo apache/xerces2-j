@@ -26,7 +26,7 @@ import org.apache.xerces.xs.XSObjectList;
 
 /**
  * The XML representation for a NOTATION declaration
- * schema component is a global <notation> element information item
+ * schema component is a global &lt;notation&gt; element information item
  *
  * @xerces.internal 
  *

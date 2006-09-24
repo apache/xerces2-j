@@ -26,7 +26,7 @@ import org.apache.xerces.impl.xs.XSConstraints;
 import java.util.Vector;
 
 /**
- * XSAllCM implements XSCMValidator and handles <all>
+ * XSAllCM implements XSCMValidator and handles &lt;all&gt;.
  *
  * @xerces.internal 
  *

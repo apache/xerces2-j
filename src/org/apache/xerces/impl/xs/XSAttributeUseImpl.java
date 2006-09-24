@@ -28,7 +28,7 @@ import org.apache.xerces.xs.XSObjectList;
 
 /**
  * The XML representation for an attribute use
- * schema component is a local <attribute> element information item
+ * schema component is a local &lt;attribute&gt; element information item
  *
  * @xerces.internal 
  *
