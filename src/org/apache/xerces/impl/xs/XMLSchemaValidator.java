@@ -304,6 +304,12 @@ public class XMLSchemaValidator
     // we expect an element to have.  It's almost
     // never > 1; so leave it at that.
     protected static final int ID_CONSTRAINT_NUM = 1;
+    
+    // xsi:* attribute declarations
+    static final XSAttributeDecl XSI_TYPE = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(SchemaSymbols.XSI_TYPE);
+    static final XSAttributeDecl XSI_NIL = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(SchemaSymbols.XSI_NIL);
+    static final XSAttributeDecl XSI_SCHEMALOCATION = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(SchemaSymbols.XSI_SCHEMALOCATION);
+    static final XSAttributeDecl XSI_NONAMESPACESCHEMALOCATION = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(SchemaSymbols.XSI_NONAMESPACESCHEMALOCATION);  
 
     //
     // Data
@@ -2729,18 +2735,18 @@ public class XMLSchemaValidator
             // for the 4 xsi attributes, get appropriate decl, and validate
             if (fTempQName.uri == SchemaSymbols.URI_XSI) {
                 XSAttributeDecl attrDecl = null;
-                if (fTempQName.localpart == SchemaSymbols.XSI_SCHEMALOCATION)
-                    attrDecl =
-                        SchemaGrammar.SG_XSI.getGlobalAttributeDecl(
-                            SchemaSymbols.XSI_SCHEMALOCATION);
-                else if (fTempQName.localpart == SchemaSymbols.XSI_NONAMESPACESCHEMALOCATION)
-                    attrDecl =
-                        SchemaGrammar.SG_XSI.getGlobalAttributeDecl(
-                            SchemaSymbols.XSI_NONAMESPACESCHEMALOCATION);
-                else if (fTempQName.localpart == SchemaSymbols.XSI_NIL)
-                    attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(SchemaSymbols.XSI_NIL);
-                else if (fTempQName.localpart == SchemaSymbols.XSI_TYPE)
-                    attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(SchemaSymbols.XSI_TYPE);
+                if (fTempQName.localpart == SchemaSymbols.XSI_TYPE) {
+                    attrDecl = XSI_TYPE;
+                }
+                else if (fTempQName.localpart == SchemaSymbols.XSI_NIL) {
+                    attrDecl = XSI_NIL;
+                }
+                else if (fTempQName.localpart == SchemaSymbols.XSI_SCHEMALOCATION) {
+                    attrDecl = XSI_SCHEMALOCATION;
+                }
+                else if (fTempQName.localpart == SchemaSymbols.XSI_NONAMESPACESCHEMALOCATION) {
+                    attrDecl = XSI_NONAMESPACESCHEMALOCATION;
+                }
                 if (attrDecl != null) {
                     processOneAttribute(element, attributes, index, attrDecl, null, attrPSVI);
                     continue;
