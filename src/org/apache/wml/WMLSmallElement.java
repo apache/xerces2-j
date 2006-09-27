@@ -21,14 +21,12 @@ package org.apache.wml;
  * The DTD used in this DOM model is from 
  * <a href="http://www.wapforum.org/DTD/wml_1.1.xml">
  * http://www.wapforum.org/DTD/wml_1.1.xml</a></p>
+ * 
+ * <p>'small' render the text with small font
+ * (Section 11.8.1, WAP WML Version 16-Jun-1999)</p>
  *
  * @version $Id$
  * @author <a href="mailto:david@topware.com.tw">David Li</a>
- */
-
-/**
- * 'small' render the text with small font
- * (Section 11.8.1, WAP WML Version 16-Jun-1999)
  */
 public interface WMLSmallElement extends WMLElement {
     /**
