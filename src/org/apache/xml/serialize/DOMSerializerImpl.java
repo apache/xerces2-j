@@ -17,17 +17,12 @@
 
 package org.apache.xml.serialize;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.reflect.Method;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.StringTokenizer;
 import java.util.Vector;
 
 import org.apache.xerces.dom.CoreDocumentImpl;
@@ -36,10 +31,6 @@ import org.apache.xerces.dom.DOMLocatorImpl;
 import org.apache.xerces.dom.DOMMessageFormatter;
 import org.apache.xerces.dom.DOMNormalizer;
 import org.apache.xerces.dom.DOMStringListImpl;
-import org.w3c.dom.DOMConfiguration;
-import org.w3c.dom.DOMError;
-import org.w3c.dom.DOMErrorHandler;
-import org.w3c.dom.DOMStringList;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.util.DOMUtil;
@@ -49,7 +40,11 @@ import org.apache.xerces.util.XML11Char;
 import org.apache.xerces.util.XMLChar;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Comment;
+import org.w3c.dom.DOMConfiguration;
+import org.w3c.dom.DOMError;
+import org.w3c.dom.DOMErrorHandler;
 import org.w3c.dom.DOMException;
+import org.w3c.dom.DOMStringList;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -60,7 +55,6 @@ import org.w3c.dom.ls.LSException;
 import org.w3c.dom.ls.LSOutput;
 import org.w3c.dom.ls.LSSerializer;
 import org.w3c.dom.ls.LSSerializerFilter;
-
 
 /**
  * EXPERIMENTAL: Implemenatation of DOM Level 3 org.w3c.ls.LSSerializer  by delegating serialization
@@ -714,33 +708,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                         throw new LSException(LSException.SERIALIZE_ERR, msg);
                     }
                     else {
-                        // URI was specified. Handle relative URIs.
-                        String expanded = XMLEntityManager.expandSystemId(uri, null, true);
-                        URL url = new URL(expanded != null ? expanded : uri);
-                        OutputStream out = null;
-                        String protocol = url.getProtocol();
-                        String host = url.getHost();
-                        // Use FileOutputStream if this URI is for a local file.
-                        if (protocol.equals("file") 
-                            && (host == null || host.length() == 0 || host.equals("localhost"))) {
-                            out = new FileOutputStream(getPathWithoutEscapes(url.getFile()));
-                        }
-                        // Try to write to some other kind of URI. Some protocols
-                        // won't support this, though HTTP should work.
-                        else {
-                            URLConnection urlCon = url.openConnection();
-                            urlCon.setDoInput(false);
-                            urlCon.setDoOutput(true);
-                            urlCon.setUseCaches(false); // Enable tunneling.
-                            if (urlCon instanceof HttpURLConnection) {
-                                // The DOM L3 LS CR says if we are writing to an HTTP URI
-                                // it is to be done with an HTTP PUT. 
-                                HttpURLConnection httpCon = (HttpURLConnection) urlCon;
-                                httpCon.setRequestMethod("PUT");
-                            }
-                            out = urlCon.getOutputStream();
-                        }
-                        ser.setOutputByteStream(out);
+                        ser.setOutputByteStream(XMLEntityManager.createOutputStream(uri));
                     }
                 }
                 else {
@@ -863,34 +831,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
         try {
             prepareForSerialization(ser, node);
             ser._format.setEncoding(encoding);
-            
-            // URI was specified. Handle relative URIs.
-            String expanded = XMLEntityManager.expandSystemId(URI, null, true);
-            URL url = new URL(expanded != null ? expanded : URI);
-            OutputStream out = null;
-            String protocol = url.getProtocol();
-            String host = url.getHost();
-            // Use FileOutputStream if this URI is for a local file.
-            if (protocol.equals("file") 
-                && (host == null || host.length() == 0 || host.equals("localhost"))) {
-                out = new FileOutputStream(getPathWithoutEscapes(url.getFile()));            
-            }
-            // Try to write to some other kind of URI. Some protocols
-            // won't support this, though HTTP should work.
-            else {
-                URLConnection urlCon = url.openConnection();
-                urlCon.setDoInput(false);
-                urlCon.setDoOutput(true);
-                urlCon.setUseCaches(false); // Enable tunneling.
-                if (urlCon instanceof HttpURLConnection) {
-                    // The DOM L3 LS CR says if we are writing to an HTTP URI
-                    // it is to be done with an HTTP PUT. 
-                    HttpURLConnection httpCon = (HttpURLConnection) urlCon;
-                    httpCon.setRequestMethod("PUT");
-                }
-                out = urlCon.getOutputStream();
-            }
-            ser.setOutputByteStream(out);
+            ser.setOutputByteStream(XMLEntityManager.createOutputStream(URI));
 
             if (node.getNodeType() == Node.DOCUMENT_NODE)
                 ser.serialize((Document) node);
@@ -1105,24 +1046,6 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
         }        
         }
                
-    }
-    
-    private String getPathWithoutEscapes(String origPath) {
-        if (origPath != null && origPath.length() != 0 && origPath.indexOf('%') != -1) {
-            // Locate the escape characters
-            StringTokenizer tokenizer = new StringTokenizer(origPath, "%");
-            StringBuffer result = new StringBuffer(origPath.length());
-            int size = tokenizer.countTokens();
-            result.append(tokenizer.nextToken());
-            for(int i = 1; i < size; ++i) {
-                String token = tokenizer.nextToken();
-                // Decode the 2 digit hexadecimal number following % in '%nn'
-                result.append((char)Integer.valueOf(token.substring(0, 2), 16).intValue());
-                result.append(token.substring(2));
-            }
-            return result.toString();
-        }
-        return origPath;
     }
     
     private String _getXmlVersion(Node node) {
