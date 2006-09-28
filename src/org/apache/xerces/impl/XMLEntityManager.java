@@ -16,9 +16,11 @@
 
 package org.apache.xerces.impl;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.lang.reflect.Method;
@@ -30,6 +32,7 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Stack;
+import java.util.StringTokenizer;
 
 import org.apache.xerces.impl.io.ASCIIReader;
 import org.apache.xerces.impl.io.Latin1Reader;
@@ -1833,6 +1836,54 @@ public class XMLEntityManager
         }
         // setInstanceFollowRedirects doesn't exist.
         catch (Exception exc) {}
+    }
+    
+    public static OutputStream createOutputStream(String uri) throws IOException {
+        // URI was specified. Handle relative URIs.
+        String expanded = XMLEntityManager.expandSystemId(uri, null, true);
+        URL url = new URL(expanded != null ? expanded : uri);
+        OutputStream out = null;
+        String protocol = url.getProtocol();
+        String host = url.getHost();
+        // Use FileOutputStream if this URI is for a local file.
+        if (protocol.equals("file") 
+                && (host == null || host.length() == 0 || host.equals("localhost"))) {
+            out = new FileOutputStream(getPathWithoutEscapes(url.getFile()));
+        }
+        // Try to write to some other kind of URI. Some protocols
+        // won't support this, though HTTP should work.
+        else {
+            URLConnection urlCon = url.openConnection();
+            urlCon.setDoInput(false);
+            urlCon.setDoOutput(true);
+            urlCon.setUseCaches(false); // Enable tunneling.
+            if (urlCon instanceof HttpURLConnection) {
+                // The DOM L3 REC says if we are writing to an HTTP URI
+                // it is to be done with an HTTP PUT.
+                HttpURLConnection httpCon = (HttpURLConnection) urlCon;
+                httpCon.setRequestMethod("PUT");
+            }
+            out = urlCon.getOutputStream();
+        }
+        return out;
+    }
+    
+    private static String getPathWithoutEscapes(String origPath) {
+        if (origPath != null && origPath.length() != 0 && origPath.indexOf('%') != -1) {
+            // Locate the escape characters
+            StringTokenizer tokenizer = new StringTokenizer(origPath, "%");
+            StringBuffer result = new StringBuffer(origPath.length());
+            int size = tokenizer.countTokens();
+            result.append(tokenizer.nextToken());
+            for(int i = 1; i < size; ++i) {
+                String token = tokenizer.nextToken();
+                // Decode the 2 digit hexadecimal number following % in '%nn'
+                result.append((char)Integer.valueOf(token.substring(0, 2), 16).intValue());
+                result.append(token.substring(2));
+            }
+            return result.toString();
+        }
+        return origPath;
     }
 
     //
