@@ -21,6 +21,7 @@ import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SAXLocatorWrapper;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLAttributesImpl;
+import org.apache.xerces.util.XMLStringBuffer;
 import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
@@ -74,6 +75,7 @@ final class SchemaContentHandler implements ContentHandler {
     private final QName fAttributeQName = new QName();
     private final XMLAttributesImpl fAttributes = new XMLAttributesImpl();
     private final XMLString fTempString = new XMLString();
+    private final XMLStringBuffer fStringBuffer = new XMLStringBuffer();
     
     /**
      * <p>Constructs an SchemaContentHandler.</p>
@@ -322,7 +324,11 @@ final class SchemaContentHandler implements ContentHandler {
             if (nsPrefix.length() > 0) {
                 prefix = XMLSymbols.PREFIX_XMLNS;
                 localpart = nsPrefix;
-                rawname = fSymbolTable.addSymbol(prefix + ":" + localpart);
+                fStringBuffer.clear();
+                fStringBuffer.append(prefix);
+                fStringBuffer.append(':');
+                fStringBuffer.append(localpart);
+                rawname = fSymbolTable.addSymbol(fStringBuffer.ch, fStringBuffer.offset, fStringBuffer.length);
             }
             else {
                 prefix = XMLSymbols.EMPTY_STRING;
