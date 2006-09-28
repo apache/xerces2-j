@@ -222,7 +222,9 @@ public final class XMLSchemaFactory extends SchemaFactory {
         catch (IOException e) {
             // this hasn't been reported, so do so now.
             SAXParseException se = new SAXParseException(e.getMessage(),null,e);
-            fErrorHandler.error(se);
+            if (fErrorHandler != null) {
+                fErrorHandler.error(se);
+            }
             throw se; // and we must throw it.
         }
         
