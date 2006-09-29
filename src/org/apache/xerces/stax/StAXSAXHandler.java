@@ -40,8 +40,9 @@ final class StAXSAXHandler extends DefaultHandler {
         this.asp = asp;
         this.reader = reader;
         this.loc = loc;
-        if(reader.isCoalescing)
+        if (reader.isCoalescing) {
             buf = new StringBuffer();
+        }
     }
     
     public void characters(char[] ch, int start, int length) throws SAXException {
@@ -49,13 +50,13 @@ final class StAXSAXHandler extends DefaultHandler {
             synchronized (asp) {
                 reader.setCurType(XMLStreamConstants.CHARACTERS);
                 
-                if(reader.isCoalescing) {
+                if (reader.isCoalescing) {
                     buf.append(ch, start, length);
                 }
                 else {
                     asp.setCharacters(ch, start, length);
                     
-                    while (asp.getRunningFlag() == false) {
+                    while (!asp.getRunningFlag()) {
                         asp.notify();
                         asp.wait();
                     }
@@ -64,7 +65,7 @@ final class StAXSAXHandler extends DefaultHandler {
                 }
             }
         }
-        catch(Exception e) {
+        catch (Exception e) {
             throw new SAXException(e.getMessage(), e);
         }
     }
@@ -78,21 +79,23 @@ final class StAXSAXHandler extends DefaultHandler {
                 asp.setRunningFlag(false);
             }
         }
-        catch(Exception e) {
+        catch (Exception e) {
             throw new SAXException(e.getMessage(), e);
         }
     }
     
-    public synchronized void endElement(java.lang.String uri, java.lang.String localName, java.lang.String qName) throws SAXException{
+    public synchronized void endElement(String uri, String localName, String qName) throws SAXException {
         try {
             synchronized (asp) {
                 checkCoalescing();
                 
                 reader.setCurType(XMLStreamConstants.END_ELEMENT);
-                if(qName != null && !"".equals(qName))
+                if (qName != null && !"".equals(qName)) {
                     asp.setElementName(qName);
-                else
+                }
+                else {
                     asp.setElementName(localName);
+                }
                 asp.setUri(uri);
                 
                 while (asp.getRunningFlag() == false) {
@@ -105,12 +108,12 @@ final class StAXSAXHandler extends DefaultHandler {
                 asp.setRunningFlag(false);
             }
         }
-        catch(Exception e) {
+        catch (Exception e) {
             throw new SAXException(e.getMessage(), e);
         }
     }
     
-    public synchronized void ignorableWhitespace(char[] ch, int start, int length) throws SAXException{
+    public synchronized void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
         try {
             synchronized (asp) {
                 checkCoalescing();
@@ -118,7 +121,7 @@ final class StAXSAXHandler extends DefaultHandler {
                 reader.setCurType(XMLStreamConstants.SPACE);
                 asp.setCharacters(ch, start, length);
                 
-                while (asp.getRunningFlag() == false) {
+                while (!asp.getRunningFlag()) {
                     asp.notify();
                     asp.wait();
                 }                
@@ -126,16 +129,16 @@ final class StAXSAXHandler extends DefaultHandler {
                 asp.setRunningFlag(false);
             }
         }
-        catch(Exception e) {
+        catch (Exception e) {
             throw new SAXException(e.getMessage(), e);
         }
     }
     
-    public synchronized void notationDecl(java.lang.String name, java.lang.String publicId, java.lang.String systemId) throws SAXException{
+    public synchronized void notationDecl(String name, String publicId, String systemId) throws SAXException {
         try {
             synchronized (asp) {
                 reader.setCurType(XMLStreamConstants.NOTATION_DECLARATION);
-                while (asp.getRunningFlag() == false) {
+                while (!asp.getRunningFlag()) {
                     asp.notify();
                     asp.wait();
                 }
@@ -143,18 +146,18 @@ final class StAXSAXHandler extends DefaultHandler {
                 asp.setRunningFlag(false);
             }
         }
-        catch(Exception e) {
+        catch (Exception e) {
             throw new SAXException(e.getMessage(), e);
         }
     }
     
-    public synchronized void processingInstruction(java.lang.String target, java.lang.String data) throws SAXException{
+    public synchronized void processingInstruction(String target, String data) throws SAXException {
         try {
             reader.setCurType(XMLStreamConstants.PROCESSING_INSTRUCTION);
             asp.setPI(data, target);
             
             synchronized (asp) {
-                while (asp.getRunningFlag() == false) {
+                while (!asp.getRunningFlag()) {
                     asp.notify();
                     asp.wait();
                 }
@@ -162,7 +165,7 @@ final class StAXSAXHandler extends DefaultHandler {
                 asp.setRunningFlag(false);
             }
         }
-        catch(Exception e) {
+        catch (Exception e) {
             throw new SAXException(e.getMessage(), e);
         }
     }
@@ -172,7 +175,7 @@ final class StAXSAXHandler extends DefaultHandler {
             reader.setCurType(XMLStreamConstants.START_DOCUMENT);
             
             synchronized (asp) {
-                while (asp.getRunningFlag() == false) {
+                while (!asp.getRunningFlag()) {
                     asp.notify();
                     asp.wait();
                 }
@@ -180,12 +183,13 @@ final class StAXSAXHandler extends DefaultHandler {
                 asp.setRunningFlag(false);
             }
         }
-        catch(Exception e) {
+        catch (Exception e) {
             throw new SAXException(e.getMessage(), e);
         }
     }
     
-    public synchronized void startElement(java.lang.String uri, java.lang.String localName, java.lang.String qName, Attributes attributes) throws SAXException{
+    public synchronized void startElement(String uri, String localName, 
+            String qName, Attributes attributes) throws SAXException {
         try {
             synchronized (asp) {
                 checkCoalescing();
@@ -195,13 +199,15 @@ final class StAXSAXHandler extends DefaultHandler {
                 
                 NamespaceContextImpl nci = (NamespaceContextImpl)reader.getNamespaceContext();
                 nci.onStartElement();
-                if(qName != null && !"".equals(qName))
+                if (qName != null && !"".equals(qName)) {
                     asp.setElementName(qName);
-                else
+                }
+                else {
                     asp.setElementName(localName);
+                }
                 asp.setUri(uri);
                 
-                while (asp.getRunningFlag() == false) {
+                while (!asp.getRunningFlag()) {
                     asp.notify();
                     asp.wait();
                 }
@@ -209,18 +215,18 @@ final class StAXSAXHandler extends DefaultHandler {
                 asp.setRunningFlag(false);                
             }
         }
-        catch(Exception e) {
+        catch (Exception e) {
             throw new SAXException(e.getMessage(), e);
         }
     }
     
     
-    public synchronized void unparsedEntityDecl(java.lang.String name, java.lang.String publicId, java.lang.String systemId, java.lang.String notationName) throws SAXException{
-//      System.out.println("ENTITY_DECLARATION");
+    public synchronized void unparsedEntityDecl(String name, String publicId, 
+            String systemId, String notationName) throws SAXException {
         try {
             synchronized (asp) {
                 reader.setCurType(XMLStreamConstants.ENTITY_DECLARATION);
-                while (asp.getRunningFlag() == false) {
+                while (!asp.getRunningFlag()) {
                     asp.notify();
                     asp.wait();
                 }
@@ -228,7 +234,7 @@ final class StAXSAXHandler extends DefaultHandler {
                 asp.setRunningFlag(false);
             }
         }
-        catch(Exception e) {
+        catch (Exception e) {
             throw new SAXException(e.getMessage(), e);
         }
     }
@@ -237,13 +243,14 @@ final class StAXSAXHandler extends DefaultHandler {
      * If feature http://xml.org/sax/features/namespace-prefixes is set to false,
      * namespace binding is done in this method.
      */
-    public synchronized void startPrefixMapping(java.lang.String prefix, java.lang.String uri){
+    public synchronized void startPrefixMapping(String prefix, String uri) {
         try {
-            if(!asp.xr.getFeature("http://xml.org/sax/features/namespace-prefixes")) {
+            if (!asp.xr.getFeature("http://xml.org/sax/features/namespace-prefixes")) {
                 NamespaceContextImpl nci = (NamespaceContextImpl)reader.getNamespaceContext();
                 nci.addNamespace(prefix, uri);
             }
-        } catch (Exception e) {
+        } 
+        catch (Exception e) {
             //It is said that
             //all XMLReaders are required to recognize the http://xml.org/sax/features/namespaces 
             //and the http://xml.org/sax/features/namespace-prefixes feature names
@@ -255,7 +262,7 @@ final class StAXSAXHandler extends DefaultHandler {
         loc.setLocator(locator);
     }
     
-    public synchronized void skippedEntity(java.lang.String name) throws SAXException{
+    public synchronized void skippedEntity(String name) throws SAXException{
         try {
             synchronized (asp) {
                 checkCoalescing();
@@ -263,7 +270,7 @@ final class StAXSAXHandler extends DefaultHandler {
                 reader.setCurType(XMLStreamConstants.ENTITY_REFERENCE);
                 asp.setElementName(name);
                 asp.setCharacters(null, 0, 0);
-                while (asp.getRunningFlag() == false) {
+                while (!asp.getRunningFlag()) {
                     asp.notify();
                     asp.wait();
                 }
@@ -271,18 +278,18 @@ final class StAXSAXHandler extends DefaultHandler {
                 asp.setRunningFlag(false);
             }
         }
-        catch(Exception e) {
+        catch (Exception e) {
             throw new SAXException(e.getMessage(), e);
         }
     }
     
     private void checkCoalescing() throws InterruptedException {
-        if(reader.isCoalescing && reader.curType == XMLStreamConstants.CHARACTERS) {
+        if (reader.isCoalescing && reader.curType == XMLStreamConstants.CHARACTERS) {
             char[] chs = buf.toString().toCharArray();
             asp.setCharacters(chs, 0, chs.length);
             buf.setLength(0);
             
-            while (asp.getRunningFlag() == false) {
+            while (!asp.getRunningFlag()) {
                 asp.notify();
                 asp.wait();
             }
