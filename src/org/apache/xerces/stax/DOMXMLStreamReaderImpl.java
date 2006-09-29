@@ -172,8 +172,8 @@ public class DOMXMLStreamReaderImpl implements XMLStreamReader {
      * @throws XMLStreamException  if there is an error processing the underlying XML source
      */
     public int next() throws XMLStreamException {
-        if (hasNext() == false) {
-            throw new XMLStreamException("No such element!");
+        if (!hasNext()) {
+            throw new NoSuchElementException("No more events in the stream.");
         }
         
         if (curType == XMLStreamConstants.END_ELEMENT)

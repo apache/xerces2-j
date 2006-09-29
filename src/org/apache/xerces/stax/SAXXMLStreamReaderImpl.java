@@ -165,12 +165,12 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
      * @throws XMLStreamException  if there is an error processing the underlying XML source
      */
     public  int next() throws XMLStreamException {	 
-        if (hasNext() == false) {
+        if (!hasNext()) {
             asp.interrupt();
-            throw new XMLStreamException("No such element!");
+            throw new NoSuchElementException("No more events in the stream.");
         }
         
-        if(asp.ex != null) {
+        if (asp.ex != null) {
             asp.interrupt();
             throw new XMLStreamException(asp.ex.getMessage(), asp.ex);
         }
