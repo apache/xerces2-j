@@ -399,6 +399,10 @@ public class HTMLDocumentImpl
 
     public synchronized Element getElementById( String elementId )
     {
+        Element idElement = super.getElementById(elementId);
+        if (idElement != null) {
+            return idElement;
+        }
         return getElementById( elementId, this );
     }
 
