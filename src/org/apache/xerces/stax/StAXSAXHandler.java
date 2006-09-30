@@ -47,22 +47,16 @@ final class StAXSAXHandler extends DefaultHandler {
     
     public void characters(char[] ch, int start, int length) throws SAXException {
         try {
+            reader.setCurType(XMLStreamConstants.CHARACTERS);
+            
+            if (reader.isCoalescing) {
+                buf.append(ch, start, length);
+                return;
+            }
+            asp.setCharacters(ch, start, length);
             synchronized (asp) {
-                reader.setCurType(XMLStreamConstants.CHARACTERS);
-                
-                if (reader.isCoalescing) {
-                    buf.append(ch, start, length);
-                }
-                else {
-                    asp.setCharacters(ch, start, length);
-                    
-                    while (!asp.getRunningFlag()) {
-                        asp.notify();
-                        asp.wait();
-                    }
-                    
-                    asp.setRunningFlag(false);
-                }
+                asp.notify();
+                asp.wait();
             }
         }
         catch (Exception e) {
@@ -70,14 +64,10 @@ final class StAXSAXHandler extends DefaultHandler {
         }
     }
     
-    public void endDocument() throws SAXException{
+    public void endDocument() throws SAXException {
         try {
-            synchronized (asp) {
-                checkCoalescing();
-                
-                reader.setCurType(XMLStreamConstants.END_DOCUMENT);
-                asp.setRunningFlag(false);
-            }
+            checkCoalescing();
+            reader.setCurType(XMLStreamConstants.END_DOCUMENT);
         }
         catch (Exception e) {
             throw new SAXException(e.getMessage(), e);
@@ -86,21 +76,17 @@ final class StAXSAXHandler extends DefaultHandler {
     
     public synchronized void endElement(String uri, String localName, String qName) throws SAXException {
         try {
+            checkCoalescing();
+            reader.setCurType(XMLStreamConstants.END_ELEMENT);
+            asp.setElementName(uri, localName, (qName != null && qName.length() > 0) ? qName : localName);
+            
             synchronized (asp) {
-                checkCoalescing();
-                
-                reader.setCurType(XMLStreamConstants.END_ELEMENT);
-                asp.setElementName(uri, localName, (qName != null && qName.length() > 0) ? qName : localName);
-                
-                while (asp.getRunningFlag() == false) {
-                    asp.notify();
-                    asp.wait();
-                }
-                
-                NamespaceContextImpl nci = (NamespaceContextImpl)reader.getNamespaceContext();
-                nci.onEndElement();
-                asp.setRunningFlag(false);
+                asp.notify();
+                asp.wait();
             }
+            
+            NamespaceContextImpl nci = (NamespaceContextImpl)reader.getNamespaceContext();
+            nci.onEndElement();
         }
         catch (Exception e) {
             throw new SAXException(e.getMessage(), e);
@@ -109,18 +95,14 @@ final class StAXSAXHandler extends DefaultHandler {
     
     public synchronized void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
         try {
+            checkCoalescing();
+            
+            reader.setCurType(XMLStreamConstants.SPACE);
+            asp.setCharacters(ch, start, length);
+            
             synchronized (asp) {
-                checkCoalescing();
-                
-                reader.setCurType(XMLStreamConstants.SPACE);
-                asp.setCharacters(ch, start, length);
-                
-                while (!asp.getRunningFlag()) {
-                    asp.notify();
-                    asp.wait();
-                }                
-                
-                asp.setRunningFlag(false);
+                asp.notify();
+                asp.wait();
             }
         }
         catch (Exception e) {
@@ -130,14 +112,10 @@ final class StAXSAXHandler extends DefaultHandler {
     
     public synchronized void notationDecl(String name, String publicId, String systemId) throws SAXException {
         try {
+            reader.setCurType(XMLStreamConstants.NOTATION_DECLARATION);
             synchronized (asp) {
-                reader.setCurType(XMLStreamConstants.NOTATION_DECLARATION);
-                while (!asp.getRunningFlag()) {
-                    asp.notify();
-                    asp.wait();
-                }
-                
-                asp.setRunningFlag(false);
+                asp.notify();
+                asp.wait();
             }
         }
         catch (Exception e) {
@@ -149,14 +127,9 @@ final class StAXSAXHandler extends DefaultHandler {
         try {
             reader.setCurType(XMLStreamConstants.PROCESSING_INSTRUCTION);
             asp.setPI(data, target);
-            
             synchronized (asp) {
-                while (!asp.getRunningFlag()) {
-                    asp.notify();
-                    asp.wait();
-                }
-                
-                asp.setRunningFlag(false);
+                asp.notify();
+                asp.wait();
             }
         }
         catch (Exception e) {
@@ -167,14 +140,9 @@ final class StAXSAXHandler extends DefaultHandler {
     public synchronized void startDocument() throws SAXException {
         try {
             reader.setCurType(XMLStreamConstants.START_DOCUMENT);
-            
             synchronized (asp) {
-                while (!asp.getRunningFlag()) {
-                    asp.notify();
-                    asp.wait();
-                }
-                
-                asp.setRunningFlag(false);
+                asp.notify();
+                asp.wait();
             }
         }
         catch (Exception e) {
@@ -185,22 +153,18 @@ final class StAXSAXHandler extends DefaultHandler {
     public synchronized void startElement(String uri, String localName, 
             String qName, Attributes attributes) throws SAXException {
         try {
+            checkCoalescing();
+            
+            reader.setCurType(XMLStreamConstants.START_ELEMENT);
+            reader.initialElementAttrs(attributes);
+            
+            NamespaceContextImpl nci = (NamespaceContextImpl)reader.getNamespaceContext();
+            nci.onStartElement();
+            asp.setElementName(uri, localName, (qName != null && qName.length() > 0) ? qName : localName);
+            
             synchronized (asp) {
-                checkCoalescing();
-                
-                reader.setCurType(XMLStreamConstants.START_ELEMENT);
-                reader.initialElementAttrs(attributes);
-                
-                NamespaceContextImpl nci = (NamespaceContextImpl)reader.getNamespaceContext();
-                nci.onStartElement();
-                asp.setElementName(uri, localName, (qName != null && qName.length() > 0) ? qName : localName);
-                
-                while (!asp.getRunningFlag()) {
-                    asp.notify();
-                    asp.wait();
-                }
-                
-                asp.setRunningFlag(false);                
+                asp.notify();
+                asp.wait();
             }
         }
         catch (Exception e) {
@@ -212,14 +176,10 @@ final class StAXSAXHandler extends DefaultHandler {
     public synchronized void unparsedEntityDecl(String name, String publicId, 
             String systemId, String notationName) throws SAXException {
         try {
+            reader.setCurType(XMLStreamConstants.ENTITY_DECLARATION);
             synchronized (asp) {
-                reader.setCurType(XMLStreamConstants.ENTITY_DECLARATION);
-                while (!asp.getRunningFlag()) {
-                    asp.notify();
-                    asp.wait();
-                }
-                
-                asp.setRunningFlag(false);
+                asp.notify();
+                asp.wait();
             }
         }
         catch (Exception e) {
@@ -252,18 +212,12 @@ final class StAXSAXHandler extends DefaultHandler {
     
     public synchronized void skippedEntity(String name) throws SAXException{
         try {
+            reader.setCurType(XMLStreamConstants.ENTITY_REFERENCE);
+            asp.setEntityName(name);
+            asp.setCharacters(null, 0, 0);
             synchronized (asp) {
-                checkCoalescing();
-                
-                reader.setCurType(XMLStreamConstants.ENTITY_REFERENCE);
-                asp.setEntityName(name);
-                asp.setCharacters(null, 0, 0);
-                while (!asp.getRunningFlag()) {
-                    asp.notify();
-                    asp.wait();
-                }
-                
-                asp.setRunningFlag(false);
+                asp.notify();
+                asp.wait();
             }
         }
         catch (Exception e) {
@@ -276,13 +230,10 @@ final class StAXSAXHandler extends DefaultHandler {
             char[] chs = buf.toString().toCharArray();
             asp.setCharacters(chs, 0, chs.length);
             buf.setLength(0);
-            
-            while (!asp.getRunningFlag()) {
+            synchronized (asp) {
                 asp.notify();
                 asp.wait();
             }
-            
-            asp.setRunningFlag(false);
         }
     }
 }

@@ -32,10 +32,6 @@ final class AsyncSAXParser extends Thread {
     XMLReader xr;
     private InputSource is;
     
-    // The flag which represents the status of AsyncSAXParser. If true,
-    // the SAXParser is executing parsing work
-    private boolean runningFlag;   
-    
     // The buffer which records the Characters and Space
     private char[] charactersBuf;
     
@@ -50,8 +46,7 @@ final class AsyncSAXParser extends Thread {
     
     public AsyncSAXParser(XMLReader xr, InputSource is) {
         this.xr = xr;
-        this.is = is;
-        this.runningFlag = false;     
+        this.is = is;  
     }
     
     /**
@@ -68,25 +63,6 @@ final class AsyncSAXParser extends Thread {
             ex = e;
 //          throw new RuntimeException(e.getMessage(), e);
         }
-    }  
-    
-    /**
-     * Set the status of SAXParser
-     * 
-     * @param flag
-     */
-    public synchronized void setRunningFlag(boolean flag) {
-        runningFlag = flag;
-        
-    }
-    
-    /**
-     * Get the status of SAXParser
-     * 
-     * @return
-     */
-    public synchronized boolean getRunningFlag(){
-        return runningFlag;
     }
     
     /**

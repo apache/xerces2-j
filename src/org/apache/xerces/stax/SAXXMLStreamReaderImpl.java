@@ -89,7 +89,7 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
      * @param xif
      */
     public SAXXMLStreamReaderImpl(XMLReader xr, InputSource is, XMLInputFactory xif)
-    throws XMLStreamException {
+        throws XMLStreamException {
         
         this.xif = xif;
         this.curAttrs = new ArrayList();
@@ -112,14 +112,16 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
             
             dc = new NamespaceContextImpl();
             
-            asp.start();
             synchronized (asp) {
-                while (asp.getRunningFlag() == true)
-                    asp.wait();
+                asp.start();
+                asp.wait();
+                if (asp.ex != null) {
+                    throw new XMLStreamException(asp.ex.getMessage(), asp.ex);
+                }
             }
         }
-        catch(Exception e) {
-            throw new XMLStreamException("Error occurs during the SAX parsing process", e);  
+        catch (InterruptedException e) {
+            throw new XMLStreamException("Error occured during the SAX parsing process", e);  
         }
     }
     
@@ -150,10 +152,7 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
      * @throws XMLStreamException if there is a fatal error detecting the next state
      */
     public boolean hasNext() throws XMLStreamException {
-        
-        if (curType == XMLStreamConstants.END_DOCUMENT)
-            return false;
-        return true;
+        return (curType != XMLStreamConstants.END_DOCUMENT);
     }
     
     /**
@@ -175,25 +174,19 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
             throw new XMLStreamException(asp.ex.getMessage(), asp.ex);
         }
         
-        synchronized(asp) {
-            asp.setRunningFlag(true);
+        synchronized (asp) {
             asp.notify();
             
             try {
-                while (asp.getRunningFlag() == true) {
-                    if(asp.ex != null) {
-                        asp.interrupt();
-                        throw new XMLStreamException(asp.ex.getMessage(), asp.ex);
-                    }
-                    asp.wait();
+                asp.wait();
+                if (asp.ex != null) {
+                    throw new XMLStreamException(asp.ex.getMessage(), asp.ex);
                 }
-                
                 return curType;
             } 
-            catch (Exception e) {
-                asp.interrupt();
+            catch (InterruptedException e) {
                 throw new XMLStreamException(
-                        "Error occurs when processing SAXSource", e);
+                        "Error occured when processing SAXSource", e);
             }
         }
     }
