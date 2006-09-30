@@ -920,9 +920,8 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
     public QName getName() {
         if (curType == XMLStreamConstants.START_ELEMENT || curType == XMLStreamConstants.END_ELEMENT) {
             String prefix = getPrefix();
-            
             QName qname;
-            if(prefix == null) {
+            if (prefix == null) {
                 qname = new QName(getNamespaceURI(), getLocalName());
             }
             else {
@@ -930,8 +929,7 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
             }
             return qname;
         }
-        throw new IllegalStateException(
-        "The current event is not START_ELEMENT or END_ELEMENT.");
+        throw new IllegalStateException("The current event is not START_ELEMENT or END_ELEMENT.");
     }
     
     /**
@@ -945,17 +943,22 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
      * END_ELEMENT or ENTITY_REFERENCE
      */
     public String getLocalName() {
-        if(curType == XMLStreamConstants.START_ELEMENT || curType == XMLStreamConstants.END_ELEMENT
-                || curType == XMLStreamConstants.ENTITY_REFERENCE) { 
-            String local = asp.getElementName();
+        if (curType == XMLStreamConstants.START_ELEMENT || curType == XMLStreamConstants.END_ELEMENT) { 
+            String local = asp.getLocalName();
+            if (local != null && local.length() > 0) {
+                return local;
+            }
+            local = asp.getQName();
             int indexPre = local.indexOf(":");
             if (indexPre != -1){
                 local = local.substring(indexPre + 1);		
             }
             return local;
         }
-        else
-            throw new IllegalStateException("Current event is not START_ELEMENT, END_ELEMENT or ENTITY_REFERENCE");
+        else if (curType == XMLStreamConstants.ENTITY_REFERENCE) {
+            return asp.getLocalName();
+        }
+        throw new IllegalStateException("Current event is not START_ELEMENT, END_ELEMENT or ENTITY_REFERENCE");
     }
     
     /**
@@ -963,10 +966,8 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
      * returns false otherwise
      */
     public boolean hasName() {
-        if(curType == XMLStreamConstants.START_ELEMENT || curType == XMLStreamConstants.END_ELEMENT)
-            return true;
-        else 
-            return false;
+        return (curType == XMLStreamConstants.START_ELEMENT || 
+                curType == XMLStreamConstants.END_ELEMENT);
     }
     
     /**
@@ -980,19 +981,18 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
      *    or ATTRIBUTE
      */
     public String getNamespaceURI() {
-        if(curType == XMLStreamConstants.START_ELEMENT || curType == XMLStreamConstants.END_ELEMENT || curType == XMLStreamConstants.ATTRIBUTE) { 
-            String uri = asp.getUri();
-            if(uri == null || "".equals(uri)) {
+        if (curType == XMLStreamConstants.START_ELEMENT || curType == XMLStreamConstants.END_ELEMENT || curType == XMLStreamConstants.ATTRIBUTE) { 
+            String uri = asp.getNamespaceURI();
+            if (uri == null || "".equals(uri)) {
                 String prefix = getPrefix();
-                if(prefix == null) 
+                if (prefix == null) {
                     prefix = "";
+                }
                 uri = dc.getNamespaceURI(prefix);
             }
-            
             return uri;
         }
-        else
-            throw new IllegalStateException("Current event is not START_ELEMENT, END_ELEMENT");
+        throw new IllegalStateException("Current event is not START_ELEMENT, END_ELEMENT");
     }
     
     /**
@@ -1002,17 +1002,12 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
      * @throws IllegalStateException if this is not a START_ELEMENT or END_ELEMENT
      */
     public String getPrefix() {
-        if(curType == XMLStreamConstants.START_ELEMENT || curType == XMLStreamConstants.END_ELEMENT) { 
-            String pre = null;
-            String name = asp.getElementName();
+        if (curType == XMLStreamConstants.START_ELEMENT || curType == XMLStreamConstants.END_ELEMENT) { 
+            String name = asp.getQName();
             int indexPre = name.indexOf(":");
-            if(indexPre != -1){
-                pre = name.substring(0, indexPre);		
-            }
-            return pre;
+            return (indexPre != -1 ? name.substring(0, indexPre) : null);
         }
-        else
-            throw new IllegalStateException("Current event is not START_ELEMENT, END_ELEMENT");
+        throw new IllegalStateException("Current event is not START_ELEMENT, END_ELEMENT");
     }
     
     /**

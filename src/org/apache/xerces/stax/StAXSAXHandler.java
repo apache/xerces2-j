@@ -31,9 +31,9 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 final class StAXSAXHandler extends DefaultHandler {
     
-    private AsyncSAXParser asp;
-    private SAXXMLStreamReaderImpl reader;
-    private SAXLocation loc;
+    private final AsyncSAXParser asp;
+    private final SAXXMLStreamReaderImpl reader;
+    private final SAXLocation loc;
     private StringBuffer buf;
     
     public StAXSAXHandler(AsyncSAXParser asp, SAXXMLStreamReaderImpl reader, SAXLocation loc) {
@@ -90,13 +90,7 @@ final class StAXSAXHandler extends DefaultHandler {
                 checkCoalescing();
                 
                 reader.setCurType(XMLStreamConstants.END_ELEMENT);
-                if (qName != null && !"".equals(qName)) {
-                    asp.setElementName(qName);
-                }
-                else {
-                    asp.setElementName(localName);
-                }
-                asp.setUri(uri);
+                asp.setElementName(uri, localName, (qName != null && qName.length() > 0) ? qName : localName);
                 
                 while (asp.getRunningFlag() == false) {
                     asp.notify();
@@ -199,13 +193,7 @@ final class StAXSAXHandler extends DefaultHandler {
                 
                 NamespaceContextImpl nci = (NamespaceContextImpl)reader.getNamespaceContext();
                 nci.onStartElement();
-                if (qName != null && !"".equals(qName)) {
-                    asp.setElementName(qName);
-                }
-                else {
-                    asp.setElementName(localName);
-                }
-                asp.setUri(uri);
+                asp.setElementName(uri, localName, (qName != null && qName.length() > 0) ? qName : localName);
                 
                 while (!asp.getRunningFlag()) {
                     asp.notify();
@@ -268,7 +256,7 @@ final class StAXSAXHandler extends DefaultHandler {
                 checkCoalescing();
                 
                 reader.setCurType(XMLStreamConstants.ENTITY_REFERENCE);
-                asp.setElementName(name);
+                asp.setEntityName(name);
                 asp.setCharacters(null, 0, 0);
                 while (!asp.getRunningFlag()) {
                     asp.notify();

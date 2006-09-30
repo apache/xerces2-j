@@ -17,6 +17,7 @@
 
 package org.apache.xerces.stax;
 
+import org.apache.xerces.xni.QName;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
@@ -43,15 +44,13 @@ final class AsyncSAXParser extends Thread {
     private Attributes attrs;
     
     // The current element name
-    private String eleName;
-    private String uri;
+    private final QName elementName = new QName();
     
     Exception ex = null;
     
     public AsyncSAXParser(XMLReader xr, InputSource is) {
         this.xr = xr;
         this.is = is;
-        
         this.runningFlag = false;     
     }
     
@@ -135,21 +134,39 @@ final class AsyncSAXParser extends Thread {
     }
     
     /**
-     * Set the element name for startElement and endElement event
-     * 
-     * @param attrs
+     * Sets the element name for the current startElement/endElement event
      */
-    public void setElementName(String eleName) {
-        this.eleName = eleName;
+    public void setElementName(String uri, String localName, String qName) {
+        elementName.setValues(null, localName, qName, uri);
     }
     
     /**
-     * Get the element name for startElement and endElement event
-     * 
-     * @return
+     * Gets the QName for the current element.
      */
-    public String getElementName() {
-        return eleName;
+    public String getQName() {
+        return elementName.rawname;
+    }
+    
+    /**
+     * Gets the local name for the current element or
+     * the entity name if the current event is an entity reference.
+     */
+    public String getLocalName() {
+        return elementName.localpart;
+    }
+    
+    /**
+     * Gets the namespace for the current element.
+     */
+    public String getNamespaceURI() {
+        return elementName.uri;
+    }
+    
+    /**
+     * Sets the name of the current entity reference.
+     */
+    public void setEntityName(String name) {
+        elementName.localpart = name;
     }
     
     // Record the data and target of ProcessingInstruction
@@ -169,11 +186,4 @@ final class AsyncSAXParser extends Thread {
         return piTarget;
     }
     
-    public String getUri() {
-        return uri;
-    }
-    
-    public void setUri(String uri) {
-        this.uri = uri;
-    }
 }
