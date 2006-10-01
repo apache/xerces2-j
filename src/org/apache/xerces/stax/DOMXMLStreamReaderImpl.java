@@ -455,8 +455,8 @@ public class DOMXMLStreamReaderImpl implements XMLStreamReader {
         if (!prefix.equals(""))
             namespaceDef += ":"+ prefix;
         
-        while(workNode != domNode) {
-            if(workType == XMLStreamConstants.START_ELEMENT || workType == XMLStreamConstants.START_ELEMENT){
+        while (workNode != domNode) {
+            if (workType == XMLStreamConstants.START_ELEMENT || workType == XMLStreamConstants.START_ELEMENT){
                 NamedNodeMap nodes = workNode.getAttributes();
                 Attr attr = (Attr)nodes.getNamedItem(namespaceDef);
                 if(attr != null){
@@ -474,7 +474,7 @@ public class DOMXMLStreamReaderImpl implements XMLStreamReader {
      * @return true if the cursor points to a start tag, false otherwise
      */
     public boolean isStartElement() {
-        return curType == XMLStreamConstants.START_ELEMENT;
+        return curType == START_ELEMENT;
     }
     
     /**
@@ -482,15 +482,15 @@ public class DOMXMLStreamReaderImpl implements XMLStreamReader {
      * @return true if the cursor points to an end tag, false otherwise
      */
     public boolean isEndElement() {
-        return curType == XMLStreamConstants.END_ELEMENT;
+        return curType == END_ELEMENT;
     }
     
     /**
      * Returns true if the cursor points to a character data event
      * @return true if the cursor points to character data, false otherwise
      */
-    public boolean isCharacters() {
-        return curType == XMLStreamConstants.CHARACTERS;
+    public final boolean isCharacters() {
+        return curType == CHARACTERS || curType == CDATA || curType == SPACE;
     }
     
     /**
@@ -912,16 +912,15 @@ public class DOMXMLStreamReaderImpl implements XMLStreamReader {
      * @throws java.lang.IllegalStateException if this state is not
      * a valid text state.
      */
-    public String getText(){
-        // XMLStreamConstants.SPACE and XMLStreamConstants.CDATA¡¡are 
-        // reported as XMLStreamConstants.CHARACTERS
-        if (curType == XMLStreamConstants.CHARACTERS) {
+    public String getText() {
+        if (curType == XMLStreamConstants.CHARACTERS ||
+            curType == XMLStreamConstants.CDATA) {
             String text = "";
             Node cur = curNode;
             int count = contiNum;
             if (this.isCoalescing) {
                 text = getText(cur);
-                while(count >0){
+                while (count > 0) {
                     cur = cur.getPreviousSibling();
                     text = getText(cur)+ text;
                     count--;
@@ -1043,6 +1042,9 @@ public class DOMXMLStreamReaderImpl implements XMLStreamReader {
      * a valid text state.
      */
     public int getTextStart() {
+        if (!hasText()) {
+            throw new IllegalStateException("The current event is not a valid text state.");
+        }
         return 0;
     }
     
@@ -1071,11 +1073,7 @@ public class DOMXMLStreamReaderImpl implements XMLStreamReader {
      * CHARACTERS,DTD ,ENTITY_REFERENCE, COMMENT, SPACE
      */
     public boolean hasText() {
-        if(curType == XMLStreamConstants.CHARACTERS || curType == XMLStreamConstants.ENTITY_REFERENCE ||
-                curType == XMLStreamConstants.COMMENT || curType == XMLStreamConstants.SPACE || curType == XMLStreamConstants.DTD)
-            return true;
-        else
-            return false;
+        return isCharacters() || curType == DTD || curType == COMMENT || curType == ENTITY_REFERENCE;
     }
     
     /**
@@ -1139,10 +1137,7 @@ public class DOMXMLStreamReaderImpl implements XMLStreamReader {
      * returns false otherwise
      */
     public boolean hasName() {
-        if (curType == XMLStreamConstants.START_ELEMENT || curType == XMLStreamConstants.END_ELEMENT)
-            return true;
-        else 
-            return false;
+        return (curType == START_ELEMENT || curType == END_ELEMENT);
     }
     
     /**
@@ -1275,7 +1270,7 @@ public class DOMXMLStreamReaderImpl implements XMLStreamReader {
             case Node.DOCUMENT_NODE:
                 return XMLStreamConstants.START_DOCUMENT;
             case Node.CDATA_SECTION_NODE:
-                return XMLStreamConstants.CHARACTERS;
+                return XMLStreamConstants.CDATA;
             case Node.TEXT_NODE:
                 // Include XMLStreamConstants.space
                 return XMLStreamConstants.CHARACTERS;
