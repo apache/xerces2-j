@@ -48,6 +48,8 @@ public class XMLInputFactoryImpl extends XMLInputFactory {
     
     ConfigurationContext config = new ConfigurationContext();
     
+    DefaultEventAllocator fAllocator = new DefaultEventAllocator();
+    
     public XMLInputFactoryImpl() {}
     
     public XMLStreamReader createXMLStreamReader(Reader reader)
@@ -100,39 +102,41 @@ public class XMLInputFactoryImpl extends XMLInputFactory {
     }
     
     public XMLEventReader createXMLEventReader(Reader reader)
-    throws XMLStreamException {
-        return null;
+            throws XMLStreamException {
+        return new XMLEventReaderImpl(createEventAllocator(), createXMLStreamReader(reader));
     }
     
     public XMLEventReader createXMLEventReader(String systemId, Reader reader)
-    throws XMLStreamException {
-        return null;
+            throws XMLStreamException {
+        return new XMLEventReaderImpl(createEventAllocator(), createXMLStreamReader(systemId, reader));
     }
     
     public XMLEventReader createXMLEventReader(XMLStreamReader reader)
-    throws XMLStreamException {
-        return null;
+            throws XMLStreamException {
+        return new XMLEventReaderImpl(createEventAllocator(), reader);
     }
     
     public XMLEventReader createXMLEventReader(Source source)
-    throws XMLStreamException {
-        return null;
+            throws XMLStreamException {
+        return new XMLEventReaderImpl(createEventAllocator(), createXMLStreamReader(source));
     }
     
     public XMLEventReader createXMLEventReader(InputStream stream)
-    throws XMLStreamException {
-        return null;
+            throws XMLStreamException {
+        return new XMLEventReaderImpl(createEventAllocator(), createXMLStreamReader(stream));
     }
     
     public XMLEventReader createXMLEventReader(InputStream stream,
             String encoding) throws XMLStreamException {
-        return null;
+        return new XMLEventReaderImpl(createEventAllocator(), createXMLStreamReader(stream, encoding));
     }
     
     public XMLEventReader createXMLEventReader(String systemId,
             InputStream stream) throws XMLStreamException {
-        return null;
+        return new XMLEventReaderImpl(createEventAllocator(), createXMLStreamReader(systemId, stream));
     }
+    
+    
     
     public XMLStreamReader createFilteredReader(XMLStreamReader reader,
             StreamFilter filter) throws XMLStreamException {
@@ -215,5 +219,13 @@ public class XMLInputFactoryImpl extends XMLInputFactory {
     
     public boolean isPropertySupported(String name) {
         return config.isPropertySupported(name);
+    }
+    
+    /**
+     * @return Either the user supplied event allocator, or a default one.
+     */
+    private XMLEventAllocator createEventAllocator() {
+        XMLEventAllocator userAlloc = config.getEventAllocator();
+        return userAlloc == null ? fAllocator.newInstance() : userAlloc.newInstance();
     }
 }
