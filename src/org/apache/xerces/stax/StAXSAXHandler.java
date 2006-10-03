@@ -22,34 +22,32 @@ import javax.xml.stream.XMLStreamConstants;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
+import org.xml.sax.ext.DefaultHandler2;
 
 /**
  * @author Hua Lei
  * 
  * @version $Id$
  */
-final class StAXSAXHandler extends DefaultHandler {
+final class StAXSAXHandler extends DefaultHandler2 {
     
     private final AsyncSAXParser asp;
     private final SAXXMLStreamReaderImpl reader;
     private final SAXLocation loc;
     private StringBuffer buf;
+    private boolean inCDATA;
     
     public StAXSAXHandler(AsyncSAXParser asp, SAXXMLStreamReaderImpl reader, SAXLocation loc) {
         this.asp = asp;
         this.reader = reader;
         this.loc = loc;
-        if (reader.isCoalescing) {
-            buf = new StringBuffer();
-        }
+        this.buf = new StringBuffer();
     }
     
     public void characters(char[] ch, int start, int length) throws SAXException {
         try {
-            reader.setCurType(XMLStreamConstants.CHARACTERS);
-            
-            if (reader.isCoalescing) {
+            reader.setCurType(!inCDATA ? XMLStreamConstants.CHARACTERS : XMLStreamConstants.CDATA);
+            if (reader.isCoalescing || inCDATA) {
                 buf.append(ch, start, length);
                 return;
             }
@@ -210,11 +208,52 @@ final class StAXSAXHandler extends DefaultHandler {
         loc.setLocator(locator);
     }
     
-    public synchronized void skippedEntity(String name) throws SAXException{
+    public synchronized void skippedEntity(String name) throws SAXException {
         try {
             reader.setCurType(XMLStreamConstants.ENTITY_REFERENCE);
             asp.setEntityName(name);
             asp.setCharacters(null, 0, 0);
+            synchronized (asp) {
+                asp.notify();
+                asp.wait();
+            }
+        }
+        catch (Exception e) {
+            throw new SAXException(e.getMessage(), e);
+        }
+    }
+    
+    public synchronized void comment(char[] ch, int start, int length) throws SAXException {
+        try {
+            checkCoalescing();
+            reader.setCurType(XMLStreamConstants.COMMENT);
+            asp.setCharacters(ch, start, length);
+            synchronized (asp) {
+                asp.notify();
+                asp.wait();
+            }
+        }
+        catch (Exception e) {
+            throw new SAXException(e.getMessage(), e);
+        }
+    }
+    
+    public synchronized void startCDATA() throws SAXException {
+        try {
+            checkCoalescing();
+            inCDATA = true;
+        }
+        catch (Exception e) {
+            throw new SAXException(e.getMessage(), e);
+        }
+    }
+    
+    public synchronized void endCDATA() throws SAXException {
+        try {
+            inCDATA = false;
+            char[] chs = buf.toString().toCharArray();
+            asp.setCharacters(chs, 0, chs.length);
+            buf.setLength(0);
             synchronized (asp) {
                 asp.notify();
                 asp.wait();

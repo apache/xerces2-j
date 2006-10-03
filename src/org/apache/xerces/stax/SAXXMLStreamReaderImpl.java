@@ -28,8 +28,10 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.apache.xerces.impl.Constants;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 /**
@@ -40,6 +42,24 @@ import org.xml.sax.XMLReader;
  * @version $Id$
  */
 public class SAXXMLStreamReaderImpl implements XMLStreamReader {
+    
+    //
+    // Constants
+    //
+    
+    // properties
+
+    /** Property id: lexical handler. */
+    private static final String LEXICAL_HANDLER = 
+        Constants.SAX_PROPERTY_PREFIX + Constants.LEXICAL_HANDLER_PROPERTY;
+
+    /** Property id: declaration handler. */
+    private static final String DECLARATION_HANDLER =
+        Constants.SAX_PROPERTY_PREFIX + Constants.DECLARATION_HANDLER_PROPERTY;
+    
+    //
+    // Data
+    //
     
     //	The XMLInputFactory instance which creates the SAXXMLStreamReader
     private XMLInputFactory xif;
@@ -110,6 +130,22 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
             xr.setEntityResolver(handler);
             xr.setErrorHandler(handler);
             
+            // Try to set a lexical handler.
+            try {
+                xr.setProperty(LEXICAL_HANDLER, handler);
+            }
+            // If the XMLReader doesn't support this property ignore the exception.
+            catch (SAXException e) {}
+            
+            // Try to set a declaration handler.
+            try {
+                xr.setProperty(DECLARATION_HANDLER, handler);
+            }
+            // If the XMLReader doesn't support this property ignore the exception.
+            catch (SAXException e) {
+                e.printStackTrace();
+            }
+            
             dc = new NamespaceContextImpl();
             
             synchronized (asp) {
@@ -136,9 +172,10 @@ public class SAXXMLStreamReaderImpl implements XMLStreamReader {
      * @return The value of the property
      * @throws IllegalArgumentException if name is null
      */
-    public Object getProperty(java.lang.String name) throws java.lang.IllegalArgumentException {
-        if (name == null)
-            throw new IllegalArgumentException("The feature name should not be null");
+    public Object getProperty(String name) throws java.lang.IllegalArgumentException {
+        if (name == null) {
+            throw new IllegalArgumentException("The feature name must not be null");
+        }
         return xif.getProperty(name);
     }
     
