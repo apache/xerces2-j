@@ -23,6 +23,7 @@ import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.XMLStringBuffer;
+import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
@@ -1264,7 +1265,12 @@ public class XMLDTDScannerImpl
                 String aName = fEntityScanner.scanName();
                 if (aName == null) {
                     reportFatalError("MSG_NAME_REQUIRED_IN_NOTATIONTYPE",
-                                     new Object[]{elName, atName}); 
+                                     new Object[]{elName, atName});
+                    c = skipInvalidEnumerationValue();
+                    if (c == '|') {
+                        continue;
+                    }
+                    break;
                 }
                 ensureEnumerationSize(fEnumerationCount + 1);
                 fEnumeration[fEnumerationCount++] = aName;
@@ -1293,6 +1299,11 @@ public class XMLDTDScannerImpl
                 if (token == null) {
                     reportFatalError("MSG_NMTOKEN_REQUIRED_IN_ENUMERATION",
                                      new Object[]{elName, atName});
+                    c = skipInvalidEnumerationValue();
+                    if (c == '|') {
+                        continue;
+                    }
+                    break;
                 }
                 ensureEnumerationSize(fEnumerationCount + 1);
                 fEnumeration[fEnumerationCount++] = token;
@@ -2100,6 +2111,17 @@ public class XMLDTDScannerImpl
 
         // set starting state
         setScannerState(SCANNER_STATE_TEXT_DECL);
+    }
+    
+    private int skipInvalidEnumerationValue() throws IOException {
+        int c;
+        do {
+            c = fEntityScanner.scanChar();
+        } 
+        while (c != '|' && c != ')');
+        ensureEnumerationSize(fEnumerationCount + 1);
+        fEnumeration[fEnumerationCount++] = XMLSymbols.EMPTY_STRING;
+        return c;
     }
 
 } // class XMLDTDScannerImpl
