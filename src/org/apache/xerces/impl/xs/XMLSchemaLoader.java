@@ -30,6 +30,7 @@ import java.util.Hashtable;
 import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.WeakHashMap;
 
 import org.apache.xerces.dom.DOMErrorImpl;
 import org.apache.xerces.dom.DOMMessageFormatter;
@@ -227,7 +228,7 @@ XSLoader, DOMConfiguration {
     private CMBuilder fCMBuilder;
     private XSDDescription fXSDDescription = new XSDDescription();
     
-    private Hashtable fJAXPCache;
+    private WeakHashMap fJAXPCache;
     private Locale fLocale = Locale.getDefault();
     
     // XSLoader attributes
@@ -315,7 +316,7 @@ XSLoader, DOMConfiguration {
         fCMBuilder = builder;
         fSchemaHandler = new XSDHandler(fGrammarBucket);
         fDeclPool = new XSDeclarationPool();
-        fJAXPCache = new Hashtable();
+        fJAXPCache = new WeakHashMap();
         
         fSettingsChanged = true;
     }
@@ -693,10 +694,10 @@ XSLoader, DOMConfiguration {
         String sid = null;
         if (componentType == null) {
             // Not an array
-            if(fJAXPSource instanceof InputStream ||
+            if (fJAXPSource instanceof InputStream ||
                     fJAXPSource instanceof InputSource) {
                 SchemaGrammar g = (SchemaGrammar)fJAXPCache.get(fJAXPSource);
-                if(g != null) {
+                if (g != null) {
                     fGrammarBucket.putGrammar(g);
                     return;
                 }
@@ -713,18 +714,19 @@ XSLoader, DOMConfiguration {
             }
             SchemaGrammar g = loadSchema(fXSDDescription, xis, locationPairs);
             // it is possible that we won't be able to resolve JAXP schema-source location
-            if (g != null){
-                if(fJAXPSource instanceof InputStream ||
+            if (g != null) {
+                if (fJAXPSource instanceof InputStream ||
                         fJAXPSource instanceof InputSource) {
                     fJAXPCache.put(fJAXPSource, g);
-                    if(fIsCheckedFully) {
+                    if (fIsCheckedFully) {
                         XSConstraints.fullSchemaChecking(fGrammarBucket, fSubGroupHandler, fCMBuilder, fErrorReporter);
                     }
                 }
                 fGrammarBucket.putGrammar(g);
             }
-            return ;
-        } else if ( (componentType != Object.class) &&
+            return;
+        } 
+        else if ( (componentType != Object.class) &&
                 (componentType != String.class) &&
                 (componentType != File.class) &&
                 (componentType != InputStream.class) &&
@@ -741,7 +743,7 @@ XSLoader, DOMConfiguration {
         // JAXP spec. allow []s of type String, File, InputStream,
         // InputSource also, apart from [] of type Object.
         Object[] objArr = (Object[]) fJAXPSource;
-        //make local vector for storing targetn namespaces of schemasources specified in object arrays.
+        // make local vector for storing target namespaces of schemasources specified in object arrays.
         ArrayList jaxpSchemaSourceNamespaces = new ArrayList();
         for (int i = 0; i < objArr.length; i++) {
             if(objArr[i] instanceof InputStream ||
@@ -766,27 +768,27 @@ XSLoader, DOMConfiguration {
             // load schema
             SchemaGrammar grammar = fSchemaHandler.parseSchema(xis,fXSDDescription, locationPairs);
             
-            if(fIsCheckedFully) {
+            if (fIsCheckedFully) {
                 XSConstraints.fullSchemaChecking(fGrammarBucket, fSubGroupHandler, fCMBuilder, fErrorReporter);
             }                                   
-            if(grammar != null){
-                targetNamespace = grammar.getTargetNamespace() ;
-                if(jaxpSchemaSourceNamespaces.contains(targetNamespace)){
+            if (grammar != null) {
+                targetNamespace = grammar.getTargetNamespace();
+                if (jaxpSchemaSourceNamespaces.contains(targetNamespace)) {
                     //when an array of objects is passed it is illegal to have two schemas that share same namespace.
                     throw new java.lang.IllegalArgumentException(
                             " When using array of Objects as the value of SCHEMA_SOURCE property , " +
                     "no two Schemas should share the same targetNamespace. " );
                 }
-                else{
+                else {
                     jaxpSchemaSourceNamespaces.add(targetNamespace) ;
                 }
-                if(objArr[i] instanceof InputStream ||
+                if (objArr[i] instanceof InputStream ||
                         objArr[i] instanceof InputSource) {
                     fJAXPCache.put(objArr[i], grammar);
                 }
                 fGrammarBucket.putGrammar(grammar);
             }
-            else{
+            else {
                 //REVISIT: What should be the acutal behavior if grammar can't be loaded as specified in schema source?
             }
         }
