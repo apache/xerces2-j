@@ -730,7 +730,10 @@ XSLoader, DOMConfiguration {
                 (componentType != String.class) &&
                 (componentType != File.class) &&
                 (componentType != InputStream.class) &&
-                (componentType != InputSource.class)
+                (componentType != InputSource.class) &&
+                !File.class.isAssignableFrom(componentType) &&
+                !InputStream.class.isAssignableFrom(componentType) &&
+                !InputSource.class.isAssignableFrom(componentType)
         ) {
             // Not an Object[], String[], File[], InputStream[], InputSource[]
             throw new XMLConfigurationException(
