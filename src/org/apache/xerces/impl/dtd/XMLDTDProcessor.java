@@ -1709,23 +1709,22 @@ public class XMLDTDProcessor
                         new Object[]{grammar.getElementDeclName(elementIndex).rawname, value},
                         XMLErrorReporter.SEVERITY_WARNING);
             }
-        } 
-        else {
-            // It's not a leaf, so we have to recurse its left and maybe right
-            // nodes. Save both values before we recurse and trash the node.
+        }
+        // It's not a leaf, so we have to recurse its left and maybe right
+        // nodes. Save both values before we recurse and trash the node.
+        else if ((contentSpec.type == XMLContentSpec.CONTENTSPECNODE_CHOICE)
+                || (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_SEQ)) {
             final int leftNode = ((int[])contentSpec.value)[0];
             final int rightNode = ((int[])contentSpec.otherValue)[0];
-            if ((contentSpec.type == XMLContentSpec.CONTENTSPECNODE_CHOICE)
-                || (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_SEQ)) {
-                //  Recurse on both children.
-                checkDeclaredElements(grammar, elementIndex, leftNode, contentSpec);
-                checkDeclaredElements(grammar, elementIndex, rightNode, contentSpec);
-            }
-            else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE
-                  || contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE
-                  || contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE) {
-                checkDeclaredElements(grammar, elementIndex, leftNode, contentSpec);
-            }
+            //  Recurse on both children.
+            checkDeclaredElements(grammar, elementIndex, leftNode, contentSpec);
+            checkDeclaredElements(grammar, elementIndex, rightNode, contentSpec);
+        }
+        else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE
+                || contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE
+                || contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE) {
+            final int leftNode = ((int[])contentSpec.value)[0];
+            checkDeclaredElements(grammar, elementIndex, leftNode, contentSpec);
         }
     }
     
