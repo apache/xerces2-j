@@ -734,7 +734,8 @@ XSLoader, DOMConfiguration {
                 (componentType != InputSource.class) &&
                 !File.class.isAssignableFrom(componentType) &&
                 !InputStream.class.isAssignableFrom(componentType) &&
-                !InputSource.class.isAssignableFrom(componentType)
+                !InputSource.class.isAssignableFrom(componentType) &&
+                !componentType.isInterface()
         ) {
             // Not an Object[], String[], File[], InputStream[], InputSource[]
             MessageFormatter mf = fErrorReporter.getMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN);
