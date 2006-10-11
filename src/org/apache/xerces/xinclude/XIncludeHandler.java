@@ -203,6 +203,10 @@ public class XIncludeHandler
     protected static final String XINCLUDE_FIXUP_LANGUAGE =
         Constants.XERCES_FEATURE_PREFIX + Constants.XINCLUDE_FIXUP_LANGUAGE_FEATURE;
     
+    /** Property identifier: JAXP schema language. */
+    protected static final String JAXP_SCHEMA_LANGUAGE =
+        Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_LANGUAGE;
+    
     /** Property identifier: symbol table. */
     protected static final String SYMBOL_TABLE = 
         Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
@@ -558,15 +562,21 @@ public class XIncludeHandler
         copyFeatures(componentManager, fSettings);
         
         // We don't want a schema validator on the new pipeline,
-        // so if it was enabled, we set the feature to false. If
-        // the validation feature was also enabled we turn on
-        // dynamic validation, so that DTD validation is performed
-        // on the included documents only if they have a DOCTYPE. 
-        // This is consistent with the behaviour on the main pipeline.
+        // so if it was enabled, we set the feature to false. 
         try {
             if (componentManager.getFeature(SCHEMA_VALIDATION)) {
                 fSettings.setFeature(SCHEMA_VALIDATION, false);
-                if (componentManager.getFeature(VALIDATION)) {
+                // If the value of the JAXP 1.2 schema language property
+                // is http://www.w3.org/2001/XMLSchema we're only validating 
+                // against XML schema so we disable validation on the new pipeline.
+                if (Constants.NS_XMLSCHEMA.equals(componentManager.getProperty(JAXP_SCHEMA_LANGUAGE))) {
+                    fSettings.setFeature(VALIDATION, false);
+                }
+                // If the validation feature was also enabled we turn on
+                // dynamic validation, so that DTD validation is performed
+                // on the included documents only if they have a DOCTYPE. 
+                // This is consistent with the behaviour on the main pipeline.
+                else if (componentManager.getFeature(VALIDATION)) {
                     fSettings.setFeature(DYNAMIC_VALIDATION, true);
                 }
             }
