@@ -45,6 +45,7 @@ import org.apache.xerces.impl.xs.traversers.XSDHandler;
 import org.apache.xerces.util.DOMEntityResolverWrapper;
 import org.apache.xerces.util.DOMErrorHandlerWrapper;
 import org.apache.xerces.util.DefaultErrorHandler;
+import org.apache.xerces.util.MessageFormatter;
 import org.apache.xerces.util.ParserConfigurationSettings;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLSymbols;
@@ -736,11 +737,11 @@ XSLoader, DOMConfiguration {
                 !InputSource.class.isAssignableFrom(componentType)
         ) {
             // Not an Object[], String[], File[], InputStream[], InputSource[]
+            MessageFormatter mf = fErrorReporter.getMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN);
             throw new XMLConfigurationException(
-                    XMLConfigurationException.NOT_SUPPORTED, "\""+JAXP_SCHEMA_SOURCE+
-                    "\" property cannot have an array of type {"+componentType.getName()+
-                    "}. Possible types of the array supported are Object, String, File, "+
-            "InputStream, InputSource.");
+                    XMLConfigurationException.NOT_SUPPORTED, 
+                    mf.formatMessage(fErrorReporter.getLocale(), "jaxp12-schema-source-type.2",
+                    new Object [] {componentType.getName()}));
         }
         
         // JAXP spec. allow []s of type String, File, InputStream,
@@ -749,7 +750,7 @@ XSLoader, DOMConfiguration {
         // make local vector for storing target namespaces of schemasources specified in object arrays.
         ArrayList jaxpSchemaSourceNamespaces = new ArrayList();
         for (int i = 0; i < objArr.length; i++) {
-            if(objArr[i] instanceof InputStream ||
+            if (objArr[i] instanceof InputStream ||
                     objArr[i] instanceof InputSource) {
                 SchemaGrammar g = (SchemaGrammar)fJAXPCache.get(objArr[i]);
                 if (g != null) {
@@ -777,10 +778,10 @@ XSLoader, DOMConfiguration {
             if (grammar != null) {
                 targetNamespace = grammar.getTargetNamespace();
                 if (jaxpSchemaSourceNamespaces.contains(targetNamespace)) {
-                    //when an array of objects is passed it is illegal to have two schemas that share same namespace.
-                    throw new java.lang.IllegalArgumentException(
-                            " When using array of Objects as the value of SCHEMA_SOURCE property , " +
-                    "no two Schemas should share the same targetNamespace. " );
+                    // when an array of objects is passed it is illegal to have two schemas that share same namespace.
+                    MessageFormatter mf = fErrorReporter.getMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN);
+                    throw new java.lang.IllegalArgumentException(mf.formatMessage(fErrorReporter.getLocale(), 
+                            "jaxp12-schema-source-ns", null));
                 }
                 else {
                     jaxpSchemaSourceNamespaces.add(targetNamespace) ;
@@ -797,9 +798,7 @@ XSLoader, DOMConfiguration {
         }
     }//processJAXPSchemaSource
     
-    private XMLInputSource xsdToXMLInputSource(
-            Object val)
-    {
+    private XMLInputSource xsdToXMLInputSource(Object val) {
         if (val instanceof String) {
             // String value is treated as a URI that is passed through the
             // EntityResolver
@@ -809,7 +808,8 @@ XSLoader, DOMConfiguration {
             XMLInputSource xis = null;
             try {
                 xis = fEntityManager.resolveEntity(fXSDDescription);
-            } catch (IOException ex) {
+            } 
+            catch (IOException ex) {
                 fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                         "schema_reference.4",
                         new Object[] { loc }, XMLErrorReporter.SEVERITY_ERROR);
@@ -820,12 +820,15 @@ XSLoader, DOMConfiguration {
                 return new XMLInputSource(null, loc, null);
             }
             return xis;
-        } else if (val instanceof InputSource) {
+        } 
+        else if (val instanceof InputSource) {
             return saxToXMLInputSource((InputSource) val);
-        } else if (val instanceof InputStream) {
+        } 
+        else if (val instanceof InputStream) {
             return new XMLInputSource(null, null, null,
                     (InputStream) val, null);
-        } else if (val instanceof File) {
+        } 
+        else if (val instanceof File) {
             File file = (File) val;
             InputStream is = null;
             try {
@@ -837,11 +840,11 @@ XSLoader, DOMConfiguration {
             }
             return new XMLInputSource(null, null, null, is, null);
         }
+        MessageFormatter mf = fErrorReporter.getMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN);
         throw new XMLConfigurationException(
-                XMLConfigurationException.NOT_SUPPORTED, "\""+JAXP_SCHEMA_SOURCE+
-                "\" property cannot have a value of type {"+val.getClass().getName()+
-                "}. Possible types of the value supported are String, File, InputStream, "+
-        "InputSource OR an array of these types.");
+                XMLConfigurationException.NOT_SUPPORTED, 
+                mf.formatMessage(fErrorReporter.getLocale(), "jaxp12-schema-source-type.1",
+                new Object [] {val != null ? val.getClass().getName() : "null"}));
     }
     
     
