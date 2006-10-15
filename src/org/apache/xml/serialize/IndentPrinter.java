@@ -121,8 +121,8 @@ public class IndentPrinter
             flushLine( false );
             _writer = _docWriter;
             return _dtdWriter.toString();
-        } else
-            return null;
+        }
+        return null;
     }
     
     

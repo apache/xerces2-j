@@ -15,11 +15,9 @@
  * limitations under the License.
  */
 
-
 // Aug 21, 2000:
 //   Fixed bug in isElement and made HTMLdtd public.
 //   Contributed by Eric SCHAEFFER" <eschaeffer@posterconseil.com>
-
 
 package org.apache.xml.serialize;
 
@@ -30,7 +28,6 @@ import java.io.InputStreamReader;
 import java.io.BufferedReader;
 import java.util.Hashtable;
 import java.util.Locale;
-
 
 /**
  * Utility class for accessing information specific to HTML documents.
@@ -322,10 +319,10 @@ public final class HTMLdtd
 
         initialize();
         value = _byName.get( name );
-        if ( value != null && value instanceof Integer )
+        if ( value != null && value instanceof Integer ) {
             return ( (Integer) value ).intValue();
-        else
-            return -1;
+        }
+        return -1;
     }
 
 
@@ -461,10 +458,10 @@ public final class HTMLdtd
         Integer flags;
 
         flags = (Integer) _elemDefs.get( name.toUpperCase(Locale.ENGLISH) );
-        if ( flags == null )
+        if ( flags == null ) {
             return false;
-        else
-            return ( ( flags.intValue() & flag ) == flag );
+        }
+        return ( ( flags.intValue() & flag ) == flag );
     }
 
 

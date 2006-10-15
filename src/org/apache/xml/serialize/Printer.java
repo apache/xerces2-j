@@ -149,12 +149,12 @@ public class Printer
     {
         // Only works if we're going out of DTD mode.
         if ( _writer == _dtdWriter ) {
-	    flushLine( false );
+            flushLine( false );
 
 			_writer = _docWriter;
             return _dtdWriter.toString();
-        } else
-            return null;
+        }
+        return null;
     }
 
 

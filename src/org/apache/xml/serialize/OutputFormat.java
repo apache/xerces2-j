@@ -171,27 +171,21 @@ public class OutputFormat
 
 
     /**
-     * Ture if the XML declaration should be ommited;
+     * True if the XML declaration should be ommited;
      */
     private boolean _omitXmlDeclaration = false;
 
 
     /**
-     * Ture if the DOCTYPE declaration should be ommited;
+     * True if the DOCTYPE declaration should be ommited;
      */
     private boolean _omitDoctype = false;
 
 
     /**
-     * Ture if comments should be ommited;
+     * True if comments should be ommited;
      */
     private boolean _omitComments = false;
-
-
-    /**
-     * Ture if the comments should be ommited;
-     */
-    private boolean _stripComments = false;
 
 
     /**
@@ -336,7 +330,7 @@ public class OutputFormat
      * Returns the version for this output method.
      * If no version was specified, will return null
      * and the default version number will be used.
-     * If the serializerr does not support that particular
+     * If the serializer does not support that particular
      * version, it should default to a supported version.
      *
      * @return The specified method version, or null
@@ -825,10 +819,10 @@ public class OutputFormat
     public char getLastPrintable()
     {
         if ( getEncoding() != null &&
-             ( getEncoding().equalsIgnoreCase( "ASCII" ) ) )
+             ( getEncoding().equalsIgnoreCase( "ASCII" ) ) ) {
             return 0xFF;
-        else
-            return 0xFFFF;
+        }
+        return 0xFFFF;
     }
 
 

@@ -626,8 +626,6 @@ public class HTMLSerializer
     protected void startDocument( String rootTagName )
         throws IOException
     {
-        StringBuffer buffer;
-
         // Not supported in HTML/XHTML, but we still have to switch
         // out of DTD mode.
         _printer.leaveDTD();
@@ -848,10 +846,8 @@ public class HTMLSerializer
     protected void characters( String text )
         throws IOException
     {
-        ElementState state;
-
         // HTML: no CDATA section
-        state = content();
+        content();
         super.characters( text );
     }
 
@@ -869,15 +865,10 @@ public class HTMLSerializer
         // XXX  Apparently Netscape doesn't like if we escape the URI
         //      using %nn, so we leave it as is, just remove any quotes.
         index = uri.indexOf( "\"" );
-        if ( index >= 0 )
+        if ( index >= 0 ) {
             return uri.substring( 0, index );
-        else
-            return uri;
+        }
+        return uri;
     }
 
-
 }
-
-
-
-

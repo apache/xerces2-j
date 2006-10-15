@@ -15,16 +15,13 @@
  * limitations under the License.
  */
 
-
 package org.apache.xml.serialize;
-
 
 import java.io.UnsupportedEncodingException;
 import java.util.Hashtable;
 import java.util.Locale;
 
 import org.apache.xerces.util.EncodingMap;
-
 
 /**
  * Provides information about encodings. Depends on the Java runtime
@@ -73,14 +70,14 @@ public class Encodings
         // need to convert it to upper case:
         encoding = encoding.toUpperCase(Locale.ENGLISH);
         String jName = EncodingMap.getIANA2JavaMapping(encoding);
-        if(jName == null) {
+        if (jName == null) {
             // see if the encoding passed in is a Java encoding name.
-            if(allowJavaNames ) {
+            if (allowJavaNames) {
                 EncodingInfo.testJavaEncodingName(encoding);
-                if((eInfo = (EncodingInfo)_encodings.get(encoding)) != null) 
+                if ((eInfo = (EncodingInfo)_encodings.get(encoding)) != null) 
                     return eInfo;
                 // is it known to be unicode-compliant?
-                int i=0;
+                int i = 0;
                 for(; i<UNICODE_ENCODINGS.length; i++) {
                     if(UNICODE_ENCODINGS[i].equalsIgnoreCase(encoding)) {
                         eInfo = new EncodingInfo(EncodingMap.getJava2IANAMapping(encoding), encoding, LAST_PRINTABLE_UNICODE);
@@ -92,9 +89,8 @@ public class Encodings
                 }
                 _encodings.put(encoding, eInfo); 
                 return eInfo;
-            } else {
-                throw new UnsupportedEncodingException(encoding);
             }
+            throw new UnsupportedEncodingException(encoding);
         }
         if ((eInfo = (EncodingInfo)_encodings.get(jName)) != null)
             return eInfo;
