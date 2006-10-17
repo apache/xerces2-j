@@ -524,9 +524,6 @@ Authors:
     <copy file="LICENSE.resolver.txt" tofile="${distsrc.dir}/LICENSE.resolver.txt"/>
     <copy file="README" tofile="${distsrc.dir}/README"/>
     <copy file="Readme.html" tofile="${distsrc.dir}/Readme.html"/>
-    <copy file="STATUS" tofile="${distsrc.dir}/STATUS"/>
-    <copy file="TODO" tofile="${distsrc.dir}/TODO"/>
-    <copy file="ISSUES" tofile="${distsrc.dir}/ISSUES"/>
     <copy file="build.xml" tofile="${distsrc.dir}/build.xml"/>
     <copy file="${basedir}/build.sh" tofile="${distsrc.dir}/build.sh" />
     <chmod file="${distsrc.dir}/build.sh" perm="ugo+rx" />
