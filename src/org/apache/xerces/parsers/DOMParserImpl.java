@@ -343,8 +343,8 @@ public class DOMParserImpl
     public void setParameter (String name, Object value) throws DOMException {
         // set features
     	
-        if(value instanceof Boolean){
-            boolean state = ((Boolean)value).booleanValue ();
+        if (value instanceof Boolean) {
+            boolean state = ((Boolean)value).booleanValue();
             try {
                 if (name.equalsIgnoreCase (Constants.DOM_COMMENTS)) {
                     fConfiguration.setFeature (INCLUDE_COMMENTS_FEATURE, state);
@@ -596,13 +596,38 @@ public class DOMParserImpl
                 fConfiguration.setProperty (DOCUMENT_CLASS_NAME, value);
             }
             else {
-                // REVISIT: check if this is a boolean parameter -- type mismatch should be thrown.
-                //parameter is not recognized
+                // Try to set the property.
+                String normalizedName = name.toLowerCase(Locale.ENGLISH);
+                try {
+                    fConfiguration.setProperty(normalizedName, value);
+                    return;
+                }
+                catch (XMLConfigurationException e) {}
+                
+                // If this is a boolean parameter a type mismatch should be thrown.
+                try {
+                    // The honour-all-schemaLocations feature is 
+                    // mixed case so requires special treatment.
+                    if (name.equalsIgnoreCase(HONOUR_ALL_SCHEMALOCATIONS)) {
+                        normalizedName = HONOUR_ALL_SCHEMALOCATIONS;
+                    }
+                    fConfiguration.getFeature(normalizedName);
+                    String msg =
+                        DOMMessageFormatter.formatMessage (
+                                DOMMessageFormatter.DOM_DOMAIN,
+                                "TYPE_MISMATCH_ERR",
+                                new Object[] { name });
+                    throw new DOMException (DOMException.TYPE_MISMATCH_ERR, msg);
+                    
+                }
+                catch (XMLConfigurationException e) {}
+                
+                // Parameter is not recognized
                 String msg =
-                DOMMessageFormatter.formatMessage (
-                DOMMessageFormatter.DOM_DOMAIN,
-                "FEATURE_NOT_FOUND",
-                new Object[] { name });
+                    DOMMessageFormatter.formatMessage (
+                            DOMMessageFormatter.DOM_DOMAIN,
+                            "FEATURE_NOT_FOUND",
+                            new Object[] { name });
                 throw new DOMException (DOMException.NOT_FOUND_ERR, msg);
             }
         }
@@ -672,7 +697,7 @@ public class DOMParserImpl
                 ? Boolean.TRUE : Boolean.FALSE;
         }
         else if (name.equalsIgnoreCase(Constants.DOM_CHECK_CHAR_NORMALIZATION ) ||
-                 name.equalsIgnoreCase(Constants.DOM_NORMALIZE_CHARACTERS)){
+                 name.equalsIgnoreCase(Constants.DOM_NORMALIZE_CHARACTERS)) {
             return Boolean.FALSE;
         }
         else if (name.equalsIgnoreCase(Constants.DOM_NAMESPACE_DECLARATIONS)
@@ -697,12 +722,12 @@ public class DOMParserImpl
                 XMLEntityResolver entityResolver =
                 (XMLEntityResolver) fConfiguration.getProperty (ENTITY_RESOLVER);
                 if (entityResolver != null
-                && entityResolver instanceof DOMEntityResolverWrapper) {
-                    return ((DOMEntityResolverWrapper) entityResolver).getEntityResolver ();
+                        && entityResolver instanceof DOMEntityResolverWrapper) {
+                    return ((DOMEntityResolverWrapper) entityResolver).getEntityResolver();
                 }
-                return null;
             }
             catch (XMLConfigurationException e) {}
+            return null;
         }
         else if (name.equalsIgnoreCase (Constants.DOM_SCHEMA_TYPE)) {
             return fConfiguration.getProperty (
@@ -711,30 +736,52 @@ public class DOMParserImpl
         else if (name.equalsIgnoreCase (Constants.DOM_SCHEMA_LOCATION)) {
             return fSchemaLocation;
         }
-        else if (name.equalsIgnoreCase (SYMBOL_TABLE)){
+        else if (name.equalsIgnoreCase (SYMBOL_TABLE)) {
             return fConfiguration.getProperty (SYMBOL_TABLE);
         }
         else if (name.equalsIgnoreCase (DOCUMENT_CLASS_NAME)) {
             return fConfiguration.getProperty (DOCUMENT_CLASS_NAME);
         }
         else {
+            // This could be a recognized feature or property.
+            String normalizedName;
+            
+            // The honour-all-schemaLocations feature is 
+            // mixed case so requires special treatment.
+            if (name.equalsIgnoreCase(HONOUR_ALL_SCHEMALOCATIONS)) {
+                normalizedName = HONOUR_ALL_SCHEMALOCATIONS;
+            }
+            else {
+                normalizedName = name.toLowerCase(Locale.ENGLISH);
+            }
+            try {
+                return fConfiguration.getFeature(normalizedName) 
+                    ? Boolean.TRUE : Boolean.FALSE;
+            }
+            catch (XMLConfigurationException e) {}
+            
+            // This isn't a feature; perhaps it's a property
+            try {
+                return fConfiguration.getProperty(normalizedName);
+            }
+            catch (XMLConfigurationException e) {}
+            
             String msg =
-            DOMMessageFormatter.formatMessage (
-            DOMMessageFormatter.DOM_DOMAIN,
-            "FEATURE_NOT_FOUND",
-            new Object[] { name });
+                DOMMessageFormatter.formatMessage (
+                        DOMMessageFormatter.DOM_DOMAIN,
+                        "FEATURE_NOT_FOUND",
+                        new Object[] { name });
             throw new DOMException (DOMException.NOT_FOUND_ERR, msg);
         }
-        return null;
     }
 
     public boolean canSetParameter (String name, Object value) {
-    	if (value == null){
-    		return true;
-    	}
-    	
-        if(value instanceof Boolean){
-            boolean state = ((Boolean)value).booleanValue ();
+        if (value == null) {
+            return true;
+        }
+        
+        if (value instanceof Boolean) {
+            boolean state = ((Boolean)value).booleanValue();
             if ( name.equalsIgnoreCase (Constants.DOM_SUPPORTED_MEDIATYPES_ONLY)
             || name.equalsIgnoreCase(Constants.DOM_NORMALIZE_CHARACTERS)
             || name.equalsIgnoreCase(Constants.DOM_CHECK_CHAR_NORMALIZATION )
@@ -765,7 +812,16 @@ public class DOMParserImpl
 
             // Recognize Xerces features.
             try {
-                fConfiguration.getFeature(name.toLowerCase(Locale.ENGLISH));
+                String normalizedName;
+                // The honour-all-schemaLocations feature is 
+                // mixed case so requires special treatment.
+                if (name.equalsIgnoreCase(HONOUR_ALL_SCHEMALOCATIONS)) {
+                    normalizedName = HONOUR_ALL_SCHEMALOCATIONS;
+                }
+                else {
+                    normalizedName = name.toLowerCase(Locale.ENGLISH);
+                }
+                fConfiguration.getFeature(normalizedName);
                 return true;
             }
             catch (XMLConfigurationException e) {
@@ -798,10 +854,18 @@ public class DOMParserImpl
                     return true;
                 return false;
             }
-            else if (name.equalsIgnoreCase (DOCUMENT_CLASS_NAME)){
+            else if (name.equalsIgnoreCase (DOCUMENT_CLASS_NAME)) {
                 return true;
             }
-            return false;
+            
+            // Recognize Xerces properties.
+            try {
+                fConfiguration.getProperty(name.toLowerCase(Locale.ENGLISH));
+                return true;
+            }
+            catch (XMLConfigurationException e) {
+                return false;
+            }
         }
     }
 
