@@ -83,39 +83,42 @@ public class DOMParserImpl
 
     /** Feature identifier: namespaces. */
     protected static final String NAMESPACES =
-    Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
+        Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
 
     /** Feature id: validation. */
     protected static final String VALIDATION_FEATURE =
-    Constants.SAX_FEATURE_PREFIX+Constants.VALIDATION_FEATURE;
+        Constants.SAX_FEATURE_PREFIX+Constants.VALIDATION_FEATURE;
 
     /** XML Schema validation */
     protected static final String XMLSCHEMA =
-    Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE;
+        Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE;
     
     /** XML Schema full checking */
     protected static final String XMLSCHEMA_FULL_CHECKING =
-    Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_FULL_CHECKING;    
+        Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_FULL_CHECKING;    
 
     /** Dynamic validation */
     protected static final String DYNAMIC_VALIDATION =
-    Constants.XERCES_FEATURE_PREFIX + Constants.DYNAMIC_VALIDATION_FEATURE;
+        Constants.XERCES_FEATURE_PREFIX + Constants.DYNAMIC_VALIDATION_FEATURE;
 
     /** Feature identifier: expose schema normalized value */
     protected static final String NORMALIZE_DATA =
-    Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_NORMALIZED_VALUE;
+        Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_NORMALIZED_VALUE;
 
     /** Feature identifier: disallow docType Decls. */
     protected static final String DISALLOW_DOCTYPE_DECL_FEATURE =
         Constants.XERCES_FEATURE_PREFIX + Constants.DISALLOW_DOCTYPE_DECL_FEATURE;
+    
+    /** Feature identifier: honour all schemaLocations */
+    protected static final String HONOUR_ALL_SCHEMALOCATIONS = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.HONOUR_ALL_SCHEMALOCATIONS_FEATURE;
 
     // internal properties
     protected static final String SYMBOL_TABLE =
-    Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
 
     protected static final String PSVI_AUGMENT =
-    Constants.XERCES_FEATURE_PREFIX +Constants.SCHEMA_AUGMENT_PSVI;
-
+        Constants.XERCES_FEATURE_PREFIX +Constants.SCHEMA_AUGMENT_PSVI;
 
     //
     // Data
@@ -439,7 +442,16 @@ public class DOMParserImpl
                     // Constants.DOM_CHARSET_OVERRIDES_XML_ENCODING feature,
                     // Constants.DOM_SPLIT_CDATA feature,
                     // or any Xerces feature
-                    fConfiguration.setFeature (name.toLowerCase(Locale.ENGLISH), state);
+                    String normalizedName;
+                    // The honour-all-schemaLocations feature is 
+                    // mixed case so requires special treatment.
+                    if (name.equalsIgnoreCase(HONOUR_ALL_SCHEMALOCATIONS)) {
+                        normalizedName = HONOUR_ALL_SCHEMALOCATIONS;
+                    }
+                    else {
+                        normalizedName = name.toLowerCase(Locale.ENGLISH);
+                    }
+                    fConfiguration.setFeature(normalizedName, state);
                 }
 
             }
