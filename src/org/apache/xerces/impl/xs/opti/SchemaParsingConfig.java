@@ -43,7 +43,6 @@ import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLPullParserConfiguration;
 import org.w3c.dom.Document;
 
-
 /**
  * @xerces.internal  
  * 
@@ -52,7 +51,7 @@ import org.w3c.dom.Document;
  * @version $Id$
  */
 public class SchemaParsingConfig extends BasicParserConfiguration 
-implements XMLPullParserConfiguration {
+    implements XMLPullParserConfiguration {
     
     //
     // Constants
@@ -91,18 +90,16 @@ implements XMLPullParserConfiguration {
     protected static final String NOTIFY_CHAR_REFS =
         Constants.XERCES_FEATURE_PREFIX + Constants.NOTIFY_CHAR_REFS_FEATURE;
     
-    
     /** Feature identifier: expose schema normalized value */
     protected static final String NORMALIZE_DATA =
         Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_NORMALIZED_VALUE;
-    
     
     /** Feature identifier: send element default value via characters() */
     protected static final String SCHEMA_ELEMENT_DEFAULT =
         Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_ELEMENT_DEFAULT;
     
     /** Feature identifier: generate synthetic annotations. */
-    protected static final String GENERATE_SYNTHETIC_ANNOTATION = 
+    protected static final String GENERATE_SYNTHETIC_ANNOTATIONS = 
         Constants.XERCES_FEATURE_PREFIX + Constants.GENERATE_SYNTHETIC_ANNOTATIONS_FEATURE;
     
     
@@ -254,7 +251,7 @@ implements XMLPullParserConfiguration {
             PARSER_SETTINGS, WARN_ON_DUPLICATE_ATTDEF,   WARN_ON_UNDECLARED_ELEMDEF,
             ALLOW_JAVA_ENCODINGS,       CONTINUE_AFTER_FATAL_ERROR,
             LOAD_EXTERNAL_DTD,          NOTIFY_BUILTIN_REFS,
-            NOTIFY_CHAR_REFS, GENERATE_SYNTHETIC_ANNOTATION
+            NOTIFY_CHAR_REFS, GENERATE_SYNTHETIC_ANNOTATIONS
         };
         addRecognizedFeatures(recognizedFeatures);
         fFeatures.put(PARSER_SETTINGS, Boolean.TRUE);
@@ -267,7 +264,7 @@ implements XMLPullParserConfiguration {
         fFeatures.put(LOAD_EXTERNAL_DTD, Boolean.TRUE);
         fFeatures.put(NOTIFY_BUILTIN_REFS, Boolean.FALSE);
         fFeatures.put(NOTIFY_CHAR_REFS, Boolean.FALSE);
-        fFeatures.put(GENERATE_SYNTHETIC_ANNOTATION, Boolean.FALSE);
+        fFeatures.put(GENERATE_SYNTHETIC_ANNOTATIONS, Boolean.FALSE);
         
         // add default recognized properties
         final String[] recognizedProperties = {
@@ -280,12 +277,12 @@ implements XMLPullParserConfiguration {
             XMLGRAMMAR_POOL,   
             DATATYPE_VALIDATOR_FACTORY,
             VALIDATION_MANAGER,
-            GENERATE_SYNTHETIC_ANNOTATION
+            GENERATE_SYNTHETIC_ANNOTATIONS
         };
         addRecognizedProperties(recognizedProperties);
         
         fGrammarPool = grammarPool;
-        if(fGrammarPool != null){
+        if (fGrammarPool != null) {
             setProperty(XMLGRAMMAR_POOL, fGrammarPool);
         }
         
@@ -531,8 +528,9 @@ implements XMLPullParserConfiguration {
     public void reset() throws XNIException {
         
         // set handlers
-        if (fSchemaDOMParser == null)
+        if (fSchemaDOMParser == null) {
             fSchemaDOMParser = new SchemaDOMParser(this);
+        }
         fDocumentHandler = fSchemaDOMParser;
         fDTDHandler = fSchemaDOMParser;
         fDTDContentModelHandler = fSchemaDOMParser;
@@ -575,7 +573,7 @@ implements XMLPullParserConfiguration {
      *                                   a critical error.
      */
     protected void checkFeature(String featureId)
-    throws XMLConfigurationException {
+        throws XMLConfigurationException {
         
         //
         // Xerces Features
@@ -659,7 +657,7 @@ implements XMLPullParserConfiguration {
      *                                   a critical error.
      */
     protected void checkProperty(String propertyId)
-    throws XMLConfigurationException {
+        throws XMLConfigurationException {
         
         //
         // Xerces Properties
