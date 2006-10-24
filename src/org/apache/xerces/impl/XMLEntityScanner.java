@@ -78,7 +78,7 @@ public class XMLEntityScanner implements XMLLocator {
      * Returns the base system identifier of the currently scanned
      * entity, or null if none is available.
      */
-    public String getBaseSystemId() {
+    public final String getBaseSystemId() {
         return (fCurrentEntity != null && fCurrentEntity.entityLocation != null) ? fCurrentEntity.entityLocation.getExpandedSystemId() : null;
     } // getBaseSystemId():String
 
@@ -100,7 +100,7 @@ public class XMLEntityScanner implements XMLLocator {
      *
      * @see org.apache.xerces.util.EncodingMap
      */
-    public void setEncoding(String encoding) throws IOException {
+    public final void setEncoding(String encoding) throws IOException {
 
         if (DEBUG_ENCODINGS) {
             System.out.println("$$$ setEncoding: "+encoding);
@@ -164,12 +164,12 @@ public class XMLEntityScanner implements XMLLocator {
      *
      * @param xmlVersion the XML version of the current entity
      */
-    public void setXMLVersion(String xmlVersion) {
+    public final void setXMLVersion(String xmlVersion) {
         fCurrentEntity.xmlVersion = xmlVersion;
     } // setXMLVersion(String)
 
     /** Returns true if the current entity being scanned is external. */
-    public boolean isExternal() {
+    public final boolean isExternal() {
         return fCurrentEntity.isExternal();
     } // isExternal():boolean
 
@@ -1330,7 +1330,7 @@ public class XMLEntityScanner implements XMLLocator {
      *
      * @see org.apache.xerces.util.XMLChar#isSpace
      */
-    public boolean skipDeclSpaces() throws IOException {
+    public final boolean skipDeclSpaces() throws IOException {
         if (DEBUG_BUFFER) {
             System.out.print("(skipDeclSpaces: ");
             XMLEntityManager.print(fCurrentEntity);
@@ -1484,7 +1484,7 @@ public class XMLEntityScanner implements XMLLocator {
      * @return A string containing the public identifier, or
      *         null if none is available.
      */
-    public String getPublicId() {
+    public final String getPublicId() {
         return (fCurrentEntity != null && fCurrentEntity.entityLocation != null) ? fCurrentEntity.entityLocation.getPublicId() : null;
     } // getPublicId():String
 
@@ -1501,7 +1501,7 @@ public class XMLEntityScanner implements XMLLocator {
      * @return A string containing the expanded system identifier, or null
      *         if none is available.
      */
-    public String getExpandedSystemId() {
+    public final String getExpandedSystemId() {
         if (fCurrentEntity != null) {
             if (fCurrentEntity.entityLocation != null &&
                     fCurrentEntity.entityLocation.getExpandedSystemId() != null ) {
@@ -1525,7 +1525,7 @@ public class XMLEntityScanner implements XMLLocator {
      * @return A string containing the literal system identifier, or null
      *         if none is available.
      */
-    public String getLiteralSystemId() {
+    public final String getLiteralSystemId() {
         if (fCurrentEntity != null) {
             if (fCurrentEntity.entityLocation != null &&
                     fCurrentEntity.entityLocation.getLiteralSystemId() != null ) {
@@ -1557,7 +1557,7 @@ public class XMLEntityScanner implements XMLLocator {
      *
      * @return The line number, or -1 if none is available.
      */
-    public int getLineNumber() {
+    public final int getLineNumber() {
         if (fCurrentEntity != null) {
             if (fCurrentEntity.isExternal()) {
                 return fCurrentEntity.lineNumber;
@@ -1590,7 +1590,7 @@ public class XMLEntityScanner implements XMLLocator {
      *
      * @return The column number, or -1 if none is available.
      */
-    public int getColumnNumber() {
+    public final int getColumnNumber() {
         if (fCurrentEntity != null) {
             if (fCurrentEntity.isExternal()) {
                 return fCurrentEntity.columnNumber;
@@ -1621,7 +1621,7 @@ public class XMLEntityScanner implements XMLLocator {
      *
      * @return The character offset, or -1 if none is available.
      */
-    public int getCharacterOffset() {
+    public final int getCharacterOffset() {
         if (fCurrentEntity != null) {
             if (fCurrentEntity.isExternal()) {
                 return fCurrentEntity.baseCharOffset + (fCurrentEntity.position - fCurrentEntity.startPosition);
@@ -1643,7 +1643,7 @@ public class XMLEntityScanner implements XMLLocator {
      * having been specified on the XMLInputSource, the parser
      * will make an initial "guess" which could be in error. 
      */
-    public String getEncoding() {
+    public final String getEncoding() {
         if (fCurrentEntity != null) {
             if (fCurrentEntity.isExternal()) {
                 return fCurrentEntity.encoding;
@@ -1666,7 +1666,7 @@ public class XMLEntityScanner implements XMLLocator {
      * final once the XML or text declaration has been read or once it has been
      * determined that there is no such declaration.
      */
-    public String getXMLVersion() {
+    public final String getXMLVersion() {
         if (fCurrentEntity != null) {
             if (fCurrentEntity.isExternal()) {
                 return fCurrentEntity.xmlVersion;
@@ -1680,12 +1680,12 @@ public class XMLEntityScanner implements XMLLocator {
     } // getXMLVersion():String
     
     // allow entity manager to tell us what the current entityis:
-    public void setCurrentEntity(XMLEntityManager.ScannedEntity ent) {
+    public final void setCurrentEntity(XMLEntityManager.ScannedEntity ent) {
         fCurrentEntity = ent;
     }
 
     // set buffer size:
-    public void setBufferSize(int size) {
+    public final void setBufferSize(int size) {
         // REVISIT: Buffer size passed to entity scanner 
         // was not being kept in synch with the actual size
         // of the buffers in each scanned entity. If any
@@ -1700,7 +1700,7 @@ public class XMLEntityScanner implements XMLLocator {
     }
 
     // reset what little state we have...
-    public void reset(SymbolTable symbolTable, XMLEntityManager entityManager,
+    public final void reset(SymbolTable symbolTable, XMLEntityManager entityManager,
                         XMLErrorReporter reporter) {
         fCurrentEntity = null;
         fSymbolTable = symbolTable;
