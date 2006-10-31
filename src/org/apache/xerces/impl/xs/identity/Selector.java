@@ -19,6 +19,7 @@ package org.apache.xerces.impl.xs.identity;
 
 import org.apache.xerces.impl.xpath.XPathException;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
@@ -137,7 +138,7 @@ public class Selector {
             StringBuffer modifiedXPath = new StringBuffer(xpath.length()+5);
             int unionIndex = -1;
             do {
-                if(!(xpath.trim().startsWith("/") ||xpath.trim().startsWith("."))) {
+                if(!(XMLChar.trim(xpath).startsWith("/") || XMLChar.trim(xpath).startsWith("."))) {
                     modifiedXPath.append("./"); 
                 }
                 unionIndex = xpath.indexOf('|');

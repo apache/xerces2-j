@@ -23,6 +23,7 @@ import org.apache.xerces.impl.xs.identity.Field;
 import org.apache.xerces.impl.xs.identity.IdentityConstraint;
 import org.apache.xerces.impl.xs.identity.Selector;
 import org.apache.xerces.util.DOMUtil;
+import org.apache.xerces.util.XMLChar;
 import org.w3c.dom.Element;
 
 /**
@@ -107,7 +108,7 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
             reportSchemaError("s4s-att-must-appear", new Object [] {SchemaSymbols.ELT_SELECTOR, SchemaSymbols.ATT_XPATH}, sElem);
             return;
         }
-        sText = sText.trim();
+        sText = XMLChar.trim(sText);
         
         Selector.XPath sXpath = null;
         try {

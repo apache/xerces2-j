@@ -34,6 +34,7 @@ import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.QName;
 import org.w3c.dom.Element;
 import org.w3c.dom.Attr;
@@ -103,7 +104,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         } else {
             particle = new XSParticleDecl();
         }
-        if(fDeferTraversingLocalElements) {
+        if (fDeferTraversingLocalElements) {
             // The only thing we care about now is whether this element has
             // minOccurs=0. This affects (if the element appears in a complex
             // type) whether a type has emptiable content.
@@ -112,7 +113,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
             if (attr != null) {
                 String min = attr.getValue();
                 try {
-                    int m = Integer.parseInt(min.trim());
+                    int m = Integer.parseInt(XMLChar.trim(min));
                     if (m >= 0)
                         particle.fMinOccurs = m;
                 }

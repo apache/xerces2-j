@@ -1018,6 +1018,38 @@ public class XMLChar {
         }
         return false;
     } // isValidIANAEncoding(String):boolean
-
+    
+    // other methods
+    
+    /**
+     * Trims space characters as defined by production [3] in 
+     * the XML 1.0 specification from both ends of the given string.
+     * 
+     * @param value the string to be trimmed
+     * @return the given string with the space characters trimmed
+     * from both ends
+     */
+    public static String trim(String value) {
+        int start;
+        int end;
+        final int lengthMinusOne = value.length() - 1;
+        for (start = 0; start <= lengthMinusOne; ++start) {
+            if (!isSpace(value.charAt(start))) {
+                break;
+            }
+        }
+        for (end = lengthMinusOne; end >= start; --end) {
+            if (!isSpace(value.charAt(end))) {
+                break;
+            }
+        }
+        if (start == 0 && end == lengthMinusOne) {
+            return value;
+        }
+        if (start > lengthMinusOne) {
+            return "";
+        }
+        return value.substring(start, end + 1);
+    } // trim(String):String
 
 } // class XMLChar

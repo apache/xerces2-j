@@ -2659,7 +2659,7 @@ public class XMLSchemaValidator
         // 3.2 If {nillable} is true and there is such an attribute information item and its actual value is true , then all of the following must be true:
         // 3.2.2 There must be no fixed {value constraint}.
         else {
-            String value = xsiNil.trim();
+            String value = XMLChar.trim(xsiNil);
             if (value.equals(SchemaSymbols.ATTVAL_TRUE)
                 || value.equals(SchemaSymbols.ATTVAL_TRUE_1)) {
                 if (fCurrentElemDecl != null

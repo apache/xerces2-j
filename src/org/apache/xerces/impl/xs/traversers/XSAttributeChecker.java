@@ -34,6 +34,7 @@ import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.impl.xs.util.XIntPool;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xs.XSConstants;
@@ -1188,14 +1189,8 @@ public class XSAttributeChecker {
         // strings. We only need to remove the whitespace from both ends.
         // In some special cases (list types), StringTokenizer can correctly
         // process the un-normalized whitespace.        
-        /**
-         * REVISIT: Trim removes all leading and trailing characters less
-         * than or equal to U+0020. This is okay for XML 1.0 since all
-         * of the valid characters in that range are white space but
-         * in XML 1.1 control chars are allowed. We shouldn't be trimming
-         * those. -- mrglavas
-         */
-        String value = ivalue.trim();
+
+        String value = XMLChar.trim(ivalue);
         Object retValue = null;
         Vector memberType;
         int choice;

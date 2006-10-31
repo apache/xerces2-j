@@ -1989,7 +1989,7 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 				return content.toString();
 			}
 			else if (norm_type == NORMALIZE_TRIM) {
-				return content.toString().trim();
+				return XMLChar.trim(content.toString());
 			}
 		}
 		
