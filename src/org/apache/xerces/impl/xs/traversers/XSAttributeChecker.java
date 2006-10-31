@@ -1238,8 +1238,7 @@ public class XSAttributeChecker {
                          XSConstants.DERIVATION_UNION;
             }
             else {
-                // use the default \t\r\n\f delimiters
-                StringTokenizer t = new StringTokenizer(value);
+                StringTokenizer t = new StringTokenizer(value, " \n\t\r");
                 while (t.hasMoreTokens()) {
                     String token = t.nextToken ();
 
@@ -1287,8 +1286,7 @@ public class XSAttributeChecker {
                          XSConstants.DERIVATION_UNION;
             }
             else {
-                // use the default \t\r\n\f delimiters
-                StringTokenizer t = new StringTokenizer(value);
+                StringTokenizer t = new StringTokenizer(value, " \n\t\r");
                 while (t.hasMoreTokens()) {
                     String token = t.nextToken ();
 
@@ -1320,8 +1318,7 @@ public class XSAttributeChecker {
                          XSConstants.DERIVATION_UNION;
             }
             else {
-                // use the default \t\r\n\f delimiters
-                StringTokenizer t = new StringTokenizer(value);
+                StringTokenizer t = new StringTokenizer(value, " \n\t\r");
                 while (t.hasMoreTokens()) {
                     String token = t.nextToken ();
 
@@ -1356,8 +1353,7 @@ public class XSAttributeChecker {
                          XSConstants.DERIVATION_UNION;
             }
             else {
-                // use the default \t\r\n\f delimiters
-                StringTokenizer t = new StringTokenizer(value);
+                StringTokenizer t = new StringTokenizer(value, " \n\t\r");
                 while (t.hasMoreTokens()) {
                     String token = t.nextToken ();
 
@@ -1414,8 +1410,7 @@ public class XSAttributeChecker {
             // memberTypes = List of QName
             memberType = new Vector();
             try {
-                // use the default \t\r\n\f delimiters
-                StringTokenizer t = new StringTokenizer(value);
+                StringTokenizer t = new StringTokenizer(value, " \n\t\r");
                 while (t.hasMoreTokens()) {
                     String token = t.nextToken ();
                     QName qname = (QName)fExtraDVs[DT_QNAME].validate(token, schemaDoc.fValidationContext, null);
@@ -1459,8 +1454,7 @@ public class XSAttributeChecker {
                 fNamespaceList.removeAllElements();
 
                 // tokenize
-                // use the default \t\r\n\f delimiters
-                StringTokenizer tokens = new StringTokenizer(value);
+                StringTokenizer tokens = new StringTokenizer(value, " \n\t\r");
                 String token;
                 String tempNamespace;
                 try {
