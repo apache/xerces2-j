@@ -161,7 +161,10 @@ public class XPath {
                     token == XPath.Tokens.EXPRTOKEN_NAMETEST_ANY ||
                     token == XPath.Tokens.EXPRTOKEN_NAMETEST_NAMESPACE ||
                     token == XPath.Tokens.EXPRTOKEN_OPERATOR_DOUBLE_SLASH ||
-                    token == XPath.Tokens.EXPRTOKEN_OPERATOR_UNION
+                    token == XPath.Tokens.EXPRTOKEN_OPERATOR_UNION ||
+                    token == XPath.Tokens.EXPRTOKEN_AXISNAME_CHILD ||
+                    token == XPath.Tokens.EXPRTOKEN_AXISNAME_ATTRIBUTE ||
+                    token == XPath.Tokens.EXPRTOKEN_DOUBLE_COLON
                     //
                     ) {
                     super.addToken(tokens, token);
@@ -190,7 +193,7 @@ public class XPath {
         // 'abc' '/' '/' 'def' 'ghi'
         boolean expectingStep = true;
 
-        while(xtokens.hasMore()) {
+        while (xtokens.hasMore()) {
             final int token = xtokens.nextToken();
 
             switch (token) {
@@ -200,7 +203,6 @@ public class XPath {
                     expectingStep=true;
                     break;
                 }
-
                 case XPath.Tokens.EXPRTOKEN_ATSIGN: {
                     check(expectingStep);
                     Step step = new Step(
@@ -208,6 +210,19 @@ public class XPath {
                             parseNodeTest(xtokens.nextToken(),xtokens,context));
                     stepsVector.addElement(step);
                     expectingStep=false;
+                    break;
+                }
+                case XPath.Tokens.EXPRTOKEN_AXISNAME_ATTRIBUTE: {
+                    check(expectingStep);
+                    // If we got here we're expecting attribute::
+                    if (xtokens.nextToken() != XPath.Tokens.EXPRTOKEN_DOUBLE_COLON) {
+                        throw new XPathException("c-general-xpath");
+                    }
+                    Step step = new Step(
+                            new Axis(Axis.ATTRIBUTE),
+                            parseNodeTest(xtokens.nextToken(),xtokens,context));
+                    stepsVector.addElement(step);
+                    expectingStep = false;
                     break;
                 }
                 case XPath.Tokens.EXPRTOKEN_NAMETEST_ANY:
@@ -221,7 +236,19 @@ public class XPath {
                     expectingStep=false;
                     break;
                 }
-
+                case XPath.Tokens.EXPRTOKEN_AXISNAME_CHILD: {
+                    check(expectingStep);
+                    // If we got here we're expecting child::
+                    if (xtokens.nextToken() != XPath.Tokens.EXPRTOKEN_DOUBLE_COLON) {
+                        throw new XPathException("c-general-xpath");
+                    }
+                    Step step = new Step(
+                            new Axis(Axis.CHILD),
+                            parseNodeTest(xtokens.nextToken(),xtokens,context));
+                    stepsVector.addElement(step);
+                    expectingStep = false;
+                    break;
+                }
                 case XPath.Tokens.EXPRTOKEN_PERIOD: {
                     check(expectingStep);
                     expectingStep=false;
@@ -253,11 +280,16 @@ public class XPath {
                     }
                     break;
                 }
-
                 case XPath.Tokens.EXPRTOKEN_OPERATOR_DOUBLE_SLASH:{
-                    // this cannot appear in arbitrary position.
+                    // this cannot appear in an arbitrary position.
                     // it is only allowed right after '.' when
                     // '.' is the first token of a location path.
+                    throw new XPathException("c-general-xpath");
+                }
+                case XPath.Tokens.EXPRTOKEN_DOUBLE_COLON: {
+                    // :: cannot appear in an arbitrary position.
+                    // We only expect this token if the xpath
+                    // contains child:: or attribute::
                     throw new XPathException("c-general-xpath");
                 }
                 case XPath.Tokens.EXPRTOKEN_OPERATOR_SLASH: {
@@ -318,8 +350,7 @@ public class XPath {
             return new NodeTest(new QName(prefix, localpart, rawname, uri));
         
         default:
-            // assertion error
-            throw new InternalError();
+            throw new XPathException("c-general-xpath");
         }
     }
     
