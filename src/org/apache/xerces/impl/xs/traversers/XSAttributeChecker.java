@@ -504,7 +504,7 @@ public class XSAttributeChecker {
         attrList = Container.getContainer(10);
         // abstract = boolean : false
         attrList.put(SchemaSymbols.ATT_ABSTRACT, allAttrs[ATT_ABSTRACT_D]);
-        // block = (#all | List of (substitution | extension | restriction | list | union))
+        // block = (#all | List of (extension | restriction | substitution))
         attrList.put(SchemaSymbols.ATT_BLOCK, allAttrs[ATT_BLOCK_N]);
         // default = string
         attrList.put(SchemaSymbols.ATT_DEFAULT, allAttrs[ATT_DEFAULT_N]);
@@ -526,7 +526,7 @@ public class XSAttributeChecker {
 
         // for element "element" - local name
         attrList = Container.getContainer(10);
-        // block = (#all | List of (substitution | extension | restriction | list | union))
+        // block = (#all | List of (extension | restriction | substitution))
         attrList.put(SchemaSymbols.ATT_BLOCK, allAttrs[ATT_BLOCK_N]);
         // default = string
         attrList.put(SchemaSymbols.ATT_DEFAULT, allAttrs[ATT_DEFAULT_N]);
@@ -810,7 +810,7 @@ public class XSAttributeChecker {
         attrList = Container.getContainer(8);
         // attributeFormDefault = (qualified | unqualified) : unqualified
         attrList.put(SchemaSymbols.ATT_ATTRIBUTEFORMDEFAULT, allAttrs[ATT_ATTRIBUTE_FD_D]);
-        // blockDefault = (#all | List of (substitution | extension | restriction | list | union))  : ''
+        // blockDefault = (#all | List of (extension | restriction | substitution))  : ''
         attrList.put(SchemaSymbols.ATT_BLOCKDEFAULT, allAttrs[ATT_BLOCK_D_D]);
         // elementFormDefault = (qualified | unqualified) : unqualified
         attrList.put(SchemaSymbols.ATT_ELEMENTFORMDEFAULT, allAttrs[ATT_ELEMENT_FD_D]);
@@ -1230,7 +1230,7 @@ public class XSAttributeChecker {
                 throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{value, "positiveInteger"});
             break;
         case DT_BLOCK:
-            // block = (#all | List of (substitution | extension | restriction | list | union))
+            // block = (#all | List of (extension | restriction | substitution))
             choice = 0;
             if (value.equals (SchemaSymbols.ATTVAL_POUNDALL)) {
                 choice = XSConstants.DERIVATION_SUBSTITUTION|XSConstants.DERIVATION_EXTENSION|
@@ -1242,23 +1242,17 @@ public class XSAttributeChecker {
                 while (t.hasMoreTokens()) {
                     String token = t.nextToken ();
 
-                    if (token.equals (SchemaSymbols.ATTVAL_SUBSTITUTION)) {
-                        choice |= XSConstants.DERIVATION_SUBSTITUTION;
-                    }
-                    else if (token.equals (SchemaSymbols.ATTVAL_EXTENSION)) {
+                    if (token.equals (SchemaSymbols.ATTVAL_EXTENSION)) {
                         choice |= XSConstants.DERIVATION_EXTENSION;
                     }
                     else if (token.equals (SchemaSymbols.ATTVAL_RESTRICTION)) {
                         choice |= XSConstants.DERIVATION_RESTRICTION;
                     }
-                    else if (token.equals (SchemaSymbols.ATTVAL_LIST)) {
-                        choice |= XSConstants.DERIVATION_LIST;
-                    }
-                    else if (token.equals (SchemaSymbols.ATTVAL_UNION)) {
-                        choice |= XSConstants.DERIVATION_RESTRICTION;
+                    else if (token.equals (SchemaSymbols.ATTVAL_SUBSTITUTION)) {
+                        choice |= XSConstants.DERIVATION_SUBSTITUTION;
                     }
                     else {
-                        throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.3", new Object[]{value, "(#all | List of (substitution | extension | restriction | list | union))"});
+                        throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.3", new Object[]{value, "(#all | List of (extension | restriction | substitution))"});
                     }
                 }
             }
