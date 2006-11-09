@@ -67,6 +67,7 @@ Authors:
     <property name='jar.samples' value='xercesSamples.jar'/>
     <property name='jar.dv' value='xercesDV.jar'/>
     <property name='jar.resolver' value='resolver.jar'/>
+    <property name='jar.serializer' value='serializer.jar'/>
     <property name='jar.junit' value='junit.jar'/>
     
     <property name='default.parser.config.name' value='XIncludeAwareParserConfiguration'/>
@@ -252,7 +253,7 @@ Authors:
 
     <xjavac srcdir="${build.src}"
            destdir="${build.dest}"
-           classpath="${build.dir}/classes:${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}"
+           classpath="${build.dir}/classes:${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}"
            debug="${debug}"
            deprecation="${deprecation}"
            optimize="${optimize}"
@@ -452,7 +453,7 @@ Authors:
                            org.apache.xerces.xpointer'
       locale='en_US'
       sourcepath='${build.src}' destdir='${build.dir}/docs/javadocs/xerces2'
-      classpath='${tools.dir}/${jar.resolver}'
+      classpath='${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}'
       author='true' version='true'
       windowtitle='Xerces2 Implementation' 
       doctitle='Xerces2 Implementation'
@@ -517,11 +518,13 @@ Authors:
     </copy>
 
     <copy file="LICENSE" tofile="${distsrc.dir}/LICENSE"/>
-    <copy file="NOTICE" tofile="${distsrc.dir}/NOTICE"/>    
+    <copy file="NOTICE" tofile="${distsrc.dir}/NOTICE"/>
+    <copy file="NOTICE.serializer.txt" tofile="${distsrc.dir}/NOTICE.serializer.txt"/>
     <copy file="LICENSE.DOM-documentation.html" tofile="${distsrc.dir}/LICENSE.DOM-documentation.html"/>
     <copy file="LICENSE.DOM-software.html" tofile="${distsrc.dir}/LICENSE.DOM-software.html"/>
     <copy file="LICENSE-SAX.html" tofile="${distsrc.dir}/LICENSE-SAX.html"/>
     <copy file="LICENSE.resolver.txt" tofile="${distsrc.dir}/LICENSE.resolver.txt"/>
+    <copy file="LICENSE.serializer.txt" tofile="${distsrc.dir}/LICENSE.serializer.txt"/>
     <copy file="README" tofile="${distsrc.dir}/README"/>
     <copy file="Readme.html" tofile="${distsrc.dir}/Readme.html"/>
     <copy file="build.xml" tofile="${distsrc.dir}/build.xml"/>
@@ -611,10 +614,12 @@ Authors:
 
     <copy file="LICENSE" tofile="${distbin.dir}/LICENSE"/>
     <copy file="NOTICE" tofile="${distsrc.dir}/NOTICE"/>
+    <copy file="NOTICE.serializer.txt" tofile="${distsrc.dir}/NOTICE.serializer.txt"/>
     <copy file="LICENSE.DOM-documentation.html" tofile="${distsrc.dir}/LICENSE.DOM-documentation.html"/>
     <copy file="LICENSE.DOM-software.html" tofile="${distsrc.dir}/LICENSE.DOM-software.html"/>
     <copy file="LICENSE-SAX.html" tofile="${distbin.dir}/LICENSE-SAX.html"/>
     <copy file="LICENSE.resolver.txt" tofile="${distbin.dir}/LICENSE.resolver.txt"/>
+    <copy file="LICENSE.serializer.txt" tofile="${distsrc.dir}/LICENSE.serializer.txt"/>
     <copy file="Readme.html" tofile="${distbin.dir}/Readme.html"/>
 
     <copy file="${build.dir}/${jar.samples}" tofile="${distbin.dir}/${jar.samples}"/>
@@ -634,10 +639,12 @@ Authors:
   <!-- =================================================================== -->
   <target name="pack-bin" depends="pack-bin-common, jars">
     <copy file="${build.dir}/${jar.parser}" tofile="${distbin.dir}/${jar.parser}"/>
-    <!-- support xml-commons APIs -->
+    <!-- include the xml-commons APIs -->
     <copy file="${tools.dir}/${jar.apis}" tofile="${distbin.dir}/${jar.apis}"/>
-    <!-- support xml-commons resolver -->
+    <!-- include the xml-commons resolver -->
     <copy file="${tools.dir}/${jar.resolver}" tofile="${distbin.dir}/${jar.resolver}"/>
+    <!-- include the Xalan Serializer -->
+    <copy file="${tools.dir}/${jar.serializer}" tofile="${distbin.dir}/${jar.serializer}"/>
 
     <zip zipfile="${build.dir}/${parser.Name}-bin.${parser.version}.zip" 
          basedir="${build.dir}"
@@ -660,8 +667,10 @@ Authors:
   <target name="deprecated-bin" depends="pack-bin-common, deprecatedjars">
     <copy file="${build.dir}/${deprecatedjar.parser}" tofile="${distbin.dir}/${deprecatedjar.parser}"/>
     
-    <!-- support xml-commons resolver -->
+    <!-- include the xml-commons resolver -->
     <copy file="${tools.dir}/${jar.resolver}" tofile="${distbin.dir}/${jar.resolver}"/>
+    <!-- include the Xalan Serializer -->
+    <copy file="${tools.dir}/${jar.serializer}" tofile="${distbin.dir}/${jar.serializer}"/>
 
     <zip zipfile="${build.dir}/deprecated${parser.Name}-bin.${parser.version}.zip" 
          basedir="${build.dir}"
@@ -686,35 +695,35 @@ Authors:
     <echo message="Using classpath=&apos;${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes&apos;" />
     <echo message="Running sax.Counter ..." />
     <java fork="yes"
-          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
+          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}:${build.dir}/classes"
           classname="sax.Counter"
           failOnError="yes">
        <arg value="${data.dir}/personal.xml"/>
     </java>
     <echo message="Running sax.Writer ..." />
     <java fork="yes"
-          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes" 
+          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}:${build.dir}/classes" 
           classname="sax.Writer"
           failOnError="yes">
        <arg value="${data.dir}/personal.xml"/>
     </java>
     <echo message="Running dom.Counter ..." />
     <java fork="yes"
-          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
+          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}:${build.dir}/classes"
           classname="dom.Counter"
           failOnError="yes">
        <arg value="${data.dir}/personal.xml"/>
     </java>
     <echo message="Running dom.Writer ..." />
     <java fork="yes"
-          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes" 
+          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}:${build.dir}/classes" 
           classname="dom.Writer"
           failOnError="yes">
        <arg value="${data.dir}/personal.xml"/>
     </java>
     <echo message="Running thread.Test dom" />
     <java fork="yes"
-          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
+          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}:${build.dir}/classes"
           classname="thread.Test"
           failOnError="yes">
            <arg value="-dom"/>
@@ -727,7 +736,7 @@ Authors:
     </java>
     <echo message="Running thread.Test sax" />
     <java fork="yes"
-          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
+          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}:${build.dir}/classes"
           classname="thread.Test"
           failOnError="yes">
            <arg value="-threads"/>
@@ -743,45 +752,45 @@ Authors:
     <!--
     <echo message="Running DOMFilter ..." />
     <java fork="yes"
-          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
+          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}:${build.dir}/classes"
           classname="dom.DOMFilter"
           args="-p dom.wrappers.DOMParser ${data.dir}/personal.xml"/>
     -->
     <!-- The following are samples but not command-line applications.
     <echo message="Running IteratorView ..." />
     <java fork="yes"
-          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
+          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}:${build.dir}/classes"
           classname="dom.traversal.IteratorView"
           failOnError="yes"
           args="${data.dir}/personal.xml"/>
     <echo message="Running TreeWalkerView ..." />
     <java fork="yes"
-          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
+          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}:${build.dir}/classes"
           classname="dom.traversal.TreeWalkerView"
           failOnError="yes"
           args="${data.dir}/personal.xml"/>
     <echo message="Running TreeViewer ..." />
     <java fork="yes"
-          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
+          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}:${build.dir}/classes"
           classname="dom.TreeViewer"
           failOnError="yes"
           args="${data.dir}/personal.xml"/>
      -->
     <echo message="Running dom.DTest ..." />
     <java fork="yes"
-          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
+          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}:${build.dir}/classes"
           classname="dom.DTest"
           failOnError="yes">
     </java>
     <echo message="Running dom.mem.Test ..." />
     <java fork="yes"
-          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
+          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}:${build.dir}/classes"
           classname="dom.mem.Test"
           failOnError="yes">
     </java>
     <echo message="Running dom.range.Test ..." />
     <java fork="yes"
-          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
+          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}:${build.dir}/classes"
           classname="dom.range.Test"
           failOnError="yes">
 		<arg value="all"/>
@@ -789,13 +798,13 @@ Authors:
 
     <echo message="Running dom.ids.Test ..." />
     <java fork="yes"
-          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
+          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}:${build.dir}/classes"
           classname="dom.ids.Test"
           failOnError="yes">
     </java>
     <echo message="Running dom.serialization.Test ..." />
     <java fork="yes"
-          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
+          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}:${build.dir}/classes"
           classname="dom.serialization.Test"
           failOnError="yes">
            <arg value="${data.dir}/personal-schema.xml"/>
@@ -803,7 +812,7 @@ Authors:
     </java>
     <echo message="Running schema.Test ..." />
     <java fork="yes"
-          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
+          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}:${build.dir}/classes"
           classname="schema.Test"
           failOnError="yes">
     </java>
@@ -812,7 +821,7 @@ Authors:
           classname="schema.config.AllTests"
           failOnError="yes">
         <classpath>
-            <pathelement path="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes" />
+            <pathelement path="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}:${build.dir}/classes" />
             <pathelement path="${tools.dir}/${jar.junit}" />
             <pathelement path="${build.dir}/tests" />
         </classpath>
@@ -822,20 +831,20 @@ Authors:
           classname="schema.annotations.AllTests"
           failOnError="yes">
         <classpath>
-            <pathelement path="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes" />
+            <pathelement path="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}:${build.dir}/classes" />
             <pathelement path="${tools.dir}/${jar.junit}" />
             <pathelement path="${build.dir}/tests" />
         </classpath>
     </java>
     <echo message="Running jaxp.PropertyTest ..." />
     <java fork="yes"
-          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
+          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}:${build.dir}/classes"
           classname="jaxp.PropertyTest"
           failOnError="yes">
     </java>
     <echo message="Running jaxp.JAXPSpecTest ..." />
     <java fork="yes"
-          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
+          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}:${build.dir}/classes"
           classname="jaxp.JAXPSpecTest"
           failOnError="yes">
            <arg value="testSchemaLanguageSAX"/>
@@ -845,19 +854,19 @@ Authors:
     </java>
     <echo message="Running xinclude.Test ..." />
     <java fork="yes"
-          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
+          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}:${build.dir}/classes"
           classname="xinclude.Test"
           failOnError="yes">
     </java>
     <echo message="Running dom.registry.Test ..." />
     <java fork="yes"
-          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
+          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}:${build.dir}/classes"
           classname="dom.registry.Test"
           failOnError="yes">
     </java>
     <echo message="Running dom.dom3.Test ..." />
     <java fork="yes"
-          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
+          classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}:${build.dir}/classes"
           classname="dom.dom3.Test"
           failOnError="yes">
     </java>    
@@ -867,19 +876,22 @@ Authors:
   <!-- Builds both deprecated xerces and sample jar files                  -->
   <!-- =================================================================== -->
   <target name="deprecatedjars" depends="deprecatedjar, sampjar">
-    <!-- support xml-commons resolver -->
+    <!-- include the xml-commons resolver -->
     <copy file="${tools.dir}/${jar.resolver}" tofile="${build.dir}/${jar.resolver}"/>
+    <!-- include the Xalan Serializer -->
+    <copy file="${tools.dir}/${jar.serializer}" tofile="${build.dir}/${jar.serializer}"/>
   </target>
 
   <!-- =================================================================== -->
   <!-- Builds xercesImpl, xml-apis and sample jar files                    -->
   <!-- =================================================================== -->
   <target name="jars" depends="jar, sampjar">
-    <!-- support xml-commons APIs -->
+    <!-- include the xml-commons APIs -->
     <copy file="${tools.dir}/${jar.apis}" tofile="${build.dir}/${jar.apis}"/>
-
-    <!-- support xml-commons resolver -->
+    <!-- include the xml-commons resolver -->
     <copy file="${tools.dir}/${jar.resolver}" tofile="${build.dir}/${jar.resolver}"/>
+    <!-- include the Xalan Serializer -->
+    <copy file="${tools.dir}/${jar.serializer}" tofile="${build.dir}/${jar.serializer}"/>
   </target>
 
   <!-- =================================================================== -->
@@ -941,7 +953,7 @@ Authors:
            optimize="${optimize}"
            includeAntRuntime="false"
            includeJavaRuntime="true"
-           classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}"/>
+           classpath="${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}"/>
   </target>
 
 
@@ -1192,12 +1204,12 @@ Authors:
   <!-- Builds xercesImpl (dtd), xml-apis, and sample jars                  -->
   <!-- =================================================================== -->
   <target name="dtdjars" depends="dtdjar, sampjar">
-    <!-- support xml-commons APIs -->
+    <!-- include the xml-commons APIs -->
     <copy file="${tools.dir}/${jar.apis}" tofile="${build.dir}/${jar.apis}"/>
-    
-    <!-- support xml-commons resolver -->
+    <!-- include the xml-commons resolver -->
     <copy file="${tools.dir}/${jar.resolver}" tofile="${build.dir}/${jar.resolver}"/>
-       
+    <!-- include the Xalan Serializer -->
+    <copy file="${tools.dir}/${jar.serializer}" tofile="${build.dir}/${jar.serializer}"/>
   </target>
 
   <!-- =================================================================== -->
@@ -1370,7 +1382,7 @@ Authors:
 
         <xjavac srcdir="${build.src}"
                destdir="${build.dest}"
-               classpath="${build.dir}/classes:${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}"
+               classpath="${build.dir}/classes:${tools.dir}/${jar.apis}:${tools.dir}/${jar.resolver}:${tools.dir}/${jar.serializer}"
                debug="${debug}"
                deprecation="${deprecation}"
                optimize="${optimize}"
@@ -1420,10 +1432,11 @@ Authors:
   <!-- Builds xercesImpl, xml-apis and sample jars with Schema 1.1 support -->
   <!-- =================================================================== -->
   <target name="jars-schema11" depends="jar-schema11, sampjar">
-    <!-- support xml-commons APIs -->
+    <!-- include the xml-commons APIs -->
     <copy file="${tools.dir}/${jar.apis}" tofile="${build.dir}/${jar.apis}"/>
-
-    <!-- support xml-commons resolver -->
+    <!-- include the xml-commons resolver -->
     <copy file="${tools.dir}/${jar.resolver}" tofile="${build.dir}/${jar.resolver}"/>
+    <!-- include the Xalan Serializer -->
+    <copy file="${tools.dir}/${jar.serializer}" tofile="${build.dir}/${jar.serializer}"/>
   </target>
 </project>
