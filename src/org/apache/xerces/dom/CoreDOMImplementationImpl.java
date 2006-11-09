@@ -405,6 +405,13 @@ public class CoreDOMImplementationImpl
      * reference to the default error handler.
      */
     public LSSerializer createLSSerializer() {
+        try {
+            Class serializerClass = ObjectFactory.findProviderClass(
+                "org.apache.xml.serializer.dom3.LSSerializerImpl",
+                ObjectFactory.findClassLoader(), true);
+            return (LSSerializer) serializerClass.newInstance();
+        }
+        catch (Exception e) {}
         return new DOMSerializerImpl();
     }
     
