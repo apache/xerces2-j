@@ -1858,7 +1858,7 @@ public class XMLEntityManager
         // Use FileOutputStream if this URI is for a local file.
         if (protocol.equals("file") 
                 && (host == null || host.length() == 0 || host.equals("localhost"))) {
-            out = new FileOutputStream(getPathWithoutEscapes(url.getFile()));
+            out = new FileOutputStream(getPathWithoutEscapes(url.getPath()));
         }
         // Try to write to some other kind of URI. Some protocols
         // won't support this, though HTTP should work.
