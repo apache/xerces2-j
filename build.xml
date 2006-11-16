@@ -555,7 +555,7 @@ Authors:
     <copy todir="${disttools.dir}" >
         <fileset
             dir="${tools.dir}"  
-            includes="**/*.txt, **/*.bat, **/*.jar, **/*.zip, **/*.opt"
+            includes="**/*.txt, **/*.html, **/*.bat, **/*.jar, **/*.zip, **/*.opt"
             excludes="**/CVS*, **/.#*, **/*.class"
         />
     </copy>
