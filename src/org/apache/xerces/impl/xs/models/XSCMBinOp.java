@@ -28,7 +28,7 @@ import org.apache.xerces.impl.xs.XSModelGroupImpl;
  * @xerces.internal  
  *
  * @author Neil Graham, IBM
- * @version $$
+ * @version $Id$
  */
 public class XSCMBinOp extends CMNode {
     // -------------------------------------------------------------------

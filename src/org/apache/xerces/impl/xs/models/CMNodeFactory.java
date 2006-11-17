@@ -31,7 +31,8 @@ import org.apache.xerces.impl.Constants;
  * @xerces.internal 
  *
  * @author  Neeraj Bajaj
- *
+ * 
+ * @version $Id$
  */
 public class CMNodeFactory {
     
