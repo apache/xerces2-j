@@ -69,7 +69,7 @@ import org.w3c.dom.ls.LSSerializerFilter;
  * @author Arun Yadav, Sun Microsystems
  * @version $Id$
  * 
- * @deprecated Replaced by org.apache.xml.serializer.dom3.LSSerializerImpl
+ * @deprecated Replaced by org.apache.xml.serializer.dom3.LSSerializerImpl in Xerces 2.9.0.
  */
 public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
 

@@ -24,6 +24,10 @@ import java.util.Hashtable;
 import java.util.StringTokenizer;
 
 /**
+ * @deprecated This class was deprecated in Xerces 2.9.0. It is recommended 
+ * that new applications use the DOM Level 3 LSSerializer or JAXP's Transformation 
+ * API for XML (TrAX) for serializing XML and HTML. See the Xerces documentation for more 
+ * information.
  * @version $Revision$ $Date$
  * @author <a href="mailto:Scott_Boag/CAM/Lotus@lotus.com">Scott Boag</a>
  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>

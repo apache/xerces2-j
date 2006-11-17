@@ -78,6 +78,11 @@ import org.xml.sax.helpers.AttributesImpl;
  * boundaries, indent lines, and serialize elements on separate
  * lines. Line terminators will be regarded as spaces, and
  * spaces at beginning of line will be stripped.
+ * 
+ * @deprecated This class was deprecated in Xerces 2.9.0. It is recommended 
+ * that new applications use the DOM Level 3 LSSerializer or JAXP's Transformation 
+ * API for XML (TrAX) for serializing XML. See the Xerces documentation for more 
+ * information.
  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
  * @author <a href="mailto:rahul.srivastava@sun.com">Rahul Srivastava</a>
  * @author Elena Litani IBM

@@ -39,7 +39,9 @@ import java.util.Locale;
  * from value to name. A small entities resource is loaded into memory the
  * first time any of these methods is called for fast and efficient access.
  *
- *
+ * @deprecated This class was deprecated in Xerces 2.9.0. It is recommended 
+ * that new applications use JAXP's Transformation API for XML (TrAX) for 
+ * serializing HTML. See the Xerces documentation for more information.
  * @version $Revision$ $Date$
  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
  */

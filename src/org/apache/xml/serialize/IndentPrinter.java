@@ -28,6 +28,10 @@ import java.io.IOException;
  * Extends {@link Printer} and adds support for indentation and line
  * wrapping.
  *
+ * @deprecated This class was deprecated in Xerces 2.9.0. It is recommended 
+ * that new applications use the DOM Level 3 LSSerializer or JAXP's Transformation 
+ * API for XML (TrAX) for serializing XML. See the Xerces documentation for more 
+ * information.
  * @version $Revision$ $Date$
  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
  */
