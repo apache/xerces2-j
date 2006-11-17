@@ -158,6 +158,7 @@ final class DOMResultAugmentor implements DOMDocumentHandler {
                     AttrImpl attr = (AttrImpl) fDocumentImpl.createAttributeNS(fAttributeQName.uri, 
                             fAttributeQName.rawname, fAttributeQName.localpart);
                     attr.setValue(attributes.getValue(i));
+                    currentElement.setAttributeNodeNS(attr);
                     
                     // write type information to this attribute
                     AttributePSVI attrPSVI = (AttributePSVI) attributes.getAugmentations(i).getItem (Constants.ATTRIBUTE_PSVI);
@@ -167,7 +168,6 @@ final class DOMResultAugmentor implements DOMDocumentHandler {
                         }
                     }
                     attr.setSpecified(false);
-                    currentElement.setAttributeNodeNS(attr);
                 }
             }
         }

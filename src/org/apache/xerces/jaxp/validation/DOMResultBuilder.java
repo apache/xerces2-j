@@ -237,6 +237,7 @@ final class DOMResultBuilder implements DOMDocumentHandler {
                 AttrImpl attr = (AttrImpl) fDocumentImpl.createAttributeNS(fAttributeQName.uri, 
                         fAttributeQName.rawname, fAttributeQName.localpart);
                 attr.setValue(attributes.getValue(i));
+                elem.setAttributeNodeNS(attr);
                 
                 // write type information to this attribute
                 AttributePSVI attrPSVI = (AttributePSVI) attributes.getAugmentations(i).getItem (Constants.ATTRIBUTE_PSVI);
@@ -262,7 +263,6 @@ final class DOMResultBuilder implements DOMDocumentHandler {
                     }
                 }
                 attr.setSpecified(attributes.isSpecified(i));
-                elem.setAttributeNodeNS(attr);
             }
         }
         append(elem);
