@@ -64,8 +64,12 @@ import org.w3c.dom.html.HTMLDocument;
  */
 public class OutputFormat
 {
-
-
+    /** 
+     * @deprecated This class was deprecated in Xerces 2.9.0. It is recommended 
+     * that new applications use the DOM Level 3 LSSerializer or JAXP's Transformation 
+     * API for XML (TrAX) for serializing XML and HTML. See the Xerces documentation for 
+     * more information.
+     */
     public static class DTD
     {
 
@@ -94,7 +98,12 @@ public class OutputFormat
 
     }
 
-
+    /** 
+     * @deprecated This class was deprecated in Xerces 2.9.0. It is recommended 
+     * that new applications use the DOM Level 3 LSSerializer or JAXP's Transformation 
+     * API for XML (TrAX) for serializing XML and HTML. See the Xerces documentation for 
+     * more information.
+     */
     public static class Defaults
     {
 
