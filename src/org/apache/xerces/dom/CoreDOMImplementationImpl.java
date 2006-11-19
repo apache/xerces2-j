@@ -412,6 +412,8 @@ public class CoreDOMImplementationImpl
             return (LSSerializer) serializerClass.newInstance();
         }
         catch (Exception e) {}
+        // Fall back to Xerces' deprecated serializer if 
+        // the Xalan based serializer is unavailable.
         return new DOMSerializerImpl();
     }
     
