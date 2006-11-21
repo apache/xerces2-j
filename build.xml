@@ -57,9 +57,9 @@ Authors:
     <property name='parser.Name' value='Xerces-J'/>
     <property name='parser.name' value='xerces-j'/>
     <property name='parser.shortname' value='xerces'/>
-    <property name='parser.Version' value='2.8.1'/>
-    <property name='parser.version' value='2.8.1'/>
-    <property name='parser_version' value='2_8_1'/>
+    <property name='parser.Version' value='2.9.0'/>
+    <property name='parser.version' value='2.9.0'/>
+    <property name='parser_version' value='2_9_0'/>
 
     <property name='deprecatedjar.parser' value='xerces.jar'/>
     <property name='jar.apis' value='xml-apis.jar'/>
