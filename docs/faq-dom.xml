@@ -76,8 +76,6 @@ import  org.w3c.dom.ls.LSParser;
 
 ...
 
-System.setProperty(DOMImplementationRegistry.PROPERTY,
-    "org.apache.xerces.dom.DOMImplementationSourceImpl");
 DOMImplementationRegistry registry = 
     DOMImplementationRegistry.newInstance();
 
@@ -88,7 +86,7 @@ LSParser builder = impl.createLSParser(
     DOMImplementationLS.MODE_SYNCHRONOUS, null);
 	
 Document document = builder.parseURI("data/personal.xml");</source>
-      <note>You can now use DOM Level 3 Load/Save and Core interfaces with the default Xerces distribution. 
+      <note>You can now use DOM Level 3 Load/Save and Core interfaces with the regular Xerces distribution. 
       </note>
     </a>
   </faq>
@@ -107,8 +105,6 @@ import  org.w3c.dom.ls.LSSerializer;
 
 ...
 
-System.setProperty(DOMImplementationRegistry.PROPERTY,
-    "org.apache.xerces.dom.DOMImplementationSourceImpl");
 DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
 
 DOMImplementationLS impl = 
@@ -139,7 +135,7 @@ format.setIndenting(true);
 format.setLineWidth(0);             
 format.setPreserveSpace(true);
 XMLSerializer serializer = new XMLSerializer (
-    new FileWriter("output.xml"), format);
+    new FileOutputStream("output.xml"), format);
 serializer.asDOMSerializer();
 serializer.serialize(document);</source>
     </a>
