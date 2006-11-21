@@ -519,6 +519,7 @@ Authors:
 
     <copy file="LICENSE" tofile="${distsrc.dir}/LICENSE"/>
     <copy file="NOTICE" tofile="${distsrc.dir}/NOTICE"/>
+    <copy file="NOTICE.resolver.txt" tofile="${distsrc.dir}/NOTICE.resolver.txt"/>
     <copy file="NOTICE.serializer.txt" tofile="${distsrc.dir}/NOTICE.serializer.txt"/>
     <copy file="LICENSE.DOM-documentation.html" tofile="${distsrc.dir}/LICENSE.DOM-documentation.html"/>
     <copy file="LICENSE.DOM-software.html" tofile="${distsrc.dir}/LICENSE.DOM-software.html"/>
@@ -614,6 +615,7 @@ Authors:
 
     <copy file="LICENSE" tofile="${distbin.dir}/LICENSE"/>
     <copy file="NOTICE" tofile="${distsrc.dir}/NOTICE"/>
+    <copy file="NOTICE.resolver.txt" tofile="${distsrc.dir}/NOTICE.resolver.txt"/>
     <copy file="NOTICE.serializer.txt" tofile="${distsrc.dir}/NOTICE.serializer.txt"/>
     <copy file="LICENSE.DOM-documentation.html" tofile="${distsrc.dir}/LICENSE.DOM-documentation.html"/>
     <copy file="LICENSE.DOM-software.html" tofile="${distsrc.dir}/LICENSE.DOM-software.html"/>
