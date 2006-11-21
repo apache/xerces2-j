@@ -124,7 +124,8 @@ String str = writer.writeToString(document);</source>
       </p>
 
       <p>
-	You can also serialize a DOM tree by using the Xerces <code>org.apache.xml.XMLSerializer</code> serialization code directly.  This is a non-standard way of serializing a DOM and should be avoided:
+	It is also possible to serialize a DOM tree by using the Xerces <code>org.apache.xml.XMLSerializer</code> serialization code directly.  
+	This non-standard way of serializing a DOM has been <strong>deprecated</strong> since Xerces-J 2.9.0 and should be avoided.
       </p>
       <source>import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
