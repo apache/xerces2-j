@@ -29,12 +29,20 @@ import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.impl.dv.ValidationContext;
 import org.apache.xerces.util.SymbolHash;
+
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Vector;
 
 /**
  * Constaints shared by traversers and validator
+ * 
+ * IHR: Visited on 2006-11-17
+ * I've added a boolean return value to particleValidRestriction (it was a void function)
+ * to help the checkRecurseLax to know when expansion has happened and no order is required
+ * (IHR@xbrl.org) (Ignacio@Hernandez-Ros.com)
  *
- * @xerces.internal 
+ * @xerces.internal
  *
  * @author Sandy Gao, IBM
  *
@@ -44,6 +52,40 @@ public class XSConstraints {
 
     static final int OCCURRENCE_UNKNOWN = SchemaSymbols.OCCURRENCE_UNBOUNDED-1;
     static final XSSimpleType STRING_TYPE = (XSSimpleType)SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_STRING);
+
+    private static final Comparator ELEMENT_PARTICLE_COMPARATOR = new Comparator() {
+
+        public int compare(Object o1, Object o2) {
+            XSParticleDecl pDecl1 = (XSParticleDecl) o1;
+            XSParticleDecl pDecl2 = (XSParticleDecl) o2;
+            XSElementDecl decl1 = (XSElementDecl) pDecl1.fValue;
+            XSElementDecl decl2 = (XSElementDecl) pDecl2.fValue;
+
+            String namespace1 = decl1.getNamespace();
+            String namespace2 = decl2.getNamespace();
+            String name1 = decl1.getName();
+            String name2 = decl2.getName();
+
+            boolean sameNamespace = (namespace1 == namespace2);
+            int namespaceComparison = 0;
+
+            if (!sameNamespace) {
+                if (namespace1 != null) {
+                    if (namespace2 != null){
+                        namespaceComparison = namespace1.compareTo(namespace2);
+                    }
+                    else {
+                        namespaceComparison = 1;
+                    }
+                }
+                else {
+                    namespaceComparison = -1;
+                }
+            }
+            //This assumes that the names are never null.
+            return namespaceComparison != 0 ? namespaceComparison : name1.compareTo(name2);
+        }
+    };
 
     /**
      * check whether derived is valid derived from base, given a subset
@@ -353,7 +395,7 @@ public class XSConstraints {
         // i: grammar; j: type; k: error
         // for all grammars
         SymbolHash elemTable = new SymbolHash();
-        for (int i = grammars.length-1, j, k; i >= 0; i--) {
+        for (int i = grammars.length-1, j; i >= 0; i--) {
             // get whether to skip EDC, and types need to be checked
             keepType = 0;
             fullChecked = grammars[i].fFullChecked;
@@ -522,16 +564,22 @@ public class XSConstraints {
 
     /*
        Check that a given particle is a valid restriction of a base particle.
+
+       IHR: 2006/11/17
+       Returns a boolean indicating if there has been expansion of substitution group
+       in the bParticle.
+       With this information the checkRecurseLax function knows when is
+       to keep the order and when to ignore it.
     */
-    private static void particleValidRestriction(XSParticleDecl dParticle,
+    private static boolean particleValidRestriction(XSParticleDecl dParticle,
                                      SubstitutionGroupHandler dSGHandler,
                                      XSParticleDecl bParticle,
                                      SubstitutionGroupHandler bSGHandler)
                                      throws XMLSchemaException {
-       particleValidRestriction(dParticle, dSGHandler, bParticle, bSGHandler, true);
+       return particleValidRestriction(dParticle, dSGHandler, bParticle, bSGHandler, true);
     }
 
-    private static void particleValidRestriction(XSParticleDecl dParticle,
+    private static boolean particleValidRestriction(XSParticleDecl dParticle,
                                      SubstitutionGroupHandler dSGHandler,
                                      XSParticleDecl bParticle,
                                      SubstitutionGroupHandler bSGHandler,
@@ -543,6 +591,8 @@ public class XSConstraints {
        int dMinEffectiveTotalRange=OCCURRENCE_UNKNOWN;
        int dMaxEffectiveTotalRange=OCCURRENCE_UNKNOWN;
 
+       // By default there has been no expansion
+       boolean bExpansionHappened = false;
 
        // Check for empty particles.   If either base or derived particle is empty,
        // (and the other isn't) it's an error.
@@ -612,6 +662,7 @@ public class XSConstraints {
                   addElementToParticleVector(dChildren, subGroup[i]);
                 }
                 addElementToParticleVector(dChildren, dElement);
+                Collections.sort(dChildren, ELEMENT_PARTICLE_COMPARATOR);
 
                 // Set the handler to null, to indicate that we've finished handling
                 // substitution groups for this particle.
@@ -664,9 +715,13 @@ public class XSConstraints {
                   addElementToParticleVector(bChildren, bsubGroup[i]);
                 }
                 addElementToParticleVector(bChildren, bElement);
+                Collections.sort(bChildren, ELEMENT_PARTICLE_COMPARATOR);
                 // Set the handler to null, to indicate that we've finished handling
                 // substitution groups for this particle.
                 bSGHandler = null;
+
+                // if we are here expansion of bParticle happened
+                bExpansionHappened = true;
              }
            }
        }
@@ -684,7 +739,7 @@ public class XSConstraints {
               {
                  checkNameAndTypeOK((XSElementDecl)dParticle.fValue,dMinOccurs,dMaxOccurs,
                                     (XSElementDecl)bParticle.fValue,bMinOccurs,bMaxOccurs);
-                 return;
+                 return bExpansionHappened;
               }
 
               // Elt:Any NSCompat
@@ -693,7 +748,7 @@ public class XSConstraints {
                  checkNSCompat((XSElementDecl)dParticle.fValue,dMinOccurs,dMaxOccurs,
                                (XSWildcardDecl)bParticle.fValue,bMinOccurs,bMaxOccurs,
                                checkWCOccurrence);
-                 return;
+                 return bExpansionHappened;
               }
 
               // Elt:All RecurseAsIfGroup
@@ -706,7 +761,7 @@ public class XSConstraints {
 
                  checkRecurseLax(dChildren, 1, 1, dSGHandler,
                                  bChildren, bMinOccurs, bMaxOccurs, bSGHandler);
-                 return;
+                 return bExpansionHappened;
               }
               case XSModelGroupImpl.MODELGROUP_SEQUENCE:
               case XSModelGroupImpl.MODELGROUP_ALL:
@@ -718,7 +773,7 @@ public class XSConstraints {
 
                  checkRecurse(dChildren, 1, 1, dSGHandler,
                               bChildren, bMinOccurs, bMaxOccurs, bSGHandler);
-                 return;
+                 return bExpansionHappened;
               }
 
               default:
@@ -738,7 +793,7 @@ public class XSConstraints {
               {
                  checkNSSubset((XSWildcardDecl)dParticle.fValue, dMinOccurs, dMaxOccurs,
                                (XSWildcardDecl)bParticle.fValue, bMinOccurs, bMaxOccurs);
-                 return;
+                 return bExpansionHappened;
               }
 
               case XSModelGroupImpl.MODELGROUP_CHOICE:
@@ -776,14 +831,14 @@ public class XSConstraints {
                                                 bParticle,bMinOccurs,bMaxOccurs,
                                                 checkWCOccurrence);
 
-                 return;
+                 return bExpansionHappened;
               }
 
               case XSModelGroupImpl.MODELGROUP_ALL:
               {
                  checkRecurse(dChildren, dMinOccurs, dMaxOccurs, dSGHandler,
                               bChildren, bMinOccurs, bMaxOccurs, bSGHandler);
-                 return;
+                 return bExpansionHappened;
               }
 
               case XSModelGroupImpl.MODELGROUP_CHOICE:
@@ -819,14 +874,14 @@ public class XSConstraints {
                                                 dSGHandler,
                                                 bParticle,bMinOccurs,bMaxOccurs,
                                                 checkWCOccurrence);
-                 return;
+                 return bExpansionHappened;
               }
 
               case XSModelGroupImpl.MODELGROUP_CHOICE:
               {
                  checkRecurseLax(dChildren, dMinOccurs, dMaxOccurs, dSGHandler,
                                  bChildren, bMinOccurs, bMaxOccurs, bSGHandler);
-                 return;
+                 return bExpansionHappened;
               }
 
               case XSModelGroupImpl.MODELGROUP_ALL:
@@ -863,21 +918,21 @@ public class XSConstraints {
                                                 dSGHandler,
                                                 bParticle,bMinOccurs,bMaxOccurs,
                                                 checkWCOccurrence);
-                 return;
+                 return bExpansionHappened;
               }
 
               case XSModelGroupImpl.MODELGROUP_ALL:
               {
                  checkRecurseUnordered(dChildren, dMinOccurs, dMaxOccurs, dSGHandler,
                                        bChildren, bMinOccurs, bMaxOccurs, bSGHandler);
-                 return;
+                 return bExpansionHappened;
               }
 
               case XSModelGroupImpl.MODELGROUP_SEQUENCE:
               {
                  checkRecurse(dChildren, dMinOccurs, dMaxOccurs, dSGHandler,
                               bChildren, bMinOccurs, bMaxOccurs, bSGHandler);
-                 return;
+                 return bExpansionHappened;
               }
 
               case XSModelGroupImpl.MODELGROUP_CHOICE:
@@ -887,7 +942,7 @@ public class XSConstraints {
                              dMaxOccurs : dMaxOccurs * dChildren.size();
                  checkMapAndSum(dChildren, min1, max1, dSGHandler,
                                 bChildren, bMinOccurs, bMaxOccurs, bSGHandler);
-                 return;
+                 return bExpansionHappened;
               }
 
               case XSParticleDecl.PARTICLE_ELEMENT:
@@ -905,6 +960,8 @@ public class XSConstraints {
          }
 
        }
+
+       return bExpansionHappened;
     }
 
     private static void addElementToParticleVector (Vector v, XSElementDecl d)  {
@@ -1291,7 +1348,10 @@ public class XSConstraints {
            XSParticleDecl particle2 = (XSParticleDecl)bChildren.elementAt(j);
            current +=1;
            try {
-             particleValidRestriction(particle1, dSGHandler, particle2, bSGHandler);
+               // IHR: go back one element on b list because the next element may match
+               // this as well.
+             if (particleValidRestriction(particle1, dSGHandler, particle2, bSGHandler))
+            	 current--;
              continue label;
            }
            catch (XMLSchemaException e) {
