@@ -49,6 +49,18 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
     <td>License for the XML Commons Resolver</td>
    </tr>
    <tr>
+    <td>NOTICE.resolver.txt</td>
+    <td>NOTICE file for the XML Commons Resolver</td>
+   </tr>
+   <tr>
+    <td>LICENSE.serializer.txt</td>
+    <td>License for the Apache Xalan serializer</td>
+   </tr>
+   <tr>
+    <td>NOTICE.serializer.txt</td>
+    <td>NOTICE file for the Apache Xalan serializer</td>
+   </tr>
+   <tr>
     <td>LICENSE-SAX.html</td>
     <td>SAX License</td>
    </tr>
@@ -66,8 +78,13 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
    </tr>
    <tr>
     <td>resolver.jar</td>
-    <td>Jar file containing the XML Commons Resolver. Currently,
-    Resolver 1.1 is distributed with &ParserName;.</td>
+    <td>Jar file containing the XML Commons Resolver. Currently
+    Resolver 1.2 is distributed with &ParserName;.</td>
+   </tr>
+   <tr>
+    <td>serializer.jar</td>
+    <td>Jar file containing the Apache Xalan serializer. Currently
+    the serializer included in Xalan 2.7.1 is distributed with &ParserName;.</td>
    </tr>
    <tr>
     <td>xercesImpl.jar</td>
@@ -77,7 +94,7 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
    <tr>
     <td>xml-apis.jar</td>
     <td>Jar file containing all the standard APIs implemented by
-    the parser.  Currently, &ParserName; supports DOM level 3, SAX
+    the parser.  Currently &ParserName; supports DOM level 3, SAX
     2.0.2, and the <code>javax.xml.datatype</code>, 
     <code>javax.xml.parsers</code> and <code>javax.xml.validation</code> 
     parts of JAXP 1.3.</td>
@@ -131,6 +148,18 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
     <td>License for the XML Commons Resolver</td>
    </tr>
    <tr>
+    <td>NOTICE.resolver.txt</td>
+    <td>NOTICE file for the XML Commons Resolver</td>
+   </tr>
+   <tr>
+    <td>LICENSE.serializer.txt</td>
+    <td>License for the Apache Xalan serializer</td>
+   </tr>
+   <tr>
+    <td>NOTICE.serializer.txt</td>
+    <td>NOTICE file for the Apache Xalan serializer</td>
+   </tr>
+   <tr>
     <td>LICENSE-SAX.html</td>
     <td>SAX License</td>
    </tr>
@@ -163,18 +192,6 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
     <td>Web page redirect required for building documentation</td>
    </tr>
    <tr>
-    <td>STATUS</td>
-    <td>Current source code status information</td>
-   </tr>
-   <tr>
-    <td>TODO</td>
-    <td>Current list of "todo" items</td>
-   </tr>
-   <tr>
-    <td>ISSUES</td>
-    <td>Current open issues that need to be resolved</td>
-   </tr>
-   <tr>
     <td>data/</td>
     <td>Directory containing sample XML data files</td>
    </tr>
@@ -189,8 +206,7 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
    <tr>
     <td>src/</td>
     <td>
-     Directory containing source code for parser and supplemental 
-     APIs
+     Directory containing source code for parser and supplemental APIs
     </td>
    </tr>
   </table>
