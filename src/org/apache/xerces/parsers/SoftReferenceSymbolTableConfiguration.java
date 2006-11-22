@@ -23,6 +23,14 @@ import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 
 /**
+ * This parser configuration extends the default configuration allowing Xerces to 
+ * handle usage scenarios where the names in the XML documents being parsed are mostly 
+ * unique by installing a memory sensitive <code>SymbolTable</code>. The internalized 
+ * strings stored in this <code>SymbolTable</code> are softly reachable and may be 
+ * cleared by the garbage collector in response to memory demand.
+ * 
+ * @see org.apache.xerces.util.SoftReferenceSymbolTable
+ * 
  * @author Peter McCracken, IBM
  *
  * @version $Id$
