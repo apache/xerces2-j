@@ -278,7 +278,9 @@ Authors:
     <jar jarfile="${build.dir}/${deprecatedjar.parser}"
          basedir="${build.dest}"
          compress="true"
-         includes="org/**, javax/**,META-INF/**"/>
+         includes="org/**, javax/**,META-INF/**">
+      <metainf dir="." includes="LICENSE,NOTICE"/>
+    </jar>
   </target>
 
   <!-- =================================================================== -->
@@ -300,6 +302,7 @@ Authors:
       <manifest>
         <attribute name="Ant-Version" value="${ant.version}"/>
       </manifest>
+      <metainf dir="." includes="LICENSE,NOTICE"/>
     </jar>
   </target>
 
@@ -343,7 +346,9 @@ Authors:
     <jar jarfile="${build.dir}/${jar.samples}"
          basedir="${build.dest}"
          compress="true"
-         includes="dom/**,sax/**,jaxp/**,socket/**,ui/**,xni/**,xs/**"/>
+         includes="dom/**,sax/**,jaxp/**,socket/**,ui/**,xni/**,xs/**">
+      <metainf dir="." includes="LICENSE,NOTICE"/>
+    </jar>
   </target>
 
   <!-- =================================================================== -->
@@ -935,6 +940,7 @@ Authors:
       <manifest>
         <attribute name="Ant-Version" value="${ant.version}"/>
       </manifest>
+      <metainf dir="." includes="LICENSE,NOTICE"/>
     </jar>
   </target>
 
@@ -1012,6 +1018,7 @@ Authors:
                         org/apache/xerces/parsers/XIncludeParserConfiguration.java
                         org/apache/xerces/parsers/XIncludeAwareParserConfiguration.java
                         org/apache/xerces/parsers/SecurityConfiguration.java
+                        org/apache/xerces/parsers/SoftReferenceSymbolTableParserConfiguration.java
                         org/apache/xerces/parsers/XML11Configurable.java
                         org/apache/xerces/parsers/XML11Configuration.java
                         org/apache/xerces/parsers/XML11DTDConfiguration.java
@@ -1221,7 +1228,9 @@ Authors:
     <jar jarfile="${build.dir}/${jar.dv}"
          basedir="${build.dest}"
          compress="true"
-         includes="org/apache/xerces/**"/>
+         includes="org/apache/xerces/**">
+      <metainf dir="." includes="LICENSE,NOTICE"/>
+    </jar>
   </target>
 
   <!-- =================================================================== -->
@@ -1427,6 +1436,7 @@ Authors:
       <manifest>
         <attribute name="Ant-Version" value="${ant.version}"/>
       </manifest>
+      <metainf dir="." includes="LICENSE,NOTICE"/>
     </jar>
   </target>	
 
