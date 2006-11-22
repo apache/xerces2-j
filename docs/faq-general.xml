@@ -94,14 +94,44 @@
     </p>
   </a>
  </faq>
- <faq title="Xerces HTML, XHTML, and XML Serializers">
-   <q>What can I use instead of Xerces' HTML, XHTML, or XML serializers?
+ <faq title="Xerces XML, HTML and XHTML Serializers">
+   <q>What should I be using instead of Xerces' XML, HTML or XHTML serializers?
  </q>
  <a>
 <p>
-If you want to achieve interoperability, you should not be using Xerces serialization code directly. 
+As of the 2.9.0 release Xerces-J began sharing a common serialization codebase with Xalan and now includes <code>serializer.jar</code> 
+with its distribution for DOM Level 3 serialization support. The entire <code>org.apache.xml.serialize</code> package was 
+<strong>deprecated</strong> in Xerces 2.9.0. The HTML and XHTML serializers were previously <strong>deprecated</strong> in the 
+Xerces 2.6.2 release. You can find more details about the rationale for this decision here in the 
+<jump href="http://marc.theaimsgroup.com/?l=xalan-dev&amp;m=107593381313807&amp;w=2">archives</jump>.
+</p>
+
+<p>
+If you want to achieve interoperability and avoid using deprecated APIs, you should not be using Xerces serialization code directly.
 Instead, the <jump href="http://java.sun.com/xml/jaxp/index.jsp">JAXP</jump> Transformer API should be used to serialize HTML, XHTML, and SAX. The <jump href="http://www.w3.org/DOM/DOMTR">DOM</jump> Level 3 Load and Save API (or JAXP Transformer API) should be used to serialize DOM.
 </p>
+
+    <p>Using <jump href="http://www.w3.org/DOM/DOMTR">DOM</jump> Level 3 you can serialize XML as follows:</p>
+
+<source>import org.w3c.dom.DOMImplementationRegistry;
+import org.w3c.dom.Document;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSSerializer;
+import org.w3c.dom.ls.LSOutput;
+
+...
+
+DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
+
+DOMImplementationLS impl = 
+    (DOMImplementationLS)registry.getDOMImplementation("LS");
+
+...     
+
+LSSerializer writer = impl.createLSSerializer();
+LSOutput output = impl.createLSOutput();
+output.setByteStream(System.out);
+writer.write(document, output);</source>
 
     <p>Using <jump href="http://java.sun.com/xml/jaxp/index.jsp">JAXP</jump> you can serialize HTML and XHTML as follows:</p>
 
@@ -123,14 +153,9 @@ t.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM,
 t.setOutputProperty(OutputKeys.METHOD, "html");
 
 // Serialize DOM tree
-t.transform(new DOMSource(doc), new StreamResult(System.out));
-</source>
+t.transform(new DOMSource(doc), new StreamResult(System.out));</source>
 
-<p>
 
-You can find more details about the future of Xerces' serializers in the <jump href="http://marc.theaimsgroup.com/?l=xalan-dev&amp;m=107593381313807&amp;w=2">archives</jump>.
-</p>
-<note>The HTML and XHTML serializers (<code>org.apache.xml.serialize</code>) have been <code>deprecated</code> in the Xerces 2.6.2 release. We might deprecate <code>XMLSerializer</code> in a future release.</note>
   </a>
  </faq>
  <faq title="Obtaining smaller jars">
