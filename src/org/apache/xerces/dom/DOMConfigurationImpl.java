@@ -495,9 +495,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
      *                 uninstall the currently installed resolver.
      */
     public void setEntityResolver(XMLEntityResolver resolver) {
-        if (resolver !=null) {
-            fProperties.put(ENTITY_RESOLVER, resolver);
-        }
+        fProperties.put(ENTITY_RESOLVER, resolver);
     } // setEntityResolver(XMLEntityResolver)
 
     /**
@@ -816,6 +814,22 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                 }
 
             }
+            else if (name.equalsIgnoreCase(ENTITY_RESOLVER)) {
+                if (value instanceof XMLEntityResolver || value == null) {
+                    try {
+                        setEntityResolver((XMLEntityResolver) value);
+                    }
+                    catch (XMLConfigurationException e) {}
+                }
+                else {
+                    String msg =
+                        DOMMessageFormatter.formatMessage(
+                            DOMMessageFormatter.DOM_DOMAIN,
+                            "TYPE_MISMATCH_ERR",
+                            new Object[] { name });
+                    throw new DOMException(DOMException.TYPE_MISMATCH_ERR, msg);
+                }
+            }
             else if (name.equalsIgnoreCase(SYMBOL_TABLE)){
                 // Xerces Symbol Table
                 if (value instanceof SymbolTable){
@@ -933,6 +947,9 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 		else if (name.equalsIgnoreCase(Constants.DOM_SCHEMA_LOCATION)) {
 			return getProperty(Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE);
 		}
+        else if (name.equalsIgnoreCase(ENTITY_RESOLVER)) {
+            return getEntityResolver();
+        }
         else if (name.equalsIgnoreCase(SYMBOL_TABLE)){
             return getProperty(SYMBOL_TABLE);
         }
