@@ -45,7 +45,7 @@
       Object Model Level 3 Core and Load/Save</jump> W3C Recommendations and provides a 
       <link idref='faq-xinclude'>complete implementation</link> of the <jump href="http://www.w3.org/TR/2004/REC-xinclude-20041220/">XML Inclusions 
       (XInclude)</jump> W3C Recommendation. It also provides <link idref='faq-xcatalogs'>support</link>
-      for <jump href="http://www.oasis-open.org/committees/entity/spec.html">OASIS XML Catalogs</jump>.
+      for <jump href="http://www.oasis-open.org/committees/download.php/14809/xml-catalogs.html">OASIS XML Catalogs v1.1</jump>.
     </p>
 
 

@@ -26,8 +26,8 @@
       Apache <jump href="http://xml.apache.org/commons/">XML Commons</jump> Resolver: 
       <code>resolver.jar</code> needs to be on your classpath (or accessible
       in some other way to the ClassLoader). The resolver provides an implementation
-      of <jump href="http://www.oasis-open.org/committees/entity/spec.html">OASIS XML Catalogs</jump>
-      as well as some <link anchor='xcatalogs-other-formats'>other</link> catalog formats. The XML Commons Resolver 1.1 is included with 
+      of <jump href="http://www.oasis-open.org/committees/download.php/14809/xml-catalogs.html">OASIS XML Catalogs v1.1</jump>
+      as well as some <link anchor='xcatalogs-other-formats'>other</link> catalog formats. The XML Commons Resolver 1.2 is included with 
       the binary distribution of Xerces. For information about interacting directly with 
       the Resolver's API visit the <jump href="http://xml.apache.org/commons/">XML Commons</jump>
       site.
@@ -224,13 +224,11 @@ catalog2.xml:
      <anchor name='xcatalogs-other-formats'/>
      <p>
       Xerces only includes a utility class for OASIS XML Catalogs, however
-      the XML Commons Resolver supports several other catalog formats
+      the XML Commons Resolver supports a few other catalog formats
       including: the plain text format described by OASIS
       <jump href="http://www.oasis-open.org/specs/a401.htm">TR 9401</jump>,
-      the XCatalog XML format defined by John Cowan, and an extended
-      version of OASIS XML Catalogs which supports suffix matching. For
-      more information visit the 
-      <jump href="http://xml.apache.org/commons/">XML Commons</jump> site.
+      and the XCatalog XML format defined by John Cowan. For more information 
+      visit the <jump href="http://xml.apache.org/commons/">XML Commons</jump> site.
      </p>
     </a>
   </faq>
