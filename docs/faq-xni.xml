@@ -127,6 +127,15 @@
      </td>
     </tr>
     <tr>
+     <td>SoftReferenceSymbolTableConfiguration</td>
+     <td>Extends the default configuration allowing Xerces to handle usage scenarios
+         where the names in the XML documents being parsed are mostly unique by
+         installing a memory sensitive SymbolTable. The internalized strings stored
+         in this SymbolTable are softly reachable and may be cleared by the garbage
+         collector in response to memory demand.
+     </td>
+    </tr>
+    <tr>
      <td>StandardParserConfiguration</td>
      <td>Extends DTDConfiguration by adding support for XML schema validation.</td>
     </tr>
