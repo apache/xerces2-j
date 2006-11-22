@@ -226,7 +226,7 @@ catalog2.xml:
       Xerces only includes a utility class for OASIS XML Catalogs, however
       the XML Commons Resolver supports a few other catalog formats
       including: the plain text format described by OASIS
-      <jump href="http://www.oasis-open.org/specs/a401.htm">TR 9401</jump>,
+      <jump href="http://www.oasis-open.org/specs/a401.htm">TR 9401</jump>
       and the XCatalog XML format defined by John Cowan. For more information 
       visit the <jump href="http://xml.apache.org/commons/">XML Commons</jump> site.
      </p>
