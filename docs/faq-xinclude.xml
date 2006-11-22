@@ -88,7 +88,7 @@ spf.setXIncludeAware(true);
       Yes. The XInclude specification requires processors to use the base URI
       (as specified in the <jump href="http://www.w3.org/TR/xmlbase/">XML Base</jump>
       recommendation) to resolve relative IRIs to compute the
-      <jump href="http://www.w3.org/TR/2004/REC-xinclude-20041220/#include-location">include location</jump>.
+      <jump href="http://www.w3.org/TR/2006/REC-xinclude-20061115/#include-location">include location</jump>.
       Support for XML Base was added to the XInclude implementation in Xerces-J 2.6.0.
      </p>
     </a>
@@ -109,7 +109,7 @@ spf.setXIncludeAware(true);
     <q>Does the XInclude processor perform references property fixup?</q>
     <a>
      <p>
-      Section <jump href="http://www.w3.org/TR/xinclude/#references-property">4.5.3</jump>
+      Section <jump href="http://www.w3.org/TR/2006/REC-xinclude-20061115/#references-property">4.5.3</jump>
       of the XInclude 1.0 W3C Recommendation describes fixup of the [references] property 
       of an attribute information item. For IDREF/IDREFS the property contains an ordered
       list of element information items. Xerces provides no mechanism for accessing this 
@@ -150,7 +150,7 @@ spf.setXIncludeAware(true);
     <a>
      <p>
       Yes, the values of the <code>accept</code> and <code>accept-language</code> attributes 
-      from an <jump href="http://www.w3.org/TR/2004/REC-xinclude-20041220/#include_element">include</jump>
+      from an <jump href="http://www.w3.org/TR/2006/REC-xinclude-20061115/#include_element">include</jump>
       element are included as request properties in an HTTP request. Support for content negotation 
       when parse="xml" was added to the XInclude implementation in Xerces-J 2.7.0.
      </p>

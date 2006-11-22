@@ -43,7 +43,7 @@
       Xerces2 also provides a <link idref='dom3'>complete implementation</link> of the 
 <jump href="http://www.w3.org/DOM/DOMTR#dom3">Document 
       Object Model Level 3 Core and Load/Save</jump> W3C Recommendations and provides a 
-      <link idref='faq-xinclude'>complete implementation</link> of the <jump href="http://www.w3.org/TR/2004/REC-xinclude-20041220/">XML Inclusions 
+      <link idref='faq-xinclude'>complete implementation</link> of the <jump href="http://www.w3.org/TR/2006/REC-xinclude-20061115/">XML Inclusions 
       (XInclude)</jump> W3C Recommendation. It also provides <link idref='faq-xcatalogs'>support</link>
       for <jump href="http://www.oasis-open.org/committees/download.php/14809/xml-catalogs.html">OASIS XML Catalogs v1.1</jump>.
     </p>
@@ -89,8 +89,8 @@
         Second Edition Recommendation
       </li>
       <li>
-        <jump href='http://www.w3.org/TR/2004/REC-xinclude-20041220/'>
-          XML Inclusions (XInclude) Version 1.0</jump> Recommendation
+        <jump href='http://www.w3.org/TR/2006/REC-xinclude-20061115/'>
+          XML Inclusions (XInclude) Version 1.0</jump> Second Edition Recommendation
       </li>
       <li>
 	<jump href='http://www.w3.org/DOM/'>Document Object Model</jump>
