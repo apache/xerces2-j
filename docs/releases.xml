@@ -18,6 +18,101 @@
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
+  <release version='&ParserName; 2.9.0'>
+   <desc>
+    <p>
+     In this release, Xerces now includes the Xalan serializer in its distribution. 
+     Xerces and Xalan now share a common serialization codebase. The DOM Level 3 
+     serialization support which was in Xerces was migrated into the Xalan serializer
+     and Xerces' native serializer was deprecated. In addition, this release upgrades
+     the xml-commons resolver to v1.2 (which provides support for OASIS XML Catalogs v1.1), 
+     introduces a few minor features and fixes several bugs.
+    </p>
+   </desc>
+   <changes>
+    <update>
+     <note>
+      Migrated the DOM Level 3 serialization support onto a common serialization 
+      codebase shared with Xalan and deprecated Xerces' native serializer.
+     </note>
+     <submitter name='Neil Delima, Michael Glavassevich'/>
+    </update>
+    <add>
+     <note>
+      Upgraded the xml-commons resolver to v1.2. This new version of
+      the resolver adds support for 
+      <jump href="http://www.oasis-open.org/committees/download.php/14809/xml-catalogs.html">OASIS XML Catalogs v1.1</jump>.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </add>
+    <add>
+     <note>
+      Created a new parser configuration which uses a memory sensitive
+      SymbolTable which can handle usage scenarios where the names in the 
+      XML documents being parsed are mostly unique. The internalized 
+      strings stored in this SymbolTable are softly reachable and may be 
+      cleared by the garbage collector in response to memory demand.
+     </note>
+     <submitter name='Peter McCracken'/>
+    </add>
+    <update>
+     <note>
+      Updated the schema loader so that it can now process XML 1.1 schema documents.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </update>
+    <fix>
+     <note>
+      Fixed several bugs in the checking of schema type restrictions 
+      that involve substitution groups.
+     </note>
+     <submitter name='Lucian Holland, Ignacio Hernandez-Ros'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed a bug in Xerces' regular expression support where patterns containing
+      "$" and "^" were being interpreted as anchors in a schema context.
+     </note>
+     <submitter name='Chris Carman'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed a bug in the XPath matcher for identify constraints which allowed
+      steps containing NCName:* to select element or attribute names which do 
+      not match the specified namespace.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed a bug in the XPath parser for identify constraints which caused
+      field and selector XPaths containing the non-abbreviated form of the 
+      child and attribute axes to be reported as invalid.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed a bug which allowed the JAXP SchemaFactory to mutate a user 
+      supplied DOM input.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed a bug which caused the JAXP 1.2 method for schema validation to 
+      produce DTD validation errors when XInclude processing is enabled.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed various bugs and made various improvements.
+     </note>
+     <submitter name='Nathan Beyer, Michael Glavassevich, Jacob Kjome'/>
+    </fix>
+   </changes>
+  </release>
   <release version='&ParserName; 2.8.1'>
    <desc>
     <p>
