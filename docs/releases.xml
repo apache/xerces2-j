@@ -21,12 +21,12 @@
   <release version='&ParserName; 2.9.0'>
    <desc>
     <p>
-     In this release, Xerces now includes the Xalan serializer in its distribution. 
-     Xerces and Xalan now share a common serialization codebase. The DOM Level 3 
-     serialization support which was in Xerces was migrated into the Xalan serializer
-     and Xerces' native serializer was deprecated. In addition, this release upgrades
-     the xml-commons resolver to v1.2 (which provides support for OASIS XML Catalogs v1.1), 
-     introduces a few minor features and fixes several bugs.
+     As of this release, Xerces and Xalan now share a commons serialization codebase.
+     The DOM Level 3 serialization support which was in Xerces was migrated into 
+     the Xalan serializer and Xerces' native serializer was deprecated. In addition, 
+     in this release we upgraded the xml-commons resolver to v1.2 (which provides support 
+     for OASIS XML Catalogs v1.1), introduced a few minor features and fixed several 
+     bugs.
     </p>
    </desc>
    <changes>
