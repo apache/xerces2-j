@@ -133,7 +133,7 @@
   <s2 title='Changes from Previous Release'>
     
     <p>
-      The &ParserNameLong; &ParserVersion; now includes the Xalan serializer in its 
+      The &ParserNameLong; &ParserVersion; includes the Xalan serializer in its 
       distribution. Xerces and Xalan now share a common serialization codebase. The 
       DOM Level 3 serialization support which was in Xerces was migrated into the Xalan 
       serializer and Xerces' native serializer was deprecated. This release also
