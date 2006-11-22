@@ -1018,7 +1018,7 @@ Authors:
                         org/apache/xerces/parsers/XIncludeParserConfiguration.java
                         org/apache/xerces/parsers/XIncludeAwareParserConfiguration.java
                         org/apache/xerces/parsers/SecurityConfiguration.java
-                        org/apache/xerces/parsers/SoftReferenceSymbolTableParserConfiguration.java
+                        org/apache/xerces/parsers/SoftReferenceSymbolTableConfiguration.java
                         org/apache/xerces/parsers/XML11Configurable.java
                         org/apache/xerces/parsers/XML11Configuration.java
                         org/apache/xerces/parsers/XML11DTDConfiguration.java
