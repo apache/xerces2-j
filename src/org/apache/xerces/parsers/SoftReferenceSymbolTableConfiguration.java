@@ -27,11 +27,11 @@ import org.apache.xerces.xni.parser.XMLComponentManager;
  *
  * @version $Id$
  */
-public class SoftReferenceSymbolTableParserConfiguration extends
+public class SoftReferenceSymbolTableConfiguration extends
     XIncludeAwareParserConfiguration {
     
     /** Default constructor. */
-    public SoftReferenceSymbolTableParserConfiguration() {
+    public SoftReferenceSymbolTableConfiguration() {
         this(new SoftReferenceSymbolTable(), null, null);
     } // <init>()
     
@@ -40,7 +40,7 @@ public class SoftReferenceSymbolTableParserConfiguration extends
      *
      * @param symbolTable The symbol table to use.
      */
-    public SoftReferenceSymbolTableParserConfiguration(SymbolTable symbolTable) {
+    public SoftReferenceSymbolTableConfiguration(SymbolTable symbolTable) {
         this(symbolTable, null, null);
     } // <init>(SymbolTable)
     
@@ -52,7 +52,7 @@ public class SoftReferenceSymbolTableParserConfiguration extends
      * @param symbolTable The symbol table to use.
      * @param grammarPool The grammar pool to use.
      */
-    public SoftReferenceSymbolTableParserConfiguration(
+    public SoftReferenceSymbolTableConfiguration(
             SymbolTable symbolTable,
             XMLGrammarPool grammarPool) {
         this(symbolTable, grammarPool, null);
@@ -67,7 +67,7 @@ public class SoftReferenceSymbolTableParserConfiguration extends
      * @param grammarPool    The grammar pool to use.
      * @param parentSettings The parent settings.
      */
-    public SoftReferenceSymbolTableParserConfiguration(
+    public SoftReferenceSymbolTableConfiguration(
             SymbolTable symbolTable,
             XMLGrammarPool grammarPool,
             XMLComponentManager parentSettings) {
