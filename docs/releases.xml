@@ -56,7 +56,7 @@
     </add>
     <update>
      <note>
-      Updated the schema loader so that it can now process XML 1.1 schema documents.
+      Updated the schema loader so that it can now process schema documents with an XML 1.1 declaration.
      </note>
      <submitter name='Michael Glavassevich'/>
     </update>
