@@ -76,7 +76,7 @@
     </fix>
     <fix>
      <note>
-      Fixed a bug in the XPath matcher for identify constraints which allowed
+      Fixed a bug in the XPath matcher for identity constraints which allowed
       steps containing NCName:* to select element or attribute names which do 
       not match the specified namespace.
      </note>
@@ -84,7 +84,7 @@
     </fix>
     <fix>
      <note>
-      Fixed a bug in the XPath parser for identify constraints which caused
+      Fixed a bug in the XPath parser for identity constraints which caused
       field and selector XPaths containing the non-abbreviated form of the 
       child and attribute axes to be reported as invalid.
      </note>
