@@ -528,7 +528,7 @@ public class DTDGrammar
         int chunk = fCurrentElementIndex >> CHUNK_SHIFT;
         int index = fCurrentElementIndex & CHUNK_MASK;
         ensureElementDeclCapacity(chunk);
-        fElementDeclIsExternal[chunk][index] = fReadingExternalDTD? 1 : 0;
+        fElementDeclIsExternal[chunk][index] = (fReadingExternalDTD || fPEDepth > 0) ? 1 : 0;
 
     } // elementDecl(String,String)
 
@@ -658,7 +658,7 @@ public class DTDGrammar
         int chunk = fCurrentAttributeIndex >> CHUNK_SHIFT;
         int index = fCurrentAttributeIndex & CHUNK_MASK;
         ensureAttributeDeclCapacity(chunk);
-        fAttributeDeclIsExternal[chunk][index] = fReadingExternalDTD ?  1 : 0;
+        fAttributeDeclIsExternal[chunk][index] = (fReadingExternalDTD || fPEDepth > 0) ?  1 : 0;
 
     } // attributeDecl(String,String,String,String[],String,XMLString,XMLString, Augmentations)
 
@@ -685,7 +685,7 @@ public class DTDGrammar
         if( entityIndex == -1){
             entityIndex = createEntityDecl();
             boolean isPE = name.startsWith("%");
-            boolean inExternal = fReadingExternalDTD;
+            boolean inExternal = (fReadingExternalDTD || fPEDepth > 0);
             XMLEntityDecl  entityDecl = new XMLEntityDecl();
             entityDecl.setValues(name,null,null, null, null,
                                  text.toString(), isPE, inExternal);
@@ -715,7 +715,7 @@ public class DTDGrammar
         if( entityIndex == -1){
             entityIndex = createEntityDecl();
             boolean isPE = name.startsWith("%");
-            boolean inExternal = fReadingExternalDTD;
+            boolean inExternal = (fReadingExternalDTD || fPEDepth > 0);
 
             XMLEntityDecl  entityDecl = new XMLEntityDecl();
             entityDecl.setValues(name, identifier.getPublicId(), identifier.getLiteralSystemId(),
@@ -743,7 +743,7 @@ public class DTDGrammar
 
         XMLEntityDecl  entityDecl = new XMLEntityDecl();
         boolean isPE = name.startsWith("%");
-        boolean inExternal = fReadingExternalDTD;
+        boolean inExternal = (fReadingExternalDTD || fPEDepth > 0);
 
         entityDecl.setValues(name,identifier.getPublicId(),identifier.getLiteralSystemId(),
                             identifier.getBaseSystemId(), notation,
