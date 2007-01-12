@@ -525,12 +525,9 @@ extends XMLDocumentScannerImpl {
             }
         }
 
-        //REVISIT: one more case needs to be included: external PE and standalone is no
-        boolean isVC =  fHasExternalDTD && !fStandalone;
-
         // Scan attribute value and return true if the non-normalized and normalized value are the same
         boolean isSameNormalizedAttr = scanAttributeValue(this.fTempString, fTempString2,
-                fAttributeQName.rawname, isVC, fCurrentElement.rawname);
+                fAttributeQName.rawname, fIsEntityDeclaredVC, fCurrentElement.rawname);
         
         String value = fTempString.toString();
         attributes.setValue(attrIndex, value);

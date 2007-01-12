@@ -306,6 +306,11 @@ public class XMLEntityManager
      * only be set by the document source (e.g. XMLDocumentScanner).
      */
     protected boolean fStandalone;
+    
+    /**
+     * True if the current document contains parameter entity references.
+     */
+    protected boolean fHasPEReferences;
 
     // are the entities being parsed in the external subset?
     // NOTE:  this *is not* the same as whether they're external entities!
@@ -409,6 +414,21 @@ public class XMLEntityManager
     public boolean isStandalone() {
         return fStandalone;
     } // isStandalone():boolean
+    
+    /** 
+     * Notifies the entity manager that the current document 
+     * being processed contains parameter entity references.
+     */
+    final void notifyHasPEReferences() {
+        fHasPEReferences = true;
+    } // notifyHasPEReferences
+    
+    /** 
+     * Returns true if the document contains parameter entity references.
+     */
+    final boolean hasPEReferences() {
+        return fHasPEReferences;
+    } // hasPEReferences():boolean
 
     /**
      * Sets the entity handler. When an entity starts and ends, the
@@ -1325,6 +1345,7 @@ public class XMLEntityManager
 
         // initialize state
         fStandalone = false;
+        fHasPEReferences = false;
         fEntities.clear();
         fEntityStack.removeAllElements();
         fEntityExpansionCount = 0;

@@ -197,6 +197,9 @@ public class XMLDocumentFragmentScannerImpl
     /** Standalone. */
     protected boolean fStandalone;
     
+    /** True if [Entity Declared] is a VC; false if it is a WFC. */
+    protected boolean fIsEntityDeclaredVC;
+    
     /** External subset resolver. **/
     protected ExternalSubsetResolver fExternalSubsetResolver;
 
@@ -366,6 +369,7 @@ public class XMLDocumentFragmentScannerImpl
         fElementStack.clear();
         fHasExternalDTD = false;
         fStandalone = false;
+        fIsEntityDeclaredVC = false;
         fInScanContent = false;
 
 		// setup dispatcher
@@ -975,13 +979,11 @@ public class XMLDocumentFragmentScannerImpl
             reportFatalError("AttributeNotUnique",
                              new Object[]{fCurrentElement.rawname,
                                           fAttributeQName.rawname});
-        }
-        //REVISIT: one more case needs to be included: external PE and standalone is no
-        boolean isVC =  fHasExternalDTD && !fStandalone;        
+        }      
         
         // Scan attribute value and return true if the un-normalized and normalized value are the same
         boolean isSameNormalizedAttr =  scanAttributeValue(fTempString, fTempString2,
-                fAttributeQName.rawname, isVC, fCurrentElement.rawname);
+                fAttributeQName.rawname, fIsEntityDeclaredVC, fCurrentElement.rawname);
         
         attributes.setValue(attrIndex, fTempString.toString());
         // If the non-normalized and normalized value are the same, avoid creating a new string.
@@ -1281,14 +1283,14 @@ public class XMLDocumentFragmentScannerImpl
         }
         else {
             if (!fEntityManager.isDeclaredEntity(name)) {
-                //REVISIT: one more case needs to be included: external PE and standalone is no
-                if ( fHasExternalDTD && !fStandalone) {
+                if (fIsEntityDeclaredVC) {
                     if (fValidation)
                         fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,"EntityNotDeclared", 
                                                     new Object[]{name}, XMLErrorReporter.SEVERITY_ERROR);
                 }
-                else 
+                else {
                     reportFatalError("EntityNotDeclared", new Object[]{name});
+                }
             }
             fEntityManager.startEntity(name, false);
         }

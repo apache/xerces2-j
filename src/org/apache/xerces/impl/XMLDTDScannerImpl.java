@@ -136,8 +136,8 @@ public class XMLDTDScannerImpl
     /** Seen external DTD. */
     protected boolean fSeenExternalDTD;
 
-    /** Seen external parameter entity. */
-    protected boolean fSeenExternalPE;
+    /** Seen a parameter entity reference. */
+    protected boolean fSeenPEReferences;
 
     // private data
 
@@ -635,6 +635,10 @@ public class XMLDTDScannerImpl
         throws IOException, XNIException {
         int depth = fPEDepth;
         String pName = "%"+name;
+        if (!fSeenPEReferences) {
+            fSeenPEReferences = true;
+            fEntityManager.notifyHasPEReferences();
+        }
         if (fValidation && !fEntityManager.isDeclaredEntity(pName)) {
             fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,"EntityNotDeclared", 
                                         new Object[]{name}, XMLErrorReporter.SEVERITY_ERROR);
@@ -1359,7 +1363,7 @@ public class XMLDTDScannerImpl
                 }
             }
             // AttValue 
-            boolean isVC = !fStandalone  &&  (fSeenExternalDTD || fSeenExternalPE) ;
+            boolean isVC = !fStandalone  &&  (fSeenExternalDTD || fSeenPEReferences);
             scanAttributeValue(defaultVal, nonNormalizedDefaultVal, atName, isVC, elName);
         }
         return defaultType;
@@ -1484,10 +1488,6 @@ public class XMLDTDScannerImpl
         scanExternalID(fStrings, false);
         String systemId = fStrings[0];
         String publicId = fStrings[1];
-
-        if (isPEDecl && systemId != null) {
-            fSeenExternalPE = true;
-        }
 
         String notation = null;
         // NDATA
@@ -2107,7 +2107,7 @@ public class XMLDTDScannerImpl
 
         fStandalone = false;
         fSeenExternalDTD = false;
-        fSeenExternalPE = false;
+        fSeenPEReferences = false;
 
         // set starting state
         setScannerState(SCANNER_STATE_TEXT_DECL);

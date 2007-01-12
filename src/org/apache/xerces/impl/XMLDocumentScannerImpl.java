@@ -829,6 +829,7 @@ public class XMLDocumentScannerImpl
                             
                             // handle external subset
                             if (fDoctypeSystemId != null) {
+                                fIsEntityDeclaredVC = !fStandalone;
                                 if (((fValidation || fLoadExternalDTD) 
                                     && (fValidationManager == null || !fValidationManager.isCachedDTD()))) {
                                     setScannerState(SCANNER_STATE_DTD_EXTERNAL);
@@ -837,6 +838,7 @@ public class XMLDocumentScannerImpl
                                 }
                             }
                             else if (fExternalSubsetSource != null) {
+                                fIsEntityDeclaredVC = !fStandalone;
                                 if (((fValidation || fLoadExternalDTD) 
                                     && (fValidationManager == null || !fValidationManager.isCachedDTD()))) {
                                     // This handles the case of a DOCTYPE that had neither an internal subset or an external subset.
@@ -952,12 +954,14 @@ public class XMLDocumentScannerImpl
 
                                 // scan external subset next
                                 if (fDoctypeSystemId != null) {
+                                    fIsEntityDeclaredVC = !fStandalone;
                                     if (readExternalSubset) {
                                         setScannerState(SCANNER_STATE_DTD_EXTERNAL);
                                         break;
                                     }
                                 }
                                 else if (fExternalSubsetSource != null) {
+                                    fIsEntityDeclaredVC = !fStandalone;
                                     if (readExternalSubset) {
                                         // This handles the case of a DOCTYPE that only had an internal subset.
                                         fDTDScanner.setInputSource(fExternalSubsetSource);
@@ -965,6 +969,11 @@ public class XMLDocumentScannerImpl
                                         setScannerState(SCANNER_STATE_DTD_EXTERNAL_DECLS);
                                         break;
                                     }
+                                }
+                                // This document only has an internal subset. If it contains parameter entity
+                                // references and standalone="no" then [Entity Declared] is a validity constraint.
+                                else {
+                                    fIsEntityDeclaredVC = fEntityManager.hasPEReferences() && !fStandalone;
                                 }
                                 
                                 // break out of this dispatcher.
