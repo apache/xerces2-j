@@ -1925,7 +1925,7 @@ public class DeferredDocumentImpl
         System.arraycopy(INIT_ARRAY, 0, data[chunk], 0, CHUNK_SIZE);
     }
 
-    class RefCount {
+    static final class RefCount {
         int fCount;
     }
 
@@ -2075,7 +2075,7 @@ public class DeferredDocumentImpl
     /**
      * A simple integer vector.
      */
-    static class IntVector {
+    static final class IntVector {
 
         //
         // Data
