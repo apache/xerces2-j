@@ -366,13 +366,13 @@ public class SymbolTable {
         //
 
         /** Symbol. */
-        public String symbol;
+        public final String symbol;
 
         /**
          * Symbol characters. This information is duplicated here for
          * comparison performance.
          */
-        public char[] characters;
+        public final char[] characters;
 
         /** The next entry. */
         public Entry next;
