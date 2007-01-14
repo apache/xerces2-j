@@ -48,7 +48,7 @@ public class SoftReferenceSymbolTable extends SymbolTable {
      */
     protected SREntry[] fBuckets = null;
 
-    private ReferenceQueue fReferenceQueue;
+    private final ReferenceQueue fReferenceQueue;
     
     //
     // Constructors
@@ -370,8 +370,8 @@ public class SoftReferenceSymbolTable extends SymbolTable {
     } // class Entry
 
     protected static final class SREntryData {
-        public String symbol;
-        public char[] characters;
+        public final String symbol;
+        public final char[] characters;
 
         public SREntryData(String internedSymbol) {
             this.symbol = internedSymbol;
