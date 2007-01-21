@@ -185,7 +185,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
         fSymbolTable = (SymbolTable) fConfiguration.getProperty(DOMConfigurationImpl.SYMBOL_TABLE);
         // reset namespace context
         fNamespaceContext.reset();
-        fNamespaceContext.declarePrefix(XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING);
+        fNamespaceContext.declarePrefix(XMLSymbols.EMPTY_STRING, null);
         
         if ((fConfiguration.features & DOMConfigurationImpl.VALIDATE) != 0) {
             String schemaLang = (String)fConfiguration.getProperty(DOMConfigurationImpl.JAXP_SCHEMA_LANGUAGE);
@@ -792,7 +792,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
                         } else { // (localpart == fXmlnsSymbol && prefix == fEmptySymbol)  -- xmlns
                             // empty prefix is always bound ("" or some string)
                             value = fSymbolTable.addSymbol(value);
-                            fNamespaceContext.declarePrefix(XMLSymbols.EMPTY_STRING, value);
+                            fNamespaceContext.declarePrefix(XMLSymbols.EMPTY_STRING, value.length() != 0 ? value : null);
                             //removeDefault (attr, attributes);
                             continue;
                         }
@@ -859,8 +859,8 @@ public class DOMNormalizer implements XMLDocumentHandler {
                     // undeclare default namespace declaration (before that element
                     // bound to non-zero length uir), but adding xmlns="" decl                    
                     addNamespaceDecl (XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING, element);
-                    fLocalNSBinder.declarePrefix(XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING);
-                    fNamespaceContext.declarePrefix(XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING);
+                    fLocalNSBinder.declarePrefix(XMLSymbols.EMPTY_STRING, null);
+                    fNamespaceContext.declarePrefix(XMLSymbols.EMPTY_STRING, null);
                 }
             }
         }
