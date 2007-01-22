@@ -318,7 +318,13 @@ public class DeferredDocumentImpl
             setChunkValue(fNodeURI, encoding, echunk, eindex);
         }
     }
-
+    
+    // DOM Level 3: sets element TypeInfo
+    public void setTypeInfo(int elementNodeIndex, Object type) {
+        int elementChunk     = elementNodeIndex >> CHUNK_SHIFT;
+        int elementIndex     = elementNodeIndex & CHUNK_MASK;
+        setChunkValue(fNodeValue, type, elementChunk, elementIndex);
+    }
 
     /**
      * DOM Internal 
@@ -357,7 +363,10 @@ public class DeferredDocumentImpl
     } // createDeferredEntityReference(String):int
 
 
-    /** Creates an element node with a URI in the table and type information. */
+    /** 
+     * Creates an element node with a URI in the table and type information.
+     * @deprecated
+     */
     public int createDeferredElement(String elementURI, String elementName, 
                                       Object type) {
 
@@ -372,7 +381,7 @@ public class DeferredDocumentImpl
         // return node index
         return elementNodeIndex;
 
-    } // createDeferredElement(String,String):int
+    } // createDeferredElement(String,String,Object):int
 
     /** 
      * Creates an element node in the table.
@@ -383,8 +392,7 @@ public class DeferredDocumentImpl
     }
 
     /** 
-     * Creates an element node with a URI in the table.
-     * @deprecated  
+     * Creates an element node with a URI in the table. 
      */
     public int createDeferredElement(String elementURI, String elementName) {
 

@@ -1044,26 +1044,14 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
             fCurrentNode = el;
         }
         else {
+            int el = fDeferredDocumentImpl.createDeferredElement (fNamespaceAware ?
+                    element.uri : null, element.rawname);
             Object type = null;
-            if (augs != null) {
-                ElementPSVI elementPSVI = (ElementPSVI)augs.getItem (Constants.ELEMENT_PSVI);
-                if (elementPSVI != null) {
-                    type = elementPSVI.getMemberTypeDefinition ();
-                    if (type == null) {
-                        type = elementPSVI.getTypeDefinition ();
-                    }
-                }
-            }
-
-            int el =
-            fDeferredDocumentImpl.createDeferredElement (fNamespaceAware ?
-            element.uri : null,
-            element.rawname,
-            type);
             int attrCount = attributes.getLength ();
             // Need to loop in reverse order so that the attributes
             // are processed in document order when the DOM is expanded.
             for (int i = attrCount - 1; i >= 0; --i) {
+                
                 // set type information
                 AttributePSVI attrPSVI = (AttributePSVI)attributes.getAugmentations (i).getItem (Constants.ATTRIBUTE_PSVI);
                 boolean id = false;
@@ -1364,8 +1352,21 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
 
         }
         else {
+            if (augs != null) {
+                ElementPSVI elementPSVI = (ElementPSVI) augs.getItem(Constants.ELEMENT_PSVI);
+                if (elementPSVI != null) {
+                    // Setting TypeInfo. If the declared type is a union the
+                    // [member type definition] will only be available at the
+                    // end of an element.
+                    XSTypeDefinition type = elementPSVI.getMemberTypeDefinition();
+                    if (type == null) {
+                        type = elementPSVI.getTypeDefinition();
+                    }
+                    fDeferredDocumentImpl.setTypeInfo(fCurrentNodeIndex, type);
+                }
+            }
             fCurrentNodeIndex =
-            fDeferredDocumentImpl.getParentNode (fCurrentNodeIndex, false);
+                fDeferredDocumentImpl.getParentNode (fCurrentNodeIndex, false);
         }
 
 
