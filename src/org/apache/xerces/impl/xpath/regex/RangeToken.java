@@ -349,7 +349,7 @@ final class RangeToken extends Token implements java.io.Serializable {
                                                 // src2:      o----o
                                                 // src2:          o----o
                                                 // src2:  o------------o
-                if (src2begin <= src2begin && src1end <= src2end) {
+                if (src2begin <= src1begin && src1end <= src2end) {
                                                 // src1:    o--------o
                                                 // src2:  o------------o
                                                 // res:     o--------o
