@@ -387,8 +387,11 @@ public class XPathMatcher {
             else {
                 int j = 0;
                 for(; j < i && ((fMatched[j] & MATCHED) != MATCHED); j++);
-                if ((j < i) || (fMatched[j] == 0) ||
-                        ((fMatched[j] & MATCHED_ATTRIBUTE) == MATCHED_ATTRIBUTE)) {
+                if ((j < i) || (fMatched[j] == 0)) {
+                    continue;
+                }
+                if ((fMatched[j] & MATCHED_ATTRIBUTE) == MATCHED_ATTRIBUTE) {
+                    fMatched[i] = 0;
                     continue;
                 }
                 // only certain kinds of matchers actually
