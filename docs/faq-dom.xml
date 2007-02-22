@@ -69,7 +69,7 @@ catch (IOException e) {
       <p>  
 	The following source code shows how to create the parser using <jump href="http://www.w3.org/DOM/DOMTR#DOML3">DOM Level 3</jump>:
       </p>
-      <source>import  org.w3c.dom.DOMImplementationRegistry;
+      <source>import  org.w3c.dom.bootstrap.DOMImplementationRegistry;
 import  org.w3c.dom.Document;
 import  org.w3c.dom.ls.DOMImplementationLS;
 import  org.w3c.dom.ls.LSParser;
@@ -98,7 +98,7 @@ Document document = builder.parseURI("data/personal.xml");</source>
 	<code>LSSerializer</code> performs automatic namespace fixup to make your document namespace
 	well-formed.
       </p>
-      <source>import  org.w3c.dom.DOMImplementationRegistry;
+      <source>import  org.w3c.dom.bootstrap.DOMImplementationRegistry;
 import  org.w3c.dom.Document;
 import  org.w3c.dom.ls.DOMImplementationLS;
 import  org.w3c.dom.ls.LSSerializer;
