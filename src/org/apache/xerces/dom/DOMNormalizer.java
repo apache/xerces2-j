@@ -311,7 +311,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
                     if ( ((fConfiguration.features & DOMConfigurationImpl.WELLFORMED) != 0) && 
                             fDocument.isXMLVersionChanged()){
                         if (fNamespaceValidation){
-                            wellformed = CoreDocumentImpl.isValidQName(node.getPrefix() , node.getLocalName(), fDocument.isXML11Version()) ;
+                            wellformed = CoreDocumentImpl.isValidQName(node.getPrefix() , node.getLocalName(), fDocument.isXML11Version());
                         }
                         else {
                             wellformed = CoreDocumentImpl.isXMLName(node.getNodeName() , fDocument.isXML11Version());
@@ -362,9 +362,14 @@ public class DOMNormalizer implements XMLDocumentHandler {
                             attr.normalize();
                             if (fDocument.errorChecking && ((fConfiguration.features & DOMConfigurationImpl.WELLFORMED) != 0)){
                                     isAttrValueWF(fErrorHandler, fError, fLocator, attributes, attr, attr.getValue(), fDocument.isXML11Version());
-                                if (fDocument.isXMLVersionChanged()){                                   
-                                    wellformed=CoreDocumentImpl.isXMLName(node.getNodeName() , fDocument.isXML11Version());
-                                    if (!wellformed){
+                                if (fDocument.isXMLVersionChanged()) {
+                                    if (fNamespaceValidation){
+                                        wellformed = CoreDocumentImpl.isValidQName(node.getPrefix(), node.getLocalName(), fDocument.isXML11Version());
+                                    }
+                                    else {
+                                        wellformed = CoreDocumentImpl.isXMLName(node.getNodeName(), fDocument.isXML11Version());
+                                    }
+                                    if (!wellformed) {
 				                            String msg = DOMMessageFormatter.formatMessage(
 				                              DOMMessageFormatter.DOM_DOMAIN, 
 				                              "wf-invalid-character-in-node-name", 
@@ -746,15 +751,6 @@ public class DOMNormalizer implements XMLDocumentHandler {
             // Record all valid local declarations
             for (int k = 0; k < attributes.getLength(); ++k) {
                 Attr attr = (Attr)attributes.getItem(k);
-               
-                //do the name check only when version of the document was changed &
-                //application has set the value of well-formed features to true
-                if (fDocument.errorChecking && ((fConfiguration.features & DOMConfigurationImpl.WELLFORMED) != 0) && 
-                    fDocument.isXMLVersionChanged()) {
-                    //checkQName does checking based on the version of the document
-                    fDocument.checkQName(attr.getPrefix() , attr.getLocalName()) ;
-                }
-                
                 uri = attr.getNamespaceURI();
                 if (uri != null && uri.equals(NamespaceContext.XMLNS_URI)) {
                     // namespace attribute
@@ -887,7 +883,31 @@ public class DOMNormalizer implements XMLDocumentHandler {
 
                 // make sure that value is never null.
                 if (value == null) {
-                    value=XMLSymbols.EMPTY_STRING;
+                    value = XMLSymbols.EMPTY_STRING;
+                }
+                
+                //---------------------------------------
+                // check if value of the attribute is namespace well-formed
+                //---------------------------------------
+                if (fDocument.errorChecking && ((fConfiguration.features & DOMConfigurationImpl.WELLFORMED) != 0)) {
+                    isAttrValueWF(fErrorHandler, fError, fLocator, attributes, attr, value, fDocument.isXML11Version());
+                    if (fDocument.isXMLVersionChanged()) {
+                        boolean wellformed;
+                        if (fNamespaceValidation){
+                            wellformed = CoreDocumentImpl.isValidQName(attr.getPrefix(), attr.getLocalName(), fDocument.isXML11Version());
+                        }
+                        else {
+                            wellformed = CoreDocumentImpl.isXMLName(attr.getNodeName(), fDocument.isXML11Version());
+                        }
+                        if (!wellformed) {
+                            String msg = DOMMessageFormatter.formatMessage(
+                                    DOMMessageFormatter.DOM_DOMAIN, 
+                                    "wf-invalid-character-in-node-name", 
+                                    new Object[]{"Attr", attr.getNodeName()});
+                            reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_ERROR, 
+                            "wf-invalid-character-in-node-name");
+                        }
+                    }           
                 }
 
                 if (uri != null) {  // attribute has namespace !=null
@@ -904,23 +924,6 @@ public class DOMNormalizer implements XMLDocumentHandler {
                     if (uri != null && uri.equals(NamespaceContext.XMLNS_URI)) {
                         continue;
                     }
-                    //---------------------------------------
-                    // check if value of the attribute is namespace well-formed
-                    //---------------------------------------
-                    if (fDocument.errorChecking && ((fConfiguration.features & DOMConfigurationImpl.WELLFORMED) != 0)) {
-                            isAttrValueWF(fErrorHandler, fError, fLocator, attributes, attr, attr.getValue(), fDocument.isXML11Version());
-                            if (fDocument.isXMLVersionChanged()){                                   
-                                boolean wellformed=CoreDocumentImpl.isXMLName(attr.getNodeName() , fDocument.isXML11Version());
-                                if (!wellformed){
-				                        String msg = DOMMessageFormatter.formatMessage(
-				                            DOMMessageFormatter.DOM_DOMAIN, 
-				                            "wf-invalid-character-in-node-name", 
-				                            new Object[]{"Attribute", attr.getNodeName()});
-                                        reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_ERROR, 
-                                            "wf-invalid-character-in-node-name");  
-                                }
-                        }
-                    }
 
                     // ---------------------------------------
                     // remove default attributes
@@ -935,7 +938,6 @@ public class DOMNormalizer implements XMLDocumentHandler {
                     
                     // reset id-attributes
                     ((AttrImpl)attr).setIdAttribute(false);
-
 
                     uri = fSymbolTable.addSymbol(uri);
 
