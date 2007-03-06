@@ -780,20 +780,20 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 	}
 	
 	protected void append(StringBuffer message, double value) {
-		if (value < 0) {
-			message.append('-');
-			value = -value;
-		}
-		if (value < 10) {
-			message.append('0');
-        }
-        final int intValue = (int) value;
-        if (value == intValue) {
-            message.append(intValue);
-        }
-        else {
-            append2(message, value);
-        }
+	    if (value < 0) {
+	        message.append('-');
+	        value = -value;
+	    }
+	    if (value < 10) {
+	        message.append('0');
+	    }
+	    final int intValue = (int) value;
+	    if (value == intValue) {
+	        message.append(intValue);
+	    }
+	    else {
+	        append2(message, value);
+	    }
 	}
     
     private void append2(StringBuffer message, double value) {
