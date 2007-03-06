@@ -26,8 +26,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.ranges.Range;
 import org.w3c.dom.ranges.RangeException;
 
-
-/** The RangeImpl class implements the org.w3c.dom.range.Range interface.
+/** 
+ * The RangeImpl class implements the org.w3c.dom.range.Range interface.
  *  <p> Please see the API documentation for the interface classes  
  *  and use the interfaces in your client programs.
  *  
@@ -35,7 +35,7 @@ import org.w3c.dom.ranges.RangeException;
  *
  * @version $Id$
  */
-public class RangeImpl  implements Range {
+public class RangeImpl implements Range {
     
     //
     // Constants
@@ -1197,39 +1197,54 @@ public class RangeImpl  implements Range {
     private DocumentFragment traverseSameContainer( int how )
     {
         DocumentFragment frag = null;
-        if ( how!=DELETE_CONTENTS)
+        if (how != DELETE_CONTENTS) {
             frag = fDocument.createDocumentFragment();
+        }
 
         // If selection is empty, just return the fragment
-        if ( fStartOffset==fEndOffset )
+        if (fStartOffset == fEndOffset) {
             return frag;
+        }
 
-        // Text node needs special case handling
-        if ( fStartContainer.getNodeType()==Node.TEXT_NODE )
-        {
+        // Text, CDATASection, Comment and ProcessingInstruction nodes need special case handling
+        final short nodeType = fStartContainer.getNodeType();
+        if (nodeType == Node.TEXT_NODE ||
+            nodeType == Node.CDATA_SECTION_NODE ||
+            nodeType == Node.COMMENT_NODE ||
+            nodeType == Node.PROCESSING_INSTRUCTION_NODE) {
             // get the substring
             String s = fStartContainer.getNodeValue();
-            String sub = s.substring( fStartOffset, fEndOffset );
+            String sub = s.substring(fStartOffset, fEndOffset);
 
             // set the original text node to its new value
-            if ( how != CLONE_CONTENTS )
-            {
-                ((TextImpl)fStartContainer).deleteData(fStartOffset,
-                     fEndOffset-fStartOffset) ;
+            if (how != CLONE_CONTENTS) {
+                ((CharacterDataImpl)fStartContainer).deleteData(fStartOffset,
+                     fEndOffset-fStartOffset);
                 // Nothing is partially selected, so collapse to start point
-                collapse( true );
+                collapse(true);
             }
-            if ( how==DELETE_CONTENTS)
+            if (how == DELETE_CONTENTS) {
                 return null;
-            frag.appendChild( fDocument.createTextNode(sub) );
+            }
+            if (nodeType == Node.TEXT_NODE) {
+                frag.appendChild(fDocument.createTextNode(sub));
+            }
+            else if (nodeType == Node.CDATA_SECTION_NODE) {
+                frag.appendChild(fDocument.createCDATASection(sub));
+            }
+            else if (nodeType == Node.COMMENT_NODE) {
+                frag.appendChild(fDocument.createComment(sub));
+            }
+            else { // nodeType == Node.PROCESSING_INSTRUCTION_NODE
+                frag.appendChild(fDocument.createProcessingInstruction(fStartContainer.getNodeName(), sub));
+            }
             return frag;
         }
 
         // Copy nodes between the start/end offsets.
         Node n = getSelectedNode( fStartContainer, fStartOffset );
         int cnt = fEndOffset - fStartOffset;
-        while( cnt > 0 )
-        {
+        while( cnt > 0 ) {
             Node sibling = n.getNextSibling();
             Node xferNode = traverseFullySelected( n, how );
             if ( frag!=null )
@@ -1239,8 +1254,9 @@ public class RangeImpl  implements Range {
         }
 
         // Nothing is partially selected, so collapse to start point
-        if ( how != CLONE_CONTENTS )
-            collapse( true );
+        if (how != CLONE_CONTENTS) {
+            collapse(true);
+        }
         return frag;
     }
 
@@ -1679,7 +1695,7 @@ public class RangeImpl  implements Range {
      * Utility method for traversing a single node.
      * Does not properly handle a text node containing both the
      * start and end offsets.  Such nodes should
-     * have been previously detected and been routed to traverseTextNode.
+     * have been previously detected and been routed to traverseCharacterDataNode.
      * 
      * @param n      The node to be traversed.
      * 
@@ -1718,10 +1734,16 @@ public class RangeImpl  implements Range {
      */
     private Node traverseNode( Node n, boolean isFullySelected, boolean isLeft, int how )
     {
-        if ( isFullySelected )
+        if ( isFullySelected ) {
             return traverseFullySelected( n, how );
-        if ( n.getNodeType()==Node.TEXT_NODE )
-            return traverseTextNode( n, isLeft, how );
+        }
+        final short nodeType = n.getNodeType();
+        if (nodeType == Node.TEXT_NODE ||
+            nodeType == Node.CDATA_SECTION_NODE ||
+            nodeType == Node.COMMENT_NODE ||
+            nodeType == Node.PROCESSING_INSTRUCTION_NODE) {
+            return traverseCharacterDataNode( n, isLeft, how );
+        }
         return traversePartiallySelected( n, how );
     }
 
@@ -1815,8 +1837,9 @@ public class RangeImpl  implements Range {
     }
 
     /**
-     * Utility method for traversing a text node that we know
-     * a-priori to be on a left or right boundary of the range.
+     * Utility method for traversing a node containing character data
+     * (either a Text, CDATASection, Comment or ProcessingInstruction node)
+     * that we know a-priori to be on a left or right boundary of the range.
      * This method does not properly handle text nodes that contain
      * both the start and end points of the range.
      * 
@@ -1847,7 +1870,7 @@ public class RangeImpl  implements Range {
      *         If the traversal operation is
      *         <code>DELETE_CONTENTS</code> the return value is null.
      */
-    private Node traverseTextNode( Node n, boolean isLeft, int how )
+    private Node traverseCharacterDataNode( Node n, boolean isLeft, int how )
     {
         String txtValue = n.getNodeValue();
         String newNodeValue;
