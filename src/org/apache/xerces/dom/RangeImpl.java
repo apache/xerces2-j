@@ -892,24 +892,22 @@ public class RangeImpl implements Range {
      *  The  text has already beeen inserted.
      *  Fix-up any offsets.
      */
-    void receiveDeletedText(Node node, int offset, int count) {
+    void receiveDeletedText(CharacterDataImpl node, int offset, int count) {
         if (node == null) return;
         if (fDeleteNode == node) return;
-        if (node == fStartContainer 
-        && fStartContainer.getNodeType() == Node.TEXT_NODE) {
-            if (fStartOffset > offset+count) {
-                fStartOffset = offset+(fStartOffset-(offset+count));
-            } else 
-            if (fStartOffset > offset) {
+        if (node == fStartContainer) {
+            if (fStartOffset > offset + count) {
+                fStartOffset = offset + (fStartOffset - (offset + count));
+            } 
+            else if (fStartOffset > offset) {
                 fStartOffset = offset;
             }  
         }
-        if (node == fEndContainer 
-        && fEndContainer.getNodeType() == Node.TEXT_NODE) {
-            if (fEndOffset > offset+count) {
-                fEndOffset = offset+(fEndOffset-(offset+count));
-            } else 
-            if (fEndOffset > offset) {
+        if (node == fEndContainer) {
+            if (fEndOffset > offset + count) {
+                fEndOffset = offset + (fEndOffset - (offset + count));
+            } 
+            else if (fEndOffset > offset) {
                 fEndOffset = offset;
             }  
         }
@@ -926,43 +924,39 @@ public class RangeImpl implements Range {
     }
     
     
-    /** This function is called from DOM.
-     *  The  text has already beeen inserted.
+    /** 
+     *  This function is called from DOM.
+     *  The text has already beeen inserted.
      *  Fix-up any offsets.
      */
-    void receiveInsertedText(Node node, int index, int len) {
+    void receiveInsertedText(CharacterDataImpl node, int index, int len) {
         if (node == null) return;
         if (fInsertNode == node) return;
-        if (node == fStartContainer 
-        && fStartContainer.getNodeType() == Node.TEXT_NODE) {
+        if (node == fStartContainer) {
             if (index < fStartOffset) {
-                fStartOffset = fStartOffset+len;
+                fStartOffset = fStartOffset + len;
             }
         }
-        if (node == fEndContainer 
-        && fEndContainer.getNodeType() == Node.TEXT_NODE) {
+        if (node == fEndContainer) {
             if (index < fEndOffset) {
-                fEndOffset = fEndOffset+len;
+                fEndOffset = fEndOffset + len;
             }
         }
-        
     }
    
-    /** This function is called from DOM.
-     *  The  text has already beeen replaced.
+    /** 
+     *  This function is called from DOM.
+     *  The text has already beeen replaced.
      *  Fix-up any offsets.
      */
-    void receiveReplacedText(Node node) {
+    void receiveReplacedText(CharacterDataImpl node) {
         if (node == null) return;
-        if (node == fStartContainer 
-        && fStartContainer.getNodeType() == Node.TEXT_NODE) {
+        if (node == fStartContainer) {
             fStartOffset = 0;
         }
-        if (node == fEndContainer 
-        && fEndContainer.getNodeType() == Node.TEXT_NODE) {
+        if (node == fEndContainer) {
             fEndOffset = 0;
         }
-        
     }
     
     /** This function is called from the DOM.

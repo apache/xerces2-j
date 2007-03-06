@@ -2647,21 +2647,21 @@ extends ParentNode implements Document  {
      * A method to be called when some text was changed in a text node,
      * so that live objects can be notified.
      */
-    void replacedText(NodeImpl node) {
+    void replacedText(CharacterDataImpl node) {
     }
 
     /**
      * A method to be called when some text was deleted from a text node,
      * so that live objects can be notified.
      */
-    void deletedText(NodeImpl node, int offset, int count) {
+    void deletedText(CharacterDataImpl node, int offset, int count) {
     }
 
     /**
      * A method to be called when some text was inserted into a text node,
      * so that live objects can be notified.
      */
-    void insertedText(NodeImpl node, int offset, int count) {
+    void insertedText(CharacterDataImpl node, int offset, int count) {
     }
 
     /**

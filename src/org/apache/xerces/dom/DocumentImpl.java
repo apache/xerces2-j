@@ -323,14 +323,14 @@ public class DocumentImpl
      * A method to be called when some text was changed in a text node,
      * so that live objects can be notified.
      */
-    void replacedText(NodeImpl node) {
+    void replacedText(CharacterDataImpl node) {
         // notify ranges
         if (ranges != null) {
             notifyRangesReplacedText(node);
         }
     }
     
-    private void notifyRangesReplacedText(NodeImpl node) {
+    private void notifyRangesReplacedText(CharacterDataImpl node) {
         final int size = ranges.size();
         for (int i = 0; i != size; i++) {
             ((RangeImpl)ranges.elementAt(i)).receiveReplacedText(node);
@@ -341,14 +341,14 @@ public class DocumentImpl
      * A method to be called when some text was deleted from a text node,
      * so that live objects can be notified.
      */
-    void deletedText(NodeImpl node, int offset, int count) {
+    void deletedText(CharacterDataImpl node, int offset, int count) {
         // notify ranges
         if (ranges != null) {
             notifyRangesDeletedText(node, offset, count);
         }
     }
     
-    private void notifyRangesDeletedText(NodeImpl node, int offset, int count) {
+    private void notifyRangesDeletedText(CharacterDataImpl node, int offset, int count) {
         final int size = ranges.size();
         for (int i = 0; i != size; i++) {
             ((RangeImpl)ranges.elementAt(i)).receiveDeletedText(node, offset, count);
@@ -359,14 +359,14 @@ public class DocumentImpl
      * A method to be called when some text was inserted into a text node,
      * so that live objects can be notified.
      */
-    void insertedText(NodeImpl node, int offset, int count) {
+    void insertedText(CharacterDataImpl node, int offset, int count) {
         // notify ranges
         if (ranges != null) {
             notifyRangesInsertedText(node, offset, count);
         }
     }
     
-    private void notifyRangesInsertedText(NodeImpl node, int offset, int count) {
+    private void notifyRangesInsertedText(CharacterDataImpl node, int offset, int count) {
         final int size = ranges.size();
         for (int i = 0; i != size; i++) {
             ((RangeImpl)ranges.elementAt(i)).receiveInsertedText(node, offset, count);
