@@ -46,18 +46,17 @@ public class RangeImpl implements Range {
     // Data
     //
     
-    DocumentImpl fDocument;
-    Node fStartContainer;
-    Node fEndContainer;
-    int fStartOffset;
-    int fEndOffset;
-    boolean fIsCollapsed;   
-    boolean fDetach = false;
-    Node fInsertNode = null;
-    Node fDeleteNode = null;
-    Node fSplitNode = null;
+    private DocumentImpl fDocument;
+    private Node fStartContainer;
+    private Node fEndContainer;
+    private int fStartOffset;
+    private int fEndOffset;   
+    private boolean fDetach = false;
+    private Node fInsertNode = null;
+    private Node fDeleteNode = null;
+    private Node fSplitNode = null;
     // Was the Node inserted from the Range or the Document
-    boolean fInsertedFromRange = false; 
+    private boolean fInsertedFromRange = false; 
     
     /** The constructor. Clients must use DocumentRange.createRange(),
      *  because it registers the Range with the document, so it can 
@@ -999,7 +998,7 @@ public class RangeImpl implements Range {
      *  removing this child.
      */
      
-    Node fRemoveChild = null;
+    private Node fRemoveChild = null;
     Node removeChild(Node parent, Node child) {
         fRemoveChild = child;
         Node n = parent.removeChild(child);
