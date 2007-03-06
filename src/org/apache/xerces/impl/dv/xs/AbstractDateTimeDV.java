@@ -17,6 +17,8 @@
 
 package org.apache.xerces.impl.dv.xs;
 
+import java.math.BigDecimal;
+
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -782,10 +784,58 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 			message.append('-');
 			value = -value;
 		}
-		if (value < 10)
+		if (value < 10) {
 			message.append('0');
-		message.append(value);
+        }
+        final int intValue = (int) value;
+        if (value == intValue) {
+            message.append(intValue);
+        }
+        else {
+            append2(message, value);
+        }
 	}
+    
+    private void append2(StringBuffer message, double value) {
+        String d = String.valueOf(value);
+        int eIndex = d.indexOf('E');
+        if (eIndex == -1) {
+            message.append(d);
+            return;
+        }
+        // Need to convert from scientific notation of the form 
+        // n.nnn...E-N (N >= 4) to a normal decimal value.
+        int exp;
+        try {
+            exp = parseInt(d, eIndex+2, d.length());
+        }
+        // This should never happen. 
+        // It's only possible if String.valueOf(double) is broken.
+        catch (Exception e) {
+            message.append(d);
+            return;
+        }
+        message.append("0.");
+        for (int i = 1; i < exp; ++i) {
+            message.append('0');
+        }
+        // Remove trailing zeros.
+        int end = eIndex - 1;
+        while (end > 0) {
+            char c = d.charAt(end);
+            if (c != '0') {
+                break;
+            }
+            --end;
+        }
+        // Now append the digits to the end. Skip over the decimal point.
+        for (int i = 0; i <= end; ++i) {
+            char c = d.charAt(i);
+            if (c != '.') {
+                message.append(c);
+            }
+        }
+    }
 	
 	protected double parseSecond(String buffer, int start, int end)
 	throws NumberFormatException {
