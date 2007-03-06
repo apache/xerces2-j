@@ -846,7 +846,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                 }
             }
             else if (name.equalsIgnoreCase (GRAMMAR_POOL)){
-                if (value instanceof XMLGrammarPool){
+                if (value instanceof XMLGrammarPool || value == null) {
                     setProperty(GRAMMAR_POOL, value);
                 }
                 else {
