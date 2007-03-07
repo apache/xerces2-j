@@ -17,8 +17,6 @@
 
 package org.apache.xerces.impl.dv.xs;
 
-import java.math.BigDecimal;
-
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
