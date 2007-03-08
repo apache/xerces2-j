@@ -876,7 +876,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 XSParticleDecl particle = new XSParticleDecl();
                 particle.fType = XSParticleDecl.PARTICLE_MODELGROUP;
                 particle.fValue = group;
-                particle.fAnnotations = fParticle.getAnnotations(); 
+                particle.fAnnotations = XSObjectListImpl.EMPTY_LIST; 
                 
                 fParticle = particle;
             }
