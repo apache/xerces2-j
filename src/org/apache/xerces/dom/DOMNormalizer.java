@@ -157,8 +157,8 @@ public class DOMNormalizer implements XMLDocumentHandler {
     /** Empty string to pass to the validator. **/
     public static final XMLString EMPTY_STRING = new XMLString();
     
-    //Check if element content is all "ignorable whitespace"
-    private boolean allWhitespace = false;
+    // Check if element content is all "ignorable whitespace"
+    private boolean fAllWhitespace = false;
     
     // Constructor
     // 
@@ -175,6 +175,8 @@ public class DOMNormalizer implements XMLDocumentHandler {
         
         fDocument = document;
         fConfiguration = config;
+        fAllWhitespace = false;
+        fNamespaceValidation = false;
         
         String xmlVersion = fDocument.getXmlVersion();
         String schemaType = null;
@@ -403,7 +405,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
                 for (kid = elem.getFirstChild(); kid != null; kid = next) {
                     next = kid.getNextSibling();
                     kid = normalizeNode(kid);
-                    if (kid !=null) {
+                    if (kid != null) {
                         next = kid;  // don't advance
                     }
                 } 
@@ -596,32 +598,37 @@ public class DOMNormalizer implements XMLDocumentHandler {
                   
                     short nextType = (next != null)?next.getNodeType():-1;
                     if (nextType == -1 || !(((fConfiguration.features & DOMConfigurationImpl.ENTITIES) == 0 &&
-                           nextType == Node.ENTITY_NODE) ||
-                          ((fConfiguration.features & DOMConfigurationImpl.COMMENTS) == 0 &&
-                           nextType == Node.COMMENT_NODE) ||
-                          ((fConfiguration.features & DOMConfigurationImpl.CDATA) == 0) &&
-                          nextType == Node.CDATA_SECTION_NODE)) {
-                              if (fDocument.errorChecking && ((fConfiguration.features & DOMConfigurationImpl.WELLFORMED) != 0) ){
-                                  isXMLCharWF(fErrorHandler, fError, fLocator, node.getNodeValue(), fDocument.isXML11Version());
-                              }                              
-                              if (fValidationHandler != null) {
-                                     fConfiguration.fErrorHandlerWrapper.fCurrentNode = node;
-                                     fCurrentNode = node;
-                                     fValidationHandler.characterData(node.getNodeValue(), null);
-                                     if (allWhitespace) {
-                                         allWhitespace = false;
-                                         ((TextImpl)node).setIgnorableWhitespace(true);
-                                     }
-                                     if (DEBUG_ND) {
-                                         System.out.println("=====>characterData(),"+nextType);
-                                     }
-                              }  
+                            nextType == Node.ENTITY_NODE) ||
+                            ((fConfiguration.features & DOMConfigurationImpl.COMMENTS) == 0 &&
+                                    nextType == Node.COMMENT_NODE) ||
+                                    ((fConfiguration.features & DOMConfigurationImpl.CDATA) == 0) &&
+                                    nextType == Node.CDATA_SECTION_NODE)) {
+                        if (fDocument.errorChecking && ((fConfiguration.features & DOMConfigurationImpl.WELLFORMED) != 0) ){
+                            isXMLCharWF(fErrorHandler, fError, fLocator, node.getNodeValue(), fDocument.isXML11Version());
+                        }                              
+                        if (fValidationHandler != null) {
+                            fConfiguration.fErrorHandlerWrapper.fCurrentNode = node;
+                            fCurrentNode = node;
+                            fValidationHandler.characterData(node.getNodeValue(), null);
+                            if (!fNamespaceValidation) {
+                                if (fAllWhitespace) {
+                                    fAllWhitespace = false;
+                                    ((TextImpl)node).setIgnorableWhitespace(true);
+                                }
+                                else {
+                                    ((TextImpl)node).setIgnorableWhitespace(false);
+                                }
+                            }
+                            if (DEBUG_ND) {
+                                System.out.println("=====>characterData(),"+nextType);
+                            }
+                        }  
                     }
                     else {
-                            if (DEBUG_ND) {
-                                System.out.println("=====>don't send characters(),"+nextType);
+                        if (DEBUG_ND) {
+                            System.out.println("=====>don't send characters(),"+nextType);
 
-                            }
+                        }
                     }
                 }
                 break;
@@ -1436,8 +1443,8 @@ public class DOMNormalizer implements XMLDocumentHandler {
         protected CoreDocumentImpl fDocument;
         protected ElementImpl fElement;
 
+        protected final Vector fDTDTypes = new Vector(5);
         protected final Vector fAugmentations = new Vector(5);
-
 
         public void setAttributes(AttributeMap attributes, CoreDocumentImpl doc, ElementImpl elem) {
             fDocument = doc;
@@ -1445,7 +1452,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
             fElement = elem;
             if (attributes != null) {
                 int length = attributes.getLength();
-
+                fDTDTypes.setSize(length);
                 fAugmentations.setSize(length);
                 // REVISIT: this implementation does not store any value in augmentations
                 //          and basically not keeping augs in parallel to attributes map
@@ -1453,7 +1460,9 @@ public class DOMNormalizer implements XMLDocumentHandler {
                 for (int i = 0; i < length; i++) {
                     fAugmentations.setElementAt(new AugmentationsImpl(), i);
                 }
-            } else {
+            } 
+            else {
+                fDTDTypes.setSize(0);
                 fAugmentations.setSize(0);
             }
         }
@@ -1477,6 +1486,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
                 // REVISIT: the following should also update ID table
                 attr.setNodeValue(attrValue);
                 index = fElement.setXercesAttributeNode(attr);
+                fDTDTypes.insertElementAt(attrType, index);
                 fAugmentations.insertElementAt(new AugmentationsImpl(), index);
                 attr.setSpecified(false);
             }            
@@ -1568,11 +1578,12 @@ public class DOMNormalizer implements XMLDocumentHandler {
         }
 
         public void setType(int attrIndex, String attrType) {
-            // REVISIT: implement
+            fDTDTypes.setElementAt(attrType, attrIndex);
         }
 
         public String getType(int index) {
-            return "CDATA";
+            String type = (String) fDTDTypes.elementAt(index);
+            return (type != null) ? getReportableType(type) : "CDATA";
         }
 
         public String getType(String qName) {
@@ -1581,6 +1592,13 @@ public class DOMNormalizer implements XMLDocumentHandler {
 
         public String getType(String uri, String localName) {
             return "CDATA";
+        }
+        
+        private String getReportableType(String type) {
+            if (type.charAt(0) == '(') {
+                return "NMTOKEN";
+            }
+            return type;
         }
 
         public void setValue(int attrIndex, String attrValue) {
@@ -1776,58 +1794,81 @@ public class DOMNormalizer implements XMLDocumentHandler {
      * @exception XNIException
      *                   Thrown by handler to signal an error.
      */
-	public void startElement(QName element, XMLAttributes attributes, Augmentations augs)
-		throws XNIException {
-		Element currentElement = (Element) fCurrentNode;
-		int attrCount = attributes.getLength();
+    public void startElement(QName element, XMLAttributes attributes, Augmentations augs)
+        throws XNIException {
+        Element currentElement = (Element) fCurrentNode;
+        int attrCount = attributes.getLength();
         if (DEBUG_EVENTS) {
             System.out.println("==>startElement: " +element+
-            " attrs.length="+attrCount);
+                    " attrs.length="+attrCount);
         }
 
-		for (int i = 0; i < attrCount; i++) {
-			attributes.getName(i, fAttrQName);
-			Attr attr = null;
+        for (int i = 0; i < attrCount; i++) {
+            attributes.getName(i, fAttrQName);
+            Attr attr = null;
 
-			attr = currentElement.getAttributeNodeNS(fAttrQName.uri, fAttrQName.localpart);
+            attr = currentElement.getAttributeNodeNS(fAttrQName.uri, fAttrQName.localpart);
             AttributePSVI attrPSVI =
-				(AttributePSVI) attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI);
+                (AttributePSVI) attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI);
 
-			if (attrPSVI != null) {
+            if (attrPSVI != null) {
                 //REVISIT: instead we should be using augmentations:
                 // to set/retrieve Id attributes
                 XSTypeDefinition decl = attrPSVI.getMemberTypeDefinition();
                 boolean id = false;
-                if (decl != null){
+                if (decl != null) {
                     id = ((XSSimpleType)decl).isIDType();
-                } else{
+                } 
+                else {
                     decl = attrPSVI.getTypeDefinition();
-                    if (decl !=null){
-                       id = ((XSSimpleType)decl).isIDType(); 
+                    if (decl != null) {
+                        id = ((XSSimpleType)decl).isIDType(); 
                     }
                 }
-                if (id){
+                if (id) {
                     ((ElementImpl)currentElement).setIdAttributeNode(attr, true);
                 }
-                
-				if (fPSVI) {
-					((PSVIAttrNSImpl) attr).setPSVI(attrPSVI);
-				}
-				if ((fConfiguration.features & DOMConfigurationImpl.DTNORMALIZATION) != 0) {
-					// datatype-normalization
-					// NOTE: The specified value MUST be set after we set
-					//       the node value because that turns the "specified"
-					//       flag to "true" which may overwrite a "false"
-					//       value from the attribute list.
-					boolean specified = attr.getSpecified();
-					attr.setValue(attrPSVI.getSchemaNormalizedValue());
-					if (!specified) {
-						((AttrImpl) attr).setSpecified(specified);
-					}
-				}
-			}
-		}
-	}
+
+                if (fPSVI) {
+                    ((PSVIAttrNSImpl) attr).setPSVI(attrPSVI);
+                }
+
+                // Updating the TypeInfo for this attribute.
+                ((AttrImpl) attr).setType(decl);
+
+                if ((fConfiguration.features & DOMConfigurationImpl.DTNORMALIZATION) != 0) {
+                    // datatype-normalization
+                    // NOTE: The specified value MUST be set after we set
+                    //       the node value because that turns the "specified"
+                    //       flag to "true" which may overwrite a "false"
+                    //       value from the attribute list.
+                    final String normalizedValue = attrPSVI.getSchemaNormalizedValue();
+                    if (normalizedValue != null) {
+                        boolean specified = attr.getSpecified();
+                        attr.setValue(normalizedValue);
+                        if (!specified) {
+                            ((AttrImpl) attr).setSpecified(specified);
+                        }
+                    }
+                }
+            }
+            else { // DTD
+                String type = null;
+                boolean isDeclared = Boolean.TRUE.equals(attributes.getAugmentations(i).getItem (Constants.ATTRIBUTE_DECLARED));
+                // For DOM Level 3 TypeInfo, the type name must
+                // be null if this attribute has not been declared
+                // in the DTD.
+                if (isDeclared) {
+                    type = attributes.getType(i);
+                    if ("ID".equals (type)) {
+                        ((ElementImpl) currentElement).setIdAttributeNode(attr, true);
+                    }
+                }
+                // Updating the TypeInfo for this attribute.
+                ((AttrImpl) attr).setType(type);
+            }
+        }
+    }
 
 
     /**
@@ -1936,7 +1977,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
      *                   Thrown by handler to signal an error.
      */
     public void ignorableWhitespace(XMLString text, Augmentations augs) throws XNIException{
-        allWhitespace = true;
+        fAllWhitespace = true;
     }
 
     /**
@@ -1948,38 +1989,51 @@ public class DOMNormalizer implements XMLDocumentHandler {
      * @exception XNIException
      *                   Thrown by handler to signal an error.
      */
-	public void endElement(QName element, Augmentations augs) throws XNIException {
-		if (DEBUG_EVENTS) {
-			System.out.println("==>endElement: " + element);
-		}
+    public void endElement(QName element, Augmentations augs) throws XNIException {
+        if (DEBUG_EVENTS) {
+            System.out.println("==>endElement: " + element);
+        }
 
-        if(augs != null) {
-    		ElementPSVI elementPSVI = (ElementPSVI) augs.getItem(Constants.ELEMENT_PSVI);
-    		if (elementPSVI != null) {
-    			ElementImpl elementNode = (ElementImpl) fCurrentNode;
-    			if (fPSVI) {
-    				((PSVIElementNSImpl) fCurrentNode).setPSVI(elementPSVI);
-    			}
-    			// include element default content (if one is available)
-    			String normalizedValue = elementPSVI.getSchemaNormalizedValue();
-    			if ((fConfiguration.features & DOMConfigurationImpl.DTNORMALIZATION) != 0) {
+        if (augs != null) {
+            ElementPSVI elementPSVI = (ElementPSVI) augs.getItem(Constants.ELEMENT_PSVI);
+            if (elementPSVI != null) {
+                ElementImpl elementNode = (ElementImpl) fCurrentNode;
+                if (fPSVI) {
+                    ((PSVIElementNSImpl) fCurrentNode).setPSVI(elementPSVI);
+                }
+                // Updating the TypeInfo for this element.
+                if (elementNode instanceof ElementNSImpl) {
+                    XSTypeDefinition type = elementPSVI.getMemberTypeDefinition();
+                    if (type == null) {
+                        type = elementPSVI.getTypeDefinition();
+                    }
+                    ((ElementNSImpl) elementNode).setType(type);
+                }
+                // include element default content (if one is available)
+                String normalizedValue = elementPSVI.getSchemaNormalizedValue();
+                if ((fConfiguration.features & DOMConfigurationImpl.DTNORMALIZATION) != 0) {
                     if (normalizedValue !=null)
-    				    elementNode.setTextContent(normalizedValue);
-    			}
-    			else {
-    				// NOTE: this is a hack: it is possible that DOM had an empty element
-    				// and validator sent default value using characters(), which we don't 
-    				// implement. Thus, here we attempt to add the default value.
-    				String text = elementNode.getTextContent();
-    				if (text.length() == 0) {
-    					// default content could be provided
+                        elementNode.setTextContent(normalizedValue);
+                }
+                else {
+                    // NOTE: this is a hack: it is possible that DOM had an empty element
+                    // and validator sent default value using characters(), which we don't 
+                    // implement. Thus, here we attempt to add the default value.
+                    String text = elementNode.getTextContent();
+                    if (text.length() == 0) {
+                        // default content could be provided
                         if (normalizedValue !=null)
                             elementNode.setTextContent(normalizedValue);
-    				}
-    			}
-    		}
+                    }
+                }
+                return;
+            }
         }
-	}
+        // DTD; elements have no type.
+        if (fCurrentNode instanceof ElementNSImpl) { 
+            ((ElementNSImpl) fCurrentNode).setType(null);
+        }
+    }
 
 
     /**
