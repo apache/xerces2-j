@@ -113,8 +113,11 @@ public class PSVIDOMImplementationImpl extends CoreDOMImplementationImpl {
 					               "WRONG_DOCUMENT_ERR", null));
         }
         DocumentImpl doc = new PSVIDocumentImpl(doctype);
-        Element e = doc.createElementNS( namespaceURI, qualifiedName);
-        doc.appendChild(e);
+        // If namespaceURI and qualifiedName are null return a Document with no document element.
+        if (qualifiedName != null || namespaceURI != null) {
+            Element e = doc.createElementNS(namespaceURI, qualifiedName);
+            doc.appendChild(e);
+        }
         return doc;
     }
     

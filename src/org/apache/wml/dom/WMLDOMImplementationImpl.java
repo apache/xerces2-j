@@ -14,11 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.wml.dom;
 
-import org.apache.wml.*;
-import org.w3c.dom.*;
-import org.apache.xerces.dom.*;
+import org.apache.wml.WMLDOMImplementation;
+import org.apache.xerces.dom.DOMImplementationImpl;
+import org.apache.xerces.dom.DOMMessageFormatter;
+import org.apache.xerces.dom.DocumentImpl;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentType;
+import org.w3c.dom.Element;
 
 /**
  * @xerces.internal
@@ -40,10 +47,18 @@ public class WMLDOMImplementationImpl extends DOMImplementationImpl implements W
     public Document createDocument(String namespaceURI, 
             String qualifiedName, 
             DocumentType doctype) throws DOMException {
+        if (doctype != null && doctype.getOwnerDocument() != null) {
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
+                                   DOMMessageFormatter.formatMessage(
+                                   DOMMessageFormatter.XML_DOMAIN, 
+                                   "WRONG_DOCUMENT_ERR", null));
+        }
         DocumentImpl doc = new WMLDocumentImpl(doctype);
-        //((DocumentTypeImpl)doctype).ownerDocument = doc;
-        Element e = doc.createElementNS( namespaceURI, qualifiedName);
-        doc.appendChild(e);
+        // If namespaceURI and qualifiedName are null return a Document with no document element.
+        if (qualifiedName != null || namespaceURI != null) {
+            Element e = doc.createElementNS(namespaceURI, qualifiedName);
+            doc.appendChild(e);
+        }
         return doc;
     }
 }

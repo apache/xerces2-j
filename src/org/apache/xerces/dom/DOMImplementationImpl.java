@@ -130,18 +130,16 @@ public class DOMImplementationImpl extends CoreDOMImplementationImpl
                                              DocumentType doctype)
                                              throws DOMException
     {
-        if(namespaceURI == null && qualifiedName == null && doctype == null){
-        //if namespaceURI, qualifiedName and doctype are null, returned document is empty with
-        //no document element
-            return new DocumentImpl();
-        }
-    	else if (doctype != null && doctype.getOwnerDocument() != null) {
+        if (doctype != null && doctype.getOwnerDocument() != null) {
             String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null);
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);
         }
         DocumentImpl doc = new DocumentImpl(doctype);
-        Element e = doc.createElementNS( namespaceURI, qualifiedName);
-        doc.appendChild(e);
+        // If namespaceURI and qualifiedName are null return a Document with no document element.
+        if (qualifiedName != null || namespaceURI != null) {
+            Element e = doc.createElementNS(namespaceURI, qualifiedName);
+            doc.appendChild(e);
+        }
         return doc;
     }
 
