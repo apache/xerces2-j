@@ -1808,6 +1808,10 @@ public class DOMNormalizer implements XMLDocumentHandler {
             Attr attr = null;
 
             attr = currentElement.getAttributeNodeNS(fAttrQName.uri, fAttrQName.localpart);
+            if (attr == null) {
+                // Must be a non-namespace aware DOM Level 1 node.
+                attr = currentElement.getAttributeNode(fAttrQName.rawname);
+            }
             AttributePSVI attrPSVI =
                 (AttributePSVI) attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI);
 
