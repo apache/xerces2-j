@@ -748,7 +748,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 		return message.toString();
 	}
 	
-	protected void append(StringBuffer message, int value, int nch) {
+	protected final void append(StringBuffer message, int value, int nch) {
         if (value == Integer.MIN_VALUE) {
             message.append(value);
             return;
@@ -777,7 +777,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 		}
 	}
 	
-	protected void append(StringBuffer message, double value) {
+	protected final void append(StringBuffer message, double value) {
 	    if (value < 0) {
 	        message.append('-');
 	        value = -value;
@@ -785,52 +785,85 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 	    if (value < 10) {
 	        message.append('0');
 	    }
-	    final int intValue = (int) value;
-	    if (value == intValue) {
-	        message.append(intValue);
-	    }
-	    else {
-	        append2(message, value);
-	    }
+        append2(message, value);
 	}
     
-    private void append2(StringBuffer message, double value) {
+    protected final void append2(StringBuffer message, double value) {
+        final int intValue = (int) value;
+        if (value == intValue) {
+            message.append(intValue);
+        }
+        else {
+            append3(message, value);
+        }
+    }
+    
+    private void append3(StringBuffer message, double value) {
         String d = String.valueOf(value);
         int eIndex = d.indexOf('E');
         if (eIndex == -1) {
             message.append(d);
             return;
         }
-        // Need to convert from scientific notation of the form 
-        // n.nnn...E-N (N >= 4) to a normal decimal value.
         int exp;
-        try {
-            exp = parseInt(d, eIndex+2, d.length());
-        }
-        // This should never happen. 
-        // It's only possible if String.valueOf(double) is broken.
-        catch (Exception e) {
-            message.append(d);
-            return;
-        }
-        message.append("0.");
-        for (int i = 1; i < exp; ++i) {
-            message.append('0');
-        }
-        // Remove trailing zeros.
-        int end = eIndex - 1;
-        while (end > 0) {
-            char c = d.charAt(end);
-            if (c != '0') {
-                break;
+        if (value < 1) {
+            // Need to convert from scientific notation of the form 
+            // n.nnn...E-N (N >= 4) to a normal decimal value.
+            try {
+                exp = parseInt(d, eIndex+2, d.length());
             }
-            --end;
+            // This should never happen. 
+            // It's only possible if String.valueOf(double) is broken.
+            catch (Exception e) {
+                message.append(d);
+                return;
+            }
+            message.append("0.");
+            for (int i = 1; i < exp; ++i) {
+                message.append('0');
+            }
+            // Remove trailing zeros.
+            int end = eIndex - 1;
+            while (end > 0) {
+                char c = d.charAt(end);
+                if (c != '0') {
+                    break;
+                }
+                --end;
+            }
+            // Now append the digits to the end. Skip over the decimal point.
+            for (int i = 0; i <= end; ++i) {
+                char c = d.charAt(i);
+                if (c != '.') {
+                    message.append(c);
+                }
+            }
         }
-        // Now append the digits to the end. Skip over the decimal point.
-        for (int i = 0; i <= end; ++i) {
-            char c = d.charAt(i);
-            if (c != '.') {
-                message.append(c);
+        else {
+            // Need to convert from scientific notation of the form 
+            // n.nnn...EN (N >= 7) to a normal decimal value.
+            try {
+                exp = parseInt(d, eIndex+1, d.length());
+            }
+            // This should never happen. 
+            // It's only possible if String.valueOf(double) is broken.
+            catch (Exception e) {
+                message.append(d);
+                return;
+            }
+            final int integerEnd = exp + 2;
+            for (int i = 0; i < eIndex; ++i) {
+                char c = d.charAt(i);
+                if (c != '.') {
+                    if (i == integerEnd) {
+                        message.append('.');
+                    }
+                    message.append(c);
+                }
+            }
+            // Append trailing zeroes if necessary.
+            for (int i = integerEnd - eIndex; i > 0; --i) {
+                message.append('0');
             }
         }
     }

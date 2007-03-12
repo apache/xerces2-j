@@ -339,7 +339,11 @@ public class DurationDV extends AbstractDateTimeDV {
         if (dot+1 == end) {
             throw new NumberFormatException("'" + buffer + "' has wrong format");
         }
-        return Double.parseDouble(buffer.substring(start, end));
+        double value = Double.parseDouble(buffer.substring(start, end));
+        if (value == Double.POSITIVE_INFINITY) {
+            throw new NumberFormatException("'" + buffer + "' has wrong format");
+        }
+        return value;
     }
 
     protected String dateToString(DateTimeData date) {
@@ -360,7 +364,7 @@ public class DurationDV extends AbstractDateTimeDV {
         message.append('H');
         message.append((date.minute < 0?-1:1) * date.minute);
         message.append('M');
-        message.append((date.second < 0?-1:1) * date.second);
+        append2(message, (date.second < 0?-1:1) * date.second);
         message.append('S');
 
         return message.toString();
