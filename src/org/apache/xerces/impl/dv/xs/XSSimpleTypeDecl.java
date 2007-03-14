@@ -1360,13 +1360,17 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 			// check fixed value for fractionDigits
 			if (((fFacetsDefined & FACET_FRACTIONDIGITS) != 0)) {
 				if ((( fBase.fFacetsDefined & FACET_FRACTIONDIGITS) != 0)) {
-					if ((fBase.fFixedFacet & FACET_FRACTIONDIGITS) != 0 && fFractionDigits != fBase.fFractionDigits) {
+					if (((fBase.fFixedFacet & FACET_FRACTIONDIGITS) != 0 && fFractionDigits != fBase.fFractionDigits) ||
+                        (fValidationDV == DV_INTEGER && fFractionDigits != 0)) {
 						reportError("FixedFacetValue", new Object[]{"fractionDigits", Integer.toString(fFractionDigits), Integer.toString(fBase.fFractionDigits), fTypeName});
 					}
 					if (fFractionDigits > fBase.fFractionDigits) {
 						reportError( "fractionDigits-valid-restriction", new Object[]{Integer.toString(fFractionDigits), Integer.toString(fBase.fFractionDigits), fTypeName});
 					}
 				}
+                else if (fValidationDV == DV_INTEGER && fFractionDigits != 0) {
+                    reportError("FixedFacetValue", new Object[]{"fractionDigits", Integer.toString(fFractionDigits), "0", fTypeName});
+                }
 			}
 			
 			// check 4.3.6.c1 error:
@@ -2162,10 +2166,11 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 		case FACET_MININCLUSIVE:
 			return (fMinInclusive == null)?null:fMinInclusive.toString();
 		case FACET_TOTALDIGITS:
-			if (fValidationDV == DV_INTEGER)
-				return "0";
 			return (fTotalDigits == -1)?null:Integer.toString(fTotalDigits);
 		case FACET_FRACTIONDIGITS:
+            if (fValidationDV == DV_INTEGER) {
+                return "0";
+            }
 			return (fFractionDigits == -1)?null:Integer.toString(fFractionDigits);
 		}
 		return null;
@@ -3000,10 +3005,10 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 							FACET_FRACTIONDIGITS,
 							"0",
 							true,
-							null);
+                            fractionDigitsAnnotation);
 				count++;
 			}
-			if (fFractionDigits != -1) {
+            else if (fFractionDigits != -1) {
 				facets[count] =
 					new XSFacetImpl(
 							FACET_FRACTIONDIGITS,
