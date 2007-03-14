@@ -112,6 +112,12 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
             particle.fValue = group.fModelGroup;
             particle.fMinOccurs = minOccurs;
             particle.fMaxOccurs = maxOccurs;
+            if (group.fModelGroup.fCompositor == XSModelGroupImpl.MODELGROUP_ALL) {
+                Long defaultVals = (Long)attrValues[XSAttributeChecker.ATTIDX_FROMDEFAULT];
+                particle = checkOccurrences(particle, SchemaSymbols.ELT_GROUP,
+                        (Element)elmNode.getParentNode(), GROUP_REF_WITH_ALL,
+                        defaultVals.longValue());
+            }
             if (refAttr != null) {
                 XSObjectList annotations;
                 if (annotation != null) {
