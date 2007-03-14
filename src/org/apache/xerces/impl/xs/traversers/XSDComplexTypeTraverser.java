@@ -941,6 +941,12 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             }
             else if (fromAttrGrp.fAttributeWC != null) {
                 toAttrGrp.fAttributeWC = toAttrGrp.fAttributeWC.performUnionWith(fromAttrGrp.fAttributeWC, toAttrGrp.fAttributeWC.fProcessContents);
+                if (toAttrGrp.fAttributeWC == null) {
+                    // REVISIT: XML Schema 1.0 2nd edition doesn't actually specify this constraint. It's a bug in the spec
+                    // which will eventually be fixed. We're just guessing what the error code will be. If it turns out to be
+                    // something else we'll need to change it. -- mrglavas
+                    throw new ComplexTypeRecoverableError("src-ct.5", new Object[]{typeName}, elem);
+                }
             }
             
         }
