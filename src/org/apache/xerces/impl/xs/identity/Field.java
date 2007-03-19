@@ -76,8 +76,8 @@ public class Field {
     // factory method
 
     /** Creates a field matcher. */
-    public XPathMatcher createMatcher(FieldActivator activator, ValueStore store) {
-        return new Field.Matcher(fXPath, activator, store);
+    public XPathMatcher createMatcher(ValueStore store) {
+        return new Field.Matcher(fXPath, store);
     } // createMatcher(ValueStore):XPathMatcher
 
     //
@@ -205,20 +205,19 @@ public class Field {
         // Data
         //
 
-        /** Field activator. */
-        protected FieldActivator fFieldActivator;
-
         /** Value store for data values. */
         protected ValueStore fStore;
+        
+        /** A flag indicating whether the field is allowed to match a value. */
+        protected boolean fMayMatch = true;
 
         //
         // Constructors
         //
 
         /** Constructs a field matcher. */
-        public Matcher(Field.XPath xpath, FieldActivator activator, ValueStore store) {
+        public Matcher(Field.XPath xpath, ValueStore store) {
             super(xpath);
-            fFieldActivator = activator;
             fStore = store;
         } // <init>(Field.XPath,ValueStore)
 
@@ -237,11 +236,11 @@ public class Field {
                 fStore.reportError(code, 
                     new Object[]{fIdentityConstraint.getElementName(), fIdentityConstraint.getIdentityConstraintName()});
             }
-            fStore.addValue(Field.this, actualValue, convertToPrimitiveKind(valueType), convertToPrimitiveKind(itemValueType));
+            fStore.addValue(Field.this, fMayMatch, actualValue, convertToPrimitiveKind(valueType), convertToPrimitiveKind(itemValueType));
             // once we've stored the value for this field, we set the mayMatch
-            // member to false so that, in the same scope, we don't match any more
+            // member to false so that in the same scope, we don't match any more
             // values (and throw an error instead).
-            fFieldActivator.setMayMatch(Field.this, Boolean.FALSE);
+            fMayMatch = false;
         } // matched(String)
 
         private short convertToPrimitiveKind(short valueType) {

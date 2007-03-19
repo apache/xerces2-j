@@ -52,9 +52,12 @@ public interface ValueStore {
      * @param field The field associated to the value. This reference
      *              is used to ensure that each field only adds a value
      *              once within a selection scope.
+     * @param mayMatch a flag indiciating whether the field may be matched.
      * @param actualValue The value to add.
+     * @param valueType Type of the value to add.
+     * @param itemValueType If the value is a list, a list of types for each of the values in the list.
      */
-    public void addValue(Field field, Object actualValue, short valueType, ShortList itemValueType);
+    public void addValue(Field field, boolean mayMatch, Object actualValue, short valueType, ShortList itemValueType);
 
     /**
      * Since the valueStore will have access to an error reporter, this

@@ -325,12 +325,6 @@ public class XMLSchemaValidator
     // clear this before we introduce it into the pipeline.
     protected final AugmentationsImpl fAugmentations = new AugmentationsImpl();
 
-    /**
-     * Map which is used to catch instance documents that try
-     * and match a field several times in the same scope.
-     */
-    protected final HashMap fMayMatchFieldMap = new HashMap();
-
     // this is included for the convenience of handleEndElement
     protected XMLString fDefaultValue;
 
@@ -1309,11 +1303,6 @@ public class XMLSchemaValidator
 
         fMatcherStack.clear();
 
-        if (!fMayMatchFieldMap.isEmpty()) {
-            // should only clear this if the last schema had identity constraints.
-            fMayMatchFieldMap.clear();
-        }
-
         // get error reporter
         fXSIErrorReporter.reset((XMLErrorReporter) componentManager.getProperty(ERROR_REPORTER));
 
@@ -1518,8 +1507,7 @@ public class XMLSchemaValidator
     public XPathMatcher activateField(Field field, int initialDepth) {
         ValueStore valueStore =
             fValueStoreCache.getValueStoreFor(field.getIdentityConstraint(), initialDepth);
-        setMayMatch(field, Boolean.TRUE);
-        XPathMatcher matcher = field.createMatcher(this, valueStore);
+        XPathMatcher matcher = field.createMatcher(valueStore);
         fMatcherStack.addMatcher(matcher);
         matcher.startDocumentFragment();
         return matcher;
@@ -1537,28 +1525,6 @@ public class XMLSchemaValidator
         valueStore.endValueScope();
 
     } // endValueScopeFor(IdentityConstraint)
-
-    /**
-     * Sets whether the given field is permitted to match a value.
-     * This should be used to catch instance documents that try
-     * and match a field several times in the same scope.
-     *
-     * @param field The field that may be permitted to be matched.
-     * @param state Boolean indiciating whether the field may be matched.
-     */
-    public void setMayMatch(Field field, Boolean state) {
-        fMayMatchFieldMap.put(field, state);
-    } // setMayMatch(Field, Boolean)
-
-    /**
-     * Returns whether the given field is permitted to match a value.
-     *
-     * @param field The field that may be permitted to be matched.
-     * @return Boolean indicating whether the field may be matched.
-     */
-    public Boolean mayMatch(Field field) {
-        return (Boolean) fMayMatchFieldMap.get(field);
-    } // mayMatch(Field):Boolean
 
     // a utility method for Identity constraints
     private void activateSelectorFor(IdentityConstraint ic) {
@@ -3577,9 +3543,12 @@ public class XMLSchemaValidator
          * @param field The field associated to the value. This reference
          *              is used to ensure that each field only adds a value
          *              once within a selection scope.
+         * @param mayMatch a flag indiciating whether the field may be matched.
          * @param actualValue The value to add.
+         * @param valueType Type of the value to add.
+         * @param itemValueType If the value is a list, a list of types for each of the values in the list.
          */
-        public void addValue(Field field, Object actualValue, short valueType, ShortList itemValueType) {
+        public void addValue(Field field, boolean mayMatch, Object actualValue, short valueType, ShortList itemValueType) {
             int i;
             for (i = fFieldCount - 1; i > -1; i--) {
                 if (fFields[i] == field) {
@@ -3594,11 +3563,12 @@ public class XMLSchemaValidator
                 reportSchemaError(code, new Object[] { field.toString(), eName, cName });
                 return;
             }
-            if (Boolean.TRUE != mayMatch(field)) {
+            if (!mayMatch) {
                 String code = "FieldMultipleMatch";
                 String cName = fIdentityConstraint.getIdentityConstraintName();
                 reportSchemaError(code, new Object[] { field.toString(), cName });
-            } else {
+            } 
+            else {
                 fValuesCount++;
             }
             fLocalValues[i] = actualValue;
