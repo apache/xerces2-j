@@ -97,6 +97,7 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
     private XMLComponent fSchemaValidator;
     private XMLComponentManager fSchemaValidatorComponentManager;
     private ValidationManager fSchemaValidationManager;
+    private UnparsedEntityHandler fUnparsedEntityHandler;
     
     /** Initial ErrorHandler */
     private final ErrorHandler fInitErrorHandler;
@@ -169,10 +170,10 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
             if (grammar instanceof XSGrammarPoolContainer) {
                 validatorComponent = new XMLSchemaValidator();
                 fSchemaValidationManager = new ValidationManager();
-                XMLDTDFilter entityHandler = new UnparsedEntityHandler(fSchemaValidationManager);
-                config.setDTDHandler(entityHandler);
-                entityHandler.setDTDHandler(xmlReader);
-                xmlReader.setDTDSource(entityHandler);
+                fUnparsedEntityHandler = new UnparsedEntityHandler(fSchemaValidationManager);
+                config.setDTDHandler(fUnparsedEntityHandler);
+                fUnparsedEntityHandler.setDTDHandler(xmlReader);
+                xmlReader.setDTDSource(fUnparsedEntityHandler);
                 fSchemaValidatorComponentManager = new SchemaValidatorConfiguration(config, 
                         (XSGrammarPoolContainer) grammar, fSchemaValidationManager);
             }
@@ -548,6 +549,7 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
             if (fSAXParser != null && fSAXParser.fSchemaValidator != null) {
                 if (fSAXParser.fSchemaValidationManager != null) {
                     fSAXParser.fSchemaValidationManager.reset();
+                    fSAXParser.fUnparsedEntityHandler.reset();
                 }
                 resetSchemaValidator();
             }
@@ -559,6 +561,7 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
             if (fSAXParser != null && fSAXParser.fSchemaValidator != null) {
                 if (fSAXParser.fSchemaValidationManager != null) {
                     fSAXParser.fSchemaValidationManager.reset();
+                    fSAXParser.fUnparsedEntityHandler.reset();
                 }
                 resetSchemaValidator();
             }

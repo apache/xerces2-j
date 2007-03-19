@@ -98,6 +98,7 @@ public class DocumentBuilderImpl extends DocumentBuilder
     private XMLComponent fSchemaValidator;
     private XMLComponentManager fSchemaValidatorComponentManager;
     private ValidationManager fSchemaValidationManager;
+    private UnparsedEntityHandler fUnparsedEntityHandler;
     
     /** Initial ErrorHandler */
     private final ErrorHandler fInitErrorHandler;
@@ -161,10 +162,10 @@ public class DocumentBuilderImpl extends DocumentBuilder
             if (grammar instanceof XSGrammarPoolContainer) {
                 validatorComponent = new XMLSchemaValidator();
                 fSchemaValidationManager = new ValidationManager();
-                XMLDTDFilter entityHandler = new UnparsedEntityHandler(fSchemaValidationManager);
-                config.setDTDHandler(entityHandler);
-                entityHandler.setDTDHandler(domParser);
-                domParser.setDTDSource(entityHandler);
+                fUnparsedEntityHandler = new UnparsedEntityHandler(fSchemaValidationManager);
+                config.setDTDHandler(fUnparsedEntityHandler);
+                fUnparsedEntityHandler.setDTDHandler(domParser);
+                domParser.setDTDSource(fUnparsedEntityHandler);
                 fSchemaValidatorComponentManager = new SchemaValidatorConfiguration(config, 
                         (XSGrammarPoolContainer) grammar, fSchemaValidationManager);
             }
@@ -278,6 +279,7 @@ public class DocumentBuilderImpl extends DocumentBuilder
         if (fSchemaValidator != null) {
             if (fSchemaValidationManager != null) {
                 fSchemaValidationManager.reset();
+                fUnparsedEntityHandler.reset();
             }
             resetSchemaValidator();
         }

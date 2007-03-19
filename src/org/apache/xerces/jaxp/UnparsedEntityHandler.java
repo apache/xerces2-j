@@ -61,10 +61,6 @@ final class UnparsedEntityHandler implements XMLDTDFilter, EntityState {
     public void startDTD(XMLLocator locator, Augmentations augmentations)
             throws XNIException {
         fValidationManager.setEntityState(this);
-        if (fUnparsedEntities != null && !fUnparsedEntities.isEmpty()) {
-            // should only clear this if the last document contained unparsed entities
-            fUnparsedEntities.clear();
-        }
         if (fDTDHandler != null) {
             fDTDHandler.startDTD(locator, augmentations);
         }
@@ -250,4 +246,14 @@ final class UnparsedEntityHandler implements XMLDTDFilter, EntityState {
         return false;
     }
     
+    /*
+     * Other methods
+     */
+    
+    public void reset() {
+        if (fUnparsedEntities != null && !fUnparsedEntities.isEmpty()) {
+            // should only clear this if the last document contained unparsed entities
+            fUnparsedEntities.clear();
+        }
+    }
 }
