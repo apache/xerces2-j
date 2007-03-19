@@ -37,7 +37,6 @@ import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
-import org.apache.xerces.xni.parser.XMLDTDFilter;
 import org.apache.xerces.xni.parser.XMLDocumentSource;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 import org.apache.xerces.xs.AttributePSVI;
