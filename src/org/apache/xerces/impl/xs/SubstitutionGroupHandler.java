@@ -18,6 +18,8 @@
 package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.xs.XSConstants;
+import org.apache.xerces.xs.XSObjectList;
+import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xni.QName;
 import java.util.Hashtable;
@@ -56,26 +58,31 @@ public class SubstitutionGroupHandler {
 
         // if the exemplar is not a global element decl, then it's not possible
         // to be substituted by another element.
-        if (exemplar.fScope != XSConstants.SCOPE_GLOBAL)
+        if (exemplar.fScope != XSConstants.SCOPE_GLOBAL) {
             return null;
+        }
 
         // if the decl blocks substitution, return false
-        if ((exemplar.fBlock & XSConstants.DERIVATION_SUBSTITUTION) != 0)
+        if ((exemplar.fBlock & XSConstants.DERIVATION_SUBSTITUTION) != 0) {
             return null;
+        }
 
         // get grammar of the element
         SchemaGrammar sGrammar = fGrammarBucket.getGrammar(element.uri);
-        if (sGrammar == null)
+        if (sGrammar == null) {
             return null;
+        }
 
         // get the decl for the element
         XSElementDecl eDecl = sGrammar.getGlobalElementDecl(element.localpart);
-        if (eDecl == null)
+        if (eDecl == null) {
             return null;
+        }
 
         // and check by using substitutionGroup information
-        if (substitutionGroupOK(eDecl, exemplar, exemplar.fBlock))
+        if (substitutionGroupOK(eDecl, exemplar, exemplar.fBlock)) {
             return eDecl;
+        }
 
         return null;
     }
@@ -85,13 +92,15 @@ public class SubstitutionGroupHandler {
     protected boolean substitutionGroupOK(XSElementDecl element, XSElementDecl exemplar, short blockingConstraint) {
         // For an element declaration (call it D) to be validly substitutable for another element declaration (call it C) subject to a blocking constraint (a subset of {substitution, extension, restriction}, the value of a {disallowed substitutions}) one of the following must be true:
         // 1. D and C are the same element declaration.
-        if (element == exemplar)
+        if (element == exemplar) {
             return true;
+        }
         
         // 2 All of the following must be true:
         // 2.1 The blocking constraint does not contain substitution.
-        if ((blockingConstraint & XSConstants.DERIVATION_SUBSTITUTION) != 0)
+        if ((blockingConstraint & XSConstants.DERIVATION_SUBSTITUTION) != 0) {
             return false;
+        }
 
         // 2.2 There is a chain of {substitution group affiliation}s from D to C, that is, either D's {substitution group affiliation} is C, or D's {substitution group affiliation}'s {substitution group affiliation} is C, or . . .
         XSElementDecl subGroup = element.fSubGroup;
@@ -99,37 +108,60 @@ public class SubstitutionGroupHandler {
             subGroup = subGroup.fSubGroup;
         }
 
-        if (subGroup == null)
+        if (subGroup == null) {
             return false;
+        }
 
         // 2.3 The set of all {derivation method}s involved in the derivation of D's {type definition} from C's {type definition} does not intersect with the union of the blocking constraint, C's {prohibited substitutions} (if C is complex, otherwise the empty set) and the {prohibited substitutions} (respectively the empty set) of any intermediate {type definition}s in the derivation of D's {type definition} from C's {type definition}.
         // prepare the combination of {derivation method} and
         // {disallowed substitution}
+        return typeDerivationOK(element.fType, exemplar.fType, blockingConstraint);   
+    }
+    
+    private boolean typeDerivationOK(XSTypeDefinition derived, XSTypeDefinition base, short blockingConstraint) {
+        
         short devMethod = 0, blockConstraint = blockingConstraint;
 
-        // element.fType should be derived from exemplar.fType
+        // "derived" should be derived from "base"
         // add derivation methods of derived types to devMethod;
         // add block of base types to blockConstraint.
-        XSTypeDefinition type = element.fType;
-        while (type != exemplar.fType && type != SchemaGrammar.fAnyType) {
-            if (type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE)
+        XSTypeDefinition type = derived;
+        while (type != base && type != SchemaGrammar.fAnyType) {
+            if (type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
                 devMethod |= ((XSComplexTypeDecl)type).fDerivedBy;
-            else
+            }
+            else {
                 devMethod |= XSConstants.DERIVATION_RESTRICTION;
+            }
             type = type.getBaseType();
             // type == null means the current type is anySimpleType,
             // whose base type should be anyType
-            if (type == null)
+            if (type == null) {
                 type = SchemaGrammar.fAnyType;
-            if (type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE)
+            }
+            if (type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
                 blockConstraint |= ((XSComplexTypeDecl)type).fBlock;
+            }
         }
-        if (type != exemplar.fType)
+        if (type != base) {
+            // If the base is a union, check if "derived" is allowed through any of the member types.
+            if (base.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
+                XSSimpleTypeDefinition st = (XSSimpleTypeDefinition) base;
+                if (st.getVariety() ==  XSSimpleTypeDefinition.VARIETY_UNION) {
+                    XSObjectList memberTypes = st.getMemberTypes();
+                    final int length = memberTypes.getLength();
+                    for (int i = 0; i < length; ++i) {
+                        if (typeDerivationOK(derived, (XSTypeDefinition) memberTypes.item(i), blockingConstraint)) {
+                            return true;
+                        }
+                    }
+                }
+            }
             return false;
-        
-        if ((devMethod & blockConstraint) != 0)
+        }
+        if ((devMethod & blockConstraint) != 0) {
             return false;
-
+        }
         return true;
     }
 
