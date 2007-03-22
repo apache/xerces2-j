@@ -933,14 +933,7 @@ XSLoader, DOMConfiguration {
         
         fSubGroupHandler.reset();		
         
-        boolean parser_settings;
-        try {
-            parser_settings = componentManager.getFeature(PARSER_SETTINGS);     
-        }
-        catch (XMLConfigurationException e){
-            parser_settings = true;
-        }
-        if (!parser_settings || !fSettingsChanged) {
+        if (!fSettingsChanged || !parserSettingsUpdated(componentManager)) {
             // need to reprocess JAXP schema sources
             fJAXPProcessed = false;
             // reinitialize grammar bucket
@@ -1019,6 +1012,14 @@ XSLoader, DOMConfiguration {
             fSchemaHandler.setGenerateSyntheticAnnotations(false);
         }
         fSchemaHandler.reset(componentManager);		 
+    }
+    
+    private boolean parserSettingsUpdated(XMLComponentManager componentManager) {
+        try {
+            return componentManager.getFeature(PARSER_SETTINGS);     
+        }
+        catch (XMLConfigurationException e) {}
+        return true;
     }
     
     private void initGrammarBucket(){
