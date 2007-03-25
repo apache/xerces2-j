@@ -1130,6 +1130,8 @@ Authors:
     <replace file="${build.dir}/src/org/apache/xerces/jaxp/SAXParserImpl.java" 
              token="import org.apache.xerces.jaxp.validation.XSGrammarPoolContainer;" value=""/>
     <replace file="${build.dir}/src/org/apache/xerces/jaxp/SAXParserImpl.java" 
+             token="UnparsedEntityHandler fUnparsedEntityHandler" value="org.apache.xerces.xni.parser.XMLDTDFilter fUnparsedEntityHandler"/>
+    <replace file="${build.dir}/src/org/apache/xerces/jaxp/SAXParserImpl.java" 
              token="this.grammar = spf.getSchema();" value="this.grammar = null;"/>
     <replace file="${build.dir}/src/org/apache/xerces/jaxp/SAXParserImpl.java" 
              token="(grammar != null)" value="(false)"/>
@@ -1145,11 +1147,15 @@ Authors:
              token="new SchemaValidatorConfiguration(config," value="null;"/>
     <replace file="${build.dir}/src/org/apache/xerces/jaxp/SAXParserImpl.java" 
              token="(XSGrammarPoolContainer) grammar, fSchemaValidationManager);" value=""/>
+    <replace file="${build.dir}/src/org/apache/xerces/jaxp/SAXParserImpl.java" 
+             token="fSAXParser.fUnparsedEntityHandler.reset();" value=""/>
   	
     <replace file="${build.dir}/src/org/apache/xerces/jaxp/DocumentBuilderImpl.java" 
              token="import org.apache.xerces.impl.xs.XMLSchemaValidator;" value=""/>
     <replace file="${build.dir}/src/org/apache/xerces/jaxp/DocumentBuilderImpl.java" 
              token="import org.apache.xerces.jaxp.validation.XSGrammarPoolContainer;" value=""/>
+    <replace file="${build.dir}/src/org/apache/xerces/jaxp/DocumentBuilderImpl.java" 
+             token="UnparsedEntityHandler fUnparsedEntityHandler" value="org.apache.xerces.xni.parser.XMLDTDFilter fUnparsedEntityHandler"/>
     <replace file="${build.dir}/src/org/apache/xerces/jaxp/DocumentBuilderImpl.java" 
              token="this.grammar = dbf.getSchema();" value="this.grammar = null;"/>
     <replace file="${build.dir}/src/org/apache/xerces/jaxp/DocumentBuilderImpl.java" 
@@ -1166,6 +1172,8 @@ Authors:
              token="new SchemaValidatorConfiguration(config," value="null;"/>
     <replace file="${build.dir}/src/org/apache/xerces/jaxp/DocumentBuilderImpl.java" 
              token="(XSGrammarPoolContainer) grammar, fSchemaValidationManager);" value=""/>
+    <replace file="${build.dir}/src/org/apache/xerces/jaxp/DocumentBuilderImpl.java" 
+             token="fUnparsedEntityHandler.reset();" value=""/>
   	
     <replace file="${build.dir}/src/org/apache/xerces/jaxp/SAXParserFactoryImpl.java" 
              token="return grammar;" value="throw new UnsupportedOperationException();"/>
