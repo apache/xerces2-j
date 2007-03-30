@@ -2671,38 +2671,38 @@ class XMLGregorianCalendarImpl
      * @return TimeZone for this.
      */
     public TimeZone getTimeZone(int defaultZoneoffset) {
-	TimeZone result = null;
-	int zoneoffset = getTimezone();
+        TimeZone result = null;
+        int zoneoffset = getTimezone();
 
-	if (zoneoffset == DatatypeConstants.FIELD_UNDEFINED) {
-	    zoneoffset = defaultZoneoffset;
-	}
-	if (zoneoffset == DatatypeConstants.FIELD_UNDEFINED) {
-	    result = TimeZone.getDefault();
-	} else {
-	    // zoneoffset is in minutes. Convert to custom timezone id format.
-	    char sign = zoneoffset < 0 ? '-' : '+';
-	    if (sign == '-') {
-		zoneoffset = -zoneoffset;
-	    }
-	    int hour = zoneoffset / 60;
-	    int minutes = zoneoffset - (hour * 60);
-		
-	    // Javadoc for java.util.TimeZone documents max length
-	    // for customTimezoneId is 8 when optional ':' is not used.
-	    // Format is 
-	    // "GMT" ('-'|''+') (digit digit?) (digit digit)?
-	    //                   hour          minutes
-	    StringBuffer customTimezoneId = new StringBuffer(8);
-	    customTimezoneId.append("GMT");
-	    customTimezoneId.append(sign);
-	    customTimezoneId.append(hour);
-	    if (minutes != 0) {
-		customTimezoneId.append(minutes);
-	    }
-	    result = TimeZone.getTimeZone(customTimezoneId.toString());
-	}
-	return result;
+        if (zoneoffset == DatatypeConstants.FIELD_UNDEFINED) {
+            zoneoffset = defaultZoneoffset;
+        }
+        if (zoneoffset == DatatypeConstants.FIELD_UNDEFINED) {
+            result = TimeZone.getDefault();
+        } else {
+            // zoneoffset is in minutes. Convert to custom timezone id format.
+            char sign = zoneoffset < 0 ? '-' : '+';
+            if (sign == '-') {
+                zoneoffset = -zoneoffset;
+            }
+            int hour = zoneoffset / 60;
+            int minutes = zoneoffset - (hour * 60);
+
+            // Javadoc for java.util.TimeZone documents max length
+            // for customTimezoneId is 8 when optional ':' is not used.
+            // Format is 
+            // "GMT" ('-'|''+') (digit digit?) (digit digit)?
+            //                   hour          minutes
+            StringBuffer customTimezoneId = new StringBuffer(8);
+            customTimezoneId.append("GMT");
+            customTimezoneId.append(sign);
+            customTimezoneId.append(hour);
+            if (minutes != 0) {
+                customTimezoneId.append(minutes);
+            }
+            result = TimeZone.getTimeZone(customTimezoneId.toString());
+        }
+        return result;
     }
     
     /**
