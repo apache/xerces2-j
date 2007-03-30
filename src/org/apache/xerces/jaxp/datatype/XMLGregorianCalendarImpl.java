@@ -2698,6 +2698,9 @@ class XMLGregorianCalendarImpl
             customTimezoneId.append(sign);
             customTimezoneId.append(hour);
             if (minutes != 0) {
+                if (minutes < 10) {
+                    customTimezoneId.append('0');
+                }
                 customTimezoneId.append(minutes);
             }
             result = TimeZone.getTimeZone(customTimezoneId.toString());
