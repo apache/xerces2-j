@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.StringTokenizer;
 import java.util.Vector;
 
 import org.w3c.dom.DOMConfiguration;
@@ -240,8 +241,8 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 
     // private data
 
+    private String fSchemaLocation = null;
     private DOMStringList fRecognizedParameters;
-
 
     //
     // Constructors
@@ -764,10 +765,33 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
             else if (name.equalsIgnoreCase(Constants.DOM_SCHEMA_LOCATION)) {
                 if (value instanceof String || value == null) {
                     try {
-                        // map DOM schema-location to JAXP schemaSource property
-                        setProperty(
-                            Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE,
-                            value);
+                        if (value == null) {
+                            fSchemaLocation = null;
+                            setProperty (
+                                Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE,
+                                null);
+                        }
+                        else {
+                            fSchemaLocation = (String) value;
+                            // map DOM schema-location to JAXP schemaSource property
+                            // tokenize location string
+                            StringTokenizer t = new StringTokenizer(fSchemaLocation, " \n\t\r");
+                            if (t.hasMoreTokens()) {
+                                ArrayList locations = new ArrayList();
+                                locations.add(t.nextToken());
+                                while (t.hasMoreTokens()) {
+                                    locations.add (t.nextToken());
+                                }
+                                setProperty (
+                                    Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE,
+                                    locations.toArray(new String[locations.size()]));
+                            }
+                            else {
+                                setProperty (
+                                    Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE,
+                                    new String [] {(String) value});
+                            }
+                        }
                     }
                     catch (XMLConfigurationException e) {}
                 }
@@ -945,7 +969,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 			return getProperty(Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_LANGUAGE);
 		}
 		else if (name.equalsIgnoreCase(Constants.DOM_SCHEMA_LOCATION)) {
-			return getProperty(Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE);
+            return fSchemaLocation;
 		}
         else if (name.equalsIgnoreCase(ENTITY_RESOLVER)) {
             return getEntityResolver();

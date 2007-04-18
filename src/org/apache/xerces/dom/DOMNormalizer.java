@@ -180,7 +180,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
         
         String xmlVersion = fDocument.getXmlVersion();
         String schemaType = null;
-        String schemaLocation = null;
+        String [] schemaLocations = null;
         
         // intialize and reset DOMNormalizer component
         // 
@@ -206,7 +206,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
             else {
                 schemaType = XMLGrammarDescription.XML_DTD;
                 if (schemaLang != null) {
-                    schemaLocation = (String) fConfiguration.getProperty(DOMConfigurationImpl.JAXP_SCHEMA_SOURCE);
+                    schemaLocations = (String []) fConfiguration.getProperty(DOMConfigurationImpl.JAXP_SCHEMA_SOURCE);
                 }
                 fConfiguration.setDTDValidatorFactory(xmlVersion);
                 fValidationHandler = CoreDOMImplementationImpl.singleton.getValidator(schemaType, xmlVersion);
@@ -238,7 +238,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
         }
         try {
             if (schemaType == XMLGrammarDescription.XML_DTD) {
-                processDTD(xmlVersion, schemaLocation);
+                processDTD(xmlVersion, schemaLocations[0]);
             }            
             
             Node kid, next;
