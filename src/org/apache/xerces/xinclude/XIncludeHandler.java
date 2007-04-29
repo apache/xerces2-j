@@ -38,6 +38,7 @@ import org.apache.xerces.util.SecurityManager;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.URI;
 import org.apache.xerces.util.XMLAttributesImpl;
+import org.apache.xerces.util.XMLLocatorWrapper;
 import org.apache.xerces.util.XMLResourceIdentifierImpl;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.XMLSymbols;
@@ -278,6 +279,7 @@ public class XIncludeHandler
     protected XPointerProcessor fXPtrProcessor = null;
 
     protected XMLLocator fDocLocation;
+    protected XMLLocatorWrapper fXIncludeLocator = new XMLLocatorWrapper();
     protected XIncludeMessageFormatter fXIncludeMessageFormatter = new XIncludeMessageFormatter();
     protected XIncludeNamespaceSupport fNamespaceContext;
     protected SymbolTable fSymbolTable;
@@ -775,6 +777,7 @@ public class XIncludeHandler
         }
         fNamespaceContext = (XIncludeNamespaceSupport)namespaceContext;
         fDocLocation = locator;
+        fXIncludeLocator.setLocator(fDocLocation);
 
         // initialize the current base URI
         setupCurrentBaseURI(locator);
@@ -801,7 +804,7 @@ public class XIncludeHandler
 
         if (isRootDocument() && fDocumentHandler != null) {
             fDocumentHandler.startDocument(
-                locator,
+                fXIncludeLocator,
                 encoding,
                 namespaceContext,
                 augs);
@@ -1648,6 +1651,7 @@ public class XIncludeHandler
                     
                     newHandler.setParent(this); 
                     newHandler.setHref(href);
+                    newHandler.setXIncludeLocator(fXIncludeLocator);
                     newHandler.setDocumentHandler(this.getDocumentHandler());
                     fXPointerChildConfig = fChildConfig;                       
                 } else {
@@ -1658,6 +1662,7 @@ public class XIncludeHandler
 
                     newHandler.setParent(this);
                     newHandler.setHref(href);
+                    newHandler.setXIncludeLocator(fXIncludeLocator);
                     newHandler.setDocumentHandler(this.getDocumentHandler());
                     fXIncludeChildConfig = fChildConfig;
                 }
@@ -1693,7 +1698,8 @@ public class XIncludeHandler
                 fNamespaceContext.pushScope();
 
                 fChildConfig.parse(includedSource);
-                // necessary to make sure proper location is reported in errors
+                // necessary to make sure proper location is reported to the application and in errors
+                fXIncludeLocator.setLocator(fDocLocation);
                 if (fErrorReporter != null) {
                     fErrorReporter.setDocumentLocator(fDocLocation);
                 }
@@ -1711,14 +1717,16 @@ public class XIncludeHandler
                 }
             }
             catch (XNIException e) {
-                // necessary to make sure proper location is reported in errors
+                // necessary to make sure proper location is reported to the application and in errors
+                fXIncludeLocator.setLocator(fDocLocation);
                 if (fErrorReporter != null) {
                     fErrorReporter.setDocumentLocator(fDocLocation);
                 }
                 reportFatalError("XMLParseError", new Object[] { href });
             }
             catch (IOException e) {
-                // necessary to make sure proper location is reported in errors
+                // necessary to make sure proper location is reported to the application and in errors
+                fXIncludeLocator.setLocator(fDocLocation);
                 if (fErrorReporter != null) {
                     fErrorReporter.setDocumentLocator(fDocLocation);
                 }
@@ -2397,6 +2405,10 @@ public class XIncludeHandler
 
     protected void setHref(String href) {
        fHrefFromParent = href;
+    }
+    
+    protected void setXIncludeLocator(XMLLocatorWrapper locator) {
+        fXIncludeLocator = locator;
     }
     
     // used to know whether to pass declarations to the document handler
