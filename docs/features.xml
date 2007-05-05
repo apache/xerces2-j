@@ -690,7 +690,7 @@ catch (SAXException e) {
   <feature name='http://xml.org/sax/features/xml-1.1'
            id='xml-1.1'>
    <true>
-    The parser supports both XML 1.1 and XML 1.0.
+    The parser supports both XML 1.0 and XML 1.1.
    </true>
    <false>
     The parser supports only XML 1.0.

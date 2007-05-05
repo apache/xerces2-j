@@ -121,7 +121,7 @@ String str = writer.writeToString(document);</source>
 
       <p>
 	It is also possible to serialize a DOM tree by using the Xerces <code>org.apache.xml.XMLSerializer</code> serialization code directly.  
-	This non-standard way of serializing a DOM has been <strong>deprecated</strong> since Xerces-J 2.9.0 and should be avoided.
+	This non-standard way of serializing a DOM has been <strong>deprecated</strong> since Xerces-J 2.9.0 and should be avoided if possible.
       </p>
       <source>import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
@@ -203,12 +203,12 @@ serializer.serialize(document);</source>
     </a>
   </faq>
   
-   <faq title="Running DOM Level 3 samples with Sun JDK 1.4 and higher">
-    <q>How do I access run under Sun JDK 1.4 and higher?</q>
+   <faq title="Using DOM Level 3 with JDK 1.4 and higher">
+    <q>How do I run DOM Level 3 applications under JDK 1.4 and higher?</q>
     <a>    <anchor name="dom3-run"/>
     <p>Use the <jump href="http://java.sun.com/j2se/1.4/docs/guide/standards/">
     Endorsed Standards Override Mechanism</jump> to specify xercesImpl.jar and xml-apis.jar.
-    More complete description is available <jump href="http://xml.apache.org/xalan-j/faq.html#faq-N100CC">here</jump>.
+    A more complete description is available <jump href="http://xml.apache.org/xalan-j/faq.html#faq-N100D6">here</jump>.
     </p>
     </a>
   </faq>
