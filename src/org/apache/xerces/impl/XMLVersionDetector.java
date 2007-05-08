@@ -17,9 +17,11 @@
 
 package org.apache.xerces.impl;
 
+import java.io.CharConversionException;
 import java.io.EOFException;
 import java.io.IOException;
 
+import org.apache.xerces.impl.io.MalformedByteSequenceException;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.parser.XMLComponentManager;
@@ -182,6 +184,20 @@ public class XMLVersionDetector {
             return (matched == XML11_VERSION.length) ? 
                     Constants.XML_VERSION_1_1 :
                     Constants.XML_VERSION_1_0;
+        }
+        // encoding errors
+        catch (MalformedByteSequenceException e) {
+            fErrorReporter.reportError(e.getDomain(), e.getKey(), 
+                e.getArguments(), XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            return Constants.XML_VERSION_ERROR;
+        }
+        catch (CharConversionException e) {
+            fErrorReporter.reportError(
+                    XMLMessageFormatter.XML_DOMAIN,
+                    "CharConversionFailure",
+                    null,
+                    XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            return Constants.XML_VERSION_ERROR;;
         }
         // premature end of file
         catch (EOFException e) {
