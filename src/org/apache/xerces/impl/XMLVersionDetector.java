@@ -197,7 +197,7 @@ public class XMLVersionDetector {
                     "CharConversionFailure",
                     null,
                     XMLErrorReporter.SEVERITY_FATAL_ERROR);
-            return Constants.XML_VERSION_ERROR;;
+            return Constants.XML_VERSION_ERROR;
         }
         // premature end of file
         catch (EOFException e) {
