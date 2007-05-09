@@ -508,7 +508,7 @@ public class TreeWalkerImpl implements TreeWalker {
     }
     
     /**
-     * Use isSameNode() for testing node equality if the DOM implementation
+     * Use isSameNode() for testing node identity if the DOM implementation
      * supports DOM Level 3 core and it isn't the Xerces implementation.
      */
     private boolean useIsSameNode(Node node) {
