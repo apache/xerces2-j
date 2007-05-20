@@ -23,6 +23,7 @@ import java.io.IOException;
 
 import org.apache.xerces.impl.dtd.XMLDTDDescription;
 import org.apache.xerces.impl.io.MalformedByteSequenceException;
+import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.ValidationManager;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.XMLChar;
@@ -693,11 +694,15 @@ public class XMLDocumentScannerImpl
             // encoding errors
             catch (MalformedByteSequenceException e) {
                 fErrorReporter.reportError(e.getDomain(), e.getKey(), 
-                    e.getArguments(), XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    e.getArguments(), XMLErrorReporter.SEVERITY_FATAL_ERROR, e);
                 return false;
             }
             catch (CharConversionException e) {
-                reportFatalError("CharConversionFailure", null);
+                fErrorReporter.reportError(
+                        XMLMessageFormatter.XML_DOMAIN,
+                        "CharConversionFailure",
+                        null,
+                        XMLErrorReporter.SEVERITY_FATAL_ERROR, e);
                 return false;
             }
             // premature end of file
@@ -882,11 +887,15 @@ public class XMLDocumentScannerImpl
             // encoding errors
             catch (MalformedByteSequenceException e) {
                 fErrorReporter.reportError(e.getDomain(), e.getKey(), 
-                    e.getArguments(), XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    e.getArguments(), XMLErrorReporter.SEVERITY_FATAL_ERROR, e);
                 return false;
             }
             catch (CharConversionException e) {
-                reportFatalError("CharConversionFailure", null);
+                fErrorReporter.reportError(
+                        XMLMessageFormatter.XML_DOMAIN,
+                        "CharConversionFailure",
+                        null,
+                        XMLErrorReporter.SEVERITY_FATAL_ERROR, e);
                 return false;
             }
             // premature end of file
@@ -1016,11 +1025,15 @@ public class XMLDocumentScannerImpl
             // encoding errors
             catch (MalformedByteSequenceException e) {
                 fErrorReporter.reportError(e.getDomain(), e.getKey(), 
-                    e.getArguments(), XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    e.getArguments(), XMLErrorReporter.SEVERITY_FATAL_ERROR, e);
                 return false;
             }
             catch (CharConversionException e) {
-                reportFatalError("CharConversionFailure", null);
+                fErrorReporter.reportError(
+                        XMLMessageFormatter.XML_DOMAIN,
+                        "CharConversionFailure",
+                        null,
+                        XMLErrorReporter.SEVERITY_FATAL_ERROR, e);
                 return false;
             }
             // premature end of file
@@ -1307,11 +1320,15 @@ public class XMLDocumentScannerImpl
             // encoding errors
             catch (MalformedByteSequenceException e) {
                 fErrorReporter.reportError(e.getDomain(), e.getKey(), 
-                    e.getArguments(), XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    e.getArguments(), XMLErrorReporter.SEVERITY_FATAL_ERROR, e);
                 return false;
             }
             catch (CharConversionException e) {
-                reportFatalError("CharConversionFailure", null);
+                fErrorReporter.reportError(
+                        XMLMessageFormatter.XML_DOMAIN,
+                        "CharConversionFailure",
+                        null,
+                        XMLErrorReporter.SEVERITY_FATAL_ERROR, e);
                 return false;
             }
             catch (EOFException e) {

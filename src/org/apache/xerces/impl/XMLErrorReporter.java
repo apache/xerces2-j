@@ -280,7 +280,28 @@ public class XMLErrorReporter
                             short severity) throws XNIException {
         reportError(fLocator, domain, key, arguments, severity);
     } // reportError(String,String,Object[],short)
-
+    
+    /**
+     * Reports an error. The error message passed to the error handler
+     * is formatted for the locale by the message formatter installed
+     * for the specified error domain.
+     * 
+     * @param domain    The error domain.
+     * @param key       The key of the error message.
+     * @param arguments The replacement arguments for the error message,
+     *                  if needed.
+     * @param severity  The severity of the error.
+     * @param exception The exception to wrap.
+     *
+     * @see #SEVERITY_WARNING
+     * @see #SEVERITY_ERROR
+     * @see #SEVERITY_FATAL_ERROR
+     */
+    public void reportError(String domain, String key, Object[] arguments, 
+            short severity, Exception exception) throws XNIException {
+        reportError(fLocator, domain, key, arguments, severity, exception);
+    } // reportError(String,String,Object[],short,Exception)
+    
     /**
      * Reports an error at a specific location.
      * 
@@ -296,8 +317,29 @@ public class XMLErrorReporter
      * @see #SEVERITY_FATAL_ERROR
      */
     public void reportError(XMLLocator location,
+            String domain, String key, Object[] arguments, 
+            short severity) throws XNIException {
+        reportError(fLocator, domain, key, arguments, severity, null);
+    } // reportError(XMLLocator,String,String,Object[],short)
+
+    /**
+     * Reports an error at a specific location.
+     * 
+     * @param location  The error location.
+     * @param domain    The error domain.
+     * @param key       The key of the error message.
+     * @param arguments The replacement arguments for the error message,
+     *                  if needed.
+     * @param severity  The severity of the error.
+     * @param exception The exception to wrap.
+     *
+     * @see #SEVERITY_WARNING
+     * @see #SEVERITY_ERROR
+     * @see #SEVERITY_FATAL_ERROR
+     */
+    public void reportError(XMLLocator location,
                             String domain, String key, Object[] arguments, 
-                            short severity) throws XNIException {
+                            short severity, Exception exception) throws XNIException {
 
         // REVISIT: [Q] Should we do anything about invalid severity
         //              parameter? -Ac
@@ -325,7 +367,8 @@ public class XMLErrorReporter
             }
             message = str.toString();
         }
-        XMLParseException parseException = 
+        XMLParseException parseException = (exception != null) ?
+            new XMLParseException(location, message, exception) :
             new XMLParseException(location, message);
 
         // get error handler
@@ -356,7 +399,7 @@ public class XMLErrorReporter
             }
         }
 
-    } // reportError(XMLLocator,String,String,Object[],short)
+    } // reportError(XMLLocator,String,String,Object[],short,Exception)
 
     //
     // XMLComponent methods

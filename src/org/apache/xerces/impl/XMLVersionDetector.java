@@ -188,7 +188,7 @@ public class XMLVersionDetector {
         // encoding errors
         catch (MalformedByteSequenceException e) {
             fErrorReporter.reportError(e.getDomain(), e.getKey(), 
-                e.getArguments(), XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                e.getArguments(), XMLErrorReporter.SEVERITY_FATAL_ERROR, e);
             return Constants.XML_VERSION_ERROR;
         }
         catch (CharConversionException e) {
@@ -196,7 +196,7 @@ public class XMLVersionDetector {
                     XMLMessageFormatter.XML_DOMAIN,
                     "CharConversionFailure",
                     null,
-                    XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    XMLErrorReporter.SEVERITY_FATAL_ERROR, e);
             return Constants.XML_VERSION_ERROR;
         }
         // premature end of file

@@ -17,6 +17,7 @@
 
 package org.apache.xerces.parsers;
 
+import java.io.CharConversionException;
 import java.io.IOException;
 
 import org.apache.xerces.impl.Constants;
@@ -167,7 +168,7 @@ public class DOMParser
         // wrap XNI exceptions as SAX exceptions
         catch (XMLParseException e) {
             Exception ex = e.getException();
-            if (ex == null) {
+            if (ex == null || ex instanceof CharConversionException) {
                 // must be a parser exception; mine it for locator info and throw
                 // a SAXParseException
                 LocatorImpl locatorImpl = new LocatorImpl();
@@ -175,7 +176,9 @@ public class DOMParser
                 locatorImpl.setSystemId(e.getExpandedSystemId());
                 locatorImpl.setLineNumber(e.getLineNumber());
                 locatorImpl.setColumnNumber(e.getColumnNumber());
-                throw new SAXParseException(e.getMessage(), locatorImpl);
+                throw (ex == null) ? 
+                        new SAXParseException(e.getMessage(), locatorImpl) : 
+                        new SAXParseException(e.getMessage(), locatorImpl, ex);
             }
             if (ex instanceof SAXException) {
                 // why did we create an XMLParseException?
@@ -229,7 +232,7 @@ public class DOMParser
         // wrap XNI exceptions as SAX exceptions
         catch (XMLParseException e) {
             Exception ex = e.getException();
-            if (ex == null) {
+            if (ex == null || ex instanceof CharConversionException) {
                 // must be a parser exception; mine it for locator info and throw
                 // a SAXParseException
                 LocatorImpl locatorImpl = new LocatorImpl();
@@ -237,7 +240,9 @@ public class DOMParser
                 locatorImpl.setSystemId(e.getExpandedSystemId());
                 locatorImpl.setLineNumber(e.getLineNumber());
                 locatorImpl.setColumnNumber(e.getColumnNumber());
-                throw new SAXParseException(e.getMessage(), locatorImpl);
+                throw (ex == null) ? 
+                        new SAXParseException(e.getMessage(), locatorImpl) : 
+                        new SAXParseException(e.getMessage(), locatorImpl, ex);
             }
             if (ex instanceof SAXException) {
                 // why did we create an XMLParseException?

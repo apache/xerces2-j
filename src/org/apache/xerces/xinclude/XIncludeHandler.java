@@ -1783,11 +1783,11 @@ public class XIncludeHandler
             // encoding errors
             catch (MalformedByteSequenceException ex) {
                 fErrorReporter.reportError(ex.getDomain(), ex.getKey(), 
-                    ex.getArguments(), XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    ex.getArguments(), XMLErrorReporter.SEVERITY_FATAL_ERROR, ex);
             }
             catch (CharConversionException e) {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                    "CharConversionFailure", null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    "CharConversionFailure", null, XMLErrorReporter.SEVERITY_FATAL_ERROR, e);
             }
             catch (IOException e) {
                 // If a characters event has already been sent down the pipeline it

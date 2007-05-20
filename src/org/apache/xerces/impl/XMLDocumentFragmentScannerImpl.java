@@ -1771,11 +1771,15 @@ public class XMLDocumentFragmentScannerImpl
             // encoding errors
             catch (MalformedByteSequenceException e) {
                 fErrorReporter.reportError(e.getDomain(), e.getKey(), 
-                    e.getArguments(), XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    e.getArguments(), XMLErrorReporter.SEVERITY_FATAL_ERROR, e);
                 return false;
             }
             catch (CharConversionException e) {
-                reportFatalError("CharConversionFailure", null);
+                fErrorReporter.reportError(
+                        XMLMessageFormatter.XML_DOMAIN,
+                        "CharConversionFailure",
+                        null,
+                        XMLErrorReporter.SEVERITY_FATAL_ERROR, e);
                 return false;
             }
             // premature end of file
