@@ -123,7 +123,7 @@ public class MalformedByteSequenceException extends CharConversionException {
      * 
      * @return the localized message for this exception.
      */
-    public String getMessage() {
+    public synchronized String getMessage() {
         if (fMessage == null) {
             fMessage = fFormatter.formatMessage(fLocale, fKey, fArguments);
             // The references to the message formatter and locale
