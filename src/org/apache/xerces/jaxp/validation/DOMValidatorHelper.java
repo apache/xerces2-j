@@ -29,6 +29,7 @@ import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 
+import org.apache.xerces.dom.NodeImpl;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.validation.EntityState;
@@ -235,6 +236,7 @@ final class DOMValidatorHelper implements ValidatorHelper, EntityState {
     /** Traverse the DOM and fire events to the schema validator. */
     private void validate(Node node) {
         final Node top = node;
+        final boolean useIsSameNode = useIsSameNode(top);
         // Performs a non-recursive traversal of the DOM. This
         // will avoid a stack overflow for DOMs with high depth.
         while (node != null) {
@@ -248,7 +250,8 @@ final class DOMValidatorHelper implements ValidatorHelper, EntityState {
                 next = node.getNextSibling();
                 if (next == null) {
                     node = node.getParentNode();
-                    if (node == null || top == node) {
+                    if (node == null || ((useIsSameNode) ? 
+                        top.isSameNode(node) : top == node)) {
                         if (node != null) {
                             finishNode(node);
                         }
@@ -450,6 +453,22 @@ final class DOMValidatorHelper implements ValidatorHelper, EntityState {
         }
     }
     
+    /**
+     * Use isSameNode() for testing node identity if the DOM implementation
+     * supports DOM Level 3 core and it isn't the Xerces implementation.
+     */
+    private boolean useIsSameNode(Node node) {
+        if (node instanceof NodeImpl) {
+            return false;
+        }
+        Document doc = node.getNodeType() == Node.DOCUMENT_NODE 
+            ? (Document) node : node.getOwnerDocument();
+        return (doc != null && doc.getImplementation().hasFeature("Core", "3.0"));
+    }
+    
+    /**
+     * Returns the current element node.
+     */
     Node getCurrentElement() {
         return fCurrentElement;
     }
