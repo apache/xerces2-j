@@ -238,7 +238,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
         }
         try {
             if (schemaType == XMLGrammarDescription.XML_DTD) {
-                processDTD(xmlVersion, schemaLocations[0]);
+                processDTD(xmlVersion, schemaLocations != null ? schemaLocations[0] : null);
             }            
             
             Node kid, next;
