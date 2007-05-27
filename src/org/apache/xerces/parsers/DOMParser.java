@@ -20,6 +20,7 @@ package org.apache.xerces.parsers;
 import java.io.CharConversionException;
 import java.io.IOException;
 
+import org.apache.xerces.dom.DOMMessageFormatter;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.EntityResolverWrapper;
 import org.apache.xerces.util.EntityResolver2Wrapper;
@@ -566,7 +567,10 @@ public class DOMParser
                // ignore
            }
            if (deferred) {
-               throw new SAXNotSupportedException("Current element node cannot be queried when node expansion is deferred.");
+               throw new SAXNotSupportedException(
+                       DOMMessageFormatter.formatMessage(
+                       DOMMessageFormatter.DOM_DOMAIN,
+                       "CannotQueryDeferredNode", null));
            }
            return (fCurrentNode!=null &&
                    fCurrentNode.getNodeType() == Node.ELEMENT_NODE)? fCurrentNode:null;
