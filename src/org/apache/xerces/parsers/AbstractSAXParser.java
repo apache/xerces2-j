@@ -22,9 +22,8 @@ import java.io.IOException;
 import java.util.Locale;
 
 import org.apache.xerces.impl.Constants;
-import org.apache.xerces.xs.PSVIProvider;
-import org.apache.xerces.util.EntityResolverWrapper;
 import org.apache.xerces.util.EntityResolver2Wrapper;
+import org.apache.xerces.util.EntityResolverWrapper;
 import org.apache.xerces.util.ErrorHandlerWrapper;
 import org.apache.xerces.util.SAXMessageFormatter;
 import org.apache.xerces.util.SymbolHash;
@@ -45,15 +44,14 @@ import org.apache.xerces.xni.parser.XMLParseException;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 import org.apache.xerces.xs.AttributePSVI;
 import org.apache.xerces.xs.ElementPSVI;
+import org.apache.xerces.xs.PSVIProvider;
 import org.xml.sax.AttributeList;
-import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.DTDHandler;
 import org.xml.sax.DocumentHandler;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
-import org.xml.sax.Locator;
 import org.xml.sax.Parser;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
@@ -65,7 +63,7 @@ import org.xml.sax.ext.DeclHandler;
 import org.xml.sax.ext.EntityResolver2;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.ext.Locator2;
-import org.xml.sax.helpers.LocatorImpl;
+import org.xml.sax.ext.Locator2Impl;
 
 /**
  * This is the base class of all SAX parsers. It implements both the
@@ -1133,21 +1131,15 @@ public abstract class AbstractSAXParser
         catch (XMLParseException e) {
             Exception ex = e.getException();
             if (ex == null || ex instanceof CharConversionException) {
-                // must be a parser exception; mine it for locator info and throw
-                // a SAXParseException
-                LocatorImpl locatorImpl = new LocatorImpl(){
-                    public String getXMLVersion() {
-                        return fVersion;
-                    }
-                    // since XMLParseExceptions know nothing about encoding,
-                    // we cannot return anything meaningful in this context.
-                    // We *could* consult the LocatorProxy, but the
-                    // application can do this itself if it wishes to possibly
-                    // be mislead.
-                    public String getEncoding() {
-                        return null;
-                    }
-                };
+                // must be a parser exception; mine it for locator info 
+                // and throw a SAXParseException
+                Locator2Impl locatorImpl = new Locator2Impl();
+                // since XMLParseExceptions know nothing about encoding,
+                // we cannot return anything meaningful in this context.
+                // We *could* consult the LocatorProxy, but the
+                // application can do this itself if it wishes to possibly
+                // be mislead.
+                locatorImpl.setXMLVersion(fVersion);
                 locatorImpl.setPublicId(e.getPublicId());
                 locatorImpl.setSystemId(e.getExpandedSystemId());
                 locatorImpl.setLineNumber(e.getLineNumber());
@@ -1208,21 +1200,15 @@ public abstract class AbstractSAXParser
         catch (XMLParseException e) {
             Exception ex = e.getException();
             if (ex == null || ex instanceof CharConversionException) {
-                // must be a parser exception; mine it for locator info and throw
-                // a SAXParseException
-                LocatorImpl locatorImpl = new LocatorImpl() {
-                    public String getXMLVersion() {
-                        return fVersion;
-                    }
-                    // since XMLParseExceptions know nothing about encoding,
-                    // we cannot return anything meaningful in this context.
-                    // We *could* consult the LocatorProxy, but the
-                    // application can do this itself if it wishes to possibly
-                    // be mislead.
-                    public String getEncoding() {
-                        return null;
-                    }
-                };
+                // must be a parser exception; mine it for locator info 
+                // and throw a SAXParseException
+                Locator2Impl locatorImpl = new Locator2Impl();
+                // since XMLParseExceptions know nothing about encoding,
+                // we cannot return anything meaningful in this context.
+                // We *could* consult the LocatorProxy, but the
+                // application can do this itself if it wishes to possibly
+                // be mislead.
+                locatorImpl.setXMLVersion(fVersion);
                 locatorImpl.setPublicId(e.getPublicId());
                 locatorImpl.setSystemId(e.getExpandedSystemId());
                 locatorImpl.setLineNumber(e.getLineNumber());
