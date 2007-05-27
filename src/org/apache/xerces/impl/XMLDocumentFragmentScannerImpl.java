@@ -262,9 +262,6 @@ public class XMLDocumentFragmentScannerImpl
 
     /** Single character array. */
     private final char[] fSingleChar = new char[1];
-
-    /** External entity. */
-    private final XMLEntityManager.ExternalEntity fExternalEntity = new XMLEntityManager.ExternalEntity();
     
     /** 
      * Saw spaces after element name or between attributes.
