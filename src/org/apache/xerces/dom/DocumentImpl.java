@@ -23,7 +23,9 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 import org.apache.xerces.dom.events.EventImpl;
+import org.apache.xerces.dom.events.MouseEventImpl;
 import org.apache.xerces.dom.events.MutationEventImpl;
+import org.apache.xerces.dom.events.UIEventImpl;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMImplementation;
@@ -414,18 +416,28 @@ public class DocumentImpl
      * does not support the type of Event interface requested
      * @since WD-DOM-Level-2-19990923
      */
-    public Event createEvent(String type)
-	throws DOMException {
-	    if (type.equalsIgnoreCase("Events") || "Event".equals(type))
-	        return new EventImpl();
-	    if (type.equalsIgnoreCase("MutationEvents") ||
-                "MutationEvent".equals(type))
-	        return new MutationEventImpl();
-	    else {
-            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
-	        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+    public Event createEvent(String type) throws DOMException {
+        if (type.equalsIgnoreCase("Events") || 
+                "Event".equals(type)) {
+            return new EventImpl();
         }
-	}
+        else if (type.equalsIgnoreCase("MutationEvents") ||
+                "MutationEvent".equals(type)) {
+            return new MutationEventImpl();
+        }
+        else if (type.equalsIgnoreCase("UIEvents") ||
+                "UIEvent".equals(type)) {
+            return new UIEventImpl();
+        }
+        else if (type.equalsIgnoreCase("MouseEvents") ||
+                "MouseEvent".equals(type)) {
+            return new MouseEventImpl();
+        }
+        else {
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+            throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+        }
+    }
 
     /**
      * Sets whether the DOM implementation generates mutation events
