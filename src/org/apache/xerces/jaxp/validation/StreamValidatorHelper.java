@@ -28,6 +28,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
+import org.apache.xerces.impl.xs.XMLSchemaValidator;
 import org.apache.xerces.parsers.XML11Configuration;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLInputSource;
@@ -83,14 +84,14 @@ final class StreamValidatorHelper implements ValidatorHelper {
     private SoftReference fConfiguration = new SoftReference(null);
     
     /** Schema validator. **/
-    private org.apache.xerces.impl.xs.XMLSchemaValidator fSchemaValidator;
+    private final XMLSchemaValidator fSchemaValidator;
     
     /** Component manager. **/
-    private XMLSchemaValidatorComponentManager fComponentManager;
+    private final XMLSchemaValidatorComponentManager fComponentManager;
 
     public StreamValidatorHelper(XMLSchemaValidatorComponentManager componentManager) {
         fComponentManager = componentManager;
-        fSchemaValidator = (org.apache.xerces.impl.xs.XMLSchemaValidator) fComponentManager.getProperty(SCHEMA_VALIDATOR);
+        fSchemaValidator = (XMLSchemaValidator) fComponentManager.getProperty(SCHEMA_VALIDATOR);
     }
 
     public void validate(Source source, Result result) 
