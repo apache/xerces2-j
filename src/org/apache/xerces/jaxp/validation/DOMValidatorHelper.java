@@ -102,25 +102,25 @@ final class DOMValidatorHelper implements ValidatorHelper, EntityState {
     //
     
     /** Error reporter. */
-    private XMLErrorReporter fErrorReporter;
+    private final XMLErrorReporter fErrorReporter;
     
     /** The namespace context of this document: stores namespaces in scope. **/
-    private NamespaceSupport fNamespaceContext;
+    private final NamespaceSupport fNamespaceContext;
     
     /** The namespace context of the DOMSource, includes context from ancestor nodes. **/
-    private DOMNamespaceContext fDOMNamespaceContext = new DOMNamespaceContext();
+    private final DOMNamespaceContext fDOMNamespaceContext = new DOMNamespaceContext();
     
     /** Schema validator. **/
-    private XMLSchemaValidator fSchemaValidator;
+    private final XMLSchemaValidator fSchemaValidator;
     
     /** Symbol table **/
-    private SymbolTable fSymbolTable;
+    private final SymbolTable fSymbolTable;
     
     /** Validation manager. **/
-    private ValidationManager fValidationManager;
+    private final ValidationManager fValidationManager;
     
     /** Component manager. **/
-    private XMLSchemaValidatorComponentManager fComponentManager;
+    private final XMLSchemaValidatorComponentManager fComponentManager;
     
     /** Simple Locator. **/
     private final SimpleLocator fXMLLocator = new SimpleLocator(null, null, -1, -1, -1);
@@ -138,7 +138,7 @@ final class DOMValidatorHelper implements ValidatorHelper, EntityState {
     private NamedNodeMap fEntities = null;
     
     /** Array for holding character data. **/
-    private char [] fCharBuffer = new char[CHUNK_SIZE];
+    private final char [] fCharBuffer = new char[CHUNK_SIZE];
     
     /** Root node. **/
     private Node fRoot;
