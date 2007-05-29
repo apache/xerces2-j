@@ -62,7 +62,7 @@ final class DOMResultAugmentor implements DOMDocumentHandler {
     // Data
     //
     
-    private DOMValidatorHelper fDOMValidatorHelper;
+    private final DOMValidatorHelper fDOMValidatorHelper;
     
     private Document fDocument;
     private CoreDocumentImpl fDocumentImpl;
