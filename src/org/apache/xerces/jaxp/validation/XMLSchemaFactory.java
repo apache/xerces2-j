@@ -99,13 +99,13 @@ public final class XMLSchemaFactory extends SchemaFactory {
     private final DOMEntityResolverWrapper fDOMEntityResolverWrapper;
     
     /** The ErrorHandlerWrapper */
-    private ErrorHandlerWrapper fErrorHandlerWrapper;
+    private final ErrorHandlerWrapper fErrorHandlerWrapper;
     
     /** The SecurityManager. */
     private SecurityManager fSecurityManager;
     
     /** The container for the real grammar pool. */ 
-    private XMLGrammarPoolWrapper fXMLGrammarPoolWrapper;
+    private final XMLGrammarPoolWrapper fXMLGrammarPoolWrapper;
     
     /** Whether or not to allow new schemas to be added to the grammar pool */
     private boolean fUseGrammarPoolOnly;
