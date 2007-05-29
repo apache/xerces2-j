@@ -33,9 +33,9 @@ final class SimpleXMLSchema extends AbstractXMLSchema implements XMLGrammarPool 
     /** Zero length grammar array. */
     private static final Grammar [] ZERO_LENGTH_GRAMMAR_ARRAY = new Grammar [0];
 
-    private Grammar fGrammar;
-    private Grammar[] fGrammars;
-    private XMLGrammarDescription fGrammarDescription;
+    private final Grammar fGrammar;
+    private final Grammar[] fGrammars;
+    private final XMLGrammarDescription fGrammarDescription;
     
     public SimpleXMLSchema(Grammar grammar) {
         fGrammar = grammar;
