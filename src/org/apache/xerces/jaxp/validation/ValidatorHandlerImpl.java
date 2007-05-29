@@ -138,22 +138,22 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
     //
     
     /** Error reporter. */
-    private XMLErrorReporter fErrorReporter;
+    private final XMLErrorReporter fErrorReporter;
     
     /** The namespace context of this document: stores namespaces in scope */
-    private NamespaceContext fNamespaceContext;
+    private final NamespaceContext fNamespaceContext;
     
     /** Schema validator. **/
-    private XMLSchemaValidator fSchemaValidator;
+    private final XMLSchemaValidator fSchemaValidator;
     
     /** Symbol table **/
-    private SymbolTable fSymbolTable;
+    private final SymbolTable fSymbolTable;
     
     /** Validation manager. */
-    private ValidationManager fValidationManager;
+    private final ValidationManager fValidationManager;
     
     /** Component manager. **/
-    private XMLSchemaValidatorComponentManager fComponentManager;
+    private final XMLSchemaValidatorComponentManager fComponentManager;
 
     /** XML Locator wrapper for SAX. **/
     private final SAXLocatorWrapper fSAXLocatorWrapper = new SAXLocatorWrapper();
