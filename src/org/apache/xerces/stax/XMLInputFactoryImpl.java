@@ -33,6 +33,7 @@ import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXSource;
 
+import org.apache.xerces.xni.parser.XMLInputSource;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
@@ -41,6 +42,7 @@ import org.xml.sax.XMLReader;
  * <p>Implementation of XMLInputFactory.</p>
  * 
  * @author Hua Lei
+ * @author Wei Duan
  * 
  * @version $Id$
  */
@@ -83,7 +85,10 @@ public class XMLInputFactoryImpl extends XMLInputFactory {
     
     public XMLStreamReader createXMLStreamReader(InputStream stream)
     throws XMLStreamException {
-        return null;
+        XMLInputSource inputsource = new XMLInputSource(null, null, null,
+                stream, null);
+        StAXParser xmlStreamReader = new StAXParser(inputsource, this);
+        return xmlStreamReader;
     }
     
     public XMLStreamReader createXMLStreamReader(InputStream stream,
