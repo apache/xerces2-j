@@ -22,45 +22,52 @@ import java.io.StringWriter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.bootstrap.DOMImplementationRegistry;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSOutput;
+import org.w3c.dom.ls.LSSerializer;
 
 /**
  * Simple Sample that:
- * - Generate a DOM from Scratch.
- * - Output DOM to a String using Serializer
+ * - Generates a DOM from scratch.
+ * - Writes the DOM to a String using an LSSerializer
  * @author Jeffrey Rodriguez
  * @version $Id$
  */
 public class DOMGenerate {
+    
     public static void main( String[] argv ) {
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            dbf.setNamespaceAware(true);
             DocumentBuilder db = dbf.newDocumentBuilder();
             Document doc = db.newDocument();
             
-            Element root = doc.createElement("person");     // Create Root Element
-            Element item = doc.createElement("name");       // Create element
+            Element root = doc.createElementNS(null, "person"); // Create Root Element
+            Element item = doc.createElementNS(null, "name");   // Create element
             item.appendChild( doc.createTextNode("Jeff") );
-            root.appendChild( item );                       // atach element to Root element
-            item = doc.createElement("age");                // Create another Element
+            root.appendChild( item );                           // Attach element to Root element
+            item = doc.createElementNS(null, "age");            // Create another Element
             item.appendChild( doc.createTextNode("28" ) );       
-            root.appendChild( item );                       // Attach Element to previous element down tree
-            item = doc.createElement("height");            
+            root.appendChild( item );                           // Attach Element to previous element down tree
+            item = doc.createElementNS(null, "height");            
             item.appendChild( doc.createTextNode("1.80" ) );
-            root.appendChild( item );                       // Attach another Element - grandaugther
-            doc.appendChild( root );                        // Add Root to Document
+            root.appendChild( item );                           // Attach another Element - grandaugther
+            doc.appendChild( root );                            // Add Root to Document
 
-            OutputFormat    format  = new OutputFormat( doc );   //Serialize DOM
-            StringWriter  stringOut = new StringWriter();        //Writer will be a String
-            XMLSerializer    serial = new XMLSerializer( stringOut, format );
-            serial.asDOMSerializer();                            // As a DOM Serializer
+            DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
+            DOMImplementationLS domImplLS = (DOMImplementationLS)registry.getDOMImplementation("LS");
+            
+            LSSerializer ser = domImplLS.createLSSerializer();  // Create a serializer for the DOM
+            LSOutput out = domImplLS.createLSOutput();
+            StringWriter stringOut = new StringWriter();        // Writer will be a String
+            out.setCharacterStream(stringOut);
+            ser.write(doc, out);                                // Serialize the DOM
 
-            serial.serialize( doc.getDocumentElement() );
-
-            System.out.println( "STRXML = " + stringOut.toString() ); //Spit out DOM as a String
+            System.out.println( "STRXML = " 
+                    + stringOut.toString() );                   // Spit out the DOM as a String
         } catch ( Exception ex ) {
             ex.printStackTrace();
         }
