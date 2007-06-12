@@ -83,7 +83,7 @@ reader.setProperty(
       documentation for details.
      </p>
      <note>
-      The XMLCatalogResolver class requires XML Commons Resolver 1.1 
+      The XMLCatalogResolver class requires the XML Commons Resolver 1.1 
       or a version compatible with 1.1.
      </note>
     </a>
