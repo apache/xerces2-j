@@ -2190,7 +2190,7 @@ public abstract class AbstractSAXParser
     // Classes
     //
 
-    protected class LocatorProxy
+    protected static final class LocatorProxy
         implements Locator2 {
 
         //
