@@ -97,7 +97,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     
     private SchemaDVFactory schemaFactory = SchemaDVFactory.getInstance();
     
-    private class ComplexTypeRecoverableError extends Exception {
+    private static final class ComplexTypeRecoverableError extends Exception {
         
         private static final long serialVersionUID = 6802729912091130335L;
         
