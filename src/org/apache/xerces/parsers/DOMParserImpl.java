@@ -1178,7 +1178,7 @@ public class DOMParserImpl
         super.startElement(element, attributes, augs);
     }
     
-    private class AbortHandler implements XMLDocumentHandler, XMLDTDHandler, XMLDTDContentModelHandler  {
+    private static final class AbortHandler implements XMLDocumentHandler, XMLDTDHandler, XMLDTDContentModelHandler  {
 
         private XMLDocumentSource documentSource;
         private XMLDTDContentModelSource dtdContentSource;
