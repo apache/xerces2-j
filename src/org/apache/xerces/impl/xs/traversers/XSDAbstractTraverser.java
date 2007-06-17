@@ -255,10 +255,18 @@ abstract class XSDAbstractTraverser {
     private final XSFacets xsFacets = new XSFacets();
     
     static final class FacetInfo {
-        XSFacets facetdata;
-        Element nodeAfterFacets;
-        short fPresentFacets;
-        short fFixedFacets;
+        
+        final XSFacets facetdata;
+        final Element nodeAfterFacets;
+        final short fPresentFacets;
+        final short fFixedFacets;
+        
+        FacetInfo(XSFacets facets, Element nodeAfterFacets, short presentFacets, short fixedFacets) {
+            facetdata = facets;
+            this.nodeAfterFacets = nodeAfterFacets;
+            fPresentFacets = presentFacets;
+            fFixedFacets = fixedFacets;
+        }
     }
     
     FacetInfo traverseFacets(Element content,
@@ -508,12 +516,7 @@ abstract class XSDAbstractTraverser {
         
         fPattern.setLength(0);
         
-        FacetInfo fi = new FacetInfo();
-        fi.facetdata = xsFacets;
-        fi.nodeAfterFacets = content;
-        fi.fPresentFacets = facetsPresent;
-        fi.fFixedFacets = facetsFixed;
-        return fi;
+        return new FacetInfo(xsFacets, content, facetsPresent, facetsFixed);
     }
     
     
