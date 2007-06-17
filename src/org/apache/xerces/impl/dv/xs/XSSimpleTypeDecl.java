@@ -2815,8 +2815,10 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
      * A wrapper of ValidationContext, to provide a way of switching to a
      * different Namespace declaration context.
      */
-    class ValidationContextImpl implements ValidationContext {
-        ValidationContext fExternal;
+    static final class ValidationContextImpl implements ValidationContext {
+
+        final ValidationContext fExternal;
+        
         ValidationContextImpl(ValidationContext external) {
             fExternal = external;
         }
@@ -2866,10 +2868,12 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
         }
 
         public String getURI(String prefix) {
-            if (fNSContext == null)
+            if (fNSContext == null) {
                 return fExternal.getURI(prefix);
-            else
+            }
+            else {
                 return fNSContext.getURI(prefix);
+            }
         }
     }
 
