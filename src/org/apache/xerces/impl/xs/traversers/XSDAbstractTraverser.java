@@ -254,7 +254,7 @@ abstract class XSDAbstractTraverser {
     private StringBuffer fPattern = new StringBuffer();
     private final XSFacets xsFacets = new XSFacets();
     
-    class FacetInfo {
+    static final class FacetInfo {
         XSFacets facetdata;
         Element nodeAfterFacets;
         short fPresentFacets;
