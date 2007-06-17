@@ -4192,7 +4192,7 @@ public class XMLSchemaValidator
 
     // the purpose of this class is to enable IdentityConstraint,int
     // pairs to be used easily as keys in Hashtables.
-    protected class LocalIDKey {
+    protected static final class LocalIDKey {
 
         public IdentityConstraint fId;
         public int fDepth;
