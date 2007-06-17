@@ -343,7 +343,7 @@ final class JAXPValidatorComponent
      * 
      * @author Kohsuke Kawaguchi (kohsuke.kawaguchi@sun.com)
      */
-    private final class XNI2SAX extends DefaultXMLDocumentHandler {
+    private static final class XNI2SAX extends DefaultXMLDocumentHandler {
         
         private ContentHandler fContentHandler;
 
