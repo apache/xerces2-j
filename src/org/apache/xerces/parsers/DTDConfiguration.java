@@ -353,9 +353,7 @@ public class DTDConfiguration
         fDTDProcessor = createDTDProcessor();
         if (fDTDProcessor != null) {
             setProperty(DTD_PROCESSOR, fDTDProcessor);
-            if (fDTDProcessor instanceof XMLComponent) {
-                addComponent((XMLComponent)fDTDProcessor);
-            }
+            addComponent(fDTDProcessor);
         }
 
         fDTDValidator = createDTDValidator();

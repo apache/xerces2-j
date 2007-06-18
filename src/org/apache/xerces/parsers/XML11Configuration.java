@@ -560,7 +560,7 @@ public class XML11Configuration extends ParserConfigurationSettings
 
         fDTDProcessor = new XMLDTDProcessor();
 		fProperties.put(DTD_PROCESSOR, fDTDProcessor);
-        addComponent((XMLComponent) fDTDProcessor);
+        addComponent(fDTDProcessor);
 
         fDTDValidator = new XMLNSDTDValidator();
 		fProperties.put(DTD_VALIDATOR, fDTDValidator);
