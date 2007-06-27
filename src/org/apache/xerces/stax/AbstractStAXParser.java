@@ -17,6 +17,7 @@
 
 package org.apache.xerces.stax;
 
+import java.util.Stack;
 import javax.xml.stream.XMLStreamConstants;
 
 import org.apache.xerces.parsers.AbstractXMLDocumentParser;
@@ -36,11 +37,6 @@ import org.apache.xerces.xni.XNIException;
  * @version $Id$
  */
 public class AbstractStAXParser extends AbstractXMLDocumentParser {
-	// Represent the XNI type such as xmlDecl but not existed in stax
-	// TODO : The parsing steps of XNI and StAX are not the same. For example,
-	// XNI will treat
-	// START_DOCUMENT and XML_DECL as two events, and stax will treat as one
-	static protected int START_DOCUMENT_DECL = -1;
 
 	// The current event type
 	protected int eventType;
@@ -72,10 +68,13 @@ public class AbstractStAXParser extends AbstractXMLDocumentParser {
 	// Element QName
 	protected QName elementName = null;
 
-	// Element attribute
-	// TODO : Actually, a attribute stack is needed to store the attribute for
-	// endElement event
-	protected XMLAttributes elementAttr = null;
+	// Element attribute stack
+    // The XNI interface "endElement" will not give out XMLAttributes info.
+    // However, stax inteface needs to give namespace information when
+    // START_ELEMENT or END_ELEMENT¡¡
+    protected Stack atrributeStack = new Stack();
+    
+	protected XMLAttributes curElementAttr = null;
 
 	// Namespace context
 	protected NamespaceContext namespaceContext = null;
@@ -109,8 +108,9 @@ public class AbstractStAXParser extends AbstractXMLDocumentParser {
 		piTarget = null;
 		piData = null;
 		elementName = null;
-		elementAttr = null;
+		curElementAttr = null;
 		namespaceContext = null;
+        atrributeStack.clear();
 	} // reset()
 
 	//
@@ -172,9 +172,6 @@ public class AbstractStAXParser extends AbstractXMLDocumentParser {
 		this.versionXML = version;
 		this.encodingXML = encoding;
 		this.standaloneXML = standalone;
-
-		// No according event type in stax event
-		eventType = START_DOCUMENT_DECL;
 	} // xmlDecl(String,String,String)
 
 	/**
@@ -219,7 +216,9 @@ public class AbstractStAXParser extends AbstractXMLDocumentParser {
 		eventType = XMLStreamConstants.START_ELEMENT;
 
 		this.elementName = element;
-		this.elementAttr = attributes;
+        
+        this.curElementAttr = attributes;
+		this.atrributeStack.push(attributes);
 	} // startElement(QName,XMLAttributes)
 
 	/**
@@ -300,7 +299,10 @@ public class AbstractStAXParser extends AbstractXMLDocumentParser {
 		eventType = XMLStreamConstants.END_ELEMENT;
 
 		this.elementName = element;
-	} // endElement(QName)
+        
+        // The endElement and startElement are in pair
+        this.curElementAttr = (XMLAttributes) this.atrributeStack.pop();
+    } // endElement(QName)
 
 	/**
 	 * The start of a CDATA section.

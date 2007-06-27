@@ -130,7 +130,10 @@ public class StAXParser implements XMLStreamReader {
      */
     public int next() throws XMLStreamException {
         try {
+            // Initialize the StAXParser event type to zero
+            staxParser.eventType = 0;
             configuration.parse(false);
+           
         } catch (Exception e) {
             throw new XMLStreamException(
                     "Error occurs when processing the underlying XML source", e);
@@ -167,7 +170,36 @@ public class StAXParser implements XMLStreamReader {
      */
     public void require(int type, String namespaceURI, String localName)
             throws XMLStreamException {
-        // Need to be realized
+        if (type == curStAXEventType)
+        {
+           try{
+               if (namespaceURI != null)
+               {
+                   String curNamespace = this.getNamespaceURI();
+                   if (!namespaceURI.equals(curNamespace))
+                   {
+                       throw new XMLStreamException(
+                               "Namespace " + curNamespace + " doesn't match with input "+ namespaceURI);  
+                   }
+               }
+               if (localName != null)
+               {
+                   String curLocalName = this.getLocalName();
+                   if (!localName.equals(curLocalName))
+                   {
+                       throw new XMLStreamException(
+                               "Local name " + curLocalName + " doesn't match with input "+ localName);  
+                   }
+               }    
+           }catch(IllegalStateException e)
+           {
+               throw new XMLStreamException(e);
+           }       
+        }
+        else{
+            throw new XMLStreamException(
+               "Event type " + curStAXEventType + " doesn't match with input type "+ type);   
+        }
     }
 
     /**
@@ -340,7 +372,7 @@ public class StAXParser implements XMLStreamReader {
             if (localName == null) {
                 throw new IllegalStateException("Local name can't be null");
             }
-            XMLAttributes attrs = staxParser.elementAttr;
+            XMLAttributes attrs = staxParser.curElementAttr;
             return attrs.getValue(namespaceURI, localName);
         }
 
@@ -359,7 +391,7 @@ public class StAXParser implements XMLStreamReader {
      */
     public int getAttributeCount() {
         if (curStAXEventType == XMLStreamConstants.START_ELEMENT) {
-            return staxParser.elementAttr.getLength();
+            return staxParser.curElementAttr.getLength();
         }
 
         throw new IllegalStateException(
@@ -398,7 +430,7 @@ public class StAXParser implements XMLStreamReader {
      */
     public String getAttributeNamespace(int index) {
         if (curStAXEventType == XMLStreamConstants.START_ELEMENT) {
-            return staxParser.elementAttr.getURI(index);
+            return staxParser.curElementAttr.getURI(index);
         }
 
         throw new IllegalStateException(
@@ -416,7 +448,7 @@ public class StAXParser implements XMLStreamReader {
      */
     public String getAttributeLocalName(int index) {
         if (curStAXEventType == XMLStreamConstants.START_ELEMENT) {
-            return staxParser.elementAttr.getLocalName(index);
+            return staxParser.curElementAttr.getLocalName(index);
         }
 
         throw new IllegalStateException(
@@ -434,7 +466,7 @@ public class StAXParser implements XMLStreamReader {
      */
     public String getAttributePrefix(int index) {
         if (curStAXEventType == XMLStreamConstants.START_ELEMENT) {
-            return staxParser.elementAttr.getPrefix(index);
+            return staxParser.curElementAttr.getPrefix(index);
         }
 
         throw new IllegalStateException(
@@ -452,7 +484,7 @@ public class StAXParser implements XMLStreamReader {
      */
     public String getAttributeType(int index) {
         if (curStAXEventType == XMLStreamConstants.START_ELEMENT) {
-            return staxParser.elementAttr.getType(index);
+            return staxParser.curElementAttr.getType(index);
         }
 
         throw new IllegalStateException(
@@ -470,7 +502,7 @@ public class StAXParser implements XMLStreamReader {
      */
     public String getAttributeValue(int index) {
         if (curStAXEventType == XMLStreamConstants.START_ELEMENT) {
-            return staxParser.elementAttr.getValue(index);
+            return staxParser.curElementAttr.getValue(index);
         }
 
         throw new IllegalStateException(
@@ -489,7 +521,7 @@ public class StAXParser implements XMLStreamReader {
      */
     public boolean isAttributeSpecified(int index) {
         if (curStAXEventType == XMLStreamConstants.START_ELEMENT) {
-            return staxParser.elementAttr.isSpecified(index);
+            return staxParser.curElementAttr.isSpecified(index);
         }
 
         throw new IllegalStateException(
@@ -509,7 +541,7 @@ public class StAXParser implements XMLStreamReader {
         int countNamespace = 0;
         if (curStAXEventType == XMLStreamConstants.START_ELEMENT
                 || curStAXEventType == XMLStreamConstants.END_ELEMENT) {
-            XMLAttributes attrs = staxParser.elementAttr;
+            XMLAttributes attrs = staxParser.curElementAttr;
 
             for (int i = 0; i < attrs.getLength(); i++) {
                 if (attrs.getLocalName(i) == XMLSymbols.PREFIX_XMLNS) {
@@ -540,10 +572,30 @@ public class StAXParser implements XMLStreamReader {
     public String getNamespacePrefix(int index) {
         if (curStAXEventType == XMLStreamConstants.START_ELEMENT
                 || curStAXEventType == XMLStreamConstants.END_ELEMENT) {
-            // TODO : Need to be done
-            return null;
+            
+            int namespaceCount = getNamespaceCount();      
+            if (index + 1 > namespaceCount || index < 0)
+            {
+                throw new IndexOutOfBoundsException("Illegle of namespace index");
+            }
+     
+            XMLAttributes attrs = staxParser.curElementAttr;
+            
+            String prefix = null;
+            int count = 0;
+            for (int i = 0; i < attrs.getLength() && count <= index ; i++) {
+                if (attrs.getLocalName(i) == XMLSymbols.PREFIX_XMLNS) {
+                    // default namesapce 
+                    count++;
+                    prefix = null;
+                } else if (attrs.getPrefix(i) == XMLSymbols.PREFIX_XMLNS) {
+                    count++;
+                    prefix = attrs.getLocalName(i);
+                }
+            }
+            
+            return prefix;
         }
-
         throw new IllegalStateException(
                 "Current state is not START_ELEMENT or END_ELEMENT");
     }
@@ -560,8 +612,28 @@ public class StAXParser implements XMLStreamReader {
     public String getNamespaceURI(int index) {
         if (curStAXEventType == XMLStreamConstants.START_ELEMENT
                 || curStAXEventType == XMLStreamConstants.END_ELEMENT) {
-            // TODO : Need to be done
-            return null;
+            int namespaceCount = getNamespaceCount();      
+            if (index + 1 > namespaceCount || index < 0)
+            {
+                throw new IndexOutOfBoundsException("Illegle of namespace index");
+            }
+     
+            XMLAttributes attrs = staxParser.curElementAttr;
+            
+            String uri = null;
+            int count = 0;
+            for (int i = 0; i < attrs.getLength() && count <= index ; i++) {
+                if (attrs.getLocalName(i) == XMLSymbols.PREFIX_XMLNS) {
+                    // default namesapce 
+                    count++;
+                    uri = null;
+                } else if (attrs.getPrefix(i) == XMLSymbols.PREFIX_XMLNS) {
+                    count++;
+                    uri = attrs.getValue(i);
+                }
+            }
+            
+            return uri;
         }
 
         throw new IllegalStateException(
