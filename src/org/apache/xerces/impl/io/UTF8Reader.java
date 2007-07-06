@@ -286,21 +286,20 @@ public class UTF8Reader
      */
     public int read(char ch[], int offset, int length) throws IOException {
 
-        // handle surrogate
-        int out = offset;
-        if (fSurrogate != -1) {
-            ch[offset + 1] = (char)fSurrogate;
-            fSurrogate = -1;
-            length--;
-            out++;
-        }
-
         // read bytes
+        int out = offset;
         int count = 0;
         if (fOffset == 0) {
             // adjust length to read
             if (length > fBuffer.length) {
                 length = fBuffer.length;
+            }
+            
+            // handle surrogate
+            if (fSurrogate != -1) {
+                ch[out++] = (char)fSurrogate;
+                fSurrogate = -1;
+                length--;
             }
 
             // perform read operation
@@ -548,8 +547,14 @@ public class UTF8Reader
 
                 // set characters
                 ch[out++] = (char)hs;
-                ch[out++] = (char)ls;
-                count -= 2;
+                if ((count -= 2) <= length) {
+                    ch[out++] = (char)ls;
+                }
+                // reached the end of the char buffer; save low surrogate for the next read
+                else {
+                    fSurrogate = ls;
+                    --count;
+                }
                 continue;
             }
 
