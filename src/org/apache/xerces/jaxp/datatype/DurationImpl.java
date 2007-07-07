@@ -105,83 +105,83 @@ class DurationImpl
      * <p>Number of Fields.</p>
      */
     private static final int FIELD_NUM = 6;
-    
+
     /**
      * <p>Internal array of value Fields.</p>
      */
-	private static final DatatypeConstants.Field[] FIELDS = new DatatypeConstants.Field[]{
-			DatatypeConstants.YEARS,
-			DatatypeConstants.MONTHS,
-			DatatypeConstants.DAYS,
-			DatatypeConstants.HOURS,
-			DatatypeConstants.MINUTES,
-			DatatypeConstants.SECONDS
-		};
+    private static final DatatypeConstants.Field[] FIELDS = new DatatypeConstants.Field[]{
+        DatatypeConstants.YEARS,
+        DatatypeConstants.MONTHS,
+        DatatypeConstants.DAYS,
+        DatatypeConstants.HOURS,
+        DatatypeConstants.MINUTES,
+        DatatypeConstants.SECONDS
+    };
 
-		/**
-		 * <p>Internal array of value Field ids.</p>
-		 */
-		private static final int[] FIELD_IDS = {
-				DatatypeConstants.YEARS.getId(),
-				DatatypeConstants.MONTHS.getId(),
-				DatatypeConstants.DAYS.getId(),
-				DatatypeConstants.HOURS.getId(),
-				DatatypeConstants.MINUTES.getId(),
-				DatatypeConstants.SECONDS.getId()
-			};
+    /**
+     * <p>Internal array of value Field ids.</p>
+     */
+    private static final int[] FIELD_IDS = {
+        DatatypeConstants.YEARS.getId(),
+        DatatypeConstants.MONTHS.getId(),
+        DatatypeConstants.DAYS.getId(),
+        DatatypeConstants.HOURS.getId(),
+        DatatypeConstants.MINUTES.getId(),
+        DatatypeConstants.SECONDS.getId()
+    };
 
-	/**
-	 * <p>BigDecimal value of 0.</p>
-	 */    
-	private static final BigDecimal ZERO = BigDecimal.valueOf((long) 0);
+    /**
+     * <p>BigDecimal value of 0.</p>
+     */    
+    private static final BigDecimal ZERO = BigDecimal.valueOf((long) 0);
 
     /**
      * <p>Indicates the sign. -1, 0 or 1 if the duration is negative,
      * zero, or positive.</p>
      */
     private final int signum;
-    
+
     /**
      * <p>Years of this <code>Duration</code>.</p>
      */
     private final BigInteger years;
-    
+
     /**
      * <p>Months of this <code>Duration</code>.</p>
      */
     private final BigInteger months;
-    
+
     /**
      * <p>Days of this <code>Duration</code>.</p>
      */
     private final BigInteger days;
-    
+
     /**
      * <p>Hours of this <code>Duration</code>.</p>
      */
     private final BigInteger hours;
-    
+
     /**
      * <p>Minutes of this <code>Duration</code>.</p>
      */
     private final BigInteger minutes;
-    
+
     /**
      * <p>Seconds of this <code>Duration</code>.</p>
      */
     private final BigDecimal seconds;
 
-	/**
-	 * Returns the sign of this duration in -1,0, or 1.
-	 * 
-	 * @return
-	 *      -1 if this duration is negative, 0 if the duration is zero,
-	 *      and 1 if the duration is postive.
-	 */
-	public int getSign() {
-		
-		return signum;
-	}
+    /**
+     * Returns the sign of this duration in -1,0, or 1.
+     * 
+     * @return
+     *      -1 if this duration is negative, 0 if the duration is zero,
+     *      and 1 if the duration is postive.
+     */
+    public int getSign() {
+
+        return signum;
+    }
 
 	/**
 	 * TODO: Javadoc
@@ -191,20 +191,20 @@ class DurationImpl
 	 */	        
     private int calcSignum(boolean isPositive) {
         if ((years == null || years.signum() == 0)
-            && (months == null || months.signum() == 0)
-            && (days == null || days.signum() == 0)
-            && (hours == null || hours.signum() == 0)
-            && (minutes == null || minutes.signum() == 0)
-            && (seconds == null || seconds.signum() == 0)) {
+             && (months == null || months.signum() == 0)
+             && (days == null || days.signum() == 0)
+             && (hours == null || hours.signum() == 0)
+             && (minutes == null || minutes.signum() == 0)
+             && (seconds == null || seconds.signum() == 0)) {
             return 0;
-            }
+        }
 
-            if (isPositive) {
-                return 1;
-            } else {
-                return -1;
-            }
-
+        if (isPositive) {
+            return 1;
+        } 
+        else {
+            return -1;
+        }
     }
     
     /**
@@ -363,13 +363,14 @@ class DurationImpl
      *      The length of the duration in milliseconds.
      */
     protected DurationImpl(final long durationInMilliSeconds) {
-        
+
         boolean is0x8000000000000000L = false;
         long l = durationInMilliSeconds;
-        
+
         if (l > 0) {
             signum = 1;
-        } else if (l < 0) {
+        } 
+        else if (l < 0) {
             signum = -1;
             if (l == 0x8000000000000000L) {
                 // negating 0x8000000000000000L causes an overflow
@@ -377,22 +378,23 @@ class DurationImpl
                 is0x8000000000000000L = true;
             }
             l *= -1;
-        } else {
+        } 
+        else {
             signum = 0;
         }
-        
+
         this.years = null;
         this.months = null;
-        
+
         this.seconds =
             BigDecimal.valueOf((l % 60000L) + (is0x8000000000000000L ? 1 : 0), 3);
-        
+
         l /= 60000L;
         this.minutes = (l == 0) ? null : BigInteger.valueOf(l % 60L);
 
         l /= 60L;
         this.hours = (l == 0) ? null : BigInteger.valueOf(l % 24L);
-        
+
         l /= 24L;
         this.days = (l == 0) ? null : BigInteger.valueOf(l);
     }
@@ -432,30 +434,31 @@ class DurationImpl
     protected DurationImpl(String lexicalRepresentation)
         throws IllegalArgumentException {
         // only if I could use the JDK1.4 regular expression ....
-        
+
         final String s = lexicalRepresentation;
         boolean positive;
         int[] idx = new int[1];
-	int length = s.length();
-	boolean timeRequired = false;
+        int length = s.length();
+        boolean timeRequired = false;
 
-	if (lexicalRepresentation == null) {
-	    throw new NullPointerException();
-	}
-        
-	idx[0] = 0;
-	if (length != idx[0] && s.charAt(idx[0]) == '-') {
-	    idx[0]++;
-	    positive = false;
-	} else {
-	    positive = true;
-	}
-        
-	if (length != idx[0] && s.charAt(idx[0]++) != 'P') {
-	    throw new IllegalArgumentException(s); //,idx[0]-1);
-	}
+        if (lexicalRepresentation == null) {
+            throw new NullPointerException();
+        }
 
-        
+        idx[0] = 0;
+        if (length != idx[0] && s.charAt(idx[0]) == '-') {
+            idx[0]++;
+            positive = false;
+        } 
+        else {
+            positive = true;
+        }
+
+        if (length != idx[0] && s.charAt(idx[0]++) != 'P') {
+            throw new IllegalArgumentException(s); //,idx[0]-1);
+        }
+
+
         // phase 1: chop the string into chunks
         // (where a chunk is '<number><a symbol>'
         //--------------------------------------
@@ -463,33 +466,34 @@ class DurationImpl
         String[] dateParts = new String[3];
         int[] datePartsIndex = new int[3];
         while (length != idx[0]
-            && isDigit(s.charAt(idx[0]))
-            && dateLen < 3) {
+               && isDigit(s.charAt(idx[0]))
+               && dateLen < 3) {
             datePartsIndex[dateLen] = idx[0];
             dateParts[dateLen++] = parsePiece(s, idx);
         }
-        
-	if (length != idx[0]) {
-	    if (s.charAt(idx[0]++) == 'T') {
-		timeRequired = true;
-	    } else {
-		throw new IllegalArgumentException(s); // ,idx[0]-1);
-	    }
-	}
-        
+
+        if (length != idx[0]) {
+            if (s.charAt(idx[0]++) == 'T') {
+                timeRequired = true;
+            } 
+            else {
+                throw new IllegalArgumentException(s); // ,idx[0]-1);
+            }
+        }
+
         int timeLen = 0;
         String[] timeParts = new String[3];
         int[] timePartsIndex = new int[3];
         while (length != idx[0]
-            && isDigitOrPeriod(s.charAt(idx[0]))
-            && timeLen < 3) {
+                             && isDigitOrPeriod(s.charAt(idx[0]))
+                             && timeLen < 3) {
             timePartsIndex[timeLen] = idx[0];
             timeParts[timeLen++] = parsePiece(s, idx);
         }
-        
-	if (timeRequired && timeLen == 0) {
+
+        if (timeRequired && timeLen == 0) {
             throw new IllegalArgumentException(s); // ,idx[0]);
-	}
+        }
 
         if (length != idx[0]) {
             throw new IllegalArgumentException(s); // ,idx[0]);
@@ -497,12 +501,12 @@ class DurationImpl
         if (dateLen == 0 && timeLen == 0) {
             throw new IllegalArgumentException(s); // ,idx[0]);
         }
-        
+
         // phase 2: check the ordering of chunks
         //--------------------------------------
         organizeParts(s, dateParts, datePartsIndex, dateLen, "YMD");
         organizeParts(s, timeParts, timePartsIndex, timeLen, "HMS");
-        
+
         // parse into numbers
         years = parseBigInteger(s, dateParts[0], datePartsIndex[0]);
         months = parseBigInteger(s, dateParts[1], datePartsIndex[1]);
@@ -936,9 +940,9 @@ class DurationImpl
         return resultA;
     }
 
-    private int compareResults(int resultA, int resultB){
+    private int compareResults(int resultA, int resultB) {
 
-      if ( resultB == DatatypeConstants.INDETERMINATE ) {
+        if ( resultB == DatatypeConstants.INDETERMINATE ) {
             return DatatypeConstants.INDETERMINATE;
         }
         else if ( resultA!=resultB) {
@@ -954,9 +958,9 @@ class DurationImpl
      */
     public int hashCode() {
         // component wise hash is not correct because 1day = 24hours
-	Calendar cal = TEST_POINTS[0].toGregorianCalendar();
-	this.addTo(cal);
-	return (int) getCalendarTimeInMillis(cal);
+        Calendar cal = TEST_POINTS[0].toGregorianCalendar();
+        this.addTo(cal);
+        return (int) getCalendarTimeInMillis(cal);
     }
     
     /**
@@ -1034,10 +1038,12 @@ class DurationImpl
         int insertionPoint = intString.length() - scale;
         if (insertionPoint == 0) { /* Point goes right before intVal */
             return "0." + intString;
-        } else if (insertionPoint > 0) { /* Point goes inside intVal */
+        } 
+        else if (insertionPoint > 0) { /* Point goes inside intVal */
             buf = new StringBuffer(intString);
             buf.insert(insertionPoint, '.');
-        } else { /* We must insert zeros between point and intVal */
+        } 
+        else { /* We must insert zeros between point and intVal */
             buf = new StringBuffer(3 - insertionPoint + intString.length());
             buf.append("0.");
             for (int i = 0; i < -insertionPoint; i++) {
@@ -1281,7 +1287,8 @@ class DurationImpl
         Number n = getField(field);
         if (n == null) {
             return 0;
-        } else {
+        } 
+        else {
             return n.intValue();
         }
     }
@@ -1319,8 +1326,7 @@ class DurationImpl
     public long getTimeInMillis(final Calendar startInstant) {
         Calendar cal = (Calendar) startInstant.clone();
         addTo(cal);
-        return getCalendarTimeInMillis(cal)
-                    - getCalendarTimeInMillis(startInstant);
+        return getCalendarTimeInMillis(cal) - getCalendarTimeInMillis(startInstant);
     }
     
     /**
@@ -1416,27 +1422,27 @@ class DurationImpl
      * @throws NullPointerException If the startTimeInstant parameter is null.
      */
     public Duration normalizeWith(Calendar startTimeInstant) {
-        
+
         Calendar c = (Calendar) startTimeInstant.clone();
-        
+
         // using int may cause overflow, but 
         // Calendar internally treats value as int anyways.
-	c.add(Calendar.YEAR, getYears() * signum);
+        c.add(Calendar.YEAR, getYears() * signum);
         c.add(Calendar.MONTH, getMonths() * signum);
         c.add(Calendar.DAY_OF_MONTH, getDays() * signum);
-        
+
         // obtain the difference in terms of days
         long diff = getCalendarTimeInMillis(c) - getCalendarTimeInMillis(startTimeInstant);
         int days = (int) (diff / (1000L * 60L * 60L * 24L));
-        
+
         return new DurationImpl(
-            days >= 0,
-            null,
-            null,
-            wrap(Math.abs(days)),
-            (BigInteger) getField(DatatypeConstants.HOURS),
-            (BigInteger) getField(DatatypeConstants.MINUTES),
-            (BigDecimal) getField(DatatypeConstants.SECONDS));
+                days >= 0,
+                null,
+                null,
+                wrap(Math.abs(days)),
+                (BigInteger) getField(DatatypeConstants.HOURS),
+                (BigInteger) getField(DatatypeConstants.MINUTES),
+                (BigDecimal) getField(DatatypeConstants.SECONDS));
     }
     
     /**
@@ -1526,14 +1532,16 @@ class DurationImpl
                 } else {
                     carry = ZERO;
                 }
-            } else {
+            } 
+            else {
                 carry = bd.multiply(FACTORS[i]);
             }
         }
         
         if (seconds != null) {
             buf[5] = seconds.multiply(factor).add(carry);
-        } else {
+        } 
+        else {
             buf[5] = carry;
         }
                 
@@ -1560,14 +1568,17 @@ class DurationImpl
         if (f == DatatypeConstants.SECONDS) {
             if (seconds != null) {
                 return seconds;
-            } else {
+            } 
+            else {
                 return ZERO;
             }
-        } else {
+        } 
+        else {
             BigInteger bi = (BigInteger) getField(f);
             if (bi == null) {
                 return ZERO;
-            } else {
+            } 
+            else {
                 return new BigDecimal(bi);
             }
         }
@@ -1586,7 +1597,8 @@ class DurationImpl
         boolean canBeNull) {
         if (canBeNull && value.signum() == 0) {
             return null;
-        } else {
+        } 
+        else {
             return value.unscaledValue();
         }
     }
@@ -1595,7 +1607,7 @@ class DurationImpl
      * 1 unit of FIELDS[i] is equivalent to <code>FACTORS[i]</code> unit of
      * FIELDS[i+1].
      */
-    private static final BigDecimal[] FACTORS = new BigDecimal[]{
+    private static final BigDecimal[] FACTORS = new BigDecimal[] {
         BigDecimal.valueOf(12),
         null/*undefined*/,
         BigDecimal.valueOf(24),
