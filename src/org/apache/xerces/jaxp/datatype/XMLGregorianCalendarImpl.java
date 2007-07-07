@@ -176,7 +176,6 @@ import org.apache.xerces.util.DatatypeMessageFormatter;
  * @version $Id$
  * @see javax.xml.datatype.Duration
  */
-
 class XMLGregorianCalendarImpl
 	extends XMLGregorianCalendar
 	implements Serializable, Cloneable {
@@ -246,8 +245,7 @@ class XMLGregorianCalendarImpl
      *   <p>Obtain a pure Gregorian Calendar by calling
      *   GregorianCalendar.setChange(PURE_GREGORIAN_CHANGE). </p>
      */
-    private static final Date PURE_GREGORIAN_CHANGE = 
-	new Date(Long.MIN_VALUE);
+    private static final Date PURE_GREGORIAN_CHANGE = new Date(Long.MIN_VALUE);
 
     /**
      * Year index for MIN_ and MAX_FIELD_VALUES.
@@ -293,44 +291,44 @@ class XMLGregorianCalendarImpl
      * Minimum field values indexed by YEAR..TIMEZONE.
      */
     private static final int MIN_FIELD_VALUE[] = { 
-	Integer.MIN_VALUE,  //Year field can be smaller than this,
-                            // only constraint on integer value of year. 
-	DatatypeConstants.JANUARY, 
-	1,       //day of month
-	0,       //hour
-	0,       //minute
-	0,       //second
-	0,       //millisecond
-	-14 * 60 //timezone
+        Integer.MIN_VALUE,  //Year field can be smaller than this,
+        // only constraint on integer value of year. 
+        DatatypeConstants.JANUARY, 
+        1,       //day of month
+        0,       //hour
+        0,       //minute
+        0,       //second
+        0,       //millisecond
+        -14 * 60 //timezone
     };
 
     /**
      * Maximum field values indexed by YEAR..TIMEZONE.
      */
     private static final int MAX_FIELD_VALUE[] = { 
-	Integer.MAX_VALUE,  // Year field can be bigger than this, 
-	                    // only constraint on integer value of year.
-		DatatypeConstants.DECEMBER,              
-	31,       //day of month                         
-	23,       //hour
-	59,       //minute
-	60,       //second (leap second allows for 60)
-	999,      //millisecond
-	14 * 60   //timezone
+        Integer.MAX_VALUE,  // Year field can be bigger than this, 
+        // only constraint on integer value of year.
+        DatatypeConstants.DECEMBER,              
+        31,       //day of month                         
+        23,       //hour
+        59,       //minute
+        60,       //second (leap second allows for 60)
+        999,      //millisecond
+        14 * 60   //timezone
     }; 
 
     /**
      * field names indexed by YEAR..TIMEZONE.
      */
     private static final String FIELD_NAME[] = { 
-	"Year",
-	"Month",
-	"Day",
-	"Hour",
-	"Minute",
-	"Second",
-	"Millisecond",
-	"Timezone"
+        "Year",
+        "Month",
+        "Day",
+        "Hour",
+        "Minute",
+        "Second",
+        "Millisecond",
+        "Timezone"
     }; 
 
     /**
@@ -354,16 +352,16 @@ class XMLGregorianCalendarImpl
      * @see #toGregorianCalendar(TimeZone, Locale, XMLGregorianCalendar)
      */
     public static final XMLGregorianCalendar LEAP_YEAR_DEFAULT =
-		createDateTime(
-			400,  //year
-		DatatypeConstants.JANUARY,  //month
-			1,  // day
-		    0,  // hour
-		    0,  // minute
-		    0,  // second
-		    DatatypeConstants.FIELD_UNDEFINED,  // milliseconds
-		    DatatypeConstants.FIELD_UNDEFINED // timezone
-		);
+        createDateTime(
+                400,  //year
+                DatatypeConstants.JANUARY,  //month
+                1,  // day
+                0,  // hour
+                0,  // minute
+                0,  // second
+                DatatypeConstants.FIELD_UNDEFINED,  // milliseconds
+                DatatypeConstants.FIELD_UNDEFINED // timezone
+        );
 
     // Constructors
 
@@ -385,98 +383,104 @@ class XMLGregorianCalendarImpl
      *      If the given string is null.
      */
     protected XMLGregorianCalendarImpl(String lexicalRepresentation)
-		throws IllegalArgumentException {
-			
-	// compute format string for this lexical representation.
-	String format = null;
-	String lexRep = lexicalRepresentation;
-	final int NOT_FOUND = -1;
-	int lexRepLength = lexRep.length();
-	
-	
-	// current parser needs a format string,
-	// use following heuristics to figure out what xml schema date/time
-	// datatype this lexical string could represent.
-	if (lexRep.indexOf('T') != NOT_FOUND) {
-	    // found Date Time separater, must be xsd:DateTime
-	    format = "%Y-%M-%DT%h:%m:%s" + "%z";
-	} else if (lexRepLength >= 3 && lexRep.charAt(2) == ':') {
-	    // found ":", must be xsd:Time
-	    format = "%h:%m:%s" +"%z";
-	} else if (lexRep.startsWith("--")) {
-	    // check for GDay || GMonth || GMonthDay
-	    if (lexRepLength >= 3 && lexRep.charAt(2) == '-') {
-		// GDAY
-		// Fix 4971612: invalid SCCS macro substitution in data string
-		format = "---%D" + "%z";
-	    } else if (lexRepLength == 4 || (lexRepLength >= 6 && (lexRep.charAt(4) == '+' || (lexRep.charAt(4) == '-' && (lexRep.charAt(5) == '-' || lexRepLength == 10))))) {
-		// GMonth
-		// Fix 4971612: invalid SCCS macro substitution in data string
-		format = "--%M--%z";
+        throws IllegalArgumentException {
+
+        // compute format string for this lexical representation.
+        String format = null;
+        String lexRep = lexicalRepresentation;
+        final int NOT_FOUND = -1;
+        int lexRepLength = lexRep.length();
+
+        // current parser needs a format string,
+        // use following heuristics to figure out what xml schema date/time
+        // datatype this lexical string could represent.
+        if (lexRep.indexOf('T') != NOT_FOUND) {
+            // found Date Time separater, must be xsd:DateTime
+            format = "%Y-%M-%DT%h:%m:%s" + "%z";
+        } 
+        else if (lexRepLength >= 3 && lexRep.charAt(2) == ':') {
+            // found ":", must be xsd:Time
+            format = "%h:%m:%s" +"%z";
+        } 
+        else if (lexRep.startsWith("--")) {
+            // check for GDay || GMonth || GMonthDay
+            if (lexRepLength >= 3 && lexRep.charAt(2) == '-') {
+                // GDAY
+                // Fix 4971612: invalid SCCS macro substitution in data string
+                format = "---%D" + "%z";
+            } 
+            else if (lexRepLength == 4 || (lexRepLength >= 6 && (lexRep.charAt(4) == '+' || (lexRep.charAt(4) == '-' && (lexRep.charAt(5) == '-' || lexRepLength == 10))))) {
+                // GMonth
+                // Fix 4971612: invalid SCCS macro substitution in data string
+                format = "--%M--%z";
+                Parser p = new Parser(format, lexRep);
+                try {
+                    p.parse();
+                    // check for validity
+                    if (!isValid()) {
+                        throw new IllegalArgumentException(
+                                DatatypeMessageFormatter.formatMessage(null,"InvalidXGCRepresentation", new Object[]{lexicalRepresentation})
+                                //"\"" + lexicalRepresentation + "\" is not a valid representation of an XML Gregorian Calendar value."
+                        );
+                    }
+                    save();
+                    return;
+                }
+                catch(IllegalArgumentException e) {
+                    format = "--%M%z";
+                }
+            } 
+            else {
+                // GMonthDay or invalid lexicalRepresentation
+                format = "--%M-%D" + "%z";
+            }
+        } 
+        else {
+            // check for Date || GYear | GYearMonth
+            int countSeparator = 0;
+
+            // start at index 1 to skip potential negative sign for year.
+
+
+            int timezoneOffset = lexRep.indexOf(':');
+            if (timezoneOffset != NOT_FOUND) {
+
+                // found timezone, strip it off for distinguishing
+                // between Date, GYear and GYearMonth so possible
+                // negative sign in timezone is not mistaken as
+                // a separator.
+                lexRepLength -= 6;
+            }
+
+            for (int i=1; i < lexRepLength; i++) {
+                if (lexRep.charAt(i) == '-') {
+                    countSeparator++;
+                }
+            }
+            if (countSeparator == 0) {
+                // GYear
+                format = "%Y" + "%z";
+            } 
+            else if (countSeparator == 1) {
+                // GYearMonth
+                format = "%Y-%M" + "%z";
+            } 
+            else {
+                // Date or invalid lexicalRepresentation
+                // Fix 4971612: invalid SCCS macro substitution in data string
+                format = "%Y-%M-%D" + "%z";
+            }
+        }
         Parser p = new Parser(format, lexRep);
-        try {
-            p.parse();
-            // check for validity
-            if (!isValid()) {
-                throw new IllegalArgumentException(
+        p.parse();
+
+        // check for validity
+        if (!isValid()) {
+            throw new IllegalArgumentException(
                     DatatypeMessageFormatter.formatMessage(null,"InvalidXGCRepresentation", new Object[]{lexicalRepresentation})
                     //"\"" + lexicalRepresentation + "\" is not a valid representation of an XML Gregorian Calendar value."
-                );
-            }
-            save();
-            return;
+            );
         }
-        catch(IllegalArgumentException e) {
-            format = "--%M%z";
-        }
-	    } else {
-		// GMonthDay or invalid lexicalRepresentation
-		format = "--%M-%D" + "%z";
-	    }
-	} else {
-	    // check for Date || GYear | GYearMonth
-	    int countSeparator = 0;
-
-	    // start at index 1 to skip potential negative sign for year.
-	    
-	    
-	    int timezoneOffset = lexRep.indexOf(':');
-	    if (timezoneOffset != NOT_FOUND) {
-
-		// found timezone, strip it off for distinguishing
-		// between Date, GYear and GYearMonth so possible
-		// negative sign in timezone is not mistaken as
-		// a separator.
-		lexRepLength -= 6;
-	    }
-	    
-	    for (int i=1; i < lexRepLength; i++) {
-		if (lexRep.charAt(i) == '-') {
-			countSeparator++;
-		}
-	    }
-	    if (countSeparator == 0) {
-		// GYear
-		format = "%Y" + "%z";
-	    } else if (countSeparator == 1) {
-		// GYearMonth
-		format = "%Y-%M" + "%z";
-	    } else {
-		// Date or invalid lexicalRepresentation
-		// Fix 4971612: invalid SCCS macro substitution in data string
-		format = "%Y-%M-%D" + "%z";
-	    }
-	}
-	Parser p = new Parser(format, lexRep);
-	p.parse();
-	
-		// check for validity
-		if (!isValid()) {
-			throw new IllegalArgumentException(
-                DatatypeMessageFormatter.formatMessage(null,"InvalidXGCRepresentation", new Object[]{lexicalRepresentation})
-				//"\"" + lexicalRepresentation + "\" is not a valid representation of an XML Gregorian Calendar value."
-			);
-	    }
         save();
     }
     
@@ -695,29 +699,29 @@ class XMLGregorianCalendarImpl
 	 *
 	 * @param cal <code>java.util.GregorianCalendar</code> used to create <code>XMLGregorianCalendar</code>
 	 */
-	public XMLGregorianCalendarImpl(GregorianCalendar cal) {
-    	
-	int year = cal.get(Calendar.YEAR);
-	if (cal.get(Calendar.ERA) == GregorianCalendar.BC) {
-		year = -year;
-	}
-	this.setYear(year);
-	
-	// Calendar.MONTH is zero based, XSD Date datatype's month field starts
-		// with JANUARY as 1.
-	this.setMonth(cal.get(Calendar.MONTH) + 1);
-	this.setDay(cal.get(Calendar.DAY_OF_MONTH));
-	this.setTime(
-		cal.get(Calendar.HOUR_OF_DAY),
-		cal.get(Calendar.MINUTE), 
-		cal.get(Calendar.SECOND),
-		cal.get(Calendar.MILLISECOND));
-	
-	// Calendar ZONE_OFFSET and DST_OFFSET fields are in milliseconds.
-	int offsetInMinutes = (cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET)) / (60 * 1000);
-	this.setTimezone(offsetInMinutes);
-    save();
-	}
+    public XMLGregorianCalendarImpl(GregorianCalendar cal) {
+
+        int year = cal.get(Calendar.YEAR);
+        if (cal.get(Calendar.ERA) == GregorianCalendar.BC) {
+            year = -year;
+        }
+        this.setYear(year);
+
+        // Calendar.MONTH is zero based, XSD Date datatype's month field starts
+        // with JANUARY as 1.
+        this.setMonth(cal.get(Calendar.MONTH) + 1);
+        this.setDay(cal.get(Calendar.DAY_OF_MONTH));
+        this.setTime(
+                cal.get(Calendar.HOUR_OF_DAY),
+                cal.get(Calendar.MINUTE), 
+                cal.get(Calendar.SECOND),
+                cal.get(Calendar.MILLISECOND));
+
+        // Calendar ZONE_OFFSET and DST_OFFSET fields are in milliseconds.
+        int offsetInMinutes = (cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET)) / (60 * 1000);
+        this.setTimezone(offsetInMinutes);
+        save();
+    }
 
     // Factories
 
@@ -742,26 +746,26 @@ class XMLGregorianCalendarImpl
      * constraints for the field as specified in 
      * <a href="#datetimefieldmapping">date/time field mapping table</a>.
      */
-    public static XMLGregorianCalendar createDateTime(
-        BigInteger year,
-        int month,
-        int day,
-        int hours,
-        int minutes,
-        int seconds,
-        BigDecimal fractionalSecond,
-        int timezone) {
-	
-	return new XMLGregorianCalendarImpl(
-		year,
-		month, 
-		day, 
-		hours,
-		minutes,
-		seconds, 
-		fractionalSecond,
-		timezone);
-    }
+	public static XMLGregorianCalendar createDateTime(
+	        BigInteger year,
+	        int month,
+	        int day,
+	        int hours,
+	        int minutes,
+	        int seconds,
+	        BigDecimal fractionalSecond,
+	        int timezone) {
+
+	    return new XMLGregorianCalendarImpl(
+	            year,
+	            month, 
+	            day, 
+	            hours,
+	            minutes,
+	            seconds, 
+	            fractionalSecond,
+	            timezone);
+	}
 
     /**
      * <p>Create a Java instance of XML Schema builtin datatype dateTime.</p>
@@ -781,22 +785,22 @@ class XMLGregorianCalendarImpl
      * @see DatatypeConstants#FIELD_UNDEFINED
      */
     public static XMLGregorianCalendar createDateTime(
-        int year,
-        int month,
-        int day,
-        int hour,
-        int minute,
-        int second) {
-        	
+            int year,
+            int month,
+            int day,
+            int hour,
+            int minute,
+            int second) {
+
         return new XMLGregorianCalendarImpl(
-            year,
-            month,
-            day,
-            hour,
-            minute,
-            second,
-            DatatypeConstants.FIELD_UNDEFINED,  //millisecond
-        	DatatypeConstants.FIELD_UNDEFINED //timezone
+                year,
+                month,
+                day,
+                hour,
+                minute,
+                second,
+                DatatypeConstants.FIELD_UNDEFINED,  //millisecond
+                DatatypeConstants.FIELD_UNDEFINED //timezone
         );
     }
 
@@ -821,24 +825,24 @@ class XMLGregorianCalendarImpl
      * @see DatatypeConstants#FIELD_UNDEFINED
      */
     public static XMLGregorianCalendar createDateTime(
-        int year,
-        int month,
-        int day,
-        int hours,
-        int minutes,
-        int seconds,
-        int milliseconds,
-        int timezone) {
-        	
+            int year,
+            int month,
+            int day,
+            int hours,
+            int minutes,
+            int seconds,
+            int milliseconds,
+            int timezone) {
+
         return new XMLGregorianCalendarImpl(
-            year,
-            month,
-            day,
-            hours,
-            minutes,
-            seconds,
-            milliseconds,
-            timezone);
+                year,
+                month,
+                day,
+                hours,
+                minutes,
+                seconds,
+                milliseconds,
+                timezone);
     }
 
     /**
@@ -862,20 +866,20 @@ class XMLGregorianCalendarImpl
      * <a href="#datetimefieldmapping">date/time field mapping table</a>.
      */
     public static XMLGregorianCalendar createDate(
-        int year,
-        int month,
-        int day,
-        int timezone) {
-        	
+            int year,
+            int month,
+            int day,
+            int timezone) {
+
         return new XMLGregorianCalendarImpl(
-            year,
-            month,
-            day,
-            DatatypeConstants.FIELD_UNDEFINED, // hour
-            DatatypeConstants.FIELD_UNDEFINED, // minute
-            DatatypeConstants.FIELD_UNDEFINED, // second
-	    	DatatypeConstants.FIELD_UNDEFINED, // millisecond
-            timezone);
+                year,
+                month,
+                day,
+                DatatypeConstants.FIELD_UNDEFINED, // hour
+                DatatypeConstants.FIELD_UNDEFINED, // minute
+                DatatypeConstants.FIELD_UNDEFINED, // second
+                DatatypeConstants.FIELD_UNDEFINED, // millisecond
+                timezone);
     }
 
     /**
@@ -894,20 +898,20 @@ class XMLGregorianCalendarImpl
      * <a href="#datetimefieldmapping">date/time field mapping table</a>.
      */
     public static XMLGregorianCalendar createTime(
-    	int hours,
-    	int minutes,
-    	int seconds,
-		int timezone) {
-			
-		return new XMLGregorianCalendarImpl(
-			DatatypeConstants.FIELD_UNDEFINED, // Year
-			DatatypeConstants.FIELD_UNDEFINED, // Month
-			DatatypeConstants.FIELD_UNDEFINED, // Day
-			hours,
-			minutes,
-			seconds, 
-			DatatypeConstants.FIELD_UNDEFINED, //Millisecond
-			timezone);
+            int hours,
+            int minutes,
+            int seconds,
+            int timezone) {
+
+        return new XMLGregorianCalendarImpl(
+                DatatypeConstants.FIELD_UNDEFINED, // Year
+                DatatypeConstants.FIELD_UNDEFINED, // Month
+                DatatypeConstants.FIELD_UNDEFINED, // Day
+                hours,
+                minutes,
+                seconds, 
+                DatatypeConstants.FIELD_UNDEFINED, //Millisecond
+                timezone);
     }
 
     /**
@@ -928,21 +932,21 @@ class XMLGregorianCalendarImpl
      * <a href="#datetimefieldmapping">date/time field mapping table</a>.
      */
     public static XMLGregorianCalendar createTime(
-        int hours,
-        int minutes,
-        int seconds,
-        BigDecimal fractionalSecond,
-        int timezone) {
-        	
+            int hours,
+            int minutes,
+            int seconds,
+            BigDecimal fractionalSecond,
+            int timezone) {
+
         return new XMLGregorianCalendarImpl(
-            null,            // Year
-            DatatypeConstants.FIELD_UNDEFINED, // month
-            DatatypeConstants.FIELD_UNDEFINED, // day
-            hours,
-            minutes,
-            seconds,
-            fractionalSecond,
-            timezone);
+                null,            // Year
+                DatatypeConstants.FIELD_UNDEFINED, // month
+                DatatypeConstants.FIELD_UNDEFINED, // day
+                hours,
+                minutes,
+                seconds,
+                fractionalSecond,
+                timezone);
     }
 
     /**
@@ -963,21 +967,21 @@ class XMLGregorianCalendarImpl
      * <a href="#datetimefieldmapping">date/time field mapping table</a>.
      */
     public static XMLGregorianCalendar createTime(
-        int hours,
-        int minutes,
-        int seconds,
-	int milliseconds,
-        int timezone) {
-        	
+            int hours,
+            int minutes,
+            int seconds,
+            int milliseconds,
+            int timezone) {
+
         return new XMLGregorianCalendarImpl(
-            DatatypeConstants.FIELD_UNDEFINED, // year
-            DatatypeConstants.FIELD_UNDEFINED, // month
-            DatatypeConstants.FIELD_UNDEFINED, // day
-            hours,
-            minutes,
-            seconds,
-	    milliseconds,
-            timezone);
+                DatatypeConstants.FIELD_UNDEFINED, // year
+                DatatypeConstants.FIELD_UNDEFINED, // month
+                DatatypeConstants.FIELD_UNDEFINED, // day
+                hours,
+                minutes,
+                seconds,
+                milliseconds,
+                timezone);
     }
 
     // Accessors
@@ -1031,24 +1035,24 @@ class XMLGregorianCalendarImpl
      * @see #getYear()
      */
     public BigInteger getEonAndYear() {
-    	
-		// both are defined
-		if (year != DatatypeConstants.FIELD_UNDEFINED
-			&& eon != null) {
-    			
-			return eon.add(BigInteger.valueOf((long) year));
-		}
 
-		// only year is defined
-		if (year != DatatypeConstants.FIELD_UNDEFINED
-			&& eon == null) {
-    			
-			return BigInteger.valueOf((long) year);
-		}
+        // both are defined
+        if (year != DatatypeConstants.FIELD_UNDEFINED
+            && eon != null) {
 
-    	// neither are defined
-    	// or only eon is defined which is not valid without a year 
-		return null;
+            return eon.add(BigInteger.valueOf((long) year));
+        }
+
+        // only year is defined
+        if (year != DatatypeConstants.FIELD_UNDEFINED
+            && eon == null) {
+
+            return BigInteger.valueOf((long) year);
+        }
+
+        // neither are defined
+        // or only eon is defined which is not valid without a year 
+        return null;
     }
 
     /** 
@@ -1061,7 +1065,7 @@ class XMLGregorianCalendarImpl
      * 
      */
     public int getMonth() {
-    	return month;
+        return month;
     }
 
     /** 
@@ -1073,7 +1077,7 @@ class XMLGregorianCalendarImpl
      * @see #setDay(int)
      */
     public int getDay() {
-	return day;
+        return day;
     }
 
     /** 
@@ -1086,7 +1090,7 @@ class XMLGregorianCalendarImpl
      * @see #setTimezone(int)
      */
     public int getTimezone() {
-	return timezone;
+        return timezone;
     }
 
     /** 
@@ -1098,7 +1102,7 @@ class XMLGregorianCalendarImpl
      * @see #setTime(int, int, int)
      */
     public int getHour() {
-	return hour;
+        return hour;
     }
 
     /**
@@ -1110,7 +1114,7 @@ class XMLGregorianCalendarImpl
      * @see #setTime(int, int, int)
      */
     public int getMinute() {
-	return minute;
+        return minute;
     }
 
     /** 
@@ -1139,18 +1143,18 @@ class XMLGregorianCalendarImpl
      * @return result of adding second and fractional second field
      */
     private BigDecimal getSeconds() {
-    	
-	if (second == DatatypeConstants.FIELD_UNDEFINED) {
-	    return DECIMAL_ZERO;
-	} 
-	BigDecimal result = BigDecimal.valueOf((long)second);
-	if (fractionalSecond != null){
-	    return result.add(fractionalSecond);
-	} else {
-	    return result;
-	}
-    }
 
+        if (second == DatatypeConstants.FIELD_UNDEFINED) {
+            return DECIMAL_ZERO;
+        } 
+        BigDecimal result = BigDecimal.valueOf((long)second);
+        if (fractionalSecond != null){
+            return result.add(fractionalSecond);
+        } 
+        else {
+            return result;
+        }
+    }
 
     /** 
      * <p>Return millisecond precision of {@link #getFractionalSecond()}.<\p>
@@ -1174,7 +1178,8 @@ class XMLGregorianCalendarImpl
     public int getMillisecond() {
         if (fractionalSecond == null) {
             return DatatypeConstants.FIELD_UNDEFINED;
-        } else {
+        } 
+        else {
             // TODO: Non-optimal solution for now.
             // Efficient implementation would only store as BigDecimal
             // when needed and millisecond otherwise.
@@ -1217,14 +1222,15 @@ class XMLGregorianCalendarImpl
      * <a href="#datetimefieldmapping">date/time field mapping table</a>.
      */
     public void setYear(BigInteger year) {
-	if (year == null) {
-	    this.eon = null;
-	    this.year = DatatypeConstants.FIELD_UNDEFINED;
-	} else {
-	    BigInteger temp = year.remainder(BILLION);
-	    this.year = temp.intValue();
-	    setEon(year.subtract(temp));
-	}
+        if (year == null) {
+            this.eon = null;
+            this.year = DatatypeConstants.FIELD_UNDEFINED;
+        } 
+        else {
+            BigInteger temp = year.remainder(BILLION);
+            this.year = temp.intValue();
+            setEon(year.subtract(temp));
+        }
     }
 
     /**
@@ -1241,18 +1247,20 @@ class XMLGregorianCalendarImpl
      *   If year is {@link DatatypeConstants#FIELD_UNDEFINED}, then eon is set to <code>null</code>.
      */
     public void setYear(int year) { 
-	if (year == DatatypeConstants.FIELD_UNDEFINED) {
-	    this.year = DatatypeConstants.FIELD_UNDEFINED;
-	    this.eon = null;
-	} else if (Math.abs(year) < BILLION.intValue()) {
-	    this.year = year;
-	    this.eon = null;
-	} else {
-	    BigInteger theYear = BigInteger.valueOf((long) year);
-	    BigInteger remainder = theYear.remainder(BILLION);
-	    this.year = remainder.intValue();
-	    setEon(theYear.subtract(remainder));
-	}
+        if (year == DatatypeConstants.FIELD_UNDEFINED) {
+            this.year = DatatypeConstants.FIELD_UNDEFINED;
+            this.eon = null;
+        } 
+        else if (Math.abs(year) < BILLION.intValue()) {
+            this.year = year;
+            this.eon = null;
+        } 
+        else {
+            BigInteger theYear = BigInteger.valueOf((long) year);
+            BigInteger remainder = theYear.remainder(BILLION);
+            this.year = remainder.intValue();
+            setEon(theYear.subtract(remainder));
+        }
     }
 
     /**
@@ -1267,7 +1275,8 @@ class XMLGregorianCalendarImpl
         if (eon != null && eon.compareTo(BigInteger.ZERO) == 0) {
             // Treat ZERO as field being undefined.
             this.eon = null;
-        } else {
+        } 
+        else {
             this.eon = eon;
         }
     }
@@ -1284,8 +1293,8 @@ class XMLGregorianCalendarImpl
      * <a href="#datetimefieldmapping">date/time field mapping table</a>.
      */
     public void setMonth(int month) { 
-	checkFieldValueConstraint(MONTH, month);
-	this.month = month;
+        checkFieldValueConstraint(MONTH, month);
+        this.month = month;
     }
 
     /**
@@ -1300,8 +1309,8 @@ class XMLGregorianCalendarImpl
      * <a href="#datetimefieldmapping">date/time field mapping table</a>.
      */
     public void setDay(int day) {  
-	checkFieldValueConstraint(DAY, day);
-	this.day = day;
+        checkFieldValueConstraint(DAY, day);
+        this.day = day;
     }
 
     /**
@@ -1317,8 +1326,8 @@ class XMLGregorianCalendarImpl
      * <a href="#datetimefieldmapping">date/time field mapping table</a>.
      */
     public void setTimezone(int offset) {
-	checkFieldValueConstraint(TIMEZONE, offset);
-	this.timezone = offset;
+        checkFieldValueConstraint(TIMEZONE, offset);
+        this.timezone = offset;
     }
 
     /**
@@ -1338,38 +1347,37 @@ class XMLGregorianCalendarImpl
      * <a href="#datetimefieldmapping">date/time field mapping table</a>.
      */
     public void setTime(int hour, int minute, int second) {
-	setTime(hour, minute, second, null);
+        setTime(hour, minute, second, null);
     }
 
     private void checkFieldValueConstraint(int field, int value)
-	throws IllegalArgumentException 
-    {
-	if ((value < MIN_FIELD_VALUE[field] && value != DatatypeConstants.FIELD_UNDEFINED) ||
-	    value > MAX_FIELD_VALUE[field]) {
-         /**
+        throws IllegalArgumentException {
+        if ((value < MIN_FIELD_VALUE[field] && value != DatatypeConstants.FIELD_UNDEFINED) ||
+                value > MAX_FIELD_VALUE[field]) {
+            /**
             throw new IllegalArgumentException("invalid value " + value +
 					       " for " + FIELD_NAME[field] +
 					       " field");
              */
-        throw new IllegalArgumentException(
-            DatatypeMessageFormatter.formatMessage(null, "InvalidFieldValue", new Object[]{ new Integer(value), FIELD_NAME[field]})
-        );
-	}
+            throw new IllegalArgumentException(
+                    DatatypeMessageFormatter.formatMessage(null, "InvalidFieldValue", new Object[]{ new Integer(value), FIELD_NAME[field]})
+            );
+        }
     }
 
     public void setHour(int hour) {
-	checkFieldValueConstraint(HOUR, hour);
-	this.hour = hour;
+        checkFieldValueConstraint(HOUR, hour);
+        this.hour = hour;
     }
 
     public void setMinute(int minute) {
-	checkFieldValueConstraint(MINUTE, minute);
-	this.minute = minute;
+        checkFieldValueConstraint(MINUTE, minute);
+        this.minute = minute;
     }
 
     public void setSecond(int second) {
-	checkFieldValueConstraint(SECOND, second);
-	this.second  = second;
+        checkFieldValueConstraint(SECOND, second);
+        this.second  = second;
     }
 
     /**
@@ -1390,16 +1398,15 @@ class XMLGregorianCalendarImpl
      * <a href="#datetimefieldmapping">date/time field mapping table</a>.
      */
     public void setTime(
-        int hour,
-        int minute,
-        int second,
-        BigDecimal fractional) {
-	setHour(hour);
+            int hour,
+            int minute,
+            int second,
+            BigDecimal fractional) {
+        setHour(hour);
         setMinute(minute);
         setSecond(second);
         setFractionalSecond(fractional);
     }
-    
 
     /**
      * <p>Set time as one unit, including optional milliseconds.</p>
@@ -1447,72 +1454,77 @@ class XMLGregorianCalendarImpl
      * parameters are null. 
      */
     public int compare(XMLGregorianCalendar rhs) {
-        	
-		//MLGregorianCalendar lhs = this;
 
-	int result = DatatypeConstants.INDETERMINATE;
+        //MLGregorianCalendar lhs = this;
+
+        int result = DatatypeConstants.INDETERMINATE;
         XMLGregorianCalendar P = this;
         XMLGregorianCalendar Q = rhs;
 
         if (P.getTimezone() == Q.getTimezone()) {
-	    // Optimization: 
-	    // both instances are in same timezone or
-	    // both are FIELD_UNDEFINED. 
-	    // Avoid costly normalization of timezone to 'Z' time.
-	    return internalCompare(P, Q);
+            // Optimization: 
+            // both instances are in same timezone or
+            // both are FIELD_UNDEFINED. 
+            // Avoid costly normalization of timezone to 'Z' time.
+            return internalCompare(P, Q);
 
-	} else if (P.getTimezone() != DatatypeConstants.FIELD_UNDEFINED &&
-		   Q.getTimezone() != DatatypeConstants.FIELD_UNDEFINED) {
+        } 
+        else if (P.getTimezone() != DatatypeConstants.FIELD_UNDEFINED &&
+                Q.getTimezone() != DatatypeConstants.FIELD_UNDEFINED) {
 
-	    // Both instances have different timezones.
-	    // Normalize to UTC time and compare.
-	    P = (XMLGregorianCalendarImpl) P.normalize();
-	    Q = (XMLGregorianCalendarImpl) Q.normalize();
-	    return internalCompare(P, Q);
-	} else if (P.getTimezone() != DatatypeConstants.FIELD_UNDEFINED) {
-	    
-	    if (P.getTimezone() != 0) {
-		P = (XMLGregorianCalendarImpl) P.normalize();
-	    }
-	    
-	    // C. step 1
-	    XMLGregorianCalendar MinQ = normalizeToTimezone(Q, DatatypeConstants.MIN_TIMEZONE_OFFSET);
-	    result = internalCompare(P, MinQ);
-	    if (result == DatatypeConstants.LESSER) {
-		return result;
-	    } 
+            // Both instances have different timezones.
+            // Normalize to UTC time and compare.
+            P = (XMLGregorianCalendarImpl) P.normalize();
+            Q = (XMLGregorianCalendarImpl) Q.normalize();
+            return internalCompare(P, Q);
+        } 
+        else if (P.getTimezone() != DatatypeConstants.FIELD_UNDEFINED) {
 
-	    // C. step 2
-	    XMLGregorianCalendar MaxQ = normalizeToTimezone(Q, DatatypeConstants.MAX_TIMEZONE_OFFSET);
-	    result = internalCompare(P, MaxQ);
-	    if (result == DatatypeConstants.GREATER) {
-		return result;
-	    } else {
-		// C. step 3
-		return DatatypeConstants.INDETERMINATE;
-	    }
-	} else { // Q.getTimezone() != DatatypeConstants.FIELD_UNDEFINED
-	    // P has no timezone and Q does.
-	    if (Q.getTimezone() != 0 ) { 
-			Q = (XMLGregorianCalendarImpl) normalizeToTimezone(Q, Q.getTimezone());
-	    }
-	    
-	    // D. step 1
-	    XMLGregorianCalendar MaxP = normalizeToTimezone(P, DatatypeConstants.MAX_TIMEZONE_OFFSET);
-	    result = internalCompare(MaxP, Q);
-	    if (result == DatatypeConstants.LESSER) {
-		return result;
-	    } 
+            if (P.getTimezone() != 0) {
+                P = (XMLGregorianCalendarImpl) P.normalize();
+            }
 
-	    // D. step 2
-	    XMLGregorianCalendar MinP = normalizeToTimezone(P, DatatypeConstants.MIN_TIMEZONE_OFFSET);
-	    result = internalCompare(MinP, Q);
-	    if (result == DatatypeConstants.GREATER) {
-		return result;
-	    } else {
-		// D. step 3
-		return DatatypeConstants.INDETERMINATE;
-	    }
+            // C. step 1
+            XMLGregorianCalendar MinQ = normalizeToTimezone(Q, DatatypeConstants.MIN_TIMEZONE_OFFSET);
+            result = internalCompare(P, MinQ);
+            if (result == DatatypeConstants.LESSER) {
+                return result;
+            } 
+
+            // C. step 2
+            XMLGregorianCalendar MaxQ = normalizeToTimezone(Q, DatatypeConstants.MAX_TIMEZONE_OFFSET);
+            result = internalCompare(P, MaxQ);
+            if (result == DatatypeConstants.GREATER) {
+                return result;
+            } 
+            else {
+                // C. step 3
+                return DatatypeConstants.INDETERMINATE;
+            }
+        } 
+        else { // Q.getTimezone() != DatatypeConstants.FIELD_UNDEFINED
+            // P has no timezone and Q does.
+            if (Q.getTimezone() != 0 ) { 
+                Q = (XMLGregorianCalendarImpl) normalizeToTimezone(Q, Q.getTimezone());
+            }
+
+            // D. step 1
+            XMLGregorianCalendar MaxP = normalizeToTimezone(P, DatatypeConstants.MAX_TIMEZONE_OFFSET);
+            result = internalCompare(MaxP, Q);
+            if (result == DatatypeConstants.LESSER) {
+                return result;
+            } 
+
+            // D. step 2
+            XMLGregorianCalendar MinP = normalizeToTimezone(P, DatatypeConstants.MIN_TIMEZONE_OFFSET);
+            result = internalCompare(MinP, Q);
+            if (result == DatatypeConstants.GREATER) {
+                return result;
+            } 
+            else {
+                // D. step 3
+                return DatatypeConstants.INDETERMINATE;
+            }
         }
     }
 
@@ -1545,28 +1557,28 @@ class XMLGregorianCalendarImpl
 	 * <p>2000-03-04T23:00:00+03:00 normalizes to 2000-03-04T20:00:00Z</p>
 	 * <p>Implements W3C XML Schema Part 2, Section 3.2.7.3 (A).</p>
 	 */
-	private XMLGregorianCalendar normalizeToTimezone(XMLGregorianCalendar cal, int timezone) {
+    private XMLGregorianCalendar normalizeToTimezone(XMLGregorianCalendar cal, int timezone) {
 
-	int minutes = timezone;    	
-	XMLGregorianCalendar result = (XMLGregorianCalendar) cal.clone();
-	
-	// normalizing to UTC time negates the timezone offset before 
-	// addition.
-	minutes = -minutes;
-	Duration d = new DurationImpl(minutes >= 0, // isPositive
-				  0, //years
-				  0, //months
-				  0, //days
-				  0, //hours
-				  minutes < 0 ? -minutes : minutes, // absolute
-				  0  //seconds
-				  );
-	result.add(d);
+        int minutes = timezone;    	
+        XMLGregorianCalendar result = (XMLGregorianCalendar) cal.clone();
 
-	// set to zulu UTC time.
-	result.setTimezone(0);
-	return result;
-	}
+        // normalizing to UTC time negates the timezone offset before 
+        // addition.
+        minutes = -minutes;
+        Duration d = new DurationImpl(minutes >= 0, // isPositive
+                0, //years
+                0, //months
+                0, //days
+                0, //hours
+                minutes < 0 ? -minutes : minutes, // absolute
+                        0  //seconds
+        );
+        result.add(d);
+
+        // set to zulu UTC time.
+        result.setTimezone(0);
+        return result;
+    }
 
     /** 
      * 
@@ -1582,101 +1594,102 @@ class XMLGregorianCalendarImpl
      *   {@link DatatypeConstants#GREATER} or 
      *   {@link DatatypeConstants#INDETERMINATE}.
      */
-    private static int internalCompare(XMLGregorianCalendar P,
-				       XMLGregorianCalendar Q) {
+	private static int internalCompare(XMLGregorianCalendar P,
+	        XMLGregorianCalendar Q) {
 
-	int result;
+	    int result;
 
-	// compare Year.
-	if (P.getEon() == Q.getEon()) {
-	    
-	    // Eon field is only equal when null.
-	    // optimized case for comparing year not requiring eon field.
-	    result = compareField(P.getYear(), Q.getYear());
-	    if (result != DatatypeConstants.EQUAL) {
-		return result;
+	    // compare Year.
+	    if (P.getEon() == Q.getEon()) {
+	        // Eon field is only equal when null.
+	        // optimized case for comparing year not requiring eon field.
+	        result = compareField(P.getYear(), Q.getYear());
+	        if (result != DatatypeConstants.EQUAL) {
+	            return result;
+	        }
+	    } 
+        else {
+	        result = compareField(P.getEonAndYear(), Q.getEonAndYear());
+	        if (result != DatatypeConstants.EQUAL) {
+	            return result;
+	        }
 	    }
-	} else {
-	    result = compareField(P.getEonAndYear(), Q.getEonAndYear());
+
+	    result = compareField(P.getMonth(), Q.getMonth());
 	    if (result != DatatypeConstants.EQUAL) {
-		return result;
+	        return result;
 	    }
-	}
 
-	result = compareField(P.getMonth(), Q.getMonth());
-	if (result != DatatypeConstants.EQUAL) {
+	    result = compareField(P.getDay(), Q.getDay());
+	    if (result != DatatypeConstants.EQUAL) {
+	        return result;
+	    }
+
+	    result = compareField(P.getHour(), Q.getHour());
+	    if (result != DatatypeConstants.EQUAL) {
+	        return result;
+	    }
+
+	    result = compareField(P.getMinute(), Q.getMinute());
+	    if (result != DatatypeConstants.EQUAL) {
+	        return result;
+	    }
+	    result = compareField(P.getSecond(), Q.getSecond());
+	    if (result != DatatypeConstants.EQUAL) {
+	        return result;
+	    }
+
+	    result = compareField(P.getFractionalSecond(), Q.getFractionalSecond());
 	    return result;
 	}
-
-	result = compareField(P.getDay(), Q.getDay());
-	if (result != DatatypeConstants.EQUAL) {
-	    return result;
-	}
-
-	result = compareField(P.getHour(), Q.getHour());
-	if (result != DatatypeConstants.EQUAL) {
-	    return result;
-	}
-	
-	result = compareField(P.getMinute(), Q.getMinute());
-	if (result != DatatypeConstants.EQUAL) {
-		return result;
-	}
-	result = compareField(P.getSecond(), Q.getSecond());
-	if (result != DatatypeConstants.EQUAL) {
-		return result;
-	}
-	
-	result = compareField(P.getFractionalSecond(), Q.getFractionalSecond());
-	return result;
-   }
 
     /**
      * <p>Implement Step B from 
      * http://www.w3.org/TR/xmlschema-2/#dateTime-order.</p>
      */
     private static int compareField(int Pfield, int Qfield) {
-	if (Pfield == Qfield) {
-
-	    //fields are either equal in value or both undefined.
-	    // Step B. 1.1 AND optimized result of performing 1.1-1.4.
-	    return DatatypeConstants.EQUAL;
-	} else {
-	    if (Pfield == DatatypeConstants.FIELD_UNDEFINED || Qfield == DatatypeConstants.FIELD_UNDEFINED) {
-		// Step B. 1.2
-		return DatatypeConstants.INDETERMINATE;
-	    } else {
-		// Step B. 1.3-4.
-		return (Pfield < Qfield ? DatatypeConstants.LESSER : DatatypeConstants.GREATER);
-	    }
-	}
+        if (Pfield == Qfield) {
+            //fields are either equal in value or both undefined.
+            // Step B. 1.1 AND optimized result of performing 1.1-1.4.
+            return DatatypeConstants.EQUAL;
+        } 
+        else {
+            if (Pfield == DatatypeConstants.FIELD_UNDEFINED || Qfield == DatatypeConstants.FIELD_UNDEFINED) {
+                // Step B. 1.2
+                return DatatypeConstants.INDETERMINATE;
+            } 
+            else {
+                // Step B. 1.3-4.
+                return (Pfield < Qfield ? DatatypeConstants.LESSER : DatatypeConstants.GREATER);
+            }
+        }
     }
 
     private static int compareField(BigInteger Pfield, BigInteger Qfield) {
-	if (Pfield == null) {
-	    return (Qfield == null ? DatatypeConstants.EQUAL : DatatypeConstants.INDETERMINATE);
-	}
-	if (Qfield == null) {
-	    return DatatypeConstants.INDETERMINATE;
-	}
-	return Pfield.compareTo(Qfield);
+        if (Pfield == null) {
+            return (Qfield == null ? DatatypeConstants.EQUAL : DatatypeConstants.INDETERMINATE);
+        }
+        if (Qfield == null) {
+            return DatatypeConstants.INDETERMINATE;
+        }
+        return Pfield.compareTo(Qfield);
     }
 
     private static int compareField(BigDecimal Pfield, BigDecimal Qfield) {
-	// optimization. especially when both arguments are null.
-	if (Pfield == Qfield) {
-	    return DatatypeConstants.EQUAL;
-	}
+        // optimization. especially when both arguments are null.
+        if (Pfield == Qfield) {
+            return DatatypeConstants.EQUAL;
+        }
 
-	if (Pfield == null) {
-	    Pfield = DECIMAL_ZERO;
-	}
+        if (Pfield == null) {
+            Pfield = DECIMAL_ZERO;
+        }
 
-	if (Qfield == null) {
-	    Qfield = DECIMAL_ZERO;
-	}
-	
-	return Pfield.compareTo(Qfield);
+        if (Qfield == null) {
+            Qfield = DECIMAL_ZERO;
+        }
+
+        return Pfield.compareTo(Qfield);
     }
 
     /**
@@ -1701,21 +1714,21 @@ class XMLGregorianCalendarImpl
      */
     public int hashCode() {
 
-	// Following two dates compare to EQUALS since in different timezones.
-	// 2000-01-15T12:00:00-05:00 == 2000-01-15T13:00:00-04:00 	
-	//
-	// Must ensure both instances generate same hashcode by normalizing 
-	// this to UTC timezone.
-	int timezone = getTimezone();
-	if (timezone == DatatypeConstants.FIELD_UNDEFINED){
-	    timezone = 0;
-	}
-	XMLGregorianCalendar gc = this;
-	if (timezone != 0) {
-	    gc = normalizeToTimezone(this, getTimezone());
-	}
-	return gc.getYear() + gc.getMonth() + gc.getDay() + 
-	    gc.getHour() + gc.getMinute() + gc.getSecond();
+        // Following two dates compare to EQUALS since in different timezones.
+        // 2000-01-15T12:00:00-05:00 == 2000-01-15T13:00:00-04:00 	
+        //
+        // Must ensure both instances generate same hashcode by normalizing 
+        // this to UTC timezone.
+        int timezone = getTimezone();
+        if (timezone == DatatypeConstants.FIELD_UNDEFINED) {
+            timezone = 0;
+        }
+        XMLGregorianCalendar gc = this;
+        if (timezone != 0) {
+            gc = normalizeToTimezone(this, getTimezone());
+        }
+        return gc.getYear() + gc.getMonth() + gc.getDay() + 
+        gc.getHour() + gc.getMinute() + gc.getSecond();
     }
     
     
@@ -1769,32 +1782,39 @@ class XMLGregorianCalendarImpl
      *    does not match one of the eight defined XML Schema builtin date/time datatypes. 
      */
     public String toXMLFormat() {
-    	
-	QName typekind = getXMLSchemaType();
-	
-	String formatString = null;
-	if (typekind == DatatypeConstants.DATETIME) {
-	    formatString = "%Y-%M-%DT%h:%m:%s"+ "%z";
-	} else if (typekind == DatatypeConstants.DATE) {
-	    // Fix 4971612: invalid SCCS macro substitution in data string
-	    formatString = "%Y-%M-%D" +"%z";
-	} else if (typekind == DatatypeConstants.TIME) {
-	    formatString = "%h:%m:%s"+ "%z";
-	} else if (typekind == DatatypeConstants.GMONTH) {
-	    formatString = "--%M--%z";
-	} else if (typekind == DatatypeConstants.GDAY) {
-	    // Fix 4971612: invalid SCCS macro substitution in data string
-	    formatString = "---%D" + "%z";
-	} else if (typekind == DatatypeConstants.GYEAR) {
-	    formatString = "%Y" + "%z";
-	} else if (typekind == DatatypeConstants.GYEARMONTH) {
-	    // Fix 4971612: invalid SCCS macro substitution in data string
-	    formatString = "%Y-%M" + "%z";
-	} else if (typekind == DatatypeConstants.GMONTHDAY) {
-	    // Fix 4971612: invalid SCCS macro substitution in data string
-	    formatString = "--%M-%D" +"%z";
-	}
-	return format(formatString);
+
+        QName typekind = getXMLSchemaType();
+
+        String formatString = null;
+        if (typekind == DatatypeConstants.DATETIME) {
+            formatString = "%Y-%M-%DT%h:%m:%s"+ "%z";
+        } 
+        else if (typekind == DatatypeConstants.DATE) {
+            // Fix 4971612: invalid SCCS macro substitution in data string
+            formatString = "%Y-%M-%D" +"%z";
+        } 
+        else if (typekind == DatatypeConstants.TIME) {
+            formatString = "%h:%m:%s"+ "%z";
+        } 
+        else if (typekind == DatatypeConstants.GMONTH) {
+            formatString = "--%M--%z";
+        } 
+        else if (typekind == DatatypeConstants.GDAY) {
+            // Fix 4971612: invalid SCCS macro substitution in data string
+            formatString = "---%D" + "%z";
+        } 
+        else if (typekind == DatatypeConstants.GYEAR) {
+            formatString = "%Y" + "%z";
+        } 
+        else if (typekind == DatatypeConstants.GYEARMONTH) {
+            // Fix 4971612: invalid SCCS macro substitution in data string
+            formatString = "%Y-%M" + "%z";
+        } 
+        else if (typekind == DatatypeConstants.GMONTHDAY) {
+            // Fix 4971612: invalid SCCS macro substitution in data string
+            formatString = "--%M-%D" +"%z";
+        }
+        return format(formatString);
     }
     
     /**
@@ -2005,55 +2025,58 @@ class XMLGregorianCalendarImpl
      * @return true if data values are valid.
      */
     public boolean isValid() {
-	// since setters do not allow for invalid values, 
-	// (except for exceptional case of year field of zero),
-	// no need to check for anything except for constraints
-	// between fields. 
+        // since setters do not allow for invalid values, 
+        // (except for exceptional case of year field of zero),
+        // no need to check for anything except for constraints
+        // between fields. 
 
-	//check if days in month is valid. Can be dependent on leap year.
-	if (getMonth() == DatatypeConstants.FEBRUARY) {
-		// years could not be set
-		int maxDays = DatatypeConstants.FIELD_UNDEFINED;
-		BigInteger years = getEonAndYear();
-		if (years != null) {
-			maxDays = maximumDayInMonthFor(getEonAndYear(), DatatypeConstants.FEBRUARY);
-		} else {
-			// year is undefined, allow 29 days
-			maxDays = 29;
-		}
-	    if (getDay() > maxDays) {
-		return false;
-	    }
-	}
+        //check if days in month is valid. Can be dependent on leap year.
+        if (getMonth() == DatatypeConstants.FEBRUARY) {
+            // years could not be set
+            int maxDays = DatatypeConstants.FIELD_UNDEFINED;
+            BigInteger years = getEonAndYear();
+            if (years != null) {
+                maxDays = maximumDayInMonthFor(getEonAndYear(), DatatypeConstants.FEBRUARY);
+            } 
+            else {
+                // year is undefined, allow 29 days
+                maxDays = 29;
+            }
+            if (getDay() > maxDays) {
+                return false;
+            }
+        }
 
-	// http://www.w3.org/2001/05/xmlschema-errata#e2-45
-	if (getHour() == 24) {
-	    if(getMinute() != 0) {
-		return false;
-	    } else if (getSecond() != 0) {
-		return false;
-	    }
-	}
+        // http://www.w3.org/2001/05/xmlschema-errata#e2-45
+        if (getHour() == 24) {
+            if (getMinute() != 0) {
+                return false;
+            } 
+            else if (getSecond() != 0) {
+                return false;
+            }
+        }
 
-	// XML Schema 1.0 specification defines year value of zero as
-	// invalid. Allow this class to set year field to zero
-	// since XML Schema 1.0 errata states that lexical zero will 
-	// be allowed in next version and treated as 1 B.C.E.
-	if (eon == null) {
-	    // optimize check.
-	    if (year == 0) {
-		return false;
-	    }
-	} else {
-	    BigInteger yearField = getEonAndYear();
-	    if (yearField != null) {
-		int result = compareField(yearField, BigInteger.ZERO);
-		if (result == DatatypeConstants.EQUAL) {
-		    return false;
-		}
-	    }
-	}
-	return true;
+        // XML Schema 1.0 specification defines year value of zero as
+        // invalid. Allow this class to set year field to zero
+        // since XML Schema 1.0 errata states that lexical zero will 
+        // be allowed in next version and treated as 1 B.C.E.
+        if (eon == null) {
+            // optimize check.
+            if (year == 0) {
+                return false;
+            }
+        } 
+        else {
+            BigInteger yearField = getEonAndYear();
+            if (yearField != null) {
+                int result = compareField(yearField, BigInteger.ZERO);
+                if (result == DatatypeConstants.EQUAL) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**
@@ -2071,243 +2094,252 @@ class XMLGregorianCalendarImpl
      * @throws NullPointerException  when <code>duration</code> parameter is <code>null</code>.
      */
     public void add(Duration duration) {
-    	
-		/*
-		 * Extracted from 
-		 * http://www.w3.org/TR/xmlschema-2/#adding-durations-to-dateTimes 
-		 * to ensure implemented properly. See spec for definitions of methods
-		 * used in algorithm.
-		 * 
-		 * Given a dateTime S and a duration D, specifies how to compute a 
-		 * dateTime E where E is the end of the time period with start S and 
-		 * duration D i.e. E = S + D.
-		 * 
-		 * The following is the precise specification. 
-		 * These steps must be followed in the same order. 
-		 * If a field in D is not specified, it is treated as if it were zero.
-		 * If a field in S is not specified, it is treated in the calculation 
-		 * as if it were the minimum allowed value in that field, however, 
-		 * after the calculation is concluded, the corresponding field in 
-		 * E is removed (set to unspecified).
-		 * 
-		 * Months (may be modified additionally below)
-	         *  temp := S[month] + D[month]
-	         *  E[month] := modulo(temp, 1, 13)
-	         *  carry := fQuotient(temp, 1, 13)
-		 */
-	 
-		boolean fieldUndefined[] = {
-			false,
-			false,
-			false, 
-			false,
-			false,
-			false
-		};
-		
-		int signum = duration.getSign();
-		
-		int startMonth = getMonth();
-		if (startMonth == DatatypeConstants.FIELD_UNDEFINED) {
-		    startMonth = MIN_FIELD_VALUE[MONTH];
-		    fieldUndefined[MONTH] = true;
-		}
-		
-		BigInteger dMonths = sanitize(duration.getField(DatatypeConstants.MONTHS), signum);
-		BigInteger temp = BigInteger.valueOf((long) startMonth).add(dMonths);
-		setMonth(temp.subtract(BigInteger.ONE).mod(TWELVE).intValue() + 1);
-		BigInteger carry =
-			new BigDecimal(temp.subtract(BigInteger.ONE)).divide(new BigDecimal(TWELVE), BigDecimal.ROUND_FLOOR).toBigInteger();
 
-		 /* Years (may be modified additionally below)
-		  *  E[year] := S[year] + D[year] + carry
-		  */
-		BigInteger startYear = getEonAndYear();
-		if (startYear == null) {
-		    fieldUndefined[YEAR] = true;
-		    startYear = BigInteger.ZERO;
-		}
-		BigInteger dYears = sanitize(duration.getField(DatatypeConstants.YEARS), signum);
-		BigInteger endYear = startYear.add(dYears).add(carry);
-		setYear(endYear);
+        /*
+         * Extracted from 
+         * http://www.w3.org/TR/xmlschema-2/#adding-durations-to-dateTimes 
+         * to ensure implemented properly. See spec for definitions of methods
+         * used in algorithm.
+         * 
+         * Given a dateTime S and a duration D, specifies how to compute a 
+         * dateTime E where E is the end of the time period with start S and 
+         * duration D i.e. E = S + D.
+         * 
+         * The following is the precise specification. 
+         * These steps must be followed in the same order. 
+         * If a field in D is not specified, it is treated as if it were zero.
+         * If a field in S is not specified, it is treated in the calculation 
+         * as if it were the minimum allowed value in that field, however, 
+         * after the calculation is concluded, the corresponding field in 
+         * E is removed (set to unspecified).
+         * 
+         * Months (may be modified additionally below)
+         *  temp := S[month] + D[month]
+         *  E[month] := modulo(temp, 1, 13)
+         *  carry := fQuotient(temp, 1, 13)
+         */
 
-		/* Zone
-	         *  E[zone] := S[zone]
-		 * 
-		 * no-op since adding to this, not to a new end point.
-		 */
-	
-		 /* Seconds
-		  *  temp := S[second] + D[second]
-		  *  E[second] := modulo(temp, 60)
-		  *  carry := fQuotient(temp, 60)
-		  */
-		BigDecimal startSeconds;
-		if (getSecond() == DatatypeConstants.FIELD_UNDEFINED) {
-		    fieldUndefined[SECOND] = true;
-		    startSeconds = DECIMAL_ZERO;
-		} else {
-		    // seconds + fractionalSeconds
-		    startSeconds = getSeconds();
-		}
+        boolean fieldUndefined[] = {
+                false,
+                false,
+                false, 
+                false,
+                false,
+                false
+        };
 
-		// Duration seconds is SECONDS + FRACTIONALSECONDS.
-		BigDecimal dSeconds = DurationImpl.sanitize((BigDecimal) duration.getField(DatatypeConstants.SECONDS), signum);
-		BigDecimal tempBD = startSeconds.add(dSeconds);
-	    BigDecimal fQuotient = 
-		    new BigDecimal(new BigDecimal(tempBD.toBigInteger()).divide(DECIMAL_SIXTY, BigDecimal.ROUND_FLOOR).toBigInteger());
-	    BigDecimal endSeconds = tempBD.subtract(fQuotient.multiply(DECIMAL_SIXTY));
+        int signum = duration.getSign();
 
-		carry = fQuotient.toBigInteger();
-		setSecond(endSeconds.intValue());
-		BigDecimal tempFracSeconds = endSeconds.subtract(new BigDecimal(BigInteger.valueOf((long) getSecond())));
-		if (tempFracSeconds.compareTo(DECIMAL_ZERO) < 0) {
-		    setFractionalSecond(DECIMAL_ONE.add(tempFracSeconds));
-		    if (getSecond() == 0) {
-				setSecond(59);
-				carry = carry.subtract(BigInteger.ONE);
-		    } else {
-				setSecond(getSecond() - 1);
-		    }
-		} else {
-		    setFractionalSecond(tempFracSeconds);
-		}
- 
-		/* Minutes
-	         *  temp := S[minute] + D[minute] + carry
-	         *  E[minute] := modulo(temp, 60)
-	         *  carry := fQuotient(temp, 60)
-		 */
-		int startMinutes = getMinute();
-		if (startMinutes == DatatypeConstants.FIELD_UNDEFINED) {
-		    fieldUndefined[MINUTE] = true;
-		    startMinutes = MIN_FIELD_VALUE[MINUTE];
-		}
-		BigInteger dMinutes = sanitize(duration.getField(DatatypeConstants.MINUTES), signum);
-		
-		temp = BigInteger.valueOf(startMinutes).add(dMinutes).add(carry);
-		setMinute(temp.mod(SIXTY).intValue());
-		carry = new BigDecimal(temp).divide(DECIMAL_SIXTY, BigDecimal.ROUND_FLOOR).toBigInteger();
+        int startMonth = getMonth();
+        if (startMonth == DatatypeConstants.FIELD_UNDEFINED) {
+            startMonth = MIN_FIELD_VALUE[MONTH];
+            fieldUndefined[MONTH] = true;
+        }
 
-		/* Hours
-	         *  temp := S[hour] + D[hour] + carry
-	         *  E[hour] := modulo(temp, 24)
-	         *  carry := fQuotient(temp, 24)
-		 */
-		int startHours = getHour();
-		if (startHours == DatatypeConstants.FIELD_UNDEFINED) {
-		    fieldUndefined[HOUR] = true;
-		    startHours = MIN_FIELD_VALUE[HOUR];
-		}
-		BigInteger dHours = sanitize(duration.getField(DatatypeConstants.HOURS), signum);
-		
-		temp = BigInteger.valueOf(startHours).add(dHours).add(carry);
-		setHour(temp.mod(TWENTY_FOUR).intValue());
-		carry = new BigDecimal(temp).divide(new BigDecimal(TWENTY_FOUR), BigDecimal.ROUND_FLOOR).toBigInteger();
-	
-		/* Days
-	     *  if S[day] > maximumDayInMonthFor(E[year], E[month])
-	     *       + tempDays := maximumDayInMonthFor(E[year], E[month])
-	     *  else if S[day] < 1
-	     *       + tempDays := 1
-	     *  else
-	     *       + tempDays := S[day]
-	     *  E[day] := tempDays + D[day] + carry
-	     *  START LOOP
-	     *       + IF E[day] < 1
-	     *             # E[day] := E[day] + 
-	 	 *                 maximumDayInMonthFor(E[year], E[month] - 1)
-	     *             # carry := -1
-	     *       + ELSE IF E[day] > maximumDayInMonthFor(E[year], E[month])
-	     *             # E[day] := 
-	 	 *                    E[day] - maximumDayInMonthFor(E[year], E[month])
-	     *             # carry := 1
-	     *       + ELSE EXIT LOOP
-	     *       + temp := E[month] + carry
-	     *       + E[month] := modulo(temp, 1, 13)
-	     *       + E[year] := E[year] + fQuotient(temp, 1, 13)
-	     *       + GOTO START LOOP
-		 */
-		BigInteger tempDays;
-		int startDay = getDay();
-		if (startDay == DatatypeConstants.FIELD_UNDEFINED) {
-		    fieldUndefined[DAY] = true;
-		    startDay = MIN_FIELD_VALUE[DAY];
-		}
-		BigInteger dDays = sanitize(duration.getField(DatatypeConstants.DAYS), signum);
-	    int maxDayInMonth = maximumDayInMonthFor(getEonAndYear(), getMonth());
-		if (startDay > maxDayInMonth) {
-	            tempDays =  BigInteger.valueOf(maxDayInMonth);
-		} else if (startDay < 1) {
-		    tempDays = BigInteger.ONE;
-		} else {
-		    tempDays = BigInteger.valueOf(startDay);
-		}
-		BigInteger endDays = tempDays.add(dDays).add(carry);
-		int monthCarry;
-		int intTemp;
-		while (true) {
-		    if (endDays.compareTo(BigInteger.ONE) < 0) {
-		    	// calculate days in previous month, watch for month roll over
-				BigInteger mdimf = null;
-				if (month >= 2) {
-					mdimf = BigInteger.valueOf(maximumDayInMonthFor(getEonAndYear(), getMonth() - 1));
-				} else {
-					// roll over to December of previous year
-					mdimf = BigInteger.valueOf(maximumDayInMonthFor(getEonAndYear().subtract(BigInteger.valueOf((long) 1)), 12));
-				}
-				endDays = endDays.add(mdimf);
-				monthCarry = -1;
-		    } else if (endDays.compareTo(BigInteger.valueOf(maximumDayInMonthFor(getEonAndYear(), getMonth()))) > 0) {
-				endDays = endDays.add(BigInteger.valueOf(-maximumDayInMonthFor(getEonAndYear(), getMonth())));
-				monthCarry = 1;
-		    } else {
-		    	break;
-		    } 
+        BigInteger dMonths = sanitize(duration.getField(DatatypeConstants.MONTHS), signum);
+        BigInteger temp = BigInteger.valueOf((long) startMonth).add(dMonths);
+        setMonth(temp.subtract(BigInteger.ONE).mod(TWELVE).intValue() + 1);
+        BigInteger carry =
+            new BigDecimal(temp.subtract(BigInteger.ONE)).divide(new BigDecimal(TWELVE), BigDecimal.ROUND_FLOOR).toBigInteger();
 
-		    intTemp = getMonth() + monthCarry;
-		    int endMonth = (intTemp - 1) % (13 - 1);
-		    int quotient;
-		    if (endMonth < 0) {
-				endMonth = (13 - 1) + endMonth + 1;
-				quotient = new BigDecimal(intTemp - 1).divide(new BigDecimal(TWELVE), BigDecimal.ROUND_UP).intValue();
-		    } else {
-				quotient = (intTemp - 1) / (13 - 1);
-				endMonth += 1;
-		    }
-		    setMonth(endMonth);
-		    if (quotient != 0)  {
-				setYear(getEonAndYear().add(BigInteger.valueOf(quotient)));
-	    	} 
-		}
-		setDay(endDays.intValue());
-	
+        /* Years (may be modified additionally below)
+         *  E[year] := S[year] + D[year] + carry
+         */
+        BigInteger startYear = getEonAndYear();
+        if (startYear == null) {
+            fieldUndefined[YEAR] = true;
+            startYear = BigInteger.ZERO;
+        }
+        BigInteger dYears = sanitize(duration.getField(DatatypeConstants.YEARS), signum);
+        BigInteger endYear = startYear.add(dYears).add(carry);
+        setYear(endYear);
+
+        /* Zone
+         *  E[zone] := S[zone]
+         * 
+         * no-op since adding to this, not to a new end point.
+         */
+
+        /* Seconds
+         *  temp := S[second] + D[second]
+         *  E[second] := modulo(temp, 60)
+         *  carry := fQuotient(temp, 60)
+         */
+        BigDecimal startSeconds;
+        if (getSecond() == DatatypeConstants.FIELD_UNDEFINED) {
+            fieldUndefined[SECOND] = true;
+            startSeconds = DECIMAL_ZERO;
+        } 
+        else {
+            // seconds + fractionalSeconds
+            startSeconds = getSeconds();
+        }
+
+        // Duration seconds is SECONDS + FRACTIONALSECONDS.
+        BigDecimal dSeconds = DurationImpl.sanitize((BigDecimal) duration.getField(DatatypeConstants.SECONDS), signum);
+        BigDecimal tempBD = startSeconds.add(dSeconds);
+        BigDecimal fQuotient = 
+            new BigDecimal(new BigDecimal(tempBD.toBigInteger()).divide(DECIMAL_SIXTY, BigDecimal.ROUND_FLOOR).toBigInteger());
+        BigDecimal endSeconds = tempBD.subtract(fQuotient.multiply(DECIMAL_SIXTY));
+
+        carry = fQuotient.toBigInteger();
+        setSecond(endSeconds.intValue());
+        BigDecimal tempFracSeconds = endSeconds.subtract(new BigDecimal(BigInteger.valueOf((long) getSecond())));
+        if (tempFracSeconds.compareTo(DECIMAL_ZERO) < 0) {
+            setFractionalSecond(DECIMAL_ONE.add(tempFracSeconds));
+            if (getSecond() == 0) {
+                setSecond(59);
+                carry = carry.subtract(BigInteger.ONE);
+            } 
+            else {
+                setSecond(getSecond() - 1);
+            }
+        } 
+        else {
+            setFractionalSecond(tempFracSeconds);
+        }
+
+        /* Minutes
+         *  temp := S[minute] + D[minute] + carry
+         *  E[minute] := modulo(temp, 60)
+         *  carry := fQuotient(temp, 60)
+         */
+        int startMinutes = getMinute();
+        if (startMinutes == DatatypeConstants.FIELD_UNDEFINED) {
+            fieldUndefined[MINUTE] = true;
+            startMinutes = MIN_FIELD_VALUE[MINUTE];
+        }
+        BigInteger dMinutes = sanitize(duration.getField(DatatypeConstants.MINUTES), signum);
+
+        temp = BigInteger.valueOf(startMinutes).add(dMinutes).add(carry);
+        setMinute(temp.mod(SIXTY).intValue());
+        carry = new BigDecimal(temp).divide(DECIMAL_SIXTY, BigDecimal.ROUND_FLOOR).toBigInteger();
+
+        /* Hours
+         *  temp := S[hour] + D[hour] + carry
+         *  E[hour] := modulo(temp, 24)
+         *  carry := fQuotient(temp, 24)
+         */
+        int startHours = getHour();
+        if (startHours == DatatypeConstants.FIELD_UNDEFINED) {
+            fieldUndefined[HOUR] = true;
+            startHours = MIN_FIELD_VALUE[HOUR];
+        }
+        BigInteger dHours = sanitize(duration.getField(DatatypeConstants.HOURS), signum);
+
+        temp = BigInteger.valueOf(startHours).add(dHours).add(carry);
+        setHour(temp.mod(TWENTY_FOUR).intValue());
+        carry = new BigDecimal(temp).divide(new BigDecimal(TWENTY_FOUR), BigDecimal.ROUND_FLOOR).toBigInteger();
+
+        /* Days
+         *  if S[day] > maximumDayInMonthFor(E[year], E[month])
+         *       + tempDays := maximumDayInMonthFor(E[year], E[month])
+         *  else if S[day] < 1
+         *       + tempDays := 1
+         *  else
+         *       + tempDays := S[day]
+         *  E[day] := tempDays + D[day] + carry
+         *  START LOOP
+         *       + IF E[day] < 1
+         *             # E[day] := E[day] + 
+         *                 maximumDayInMonthFor(E[year], E[month] - 1)
+         *             # carry := -1
+         *       + ELSE IF E[day] > maximumDayInMonthFor(E[year], E[month])
+         *             # E[day] := 
+         *                    E[day] - maximumDayInMonthFor(E[year], E[month])
+         *             # carry := 1
+         *       + ELSE EXIT LOOP
+         *       + temp := E[month] + carry
+         *       + E[month] := modulo(temp, 1, 13)
+         *       + E[year] := E[year] + fQuotient(temp, 1, 13)
+         *       + GOTO START LOOP
+         */
+        BigInteger tempDays;
+        int startDay = getDay();
+        if (startDay == DatatypeConstants.FIELD_UNDEFINED) {
+            fieldUndefined[DAY] = true;
+            startDay = MIN_FIELD_VALUE[DAY];
+        }
+        BigInteger dDays = sanitize(duration.getField(DatatypeConstants.DAYS), signum);
+        int maxDayInMonth = maximumDayInMonthFor(getEonAndYear(), getMonth());
+        if (startDay > maxDayInMonth) {
+            tempDays =  BigInteger.valueOf(maxDayInMonth);
+        } 
+        else if (startDay < 1) {
+            tempDays = BigInteger.ONE;
+        } 
+        else {
+            tempDays = BigInteger.valueOf(startDay);
+        }
+        BigInteger endDays = tempDays.add(dDays).add(carry);
+        int monthCarry;
+        int intTemp;
+        while (true) {
+            if (endDays.compareTo(BigInteger.ONE) < 0) {
+                // calculate days in previous month, watch for month roll over
+                BigInteger mdimf = null;
+                if (month >= 2) {
+                    mdimf = BigInteger.valueOf(maximumDayInMonthFor(getEonAndYear(), getMonth() - 1));
+                } 
+                else {
+                    // roll over to December of previous year
+                    mdimf = BigInteger.valueOf(maximumDayInMonthFor(getEonAndYear().subtract(BigInteger.valueOf((long) 1)), 12));
+                }
+                endDays = endDays.add(mdimf);
+                monthCarry = -1;
+            } 
+            else if (endDays.compareTo(BigInteger.valueOf(maximumDayInMonthFor(getEonAndYear(), getMonth()))) > 0) {
+                endDays = endDays.add(BigInteger.valueOf(-maximumDayInMonthFor(getEonAndYear(), getMonth())));
+                monthCarry = 1;
+            } 
+            else {
+                break;
+            } 
+
+            intTemp = getMonth() + monthCarry;
+            int endMonth = (intTemp - 1) % (13 - 1);
+            int quotient;
+            if (endMonth < 0) {
+                endMonth = (13 - 1) + endMonth + 1;
+                quotient = new BigDecimal(intTemp - 1).divide(new BigDecimal(TWELVE), BigDecimal.ROUND_UP).intValue();
+            } 
+            else {
+                quotient = (intTemp - 1) / (13 - 1);
+                endMonth += 1;
+            }
+            setMonth(endMonth);
+            if (quotient != 0)  {
+                setYear(getEonAndYear().add(BigInteger.valueOf(quotient)));
+            } 
+        }
+        setDay(endDays.intValue());
+
         // set fields that where undefined before this addition, back to undefined.
-		for (int i = YEAR; i <= SECOND; i++) {
-		    if (fieldUndefined[i]) {
-				switch (i) {
-				case YEAR:
-				    setYear(DatatypeConstants.FIELD_UNDEFINED);
-				    break;
-				case MONTH:
-				    setMonth(DatatypeConstants.FIELD_UNDEFINED);
-				    break;
-				case DAY:
-				    setDay(DatatypeConstants.FIELD_UNDEFINED);
-				    break;
-				case HOUR:
-				    setHour(DatatypeConstants.FIELD_UNDEFINED);
-				    break;
-				case MINUTE:
-				    setMinute(DatatypeConstants.FIELD_UNDEFINED);
-				    break;
-				case SECOND:
-				    setSecond(DatatypeConstants.FIELD_UNDEFINED);
-				    setFractionalSecond(null);
-				    break;
-				}
-		    }
-		}
+        for (int i = YEAR; i <= SECOND; i++) {
+            if (fieldUndefined[i]) {
+                switch (i) {
+                    case YEAR:
+                        setYear(DatatypeConstants.FIELD_UNDEFINED);
+                        break;
+                    case MONTH:
+                        setMonth(DatatypeConstants.FIELD_UNDEFINED);
+                        break;
+                    case DAY:
+                        setDay(DatatypeConstants.FIELD_UNDEFINED);
+                        break;
+                    case HOUR:
+                        setHour(DatatypeConstants.FIELD_UNDEFINED);
+                        break;
+                    case MINUTE:
+                        setMinute(DatatypeConstants.FIELD_UNDEFINED);
+                        break;
+                    case SECOND:
+                        setSecond(DatatypeConstants.FIELD_UNDEFINED);
+                        setFractionalSecond(null);
+                        break;
+                }
+            }
+        }
     }
 
     private static final BigInteger FOUR = BigInteger.valueOf(4);
@@ -2326,32 +2358,36 @@ class XMLGregorianCalendarImpl
                                        31, 31, 30, 31, 30, 31};
 
     private static int maximumDayInMonthFor(BigInteger year, int month) {
-	if (month != DatatypeConstants.FEBRUARY) {
-	    return daysInMonth[month];
-	} else {
-	    if (year.mod(FOUR_HUNDRED).equals(BigInteger.ZERO) || 
-		(!year.mod(HUNDRED).equals(BigInteger.ZERO) &&
-		 year.mod(FOUR).equals(BigInteger.ZERO))) {
-		// is a leap year.
-		return 29;
-	    } else {
-		return daysInMonth[month];
-	    }
-	}
+        if (month != DatatypeConstants.FEBRUARY) {
+            return daysInMonth[month];
+        } 
+        else {
+            if (year.mod(FOUR_HUNDRED).equals(BigInteger.ZERO) || 
+                    (!year.mod(HUNDRED).equals(BigInteger.ZERO) &&
+                            year.mod(FOUR).equals(BigInteger.ZERO))) {
+                // is a leap year.
+                return 29;
+            } 
+            else {
+                return daysInMonth[month];
+            }
+        }
     }
 
     private static int maximumDayInMonthFor(int year, int month) {
-	if (month != DatatypeConstants.FEBRUARY) {
-	    return daysInMonth[month];
-	} else {
-	    if ( ((year %400) == 0) || 
-		 ( ((year % 100) != 0) && ((year % 4) == 0))) {
-		// is a leap year.
-		return 29;
-	    } else {
-		return daysInMonth[DatatypeConstants.FEBRUARY];
-	    }
-	}
+        if (month != DatatypeConstants.FEBRUARY) {
+            return daysInMonth[month];
+        } 
+        else {
+            if ( ((year %400) == 0) || 
+                    ( ((year % 100) != 0) && ((year % 4) == 0))) {
+                // is a leap year.
+                return 29;
+            } 
+            else {
+                return daysInMonth[DatatypeConstants.FEBRUARY];
+            }
+        }
     }
 
     /**
@@ -2448,54 +2484,54 @@ class XMLGregorianCalendarImpl
      */
     public java.util.GregorianCalendar toGregorianCalendar() {
 
-	GregorianCalendar result = null;
-	final int DEFAULT_TIMEZONE_OFFSET = DatatypeConstants.FIELD_UNDEFINED;
-	TimeZone tz = getTimeZone(DEFAULT_TIMEZONE_OFFSET);
-	Locale locale = java.util.Locale.getDefault();
+        GregorianCalendar result = null;
+        final int DEFAULT_TIMEZONE_OFFSET = DatatypeConstants.FIELD_UNDEFINED;
+        TimeZone tz = getTimeZone(DEFAULT_TIMEZONE_OFFSET);
+        Locale locale = java.util.Locale.getDefault();
 
-	result = new GregorianCalendar(tz, locale);
-	result.clear();
-	result.setGregorianChange(PURE_GREGORIAN_CHANGE);
-	
-	// if year( and eon) are undefined, leave default Calendar values
-	BigInteger year = getEonAndYear();
-	if (year != null) {
-		result.set(Calendar.ERA, year.signum() == -1 ? GregorianCalendar.BC : GregorianCalendar.AD);
-		result.set(Calendar.YEAR, year.abs().intValue());
-	}
-	
-	// only set month if it is set
-	if (month != DatatypeConstants.FIELD_UNDEFINED) { 
-		// Calendar.MONTH is zero based while XMLGregorianCalendar month field is not.
-		result.set(Calendar.MONTH, month  - 1);
-	}
-	
-	// only set day if it is set
-	if (day != DatatypeConstants.FIELD_UNDEFINED) {
-		result.set(Calendar.DAY_OF_MONTH, day);
-	}
-	
-	// only set hour if it is set
-	if (hour != DatatypeConstants.FIELD_UNDEFINED) {
-		result.set(Calendar.HOUR_OF_DAY, hour);
-	}
-	
-	// only set minute if it is set
-	if (minute != DatatypeConstants.FIELD_UNDEFINED) {
-		result.set(Calendar.MINUTE, minute);
-	}
-	
-	// only set second if it is set
-	if (second != DatatypeConstants.FIELD_UNDEFINED) {
-		result.set(Calendar.SECOND, second);
-	}
-	
-	// only set millisend if it is set
-	if (fractionalSecond != null) {
-		result.set(Calendar.MILLISECOND, getMillisecond());
-	}
+        result = new GregorianCalendar(tz, locale);
+        result.clear();
+        result.setGregorianChange(PURE_GREGORIAN_CHANGE);
 
-	return result;
+        // if year( and eon) are undefined, leave default Calendar values
+        BigInteger year = getEonAndYear();
+        if (year != null) {
+            result.set(Calendar.ERA, year.signum() == -1 ? GregorianCalendar.BC : GregorianCalendar.AD);
+            result.set(Calendar.YEAR, year.abs().intValue());
+        }
+
+        // only set month if it is set
+        if (month != DatatypeConstants.FIELD_UNDEFINED) { 
+            // Calendar.MONTH is zero based while XMLGregorianCalendar month field is not.
+            result.set(Calendar.MONTH, month  - 1);
+        }
+
+        // only set day if it is set
+        if (day != DatatypeConstants.FIELD_UNDEFINED) {
+            result.set(Calendar.DAY_OF_MONTH, day);
+        }
+
+        // only set hour if it is set
+        if (hour != DatatypeConstants.FIELD_UNDEFINED) {
+            result.set(Calendar.HOUR_OF_DAY, hour);
+        }
+
+        // only set minute if it is set
+        if (minute != DatatypeConstants.FIELD_UNDEFINED) {
+            result.set(Calendar.MINUTE, minute);
+        }
+
+        // only set second if it is set
+        if (second != DatatypeConstants.FIELD_UNDEFINED) {
+            result.set(Calendar.SECOND, second);
+        }
+
+        // only set millisend if it is set
+        if (fractionalSecond != null) {
+            result.set(Calendar.MILLISECOND, getMillisecond());
+        }
+
+        return result;
     }
 
     /**
@@ -2551,107 +2587,113 @@ class XMLGregorianCalendarImpl
      * @see #LEAP_YEAR_DEFAULT
      */
     public GregorianCalendar toGregorianCalendar(java.util.TimeZone timezone, 
-					 java.util.Locale aLocale,
-					 XMLGregorianCalendar defaults) {
-	GregorianCalendar result = null;
-	TimeZone tz = timezone;
-	if (tz == null) {
-	    int defaultZoneoffset = DatatypeConstants.FIELD_UNDEFINED;
-	    if (defaults != null) {
-	    	defaultZoneoffset = defaults.getTimezone();
-	    }
-	    tz = getTimeZone(defaultZoneoffset);
-	}
-	if (aLocale == null) {
-	    aLocale = java.util.Locale.getDefault();
-	}
-	result = new GregorianCalendar(tz, aLocale);
-	result.clear();
-	result.setGregorianChange(PURE_GREGORIAN_CHANGE);
+            java.util.Locale aLocale,
+            XMLGregorianCalendar defaults) {
+        GregorianCalendar result = null;
+        TimeZone tz = timezone;
+        if (tz == null) {
+            int defaultZoneoffset = DatatypeConstants.FIELD_UNDEFINED;
+            if (defaults != null) {
+                defaultZoneoffset = defaults.getTimezone();
+            }
+            tz = getTimeZone(defaultZoneoffset);
+        }
+        if (aLocale == null) {
+            aLocale = java.util.Locale.getDefault();
+        }
+        result = new GregorianCalendar(tz, aLocale);
+        result.clear();
+        result.setGregorianChange(PURE_GREGORIAN_CHANGE);
 
-	// if year( and eon) are undefined, leave default Calendar values
-	BigInteger year = getEonAndYear();
-	if (year != null) {
-		result.set(Calendar.ERA, year.signum() == -1 ? GregorianCalendar.BC : GregorianCalendar.AD);
-		result.set(Calendar.YEAR, year.abs().intValue());
-	} else {
-		// use default if set
-		BigInteger defaultYear = (defaults != null) ? defaults.getEonAndYear() : null;
-		if (defaultYear != null) {
-			result.set(Calendar.ERA, defaultYear.signum() == -1 ? GregorianCalendar.BC : GregorianCalendar.AD);
-			result.set(Calendar.YEAR, defaultYear.abs().intValue());
-		}
-	}
-	
-	// only set month if it is set
-	if (month != DatatypeConstants.FIELD_UNDEFINED) { 
-		// Calendar.MONTH is zero based while XMLGregorianCalendar month field is not.
-		result.set(Calendar.MONTH, month  - 1);
-	} else {
-		// use default if set
-		int defaultMonth = (defaults != null) ? defaults.getMonth() : DatatypeConstants.FIELD_UNDEFINED;
-		if (defaultMonth != DatatypeConstants.FIELD_UNDEFINED) { 
-			// Calendar.MONTH is zero based while XMLGregorianCalendar month field is not.
-			result.set(Calendar.MONTH, defaultMonth  - 1);
-		}
-	}
-		
-	// only set day if it is set
-	if (day != DatatypeConstants.FIELD_UNDEFINED) {
-		result.set(Calendar.DAY_OF_MONTH, day);
-	} else {
-		// use default if set
-		int defaultDay = (defaults != null) ? defaults.getDay() : DatatypeConstants.FIELD_UNDEFINED;
-		if (defaultDay != DatatypeConstants.FIELD_UNDEFINED) { 
-			result.set(Calendar.DAY_OF_MONTH, defaultDay);
-		}
-	}
-	
-	// only set hour if it is set
-	if (hour != DatatypeConstants.FIELD_UNDEFINED) {
-		result.set(Calendar.HOUR_OF_DAY, hour);
-	} else {
-		// use default if set
-		int defaultHour = (defaults != null) ? defaults.getHour() : DatatypeConstants.FIELD_UNDEFINED;
-		if (defaultHour != DatatypeConstants.FIELD_UNDEFINED) { 
-			result.set(Calendar.HOUR_OF_DAY, defaultHour);
-		}
-	}
-	
-	// only set minute if it is set
-	if (minute != DatatypeConstants.FIELD_UNDEFINED) {
-		result.set(Calendar.MINUTE, minute);
-	} else {
-		// use default if set
-		int defaultMinute = (defaults != null) ? defaults.getMinute() : DatatypeConstants.FIELD_UNDEFINED;
-		if (defaultMinute != DatatypeConstants.FIELD_UNDEFINED) { 
-			result.set(Calendar.MINUTE, defaultMinute);
-		}
-	}
-	
-	// only set second if it is set
-	if (second != DatatypeConstants.FIELD_UNDEFINED) {
-		result.set(Calendar.SECOND, second);
-	} else {
-		// use default if set
-		int defaultSecond = (defaults != null) ? defaults.getSecond() : DatatypeConstants.FIELD_UNDEFINED;
-		if (defaultSecond != DatatypeConstants.FIELD_UNDEFINED) { 
-			result.set(Calendar.SECOND, defaultSecond);
-		}
-	}
-	
-	// only set millisend if it is set
-	if (fractionalSecond != null) {
-		result.set(Calendar.MILLISECOND, getMillisecond());
-	} else {
-		// use default if set
-		BigDecimal defaultFractionalSecond = (defaults != null) ? defaults.getFractionalSecond() : null;
-		if (defaultFractionalSecond != null) { 
-			result.set(Calendar.MILLISECOND, defaults.getMillisecond());
-		}
-	}
+        // if year( and eon) are undefined, leave default Calendar values
+        BigInteger year = getEonAndYear();
+        if (year != null) {
+            result.set(Calendar.ERA, year.signum() == -1 ? GregorianCalendar.BC : GregorianCalendar.AD);
+            result.set(Calendar.YEAR, year.abs().intValue());
+        } 
+        else {
+            // use default if set
+            BigInteger defaultYear = (defaults != null) ? defaults.getEonAndYear() : null;
+            if (defaultYear != null) {
+                result.set(Calendar.ERA, defaultYear.signum() == -1 ? GregorianCalendar.BC : GregorianCalendar.AD);
+                result.set(Calendar.YEAR, defaultYear.abs().intValue());
+            }
+        }
 
-	return result;
+        // only set month if it is set
+        if (month != DatatypeConstants.FIELD_UNDEFINED) { 
+            // Calendar.MONTH is zero based while XMLGregorianCalendar month field is not.
+            result.set(Calendar.MONTH, month  - 1);
+        } 
+        else {
+            // use default if set
+            int defaultMonth = (defaults != null) ? defaults.getMonth() : DatatypeConstants.FIELD_UNDEFINED;
+            if (defaultMonth != DatatypeConstants.FIELD_UNDEFINED) { 
+                // Calendar.MONTH is zero based while XMLGregorianCalendar month field is not.
+                result.set(Calendar.MONTH, defaultMonth  - 1);
+            }
+        }
+
+        // only set day if it is set
+        if (day != DatatypeConstants.FIELD_UNDEFINED) {
+            result.set(Calendar.DAY_OF_MONTH, day);
+        } 
+        else {
+            // use default if set
+            int defaultDay = (defaults != null) ? defaults.getDay() : DatatypeConstants.FIELD_UNDEFINED;
+            if (defaultDay != DatatypeConstants.FIELD_UNDEFINED) { 
+                result.set(Calendar.DAY_OF_MONTH, defaultDay);
+            }
+        }
+
+        // only set hour if it is set
+        if (hour != DatatypeConstants.FIELD_UNDEFINED) {
+            result.set(Calendar.HOUR_OF_DAY, hour);
+        } 
+        else {
+            // use default if set
+            int defaultHour = (defaults != null) ? defaults.getHour() : DatatypeConstants.FIELD_UNDEFINED;
+            if (defaultHour != DatatypeConstants.FIELD_UNDEFINED) { 
+                result.set(Calendar.HOUR_OF_DAY, defaultHour);
+            }
+        }
+
+        // only set minute if it is set
+        if (minute != DatatypeConstants.FIELD_UNDEFINED) {
+            result.set(Calendar.MINUTE, minute);
+        } else {
+            // use default if set
+            int defaultMinute = (defaults != null) ? defaults.getMinute() : DatatypeConstants.FIELD_UNDEFINED;
+            if (defaultMinute != DatatypeConstants.FIELD_UNDEFINED) { 
+                result.set(Calendar.MINUTE, defaultMinute);
+            }
+        }
+
+        // only set second if it is set
+        if (second != DatatypeConstants.FIELD_UNDEFINED) {
+            result.set(Calendar.SECOND, second);
+        } 
+        else {
+            // use default if set
+            int defaultSecond = (defaults != null) ? defaults.getSecond() : DatatypeConstants.FIELD_UNDEFINED;
+            if (defaultSecond != DatatypeConstants.FIELD_UNDEFINED) { 
+                result.set(Calendar.SECOND, defaultSecond);
+            }
+        }
+
+        // only set millisend if it is set
+        if (fractionalSecond != null) {
+            result.set(Calendar.MILLISECOND, getMillisecond());
+        } 
+        else {
+            // use default if set
+            BigDecimal defaultFractionalSecond = (defaults != null) ? defaults.getFractionalSecond() : null;
+            if (defaultFractionalSecond != null) { 
+                result.set(Calendar.MILLISECOND, defaults.getMillisecond());
+            }
+        }
+
+        return result;
     }
 
     /**
@@ -2679,7 +2721,8 @@ class XMLGregorianCalendarImpl
         }
         if (zoneoffset == DatatypeConstants.FIELD_UNDEFINED) {
             result = TimeZone.getDefault();
-        } else {
+        } 
+        else {
             // zoneoffset is in minutes. Convert to custom timezone id format.
             char sign = zoneoffset < 0 ? '-' : '+';
             if (sign == '-') {
@@ -2729,36 +2772,37 @@ class XMLGregorianCalendarImpl
      * <p>Set all int fields to {@link DatatypeConstants#FIELD_UNDEFINED} and reference fields 
      * to null.</p>
      */
-    public void clear() {
-	eon = null;
-	year = DatatypeConstants.FIELD_UNDEFINED;
-	month = DatatypeConstants.FIELD_UNDEFINED;
-	day = DatatypeConstants.FIELD_UNDEFINED;
-	timezone = DatatypeConstants.FIELD_UNDEFINED;  // in minutes
-	hour = DatatypeConstants.FIELD_UNDEFINED;
-	minute = DatatypeConstants.FIELD_UNDEFINED;
-	second = DatatypeConstants.FIELD_UNDEFINED;
-	fractionalSecond = null;
-    }
+   public void clear() {
+       eon = null;
+       year = DatatypeConstants.FIELD_UNDEFINED;
+       month = DatatypeConstants.FIELD_UNDEFINED;
+       day = DatatypeConstants.FIELD_UNDEFINED;
+       timezone = DatatypeConstants.FIELD_UNDEFINED;  // in minutes
+       hour = DatatypeConstants.FIELD_UNDEFINED;
+       minute = DatatypeConstants.FIELD_UNDEFINED;
+       second = DatatypeConstants.FIELD_UNDEFINED;
+       fractionalSecond = null;
+   }
 
     public void setMillisecond(int millisecond) {
-	if (millisecond == DatatypeConstants.FIELD_UNDEFINED) {
-	    fractionalSecond = null;
-	} else {
-	    checkFieldValueConstraint(MILLISECOND, millisecond);
-	    fractionalSecond = new BigDecimal((long) millisecond).movePointLeft(3);
-	} 
+        if (millisecond == DatatypeConstants.FIELD_UNDEFINED) {
+            fractionalSecond = null;
+        } 
+        else {
+            checkFieldValueConstraint(MILLISECOND, millisecond);
+            fractionalSecond = new BigDecimal((long) millisecond).movePointLeft(3);
+        } 
     }
 
     public void setFractionalSecond(BigDecimal fractional) {
-	if (fractional != null) {
-	    if ((fractional.compareTo(DECIMAL_ZERO) < 0) ||
-		(fractional.compareTo(DECIMAL_ONE) > 0)) {
-		throw new IllegalArgumentException(DatatypeMessageFormatter.formatMessage(null, 
-            "InvalidFractional", new Object[]{fractional}));
-	    }            	                             
-	}
-	this.fractionalSecond = fractional;
+        if (fractional != null) {
+            if ((fractional.compareTo(DECIMAL_ZERO) < 0) ||
+                    (fractional.compareTo(DECIMAL_ONE) > 0)) {
+                throw new IllegalArgumentException(DatatypeMessageFormatter.formatMessage(null, 
+                        "InvalidFractional", new Object[]{fractional}));
+            }            	                             
+        }
+        this.fractionalSecond = fractional;
     }
 
     private final class Parser {
@@ -2821,7 +2865,7 @@ class XMLGregorianCalendarImpl
                         setSecond(parseInt(2, 2));
 
                         if (peek() == '.') {
-			    setFractionalSecond(parseBigDecimal());
+                            setFractionalSecond(parseBigDecimal());
                         }
                         break;
 
@@ -2830,14 +2874,14 @@ class XMLGregorianCalendarImpl
                         if (vch == 'Z') {
                             vidx++;
                             setTimezone(0);
-                        } else if (vch == '+' || vch == '-') {
+                        } 
+                        else if (vch == '+' || vch == '-') {
                             vidx++;
                             int h = parseInt(2, 2);
                             skip(':');
                             int m = parseInt(2, 2);
                             setTimezone((h * 60 + m) * (vch == '+' ? 1 : -1));
                         }
-			
                         break;
 
                     default :
@@ -2893,13 +2937,13 @@ class XMLGregorianCalendarImpl
         }
 
         private BigInteger parseBigInteger(int minDigits)
-            throws IllegalArgumentException {
+        throws IllegalArgumentException {
             int vstart = vidx;
 
-	    // skip leading negative, if it exists
-	    if (peek() == '-') {
-		vidx++;
-	    }
+            // skip leading negative, if it exists
+            if (peek() == '-') {
+                vidx++;
+            }
             while (isDigit(peek())) {
                 vidx++;
             }
@@ -2912,14 +2956,14 @@ class XMLGregorianCalendarImpl
         }
 
         private BigDecimal parseBigDecimal()
-            throws IllegalArgumentException {
+        throws IllegalArgumentException {
             int vstart = vidx;
 
-	    if (peek() == '.') {
-		vidx++;
-	    } else {
+            if (peek() == '.') {
+                vidx++;
+            } else {
                 throw new IllegalArgumentException(value);
-	    }
+            }
             while (isDigit(peek())) {
                 vidx++;
             }
@@ -2934,69 +2978,71 @@ class XMLGregorianCalendarImpl
     private String format( String format ) {
         StringBuffer buf = new StringBuffer();
         int fidx=0,flen=format.length();
-        
+
         while(fidx<flen) {
             char fch = format.charAt(fidx++);
             if(fch!='%') {// not a meta char
                 buf.append(fch);
                 continue;
             }
-            
+
             switch(format.charAt(fidx++)) {
-            case 'Y':
-                if (eon == null) {
-                    int absYear = year;
-                    if (absYear < 0) {
-                        buf.append('-');
-                        absYear = -year;
+                case 'Y':
+                    if (eon == null) {
+                        int absYear = year;
+                        if (absYear < 0) {
+                            buf.append('-');
+                            absYear = -year;
+                        }
+                        printNumber(buf, absYear, 4);
                     }
-                    printNumber(buf, absYear, 4);
-                }
-                else {
-                    printNumber(buf, getEonAndYear(), 4);
-                }
-                break;
-            case 'M':
-                printNumber(buf,getMonth(),2);
-                break;
-            case 'D':
-                printNumber(buf,getDay(),2);
-                break;
-            case 'h':
-                printNumber(buf,getHour(),2);
-                break;
-            case 'm':
-                printNumber(buf,getMinute(),2);
-                break;
-            case 's':
-                printNumber(buf,getSecond(),2);
-		if (getFractionalSecond() != null) {
-		    String frac = toString(getFractionalSecond());
-		    //skip leading zero.
-		    buf.append(frac.substring(1, frac.length()));
-		} 
-                break;
-            case 'z':
-		int offset = getTimezone();
-                if(offset == 0) {
-		    buf.append('Z');
-		} else if (offset != DatatypeConstants.FIELD_UNDEFINED) {
-		    if(offset<0) {
-			buf.append('-');
-			offset *= -1; 
-		    } else {
-			buf.append('+');
-		    }
-		    printNumber(buf,offset/60,2);
-                    buf.append(':');
-                    printNumber(buf,offset%60,2);
-                }
-                break;
-            default:
-                throw new InternalError();  // impossible
+                    else {
+                        printNumber(buf, getEonAndYear(), 4);
+                    }
+                    break;
+                case 'M':
+                    printNumber(buf,getMonth(),2);
+                    break;
+                case 'D':
+                    printNumber(buf,getDay(),2);
+                    break;
+                case 'h':
+                    printNumber(buf,getHour(),2);
+                    break;
+                case 'm':
+                    printNumber(buf,getMinute(),2);
+                    break;
+                case 's':
+                    printNumber(buf,getSecond(),2);
+                    if (getFractionalSecond() != null) {
+                        String frac = toString(getFractionalSecond());
+                        //skip leading zero.
+                        buf.append(frac.substring(1, frac.length()));
+                    } 
+                    break;
+                case 'z':
+                    int offset = getTimezone();
+                    if (offset == 0) {
+                        buf.append('Z');
+                    } 
+                    else if (offset != DatatypeConstants.FIELD_UNDEFINED) {
+                        if (offset < 0) {
+                            buf.append('-');
+                            offset *= -1; 
+                        } 
+                        else {
+                            buf.append('+');
+                        }
+                        printNumber(buf,offset/60,2);
+                        buf.append(':');
+                        printNumber(buf,offset%60,2);
+                    }
+                    break;
+                default:
+                    throw new InternalError();  // impossible
             }
         }
-        
+
         return buf.toString();
     }
     
@@ -3014,8 +3060,9 @@ class XMLGregorianCalendarImpl
      */
     private void printNumber( StringBuffer out, int number, int nDigits ) {
         String s = String.valueOf(number);
-        for( int i=s.length(); i<nDigits; i++ )
+        for (int i = s.length(); i < nDigits; i++) {
             out.append('0');
+        }
         out.append(s);
     }
 
@@ -3033,8 +3080,9 @@ class XMLGregorianCalendarImpl
      */
     private void printNumber( StringBuffer out, BigInteger number, int nDigits) {
         String s = number.toString();
-        for( int i=s.length(); i<nDigits; i++ )
+        for (int i=s.length(); i < nDigits; i++) {
             out.append('0');
+        }
         out.append(s);
     }
     
@@ -3061,10 +3109,12 @@ class XMLGregorianCalendarImpl
         int insertionPoint = intString.length() - scale;
         if (insertionPoint == 0) { /* Point goes right before intVal */
             return "0." + intString;
-        } else if (insertionPoint > 0) { /* Point goes inside intVal */
+        } 
+        else if (insertionPoint > 0) { /* Point goes inside intVal */
             buf = new StringBuffer(intString);
             buf.insert(insertionPoint, '.');
-        } else { /* We must insert zeros between point and intVal */
+        } 
+        else { /* We must insert zeros between point and intVal */
             buf = new StringBuffer(3 - insertionPoint + intString.length());
             buf.append("0.");
             for (int i = 0; i < -insertionPoint; i++) {
