@@ -2944,7 +2944,17 @@ class XMLGregorianCalendarImpl
             
             switch(format.charAt(fidx++)) {
             case 'Y':
-                printNumber(buf,getEonAndYear(), 4);
+                if (eon == null) {
+                    int absYear = year;
+                    if (absYear < 0) {
+                        buf.append('-');
+                        absYear = -year;
+                    }
+                    printNumber(buf, absYear, 4);
+                }
+                else {
+                    printNumber(buf, getEonAndYear(), 4);
+                }
                 break;
             case 'M':
                 printNumber(buf,getMonth(),2);
