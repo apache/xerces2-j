@@ -237,9 +237,14 @@ class XMLGregorianCalendarImpl
     private BigDecimal fractionalSecond = null;
 
     /**
-     * <p>Constant to represent a billion.</p>
+     * <p>BigInteger constant; representing a billion.</p>
      */
-    private static final BigInteger BILLION = new BigInteger("1000000000");
+    private static final BigInteger BILLION_B = new BigInteger("1000000000");
+    
+    /**
+     * <p>int constant; representing a billion.</p>
+     */
+    private static final int BILLION_I = 1000000000;
 
     /**
      *   <p>Obtain a pure Gregorian Calendar by calling
@@ -1227,7 +1232,7 @@ class XMLGregorianCalendarImpl
             this.year = DatatypeConstants.FIELD_UNDEFINED;
         } 
         else {
-            BigInteger temp = year.remainder(BILLION);
+            BigInteger temp = year.remainder(BILLION_B);
             this.year = temp.intValue();
             setEon(year.subtract(temp));
         }
@@ -1251,13 +1256,13 @@ class XMLGregorianCalendarImpl
             this.year = DatatypeConstants.FIELD_UNDEFINED;
             this.eon = null;
         } 
-        else if (Math.abs(year) < BILLION.intValue()) {
+        else if (Math.abs(year) < BILLION_I) {
             this.year = year;
             this.eon = null;
         } 
         else {
             BigInteger theYear = BigInteger.valueOf((long) year);
-            BigInteger remainder = theYear.remainder(BILLION);
+            BigInteger remainder = theYear.remainder(BILLION_B);
             this.year = remainder.intValue();
             setEon(theYear.subtract(remainder));
         }
@@ -2842,7 +2847,7 @@ class XMLGregorianCalendarImpl
                 // seen meta character. we don't do error check against the format
                 switch (format.charAt(fidx++)) {
                     case 'Y' : // year
-                        setYear(parseBigInteger(4));
+                        parseYear();
                         break;
 
                     case 'M' : // month
@@ -2916,6 +2921,33 @@ class XMLGregorianCalendarImpl
             }
         }
         
+        private void parseYear()
+            throws IllegalArgumentException {
+            int vstart = vidx;
+            int sign = 0;
+            
+            // skip leading negative, if it exists
+            if (peek() == '-') {
+                vidx++;
+                sign = 1;
+            }
+            while (isDigit(peek())) {
+                vidx++;
+            }
+            final int digits = vidx - vstart - sign;
+            if (digits < 4) {
+                // we are expecting more digits
+                throw new IllegalArgumentException(value); //,vidx);
+            }
+            final String yearString = value.substring(vstart, vidx);
+            if (digits < 10) {
+                setYear(Integer.parseInt(yearString));
+            }
+            else {
+                setYear(new BigInteger(yearString));
+            }
+        }
+        
         private int parseInt(int minDigits, int maxDigits)
             throws IllegalArgumentException {
             int vstart = vidx;
@@ -2936,27 +2968,8 @@ class XMLGregorianCalendarImpl
             //            }
         }
 
-        private BigInteger parseBigInteger(int minDigits)
-        throws IllegalArgumentException {
-            int vstart = vidx;
-
-            // skip leading negative, if it exists
-            if (peek() == '-') {
-                vidx++;
-            }
-            while (isDigit(peek())) {
-                vidx++;
-            }
-            if ((vidx - vstart) < minDigits) {
-                // we are expecting more digits
-                throw new IllegalArgumentException(value); //,vidx);
-            }
-
-            return new BigInteger(value.substring(vstart, vidx));
-        }
-
         private BigDecimal parseBigDecimal()
-        throws IllegalArgumentException {
+            throws IllegalArgumentException {
             int vstart = vidx;
 
             if (peek() == '.') {
