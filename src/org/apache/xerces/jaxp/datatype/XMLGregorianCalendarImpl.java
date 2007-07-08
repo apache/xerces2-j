@@ -2499,10 +2499,16 @@ class XMLGregorianCalendarImpl
         result.setGregorianChange(PURE_GREGORIAN_CHANGE);
 
         // if year( and eon) are undefined, leave default Calendar values
-        BigInteger year = getEonAndYear();
-        if (year != null) {
-            result.set(Calendar.ERA, year.signum() == -1 ? GregorianCalendar.BC : GregorianCalendar.AD);
-            result.set(Calendar.YEAR, year.abs().intValue());
+        if (year != DatatypeConstants.FIELD_UNDEFINED) {
+            if (eon == null) {
+                result.set(Calendar.ERA, year < 0 ? GregorianCalendar.BC : GregorianCalendar.AD);
+                result.set(Calendar.YEAR, Math.abs(year));
+            }
+            else {
+                BigInteger eonAndYear = getEonAndYear();
+                result.set(Calendar.ERA, eonAndYear.signum() == -1 ? GregorianCalendar.BC : GregorianCalendar.AD);
+                result.set(Calendar.YEAR, eonAndYear.abs().intValue());
+            }
         }
 
         // only set month if it is set
@@ -2611,11 +2617,17 @@ class XMLGregorianCalendarImpl
         result.setGregorianChange(PURE_GREGORIAN_CHANGE);
 
         // if year( and eon) are undefined, leave default Calendar values
-        BigInteger year = getEonAndYear();
-        if (year != null) {
-            result.set(Calendar.ERA, year.signum() == -1 ? GregorianCalendar.BC : GregorianCalendar.AD);
-            result.set(Calendar.YEAR, year.abs().intValue());
-        } 
+        if (year != DatatypeConstants.FIELD_UNDEFINED) {
+            if (eon == null) {
+                result.set(Calendar.ERA, year < 0 ? GregorianCalendar.BC : GregorianCalendar.AD);
+                result.set(Calendar.YEAR, Math.abs(year));
+            }
+            else {
+                BigInteger eonAndYear = getEonAndYear();
+                result.set(Calendar.ERA, eonAndYear.signum() == -1 ? GregorianCalendar.BC : GregorianCalendar.AD);
+                result.set(Calendar.YEAR, eonAndYear.abs().intValue());
+            }
+        }
         else {
             // use default if set
             BigInteger defaultYear = (defaults != null) ? defaults.getEonAndYear() : null;
