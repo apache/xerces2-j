@@ -298,6 +298,52 @@ public class DatatypeFactoryImpl
 		
 		return new XMLGregorianCalendarImpl(cal);
 	}
+    
+    /**
+     * <p>Constructor of value spaces that a
+     * <code>java.util.GregorianCalendar</code> instance would need to convert to an
+     * <code>XMLGregorianCalendar</code> instance.</p>
+     *    
+     * <p><code>XMLGregorianCalendar eon</code> and 
+     * <code>fractionalSecond</code> are set to <code>null</code></p>
+     *
+     * <p>A {@link DatatypeConstants#FIELD_UNDEFINED} value indicates that field isnot set.</p>
+     * 
+     * @param year of <code>XMLGregorianCalendar</code> to be created.
+     * @param month of <code>XMLGregorianCalendar</code> to be created.
+     * @param day of <code>XMLGregorianCalendar</code> to be created.
+     * @param hour of <code>XMLGregorianCalendar</code> to be created.
+     * @param minute of <code>XMLGregorianCalendar</code> to be created.
+     * @param second of <code>XMLGregorianCalendar</code> to be created.
+     * @param millisecond of <code>XMLGregorianCalendar</code> to be created.
+     * @param timezone of <code>XMLGregorianCalendar</code> to be created.
+     * 
+     * @return <code>XMLGregorianCalendar</code> created from specified values.
+     * 
+     * @throws IllegalArgumentException If any individual parameter's value is outside the maximum value constraint for the field
+     *   as determined by the Date/Time Data Mapping table in {@link XMLGregorianCalendar}
+     *   or if the composite values constitute an invalid <code>XMLGregorianCalendar</code> instance
+     *   as determined by {@link XMLGregorianCalendar#isValid()}.
+     */
+    public XMLGregorianCalendar newXMLGregorianCalendar(
+            final int year,
+            final int month,
+            final int day,
+            final int hour,
+            final int minute,
+            final int second,
+            final int millisecond,
+            final int timezone) {
+        return XMLGregorianCalendarImpl.createDateTime(
+                year, 
+                month, 
+                day, 
+                hour, 
+                minute, 
+                second, 
+                millisecond, 
+                timezone);
+    }
 
 	/**
 	 * <p>Constructor allowing for complete value spaces allowed by 
