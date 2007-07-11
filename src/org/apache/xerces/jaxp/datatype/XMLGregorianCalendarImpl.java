@@ -318,7 +318,7 @@ class XMLGregorianCalendarImpl
         23,       //hour
         59,       //minute
         60,       //second (leap second allows for 60)
-        1000,     //millisecond
+        999,      //millisecond
         14 * 60   //timezone
     }; 
 
@@ -610,26 +610,30 @@ class XMLGregorianCalendarImpl
         int hour,
         int minute,
         int second,
-		int millisecond,
+        int millisecond,
         int timezone) {
-        	
-		setYear(year);
+
+        setYear(year);
         setMonth(month);
         setDay(day);
         setTime(hour, minute, second);
-		setTimezone(timezone);
-		setMillisecond(millisecond);
+        setTimezone(timezone);
+        BigDecimal realMilliseconds = null;
+        if (millisecond != DatatypeConstants.FIELD_UNDEFINED) {
+            realMilliseconds = BigDecimal.valueOf(millisecond, 3);
+        }
+        setFractionalSecond(realMilliseconds);
 
-		if (!isValid()) {		
-            
+        if (!isValid()) {		
+
             throw new IllegalArgumentException(
-                DatatypeMessageFormatter.formatMessage(null, 
-                "InvalidXGCValue-milli", 
-                new Object[] { new Integer(year), new Integer(month), new Integer(day), 
-                new Integer(hour), new Integer(minute), new Integer(second), 
-                new Integer(millisecond), new Integer(timezone)})                
-			);
-                /*
+                    DatatypeMessageFormatter.formatMessage(null, 
+                            "InvalidXGCValue-milli", 
+                            new Object[] { new Integer(year), new Integer(month), new Integer(day), 
+                            new Integer(hour), new Integer(minute), new Integer(second), 
+                            new Integer(millisecond), new Integer(timezone)})                
+            );
+            /*
                 throw new IllegalArgumentException(
                     "year = " + year
                     + ", month = " + month
@@ -641,9 +645,9 @@ class XMLGregorianCalendarImpl
                     + ", timezone = " + timezone
                     + ", is not a valid representation of an XML Gregorian Calendar value."
                     );
-                 */
-            
-		}
+             */
+
+        }
         save();
     }
     
@@ -2802,7 +2806,7 @@ class XMLGregorianCalendarImpl
         } 
         else {
             checkFieldValueConstraint(MILLISECOND, millisecond);
-            fractionalSecond = new BigDecimal((long) millisecond).movePointLeft(3);
+            fractionalSecond = BigDecimal.valueOf(millisecond, 3);
         } 
     }
 
