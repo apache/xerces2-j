@@ -318,7 +318,7 @@ class XMLGregorianCalendarImpl
         23,       //hour
         59,       //minute
         60,       //second (leap second allows for 60)
-        1000,      //millisecond
+        1000,     //millisecond
         14 * 60   //timezone
     }; 
 
