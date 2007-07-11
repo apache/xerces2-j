@@ -2035,51 +2035,35 @@ class XMLGregorianCalendarImpl
         // no need to check for anything except for constraints
         // between fields. 
 
-        //check if days in month is valid. Can be dependent on leap year.
-        if (getMonth() == DatatypeConstants.FEBRUARY) {
-            // years could not be set
-            int maxDays = DatatypeConstants.FIELD_UNDEFINED;
-            BigInteger years = getEonAndYear();
-            if (years != null) {
-                maxDays = maximumDayInMonthFor(getEonAndYear(), DatatypeConstants.FEBRUARY);
-            } 
-            else {
-                // year is undefined, allow 29 days
-                maxDays = 29;
+        // check if days in month is valid. Can be dependent on leap year.
+        if (month != DatatypeConstants.FIELD_UNDEFINED && day != DatatypeConstants.FIELD_UNDEFINED) {
+            if (year != DatatypeConstants.FIELD_UNDEFINED) {
+                if (eon == null) {
+                    if (day > maximumDayInMonthFor(year, month)) {
+                        return false;
+                    }
+                }
+                else if (day > maximumDayInMonthFor(getEonAndYear(), month)) {
+                    return false;
+                }
             }
-            if (getDay() > maxDays) {
+            // Use 2000 as a default since it's a leap year.
+            else if (day > maximumDayInMonthFor(2000, month)) {
                 return false;
             }
         }
 
         // http://www.w3.org/2001/05/xmlschema-errata#e2-45
-        if (getHour() == 24) {
-            if (getMinute() != 0) {
-                return false;
-            } 
-            else if (getSecond() != 0) {
-                return false;
-            }
+        if (hour == 24 && (minute != 0 || second != 0)) {
+            return false;
         }
 
         // XML Schema 1.0 specification defines year value of zero as
         // invalid. Allow this class to set year field to zero
         // since XML Schema 1.0 errata states that lexical zero will 
         // be allowed in next version and treated as 1 B.C.E.
-        if (eon == null) {
-            // optimize check.
-            if (year == 0) {
-                return false;
-            }
-        } 
-        else {
-            BigInteger yearField = getEonAndYear();
-            if (yearField != null) {
-                int result = compareField(yearField, BigInteger.ZERO);
-                if (result == DatatypeConstants.EQUAL) {
-                    return false;
-                }
-            }
+        if (eon == null && year == 0) {
+            return false;
         }
         return true;
     }
@@ -2357,14 +2341,15 @@ class XMLGregorianCalendarImpl
     private static final BigDecimal DECIMAL_ONE = new BigDecimal("1");
     private static final BigDecimal DECIMAL_SIXTY = new BigDecimal("60");
 
-
-    private static int daysInMonth[] = { 0,  // XML Schema months start at 1.
-				       31, 28, 31, 30, 31, 30,
-                                       31, 31, 30, 31, 30, 31};
+    private static class DaysInMonth {
+        private static final int [] table = { 0,  // XML Schema months start at 1.
+            31, 28, 31, 30, 31, 30,
+            31, 31, 30, 31, 30, 31};
+    }
 
     private static int maximumDayInMonthFor(BigInteger year, int month) {
         if (month != DatatypeConstants.FEBRUARY) {
-            return daysInMonth[month];
+            return DaysInMonth.table[month];
         } 
         else {
             if (year.mod(FOUR_HUNDRED).equals(BigInteger.ZERO) || 
@@ -2374,14 +2359,14 @@ class XMLGregorianCalendarImpl
                 return 29;
             } 
             else {
-                return daysInMonth[month];
+                return DaysInMonth.table[month];
             }
         }
     }
 
     private static int maximumDayInMonthFor(int year, int month) {
         if (month != DatatypeConstants.FEBRUARY) {
-            return daysInMonth[month];
+            return DaysInMonth.table[month];
         } 
         else {
             if ( ((year %400) == 0) || 
@@ -2390,7 +2375,7 @@ class XMLGregorianCalendarImpl
                 return 29;
             } 
             else {
-                return daysInMonth[DatatypeConstants.FEBRUARY];
+                return DaysInMonth.table[DatatypeConstants.FEBRUARY];
             }
         }
     }
