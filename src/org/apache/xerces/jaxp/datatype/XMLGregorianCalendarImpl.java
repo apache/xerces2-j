@@ -2623,17 +2623,26 @@ class XMLGregorianCalendarImpl
                 result.set(Calendar.YEAR, Math.abs(year));
             }
             else {
-                BigInteger eonAndYear = getEonAndYear();
+                final BigInteger eonAndYear = getEonAndYear();
                 result.set(Calendar.ERA, eonAndYear.signum() == -1 ? GregorianCalendar.BC : GregorianCalendar.AD);
                 result.set(Calendar.YEAR, eonAndYear.abs().intValue());
             }
         }
         else {
             // use default if set
-            BigInteger defaultYear = (defaults != null) ? defaults.getEonAndYear() : null;
-            if (defaultYear != null) {
-                result.set(Calendar.ERA, defaultYear.signum() == -1 ? GregorianCalendar.BC : GregorianCalendar.AD);
-                result.set(Calendar.YEAR, defaultYear.abs().intValue());
+            if (defaults != null) {
+                final int defaultYear = defaults.getYear();
+                if (defaultYear != DatatypeConstants.FIELD_UNDEFINED) {
+                    if (defaults.getEon() == null) {
+                        result.set(Calendar.ERA, defaultYear < 0 ? GregorianCalendar.BC : GregorianCalendar.AD);
+                        result.set(Calendar.YEAR, Math.abs(defaultYear));
+                    }
+                    else {
+                        final BigInteger defaultEonAndYear = defaults.getEonAndYear();
+                        result.set(Calendar.ERA, defaultEonAndYear.signum() == -1 ? GregorianCalendar.BC : GregorianCalendar.AD);
+                        result.set(Calendar.YEAR, defaultEonAndYear.abs().intValue());
+                    }
+                }
             }
         }
 
@@ -2644,7 +2653,7 @@ class XMLGregorianCalendarImpl
         } 
         else {
             // use default if set
-            int defaultMonth = (defaults != null) ? defaults.getMonth() : DatatypeConstants.FIELD_UNDEFINED;
+            final int defaultMonth = (defaults != null) ? defaults.getMonth() : DatatypeConstants.FIELD_UNDEFINED;
             if (defaultMonth != DatatypeConstants.FIELD_UNDEFINED) { 
                 // Calendar.MONTH is zero based while XMLGregorianCalendar month field is not.
                 result.set(Calendar.MONTH, defaultMonth  - 1);
@@ -2657,7 +2666,7 @@ class XMLGregorianCalendarImpl
         } 
         else {
             // use default if set
-            int defaultDay = (defaults != null) ? defaults.getDay() : DatatypeConstants.FIELD_UNDEFINED;
+            final int defaultDay = (defaults != null) ? defaults.getDay() : DatatypeConstants.FIELD_UNDEFINED;
             if (defaultDay != DatatypeConstants.FIELD_UNDEFINED) { 
                 result.set(Calendar.DAY_OF_MONTH, defaultDay);
             }
@@ -2678,9 +2687,10 @@ class XMLGregorianCalendarImpl
         // only set minute if it is set
         if (minute != DatatypeConstants.FIELD_UNDEFINED) {
             result.set(Calendar.MINUTE, minute);
-        } else {
+        } 
+        else {
             // use default if set
-            int defaultMinute = (defaults != null) ? defaults.getMinute() : DatatypeConstants.FIELD_UNDEFINED;
+            final int defaultMinute = (defaults != null) ? defaults.getMinute() : DatatypeConstants.FIELD_UNDEFINED;
             if (defaultMinute != DatatypeConstants.FIELD_UNDEFINED) { 
                 result.set(Calendar.MINUTE, defaultMinute);
             }
@@ -2692,7 +2702,7 @@ class XMLGregorianCalendarImpl
         } 
         else {
             // use default if set
-            int defaultSecond = (defaults != null) ? defaults.getSecond() : DatatypeConstants.FIELD_UNDEFINED;
+            final int defaultSecond = (defaults != null) ? defaults.getSecond() : DatatypeConstants.FIELD_UNDEFINED;
             if (defaultSecond != DatatypeConstants.FIELD_UNDEFINED) { 
                 result.set(Calendar.SECOND, defaultSecond);
             }
@@ -2704,7 +2714,7 @@ class XMLGregorianCalendarImpl
         } 
         else {
             // use default if set
-            BigDecimal defaultFractionalSecond = (defaults != null) ? defaults.getFractionalSecond() : null;
+            final BigDecimal defaultFractionalSecond = (defaults != null) ? defaults.getFractionalSecond() : null;
             if (defaultFractionalSecond != null) { 
                 result.set(Calendar.MILLISECOND, defaults.getMillisecond());
             }
