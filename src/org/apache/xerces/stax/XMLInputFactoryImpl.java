@@ -141,11 +141,10 @@ public class XMLInputFactoryImpl extends XMLInputFactory {
         return new XMLEventReaderImpl(createEventAllocator(), createXMLStreamReader(systemId, stream));
     }
     
-    
-    
+     
     public XMLStreamReader createFilteredReader(XMLStreamReader reader,
-            StreamFilter filter) throws XMLStreamException {
-        return null;
+            StreamFilter filter) throws XMLStreamException {       
+        return new StAXFilterParser(reader, filter);
     }
     
     public XMLEventReader createFilteredReader(XMLEventReader reader,

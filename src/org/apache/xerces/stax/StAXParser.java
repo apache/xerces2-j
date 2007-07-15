@@ -54,6 +54,10 @@ public class StAXParser implements XMLStreamReader {
 
     // The stax location
     private StAXLocation location = null;
+    
+    // Define property string 
+    private final String notationProperty = "javax.xml.stream.notations";
+    private final String entityProperty = "javax.xml.stream.entities";
 
     /**
      * The constructor for StAXParser
@@ -73,7 +77,7 @@ public class StAXParser implements XMLStreamReader {
             throw new XMLStreamException("Fail to create StAXParser instance");
         }
     }
-
+    
     /**
      * Get the value of a feature/property from the underlying implementation
      * 
@@ -90,7 +94,16 @@ public class StAXParser implements XMLStreamReader {
                     "The feature name should not be null");
         }
 
-        return inputFactory.getProperty(name);
+        if (name == notationProperty)
+        {
+            // TODO : Add notation property support when current enent is DTD
+        }
+        else if (name == entityProperty)
+        {
+            // TODO : Add notation property support when current enent is DTD
+        }
+        
+        return null;
     }
 
     /**
@@ -144,12 +157,13 @@ public class StAXParser implements XMLStreamReader {
 
         curStAXEventType = staxParser.eventType;
 
+        // Initialize the location information
         if (curStAXEventType == XMLStreamConstants.START_DOCUMENT) {
             this.namespaceContext = new StAXNamespaceContext(
                     staxParser.namespaceContext);
             this.location = new StAXLocation(staxParser.locator);
         }
-
+        
         return curStAXEventType;
     }
 
@@ -296,6 +310,11 @@ public class StAXParser implements XMLStreamReader {
      *             if there are errors freeing associated resources
      */
     public void close() throws XMLStreamException {
+        if (curStAXEventType == XMLStreamConstants.END_DOCUMENT) {
+            configuration.cleanup();
+        }
+        throw new IllegalStateException(
+                "Current state is not START_ELEMENT or ATTRIBUTE");
     }
 
     /**
@@ -880,8 +899,7 @@ public class StAXParser implements XMLStreamReader {
                 || curStAXEventType == XMLStreamConstants.END_ELEMENT) {
             return staxParser.elementName.localpart;
         } else if (curStAXEventType == XMLStreamConstants.ENTITY_REFERENCE) {
-            // TODO
-            return "";
+            return staxParser.entityReferrenceName;
         } else {
             throw new IllegalStateException(
                     "Current state is not START_ELEMENT, END_ELEMENT or ENTITY_REFERENCE");

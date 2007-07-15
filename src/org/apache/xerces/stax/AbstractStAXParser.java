@@ -55,6 +55,9 @@ public class AbstractStAXParser extends AbstractXMLDocumentParser {
 
 	// Process Instruction target
 	protected String piTarget = null;
+    
+    // Name of entity referrence
+    protected String entityReferrenceName = null;
 
 	// Character content
 	protected XMLString characters = null;
@@ -107,6 +110,7 @@ public class AbstractStAXParser extends AbstractXMLDocumentParser {
 		characters = null;
 		piTarget = null;
 		piData = null;
+        entityReferrenceName = null;
 		elementName = null;
 		curElementAttr = null;
 		namespaceContext = null;
@@ -193,7 +197,7 @@ public class AbstractStAXParser extends AbstractXMLDocumentParser {
 	 */
 	public void doctypeDecl(String rootElement, String publicId,
 			String systemId, Augmentations augs) throws XNIException {
-
+        this.eventType = XMLStreamConstants.DTD;
 	} // doctypeDecl(String,String,String)
 
 	/**
@@ -259,7 +263,6 @@ public class AbstractStAXParser extends AbstractXMLDocumentParser {
 			throws XNIException {
 		eventType = XMLStreamConstants.CHARACTERS;
 		this.characters = text;
-
 	} // characters(XMLString)
 
 	/**
@@ -367,6 +370,8 @@ public class AbstractStAXParser extends AbstractXMLDocumentParser {
 	public void startGeneralEntity(String name,
 			XMLResourceIdentifier identifier, String encoding,
 			Augmentations augs) throws XNIException {
+        eventType = XMLStreamConstants.ENTITY_REFERENCE;
+        this.entityReferrenceName = name;
 	} // startGeneralEntity(String,XMLResourceIdentifier,String,Augmentations)
 
 	/**
@@ -410,6 +415,7 @@ public class AbstractStAXParser extends AbstractXMLDocumentParser {
 	 */
 	public void endGeneralEntity(String name, Augmentations augs)
 			throws XNIException {
+        eventType = XMLStreamConstants.ENTITY_REFERENCE;
 	} // endGeneralEntity(String,Augmentations)
 
 	/**
@@ -531,6 +537,7 @@ public class AbstractStAXParser extends AbstractXMLDocumentParser {
 	public void startParameterEntity(String name,
 			XMLResourceIdentifier identifier, String encoding,
 			Augmentations augs) throws XNIException {
+        eventType = XMLStreamConstants.ENTITY_DECLARATION;
 	} // startParameterEntity(String,XMLResourceIdentifier,String,Augmentations)
 
 	/**
@@ -549,6 +556,7 @@ public class AbstractStAXParser extends AbstractXMLDocumentParser {
 	 */
 	public void endParameterEntity(String name, Augmentations augs)
 			throws XNIException {
+        eventType = XMLStreamConstants.ENTITY_DECLARATION;
 	} // endParameterEntity(String,Augmentations)
 
 	/**
@@ -596,7 +604,7 @@ public class AbstractStAXParser extends AbstractXMLDocumentParser {
 	 *             Thrown by handler to signal an error.
 	 */
 	public void startAttlist(String elementName, Augmentations augs)
-			throws XNIException {
+			throws XNIException {      
 	} // startAttlist(String)
 
 	/**
@@ -670,6 +678,7 @@ public class AbstractStAXParser extends AbstractXMLDocumentParser {
 	public void internalEntityDecl(String name, XMLString text,
 			XMLString nonNormalizedText, Augmentations augs)
 			throws XNIException {
+        eventType = XMLStreamConstants.ENTITY_DECLARATION;
 	} // internalEntityDecl(String,XMLString,XMLString)
 
 	/**
@@ -690,6 +699,7 @@ public class AbstractStAXParser extends AbstractXMLDocumentParser {
 	public void externalEntityDecl(String name,
 			XMLResourceIdentifier identifier, Augmentations augs)
 			throws XNIException {
+        eventType = XMLStreamConstants.ENTITY_DECLARATION;
 	} // externalEntityDecl(String,XMLResourceIdentifier, Augmentations)
 
 	/**
@@ -711,6 +721,7 @@ public class AbstractStAXParser extends AbstractXMLDocumentParser {
 	public void unparsedEntityDecl(String name,
 			XMLResourceIdentifier identifier, String notation,
 			Augmentations augs) throws XNIException {
+        eventType = XMLStreamConstants.ENTITY_DECLARATION;
 	} // unparsedEntityDecl(String,XMLResourceIdentifier, String,
 		// Augmentations)
 
@@ -730,6 +741,7 @@ public class AbstractStAXParser extends AbstractXMLDocumentParser {
 	 */
 	public void notationDecl(String name, XMLResourceIdentifier identifier,
 			Augmentations augs) throws XNIException {
+        eventType = XMLStreamConstants.NOTATION_DECLARATION;
 	} // notationDecl(String,XMLResourceIdentifier, Augmentations)
 
 	/**
