@@ -2174,7 +2174,7 @@ public class DTDGrammar
      * models and creates SimpleContentModel objects for those. For the rest
      * it creates the standard DFA style model.
      */
-    private ContentModelValidator createChildModel(int contentSpecIndex) {
+    private synchronized ContentModelValidator createChildModel(int contentSpecIndex) {
         
         //
         //  Get the content spec node for the element we are working on.
