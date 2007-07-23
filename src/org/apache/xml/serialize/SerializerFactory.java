@@ -57,8 +57,7 @@ public abstract class SerializerFactory {
         factory =  new SerializerFactoryImpl( Method.TEXT );
         registerSerializerFactory( factory );
 
-        SecuritySupport ss = SecuritySupport.getInstance();
-        list = ss.getSystemProperty( FactoriesProperty );
+        list = SecuritySupport.getSystemProperty( FactoriesProperty );
         if ( list != null ) {
             token = new StringTokenizer( list, " ;,:" );
             while ( token.hasMoreTokens() ) {

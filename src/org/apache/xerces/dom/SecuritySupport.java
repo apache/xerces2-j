@@ -35,16 +35,7 @@ import java.security.PrivilegedExceptionAction;
  */
 final class SecuritySupport {
 
-    private static final SecuritySupport securitySupport = new SecuritySupport();
-
-    /**
-     * Return an instance of this class.
-     */
-    static SecuritySupport getInstance() {
-        return securitySupport;
-    }
-
-    ClassLoader getContextClassLoader() {
+    static ClassLoader getContextClassLoader() {
         return (ClassLoader)
         AccessController.doPrivileged(new PrivilegedAction() {
             public Object run() {
@@ -57,7 +48,7 @@ final class SecuritySupport {
         });
     }
     
-    ClassLoader getSystemClassLoader() {
+    static ClassLoader getSystemClassLoader() {
         return (ClassLoader)
         AccessController.doPrivileged(new PrivilegedAction() {
             public Object run() {
@@ -70,7 +61,7 @@ final class SecuritySupport {
         });
     }
     
-    ClassLoader getParentClassLoader(final ClassLoader cl) {
+    static ClassLoader getParentClassLoader(final ClassLoader cl) {
         return (ClassLoader)
         AccessController.doPrivileged(new PrivilegedAction() {
             public Object run() {
@@ -86,7 +77,7 @@ final class SecuritySupport {
         });
     }
     
-    String getSystemProperty(final String propName) {
+    static String getSystemProperty(final String propName) {
         return (String)
         AccessController.doPrivileged(new PrivilegedAction() {
             public Object run() {
@@ -95,7 +86,7 @@ final class SecuritySupport {
         });
     }
     
-    FileInputStream getFileInputStream(final File file)
+    static FileInputStream getFileInputStream(final File file)
     throws FileNotFoundException
     {
         try {
@@ -110,7 +101,7 @@ final class SecuritySupport {
         }
     }
     
-    InputStream getResourceAsStream(final ClassLoader cl,
+    static InputStream getResourceAsStream(final ClassLoader cl,
             final String name)
     {
         return (InputStream)
@@ -127,7 +118,7 @@ final class SecuritySupport {
         });
     }
     
-    boolean getFileExists(final File f) {
+    static boolean getFileExists(final File f) {
         return ((Boolean)
                 AccessController.doPrivileged(new PrivilegedAction() {
                     public Object run() {
@@ -136,7 +127,7 @@ final class SecuritySupport {
                 })).booleanValue();
     }
     
-    long getLastModified(final File f) {
+    static long getLastModified(final File f) {
         return ((Long)
                 AccessController.doPrivileged(new PrivilegedAction() {
                     public Object run() {
