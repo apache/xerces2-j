@@ -113,7 +113,7 @@ Instead, the <jump href="http://java.sun.com/xml/jaxp/index.jsp">JAXP</jump> Tra
 
     <p>Using <jump href="http://www.w3.org/DOM/DOMTR">DOM</jump> Level 3 you can serialize XML as follows:</p>
 
-<source>import org.w3c.dom.DOMImplementationRegistry;
+<source>import org.w3c.dom.bootstrap.DOMImplementationRegistry;
 import org.w3c.dom.Document;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSSerializer;
