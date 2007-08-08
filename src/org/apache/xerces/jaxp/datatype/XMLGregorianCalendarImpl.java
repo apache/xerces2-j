@@ -239,7 +239,7 @@ class XMLGregorianCalendarImpl
     /**
      * <p>BigInteger constant; representing a billion.</p>
      */
-    private static final BigInteger BILLION_B = new BigInteger("1000000000");
+    private static final BigInteger BILLION_B = BigInteger.valueOf(1000000000);
     
     /**
      * <p>int constant; representing a billion.</p>
@@ -2341,9 +2341,9 @@ class XMLGregorianCalendarImpl
     private static final BigInteger SIXTY = BigInteger.valueOf(60);
     private static final BigInteger TWENTY_FOUR = BigInteger.valueOf(24);
     private static final BigInteger TWELVE = BigInteger.valueOf(12);
-    private static final BigDecimal DECIMAL_ZERO = new BigDecimal("0");
-    private static final BigDecimal DECIMAL_ONE = new BigDecimal("1");
-    private static final BigDecimal DECIMAL_SIXTY = new BigDecimal("60");
+    private static final BigDecimal DECIMAL_ZERO = BigDecimal.valueOf(0);
+    private static final BigDecimal DECIMAL_ONE = BigDecimal.valueOf(1);
+    private static final BigDecimal DECIMAL_SIXTY = BigDecimal.valueOf(60);
 
     private static class DaysInMonth {
         private static final int [] table = { 0,  // XML Schema months start at 1.
