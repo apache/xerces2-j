@@ -2962,7 +2962,7 @@ class XMLGregorianCalendarImpl
         private int parseInt(int minDigits, int maxDigits)
             throws IllegalArgumentException {
             int vstart = vidx;
-            while (isDigit(peek()) && (vidx - vstart) <= maxDigits) {
+            while (isDigit(peek()) && (vidx - vstart) < maxDigits) {
                 vidx++;
             }
             if ((vidx - vstart) < minDigits) {
