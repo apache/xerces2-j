@@ -2294,7 +2294,7 @@ class XMLGregorianCalendarImpl
             int quotient;
             if (endMonth < 0) {
                 endMonth = (13 - 1) + endMonth + 1;
-                quotient = new BigDecimal(intTemp - 1).divide(new BigDecimal(TWELVE), BigDecimal.ROUND_UP).intValue();
+                quotient = BigDecimal.valueOf(intTemp - 1).divide(new BigDecimal(TWELVE), BigDecimal.ROUND_UP).intValue();
             } 
             else {
                 quotient = (intTemp - 1) / (13 - 1);
