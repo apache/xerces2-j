@@ -26,6 +26,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import org.apache.xerces.parsers.XML11Configuration;
+import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.util.XMLSymbols;
@@ -42,6 +43,9 @@ public class StAXParser implements XMLStreamReader {
 
     // XML configuration for StAXParser
     private XML11Configuration configuration;
+    
+    // Input XMLInputSource
+    private XMLInputSource inputSource;
 
     // XNI-based internal parser for StAXParser
     private AbstractStAXParser staxParser;
@@ -67,16 +71,48 @@ public class StAXParser implements XMLStreamReader {
      */
     public StAXParser(XMLInputSource inputSource, XMLInputFactory inputFactory)
             throws XMLStreamException {
+        this.inputFactory = inputFactory;
+        this.inputSource = inputSource;        
+    }
+    
+    /**
+     * Get the XMLConfiguration of current StAXParser.  
+     * So the XMLConfiguration can be reused by other parser instance
+     * 
+     * @return XML11Configuration
+     */
+    public XML11Configuration GetXMLConfiguration()
+    {
+        return this.configuration;
+    }
+    
+    /**
+     * Set the XMLConfiguration to current StAXParser
+     * 
+     * @param XML11Configuration
+     * @throws XMLStreamException if fail to set XMLConfiguration
+     */
+    public void InitStAXParser(XML11Configuration config)throws XMLStreamException
+    {
+        this.configuration = config;
         try {
-            this.inputFactory = inputFactory;
-            this.configuration = new XML11Configuration();
-
-            configuration.setInputSource(inputSource);
-            staxParser = new AbstractStAXParser(configuration);
-        } catch (Exception e) {
-            throw new XMLStreamException("Fail to create StAXParser instance");
+            this.configuration.setInputSource(this.inputSource);
+            this.staxParser = new AbstractStAXParser(configuration);           
+            if (inputFactory.getXMLReporter() != null)
+            {
+                staxParser.setErrorHandler(new StAXErrorHandler(inputFactory.getXMLReporter()));
+            }
+            
+            if (inputFactory.getXMLResolver() != null)
+            {
+                staxParser.setEntityResolver(new StAXResolver(inputFactory.getXMLResolver()));
+            }
+        }catch(Exception e)
+        {
+            throw new XMLStreamException("Fail to create StAXParser instance!", e);
         }
     }
+
     
     /**
      * Get the value of a feature/property from the underlying implementation
@@ -96,11 +132,11 @@ public class StAXParser implements XMLStreamReader {
 
         if (name == notationProperty)
         {
-            // TODO : Add notation property support when current enent is DTD
+            // TODO : Add notation property support when current event is DTD
         }
         else if (name == entityProperty)
         {
-            // TODO : Add notation property support when current enent is DTD
+            // TODO : Add notation property support when current event is DTD
         }
         
         return null;
@@ -311,10 +347,15 @@ public class StAXParser implements XMLStreamReader {
      */
     public void close() throws XMLStreamException {
         if (curStAXEventType == XMLStreamConstants.END_DOCUMENT) {
-            configuration.cleanup();
+            try
+            {
+                this.inputSource.getByteStream().close();
+            }catch(java.io.IOException e)
+            {
+                throw new XMLStreamException(
+                   "There are errors freeing associated resources!", e);                
+            }
         }
-        throw new IllegalStateException(
-                "Current state is not START_ELEMENT or ATTRIBUTE");
     }
 
     /**

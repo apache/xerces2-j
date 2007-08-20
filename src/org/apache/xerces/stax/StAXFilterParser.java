@@ -18,6 +18,7 @@
 package org.apache.xerces.stax;
 
 import javax.xml.stream.StreamFilter;
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.util.StreamReaderDelegate;
@@ -47,6 +48,7 @@ public class StAXFilterParser extends StreamReaderDelegate {
             throw new XMLStreamException("The StreamReader parameter can't be null for StAXFilterParser");
         }
         this.streamFilter = streamFilter;
+        next();
     }
 
     /**
@@ -67,32 +69,50 @@ public class StAXFilterParser extends StreamReaderDelegate {
      *             if there is an error processing the underlying XML source
      */
     public int next() throws XMLStreamException {
-        while (streamFilter != null && !streamFilter.accept(this))
+        while (super.hasNext())
         {
-            next();
+            int nextEvent = super.next();
+            if (streamFilter.accept(this))
+            {
+                return nextEvent;
+            }
         }
-        
-        return next();
+    
+        throw new IllegalStateException("No more document to parse");
     }
     
     /**
-     * Returns true if there are more parsing events and false if there are no
-     * more events. This method will return false if the current state of the
-     * XMLStreamReader is END_DOCUMENT
+     * Skips any white space (isWhiteSpace() returns true), COMMENT, or
+     * PROCESSING_INSTRUCTION, until a START_ELEMENT or END_ELEMENT is reached.
+     * If other than white space characters, COMMENT, PROCESSING_INSTRUCTION,
+     * START_ELEMENT, END_ELEMENT are encountered, an exception is thrown.
+     * return eventType;
      * 
-     * @return true if there are more events, false otherwise
+     * </pre>
+     * 
+     * @return the event type of the element read (START_ELEMENT or END_ELEMENT)
      * @throws XMLStreamException
-     *             if there is a fatal error detecting the next state
+     *             if the current event is not white space,
+     *             PROCESSING_INSTRUCTION, START_ELEMENT or END_ELEMENT
+     * @throws NoSuchElementException
+     *             if this is called when hasNext() returns false
      */
-    public boolean hasNext() throws XMLStreamException {
-        boolean hasNext = hasNext();
-      
-        while (streamFilter != null && !streamFilter.accept(this))
-        {
-            next();
-            hasNext = hasNext();
+    public int nextTag() throws XMLStreamException {
+        int eventType = next();
+        while ((eventType == XMLStreamConstants.CHARACTERS && isWhiteSpace()) // skip
+                // whitespace
+                || (eventType == XMLStreamConstants.CDATA && isWhiteSpace())
+                // skip whitespace
+                || eventType == XMLStreamConstants.SPACE
+                || eventType == XMLStreamConstants.PROCESSING_INSTRUCTION
+                || eventType == XMLStreamConstants.COMMENT) {
+            eventType = next();
         }
-
-        return hasNext;
+        if (eventType != XMLStreamConstants.START_ELEMENT
+                && eventType != XMLStreamConstants.END_ELEMENT) {
+            throw new XMLStreamException("expected start or end tag",
+                    getLocation());
+        }
+        return eventType;
     }
 }

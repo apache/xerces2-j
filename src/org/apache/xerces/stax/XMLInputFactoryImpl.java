@@ -33,6 +33,7 @@ import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXSource;
 
+import org.apache.xerces.parsers.XML11Configuration;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -87,7 +88,10 @@ public class XMLInputFactoryImpl extends XMLInputFactory {
     throws XMLStreamException {
         XMLInputSource inputsource = new XMLInputSource(null, null, null,
                 stream, null);
+        XML11Configuration config = new XML11Configuration();
         StAXParser xmlStreamReader = new StAXParser(inputsource, this);
+        xmlStreamReader.InitStAXParser(config);
+        
         return xmlStreamReader;
     }
     

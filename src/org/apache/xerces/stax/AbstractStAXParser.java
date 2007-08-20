@@ -30,6 +30,9 @@ import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLErrorHandler;
+import org.apache.xerces.xni.parser.XMLEntityResolver;
 
 /**
  * @author Wei Duan
@@ -117,6 +120,30 @@ public class AbstractStAXParser extends AbstractXMLDocumentParser {
         atrributeStack.clear();
 	} // reset()
 
+    /**
+     * Allow an application to register an error event handler.
+     *
+     * @param errorHandler The error handler.
+     */
+    public void setErrorHandler(XMLErrorHandler errorHandler) {
+        if (errorHandler != null)
+        {
+            fConfiguration.setProperty(ERROR_HANDLER, errorHandler);
+        }
+    } 
+    
+    /**
+     * Allow an application to register an entity resolver handler.
+     *
+     * @param resolver The Entity Resolver
+     */
+    public void setEntityResolver(XMLEntityResolver resolver) {
+        if (resolver != null)
+        {
+            fConfiguration.setProperty(ENTITY_RESOLVER, resolver);
+        }
+    } 
+    
 	//
 	// XMLDocumentHandler methods
 	//

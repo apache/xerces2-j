@@ -32,7 +32,7 @@ public class StAXLocation implements Location {
 	public StAXLocation(XMLLocator loc) {
 		this.xniLocator = loc;
 	}
-
+	
 	/**
 	 * Return the line number where the current event ends, returns -1 if none
 	 * is available.
