@@ -39,7 +39,6 @@ import org.apache.xerces.xni.XMLString;
  * @author Neil Graham, IBM
  * @version $Id$
  */
-
 public class XMLEntityScanner implements XMLLocator {
 
     // constants
