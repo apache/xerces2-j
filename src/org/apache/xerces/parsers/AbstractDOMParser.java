@@ -159,7 +159,12 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
     /**
      * If the user stops the process, this exception will be thrown.
      */
-    public static final RuntimeException abort = new RuntimeException();
+    protected static final RuntimeException ABORT = new RuntimeException() {
+        private static final long serialVersionUID = 1687848994976808490L;
+        public Throwable fillInStackTrace() {
+            return this;
+        }
+    };
 
     // debugging
 
@@ -614,7 +619,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                 short code = fDOMFilter.acceptNode (comment);
                 switch (code) {
                     case LSParserFilter.FILTER_INTERRUPT:{
-                        throw abort;
+                        throw ABORT;
                     }
                     case LSParserFilter.FILTER_REJECT:{
                         // REVISIT: the constant FILTER_REJECT should be changed when new
@@ -696,7 +701,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                 short code = fDOMFilter.acceptNode (pi);
                 switch (code) {
                     case LSParserFilter.FILTER_INTERRUPT:{
-                        throw abort;
+                        throw ABORT;
                     }
                     case LSParserFilter.FILTER_REJECT:{
                         // fall through to SKIP since PI has no children.
@@ -1023,7 +1028,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                     switch (code) {
                         case LSParserFilter.FILTER_INTERRUPT :
                             {
-                                throw abort;
+                                throw ABORT;
                             }
                         case LSParserFilter.FILTER_REJECT :
                             {
@@ -1309,7 +1314,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                     short code = fDOMFilter.acceptNode (fCurrentNode);
                     switch (code) {
                         case LSParserFilter.FILTER_INTERRUPT:{
-                            throw abort;
+                            throw ABORT;
                         }
                         case LSParserFilter.FILTER_REJECT:{
                             Node parent = fCurrentNode.getParentNode ();
@@ -1414,7 +1419,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                     short code = fDOMFilter.acceptNode (fCurrentCDATASection);
                     switch (code) {
                         case LSParserFilter.FILTER_INTERRUPT:{
-                            throw abort;
+                            throw ABORT;
                         }
                         case LSParserFilter.FILTER_REJECT:{
                             // fall through to SKIP since CDATA section has no children.
@@ -1533,7 +1538,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                     short code = fDOMFilter.acceptNode (fCurrentNode);
                     switch (code) {
                         case LSParserFilter.FILTER_INTERRUPT:{
-                            throw abort;
+                            throw ABORT;
                         }
                         case LSParserFilter.FILTER_REJECT:{
                             Node parent = fCurrentNode.getParentNode ();
@@ -2587,7 +2592,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                     short code = fDOMFilter.acceptNode (child);
                     switch (code) {
                         case LSParserFilter.FILTER_INTERRUPT:{
-                            throw abort;
+                            throw ABORT;
                         }
                         case LSParserFilter.FILTER_REJECT:{
                             // fall through to SKIP since Comment has no children.
@@ -2611,7 +2616,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
      * @see org.w3c.dom.ls.LSParser#abort()
      */
     public void abort () {
-        throw abort;
+        throw ABORT;
     }
 
 
