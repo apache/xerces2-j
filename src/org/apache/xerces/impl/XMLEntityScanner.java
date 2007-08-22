@@ -45,6 +45,13 @@ public class XMLEntityScanner implements XMLLocator {
     // constants
     private static final boolean DEBUG_ENCODINGS = false;
     private static final boolean DEBUG_BUFFER = false;
+    
+    private static final EOFException END_OF_DOCUMENT_ENTITY = new EOFException() {
+        private static final long serialVersionUID = 980337771224675268L;
+        public Throwable fillInStackTrace() {
+            return this;
+        }
+    };
 
     //
     // Data
@@ -1762,7 +1769,7 @@ public class XMLEntityScanner implements XMLLocator {
             if (changeEntity) {
                 fEntityManager.endEntity();
                 if (fCurrentEntity == null) {
-                    throw new EOFException();
+                    throw END_OF_DOCUMENT_ENTITY;
                 }
                 // handle the trailing edges
                 if (fCurrentEntity.position == fCurrentEntity.count) {
@@ -1779,7 +1786,6 @@ public class XMLEntityScanner implements XMLLocator {
         return entityChanged;
 
     } // load(int, boolean):boolean
-
 
 } // class XMLEntityScanner
 
