@@ -1134,18 +1134,16 @@ public class DOMParserImpl
      */
     public void abort () {
         // If parse operation is in progress then reset it
-        if ( fBusy ) {
+        if (fBusy) {
             fBusy = false;
-            if(currentThread != null) {
+            if (currentThread != null) {
                 abortNow = true;
-                
                 fConfiguration.setDocumentHandler(abortHandler);
                 fConfiguration.setDTDHandler(abortHandler);
                 fConfiguration.setDTDContentModelHandler(abortHandler);
-                
-                if(currentThread == Thread.currentThread())
+                if (currentThread == Thread.currentThread()) {
                     throw abort;
-                
+                }
                 currentThread.interrupt();
             }               
         }
