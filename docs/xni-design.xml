@@ -29,7 +29,7 @@
   <p>
    The core XNI interfaces provide a mechanism for the document
    information to flow from component to component. However, beyond 
-   the basic information intefaces, XNI also defines a framework for 
+   the basic information interfaces, XNI also defines a framework for 
    constructing these pipelines and parser configurations. This
    document is designed to give you an overview of this framework
    and what a parser looks like that is written to conform to the
