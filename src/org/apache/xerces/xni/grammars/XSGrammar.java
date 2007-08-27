@@ -20,7 +20,7 @@ package org.apache.xerces.xni.grammars;
 import org.apache.xerces.xs.XSModel;
 
 /**
- * Representing a schema grammar. It contains declaratoin/definitions from
+ * Representing a schema grammar. It contains declaration/definitions from
  * a certain namespace. When a grammar is preparsed, and its grammar type is
  * XML Schema, it can be casted to this interface. Objects of this interface
  * can be converted to XSModel, from which further information about components
