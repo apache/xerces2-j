@@ -26,7 +26,7 @@
    <p>
     Unfortunately, HTML does not, in general, follow the XML 
     grammar rules. Most HTML files do not meet the XML style 
-    quidelines. Therefore, the XML parser generates XML 
+    guidelines. Therefore, the XML parser generates XML 
     well-formedness errors.
    </p>
    <p>Typical errors include:</p>
