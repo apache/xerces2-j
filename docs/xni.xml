@@ -80,7 +80,7 @@
     The XNI document handler interface is also designed to build a
     pipeline of parser components where the streaming information set
     can be fully modified and augmented by each stage in the pipeline.
-    SAX, however, is primarilly a read-only set of interfaces.
+    SAX, however, is primarily a read-only set of interfaces.
    </li>
   </ul>
   <p>
