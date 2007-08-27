@@ -62,7 +62,7 @@
    </p>
   </a>
  </faq>
- <faq title='Regenerating API documention?'>
+ <faq title='Regenerating API documentation?'>
   <q>How do I regenerate the API documentation?</q>
   <a>
    <p>
@@ -282,7 +282,7 @@
     <ul>
      <li>
       Explanation: The DOMParser class allows the user to set the
-      DOM implemenation to use, by name. However, the default DOM
+      DOM implementation to use, by name. However, the default DOM
       implementation is pure Java.
      </li>
     </ul>
