@@ -223,7 +223,7 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
   </note>
  </s2>
  <s2 title='Changes in Xerces jar files'>
- <p>In order to accomodate the very common case in which Xerces is
+ <p>In order to accommodate the very common case in which Xerces is
  used with an XSLT processor such as Xalan, between Xerces 2.0.0 beta 3
  and beta 4 a change in the default organization of Xerces&apos; jar
  files was introduced.  As well as the <code>xercesSamples.jar</code>
@@ -250,7 +250,7 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
  </p>
  <p>
  If you want to regenerate new versions of the Xerces
- binary, source and tools distributions with the old-style jarfiles,
+ binary, source and tools distributions with the old-style jar files,
  you would execute <code>build.bat deprecatedall</code>.  
 
  The situation is
