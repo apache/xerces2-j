@@ -161,7 +161,7 @@
         <code>XMLGrammarDescription</code> objects that those
         grammars contain.  Thus, both of Xerces implementations
         of XMLGrammarDescription--for DTD's and XML
-        Schemas--provide implemetations of <code>hashCode():
+        Schemas--provide implementations of <code>hashCode():
         int</code> and <code>equals(Object):boolean</code> that
         are used by the hashing algorithm.
     </p>
@@ -232,7 +232,7 @@
         interface.  Each implementation needs to know how to
         parse a particular type of grammar and how to build a
         data structure representing that grammar that Xerces can
-        eficiently make use of in validation.  Since most
+        efficiently make use of in validation.  Since most
         application programs won't want to deal with Xerces
         implementations per se, we have provided a handy utility
         class to handle grammar preparsing generally:
@@ -307,7 +307,7 @@
         this means that if this grammar is cached by itself, the grammars
         that it imports won't be available to the grammar pool
         implementation.  Since our Schema Loader knows about this
-        idiosyncracy, if a grammar pool is registered with it,
+        idiosyncrasy, if a grammar pool is registered with it,
         it will cache all schema grammars it encounters,
         including the one which it was specifically called to
         parse.  In general, it is probably advisable to register
