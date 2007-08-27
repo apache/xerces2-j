@@ -25,7 +25,7 @@ package org.apache.xerces.xni;
  * <p>
  * The attributes are read-write so that subsequent stages in the document
  * pipeline can modify the values or change the attributes that are
- * propogated to the next stage.
+ * propagated to the next stage.
  *
  * @see XMLDocumentHandler#startElement
  *
@@ -208,7 +208,7 @@ public interface XMLAttributes {
      * <p>
      * If the parser has not read a declaration for the attribute,
      * or if the parser does not report attribute types, then it must
-     * return the value "CDATA" as stated in the XML 1.0 Recommentation
+     * return the value "CDATA" as stated in the XML 1.0 Recommendation
      * (clause 3.3.3, "Attribute-Value Normalization").
      * <p>
      * For an enumerated attribute that is not a notation, the
