@@ -166,7 +166,7 @@ t.transform(new DOMSource(doc), new StreamResult(System.out));</source>
  <a>
     <p>
     Partially to address this issue, we've recently begun to
-    distribute compressed jarfiles instead of our traditionally
+    distribute compressed jar files instead of our traditionally
     uncompressed files.  But if you still need a smaller jar, and
     don&apos;t need things like support for XML Schema or the WML/HTML
     DOM implementations that Xerces provides, then look at the
