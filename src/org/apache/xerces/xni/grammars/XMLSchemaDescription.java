@@ -129,7 +129,7 @@ public interface XMLSchemaDescription extends XMLGrammarDescription {
      * If a call is triggered by an element/attribute/xsi:type in the instance,
      * this call returns all attributes of such an element (or enclosing element).
      * 
-     * @return  all attributes of the tiggering/enclosing element
+     * @return  all attributes of the triggering/enclosing element
      */
     public XMLAttributes getAttributes();
     
