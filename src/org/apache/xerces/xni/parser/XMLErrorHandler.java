@@ -43,7 +43,7 @@ public interface XMLErrorHandler {
      * @param domain    The domain of the warning. The domain can be any
      *                  string but is suggested to be a valid URI. The
      *                  domain can be used to conveniently specify a web
-     *                  site location of the relevent specification or
+     *                  site location of the relevant specification or
      *                  document pertaining to this warning.
      * @param key       The warning key. This key can be any string and
      *                  is implementation dependent.
@@ -62,7 +62,7 @@ public interface XMLErrorHandler {
      * @param domain    The domain of the error. The domain can be any
      *                  string but is suggested to be a valid URI. The
      *                  domain can be used to conveniently specify a web
-     *                  site location of the relevent specification or
+     *                  site location of the relevant specification or
      *                  document pertaining to this error.
      * @param key       The error key. This key can be any string and
      *                  is implementation dependent.
@@ -89,7 +89,7 @@ public interface XMLErrorHandler {
      * @param domain    The domain of the fatal error. The domain can be 
      *                  any string but is suggested to be a valid URI. The
      *                  domain can be used to conveniently specify a web
-     *                  site location of the relevent specification or
+     *                  site location of the relevant specification or
      *                  document pertaining to this fatal error.
      * @param key       The fatal error key. This key can be any string 
      *                  and is implementation dependent.
