@@ -155,7 +155,7 @@ public class XMLCatalogResolver
     /**
      * <p>Returns the preference for whether system or public
      * matches are preferred. This is used in the absence
-     * of any occurence of the <code>prefer</code> attribute
+     * of any occurrence of the <code>prefer</code> attribute
      * on the <code>catalog</code> entry of a catalog. If this
      * property has not yet been explicitly set its value is
      * <code>true</code>.</p>
@@ -169,7 +169,7 @@ public class XMLCatalogResolver
     /**
      * <p>Sets the preference for whether system or public
      * matches are preferred. This is used in the absence
-     * of any occurence of the <code>prefer</code> attribute
+     * of any occurrence of the <code>prefer</code> attribute
      * on the <code>catalog</code> entry of a catalog.</p>
      * 
      * @param preferPublic the prefer public setting
@@ -186,7 +186,7 @@ public class XMLCatalogResolver
      * identifier are available. If this property has not yet 
      * been explicitly set its value is <code>true</code>.</p>
      * 
-     * @return the preference for using literal system identifers
+     * @return the preference for using literal system identifiers
      * for catalog resolution
      * 
      * @see #setUseLiteralSystemId
@@ -213,7 +213,7 @@ public class XMLCatalogResolver
      * identifier against a base URI.</p>
      * 
      * @param useLiteralSystemId the preference for using 
-     * literal system identifers for catalog resolution
+     * literal system identifiers for catalog resolution
      */
     public final void setUseLiteralSystemId (boolean useLiteralSystemId) {
         fUseLiteralSystemId = useLiteralSystemId;
@@ -224,7 +224,7 @@ public class XMLCatalogResolver
      * resolved, this method should return <code>null</code>. This
      * method returns an input source if an entry was found in the
      * catalog for the given external identifier. It should be
-     * overrided if other behaviour is required.</p>
+     * overridden if other behaviour is required.</p>
      * 
      * @param publicId the public identifier, or <code>null</code> if none was supplied
      * @param systemId the system identifier
@@ -256,7 +256,7 @@ public class XMLCatalogResolver
       * resolved, this method should return <code>null</code>. This
       * method returns an input source if an entry was found in the
       * catalog for the given external identifier. It should be
-      * overrided if other behaviour is required.</p>
+      * overridden if other behaviour is required.</p>
       * 
       * @param name the identifier of the external entity 
       * @param publicId the public identifier, or <code>null</code> if none was supplied
@@ -380,7 +380,7 @@ public class XMLCatalogResolver
      * resolved, this method should return <code>null</code>. This
      * method only calls <code>resolveIdentifier</code> and returns
      * an input source if an entry was found in the catalog. It
-     * should be overrided if other behaviour is required.</p>
+     * should be overridden if other behaviour is required.</p>
      *
      * @param resourceIdentifier location of the XML resource to resolve
      *
