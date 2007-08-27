@@ -151,7 +151,7 @@ spf.setXIncludeAware(true);
      <p>
       Yes, the values of the <code>accept</code> and <code>accept-language</code> attributes 
       from an <jump href="http://www.w3.org/TR/2006/REC-xinclude-20061115/#include_element">include</jump>
-      element are included as request properties in an HTTP request. Support for content negotation 
+      element are included as request properties in an HTTP request. Support for content negotiation 
       when parse="xml" was added to the XInclude implementation in Xerces-J 2.7.0.
      </p>
     </a>
