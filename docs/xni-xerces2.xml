@@ -26,7 +26,7 @@
    order to re-use the Xerces2 parser components, however, the
    developer must know the dependencies of each standard component.
    This document provides an overview of the Xerces2 parser components
-   and lists the relevent dependencies.
+   and lists the relevant dependencies.
   </p>
   <p>
    An overview of the general dependencies and the dependencies for
