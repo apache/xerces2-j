@@ -1299,7 +1299,7 @@ In addition, in this release we improved parser performance in several areas and
           <submitter name='Neeraj Bajaj, Sandy Gao'/>
         </update>
         <fix>
-            <note>Applied fixes to Xerces's regular expression suport to address
+            <note>Applied fixes to Xerces's regular expression support to address
                 a number of bugs reported by users.
             </note>
             <submitter name="Kent Tamura, Neil Graham"/>
@@ -1484,7 +1484,7 @@ In addition, in this release we improved parser performance in several areas and
       <add>
 	<note>
 	  Added several build targets for building customized xercesImpl
-	  jarfiles.  Now we can build a DTD-only version, and a DTD-only
+	  jar files.  Now we can build a DTD-only version, and a DTD-only
 	  version also excluding support for the HTML/WML DOM.
 	</note>
 	<submitter name="Neil Graham"/>
@@ -1681,7 +1681,7 @@ In addition, in this release we improved parser performance in several areas and
 
       <add>
 	<note>
-	  Added the support for defer loading of schema gramars, grammar is parsed
+	  Added the support for defer loading of schema grammars, grammar is parsed
 	  only when there is reference to any schema component from that namespace.
 	</note>
 	<submitter name='Neeraj Bajaj'/>
@@ -1863,7 +1863,7 @@ In addition, in this release we improved parser performance in several areas and
 
       <fix>
         <note> 
-	  Fixed a bug in XMLDocumentFragmentScannerImpl occuring when a ] is encountered          at the end of an entity.                        
+	  Fixed a bug in XMLDocumentFragmentScannerImpl occurring when a ] is encountered          at the end of an entity.                        
         </note>
         <submitter name="Arnaud Le Hors"/>
       </fix> 
@@ -1987,7 +1987,7 @@ In addition, in this release we improved parser performance in several areas and
       <add>
 	<note>
 	  Implemented split of xerces.jar file into an API-only jar file
-	  (xmlParserAPIs.jar) and a jarfile containing only the API
+	  (xmlParserAPIs.jar) and a jar file containing only the API
 	  implementation (xercesImpl.jar).
 	</note>
 	<submitter name="Neil Graham"/>
@@ -2168,7 +2168,7 @@ In addition, in this release we improved parser performance in several areas and
       
       <fix>
 	<note>
-	  Synced up javax.xml.parsers package with latest code from xml-commons
+	  Synched up javax.xml.parsers package with latest code from xml-commons
 	  module and various bug fixes.
 	</note>
 	<submitter name='Edwin Goei'/>
