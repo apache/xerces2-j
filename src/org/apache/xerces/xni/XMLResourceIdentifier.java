@@ -45,7 +45,7 @@ public interface XMLResourceIdentifier {
     /** Returns the literal system identifier. */
     public String getLiteralSystemId();
     
-    /** Setsthe base URI against which the literal SystemId is to be 
+    /** Sets the base URI against which the literal SystemId is to be 
         resolved.*/
     public void setBaseSystemId(String systemId); 
     
