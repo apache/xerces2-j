@@ -115,7 +115,7 @@ public class CoreDOMImplementationImpl
 	 * This is interpreted as "Version of the DOM API supported for the
 	 * specified Feature", and in Level 1 should be "1.0"
 	 *
-	 * @return true iff this implementation is compatable with the specified
+	 * @return true iff this implementation is compatible with the specified
 	 * feature and version.
 	 */
 	public boolean hasFeature(String feature, String version) {
@@ -163,6 +163,10 @@ public class CoreDOMImplementationImpl
 	                || version.equals("1.0")
 	                || version.equals("2.0")
 	                || version.equals("3.0")))
+	                || (feature.equalsIgnoreCase("XMLVersion")
+	            && (anyVersion
+	                || version.equals("1.0")
+	                || version.equals("1.1")))
 	                || (feature.equalsIgnoreCase("LS")
 	            && (anyVersion || version.equals("3.0")));
 	} // hasFeature(String,String):boolean
