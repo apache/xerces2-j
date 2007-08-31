@@ -247,12 +247,9 @@ class ParserForXMLSchema extends RegexParser {
                 if (type == T_CHAR) {
                     if (c == '[')  throw this.ex("parser.cc.6", this.offset-2);
                     if (c == ']')  throw this.ex("parser.cc.7", this.offset-2);
-                    if (c == '-' && this.chardata == ']' && firstloop)  throw this.ex("parser.cc.8", this.offset-2);	// if regex = '[-]' then invalid
+                    if (c == '-' && this.chardata != ']' && !firstloop)  throw this.ex("parser.cc.8", this.offset-2);	// if regex = '[-]' then invalid
                 }
-                if(c == '-' && this.chardata == '-' && this.read() != T_BACKSOLIDUS && !wasDecoded) {
-                	throw this.ex("parser.cc.8", this.offset-2);
-                }
-                if (this.read() != T_CHAR || this.chardata != '-') { // Here is no '-'.
+                if (this.read() != T_CHAR || this.chardata != '-' || c == '-' && firstloop) { // Here is no '-'.
                     tok.addRange(c, c);
                 } else {                        // Found '-'
                                                 // Is this '-' is a from-to token??
