@@ -2874,10 +2874,10 @@ public class XMLEntityManager
     private static final class CharacterBuffer {
 
         /** character buffer */
-        private char[] ch;
+        private final char[] ch;
         
         /** whether the buffer is for an external or internal scanned entity */
-        private boolean isExternal;
+        private final boolean isExternal;
         
         public CharacterBuffer(boolean isExternal, int size) {
             this.isExternal = isExternal;
