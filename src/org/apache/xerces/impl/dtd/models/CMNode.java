@@ -121,11 +121,11 @@ public abstract class CMNode
     //      init to to -1 so it will cause an error if its used without
     //      being initialized.
     // -------------------------------------------------------------------
-    private int         fType;
-    private CMStateSet  fFirstPos   = null;
-    private CMStateSet  fFollowPos  = null;
-    private CMStateSet  fLastPos    = null;
-    private int         fMaxStates  = -1;
+    private final int  fType;
+    private CMStateSet fFirstPos   = null;
+    private CMStateSet fFollowPos  = null;
+    private CMStateSet fLastPos    = null;
+    private int        fMaxStates  = -1;
 };
 
 

@@ -38,7 +38,7 @@ public class CMAny
      * XMLContentSpec.CONTENTSPECNODE_ANY_OTHER,
      * XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL.
      */
-    private int fType;
+    private final int fType;
 
     /**
      * URI of the any content model. This value is set if the type is
@@ -46,7 +46,7 @@ public class CMAny
      * XMLContentSpec.CONTENTSPECNODE_ANY, 
      * XMLContentSpec.CONTENTSPECNODE_ANY_OTHER.
      */
-    private String fURI;
+    private final String fURI;
 
     /**
      * Part of the algorithm to convert a regex directly to a DFA

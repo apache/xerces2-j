@@ -143,7 +143,7 @@ public class CMBinOp extends CMNode
     //      These are the references to the two nodes that are on either
     //      side of this binary operation.
     // -------------------------------------------------------------------
-    private CMNode  fLeftChild;
-    private CMNode  fRightChild;
+    private final CMNode fLeftChild;
+    private final CMNode fRightChild;
 };
 

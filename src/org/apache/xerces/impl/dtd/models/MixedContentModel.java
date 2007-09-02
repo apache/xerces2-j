@@ -46,13 +46,13 @@ public class MixedContentModel
     //
 
     /** The count of possible children that we have to deal with. */
-    private int fCount;
+    private final int fCount;
 
     /** The list of possible children that we have to accept. */
-    private QName fChildren[];
+    private final QName fChildren[];
 
     /** The type of the children to support ANY. */
-    private int fChildrenType[];
+    private final int fChildrenType[];
 
     /* this is the EquivClassComparator object */
     //private EquivClassComparator comparator = null;
@@ -61,7 +61,7 @@ public class MixedContentModel
      * True if mixed content model is ordered. DTD mixed content models
      * are <em>always</em> unordered.
      */
-    private boolean fOrdered;
+    private final boolean fOrdered;
 
     //
     // Constructors

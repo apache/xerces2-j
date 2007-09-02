@@ -175,7 +175,7 @@ public class DFAContentModel
     // temp variables
 
     /** Temporary qualified name. */
-    private QName fQName = new QName();
+    private final QName fQName = new QName();
 
     //
     // Constructors

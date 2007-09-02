@@ -68,14 +68,14 @@ public class SimpleContentModel
      * child node. The operation code tells us whether the second child
      * is used or not.
      */
-    private QName fFirstChild = new QName();
+    private final QName fFirstChild = new QName();
 
     /**
      * The element decl pool indices of the first (and optional second)
      * child node. The operation code tells us whether the second child
      * is used or not.
      */
-    private QName fSecondChild = new QName();
+    private final QName fSecondChild = new QName();
 
     /**
      * The operation that this object represents. Since this class only
@@ -83,7 +83,7 @@ public class SimpleContentModel
      * involved (i.e. the children of the operation are always one or
      * two leafs.) This is one of the XMLDTDParams.CONTENTSPECNODE_XXX values.
      */
-    private int fOperator;
+    private final int fOperator;
 
     /* this is the EquivClassComparator object */
     //private EquivClassComparator comparator = null;

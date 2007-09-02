@@ -35,7 +35,7 @@ public class CMLeaf
     //
 
     /** This is the element that this leaf represents. */
-    private QName fElement = new QName();
+    private final QName fElement = new QName();
 
     /**
      * Part of the algorithm to convert a regex directly to a DFA
