@@ -33,7 +33,7 @@ import java.util.StringTokenizer;
 public class ListDatatypeValidator implements DatatypeValidator {
 
     // the type of items in the list
-    DatatypeValidator fItemValidator;
+    final DatatypeValidator fItemValidator;
 
     // construct a list datatype validator
     public ListDatatypeValidator(DatatypeValidator itemDV) {

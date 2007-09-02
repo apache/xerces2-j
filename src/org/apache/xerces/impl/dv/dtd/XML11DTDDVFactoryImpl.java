@@ -33,7 +33,7 @@ import org.apache.xerces.impl.dv.DatatypeValidator;
  */
 public class XML11DTDDVFactoryImpl extends DTDDVFactoryImpl {
 
-    static Hashtable fXML11BuiltInTypes = new Hashtable();
+    static final Hashtable fXML11BuiltInTypes = new Hashtable();
 
     /**
      * return a dtd type of the given name

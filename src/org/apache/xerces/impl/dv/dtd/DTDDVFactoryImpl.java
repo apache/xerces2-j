@@ -32,7 +32,7 @@ import java.util.Hashtable;
  */
 public class DTDDVFactoryImpl extends DTDDVFactory {
 
-    static Hashtable fBuiltInTypes = new Hashtable();
+    static final Hashtable fBuiltInTypes = new Hashtable();
     static {
         createBuiltInTypes();
     }
