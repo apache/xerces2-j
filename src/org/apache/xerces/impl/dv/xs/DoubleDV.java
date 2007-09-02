@@ -78,7 +78,7 @@ public class DoubleDV extends TypeValidator {
     }
 
     private static final class XDouble implements XSDouble {
-        private double value;
+        private final double value;
         public XDouble(String s) throws NumberFormatException {
             if (isPossibleFP(s)) {
                 value = Double.parseDouble(s);

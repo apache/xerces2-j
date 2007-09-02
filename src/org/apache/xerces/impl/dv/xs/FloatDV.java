@@ -62,7 +62,7 @@ public class FloatDV extends TypeValidator {
 
     private static final class XFloat implements XSFloat {
 
-        private float value;
+        private final float value;
         public XFloat(String s) throws NumberFormatException {
             if (DoubleDV.isPossibleFP(s)) {
                 value = Float.parseFloat(s);

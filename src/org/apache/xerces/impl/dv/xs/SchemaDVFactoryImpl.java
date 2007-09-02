@@ -40,7 +40,7 @@ public class SchemaDVFactoryImpl extends SchemaDVFactory {
 
     static final String URI_SCHEMAFORSCHEMA = "http://www.w3.org/2001/XMLSchema";
 
-    static SymbolHash fBuiltInTypes = new SymbolHash();
+    static final SymbolHash fBuiltInTypes = new SymbolHash();
     static {
         createBuiltInTypes();
     }
