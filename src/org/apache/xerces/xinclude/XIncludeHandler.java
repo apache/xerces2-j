@@ -292,15 +292,15 @@ public class XIncludeHandler
     protected XIncludeTextReader fXInclude11TextReader;
 
     // these are needed for XML Base processing
-    protected XMLResourceIdentifier fCurrentBaseURI;
-    protected IntStack fBaseURIScope;
-    protected Stack fBaseURI;
-    protected Stack fLiteralSystemID;
-    protected Stack fExpandedSystemID;
+    protected final XMLResourceIdentifier fCurrentBaseURI;
+    protected final IntStack fBaseURIScope;
+    protected final Stack fBaseURI;
+    protected final Stack fLiteralSystemID;
+    protected final Stack fExpandedSystemID;
     
     // these are needed for Language Fixup
-    protected IntStack fLanguageScope;
-    protected Stack fLanguageStack;
+    protected final IntStack fLanguageScope;
+    protected final Stack fLanguageStack;
     protected String fCurrentLanguage;
     
     protected String fHrefFromParent;
@@ -333,8 +333,8 @@ public class XIncludeHandler
     private int[] fState = new int[INITIAL_SIZE];
 
     // buffering the necessary DTD events
-    private ArrayList fNotations;
-    private ArrayList fUnparsedEntities;
+    private final ArrayList fNotations;
+    private final ArrayList fUnparsedEntities;
     
     // flags which control whether base URI or language fixup is performed.
     private boolean fFixupBaseURIs = true;
@@ -2966,13 +2966,13 @@ public class XIncludeHandler
     }
     
     // which ASCII characters need to be escaped
-    private static boolean gNeedEscaping[] = new boolean[128];
+    private static final boolean gNeedEscaping[] = new boolean[128];
     // the first hex character if a character needs to be escaped
-    private static char gAfterEscaping1[] = new char[128];
+    private static final char gAfterEscaping1[] = new char[128];
     // the second hex character if a character needs to be escaped
-    private static char gAfterEscaping2[] = new char[128];
-    private static char[] gHexChs = {'0', '1', '2', '3', '4', '5', '6', '7',
-                                     '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+    private static final char gAfterEscaping2[] = new char[128];
+    private static final char[] gHexChs = {'0', '1', '2', '3', '4', '5', '6', '7',
+                                           '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
     // initialize the above 3 arrays
     static {
         char[] escChs = {' ', '<', '>', '"', '{', '}', '|', '\\', '^', '`'};
@@ -3063,7 +3063,7 @@ public class XIncludeHandler
             // for each byte
             for (i = 0; i < len; i++) {
                 b = bytes[i];
-                // for non-ascii character: make it positive, then escape
+                // for non-ASCII character: make it positive, then escape
                 if (b < 0) {
                     ch = b + 256;
                     buffer.append('%');
@@ -3082,7 +3082,7 @@ public class XIncludeHandler
         }
 
         // If escaping happened, create a new string;
-        // otherwise, return the orginal one.
+        // otherwise, return the original one.
         if (buffer.length() != len) {
             return buffer.toString();
         }
