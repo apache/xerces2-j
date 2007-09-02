@@ -51,13 +51,13 @@ public class XPath {
     //
 
     /** Expression. */
-    protected String fExpression;
+    protected final String fExpression;
 
     /** Symbol table. */
-    protected SymbolTable fSymbolTable;
+    protected final SymbolTable fSymbolTable;
 
     /** Location paths. */
-    protected LocationPath[] fLocationPaths;
+    protected final LocationPath[] fLocationPaths;
 
     //
     // Constructors
@@ -69,7 +69,10 @@ public class XPath {
         throws XPathException {
         fExpression = xpath;
         fSymbolTable = symbolTable;
-        parseExpression(context);
+        fLocationPaths = parseExpression(context);
+        if (DEBUG_XPATH_PARSE) {
+            System.out.println(">>> "+fLocationPaths);
+        }
     } // <init>(String,SymbolTable,NamespaceContext)
 
     //
@@ -143,7 +146,7 @@ public class XPath {
      * This method is implemented by using the XPathExprScanner and
      * examining the list of tokens that it returns.
      */
-    private void parseExpression(final NamespaceContext context)
+    private LocationPath[] parseExpression(final NamespaceContext context)
         throws XPathException {
 
         // tokens
@@ -307,13 +310,8 @@ public class XPath {
 
         locationPathsVector.add(buildLocationPath(stepsVector));
 
-        // save location path
-        fLocationPaths = (LocationPath[])locationPathsVector.toArray(new LocationPath[locationPathsVector.size()]);
-
-
-        if (DEBUG_XPATH_PARSE) {
-            System.out.println(">>> "+fLocationPaths);
-        }
+        // return location path
+        return (LocationPath[])locationPathsVector.toArray(new LocationPath[locationPathsVector.size()]);
 
     } // parseExpression(SymbolTable,NamespaceContext)
 
@@ -376,7 +374,7 @@ public class XPath {
         //
 
         /** List of steps. */
-        public Step[] steps;
+        public final Step[] steps;
 
         //
         // Constructors
@@ -443,10 +441,10 @@ public class XPath {
         //
 
         /** Axis. */
-        public Axis axis;
+        public final Axis axis;
 
         /** Node test. */
-        public NodeTest nodeTest;
+        public final NodeTest nodeTest;
 
         //
         // Constructors
@@ -523,7 +521,7 @@ public class XPath {
         //
 
         /** Axis type. */
-        public short type;
+        public final short type;
 
         //
         // Constructors
@@ -592,7 +590,7 @@ public class XPath {
         //
 
         /** Node test type. */
-        public short type;
+        public final short type;
 
         /** Node qualified name. */
         public final QName name = new QName();

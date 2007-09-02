@@ -35,7 +35,7 @@ public class XPathException
     // Data
 
     // hold the value of the key this Exception refers to.
-    private String fKey;
+    private final String fKey;
     //
     // Constructors
     //
