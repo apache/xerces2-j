@@ -24,7 +24,7 @@ import java.util.MissingResourceException;
 /**
  * Base class for datatype exceptions. For DTD types, the exception can be
  * created from an error message. For Schema types, it needs an error code
- * (as defined in Appendix C of the structure spec), plus an array of arguents,
+ * (as defined in Appendix C of the structure spec), plus an array of arguments,
  * for error message substitution.
  * 
  * @xerces.internal 
@@ -39,8 +39,8 @@ public class DatatypeException extends Exception {
     static final long serialVersionUID = 1940805832730465578L;
     
     // used to store error code and error substitution arguments
-    protected String key;
-    protected Object[] args;
+    protected final String key;
+    protected final Object[] args;
 
     /**
      * Create a new datatype exception by providing an error code and a list
