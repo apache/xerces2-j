@@ -341,10 +341,10 @@ public class XMLEntityManager
     // entities
 
     /** Entities. */
-    protected Hashtable fEntities = new Hashtable();
+    protected final Hashtable fEntities = new Hashtable();
 
     /** Entity stack. */
-    protected Stack fEntityStack = new Stack();
+    protected final Stack fEntityStack = new Stack();
 
     /** Current entity. */
     protected ScannedEntity fCurrentEntity;
@@ -1543,13 +1543,13 @@ public class XMLEntityManager
     // cached URI object for the current value of the escaped "user.dir" property stored as a URI
     private static URI gUserDirURI;
     // which ASCII characters need to be escaped
-    private static boolean gNeedEscaping[] = new boolean[128];
+    private static final boolean gNeedEscaping[] = new boolean[128];
     // the first hex character if a character needs to be escaped
-    private static char gAfterEscaping1[] = new char[128];
+    private static final char gAfterEscaping1[] = new char[128];
     // the second hex character if a character needs to be escaped
-    private static char gAfterEscaping2[] = new char[128];
-    private static char[] gHexChs = {'0', '1', '2', '3', '4', '5', '6', '7',
-                                     '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+    private static final char gAfterEscaping2[] = new char[128];
+    private static final char[] gHexChs = {'0', '1', '2', '3', '4', '5', '6', '7',
+                                           '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
     // initialize the above 3 arrays
     static {
         for (int i = 0; i <= 0x1f; i++) {
