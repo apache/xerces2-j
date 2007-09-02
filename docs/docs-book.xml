@@ -98,8 +98,8 @@
            id='limitations' source='limitations.xml'/>
  <separator/>
  
- <external label='Source Repository'
-           href='http://svn.apache.org/viewcvs.cgi/xerces/java/trunk/'/>
+ <document label='Source Repository' title='Source Repository'
+           id='source-repository'  source='source-repository.xml'/>
  <external label='User Mail Archive'
            href='http://mail-archives.apache.org/mod_mbox/xerces-j-users/'/>
  <external label='Dev Mail Archive'
