@@ -124,7 +124,7 @@ class Op {
         return op;
     }
 
-    int type;
+    final int type;
     Op next = null;
 
     protected Op(int type) {
@@ -156,7 +156,7 @@ class Op {
 
     // ================================================================
     static class CharOp extends Op {
-        int charData;
+        final int charData;
         CharOp(int type, int data) {
             super(type);
             this.charData = data;
@@ -168,7 +168,7 @@ class Op {
 
     // ================================================================
     static class UnionOp extends Op {
-        Vector branches;
+        final Vector branches;
         UnionOp(int type, int size) {
             super(type);
             this.branches = new Vector(size);
@@ -199,8 +199,8 @@ class Op {
     }
     // ================================================================
     static class ModifierOp extends ChildOp {
-        int v1;
-        int v2;
+        final int v1;
+        final int v2;
         ModifierOp(int type, int v1, int v2) {
             super(type);
             this.v1 = v1;
@@ -215,7 +215,7 @@ class Op {
     }
     // ================================================================
     static class RangeOp extends Op {
-        Token tok;
+        final Token tok;
         RangeOp(int type, Token tok) {
             super(type);
             this.tok = tok;
@@ -226,7 +226,7 @@ class Op {
     }
     // ================================================================
     static class StringOp extends Op {
-        String string;
+        final String string;
         StringOp(int type, String literal) {
             super(type);
             this.string = literal;
@@ -237,10 +237,10 @@ class Op {
     }
     // ================================================================
     static class ConditionOp extends Op {
-        int refNumber;
-        Op condition;
-        Op yes;
-        Op no;
+        final int refNumber;
+        final Op condition;
+        final Op yes;
+        final Op no;
         ConditionOp(int type, int refno, Op conditionflow, Op yesflow, Op noflow) {
             super(type);
             this.refNumber = refno;

@@ -57,7 +57,7 @@ class Token implements java.io.Serializable {
 
     static final int UTF16_MAX = 0x10ffff;
 
-    int type;
+    final int type;
 
     static Token token_dot;
     static Token token_0to9;
@@ -1083,7 +1083,7 @@ class Token implements java.io.Serializable {
         private static final long serialVersionUID = -4614366944218504172L;
         
         String string;
-        int refNumber;
+        final int refNumber;
 
         StringToken(int type, String str, int n) {
             super(type);
@@ -1113,8 +1113,8 @@ class Token implements java.io.Serializable {
 
         private static final long serialVersionUID = 8717321425541346381L;
         
-        Token child;
-        Token child2;
+        final Token child;
+        final Token child2;
         
         ConcatToken(Token t1, Token t2) {
             super(Token.CONCAT);
@@ -1148,7 +1148,7 @@ class Token implements java.io.Serializable {
 
         private static final long serialVersionUID = -4394272816279496989L;
         
-        int chardata;
+        final int chardata;
 
         CharToken(int type, int ch) {
             super(type);
@@ -1214,7 +1214,7 @@ class Token implements java.io.Serializable {
         
         int min;
         int max;
-        Token child;
+        final Token child;
 
         ClosureToken(int type, Token tok) {
             super(type);
@@ -1281,8 +1281,8 @@ class Token implements java.io.Serializable {
 
         private static final long serialVersionUID = -5938014719827987704L;
         
-        Token child;
-        int parennumber;
+        final Token child;
+        final int parennumber;
 
         ParenToken(int type, Token tok, int paren) {
             super(type);
@@ -1339,10 +1339,10 @@ class Token implements java.io.Serializable {
 
         private static final long serialVersionUID = 4353765277910594411L;
         
-        int refNumber;
-        Token condition;
-        Token yes;
-        Token no;
+        final int refNumber;
+        final Token condition;
+        final Token yes;
+        final Token no;
         ConditionToken(int refno, Token cond, Token yespat, Token nopat) {
             super(Token.CONDITION);
             this.refNumber = refno;
@@ -1385,9 +1385,9 @@ class Token implements java.io.Serializable {
 
         private static final long serialVersionUID = -9114536559696480356L;
         
-        Token child;
-        int add;
-        int mask;
+        final Token child;
+        final int add;
+        final int mask;
 
         ModifierToken(Token tok, int add, int mask) {
             super(Token.MODIFIERGROUP);

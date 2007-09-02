@@ -27,9 +27,9 @@ import java.text.CharacterIterator;
  * @version $Id$
  */
 public class BMPattern {
-    char[] pattern;
-    int[] shiftTable;
-    boolean ignoreCase;
+    final char[] pattern;
+    final int[] shiftTable;
+    final boolean ignoreCase;
 
     public BMPattern(String pat, boolean ignoreCase) {
         this(pat, 256, ignoreCase);
