@@ -41,14 +41,14 @@ public class CMBuilder {
     private XSDeclarationPool fDeclPool = null;
 
     // It never changes, so a static member is good enough
-    private static XSEmptyCM fEmptyCM = new XSEmptyCM();
+    private static final XSEmptyCM fEmptyCM = new XSEmptyCM();
 
     // needed for DFA construction
     private int fLeafCount;
     // needed for UPA
     private int fParticleCount;
     //Factory to create Bin, Uni, Leaf nodes
-    private CMNodeFactory fNodeFactory ;
+    private final CMNodeFactory fNodeFactory;
 
     public CMBuilder(CMNodeFactory nodeFactory) {
         fDeclPool = null;

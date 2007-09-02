@@ -36,7 +36,7 @@ public class XSCMLeaf
     //
 
     /** This is the leaf: element decl or wildcard decl. */
-    private Object fLeaf = null;
+    private final Object fLeaf;
     
     /**
      * Identify the particle: for UPA checking

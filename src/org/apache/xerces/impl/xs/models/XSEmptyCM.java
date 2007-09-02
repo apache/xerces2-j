@@ -25,14 +25,14 @@ import java.util.Vector;
 
 /**
  * XSEmptyCM is a derivative of the abstract content model base class that
- * handles a content model with no chilren (elements).
+ * handles a content model with no children (elements).
  *
  * This model validated on the way in.
  *
  * @xerces.internal 
  *
- * @author Elena Litani, Lisa Martin
- * @author IBM
+ * @author Elena Litani, IBM
+ * @author Lisa Martin, IBM
  * @version $Id$
  */
 public class XSEmptyCM  implements XSCMValidator {
