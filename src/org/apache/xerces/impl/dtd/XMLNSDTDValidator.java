@@ -61,8 +61,7 @@ public class XMLNSDTDValidator
               extends XMLDTDValidator{
 
     /** Attribute QName. */
-    private QName fAttributeQName = new QName();
-
+    private final QName fAttributeQName = new QName();
 
     /** Bind namespaces */
     protected final void startNamespaceScope (QName element, XMLAttributes attributes,

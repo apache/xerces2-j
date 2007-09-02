@@ -58,12 +58,12 @@ public class XML11DocumentScannerImpl
     extends XMLDocumentScannerImpl {
 
     /** String. */
-    private XMLString fString = new XMLString();
+    private final XMLString fString = new XMLString();
 
     /** String buffer. */
-    private XMLStringBuffer fStringBuffer = new XMLStringBuffer();
-    private XMLStringBuffer fStringBuffer2 = new XMLStringBuffer();
-    private XMLStringBuffer fStringBuffer3 = new XMLStringBuffer();
+    private final XMLStringBuffer fStringBuffer = new XMLStringBuffer();
+    private final XMLStringBuffer fStringBuffer2 = new XMLStringBuffer();
+    private final XMLStringBuffer fStringBuffer3 = new XMLStringBuffer();
 
     //
     // Constructors

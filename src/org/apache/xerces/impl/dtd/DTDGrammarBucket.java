@@ -44,7 +44,7 @@ public class DTDGrammarBucket {
     //
 
     /** Grammars associated with element root name. */
-    protected Hashtable fGrammars;
+    protected final Hashtable fGrammars;
 
     // the unique grammar from fGrammars (or that we're
     // building) that is used in validation.

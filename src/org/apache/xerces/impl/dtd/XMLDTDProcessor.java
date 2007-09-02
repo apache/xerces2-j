@@ -232,19 +232,19 @@ public class XMLDTDProcessor
     // temporary variables
 
     /** Temporary entity declaration. */
-    private XMLEntityDecl fEntityDecl = new XMLEntityDecl();
+    private final XMLEntityDecl fEntityDecl = new XMLEntityDecl();
 
     /** Notation declaration hash. */
-    private Hashtable fNDataDeclNotations = new Hashtable();
+    private final Hashtable fNDataDeclNotations = new Hashtable();
 
     /** DTD element declaration name. */
     private String fDTDElementDeclName = null;
 
     /** Mixed element type "hash". */
-    private Vector fMixedElementTypes = new Vector();
+    private final Vector fMixedElementTypes = new Vector();
 
     /** Element declarations in DTD. */
-    private Vector fDTDElementDecls = new Vector();
+    private final Vector fDTDElementDecls = new Vector();
 
     // to check for duplicate ID or ANNOTATION attribute declare in
     // ATTLIST, and misc VCs

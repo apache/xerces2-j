@@ -45,8 +45,7 @@ public class XMLVersionDetector {
     // Constants
     //
 
-    private final static char[] XML11_VERSION = new char[]{'1', '.', '1'};
-
+    private static final char[] XML11_VERSION = new char[]{'1', '.', '1'};
 
     // property identifiers
 
@@ -67,7 +66,7 @@ public class XMLVersionDetector {
     //
 
     /** Symbol: "version". */
-    protected final static String fVersionSymbol = "version".intern();
+    protected static final String fVersionSymbol = "version".intern();
 
     // symbol:  [xml]:
     protected static final String fXMLSymbol = "[xml]".intern();

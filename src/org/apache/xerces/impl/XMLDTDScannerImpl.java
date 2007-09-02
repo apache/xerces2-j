@@ -175,22 +175,22 @@ public class XMLDTDScannerImpl
     // temporary variables
 
     /** Array of 3 strings. */
-    private String[] fStrings = new String[3];
+    private final String[] fStrings = new String[3];
 
     /** String. */
-    private XMLString fString = new XMLString();
+    private final XMLString fString = new XMLString();
 
     /** String buffer. */
-    private XMLStringBuffer fStringBuffer = new XMLStringBuffer();
+    private final XMLStringBuffer fStringBuffer = new XMLStringBuffer();
 
     /** String buffer. */
-    private XMLStringBuffer fStringBuffer2 = new XMLStringBuffer();
+    private final XMLStringBuffer fStringBuffer2 = new XMLStringBuffer();
 
     /** Literal text. */
-    private XMLString fLiteral = new XMLString();
+    private final XMLString fLiteral = new XMLString();
 
     /** Literal text. */
-    private XMLString fLiteral2 = new XMLString();
+    private final XMLString fLiteral2 = new XMLString();
 
     /** Enumeration values. */
     private String[] fEnumeration = new String[5];
@@ -199,7 +199,7 @@ public class XMLDTDScannerImpl
     private int fEnumerationCount;
 
     /** Ignore conditional section buffer. */
-    private XMLStringBuffer fIgnoreConditionalBuffer = new XMLStringBuffer(128);
+    private final XMLStringBuffer fIgnoreConditionalBuffer = new XMLStringBuffer(128);
 
     //
     // Constructors

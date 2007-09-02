@@ -139,7 +139,7 @@ public class XMLNamespaceBinder
     // temp vars
 
     /** Attribute QName. */
-    private QName fAttributeQName = new QName();
+    private final QName fAttributeQName = new QName();
 
     //
     // Constructors

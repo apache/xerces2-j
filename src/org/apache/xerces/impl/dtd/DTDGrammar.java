@@ -221,13 +221,13 @@ public class DTDGrammar
     private boolean fMixed;
 
     /** Temporary qualified name. */
-    private QName fQName = new QName();
+    private final QName fQName = new QName();
     
     /** Temporary qualified name. */
-    private QName fQName2 = new QName();
+    private final QName fQName2 = new QName();
 
     /** Temporary Attribute decl. */
-    protected XMLAttributeDecl fAttributeDecl = new XMLAttributeDecl();
+    protected final XMLAttributeDecl fAttributeDecl = new XMLAttributeDecl();
 
     // for buildSyntaxTree method
 

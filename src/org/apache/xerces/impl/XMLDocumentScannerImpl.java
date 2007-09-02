@@ -193,16 +193,16 @@ public class XMLDocumentScannerImpl
     // dispatchers
 
     /** XML declaration dispatcher. */
-    protected Dispatcher fXMLDeclDispatcher = new XMLDeclDispatcher();
+    protected final Dispatcher fXMLDeclDispatcher = new XMLDeclDispatcher();
 
     /** Prolog dispatcher. */
-    protected Dispatcher fPrologDispatcher = new PrologDispatcher();
+    protected final Dispatcher fPrologDispatcher = new PrologDispatcher();
 
     /** DTD dispatcher. */
-    protected Dispatcher fDTDDispatcher = new DTDDispatcher();
+    protected final Dispatcher fDTDDispatcher = new DTDDispatcher();
 
     /** Trailing miscellaneous section dispatcher. */
-    protected Dispatcher fTrailingMiscDispatcher = new TrailingMiscDispatcher();
+    protected final Dispatcher fTrailingMiscDispatcher = new TrailingMiscDispatcher();
 
     // temporary variables
 

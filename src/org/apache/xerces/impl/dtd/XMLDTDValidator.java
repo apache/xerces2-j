@@ -195,7 +195,7 @@ public class XMLDTDValidator
     protected ValidationManager fValidationManager = null;
     
     // validation state
-    protected ValidationState   fValidationState   = new ValidationState();
+    protected final ValidationState fValidationState = new ValidationState();
 
     // features
 

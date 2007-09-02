@@ -60,7 +60,7 @@ import org.apache.xerces.xni.XNIException;
 public class XML11NSDTDValidator extends XML11DTDValidator {
 
     /** Attribute QName. */
-    private QName fAttributeQName = new QName();
+    private final QName fAttributeQName = new QName();
 
     /** Bind namespaces */
     protected final void startNamespaceScope(QName element, XMLAttributes attributes, Augmentations augs)

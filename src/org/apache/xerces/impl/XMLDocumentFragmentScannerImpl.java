@@ -209,7 +209,7 @@ public class XMLDocumentFragmentScannerImpl
     protected QName fCurrentElement;
 
     /** Element stack. */
-    protected ElementStack fElementStack = new ElementStack();
+    protected final ElementStack fElementStack = new ElementStack();
 
     // other info
 
@@ -229,7 +229,7 @@ public class XMLDocumentFragmentScannerImpl
     protected Dispatcher fDispatcher;
 
     /** Content dispatcher. */
-    protected Dispatcher fContentDispatcher = createContentDispatcher();
+    protected final Dispatcher fContentDispatcher = createContentDispatcher();
 
     // temporary variables
 

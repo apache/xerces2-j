@@ -186,19 +186,19 @@ public abstract class XMLScanner
     //       possibility.
 
     /** String. */
-    private XMLString fString = new XMLString();
+    private final XMLString fString = new XMLString();
 
     /** String buffer. */
-    private XMLStringBuffer fStringBuffer = new XMLStringBuffer();
+    private final XMLStringBuffer fStringBuffer = new XMLStringBuffer();
 
     /** String buffer. */
-    private XMLStringBuffer fStringBuffer2 = new XMLStringBuffer();
+    private final XMLStringBuffer fStringBuffer2 = new XMLStringBuffer();
 
     /** String buffer. */
-    private XMLStringBuffer fStringBuffer3 = new XMLStringBuffer();
+    private final XMLStringBuffer fStringBuffer3 = new XMLStringBuffer();
 
     // temporary location for Resource identification information.
-    protected XMLResourceIdentifierImpl fResourceIdentifier = new XMLResourceIdentifierImpl();
+    protected final XMLResourceIdentifierImpl fResourceIdentifier = new XMLResourceIdentifierImpl();
 
     //
     // XMLComponent methods

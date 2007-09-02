@@ -55,7 +55,7 @@ public class XML11DTDScannerImpl
     extends XMLDTDScannerImpl {
 
     /** String buffer. */
-    private XMLStringBuffer fStringBuffer = new XMLStringBuffer();
+    private final XMLStringBuffer fStringBuffer = new XMLStringBuffer();
     
     //
     // Constructors
