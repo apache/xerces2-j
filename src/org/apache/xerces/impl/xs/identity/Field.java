@@ -42,11 +42,11 @@ public class Field {
     //
 
     /** Field XPath. */
-    protected Field.XPath fXPath;
+    protected final Field.XPath fXPath;
 
 
     /** Identity constraint. */
-    protected IdentityConstraint fIdentityConstraint;
+    protected final IdentityConstraint fIdentityConstraint;
 
     //
     // Constructors
@@ -206,7 +206,7 @@ public class Field {
         //
 
         /** Value store for data values. */
-        protected ValueStore fStore;
+        protected final ValueStore fStore;
         
         /** A flag indicating whether the field is allowed to match a value. */
         protected boolean fMayMatch = true;

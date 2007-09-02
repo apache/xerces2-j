@@ -41,10 +41,10 @@ public class Selector {
     //
 
     /** XPath. */
-    protected Selector.XPath fXPath;
+    protected final Selector.XPath fXPath;
 
     /** Identity constraint. */
-    protected IdentityConstraint fIdentityConstraint;
+    protected final IdentityConstraint fIdentityConstraint;
 
     // the Identity constraint we're the matcher for.  Only
     // used for selectors!
@@ -167,10 +167,10 @@ public class Selector {
         //
 
         /** Field activator. */
-        protected FieldActivator fFieldActivator;
+        protected final FieldActivator fFieldActivator;
 
         /** Initial depth in the document at which this matcher was created. */
-        protected int fInitialDepth;
+        protected final int fInitialDepth;
 
         /** Element depth. */
         protected int fElementDepth;

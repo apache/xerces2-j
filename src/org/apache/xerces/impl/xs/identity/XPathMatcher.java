@@ -27,7 +27,6 @@ import org.apache.xerces.xs.ShortList;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.xml.sax.SAXException;
 
-
 /**
  * XPath matcher.
  *
@@ -86,25 +85,25 @@ public class XPathMatcher {
     //
 
     /** XPath location path. */
-    private XPath.LocationPath[] fLocationPaths;
+    private final XPath.LocationPath[] fLocationPaths;
 
     /** True if XPath has been matched. */
-    private int[] fMatched;
+    private final int[] fMatched;
 
     /** The matching string. */
     protected Object fMatchedString;
 
     /** Integer stack of step indexes. */
-    private IntStack[] fStepIndexes;
+    private final IntStack[] fStepIndexes;
 
     /** Current step. */
-    private int[] fCurrentStep;
+    private final int[] fCurrentStep;
 
     /**
      * No match depth. The value of this field will be zero while
      * matching is successful for the given xpath expression.
      */
-    private int [] fNoMatchDepth;
+    private final int [] fNoMatchDepth;
     
     final QName fQName = new QName();
 

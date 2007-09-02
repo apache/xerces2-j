@@ -35,7 +35,7 @@ public class KeyRef
     //
 
     /** The key (or unique) being referred to. */
-    protected UniqueOrKey fKey;
+    protected final UniqueOrKey fKey;
 
     //
     // Constructors

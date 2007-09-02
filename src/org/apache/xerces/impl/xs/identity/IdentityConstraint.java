@@ -44,13 +44,13 @@ public abstract class IdentityConstraint implements XSIDCDefinition {
     protected short type;
 
     /** target namespace */
-    protected String fNamespace;
+    protected final String fNamespace;
     
     /** Identity constraint name. */
-    protected String fIdentityConstraintName;
+    protected final String fIdentityConstraintName;
 
     /** name of owning element */
-    protected String fElementName;
+    protected final String fElementName;
 
     /** Selector. */
     protected Selector fSelector;
