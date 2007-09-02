@@ -81,8 +81,8 @@
         and <code>tools/xml-apis--src.zip</code> reflect the
         state of the branch of xml-commons that contains the API
         set to which the parser must conform.  At the time of
-        writing (March 20, 2003) this was the branch
-        <code>tck-jaxp-1_2_0</code>.
+        writing (September 2, 2007) this was the main
+        <code>trunk</code>.
         </li>
         <li>Change the following files:<br/>
             <code>build.xml</code>
@@ -106,7 +106,7 @@
         </li>
         <li>Do a test build and regression test run;
             i.e., <code>build test</code> at a bare minimum.
-            In general, apply as many test suites (Oasis XML
+            In general, apply as many test suites (OASIS XML
                 tests, W3C DOM and Schema tests etc.) as are
                 available, particularly with a view to preventing
                 regressions since the previous release.
@@ -136,8 +136,8 @@
         </li>
         <li>Prepare release e-mail -- be sure to give contributors
             credit for their work</li>
-        <li>Send the release e-mail to the xerces-j lists, general@xml and, if 
-            it&apos;s a big enough release, announcements@xml.apache.org and 
+        <li>Send the release e-mail to the xerces-j lists, general@xml.apache.org and, 
+            if it&apos;s a big enough release, announcements@xml.apache.org and 
             announcements@apache.org
         </li>
         <li>JIRA:<br/>
@@ -146,7 +146,7 @@
                 releases).
         </li>
         <li>Website:<br/>
-            Upload generated docs directory to daedalus (until this process 
+            Upload generated docs directory to minotaur (until this process 
                 matures and becomes SVN-based).
             Commit <code>/www/xerces.apache.org/xerces2-j</code> to SVN;
                i.e., update the xml-site module.
