@@ -66,7 +66,7 @@ import org.apache.xerces.xni.parser.XMLInputSource;
 public class XIncludeTextReader {
 
     private Reader fReader;
-    private XIncludeHandler fHandler;
+    private final XIncludeHandler fHandler;
     private XMLInputSource fSource;
     private XMLErrorReporter fErrorReporter;
     private XMLString fTempString = new XMLString();
