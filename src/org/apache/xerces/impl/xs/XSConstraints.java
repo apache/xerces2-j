@@ -462,7 +462,7 @@ public class XSConstraints {
                 }
                 // 3. UPA
                 // get the content model and check UPA
-                XSCMValidator cm = types[j].getContentModel(cmBuilder);
+                XSCMValidator cm = types[j].getContentModel(cmBuilder, true);
                 further = false;
                 if (cm != null) {
                     try {

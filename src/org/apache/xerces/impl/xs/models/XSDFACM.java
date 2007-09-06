@@ -164,6 +164,8 @@ public class XSDFACM
      */
     private int fTransTableSize = 0;
 
+    private boolean fIsCompactedForUPA;
+    
     // temp variables
 
     //
@@ -183,6 +185,7 @@ public class XSDFACM
    
         // Store away our index and pools in members
         fLeafCount = leafCount;
+        fIsCompactedForUPA = syntaxTree.isCompactedForUPA();
 
         //
         //  Create some string pool indexes that represent the names of some
@@ -1140,4 +1143,7 @@ public class XSDFACM
         return ret;
     }
         
+    public boolean isCompactedForUPA() {
+        return fIsCompactedForUPA;
+    }
 } // class DFAContentModel

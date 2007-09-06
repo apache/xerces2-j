@@ -130,4 +130,7 @@ public class XSEmptyCM  implements XSCMValidator {
         return EMPTY;
     }
     
+    public boolean isCompactedForUPA() {
+        return false;
+    }
 } // class XSEmptyCM

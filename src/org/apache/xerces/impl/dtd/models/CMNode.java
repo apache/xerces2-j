@@ -81,6 +81,14 @@ public abstract class CMNode
     {
         fMaxStates = maxStates;
     }
+    
+    public boolean isCompactedForUPA() {
+        return fCompactedForUPA;
+    }
+
+    public void setIsCompactUPAModel(boolean value) {
+        fCompactedForUPA = value;
+    }
 
 
     // -------------------------------------------------------------------
@@ -126,6 +134,11 @@ public abstract class CMNode
     private CMStateSet fFollowPos  = null;
     private CMStateSet fLastPos    = null;
     private int        fMaxStates  = -1;
+
+    /*
+     * This boolean is true if the model represented by the CMNode does not represent
+     * the true model from the schema, but has had its min/maxOccurs modified for a
+     * more compact representation (for purposes of UPA).
+     */
+    private boolean fCompactedForUPA = false;    
 };
-
-

@@ -89,4 +89,12 @@ public interface XSCMValidator {
      */
     public Vector whatCanGoHere(int[] state);
     
+    /**
+     * Checks if this content model has had its min/maxOccurs values reduced for
+     * purposes of speeding up UPA.  If so, this content model should not be used
+     * for any purpose other than checking unique particle attribution
+     * 
+     * @return a boolean that says whether this content has been compacted for UPA
+     */
+    public boolean isCompactedForUPA();
 } // XSCMValidator

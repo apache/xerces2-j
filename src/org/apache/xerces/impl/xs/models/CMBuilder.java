@@ -65,7 +65,7 @@ public class CMBuilder {
      * @param typeDecl  get content model for which complex type
      * @return          a content model validator
      */
-    public XSCMValidator getContentModel(XSComplexTypeDecl typeDecl) {
+    public XSCMValidator getContentModel(XSComplexTypeDecl typeDecl, boolean forUPA) {
 
         // for complex type with empty or simple content,
         // there is no content model validator
@@ -90,7 +90,7 @@ public class CMBuilder {
             cmValidator = createAllCM(particle);
         }
         else {
-            cmValidator = createDFACM(particle);
+            cmValidator = createDFACM(particle, forUPA);
         }
 
         //now we are throught building content model and have passed sucessfully of the nodecount check
@@ -122,11 +122,11 @@ public class CMBuilder {
         return allContent;
     }
 
-    XSCMValidator createDFACM(XSParticleDecl particle) {
+    XSCMValidator createDFACM(XSParticleDecl particle, boolean forUPA) {
         fLeafCount = 0;
         fParticleCount = 0;
         // convert particle tree to CM tree
-        CMNode node = useRepeatingLeafNodes(particle) ? buildCompactSyntaxTree(particle) : buildSyntaxTree(particle);
+        CMNode node = useRepeatingLeafNodes(particle) ? buildCompactSyntaxTree(particle) : buildSyntaxTree(particle, forUPA);
         if (node == null)
             return null;
         // build DFA content model from the CM tree
@@ -139,10 +139,31 @@ public class CMBuilder {
     // 3. convert model groups (a, b, c, ...) or (a | b | c | ...) to
     //    binary tree: (((a,b),c),...) or (((a|b)|c)|...)
     // 4. make sure each leaf node (XSCMLeaf) has a distinct position
-    private CMNode buildSyntaxTree(XSParticleDecl particle) {
+    private CMNode buildSyntaxTree(XSParticleDecl particle, boolean forUPA) {
 
         int maxOccurs = particle.fMaxOccurs;
         int minOccurs = particle.fMinOccurs;
+        
+        boolean compactedForUPA = false;
+        if (forUPA) {
+            // When doing UPA, we reduce the size of the minOccurs/maxOccurs values to make
+            // processing the DFA faster.  For UPA the exact values don't matter.
+            if (minOccurs > 1) {
+                if (maxOccurs > minOccurs || particle.getMaxOccursUnbounded()) {
+                    minOccurs = 1;
+                    compactedForUPA = true;
+                }
+                else { // maxOccurs == minOccurs
+                    minOccurs = 2;
+                    compactedForUPA = true;
+                }
+            }
+            if (maxOccurs > 1) {
+                maxOccurs = 2;
+                compactedForUPA = true;
+            }
+        }
+        
         short type = particle.fType;
         CMNode nodeRet = null;
 
@@ -157,6 +178,9 @@ public class CMBuilder {
             nodeRet = fNodeFactory.getCMLeafNode(particle.fType, particle.fValue, fParticleCount++, fLeafCount++);
             // (task 2) expand occurrence values
             nodeRet = expandContentModel(nodeRet, minOccurs, maxOccurs);
+            if (nodeRet != null) {
+                nodeRet.setIsCompactUPAModel(compactedForUPA);
+            }
         }
         else if (type == XSParticleDecl.PARTICLE_MODELGROUP) {
             // (task 1,3) convert model groups to binary trees
@@ -174,9 +198,10 @@ public class CMBuilder {
             int count = 0;
             for (int i = 0; i < group.fParticleCount; i++) {
                 // first convert each child to a CM tree
-                temp = buildSyntaxTree(group.fParticles[i]);
+                temp = buildSyntaxTree(group.fParticles[i], forUPA);
                 // then combine them using binary operation
                 if (temp != null) {
+                    compactedForUPA |= temp.isCompactedForUPA();
                     ++count;
                     if (nodeRet == null) {
                         nodeRet = temp;
@@ -194,6 +219,7 @@ public class CMBuilder {
                     nodeRet = fNodeFactory.getCMUniOpNode(XSParticleDecl.PARTICLE_ZERO_OR_ONE, nodeRet);
                 }
                 nodeRet = expandContentModel(nodeRet, minOccurs, maxOccurs);
+                nodeRet.setIsCompactUPAModel(compactedForUPA);
             }
         }
 

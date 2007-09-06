@@ -74,6 +74,9 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition, TypeInfo {
     // if there is a particle, the content model corresponding to that particle
     XSCMValidator fCMValidator = null;
 
+    // the content model that's sufficient for computing UPA
+    XSCMValidator fUPACMValidator = null;
+
     // list of annotations affiliated with this type
     XSObjectListImpl fAnnotations = null;
 
@@ -149,9 +152,26 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition, TypeInfo {
         fMiscFlags |= CT_IS_ANONYMOUS;
     }
 
-    public synchronized XSCMValidator getContentModel(CMBuilder cmBuilder) {
-        if (fCMValidator == null)
-            fCMValidator = cmBuilder.getContentModel(this);
+    public XSCMValidator getContentModel(CMBuilder cmBuilder) {
+        return getContentModel(cmBuilder, false);
+    }
+
+    public synchronized XSCMValidator getContentModel(CMBuilder cmBuilder, boolean forUPA) {
+        if (fCMValidator == null) {
+            if (forUPA) {
+                if (fUPACMValidator == null) {
+                    fUPACMValidator = cmBuilder.getContentModel(this, true);
+
+                    if (fUPACMValidator != null && !fUPACMValidator.isCompactedForUPA()) {
+                        fCMValidator = fUPACMValidator;
+                    }
+                }
+                return fUPACMValidator;
+            }
+            else {
+                fCMValidator = cmBuilder.getContentModel(this, false);
+            }
+        }
 
         return fCMValidator;
     }
@@ -516,6 +536,7 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition, TypeInfo {
         fXSSimpleType = null;
         fParticle = null;
         fCMValidator = null;
+        fUPACMValidator = null;
         if(fAnnotations != null) {
             // help out the garbage collector
             fAnnotations.clear();

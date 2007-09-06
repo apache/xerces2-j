@@ -213,5 +213,8 @@ public class XSAllCM implements XSCMValidator {
         return ret;
     }
 
+    public boolean isCompactedForUPA() {
+        return false;
+    }
 } // class XSAllCM
 
