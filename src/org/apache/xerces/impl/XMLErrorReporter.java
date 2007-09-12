@@ -319,7 +319,7 @@ public class XMLErrorReporter
     public void reportError(XMLLocator location,
             String domain, String key, Object[] arguments, 
             short severity) throws XNIException {
-        reportError(fLocator, domain, key, arguments, severity, null);
+        reportError(location, domain, key, arguments, severity, null);
     } // reportError(XMLLocator,String,String,Object[],short)
 
     /**
