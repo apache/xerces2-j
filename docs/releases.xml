@@ -66,10 +66,10 @@
     </update>
     <update>
      <note>
-      Improved the algorithm for checking the Unique Particle Attribution constraint so that it 
-      no longer causes an OutOfMemoryError for content models with large maxOccurs values. Note that 
-      this only applies to the checking of schema validity. An OutOfMemoryError may still occur if 
-      the schema contains large maxOccurs and is used to validate an instance document.
+      Improved the algorithm for checking the <jump href="http://www.w3.org/TR/xmlschema-1/#cos-nonambig">Unique Particle Attribution</jump> 
+      constraint so that it no longer causes an OutOfMemoryError for content models with large maxOccurs values. Note that this only applies 
+      to the checking of schema validity. An OutOfMemoryError may still occur if the schema contains large maxOccurs and is used to validate 
+      an instance document.
      </note>
      <submitter name='Peter McCracken'/>
     </update>
