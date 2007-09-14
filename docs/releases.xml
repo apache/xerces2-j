@@ -29,7 +29,7 @@
     <add>
      <note>
       Added support for creating UIEvents and MouseEvents through the
-      DOM Level 2 Events API.
+      DOM Level 2 <jump href="http://www.w3.org/TR/DOM-Level-2-Events/">Events</jump> API.
      </note>
      <submitter name='Michael Glavassevich'/>
     </add>
@@ -54,6 +54,24 @@
       Improved the performance of the XMLGregorianCalendar implementation.
      </note>
      <submitter name='Michael Glavassevich'/>
+    </update>
+    <update>
+     <note>
+      Implemented improvements in the processing of large minOccurs/maxOccurs on 
+      element/wildcard particles which once caused OutOfMemoryErrors to occur during
+      validation. Note that an OutOfMemoryError may still occur if the minOccurs/maxOccurs
+      are nested or appear on a sequence or choice model group.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </update>
+    <update>
+     <note>
+      Improved the algorithm for checking the Unique Particle Attribution constraint so that it 
+      no longer causes an OutOfMemoryError for content models with large maxOccurs values. Note that 
+      this only applies to the checking of schema validity. An OutOfMemoryError may still occur if 
+      the schema contains large maxOccurs and is used to validate an instance document.
+     </note>
+     <submitter name='Peter McCracken'/>
     </update>
     <fix>
      <note>
@@ -110,6 +128,13 @@
      <note>
       Fixed several bugs in the XML schema processor which were exposed by running the W3C's
       XML Schema 1.0 2nd Edition test suite. 
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed several bugs in the DOM Level 2 
+      <jump href="http://www.w3.org/TR/DOM-Level-2-Traversal-Range/">Traversal and Range</jump> implementation.
      </note>
      <submitter name='Michael Glavassevich'/>
     </fix>
