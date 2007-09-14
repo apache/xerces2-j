@@ -18,6 +18,109 @@
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
+  <release version='&ParserName; 2.9.1'>
+   <desc>
+    <p>
+     This release fixes several bugs which were present in Xerces-J 2.9.0.
+     It also includes a few minor enhancements and performance improvements.
+    </p>
+   </desc>
+   <changes>
+    <add>
+     <note>
+      Added support for creating UIEvents and MouseEvents through the
+      DOM Level 2 Events API.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </add>
+    <update>
+     <note>
+      Improved the reporting of character conversion errors. The CharConversionException 
+      which triggered the fatal error is now available from SAXException.getException(). 
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </update>
+    <update>
+     <note>
+      Reduced the performance penalty for using an EOFException internally to 
+      signal to the scanner that the end of the document has been reached. The
+      exception is now cached, avoiding the expensive fillInStackTrace() on
+      creation.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </update>
+    <update>
+     <note>
+      Improved the performance of the XMLGregorianCalendar implementation.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </update>
+    <fix>
+     <note>
+      Completed the implementation of XML Schema erratum E2-67.
+     </note>
+     <submitter name='Ed Merks, Khaled Noaman'/>
+    </fix>
+    <fix>
+     <note>
+      Implemented XML 1.0 Third Edition erratum E13.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed bugs in the implementation of Document.normalizeDocument() where it was not correctly 
+      re-evaluating Element.schemaTypeInfo, Attr.schemaTypeInfo, IDness or the 
+      [element content whitespace] property of text nodes when validating against a DTD or XML Schema.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed a thread-safety bug which could cause an ArrayIndexOutOfBoundsException or a 
+      NullPointerException to be thrown during DTD validation if a grammar pool is shared 
+      between multiple parser instances.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed a bug in the DOMConfiguration of a Document where it was processing the 
+      "schema-location" parameter as an atomic URI value instead of a whitespace separated 
+      list of URIs.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed a bug in the XInclude implementation where the Locator would report the location 
+      of the xi:include element in the top-level document as the location of all the document 
+      events in the included document or fragment.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed a bug in the JAXP schema validator which caused it to fail with a third-party DOM 
+      Level 3 implementation whose nodes can only be tested for identity using isSameNode().
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed several bugs in the XML schema processor which were exposed by running the W3C's
+      XML Schema 1.0 2nd Edition test suite. 
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed various bugs and made various improvements.
+     </note>
+     <submitter name='Dave Brosius, Michael Glavassevich, Khaled Noaman'/>
+    </fix>
+   </changes>
+  </release>
   <release version='&ParserName; 2.9.0'>
    <desc>
     <p>
