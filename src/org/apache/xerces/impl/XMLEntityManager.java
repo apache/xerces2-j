@@ -678,13 +678,14 @@ public class XMLEntityManager
             baseSystemId = fCurrentEntity.entityLocation.getExpandedSystemId();
             if (baseSystemId != null)
                 needExpand = true;
-         }
-         if (needExpand)
-            expandedSystemId = expandSystemId(literalSystemId, baseSystemId, false);
-
-       // give the entity resolver a chance
+        }
+        
+        // give the entity resolver a chance
         XMLInputSource xmlInputSource = null;
         if (fEntityResolver != null) {
+            if (needExpand) {
+                expandedSystemId = expandSystemId(literalSystemId, baseSystemId, false);
+            }
             resourceIdentifier.setBaseSystemId(baseSystemId);
             resourceIdentifier.setExpandedSystemId(expandedSystemId);
             xmlInputSource = fEntityResolver.resolveEntity(resourceIdentifier);
