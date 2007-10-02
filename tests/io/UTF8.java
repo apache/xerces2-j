@@ -240,7 +240,7 @@ public class UTF8 {
                 expectedChar(null, i, c);
             }
         }
-        System.err.println("testing 0x010000 -> 0x110000");
+        System.err.println("testing 0x010000 -> 0x10FFFF");
         for (int i = 0x10000; i < 0x110000; i++) {
             // vars
             int uuuuu = (i >> 16) & 0x001F;
@@ -284,17 +284,17 @@ public class UTF8 {
     } // testCharArray(Reader):long
 
     //
-    // Private static methods
+    // Package private static methods
     //
 
     /** Loads another block of characters from the reader. */
-    private static int load(Reader reader, char[] ch) throws IOException {
+    static int load(Reader reader, char[] ch) throws IOException {
         int count = reader.read(ch, 0, ch.length);
         return count;
     } // load(Reader,char[]):int
 
     /** Creates an I/O exception for expected character. */
-    private static void expectedChar(String prefix, int ec, int fc) throws IOException {
+    static void expectedChar(String prefix, int ec, int fc) throws IOException {
         StringBuffer str = new StringBuffer();
         str.append("expected ");
         if (prefix != null) {
@@ -315,7 +315,7 @@ public class UTF8 {
     } // expectedChar(String,int,int)
 
     /** Creates an I/O exception for extra character. */
-    private static void extraChar(int c) throws IOException {
+    static void extraChar(int c) throws IOException {
         StringBuffer str = new StringBuffer();
         str.append("found extra character 0x");
         str.append(Integer.toHexString(c));
