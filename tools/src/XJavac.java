@@ -99,6 +99,10 @@ public class XJavac extends Javac {
         bcp.createPathElement().setPath(bcpMember.toString());
         bcpMember.replace(javaHome.length(), bcpMember.length(), "/lib/vm.jar:");
         bcp.createPathElement().setPath(bcpMember.toString());
+        bcpMember.replace(javaHome.length(), bcpMember.length(), "/lib/java.util.jar:");
+        bcp.createPathElement().setPath(bcpMember.toString());
+        bcpMember.replace(javaHome.length(), bcpMember.length(), "/lib/rt.jar:");
+        bcp.createPathElement().setPath(bcpMember.toString());
         bcpMember.replace(javaHome.length(), bcpMember.length(),  "/lib/graphics.jar:");
         bcp.createPathElement().setPath(bcpMember.toString());
         bcpMember.replace(javaHome.length(), bcpMember.length(),  "/lib/javaws.jar:");
