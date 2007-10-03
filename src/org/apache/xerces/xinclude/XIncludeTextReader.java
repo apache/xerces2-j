@@ -33,6 +33,7 @@ import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.io.ASCIIReader;
 import org.apache.xerces.impl.io.Latin1Reader;
+import org.apache.xerces.impl.io.UTF16Reader;
 import org.apache.xerces.impl.io.UTF8Reader;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.util.EncodingMap;
@@ -224,15 +225,17 @@ public class XIncludeTextReader {
             // eat the Byte Order Mark
             encoding = consumeBOM(stream, encoding);
             
-            // If the document is UTF-8 or US-ASCII use 
-            // the Xerces readers for these encodings. For
-            // US-ASCII consult the encoding map since
-            // this encoding has many aliases.
+            // If the document is UTF-8, UTF-16, US-ASCII or ISO-8859-1 use 
+            // the Xerces readers for these encodings. For US-ASCII and ISO-8859-1
+            // consult the encoding map since these encodings have many aliases.
             if (encoding.equals("UTF-8")) {
-                return new UTF8Reader(stream, 
-                    fTempString.ch.length, 
-                    fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), 
-                    fErrorReporter.getLocale() );
+                return createUTF8Reader(stream);
+            }
+            else if (encoding.equals("UTF-16BE")) {
+                return createUTF16Reader(stream, true);
+            }
+            else if (encoding.equals("UTF-16LE")) {
+                return createUTF16Reader(stream, false);
             }
             
             // Try to use a Java reader.
@@ -250,16 +253,43 @@ public class XIncludeTextReader {
                     new Object[] {encoding} ) );
             }
             else if (javaEncoding.equals("ASCII")) {
-                return new ASCIIReader(stream,
-                    fTempString.ch.length,
-                    fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), 
-                    fErrorReporter.getLocale() );
+                return createASCIIReader(stream);
             }
             else if (javaEncoding.equals("ISO8859_1")) {
-                return new Latin1Reader(stream, fTempString.ch.length);
+                return createLatin1Reader(stream);
             }
             return new InputStreamReader(stream, javaEncoding);
         }
+    }
+    
+    /** Create a new UTF-8 reader from the InputStream. **/
+    private Reader createUTF8Reader(InputStream stream) {
+        return new UTF8Reader(stream, 
+                fTempString.ch.length, 
+                fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), 
+                fErrorReporter.getLocale());
+    }
+
+    /** Create a new UTF-16 reader from the InputStream. **/
+    private Reader createUTF16Reader(InputStream stream, boolean isBigEndian) {
+        return new UTF16Reader(stream,
+                (fTempString.ch.length << 1),
+                isBigEndian,
+                fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), 
+                fErrorReporter.getLocale());
+    }
+    
+    /** Create a new ASCII reader from the InputStream. **/
+    private Reader createASCIIReader(InputStream stream) {
+        return new ASCIIReader(stream,
+                fTempString.ch.length,
+                fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), 
+                fErrorReporter.getLocale());
+    }
+    
+    /** Create a new ISO-8859-1 reader from the InputStream. **/
+    private Reader createLatin1Reader(InputStream stream) {
+        return new Latin1Reader(stream, fTempString.ch.length);
     }
 
     /** 
