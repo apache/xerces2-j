@@ -69,6 +69,9 @@ Authors:
     <property name='jar.resolver' value='resolver.jar'/>
     <property name='jar.serializer' value='serializer.jar'/>
     <property name='jar.junit' value='junit.jar'/>
+    <property name='jar.ant' value='ant.jar'/>
+    <property name='jar.ant.nodeps' value='ant-nodeps.jar'/>
+    <property name='jar.xjavac' value='xjavac.jar'/>
     
     <property name='default.parser.config.name' value='XIncludeAwareParserConfiguration'/>
     <property name='default.parser.config.qualified' value='org.apache.xerces.parsers.XIncludeAwareParserConfiguration'/>
@@ -128,6 +131,7 @@ Authors:
     <echo message=" jars --> generates xercesImpl &amp; xercesSamples jars"/>
     <echo message=" jar-schema11 --> 'jar' + XML Schema 1.1 support"/>
     <echo message=" jars-schema11 --> 'jars' + XML Schema 1.1 support"/>
+    <echo message=" xjavac-jar --> generates the xjavac.jar file"/>
     <echo message=" docs     --> generates the HTML documentation"/>
     <echo message=" javadocs --> generates the API docs (needs Java 1.2 or higher)"/>
     <echo message=" samples  --> compiles the samples source code"/>
@@ -1458,5 +1462,35 @@ Authors:
     <copy file="${tools.dir}/${jar.resolver}" tofile="${build.dir}/${jar.resolver}"/>
     <!-- include the Xalan Serializer -->
     <copy file="${tools.dir}/${jar.serializer}" tofile="${build.dir}/${jar.serializer}"/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Builds the xjavac jar file                                          -->
+  <!-- =================================================================== -->
+  <target name="xjavac-jar" depends="prepare">
+    <mkdir dir="${build.src}"/>
+    <mkdir dir="${build.dest}"/>
+  	
+    <copy file="${tools.dir}/src/XJavac.java"
+          tofile="${build.src}/org/apache/xerces/util/XJavac.java"/>
+  	
+    <javac srcdir="${build.src}"
+           destdir="${build.dest}"
+           classpath="${build.dir}/classes:${tools.dir}/${jar.ant}:${tools.dir}/${jar.ant.nodeps}"
+           debug="${debug}"
+           deprecation="${deprecation}"
+           optimize="${optimize}"
+           includeAntRuntime="false"
+           includeJavaRuntime="false"/>
+  	
+    <jar jarfile="${build.dir}/${jar.xjavac}"
+         basedir="${build.dest}"
+         compress="true"
+         includes="org/apache/xerces/util/XJavac.class">
+      <manifest>
+        <attribute name="Ant-Version" value="${ant.version}"/>
+      </manifest>
+      <metainf dir="." includes="LICENSE,NOTICE"/>
+    </jar>
   </target>
 </project>
