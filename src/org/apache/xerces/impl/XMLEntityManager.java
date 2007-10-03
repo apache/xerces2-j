@@ -40,6 +40,7 @@ import java.util.StringTokenizer;
 import org.apache.xerces.impl.io.ASCIIReader;
 import org.apache.xerces.impl.io.Latin1Reader;
 import org.apache.xerces.impl.io.UCSReader;
+import org.apache.xerces.impl.io.UTF16Reader;
 import org.apache.xerces.impl.io.UTF8Reader;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.ValidationManager;
@@ -356,14 +357,17 @@ public class XMLEntityManager
 
     // temp vars
 
-    /** Resource identifer. */
+    /** Resource identifier. */
     private final XMLResourceIdentifierImpl fResourceIdentifier = new XMLResourceIdentifierImpl();
     
     /** Augmentations for entities. */
     private final Augmentations fEntityAugs = new AugmentationsImpl();
     
-    /** Pool of byte buffers. */
-    private final ByteBufferPool fByteBufferPool = new ByteBufferPool(fBufferSize);
+    /** Pool of byte buffers for single byte and variable width encodings, such as US-ASCII and UTF-8. */
+    private final ByteBufferPool fSmallByteBufferPool = new ByteBufferPool(fBufferSize);
+    
+    /** Pool of byte buffers for 2-byte encodings, such as UTF-16. **/
+    private final ByteBufferPool fLargeByteBufferPool = new ByteBufferPool(fBufferSize << 1);
     
     /** Temporary storage for the current entity's byte buffer. */
     private byte[] fTempByteBuffer = null;
@@ -1013,21 +1017,23 @@ public class XMLEntityManager
                     b4[count] = (byte)stream.read();
                 }
                 if (count == 4) {
-                    Object [] encodingDesc = getEncodingName(b4, count);
-                    encoding = (String)(encodingDesc[0]);
-                    isBigEndian = (Boolean)(encodingDesc[1]);
-
+                    EncodingInfo info = getEncodingInfo(b4, count);
+                    encoding = info.encoding;
+                    isBigEndian = info.isBigEndian;
                     stream.reset();
-                    // Special case UTF-8 files with BOM created by Microsoft
-                    // tools. It's more efficient to consume the BOM than make
-                    // the reader perform extra checks. -Ac
-                    if (count > 2 && encoding.equals("UTF-8")) {
-                        int b0 = b4[0] & 0xFF;
-                        int b1 = b4[1] & 0xFF;
-                        int b2 = b4[2] & 0xFF;
-                        if (b0 == 0xEF && b1 == 0xBB && b2 == 0xBF) {
-                            // ignore first three bytes...
+                    if (info.hasBOM) {
+                        // Special case UTF-8 files with BOM created by Microsoft
+                        // tools. It's more efficient to consume the BOM than make
+                        // the reader perform extra checks. -Ac
+                        if (encoding == "UTF-8") {
+                            // UTF-8 BOM: 0xEF 0xBB 0xBF
                             stream.skip(3);
+                        }
+                        // It's also more efficient to consume the UTF-16 BOM.
+                        else if (encoding == "UTF-16") {
+                            // UTF-16 BE BOM: 0xFE 0xFF 
+                            // UTF-16 LE BOM: 0xFF 0xFE
+                            stream.skip(2);
                         }
                     }
                     reader = createReader(stream, encoding, isBigEndian);
@@ -1059,10 +1065,10 @@ public class XMLEntityManager
                     else {
                         stream.reset();
                     }
-                    reader = createReader(stream, encoding, isBigEndian);
+                    reader = createReader(stream, "UTF-8", isBigEndian);
                 }
-                // If encoding is UTF-16, we still need to read the first four bytes
-                // in order to discover the byte order.
+                // If encoding is UTF-16, we still need to read the first 
+                // four bytes, in order to discover the byte order.
                 else if (encoding.equals("UTF-16")) {
                     final int[] b4 = new int[4];
                     int count = 0;
@@ -1072,37 +1078,33 @@ public class XMLEntityManager
                             break;
                     }
                     stream.reset();
-                    
-                    String utf16Encoding = "UTF-16";
                     if (count >= 2) {
                         final int b0 = b4[0];
                         final int b1 = b4[1];
                         if (b0 == 0xFE && b1 == 0xFF) {
                             // UTF-16, big-endian
-                            utf16Encoding = "UTF-16BE";
                             isBigEndian = Boolean.TRUE;
+                            stream.skip(2);
                         }
                         else if (b0 == 0xFF && b1 == 0xFE) {
                             // UTF-16, little-endian
-                            utf16Encoding = "UTF-16LE";
                             isBigEndian = Boolean.FALSE;
+                            stream.skip(2);
                         }
                         else if (count == 4) {
                             final int b2 = b4[2];
                             final int b3 = b4[3];
                             if (b0 == 0x00 && b1 == 0x3C && b2 == 0x00 && b3 == 0x3F) {
                                 // UTF-16, big-endian, no BOM
-                                utf16Encoding = "UTF-16BE";
                                 isBigEndian = Boolean.TRUE;
                             }
                             if (b0 == 0x3C && b1 == 0x00 && b2 == 0x3F && b3 == 0x00) {
                                 // UTF-16, little-endian, no BOM
-                                utf16Encoding = "UTF-16LE";
                                 isBigEndian = Boolean.FALSE;
                             }
                         }
                     }
-                    reader = createReader(stream, utf16Encoding, isBigEndian);
+                    reader = createReader(stream, "UTF-16", isBigEndian);
                 }
                 // If encoding is UCS-4, we still need to read the first four bytes
                 // in order to discover the byte order.
@@ -1486,7 +1488,8 @@ public class XMLEntityManager
                     bufferSize.intValue() > DEFAULT_XMLDECL_BUFFER_SIZE) {
                     fBufferSize = bufferSize.intValue();
                     fEntityScanner.setBufferSize(fBufferSize);
-                    fByteBufferPool.setBufferSize(fBufferSize);
+                    fSmallByteBufferPool.setBufferSize(fBufferSize);
+                    fLargeByteBufferPool.setBufferSize(fBufferSize << 1);
                     fCharacterBufferPool.setExternalBufferSize(fBufferSize);
                 }
             }
@@ -1952,7 +1955,7 @@ public class XMLEntityManager
         // REVISIT: We should never encounter underflow if the calls
         // to startEntity and endEntity are balanced, but guard
         // against the EmptyStackException for now. -- mrglavas
-        if(!fReaderStack.isEmpty()) {
+        if (!fReaderStack.isEmpty()) {
             fReaderStack.pop();
         } 
 
@@ -1961,7 +1964,12 @@ public class XMLEntityManager
         
         // Release the byte buffer back to the pool for reuse
         if (fCurrentEntity.fByteBuffer != null) {
-            fByteBufferPool.returnBuffer(fCurrentEntity.fByteBuffer);
+            if (fCurrentEntity.fByteBuffer.length == fBufferSize) {
+                fSmallByteBufferPool.returnBuffer(fCurrentEntity.fByteBuffer);
+            }
+            else {
+                fLargeByteBufferPool.returnBuffer(fCurrentEntity.fByteBuffer);
+            }
         }
         
         // Pop entity stack.
@@ -1975,21 +1983,19 @@ public class XMLEntityManager
         }
 
     } // endEntity()
-
+    
     /**
      * Returns the IANA encoding name that is auto-detected from
      * the bytes specified, with the endian-ness of that encoding where appropriate.
      *
      * @param b4    The first four bytes of the input.
      * @param count The number of bytes actually read.
-     * @return a 2-element array:  the first element, an IANA-encoding string,
-     *  the second element a Boolean which is true iff the document is big endian, false
-     *  if it's little-endian, and null if the distinction isn't relevant.
+     * @return an instance of EncodingInfo which represents the auto-detected encoding.
      */
-    protected Object[] getEncodingName(byte[] b4, int count) {
+    protected EncodingInfo getEncodingInfo(byte[] b4, int count) {
 
         if (count < 2) {
-            return new Object[]{"UTF-8", null};
+            return EncodingInfo.UTF_8;
         }
 
         // UTF-16, with BOM
@@ -1997,70 +2003,70 @@ public class XMLEntityManager
         int b1 = b4[1] & 0xFF;
         if (b0 == 0xFE && b1 == 0xFF) {
             // UTF-16, big-endian
-            return new Object [] {"UTF-16BE", Boolean.TRUE};
+            return EncodingInfo.UTF_16_BIG_ENDIAN_WITH_BOM;
         }
         if (b0 == 0xFF && b1 == 0xFE) {
             // UTF-16, little-endian
-            return new Object [] {"UTF-16LE", Boolean.FALSE};
+            return EncodingInfo.UTF_16_LITTLE_ENDIAN_WITH_BOM;
         }
 
         // default to UTF-8 if we don't have enough bytes to make a
         // good determination of the encoding
         if (count < 3) {
-            return new Object [] {"UTF-8", null};
+            return EncodingInfo.UTF_8;
         }
 
         // UTF-8 with a BOM
         int b2 = b4[2] & 0xFF;
         if (b0 == 0xEF && b1 == 0xBB && b2 == 0xBF) {
-            return new Object [] {"UTF-8", null};
+            return EncodingInfo.UTF_8_WITH_BOM;
         }
 
         // default to UTF-8 if we don't have enough bytes to make a
         // good determination of the encoding
         if (count < 4) {
-            return new Object [] {"UTF-8", null};
+            return EncodingInfo.UTF_8;
         }
 
         // other encodings
         int b3 = b4[3] & 0xFF;
         if (b0 == 0x00 && b1 == 0x00 && b2 == 0x00 && b3 == 0x3C) {
             // UCS-4, big endian (1234)
-            return new Object [] {"ISO-10646-UCS-4", Boolean.TRUE};
+            return EncodingInfo.UCS_4_BIG_ENDIAN;
         }
         if (b0 == 0x3C && b1 == 0x00 && b2 == 0x00 && b3 == 0x00) {
             // UCS-4, little endian (4321)
-            return new Object [] {"ISO-10646-UCS-4", Boolean.FALSE};
+            return EncodingInfo.UCS_4_LITTLE_ENDIAN;
         }
         if (b0 == 0x00 && b1 == 0x00 && b2 == 0x3C && b3 == 0x00) {
             // UCS-4, unusual octet order (2143)
             // REVISIT: What should this be?
-            return new Object [] {"ISO-10646-UCS-4", null};
+            return EncodingInfo.UCS_4_UNUSUAL_BYTE_ORDER;
         }
         if (b0 == 0x00 && b1 == 0x3C && b2 == 0x00 && b3 == 0x00) {
             // UCS-4, unusual octect order (3412)
             // REVISIT: What should this be?
-            return new Object [] {"ISO-10646-UCS-4", null};
+            return EncodingInfo.UCS_4_UNUSUAL_BYTE_ORDER;
         }
         if (b0 == 0x00 && b1 == 0x3C && b2 == 0x00 && b3 == 0x3F) {
             // UTF-16, big-endian, no BOM
             // (or could turn out to be UCS-2...
             // REVISIT: What should this be?
-            return new Object [] {"UTF-16BE", Boolean.TRUE};
+            return EncodingInfo.UTF_16_BIG_ENDIAN;
         }
         if (b0 == 0x3C && b1 == 0x00 && b2 == 0x3F && b3 == 0x00) {
             // UTF-16, little-endian, no BOM
             // (or could turn out to be UCS-2...
-            return new Object [] {"UTF-16LE", Boolean.FALSE};
+            return EncodingInfo.UTF_16_LITTLE_ENDIAN;
         }
         if (b0 == 0x4C && b1 == 0x6F && b2 == 0xA7 && b3 == 0x94) {
             // EBCDIC
             // a la xerces1, return CP037 instead of EBCDIC here
-            return new Object [] {"CP037", null};
+            return EncodingInfo.EBCDIC;
         }
 
         // default encoding
-        return new Object [] {"UTF-8", null};
+        return EncodingInfo.UTF_8;
 
     } // getEncodingName(byte[],int):Object[]
 
@@ -2075,7 +2081,7 @@ public class XMLEntityManager
      *                     encoding name may be a Java encoding name;
      *                     otherwise, it is an ianaEncoding name.
      * @param isBigEndian   For encodings (like uCS-4), whose names cannot
-     *                      specify a byte order, this tells whether the order is bigEndian.  null menas
+     *                      specify a byte order, this tells whether the order is bigEndian. Null means
      *                      unknown or not relevant.
      *
      * @return Returns a reader.
@@ -2085,27 +2091,26 @@ public class XMLEntityManager
 
         // if the encoding is UTF-8 use the optimized UTF-8 reader
         if (encoding == "UTF-8" || encoding == null) {
-            if (DEBUG_ENCODINGS) {
-                System.out.println("$$$ creating UTF8Reader");
-            }
-            if (fTempByteBuffer == null) {
-                fTempByteBuffer = fByteBufferPool.getBuffer();
-            }
-            return new UTF8Reader(inputStream, fTempByteBuffer, fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), fErrorReporter.getLocale());
+            return createUTF8Reader(inputStream);
+        }
+        
+        // If the encoding is UTF-16 use the optimized UTF-16 reader
+        if (encoding == "UTF-16" && isBigEndian != null) {
+            return createUTF16Reader(inputStream, isBigEndian.booleanValue());
         }
 
         // try to use an optimized reader
         String ENCODING = encoding.toUpperCase(Locale.ENGLISH);
         if (ENCODING.equals("UTF-8")) {
-            if (DEBUG_ENCODINGS) {
-                System.out.println("$$$ creating UTF8Reader");
-            }
-            if (fTempByteBuffer == null) {
-                fTempByteBuffer = fByteBufferPool.getBuffer();
-            }
-            return new UTF8Reader(inputStream, fTempByteBuffer, fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), fErrorReporter.getLocale());
+            return createUTF8Reader(inputStream);
         }
-        if(ENCODING.equals("ISO-10646-UCS-4")) {
+        if (ENCODING.equals("UTF-16BE")) {
+            return createUTF16Reader(inputStream, true);
+        }
+        if (ENCODING.equals("UTF-16LE")) {
+            return createUTF16Reader(inputStream, false);
+        }
+        if (ENCODING.equals("ISO-10646-UCS-4")) {
             if(isBigEndian != null) {
                 boolean isBE = isBigEndian.booleanValue();
                 if(isBE) {
@@ -2120,8 +2125,8 @@ public class XMLEntityManager
                                        XMLErrorReporter.SEVERITY_FATAL_ERROR);
             }
         }
-        if(ENCODING.equals("ISO-10646-UCS-2")) {
-            if(isBigEndian != null) { // sould never happen with this encoding...
+        if (ENCODING.equals("ISO-10646-UCS-2")) {
+            if(isBigEndian != null) { // should never happen with this encoding...
                 boolean isBE = isBigEndian.booleanValue();
                 if(isBE) {
                     return new UCSReader(inputStream, UCSReader.UCS2BE);
@@ -2152,10 +2157,7 @@ public class XMLEntityManager
             //       invalid UTF-8 sequence to be detected. This is only
             //       important when continue-after-fatal-error is turned
             //       on. -Ac
-            if (DEBUG_ENCODINGS) {
-                System.out.println("$$$ creating Latin1Reader");
-            }
-            return new Latin1Reader(inputStream, fBufferSize);
+            return createLatin1Reader(inputStream);
         }
 
         // try to use a Java reader
@@ -2170,32 +2172,14 @@ public class XMLEntityManager
                                        new Object[] { encoding },
                                        XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 // see comment above.
-                if (DEBUG_ENCODINGS) {
-                    System.out.println("$$$ creating Latin1Reader");
-                }
-                if (fTempByteBuffer == null) {
-                    fTempByteBuffer = fByteBufferPool.getBuffer();
-                }
-                return new Latin1Reader(inputStream, fTempByteBuffer);
+                return createLatin1Reader(inputStream);
             }
         }
         else if (javaEncoding.equals("ASCII")) {
-            if (DEBUG_ENCODINGS) {
-                System.out.println("$$$ creating ASCIIReader");
-            }
-            if (fTempByteBuffer == null) {
-                fTempByteBuffer = fByteBufferPool.getBuffer();
-            }
-            return new ASCIIReader(inputStream, fTempByteBuffer, fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), fErrorReporter.getLocale());
+            return createASCIIReader(inputStream);
         }
         else if (javaEncoding.equals("ISO8859_1")) {
-            if (DEBUG_ENCODINGS) {
-                System.out.println("$$$ creating Latin1Reader");
-            }
-            if (fTempByteBuffer == null) {
-                fTempByteBuffer = fByteBufferPool.getBuffer();
-            }
-            return new Latin1Reader(inputStream, fTempByteBuffer);
+            return createLatin1Reader(inputStream);
         }
         if (DEBUG_ENCODINGS) {
             System.out.print("$$$ creating Java InputStreamReader: encoding="+javaEncoding);
@@ -2207,6 +2191,60 @@ public class XMLEntityManager
         return new InputStreamReader(inputStream, javaEncoding);
 
     } // createReader(InputStream,String, Boolean): Reader
+    
+    /** Create a new UTF-8 reader from the InputStream. **/
+    private Reader createUTF8Reader(InputStream stream) {
+        if (DEBUG_ENCODINGS) {
+            System.out.println("$$$ creating UTF8Reader");
+        }
+        if (fTempByteBuffer == null) {
+            fTempByteBuffer = fSmallByteBufferPool.getBuffer();
+        }
+        return new UTF8Reader(stream,
+                fTempByteBuffer, 
+                fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), 
+                fErrorReporter.getLocale());
+    } // createUTF8Reader(InputStream):Reader
+    
+    /** Create a new UTF-16 reader from the InputStream. **/
+    private Reader createUTF16Reader(InputStream stream, boolean isBigEndian) {
+        if (DEBUG_ENCODINGS) {
+            System.out.println("$$$ creating UTF16Reader");
+        }
+        if (fTempByteBuffer == null) {
+            fTempByteBuffer = fLargeByteBufferPool.getBuffer();
+        }
+        return new UTF16Reader(stream,
+                fTempByteBuffer, 
+                isBigEndian, 
+                fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), 
+                fErrorReporter.getLocale());
+    } // createUTF16Reader(InputStream):Reader
+    
+    /** Create a new ASCII reader from the InputStream. **/
+    private Reader createASCIIReader(InputStream stream) {
+        if (DEBUG_ENCODINGS) {
+            System.out.println("$$$ creating ASCIIReader");
+        }
+        if (fTempByteBuffer == null) {
+            fTempByteBuffer = fSmallByteBufferPool.getBuffer();
+        }
+        return new ASCIIReader(stream, 
+                fTempByteBuffer, 
+                fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), 
+                fErrorReporter.getLocale());
+    } // createASCIIReader(InputStream):Reader
+    
+    /** Create a new ISO-8859-1 reader from the InputStream. **/
+    private Reader createLatin1Reader(InputStream stream) {
+        if (DEBUG_ENCODINGS) {
+            System.out.println("$$$ creating Latin1Reader");
+        }
+        if (fTempByteBuffer == null) {
+            fTempByteBuffer = fSmallByteBufferPool.getBuffer();
+        }
+        return new Latin1Reader(stream, fTempByteBuffer);
+    } // createLatin1Reader(InputStream):Reader
 
     //
     // Protected static methods
@@ -2816,6 +2854,57 @@ public class XMLEntityManager
         } // toString():String
 
     } // class ScannedEntity
+    
+    /**
+     * Information about auto-detectable encodings.
+     * 
+     * @xerces.internal
+     * 
+     * @author Michael Glavassevich, IBM
+     */
+    private static class EncodingInfo {
+        
+        /** UTF-8 **/
+        public static final EncodingInfo UTF_8 = new EncodingInfo("UTF-8", null, false);
+        
+        /** UTF-8, with BOM **/
+        public static final EncodingInfo UTF_8_WITH_BOM = new EncodingInfo("UTF-8", null, true);
+        
+        /** UTF-16, big-endian **/
+        public static final EncodingInfo UTF_16_BIG_ENDIAN = new EncodingInfo("UTF-16", Boolean.TRUE, false);
+        
+        /** UTF-16, big-endian with BOM **/
+        public static final EncodingInfo UTF_16_BIG_ENDIAN_WITH_BOM = new EncodingInfo("UTF-16", Boolean.TRUE, true);
+        
+        /** UTF-16, little-endian **/
+        public static final EncodingInfo UTF_16_LITTLE_ENDIAN = new EncodingInfo("UTF-16", Boolean.FALSE, false);
+        
+        /** UTF-16, little-endian with BOM **/
+        public static final EncodingInfo UTF_16_LITTLE_ENDIAN_WITH_BOM = new EncodingInfo("UTF-16", Boolean.FALSE, true);
+        
+        /** UCS-4, big-endian **/
+        public static final EncodingInfo UCS_4_BIG_ENDIAN = new EncodingInfo("ISO-10646-UCS-4", Boolean.TRUE, false);
+        
+        /** UCS-4, little-endian **/
+        public static final EncodingInfo UCS_4_LITTLE_ENDIAN = new EncodingInfo("ISO-10646-UCS-4", Boolean.FALSE, false);
+        
+        /** UCS-4, unusual byte-order (2143) or (3412) **/
+        public static final EncodingInfo UCS_4_UNUSUAL_BYTE_ORDER = new EncodingInfo("ISO-10646-UCS-4", null, false);
+        
+        /** EBCDIC **/
+        public static final EncodingInfo EBCDIC = new EncodingInfo("CP037", null, false);
+        
+        public final String encoding;
+        public final Boolean isBigEndian;
+        public final boolean hasBOM;
+        
+        private EncodingInfo(String encoding, Boolean isBigEndian, boolean hasBOM) {
+            this.encoding = encoding;
+            this.isBigEndian = isBigEndian;
+            this.hasBOM = hasBOM;
+        } // <init>(String,Boolean,boolean)
+        
+    } // class EncodingInfo
     
     /**
      * Pool of byte buffers for the java.io.Readers.
