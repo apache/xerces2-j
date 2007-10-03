@@ -2214,6 +2214,11 @@ public class XMLEntityManager
         if (fTempByteBuffer == null) {
             fTempByteBuffer = fLargeByteBufferPool.getBuffer();
         }
+        // The cached buffer is too small, we need a larger one.
+        else if (fTempByteBuffer.length == fBufferSize) {
+            fSmallByteBufferPool.returnBuffer(fTempByteBuffer);
+            fTempByteBuffer = fLargeByteBufferPool.getBuffer();
+        }
         return new UTF16Reader(stream,
                 fTempByteBuffer, 
                 isBigEndian, 
