@@ -20,7 +20,6 @@ import org.apache.xerces.impl.dv.InvalidDatatypeFacetException;
 import org.apache.xerces.impl.dv.SchemaDVFactory;
 import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.dv.XSSimpleType;
-import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSAnnotationImpl;
@@ -528,11 +527,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 fixedFacets = fi.fFixedFacets;
             }
             
-            String name = genAnonTypeName(simpleContentElement);
-            fXSSimpleType = schemaFactory.createTypeRestriction(name,schemaDoc.fTargetNamespace,(short)0,baseValidator,null);
-            if (fXSSimpleType instanceof XSSimpleTypeDecl) {
-                ((XSSimpleTypeDecl)fXSSimpleType).setAnonymous(true);
-            }
+            fXSSimpleType = schemaFactory.createTypeRestriction(null,schemaDoc.fTargetNamespace,(short)0,baseValidator,null);
             try{
                 fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
                 fXSSimpleType.applyFacets(facetData, presentFacets, fixedFacets, fValidationState);
