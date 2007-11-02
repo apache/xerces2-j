@@ -32,6 +32,7 @@ import org.apache.xerces.impl.dv.DatatypeException;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
 import org.apache.xerces.impl.validation.ConfigurableValidationState;
 import org.apache.xerces.impl.validation.ValidationManager;
 import org.apache.xerces.impl.validation.ValidationState;
@@ -2870,11 +2871,14 @@ public class XMLSchemaValidator
                     fNotation = grammar.getGlobalNotationDecl(qName.localpart);
                 }
             }
-        } catch (InvalidDatatypeValueException idve) {
+        } 
+        catch (InvalidDatatypeValueException idve) {
             reportSchemaError(idve.getKey(), idve.getArgs());
             reportSchemaError(
                 "cvc-attribute.3",
-                new Object[] { element.rawname, fTempQName.rawname, attrValue, attDV.getName()});
+                new Object[] { element.rawname, fTempQName.rawname, attrValue, 
+                        (attDV instanceof XSSimpleTypeDecl) ? 
+                                ((XSSimpleTypeDecl) attDV).getTypeName() : attDV.getName()});
         }
 
         // get the value constraint from use or decl
