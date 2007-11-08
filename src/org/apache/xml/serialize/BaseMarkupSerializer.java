@@ -513,7 +513,7 @@ public abstract class BaseMarkupSerializer
                     }
                     continue;
                 }
-                if ( ( ch >= ' ' && _encodingInfo.isPrintable(ch) && ch != 0xF7 ) ||
+                if ( ( ch >= ' ' && _encodingInfo.isPrintable(ch) && ch != 0x7F ) ||
                     ch == '\n' || ch == '\r' || ch == '\t' ) {
                     _printer.printText(ch);
                 } 
@@ -1448,7 +1448,7 @@ public abstract class BaseMarkupSerializer
                 }
                 continue;
             }
-            if ( ( ch >= ' ' && _encodingInfo.isPrintable(ch) && ch != 0xF7 ) ||
+            if ( ( ch >= ' ' && _encodingInfo.isPrintable(ch) && ch != 0x7F ) ||
                  ch == '\n' || ch == '\r' || ch == '\t' ) {
                 _printer.printText(ch);
             } 
@@ -1627,7 +1627,7 @@ public abstract class BaseMarkupSerializer
             _printer.printText( '&' );
             _printer.printText( charRef );
             _printer.printText( ';' );
-        } else if ( ( ch >= ' ' && _encodingInfo.isPrintable((char)ch) && ch != 0xF7 ) ||
+        } else if ( ( ch >= ' ' && _encodingInfo.isPrintable((char)ch) && ch != 0x7F ) ||
                     ch == '\n' || ch == '\r' || ch == '\t' ) {
             // Non printables are below ASCII space but not tab or line
             // terminator, ASCII delete, or above a certain Unicode threshold.
