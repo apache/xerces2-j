@@ -1881,6 +1881,10 @@ public class XPath {
                         tokens.addToken(nameHandle);
                     }
                     break;
+                default:
+                    // CHARTYPE_INVALID or CHARTYPE_OTHER
+                    // We're not expecting to find either of these in a valid expression.
+                    return false;
                 }
             }
             if (XPath.Tokens.DUMP_TOKENS) {
