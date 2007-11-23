@@ -324,7 +324,7 @@ class DurationImpl
             wrap(days),
             wrap(hours),
             wrap(minutes),
-            seconds != 0 ? new BigDecimal(String.valueOf(seconds)) : null);
+            seconds != 0 ? BigDecimal.valueOf(seconds) : null);
     }
 
 	/**
@@ -335,14 +335,13 @@ class DurationImpl
 	 * @return BigInteger representation of int.
 	 */
     private static BigInteger wrap(final int i) {
-    	
     	// field may not be set
     	if (i == DatatypeConstants.FIELD_UNDEFINED) {
     		return null;
     	}
     	
     	// int -> BigInteger
-        return new BigInteger(String.valueOf(i));
+        return BigInteger.valueOf(i);
     }
     
     /**
