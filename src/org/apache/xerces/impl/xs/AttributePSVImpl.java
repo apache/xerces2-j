@@ -37,7 +37,7 @@ import org.apache.xerces.xs.XSConstants;
  */
 public class AttributePSVImpl implements AttributePSVI {
 
-    /** attribute declaration  */
+    /** attribute declaration */
     protected XSAttributeDeclaration fDeclaration = null;
 
     /** type of attribute, simpleType */
