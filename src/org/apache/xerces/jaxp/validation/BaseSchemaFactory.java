@@ -63,7 +63,7 @@ import org.xml.sax.SAXParseException;
  *
  * @author Kohsuke Kawaguchi (kohsuke.kawaguchi@sun.com)
  *
- * @version $Id:$
+ * @version $Id$
  */
 abstract class BaseSchemaFactory extends SchemaFactory {
 	
