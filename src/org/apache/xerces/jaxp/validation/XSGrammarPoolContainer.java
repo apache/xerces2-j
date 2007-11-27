@@ -52,4 +52,12 @@ public interface XSGrammarPoolContainer {
      */
     public Boolean getFeature(String featureId);
     
+    /**
+     * Returns the version of the schema components contained in this
+     * object
+     * 
+     * @ return the version of the schema components contained in this
+     * object
+     */
+    public String getXMLSchemaVersion();
 }

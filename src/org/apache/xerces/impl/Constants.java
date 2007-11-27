@@ -38,6 +38,10 @@ public final class Constants {
     public static final String NS_XMLSCHEMA = "http://www.w3.org/2001/XMLSchema".intern();
     public static final String NS_DTD = "http://www.w3.org/TR/REC-xml".intern();
     
+    // Schema Versions:
+    public static final String W3C_XML_SCHEMA10_NS_URI = "http://www.w3.org/2001/XMLSchema/v1.0".intern();
+    public static final String W3C_XML_SCHEMA11_NS_URI = "http://www.w3.org/2001/XMLSchema/v1.1".intern();    
+    
     // sax features
     
     /** SAX feature prefix ("http://xml.org/sax/features/"). */
@@ -413,6 +417,9 @@ public final class Constants {
     
     /** Schema type of the root element in a document ("validation/schema/root-type-definition"). */
     public static final String ROOT_TYPE_DEFINITION_PROPERTY = "validation/schema/root-type-definition";
+
+    /** Datatype XML version property ("validation/schema/datatype-xml-version"). */
+    public static final String XML_SCHEMA_VERSION_PROPERTY ="validation/schema/version";
     
     // general constants
     
@@ -529,6 +536,7 @@ public final class Constants {
             BUFFER_SIZE_PROPERTY,
             SECURITY_MANAGER_PROPERTY,
             ROOT_TYPE_DEFINITION_PROPERTY,
+            XML_SCHEMA_VERSION_PROPERTY
     };
     
     /** Empty enumeration. */

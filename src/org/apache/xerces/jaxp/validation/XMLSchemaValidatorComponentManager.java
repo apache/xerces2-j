@@ -123,7 +123,11 @@ final class XMLSchemaValidatorComponentManager extends ParserConfigurationSettin
     /** Property identifier: grammar pool. */
     private static final String XMLGRAMMAR_POOL =
         Constants.XERCES_PROPERTY_PREFIX + Constants.XMLGRAMMAR_POOL_PROPERTY;
-    
+
+    /** Property identifier: xml schema version. */
+    protected static final String XML_SCHEMA_VERSION =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.XML_SCHEMA_VERSION_PROPERTY;
+
     //
     // Data
     //
@@ -199,6 +203,7 @@ final class XMLSchemaValidatorComponentManager extends ParserConfigurationSettin
         fComponents.put(NAMESPACE_CONTEXT, fNamespaceContext);
         
         fSchemaValidator = new XMLSchemaValidator();
+        fSchemaValidator.setProperty(XML_SCHEMA_VERSION, grammarContainer.getXMLSchemaVersion());
         fComponents.put(SCHEMA_VALIDATOR, fSchemaValidator);
         
         fValidationManager = new ValidationManager();

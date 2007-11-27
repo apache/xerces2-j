@@ -34,11 +34,12 @@ final class XMLSchema extends AbstractXMLSchema {
     private final boolean fFullyComposed;
     
     /** Constructors */
-    public XMLSchema(XMLGrammarPool grammarPool) {
-        this(grammarPool, true);
+    public XMLSchema(XMLGrammarPool grammarPool, String xsdVersion) {
+        this(grammarPool, true, xsdVersion);
     }
     
-    public XMLSchema(XMLGrammarPool grammarPool, boolean fullyComposed) {
+    public XMLSchema(XMLGrammarPool grammarPool, boolean fullyComposed, String xsdVersion) {
+        super(xsdVersion);
         fGrammarPool = grammarPool;
         fFullyComposed = fullyComposed;
     }

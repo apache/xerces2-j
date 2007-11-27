@@ -36,7 +36,9 @@ final class WeakReferenceXMLSchema extends AbstractXMLSchema {
     /** Weak reference to grammar pool. */
     private WeakReference fGrammarPool = new WeakReference(null);
 
-    public WeakReferenceXMLSchema() {}
+    public WeakReferenceXMLSchema(String xsdVersion) {
+    	super(xsdVersion);
+    }
     
     /*
      * XSGrammarPoolContainer methods

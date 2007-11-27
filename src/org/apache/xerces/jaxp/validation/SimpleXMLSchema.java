@@ -37,7 +37,8 @@ final class SimpleXMLSchema extends AbstractXMLSchema implements XMLGrammarPool 
     private final Grammar[] fGrammars;
     private final XMLGrammarDescription fGrammarDescription;
     
-    public SimpleXMLSchema(Grammar grammar) {
+    public SimpleXMLSchema(Grammar grammar, String xsdVersion) {
+        super(xsdVersion);
         fGrammar = grammar;
         fGrammars = new Grammar[] {grammar};
         fGrammarDescription = grammar.getGrammarDescription();

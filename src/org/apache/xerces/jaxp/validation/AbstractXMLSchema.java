@@ -37,9 +37,12 @@ abstract class AbstractXMLSchema extends Schema implements
      * validators created using this grammar pool container.
      */
     private final HashMap fFeatures;
+
+    private final String fXSDVersion;
     
-    public AbstractXMLSchema() {
+    public AbstractXMLSchema(String xsdVersion) {
         fFeatures = new HashMap();
+        fXSDVersion = xsdVersion;
     }
     
     /*
@@ -71,6 +74,13 @@ abstract class AbstractXMLSchema extends Schema implements
      */
     public final Boolean getFeature(String featureId) {
         return (Boolean) fFeatures.get(featureId);
+    }
+
+    /**
+     * Returns the XML Schema Version
+     */
+    public final String getXMLSchemaVersion() {
+    	return fXSDVersion;
     }
     
     /*

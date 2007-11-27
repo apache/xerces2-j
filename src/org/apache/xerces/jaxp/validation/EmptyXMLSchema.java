@@ -33,7 +33,9 @@ final class EmptyXMLSchema extends AbstractXMLSchema implements XMLGrammarPool {
     /** Zero length grammar array. */
     private static final Grammar [] ZERO_LENGTH_GRAMMAR_ARRAY = new Grammar [0];
 
-    public EmptyXMLSchema() {}
+    public EmptyXMLSchema(String xsdVersion) {
+    	super(xsdVersion);
+    }
     
     /*
      * XMLGrammarPool methods
