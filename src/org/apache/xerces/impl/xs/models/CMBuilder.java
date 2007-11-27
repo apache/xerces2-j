@@ -49,6 +49,8 @@ public class CMBuilder {
     private int fParticleCount;
     //Factory to create Bin, Uni, Leaf nodes
     private final CMNodeFactory fNodeFactory;
+    // XML Schema 1.1 flag
+    private boolean fSchema11Support = false;
 
     public CMBuilder(CMNodeFactory nodeFactory) {
         fDeclPool = null;
@@ -57,6 +59,13 @@ public class CMBuilder {
 
     public void setDeclPool(XSDeclarationPool declPool) {
         fDeclPool = declPool;
+    }
+
+    /**
+     * Set XML Schema 11 flag
+     */
+    public void setSchema11Support(boolean state) {
+    	fSchema11Support = state;
     }
 
     /**

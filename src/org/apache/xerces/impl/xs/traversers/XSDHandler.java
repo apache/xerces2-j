@@ -345,7 +345,10 @@ public class XSDHandler {
     SchemaContentHandler fXSContentHandler;
     XML11Configuration fAnnotationValidator;
     XSAnnotationGrammarPool fGrammarBucketAdapter;
-    
+
+    // flag to indicate schema 1.1 support
+    boolean fSchema11Support = false;
+
     // these data members are needed for the deferred traversal
     // of local elements.
     
@@ -2693,4 +2696,13 @@ public class XSDHandler {
         fSchemaParser.setFeature(GENERATE_SYNTHETIC_ANNOTATIONS, state);
     }
     
+    /**
+     * Set schema 1.1 support
+     *
+     * @param state
+     */
+    public void setSchema11Support(boolean state) {
+        fSchema11Support = state;
+    }
+
 } // XSDHandler

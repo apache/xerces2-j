@@ -187,6 +187,9 @@ XSLoader, DOMConfiguration {
     
     protected static final String ENTITY_MANAGER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_MANAGER_PROPERTY;   
+
+    protected static final String XML_SCHEMA_VERSION =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.XML_SCHEMA_VERSION_PROPERTY;
     
     // recognized properties
     private static final String [] RECOGNIZED_PROPERTIES = {
@@ -199,7 +202,8 @@ XSLoader, DOMConfiguration {
         SCHEMA_LOCATION,
         SCHEMA_NONS_LOCATION,
         JAXP_SCHEMA_SOURCE,
-        SECURITY_MANAGER
+        SECURITY_MANAGER,
+        XML_SCHEMA_VERSION
     };
     
     // Data
@@ -240,6 +244,9 @@ XSLoader, DOMConfiguration {
     
     /** DOM L3 resource resolver */
     private DOMEntityResolverWrapper fResourceResolver = null;
+
+    /** XML Schema 1.1 flag */
+    private boolean fSchema11Support = false;
     
     // default constructor.  Create objects we absolutely need:
     public XMLSchemaLoader() {
@@ -420,6 +427,9 @@ XSLoader, DOMConfiguration {
                 fErrorReporter.putMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN, new XSMessageFormatter());
             }
         }
+        else if (propertyId.equals(XML_SCHEMA_VERSION)) {
+            setSchemaVersion((String)state);	
+        }
     } // setProperty(String, Object)
     
     /**
@@ -469,7 +479,28 @@ XSLoader, DOMConfiguration {
     public XMLEntityResolver getEntityResolver() {
         return fUserEntityResolver;
     } // getEntityResolver():  XMLEntityResolver
-    
+
+    /**
+     * Sets the XML Schema Version
+     */
+    void setSchemaVersion(String version) {
+        if (version.equals(Constants.W3C_XML_SCHEMA11_NS_URI)) {
+            fSchema11Support = true;
+        }
+        else {
+            fSchema11Support = false;
+        }
+        fSchemaHandler.setSchema11Support(fSchema11Support);
+        fCMBuilder.setSchema11Support(fSchema11Support);
+    }
+
+    /**
+     * Return XML Schema 1.1 support flag
+     */
+    boolean isSchema11Support() {
+    	return fSchema11Support;
+    }
+
     /**
      * Returns a Grammar object by parsing the contents of the
      * entities pointed to by sources.

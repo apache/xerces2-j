@@ -231,6 +231,10 @@ public class XMLSchemaValidator
     protected static final String ROOT_TYPE_DEF =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ROOT_TYPE_DEFINITION_PROPERTY;
 
+    /** Property identifier: xml schema version. */
+    protected static final String XML_SCHEMA_VERSION =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.XML_SCHEMA_VERSION_PROPERTY;
+
     // recognized features and properties
 
     /** Recognized features. */
@@ -294,11 +298,12 @@ public class XMLSchemaValidator
             JAXP_SCHEMA_SOURCE,
             JAXP_SCHEMA_LANGUAGE,
             ROOT_TYPE_DEF,
+            XML_SCHEMA_VERSION
         };
 
     /** Property defaults. */
     private static final Object[] PROPERTY_DEFAULTS =
-        { null, null, null, null, null, null, null, null, null, };
+        { null, null, null, null, null, null, null, null, null, null };
 
     // this is the number of valuestores of each kind
     // we expect an element to have.  It's almost
@@ -486,6 +491,8 @@ public class XMLSchemaValidator
     protected final XSDDescription fXSDDescription = new XSDDescription();
     protected final Hashtable fLocationPairs = new Hashtable();
 
+    /** XML Schema 1.1 Support */
+    boolean fSchema11Support = false;
 
     // handlers
 
@@ -552,6 +559,10 @@ public class XMLSchemaValidator
     public void setProperty(String propertyId, Object value) throws XMLConfigurationException {
         if (propertyId.equals(ROOT_TYPE_DEF)) {
             fRootTypeQName = (javax.xml.namespace.QName)value;
+        }
+        else if (propertyId.equals(XML_SCHEMA_VERSION)) {
+            fSchemaLoader.setSchemaVersion((String)value);
+            fSchema11Support = fSchemaLoader.isSchema11Support();
         }
     } // setProperty(String,Object)
 
