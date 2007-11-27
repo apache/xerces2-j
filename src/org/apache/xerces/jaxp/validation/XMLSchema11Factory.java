@@ -19,9 +19,7 @@ package org.apache.xerces.jaxp.validation;
 
 import java.util.Locale;
 
-import javax.xml.XMLConstants;
-
-import org.apache.xerces.impl.Constants;
+import javax.xml.validation.SchemaFactory;
 
 /**
  * {@link SchemaFactory} for XML Schema.
