@@ -68,6 +68,15 @@ public class YearDV extends AbstractDateTimeDV {
             start = 1;
         }
         int sign = findUTCSign(str, start, len);
+        
+        final int length = ((sign == -1) ? len : sign) - start;
+        if (length < 4) {
+            throw new RuntimeException("Year must have 'CCYY' format");
+        }
+        else if (length > 4 && str.charAt(start) == '0') {
+            throw new RuntimeException("Leading zeros are required if the year value would otherwise have fewer than four digits; otherwise they are forbidden");
+        }
+        
         if (sign == -1) {
             date.year=parseIntYear(str, len);
         }
