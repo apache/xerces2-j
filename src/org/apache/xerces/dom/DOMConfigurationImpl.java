@@ -22,11 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.StringTokenizer;
-import java.util.Vector;
-
-import org.w3c.dom.DOMConfiguration;
-import org.w3c.dom.DOMErrorHandler;
-import org.w3c.dom.DOMStringList;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLEntityManager;
@@ -51,7 +46,10 @@ import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
+import org.w3c.dom.DOMConfiguration;
+import org.w3c.dom.DOMErrorHandler;
 import org.w3c.dom.DOMException;
+import org.w3c.dom.DOMStringList;
 import org.w3c.dom.ls.LSResourceResolver;
 
 /**
@@ -1091,7 +1089,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
      */
 	public DOMStringList getParameterNames() {
 	    if (fRecognizedParameters == null){
-	        Vector parameters = new Vector();
+	        ArrayList parameters = new ArrayList();
 
 	        //Add DOM recognized parameters
 	        //REVISIT: Would have been nice to have a list of

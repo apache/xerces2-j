@@ -18,6 +18,7 @@
 package org.apache.xerces.parsers;
 
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Stack;
 import java.util.StringTokenizer;
@@ -879,7 +880,7 @@ public class DOMParserImpl
      */
     public DOMStringList getParameterNames () {
         if (fRecognizedParameters == null){
-            Vector parameters = new Vector();
+            ArrayList parameters = new ArrayList();
             
             // REVISIT: add Xerces recognized properties/features
             parameters.add(Constants.DOM_NAMESPACES);

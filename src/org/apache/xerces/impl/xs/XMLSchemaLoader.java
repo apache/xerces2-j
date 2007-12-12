@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Locale;
 import java.util.StringTokenizer;
-import java.util.Vector;
 import java.util.WeakHashMap;
 
 import org.apache.xerces.dom.DOMErrorImpl;
@@ -1225,7 +1224,7 @@ XSLoader, DOMConfiguration {
      */
     public DOMStringList getParameterNames() {
         if (fRecognizedParameters == null){
-            Vector v = new Vector();
+            ArrayList v = new ArrayList();
             v.add(Constants.DOM_VALIDATE);
             v.add(Constants.DOM_ERROR_HANDLER);
             v.add(Constants.DOM_RESOURCE_RESOLVER);
