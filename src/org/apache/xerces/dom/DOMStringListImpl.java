@@ -61,12 +61,11 @@ public class DOMStringListImpl implements DOMStringList {
 	 * @see org.w3c.dom.DOMStringList#item(int)
 	 */
 	public String item(int index) {
-        try {
-            return (String) fStrings.get(index);
-        } 
-        catch (ArrayIndexOutOfBoundsException e) {
-            return null;
-        }
+	    final int length = getLength();
+	    if (index >= 0 && index < length) {
+	        return (String) fStrings.get(index);
+	    }
+	    return null;
 	}
 
 	/**
@@ -80,7 +79,7 @@ public class DOMStringListImpl implements DOMStringList {
 	 * @see org.w3c.dom.DOMStringList#contains(String)
 	 */
 	public boolean contains(String param) {
-		return fStrings.contains(param) ;
+		return fStrings.contains(param);
 	}
 
     /**
