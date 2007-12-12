@@ -23,7 +23,7 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.reflect.Method;
-import java.util.Vector;
+import java.util.ArrayList;
 
 import org.apache.xerces.dom.CoreDocumentImpl;
 import org.apache.xerces.dom.DOMErrorImpl;
@@ -337,7 +337,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
     public DOMStringList getParameterNames() {
     	
      	if (fRecognizedParameters == null){
-			Vector parameters = new Vector();
+			ArrayList parameters = new ArrayList();
 
 			//Add DOM recognized parameters
 			//REVISIT: Would have been nice to have a list of 
