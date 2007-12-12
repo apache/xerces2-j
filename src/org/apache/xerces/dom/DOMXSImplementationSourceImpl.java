@@ -17,10 +17,11 @@
 
 package org.apache.xerces.dom;
 
+import java.util.ArrayList;
+
 import org.apache.xerces.impl.xs.XSImplementationImpl;
-import org.w3c.dom.DOMImplementationList;
 import org.w3c.dom.DOMImplementation;
-import java.util.Vector;
+import org.w3c.dom.DOMImplementationList;
 
 /**
  * Allows to retrieve <code>XSImplementation</code>, DOM Level 3 Core and LS implementations
@@ -75,23 +76,23 @@ public class DOMXSImplementationSourceImpl
      *   features.
      */
     public DOMImplementationList getDOMImplementationList(String features) {
-        final Vector implementations = new Vector();
-        
+        final ArrayList implementations = new ArrayList();
+
         // first check whether the CoreDOMImplementation would do
         DOMImplementationList list = super.getDOMImplementationList(features);
-        //Add core DOMImplementations
-        for (int i=0; i < list.getLength(); i++ ) {
-            implementations.addElement(list.item(i));
+        // Add core DOMImplementations
+        for (int i = 0; i < list.getLength(); ++i) {
+            implementations.add(list.item(i));
         }
-        
+
         DOMImplementation impl = PSVIDOMImplementationImpl.getDOMImplementation();
         if (testImpl(impl, features)) {
-            implementations.addElement(impl);
+            implementations.add(impl);
         }
-        
+
         impl = XSImplementationImpl.getDOMImplementation();
         if (testImpl(impl, features)) {
-            implementations.addElement(impl);
+            implementations.add(impl);
         }
         return new DOMImplementationListImpl(implementations); 
     }
