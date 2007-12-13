@@ -32,7 +32,6 @@ import org.apache.xerces.xni.XNIException;
  * @xerces.internal
  *
  * @version $Id$
- *
  */
 public interface XPointerProcessor {
 
@@ -53,8 +52,7 @@ public interface XPointerProcessor {
      * @param  xpointer A String representing the xpointer expression.
      * @throws XNIException Thrown if the xpointer string does not conform to 
      *         the XPointer Framework syntax or the syntax of the pointer part does
-     *         not conform to its definition for its scheme.
-     *   
+     *         not conform to its definition for its scheme. 
      */
     public void parseXPointer(String xpointer) throws XNIException;
 
@@ -72,7 +70,6 @@ public interface XPointerProcessor {
      *                2 - An empty element call
      * @return true if the element was resolved by the xpointer 
      * @throws XNIException Thrown to signal an error
-     *   
      */
     public boolean resolveXPointer(QName element, XMLAttributes attributes,
             Augmentations augs, int event) throws XNIException;
@@ -84,7 +81,6 @@ public interface XPointerProcessor {
      * @return True if the xpointer expression matches a node/fragment in the resource
      *         else returns false. 
      * @throws XNIException Thrown to signal an error
-     *   
      */
     public boolean isFragmentResolved() throws XNIException;
 
@@ -94,8 +90,7 @@ public interface XPointerProcessor {
      * 
      * @return True if the xpointer expression matches a fragment in the resource
      *         else returns false. 
-     * @throws XNIException Thrown to signal an error
-     *   
+     * @throws XNIException Thrown to signal an error 
      */
     public boolean isXPointerResolved() throws XNIException;
     

@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.xerces.xpointer;
 
 import org.apache.xerces.impl.Constants;
@@ -35,9 +36,8 @@ import org.apache.xerces.xs.XSTypeDefinition;
  * </p>
  *
  * @version $Id$
- *
  */
-class ShortHandPointer implements XPointerPart {
+final class ShortHandPointer implements XPointerPart {
     
     // The name of the ShortHand pointer
     private String fShortHandPointer;
