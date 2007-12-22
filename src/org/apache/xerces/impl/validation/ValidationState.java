@@ -17,15 +17,15 @@
 
 package org.apache.xerces.impl.validation;
 
-import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.impl.dv.ValidationContext;
+import java.util.HashMap;
+import java.util.Iterator;
 
+import org.apache.xerces.impl.dv.ValidationContext;
+import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.NamespaceContext;
-import java.util.Hashtable;
-import java.util.Enumeration;
 
 /**
- * Implementation of ValidationContext inteface. Used to establish an
+ * Implementation of the ValidationContext interface. Used to establish an
  * environment for simple type validation.
  * 
  * @xerces.internal
@@ -48,8 +48,8 @@ public class ValidationState implements ValidationContext {
     private SymbolTable fSymbolTable            = null;
 
     //REVISIT: Should replace with a lighter structure.
-    private final Hashtable fIdTable    = new Hashtable();
-    private final Hashtable fIdRefTable = new Hashtable();
+    private final HashMap fIdTable    = new HashMap();
+    private final HashMap fIdRefTable = new HashMap();
     private final static Object fNullValue = new Object();
 
     //
@@ -88,11 +88,10 @@ public class ValidationState implements ValidationContext {
      * otherwise return the first IDREF value without a matching ID value.
      */
     public String checkIDRefID () {
-        Enumeration en = fIdRefTable.keys();
-
+        Iterator iter = fIdRefTable.keySet().iterator();
         String key;
-        while (en.hasMoreElements()) {
-            key = (String)en.nextElement();
+        while (iter.hasNext()) {
+            key = (String) iter.next();
             if (!fIdTable.containsKey(key)) {
                   return key;
             }
