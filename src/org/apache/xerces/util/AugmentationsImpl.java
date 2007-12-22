@@ -20,6 +20,8 @@ package org.apache.xerces.util;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import org.apache.xerces.xni.Augmentations;
 
@@ -273,16 +275,14 @@ public class AugmentationsImpl implements Augmentations {
         public String toString() {
             StringBuffer buff = new StringBuffer();
             buff.append("LargeContainer");
-            Enumeration keys = Collections.enumeration(fAugmentations.keySet());
-
-            while (keys.hasMoreElements()) {
-                Object key = keys.nextElement();
+            Iterator entries = fAugmentations.entrySet().iterator();
+            while (entries.hasNext()) {
+                Map.Entry entry = (Map.Entry) entries.next();
                 buff.append("\nkey == ");
-                buff.append(key);
+                buff.append(entry.getKey());
                 buff.append("; value == ");
-                buff.append(fAugmentations.get(key));
+                buff.append(entry.getValue());
             }
-
             return buff.toString();
         }
     }
