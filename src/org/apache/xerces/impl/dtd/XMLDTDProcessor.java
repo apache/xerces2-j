@@ -47,8 +47,6 @@ import org.apache.xerces.xni.parser.XMLDTDContentModelFilter;
 import org.apache.xerces.xni.parser.XMLDTDContentModelSource;
 import org.apache.xerces.xni.parser.XMLDTDFilter;
 import org.apache.xerces.xni.parser.XMLDTDSource;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
 
 /**
  * The DTD processor. The processor implements a DTD
