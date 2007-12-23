@@ -17,6 +17,7 @@
 
 package org.apache.xerces.impl.xs.traversers;
 
+import java.util.ArrayList;
 import java.util.Vector;
 
 import org.apache.xerces.impl.dv.InvalidDatatypeFacetException;
@@ -268,12 +269,12 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             }
         }
         // get types from "memberTypes" attribute
-        Vector dTValidators = null;
+        ArrayList dTValidators = null;
         XSSimpleType dv = null;
         XSObjectList dvs;
         if (union && memberTypes != null && memberTypes.size() > 0) {
             int size = memberTypes.size();
-            dTValidators = new Vector(size, 2);
+            dTValidators = new ArrayList(size);
             // for each qname in the list
             for (int i = 0; i < size; i++) {
                 // get the type decl
@@ -284,9 +285,9 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                     if (dv.getVariety() == XSSimpleType.VARIETY_UNION) {
                         dvs = dv.getMemberTypes();
                         for (int j = 0; j < dvs.getLength(); j++)
-                            dTValidators.addElement(dvs.item(j));
+                            dTValidators.add(dvs.item(j));
                     } else {
-                        dTValidators.addElement(dv);
+                        dTValidators.add(dv);
                     }
                 }
             }
@@ -303,7 +304,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                     reportSchemaError(list ? "src-simple-type.3.a" : "src-simple-type.2.a", null, content);
                 }
                 else {
-                    // traver this child to get the base type
+                    // traverse this child to get the base type
                     baseValidator = traverseLocal(content, schemaDoc, grammar);
                 }
                 // get the next element
@@ -311,19 +312,21 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             }
             else if (union) {
                 if (dTValidators == null) {
-                    dTValidators = new Vector(2, 2);
+                    dTValidators = new ArrayList(2);
                 }
                 do {
-                    // traver this child to get the member type
+                    // traverse this child to get the member type
                     dv = traverseLocal(content, schemaDoc, grammar);
                     if (dv != null) {
                         // if it's a union, expand it
                         if (dv.getVariety() == XSSimpleType.VARIETY_UNION) {
                             dvs = dv.getMemberTypes();
-                            for (int j = 0; j < dvs.getLength(); j++)
-                                dTValidators.addElement(dvs.item(j));
-                        } else {
-                            dTValidators.addElement(dv);
+                            for (int j = 0; j < dvs.getLength(); j++) {
+                                dTValidators.add(dvs.item(j));
+                            }
+                        } 
+                        else {
+                            dTValidators.add(dv);
                         }
                     }
                     // get the next element
@@ -341,8 +344,8 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         else if (union && (memberTypes == null || memberTypes.size() == 0)) {
             // it's an error if "memberTypes" is empty and no "simpleType" appears
             reportSchemaError("src-union-memberTypes-or-simpleTypes", null, child);
-            dTValidators = new Vector(1);
-            dTValidators.addElement(SchemaGrammar.fAnySimpleType);
+            dTValidators = new ArrayList(1);
+            dTValidators.add(SchemaGrammar.fAnySimpleType);
         }
         // error finding "base" or error traversing "simpleType".
         // don't need to report an error, since some error has been reported.
@@ -352,8 +355,8 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         // error finding "memberTypes" or error traversing "simpleType".
         // don't need to report an error, since some error has been reported.
         if (union && (dTValidators == null || dTValidators.size() == 0)) {
-            dTValidators = new Vector(1);
-            dTValidators.addElement(SchemaGrammar.fAnySimpleType);
+            dTValidators = new ArrayList(1);
+            dTValidators.add(SchemaGrammar.fAnySimpleType);
         }
         // item type of list types can't have list content
         if (list && isListDatatype(baseValidator)) {
@@ -370,9 +373,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                     annotations == null? null : new XSObjectListImpl(annotations, annotations.length));
         }
         else if (union) {
-            XSSimpleType[] memberDecls = new XSSimpleType[dTValidators.size()];
-            for (int i = 0; i < dTValidators.size(); i++)
-                memberDecls[i] = (XSSimpleType)dTValidators.elementAt(i);
+            XSSimpleType[] memberDecls = (XSSimpleType[]) dTValidators.toArray(new XSSimpleType[dTValidators.size()]);
             newDecl = schemaFactory.createTypeUnion(name, schemaDoc.fTargetNamespace, (short)finalProperty, memberDecls,
                     annotations == null? null : new XSObjectListImpl(annotations, annotations.length));
         }
