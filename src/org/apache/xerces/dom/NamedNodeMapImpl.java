@@ -17,7 +17,12 @@
 
 package org.apache.xerces.dom;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 import org.w3c.dom.DOMException;
@@ -38,7 +43,7 @@ import org.w3c.dom.Node;
  * NOTE: The "primary" storage key is taken from the NodeName attribute of the
  * node. The "secondary" storage key is the namespaceURI and localName, when
  * accessed by DOM level 2 nodes. All nodes, even DOM Level 2 nodes are stored
- * in a single Vector sorted by the primary "nodename" key.
+ * in a single ArrayList sorted by the primary "nodename" key.
  * <P>
  * NOTE: item()'s integer index does _not_ imply that the named nodes
  * must be stored in an array; that's only an access method. Note too
@@ -72,7 +77,7 @@ public class NamedNodeMapImpl
     protected final static short HASDEFAULTS  = 0x1<<2;
 
     /** Nodes. */
-    protected Vector nodes;
+    protected List nodes;
 
     protected NodeImpl ownerNode; // the node this map belongs to
 
@@ -115,7 +120,7 @@ public class NamedNodeMapImpl
      */
     public Node item(int index) {
     	return (nodes != null && index < nodes.size()) ?
-                    (Node)(nodes.elementAt(index)) : null;
+                    (Node)(nodes.get(index)) : null;
     }
 
     /**
@@ -128,7 +133,7 @@ public class NamedNodeMapImpl
     public Node getNamedItem(String name) {
 
     	int i = findNamePoint(name,0);
-        return (i < 0) ? null : (Node)(nodes.elementAt(i));
+        return (i < 0) ? null : (Node)(nodes.get(i));
 
     } // getNamedItem(String):Node
 
@@ -146,7 +151,7 @@ public class NamedNodeMapImpl
     public Node getNamedItemNS(String namespaceURI, String localName) {
 
     	int i = findNamePoint(namespaceURI, localName);
-        return (i < 0) ? null : (Node)(nodes.elementAt(i));
+        return (i < 0) ? null : (Node)(nodes.get(i));
 
     } // getNamedItemNS(String,String):Node
 
@@ -185,14 +190,14 @@ public class NamedNodeMapImpl
         int i = findNamePoint(arg.getNodeName(),0);
         NodeImpl previous = null;
         if (i >= 0) {
-            previous = (NodeImpl) nodes.elementAt(i);
-            nodes.setElementAt(arg,i);
+            previous = (NodeImpl) nodes.get(i);
+            nodes.set(i, arg);
         } else {
             i = -1 - i; // Insert point (may be end of list)
             if (null == nodes) {
-                nodes = new Vector(5, 10);
+                nodes = new ArrayList(5);
             }
-            nodes.insertElementAt(arg, i);
+            nodes.add(i, arg);
         }
         return previous;
         
@@ -228,21 +233,21 @@ public class NamedNodeMapImpl
         int i = findNamePoint(arg.getNamespaceURI(), arg.getLocalName());
         NodeImpl previous = null;
         if (i >= 0) {
-            previous = (NodeImpl) nodes.elementAt(i);
-            nodes.setElementAt(arg,i);
+            previous = (NodeImpl) nodes.get(i);
+            nodes.set(i, arg);
         } else {
             // If we can't find by namespaceURI, localName, then we find by
             // nodeName so we know where to insert.
             i = findNamePoint(arg.getNodeName(),0);
             if (i >= 0) {
-                previous = (NodeImpl) nodes.elementAt(i);
-                nodes.insertElementAt(arg,i);
+                previous = (NodeImpl) nodes.get(i);
+                nodes.add(i, arg);
             } else {
                 i = -1 - i; // Insert point (may be end of list)
                 if (null == nodes) {
-                    nodes = new Vector(5, 10);
+                    nodes = new ArrayList(5);
                 }
-                nodes.insertElementAt(arg, i);
+                nodes.add(i, arg);
             }
         }
         return previous;
@@ -270,8 +275,8 @@ public class NamedNodeMapImpl
             throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
         }
 
-        NodeImpl n = (NodeImpl)nodes.elementAt(i);
-        nodes.removeElementAt(i);
+        NodeImpl n = (NodeImpl)nodes.get(i);
+        nodes.remove(i);
 
         return n;
 
@@ -306,8 +311,8 @@ public class NamedNodeMapImpl
             throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
         }
 
-        NodeImpl n = (NodeImpl)nodes.elementAt(i);
-        nodes.removeElementAt(i);
+        NodeImpl n = (NodeImpl)nodes.get(i);
+        nodes.remove(i);
 
         return n;
 
@@ -329,19 +334,21 @@ public class NamedNodeMapImpl
     }
 
     protected void cloneContent(NamedNodeMapImpl srcmap) {
-        Vector srcnodes = srcmap.nodes;
+        List srcnodes = srcmap.nodes;
         if (srcnodes != null) {
             int size = srcnodes.size();
             if (size != 0) {
                 if (nodes == null) {
-                    nodes = new Vector(size);
+                    nodes = new ArrayList(size);
                 }
-                nodes.setSize(size);
+                else {
+                    nodes.clear();
+                }
                 for (int i = 0; i < size; ++i) {
-                    NodeImpl n = (NodeImpl) srcmap.nodes.elementAt(i);
+                    NodeImpl n = (NodeImpl) srcmap.nodes.get(i);
                     NodeImpl clone = (NodeImpl) n.cloneNode(true);
                     clone.isSpecified(n.isSpecified());
-                    nodes.setElementAt(clone, i);
+                    nodes.add(clone);
                 }
             }
         }
@@ -366,7 +373,7 @@ public class NamedNodeMapImpl
         isReadOnly(readOnly);
     	if (deep && nodes != null) {
             for (int i = nodes.size() - 1; i >= 0; i--) {
-                ((NodeImpl) nodes.elementAt(i)).setReadOnly(readOnly,deep);
+                ((NodeImpl) nodes.get(i)).setReadOnly(readOnly,deep);
             }
     	}
     } // setReadOnly(boolean,boolean)
@@ -390,7 +397,8 @@ public class NamedNodeMapImpl
      */
     protected void setOwnerDocument(CoreDocumentImpl doc) {
         if (nodes != null) {
-            for (int i = 0; i < nodes.size(); i++) {
+            final int size = nodes.size();
+            for (int i = 0; i < size; ++i) {
                 ((NodeImpl)item(i)).setOwnerDocument(doc);
             }
         }
@@ -446,7 +454,7 @@ public class NamedNodeMapImpl
 
             while (first <= last) {
                 i = (first + last) / 2;
-                int test = name.compareTo(((Node)(nodes.elementAt(i))).getNodeName());
+                int test = name.compareTo(((Node)(nodes.get(i))).getNodeName());
                 if (test == 0) {
                     return i; // Name found
                 }
@@ -475,15 +483,16 @@ public class NamedNodeMapImpl
         if (nodes == null) return -1;
         if (name == null) return -1;
         
-        // This is a linear search through the same nodes Vector.
-        // The Vector is sorted on the DOM Level 1 nodename.
+        // This is a linear search through the same nodes ArrayList.
+        // The ArrayList is sorted on the DOM Level 1 nodename.
         // The DOM Level 2 NS keys are namespaceURI and Localname, 
         // so we must linear search thru it.
         // In addition, to get this to work with nodes without any namespace
         // (namespaceURI and localNames are both null) we then use the nodeName
-        // as a seconday key.
-        for (int i = 0; i < nodes.size(); i++) {
-            NodeImpl a = (NodeImpl)nodes.elementAt(i);
+        // as a secondary key.
+        final int size = nodes.size();
+        for (int i = 0; i < size; ++i) {
+            NodeImpl a = (NodeImpl)nodes.get(i);
             String aNamespaceURI = a.getNamespaceURI();
             String aLocalName = a.getLocalName();
             if (namespaceURI == null) {
@@ -507,15 +516,15 @@ public class NamedNodeMapImpl
     // return false
     protected boolean precedes(Node a, Node b) {
 
-       if (nodes != null) {
-          for (int i = 0; i < nodes.size(); i++) {
-              Node n = (Node)nodes.elementAt(i);
-              if (n==a) return true;
-              if (n==b) return false;
-          }
-       }
-
-       return false;
+        if (nodes != null) {
+            final int size = nodes.size();
+            for (int i = 0; i < size; ++i) {
+                Node n = (Node)nodes.get(i);
+                if (n==a) return true;
+                if (n==b) return false;
+            }
+        }
+        return false;
     }
 
 
@@ -524,14 +533,14 @@ public class NamedNodeMapImpl
       */
     protected void removeItem(int index) {
        if (nodes != null && index < nodes.size()){
-           nodes.removeElementAt(index);
+           nodes.remove(index);
        }
     }
 
 
     protected Object getItem (int index){
-        if (nodes !=null) {
-            return nodes.elementAt(index);
+        if (nodes != null) {
+            return nodes.get(index);
         }
         return null;
     }
@@ -539,43 +548,43 @@ public class NamedNodeMapImpl
     protected int addItem (Node arg) {
     	int i = findNamePoint(arg.getNamespaceURI(), arg.getLocalName());
     	if (i >= 0) {
-            nodes.setElementAt(arg,i);
+            nodes.set(i, arg);
     	} 
         else {
     	    // If we can't find by namespaceURI, localName, then we find by
     	    // nodeName so we know where to insert.
     	    i = findNamePoint(arg.getNodeName(),0);
             if (i >= 0) {
-                nodes.insertElementAt(arg,i);
+                nodes.add(i, arg);
             } 
             else {
                 i = -1 - i; // Insert point (may be end of list)
                 if (null == nodes) {
-                    nodes = new Vector(5, 10);
+                    nodes = new ArrayList(5);
                 }
-                nodes.insertElementAt(arg, i);
+                nodes.add(i, arg);
             }
         }
         return i;        
     }
 
     /**
-     * NON-DOM: copy content of this map into the specified vector
+     * NON-DOM: copy content of this map into the specified ArrayList
      * 
-     * @param list   Vector to copy information into.
+     * @param list   ArrayList to copy information into.
      * @return A copy of this node named map
      */
-    protected Vector cloneMap(Vector list){
+    protected ArrayList cloneMap(ArrayList list) {
         if (list == null) {
-            list = new Vector(5, 10);
+            list = new ArrayList(5);
         }
-        list.setSize(0);
+        list.clear();
         if (nodes != null) {
-            for (int i=0; i<nodes.size(); i++) {
-                list.insertElementAt(nodes.elementAt(i), i);
+            final int size = nodes.size();
+            for (int i = 0; i < size; ++i) {
+                list.add(nodes.get(i));
             }
         }
-        
         return list;
     }
     
@@ -588,9 +597,27 @@ public class NamedNodeMapImpl
       */
     public void removeAll (){
         if (nodes != null) {
-            nodes.removeAllElements();
+            nodes.clear();
         }
     }
     
+    private void readObject(ObjectInputStream in)
+        throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        nodes = new ArrayList(nodes);
+    }
 
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        List oldNodes = this.nodes;
+        try {
+            this.nodes = new Vector(oldNodes);
+            out.defaultWriteObject();
+        }
+        // If the write fails for some reason ensure 
+        // that we restore the original object.
+        finally {
+            this.nodes = oldNodes;
+        }
+    }
+    
 } // class NamedNodeMapImpl
