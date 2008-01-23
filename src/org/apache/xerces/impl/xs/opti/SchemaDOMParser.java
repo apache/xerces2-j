@@ -77,6 +77,9 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
     /** Default constructor. */
     public SchemaDOMParser(XMLParserConfiguration config) {
         this.config = config;
+        config.setDocumentHandler(this);
+        config.setDTDHandler(this);
+        config.setDTDContentModelHandler(this);
     }
     
     // Reference to the current annotation element.
@@ -521,14 +524,6 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
      */
     public void parse(XMLInputSource inputSource) throws IOException {
         config.parse(inputSource);
-    }
-    
-    /**
-     * Gets the document from SchemaParsingConfig
-     * @return Document
-     */
-    public Document getDocument2() {
-    	return ((SchemaParsingConfig)config).getDocument();
     }
     
     /**

@@ -692,14 +692,6 @@ public class SchemaParsingConfig extends BasicParserConfiguration
      */
     public void reset() throws XNIException {
         
-        // set handlers
-        if (fSchemaDOMParser == null) {
-            fSchemaDOMParser = new SchemaDOMParser(this);
-        }
-        fDocumentHandler = fSchemaDOMParser;
-        fDTDHandler = fSchemaDOMParser;
-        fDTDContentModelHandler = fSchemaDOMParser;
-        
         // initialize the common components
         super.reset();
         
@@ -985,11 +977,6 @@ public class SchemaParsingConfig extends BasicParserConfiguration
     //
     // other methods
     //
-    
-    /** Returns the Document object. */
-    public Document getDocument() {
-        return fSchemaDOMParser.getDocument();
-    }
     
     /** */
     public void resetNodePool() {
