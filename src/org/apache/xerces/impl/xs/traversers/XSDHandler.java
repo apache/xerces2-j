@@ -1801,7 +1801,8 @@ public class XSDHandler {
                 }
                 
                 fSchemaParser.parse(schemaSource);
-                schemaElement = fSchemaParser.getDocument2() == null ? null: DOMUtil.getRoot(fSchemaParser.getDocument2());
+                Document schemaDocument = fSchemaParser.getDocument();
+                schemaElement = schemaDocument != null ? DOMUtil.getRoot(schemaDocument) : null;
                 
                 // now we need to store the mapping information from system id
                 // to the document. also from the document to the system id.
