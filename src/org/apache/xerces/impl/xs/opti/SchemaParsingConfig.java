@@ -215,8 +215,6 @@ public class SchemaParsingConfig extends BasicParserConfiguration
     /** Input Source */
     protected XMLInputSource fInputSource;
     
-    protected SchemaDOMParser fSchemaDOMParser;
-    
     protected final ValidationManager fValidationManager;
     // state
     
