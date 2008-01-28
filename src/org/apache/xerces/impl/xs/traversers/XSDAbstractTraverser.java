@@ -730,7 +730,7 @@ abstract class XSDAbstractTraverser {
             }
         }
         
-        particle.fMaxOccurs = min;
+        particle.fMinOccurs = min;
         particle.fMaxOccurs = max;
         
         return particle;
