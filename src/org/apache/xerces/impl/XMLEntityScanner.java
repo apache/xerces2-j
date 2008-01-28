@@ -1745,9 +1745,10 @@ public class XMLEntityScanner implements XMLLocator {
 
         fCurrentEntity.baseCharOffset += (fCurrentEntity.position - fCurrentEntity.startPosition);
         // read characters
-        int length = fCurrentEntity.mayReadChunks?
-                (fCurrentEntity.ch.length - offset):
-                (XMLEntityManager.DEFAULT_XMLDECL_BUFFER_SIZE);
+        int length = fCurrentEntity.ch.length - offset;
+        if (!fCurrentEntity.mayReadChunks && length > XMLEntityManager.DEFAULT_XMLDECL_BUFFER_SIZE) {
+            length = XMLEntityManager.DEFAULT_XMLDECL_BUFFER_SIZE;
+        }
         if (DEBUG_BUFFER) System.out.println("  length to try to read: "+length);
         int count = fCurrentEntity.reader.read(fCurrentEntity.ch, offset, length);
         if (DEBUG_BUFFER) System.out.println("  length actually read:  "+count);
