@@ -17,14 +17,10 @@
 
 package sax;
 
-import java.lang.reflect.Method;
-
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-
-import sax.helpers.AttributesImpl;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
@@ -35,10 +31,13 @@ import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
+import org.xml.sax.ext.Locator2;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.ParserAdapter;
 import org.xml.sax.helpers.ParserFactory;
 import org.xml.sax.helpers.XMLReaderFactory;
+
+import sax.helpers.AttributesImpl;
 
 /**
  * A sample SAX2 writer. This sample program illustrates how to
@@ -251,21 +250,28 @@ public class Writer
 
         // Root Element
         if (fElementDepth == 0) {
+            String encoding = "UTF-8";
             if (fLocator != null) {
-                fXML11 = "1.1".equals(getVersion());
+                if (fLocator instanceof Locator2) {
+                    Locator2 locator2 = (Locator2) fLocator;
+                    fXML11 = "1.1".equals(locator2.getXMLVersion());
+                    encoding = locator2.getEncoding();
+                    if (encoding == null) {
+                        encoding = "UTF-8";
+                    }
+                }
                 fLocator = null;
             }
 
             // The XML declaration cannot be printed in startDocument because
-            // the version reported by the Locator cannot be relied on until after
-            // the XML declaration in the instance document has been read.
+            // the version and encoding information reported by the Locator 
+            // cannot be relied on until the next event after startDocument.
             if (!fCanonical) {
-                if (fXML11) {
-                    fOut.println("<?xml version=\"1.1\" encoding=\"UTF-8\"?>");
-                }
-                else {
-                    fOut.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-                }
+                fOut.print("<?xml version=\"");
+                fOut.print(fXML11 ? "1.1" : "1.0");
+                fOut.print("\" encoding=\"");
+                fOut.print(encoding);
+                fOut.println("\"?>");
                 fOut.flush();
             }
         }
@@ -529,27 +535,6 @@ public class Writer
         System.err.flush();
 
     } // printError(String,SAXParseException)
-
-    /** Extracts the XML version from the Locator. */
-    protected String getVersion() {
-        if (fLocator == null) {
-            return null;
-        }
-        String version = null;
-        Method getXMLVersion = null;
-        try {
-            getXMLVersion = fLocator.getClass().getMethod("getXMLVersion", new Class[]{});
-            // If Locator implements Locator2, this method will exist.
-            if (getXMLVersion != null) {
-                version = (String) getXMLVersion.invoke(fLocator, (Object[]) null);
-            }
-        } 
-        catch (Exception e) { 
-            // Either this locator object doesn't have 
-            // this method, or we're on an old JDK.
-        }
-        return version;
-    } // getVersion()
 
     //
     // Main
