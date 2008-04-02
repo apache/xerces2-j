@@ -460,6 +460,8 @@ public final class Constants {
     
     // Constant to enable Schema 1.1 support
     public final static boolean SCHEMA_1_1_SUPPORT = false;
+    public final static short SCHEMA_VERSION_1_0 = 1;
+    public final static short SCHEMA_VERSION_1_1 = 4;    
     
     // private
     

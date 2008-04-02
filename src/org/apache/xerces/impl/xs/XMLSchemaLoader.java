@@ -245,7 +245,7 @@ XSLoader, DOMConfiguration {
     private DOMEntityResolverWrapper fResourceResolver = null;
 
     /** XML Schema 1.1 flag */
-    private boolean fSchema11Support = false;
+    private short fSchemaVersion = Constants.SCHEMA_VERSION_1_0;
     
     // default constructor.  Create objects we absolutely need:
     public XMLSchemaLoader() {
@@ -484,20 +484,20 @@ XSLoader, DOMConfiguration {
      */
     void setSchemaVersion(String version) {
         if (version.equals(Constants.W3C_XML_SCHEMA11_NS_URI)) {
-            fSchema11Support = true;
+            fSchemaVersion = Constants.SCHEMA_VERSION_1_1;
         }
         else {
-            fSchema11Support = false;
+            fSchemaVersion = Constants.SCHEMA_VERSION_1_0;
         }
-        fSchemaHandler.setSchema11Support(fSchema11Support);
-        fCMBuilder.setSchema11Support(fSchema11Support);
+        fSchemaHandler.setSchemaVersion(fSchemaVersion);
+        fCMBuilder.setSchemaVersion(fSchemaVersion);
     }
 
     /**
      * Return XML Schema 1.1 support flag
      */
-    boolean isSchema11Support() {
-    	return fSchema11Support;
+    short getSchemaVersion() {
+    	return fSchemaVersion;
     }
 
     /**

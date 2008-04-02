@@ -17,6 +17,7 @@
 
 package org.apache.xerces.impl.xs.models;
 
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dtd.models.CMNode;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
@@ -50,7 +51,7 @@ public class CMBuilder {
     //Factory to create Bin, Uni, Leaf nodes
     private final CMNodeFactory fNodeFactory;
     // XML Schema 1.1 flag
-    private boolean fSchema11Support = false;
+    private short fSchemaVersion = Constants.SCHEMA_VERSION_1_0;
 
     public CMBuilder(CMNodeFactory nodeFactory) {
         fDeclPool = null;
@@ -64,8 +65,8 @@ public class CMBuilder {
     /**
      * Set XML Schema 11 flag
      */
-    public void setSchema11Support(boolean state) {
-    	fSchema11Support = state;
+    public void setSchemaVersion(short version) {
+        fSchemaVersion = version;
     }
 
     /**

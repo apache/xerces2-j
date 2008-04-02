@@ -492,7 +492,7 @@ public class XMLSchemaValidator
     protected final Hashtable fLocationPairs = new Hashtable();
 
     /** XML Schema 1.1 Support */
-    boolean fSchema11Support = false;
+    short fSchemaVersion = Constants.SCHEMA_VERSION_1_0;
 
     // handlers
 
@@ -562,7 +562,7 @@ public class XMLSchemaValidator
         }
         else if (propertyId.equals(XML_SCHEMA_VERSION)) {
             fSchemaLoader.setSchemaVersion((String)value);
-            fSchema11Support = fSchemaLoader.isSchema11Support();
+            fSchemaVersion = fSchemaLoader.getSchemaVersion();
         }
     } // setProperty(String,Object)
 

@@ -347,7 +347,7 @@ public class XSDHandler {
     XSAnnotationGrammarPool fGrammarBucketAdapter;
 
     // flag to indicate schema 1.1 support
-    boolean fSchema11Support = false;
+    short fSchemaVersion = Constants.SCHEMA_VERSION_1_0;
 
     // these data members are needed for the deferred traversal
     // of local elements.
@@ -1801,8 +1801,7 @@ public class XSDHandler {
                 }
                 
                 fSchemaParser.parse(schemaSource);
-                Document schemaDocument = fSchemaParser.getDocument();
-                schemaElement = schemaDocument != null ? DOMUtil.getRoot(schemaDocument) : null;
+                schemaElement = fSchemaParser.getDocument() == null ? null: DOMUtil.getRoot(fSchemaParser.getDocument());
                 
                 // now we need to store the mapping information from system id
                 // to the document. also from the document to the system id.
@@ -2702,8 +2701,12 @@ public class XSDHandler {
      *
      * @param state
      */
-    public void setSchema11Support(boolean state) {
-        fSchema11Support = state;
+    public void setSchemaVersion(short version) {
+        fSchemaVersion = version;
+    }
+
+    public short getSchemaVersion() {
+        return fSchemaVersion;
     }
 
 } // XSDHandler
