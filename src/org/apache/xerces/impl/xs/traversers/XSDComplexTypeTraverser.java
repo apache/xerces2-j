@@ -241,6 +241,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 
                 // set the base to the anyType
                 fBaseType = SchemaGrammar.fAnyType;
+                fDerivedBy = XSConstants.DERIVATION_RESTRICTION;
                 processComplexContent(child, mixedAtt.booleanValue(), false,
                         schemaDoc, grammar);
             }
@@ -279,6 +280,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 
                 // set the base to the anyType
                 fBaseType = SchemaGrammar.fAnyType;
+                fDerivedBy = XSConstants.DERIVATION_RESTRICTION;
                 processComplexContent(child, mixedAtt.booleanValue(), false,
                         schemaDoc, grammar);
             }
