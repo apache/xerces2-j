@@ -102,6 +102,7 @@ final class SchemaContentHandler implements ContentHandler {
      */
     public void startDocument() throws SAXException {
         fNeedPushNSContext = true;
+        fNamespaceContext.reset();
         try {
             fSchemaDOMParser.startDocument(fSAXLocatorWrapper, null, fNamespaceContext, null);
         }
