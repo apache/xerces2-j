@@ -861,15 +861,17 @@ XSLoader, DOMConfiguration {
         } 
         else if (val instanceof File) {
             File file = (File) val;
+            String escapedURI = FilePathToURI.filepath2URI(file.getAbsolutePath());
             InputStream is = null;
             try {
                 is = new BufferedInputStream(new FileInputStream(file));
-            } catch (FileNotFoundException ex) {
+            } 
+            catch (FileNotFoundException ex) {
                 fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                         "schema_reference.4", new Object[] { file.toString() },
                         XMLErrorReporter.SEVERITY_ERROR);
             }
-            return new XMLInputSource(null, null, null, is, null);
+            return new XMLInputSource(null, escapedURI, null, is, null);
         }
         MessageFormatter mf = fErrorReporter.getMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN);
         throw new XMLConfigurationException(
