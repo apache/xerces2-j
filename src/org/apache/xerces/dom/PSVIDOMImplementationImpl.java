@@ -37,7 +37,7 @@ import org.w3c.dom.Element;
  * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */
-public class PSVIDOMImplementationImpl extends CoreDOMImplementationImpl {
+public class PSVIDOMImplementationImpl extends DOMImplementationImpl {
 
     //
     // Data
