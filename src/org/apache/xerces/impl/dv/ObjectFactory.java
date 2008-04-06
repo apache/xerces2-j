@@ -134,7 +134,7 @@ final class ObjectFactory {
         // Use the system property first
         try {
             String systemProp = SecuritySupport.getSystemProperty(factoryId);
-            if (systemProp != null) {
+            if (systemProp != null && systemProp.length() > 0) {
                 if (DEBUG) debugPrintln("found system property, value=" + systemProp);
                 return newInstance(systemProp, cl, true);
             }
