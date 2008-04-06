@@ -45,7 +45,7 @@ public class HTMLDOMImplementationImpl
      * Holds a reference to the single instance of the DOM implementation.
      * Only one instance is required since this class is multiple entry.
      */
-    private static HTMLDOMImplementation _instance = new HTMLDOMImplementationImpl();
+    private static final HTMLDOMImplementation _instance = new HTMLDOMImplementationImpl();
 
 
     /**

@@ -49,7 +49,7 @@ public class DOMImplementationImpl extends CoreDOMImplementationImpl
     // static
 
     /** Dom implementation singleton. */
-    static DOMImplementationImpl singleton = new DOMImplementationImpl();
+    static final DOMImplementationImpl singleton = new DOMImplementationImpl();
 
 
     //
