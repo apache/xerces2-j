@@ -42,7 +42,7 @@ public class DeferredDOMImplementationImpl
     // static
     
     /** Dom implementation singleton. */
-    static DeferredDOMImplementationImpl singleton = new DeferredDOMImplementationImpl();
+    static final DeferredDOMImplementationImpl singleton = new DeferredDOMImplementationImpl();
     
     
     //

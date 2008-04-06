@@ -91,8 +91,8 @@ public class CoreDOMImplementationImpl
     
 	// static
 	/** Dom implementation singleton. */
-	static CoreDOMImplementationImpl singleton =
-		new CoreDOMImplementationImpl();
+	static final CoreDOMImplementationImpl singleton = new CoreDOMImplementationImpl();
+	
 	//
 	// Public methods
 	//
@@ -683,7 +683,7 @@ public class CoreDOMImplementationImpl
      * SoftReferences which haven't yet been cleared by the garbage
      * collector.
      */
-    static class RevalidationHandlerHolder {
+    static final class RevalidationHandlerHolder {
         RevalidationHandlerHolder(RevalidationHandler handler) {
             this.handler = handler;
         }
@@ -694,7 +694,7 @@ public class CoreDOMImplementationImpl
      * A holder for XMLDTDLoaders. This allows us to reuse SoftReferences 
      * which haven't yet been cleared by the garbage collector.
      */
-    static class XMLDTDLoaderHolder {
+    static final class XMLDTDLoaderHolder {
         XMLDTDLoaderHolder(XMLDTDLoader loader) {
             this.loader = loader;
         }

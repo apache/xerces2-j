@@ -46,7 +46,7 @@ public class PSVIDOMImplementationImpl extends CoreDOMImplementationImpl {
     // static
 
     /** Dom implementation singleton. */
-    static PSVIDOMImplementationImpl singleton = new PSVIDOMImplementationImpl();
+    static final PSVIDOMImplementationImpl singleton = new PSVIDOMImplementationImpl();
 
     //
     // Public methods

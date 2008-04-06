@@ -47,7 +47,7 @@ public class XSImplementationImpl extends CoreDOMImplementationImpl
     // static
 
     /** Dom implementation singleton. */
-    static XSImplementationImpl singleton = new XSImplementationImpl();
+    static final XSImplementationImpl singleton = new XSImplementationImpl();
 
     //
     // Public methods

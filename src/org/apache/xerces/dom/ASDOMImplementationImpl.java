@@ -50,7 +50,7 @@ public class ASDOMImplementationImpl extends DOMImplementationImpl
     // static
 
     /** Dom implementation singleton. */
-    static ASDOMImplementationImpl singleton = new ASDOMImplementationImpl();
+    static final ASDOMImplementationImpl singleton = new ASDOMImplementationImpl();
 
 
     //
