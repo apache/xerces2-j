@@ -17,15 +17,14 @@
 
 package org.apache.xerces.impl.xs;
 
-import org.apache.xerces.dom.CoreDOMImplementationImpl;
 import org.apache.xerces.dom.DOMMessageFormatter;
+import org.apache.xerces.dom.PSVIDOMImplementationImpl;
 import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSException;
 import org.apache.xerces.xs.XSImplementation;
 import org.apache.xerces.xs.XSLoader;
 import org.w3c.dom.DOMImplementation;
-
 
 /**
  * Implements XSImplementation interface that allows one to retrieve an instance of <code>XSLoader</code>. 
@@ -37,7 +36,7 @@ import org.w3c.dom.DOMImplementation;
  * @author Elena Litani, IBM
  * @version $Id$
  */
-public class XSImplementationImpl extends CoreDOMImplementationImpl 
+public class XSImplementationImpl extends PSVIDOMImplementationImpl 
  								  implements XSImplementation {
 
     //
