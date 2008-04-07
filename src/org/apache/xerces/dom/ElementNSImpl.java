@@ -336,89 +336,14 @@ public class ElementNSImpl
         }
         return localName;
     }
-
-
-   /**
-     * DOM Level 3 WD - Experimental.
-     * Retrieve baseURI
+    
+    /**
+     * NON-DOM
+     * Returns the xml:base attribute.
      */
-    public String getBaseURI() {
-
-        if (needsSyncData()) {
-            synchronizeData();
-        }
-        // Absolute base URI is computed according to XML Base (http://www.w3.org/TR/xmlbase/#granularity)
-
-        // 1.  the base URI specified by an xml:base attribute on the element, if one exists
-
-        if (attributes != null) {
-            Attr attrNode = (Attr)attributes.getNamedItemNS("http://www.w3.org/XML/1998/namespace", "base");
-            if (attrNode != null) {
-                String uri =  attrNode.getNodeValue();
-                if (uri.length() != 0 ) {// attribute value is always empty string
-                    try {
-                        uri = new URI(uri).toString();
-                    }
-                    catch (org.apache.xerces.util.URI.MalformedURIException e) {
-                        // This may be a relative URI.
-                        
-                        // Start from the base URI of the parent, or if this node has no parent, the owner node.
-                        NodeImpl parentOrOwner = (parentNode() != null) ? parentNode() : ownerNode;
-                        
-                        // Make any parentURI into a URI object to use with the URI(URI, String) constructor.
-                        String parentBaseURI = (parentOrOwner != null) ? parentOrOwner.getBaseURI() : null;
-                        
-                        if (parentBaseURI != null) {
-                            try {
-                                uri = new URI(new URI(parentBaseURI), uri).toString();
-                            }
-                            catch (org.apache.xerces.util.URI.MalformedURIException ex){
-                                // This should never happen: parent should have checked the URI and returned null if invalid.
-                                return null;
-                            }
-                            return uri;
-                        }                       
-                        // REVISIT: what should happen in this case?
-                        return null;
-                    }
-                    return uri;
-                }
-            }
-        }
-
-        //2.the base URI of the element's parent element within the document or external entity,
-        //if one exists
-        String parentElementBaseURI = (this.parentNode() != null) ? this.parentNode().getBaseURI() : null ;
-        //base URI of parent element is not null
-        if(parentElementBaseURI != null){
-            try {
-                //return valid absolute base URI
-               return new URI(parentElementBaseURI).toString();
-            }
-            catch (org.apache.xerces.util.URI.MalformedURIException e){
-                // REVISIT: what should happen in this case?
-                return null;
-            }
-        }
-        //3. the base URI of the document entity or external entity containing the element
-
-        String baseURI = (this.ownerNode != null) ? this.ownerNode.getBaseURI() : null ;
-
-        if(baseURI != null){
-            try {
-                //return valid absolute base URI
-               return new URI(baseURI).toString();
-            }
-            catch (org.apache.xerces.util.URI.MalformedURIException e){
-                // REVISIT: what should happen in this case?
-                return null;
-            }
-        }
-
-        return null;
-
-    }
-
+    protected Attr getXMLBaseAttribute() {
+        return (Attr) attributes.getNamedItemNS("http://www.w3.org/XML/1998/namespace", "base");
+    } // getXMLBaseAttribute():Attr
 
     /**
      * @see org.w3c.dom.TypeInfo#getTypeName()
