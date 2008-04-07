@@ -172,32 +172,36 @@ public class ElementImpl
         // 1. The base URI specified by an xml:base attribute on the element, 
         // if one exists
         if (attributes != null) {
-            Attr attrNode = getXMLBaseAttribute();
+            final Attr attrNode = getXMLBaseAttribute();
             if (attrNode != null) {
-                String uri =  attrNode.getNodeValue();
+                final String uri =  attrNode.getNodeValue();
                 if (uri.length() != 0) {// attribute value is always empty string
                     try {
-                        uri = new URI(uri).toString();
-                    }
-                    catch (org.apache.xerces.util.URI.MalformedURIException e) {
-                        // This may be a relative URI.
-
+                        URI _uri = new URI(uri, true);
+                        // If the URI is already absolute return it; otherwise it's relative and we need to resolve it.
+                        if (_uri.isAbsoluteURI()) {
+                            return _uri.toString();
+                        }
+                        
                         // Make any parentURI into a URI object to use with the URI(URI, String) constructor
                         String parentBaseURI = (this.ownerNode != null) ? this.ownerNode.getBaseURI() : null;
-                        if (parentBaseURI != null){
-                            try{
-                                uri = new URI(new URI(parentBaseURI), uri).toString();
+                        if (parentBaseURI != null) {
+                            try {
+                                URI _parentBaseURI = new URI(parentBaseURI);
+                                _uri.absolutize(_parentBaseURI);
+                                return _uri.toString();
                             }
                             catch (org.apache.xerces.util.URI.MalformedURIException ex) {
                                 // This should never happen: parent should have checked the URI and returned null if invalid.
                                 return null;
                             }
-                            return uri;
                         }
                         // REVISIT: what should happen in this case?
+                        return null; 
+                    }
+                    catch (org.apache.xerces.util.URI.MalformedURIException ex) {
                         return null;
                     }
-                    return uri;
                 }
             }
         }
