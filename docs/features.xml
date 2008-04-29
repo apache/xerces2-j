@@ -416,10 +416,10 @@ catch (SAXException e) {
   <feature name='http://apache.org/xml/features/scanner/notify-char-refs'
            id='scanner.notify-char-refs'>
    <true>
-    Notifies the handler of character entity boundaries in the
+    Notifies the handler of character reference boundaries in the
     document via the start/endEntity callbacks.
    </true>
-   <false>Does not notify of character entity boundaries.</false>
+   <false>Does not notify of character reference boundaries.</false>
    <default value='false'/>
    <see idref='scanner.notify-builtin-refs'/>
   </feature>
