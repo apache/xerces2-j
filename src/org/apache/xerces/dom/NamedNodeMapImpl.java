@@ -604,13 +604,17 @@ public class NamedNodeMapImpl
     private void readObject(ObjectInputStream in)
         throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        nodes = new ArrayList(nodes);
+        if (nodes != null) {
+            nodes = new ArrayList(nodes);
+        }
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {
         List oldNodes = this.nodes;
         try {
-            this.nodes = new Vector(oldNodes);
+            if (oldNodes != null) {
+                this.nodes = new Vector(oldNodes);
+            }
             out.defaultWriteObject();
         }
         // If the write fails for some reason ensure 
