@@ -665,7 +665,7 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
             
             try {
                 XMLReader reader = saxSource.getXMLReader();
-                if( reader==null ) {
+                if (reader == null) {
                     // create one now
                     SAXParserFactory spf = SAXParserFactory.newInstance();
                     spf.setNamespaceAware(true);
@@ -673,16 +673,17 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
                         reader = spf.newSAXParser().getXMLReader();
                         // If this is a Xerces SAX parser, set the security manager if there is one
                         if (reader instanceof org.apache.xerces.parsers.SAXParser) {
-                           SecurityManager securityManager = (SecurityManager) fComponentManager.getProperty(SECURITY_MANAGER);
-                           if (securityManager != null) {
-                               try {
-                                   reader.setProperty(SECURITY_MANAGER, securityManager);
-                               }
-                               // Ignore the exception if the security manager cannot be set.
-                               catch (SAXException exc) {}
-                           }
+                            SecurityManager securityManager = (SecurityManager) fComponentManager.getProperty(SECURITY_MANAGER);
+                            if (securityManager != null) {
+                                try {
+                                    reader.setProperty(SECURITY_MANAGER, securityManager);
+                                }
+                                // Ignore the exception if the security manager cannot be set.
+                                catch (SAXException exc) {}
+                            }
                         }
-                    } catch( Exception e ) {
+                    } 
+                    catch (Exception e) {
                         // this is impossible, but better safe than sorry
                         throw new FactoryConfigurationError(e);
                     }
