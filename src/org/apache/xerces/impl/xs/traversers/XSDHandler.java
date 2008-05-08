@@ -513,6 +513,15 @@ public class XSDHandler {
         	catch (SAXException se) {
         		return null;
         	}
+        	// Disconnect the schema loader and other objects from the XMLReader
+        	try {
+        	    parser.setContentHandler(null);
+        	    parser.setErrorHandler(null);
+        	}
+        	// Ignore any exceptions thrown by the XMLReader. Old versions of SAX
+        	// required an XMLReader to throw a NullPointerException if an attempt
+        	// to set a handler to null was made.
+        	catch (Exception e) {}
         	schemaRootDoc = fXSContentHandler.getDocument();
             if (schemaRootDoc == null) {
                 // something went wrong right off the hop
