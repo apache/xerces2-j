@@ -663,8 +663,9 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
                 setContentHandler(ch);
             }
             
+            XMLReader reader = null;
             try {
-                XMLReader reader = saxSource.getXMLReader();
+                reader = saxSource.getXMLReader();
                 if (reader == null) {
                     // create one now
                     SAXParserFactory spf = SAXParserFactory.newInstance();
@@ -716,8 +717,21 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
                 reader.parse(is);
             } 
             finally {
-                // release the reference to user's handler ASAP
+                // Release the reference to user's ContentHandler ASAP
                 setContentHandler(null);
+                // Disconnect the validator and other objects from the XMLReader
+                if (reader != null) {
+                    try {
+                        reader.setContentHandler(null);
+                        reader.setDTDHandler(null);
+                        reader.setErrorHandler(null);
+                        reader.setEntityResolver(null);
+                        fResolutionForwarder.setEntityResolver(null);
+                        reader.setProperty(LEXICAL_HANDLER, null);
+                    }
+                    // Ignore the exception if the lexical handler cannot be unset.
+                    catch (Exception exc) {}
+                }
             }
             return;
         }
