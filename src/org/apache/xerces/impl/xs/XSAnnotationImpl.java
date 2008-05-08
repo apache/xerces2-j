@@ -134,13 +134,17 @@ public class XSAnnotationImpl implements XSAnnotation {
         parser.setContentHandler(handler);
         try {
             parser.parse(aSource);
-        } catch (SAXException e) {
+        } 
+        catch (SAXException e) {
             // this should never happen!
             // REVISIT:  what to do with this?; should really not
             // eat it...
-        } catch (IOException i) {
+        } 
+        catch (IOException i) {
             // ditto with above
         }
+        // Release the reference to the user's ContentHandler.
+        parser.setContentHandler(null);
     }
 
     // this creates the new Annotation element as the first child
