@@ -100,9 +100,6 @@ public final class XSLoaderImpl implements XSLoader, DOMConfiguration {
      */
     public XSModel loadURIList(StringList uriList) {
         int length = uriList.getLength();
-        if (length == 0) {
-            return null;
-        }
         try {
             fGrammarPool.clear();
             for (int i = 0; i < length; ++i) {
@@ -125,9 +122,6 @@ public final class XSLoaderImpl implements XSLoader, DOMConfiguration {
      */
     public XSModel loadInputList(LSInputList is) {
         final int length = is.getLength();
-        if (length == 0) {
-            return null;
-        }
         try {
             fGrammarPool.clear();
             for (int i = 0; i < length; ++i) {

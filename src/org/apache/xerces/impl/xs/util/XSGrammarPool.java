@@ -34,6 +34,7 @@ import org.apache.xerces.xs.XSModel;
  * @version $Id$
  */
 public class XSGrammarPool extends XMLGrammarPoolImpl {
+    
     /**
      * Return an <code>XSModel</code> that represents components in
      * the schema grammars in this pool implementation.
@@ -48,14 +49,12 @@ public class XSGrammarPool extends XMLGrammarPoolImpl {
                     list.add(entry.grammar);
             }
         }
-
         int size = list.size();
         if (size == 0) {
-            return null;
+            return new XSModelImpl(new SchemaGrammar[0]);
         }
         SchemaGrammar[] gs = (SchemaGrammar[])list.toArray(new SchemaGrammar[size]);
         return new XSModelImpl(gs);
     }
-
 
 } // class XSGrammarPool
