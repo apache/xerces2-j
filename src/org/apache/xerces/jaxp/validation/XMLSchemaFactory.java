@@ -269,6 +269,17 @@ public final class XMLSchemaFactory extends SchemaFactory {
         return schema;
     }
     
+    public Schema newSchema(XMLGrammarPool pool) throws SAXException {
+        // If the "use-grammar-pool-only" feature is set to true
+        // prevent the application's grammar pool from being mutated
+        // by wrapping it in a ReadOnlyGrammarPool.
+        final AbstractXMLSchema schema = (fUseGrammarPoolOnly) ? 
+            new XMLSchema(new ReadOnlyGrammarPool(pool)) : 
+            new XMLSchema(pool, false);
+        propagateFeatures(schema);
+        return schema;
+    }
+    
     public boolean getFeature(String name) 
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (name == null) {
