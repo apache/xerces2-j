@@ -236,7 +236,7 @@ abstract class BaseSchemaFactory extends SchemaFactory {
             }
         }
         else {
-            schema = new XMLSchema(new ReadOnlyGrammarPool(pool), fXSDVersion);
+            schema = new XMLSchema(new ReadOnlyGrammarPool(pool), false, fXSDVersion);
         }
         propagateFeatures(schema);
         return schema;
@@ -253,6 +253,17 @@ abstract class BaseSchemaFactory extends SchemaFactory {
         
         // Use a Schema that uses the system id as the equality source.
         AbstractXMLSchema schema = new WeakReferenceXMLSchema(fXSDVersion);
+        propagateFeatures(schema);
+        return schema;
+    }
+    
+    public Schema newSchema(XMLGrammarPool pool) throws SAXException {
+        // If the "use-grammar-pool-only" feature is set to true
+        // prevent the application's grammar pool from being mutated
+        // by wrapping it in a ReadOnlyGrammarPool.
+        final AbstractXMLSchema schema = (fUseGrammarPoolOnly) ? 
+            new XMLSchema(new ReadOnlyGrammarPool(pool), fXSDVersion) : 
+            new XMLSchema(pool, false, fXSDVersion);
         propagateFeatures(schema);
         return schema;
     }
