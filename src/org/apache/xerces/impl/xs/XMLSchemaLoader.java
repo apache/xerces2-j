@@ -1093,13 +1093,10 @@ XSLoader, DOMConfiguration {
     }
     
     /* (non-Javadoc)
-     * @see org.apache.xerces.xs.XSLoader#loadInputList(org.apache.xerces.xs.DOMInputList)
+     * @see org.apache.xerces.xs.XSLoader#loadInputList(org.apache.xerces.xs.LSInputList)
      */
     public XSModel loadInputList(LSInputList is) {
         int length = is.getLength();
-        if (length == 0) {
-            return null;
-        }
         SchemaGrammar[] gs = new SchemaGrammar[length];
         for (int i = 0; i < length; i++) {
             try {
@@ -1131,9 +1128,6 @@ XSLoader, DOMConfiguration {
      */
     public XSModel loadURIList(StringList uriList) {
         int length = uriList.getLength();
-        if (length == 0) {
-            return null;
-        }
         SchemaGrammar[] gs = new SchemaGrammar[length];
         for (int i = 0; i < length; i++) {
             try {
