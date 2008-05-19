@@ -89,7 +89,7 @@ public class XSModelImpl implements XSModel {
     private final XSNamedMap[][] fNSComponents;
 
     // store all annotations
-    private XSObjectListImpl fAnnotations = null;
+    private XSObjectList fAnnotations = null;
     
     // whether there is any IDC in this XSModel
     private final boolean fHasIDC;
@@ -453,7 +453,8 @@ public class XSModelImpl implements XSModel {
     }
 
     /**
-     *  {annotations} A set of annotations.
+     *  [annotations]: a set of annotations if it exists, otherwise an empty 
+     * <code>XSObjectList</code>. 
      */
     public synchronized XSObjectList getAnnotations() {
         if (fAnnotations != null) {
@@ -464,6 +465,10 @@ public class XSModelImpl implements XSModel {
         int totalAnnotations = 0;
         for (int i = 0; i < fGrammarCount; i++) {
             totalAnnotations += fGrammarList[i].fNumAnnotations;
+        }
+        if (totalAnnotations == 0) {
+            fAnnotations = XSObjectListImpl.EMPTY_LIST;
+            return fAnnotations;
         }
         XSAnnotationImpl [] annotations = new XSAnnotationImpl [totalAnnotations];
         int currPos = 0;

@@ -1202,15 +1202,20 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
      * @see org.apache.xerces.xs.XSNamespaceItem#getAnnotations()
      */
     public XSObjectList getAnnotations() {
+        if (fNumAnnotations == 0) {
+            return XSObjectListImpl.EMPTY_LIST;
+        }
         return new XSObjectListImpl(fAnnotations, fNumAnnotations);
     }
 
     public void addAnnotation(XSAnnotationImpl annotation) {
-        if(annotation == null)
+        if (annotation == null) {
             return;
-        if(fAnnotations == null) {
+        }
+        if (fAnnotations == null) {
             fAnnotations = new XSAnnotationImpl[2];
-        } else if(fNumAnnotations == fAnnotations.length) {
+        } 
+        else if (fNumAnnotations == fAnnotations.length) {
             XSAnnotationImpl[] newArray = new XSAnnotationImpl[fNumAnnotations << 1];
             System.arraycopy(fAnnotations, 0, newArray, 0, fNumAnnotations);
             fAnnotations = newArray;
