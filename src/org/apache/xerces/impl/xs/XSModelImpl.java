@@ -73,26 +73,26 @@ public class XSModelImpl implements XSModel {
                                                  };
 
     // number of grammars/namespaces stored here
-    private int fGrammarCount;
+    private final int fGrammarCount;
     // all target namespaces
-    private String[] fNamespaces;
+    private final String[] fNamespaces;
     // all schema grammar objects (for each namespace)
-    private SchemaGrammar[] fGrammarList;
+    private final SchemaGrammar[] fGrammarList;
     // a map from namespace to schema grammar
-    private SymbolHash fGrammarMap;
+    private final SymbolHash fGrammarMap;
     // a map from element declaration to its substitution group
-    private SymbolHash fSubGroupMap;
+    private final SymbolHash fSubGroupMap;
     
     // store a certain kind of components from all namespaces
-    private XSNamedMap[] fGlobalComponents;
+    private final XSNamedMap[] fGlobalComponents;
     // store a certain kind of components from one namespace
-    private XSNamedMap[][] fNSComponents;
+    private final XSNamedMap[][] fNSComponents;
 
     // store all annotations
     private XSObjectListImpl fAnnotations = null;
     
     // whether there is any IDC in this XSModel
-    private boolean fHasIDC = false;
+    private final boolean fHasIDC;
     
    /**
     * Construct an XSModelImpl, by storing some grammars and grammars imported
@@ -103,19 +103,23 @@ public class XSModelImpl implements XSModel {
     public XSModelImpl(SchemaGrammar[] grammars) {
         // copy namespaces/grammars from the array to our arrays
         int len = grammars.length;
-        fNamespaces = new String[Math.max(len+1, 5)];
-        fGrammarList = new SchemaGrammar[Math.max(len+1, 5)];
+        final int initialSize = Math.max(len+1, 5);
+        String[] namespaces = new String[initialSize];
+        SchemaGrammar[] grammarList = new SchemaGrammar[initialSize];
         boolean hasS4S = false;
         for (int i = 0; i < len; i++) {
-            fNamespaces[i] = grammars[i].getTargetNamespace();
-            fGrammarList[i] = grammars[i];
-            if (fNamespaces[i] == SchemaSymbols.URI_SCHEMAFORSCHEMA)
+            final SchemaGrammar sg = grammars[i];
+            final String tns = sg.getTargetNamespace();
+            namespaces[i] = tns;
+            grammarList[i] = sg;
+            if (tns == SchemaSymbols.URI_SCHEMAFORSCHEMA) {
                 hasS4S = true;
+            }
         }
         // If a schema for the schema namespace isn't included, include it here.
         if (!hasS4S) {
-            fNamespaces[len] = SchemaSymbols.URI_SCHEMAFORSCHEMA;
-            fGrammarList[len++] = SchemaGrammar.SG_SchemaNS;
+            namespaces[len] = SchemaSymbols.URI_SCHEMAFORSCHEMA;
+            grammarList[len++] = SchemaGrammar.SG_SchemaNS;
         }
 
         SchemaGrammar sg1, sg2;
@@ -124,68 +128,76 @@ public class XSModelImpl implements XSModel {
         // and recursively get all imported grammars, add them to our arrays
         for (i = 0; i < len; i++) {
             // get the grammar
-            sg1 = fGrammarList[i];
+            sg1 = grammarList[i];
             gs = sg1.getImportedGrammars();
             // for each imported grammar
             for (j = gs == null ? -1 : gs.size() - 1; j >= 0; j--) {
                 sg2 = (SchemaGrammar)gs.elementAt(j);
                 // check whether this grammar is already in the list
                 for (k = 0; k < len; k++) {
-                    if (sg2 == fGrammarList[k])
+                    if (sg2 == grammarList[k]) {
                         break;
+                    }
                 }
                 // if it's not, add it to the list
                 if (k == len) {
                     // ensure the capacity of the arrays
-                    if (len == fGrammarList.length) {
+                    if (len == grammarList.length) {
                         String[] newSA = new String[len*2];
-                        System.arraycopy(fNamespaces, 0, newSA, 0, len);
-                        fNamespaces = newSA;
+                        System.arraycopy(namespaces, 0, newSA, 0, len);
+                        namespaces = newSA;
                         SchemaGrammar[] newGA = new SchemaGrammar[len*2];
-                        System.arraycopy(fGrammarList, 0, newGA, 0, len);
-                        fGrammarList = newGA;
+                        System.arraycopy(grammarList, 0, newGA, 0, len);
+                        grammarList = newGA;
                     }
-                    fNamespaces[len] = sg2.getTargetNamespace();
-                    fGrammarList[len] = sg2;
+                    namespaces[len] = sg2.getTargetNamespace();
+                    grammarList[len] = sg2;
                     len++;
                 }
             }
         }
-
+        
+        fNamespaces = namespaces;
+        fGrammarList = grammarList;
+        
+        boolean hasIDC = false;
         // establish the mapping from namespace to grammars
         fGrammarMap = new SymbolHash(len*2);
         for (i = 0; i < len; i++) {
             fGrammarMap.put(null2EmptyString(fNamespaces[i]), fGrammarList[i]);
             // update the idc field
-            if (fGrammarList[i].hasIDConstraints())
-                fHasIDC = true;
+            if (fGrammarList[i].hasIDConstraints()) {
+                hasIDC = true;
+            }
         }
         
+        fHasIDC = hasIDC;
         fGrammarCount = len;
         fGlobalComponents = new XSNamedMap[MAX_COMP_IDX+1];
         fNSComponents = new XSNamedMap[len][MAX_COMP_IDX+1];
         
         // build substitution groups
-        buildSubGroups();
+        fSubGroupMap = buildSubGroups();
     }
     
-    private void buildSubGroups() {
+    private SymbolHash buildSubGroups() {
         SubstitutionGroupHandler sgHandler = new SubstitutionGroupHandler(null);
         for (int i = 0 ; i < fGrammarCount; i++) {
             sgHandler.addSubstitutionGroup(fGrammarList[i].getSubstitutionGroups());
         }
 
-        XSNamedMap elements = getComponents(XSConstants.ELEMENT_DECLARATION);
-        int len = elements.getLength();
-        fSubGroupMap = new SymbolHash(len*2);
+        final XSNamedMap elements = getComponents(XSConstants.ELEMENT_DECLARATION);
+        final int len = elements.getLength();
+        final SymbolHash subGroupMap = new SymbolHash(len*2);
         XSElementDecl head;
         XSElementDeclaration[] subGroup;
         for (int i = 0; i < len; i++) {
             head = (XSElementDecl)elements.item(i);
             subGroup = sgHandler.getSubstitutionGroup(head);
-            fSubGroupMap.put(head, subGroup.length > 0 ? 
+            subGroupMap.put(head, subGroup.length > 0 ? 
                     new XSObjectListImpl(subGroup, subGroup.length) : XSObjectListImpl.EMPTY_LIST);
         }
+        return subGroupMap;
     }
     
     /**
@@ -289,18 +301,21 @@ public class XSModelImpl implements XSModel {
         int i = 0;
         if (namespace != null) {
             for (; i < fGrammarCount; ++i) {
-                if (namespace.equals(fNamespaces[i]))
+                if (namespace.equals(fNamespaces[i])) {
                     break;
+                }
             }
         }
         else {
             for (; i < fGrammarCount; ++i) {
-                if (fNamespaces[i] == null)
+                if (fNamespaces[i] == null) {
                     break; 
+                }
             }
         }
-        if (i == fGrammarCount)
+        if (i == fGrammarCount) {
             return XSNamedMapImpl.EMPTY_MAP;
+        }
         
         // get the hashtable for this type of components
         if (fNSComponents[i][objectType] == null) {
@@ -353,8 +368,9 @@ public class XSModelImpl implements XSModel {
     public XSTypeDefinition getTypeDefinition(String name,
                                               String namespace) {
         SchemaGrammar sg = (SchemaGrammar)fGrammarMap.get(null2EmptyString(namespace));
-        if (sg == null)
+        if (sg == null) {
             return null;
+        }
         return (XSTypeDefinition)sg.fGlobalTypeDecls.get(name);
     }
 
@@ -368,8 +384,9 @@ public class XSModelImpl implements XSModel {
     public XSAttributeDeclaration getAttributeDeclaration(String name,
                                                    String namespace) {
         SchemaGrammar sg = (SchemaGrammar)fGrammarMap.get(null2EmptyString(namespace));
-        if (sg == null)
+        if (sg == null) {
             return null;
+        }
         return (XSAttributeDeclaration)sg.fGlobalAttrDecls.get(name);
     }
 
@@ -383,8 +400,9 @@ public class XSModelImpl implements XSModel {
     public XSElementDeclaration getElementDeclaration(String name,
                                                String namespace) {
         SchemaGrammar sg = (SchemaGrammar)fGrammarMap.get(null2EmptyString(namespace));
-        if (sg == null)
+        if (sg == null) {
             return null;
+        }
         return (XSElementDeclaration)sg.fGlobalElemDecls.get(name);
     }
 
@@ -398,8 +416,9 @@ public class XSModelImpl implements XSModel {
     public XSAttributeGroupDefinition getAttributeGroup(String name,
                                                         String namespace) {
         SchemaGrammar sg = (SchemaGrammar)fGrammarMap.get(null2EmptyString(namespace));
-        if (sg == null)
+        if (sg == null) {
             return null;
+        }
         return (XSAttributeGroupDefinition)sg.fGlobalAttrGrpDecls.get(name);
     }
 
@@ -414,8 +433,9 @@ public class XSModelImpl implements XSModel {
     public XSModelGroupDefinition getModelGroupDefinition(String name,
                                                           String namespace) {
         SchemaGrammar sg = (SchemaGrammar)fGrammarMap.get(null2EmptyString(namespace));
-        if (sg == null)
+        if (sg == null) {
             return null;
+        }
         return (XSModelGroupDefinition)sg.fGlobalGroupDecls.get(name);
     }
 
@@ -426,8 +446,9 @@ public class XSModelImpl implements XSModel {
     public XSNotationDeclaration getNotationDeclaration(String name,
                                                  String namespace) {
         SchemaGrammar sg = (SchemaGrammar)fGrammarMap.get(null2EmptyString(namespace));
-        if (sg == null)
+        if (sg == null) {
             return null;
+        }
         return (XSNotationDeclaration)sg.fGlobalNotationDecls.get(name);
     }
 
@@ -435,8 +456,9 @@ public class XSModelImpl implements XSModel {
      *  {annotations} A set of annotations.
      */
     public synchronized XSObjectList getAnnotations() {
-        if(fAnnotations != null) 
+        if (fAnnotations != null) {
             return fAnnotations;
+        }
 
         // do this in two passes to avoid inaccurate array size
         int totalAnnotations = 0;
@@ -470,6 +492,17 @@ public class XSModelImpl implements XSModel {
         return fHasIDC;
     }
 
+    /**
+     * Convenience method. Returns a list containing the members of the
+     * substitution group for the given <code>XSElementDeclaration</code>
+     * or an empty <code>XSObjectList</code> if the substitution group
+     * contains no members.
+     * @param head The substitution group head.
+     * @return A list containing the members of the substitution group 
+     *  for the given <code>XSElementDeclaration</code> or an empty 
+     *  <code>XSObjectList</code> if the substitution group contains 
+     *  no members.
+     */
     public XSObjectList getSubstitutionGroup(XSElementDeclaration head) {
         return (XSObjectList)fSubGroupMap.get(head);
     }
