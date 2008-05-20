@@ -73,6 +73,9 @@ public class XSElementDecl implements XSElementDeclaration {
     static final int INITIAL_SIZE = 2;
     int fIDCPos = 0;
     IdentityConstraint[] fIDConstraints = new IdentityConstraint[INITIAL_SIZE];
+    // The namespace schema information item corresponding to the target namespace 
+    // of the element declaration, if it is globally declared; or null otherwise.
+    private XSNamespaceItem fNamespaceItem = null;
 
     private static final short CONSTRAINT_MASK = 3;
     private static final short NILLABLE        = 4;
@@ -351,8 +354,11 @@ public class XSElementDecl implements XSElementDeclaration {
      * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
      */
     public XSNamespaceItem getNamespaceItem() {
-        // REVISIT: implement
-        return null;
+        return fNamespaceItem;
+    }
+
+    void setNamespaceItem(XSNamespaceItem namespaceItem) {
+        fNamespaceItem = namespaceItem;
     }
 
     public Object getActualVC() {

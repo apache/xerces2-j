@@ -586,12 +586,11 @@ public class XSWildcardDecl implements XSWildcard {
         return (fAnnotations != null) ? fAnnotations : XSObjectListImpl.EMPTY_LIST;
     }
 
-	/**
-	 * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
-	 */
-	public XSNamespaceItem getNamespaceItem() {
-        // REVISIT: implement
-		return null;
-	}
+    /**
+     * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
+     */
+    public XSNamespaceItem getNamespaceItem() {
+        return null;
+    }
 
 } // class XSWildcardDecl

@@ -79,6 +79,10 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition, TypeInfo {
 
     // list of annotations affiliated with this type
     XSObjectListImpl fAnnotations = null;
+    
+    // The namespace schema information item corresponding to the target namespace 
+    // of the complex type definition, if it is globally declared; or null otherwise.
+    private XSNamespaceItem fNamespaceItem = null;
 
     // DOM Level 3 TypeInfo Derivation Method constants
     static final int DERIVATION_ANY = 0;
@@ -691,13 +695,16 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition, TypeInfo {
         return (fAnnotations != null) ? fAnnotations : XSObjectListImpl.EMPTY_LIST;
     }
     
-	/**
-	 * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
-	 */
-	public XSNamespaceItem getNamespaceItem() {
-        // REVISIT: implement
-		return null;
-	}
+    /**
+     * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
+     */
+    public XSNamespaceItem getNamespaceItem() {
+        return fNamespaceItem;
+    }
+
+    void setNamespaceItem(XSNamespaceItem namespaceItem) {
+        fNamespaceItem = namespaceItem;
+    }
 
     /* (non-Javadoc)
      * @see org.apache.xerces.xs.XSComplexTypeDefinition#getAttributeUse(java.lang.String, java.lang.String)

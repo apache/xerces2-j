@@ -294,6 +294,10 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
     private boolean fFinite;
     private boolean fBounded;
     private boolean fNumeric;
+    
+    // The namespace schema information item corresponding to the target namespace 
+    // of the simple type definition, if it is globally declared; or null otherwise.
+    private XSNamespaceItem fNamespaceItem = null;
 
     // default constructor
     public XSSimpleTypeDecl(){}
@@ -2931,12 +2935,16 @@ public class XSSimpleTypeDecl implements XSSimpleType, TypeInfo {
 
         // REVISIT: reset for fundamental facets
     }
+    
     /**
      * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
      */
     public XSNamespaceItem getNamespaceItem() {
-        // REVISIT: implement
-        return null;
+        return fNamespaceItem;
+    }
+    
+    public void setNamespaceItem(XSNamespaceItem namespaceItem) {
+        fNamespaceItem = namespaceItem;
     }
 
     /**

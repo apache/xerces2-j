@@ -165,7 +165,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         if (complexTypeName == null) {
             reportSchemaError("s4s-att-must-appear", new Object[]{SchemaSymbols.ELT_COMPLEXTYPE, SchemaSymbols.ATT_NAME}, complexTypeNode);
         } else {
-            grammar.addGlobalTypeDecl(type);
+            grammar.addGlobalComplexTypeDecl(type);
         }
         // need to add the type to the grammar for later constraint checking
         grammar.addComplexTypeDecl(type, fSchemaHandler.element2Locator(complexTypeNode));

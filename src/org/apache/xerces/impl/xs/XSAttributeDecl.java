@@ -55,6 +55,9 @@ public class XSAttributeDecl implements XSAttributeDeclaration {
     XSObjectList fAnnotations = null;    
     // value constraint value
     ValidatedInfo fDefault = null;
+    // The namespace schema information item corresponding to the target namespace 
+    // of the attribute declaration, if it is globally declared; or null otherwise.
+    private XSNamespaceItem fNamespaceItem = null;
 
     public void setValues(String name, String targetNamespace,
             XSSimpleType simpleType, short constraintType, short scope,
@@ -166,12 +169,16 @@ public class XSAttributeDecl implements XSAttributeDeclaration {
     public ValidatedInfo getValInfo() {
         return fDefault;
     }
+    
     /**
      * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
      */
     public XSNamespaceItem getNamespaceItem() {
-        // REVISIT: implement
-        return null;
+        return fNamespaceItem;
+    }
+
+    void setNamespaceItem(XSNamespaceItem namespaceItem) {
+        fNamespaceItem = namespaceItem;
     }
 
     public Object getActualVC() {

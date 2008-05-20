@@ -45,7 +45,11 @@ public class XSNotationDecl implements XSNotationDeclaration {
     public String fSystemId = null;
 
     // optional annotation
-    public XSObjectList fAnnotations = null;   
+    public XSObjectList fAnnotations = null;
+    
+    // The namespace schema information item corresponding to the target namespace 
+    // of the notation declaration, if it is globally declared; or null otherwise.
+    private XSNamespaceItem fNamespaceItem = null;
 
     /**
      * Get the type of the object, i.e ELEMENT_DECLARATION.
@@ -100,11 +104,15 @@ public class XSNotationDecl implements XSNotationDeclaration {
         return (fAnnotations != null) ? fAnnotations : XSObjectListImpl.EMPTY_LIST;
     }
 
-	/**
-	 * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
-	 */
-	public XSNamespaceItem getNamespaceItem() {
-		return null;
-	}
+    /**
+     * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
+     */
+    public XSNamespaceItem getNamespaceItem() {
+        return fNamespaceItem;
+    }
+
+    void setNamespaceItem(XSNamespaceItem namespaceItem) {
+        fNamespaceItem = namespaceItem;
+    }
 
 } // class XSNotationDecl
