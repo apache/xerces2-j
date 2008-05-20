@@ -112,7 +112,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         
         // don't add global components without name to the grammar
         if (type != null) {
-            grammar.addGlobalTypeDecl(type);
+            grammar.addGlobalSimpleTypeDecl(type);
         }
         
         return type;

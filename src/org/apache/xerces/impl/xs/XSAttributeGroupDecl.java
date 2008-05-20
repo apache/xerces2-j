@@ -58,6 +58,10 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
     public XSObjectList fAnnotations;
     
     protected XSObjectListImpl fAttrUses = null;
+    
+    // The namespace schema information item corresponding to the target namespace 
+    // of the attribute group definition, if it is globally declared; or null otherwise.
+    private XSNamespaceItem fNamespaceItem = null;
 
     // add an attribute use
     // if the type is derived from ID, but there is already another attribute
@@ -357,12 +361,15 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
         return (fAnnotations != null) ? fAnnotations : XSObjectListImpl.EMPTY_LIST;
     }
     
-	/**
-	 * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
-	 */
-	public XSNamespaceItem getNamespaceItem() {
-        //REVISIT: implement
-		return null;
-	}
+    /**
+     * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
+     */
+    public XSNamespaceItem getNamespaceItem() {
+        return fNamespaceItem;
+    }
+
+    void setNamespaceItem(XSNamespaceItem namespaceItem) {
+        fNamespaceItem = namespaceItem;
+    }
 
 } // class XSAttributeGroupDecl

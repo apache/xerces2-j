@@ -39,6 +39,9 @@ public class XSGroupDecl implements XSModelGroupDefinition {
     public XSModelGroupImpl fModelGroup = null;
     // optional annotations
     public XSObjectList fAnnotations = null;
+    // The namespace schema information item corresponding to the target namespace 
+    // of the model group definition, if it is globally declared; or null otherwise.
+    private XSNamespaceItem fNamespaceItem = null;
 
     /**
      * Get the type of the object, i.e ELEMENT_DECLARATION.
@@ -85,12 +88,15 @@ public class XSGroupDecl implements XSModelGroupDefinition {
         return (fAnnotations != null) ? fAnnotations : XSObjectListImpl.EMPTY_LIST;
     }
     
-	/**
-	 * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
-	 */
-	public XSNamespaceItem getNamespaceItem() {
-        // REVISIT: implement
-		return null;
-	}
+    /**
+     * @see org.apache.xerces.xs.XSObject#getNamespaceItem()
+     */
+    public XSNamespaceItem getNamespaceItem() {
+        return fNamespaceItem;
+    }
+
+    void setNamespaceItem(XSNamespaceItem namespaceItem) {
+        fNamespaceItem = namespaceItem;
+    }
 
 } // class XSGroupDecl
