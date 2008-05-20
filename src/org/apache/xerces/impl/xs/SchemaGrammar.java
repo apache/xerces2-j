@@ -889,7 +889,7 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
         }
 
         public XSObjectList getAttributeUses() {
-            return new XSObjectListImpl(null, 0);
+            return XSObjectListImpl.EMPTY_LIST;
         }
 
         public XSAttributeGroupDecl getAttrGrp() {
@@ -932,7 +932,7 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
         }
 
         public XSObjectList getAnnotations() {
-            return null;
+            return XSObjectListImpl.EMPTY_LIST;
         }
         
         public XSNamespaceItem getNamespaceItem() {
