@@ -30,10 +30,10 @@ import org.apache.xerces.util.SymbolHash;
  *
  * @version $Id$
  */
-public class XSNamedMap4Types extends XSNamedMapImpl {
+public final class XSNamedMap4Types extends XSNamedMapImpl {
 
     // the type of component stored here: complex or simple type
-    short fType;
+    private final short fType;
     
     /**
      * Construct an XSNamedMap implmentation for one namespace
@@ -107,8 +107,9 @@ public class XSNamedMap4Types extends XSNamedMapImpl {
             if (isEqual(namespace, fNamespaces[i])) {
                 XSTypeDefinition type = (XSTypeDefinition)fMaps[i].get(localName);
                 // only return it if it mataches the required type
-                if (type.getTypeCategory() == fType)
+                if (type.getTypeCategory() == fType) {
                     return type;
+                }
                 return null;
             }
         }
