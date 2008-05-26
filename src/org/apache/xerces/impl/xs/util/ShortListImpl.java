@@ -29,7 +29,7 @@ import org.apache.xerces.xs.XSException;
  *
  * @version $Id$
  */
-public class ShortListImpl implements ShortList {
+public final class ShortListImpl implements ShortList {
 
     /**
      * An immutable empty list.
@@ -47,9 +47,9 @@ public class ShortListImpl implements ShortList {
     };
     
     // The array to hold all data
-    private short[] fArray = null;
+    private final short[] fArray;
     // Number of elements in this list
-    private int fLength = 0;
+    private final int fLength;
 
     /**
      * Construct an XSObjectList implementation
@@ -80,15 +80,17 @@ public class ShortListImpl implements ShortList {
      */
     public boolean contains(short item) {
         for (int i = 0; i < fLength; i++) {
-            if (fArray[i] == item)
+            if (fArray[i] == item) {
                 return true;
+            }
         }
         return false;
     }
     
     public short item(int index) throws XSException {
-        if (index < 0 || index >= fLength)
+        if (index < 0 || index >= fLength) {
             throw new XSException(XSException.INDEX_SIZE_ERR, null);
+        }
         return fArray[index];
     }
     
@@ -101,7 +103,6 @@ public class ShortListImpl implements ShortList {
         if (fLength != rhs.getLength()) {
             return false;
         }
-        
         for (int i = 0;i < fLength; ++i) {
             if (fArray[i] != rhs.item(i)) {
                 return false;
@@ -110,4 +111,4 @@ public class ShortListImpl implements ShortList {
         return true;
     }
 
-} // class XSParticle
+} // class ShortListImpl
