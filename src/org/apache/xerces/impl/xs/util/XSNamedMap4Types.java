@@ -22,7 +22,7 @@ import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.util.SymbolHash;
 
 /**
- * Containts the map between qnames and XSObject's.
+ * Contains the map between qnames and XSObject's.
  *
  * @xerces.internal 
  *
@@ -36,7 +36,7 @@ public final class XSNamedMap4Types extends XSNamedMapImpl {
     private final short fType;
     
     /**
-     * Construct an XSNamedMap implmentation for one namespace
+     * Construct an XSNamedMap implementation for one namespace
      * 
      * @param namespace the namespace to which the components belong
      * @param map       the map from local names to components
@@ -48,7 +48,7 @@ public final class XSNamedMap4Types extends XSNamedMapImpl {
     }
 
     /**
-     * Construct an XSNamedMap implmentation for a list of namespaces
+     * Construct an XSNamedMap implementation for a list of namespaces
      * 
      * @param namespaces the namespaces to which the components belong
      * @param maps       the maps from local names to components
@@ -69,8 +69,9 @@ public final class XSNamedMap4Types extends XSNamedMapImpl {
         if (fLength == -1) {
             // first get the number of components for all types
             int length = 0;
-            for (int i = 0; i < fNSNum; i++)
+            for (int i = 0; i < fNSNum; i++) {
                 length += fMaps[i].getLength();
+            }
             // then copy all types to an temporary array
             int pos = 0;
             XSObject[] array = new XSObject[length];
@@ -106,7 +107,7 @@ public final class XSNamedMap4Types extends XSNamedMapImpl {
         for (int i = 0; i < fNSNum; i++) {
             if (isEqual(namespace, fNamespaces[i])) {
                 XSTypeDefinition type = (XSTypeDefinition)fMaps[i].get(localName);
-                // only return it if it mataches the required type
+                // only return it if it matches the required type
                 if (type.getTypeCategory() == fType) {
                     return type;
                 }
@@ -130,8 +131,9 @@ public final class XSNamedMap4Types extends XSNamedMapImpl {
         if (fArray == null) {
             getLength();
         }
-        if (index < 0 || index >= fLength)
+        if (index < 0 || index >= fLength) {
             return null;
+        }
         return fArray[index];
     }
     
