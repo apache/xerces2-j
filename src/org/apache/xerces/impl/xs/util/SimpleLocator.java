@@ -27,11 +27,13 @@ import org.apache.xerces.xni.XMLLocator;
  * @author Sandy Gao, IBM
  * @version $Id$
  */
-public class SimpleLocator implements XMLLocator {
+public final class SimpleLocator implements XMLLocator {
 
-    String lsid, esid;
-    int line, column;
-    int charOffset;
+    private String lsid;
+    private String esid;
+    private int line;
+    private int column;
+    private int charOffset;
     
     public SimpleLocator() {
     }
