@@ -26,7 +26,7 @@ package org.apache.xerces.impl.xs.util;
 
 public final class XInt {
 
-    private int fValue;
+    private final int fValue;
 
     XInt(int value) {
         fValue = value;
