@@ -19,6 +19,12 @@ package org.apache.xerces.impl.xs;
 
 import java.util.Vector;
 
+import org.apache.xerces.impl.xs.util.StringListImpl;
+import org.apache.xerces.impl.xs.util.XSNamedMap4Types;
+import org.apache.xerces.impl.xs.util.XSNamedMapImpl;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
+import org.apache.xerces.util.SymbolHash;
+import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSAttributeDeclaration;
 import org.apache.xerces.xs.XSAttributeGroupDefinition;
@@ -27,17 +33,11 @@ import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
 import org.apache.xerces.xs.XSModelGroupDefinition;
 import org.apache.xerces.xs.XSNamedMap;
+import org.apache.xerces.xs.XSNamespaceItem;
 import org.apache.xerces.xs.XSNamespaceItemList;
 import org.apache.xerces.xs.XSNotationDeclaration;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
-import org.apache.xerces.impl.xs.util.NSItemListImpl;
-import org.apache.xerces.impl.xs.util.StringListImpl;
-import org.apache.xerces.impl.xs.util.XSNamedMap4Types;
-import org.apache.xerces.impl.xs.util.XSNamedMapImpl;
-import org.apache.xerces.impl.xs.util.XSObjectListImpl;
-import org.apache.xerces.util.SymbolHash;
-import org.apache.xerces.util.XMLSymbols;
 
 /**
  * Implements XSModel:  a read-only interface that represents an XML Schema,
@@ -49,7 +49,7 @@ import org.apache.xerces.util.XMLSymbols;
  *
  * @version $Id$
  */
-public class XSModelImpl implements XSModel {
+public final class XSModelImpl implements XSModel, XSNamespaceItemList {
 
     // the max index / the max value of XSObject type
     private static final short MAX_COMP_IDX = XSTypeDefinition.SIMPLE_TYPE;
@@ -88,6 +88,8 @@ public class XSModelImpl implements XSModel {
     // store a certain kind of components from one namespace
     private final XSNamedMap[][] fNSComponents;
 
+    // a string list of all the target namespaces.
+    private final StringList fNamespacesList;
     // store all annotations
     private XSObjectList fAnnotations = null;
     
@@ -175,6 +177,7 @@ public class XSModelImpl implements XSModel {
         fGrammarCount = len;
         fGlobalComponents = new XSNamedMap[MAX_COMP_IDX+1];
         fNSComponents = new XSNamedMap[len][MAX_COMP_IDX+1];
+        fNamespacesList = new StringListImpl(fNamespaces, fGrammarCount);
         
         // build substitution groups
         fSubGroupMap = buildSubGroups();
@@ -207,15 +210,19 @@ public class XSModelImpl implements XSModel {
      *   <code>null</code> if all components don't have a targetNamespace.
      */
     public StringList getNamespaces() {
-        // REVISIT: should the type of fNamespace be StringListImpl?
-        return new StringListImpl(fNamespaces, fGrammarCount);
+        return fNamespacesList;
     }
 
-
+    /**
+     * A set of namespace schema information information items (of type 
+     * <code>XSNamespaceItem</code>), one for each namespace name which 
+     * appears as the target namespace of any schema component in the schema 
+     * used for that assessment, and one for absent if any schema component 
+     * in the schema had no target namespace. For more information see 
+     * schema information. 
+     */
     public XSNamespaceItemList getNamespaceItems() {
-
-        // REVISIT: should the type of fGrammarList be NSItemListImpl?
-        return new NSItemListImpl(fGrammarList, fGrammarCount);
+        return this;
     }
 
     /**
@@ -510,6 +517,34 @@ public class XSModelImpl implements XSModel {
      */
     public XSObjectList getSubstitutionGroup(XSElementDeclaration head) {
         return (XSObjectList)fSubGroupMap.get(head);
+    }
+    
+    //
+    // XSNamespaceItemList methods
+    // 
+
+    /**
+     * The number of <code>XSNamespaceItem</code>s in the list. The range of 
+     * valid child object indices is 0 to <code>length-1</code> inclusive. 
+     */
+    public int getLength() {
+        return fGrammarCount;
+    }
+
+    /**
+     * Returns the <code>index</code>th item in the collection or 
+     * <code>null</code> if <code>index</code> is greater than or equal to 
+     * the number of objects in the list. The index starts at 0. 
+     * @param index  index into the collection. 
+     * @return  The <code>XSNamespaceItem</code> at the <code>index</code>th 
+     *   position in the <code>XSNamespaceItemList</code>, or 
+     *   <code>null</code> if the index specified is not valid. 
+     */
+    public XSNamespaceItem item(int index) {
+        if (index < 0 || index >= fGrammarCount) {
+            return null;
+        }
+        return fGrammarList[index];
     }
 
 } // class XSModelImpl
