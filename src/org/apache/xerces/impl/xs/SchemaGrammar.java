@@ -309,12 +309,17 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
      * @author Michael Glavassevich, IBM
      */
     public static final class Schema4Annotations extends SchemaGrammar {
+        
+        /**
+         * Singleton instance.
+         */
+        public static final Schema4Annotations INSTANCE = new Schema4Annotations();
 
         /**
          * Special constructor to create a schema 
          * capable of validating annotations.
          */
-        public Schema4Annotations() {
+        private Schema4Annotations() {
             
             // target namespace
             fTargetNamespace = SchemaSymbols.URI_SCHEMAFORSCHEMA;
@@ -970,8 +975,6 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
 
     // the grammars to hold components of the schema namespace
     public final static BuiltinSchemaGrammar SG_SchemaNS = new BuiltinSchemaGrammar(GRAMMAR_XS);
-    
-    public final static Schema4Annotations SG_Schema4Annotations = new Schema4Annotations();
 
     public final static XSSimpleType fAnySimpleType = (XSSimpleType)SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_ANYSIMPLETYPE);
 
