@@ -19,6 +19,7 @@ package org.apache.xerces.impl.xs.util;
 
 import org.apache.xerces.xs.StringList;
 import java.util.Vector;
+
 /**
  * Containts a list of Object's.
  *
@@ -28,7 +29,7 @@ import java.util.Vector;
  *
  * @version $Id$
  */
-public class StringListImpl implements StringList {
+public final class StringListImpl implements StringList {
 
     /**
      * An immutable empty list.
@@ -46,17 +47,18 @@ public class StringListImpl implements StringList {
     };
     
     // The array to hold all data
-    private String[] fArray = null;
+    private final String[] fArray;
     // Number of elements in this list
-    private int fLength = 0;
+    private final int fLength;
 
     // REVISIT: this is temp solution. In general we need to use this class
     //          instead of the Vector.
-    private Vector fVector;
+    private final Vector fVector;
 
     public StringListImpl(Vector v) {
         fVector = v;        
         fLength = (v == null) ? 0 : v.size();
+        fArray = null;
     }
 
     /**
@@ -68,6 +70,7 @@ public class StringListImpl implements StringList {
     public StringListImpl(String[] array, int length) {
         fArray = array;
         fLength = length;
+        fVector = null;
     }
 
     /**
@@ -87,9 +90,9 @@ public class StringListImpl implements StringList {
      *   <code>item</code>. 
      */
     public boolean contains(String item) {
-        if (fVector != null)
+        if (fVector != null) {
             return fVector.contains(item);
-        
+        }
         if (item == null) {
             for (int i = 0; i < fLength; i++) {
                 if (fArray[i] == null)
@@ -106,8 +109,9 @@ public class StringListImpl implements StringList {
     }
 
     public String item(int index) {
-        if (index < 0 || index >= fLength)
+        if (index < 0 || index >= fLength) {
             return null;
+        }
         if (fVector != null) {
             return (String)fVector.elementAt(index);
         }
