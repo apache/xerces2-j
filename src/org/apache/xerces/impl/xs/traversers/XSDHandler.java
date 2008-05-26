@@ -2558,7 +2558,7 @@ public class XSDHandler {
             if (grammarType == XMLGrammarDescription.XML_SCHEMA) {
                 if (fInitialGrammarSet == null) {
                     if (fGrammarBucket == null) {
-                        fInitialGrammarSet = new Grammar [] {SchemaGrammar.SG_Schema4Annotations};
+                        fInitialGrammarSet = new Grammar [] {SchemaGrammar.Schema4Annotations.INSTANCE};
                     }
                     else {
                         SchemaGrammar [] schemaGrammars = fGrammarBucket.getGrammars();
@@ -2575,7 +2575,7 @@ public class XSDHandler {
                         }
                         Grammar [] grammars = new Grammar[schemaGrammars.length + 1];
                         System.arraycopy(schemaGrammars, 0, grammars, 0, schemaGrammars.length);
-                        grammars[grammars.length - 1] = SchemaGrammar.SG_Schema4Annotations;
+                        grammars[grammars.length - 1] = SchemaGrammar.Schema4Annotations.INSTANCE;
                         fInitialGrammarSet = grammars;
                     }
                 }
@@ -2598,7 +2598,7 @@ public class XSDHandler {
                     }
                 }
                 if (SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(tns)) {
-                    return SchemaGrammar.SG_Schema4Annotations;
+                    return SchemaGrammar.Schema4Annotations.INSTANCE;
                 }
             }
             return null;
