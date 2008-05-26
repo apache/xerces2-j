@@ -19,7 +19,8 @@ package org.apache.xerces.impl.xs.util;
 
 import org.apache.xerces.util.SymbolHash;
 import org.apache.xerces.xni.QName;
-import org.apache.xerces.xs.*;
+import org.apache.xerces.xs.XSNamedMap;
+import org.apache.xerces.xs.XSObject;
 
 /**
  * Containts the map between qnames and XSObject's.
