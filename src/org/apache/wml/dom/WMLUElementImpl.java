@@ -16,7 +16,7 @@
  */
 package org.apache.wml.dom;
 
-import org.apache.wml.*;
+import org.apache.wml.WMLUElement;
 
 /**
  * @xerces.internal
