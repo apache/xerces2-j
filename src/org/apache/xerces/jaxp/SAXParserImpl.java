@@ -89,14 +89,14 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
     private static final String SECURITY_MANAGER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.SECURITY_MANAGER_PROPERTY;
 
-    private JAXPSAXParser xmlReader;
+    private final JAXPSAXParser xmlReader;
     private String schemaLanguage = null;     // null means DTD
     private final Schema grammar;
     
-    private XMLComponent fSchemaValidator;
-    private XMLComponentManager fSchemaValidatorComponentManager;
-    private ValidationManager fSchemaValidationManager;
-    private UnparsedEntityHandler fUnparsedEntityHandler;
+    private final XMLComponent fSchemaValidator;
+    private final XMLComponentManager fSchemaValidatorComponentManager;
+    private final ValidationManager fSchemaValidationManager;
+    private final UnparsedEntityHandler fUnparsedEntityHandler;
     
     /** Initial ErrorHandler */
     private final ErrorHandler fInitErrorHandler;
@@ -179,6 +179,8 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
             /** For third party grammars, use the JAXP validator component. **/
             else {
                 validatorComponent = new JAXPValidatorComponent(grammar.newValidatorHandler());
+                fSchemaValidationManager = null;
+                fUnparsedEntityHandler = null;
                 fSchemaValidatorComponentManager = config;
             }
             config.addRecognizedFeatures(validatorComponent.getRecognizedFeatures());
@@ -187,6 +189,12 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
             ((XMLDocumentSource)validatorComponent).setDocumentHandler(xmlReader);
             xmlReader.setDocumentSource((XMLDocumentSource) validatorComponent);
             fSchemaValidator = validatorComponent;
+        }
+        else {
+            fSchemaValidationManager = null;
+            fUnparsedEntityHandler = null;
+            fSchemaValidatorComponentManager = null;
+            fSchemaValidator = null;
         }
         
         // Initial EntityResolver
@@ -352,12 +360,12 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
      */
     public static class JAXPSAXParser extends org.apache.xerces.parsers.SAXParser {
         
-        private HashMap fInitFeatures = new HashMap();
-        private HashMap fInitProperties = new HashMap();
-        private SAXParserImpl fSAXParser;
+        private final HashMap fInitFeatures = new HashMap();
+        private final HashMap fInitProperties = new HashMap();
+        private final SAXParserImpl fSAXParser;
 
         public JAXPSAXParser() {
-            super();
+            this(null);
         }
         
         JAXPSAXParser(SAXParserImpl saxParser) {
