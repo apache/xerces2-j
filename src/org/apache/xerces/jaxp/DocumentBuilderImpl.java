@@ -91,13 +91,13 @@ public class DocumentBuilderImpl extends DocumentBuilder
     private static final String SECURITY_MANAGER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.SECURITY_MANAGER_PROPERTY;
     
-    private DOMParser domParser = null;
+    private final DOMParser domParser;
     private final Schema grammar;
     
-    private XMLComponent fSchemaValidator;
-    private XMLComponentManager fSchemaValidatorComponentManager;
-    private ValidationManager fSchemaValidationManager;
-    private UnparsedEntityHandler fUnparsedEntityHandler;
+    private final XMLComponent fSchemaValidator;
+    private final XMLComponentManager fSchemaValidatorComponentManager;
+    private final ValidationManager fSchemaValidationManager;
+    private final UnparsedEntityHandler fUnparsedEntityHandler;
     
     /** Initial ErrorHandler */
     private final ErrorHandler fInitErrorHandler;
@@ -171,6 +171,8 @@ public class DocumentBuilderImpl extends DocumentBuilder
             /** For third party grammars, use the JAXP validator component. **/
             else {
                 validatorComponent = new JAXPValidatorComponent(grammar.newValidatorHandler());
+                fSchemaValidationManager = null;
+                fUnparsedEntityHandler = null;
                 fSchemaValidatorComponentManager = config;
             }
             config.addRecognizedFeatures(validatorComponent.getRecognizedFeatures());
@@ -179,6 +181,12 @@ public class DocumentBuilderImpl extends DocumentBuilder
             ((XMLDocumentSource)validatorComponent).setDocumentHandler(domParser);
             domParser.setDocumentSource((XMLDocumentSource) validatorComponent);
             fSchemaValidator = validatorComponent;
+        }
+        else {
+            fSchemaValidationManager = null;
+            fUnparsedEntityHandler = null;
+            fSchemaValidatorComponentManager = null;
+            fSchemaValidator = null;
         }
 
         // Set features
