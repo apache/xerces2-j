@@ -26,7 +26,15 @@ if "%JAVA_HOME%" == "" goto error
 
 rem Keep this classpath to the minimum required to run ant
 rem Application dependent classpaths are specified in build.xml 
-set LOCALCLASSPATH=%JAVA_HOME%\lib\tools.jar;%JAVA_HOME%\lib\classes.zip;.\tools\ant.jar;.\tools\ant-nodeps.jar;.\tools\xercesImpl.jar;.\tools\xml-apis.jar;.\tools\bin\xjavac.jar
+set LOCALCLASSPATH=%JAVA_HOME%\lib\tools.jar
+set LOCALCLASSPATH=%LOCALCLASSPATH%;%JAVA_HOME%\lib\classes.zip
+set LOCALCLASSPATH=%LOCALCLASSPATH%;.\tools\ant.jar
+set LOCALCLASSPATH=%LOCALCLASSPATH%;.\tools\ant-nodeps.jar
+set LOCALCLASSPATH=%LOCALCLASSPATH%;.\tools\ant-launcher.jar
+set LOCALCLASSPATH=%LOCALCLASSPATH%;.\tools\ant-junit.jar
+set LOCALCLASSPATH=%LOCALCLASSPATH%;.\tools\xml-apis.jar
+set LOCALCLASSPATH=%LOCALCLASSPATH%;.\tools\xercesImpl.jar
+set LOCALCLASSPATH=%LOCALCLASSPATH%;.\tools\bin\xjavac.jar
 
 echo Building with ant classpath %LOCALCLASSPATH%
 echo Starting Ant...
