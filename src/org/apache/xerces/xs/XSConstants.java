@@ -79,6 +79,11 @@ public interface XSConstants {
      * The object describes enumeration and pattern facets. 
      */
     public static final short MULTIVALUE_FACET          = 14;
+    
+    /**
+     * The object describes a XML schema type alternative
+     */
+    public static final short TYPE_ALTERNATIVE          = 15;
 
     // Derivation constants
     /**

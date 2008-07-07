@@ -18,6 +18,7 @@
 package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.impl.dv.ValidatedInfo;
+import org.apache.xerces.impl.xs.alternative.XSTypeAlternativeImpl;
 import org.apache.xerces.impl.xs.identity.IdentityConstraint;
 import org.apache.xerces.xs.ShortList;
 import org.apache.xerces.xs.XSAnnotation;
@@ -73,6 +74,11 @@ public class XSElementDecl implements XSElementDeclaration {
     static final int INITIAL_SIZE = 2;
     int fIDCPos = 0;
     IdentityConstraint[] fIDConstraints = new IdentityConstraint[INITIAL_SIZE];
+    
+    int fTypeAlternativePos = 0;
+    XSTypeAlternativeImpl[] fTypeAlternatives = new XSTypeAlternativeImpl[INITIAL_SIZE];
+    XSTypeAlternativeImpl fDefaultTypeDef = null;
+
     // The namespace schema information item corresponding to the target namespace 
     // of the element declaration, if it is globally declared; or null otherwise.
     private XSNamespaceItem fNamespaceItem = null;
@@ -121,6 +127,66 @@ public class XSElementDecl implements XSElementDeclaration {
 
     static final IdentityConstraint[] resize(IdentityConstraint[] oldArray, int newSize) {
         IdentityConstraint[] newArray = new IdentityConstraint[newSize];
+        System.arraycopy(oldArray, 0, newArray, 0, Math.min(oldArray.length, newSize));
+        return newArray;
+    }
+
+    /**
+     * Checks whether there is a possibility that the type table
+     * is complete. (ie the last alternative element in the table
+     * has no test attribute)
+     */
+    public boolean isTypeTableOK() {
+    	if (fTypeAlternativePos > 1) {
+    		for (int i=0; i<fTypeAlternativePos-1; i++) {
+    			if (fTypeAlternatives[i].getTest() == null) {
+    				return false;
+    			}
+    		}
+    	}
+    	return true;
+    }
+
+    public void addTypeAlternative(XSTypeAlternativeImpl typeAlternative) {
+        if (fTypeAlternativePos == fTypeAlternatives.length) {
+            fTypeAlternatives = resize(fTypeAlternatives, fTypeAlternativePos*2);
+        }
+        fTypeAlternatives[fTypeAlternativePos++] = typeAlternative;
+    }
+
+    public XSTypeAlternativeImpl[] getTypeAlternatives() {
+        if (fTypeAlternativePos == 0) {
+            return null;
+        }
+        if (fTypeAlternativePos < fTypeAlternatives.length) {
+            fTypeAlternatives = resize(fTypeAlternatives, fTypeAlternativePos);
+        }
+        return fTypeAlternatives;
+    }
+
+    public XSTypeAlternativeImpl getDefaultTypeDefinition() {
+        return fDefaultTypeDef;
+    }
+
+    public void setDefualtTypeDefinition() {
+        if (fTypeAlternativePos == 0) {
+            //no type alternatives found on the element decl
+            fDefaultTypeDef = null;
+        }
+        else {
+            //now that we have at least one type alternative we can assign a value
+            //to the default type definition attribute
+            if (fTypeAlternatives[fTypeAlternativePos-1].getTest() == null) {
+                fDefaultTypeDef = fTypeAlternatives[fTypeAlternativePos-1];
+            }
+            else {
+                fDefaultTypeDef = new XSTypeAlternativeImpl(fName, fType, XSObjectListImpl.EMPTY_LIST);
+            }
+        }
+    }
+
+    static final XSTypeAlternativeImpl[] resize(XSTypeAlternativeImpl[] oldArray, int newSize) {
+        XSTypeAlternativeImpl[] newArray = new XSTypeAlternativeImpl[newSize];
         System.arraycopy(oldArray, 0, newArray, 0, Math.min(oldArray.length, newSize));
         return newArray;
     }

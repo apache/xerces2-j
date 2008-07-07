@@ -361,6 +361,7 @@ public class XSDHandler {
     XSDKeyrefTraverser fKeyrefTraverser;
     XSDNotationTraverser fNotationTraverser;
     XSDSimpleTypeTraverser fSimpleTypeTraverser;
+    XSDTypeAlternativeTraverser fTypeAlternativeTraverser;
     XSDUniqueOrKeyTraverser fUniqueOrKeyTraverser;
     XSDWildcardTraverser fWildCardTraverser;
     
@@ -1891,6 +1892,7 @@ public class XSDHandler {
         fKeyrefTraverser = new XSDKeyrefTraverser(this, fAttributeChecker);
         fNotationTraverser = new XSDNotationTraverser(this, fAttributeChecker);
         fSimpleTypeTraverser = new XSDSimpleTypeTraverser(this, fAttributeChecker);
+        fTypeAlternativeTraverser = new XSDTypeAlternativeTraverser(this, fAttributeChecker);
         fUniqueOrKeyTraverser = new XSDUniqueOrKeyTraverser(this, fAttributeChecker);
         fWildCardTraverser = new XSDWildcardTraverser(this, fAttributeChecker);
     } // createTraversers()
@@ -1965,6 +1967,7 @@ public class XSDHandler {
         fKeyrefTraverser.reset(fSymbolTable, fValidateAnnotations);
         fNotationTraverser.reset(fSymbolTable, fValidateAnnotations);
         fSimpleTypeTraverser.reset(fSymbolTable, fValidateAnnotations);
+        fTypeAlternativeTraverser.reset(fSymbolTable, fValidateAnnotations);
         fUniqueOrKeyTraverser.reset(fSymbolTable, fValidateAnnotations);
         fWildCardTraverser.reset(fSymbolTable, fValidateAnnotations);
         

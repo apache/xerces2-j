@@ -50,6 +50,7 @@ public final class SchemaSymbols {
 
     // all possible schema element names
     public static final String ELT_ALL                  = "all".intern();
+    public static final String ELT_ALTERNATIVE          = "alternative".intern();
     public static final String ELT_ANNOTATION           = "annotation".intern();
     public static final String ELT_ANY                  = "any".intern();
     public static final String ELT_ANYATTRIBUTE         = "anyAttribute".intern();
@@ -122,17 +123,20 @@ public final class SchemaSymbols {
     public static final String ATT_SYSTEM               = "system".intern();
     public static final String ATT_PUBLIC               = "public".intern();
     public static final String ATT_TARGETNAMESPACE      = "targetNamespace".intern();
+    public static final String ATT_TEST                 = "test".intern();
     public static final String ATT_TYPE                 = "type".intern();
     public static final String ATT_USE                  = "use".intern();
     public static final String ATT_VALUE                = "value".intern();
     public static final String ATT_VERSION              = "version".intern();
     public static final String ATT_XML_LANG             = "xml:lang".intern();
     public static final String ATT_XPATH                = "xpath".intern();
+    public static final String ATT_XPATH_DEFAULT_NS     = "xpathDefaultNamespace".intern();    
     public static final String ATT_MINVERSION           = "minVersion".intern();
-    public static final String ATT_MAXVERSION           = "maxVersion".intern();    
+    public static final String ATT_MAXVERSION           = "maxVersion".intern();
 
     // all possible schema attribute values
     public static final String ATTVAL_TWOPOUNDANY       = "##any";
+    public static final String ATTVAL_TWOPOUNDDDEFAULTNS= "##defaultNamespace";    
     public static final String ATTVAL_TWOPOUNDLOCAL     = "##local";
     public static final String ATTVAL_TWOPOUNDOTHER     = "##other";
     public static final String ATTVAL_TWOPOUNDTARGETNS  = "##targetNamespace";

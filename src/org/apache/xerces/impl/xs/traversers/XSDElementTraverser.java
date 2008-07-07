@@ -17,6 +17,7 @@
 
 package org.apache.xerces.impl.xs.traversers;
 
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.SchemaGrammar;
@@ -57,7 +58,7 @@ import org.w3c.dom.Attr;
  *   substitutionGroup = QName
  *   type = QName
  *   {any attributes with non-schema namespace . . .}>
- *   Content: (annotation?, ((simpleType | complexType)?, (unique | key | keyref)*))
+ *   Content: (annotation?, ((simpleType | complexType)?, alternative*, (unique | key | keyref)*))
  * </element>
  *
  * @xerces.internal 
@@ -395,6 +396,25 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         // see if there's something here; it had better be key, keyref or unique.
         if (child != null) {
             String childName = DOMUtil.getLocalName(child);
+            
+            // if XML Schema 1.1, check for alternative types first            
+            if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
+                while (child.equals(SchemaSymbols.ELT_ALTERNATIVE)) {
+                	fSchemaHandler.fTypeAlternativeTraverser.traverse(child, element, schemaDoc, grammar);
+                	child = DOMUtil.getNextSiblingElement(child);
+                    if (child != null) {
+                        childName = DOMUtil.getLocalName(child);
+                    }
+                    else {
+                    	if (!element.isTypeTableOK()) {
+                    		reportSchemaError("src-element.5", new Object[]{nameAtt}, elmDecl);
+                    	}
+                    	element.setDefualtTypeDefinition();
+                    	break;
+                    }
+                }                
+            }
+            
             while (child != null &&
                     (childName.equals(SchemaSymbols.ELT_KEY) ||
                             childName.equals(SchemaSymbols.ELT_KEYREF) ||
@@ -440,7 +460,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         
         // element
         if (child != null) {
-            reportSchemaError("s4s-elt-must-match.1", new Object[]{nameAtt, "(annotation?, (simpleType | complexType)?, (unique | key | keyref)*))", DOMUtil.getLocalName(child)}, child);
+            reportSchemaError("s4s-elt-must-match.1", new Object[]{nameAtt, "(annotation?, (simpleType | complexType)?, alternative*, (unique | key | keyref)*))", DOMUtil.getLocalName(child)}, child);
         }
         
         // Step 4: check 3.3.3 constraints

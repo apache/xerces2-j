@@ -25,6 +25,7 @@ import org.apache.xerces.impl.dv.SchemaDVFactory;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
+import org.apache.xerces.impl.xs.alternative.XSTypeAlternativeImpl;
 import org.apache.xerces.impl.xs.identity.IdentityConstraint;
 import org.apache.xerces.impl.xs.util.SimpleLocator;
 import org.apache.xerces.impl.xs.util.StringListImpl;
@@ -678,6 +679,13 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
     public final void addIDConstraintDecl(XSElementDecl elmDecl, IdentityConstraint decl) {
         elmDecl.addIDConstraint(decl);
         fGlobalIDConstraintDecls.put(decl.getIdentityConstraintName(), decl);
+    }
+
+    /**
+     * register one type alternative
+     */
+    public final void addTypeAlternative(XSElementDecl elmDecl, XSTypeAlternativeImpl typeAlt) {
+        elmDecl.addTypeAlternative(typeAlt);
     }
 
     /**

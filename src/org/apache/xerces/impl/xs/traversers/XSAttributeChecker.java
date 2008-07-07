@@ -119,6 +119,9 @@ public class XSAttributeChecker {
     public static final int ATTIDX_FROMDEFAULT     = ATTIDX_COUNT++;
     //public static final int ATTIDX_OTHERVALUES     = ATTIDX_COUNT++;
     public static final int ATTIDX_ISRETURNED      = ATTIDX_COUNT++;
+    
+    //  Schema 1.1
+    public static final int ATTIDX_XPATHDEFAULTNS  = ATTIDX_COUNT++;
 
     private static final XIntPool fXIntPool = new XIntPool();
     // constants to return
@@ -203,6 +206,7 @@ public class XSAttributeChecker {
     protected static final int DT_BOOLEAN          = -15;
     protected static final int DT_NONNEGINT        = -16;
     protected static final int DT_POSINT           = -17;
+    protected static final int DT_XPATH_DEFAULT_NS = -18;
 
     static {
         // step 2: all possible attributes for all elements
@@ -255,6 +259,8 @@ public class XSAttributeChecker {
         int ATT_XML_LANG            = attCount++;
         int ATT_XPATH_R             = attCount++;
         int ATT_XPATH1_R            = attCount++;
+        int ATT_TEST_XPATH_R        = attCount++;
+        int ATT_DEFAULT_XPATH_NS_N  = attCount++;
 
         // step 3: store all these attributes in an array
         OneAttr[] allAttrs = new OneAttr[attCount];
@@ -449,6 +455,14 @@ public class XSAttributeChecker {
         allAttrs[ATT_XPATH1_R]          =   new OneAttr(SchemaSymbols.ATT_XPATH,
                                                         DT_XPATH1,
                                                         ATTIDX_XPATH,
+                                                        null);
+        allAttrs[ATT_TEST_XPATH_R]      =   new OneAttr(SchemaSymbols.ATT_TEST,
+                                                        DT_XPATH1,
+                                                        ATTIDX_XPATH,
+                                                        null);
+        allAttrs[ATT_DEFAULT_XPATH_NS_N]=   new OneAttr(SchemaSymbols.ATT_XPATH_DEFAULT_NS,
+                                                        DT_XPATH_DEFAULT_NS,
+                                                        ATTIDX_XPATHDEFAULTNS,
                                                         null);
 
         // step 4: for each element, make a list of possible attributes
@@ -913,6 +927,21 @@ public class XSAttributeChecker {
         fEleAttrsMapL.put(SchemaSymbols.ELT_MININCLUSIVE, attrList);
         // for element "minExclusive" - local
         fEleAttrsMapL.put(SchemaSymbols.ELT_MINEXCLUSIVE, attrList);
+
+        // XML Schema 1.1
+
+        // for element "alternative" - local
+        attrList = Container.getContainer(4);
+        // id = ID
+        attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
+        // test = an XPath expression
+        attrList.put(SchemaSymbols.ATT_TEST, allAttrs[ATT_TEST_XPATH_R]);
+        // type = QName
+        attrList.put(SchemaSymbols.ATT_TYPE, allAttrs[ATT_TYPE_N]);
+        // xpathDefaultNamespace = (anyURI | (##defaultNamespace | ##targetNamespace | ##local))
+        attrList.put(SchemaSymbols.ATT_XPATH_DEFAULT_NS, allAttrs[ATT_DEFAULT_XPATH_NS_N]);
+        // TODO: use 1.1 map
+        fEleAttrsMapL.put(SchemaSymbols.ELT_ALTERNATIVE, attrList);
     }
 
     // used to resolver namespace prefixes
@@ -1516,6 +1545,27 @@ public class XSAttributeChecker {
             else
                 throw new InvalidDatatypeValueException("cvc-enumeration-valid",
                                                         new Object[]{value, "(preserve | replace | collapse)"});
+            break;
+        case DT_XPATH_DEFAULT_NS:
+            // value = anyURI | ##defaultNamespace | ##targetNamespace | ##local
+            retValue = null;
+            if (value.equals(SchemaSymbols.ATTVAL_TWOPOUNDTARGETNS)) {
+                retValue = schemaDoc.fTargetNamespace;
+            } else if (value.equals(SchemaSymbols.ATTVAL_TWOPOUNDDDEFAULTNS)) {
+                retValue = schemaDoc.fValidationContext.getURI(XMLSymbols.EMPTY_STRING);
+                if (retValue != null) {
+                    retValue = fSymbolTable.addSymbol((String)retValue);
+                }
+            } else if (!value.equals(SchemaSymbols.ATTVAL_TWOPOUNDLOCAL)){
+                // we have found namespace URI here
+                // need to add it to the symbol table
+                try {
+                    fExtraDVs[DT_ANYURI].validate(value, schemaDoc.fValidationContext, null);
+                    retValue = fSymbolTable.addSymbol(value);
+                } catch (InvalidDatatypeValueException ide) {
+                    throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.3", new Object[]{value, "anyURI | ##defaultNamespace | ##targetNamespace | ##local"});
+                }
+            }
             break;
         }
 
