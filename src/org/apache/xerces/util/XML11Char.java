@@ -288,16 +288,17 @@ public class XML11Char {
      * @return true if name is a valid Name
      */
     public static boolean isXML11ValidName(String name) {
-        int length = name.length();
-        if (length == 0)
+        final int length = name.length();
+        if (length == 0) {
             return false;
+        }
         int i = 1;
         char ch = name.charAt(0);
-        if( !isXML11NameStart(ch) ) {
-            if ( length > 1 && isXML11NameHighSurrogate(ch) ) {
+        if (!isXML11NameStart(ch)) {
+            if (length > 1 && isXML11NameHighSurrogate(ch)) {
                 char ch2 = name.charAt(1);
-                if ( !XMLChar.isLowSurrogate(ch2) || 
-                     !isXML11NameStart(XMLChar.supplemental(ch, ch2)) ) {
+                if (!XMLChar.isLowSurrogate(ch2) || 
+                    !isXML11NameStart(XMLChar.supplemental(ch, ch2))) {
                     return false;
                 }
                 i = 2;
@@ -308,11 +309,11 @@ public class XML11Char {
         }
         while (i < length) {
             ch = name.charAt(i);
-            if ( !isXML11Name(ch) ) {
-                if ( ++i < length && isXML11NameHighSurrogate(ch) ) {
+            if (!isXML11Name(ch)) {
+                if (++i < length && isXML11NameHighSurrogate(ch)) {
                     char ch2 = name.charAt(i);
-                    if ( !XMLChar.isLowSurrogate(ch2) || 
-                         !isXML11Name(XMLChar.supplemental(ch, ch2)) ) {
+                    if (!XMLChar.isLowSurrogate(ch2) || 
+                        !isXML11Name(XMLChar.supplemental(ch, ch2))) {
                         return false;
                     }
                 }
@@ -325,7 +326,6 @@ public class XML11Char {
         return true;
     } // isXML11ValidName(String):boolean
     
-
     /*
      * from the namespace 1.1 rec
      * [4] NCName ::= NCNameStartChar NCNameChar*
@@ -338,16 +338,17 @@ public class XML11Char {
      * @return true if name is a valid NCName
      */
     public static boolean isXML11ValidNCName(String ncName) {
-        int length = ncName.length();
-        if (length == 0)
+        final int length = ncName.length();
+        if (length == 0) {
             return false;
+        }
         int i = 1;
         char ch = ncName.charAt(0);
-        if( !isXML11NCNameStart(ch) ) {
-            if ( length > 1 && isXML11NameHighSurrogate(ch) ) {
+        if (!isXML11NCNameStart(ch)) {
+            if (length > 1 && isXML11NameHighSurrogate(ch)) {
                 char ch2 = ncName.charAt(1);
-                if ( !XMLChar.isLowSurrogate(ch2) || 
-                     !isXML11NCNameStart(XMLChar.supplemental(ch, ch2)) ) {
+                if (!XMLChar.isLowSurrogate(ch2) || 
+                    !isXML11NCNameStart(XMLChar.supplemental(ch, ch2))) {
                     return false;
                 }
                 i = 2;
@@ -358,11 +359,11 @@ public class XML11Char {
         }
         while (i < length) {
             ch = ncName.charAt(i);
-            if ( !isXML11NCName(ch) ) {
-                if ( ++i < length && isXML11NameHighSurrogate(ch) ) {
+            if (!isXML11NCName(ch)) {
+                if (++i < length && isXML11NameHighSurrogate(ch)) {
                     char ch2 = ncName.charAt(i);
-                    if ( !XMLChar.isLowSurrogate(ch2) || 
-                         !isXML11NCName(XMLChar.supplemental(ch, ch2)) ) {
+                    if (!XMLChar.isLowSurrogate(ch2) || 
+                        !isXML11NCName(XMLChar.supplemental(ch, ch2))) {
                         return false;
                     }
                 }
@@ -386,16 +387,17 @@ public class XML11Char {
      * @return true if nmtoken is a valid Nmtoken 
      */
     public static boolean isXML11ValidNmtoken(String nmtoken) {
-        int length = nmtoken.length();
-        if (length == 0)
+        final int length = nmtoken.length();
+        if (length == 0) {
             return false;
-        for (int i = 0; i < length; ++i ) {
+        }
+        for (int i = 0; i < length; ++i) {
             char ch = nmtoken.charAt(i);
-            if( !isXML11Name(ch) ) {
-                if ( ++i < length && isXML11NameHighSurrogate(ch) ) {
+            if (!isXML11Name(ch)) {
+                if (++i < length && isXML11NameHighSurrogate(ch)) {
                     char ch2 = nmtoken.charAt(i);
-                    if ( !XMLChar.isLowSurrogate(ch2) || 
-                         !isXML11Name(XMLChar.supplemental(ch, ch2)) ) {
+                    if (!XMLChar.isLowSurrogate(ch2) || 
+                        !isXML11Name(XMLChar.supplemental(ch, ch2))) {
                         return false;
                     }
                 }
