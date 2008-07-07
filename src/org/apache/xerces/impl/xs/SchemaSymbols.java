@@ -45,6 +45,9 @@ public final class SchemaSymbols {
     // schema namespace
     public static final String URI_SCHEMAFORSCHEMA            = "http://www.w3.org/2001/XMLSchema".intern();
 
+    // schema version namespace
+    public static final String URI_SCHEMAVERSION = "http://www.w3.org/2007/XMLSchema-versioning".intern();
+
     // all possible schema element names
     public static final String ELT_ALL                  = "all".intern();
     public static final String ELT_ANNOTATION           = "annotation".intern();
@@ -125,6 +128,8 @@ public final class SchemaSymbols {
     public static final String ATT_VERSION              = "version".intern();
     public static final String ATT_XML_LANG             = "xml:lang".intern();
     public static final String ATT_XPATH                = "xpath".intern();
+    public static final String ATT_MINVERSION           = "minVersion".intern();
+    public static final String ATT_MAXVERSION           = "maxVersion".intern();    
 
     // all possible schema attribute values
     public static final String ATTVAL_TWOPOUNDANY       = "##any";

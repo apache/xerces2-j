@@ -21,6 +21,9 @@ import java.io.IOException;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
+import org.apache.xerces.impl.dv.xs.DecimalDV;
+import org.apache.xerces.impl.dv.xs.TypeValidator;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.util.XMLAttributesImpl;
@@ -35,6 +38,7 @@ import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
+import org.apache.xerces.xs.datatypes.XSDecimal;
 import org.w3c.dom.Document;
 
 /**
@@ -100,6 +104,12 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
     private BooleanStack fHasNonSchemaAttributes = new BooleanStack();
     private BooleanStack fSawAnnotation = new BooleanStack();
     private XMLAttributes fEmptyAttr = new XMLAttributesImpl();
+
+    // fields for conditional inclusion
+    private final TypeValidator fDecimalDV = new DecimalDV();
+    private XSDecimal fSupportedVersion;
+    private int fIgnoreDepth = -1;
+    private boolean fPerformConditionalInclusion = true; //REVISIT: use feature
     
     //
     // XMLDocumentHandler methods
@@ -117,6 +127,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
         fAnnotationDepth = -1;
         fInnerAnnotationDepth = -1;
         fDepth = -1;
+        fIgnoreDepth = -1;
         fLocator = locator;
         fNamespaceContext = namespaceContext;
         schemaDOM.setDocumentURI(locator.getExpandedSystemId());
@@ -144,7 +155,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
      *                   Thrown by application to signal an error.
      */
     public void comment(XMLString text, Augmentations augs) throws XNIException {
-        if(fAnnotationDepth > -1) {
+        if(fAnnotationDepth > -1 && fIgnoreDepth == -1) {
             schemaDOM.comment(text);
         }
     }
@@ -169,7 +180,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
      */
     public void processingInstruction(String target, XMLString data, Augmentations augs)
     throws XNIException {
-        if (fAnnotationDepth > -1) {
+        if (fAnnotationDepth > -1 && fIgnoreDepth == -1) {
             schemaDOM.processingInstruction(target, data);
         }
     }
@@ -184,6 +195,9 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
      *                   Thrown by handler to signal an error.
      */
     public void characters(XMLString text, Augmentations augs) throws XNIException {
+        if (fIgnoreDepth > -1) {
+            return;
+        }
         // when it's not within xs:appinfo or xs:documentation
         if (fInnerAnnotationDepth == -1 ) {
             for (int i=text.offset; i<text.offset+text.length; i++) {
@@ -208,7 +222,6 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
         else {
             schemaDOM.characters(text);
         }
-        
     }
     
     
@@ -224,8 +237,26 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
      */
     public void startElement(QName element, XMLAttributes attributes, Augmentations augs)
     throws XNIException {
-        
+
         fDepth++;
+
+        // conditional inclusion
+        // We ignore descendants if parent is being ignored (mismatch of version supported)
+        if (fPerformConditionalInclusion) {
+            if (fIgnoreDepth > -1) {
+                fIgnoreDepth++;
+                return;
+            }
+
+            // check for version mismatch if any (does not apply to <schema> element)
+            if (fDepth > 0) {
+                checkSupportedVersion(element, attributes);
+                if (fIgnoreDepth > -1) {
+                    return;
+                }
+            }
+        }
+
         // while it is true that non-whitespace character data
         // may only occur in appInfo or documentation
         // elements, it's certainly legal for comments and PI's to
@@ -282,7 +313,20 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
      */
     public void emptyElement(QName element, XMLAttributes attributes, Augmentations augs)
     throws XNIException {
-        
+
+        if (fPerformConditionalInclusion) {
+            if (fIgnoreDepth > -1) {
+                return;
+            }
+
+            if (fDepth > -1) {
+                checkSupportedVersion(element, attributes);
+                if (fIgnoreDepth > -1) {
+                    return;
+                }
+            }
+        }
+
         if (fGenerateSyntheticAnnotation && fAnnotationDepth == -1 && 
                 element.uri == SchemaSymbols.URI_SCHEMAFORSCHEMA && element.localpart != SchemaSymbols.ELT_ANNOTATION && hasNonSchemaAttributes(element, attributes)) { 
             
@@ -358,37 +402,41 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
         
         // when we reach the endElement of xs:appinfo or xs:documentation,
         // change fInnerAnnotationDepth to -1
-        if(fAnnotationDepth > -1) {
-            if (fInnerAnnotationDepth == fDepth) {
-                fInnerAnnotationDepth = -1;
-                schemaDOM.endAnnotationElement(element);
-                schemaDOM.endElement();
-            } else if (fAnnotationDepth == fDepth) {
-                fAnnotationDepth = -1;
-                schemaDOM.endAnnotation(element, fCurrentAnnotationElement);
-                schemaDOM.endElement();
-            } else { // inside a child of annotation
-                schemaDOM.endAnnotationElement(element);
-            }
-        } else { // not in an annotation at all
-            if(element.uri == SchemaSymbols.URI_SCHEMAFORSCHEMA && fGenerateSyntheticAnnotation) {
-                boolean value = fHasNonSchemaAttributes.pop();
-                boolean sawann = fSawAnnotation.pop();
-                if (value && !sawann) {
-                    String schemaPrefix = fNamespaceContext.getPrefix(SchemaSymbols.URI_SCHEMAFORSCHEMA);
-                    QName annQName = new QName(schemaPrefix, SchemaSymbols.ELT_ANNOTATION, schemaPrefix + (schemaPrefix.length() == 0?"":":") + SchemaSymbols.ELT_ANNOTATION, SchemaSymbols.URI_SCHEMAFORSCHEMA);
-                    schemaDOM.startAnnotation(annQName, fEmptyAttr, fNamespaceContext);
-                    QName elemQName = new QName(schemaPrefix, SchemaSymbols.ELT_DOCUMENTATION, schemaPrefix + (schemaPrefix.length() == 0?"":":") + SchemaSymbols.ELT_DOCUMENTATION, SchemaSymbols.URI_SCHEMAFORSCHEMA);
-                    schemaDOM.startAnnotationElement(elemQName, fEmptyAttr);
-                    schemaDOM.characters(new XMLString("SYNTHETIC_ANNOTATION".toCharArray(), 0, 20 ));     
-                    schemaDOM.endSyntheticAnnotationElement(elemQName, false);
-                    schemaDOM.endSyntheticAnnotationElement(annQName, true);
+        if (fIgnoreDepth == -1) {
+            if(fAnnotationDepth > -1) {
+                if (fInnerAnnotationDepth == fDepth) {
+                    fInnerAnnotationDepth = -1;
+                    schemaDOM.endAnnotationElement(element);
+                    schemaDOM.endElement();
+                } else if (fAnnotationDepth == fDepth) {
+                    fAnnotationDepth = -1;
+                    schemaDOM.endAnnotation(element, fCurrentAnnotationElement);
+                    schemaDOM.endElement();
+                } else { // inside a child of annotation
+                    schemaDOM.endAnnotationElement(element);
                 }
+            } else { // not in an annotation at all
+                if(element.uri == SchemaSymbols.URI_SCHEMAFORSCHEMA && fGenerateSyntheticAnnotation) {
+                    boolean value = fHasNonSchemaAttributes.pop();
+                    boolean sawann = fSawAnnotation.pop();
+                    if (value && !sawann) {
+                        String schemaPrefix = fNamespaceContext.getPrefix(SchemaSymbols.URI_SCHEMAFORSCHEMA);
+                        QName annQName = new QName(schemaPrefix, SchemaSymbols.ELT_ANNOTATION, schemaPrefix + (schemaPrefix.length() == 0?"":":") + SchemaSymbols.ELT_ANNOTATION, SchemaSymbols.URI_SCHEMAFORSCHEMA);
+                        schemaDOM.startAnnotation(annQName, fEmptyAttr, fNamespaceContext);
+                        QName elemQName = new QName(schemaPrefix, SchemaSymbols.ELT_DOCUMENTATION, schemaPrefix + (schemaPrefix.length() == 0?"":":") + SchemaSymbols.ELT_DOCUMENTATION, SchemaSymbols.URI_SCHEMAFORSCHEMA);
+                        schemaDOM.startAnnotationElement(elemQName, fEmptyAttr);
+                        schemaDOM.characters(new XMLString("SYNTHETIC_ANNOTATION".toCharArray(), 0, 20 ));     
+                        schemaDOM.endSyntheticAnnotationElement(elemQName, false);
+                        schemaDOM.endSyntheticAnnotationElement(annQName, true);
+                    }
+                }
+                schemaDOM.endElement();
             }
-            schemaDOM.endElement();
+        }
+        else {
+            fIgnoreDepth--;
         }
         fDepth--;
-        
     }
     
     /**
@@ -425,7 +473,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
      */
     public void ignorableWhitespace(XMLString text, Augmentations augs) throws XNIException {
         // unlikely to be called, but you never know...
-        if (fAnnotationDepth != -1 ) {
+        if (fAnnotationDepth != -1 && fIgnoreDepth == -1) {
             schemaDOM.characters(text);
         }
     }
@@ -440,7 +488,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
      */
     public void startCDATA(Augmentations augs) throws XNIException {
         // only deal with CDATA boundaries within an annotation.
-        if (fAnnotationDepth != -1) {
+        if (fAnnotationDepth != -1 && fIgnoreDepth == -1) {
             schemaDOM.startAnnotationCDATA();
         }
     }
@@ -455,7 +503,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
      */
     public void endCDATA(Augmentations augs) throws XNIException {
         // only deal with CDATA boundaries within an annotation.
-        if (fAnnotationDepth != -1) {
+        if (fAnnotationDepth != -1 && fIgnoreDepth == -1) {
             schemaDOM.endAnnotationCDATA();
         }
     }
@@ -478,7 +526,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
      * @param state
      */
     public void setFeature(String featureId, boolean state){
-    	config.setFeature(featureId, state);
+        config.setFeature(featureId, state);
     }
     
     /**
@@ -513,7 +561,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
      * @param er XMLEntityResolver
      */
     public void setEntityResolver(XMLEntityResolver er) {
-    	config.setEntityResolver(er);
+        config.setEntityResolver(er);
     }
     
     /**
@@ -530,16 +578,63 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
      * Reset SchemaParsingConfig
      */
     public void reset() {
-    	((SchemaParsingConfig)config).reset();
+        ((SchemaParsingConfig)config).reset();
     }
     
     /**
      * ResetNodePool on SchemaParsingConfig
      */
     public void resetNodePool() {
-    	((SchemaParsingConfig)config).resetNodePool();
+        ((SchemaParsingConfig)config).resetNodePool();
+    }
+
+    public void setSupportedVersion(XSDecimal version) {
+        fSupportedVersion = version;
     }
     
+    private void checkSupportedVersion(QName element, XMLAttributes attributes) {
+        final int length = attributes.getLength();
+        for (int i = 0; i < length; ++i) {
+            String uri = attributes.getURI(i);
+            if (uri != null && uri == SchemaSymbols.URI_SCHEMAVERSION) {
+                String attrLocalName = attributes.getLocalName(i);
+                if (attrLocalName == SchemaSymbols.ATT_MINVERSION) {
+                    try {
+                        XSDecimal minVer = (XSDecimal) fDecimalDV.getActualValue(attributes.getValue(i), null);
+                        if (fDecimalDV.compare(minVer, fSupportedVersion) == 1) {
+                            fIgnoreDepth++;
+                            return;
+                        }
+                    }
+                    catch (InvalidDatatypeValueException ide) {
+                        fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                "s4s-att-invalid-value",
+                                new Object[] {element.localpart, attrLocalName, ide.getMessage()},
+                                XMLErrorReporter.SEVERITY_ERROR);
+                    }
+                }
+                else if (attrLocalName == SchemaSymbols.ATT_MAXVERSION) {
+                    try {
+                        XSDecimal maxVer = (XSDecimal) fDecimalDV.getActualValue(attributes.getValue(i), null);
+                        if (fDecimalDV.compare(maxVer, fSupportedVersion) == -1) {
+                            fIgnoreDepth++;
+                            return;
+                        }
+                    }
+                    catch (InvalidDatatypeValueException ide) {
+                        fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                "s4s-att-invalid-value",
+                                new Object[] {element.localpart, attrLocalName, ide.getMessage()},
+                                XMLErrorReporter.SEVERITY_ERROR);
+                    }
+                }
+                else { //REVISIT: report error
+
+                }
+            }
+        }
+    }    
+
     /**
      * A simple boolean based stack.
      * 

@@ -27,6 +27,9 @@ import java.util.Vector;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
+import org.apache.xerces.impl.dv.xs.DecimalDV;
+import org.apache.xerces.impl.dv.xs.TypeValidator;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaNamespaceSupport;
 import org.apache.xerces.impl.xs.SchemaSymbols;
@@ -67,6 +70,7 @@ import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xs.XSObject;
 import org.apache.xerces.xs.XSParticle;
+import org.apache.xerces.xs.datatypes.XSDecimal;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -247,7 +251,26 @@ public class XSDHandler {
     
     // Records which nodes are hidden when the input is a DOMInputSource.
     Hashtable fHiddenNodes = null;
+
+    // Conditional inclustion
+    private static final String XSD_VERSION_1_0 = "1.0";
+    private static final String XSD_VERSION_1_1 = "1.1";
+
+    private static final TypeValidator DECIMAL_DV = new DecimalDV();
+    private static final XSDecimal SUPPORTED_VERSION_1_0 = getSupportedVersion(XSD_VERSION_1_0);
+    private static final XSDecimal SUPPORTED_VERSION_1_1 = getSupportedVersion(XSD_VERSION_1_1);
+    private XSDecimal fSupportedVersion = SUPPORTED_VERSION_1_0;
     
+    private static XSDecimal getSupportedVersion(String version) {
+        XSDecimal result = null;
+        try {
+            result = (XSDecimal) DECIMAL_DV.getActualValue(version, null);
+        }
+        catch (InvalidDatatypeValueException ide) {
+        }
+        return result;
+    }
+
     // convenience methods
     private String null2EmptyString(String ns) {
         return ns == null ? XMLSymbols.EMPTY_STRING : ns;
@@ -385,6 +408,7 @@ public class XSDHandler {
     public XSDHandler(){
         fHiddenNodes = new Hashtable();       
         fSchemaParser = new SchemaDOMParser(new SchemaParsingConfig());
+        fSchemaParser.setSupportedVersion(fSupportedVersion); //REVISIT: pass to constructor?
     }
     
     // it should be possible to use the same XSDHandler to parse
@@ -2712,6 +2736,13 @@ public class XSDHandler {
      */
     public void setSchemaVersion(short version) {
         fSchemaVersion = version;
+        if (version < Constants.SCHEMA_VERSION_1_1) {
+            fSupportedVersion = SUPPORTED_VERSION_1_0;
+        }
+        else {
+            fSupportedVersion = SUPPORTED_VERSION_1_1;
+        }
+        fSchemaParser.setSupportedVersion(fSupportedVersion);
     }
 
     public short getSchemaVersion() {
