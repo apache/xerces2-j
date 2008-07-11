@@ -184,7 +184,7 @@ public class BaseDVFactory extends SchemaDVFactory {
         types.put(NONPOSITIVEINTEGER, nonPositiveDV);
 
         facets.maxInclusive = "-1";
-        XSSimpleTypeDecl negativeDV = new XSSimpleTypeDecl(integerDV, NEGATIVEINTEGER, URI_SCHEMAFORSCHEMA, (short)0, false, null, XSConstants.NEGATIVEINTEGER_DT);
+        XSSimpleTypeDecl negativeDV = new XSSimpleTypeDecl(nonPositiveDV, NEGATIVEINTEGER, URI_SCHEMAFORSCHEMA, (short)0, false, null, XSConstants.NEGATIVEINTEGER_DT);
         negativeDV.applyFacets1(facets , XSSimpleType.FACET_MAXINCLUSIVE, (short)0);
         types.put(NEGATIVEINTEGER, negativeDV);
 
