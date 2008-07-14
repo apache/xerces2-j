@@ -168,7 +168,7 @@ public class XSElementDecl implements XSElementDeclaration {
         return fDefaultTypeDef;
     }
 
-    public void setDefualtTypeDefinition() {
+    public void setDefaultTypeDefinition() {
         if (fTypeAlternativePos == 0) {
             //no type alternatives found on the element decl
             fDefaultTypeDef = null;

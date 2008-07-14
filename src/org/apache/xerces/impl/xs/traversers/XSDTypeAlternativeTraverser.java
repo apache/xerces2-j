@@ -45,7 +45,7 @@ import org.w3c.dom.Element;
  * </alternative>
  * 
  * @author Hiranya Jayathilaka, University of Moratuwa
- * @version $Id:$
+ * @version $Id$
  */
 class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
 
@@ -131,8 +131,8 @@ class XSDTypeAlternativeTraverser extends XSDAbstractTraverser {
         }
 
         // if the type definition component is not present..
-        // i.e. test attr value is absent, or no anonymous types are defined
-        if (typeAtt == null || !hasAnonType) {
+        // i.e. test attr value is absent and no anonymous types are defined
+        if (typeAtt == null && !hasAnonType) {
         	reportSchemaError("src-type-alternative.3.12.13.2", null, altElement);
         }
         

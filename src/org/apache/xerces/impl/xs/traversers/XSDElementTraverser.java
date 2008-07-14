@@ -399,7 +399,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
             
             // if XML Schema 1.1, check for alternative types first            
             if (fSchemaHandler.fSchemaVersion == Constants.SCHEMA_VERSION_1_1) {
-                while (child.equals(SchemaSymbols.ELT_ALTERNATIVE)) {
+                while (childName.equals(SchemaSymbols.ELT_ALTERNATIVE)) {
                 	fSchemaHandler.fTypeAlternativeTraverser.traverse(child, element, schemaDoc, grammar);
                 	child = DOMUtil.getNextSiblingElement(child);
                     if (child != null) {
@@ -409,7 +409,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                     	if (!element.isTypeTableOK()) {
                     		reportSchemaError("src-element.5", new Object[]{nameAtt}, elmDecl);
                     	}
-                    	element.setDefualtTypeDefinition();
+                    	element.setDefaultTypeDefinition();
                     	break;
                     }
                 }                
