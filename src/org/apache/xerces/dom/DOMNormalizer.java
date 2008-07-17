@@ -144,7 +144,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
 
     /** for setting the PSVI */
     protected Node fCurrentNode = null;
-    private QName fAttrQName = new QName();
+    private final QName fAttrQName = new QName();
     
     // attribute value normalization
     final XMLString fNormalizedValue = new XMLString(new char[16], 0, 0);
