@@ -242,7 +242,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
     protected boolean fInDTDExternalSubset;
 
     /** Root element name */
-    protected QName fRoot = new QName();
+    protected final QName fRoot = new QName();
 
     /** True if inside CDATA section. */
     protected boolean fInCDATASection;
@@ -270,7 +270,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
     protected boolean fInEntityRef = false;
 
     /** Attribute QName. */
-    private QName fAttrQName = new QName ();
+    private final QName fAttrQName = new QName();
     
     /** Document locator. */
     private XMLLocator fLocator;

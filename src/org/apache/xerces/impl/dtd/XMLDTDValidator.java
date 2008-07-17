@@ -335,16 +335,16 @@ public class XMLDTDValidator
     private XMLElementDecl fTempElementDecl = new XMLElementDecl();
 
     /** Temporary atribute declaration. */
-    private XMLAttributeDecl fTempAttDecl = new XMLAttributeDecl();
+    private final XMLAttributeDecl fTempAttDecl = new XMLAttributeDecl();
 
     /** Temporary entity declaration. */
-    private XMLEntityDecl fEntityDecl = new XMLEntityDecl();
+    private final XMLEntityDecl fEntityDecl = new XMLEntityDecl();
 
     /** Temporary qualified name. */
-    private QName fTempQName = new QName();
+    private final QName fTempQName = new QName();
 
     /** Temporary string buffers. */
-    private StringBuffer fBuffer = new StringBuffer();
+    private final StringBuffer fBuffer = new StringBuffer();
 
     // symbols: general
 

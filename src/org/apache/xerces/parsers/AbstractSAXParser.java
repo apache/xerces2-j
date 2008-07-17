@@ -178,7 +178,7 @@ public abstract class AbstractSAXParser
     /** Lexical handler. */
     protected LexicalHandler fLexicalHandler;
 
-    protected QName fQName = new QName();
+    protected final QName fQName = new QName();
 
     // state
 
