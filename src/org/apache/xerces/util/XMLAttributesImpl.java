@@ -1047,7 +1047,7 @@ public class XMLAttributesImpl
         // basic info
 
         /** Name. */
-        public QName name = new QName();
+        public final QName name = new QName();
 
         /** Type. */
         public String type;
