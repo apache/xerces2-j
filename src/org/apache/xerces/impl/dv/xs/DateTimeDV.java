@@ -17,9 +17,9 @@
 
 package org.apache.xerces.impl.dv.xs;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
@@ -85,7 +85,9 @@ public class DateTimeDV extends AbstractDateTimeDV {
     }
     
     protected XMLGregorianCalendar getXMLGregorianCalendar(DateTimeData date) {
-        return factory.newXMLGregorianCalendar(BigInteger.valueOf(date.unNormYear), date.unNormMonth, date.unNormDay
-                , date.unNormHour, date.unNormMinute, (int)date.unNormSecond, date.unNormSecond != 0?new BigDecimal(date.unNormSecond - ((int)date.unNormSecond)):null, date.timezoneHr * 60 + date.timezoneMin);
+        return factory.newXMLGregorianCalendar(BigInteger.valueOf(date.unNormYear), date.unNormMonth, 
+                date.unNormDay, date.unNormHour, date.unNormMinute, 
+                (int)date.unNormSecond, date.unNormSecond != 0 ? getFractionalSecondsAsBigDecimal(date) : null, 
+                date.hasTimeZone() ? (date.timezoneHr * 60 + date.timezoneMin) : DatatypeConstants.FIELD_UNDEFINED);
     }
 }
