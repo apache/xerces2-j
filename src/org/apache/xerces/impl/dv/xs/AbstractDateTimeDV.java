@@ -17,6 +17,8 @@
 
 package org.apache.xerces.impl.dv.xs;
 
+import java.math.BigDecimal;
+
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -1082,8 +1084,23 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
         return null;
     }
 
-
     protected Duration getDuration(DateTimeData data) {
         return null;
+    }
+    
+    protected final BigDecimal getFractionalSecondsAsBigDecimal(DateTimeData data) {
+        StringBuffer buf = new StringBuffer();
+        append3(buf, data.unNormSecond);
+        String value = buf.toString();
+        int index = value.indexOf('.');
+        if (index == -1) {
+            return null;
+        }
+        value = value.substring(value.indexOf('.'));
+        BigDecimal _val = new BigDecimal(value);
+        if (_val.compareTo(BigDecimal.valueOf(0)) == 0) {
+            return null;
+        }
+        return _val;
     }
 }
