@@ -1089,15 +1089,15 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
     }
     
     protected final BigDecimal getFractionalSecondsAsBigDecimal(DateTimeData data) {
-        StringBuffer buf = new StringBuffer();
+        final StringBuffer buf = new StringBuffer();
         append3(buf, data.unNormSecond);
         String value = buf.toString();
-        int index = value.indexOf('.');
+        final int index = value.indexOf('.');
         if (index == -1) {
             return null;
         }
-        value = value.substring(value.indexOf('.'));
-        BigDecimal _val = new BigDecimal(value);
+        value = value.substring(index);
+        final BigDecimal _val = new BigDecimal(value);
         if (_val.compareTo(BigDecimal.valueOf(0)) == 0) {
             return null;
         }
