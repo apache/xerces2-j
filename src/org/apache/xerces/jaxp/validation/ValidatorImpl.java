@@ -24,6 +24,7 @@ import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.stax.StAXSource;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Validator;
 
@@ -68,6 +69,9 @@ final class ValidatorImpl extends Validator implements PSVIProvider {
     /** DOM validator helper. **/
     private DOMValidatorHelper fDOMValidatorHelper;
     
+    /** StAX validator helper. **/
+    private StAXValidatorHelper fStAXValidatorHelper;
+    
     /** Stream validator helper. **/
     private StreamValidatorHelper fStreamValidatorHelper;
     
@@ -101,6 +105,13 @@ final class ValidatorImpl extends Validator implements PSVIProvider {
                 fDOMValidatorHelper = new DOMValidatorHelper(fComponentManager);
             }
             fDOMValidatorHelper.validate(source, result);
+        }
+        else if (source instanceof StAXSource) {
+            // Hand off to StAX validator helper.
+            if (fStAXValidatorHelper == null) {
+                fStAXValidatorHelper = new StAXValidatorHelper(fComponentManager);
+            }
+            fStAXValidatorHelper.validate(source, result);
         }
         else if (source instanceof StreamSource) {
             // Hand off to stream validator helper.
