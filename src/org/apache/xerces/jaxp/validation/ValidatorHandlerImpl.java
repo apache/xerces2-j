@@ -233,7 +233,7 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
         return fTypeInfoProvider;
     }
     
-    public boolean getFeature(String name) 
+    public boolean getFeature(String name)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (name == null) {
             throw new NullPointerException();
@@ -834,6 +834,7 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
         
         /** In start element. **/
         private boolean fInStartElement = false;
+        private boolean fInEndElement = false;
         
         /** Initializes the TypeInfoProvider with type information for the current element. **/
         void beginStartElement(Augmentations elementAugs, XMLAttributes attributes) {
@@ -851,72 +852,92 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
         
         /** Initializes the TypeInfoProvider with type information for the current element. **/
         void beginEndElement(Augmentations elementAugs) {
+            fInEndElement = true;
             fElementAugs = elementAugs;
         }
         
         /** Cleanup at the end of end element. **/
         void finishEndElement() {
+            fInEndElement = false;
             fElementAugs = null;
         }
         
         /**
          * Throws a {@link IllegalStateException} if we are not in
          * the startElement callback. the JAXP API requires this
-         * for most of the public methods.
+         * for most of the public methods which access attribute 
+         * type information.
          */
-        private void checkState() {
-            if( !fInStartElement ) {
+        private void checkStateAttribute() {
+            if (!fInStartElement) {
                 throw new IllegalStateException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
-                        "TypeInfoProviderIllegalState", null));
+                        "TypeInfoProviderIllegalStateAttribute", null));
+            }
+        }
+        
+        /**
+         * Throws a {@link IllegalStateException} if we are not in
+         * the startElement or endElement callbacks. the JAXP API requires 
+         * this for the public methods which access element type information.
+         */
+        private void checkStateElement() {
+            if (!fInStartElement && !fInEndElement) {
+                throw new IllegalStateException(JAXPValidationMessageFormatter.formatMessage(Locale.getDefault(), 
+                        "TypeInfoProviderIllegalStateElement", null));
             }
         }
         
         public TypeInfo getAttributeTypeInfo(int index) {
-            checkState();
+            checkStateAttribute();
             return getAttributeType(index);
         }
         
         private TypeInfo getAttributeType( int index ) {
-            checkState();
-            if( index<0 || fAttributes.getLength()<=index )
+            checkStateAttribute();
+            if (index < 0 || fAttributes.getLength() <= index) {
                 throw new IndexOutOfBoundsException(Integer.toString(index));
+            }
             Augmentations augs = fAttributes.getAugmentations(index);
-            if (augs == null) return null;
+            if (augs == null) {
+                return null;
+            }
             AttributePSVI psvi = (AttributePSVI)augs.getItem(Constants.ATTRIBUTE_PSVI);
             return getTypeInfoFromPSVI(psvi);
         }
         
         public TypeInfo getAttributeTypeInfo(String attributeUri, String attributeLocalName) {
-            checkState();
+            checkStateAttribute();
             return getAttributeTypeInfo(fAttributes.getIndex(attributeUri,attributeLocalName));
         }
         
         public TypeInfo getAttributeTypeInfo(String attributeQName) {
-            checkState();
+            checkStateAttribute();
             return getAttributeTypeInfo(fAttributes.getIndex(attributeQName));
         }
         
         public TypeInfo getElementTypeInfo() {
-            checkState();
-            if (fElementAugs == null) return null;
+            checkStateElement();
+            if (fElementAugs == null) {
+                return null;
+            }
             ElementPSVI psvi = (ElementPSVI)fElementAugs.getItem(Constants.ELEMENT_PSVI);
             return getTypeInfoFromPSVI(psvi);
         }
         
-        private TypeInfo getTypeInfoFromPSVI( ItemPSVI psvi ) {
-            if(psvi==null)  return null;
-            
+        private TypeInfo getTypeInfoFromPSVI(ItemPSVI psvi) {
+            if (psvi == null) {
+                return null;
+            }
             // TODO: make sure if this is correct.
             // TODO: since the number of types in a schema is quite limited,
             // TypeInfoImpl should be pooled. Even better, it should be a part
             // of the element decl.
-            if( psvi.getValidity()== ElementPSVI.VALIDITY_VALID ) {
+            if (psvi.getValidity() == ItemPSVI.VALIDITY_VALID) {
                 XSTypeDefinition t = psvi.getMemberTypeDefinition();
                 if (t != null) {
                     return (t instanceof TypeInfo) ? (TypeInfo) t : null;
                 }
             }
-            
             XSTypeDefinition t = psvi.getTypeDefinition();
             // TODO: can t be null?
             if (t != null) {
@@ -926,14 +947,16 @@ final class ValidatorHandlerImpl extends ValidatorHandler implements
         }
         
         public boolean isIdAttribute(int index) {
-            checkState();
+            checkStateAttribute();
             XSSimpleType type = (XSSimpleType)getAttributeType(index);
-            if(type==null)  return false;
+            if (type == null) {
+                return false;
+            }
             return type.isIDType();
         }
         
         public boolean isSpecified(int index) {
-            checkState();
+            checkStateAttribute();
             return fAttributes.isSpecified(index);
         }
         
